@@ -108,27 +108,26 @@
 //! ```rust
 //! use winnow::prelude::*;
 //! use winnow::{
-//!   branch::alt,
-//!   multi::many0_count,
-//!   sequence::pair,
-//!   character::{alpha1, alphanumeric1},
-//!   bytes::tag,
+//!   input::AsChar,
+//!   bytes::take_while,
+//!   bytes::one_of,
 //! };
 //!
 //! pub fn identifier(input: &str) -> IResult<&str, &str> {
-//!   pair(
-//!     alt((alpha1, "_")),
-//!     many0_count(alt((alphanumeric1, "_")))
+//!   (
+//!       one_of(|c: char| c.is_alpha() || c == '_'),
+//!       take_while(|c: char| c.is_alphanum() || c == '_')
 //!   )
-//!      .recognize()
-//!      .parse_next(input)
+//!   .recognize()
+//!   .parse_next(input)
 //! }
 //! ```
 //!
-//! Let's say we apply this to the identifier `hello_world123abc`. The first `alt` parser would
-//! recognize `h`. The `pair` combinator ensures that `ello_world123abc` will be piped to the next
-//! `alphanumeric0` parser, which recognizes every remaining character. However, the `pair` combinator
-//! returns a tuple of the results of its sub-parsers. The `recognize` parser produces a `&str` of the
+//! Let's say we apply this to the identifier `hello_world123abc`. The first element of the tuple
+//! would uses [`one_of`][crate::bytes::one_of] which would recognize `h`. The tuple ensures that
+//! `ello_world123abc` will be piped to the next [`take_while`][crate::bytes::take_while] parser,
+//! which recognizes every remaining character. However, the tuple returns a tuple of the results
+//! of its sub-parsers. The [`recognize`][crate::Parser::recognize] parser produces a `&str` of the
 //! input text that was parsed, which in this case is the entire `&str` `hello_world123abc`.
 //!
 //! ## Literal Values
