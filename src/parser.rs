@@ -4,7 +4,7 @@ use self::Needed::*;
 use crate::combinator::*;
 #[cfg(feature = "std")]
 use crate::error::DbgErr;
-use crate::error::{self, Context, ErrorKind};
+use crate::error::{self, Context, ErrorKind, ParseError};
 use crate::input::InputIsStreaming;
 use crate::lib::std::fmt;
 use core::num::NonZeroUsize;
@@ -753,6 +753,67 @@ where
   }
 }
 
+impl<I, E: ParseError<I>> Parser<I, (), E> for () {
+  fn parse(&mut self, i: I) -> IResult<I, (), E> {
+    Ok((i, ()))
+  }
+}
+
+macro_rules! impl_parser_for_tuple {
+  ($($parser:ident $output:ident),+) => (
+    #[allow(non_snake_case)]
+    impl<I, $($output),+, E: ParseError<I>, $($parser),+> Parser<I, ($($output),+,), E> for ($($parser),+,)
+    where
+      $($parser: Parser<I, $output, E>),+
+    {
+      fn parse(&mut self, i: I) -> IResult<I, ($($output),+,), E> {
+        let ($(ref mut $parser),+,) = *self;
+
+        $(let(i, $output) = $parser.parse(i)?;)+
+
+        Ok((i, ($($output),+,)))
+      }
+    }
+  )
+}
+
+macro_rules! impl_parser_for_tuples {
+    ($parser1:ident $output1:ident, $($parser:ident $output:ident),+) => {
+        impl_parser_for_tuples!(__impl $parser1 $output1; $($parser $output),+);
+    };
+    (__impl $($parser:ident $output:ident),+; $parser1:ident $output1:ident $(,$parser2:ident $output2:ident)*) => {
+        impl_parser_for_tuple!($($parser $output),+);
+        impl_parser_for_tuples!(__impl $($parser $output),+, $parser1 $output1; $($parser2 $output2),*);
+    };
+    (__impl $($parser:ident $output:ident),+;) => {
+        impl_parser_for_tuple!($($parser $output),+);
+    }
+}
+
+impl_parser_for_tuples!(
+  P1 O1,
+  P2 O2,
+  P3 O3,
+  P4 O4,
+  P5 O5,
+  P6 O6,
+  P7 O7,
+  P8 O8,
+  P9 O9,
+  P10 O10,
+  P11 O11,
+  P12 O12,
+  P13 O13,
+  P14 O14,
+  P15 O15,
+  P16 O16,
+  P17 O17,
+  P18 O18,
+  P19 O19,
+  P20 O20,
+  P21 O21
+);
+
 #[cfg(feature = "alloc")]
 use alloc::boxed::Box;
 
@@ -766,7 +827,10 @@ impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a> {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::bytes::{tag, take};
   use crate::error::ErrorKind;
+  use crate::input::Streaming;
+  use crate::number::be_u16;
 
   #[doc(hidden)]
   #[macro_export]
@@ -790,5 +854,55 @@ mod tests {
   fn err_map_test() {
     let e = Err::Error(1);
     assert_eq!(e.map(|v| v + 1), Err::Error(2));
+  }
+
+  #[test]
+  fn single_element_tuples() {
+    use crate::character::alpha1;
+    use crate::{error::ErrorKind, Err};
+
+    let mut parser = (alpha1,);
+    assert_eq!(parser.parse("abc123def"), Ok(("123def", ("abc",))));
+    assert_eq!(
+      parser.parse("123def"),
+      Err(Err::Error(("123def", ErrorKind::Alpha)))
+    );
+  }
+
+  #[test]
+  fn tuple_test() {
+    fn tuple_3(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (u16, &[u8], &[u8])> {
+      (be_u16, take(3u8), tag("fg")).parse(i)
+    }
+
+    assert_eq!(
+      tuple_3(Streaming(&b"abcdefgh"[..])),
+      Ok((Streaming(&b"h"[..]), (0x6162u16, &b"cde"[..], &b"fg"[..])))
+    );
+    assert_eq!(
+      tuple_3(Streaming(&b"abcd"[..])),
+      Err(Err::Incomplete(Needed::new(1)))
+    );
+    assert_eq!(
+      tuple_3(Streaming(&b"abcde"[..])),
+      Err(Err::Incomplete(Needed::new(2)))
+    );
+    assert_eq!(
+      tuple_3(Streaming(&b"abcdejk"[..])),
+      Err(Err::Error(error_position!(
+        Streaming(&b"jk"[..]),
+        ErrorKind::Tag
+      )))
+    );
+  }
+
+  #[test]
+  fn unit_type() {
+    fn parser(i: &str) -> IResult<&str, ()> {
+      ().parse(i)
+    }
+    assert_eq!(parser.parse("abxsbsh"), Ok(("abxsbsh", ())));
+    assert_eq!(parser.parse("sdfjakdsas"), Ok(("sdfjakdsas", ())));
+    assert_eq!(parser.parse(""), Ok(("", ())));
   }
 }
