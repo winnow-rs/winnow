@@ -1011,7 +1011,9 @@ where
   move |i: I| {
     let (i, count) = f.parse_next(i)?;
     let mut input = i.clone();
-    let mut res = Vec::new();
+    let max_initial_capacity =
+      MAX_INITIAL_CAPACITY_BYTES / crate::lib::std::mem::size_of::<O>().max(1);
+    let mut res = Vec::with_capacity(count.to_usize().min(max_initial_capacity));
 
     for _ in 0..count.to_usize() {
       let input_ = input.clone();
