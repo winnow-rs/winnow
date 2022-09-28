@@ -13,6 +13,7 @@ use crate::stream::Stream;
 use crate::token::take;
 use crate::unpeek;
 use crate::IResult;
+use crate::PResult;
 use crate::Parser;
 use crate::Partial;
 
@@ -645,6 +646,28 @@ fn alt_incomplete() {
     assert_eq!(
         alt1(Partial::new(a)),
         Ok((Partial::new(&b"g"[..]), &b"def"[..]))
+    );
+}
+
+#[test]
+fn alt_array() {
+    fn alt1<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8]> {
+        alt(["a", "bc", "def"]).parse_next(i)
+    }
+
+    let i = &b"a"[..];
+    assert_eq!(alt1.parse_peek(i), Ok((&b""[..], (&b"a"[..]))));
+
+    let i = &b"bc"[..];
+    assert_eq!(alt1.parse_peek(i), Ok((&b""[..], (&b"bc"[..]))));
+
+    let i = &b"defg"[..];
+    assert_eq!(alt1.parse_peek(i), Ok((&b"g"[..], (&b"def"[..]))));
+
+    let i = &b"z"[..];
+    assert_eq!(
+        alt1.parse_peek(i),
+        Err(ErrMode::Backtrack(error_position!(&i, ErrorKind::Tag)))
     );
 }
 
