@@ -319,7 +319,7 @@ where
   T: InputTakeAtPosition,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position(|item| !item.is_alpha())
+  input.split_at_position_partial(|item| !item.is_alpha())
 }
 
 /// Recognizes one or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
@@ -340,7 +340,7 @@ where
   T: InputTakeAtPosition,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position1(|item| !item.is_alpha(), ErrorKind::Alpha)
+  input.split_at_position1_partial(|item| !item.is_alpha(), ErrorKind::Alpha)
 }
 
 /// Recognizes zero or more ASCII numerical characters: 0-9
@@ -361,7 +361,7 @@ where
   T: InputTakeAtPosition,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position(|item| !item.is_dec_digit())
+  input.split_at_position_partial(|item| !item.is_dec_digit())
 }
 
 /// Recognizes one or more ASCII numerical characters: 0-9
@@ -382,7 +382,7 @@ where
   T: InputTakeAtPosition,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position1(|item| !item.is_dec_digit(), ErrorKind::Digit)
+  input.split_at_position1_partial(|item| !item.is_dec_digit(), ErrorKind::Digit)
 }
 
 /// Recognizes zero or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
@@ -403,7 +403,7 @@ where
   T: InputTakeAtPosition,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position(|item| !item.is_hex_digit())
+  input.split_at_position_partial(|item| !item.is_hex_digit())
 }
 
 /// Recognizes one or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
@@ -424,7 +424,7 @@ where
   T: InputTakeAtPosition,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position1(|item| !item.is_hex_digit(), ErrorKind::HexDigit)
+  input.split_at_position1_partial(|item| !item.is_hex_digit(), ErrorKind::HexDigit)
 }
 
 /// Recognizes zero or more octal characters: 0-7
@@ -445,7 +445,7 @@ where
   T: InputTakeAtPosition,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position(|item| !item.is_oct_digit())
+  input.split_at_position_partial(|item| !item.is_oct_digit())
 }
 
 /// Recognizes one or more octal characters: 0-7
@@ -466,7 +466,7 @@ where
   T: InputTakeAtPosition,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position1(|item| !item.is_oct_digit(), ErrorKind::OctDigit)
+  input.split_at_position1_partial(|item| !item.is_oct_digit(), ErrorKind::OctDigit)
 }
 
 /// Recognizes zero or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
@@ -487,7 +487,7 @@ where
   T: InputTakeAtPosition,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position(|item| !item.is_alphanum())
+  input.split_at_position_partial(|item| !item.is_alphanum())
 }
 
 /// Recognizes one or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
@@ -508,7 +508,7 @@ where
   T: InputTakeAtPosition,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position1(|item| !item.is_alphanum(), ErrorKind::AlphaNumeric)
+  input.split_at_position1_partial(|item| !item.is_alphanum(), ErrorKind::AlphaNumeric)
 }
 
 /// Recognizes zero or more spaces and tabs.
@@ -529,7 +529,7 @@ where
   T: InputTakeAtPosition,
   <T as InputTakeAtPosition>::Item: AsChar + Clone,
 {
-  input.split_at_position(|item| {
+  input.split_at_position_partial(|item| {
     let c = item.as_char();
     !(c == ' ' || c == '\t')
   })
@@ -552,7 +552,7 @@ where
   T: InputTakeAtPosition,
   <T as InputTakeAtPosition>::Item: AsChar + Clone,
 {
-  input.split_at_position1(
+  input.split_at_position1_partial(
     |item| {
       let c = item.as_char();
       !(c == ' ' || c == '\t')
@@ -579,7 +579,7 @@ where
   T: InputTakeAtPosition,
   <T as InputTakeAtPosition>::Item: AsChar + Clone,
 {
-  input.split_at_position(|item| {
+  input.split_at_position_partial(|item| {
     let c = item.as_char();
     !(c == ' ' || c == '\t' || c == '\r' || c == '\n')
   })
@@ -603,7 +603,7 @@ where
   T: InputTakeAtPosition,
   <T as InputTakeAtPosition>::Item: AsChar + Clone,
 {
-  input.split_at_position1(
+  input.split_at_position1_partial(
     |item| {
       let c = item.as_char();
       !(c == ' ' || c == '\t' || c == '\r' || c == '\n')
