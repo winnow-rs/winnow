@@ -7,7 +7,7 @@ use crate::lib::std::ops::RangeFrom;
 use crate::lib::std::result::Result::*;
 use crate::traits::{
   Compare, CompareResult, FindSubstring, FindToken, InputIter, InputLength, InputTake,
-  InputTakeAtPosition, Slice, ToUsize,
+  InputTakeAtPositionPartial, Slice, ToUsize,
 };
 
 /// Recognizes a pattern.
@@ -118,8 +118,8 @@ pub fn is_not<T, Input, Error: ParseError<Input>>(
   arr: T,
 ) -> impl Fn(Input) -> IResult<Input, Input, Error>
 where
-  Input: InputTakeAtPosition,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+  Input: InputTakeAtPositionPartial,
+  T: FindToken<<Input as InputTakeAtPositionPartial>::Item>,
 {
   move |i: Input| {
     let e: ErrorKind = ErrorKind::IsNot;
@@ -154,8 +154,8 @@ pub fn is_a<T, Input, Error: ParseError<Input>>(
   arr: T,
 ) -> impl Fn(Input) -> IResult<Input, Input, Error>
 where
-  Input: InputTakeAtPosition,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+  Input: InputTakeAtPositionPartial,
+  T: FindToken<<Input as InputTakeAtPositionPartial>::Item>,
 {
   move |i: Input| {
     let e: ErrorKind = ErrorKind::IsA;
@@ -189,8 +189,8 @@ pub fn take_while<F, Input, Error: ParseError<Input>>(
   cond: F,
 ) -> impl Fn(Input) -> IResult<Input, Input, Error>
 where
-  Input: InputTakeAtPosition,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  Input: InputTakeAtPositionPartial,
+  F: Fn(<Input as InputTakeAtPositionPartial>::Item) -> bool,
 {
   move |i: Input| i.split_at_position_partial(|c| !cond(c))
 }
@@ -223,8 +223,8 @@ pub fn take_while1<F, Input, Error: ParseError<Input>>(
   cond: F,
 ) -> impl Fn(Input) -> IResult<Input, Input, Error>
 where
-  Input: InputTakeAtPosition,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  Input: InputTakeAtPositionPartial,
+  F: Fn(<Input as InputTakeAtPositionPartial>::Item) -> bool,
 {
   move |i: Input| {
     let e: ErrorKind = ErrorKind::TakeWhile1;
@@ -344,8 +344,8 @@ pub fn take_till<F, Input, Error: ParseError<Input>>(
   cond: F,
 ) -> impl Fn(Input) -> IResult<Input, Input, Error>
 where
-  Input: InputTakeAtPosition,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  Input: InputTakeAtPositionPartial,
+  F: Fn(<Input as InputTakeAtPositionPartial>::Item) -> bool,
 {
   move |i: Input| i.split_at_position_partial(|c| cond(c))
 }
@@ -376,8 +376,8 @@ pub fn take_till1<F, Input, Error: ParseError<Input>>(
   cond: F,
 ) -> impl Fn(Input) -> IResult<Input, Input, Error>
 where
-  Input: InputTakeAtPosition,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  Input: InputTakeAtPositionPartial,
+  F: Fn(<Input as InputTakeAtPositionPartial>::Item) -> bool,
 {
   move |i: Input| {
     let e: ErrorKind = ErrorKind::TakeTill1;
@@ -532,7 +532,7 @@ where
     + crate::traits::Offset
     + InputLength
     + InputTake
-    + InputTakeAtPosition
+    + InputTakeAtPositionPartial
     + Slice<RangeFrom<usize>>
     + InputIter,
   <Input as InputIter>::Item: crate::traits::AsChar,
@@ -633,7 +633,7 @@ where
     + crate::traits::Offset
     + InputLength
     + InputTake
-    + InputTakeAtPosition
+    + InputTakeAtPositionPartial
     + Slice<RangeFrom<usize>>
     + InputIter,
   Input: crate::traits::ExtendInto<Item = ExtendItem, Extender = Output>,
