@@ -473,7 +473,7 @@ pub trait UnspecializedInput {}
 /// Methods to take as much input as possible until the provided function returns true for the current element.
 ///
 /// A large part of nom's basic parsers are built using this trait.
-pub trait InputTakeAtPosition: Sized {
+pub trait InputTakeAtPositionPartial: Sized {
   /// The current input type is a sequence of that `Item` type.
   ///
   /// Example: `u8` for `&[u8]` or `char` for `&str`
@@ -483,7 +483,10 @@ pub trait InputTakeAtPosition: Sized {
   /// and returns the input up to this position.
   ///
   /// *streaming version*: If no element is found matching the condition, this will return `Incomplete`
-  fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
+  fn split_at_position_partial<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+  ) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool;
 
@@ -493,22 +496,29 @@ pub trait InputTakeAtPosition: Sized {
   /// Fails if the produced slice is empty.
   ///
   /// *streaming version*: If no element is found matching the condition, this will return `Incomplete`
-  fn split_at_position1<P, E: ParseError<Self>>(
+  fn split_at_position1_partial<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
   ) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool;
+}
+
+/// Methods to take as much input as possible until the provided function returns true for the current element.
+///
+/// A large part of nom's basic parsers are built using this trait.
+pub trait InputTakeAtPosition: Sized {
+  /// The current input type is a sequence of that `Item` type.
+  ///
+  /// Example: `u8` for `&[u8]` or `char` for `&str`
+  type Item;
 
   /// Looks for the first element of the input type for which the condition returns true,
   /// and returns the input up to this position.
   ///
   /// *complete version*: If no element is found matching the condition, this will return the whole input
-  fn split_at_position_complete<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-  ) -> IResult<Self, Self, E>
+  fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool;
 
@@ -518,7 +528,7 @@ pub trait InputTakeAtPosition: Sized {
   /// Fails if the produced slice is empty.
   ///
   /// *complete version*: If no element is found matching the condition, this will return the whole input
-  fn split_at_position1_complete<P, E: ParseError<Self>>(
+  fn split_at_position1<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
@@ -527,12 +537,15 @@ pub trait InputTakeAtPosition: Sized {
     P: Fn(Self::Item) -> bool;
 }
 
-impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputTakeAtPosition
+impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputTakeAtPositionPartial
   for T
 {
   type Item = <T as InputIter>::Item;
 
-  fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
+  fn split_at_position_partial<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+  ) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
   {
@@ -542,7 +555,7 @@ impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
     }
   }
 
-  fn split_at_position1<P, E: ParseError<Self>>(
+  fn split_at_position1_partial<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
@@ -556,21 +569,25 @@ impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
       None => Err(Err::Incomplete(Needed::new(1))),
     }
   }
+}
 
-  fn split_at_position_complete<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-  ) -> IResult<Self, Self, E>
+impl<
+    T: InputLength + InputIter + InputTake + Clone + UnspecializedInput + InputTakeAtPositionPartial,
+  > InputTakeAtPosition for T
+{
+  type Item = <T as InputTakeAtPositionPartial>::Item;
+
+  fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
   {
-    match self.split_at_position(predicate) {
+    match self.split_at_position_partial(predicate) {
       Err(Err::Incomplete(_)) => Ok(self.take_split(self.input_len())),
       res => res,
     }
   }
 
-  fn split_at_position1_complete<P, E: ParseError<Self>>(
+  fn split_at_position1<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
@@ -578,7 +595,7 @@ impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
   where
     P: Fn(Self::Item) -> bool,
   {
-    match self.split_at_position1(predicate, e) {
+    match self.split_at_position1_partial(predicate, e) {
       Err(Err::Incomplete(_)) => {
         if self.input_len() == 0 {
           Err(Err::Error(E::from_error_kind(self.clone(), e)))
@@ -591,10 +608,13 @@ impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
   }
 }
 
-impl<'a> InputTakeAtPosition for &'a [u8] {
+impl<'a> InputTakeAtPositionPartial for &'a [u8] {
   type Item = u8;
 
-  fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
+  fn split_at_position_partial<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+  ) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
   {
@@ -604,7 +624,7 @@ impl<'a> InputTakeAtPosition for &'a [u8] {
     }
   }
 
-  fn split_at_position1<P, E: ParseError<Self>>(
+  fn split_at_position1_partial<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
@@ -618,11 +638,12 @@ impl<'a> InputTakeAtPosition for &'a [u8] {
       None => Err(Err::Incomplete(Needed::new(1))),
     }
   }
+}
 
-  fn split_at_position_complete<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-  ) -> IResult<Self, Self, E>
+impl<'a> InputTakeAtPosition for &'a [u8] {
+  type Item = u8;
+
+  fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
   {
@@ -632,7 +653,7 @@ impl<'a> InputTakeAtPosition for &'a [u8] {
     }
   }
 
-  fn split_at_position1_complete<P, E: ParseError<Self>>(
+  fn split_at_position1<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
@@ -654,10 +675,13 @@ impl<'a> InputTakeAtPosition for &'a [u8] {
   }
 }
 
-impl<'a> InputTakeAtPosition for &'a str {
+impl<'a> InputTakeAtPositionPartial for &'a str {
   type Item = char;
 
-  fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
+  fn split_at_position_partial<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+  ) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
   {
@@ -668,7 +692,7 @@ impl<'a> InputTakeAtPosition for &'a str {
     }
   }
 
-  fn split_at_position1<P, E: ParseError<Self>>(
+  fn split_at_position1_partial<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
@@ -683,11 +707,12 @@ impl<'a> InputTakeAtPosition for &'a str {
       None => Err(Err::Incomplete(Needed::new(1))),
     }
   }
+}
 
-  fn split_at_position_complete<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-  ) -> IResult<Self, Self, E>
+impl<'a> InputTakeAtPosition for &'a str {
+  type Item = char;
+
+  fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
   {
@@ -704,7 +729,7 @@ impl<'a> InputTakeAtPosition for &'a str {
     }
   }
 
-  fn split_at_position1_complete<P, E: ParseError<Self>>(
+  fn split_at_position1<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
