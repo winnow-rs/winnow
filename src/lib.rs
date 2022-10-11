@@ -462,4 +462,6 @@ pub mod number;
 #[cfg(feature = "unstable-doc")]
 pub mod _cookbook;
 #[cfg(feature = "unstable-doc")]
+pub mod _faq;
+#[cfg(feature = "unstable-doc")]
 pub mod _tutorial;
