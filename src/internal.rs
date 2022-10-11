@@ -461,7 +461,7 @@ mod tests {
   #[macro_export]
   macro_rules! assert_size (
     ($t:ty, $sz:expr) => (
-      assert_eq!(crate::lib::std::mem::size_of::<$t>(), $sz);
+      assert!(crate::lib::std::mem::size_of::<$t>() <= $sz, "{} <= {} failed", crate::lib::std::mem::size_of::<$t>(), $sz);
     );
   );
 
