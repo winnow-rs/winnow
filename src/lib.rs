@@ -53,7 +53,7 @@
 //! The code is available on [Github](https://github.com/Geal/nom)
 //!
 //! There are a few [guides](https://github.com/Geal/nom/tree/main/doc) with more details
-//! about [how to write parsers](https://github.com/Geal/nom/blob/main/doc/making_a_new_parser_from_scratch.md),
+//! about [how to write parsers][_tutorial],
 //! or the [error management system](https://github.com/Geal/nom/blob/main/doc/error_management.md).
 //! You can also check out the [_cookbook] module that contains examples of common patterns.
 //!
@@ -461,3 +461,5 @@ pub mod number;
 
 #[cfg(feature = "unstable-doc")]
 pub mod _cookbook;
+#[cfg(feature = "unstable-doc")]
+pub mod _tutorial;
