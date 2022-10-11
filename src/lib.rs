@@ -53,12 +53,12 @@
 //! The code is available on [Github](https://github.com/Geal/nom)
 //!
 //! There are a few [guides](https://github.com/Geal/nom/tree/main/doc) with more details
-//! about [how to write parsers](https://github.com/Geal/nom/blob/main/doc/making_a_new_parser_from_scratch.md),
-//! or the [error management system](https://github.com/Geal/nom/blob/main/doc/error_management.md).
-//! You can also check out the [recipes] module that contains examples of common patterns.
+//! about [how to write parsers][_tutorial],
+//! or the [error management system][error].
+//! You can also check out the [_cookbook] module that contains examples of common patterns.
 //!
 //! **Looking for a specific combinator? Read the
-//! ["choose a combinator" guide](https://github.com/Geal/nom/blob/main/doc/choosing_a_combinator.md)**
+//! ["choose a combinator" guide][combinator]**
 //!
 //! If you are upgrading to nom 5.0, please read the
 //! [migration document](https://github.com/Geal/nom/blob/main/doc/upgrading_to_nom_5.md).
@@ -167,7 +167,7 @@
 //! - An error `Err(Err::Incomplete(Needed))` indicating that more input is necessary. `Needed` can indicate how much data is needed
 //! - An error `Err(Err::Failure(c))`. It works like the `Error` case, except it indicates an unrecoverable error: We cannot backtrack and test another parser
 //!
-//! Please refer to the ["choose a combinator" guide](https://github.com/Geal/nom/blob/main/doc/choosing_a_combinator.md) for an exhaustive list of parsers.
+//! Please refer to the ["choose a combinator" guide][combinator] for an exhaustive list of parsers.
 //! See also the rest of the documentation [here](https://github.com/Geal/nom/blob/main/doc).
 //!
 //! ## Making new parsers with function combinators
@@ -370,11 +370,12 @@
 //! assert_eq!(alpha0_complete("abcd"), Ok(("", "abcd")));
 //! ```
 //! **Going further:** Read the [guides](https://github.com/Geal/nom/tree/main/doc),
-//! check out the [recipes]!
+//! check out the [_cookbook]!
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(extended_key_value_attributes))]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(feature = "cargo-clippy", allow(clippy::doc_markdown))]
-#![cfg_attr(feature = "docsrs", feature(doc_cfg))]
-#![cfg_attr(feature = "docsrs", feature(extended_key_value_attributes))]
 #![deny(missing_docs)]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 #[cfg(feature = "alloc")]
@@ -458,6 +459,9 @@ mod str;
 
 pub mod number;
 
-#[cfg(feature = "docsrs")]
-#[cfg_attr(feature = "docsrs", cfg_attr(feature = "docsrs", doc = include_str!("../doc/nom_recipes.md")))]
-pub mod recipes {}
+#[cfg(feature = "unstable-doc")]
+pub mod _cookbook;
+#[cfg(feature = "unstable-doc")]
+pub mod _faq;
+#[cfg(feature = "unstable-doc")]
+pub mod _tutorial;

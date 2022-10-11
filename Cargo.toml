@@ -14,7 +14,7 @@ edition = "2018"
 autoexamples = false
 
 # also update in README.md (badge and "Rust version requirements" section)
-rust-version = "1.48"
+rust-version = "1.50.0"  # MSRV
 
 include = [
   "CHANGELOG.md",
@@ -25,14 +25,14 @@ include = [
   "src/*.rs",
   "src/*/*.rs",
   "tests/*.rs",
-  "doc/nom_recipes.md",
 ]
 
 [features]
 alloc = []
 std = ["alloc", "memchr/std", "minimal-lexical/std"]
 default = ["std"]
-docsrs = []
+
+unstable-doc = ["alloc", "std"]
 
 [dependencies.minimal-lexical]
 version = "0.2.0"
@@ -47,8 +47,9 @@ doc-comment = "0.3"
 proptest = "1.0.0"
 
 [package.metadata.docs.rs]
-features = ["alloc", "std", "docsrs"]
-all-features = true
+features = ["unstable-doc"]
+rustdoc-args = ["--cfg", "docsrs"]
+cargo-args = ["-Zunstable-options", "-Zrustdoc-scrape-examples=examples"]
 
 [profile.bench]
 debug = true

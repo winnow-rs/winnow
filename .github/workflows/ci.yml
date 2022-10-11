@@ -1,9 +1,13 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+    - main
 
 env:
-  RUST_MINVERSION: 1.41.1
+  RUST_MINVERSION: 1.50.0  # MSRV
   CARGO_INCREMENTAL: 0
   CARGO_NET_RETRY: 10
 
@@ -18,7 +22,7 @@ jobs:
           - stable
           - beta
           - nightly
-          - 1.48.0
+          - 1.50.0  # MSRV
 
         features:
           - ''
@@ -130,14 +134,14 @@ jobs:
       - name: Install rust
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly
+          toolchain: stable
           profile: minimal
           override: true
 
       - name: Build
         env:
           RUSTDOCFLAGS: -D warnings
-        run: cargo doc --no-deps --document-private-items --workspace --verbose --features "std docsrs"
+        run: cargo doc --no-deps --document-private-items --workspace --verbose --features "unstable-doc"
 
   fmt:
     name: Check formatting

@@ -172,37 +172,33 @@ impl<T> Err<error::Error<T>> {
 
 #[cfg(feature = "alloc")]
 use crate::lib::std::{borrow::ToOwned, string::String, vec::Vec};
-#[cfg(feature = "alloc")]
 impl Err<(&[u8], ErrorKind)> {
   /// Obtaining ownership
-  #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+  #[cfg(feature = "alloc")]
   pub fn to_owned(self) -> Err<(Vec<u8>, ErrorKind)> {
     self.map_input(ToOwned::to_owned)
   }
 }
 
-#[cfg(feature = "alloc")]
 impl Err<(&str, ErrorKind)> {
   /// Obtaining ownership
-  #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+  #[cfg(feature = "alloc")]
   pub fn to_owned(self) -> Err<(String, ErrorKind)> {
     self.map_input(ToOwned::to_owned)
   }
 }
 
-#[cfg(feature = "alloc")]
 impl Err<error::Error<&[u8]>> {
   /// Obtaining ownership
-  #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+  #[cfg(feature = "alloc")]
   pub fn to_owned(self) -> Err<error::Error<Vec<u8>>> {
     self.map_input(ToOwned::to_owned)
   }
 }
 
-#[cfg(feature = "alloc")]
 impl Err<error::Error<&str>> {
   /// Obtaining ownership
-  #[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+  #[cfg(feature = "alloc")]
   pub fn to_owned(self) -> Err<error::Error<String>> {
     self.map_input(ToOwned::to_owned)
   }
@@ -465,7 +461,7 @@ mod tests {
   #[macro_export]
   macro_rules! assert_size (
     ($t:ty, $sz:expr) => (
-      assert_eq!(crate::lib::std::mem::size_of::<$t>(), $sz);
+      assert!(crate::lib::std::mem::size_of::<$t>() <= $sz, "{} <= {} failed", crate::lib::std::mem::size_of::<$t>(), $sz);
     );
   );
 

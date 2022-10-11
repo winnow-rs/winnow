@@ -1311,7 +1311,6 @@ impl<I> ErrorConvert<error::Error<(I, usize)>> for error::Error<I> {
 }
 
 #[cfg(feature = "alloc")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
 impl<I> ErrorConvert<error::VerboseError<I>> for error::VerboseError<(I, usize)> {
   fn convert(self) -> error::VerboseError<I> {
     error::VerboseError {
@@ -1321,7 +1320,6 @@ impl<I> ErrorConvert<error::VerboseError<I>> for error::VerboseError<(I, usize)>
 }
 
 #[cfg(feature = "alloc")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
 impl<I> ErrorConvert<error::VerboseError<(I, usize)>> for error::VerboseError<I> {
   fn convert(self) -> error::VerboseError<(I, usize)> {
     error::VerboseError {
@@ -1330,9 +1328,8 @@ impl<I> ErrorConvert<error::VerboseError<(I, usize)>> for error::VerboseError<I>
   }
 }
 
-#[cfg(feature = "std")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "std")))]
 /// Helper trait to show a byte slice as a hex dump
+#[cfg(feature = "std")]
 pub trait HexDisplay {
   /// Converts the value of `self` to a hex dump, returning the owned
   /// `String`.
