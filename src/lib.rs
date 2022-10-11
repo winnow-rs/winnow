@@ -58,7 +58,7 @@
 //! You can also check out the [_cookbook] module that contains examples of common patterns.
 //!
 //! **Looking for a specific combinator? Read the
-//! ["choose a combinator" guide](https://github.com/Geal/nom/blob/main/doc/choosing_a_combinator.md)**
+//! ["choose a combinator" guide][combinator]**
 //!
 //! If you are upgrading to nom 5.0, please read the
 //! [migration document](https://github.com/Geal/nom/blob/main/doc/upgrading_to_nom_5.md).
@@ -167,7 +167,7 @@
 //! - An error `Err(Err::Incomplete(Needed))` indicating that more input is necessary. `Needed` can indicate how much data is needed
 //! - An error `Err(Err::Failure(c))`. It works like the `Error` case, except it indicates an unrecoverable error: We cannot backtrack and test another parser
 //!
-//! Please refer to the ["choose a combinator" guide](https://github.com/Geal/nom/blob/main/doc/choosing_a_combinator.md) for an exhaustive list of parsers.
+//! Please refer to the ["choose a combinator" guide][combinator] for an exhaustive list of parsers.
 //! See also the rest of the documentation [here](https://github.com/Geal/nom/blob/main/doc).
 //!
 //! ## Making new parsers with function combinators

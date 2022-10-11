@@ -94,7 +94,7 @@ fn parse_color() {
 
 - [Reference documentation](https://docs.rs/nom)
 - [Various design documents and tutorials](https://github.com/Geal/nom/tree/main/doc)
-- [List of combinators and their behaviour](https://github.com/Geal/nom/blob/main/doc/choosing_a_combinator.md)
+- [List of combinators and their behaviour](https://docs.rs/nom/latest/nom/combinator/index.html)
 
 If you need any help developing your parsers, please ping `geal` on IRC (libera, geeknode, oftc), go to `#nom-parsers` on Libera IRC, or on the [Gitter chat room](https://gitter.im/Geal/nom).
 
