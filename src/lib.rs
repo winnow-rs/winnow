@@ -460,5 +460,4 @@ mod str;
 pub mod number;
 
 #[cfg(feature = "unstable-doc")]
-#[doc = include_str!("../doc/cookbook.md")]
-pub mod _cookbook {}
+pub mod _cookbook;
