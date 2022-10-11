@@ -10,7 +10,7 @@ first, if you are not familiar with parser combinators, or if you are not used
 to Rust generic functions.
 
 This document is here to help you in getting started with nom. You can also find
-[nom recipes for common short parsing tasks here](nom_recipes.md). If you need
+[nom recipes for common short parsing tasks here](cookbook.md). If you need
 more specific help, please ping `geal` on IRC (libera, geeknode,
 oftc), go to `#nom-parsers` on Libera IRC, or on the
 [Gitter chat room](https://gitter.im/Geal/nom).

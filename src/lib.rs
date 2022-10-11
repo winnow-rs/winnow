@@ -55,7 +55,7 @@
 //! There are a few [guides](https://github.com/Geal/nom/tree/main/doc) with more details
 //! about [how to write parsers](https://github.com/Geal/nom/blob/main/doc/making_a_new_parser_from_scratch.md),
 //! or the [error management system](https://github.com/Geal/nom/blob/main/doc/error_management.md).
-//! You can also check out the [recipes] module that contains examples of common patterns.
+//! You can also check out the [_cookbook] module that contains examples of common patterns.
 //!
 //! **Looking for a specific combinator? Read the
 //! ["choose a combinator" guide](https://github.com/Geal/nom/blob/main/doc/choosing_a_combinator.md)**
@@ -370,7 +370,7 @@
 //! assert_eq!(alpha0_complete("abcd"), Ok(("", "abcd")));
 //! ```
 //! **Going further:** Read the [guides](https://github.com/Geal/nom/tree/main/doc),
-//! check out the [recipes]!
+//! check out the [_cookbook]!
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(docsrs, feature(extended_key_value_attributes))]
@@ -460,5 +460,5 @@ mod str;
 pub mod number;
 
 #[cfg(feature = "unstable-doc")]
-#[doc = include_str!("../doc/nom_recipes.md")]
-pub mod recipes {}
+#[doc = include_str!("../doc/cookbook.md")]
+pub mod _cookbook {}
