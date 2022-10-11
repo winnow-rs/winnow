@@ -206,7 +206,7 @@ Some benchmarks are available on [Github](https://github.com/Geal/nom_benchmarks
 
 ## Rust version requirements (MSRV)
 
-The 7.0 series of nom has **a minimum-supported Rust version (MSRV) of 1.48.0**. It is known to work properly on Rust 1.41.1 but there is no guarantee it will stay the case through this major release.
+The 7.0 series of nom has **a minimum-supported Rust version (MSRV) of 1.50.0**. It is known to work properly on Rust 1.41.1 but there is no guarantee it will stay the case through this major release.
 
 The current policy is that this will only be updated in the next major nom release.
 
