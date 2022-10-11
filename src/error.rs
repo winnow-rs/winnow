@@ -146,7 +146,7 @@ pub fn append_error<I, E: ParseError<I>>(input: I, kind: ErrorKind, other: E) ->
 /// through a parse tree. With some post processing (cf `examples/json.rs`),
 /// it can be used to display user friendly error messages
 #[cfg(feature = "alloc")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+#[cfg_attr(feature = "unstable-doc", doc(cfg(feature = "alloc")))]
 #[derive(Clone, Debug, PartialEq)]
 pub struct VerboseError<I> {
   /// List of errors accumulated by `VerboseError`, containing the affected
@@ -155,7 +155,7 @@ pub struct VerboseError<I> {
 }
 
 #[cfg(feature = "alloc")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+#[cfg_attr(feature = "unstable-doc", doc(cfg(feature = "alloc")))]
 #[derive(Clone, Debug, PartialEq)]
 /// Error context for `VerboseError`
 pub enum VerboseErrorKind {
@@ -168,7 +168,7 @@ pub enum VerboseErrorKind {
 }
 
 #[cfg(feature = "alloc")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+#[cfg_attr(feature = "unstable-doc", doc(cfg(feature = "alloc")))]
 impl<I> ParseError<I> for VerboseError<I> {
   fn from_error_kind(input: I, kind: ErrorKind) -> Self {
     VerboseError {
@@ -189,7 +189,7 @@ impl<I> ParseError<I> for VerboseError<I> {
 }
 
 #[cfg(feature = "alloc")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+#[cfg_attr(feature = "unstable-doc", doc(cfg(feature = "alloc")))]
 impl<I> ContextError<I> for VerboseError<I> {
   fn add_context(input: I, ctx: &'static str, mut other: Self) -> Self {
     other.errors.push((input, VerboseErrorKind::Context(ctx)));
@@ -198,7 +198,7 @@ impl<I> ContextError<I> for VerboseError<I> {
 }
 
 #[cfg(feature = "alloc")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+#[cfg_attr(feature = "unstable-doc", doc(cfg(feature = "alloc")))]
 impl<I, E> FromExternalError<I, E> for VerboseError<I> {
   /// Create a new error from an input position and an external error
   fn from_external_error(input: I, kind: ErrorKind, _e: E) -> Self {
@@ -247,7 +247,7 @@ where
 
 /// Transforms a `VerboseError` into a trace with input position information
 #[cfg(feature = "alloc")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+#[cfg_attr(feature = "unstable-doc", doc(cfg(feature = "alloc")))]
 pub fn convert_error<I: core::ops::Deref<Target = str>>(
   input: I,
   e: VerboseError<I>,
@@ -586,7 +586,7 @@ macro_rules! error_node_position(
 /// f(a);
 /// ```
 #[cfg(feature = "std")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "std")))]
+#[cfg_attr(feature = "unstable-doc", doc(cfg(feature = "std")))]
 pub fn dbg_dmp<'a, F, O, E: std::fmt::Debug>(
   f: F,
   context: &'static str,

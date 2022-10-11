@@ -130,14 +130,14 @@ jobs:
       - name: Install rust
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly
+          toolchain: stable
           profile: minimal
           override: true
 
       - name: Build
         env:
           RUSTDOCFLAGS: -D warnings
-        run: cargo doc --no-deps --document-private-items --workspace --verbose --features "std docsrs"
+        run: cargo doc --no-deps --document-private-items --workspace --verbose --features "unstable-doc"
 
   fmt:
     name: Check formatting

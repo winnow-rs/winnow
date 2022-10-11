@@ -32,7 +32,8 @@ include = [
 alloc = []
 std = ["alloc", "memchr/std", "minimal-lexical/std"]
 default = ["std"]
-docsrs = []
+
+unstable-doc = []
 
 [dependencies.minimal-lexical]
 version = "0.2.0"
@@ -47,7 +48,7 @@ doc-comment = "0.3"
 proptest = "1.0.0"
 
 [package.metadata.docs.rs]
-features = ["alloc", "std", "docsrs"]
+features = ["alloc", "std", "unstable-doc"]
 all-features = true
 
 [profile.bench]

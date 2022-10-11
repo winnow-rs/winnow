@@ -47,7 +47,7 @@ const MAX_INITIAL_CAPACITY: usize = 65536;
 /// assert_eq!(parser(""), Ok(("", vec![])));
 /// ```
 #[cfg(feature = "alloc")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+#[cfg_attr(feature = "unstable-doc", doc(cfg(feature = "alloc")))]
 pub fn many0<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
 where
   I: Clone + InputLength,
@@ -102,7 +102,7 @@ where
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Tag))));
 /// ```
 #[cfg(feature = "alloc")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+#[cfg_attr(feature = "unstable-doc", doc(cfg(feature = "alloc")))]
 pub fn many1<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
 where
   I: Clone + InputLength,
@@ -156,7 +156,7 @@ where
 /// assert_eq!(parser("abcendefg"), Ok(("efg", (vec!["abc"], "end"))));
 /// ```
 #[cfg(feature = "alloc")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+#[cfg_attr(feature = "unstable-doc", doc(cfg(feature = "alloc")))]
 pub fn many_till<I, O, P, E, F, G>(
   mut f: F,
   mut g: G,
@@ -216,7 +216,7 @@ where
 /// assert_eq!(parser("def|abc"), Ok(("def|abc", vec![])));
 /// ```
 #[cfg(feature = "alloc")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+#[cfg_attr(feature = "unstable-doc", doc(cfg(feature = "alloc")))]
 pub fn separated_list0<I, O, O2, E, F, G>(
   mut sep: G,
   mut f: F,
@@ -286,7 +286,7 @@ where
 /// assert_eq!(parser("def|abc"), Err(Err::Error(Error::new("def|abc", ErrorKind::Tag))));
 /// ```
 #[cfg(feature = "alloc")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+#[cfg_attr(feature = "unstable-doc", doc(cfg(feature = "alloc")))]
 pub fn separated_list1<I, O, O2, E, F, G>(
   mut sep: G,
   mut f: F,
@@ -357,7 +357,7 @@ where
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
 /// ```
 #[cfg(feature = "alloc")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+#[cfg_attr(feature = "unstable-doc", doc(cfg(feature = "alloc")))]
 pub fn many_m_n<I, O, E, F>(
   min: usize,
   max: usize,
@@ -531,7 +531,7 @@ where
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
 /// ```
 #[cfg(feature = "alloc")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "alloc")))]
+#[cfg_attr(feature = "unstable-doc", doc(cfg(feature = "alloc")))]
 pub fn count<I, O, E, F>(mut f: F, count: usize) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
 where
   I: Clone + PartialEq,
