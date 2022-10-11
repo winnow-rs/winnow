@@ -6,4 +6,3 @@ To get started using nom, you can include it in your Rust projects from
 * [Reference documentation](https://docs.rs/nom)
 * [Gitter chat room](https://gitter.im/Geal/nom). You can also go to the #nom IRC
 channel on irc.mozilla.org, or ping 'geal' on Mozilla, Freenode, Geeknode or oftc IRC
-* [How to handle parser errors](error_management.md)

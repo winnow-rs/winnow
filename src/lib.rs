@@ -54,7 +54,7 @@
 //!
 //! There are a few [guides](https://github.com/Geal/nom/tree/main/doc) with more details
 //! about [how to write parsers][_tutorial],
-//! or the [error management system](https://github.com/Geal/nom/blob/main/doc/error_management.md).
+//! or the [error management system][error].
 //! You can also check out the [_cookbook] module that contains examples of common patterns.
 //!
 //! **Looking for a specific combinator? Read the
