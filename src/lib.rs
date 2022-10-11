@@ -371,10 +371,11 @@
 //! ```
 //! **Going further:** Read the [guides](https://github.com/Geal/nom/tree/main/doc),
 //! check out the [recipes]!
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(docsrs, feature(extended_key_value_attributes))]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(feature = "cargo-clippy", allow(clippy::doc_markdown))]
-#![cfg_attr(feature = "unstable-doc", feature(doc_cfg))]
-#![cfg_attr(feature = "unstable-doc", feature(extended_key_value_attributes))]
 #![deny(missing_docs)]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 #[cfg(feature = "alloc")]
@@ -459,5 +460,5 @@ mod str;
 pub mod number;
 
 #[cfg(feature = "unstable-doc")]
-#[cfg_attr(feature = "unstable-doc", cfg_attr(feature = "unstable-doc", doc = include_str!("../doc/nom_recipes.md")))]
+#[doc = include_str!("../doc/nom_recipes.md")]
 pub mod recipes {}
