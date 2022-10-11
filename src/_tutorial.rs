@@ -105,7 +105,7 @@
 //! # use nom::bytes::complete::tag;
 //! # use nom::sequence::preceded;
 //! # use nom::sequence::tuple;
-//! # use nom::character::is_alphabetic;
+//! # use nom::AsChar;
 //! struct Request<'s> {
 //!     method: &'s [u8],
 //!     url: &'s [u8],
@@ -115,7 +115,7 @@
 //! // combine all previous parsers in one function
 //! fn request_line(i: &[u8]) -> IResult<&[u8], Request> {
 //!   // first implement the basic parsers
-//!   let method = take_while1(is_alphabetic);
+//!   let method = take_while1(AsChar::is_alpha);
 //!   let space = take_while1(|c| c == b' ');
 //!   let url = take_while1(|c| c != b' ');
 //!   let is_version = |c| c >= b'0' && c <= b'9' || c == b'.';

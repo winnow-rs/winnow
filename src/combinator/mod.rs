@@ -117,13 +117,13 @@
 //!
 //! Use these functions with a combinator like `take_while`:
 //!
-//! - [`is_alphabetic`][crate::character::is_alphabetic]: Tests if byte is ASCII alphabetic: `[A-Za-z]`
-//! - [`is_alphanumeric`][crate::character::is_alphanumeric]: Tests if byte is ASCII alphanumeric: `[A-Za-z0-9]`
-//! - [`is_digit`][crate::character::is_digit]: Tests if byte is ASCII digit: `[0-9]`
-//! - [`is_hex_digit`][crate::character::is_hex_digit]: Tests if byte is ASCII hex digit: `[0-9A-Fa-f]`
-//! - [`is_oct_digit`][crate::character::is_oct_digit]: Tests if byte is ASCII octal digit: `[0-7]`
-//! - [`is_space`][crate::character::is_space]: Tests if byte is ASCII space or tab: `[ \t]`
-//! - [`is_newline`][crate::character::is_newline]: Tests if byte is ASCII newline: `[\n]`
+//! - [`AsChar::is_alpha`][crate::AsChar::is_alpha]: Tests if byte is ASCII alphabetic: `[A-Za-z]`
+//! - [`AsChar::is_alphanum`][crate::AsChar::is_alphanum]: Tests if byte is ASCII alphanumeric: `[A-Za-z0-9]`
+//! - [`AsChar::is_dec_digit`][crate::AsChar::is_dec_digit]: Tests if byte is ASCII digit: `[0-9]`
+//! - [`AsChar::is_hex_digit`][crate::AsChar::is_hex_digit]: Tests if byte is ASCII hex digit: `[0-9A-Fa-f]`
+//! - [`AsChar::is_oct_digit`][crate::AsChar::is_oct_digit]: Tests if byte is ASCII octal digit: `[0-7]`
+//! - [`AsChar::is_space`][crate::AsChar::is_space]: Tests if byte is ASCII space or tab: `[ \t]`
+//! - [`AsChar::is_newline`][crate::AsChar::is_newline]: Tests if byte is ASCII newline: `[\n]`
 //!
 //! Alternatively there are ready to use functions:
 //!
