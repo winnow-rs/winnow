@@ -8,6 +8,7 @@ use crate::error::{ErrorKind, ParseError};
 use crate::internal::{Err, IResult, Needed};
 use crate::lib::std::ops::RangeFrom;
 use crate::traits::{ErrorConvert, Slice};
+use crate::Parser;
 
 /// Converts a byte-level input to a bit-level input, for consumption by a parser that uses bits.
 ///
@@ -37,7 +38,39 @@ use crate::traits::{ErrorConvert, Slice};
 /// assert_eq!(parsed.0, 0x01);
 /// assert_eq!(parsed.1, 0x23);
 /// ```
-pub fn bits<I, O, E1, E2, P>(mut parser: P) -> impl FnMut(I) -> IResult<I, O, E2>
+pub fn bits<P>(parser: P) -> Bits<P> {
+  Bits { parser }
+}
+
+/// Implementation of [`bits`]
+pub struct Bits<P> {
+  parser: P,
+}
+
+impl<I, O, E1, E2, P> Parser<I, O, E2> for Bits<P>
+where
+  E1: ParseError<(I, usize)> + ErrorConvert<E2>,
+  E2: ParseError<I>,
+  I: Slice<RangeFrom<usize>>,
+  P: Parser<(I, usize), O, E1>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, O, E2> {
+    match self.parser((input, 0)) {
+      Ok(((rest, offset), result)) => {
+        // If the next byte has been partially read, it will be sliced away as well.
+        // The parser functions might already slice away all fully read bytes.
+        // That's why `offset / 8` isn't necessarily needed at all times.
+        let remaining_bytes_index = offset / 8 + if offset % 8 == 0 { 0 } else { 1 };
+        Ok((rest.slice(remaining_bytes_index..), result))
+      }
+      Err(Err::Incomplete(n)) => Err(Err::Incomplete(n.map(|u| u.get() / 8 + 1))),
+      Err(Err::Error(e)) => Err(Err::Error(e.convert())),
+      Err(Err::Failure(e)) => Err(Err::Failure(e.convert())),
+    }
+  }
+}
+
+fn bits_<I, O, E1, E2, P>(mut parser: P) -> impl FnMut(I) -> IResult<I, O, E2>
 where
   E1: ParseError<(I, usize)> + ErrorConvert<E2>,
   E2: ParseError<I>,
