@@ -235,34 +235,39 @@ where
 }
 
 /// All nom parsers implement this trait
-pub trait Parser<I, O, E> {
+pub trait Parser<I> {
+  /// Output from a successful parse
+  type Output;
+  /// Error from a failed parse
+  type Error;
+
   /// A parser takes in input type, and returns a `Result` containing
   /// either the remaining input and the output value, or an error
-  fn parse(&mut self, input: I) -> IResult<I, O, E>;
+  fn parse(&mut self, input: I) -> IResult<I, Self::Output, Self::Error>;
 
   /// Maps a function over the result of a parser
-  fn map<G, O2>(self, g: G) -> Map<Self, G, O>
+  fn map<G, O2>(self, g: G) -> Map<Self, G, Self::Output>
   where
-    G: Fn(O) -> O2,
+    G: Fn(Self::Output) -> O2,
     Self: core::marker::Sized,
   {
     Map::new(self, g)
   }
 
   /// Creates a second parser from the output of the first one, then apply over the rest of the input
-  fn flat_map<G, H, O2>(self, g: G) -> FlatMap<Self, G, O>
+  fn flat_map<G, H, O2>(self, g: G) -> FlatMap<Self, G, Self::Output>
   where
-    G: FnMut(O) -> H,
-    H: Parser<I, O2, E>,
+    G: FnMut(Self::Output) -> H,
+    H: Parser<I, Output = O2, Error = Self::Output>,
     Self: core::marker::Sized,
   {
     FlatMap::new(self, g)
   }
 
   /// Applies a second parser over the output of the first one
-  fn and_then<G, O2>(self, g: G) -> AndThen<Self, G, O>
+  fn and_then<G, O2>(self, g: G) -> AndThen<Self, G, Self::Output>
   where
-    G: Parser<O, O2, E>,
+    G: Parser<Self::Output, Output = O2, Error = Self::Error>,
     Self: core::marker::Sized,
   {
     AndThen::new(self, g)
@@ -271,7 +276,7 @@ pub trait Parser<I, O, E> {
   /// Applies a second parser after the first one, return their results as a tuple
   fn and<G, O2>(self, g: G) -> And<Self, G>
   where
-    G: Parser<I, O2, E>,
+    G: Parser<I, Output = O2, Error = Self::Error>,
     Self: core::marker::Sized,
   {
     And::new(self, g)
@@ -280,7 +285,7 @@ pub trait Parser<I, O, E> {
   /// Applies a second parser over the input if the first one failed
   fn or<G>(self, g: G) -> Or<Self, G>
   where
-    G: Parser<I, O, E>,
+    G: Parser<I, Output = Self::Output, Error = Self::Error>,
     Self: core::marker::Sized,
   {
     Or::new(self, g)
@@ -288,7 +293,9 @@ pub trait Parser<I, O, E> {
 
   /// automatically converts the parser's output and error values to another type, as long as they
   /// implement the `From` trait
-  fn into<O2: From<O>, E2: From<E>>(self) -> Into<Self, O, O2, E, E2>
+  fn into<O2: From<Self::Output>, E2: From<Self::Error>>(
+    self,
+  ) -> Into<Self, Self::Output, O2, Self::Error, E2>
   where
     Self: core::marker::Sized,
   {
@@ -296,10 +303,13 @@ pub trait Parser<I, O, E> {
   }
 }
 
-impl<'a, I, O, E, F> Parser<I, O, E> for F
+impl<'a, I, O, E, F> Parser<I> for F
 where
   F: FnMut(I) -> IResult<I, O, E> + 'a,
 {
+  type Output = O;
+  type Error = E;
+
   fn parse(&mut self, i: I) -> IResult<I, O, E> {
     self(i)
   }
@@ -309,7 +319,10 @@ where
 use alloc::boxed::Box;
 
 #[cfg(feature = "alloc")]
-impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a> {
+impl<'a, I, O, E> Parser<I> for Box<dyn Parser<I, Output = O, Error = E> + 'a> {
+  type Output = O;
+  type Error = E;
+
   fn parse(&mut self, input: I) -> IResult<I, O, E> {
     (**self).parse(input)
   }

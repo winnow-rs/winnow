@@ -31,8 +31,8 @@ pub fn pair<I, O1, O2, E: ParseError<I>, F, G>(
   mut second: G,
 ) -> impl FnMut(I) -> IResult<I, (O1, O2), E>
 where
-  F: Parser<I, O1, E>,
-  G: Parser<I, O2, E>,
+  F: Parser<I, Output = O1, Error = E>,
+  G: Parser<I, Output = O2, Error = E>,
 {
   move |input: I| {
     let (input, o1) = first.parse(input)?;
@@ -65,8 +65,8 @@ pub fn preceded<I, O1, O2, E: ParseError<I>, F, G>(
   mut second: G,
 ) -> impl FnMut(I) -> IResult<I, O2, E>
 where
-  F: Parser<I, O1, E>,
-  G: Parser<I, O2, E>,
+  F: Parser<I, Output = O1, Error = E>,
+  G: Parser<I, Output = O2, Error = E>,
 {
   move |input: I| {
     let (input, _) = first.parse(input)?;
@@ -99,8 +99,8 @@ pub fn terminated<I, O1, O2, E: ParseError<I>, F, G>(
   mut second: G,
 ) -> impl FnMut(I) -> IResult<I, O1, E>
 where
-  F: Parser<I, O1, E>,
-  G: Parser<I, O2, E>,
+  F: Parser<I, Output = O1, Error = E>,
+  G: Parser<I, Output = O2, Error = E>,
 {
   move |input: I| {
     let (input, o1) = first.parse(input)?;
@@ -136,9 +136,9 @@ pub fn separated_pair<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
   mut second: H,
 ) -> impl FnMut(I) -> IResult<I, (O1, O3), E>
 where
-  F: Parser<I, O1, E>,
-  G: Parser<I, O2, E>,
-  H: Parser<I, O3, E>,
+  F: Parser<I, Output = O1, Error = E>,
+  G: Parser<I, Output = O2, Error = E>,
+  H: Parser<I, Output = O3, Error = E>,
 {
   move |input: I| {
     let (input, o1) = first.parse(input)?;
@@ -175,9 +175,9 @@ pub fn delimited<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
   mut third: H,
 ) -> impl FnMut(I) -> IResult<I, O2, E>
 where
-  F: Parser<I, O1, E>,
-  G: Parser<I, O2, E>,
-  H: Parser<I, O3, E>,
+  F: Parser<I, Output = O1, Error = E>,
+  G: Parser<I, Output = O2, Error = E>,
+  H: Parser<I, Output = O3, Error = E>,
 {
   move |input: I| {
     let (input, _) = first.parse(input)?;
@@ -194,7 +194,7 @@ pub trait Tuple<I, O, E> {
   fn parse(&mut self, input: I) -> IResult<I, O, E>;
 }
 
-impl<Input, Output, Error: ParseError<Input>, F: Parser<Input, Output, Error>>
+impl<Input, Output, Error: ParseError<Input>, F: Parser<Input, Output = Output, Error = Error>>
   Tuple<Input, (Output,), Error> for (F,)
 {
   fn parse(&mut self, input: Input) -> IResult<Input, (Output,), Error> {
@@ -220,7 +220,7 @@ macro_rules! tuple_trait_impl(
   ($($name:ident $ty: ident),+) => (
     impl<
       Input: Clone, $($ty),+ , Error: ParseError<Input>,
-      $($name: Parser<Input, $ty, Error>),+
+      $($name: Parser<Input, Output=$ty, Error=Error>),+
     > Tuple<Input, ( $($ty),+ ), Error> for ( $($name),+ ) {
 
       fn parse(&mut self, input: Input) -> IResult<Input, ( $($ty),+ ), Error> {

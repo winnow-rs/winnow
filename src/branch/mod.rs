@@ -152,7 +152,7 @@ macro_rules! alt_trait_impl(
   ($($id:ident)+) => (
     impl<
       Input: Clone, Output, Error: ParseError<Input>,
-      $($id: Parser<Input, Output, Error>),+
+      $($id: Parser<Input, Output=Output, Error=Error>),+
     > Alt<Input, Output, Error> for ( $($id),+ ) {
 
       fn choice(&mut self, input: Input) -> IResult<Input, Output, Error> {
@@ -183,7 +183,7 @@ macro_rules! alt_trait_inner(
 alt_trait!(A B C D E F G H I J K L M N O P Q R S T U);
 
 // Manually implement Alt for (A,), the 1-tuple type
-impl<Input, Output, Error: ParseError<Input>, A: Parser<Input, Output, Error>>
+impl<Input, Output, Error: ParseError<Input>, A: Parser<Input, Output = Output, Error = Error>>
   Alt<Input, Output, Error> for (A,)
 {
   fn choice(&mut self, input: Input) -> IResult<Input, Output, Error> {
@@ -215,7 +215,7 @@ macro_rules! permutation_trait_impl(
   ($($name:ident $ty:ident $item:ident),+) => (
     impl<
       Input: Clone, $($ty),+ , Error: ParseError<Input>,
-      $($name: Parser<Input, $ty, Error>),+
+      $($name: Parser<Input, Output=$ty, Error=Error>),+
     > Permutation<Input, ( $($ty),+ ), Error> for ( $($name),+ ) {
 
       fn permutation(&mut self, mut input: Input) -> IResult<Input, ( $($ty),+ ), Error> {

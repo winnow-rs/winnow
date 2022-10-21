@@ -217,7 +217,7 @@ where
 /// ```
 pub fn map<I, O1, O2, E, F, G>(mut parser: F, mut f: G) -> impl FnMut(I) -> IResult<I, O2, E>
 where
-  F: Parser<I, O1, E>,
+  F: Parser<I, Output = O1, Error = E>,
   G: FnMut(O1) -> O2,
 {
   move |input: I| {
@@ -244,7 +244,12 @@ impl<F, G, O1> Map<F, G, O1> {
   }
 }
 
-impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> O2> Parser<I, O2, E> for Map<F, G, O1> {
+impl<'a, I, O1, O2, E, F: Parser<I, Output = O1, Error = E>, G: Fn(O1) -> O2> Parser<I>
+  for Map<F, G, O1>
+{
+  type Output = O2;
+  type Error = E;
+
   fn parse(&mut self, i: I) -> IResult<I, O2, E> {
     match self.f.parse(i) {
       Err(e) => Err(e),
@@ -278,7 +283,7 @@ pub fn map_res<I: Clone, O1, O2, E: FromExternalError<I, E2>, E2, F, G>(
   mut f: G,
 ) -> impl FnMut(I) -> IResult<I, O2, E>
 where
-  F: Parser<I, O1, E>,
+  F: Parser<I, Output = O1, Error = E>,
   G: FnMut(O1) -> Result<O2, E2>,
 {
   move |input: I| {
@@ -316,7 +321,7 @@ pub fn map_opt<I: Clone, O1, O2, E: ParseError<I>, F, G>(
   mut f: G,
 ) -> impl FnMut(I) -> IResult<I, O2, E>
 where
-  F: Parser<I, O1, E>,
+  F: Parser<I, Output = O1, Error = E>,
   G: FnMut(O1) -> Option<O2>,
 {
   move |input: I| {
@@ -350,8 +355,8 @@ pub fn map_parser<I, O1, O2, E: ParseError<I>, F, G>(
   mut applied_parser: G,
 ) -> impl FnMut(I) -> IResult<I, O2, E>
 where
-  F: Parser<I, O1, E>,
-  G: Parser<O1, O2, E>,
+  F: Parser<I, Output = O1, Error = E>,
+  G: Parser<O1, Output = O2, Error = E>,
 {
   move |input: I| {
     let (input, o1) = parser.parse(input)?;
@@ -380,9 +385,9 @@ pub fn flat_map<I, O1, O2, E: ParseError<I>, F, G, H>(
   mut applied_parser: G,
 ) -> impl FnMut(I) -> IResult<I, O2, E>
 where
-  F: Parser<I, O1, E>,
+  F: Parser<I, Output = O1, Error = E>,
   G: FnMut(O1) -> H,
-  H: Parser<I, O2, E>,
+  H: Parser<I, Output = O2, Error = E>,
 {
   move |input: I| {
     let (input, o1) = parser.parse(input)?;
@@ -408,9 +413,20 @@ impl<F, G, O1> FlatMap<F, G, O1> {
   }
 }
 
-impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> H, H: Parser<I, O2, E>> Parser<I, O2, E>
-  for FlatMap<F, G, O1>
+impl<
+    'a,
+    I,
+    O1,
+    O2,
+    E,
+    F: Parser<I, Output = O1, Error = E>,
+    G: Fn(O1) -> H,
+    H: Parser<I, Output = O2, Error = E>,
+  > Parser<I> for FlatMap<F, G, O1>
 {
+  type Output = O2;
+  type Error = E;
+
   fn parse(&mut self, i: I) -> IResult<I, O2, E> {
     let (i, o1) = self.f.parse(i)?;
     (self.g)(o1).parse(i)
@@ -435,7 +451,7 @@ impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> H, H: Parser<I, O2, E>>
 /// ```
 pub fn opt<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, Option<O>, E>
 where
-  F: Parser<I, O, E>,
+  F: Parser<I, Output = O, Error = E>,
 {
   move |input: I| {
     let i = input.clone();
@@ -465,9 +481,19 @@ impl<F, G, O1> AndThen<F, G, O1> {
   }
 }
 
-impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, E>
-  for AndThen<F, G, O1>
+impl<
+    'a,
+    I,
+    O1,
+    O2,
+    E,
+    F: Parser<I, Output = O1, Error = E>,
+    G: Parser<O1, Output = O2, Error = E>,
+  > Parser<I> for AndThen<F, G, O1>
 {
+  type Output = O2;
+  type Error = E;
+
   fn parse(&mut self, i: I) -> IResult<I, O2, E> {
     let (i, o1) = self.f.parse(i)?;
     let (_, o2) = self.g.parse(o1)?;
@@ -488,9 +514,19 @@ impl<F, G> And<F, G> {
   }
 }
 
-impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<I, O2, E>> Parser<I, (O1, O2), E>
-  for And<F, G>
+impl<
+    'a,
+    I,
+    O1,
+    O2,
+    E,
+    F: Parser<I, Output = O1, Error = E>,
+    G: Parser<I, Output = O2, Error = E>,
+  > Parser<I> for And<F, G>
 {
+  type Output = (O1, O2);
+  type Error = E;
+
   fn parse(&mut self, i: I) -> IResult<I, (O1, O2), E> {
     let (i, o1) = self.f.parse(i)?;
     let (i, o2) = self.g.parse(i)?;
@@ -511,9 +547,18 @@ impl<F, G> Or<F, G> {
   }
 }
 
-impl<'a, I: Clone, O, E: crate::error::ParseError<I>, F: Parser<I, O, E>, G: Parser<I, O, E>>
-  Parser<I, O, E> for Or<F, G>
+impl<
+    'a,
+    I: Clone,
+    O,
+    E: crate::error::ParseError<I>,
+    F: Parser<I, Output = O, Error = E>,
+    G: Parser<I, Output = O, Error = E>,
+  > Parser<I> for Or<F, G>
 {
+  type Output = O;
+  type Error = E;
+
   fn parse(&mut self, i: I) -> IResult<I, O, E> {
     match self.f.parse(i.clone()) {
       Err(Err::Error(e1)) => match self.g.parse(i) {
@@ -548,7 +593,7 @@ pub fn cond<I, O, E: ParseError<I>, F>(
   mut f: F,
 ) -> impl FnMut(I) -> IResult<I, Option<O>, E>
 where
-  F: Parser<I, O, E>,
+  F: Parser<I, Output = O, Error = E>,
 {
   move |input: I| {
     if b {
@@ -578,7 +623,7 @@ where
 /// ```
 pub fn peek<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
-  F: Parser<I, O, E>,
+  F: Parser<I, Output = O, Error = E>,
 {
   move |input: I| {
     let i = input.clone();
@@ -630,7 +675,7 @@ pub fn eof<I: InputLength + Clone, E: ParseError<I>>(input: I) -> IResult<I, I, 
 /// ```
 pub fn complete<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
-  F: Parser<I, O, E>,
+  F: Parser<I, Output = O, Error = E>,
 {
   move |input: I| {
     let i = input.clone();
@@ -659,7 +704,7 @@ where
 pub fn all_consuming<I, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
   I: InputLength,
-  F: Parser<I, O, E>,
+  F: Parser<I, Output = O, Error = E>,
 {
   move |input: I| {
     let (input, res) = f.parse(input)?;
@@ -694,7 +739,7 @@ pub fn verify<I: Clone, O1, O2, E: ParseError<I>, F, G>(
   second: G,
 ) -> impl FnMut(I) -> IResult<I, O1, E>
 where
-  F: Parser<I, O1, E>,
+  F: Parser<I, Output = O1, Error = E>,
   G: Fn(&O2) -> bool,
   O1: Borrow<O2>,
   O2: ?Sized,
@@ -730,7 +775,7 @@ pub fn value<I, O1: Clone, O2, E: ParseError<I>, F>(
   mut parser: F,
 ) -> impl FnMut(I) -> IResult<I, O1, E>
 where
-  F: Parser<I, O2, E>,
+  F: Parser<I, Output = O2, Error = E>,
 {
   move |input: I| parser.parse(input).map(|(i, _)| (i, val.clone()))
 }
@@ -751,7 +796,7 @@ where
 /// ```
 pub fn not<I: Clone, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, (), E>
 where
-  F: Parser<I, O, E>,
+  F: Parser<I, Output = O, Error = E>,
 {
   move |input: I| {
     let i = input.clone();
@@ -782,7 +827,7 @@ pub fn recognize<I: Clone + Offset + Slice<RangeTo<usize>>, O, E: ParseError<I>,
   mut parser: F,
 ) -> impl FnMut(I) -> IResult<I, I, E>
 where
-  F: Parser<I, O, E>,
+  F: Parser<I, Output = O, Error = E>,
 {
   move |input: I| {
     let i = input.clone();
@@ -837,7 +882,7 @@ pub fn consumed<I, O, F, E>(mut parser: F) -> impl FnMut(I) -> IResult<I, (I, O)
 where
   I: Clone + Offset + Slice<RangeTo<usize>>,
   E: ParseError<I>,
-  F: Parser<I, O, E>,
+  F: Parser<I, Output = O, Error = E>,
 {
   move |input: I| {
     let i = input.clone();
@@ -868,7 +913,7 @@ where
 /// ```
 pub fn cut<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
-  F: Parser<I, O, E>,
+  F: Parser<I, Output = O, Error = E>,
 {
   move |input: I| match parser.parse(input) {
     Err(Err::Error(e)) => Err(Err::Failure(e)),
@@ -904,7 +949,7 @@ where
   E1: convert::Into<E2>,
   E1: ParseError<I>,
   E2: ParseError<I>,
-  F: Parser<I, O1, E1>,
+  F: Parser<I, Output = O1, Error = E1>,
 {
   //map(parser, Into::into)
   move |input: I| match parser.parse(input) {
@@ -944,9 +989,12 @@ impl<
     O2: From<O1>,
     E1,
     E2: crate::error::ParseError<I> + From<E1>,
-    F: Parser<I, O1, E1>,
-  > Parser<I, O2, E2> for Into<F, O1, O2, E1, E2>
+    F: Parser<I, Output = O1, Error = E1>,
+  > Parser<I> for Into<F, O1, O2, E1, E2>
 {
+  type Output = O2;
+  type Error = E2;
+
   fn parse(&mut self, i: I) -> IResult<I, O2, E2> {
     match self.f.parse(i) {
       Ok((i, o)) => Ok((i, o.into())),
@@ -976,7 +1024,7 @@ impl<
 /// ```
 pub fn iterator<Input, Output, Error, F>(input: Input, f: F) -> ParserIterator<Input, Error, F>
 where
-  F: Parser<Input, Output, Error>,
+  F: Parser<Input, Output = Output, Error = Error>,
   Error: ParseError<Input>,
 {
   ParserIterator {

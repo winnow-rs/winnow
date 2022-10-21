@@ -520,8 +520,8 @@ where
     + Slice<RangeFrom<usize>>
     + InputIter,
   <Input as InputIter>::Item: crate::traits::AsChar,
-  F: Parser<Input, O1, Error>,
-  G: Parser<Input, O2, Error>,
+  F: Parser<Input, Output = O1, Error = Error>,
+  G: Parser<Input, Output = O2, Error = Error>,
   Error: ParseError<Input>,
 {
   use crate::traits::AsChar;
@@ -636,8 +636,8 @@ where
   O1: crate::traits::ExtendInto<Item = ExtendItem, Extender = Output>,
   O2: crate::traits::ExtendInto<Item = ExtendItem, Extender = Output>,
   <Input as InputIter>::Item: crate::traits::AsChar,
-  F: Parser<Input, O1, Error>,
-  G: Parser<Input, O2, Error>,
+  F: Parser<Input, Output = O1, Error = Error>,
+  G: Parser<Input, Output = O2, Error = Error>,
   Error: ParseError<Input>,
 {
   use crate::traits::AsChar;

@@ -154,7 +154,7 @@ fn parse_constant<'a>(i: &'a str) -> IResult<&'a str, Expr, VerboseError<&'a str
 /// takes a parsing function and returns a new parsing function.
 fn s_exp<'a, O1, F>(inner: F) -> impl FnMut(&'a str) -> IResult<&'a str, O1, VerboseError<&'a str>>
 where
-  F: Parser<&'a str, O1, VerboseError<&'a str>>,
+  F: Parser<&'a str, Output = O1, Error = VerboseError<&'a str>>,
 {
   delimited(
     char('('),

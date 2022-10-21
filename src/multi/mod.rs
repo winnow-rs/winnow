@@ -50,7 +50,7 @@ const MAX_INITIAL_CAPACITY: usize = 65536;
 pub fn many0<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
 where
   I: Clone + InputLength,
-  F: Parser<I, O, E>,
+  F: Parser<I, Output = O, Error = E>,
   E: ParseError<I>,
 {
   move |mut i: I| {
@@ -104,7 +104,7 @@ where
 pub fn many1<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
 where
   I: Clone + InputLength,
-  F: Parser<I, O, E>,
+  F: Parser<I, Output = O, Error = E>,
   E: ParseError<I>,
 {
   move |mut i: I| match f.parse(i.clone()) {
@@ -160,8 +160,8 @@ pub fn many_till<I, O, P, E, F, G>(
 ) -> impl FnMut(I) -> IResult<I, (Vec<O>, P), E>
 where
   I: Clone + InputLength,
-  F: Parser<I, O, E>,
-  G: Parser<I, P, E>,
+  F: Parser<I, Output = O, Error = E>,
+  G: Parser<I, Output = P, Error = E>,
   E: ParseError<I>,
 {
   move |mut i: I| {
@@ -219,8 +219,8 @@ pub fn separated_list0<I, O, O2, E, F, G>(
 ) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
 where
   I: Clone + InputLength,
-  F: Parser<I, O, E>,
-  G: Parser<I, O2, E>,
+  F: Parser<I, Output = O, Error = E>,
+  G: Parser<I, Output = O2, Error = E>,
   E: ParseError<I>,
 {
   move |mut i: I| {
@@ -288,8 +288,8 @@ pub fn separated_list1<I, O, O2, E, F, G>(
 ) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
 where
   I: Clone + InputLength,
-  F: Parser<I, O, E>,
-  G: Parser<I, O2, E>,
+  F: Parser<I, Output = O, Error = E>,
+  G: Parser<I, Output = O2, Error = E>,
   E: ParseError<I>,
 {
   move |mut i: I| {
@@ -359,7 +359,7 @@ pub fn many_m_n<I, O, E, F>(
 ) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
 where
   I: Clone + InputLength,
-  F: Parser<I, O, E>,
+  F: Parser<I, Output = O, Error = E>,
   E: ParseError<I>,
 {
   move |mut input: I| {
@@ -418,7 +418,7 @@ where
 pub fn many0_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>
 where
   I: Clone + InputLength,
-  F: Parser<I, O, E>,
+  F: Parser<I, Output = O, Error = E>,
   E: ParseError<I>,
 {
   move |i: I| {
@@ -470,7 +470,7 @@ where
 pub fn many1_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>
 where
   I: Clone + InputLength,
-  F: Parser<I, O, E>,
+  F: Parser<I, Output = O, Error = E>,
   E: ParseError<I>,
 {
   move |i: I| {
@@ -528,7 +528,7 @@ where
 pub fn count<I, O, E, F>(mut f: F, count: usize) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
 where
   I: Clone + PartialEq,
-  F: Parser<I, O, E>,
+  F: Parser<I, Output = O, Error = E>,
   E: ParseError<I>,
 {
   move |i: I| {
@@ -641,7 +641,7 @@ pub fn fold_many0<I, O, E, F, G, H, R>(
 ) -> impl FnMut(I) -> IResult<I, R, E>
 where
   I: Clone + InputLength,
-  F: Parser<I, O, E>,
+  F: Parser<I, Output = O, Error = E>,
   G: FnMut(R, O) -> R,
   H: FnMut() -> R,
   E: ParseError<I>,
@@ -711,7 +711,7 @@ pub fn fold_many1<I, O, E, F, G, H, R>(
 ) -> impl FnMut(I) -> IResult<I, R, E>
 where
   I: Clone + InputLength,
-  F: Parser<I, O, E>,
+  F: Parser<I, Output = O, Error = E>,
   G: FnMut(R, O) -> R,
   H: FnMut() -> R,
   E: ParseError<I>,
@@ -796,7 +796,7 @@ pub fn fold_many_m_n<I, O, E, F, G, H, R>(
 ) -> impl FnMut(I) -> IResult<I, R, E>
 where
   I: Clone + InputLength,
-  F: Parser<I, O, E>,
+  F: Parser<I, Output = O, Error = E>,
   G: FnMut(R, O) -> R,
   H: FnMut() -> R,
   E: ParseError<I>,
@@ -858,7 +858,7 @@ pub fn length_data<I, N, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, I, E>
 where
   I: InputLength + InputTake,
   N: ToUsize,
-  F: Parser<I, N, E>,
+  F: Parser<I, Output = N, Error = E>,
   E: ParseError<I>,
 {
   move |i: I| {
@@ -903,8 +903,8 @@ pub fn length_value<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IR
 where
   I: Clone + InputLength + InputTake,
   N: ToUsize,
-  F: Parser<I, N, E>,
-  G: Parser<I, O, E>,
+  F: Parser<I, Output = N, Error = E>,
+  G: Parser<I, Output = O, Error = E>,
   E: ParseError<I>,
 {
   move |i: I| {
@@ -955,8 +955,8 @@ pub fn length_count<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IR
 where
   I: Clone,
   N: ToUsize,
-  F: Parser<I, N, E>,
-  G: Parser<I, O, E>,
+  F: Parser<I, Output = N, Error = E>,
+  G: Parser<I, Output = O, Error = E>,
   E: ParseError<I>,
 {
   move |i: I| {
