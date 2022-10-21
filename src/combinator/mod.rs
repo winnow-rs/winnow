@@ -153,7 +153,7 @@ use crate::lib::std::boxed::Box;
 use crate::error::{ErrorKind, FromExternalError, ParseError};
 use crate::internal::*;
 use crate::lib::std::borrow::Borrow;
-use crate::lib::std::convert::Into;
+use crate::lib::std::convert;
 #[cfg(feature = "std")]
 use crate::lib::std::fmt::Debug;
 use crate::lib::std::mem::transmute;
@@ -768,8 +768,8 @@ where
 /// ```
 pub fn into<I, O1, O2, E1, E2, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O2, E2>
 where
-  O1: Into<O2>,
-  E1: Into<E2>,
+  O1: convert::Into<O2>,
+  E1: convert::Into<E2>,
   E1: ParseError<I>,
   E2: ParseError<I>,
   F: Parser<I, O1, E1>,
