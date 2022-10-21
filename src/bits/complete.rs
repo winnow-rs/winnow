@@ -5,17 +5,19 @@ use crate::error::{ErrorKind, ParseError};
 use crate::internal::{Err, IResult};
 use crate::lib::std::ops::{AddAssign, Div, RangeFrom, Shl, Shr};
 use crate::traits::{InputIter, InputLength, Slice, ToUsize};
+use crate::Parser;
 
 /// Generates a parser taking `count` bits
 ///
 /// # Example
 /// ```rust
 /// # use nom::bits::complete::take;
+/// # use nom::Parser;
 /// # use nom::IResult;
 /// # use nom::error::{Error, ErrorKind};
 /// // Input is a tuple of (input: I, bit_offset: usize)
 /// fn parser(input: (&[u8], usize), count: usize)-> IResult<(&[u8], usize), u8> {
-///  take(count)(input)
+///  take(count).parse(input)
 /// }
 ///
 /// // Consumes 0 bits, returns 0
@@ -30,16 +32,25 @@ use crate::traits::{InputIter, InputLength, Slice, ToUsize};
 /// // Tries to consume 12 bits but only 8 are available
 /// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(nom::Err::Error(Error{input: ([0b00010010].as_ref(), 0), code: ErrorKind::Eof })));
 /// ```
-pub fn take<I, O, C, E: ParseError<(I, usize)>>(
+pub fn take<C>(count: C) -> Take<C> {
+  Take { count }
+}
+
+/// Implementation of [`take`]
+pub struct Take<C> {
   count: C,
-) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
+}
+
+impl<C, I, O, E> Parser<(I, usize), O, E> for Take<C>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
   C: ToUsize,
   O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
+  E: ParseError<(I, usize)>,
 {
-  let count = count.to_usize();
-  move |(input, bit_offset): (I, usize)| {
+  fn parse(&mut self, input: (I, usize)) -> IResult<(I, usize), O, E> {
+    let count = self.count.to_usize();
+    let (input, bit_offset) = input;
     if count == 0 {
       Ok(((input, bit_offset), 0u8.into()))
     } else {
@@ -82,21 +93,29 @@ where
 }
 
 /// Generates a parser taking `count` bits and comparing them to `pattern`
-pub fn tag<I, O, C, E: ParseError<(I, usize)>>(
+pub fn tag<O, C>(pattern: O, count: C) -> Tag<O, C> {
+  Tag { pattern, count }
+}
+
+/// Implementation of [`tag`]
+pub struct Tag<O, C> {
   pattern: O,
   count: C,
-) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
+}
+
+impl<I, O, C, E> Parser<(I, usize), O, E> for Tag<O, C>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength + Clone,
   C: ToUsize,
   O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
+  E: ParseError<(I, usize)>,
 {
-  let count = count.to_usize();
-  move |input: (I, usize)| {
+  fn parse(&mut self, input: (I, usize)) -> IResult<(I, usize), O, E> {
+    let count = self.count.to_usize();
     let inp = input.clone();
 
-    take(count)(input).and_then(|(i, o)| {
-      if pattern == o {
+    take(count).parse(input).and_then(|(i, o)| {
+      if self.pattern == o {
         Ok((i, o))
       } else {
         Err(Err::Error(error_position!(inp, ErrorKind::TagBits)))
@@ -116,7 +135,7 @@ mod test {
     assert_eq!(count, 0usize);
     let offset = 0usize;
 
-    let result: crate::IResult<(&[u8], usize), usize> = take(count)((input, offset));
+    let result: crate::IResult<(&[u8], usize), usize> = take(count).parse((input, offset));
 
     assert_eq!(result, Ok(((input, offset), 0)));
   }
@@ -125,7 +144,7 @@ mod test {
   fn test_take_eof() {
     let input = [0b00010010].as_ref();
 
-    let result: crate::IResult<(&[u8], usize), usize> = take(1usize)((input, 8));
+    let result: crate::IResult<(&[u8], usize), usize> = take(1usize).parse((input, 8));
 
     assert_eq!(
       result,
@@ -140,7 +159,7 @@ mod test {
   fn test_take_span_over_multiple_bytes() {
     let input = [0b00010010, 0b00110100, 0b11111111, 0b11111111].as_ref();
 
-    let result: crate::IResult<(&[u8], usize), usize> = take(24usize)((input, 4));
+    let result: crate::IResult<(&[u8], usize), usize> = take(24usize).parse((input, 4));
 
     assert_eq!(
       result,
