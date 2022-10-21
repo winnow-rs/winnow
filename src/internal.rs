@@ -1,7 +1,7 @@
 //! Basic types to build the parsers
 
 use self::Needed::*;
-use crate::core::*;
+use crate::combinator::*;
 use crate::error::{self, ErrorKind};
 use crate::lib::std::fmt;
 use core::num::NonZeroUsize;
