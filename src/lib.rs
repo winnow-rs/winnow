@@ -434,7 +434,7 @@ pub mod lib {
 }
 
 pub use self::bits::*;
-pub use self::core::*;
+pub use self::combinator::{And, AndThen, FlatMap, Into, Map, Or};
 pub use self::internal::*;
 pub use self::traits::*;
 
@@ -444,7 +444,6 @@ pub use self::str::*;
 pub mod error;
 
 pub mod combinator;
-mod core;
 mod internal;
 mod traits;
 #[macro_use]
