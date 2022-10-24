@@ -20,7 +20,7 @@ use crate::internal::{Err, IResult, Parser};
 /// use nom::branch::alt;
 /// # fn main() {
 /// fn parser(input: &str) -> IResult<&str, &str> {
-///   alt((alpha1, digit1))(input)
+///   alt((alpha1, digit1)).parse(input)
 /// };
 ///
 /// // the first parser, alpha1, recognizes the input
@@ -36,58 +36,89 @@ use crate::internal::{Err, IResult, Parser};
 ///
 /// With a custom error type, it is possible to have alt return the error of the parser
 /// that went the farthest in the input data
-pub fn alt<I: Clone, O, E: ParseError<I>, List: Alt<I, O, E>>(
-  mut l: List,
-) -> impl FnMut(I) -> IResult<I, O, E> {
-  move |i: I| l.choice(i)
-}
-
-/// Helper trait for the [alt()] combinator.
-///
-/// This trait is implemented for tuples of up to 21 elements
-pub trait Alt<I, O, E> {
-  /// Tests each parser in the tuple and returns the result of the first one that succeeds
-  fn choice(&mut self, input: I) -> IResult<I, O, E>;
-}
-
-// Manually implement Alt for (A,), the 1-tuple type
-impl<Input, Output, Error: ParseError<Input>, A: Parser<Input, Output, Error>>
-  Alt<Input, Output, Error> for (A,)
-{
-  fn choice(&mut self, input: Input) -> IResult<Input, Output, Error> {
-    self.0.parse(input)
+pub fn alt<L, I, O, E>(choices: L) -> Alt<L, I, O, E> {
+  Alt {
+    choices,
+    i: Default::default(),
+    o: Default::default(),
+    e: Default::default(),
   }
 }
 
-macro_rules! impl_alt(
+/// Implementation of [`alt`]
+pub struct Alt<L, I, O, E> {
+  choices: L,
+  i: core::marker::PhantomData<I>,
+  o: core::marker::PhantomData<O>,
+  e: core::marker::PhantomData<E>,
+}
+
+// Manually implement Parser for (A,), the 1-tuple type
+impl<P, I, O, E> Alt<(P,), I, O, E>
+where
+  P: Parser<I, O, E>,
+{
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    self.choices.0.parse(input)
+  }
+}
+
+impl<P, I, O, E> Parser<I, O, E> for Alt<(P,), I, O, E>
+where
+  P: Parser<I, O, E>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    self.parse(input)
+  }
+}
+
+macro_rules! impl_parser_alt(
   ($($id:ident)+) => (
     impl<
-      Input: Clone, Output, Error: ParseError<Input>,
-      $($id: Parser<Input, Output, Error>),+
-    > Alt<Input, Output, Error> for ( $($id),+ ) {
-
-      fn choice(&mut self, input: Input) -> IResult<Input, Output, Error> {
-        match self.0.parse(input.clone()) {
-          Err(Err::Error(e)) => impl_alt_inner!(1, self, input, e, $($id)+),
+      PI, PO, PE,
+      $($id: Parser<PI, PO, PE>),+
+    > Alt<( $($id),+ ), PI, PO, PE>
+    where
+        PI: Clone,
+        PE: ParseError<PI>
+    {
+      /// See [`Parser::parse`]
+      pub fn parse(&mut self, input: PI) -> IResult<PI, PO, PE> {
+        match self.choices.0.parse(input.clone()) {
+          Err(Err::Error(e)) => impl_parser_alt_inner!(1, self, input, e, $($id)+),
           res => res,
         }
+      }
+    }
+
+    impl<
+      PI, PO, PE,
+      $($id: Parser<PI, PO, PE>),+
+    > Parser<PI, PO, PE> for Alt<( $($id),+ ), PI, PO, PE>
+    where
+        PI: Clone,
+        PE: ParseError<PI>
+    {
+      fn parse(&mut self, input: PI) -> IResult<PI, PO, PE> {
+        self.parse(input)
       }
     }
   );
 );
 
-macro_rules! impl_alt_inner(
+macro_rules! impl_parser_alt_inner(
   ($it:tt, $self:expr, $input:expr, $err:expr, $head:ident $($id:ident)+) => (
-    match $self.$it.parse($input.clone()) {
+    match $self.choices.$it.parse($input.clone()) {
       Err(Err::Error(e)) => {
         let err = $err.or(e);
-        succ!($it, impl_alt_inner!($self, $input, err, $($id)+))
+        succ!($it, impl_parser_alt_inner!($self, $input, err, $($id)+))
       }
       res => res,
     }
   );
   ($it:tt, $self:expr, $input:expr, $err:expr, $head:ident) => (
-    Err(Err::Error(Error::append($input, ErrorKind::Alt, $err)))
+    Err(Err::Error(PE::append($input, ErrorKind::Alt, $err)))
   );
 );
 
@@ -96,13 +127,13 @@ macro_rules! alt_trait(
     alt_trait!(__impl $first $second; $($id)+);
   );
   (__impl $($current:ident)*; $head:ident $($id: ident)+) => (
-    impl_alt!($($current)*);
+    impl_parser_alt!($($current)*);
 
     alt_trait!(__impl $($current)* $head; $($id)+);
   );
   (__impl $($current:ident)*; $head:ident) => (
-    impl_alt!($($current)*);
-    impl_alt!($($current)* $head);
+    impl_parser_alt!($($current)*);
+    impl_parser_alt!($($current)* $head);
   );
 );
 
@@ -115,12 +146,12 @@ alt_trait!(A B C D E F G H I J K L M N O P Q R S T U);
 /// tuple of the parser results.
 ///
 /// ```rust
-/// # use nom::{Err,error::{Error, ErrorKind}, Needed, IResult};
+/// # use nom::{Err,error::{Error, ErrorKind}, Needed, IResult, Parser};
 /// use nom::character::complete::{alpha1, digit1};
 /// use nom::branch::permutation;
 /// # fn main() {
 /// fn parser(input: &str) -> IResult<&str, (&str, &str)> {
-///   permutation((alpha1, digit1))(input)
+///   permutation((alpha1, digit1)).parse(input)
 /// }
 ///
 /// // permutation recognizes alphabetic characters then digit
@@ -137,12 +168,12 @@ alt_trait!(A B C D E F G H I J K L M N O P Q R S T U);
 /// The parsers are applied greedily: if there are multiple unapplied parsers
 /// that could parse the next slice of input, the first one is used.
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, IResult};
+/// # use nom::{Err, error::{Error, ErrorKind}, IResult, Parser};
 /// use nom::branch::permutation;
 /// use nom::character::complete::{anychar, char};
 ///
 /// fn parser(input: &str) -> IResult<&str, (char, char)> {
-///   permutation((anychar, char('a')))(input)
+///   permutation((anychar, char('a'))).parse(input)
 /// }
 ///
 /// // anychar parses 'b', then char('a') parses 'a'
@@ -153,39 +184,44 @@ alt_trait!(A B C D E F G H I J K L M N O P Q R S T U);
 /// assert_eq!(parser("ab"), Err(Err::Error(Error::new("b", ErrorKind::Char))));
 /// ```
 ///
-pub fn permutation<I: Clone, O, E: ParseError<I>, List: Permutation<I, O, E>>(
-  mut l: List,
-) -> impl FnMut(I) -> IResult<I, O, E> {
-  move |i: I| l.permutation(i)
+pub fn permutation<L, I, E>(choices: L) -> Permutation<L, I, E> {
+  Permutation {
+    choices,
+    i: Default::default(),
+    e: Default::default(),
+  }
 }
 
-/// Helper trait for the [permutation()] combinator.
-///
-/// This trait is implemented for tuples of up to 21 elements
-pub trait Permutation<I, O, E> {
-  /// Tries to apply all parsers in the tuple in various orders until all of them succeed
-  fn permutation(&mut self, input: I) -> IResult<I, O, E>;
+/// Implementation of [`permutation`]
+pub struct Permutation<L, I, E> {
+  choices: L,
+  i: core::marker::PhantomData<I>,
+  e: core::marker::PhantomData<E>,
 }
 
-macro_rules! impl_permutation(
+macro_rules! impl_parser_permutation(
   ($($parser:ident $output:ident $item:ident),+) => (
     impl<
-      Input: Clone, $($output),+ , Error: ParseError<Input>,
-      $($parser: Parser<Input, $output, Error>),+
-    > Permutation<Input, ( $($output),+ ), Error> for ( $($parser),+ ) {
-
-      fn permutation(&mut self, mut input: Input) -> IResult<Input, ( $($output),+ ), Error> {
+      PI, PE,
+      $($output),+ ,
+      $($parser: Parser<PI, $output, PE>),+
+    > Parser<PI, ( $($output),+ ), PE> for Permutation<( $($parser),+ ), PI, PE>
+    where
+        PI: Clone,
+        PE: ParseError<PI>
+    {
+      fn parse(&mut self, mut input: PI) -> IResult<PI, ( $($output),+ ), PE> {
         let mut res = ($(Option::<$output>::None),+);
 
         loop {
-          let mut err: Option<Error> = None;
-          impl_permutation_inner!(0, self, input, res, err, $($parser)+);
+          let mut err: Option<PE> = None;
+          impl_parser_permutation_inner!(0, self, input, res, err, $($parser)+);
 
           // If we reach here, every iterator has either been applied before,
           // or errored on the remaining input
           if let Some(err) = err {
             // There are remaining parsers, and all errored on the remaining input
-            return Err(Err::Error(Error::append(input, ErrorKind::Permutation, err)));
+            return Err(Err::Error(PE::append(input, ErrorKind::Permutation, err)));
           }
 
           // All parsers were applied
@@ -199,10 +235,10 @@ macro_rules! impl_permutation(
   );
 );
 
-macro_rules! impl_permutation_inner(
+macro_rules! impl_parser_permutation_inner(
   ($it:tt, $self:expr, $input:ident, $res:expr, $err:expr, $head:ident $($id:ident)*) => (
     if $res.$it.is_none() {
-      match $self.$it.parse($input.clone()) {
+      match $self.choices.$it.parse($input.clone()) {
         Ok((i, o)) => {
           $input = i;
           $res.$it = Some(o);
@@ -217,7 +253,7 @@ macro_rules! impl_permutation_inner(
         Err(e) => return Err(e),
       };
     }
-    succ!($it, impl_permutation_inner!($self, $input, $res, $err, $($id)*));
+    succ!($it, impl_parser_permutation_inner!($self, $input, $res, $err, $($id)*));
   );
   ($it:tt, $self:expr, $input:ident, $res:expr, $err:expr,) => ();
 );
@@ -234,11 +270,11 @@ macro_rules! permutation_trait(
     __impl $($parser:ident $output:ident $item:ident),+;
     $parser1:ident $output1:ident $item1:ident $($parser2:ident $output2:ident $item2:ident)*
   ) => (
-    impl_permutation!($($parser $output $item),+);
+    impl_parser_permutation!($($parser $output $item),+);
     permutation_trait!(__impl $($parser $output $item),+ , $parser1 $output1 $item1; $($parser2 $output2 $item2)*);
   );
   (__impl $($parser:ident $output:ident $item:ident),+;) => (
-    impl_permutation!($($parser $output $item),+);
+    impl_parser_permutation!($($parser $output $item),+);
   );
 );
 

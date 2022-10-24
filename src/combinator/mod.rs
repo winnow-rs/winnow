@@ -1059,7 +1059,7 @@ enum State<E> {
 /// specify the default case.
 ///
 /// ```rust
-/// # use nom::{Err,error::ErrorKind, IResult};
+/// # use nom::{Err,error::ErrorKind, IResult, Parser};
 /// use nom::branch::alt;
 /// use nom::combinator::{success, value};
 /// use nom::character::complete::char;
@@ -1069,9 +1069,9 @@ enum State<E> {
 /// assert_eq!(parser("xyz"), Ok(("xyz", 10)));
 ///
 /// let mut sign = alt((value(-1, char('-')), value(1, char('+')), success::<_,_,(_,ErrorKind)>(1)));
-/// assert_eq!(sign("+10"), Ok(("10", 1)));
-/// assert_eq!(sign("-10"), Ok(("10", -1)));
-/// assert_eq!(sign("10"), Ok(("10", 1)));
+/// assert_eq!(sign.parse("+10"), Ok(("10", 1)));
+/// assert_eq!(sign.parse("-10"), Ok(("10", -1)));
+/// assert_eq!(sign.parse("10"), Ok(("10", 1)));
 /// # }
 /// ```
 pub fn success<I, O: Clone, E: ParseError<I>>(val: O) -> impl Fn(I) -> IResult<I, O, E> {
