@@ -8,6 +8,7 @@ use crate::error::{ErrorKind, ParseError};
 use crate::internal::{Err, IResult, Needed};
 use crate::lib::std::ops::RangeFrom;
 use crate::traits::{ErrorConvert, Slice};
+use crate::Parser;
 
 /// Converts a byte-level input to a bit-level input, for consumption by a parser that uses bits.
 ///
@@ -22,7 +23,7 @@ use crate::traits::{ErrorConvert, Slice};
 /// use nom::IResult;
 ///
 /// fn parse(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
-///     bits::<_, _, Error<(&[u8], usize)>, _, _>(tuple((take(4usize), take(8usize))))(input)
+///     bits::<_, Error<(&[u8], usize)>, _, _, _>(tuple((take(4usize), take(8usize)))).parse(input)
 /// }
 ///
 /// let input = &[0x12, 0x34, 0xff, 0xff];
@@ -37,24 +38,58 @@ use crate::traits::{ErrorConvert, Slice};
 /// assert_eq!(parsed.0, 0x01);
 /// assert_eq!(parsed.1, 0x23);
 /// ```
-pub fn bits<I, O, E1, E2, P>(mut parser: P) -> impl FnMut(I) -> IResult<I, O, E2>
+pub fn bits<P, PE, I, O, E>(parser: P) -> Bits<P, PE, I, O, E> {
+  Bits {
+    parser,
+    pe: Default::default(),
+    i: Default::default(),
+    o: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`bits`]
+pub struct Bits<P, PE, I, O, E> {
+  parser: P,
+  pe: core::marker::PhantomData<PE>,
+  i: core::marker::PhantomData<I>,
+  o: core::marker::PhantomData<O>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<P, PE, I, O, E> Bits<P, PE, I, O, E>
 where
-  E1: ParseError<(I, usize)> + ErrorConvert<E2>,
-  E2: ParseError<I>,
+  PE: ParseError<(I, usize)> + ErrorConvert<E>,
+  E: ParseError<I>,
   I: Slice<RangeFrom<usize>>,
-  P: FnMut((I, usize)) -> IResult<(I, usize), O, E1>,
+  P: Parser<(I, usize), O, PE>,
 {
-  move |input: I| match parser((input, 0)) {
-    Ok(((rest, offset), result)) => {
-      // If the next byte has been partially read, it will be sliced away as well.
-      // The parser functions might already slice away all fully read bytes.
-      // That's why `offset / 8` isn't necessarily needed at all times.
-      let remaining_bytes_index = offset / 8 + if offset % 8 == 0 { 0 } else { 1 };
-      Ok((rest.slice(remaining_bytes_index..), result))
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    match self.parser.parse((input, 0)) {
+      Ok(((rest, offset), result)) => {
+        // If the next byte has been partially read, it will be sliced away as well.
+        // The parser functions might already slice away all fully read bytes.
+        // That's why `offset / 8` isn't necessarily needed at all times.
+        let remaining_bytes_index = offset / 8 + if offset % 8 == 0 { 0 } else { 1 };
+        Ok((rest.slice(remaining_bytes_index..), result))
+      }
+      Err(Err::Incomplete(n)) => Err(Err::Incomplete(n.map(|u| u.get() / 8 + 1))),
+      Err(Err::Error(e)) => Err(Err::Error(e.convert())),
+      Err(Err::Failure(e)) => Err(Err::Failure(e.convert())),
     }
-    Err(Err::Incomplete(n)) => Err(Err::Incomplete(n.map(|u| u.get() / 8 + 1))),
-    Err(Err::Error(e)) => Err(Err::Error(e.convert())),
-    Err(Err::Failure(e)) => Err(Err::Failure(e.convert())),
+  }
+}
+
+impl<P, PE, I, O, E> Parser<I, O, E> for Bits<P, PE, I, O, E>
+where
+  PE: ParseError<(I, usize)> + ErrorConvert<E>,
+  E: ParseError<I>,
+  I: Slice<RangeFrom<usize>>,
+  P: Parser<(I, usize), O, PE>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    self.parse(input)
   }
 }
 
@@ -72,41 +107,73 @@ where
 /// use nom::IResult;
 ///
 /// fn parse(input: &[u8]) -> IResult<&[u8], (u8, u8, &[u8])> {
-///   bits::<_, _, Error<(&[u8], usize)>, _, _>(tuple((
+///   bits::<_, Error<(&[u8], usize)>, _, _, _>(tuple((
 ///     take(4usize),
 ///     take(8usize),
-///     bytes::<_, _, Error<&[u8]>, _, _>(rest)
-///   )))(input)
+///     bytes::<_, Error<&[u8]>, _, _, _>(rest)
+///   ))).parse(input)
 /// }
 ///
 /// let input = &[0x12, 0x34, 0xff, 0xff];
 ///
 /// assert_eq!(parse( input ), Ok(( &[][..], (0x01, 0x23, &[0xff, 0xff][..]) )));
 /// ```
-pub fn bytes<I, O, E1, E2, P>(mut parser: P) -> impl FnMut((I, usize)) -> IResult<(I, usize), O, E2>
+pub fn bytes<P, PE, I, O, E>(parser: P) -> Bytes<P, PE, I, O, E> {
+  Bytes {
+    parser,
+    pe: Default::default(),
+    i: Default::default(),
+    o: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`bits`]
+pub struct Bytes<P, PE, I, O, E> {
+  parser: P,
+  pe: core::marker::PhantomData<PE>,
+  i: core::marker::PhantomData<I>,
+  o: core::marker::PhantomData<O>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<P, PE, I, O, E> Bytes<P, PE, I, O, E>
 where
-  E1: ParseError<I> + ErrorConvert<E2>,
-  E2: ParseError<(I, usize)>,
+  PE: ParseError<I> + ErrorConvert<E>,
+  E: ParseError<(I, usize)>,
   I: Slice<RangeFrom<usize>> + Clone,
-  P: FnMut(I) -> IResult<I, O, E1>,
+  P: Parser<I, O, PE>,
 {
-  move |(input, offset): (I, usize)| {
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, (input, offset): (I, usize)) -> IResult<(I, usize), O, E> {
     let inner = if offset % 8 != 0 {
       input.slice((1 + offset / 8)..)
     } else {
       input.slice((offset / 8)..)
     };
     let i = (input, offset);
-    match parser(inner) {
+    match self.parser.parse(inner) {
       Ok((rest, res)) => Ok(((rest, 0), res)),
       Err(Err::Incomplete(Needed::Unknown)) => Err(Err::Incomplete(Needed::Unknown)),
       Err(Err::Incomplete(Needed::Size(sz))) => Err(match sz.get().checked_mul(8) {
         Some(v) => Err::Incomplete(Needed::new(v)),
-        None => Err::Failure(E2::from_error_kind(i, ErrorKind::TooLarge)),
+        None => Err::Failure(E::from_error_kind(i, ErrorKind::TooLarge)),
       }),
       Err(Err::Error(e)) => Err(Err::Error(e.convert())),
       Err(Err::Failure(e)) => Err(Err::Failure(e.convert())),
     }
+  }
+}
+
+impl<P, PE, I, O, E> Parser<(I, usize), O, E> for Bytes<P, PE, I, O, E>
+where
+  PE: ParseError<I> + ErrorConvert<E>,
+  E: ParseError<(I, usize)>,
+  I: Slice<RangeFrom<usize>> + Clone,
+  P: Parser<I, O, PE>,
+{
+  fn parse(&mut self, input: (I, usize)) -> IResult<(I, usize), O, E> {
+    self.parse(input)
   }
 }
 
@@ -125,9 +192,8 @@ mod test {
 
     // Take 3 bit slices with sizes [4, 8, 4].
     let result: IResult<&[u8], (u8, u8, u8)> =
-      bits::<_, _, Error<(&[u8], usize)>, _, _>(tuple((take(4usize), take(8usize), take(4usize))))(
-        input,
-      );
+      bits::<_, Error<(&[u8], usize)>, _, _, _>(tuple((take(4usize), take(8usize), take(4usize))))
+        .parse(input);
 
     let output = result.expect("We take 2 bytes and the input is longer than 2 bytes");
 
@@ -150,7 +216,7 @@ mod test {
 
     // Take bit slices with sizes [4, 8].
     let result: IResult<&[u8], (u8, u8)> =
-      bits::<_, _, Error<(&[u8], usize)>, _, _>(tuple((take(4usize), take(8usize))))(input);
+      bits::<_, Error<(&[u8], usize)>, _, _, _>(tuple((take(4usize), take(8usize)))).parse(input);
 
     let output = result.expect("We take 1.5 bytes and the input is longer than 2 bytes");
 
@@ -170,7 +236,7 @@ mod test {
 
     // Take bit slices with sizes [4, 8].
     let result: IResult<&[u8], (u8, u8)> =
-      bits::<_, _, Error<(&[u8], usize)>, _, _>(tuple((take(4usize), take(8usize))))(input);
+      bits::<_, Error<(&[u8], usize)>, _, _, _>(tuple((take(4usize), take(8usize)))).parse(input);
 
     assert!(result.is_err());
     let error = result.err().unwrap();

@@ -144,7 +144,7 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
   fn parser(i: &[u8]) -> IResult<&[u8], &[u8]> {
     use nom::bits::{bits, bytes};
 
-    bits(bytes(take))(i)
+    bits(bytes(take)).parse(i)
   }
   assert_eq!(
     parser(&b""[..]),
@@ -202,7 +202,7 @@ fn issue_1231_bits_expect_fn_closure() {
   use nom::error::Error;
   use nom::sequence::tuple;
   pub fn example(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
-    bits::<_, _, Error<_>, _, _>(tuple((take(1usize), take(1usize))))(input)
+    bits::<_, Error<_>, _, _, _>(tuple((take(1usize), take(1usize)))).parse(input)
   }
   assert_eq!(example(&[0xff]), Ok((&b""[..], (1, 1))));
 }
