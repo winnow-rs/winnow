@@ -463,7 +463,7 @@
 //! # use nom::error::dbg_dmp;
 //! # use nom::bytes::complete::tag;
 //! fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
-//!     dbg_dmp(tag("abcd"), "tag")(i)
+//!     dbg_dmp(tag("abcd"), "tag").parse(i)
 //! }
 //!
 //! let a = &b"efghijkl"[..];
@@ -698,18 +698,50 @@ use crate::internal::{Err, IResult};
 /// Create a new error from an input position, a static string and an existing error.
 /// This is used mainly in the [context] combinator, to add user friendly information
 /// to errors when backtracking through a parse tree
-pub fn context<I: Clone, E: ContextError<I>, F, O>(
+pub fn context<P, I, O, E>(context: &'static str, parser: P) -> Context<P, I, O, E> {
+  Context {
+    context,
+    parser,
+    i: Default::default(),
+    o: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`context`]
+pub struct Context<P, I, O, E> {
   context: &'static str,
-  mut f: F,
-) -> impl FnMut(I) -> IResult<I, O, E>
+  parser: P,
+  i: core::marker::PhantomData<I>,
+  o: core::marker::PhantomData<O>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<P, I, O, E> Context<P, I, O, E>
 where
-  F: Parser<I, O, E>,
+  P: Parser<I, O, E>,
+  I: Clone,
+  E: ContextError<I>,
 {
-  move |i: I| match f.parse(i.clone()) {
-    Ok(o) => Ok(o),
-    Err(Err::Incomplete(i)) => Err(Err::Incomplete(i)),
-    Err(Err::Error(e)) => Err(Err::Error(E::add_context(i, context, e))),
-    Err(Err::Failure(e)) => Err(Err::Failure(E::add_context(i, context, e))),
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    match self.parser.parse(input.clone()) {
+      Ok(o) => Ok(o),
+      Err(Err::Incomplete(i)) => Err(Err::Incomplete(i)),
+      Err(Err::Error(e)) => Err(Err::Error(E::add_context(input, self.context, e))),
+      Err(Err::Failure(e)) => Err(Err::Failure(E::add_context(input, self.context, e))),
+    }
+  }
+}
+
+impl<P, I, O, E> Parser<I, O, E> for Context<P, I, O, E>
+where
+  P: Parser<I, O, E>,
+  I: Clone,
+  E: ContextError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    self.parse(input)
   }
 }
 
@@ -1042,7 +1074,7 @@ macro_rules! error_node_position(
 /// use nom::{IResult, error::dbg_dmp, bytes::complete::tag};
 ///
 /// fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
-///   dbg_dmp(tag("abcd"), "tag")(i)
+///   dbg_dmp(tag("abcd"), "tag").parse(i)
 /// }
 ///
 ///   let a = &b"efghijkl"[..];
@@ -1053,20 +1085,51 @@ macro_rules! error_node_position(
 /// f(a);
 /// ```
 #[cfg(feature = "std")]
-pub fn dbg_dmp<'a, F, O, E: std::fmt::Debug>(
-  f: F,
+pub fn dbg_dmp<P, O, E>(parser: P, context: &'static str) -> DbgDmp<P, O, E> {
+  DbgDmp {
+    parser,
+    context,
+    o: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`dbg_dmp`]
+#[cfg(feature = "std")]
+pub struct DbgDmp<P, O, E> {
+  parser: P,
   context: &'static str,
-) -> impl Fn(&'a [u8]) -> IResult<&'a [u8], O, E>
+  o: core::marker::PhantomData<O>,
+  e: core::marker::PhantomData<E>,
+}
+
+#[cfg(feature = "std")]
+impl<'i, P, O, E> DbgDmp<P, O, E>
 where
-  F: Fn(&'a [u8]) -> IResult<&'a [u8], O, E>,
+  P: Parser<&'i [u8], O, E>,
+  E: std::fmt::Debug,
 {
-  use crate::HexDisplay;
-  move |i: &'a [u8]| match f(i) {
-    Err(e) => {
-      println!("{}: Error({:?}) at:\n{}", context, e, i.to_hex(8));
-      Err(e)
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: &'i [u8]) -> IResult<&'i [u8], O, E> {
+    use crate::HexDisplay;
+    match self.parser.parse(input) {
+      Err(e) => {
+        println!("{}: Error({:?}) at:\n{}", self.context, e, input.to_hex(8));
+        Err(e)
+      }
+      a => a,
     }
-    a => a,
+  }
+}
+
+#[cfg(feature = "std")]
+impl<'i, P, O, E> Parser<&'i [u8], O, E> for DbgDmp<P, O, E>
+where
+  P: Parser<&'i [u8], O, E>,
+  E: std::fmt::Debug,
+{
+  fn parse(&mut self, input: &'i [u8]) -> IResult<&'i [u8], O, E> {
+    self.parse(input)
   }
 }
 
