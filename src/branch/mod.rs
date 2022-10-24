@@ -169,37 +169,37 @@ impl<Input, Output, Error: ParseError<Input>, A: Parser<Input, Output, Error>>
 
 macro_rules! permutation_trait(
   (
-    $name1:ident $ty1:ident $item1:ident
-    $name2:ident $ty2:ident $item2:ident
-    $($name3:ident $ty3:ident $item3:ident)*
+    $parser1:ident $output1:ident $item1:ident
+    $parser2:ident $output2:ident $item2:ident
+    $($parser3:ident $output3:ident $item3:ident)*
   ) => (
-    permutation_trait!(__impl $name1 $ty1 $item1, $name2 $ty2 $item2; $($name3 $ty3 $item3)*);
+    permutation_trait!(__impl $parser1 $output1 $item1, $parser2 $output2 $item2; $($parser3 $output3 $item3)*);
   );
   (
-    __impl $($name:ident $ty:ident $item:ident),+;
-    $name1:ident $ty1:ident $item1:ident $($name2:ident $ty2:ident $item2:ident)*
+    __impl $($parser:ident $output:ident $item:ident),+;
+    $parser1:ident $output1:ident $item1:ident $($parser2:ident $output2:ident $item2:ident)*
   ) => (
-    permutation_trait_impl!($($name $ty $item),+);
-    permutation_trait!(__impl $($name $ty $item),+ , $name1 $ty1 $item1; $($name2 $ty2 $item2)*);
+    permutation_trait_impl!($($parser $output $item),+);
+    permutation_trait!(__impl $($parser $output $item),+ , $parser1 $output1 $item1; $($parser2 $output2 $item2)*);
   );
-  (__impl $($name:ident $ty:ident $item:ident),+;) => (
-    permutation_trait_impl!($($name $ty $item),+);
+  (__impl $($parser:ident $output:ident $item:ident),+;) => (
+    permutation_trait_impl!($($parser $output $item),+);
   );
 );
 
 macro_rules! permutation_trait_impl(
-  ($($name:ident $ty:ident $item:ident),+) => (
+  ($($parser:ident $output:ident $item:ident),+) => (
     impl<
-      Input: Clone, $($ty),+ , Error: ParseError<Input>,
-      $($name: Parser<Input, $ty, Error>),+
-    > Permutation<Input, ( $($ty),+ ), Error> for ( $($name),+ ) {
+      Input: Clone, $($output),+ , Error: ParseError<Input>,
+      $($parser: Parser<Input, $output, Error>),+
+    > Permutation<Input, ( $($output),+ ), Error> for ( $($parser),+ ) {
 
-      fn permutation(&mut self, mut input: Input) -> IResult<Input, ( $($ty),+ ), Error> {
-        let mut res = ($(Option::<$ty>::None),+);
+      fn permutation(&mut self, mut input: Input) -> IResult<Input, ( $($output),+ ), Error> {
+        let mut res = ($(Option::<$output>::None),+);
 
         loop {
           let mut err: Option<Error> = None;
-          permutation_trait_inner!(0, self, input, res, err, $($name)+);
+          permutation_trait_inner!(0, self, input, res, err, $($parser)+);
 
           // If we reach here, every iterator has either been applied before,
           // or errored on the remaining input
@@ -243,25 +243,25 @@ macro_rules! permutation_trait_inner(
 );
 
 permutation_trait!(
-  FnA A a
-  FnB B b
-  FnC C c
-  FnD D d
-  FnE E e
-  FnF F f
-  FnG G g
-  FnH H h
-  FnI I i
-  FnJ J j
-  FnK K k
-  FnL L l
-  FnM M m
-  FnN N n
-  FnO O o
-  FnP P p
-  FnQ Q q
-  FnR R r
-  FnS S s
-  FnT T t
-  FnU U u
+  AParser AParserOutput a_value
+  BParser BParserOutput b_value
+  CParser CParserOutput c_value
+  DParser DParserOutput d_value
+  EParser EParserOutput e_value
+  FParser FParserOutput f_value
+  GParser GParserOutput g_value
+  HParser HParserOutput h_value
+  IParser IParserOutput i_value
+  JParser JParserOutput j_value
+  KParser KParserOutput k_value
+  LParser LParserOutput l_value
+  MParser MParserOutput m_value
+  NParser NParserOutput n_value
+  OParser OParserOutput o_value
+  PParser PParserOutput p_value
+  QParser QParserOutput q_value
+  RParser RParserOutput r_value
+  SParser SParserOutput s_value
+  TParser TParserOutput t_value
+  UParser UParserOutput u_value
 );
