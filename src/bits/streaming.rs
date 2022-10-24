@@ -5,18 +5,35 @@ use crate::error::{ErrorKind, ParseError};
 use crate::internal::{Err, IResult, Needed};
 use crate::lib::std::ops::{AddAssign, Div, RangeFrom, Shl, Shr};
 use crate::traits::{InputIter, InputLength, Slice, ToUsize};
+use crate::Parser;
 
 /// Generates a parser taking `count` bits
-pub fn take<I, O, C, E: ParseError<(I, usize)>>(
+pub fn take<C, I, O, E>(count: C) -> Take<C, I, O, E> {
+  Take {
+    count,
+    i: Default::default(),
+    o: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`take`]
+pub struct Take<C, I, O, E> {
   count: C,
-) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
+  i: core::marker::PhantomData<I>,
+  o: core::marker::PhantomData<O>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<C, I, O, E> Take<C, I, O, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
   C: ToUsize,
   O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
-  let count = count.to_usize();
-  move |(input, bit_offset): (I, usize)| {
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, (input, bit_offset): (I, usize)) -> IResult<(I, usize), O, E> {
+    let count = self.count.to_usize();
     if count == 0 {
       Ok(((input, bit_offset), 0u8.into()))
     } else {
@@ -55,27 +72,66 @@ where
   }
 }
 
+impl<C, I, O, E> Parser<(I, usize), O, E> for Take<C, I, O, E>
+where
+  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
+  C: ToUsize,
+  O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
+{
+  fn parse(&mut self, input: (I, usize)) -> IResult<(I, usize), O, E> {
+    self.parse(input)
+  }
+}
+
 /// Generates a parser taking `count` bits and comparing them to `pattern`
-pub fn tag<I, O, C, E: ParseError<(I, usize)>>(
+pub fn tag<C, I, O, E>(pattern: O, count: C) -> Tag<C, I, O, E> {
+  Tag {
+    pattern,
+    count,
+    i: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`tag`]
+pub struct Tag<C, I, O, E> {
   pattern: O,
   count: C,
-) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
+  i: core::marker::PhantomData<I>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<C, I, O, E> Tag<C, I, O, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength + Clone,
   C: ToUsize,
   O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
+  E: ParseError<(I, usize)>,
 {
-  let count = count.to_usize();
-  move |input: (I, usize)| {
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: (I, usize)) -> IResult<(I, usize), O, E> {
+    let count = self.count.to_usize();
     let inp = input.clone();
 
-    take(count)(input).and_then(|(i, o)| {
-      if pattern == o {
+    take(count).parse(input).and_then(|(i, o)| {
+      if self.pattern == o {
         Ok((i, o))
       } else {
         Err(Err::Error(error_position!(inp, ErrorKind::TagBits)))
       }
     })
+  }
+}
+
+impl<C, I, O, E> Parser<(I, usize), O, E> for Tag<C, I, O, E>
+where
+  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength + Clone,
+  C: ToUsize,
+  O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
+  E: ParseError<(I, usize)>,
+{
+  fn parse(&mut self, input: (I, usize)) -> IResult<(I, usize), O, E> {
+    self.parse(input)
   }
 }
 
@@ -90,7 +146,7 @@ mod test {
     assert_eq!(count, 0usize);
     let offset = 0usize;
 
-    let result: crate::IResult<(&[u8], usize), usize> = take(count)((input, offset));
+    let result: crate::IResult<(&[u8], usize), usize> = take(count).parse((input, offset));
 
     assert_eq!(result, Ok(((input, offset), 0)));
   }
@@ -103,7 +159,7 @@ mod test {
     let value_to_tag = 0b0001;
 
     let result: crate::IResult<(&[u8], usize), usize> =
-      tag(value_to_tag, bits_to_take)((input, offset));
+      tag(value_to_tag, bits_to_take).parse((input, offset));
 
     assert_eq!(result, Ok(((input, bits_to_take), value_to_tag)));
   }
@@ -116,7 +172,7 @@ mod test {
     let value_to_tag = 0b1111;
 
     let result: crate::IResult<(&[u8], usize), usize> =
-      tag(value_to_tag, bits_to_take)((input, offset));
+      tag(value_to_tag, bits_to_take).parse((input, offset));
 
     assert_eq!(
       result,
