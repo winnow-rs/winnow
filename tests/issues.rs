@@ -74,7 +74,7 @@ fn take_till_issue() {
   use nom::bytes::streaming::take_till;
 
   fn nothing(i: &[u8]) -> IResult<&[u8], &[u8]> {
-    take_till(|_| true)(i)
+    take_till(|_| true).parse(i)
   }
 
   assert_eq!(nothing(b""), Err(Err::Incomplete(Needed::new(1))));
@@ -129,7 +129,7 @@ mod issue_647 {
 
   fn data(input: Input<'_>) -> IResult<Input<'_>, Data> {
     let (i, c) = be_f64(input)?;
-    let (i, _) = tag("\n")(i)?;
+    let (i, _) = tag("\n").parse(i)?;
     let (i, v) = list(i, &c)?;
     Ok((i, Data { c, v }))
   }
@@ -139,7 +139,7 @@ mod issue_647 {
 fn issue_848_overflow_incomplete_bits_to_bytes() {
   fn take(i: &[u8]) -> IResult<&[u8], &[u8]> {
     use nom::bytes::streaming::take;
-    take(0x2000000000000000_usize)(i)
+    take(0x2000000000000000_usize).parse(i)
   }
   fn parser(i: &[u8]) -> IResult<&[u8], &[u8]> {
     use nom::bits::{bits, bytes};

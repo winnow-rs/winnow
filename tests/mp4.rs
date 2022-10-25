@@ -103,7 +103,7 @@ fn mvhd32(i: &[u8]) -> IResult<&[u8], MvhdBox> {
   let (i, duration) =      be_u32(i)?;
   let (i, speed) =         be_f32(i)?;
   let (i, volume) =        be_u16(i)?; // actually a 2 bytes decimal
-  let (i, _) =             take(10_usize)(i)?;
+  let (i, _) =             take(10_usize).parse(i)?;
   let (i, scale_a) =       be_f32(i)?;
   let (i, rotate_b) =      be_f32(i)?;
   let (i, angle_u) =       be_f32(i)?;
@@ -155,7 +155,7 @@ fn mvhd64(i: &[u8]) -> IResult<&[u8], MvhdBox> {
   let (i, duration) =      be_u64(i)?;
   let (i, speed) =         be_f32(i)?;
   let (i, volume) =        be_u16(i)?; // actually a 2 bytes decimal
-  let (i, _) =             take(10_usize)(i)?;
+  let (i, _) =             take(10_usize).parse(i)?;
   let (i, scale_a) =       be_f32(i)?;
   let (i, rotate_b) =      be_f32(i)?;
   let (i, angle_u) =       be_f32(i)?;
@@ -249,7 +249,7 @@ fn brand_name(input: &[u8]) -> IResult<&[u8], &str> {
 
 fn filetype_parser(input: &[u8]) -> IResult<&[u8], FileType<'_>> {
   let (i, name) = brand_name(input)?;
-  let (i, version) = take(4_usize)(i)?;
+  let (i, version) = take(4_usize).parse(i)?;
   let (i, brands) = many0(brand_name)(i)?;
 
   let ft = FileType {

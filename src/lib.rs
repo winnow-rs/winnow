@@ -129,7 +129,7 @@
 //! ```rust
 //! use nom::{IResult, bytes::streaming::take};
 //! fn take4(input: &str) -> IResult<&str, &str> {
-//!   take(4u8)(input)
+//!   take(4u8).parse(input)
 //! }
 //! ```
 //!
@@ -331,7 +331,7 @@
 //! use nom::{IResult, Err, Needed, error::{Error, ErrorKind}, bytes, character};
 //!
 //! fn take_streaming(i: &[u8]) -> IResult<&[u8], &[u8]> {
-//!   bytes::streaming::take(4u8)(i)
+//!   bytes::streaming::take(4u8).parse(i)
 //! }
 //!
 //! fn take_complete(i: &[u8]) -> IResult<&[u8], &[u8]> {

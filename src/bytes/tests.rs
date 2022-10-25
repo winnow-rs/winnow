@@ -19,7 +19,7 @@ fn is_a() {
   use crate::bytes::streaming::is_a;
 
   fn a_or_b(i: &[u8]) -> IResult<&[u8], &[u8]> {
-    is_a("ab")(i)
+    is_a("ab").parse(i)
   }
 
   let a = &b"abcd"[..];
@@ -43,7 +43,7 @@ fn is_not() {
   use crate::bytes::streaming::is_not;
 
   fn a_or_b(i: &[u8]) -> IResult<&[u8], &[u8]> {
-    is_not("ab")(i)
+    is_not("ab").parse(i)
   }
 
   let a = &b"cdab"[..];
@@ -280,7 +280,7 @@ fn escape_transform_str() {
 fn take_until_incomplete() {
   use crate::bytes::streaming::take_until;
   fn y(i: &[u8]) -> IResult<&[u8], &[u8]> {
-    take_until("end")(i)
+    take_until("end").parse(i)
   }
   assert_eq!(y(&b"nd"[..]), Err(Err::Incomplete(Needed::Unknown)));
   assert_eq!(y(&b"123"[..]), Err(Err::Incomplete(Needed::Unknown)));
@@ -291,7 +291,7 @@ fn take_until_incomplete() {
 fn take_until_incomplete_s() {
   use crate::bytes::streaming::take_until;
   fn ys(i: &str) -> IResult<&str, &str> {
-    take_until("end")(i)
+    take_until("end").parse(i)
   }
   assert_eq!(ys("123en"), Err(Err::Incomplete(Needed::Unknown)));
 }
@@ -358,7 +358,7 @@ fn take_while() {
   use crate::bytes::streaming::take_while;
 
   fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
-    take_while(AsChar::is_alpha)(i)
+    take_while(AsChar::is_alpha).parse(i)
   }
   let a = b"";
   let b = b"abcd";
@@ -376,7 +376,7 @@ fn take_while1() {
   use crate::bytes::streaming::take_while1;
 
   fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
-    take_while1(AsChar::is_alpha)(i)
+    take_while1(AsChar::is_alpha).parse(i)
   }
   let a = b"";
   let b = b"abcd";
@@ -397,7 +397,7 @@ fn take_while_m_n() {
   use crate::bytes::streaming::take_while_m_n;
 
   fn x(i: &[u8]) -> IResult<&[u8], &[u8]> {
-    take_while_m_n(2, 4, AsChar::is_alpha)(i)
+    take_while_m_n(2, 4, AsChar::is_alpha).parse(i)
   }
   let a = b"";
   let b = b"a";
@@ -422,7 +422,7 @@ fn take_till() {
   use crate::bytes::streaming::take_till;
 
   fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
-    take_till(AsChar::is_alpha)(i)
+    take_till(AsChar::is_alpha).parse(i)
   }
   let a = b"";
   let b = b"abcd";
@@ -440,7 +440,7 @@ fn take_till1() {
   use crate::bytes::streaming::take_till1;
 
   fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
-    take_till1(AsChar::is_alpha)(i)
+    take_till1(AsChar::is_alpha).parse(i)
   }
   let a = b"";
   let b = b"abcd";
@@ -461,7 +461,7 @@ fn take_while_utf8() {
   use crate::bytes::streaming::take_while;
 
   fn f(i: &str) -> IResult<&str, &str> {
-    take_while(|c| c != '點')(i)
+    take_while(|c| c != '點').parse(i)
   }
 
   assert_eq!(f(""), Err(Err::Incomplete(Needed::new(1))));
@@ -470,7 +470,7 @@ fn take_while_utf8() {
   assert_eq!(f("abcd點a"), Ok(("點a", "abcd")));
 
   fn g(i: &str) -> IResult<&str, &str> {
-    take_while(|c| c == '點')(i)
+    take_while(|c| c == '點').parse(i)
   }
 
   assert_eq!(g(""), Err(Err::Incomplete(Needed::new(1))));
@@ -483,7 +483,7 @@ fn take_till_utf8() {
   use crate::bytes::streaming::take_till;
 
   fn f(i: &str) -> IResult<&str, &str> {
-    take_till(|c| c == '點')(i)
+    take_till(|c| c == '點').parse(i)
   }
 
   assert_eq!(f(""), Err(Err::Incomplete(Needed::new(1))));
@@ -492,7 +492,7 @@ fn take_till_utf8() {
   assert_eq!(f("abcd點a"), Ok(("點a", "abcd")));
 
   fn g(i: &str) -> IResult<&str, &str> {
-    take_till(|c| c != '點')(i)
+    take_till(|c| c != '點').parse(i)
   }
 
   assert_eq!(g(""), Err(Err::Incomplete(Needed::new(1))));
@@ -505,7 +505,7 @@ fn take_utf8() {
   use crate::bytes::streaming::{take, take_while};
 
   fn f(i: &str) -> IResult<&str, &str> {
-    take(3_usize)(i)
+    take(3_usize).parse(i)
   }
 
   assert_eq!(f(""), Err(Err::Incomplete(Needed::Unknown)));
@@ -516,7 +516,7 @@ fn take_utf8() {
   assert_eq!(f("a點b"), Ok(("", "a點b")));
 
   fn g(i: &str) -> IResult<&str, &str> {
-    take_while(|c| c == '點')(i)
+    take_while(|c| c == '點').parse(i)
   }
 
   assert_eq!(g(""), Err(Err::Incomplete(Needed::new(1))));
@@ -529,7 +529,7 @@ fn take_while_m_n_utf8() {
   use crate::bytes::streaming::take_while_m_n;
 
   fn parser(i: &str) -> IResult<&str, &str> {
-    take_while_m_n(1, 1, |c| c == 'A' || c == '😃')(i)
+    take_while_m_n(1, 1, |c| c == 'A' || c == '😃').parse(i)
   }
   assert_eq!(parser("A!"), Ok(("!", "A")));
   assert_eq!(parser("😃!"), Ok(("!", "😃")));
@@ -540,7 +540,7 @@ fn take_while_m_n_utf8_full_match() {
   use crate::bytes::streaming::take_while_m_n;
 
   fn parser(i: &str) -> IResult<&str, &str> {
-    take_while_m_n(1, 1, |c: char| c.is_alphabetic())(i)
+    take_while_m_n(1, 1, |c: char| c.is_alphabetic()).parse(i)
   }
   assert_eq!(parser("øn"), Ok(("n", "ø")));
 }
@@ -552,7 +552,7 @@ fn recognize_take_while() {
   use crate::combinator::recognize;
 
   fn x(i: &[u8]) -> IResult<&[u8], &[u8]> {
-    take_while(AsChar::is_alphanum)(i)
+    take_while(AsChar::is_alphanum).parse(i)
   }
   fn y(i: &[u8]) -> IResult<&[u8], &[u8]> {
     recognize(x)(i)
@@ -575,7 +575,7 @@ fn length_bytes() {
   assert_eq!(x(b"\x02"), Err(Err::Incomplete(Needed::new(2))));
 
   fn y(i: &[u8]) -> IResult<&[u8], &[u8]> {
-    let (i, _) = tag("magic")(i)?;
+    let (i, _) = tag("magic").parse(i)?;
     length_data(le_u8)(i)
   }
   assert_eq!(y(b"magic\x02..>>"), Ok((&b">>"[..], &b".."[..])));
@@ -590,7 +590,7 @@ fn case_insensitive() {
   use crate::bytes::streaming::tag_no_case;
 
   fn test(i: &[u8]) -> IResult<&[u8], &[u8]> {
-    tag_no_case("ABcd")(i)
+    tag_no_case("ABcd").parse(i)
   }
   assert_eq!(test(&b"aBCdefgh"[..]), Ok((&b"efgh"[..], &b"aBCd"[..])));
   assert_eq!(test(&b"abcdefgh"[..]), Ok((&b"efgh"[..], &b"abcd"[..])));
@@ -606,7 +606,7 @@ fn case_insensitive() {
   );
 
   fn test2(i: &str) -> IResult<&str, &str> {
-    tag_no_case("ABcd")(i)
+    tag_no_case("ABcd").parse(i)
   }
   assert_eq!(test2("aBCdefgh"), Ok(("efgh", "aBCd")));
   assert_eq!(test2("abcdefgh"), Ok(("efgh", "abcd")));
@@ -627,10 +627,10 @@ fn tag_fixed_size_array() {
   use crate::bytes::streaming::tag;
 
   fn test(i: &[u8]) -> IResult<&[u8], &[u8]> {
-    tag([0x42])(i)
+    tag([0x42]).parse(i)
   }
   fn test2(i: &[u8]) -> IResult<&[u8], &[u8]> {
-    tag(&[0x42])(i)
+    tag(&[0x42]).parse(i)
   }
   let input = [0x42, 0x00];
   assert_eq!(test(&input), Ok((&b"\x00"[..], &b"\x42"[..])));

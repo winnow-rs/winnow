@@ -42,7 +42,7 @@ mod test {
     const INPUT: &str = "Hello";
     const TAG: &str = "Hello World!";
 
-    let res: IResult<_, _, error::Error<_>> = tag(TAG)(INPUT);
+    let res: IResult<_, _, error::Error<_>> = tag(TAG).parse(INPUT);
     match res {
       Err(Err::Incomplete(_)) => (),
       other => {
@@ -139,7 +139,7 @@ mod test {
 
     const INPUT: &str = "βèƒôřèÂßÇá";
 
-    let res: IResult<_, _, (_, ErrorKind)> = take(13_usize)(INPUT);
+    let res: IResult<_, _, (_, ErrorKind)> = take(13_usize).parse(INPUT);
     match res {
       Err(Err::Incomplete(_)) => (),
       other => panic!(
@@ -161,7 +161,7 @@ mod test {
     use crate::bytes::streaming::take_while;
 
     fn f(i: &str) -> IResult<&str, &str> {
-      take_while(is_alphabetic)(i)
+      take_while(is_alphabetic).parse(i)
     }
     let a = "";
     let b = "abcd";
@@ -179,7 +179,7 @@ mod test {
     use crate::bytes::streaming::take_while1;
 
     fn f(i: &str) -> IResult<&str, &str> {
-      take_while1(is_alphabetic)(i)
+      take_while1(is_alphabetic).parse(i)
     }
     let a = "";
     let b = "abcd";
@@ -403,7 +403,7 @@ mod test {
     const INPUT: &str = "βèƒôřè";
     const FIND: &str = "βèƒôřèÂßÇ";
 
-    let res: IResult<_, _, (_, ErrorKind)> = take_until(FIND)(INPUT);
+    let res: IResult<_, _, (_, ErrorKind)> = take_until(FIND).parse(INPUT);
     match res {
       Err(Err::Incomplete(_)) => (),
       other => panic!(
@@ -489,7 +489,7 @@ mod test {
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const FIND: &str = "Ráñδô₥";
 
-    let res: IResult<_, _, (_, ErrorKind)> = take_until(FIND)(INPUT);
+    let res: IResult<_, _, (_, ErrorKind)> = take_until(FIND).parse(INPUT);
     match res {
       Err(Err::Incomplete(_)) => (),
       other => panic!(

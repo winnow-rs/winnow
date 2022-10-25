@@ -30,7 +30,7 @@ impl<'a> ParseError<&'a str> for CustomError {
 
 fn test1(input: &str) -> IResult<&str, &str, CustomError> {
   //fix_error!(input, CustomError, tag!("abcd"))
-  tag("abcd")(input)
+  tag("abcd").parse(input)
 }
 
 fn test2(input: &str) -> IResult<&str, &str, CustomError> {

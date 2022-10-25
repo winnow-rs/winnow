@@ -10,7 +10,7 @@ use crate::traits::{
   InputTakeAtPositionPartial, Slice, ToUsize,
 };
 
-/// Recognizes a pattern.
+/// Recognizes a pattern
 ///
 /// The input data will be compared to the tag combinator's argument and will return the part of
 /// the input that matches the argument.
@@ -20,7 +20,7 @@ use crate::traits::{
 /// use nom::bytes::streaming::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
-///   tag("Hello")(s)
+///   tag("Hello").parse(s)
 /// }
 ///
 /// assert_eq!(parser("Hello, World!"), Ok((", World!", "Hello")));
@@ -28,26 +28,51 @@ use crate::traits::{
 /// assert_eq!(parser("S"), Err(Err::Error(Error::new("S", ErrorKind::Tag))));
 /// assert_eq!(parser("H"), Err(Err::Incomplete(Needed::new(4))));
 /// ```
-pub fn tag<T, Input, Error: ParseError<Input>>(
-  tag: T,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
-where
-  Input: InputTake + InputLength + Compare<T>,
-  T: InputLength + Clone,
-{
-  move |i: Input| {
-    let tag_len = tag.input_len();
-    let t = tag.clone();
+pub fn tag<T, I, E>(tag: T) -> Tag<T, I, E> {
+  Tag {
+    tag,
+    i: Default::default(),
+    e: Default::default(),
+  }
+}
 
-    let res: IResult<_, _, Error> = match i.compare(t) {
-      CompareResult::Ok => Ok(i.take_split(tag_len)),
-      CompareResult::Incomplete => Err(Err::Incomplete(Needed::new(tag_len - i.input_len()))),
+/// Implementation of [`tag`]
+pub struct Tag<T, I, E> {
+  tag: T,
+  i: core::marker::PhantomData<I>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<T, I, E> Tag<T, I, E>
+where
+  T: InputLength + Clone,
+  I: InputTake + InputLength + Compare<T>,
+  E: ParseError<I>,
+{
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    let tag_len = self.tag.input_len();
+    let t = self.tag.clone();
+    let res: IResult<_, _, E> = match input.compare(t) {
+      CompareResult::Ok => Ok(input.take_split(tag_len)),
+      CompareResult::Incomplete => Err(Err::Incomplete(Needed::new(tag_len - input.input_len()))),
       CompareResult::Error => {
         let e: ErrorKind = ErrorKind::Tag;
-        Err(Err::Error(Error::from_error_kind(i, e)))
+        Err(Err::Error(E::from_error_kind(input, e)))
       }
     };
     res
+  }
+}
+
+impl<T, I, E> Parser<I, I, E> for Tag<T, I, E>
+where
+  T: InputLength + Clone,
+  I: InputTake + InputLength + Compare<T>,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    self.parse(input)
   }
 }
 
@@ -61,7 +86,7 @@ where
 /// use nom::bytes::streaming::tag_no_case;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
-///   tag_no_case("hello")(s)
+///   tag_no_case("hello").parse(s)
 /// }
 ///
 /// assert_eq!(parser("Hello, World!"), Ok((", World!", "Hello")));
@@ -70,26 +95,51 @@ where
 /// assert_eq!(parser("Something"), Err(Err::Error(Error::new("Something", ErrorKind::Tag))));
 /// assert_eq!(parser(""), Err(Err::Incomplete(Needed::new(5))));
 /// ```
-pub fn tag_no_case<T, Input, Error: ParseError<Input>>(
-  tag: T,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
-where
-  Input: InputTake + InputLength + Compare<T>,
-  T: InputLength + Clone,
-{
-  move |i: Input| {
-    let tag_len = tag.input_len();
-    let t = tag.clone();
+pub fn tag_no_case<T, I, E>(tag: T) -> TagNoCase<T, I, E> {
+  TagNoCase {
+    tag,
+    i: Default::default(),
+    e: Default::default(),
+  }
+}
 
-    let res: IResult<_, _, Error> = match (i).compare_no_case(t) {
-      CompareResult::Ok => Ok(i.take_split(tag_len)),
-      CompareResult::Incomplete => Err(Err::Incomplete(Needed::new(tag_len - i.input_len()))),
+/// Implementation of [`tag_no_case`]
+pub struct TagNoCase<T, I, E> {
+  tag: T,
+  i: core::marker::PhantomData<I>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<T, I, E> TagNoCase<T, I, E>
+where
+  T: InputLength + Clone,
+  I: InputTake + InputLength + Compare<T>,
+  E: ParseError<I>,
+{
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    let tag_len = self.tag.input_len();
+    let t = self.tag.clone();
+    let res: IResult<_, _, E> = match input.compare_no_case(t) {
+      CompareResult::Ok => Ok(input.take_split(tag_len)),
+      CompareResult::Incomplete => Err(Err::Incomplete(Needed::new(tag_len - input.input_len()))),
       CompareResult::Error => {
         let e: ErrorKind = ErrorKind::Tag;
-        Err(Err::Error(Error::from_error_kind(i, e)))
+        Err(Err::Error(E::from_error_kind(input, e)))
       }
     };
     res
+  }
+}
+
+impl<T, I, E> Parser<I, I, E> for TagNoCase<T, I, E>
+where
+  T: InputLength + Clone,
+  I: InputTake + InputLength + Compare<T>,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    self.parse(input)
   }
 }
 
@@ -106,7 +156,7 @@ where
 /// use nom::bytes::streaming::is_not;
 ///
 /// fn not_space(s: &str) -> IResult<&str, &str> {
-///   is_not(" \t\r\n")(s)
+///   is_not(" \t\r\n").parse(s)
 /// }
 ///
 /// assert_eq!(not_space("Hello, World!"), Ok((" World!", "Hello,")));
@@ -114,16 +164,42 @@ where
 /// assert_eq!(not_space("Nospace"), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(not_space(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn is_not<T, Input, Error: ParseError<Input>>(
+pub fn is_not<T, I, E>(arr: T) -> IsNot<T, I, E> {
+  IsNot {
+    arr,
+    i: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`is_not`]
+pub struct IsNot<T, I, E> {
   arr: T,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
+  i: core::marker::PhantomData<I>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<T, I, E> IsNot<T, I, E>
 where
-  Input: InputTakeAtPositionPartial,
-  T: FindToken<<Input as InputTakeAtPositionPartial>::Item>,
+  T: FindToken<<I as InputTakeAtPositionPartial>::Item>,
+  I: InputTakeAtPositionPartial,
+  E: ParseError<I>,
 {
-  move |i: Input| {
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, I, E> {
     let e: ErrorKind = ErrorKind::IsNot;
-    i.split_at_position1_partial(|c| arr.find_token(c), e)
+    input.split_at_position1_partial(|c| self.arr.find_token(c), e)
+  }
+}
+
+impl<T, I, E> Parser<I, I, E> for IsNot<T, I, E>
+where
+  T: FindToken<<I as InputTakeAtPositionPartial>::Item>,
+  I: InputTakeAtPositionPartial,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    self.parse(input)
   }
 }
 
@@ -135,13 +211,14 @@ where
 /// # Streaming specific
 /// *Streaming version* will return a `Err::Incomplete(Needed::new(1))` if the pattern wasn't met
 /// or if the pattern reaches the end of the input.
+///
 /// # Example
 /// ```rust
 /// # use nom::{Err, error::ErrorKind, Needed, IResult};
 /// use nom::bytes::streaming::is_a;
 ///
 /// fn hex(s: &str) -> IResult<&str, &str> {
-///   is_a("1234567890ABCDEF")(s)
+///   is_a("1234567890ABCDEF").parse(s)
 /// }
 ///
 /// assert_eq!(hex("123 and voila"), Ok((" and voila", "123")));
@@ -150,16 +227,42 @@ where
 /// assert_eq!(hex("D15EA5E"), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(hex(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn is_a<T, Input, Error: ParseError<Input>>(
+pub fn is_a<T, I, E>(arr: T) -> IsA<T, I, E> {
+  IsA {
+    arr,
+    i: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`is_a`]
+pub struct IsA<T, I, E> {
   arr: T,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
+  i: core::marker::PhantomData<I>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<T, I, E> IsA<T, I, E>
 where
-  Input: InputTakeAtPositionPartial,
-  T: FindToken<<Input as InputTakeAtPositionPartial>::Item>,
+  T: FindToken<<I as InputTakeAtPositionPartial>::Item>,
+  I: InputTakeAtPositionPartial,
+  E: ParseError<I>,
 {
-  move |i: Input| {
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, I, E> {
     let e: ErrorKind = ErrorKind::IsA;
-    i.split_at_position1_partial(|c| !arr.find_token(c), e)
+    input.split_at_position1_partial(|c| !self.arr.find_token(c), e)
+  }
+}
+
+impl<T, I, E> Parser<I, I, E> for IsA<T, I, E>
+where
+  T: FindToken<<I as InputTakeAtPositionPartial>::Item>,
+  I: InputTakeAtPositionPartial,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    self.parse(input)
   }
 }
 
@@ -170,6 +273,7 @@ where
 ///
 /// # Streaming Specific
 /// *Streaming version* will return a `Err::Incomplete(Needed::new(1))` if the pattern reaches the end of the input.
+///
 /// # Example
 /// ```rust
 /// # use nom::{Err, error::ErrorKind, Needed, IResult};
@@ -177,7 +281,7 @@ where
 /// use nom::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
-///   take_while(AsChar::is_alpha)(s)
+///   take_while(AsChar::is_alpha).parse(s)
 /// }
 ///
 /// assert_eq!(alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
@@ -185,14 +289,42 @@ where
 /// assert_eq!(alpha(b"latin"), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(alpha(b""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn take_while<F, Input, Error: ParseError<Input>>(
-  cond: F,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
+pub fn take_while<F, I, E>(pred: F) -> TakeWhile<F, I, E> {
+  TakeWhile {
+    pred,
+    i: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`take_while`]
+pub struct TakeWhile<F, I, E> {
+  pred: F,
+  i: core::marker::PhantomData<I>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<F, I, E> TakeWhile<F, I, E>
 where
-  Input: InputTakeAtPositionPartial,
-  F: Fn(<Input as InputTakeAtPositionPartial>::Item) -> bool,
+  F: Fn(<I as InputTakeAtPositionPartial>::Item) -> bool,
+  I: InputTakeAtPositionPartial,
+  E: ParseError<I>,
 {
-  move |i: Input| i.split_at_position_partial(|c| !cond(c))
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    input.split_at_position_partial(|c| !(self.pred)(c))
+  }
+}
+
+impl<F, I, E> Parser<I, I, E> for TakeWhile<F, I, E>
+where
+  F: Fn(<I as InputTakeAtPositionPartial>::Item) -> bool,
+  I: InputTakeAtPositionPartial,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    self.parse(input)
+  }
 }
 
 /// Returns the longest (at least 1) input slice that matches the predicate.
@@ -212,23 +344,49 @@ where
 /// use nom::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
-///   take_while1(AsChar::is_alpha)(s)
+///   take_while1(AsChar::is_alpha).parse(s)
 /// }
 ///
 /// assert_eq!(alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
 /// assert_eq!(alpha(b"latin"), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(alpha(b"12345"), Err(Err::Error(Error::new(&b"12345"[..], ErrorKind::TakeWhile1))));
 /// ```
-pub fn take_while1<F, Input, Error: ParseError<Input>>(
-  cond: F,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
+pub fn take_while1<F, I, E>(pred: F) -> TakeWhile1<F, I, E> {
+  TakeWhile1 {
+    pred,
+    i: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`take_while1`]
+pub struct TakeWhile1<F, I, E> {
+  pred: F,
+  i: core::marker::PhantomData<I>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<F, I, E> TakeWhile1<F, I, E>
 where
-  Input: InputTakeAtPositionPartial,
-  F: Fn(<Input as InputTakeAtPositionPartial>::Item) -> bool,
+  F: Fn(<I as InputTakeAtPositionPartial>::Item) -> bool,
+  I: InputTakeAtPositionPartial,
+  E: ParseError<I>,
 {
-  move |i: Input| {
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, I, E> {
     let e: ErrorKind = ErrorKind::TakeWhile1;
-    i.split_at_position1_partial(|c| !cond(c), e)
+    input.split_at_position1_partial(|c| !(self.pred)(c), e)
+  }
+}
+
+impl<F, I, E> Parser<I, I, E> for TakeWhile1<F, I, E>
+where
+  F: Fn(<I as InputTakeAtPositionPartial>::Item) -> bool,
+  I: InputTakeAtPositionPartial,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    self.parse(input)
   }
 }
 
@@ -238,6 +396,7 @@ where
 /// takes the input and returns a bool)*.
 ///
 /// It will return an `Err::Error((_, ErrorKind::TakeWhileMN))` if the pattern wasn't met.
+///
 /// # Streaming Specific
 /// *Streaming version* will return a `Err::Incomplete(Needed::new(1))`  if the pattern reaches the end of the input or is too short.
 ///
@@ -248,7 +407,7 @@ where
 /// use nom::AsChar;
 ///
 /// fn short_alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
-///   take_while_m_n(3, 6, AsChar::is_alpha)(s)
+///   take_while_m_n(3, 6, AsChar::is_alpha).parse(s)
 /// }
 ///
 /// assert_eq!(short_alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
@@ -257,36 +416,51 @@ where
 /// assert_eq!(short_alpha(b"ed"), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(short_alpha(b"12345"), Err(Err::Error(Error::new(&b"12345"[..], ErrorKind::TakeWhileMN))));
 /// ```
-pub fn take_while_m_n<F, Input, Error: ParseError<Input>>(
+pub fn take_while_m_n<F, I, E>(m: usize, n: usize, pred: F) -> TakeWhileMN<F, I, E> {
+  TakeWhileMN {
+    m,
+    n,
+    pred,
+    i: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`take_while_m_n`]
+pub struct TakeWhileMN<F, I, E> {
   m: usize,
   n: usize,
-  cond: F,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
-where
-  Input: InputTake + InputIter + InputLength,
-  F: Fn(<Input as InputIter>::Item) -> bool,
-{
-  move |i: Input| {
-    let input = i;
+  pred: F,
+  i: core::marker::PhantomData<I>,
+  e: core::marker::PhantomData<E>,
+}
 
-    match input.position(|c| !cond(c)) {
+impl<F, I, E> TakeWhileMN<F, I, E>
+where
+  F: Fn(<I as InputIter>::Item) -> bool,
+  I: InputTake + InputIter + InputLength + Slice<RangeFrom<usize>>,
+  E: ParseError<I>,
+{
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    match input.position(|c| !(self.pred)(c)) {
       Some(idx) => {
-        if idx >= m {
-          if idx <= n {
-            let res: IResult<_, _, Error> = if let Ok(index) = input.slice_index(idx) {
+        if idx >= self.m {
+          if idx <= self.n {
+            let res: IResult<_, _, E> = if let Ok(index) = input.slice_index(idx) {
               Ok(input.take_split(index))
             } else {
-              Err(Err::Error(Error::from_error_kind(
+              Err(Err::Error(E::from_error_kind(
                 input,
                 ErrorKind::TakeWhileMN,
               )))
             };
             res
           } else {
-            let res: IResult<_, _, Error> = if let Ok(index) = input.slice_index(n) {
+            let res: IResult<_, _, E> = if let Ok(index) = input.slice_index(self.n) {
               Ok(input.take_split(index))
             } else {
-              Err(Err::Error(Error::from_error_kind(
+              Err(Err::Error(E::from_error_kind(
                 input,
                 ErrorKind::TakeWhileMN,
               )))
@@ -295,25 +469,36 @@ where
           }
         } else {
           let e = ErrorKind::TakeWhileMN;
-          Err(Err::Error(Error::from_error_kind(input, e)))
+          Err(Err::Error(E::from_error_kind(input, e)))
         }
       }
       None => {
         let len = input.input_len();
-        if len >= n {
-          match input.slice_index(n) {
+        if len >= self.n {
+          match input.slice_index(self.n) {
             Ok(index) => Ok(input.take_split(index)),
-            Err(_needed) => Err(Err::Error(Error::from_error_kind(
+            Err(_needed) => Err(Err::Error(E::from_error_kind(
               input,
               ErrorKind::TakeWhileMN,
             ))),
           }
         } else {
-          let needed = if m > len { m - len } else { 1 };
+          let needed = if self.m > len { self.m - len } else { 1 };
           Err(Err::Incomplete(Needed::new(needed)))
         }
       }
     }
+  }
+}
+
+impl<F, I, E> Parser<I, I, E> for TakeWhileMN<F, I, E>
+where
+  F: Fn(<I as InputIter>::Item) -> bool,
+  I: InputTake + InputIter + InputLength + Slice<RangeFrom<usize>>,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    self.parse(input)
   }
 }
 
@@ -332,7 +517,7 @@ where
 /// use nom::bytes::streaming::take_till;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
-///   take_till(|c| c == ':')(s)
+///   take_till(|c| c == ':').parse(s)
 /// }
 ///
 /// assert_eq!(till_colon("latin:123"), Ok((":123", "latin")));
@@ -340,14 +525,42 @@ where
 /// assert_eq!(till_colon("12345"), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(till_colon(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn take_till<F, Input, Error: ParseError<Input>>(
-  cond: F,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
+pub fn take_till<F, I, E>(pred: F) -> TakeTill<F, I, E> {
+  TakeTill {
+    pred,
+    i: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`take_till`]
+pub struct TakeTill<F, I, E> {
+  pred: F,
+  i: core::marker::PhantomData<I>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<F, I, E> TakeTill<F, I, E>
 where
-  Input: InputTakeAtPositionPartial,
-  F: Fn(<Input as InputTakeAtPositionPartial>::Item) -> bool,
+  F: Fn(<I as InputTakeAtPositionPartial>::Item) -> bool,
+  I: InputTakeAtPositionPartial,
+  E: ParseError<I>,
 {
-  move |i: Input| i.split_at_position_partial(|c| cond(c))
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    input.split_at_position_partial(|c| (self.pred)(c))
+  }
+}
+
+impl<F, I, E> Parser<I, I, E> for TakeTill<F, I, E>
+where
+  F: Fn(<I as InputTakeAtPositionPartial>::Item) -> bool,
+  I: InputTakeAtPositionPartial,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    self.parse(input)
+  }
 }
 
 /// Returns the longest (at least 1) input slice till a predicate is met.
@@ -358,13 +571,14 @@ where
 /// # Streaming Specific
 /// *Streaming version* will return a `Err::Incomplete(Needed::new(1))` if the match reaches the
 /// end of input or if there was not match.
+///
 /// # Example
 /// ```rust
 /// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
 /// use nom::bytes::streaming::take_till1;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
-///   take_till1(|c| c == ':')(s)
+///   take_till1(|c| c == ':').parse(s)
 /// }
 ///
 /// assert_eq!(till_colon("latin:123"), Ok((":123", "latin")));
@@ -372,16 +586,42 @@ where
 /// assert_eq!(till_colon("12345"), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(till_colon(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn take_till1<F, Input, Error: ParseError<Input>>(
-  cond: F,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
+pub fn take_till1<F, I, E>(pred: F) -> TakeTill1<F, I, E> {
+  TakeTill1 {
+    pred,
+    i: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`take_till1`]
+pub struct TakeTill1<F, I, E> {
+  pred: F,
+  i: core::marker::PhantomData<I>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<F, I, E> TakeTill1<F, I, E>
 where
-  Input: InputTakeAtPositionPartial,
-  F: Fn(<Input as InputTakeAtPositionPartial>::Item) -> bool,
+  F: Fn(<I as InputTakeAtPositionPartial>::Item) -> bool,
+  I: InputTakeAtPositionPartial,
+  E: ParseError<I>,
 {
-  move |i: Input| {
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, I, E> {
     let e: ErrorKind = ErrorKind::TakeTill1;
-    i.split_at_position1_partial(|c| cond(c), e)
+    input.split_at_position1_partial(|c| (self.pred)(c), e)
+  }
+}
+
+impl<F, I, E> Parser<I, I, E> for TakeTill1<F, I, E>
+where
+  F: Fn(<I as InputTakeAtPositionPartial>::Item) -> bool,
+  I: InputTakeAtPositionPartial,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    self.parse(input)
   }
 }
 
@@ -401,24 +641,52 @@ where
 /// use nom::bytes::streaming::take;
 ///
 /// fn take6(s: &str) -> IResult<&str, &str> {
-///   take(6usize)(s)
+///   take(6usize).parse(s)
 /// }
 ///
 /// assert_eq!(take6("1234567"), Ok(("7", "123456")));
 /// assert_eq!(take6("things"), Ok(("", "things")));
 /// assert_eq!(take6("short"), Err(Err::Incomplete(Needed::Unknown)));
 /// ```
-pub fn take<C, Input, Error: ParseError<Input>>(
+pub fn take<C, I, E>(count: C) -> Take<C, I, E> {
+  Take {
+    count,
+    i: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`take`]
+pub struct Take<C, I, E> {
   count: C,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
+  i: core::marker::PhantomData<I>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<C, I, E> Take<C, I, E>
 where
-  Input: InputIter + InputTake + InputLength,
   C: ToUsize,
+  I: InputIter + InputTake,
+  E: ParseError<I>,
 {
-  let c = count.to_usize();
-  move |i: Input| match i.slice_index(c) {
-    Err(i) => Err(Err::Incomplete(i)),
-    Ok(index) => Ok(i.take_split(index)),
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    let c = self.count.to_usize();
+    match input.slice_index(c) {
+      Err(needed) => Err(Err::Incomplete(needed)),
+      Ok(index) => Ok(input.take_split(index)),
+    }
+  }
+}
+
+impl<C, I, E> Parser<I, I, E> for Take<C, I, E>
+where
+  C: ToUsize,
+  I: InputIter + InputTake,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    self.parse(input)
   }
 }
 
@@ -429,13 +697,14 @@ where
 /// # Streaming Specific
 /// *Streaming version* will return a `Err::Incomplete(Needed::new(N))` if the input doesn't
 /// contain the pattern or if the input is smaller than the pattern.
+///
 /// # Example
 /// ```rust
 /// # use nom::{Err, error::ErrorKind, Needed, IResult};
 /// use nom::bytes::streaming::take_until;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
-///   take_until("eof")(s)
+///   take_until("eof").parse(s)
 /// }
 ///
 /// assert_eq!(until_eof("hello, worldeof"), Ok(("eof", "hello, world")));
@@ -443,21 +712,46 @@ where
 /// assert_eq!(until_eof("hello, worldeo"), Err(Err::Incomplete(Needed::Unknown)));
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
 /// ```
-pub fn take_until<T, Input, Error: ParseError<Input>>(
-  tag: T,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
-where
-  Input: InputTake + InputLength + FindSubstring<T>,
-  T: Clone,
-{
-  move |i: Input| {
-    let t = tag.clone();
+pub fn take_until<T, I, E>(tag: T) -> TakeUntil<T, I, E> {
+  TakeUntil {
+    tag,
+    i: Default::default(),
+    e: Default::default(),
+  }
+}
 
-    let res: IResult<_, _, Error> = match i.find_substring(t) {
+/// Implementation of [`take_until`]
+pub struct TakeUntil<T, I, E> {
+  tag: T,
+  i: core::marker::PhantomData<I>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<T, I, E> TakeUntil<T, I, E>
+where
+  T: InputLength + Clone,
+  I: InputTake + FindSubstring<T>,
+  E: ParseError<I>,
+{
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    let t = self.tag.clone();
+    let res: IResult<_, _, E> = match input.find_substring(t) {
       None => Err(Err::Incomplete(Needed::Unknown)),
-      Some(index) => Ok(i.take_split(index)),
+      Some(index) => Ok(input.take_split(index)),
     };
     res
+  }
+}
+
+impl<T, I, E> Parser<I, I, E> for TakeUntil<T, I, E>
+where
+  T: InputLength + Clone,
+  I: InputTake + FindSubstring<T>,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    self.parse(input)
   }
 }
 
@@ -468,13 +762,14 @@ where
 /// # Streaming Specific
 /// *Streaming version* will return a `Err::Incomplete(Needed::new(N))` if the input doesn't
 /// contain the pattern or if the input is smaller than the pattern.
+///
 /// # Example
 /// ```rust
 /// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
 /// use nom::bytes::streaming::take_until1;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
-///   take_until1("eof")(s)
+///   take_until1("eof").parse(s)
 /// }
 ///
 /// assert_eq!(until_eof("hello, worldeof"), Ok(("eof", "hello, world")));
@@ -483,22 +778,47 @@ where
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
 /// assert_eq!(until_eof("eof"),  Err(Err::Error(Error::new("eof", ErrorKind::TakeUntil))));
 /// ```
-pub fn take_until1<T, Input, Error: ParseError<Input>>(
-  tag: T,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
-where
-  Input: InputTake + InputLength + FindSubstring<T>,
-  T: Clone,
-{
-  move |i: Input| {
-    let t = tag.clone();
+pub fn take_until1<T, I, E>(tag: T) -> TakeUntil1<T, I, E> {
+  TakeUntil1 {
+    tag,
+    i: Default::default(),
+    e: Default::default(),
+  }
+}
 
-    let res: IResult<_, _, Error> = match i.find_substring(t) {
+/// Implementation of [`take_until1`]
+pub struct TakeUntil1<T, I, E> {
+  tag: T,
+  i: core::marker::PhantomData<I>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<T, I, E> TakeUntil1<T, I, E>
+where
+  T: InputLength + Clone,
+  I: InputTake + FindSubstring<T>,
+  E: ParseError<I>,
+{
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    let t = self.tag.clone();
+    let res: IResult<_, _, E> = match input.find_substring(t) {
       None => Err(Err::Incomplete(Needed::Unknown)),
-      Some(0) => Err(Err::Error(Error::from_error_kind(i, ErrorKind::TakeUntil))),
-      Some(index) => Ok(i.take_split(index)),
+      Some(0) => Err(Err::Error(E::from_error_kind(input, ErrorKind::TakeUntil))),
+      Some(index) => Ok(input.take_split(index)),
     };
     res
+  }
+}
+
+impl<T, I, E> Parser<I, I, E> for TakeUntil1<T, I, E>
+where
+  T: InputLength + Clone,
+  I: InputTake + FindSubstring<T>,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    self.parse(input)
   }
 }
 
@@ -515,40 +835,64 @@ where
 /// use nom::character::streaming::one_of;
 ///
 /// fn esc(s: &str) -> IResult<&str, &str> {
-///   escaped(digit1, '\\', one_of("\"n\\"))(s)
+///   escaped(digit1, '\\', one_of("\"n\\")).parse(s)
 /// }
 ///
 /// assert_eq!(esc("123;"), Ok((";", "123")));
 /// assert_eq!(esc("12\\\"34;"), Ok((";", "12\\\"34")));
 /// ```
 ///
-pub fn escaped<Input, Error, F, G, O1, O2>(
-  mut normal: F,
+pub fn escaped<F, FO, G, GO, I, E>(
+  normal: F,
   control_char: char,
-  mut escapable: G,
-) -> impl FnMut(Input) -> IResult<Input, Input, Error>
+  escapable: G,
+) -> Escaped<F, FO, G, GO, I, E> {
+  Escaped {
+    normal,
+    control_char,
+    escapable,
+    fo: Default::default(),
+    go: Default::default(),
+    i: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`escaped`]
+pub struct Escaped<F, FO, G, GO, I, E> {
+  normal: F,
+  control_char: char,
+  escapable: G,
+  fo: core::marker::PhantomData<FO>,
+  go: core::marker::PhantomData<GO>,
+  i: core::marker::PhantomData<I>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<'i, F, FO, G, GO, I, E> Escaped<F, FO, G, GO, I, E>
 where
-  Input: Clone
+  I: Clone
     + crate::traits::Offset
     + InputLength
     + InputTake
     + InputTakeAtPositionPartial
     + Slice<RangeFrom<usize>>
-    + InputIter,
-  <Input as InputIter>::Item: crate::traits::AsChar,
-  F: Parser<Input, O1, Error>,
-  G: Parser<Input, O2, Error>,
-  Error: ParseError<Input>,
+    + InputIter
+    + 'i,
+  <I as InputIter>::Item: crate::traits::AsChar,
+  F: Parser<I, FO, E>,
+  G: Parser<I, GO, E>,
+  E: ParseError<I>,
 {
-  use crate::traits::AsChar;
-
-  move |input: Input| {
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    use crate::traits::AsChar;
     let mut i = input.clone();
 
     while i.input_len() > 0 {
       let current_len = i.input_len();
 
-      match normal.parse(i.clone()) {
+      match self.normal.parse(i.clone()) {
         Ok((i2, _)) => {
           if i2.input_len() == 0 {
             return Err(Err::Incomplete(Needed::Unknown));
@@ -561,12 +905,12 @@ where
         }
         Err(Err::Error(_)) => {
           // unwrap() should be safe here since index < $i.input_len()
-          if i.iter_elements().next().unwrap().as_char() == control_char {
-            let next = control_char.len_utf8();
+          if i.iter_elements().next().unwrap().as_char() == self.control_char {
+            let next = self.control_char.len_utf8();
             if next >= i.input_len() {
               return Err(Err::Incomplete(Needed::new(1)));
             } else {
-              match escapable.parse(i.slice(next..)) {
+              match self.escapable.parse(i.slice(next..)) {
                 Ok((i2, _)) => {
                   if i2.input_len() == 0 {
                     return Err(Err::Incomplete(Needed::Unknown));
@@ -589,6 +933,26 @@ where
     }
 
     Err(Err::Incomplete(Needed::Unknown))
+  }
+}
+
+impl<'i, F, FO, G, GO, I, E> Parser<I, I, E> for Escaped<F, FO, G, GO, I, E>
+where
+  I: Clone
+    + crate::traits::Offset
+    + InputLength
+    + InputTake
+    + InputTakeAtPositionPartial
+    + Slice<RangeFrom<usize>>
+    + InputIter
+    + 'i,
+  <I as InputIter>::Item: crate::traits::AsChar,
+  F: Parser<I, FO, E>,
+  G: Parser<I, GO, E>,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    self.parse(input)
   }
 }
 
@@ -617,36 +981,66 @@ where
 ///       value("\"", tag("\"")),
 ///       value("\n", tag("n")),
 ///     ))
-///   )(input)
+///   ).parse(input)
 /// }
 ///
 /// assert_eq!(parser("ab\\\"cd\""), Ok(("\"", String::from("ab\"cd"))));
 /// ```
 #[cfg(feature = "alloc")]
-pub fn escaped_transform<Input, Error, F, G, O1, O2, ExtendItem, Output>(
-  mut normal: F,
+pub fn escaped_transform<F, FO, G, GO, EXT, I, O, E>(
+  normal: F,
   control_char: char,
-  mut transform: G,
-) -> impl FnMut(Input) -> IResult<Input, Output, Error>
+  transform: G,
+) -> EscapedTransform<F, FO, G, GO, EXT, I, O, E> {
+  EscapedTransform {
+    normal,
+    control_char,
+    transform,
+    fo: Default::default(),
+    go: Default::default(),
+    ext: Default::default(),
+    i: Default::default(),
+    o: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`escaped_transform`]
+#[cfg(feature = "alloc")]
+pub struct EscapedTransform<F, FO, G, GO, EXT, I, O, E> {
+  normal: F,
+  control_char: char,
+  transform: G,
+  fo: core::marker::PhantomData<FO>,
+  go: core::marker::PhantomData<GO>,
+  ext: core::marker::PhantomData<EXT>,
+  i: core::marker::PhantomData<I>,
+  o: core::marker::PhantomData<O>,
+  e: core::marker::PhantomData<E>,
+}
+
+#[cfg(feature = "alloc")]
+impl<F, FO, G, GO, EXT, I, O, E> EscapedTransform<F, FO, G, GO, EXT, I, O, E>
 where
-  Input: Clone
+  I: Clone
     + crate::traits::Offset
     + InputLength
     + InputTake
     + InputTakeAtPositionPartial
     + Slice<RangeFrom<usize>>
-    + InputIter,
-  Input: crate::traits::ExtendInto<Item = ExtendItem, Extender = Output>,
-  O1: crate::traits::ExtendInto<Item = ExtendItem, Extender = Output>,
-  O2: crate::traits::ExtendInto<Item = ExtendItem, Extender = Output>,
-  <Input as InputIter>::Item: crate::traits::AsChar,
-  F: Parser<Input, O1, Error>,
-  G: Parser<Input, O2, Error>,
-  Error: ParseError<Input>,
+    + InputIter
+    + crate::traits::ExtendInto<Item = EXT, Extender = O>,
+  <I as InputIter>::Item: crate::traits::AsChar,
+  F: Parser<I, FO, E>,
+  G: Parser<I, GO, E>,
+  FO: crate::traits::ExtendInto<Item = EXT, Extender = O>,
+  GO: crate::traits::ExtendInto<Item = EXT, Extender = O>,
+  E: ParseError<I>,
 {
-  use crate::traits::AsChar;
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    use crate::traits::AsChar;
 
-  move |input: Input| {
     let mut index = 0;
     let mut res = input.new_builder();
 
@@ -655,7 +1049,7 @@ where
     while index < i.input_len() {
       let current_len = i.input_len();
       let remainder = i.slice(index..);
-      match normal.parse(remainder.clone()) {
+      match self.normal.parse(remainder.clone()) {
         Ok((i2, o)) => {
           o.extend_into(&mut res);
           if i2.input_len() == 0 {
@@ -668,14 +1062,14 @@ where
         }
         Err(Err::Error(_)) => {
           // unwrap() should be safe here since index < $i.input_len()
-          if remainder.iter_elements().next().unwrap().as_char() == control_char {
-            let next = index + control_char.len_utf8();
+          if remainder.iter_elements().next().unwrap().as_char() == self.control_char {
+            let next = index + self.control_char.len_utf8();
             let input_len = input.input_len();
 
             if next >= input_len {
               return Err(Err::Incomplete(Needed::Unknown));
             } else {
-              match transform.parse(i.slice(next..)) {
+              match self.transform.parse(i.slice(next..)) {
                 Ok((i2, o)) => {
                   o.extend_into(&mut res);
                   if i2.input_len() == 0 {
@@ -695,5 +1089,28 @@ where
       }
     }
     Err(Err::Incomplete(Needed::Unknown))
+  }
+}
+
+#[cfg(feature = "alloc")]
+impl<F, FO, G, GO, EXT, I, O, E> Parser<I, O, E> for EscapedTransform<F, FO, G, GO, EXT, I, O, E>
+where
+  I: Clone
+    + crate::traits::Offset
+    + InputLength
+    + InputTake
+    + InputTakeAtPositionPartial
+    + Slice<RangeFrom<usize>>
+    + InputIter
+    + crate::traits::ExtendInto<Item = EXT, Extender = O>,
+  <I as InputIter>::Item: crate::traits::AsChar,
+  F: Parser<I, FO, E>,
+  G: Parser<I, GO, E>,
+  FO: crate::traits::ExtendInto<Item = EXT, Extender = O>,
+  GO: crate::traits::ExtendInto<Item = EXT, Extender = O>,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    self.parse(input)
   }
 }

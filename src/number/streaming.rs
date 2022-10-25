@@ -1325,7 +1325,7 @@ where
 /// ```
 #[inline]
 pub fn hex_u32<'a, E: ParseError<&'a [u8]>>(input: &'a [u8]) -> IResult<&'a [u8], u32, E> {
-  let (i, o) = crate::bytes::streaming::is_a(&b"0123456789abcdefABCDEF"[..])(input)?;
+  let (i, o) = crate::bytes::streaming::is_a(&b"0123456789abcdefABCDEF"[..]).parse(input)?;
 
   // Do not parse more than 8 characters for a u32
   let (parsed, remaining) = if o.len() <= 8 {
@@ -1410,15 +1410,18 @@ where
       })
     },
     |i: T| {
-      crate::bytes::streaming::tag_no_case::<_, _, E>("nan")(i.clone())
+      crate::bytes::streaming::tag_no_case::<_, _, E>("nan")
+        .parse(i.clone())
         .map_err(|_| crate::Err::Error(E::from_error_kind(i, ErrorKind::Float)))
     },
     |i: T| {
-      crate::bytes::streaming::tag_no_case::<_, _, E>("inf")(i.clone())
+      crate::bytes::streaming::tag_no_case::<_, _, E>("inf")
+        .parse(i.clone())
         .map_err(|_| crate::Err::Error(E::from_error_kind(i, ErrorKind::Float)))
     },
     |i: T| {
-      crate::bytes::streaming::tag_no_case::<_, _, E>("infinity")(i.clone())
+      crate::bytes::streaming::tag_no_case::<_, _, E>("infinity")
+        .parse(i.clone())
         .map_err(|_| crate::Err::Error(E::from_error_kind(i, ErrorKind::Float)))
     },
   ))
