@@ -974,7 +974,10 @@ impl<
 /// assert_eq!(parsed, [("abc", 3usize), ("defg", 4), ("hijkl", 5), ("mnopqr", 6)].iter().cloned().collect());
 /// assert_eq!(res, Ok(("123", ())));
 /// ```
-pub fn iterator<Input, Output, Error, F>(input: Input, f: F) -> ParserIterator<Input, Error, F>
+pub fn iterator<Input, Output, Error, F>(
+  input: Input,
+  f: F,
+) -> ParserIterator<Input, Output, Error, F>
 where
   F: Parser<Input, Output, Error>,
   Error: ParseError<Input>,
@@ -982,18 +985,20 @@ where
   ParserIterator {
     iterator: f,
     input,
+    output: Default::default(),
     state: Some(State::Running),
   }
 }
 
 /// Main structure associated to the [iterator] function.
-pub struct ParserIterator<I, E, F> {
+pub struct ParserIterator<I, O, E, F> {
   iterator: F,
   input: I,
+  output: core::marker::PhantomData<O>,
   state: Option<State<E>>,
 }
 
-impl<I: Clone, E, F> ParserIterator<I, E, F> {
+impl<I: Clone, O, E, F> ParserIterator<I, O, E, F> {
   /// Returns the remaining input if parsing was successful, or the error if we encountered an error.
   pub fn finish(mut self) -> IResult<I, (), E> {
     match self.state.take().unwrap() {
@@ -1004,9 +1009,10 @@ impl<I: Clone, E, F> ParserIterator<I, E, F> {
   }
 }
 
-impl<'a, Input, Output, Error, F> core::iter::Iterator for &'a mut ParserIterator<Input, Error, F>
+impl<'a, Input, Output, Error, F> core::iter::Iterator
+  for &'a mut ParserIterator<Input, Output, Error, F>
 where
-  F: FnMut(Input) -> IResult<Input, Output, Error>,
+  F: Parser<Input, Output, Error>,
   Input: Clone,
 {
   type Item = Output;
@@ -1015,7 +1021,7 @@ where
     if let State::Running = self.state.take().unwrap() {
       let input = self.input.clone();
 
-      match (self.iterator)(input) {
+      match self.iterator.parse(input) {
         Ok((i, o)) => {
           self.input = i;
           self.state = Some(State::Running);
