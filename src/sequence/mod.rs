@@ -13,6 +13,7 @@ use crate::internal::{IResult, Parser};
 /// * `first` The first parser to apply.
 /// * `second` The second parser to apply.
 ///
+/// # Example
 /// ```rust
 /// # use nom::{Err, error::ErrorKind, Needed};
 /// # use nom::Needed::Size;
@@ -21,23 +22,27 @@ use crate::internal::{IResult, Parser};
 ///
 /// let mut parser = pair(tag("abc"), tag("efg"));
 ///
-/// assert_eq!(parser("abcefg"), Ok(("", ("abc", "efg"))));
-/// assert_eq!(parser("abcefghij"), Ok(("hij", ("abc", "efg"))));
-/// assert_eq!(parser(""), Err(Err::Error(("", ErrorKind::Tag))));
-/// assert_eq!(parser("123"), Err(Err::Error(("123", ErrorKind::Tag))));
+/// assert_eq!(parser.parse("abcefg"), Ok(("", ("abc", "efg"))));
+/// assert_eq!(parser.parse("abcefghij"), Ok(("hij", ("abc", "efg"))));
+/// assert_eq!(parser.parse(""), Err(Err::Error(("", ErrorKind::Tag))));
+/// assert_eq!(parser.parse("123"), Err(Err::Error(("123", ErrorKind::Tag))));
 /// ```
-pub fn pair<I, O1, O2, E: ParseError<I>, F, G>(
-  mut first: F,
-  mut second: G,
-) -> impl FnMut(I) -> IResult<I, (O1, O2), E>
-where
-  F: Parser<I, O1, E>,
-  G: Parser<I, O2, E>,
-{
-  move |input: I| {
-    let (input, o1) = first.parse(input)?;
-    second.parse(input).map(|(i, o2)| (i, (o1, o2)))
-  }
+///
+/// This can also be written as:
+/// ```rust
+/// # use nom::{Err, error::ErrorKind, Needed, Parser};
+/// # use nom::Needed::Size;
+/// use nom::bytes::complete::tag;
+///
+/// let mut parser = (tag("abc"), tag("efg"));
+///
+/// assert_eq!(parser.parse("abcefg"), Ok(("", ("abc", "efg"))));
+/// assert_eq!(parser.parse("abcefghij"), Ok(("hij", ("abc", "efg"))));
+/// assert_eq!(parser.parse(""), Err(Err::Error(("", ErrorKind::Tag))));
+/// assert_eq!(parser.parse("123"), Err(Err::Error(("123", ErrorKind::Tag))));
+/// ```
+pub fn pair<F, G, FO, GO, I, E>(first: F, second: G) -> Tuple<(F, G), I, (FO, GO), E> {
+  tuple((first, second))
 }
 
 /// Matches an object from the first parser and discards it,
@@ -55,22 +60,53 @@ where
 ///
 /// let mut parser = preceded(tag("abc"), tag("efg"));
 ///
-/// assert_eq!(parser("abcefg"), Ok(("", "efg")));
-/// assert_eq!(parser("abcefghij"), Ok(("hij", "efg")));
-/// assert_eq!(parser(""), Err(Err::Error(("", ErrorKind::Tag))));
-/// assert_eq!(parser("123"), Err(Err::Error(("123", ErrorKind::Tag))));
+/// assert_eq!(parser.parse("abcefg"), Ok(("", "efg")));
+/// assert_eq!(parser.parse("abcefghij"), Ok(("hij", "efg")));
+/// assert_eq!(parser.parse(""), Err(Err::Error(("", ErrorKind::Tag))));
+/// assert_eq!(parser.parse("123"), Err(Err::Error(("123", ErrorKind::Tag))));
 /// ```
-pub fn preceded<I, O1, O2, E: ParseError<I>, F, G>(
-  mut first: F,
-  mut second: G,
-) -> impl FnMut(I) -> IResult<I, O2, E>
+pub fn preceded<F, G, FO, I, O, E>(first: F, second: G) -> Preceded<F, G, FO, I, O, E> {
+  Preceded {
+    first,
+    second,
+    fo: Default::default(),
+    i: Default::default(),
+    o: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`preceded`]
+pub struct Preceded<F, G, FO, I, O, E> {
+  first: F,
+  second: G,
+  fo: core::marker::PhantomData<FO>,
+  i: core::marker::PhantomData<I>,
+  o: core::marker::PhantomData<O>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<F, G, FO, I, O, E> Preceded<F, G, FO, I, O, E>
 where
-  F: Parser<I, O1, E>,
-  G: Parser<I, O2, E>,
+  F: Parser<I, FO, E>,
+  G: Parser<I, O, E>,
+  E: ParseError<I>,
 {
-  move |input: I| {
-    let (input, _) = first.parse(input)?;
-    second.parse(input)
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    let (input, _) = self.first.parse(input)?;
+    self.second.parse(input)
+  }
+}
+
+impl<F, G, FO, I, O, E> Parser<I, O, E> for Preceded<F, G, FO, I, O, E>
+where
+  F: Parser<I, FO, E>,
+  G: Parser<I, O, E>,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    self.parse(input)
   }
 }
 
@@ -89,22 +125,53 @@ where
 ///
 /// let mut parser = terminated(tag("abc"), tag("efg"));
 ///
-/// assert_eq!(parser("abcefg"), Ok(("", "abc")));
-/// assert_eq!(parser("abcefghij"), Ok(("hij", "abc")));
-/// assert_eq!(parser(""), Err(Err::Error(("", ErrorKind::Tag))));
-/// assert_eq!(parser("123"), Err(Err::Error(("123", ErrorKind::Tag))));
+/// assert_eq!(parser.parse("abcefg"), Ok(("", "abc")));
+/// assert_eq!(parser.parse("abcefghij"), Ok(("hij", "abc")));
+/// assert_eq!(parser.parse(""), Err(Err::Error(("", ErrorKind::Tag))));
+/// assert_eq!(parser.parse("123"), Err(Err::Error(("123", ErrorKind::Tag))));
 /// ```
-pub fn terminated<I, O1, O2, E: ParseError<I>, F, G>(
-  mut first: F,
-  mut second: G,
-) -> impl FnMut(I) -> IResult<I, O1, E>
+pub fn terminated<F, G, GO, I, O, E>(first: F, second: G) -> Terminated<F, G, GO, I, O, E> {
+  Terminated {
+    first,
+    second,
+    go: Default::default(),
+    i: Default::default(),
+    o: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`terminated`]
+pub struct Terminated<F, G, GO, I, O, E> {
+  first: F,
+  second: G,
+  go: core::marker::PhantomData<GO>,
+  i: core::marker::PhantomData<I>,
+  o: core::marker::PhantomData<O>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<F, G, GO, I, O, E> Terminated<F, G, GO, I, O, E>
 where
-  F: Parser<I, O1, E>,
-  G: Parser<I, O2, E>,
+  F: Parser<I, O, E>,
+  G: Parser<I, GO, E>,
+  E: ParseError<I>,
 {
-  move |input: I| {
-    let (input, o1) = first.parse(input)?;
-    second.parse(input).map(|(i, _)| (i, o1))
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    let (input, output) = self.first.parse(input)?;
+    self.second.parse(input).map(|(i, _)| (i, output))
+  }
+}
+
+impl<F, G, GO, I, O, E> Parser<I, O, E> for Terminated<F, G, GO, I, O, E>
+where
+  F: Parser<I, O, E>,
+  G: Parser<I, GO, E>,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    self.parse(input)
   }
 }
 
@@ -125,25 +192,64 @@ where
 ///
 /// let mut parser = separated_pair(tag("abc"), tag("|"), tag("efg"));
 ///
-/// assert_eq!(parser("abc|efg"), Ok(("", ("abc", "efg"))));
-/// assert_eq!(parser("abc|efghij"), Ok(("hij", ("abc", "efg"))));
-/// assert_eq!(parser(""), Err(Err::Error(("", ErrorKind::Tag))));
-/// assert_eq!(parser("123"), Err(Err::Error(("123", ErrorKind::Tag))));
+/// assert_eq!(parser.parse("abc|efg"), Ok(("", ("abc", "efg"))));
+/// assert_eq!(parser.parse("abc|efghij"), Ok(("hij", ("abc", "efg"))));
+/// assert_eq!(parser.parse(""), Err(Err::Error(("", ErrorKind::Tag))));
+/// assert_eq!(parser.parse("123"), Err(Err::Error(("123", ErrorKind::Tag))));
 /// ```
-pub fn separated_pair<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
-  mut first: F,
-  mut sep: G,
-  mut second: H,
-) -> impl FnMut(I) -> IResult<I, (O1, O3), E>
+pub fn separated_pair<F, G, H, FO, GO, HO, I, E>(
+  first: F,
+  sep: G,
+  second: H,
+) -> SeparatedPair<F, G, H, FO, GO, HO, I, E> {
+  SeparatedPair {
+    first,
+    sep,
+    second,
+    fo: Default::default(),
+    go: Default::default(),
+    ho: Default::default(),
+    i: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`separated_pair`]
+pub struct SeparatedPair<F, G, H, FO, GO, HO, I, E> {
+  first: F,
+  sep: G,
+  second: H,
+  fo: core::marker::PhantomData<FO>,
+  go: core::marker::PhantomData<GO>,
+  ho: core::marker::PhantomData<HO>,
+  i: core::marker::PhantomData<I>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<F, G, H, FO, GO, HO, I, E> SeparatedPair<F, G, H, FO, GO, HO, I, E>
 where
-  F: Parser<I, O1, E>,
-  G: Parser<I, O2, E>,
-  H: Parser<I, O3, E>,
+  F: Parser<I, FO, E>,
+  G: Parser<I, GO, E>,
+  H: Parser<I, HO, E>,
+  E: ParseError<I>,
 {
-  move |input: I| {
-    let (input, o1) = first.parse(input)?;
-    let (input, _) = sep.parse(input)?;
-    second.parse(input).map(|(i, o2)| (i, (o1, o2)))
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, (FO, HO), E> {
+    let (input, o1) = self.first.parse(input)?;
+    let (input, _) = self.sep.parse(input)?;
+    self.second.parse(input).map(|(i, o2)| (i, (o1, o2)))
+  }
+}
+
+impl<F, G, H, FO, GO, HO, I, E> Parser<I, (FO, HO), E> for SeparatedPair<F, G, H, FO, GO, HO, I, E>
+where
+  F: Parser<I, FO, E>,
+  G: Parser<I, GO, E>,
+  H: Parser<I, HO, E>,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, (FO, HO), E> {
+    self.parse(input)
   }
 }
 
@@ -164,25 +270,64 @@ where
 ///
 /// let mut parser = delimited(tag("("), tag("abc"), tag(")"));
 ///
-/// assert_eq!(parser("(abc)"), Ok(("", "abc")));
-/// assert_eq!(parser("(abc)def"), Ok(("def", "abc")));
-/// assert_eq!(parser(""), Err(Err::Error(("", ErrorKind::Tag))));
-/// assert_eq!(parser("123"), Err(Err::Error(("123", ErrorKind::Tag))));
+/// assert_eq!(parser.parse("(abc)"), Ok(("", "abc")));
+/// assert_eq!(parser.parse("(abc)def"), Ok(("def", "abc")));
+/// assert_eq!(parser.parse(""), Err(Err::Error(("", ErrorKind::Tag))));
+/// assert_eq!(parser.parse("123"), Err(Err::Error(("123", ErrorKind::Tag))));
 /// ```
-pub fn delimited<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
-  mut first: F,
-  mut second: G,
-  mut third: H,
-) -> impl FnMut(I) -> IResult<I, O2, E>
+pub fn delimited<F, G, H, FO, HO, I, O, E>(
+  first: F,
+  second: G,
+  third: H,
+) -> Delimited<F, G, H, FO, HO, I, O, E> {
+  Delimited {
+    first,
+    second,
+    third,
+    fo: Default::default(),
+    ho: Default::default(),
+    i: Default::default(),
+    o: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`delimited`]
+pub struct Delimited<F, G, H, FO, HO, I, O, E> {
+  first: F,
+  second: G,
+  third: H,
+  fo: core::marker::PhantomData<FO>,
+  ho: core::marker::PhantomData<HO>,
+  i: core::marker::PhantomData<I>,
+  o: core::marker::PhantomData<O>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<F, G, H, FO, HO, I, O, E> Delimited<F, G, H, FO, HO, I, O, E>
 where
-  F: Parser<I, O1, E>,
-  G: Parser<I, O2, E>,
-  H: Parser<I, O3, E>,
+  F: Parser<I, FO, E>,
+  G: Parser<I, O, E>,
+  H: Parser<I, HO, E>,
+  E: ParseError<I>,
 {
-  move |input: I| {
-    let (input, _) = first.parse(input)?;
-    let (input, o2) = second.parse(input)?;
-    third.parse(input).map(|(i, _)| (i, o2))
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    let (input, _) = self.first.parse(input)?;
+    let (input, o2) = self.second.parse(input)?;
+    self.third.parse(input).map(|(i, _)| (i, o2))
+  }
+}
+
+impl<F, G, H, FO, HO, I, O, E> Parser<I, O, E> for Delimited<F, G, H, FO, HO, I, O, E>
+where
+  F: Parser<I, FO, E>,
+  G: Parser<I, O, E>,
+  H: Parser<I, HO, E>,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    self.parse(input)
   }
 }
 

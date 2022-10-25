@@ -160,11 +160,17 @@ fn s_exp<'a, O1, F>(inner: F) -> impl FnMut(&'a str) -> IResult<&'a str, O1, Ver
 where
   F: Parser<&'a str, O1, VerboseError<&'a str>>,
 {
-  delimited(
+  to_fn(delimited(
     char('('),
     preceded(multispace0, inner),
     context("closing paren", cut(preceded(multispace0, char(')')))),
-  )
+  ))
+}
+
+fn to_fn<I, O, E: nom::error::ParseError<I>, P: Parser<I, O, E>>(
+  mut l: P,
+) -> impl FnMut(I) -> IResult<I, O, E> {
+  move |i: I| l.parse(i)
 }
 
 /// We can now use our new combinator to define the rest of the `Expr`s.
@@ -238,7 +244,8 @@ fn parse_expr<'a>(i: &'a str) -> IResult<&'a str, Expr, VerboseError<&'a str>> {
   preceded(
     multispace0,
     alt((parse_constant, parse_application, parse_if, parse_quote)),
-  )(i)
+  )
+  .parse(i)
 }
 
 /// And that's it!

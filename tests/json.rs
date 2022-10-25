@@ -88,7 +88,8 @@ fn string(input: &str) -> IResult<&str, String> {
       string
     }),
     char('"'),
-  )(input)
+  )
+  .parse(input)
 }
 
 fn ws<'a, O, E: ParseError<&'a str>, F: Parser<&'a str, O, E>>(f: F) -> impl Parser<&'a str, O, E> {
@@ -100,7 +101,8 @@ fn array(input: &str) -> IResult<&str, Vec<JsonValue>> {
     char('['),
     ws(separated_list0(ws(char(',')), json_value)),
     char(']'),
-  )(input)
+  )
+  .parse(input)
 }
 
 fn object(input: &str) -> IResult<&str, HashMap<String, JsonValue>> {

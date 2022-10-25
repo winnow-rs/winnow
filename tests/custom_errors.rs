@@ -35,7 +35,7 @@ fn test1(input: &str) -> IResult<&str, &str, CustomError> {
 
 fn test2(input: &str) -> IResult<&str, &str, CustomError> {
   //terminated!(input, test1, fix_error!(CustomError, digit))
-  terminated(test1, digit)(input)
+  terminated(test1, digit).parse(input)
 }
 
 fn test3(input: &str) -> IResult<&str, &str, CustomError> {

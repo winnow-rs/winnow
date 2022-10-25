@@ -27,5 +27,6 @@ fn list<'a>(i: &'a [u8], tomb: &'a mut ()) -> IResult<&'a [u8], String> {
       acc + next.as_str()
     }),
     char(')'),
-  )(i)
+  )
+  .parse(i)
 }

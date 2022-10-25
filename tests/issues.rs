@@ -183,7 +183,7 @@ fn issue_1027_convert_error_panic_nonempty() {
 
   let input = "a";
 
-  let result: IResult<_, _, VerboseError<&str>> = pair(char('a'), char('b'))(input);
+  let result: IResult<_, _, VerboseError<&str>> = pair(char('a'), char('b')).parse(input);
   let err = match result.unwrap_err() {
     Err::Error(e) => e,
     _ => unreachable!(),

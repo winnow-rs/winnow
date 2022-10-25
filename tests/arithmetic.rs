@@ -15,7 +15,7 @@ use std::str::FromStr;
 
 // We parse any expr surrounded by parens, ignoring all whitespaces around those
 fn parens(i: &str) -> IResult<&str, i64> {
-  delimited(space, delimited(tag("("), expr, tag(")")), space)(i)
+  delimited(space, delimited(tag("("), expr, tag(")")), space).parse(i)
 }
 
 // We transform an integer string into a i64, ignoring surrounding whitespaces

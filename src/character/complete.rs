@@ -1084,7 +1084,7 @@ mod tests {
   fn full_line_windows() {
     use crate::sequence::pair;
     fn take_full_line(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8])> {
-      pair(not_line_ending, line_ending)(i)
+      pair(not_line_ending, line_ending).parse(i)
     }
     let input = b"abc\r\n";
     let output = take_full_line(input);
@@ -1095,7 +1095,7 @@ mod tests {
   fn full_line_unix() {
     use crate::sequence::pair;
     fn take_full_line(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8])> {
-      pair(not_line_ending, line_ending)(i)
+      pair(not_line_ending, line_ending).parse(i)
     }
     let input = b"abc\n";
     let output = take_full_line(input);

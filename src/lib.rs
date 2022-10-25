@@ -95,7 +95,7 @@
 //! };
 //!
 //! fn parens(input: &str) -> IResult<&str, &str> {
-//!   delimited(char('('), is_not(")"), char(')'))(input)
+//!   delimited(char('('), is_not(")"), char(')')).parse(input)
 //! }
 //! ```
 //!
