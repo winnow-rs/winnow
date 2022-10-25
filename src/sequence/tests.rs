@@ -1,6 +1,6 @@
 use super::*;
 use crate::bytes::streaming::{tag, take};
-use crate::error::{ErrorKind, Error};
+use crate::error::{Error, ErrorKind};
 use crate::internal::{Err, IResult, Needed};
 use crate::number::streaming::be_u16;
 
@@ -72,8 +72,8 @@ fn error_to_string<P: Clone + PartialEq>(e: &Context<P, u32>) -> &'static str {
 fn complete() {
   use crate::bytes::complete::tag;
   fn err_test(i: &[u8]) -> IResult<&[u8], &[u8]> {
-    let (i, _) = tag("ijkl")(i)?;
-    tag("mnop")(i)
+    let (i, _) = tag("ijkl").parse(i)?;
+    tag("mnop").parse(i)
   }
   let a = &b"ijklmn"[..];
 
@@ -275,7 +275,16 @@ fn tuple_test() {
 
 #[test]
 fn unit_type() {
-  assert_eq!(tuple::<&'static str, (), Error<&'static str>, ()>(())("abxsbsh"), Ok(("abxsbsh", ())));
-  assert_eq!(tuple::<&'static str, (), Error<&'static str>, ()>(())("sdfjakdsas"), Ok(("sdfjakdsas", ())));
-  assert_eq!(tuple::<&'static str, (), Error<&'static str>, ()>(())(""), Ok(("", ())));
+  assert_eq!(
+    tuple::<&'static str, (), Error<&'static str>, ()>(())("abxsbsh"),
+    Ok(("abxsbsh", ()))
+  );
+  assert_eq!(
+    tuple::<&'static str, (), Error<&'static str>, ()>(())("sdfjakdsas"),
+    Ok(("sdfjakdsas", ()))
+  );
+  assert_eq!(
+    tuple::<&'static str, (), Error<&'static str>, ()>(())(""),
+    Ok(("", ()))
+  );
 }

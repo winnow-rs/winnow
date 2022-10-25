@@ -14,11 +14,11 @@ fn is_line_ending_or_comment(chr: char) -> bool {
 }
 
 fn not_line_ending(i: &str) -> IResult<&str, &str> {
-  take_while(|c| c != '\r' && c != '\n')(i)
+  take_while(|c| c != '\r' && c != '\n').parse(i)
 }
 
 fn space_or_line_ending(i: &str) -> IResult<&str, &str> {
-  is_a(" \r\n")(i)
+  is_a(" \r\n").parse(i)
 }
 
 fn category(i: &str) -> IResult<&str, &str> {
@@ -31,7 +31,7 @@ fn category(i: &str) -> IResult<&str, &str> {
 fn key_value(i: &str) -> IResult<&str, (&str, &str)> {
   let (i, key) = alphanumeric(i)?;
   let (i, _) = tuple((opt(space), tag("="), opt(space)))(i)?;
-  let (i, val) = take_till(is_line_ending_or_comment)(i)?;
+  let (i, val) = take_till(is_line_ending_or_comment).parse(i)?;
   let (i, _) = opt(space)(i)?;
   let (i, _) = opt(pair(tag(";"), not_line_ending))(i)?;
   let (i, _) = opt(space_or_line_ending)(i)?;

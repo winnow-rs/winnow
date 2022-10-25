@@ -32,7 +32,7 @@ fn sp<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str, E> {
 
   // nom combinators like `take_while` return a function. That function is the
   // parser,to which we can pass the input
-  take_while(move |c| chars.contains(c))(i)
+  take_while(move |c| chars.contains(c)).parse(i)
 }
 
 /// A nom parser has the following signature:
@@ -51,7 +51,7 @@ fn sp<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str, E> {
 /// of the input data. and there is no allocation needed. This is the main idea
 /// behind nom's performance.
 fn parse_str<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str, E> {
-  escaped(alphanumeric, '\\', one_of("\"n\\"))(i)
+  escaped(alphanumeric, '\\', one_of("\"n\\")).parse(i)
 }
 
 /// `tag(string)` generates a parser that recognizes the argument string.

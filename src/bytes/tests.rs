@@ -72,7 +72,7 @@ fn escaping() {
   use crate::character::streaming::one_of;
 
   fn esc(i: &[u8]) -> IResult<&[u8], &[u8]> {
-    escaped(alpha, '\\', one_of("\"n\\"))(i)
+    escaped(alpha, '\\', one_of("\"n\\")).parse(i)
   }
   assert_eq!(esc(&b"abcd;"[..]), Ok((&b";"[..], &b"abcd"[..])));
   assert_eq!(esc(&b"ab\\\"cd;"[..]), Ok((&b";"[..], &b"ab\\\"cd"[..])));
@@ -96,7 +96,7 @@ fn escaping() {
   );
 
   fn esc2(i: &[u8]) -> IResult<&[u8], &[u8]> {
-    escaped(digit, '\\', one_of("\"n\\"))(i)
+    escaped(digit, '\\', one_of("\"n\\")).parse(i)
   }
   assert_eq!(esc2(&b"12\\nnn34"[..]), Ok((&b"nn34"[..], &b"12\\n"[..])));
 }
@@ -107,7 +107,7 @@ fn escaping_str() {
   use crate::character::streaming::one_of;
 
   fn esc(i: &str) -> IResult<&str, &str> {
-    escaped(alpha, '\\', one_of("\"n\\"))(i)
+    escaped(alpha, '\\', one_of("\"n\\")).parse(i)
   }
   assert_eq!(esc("abcd;"), Ok((";", "abcd")));
   assert_eq!(esc("ab\\\"cd;"), Ok((";", "ab\\\"cd")));
@@ -128,12 +128,12 @@ fn escaping_str() {
   );
 
   fn esc2(i: &str) -> IResult<&str, &str> {
-    escaped(digit, '\\', one_of("\"n\\"))(i)
+    escaped(digit, '\\', one_of("\"n\\")).parse(i)
   }
   assert_eq!(esc2("12\\nnn34"), Ok(("nn34", "12\\n")));
 
   fn esc3(i: &str) -> IResult<&str, &str> {
-    escaped(alpha, '\u{241b}', one_of("\"n"))(i)
+    escaped(alpha, '\u{241b}', one_of("\"n")).parse(i)
   }
   assert_eq!(esc3("ab␛ncd;"), Ok((";", "ab␛ncd")));
 }
@@ -226,7 +226,8 @@ fn escape_transform_str() {
         value("\"", tag("\"")),
         value("\n", tag("n")),
       )),
-    )(i)
+    )
+    .parse(i)
   }
 
   assert_eq!(esc("abcd;"), Ok((";", String::from("abcd"))));
@@ -255,7 +256,8 @@ fn escape_transform_str() {
       alpha,
       '&',
       alt((value("è", tag("egrave;")), value("à", tag("agrave;")))),
-    )(i)
+    )
+    .parse(i)
   }
   assert_eq!(esc2("ab&egrave;DEF;"), Ok((";", String::from("abèDEF"))));
   assert_eq!(
@@ -268,7 +270,8 @@ fn escape_transform_str() {
       alpha,
       '␛',
       alt((value("\0", tag("0")), value("\n", tag("n")))),
-    )(i)
+    )
+    .parse(i)
   }
   assert_eq!(esc3("a␛0bc␛n"), Ok(("", String::from("a\0bc\n"))));
 }

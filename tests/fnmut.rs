@@ -10,7 +10,7 @@ fn parse() {
   let res = {
     let mut parser = many0::<_, _, (), _>(|i| {
       counter += 1;
-      tag("abc")(i)
+      tag("abc").parse(i)
     });
 
     parser("abcabcabcabc").unwrap()
@@ -26,7 +26,7 @@ fn accumulate() {
 
   let (_, count) = {
     let mut parser = many0_count::<_, _, (), _>(|i| {
-      let (i, o) = tag("abc")(i)?;
+      let (i, o) = tag("abc").parse(i)?;
       v.push(o);
       Ok((i, ()))
     });

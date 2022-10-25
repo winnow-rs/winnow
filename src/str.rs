@@ -13,7 +13,7 @@ mod test {
     const INPUT: &str = "Hello World!";
     const TAG: &str = "Hello";
     fn test(input: &str) -> IResult<&str, &str> {
-      tag(TAG)(input)
+      tag(TAG).parse(input)
     }
 
     match test(INPUT) {
@@ -60,7 +60,7 @@ mod test {
     const INPUT: &str = "Hello World!";
     const TAG: &str = "Random"; // TAG must be closer than INPUT.
 
-    let res: IResult<_, _, error::Error<_>> = tag(TAG)(INPUT);
+    let res: IResult<_, _, error::Error<_>> = tag(TAG).parse(INPUT);
     match res {
       Err(Err::Error(_)) => (),
       other => {
@@ -78,7 +78,7 @@ mod test {
     const CONSUMED: &str = "βèƒôřèÂßÇ";
     const LEFTOVER: &str = "áƒƭèř";
 
-    let res: IResult<_, _, error::Error<_>> = take(9_usize)(INPUT);
+    let res: IResult<_, _, error::Error<_>> = take(9_usize).parse(INPUT);
     match res {
       Ok((extra, output)) => {
         assert!(
@@ -108,7 +108,7 @@ mod test {
     const CONSUMED: &str = "βèƒôřè";
     const LEFTOVER: &str = "ÂßÇ∂áƒƭèř";
 
-    let res: IResult<_, _, (_, ErrorKind)> = take_until(FIND)(INPUT);
+    let res: IResult<_, _, (_, ErrorKind)> = take_until(FIND).parse(INPUT);
     match res {
       Ok((extra, output)) => {
         assert!(
@@ -204,7 +204,7 @@ mod test {
       c == 'á'
     }
     fn test(input: &str) -> IResult<&str, &str> {
-      take_till(till_s)(input)
+      take_till(till_s).parse(input)
     }
     match test(INPUT) {
       Ok((extra, output)) => {
@@ -239,7 +239,7 @@ mod test {
       c == '9'
     }
     fn test(input: &str) -> IResult<&str, &str> {
-      take_while(while_s)(input)
+      take_while(while_s).parse(input)
     }
     match test(INPUT) {
       Ok((extra, output)) => {
@@ -270,7 +270,7 @@ mod test {
     const CONSUMED: &str = "βèƒôřèÂßÇ";
     const LEFTOVER: &str = "áƒƭèř";
     fn test(input: &str) -> IResult<&str, &str> {
-      is_not(AVOID)(input)
+      is_not(AVOID).parse(input)
     }
     match test(INPUT) {
       Ok((extra, output)) => {
@@ -313,7 +313,7 @@ mod test {
         || c == 'Ç'
     }
     fn test(input: &str) -> IResult<&str, &str> {
-      take_while(while_s)(input)
+      take_while(while_s).parse(input)
     }
     match test(INPUT) {
       Ok((extra, output)) => {
@@ -342,7 +342,7 @@ mod test {
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const AVOID: &str = "βúçƙ¥";
     fn test(input: &str) -> IResult<&str, &str> {
-      is_not(AVOID)(input)
+      is_not(AVOID).parse(input)
     }
     match test(INPUT) {
       Err(Err::Error(_)) => (),
@@ -372,7 +372,7 @@ mod test {
         || c == 'Ç'
     }
     fn test(input: &str) -> IResult<&str, &str> {
-      take_while1(while1_s)(input)
+      take_while1(while1_s).parse(input)
     }
     match test(INPUT) {
       Ok((extra, output)) => {
@@ -421,7 +421,7 @@ mod test {
     const CONSUMED: &str = "βèƒôřèÂßÇ";
     const LEFTOVER: &str = "áƒƭèř";
     fn test(input: &str) -> IResult<&str, &str> {
-      is_a(MATCH)(input)
+      is_a(MATCH).parse(input)
     }
     match test(INPUT) {
       Ok((extra, output)) => {
@@ -454,7 +454,7 @@ mod test {
       c == '9'
     }
     fn test(input: &str) -> IResult<&str, &str> {
-      take_while1(while1_s)(input)
+      take_while1(while1_s).parse(input)
     }
     match test(INPUT) {
       Err(Err::Error(_)) => (),
@@ -471,7 +471,7 @@ mod test {
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const MATCH: &str = "Ûñℓúçƙ¥";
     fn test(input: &str) -> IResult<&str, &str> {
-      is_a(MATCH)(input)
+      is_a(MATCH).parse(input)
     }
     match test(INPUT) {
       Err(Err::Error(_)) => (),
@@ -517,7 +517,7 @@ mod test {
   #[test]
   fn utf8_indexing() {
     fn dot(i: &str) -> IResult<&str, &str> {
-      tag(".")(i)
+      tag(".").parse(i)
     }
 
     let _ = dot("點");
@@ -527,7 +527,7 @@ mod test {
   #[test]
   fn case_insensitive() {
     fn test(i: &str) -> IResult<&str, &str> {
-      tag_no_case("ABcd")(i)
+      tag_no_case("ABcd").parse(i)
     }
     assert_eq!(test("aBCdefgh"), Ok(("efgh", "aBCd")));
     assert_eq!(test("abcdefgh"), Ok(("efgh", "abcd")));

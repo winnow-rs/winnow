@@ -11,7 +11,7 @@ fn main() {
   let mut data = "abcabcabcabc";
 
   fn parser(i: &str) -> IResult<&str, &str> {
-    tag("abc")(i)
+    tag("abc").parse(i)
   }
 
   // `from_fn` (available from Rust 1.34) can create an iterator

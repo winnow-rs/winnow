@@ -4,13 +4,13 @@ use nom::character::complete::one_of;
 use nom::{error::ErrorKind, Err, IResult};
 
 fn esc(s: &str) -> IResult<&str, &str, (&str, ErrorKind)> {
-  escaped(digit1, '\\', one_of("\"n\\"))(s)
+  escaped(digit1, '\\', one_of("\"n\\")).parse(s)
 }
 
 #[cfg(feature = "alloc")]
 fn esc_trans(s: &str) -> IResult<&str, String, (&str, ErrorKind)> {
   use nom::bytes::complete::{escaped_transform, tag};
-  escaped_transform(digit1, '\\', tag("n"))(s)
+  escaped_transform(digit1, '\\', tag("n")).parse(s)
 }
 
 #[test]

@@ -35,7 +35,7 @@
 //! }
 //!
 //! fn hex_color(input: &str) -> IResult<&str, Color> {
-//!   let (input, _) = tag("#")(input)?;
+//!   let (input, _) = tag("#").parse(input)?;
 //!   let (input, (red, green, blue)) = tuple((hex_primary, hex_primary, hex_primary))(input)?;
 //!
 //!   Ok((input, Color { red, green, blue }))
@@ -185,11 +185,11 @@
 //! use nom::IResult;
 //! use nom::bytes::complete::{tag, take};
 //! fn abcd_parser(i: &str) -> IResult<&str, &str> {
-//!   tag("abcd")(i) // will consume bytes if the input begins with "abcd"
+//!   tag("abcd").parse(i) // will consume bytes if the input begins with "abcd"
 //! }
 //!
 //! fn take_10(i: &[u8]) -> IResult<&[u8], &[u8]> {
-//!   take(10u8)(i) // will consume and return 10 bytes of input
+//!   take(10u8).parse(i) // will consume and return 10 bytes of input
 //! }
 //! ```
 //!
@@ -299,9 +299,9 @@
 //!
 //! fn f(i: &[u8]) -> IResult<&[u8], A> {
 //!   // if successful, the parser returns `Ok((remaining_input, output_value))` that we can destructure
-//!   let (i, _) = tag("abcd")(i)?;
+//!   let (i, _) = tag("abcd").parse(i)?;
 //!   let (i, a) = ret_int1(i)?;
-//!   let (i, _) = tag("efgh")(i)?;
+//!   let (i, _) = tag("efgh").parse(i)?;
 //!   let (i, b) = ret_int2(i)?;
 //!
 //!   Ok((i, A { a, b }))
@@ -335,7 +335,7 @@
 //! }
 //!
 //! fn take_complete(i: &[u8]) -> IResult<&[u8], &[u8]> {
-//!   bytes::complete::take(4u8)(i)
+//!   bytes::complete::take(4u8).parse(i)
 //! }
 //!
 //! // both parsers will take 4 bytes as expected
