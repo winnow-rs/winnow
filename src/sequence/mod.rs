@@ -186,44 +186,84 @@ where
   }
 }
 
-///Applies a tuple of parsers one by one and returns their results as a tuple.
-///There is a maximum of 21 parsers
+/// Applies a tuple of parsers one by one and returns their results as a tuple.
+///
+/// There is a maximum of 21 parsers
+///
+/// # Example
 /// ```rust
 /// # use nom::{Err, error::ErrorKind};
 /// use nom::sequence::tuple;
 /// use nom::character::complete::{alpha1, digit1};
 /// let mut parser = tuple((alpha1, digit1, alpha1));
 ///
-/// assert_eq!(parser("abc123def"), Ok(("", ("abc", "123", "def"))));
-/// assert_eq!(parser("123def"), Err(Err::Error(("123def", ErrorKind::Alpha))));
+/// assert_eq!(parser.parse("abc123def"), Ok(("", ("abc", "123", "def"))));
+/// assert_eq!(parser.parse("123def"), Err(Err::Error(("123def", ErrorKind::Alpha))));
 /// ```
-pub fn tuple<I, O, E: ParseError<I>, List: Tuple<I, O, E>>(
-  mut l: List,
-) -> impl FnMut(I) -> IResult<I, O, E> {
-  move |i: I| l.parse(i)
+///
+/// This can also be written as:
+/// ```rust
+/// # use nom::{Err, error::ErrorKind, Parser};
+/// use nom::character::complete::{alpha1, digit1};
+/// let mut parser = (alpha1, digit1, alpha1);
+///
+/// assert_eq!(parser.parse("abc123def"), Ok(("", ("abc", "123", "def"))));
+/// assert_eq!(parser.parse("123def"), Err(Err::Error(("123def", ErrorKind::Alpha))));
+/// ```
+pub fn tuple<P, PI, PO, PE>(sequence: P) -> Tuple<P, PI, PO, PE> {
+  Tuple {
+    sequence,
+    pi: Default::default(),
+    po: Default::default(),
+    pe: Default::default(),
+  }
 }
 
-/// Helper trait for the tuple combinator.
-///
-/// This trait is implemented for tuples of parsers of up to 21 elements.
-pub trait Tuple<I, O, E> {
-  /// Parses the input and returns a tuple of results of each parser.
-  fn parse(&mut self, input: I) -> IResult<I, O, E>;
+/// Implementation of [`tuple()`]
+pub struct Tuple<P, PI, PO, PE> {
+  sequence: P,
+  pi: core::marker::PhantomData<PI>,
+  po: core::marker::PhantomData<PO>,
+  pe: core::marker::PhantomData<PE>,
+}
+
+impl<P, PI, PO, PE> Tuple<P, PI, PO, PE>
+where
+  P: Parser<PI, PO, PE>,
+{
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: PI) -> IResult<PI, PO, PE> {
+    self.sequence.parse(input)
+  }
+}
+
+impl<P, PI, PO, PE> Parser<PI, PO, PE> for Tuple<P, PI, PO, PE>
+where
+  P: Parser<PI, PO, PE>,
+{
+  fn parse(&mut self, input: PI) -> IResult<PI, PO, PE> {
+    self.parse(input)
+  }
 }
 
 // Special case: implement `Tuple` for `()`, the unit type.
 // This can come up in macros which accept a variable number of arguments.
 // Literally, `()` is an empty tuple, so it should simply parse nothing.
-impl<I, E: ParseError<I>> Tuple<I, (), E> for () {
-  fn parse(&mut self, input: I) -> IResult<I, (), E> {
+impl<PI, PE> Parser<PI, (), PE> for ()
+where
+  PE: ParseError<PI>,
+{
+  fn parse(&mut self, input: PI) -> IResult<PI, (), PE> {
     Ok((input, ()))
   }
 }
 
-impl<Input, Output, Error: ParseError<Input>, F: Parser<Input, Output, Error>>
-  Tuple<Input, (Output,), Error> for (F,)
+impl<A, AO, PI, PE> Parser<PI, (AO,), PE> for (A,)
+where
+  A: Parser<PI, AO, PE>,
+  PE: ParseError<PI>,
 {
-  fn parse(&mut self, input: Input) -> IResult<Input, (Output,), Error> {
+  fn parse(&mut self, input: PI) -> IResult<PI, (AO,), PE> {
     self.0.parse(input).map(|(i, o)| (i, (o,)))
   }
 }
@@ -231,11 +271,15 @@ impl<Input, Output, Error: ParseError<Input>, F: Parser<Input, Output, Error>>
 macro_rules! impl_tuple(
   ($($name:ident $ty: ident),+) => (
     impl<
-      Input: Clone, $($ty),+ , Error: ParseError<Input>,
-      $($name: Parser<Input, $ty, Error>),+
-    > Tuple<Input, ( $($ty),+ ), Error> for ( $($name),+ ) {
-
-      fn parse(&mut self, input: Input) -> IResult<Input, ( $($ty),+ ), Error> {
+      $($ty),+ ,
+      $($name: Parser<PI, $ty, PE>),+ ,
+      PI, PE,
+    > Parser<PI, ( $($ty),+ ), PE> for ( $($name),+ )
+    where
+        PI: Clone,
+        PE: ParseError<PI>,
+    {
+      fn parse(&mut self, input: PI) -> IResult<PI, ( $($ty),+ ), PE> {
         impl_tuple_inner!(0, self, input, (), $($name)+)
       }
     }

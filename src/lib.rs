@@ -36,7 +36,7 @@
 //!
 //! fn hex_color(input: &str) -> IResult<&str, Color> {
 //!   let (input, _) = tag("#").parse(input)?;
-//!   let (input, (red, green, blue)) = tuple((hex_primary, hex_primary, hex_primary))(input)?;
+//!   let (input, (red, green, blue)) = tuple((hex_primary, hex_primary, hex_primary)).parse(input)?;
 //!
 //!   Ok((input, Color { red, green, blue }))
 //! }
@@ -269,15 +269,15 @@
 //! let mut tpl = tuple((be_u16, take(3u8), tag("fg")));
 //!
 //! assert_eq!(
-//!   tpl(&b"abcdefgh"[..]),
+//!   tpl.parse(&b"abcdefgh"[..]),
 //!   Ok((
 //!     &b"h"[..],
 //!     (0x6162u16, &b"cde"[..], &b"fg"[..])
 //!   ))
 //! );
-//! assert_eq!(tpl(&b"abcde"[..]), Err(nom::Err::Incomplete(Needed::new(2))));
+//! assert_eq!(tpl.parse(&b"abcde"[..]), Err(nom::Err::Incomplete(Needed::new(2))));
 //! let input = &b"abcdejk"[..];
-//! assert_eq!(tpl(input), Err(nom::Err::Error((&input[5..], ErrorKind::Tag))));
+//! assert_eq!(tpl.parse(input), Err(nom::Err::Error((&input[5..], ErrorKind::Tag))));
 //! # }
 //! ```
 //!

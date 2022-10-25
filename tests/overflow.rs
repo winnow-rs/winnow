@@ -13,7 +13,7 @@ use nom::{Err, IResult, Needed};
 
 // We request a length that would trigger an overflow if computing consumed + requested
 fn parser02(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8])> {
-  tuple((take(1_usize), take(18446744073709551615_usize)))(i)
+  tuple((take(1_usize), take(18446744073709551615_usize))).parse(i)
 }
 
 #[test]

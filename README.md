@@ -72,7 +72,7 @@ fn hex_primary(input: &str) -> IResult<&str, u8> {
 
 fn hex_color(input: &str) -> IResult<&str, Color> {
   let (input, _) = tag("#").parse(input)?;
-  let (input, (red, green, blue)) = tuple((hex_primary, hex_primary, hex_primary))(input)?;
+  let (input, (red, green, blue)) = tuple((hex_primary, hex_primary, hex_primary)).parse(input)?;
 
   Ok((input, Color { red, green, blue }))
 }

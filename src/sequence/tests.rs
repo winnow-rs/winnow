@@ -10,9 +10,9 @@ fn single_element_tuples() {
   use crate::{error::ErrorKind, Err};
 
   let mut parser = tuple((alpha1,));
-  assert_eq!(parser("abc123def"), Ok(("123def", ("abc",))));
+  assert_eq!(parser.parse("abc123def"), Ok(("123def", ("abc",))));
   assert_eq!(
-    parser("123def"),
+    parser.parse("123def"),
     Err(Err::Error(("123def", ErrorKind::Alpha)))
   );
 }
@@ -258,7 +258,7 @@ fn delimited_test() {
 #[test]
 fn tuple_test() {
   fn tuple_3(i: &[u8]) -> IResult<&[u8], (u16, &[u8], &[u8])> {
-    tuple((be_u16, take(3u8), tag("fg")))(i)
+    tuple((be_u16, take(3u8), tag("fg"))).parse(i)
   }
 
   assert_eq!(
@@ -276,15 +276,49 @@ fn tuple_test() {
 #[test]
 fn unit_type() {
   assert_eq!(
-    tuple::<&'static str, (), Error<&'static str>, ()>(())("abxsbsh"),
+    tuple::<(), &'static str, (), Error<&'static str>>(()).parse("abxsbsh"),
     Ok(("abxsbsh", ()))
   );
   assert_eq!(
-    tuple::<&'static str, (), Error<&'static str>, ()>(())("sdfjakdsas"),
+    tuple::<(), &'static str, (), Error<&'static str>>(()).parse("sdfjakdsas"),
     Ok(("sdfjakdsas", ()))
   );
   assert_eq!(
-    tuple::<&'static str, (), Error<&'static str>, ()>(())(""),
+    tuple::<(), &'static str, (), Error<&'static str>>(()).parse(""),
+    Ok(("", ()))
+  );
+}
+
+#[test]
+fn implicit_tuple_test() {
+  fn tuple_3(i: &[u8]) -> IResult<&[u8], (u16, &[u8], &[u8])> {
+    (be_u16, take(3u8), tag("fg")).parse(i)
+  }
+
+  assert_eq!(
+    tuple_3(&b"abcdefgh"[..]),
+    Ok((&b"h"[..], (0x6162u16, &b"cde"[..], &b"fg"[..])))
+  );
+  assert_eq!(tuple_3(&b"abcd"[..]), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(tuple_3(&b"abcde"[..]), Err(Err::Incomplete(Needed::new(2))));
+  assert_eq!(
+    tuple_3(&b"abcdejk"[..]),
+    Err(Err::Error(error_position!(&b"jk"[..], ErrorKind::Tag)))
+  );
+}
+
+#[test]
+fn implicit_unit_type() {
+  assert_eq!(
+    <() as Parser::<&str, (), Error<&'static str>>>::parse(&mut (()), "abxsbsh"),
+    Ok(("abxsbsh", ()))
+  );
+  assert_eq!(
+    <() as Parser::<&str, (), Error<&'static str>>>::parse(&mut (()), "sdfjakdsas"),
+    Ok(("sdfjakdsas", ()))
+  );
+  assert_eq!(
+    <() as Parser::<&str, (), Error<&'static str>>>::parse(&mut (()), ""),
     Ok(("", ()))
   );
 }

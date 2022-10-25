@@ -30,7 +30,7 @@ fn category(i: &str) -> IResult<&str, &str> {
 
 fn key_value(i: &str) -> IResult<&str, (&str, &str)> {
   let (i, key) = alphanumeric(i)?;
-  let (i, _) = tuple((opt(space), tag("="), opt(space)))(i)?;
+  let (i, _) = tuple((opt(space), tag("="), opt(space))).parse(i)?;
   let (i, val) = take_till(is_line_ending_or_comment).parse(i)?;
   let (i, _) = opt(space)(i)?;
   let (i, _) = opt(pair(tag(";"), not_line_ending))(i)?;
