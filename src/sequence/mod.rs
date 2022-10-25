@@ -228,7 +228,7 @@ impl<Input, Output, Error: ParseError<Input>, F: Parser<Input, Output, Error>>
   }
 }
 
-macro_rules! tuple_trait_impl(
+macro_rules! impl_tuple(
   ($($name:ident $ty: ident),+) => (
     impl<
       Input: Clone, $($ty),+ , Error: ParseError<Input>,
@@ -236,23 +236,22 @@ macro_rules! tuple_trait_impl(
     > Tuple<Input, ( $($ty),+ ), Error> for ( $($name),+ ) {
 
       fn parse(&mut self, input: Input) -> IResult<Input, ( $($ty),+ ), Error> {
-        tuple_trait_inner!(0, self, input, (), $($name)+)
-
+        impl_tuple_inner!(0, self, input, (), $($name)+)
       }
     }
   );
 );
 
-macro_rules! tuple_trait_inner(
+macro_rules! impl_tuple_inner(
   ($it:tt, $self:expr, $input:expr, (), $head:ident $($id:ident)+) => ({
     let (i, o) = $self.$it.parse($input.clone())?;
 
-    succ!($it, tuple_trait_inner!($self, i, ( o ), $($id)+))
+    succ!($it, impl_tuple_inner!($self, i, ( o ), $($id)+))
   });
   ($it:tt, $self:expr, $input:expr, ($($parsed:tt)*), $head:ident $($id:ident)+) => ({
     let (i, o) = $self.$it.parse($input.clone())?;
 
-    succ!($it, tuple_trait_inner!($self, i, ($($parsed)* , o), $($id)+))
+    succ!($it, impl_tuple_inner!($self, i, ($($parsed)* , o), $($id)+))
   });
   ($it:tt, $self:expr, $input:expr, ($($parsed:tt)*), $head:ident) => ({
     let (i, o) = $self.$it.parse($input.clone())?;
@@ -266,12 +265,12 @@ macro_rules! tuple_trait(
     tuple_trait!(__impl $name1 $ty1, $name2 $ty2; $($name $ty),*);
   );
   (__impl $($name:ident $ty: ident),+; $name1:ident $ty1:ident, $($name2:ident $ty2:ident),*) => (
-    tuple_trait_impl!($($name $ty),+);
+    impl_tuple!($($name $ty),+);
     tuple_trait!(__impl $($name $ty),+ , $name1 $ty1; $($name2 $ty2),*);
   );
   (__impl $($name:ident $ty: ident),+; $name1:ident $ty1:ident) => (
-    tuple_trait_impl!($($name $ty),+);
-    tuple_trait_impl!($($name $ty),+, $name1 $ty1);
+    impl_tuple!($($name $ty),+);
+    impl_tuple!($($name $ty),+, $name1 $ty1);
   );
 );
 
