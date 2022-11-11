@@ -158,7 +158,8 @@ fn escape_transform() {
         )),
       ),
       to_s,
-    )(i)
+    )
+    .parse(i)
   }
 
   assert_eq!(esc(&b"abcd;"[..]), Ok((&b";"[..], String::from("abcd"))));
@@ -202,7 +203,8 @@ fn escape_transform() {
         )),
       ),
       to_s,
-    )(i)
+    )
+    .parse(i)
   }
   assert_eq!(
     esc2(&b"ab&egrave;DEF;"[..]),

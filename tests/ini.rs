@@ -30,7 +30,8 @@ fn key_value(i: &[u8]) -> IResult<&[u8], (&str, &str)> {
 fn keys_and_values(i: &[u8]) -> IResult<&[u8], HashMap<&str, &str>> {
   map(many0(terminated(key_value, opt(multispace))), |vec| {
     vec.into_iter().collect()
-  })(i)
+  })
+  .parse(i)
 }
 
 fn category_and_keys(i: &[u8]) -> IResult<&[u8], (&str, HashMap<&str, &str>)> {
@@ -50,7 +51,8 @@ fn categories(i: &[u8]) -> IResult<&[u8], HashMap<&str, HashMap<&str, &str>>> {
       ),
     )),
     |vec: Vec<_>| vec.into_iter().collect(),
-  )(i)
+  )
+  .parse(i)
 }
 
 #[test]

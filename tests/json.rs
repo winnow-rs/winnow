@@ -116,7 +116,8 @@ fn object(input: &str) -> IResult<&str, HashMap<String, JsonValue>> {
       char('}'),
     ),
     |key_values| key_values.into_iter().collect(),
-  )(input)
+  )
+  .parse(input)
 }
 
 fn json_value(input: &str) -> IResult<&str, JsonValue> {

@@ -168,34 +168,87 @@ mod tests;
 ///
 /// ```rust
 /// # use nom::error::ErrorKind;
+/// # use nom::Parser;
 /// use nom::combinator::rest;
-/// assert_eq!(rest::<_,(_, ErrorKind)>("abc"), Ok(("", "abc")));
-/// assert_eq!(rest::<_,(_, ErrorKind)>(""), Ok(("", "")));
+/// assert_eq!(rest::<_,(&str, ErrorKind)>().parse("abc"), Ok(("", "abc")));
+/// assert_eq!(rest::<_,(&str, ErrorKind)>().parse(""), Ok(("", "")));
 /// ```
-#[inline]
-pub fn rest<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn rest<I, E>() -> Rest<I, E> {
+  Rest {
+    i: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`rest`]
+pub struct Rest<I, E> {
+  i: core::marker::PhantomData<I>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<I, E> Rest<I, E>
 where
-  T: Slice<RangeFrom<usize>>,
-  T: InputLength,
+  I: Slice<RangeFrom<usize>>,
+  I: InputLength,
 {
-  Ok((input.slice(input.input_len()..), input))
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    Ok((input.slice(input.input_len()..), input))
+  }
+}
+
+impl<I, E> Parser<I, I, E> for Rest<I, E>
+where
+  I: Slice<RangeFrom<usize>>,
+  I: InputLength,
+{
+  fn parse(&mut self, input: I) -> IResult<I, I, E> {
+    self.parse(input)
+  }
 }
 
 /// Return the length of the remaining input.
 ///
 /// ```rust
 /// # use nom::error::ErrorKind;
+/// # use nom::Parser;
 /// use nom::combinator::rest_len;
-/// assert_eq!(rest_len::<_,(_, ErrorKind)>("abc"), Ok(("abc", 3)));
-/// assert_eq!(rest_len::<_,(_, ErrorKind)>(""), Ok(("", 0)));
+/// assert_eq!(rest_len::<_,(&str, ErrorKind)>().parse("abc"), Ok(("abc", 3)));
+/// assert_eq!(rest_len::<_,(&str, ErrorKind)>().parse(""), Ok(("", 0)));
 /// ```
-#[inline]
-pub fn rest_len<T, E: ParseError<T>>(input: T) -> IResult<T, usize, E>
+pub fn rest_len<I, E>() -> RestLen<I, E> {
+  RestLen {
+    i: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`rest_len`]
+pub struct RestLen<I, E> {
+  i: core::marker::PhantomData<I>,
+  e: core::marker::PhantomData<E>,
+}
+
+impl<I, E> RestLen<I, E>
 where
-  T: InputLength,
+  I: Slice<RangeFrom<usize>>,
+  I: InputLength,
 {
-  let len = input.input_len();
-  Ok((input, len))
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, usize, E> {
+    let len = input.input_len();
+    Ok((input, len))
+  }
+}
+
+impl<I, E> Parser<I, usize, E> for RestLen<I, E>
+where
+  I: Slice<RangeFrom<usize>>,
+  I: InputLength,
+{
+  fn parse(&mut self, input: I) -> IResult<I, usize, E> {
+    self.parse(input)
+  }
 }
 
 /// Maps a function on the result of a parser.
@@ -215,41 +268,49 @@ where
 /// assert_eq!(parser.parse("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
 /// # }
 /// ```
-pub fn map<I, O1, O2, E, F, G>(mut parser: F, mut f: G) -> impl FnMut(I) -> IResult<I, O2, E>
+pub fn map<P, PO, F, I, O, E>(parser: P, transform: F) -> Map<P, PO, F, I, O, E> {
+  Map {
+    parser,
+    transform,
+    po: Default::default(),
+    i: Default::default(),
+    o: Default::default(),
+    e: Default::default(),
+  }
+}
+
+/// Implementation of [`map`]
+pub struct Map<P, PO, F, I, O, E> {
+  parser: P,
+  transform: F,
+  po: std::marker::PhantomData<PO>,
+  i: std::marker::PhantomData<I>,
+  o: std::marker::PhantomData<O>,
+  e: std::marker::PhantomData<E>,
+}
+
+impl<P, PO, F, I, O, E> Map<P, PO, F, I, O, E>
 where
-  F: Parser<I, O1, E>,
-  G: FnMut(O1) -> O2,
+  P: Parser<I, PO, E>,
+  F: FnMut(PO) -> O,
 {
-  move |input: I| {
-    let (input, o1) = parser.parse(input)?;
-    Ok((input, f(o1)))
-  }
-}
-
-/// Implementation of `Parser::map`
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct Map<F, G, O1> {
-  f: F,
-  g: G,
-  phantom: core::marker::PhantomData<O1>,
-}
-
-impl<F, G, O1> Map<F, G, O1> {
-  pub(crate) fn new(f: F, g: G) -> Self {
-    Self {
-      f,
-      g,
-      phantom: Default::default(),
-    }
-  }
-}
-
-impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> O2> Parser<I, O2, E> for Map<F, G, O1> {
-  fn parse(&mut self, i: I) -> IResult<I, O2, E> {
-    match self.f.parse(i) {
+  /// See [`Parser::parse`]
+  pub fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    match self.parser.parse(input) {
       Err(e) => Err(e),
-      Ok((i, o)) => Ok((i, (self.g)(o))),
+      Ok((i, o)) => Ok((i, (self.transform)(o))),
     }
+  }
+}
+
+impl<P, PO, F, I, O, E> Parser<I, O, E> for Map<P, PO, F, I, O, E>
+where
+  P: Parser<I, PO, E>,
+  F: FnMut(PO) -> O,
+{
+  /// See [`Parser::parse`]
+  fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    self.parse(input)
   }
 }
 

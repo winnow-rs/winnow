@@ -241,12 +241,12 @@ pub trait Parser<I, O, E> {
   fn parse(&mut self, input: I) -> IResult<I, O, E>;
 
   /// Maps a function over the result of a parser
-  fn map<G, O2>(self, g: G) -> Map<Self, G, O>
+  fn map<F, FO>(self, transform: F) -> Map<Self, O, F, I, FO, E>
   where
-    G: Fn(O) -> O2,
+    F: Fn(O) -> FO,
     Self: core::marker::Sized,
   {
-    Map::new(self, g)
+    map(self, transform)
   }
 
   /// Creates a second parser from the output of the first one, then apply over the rest of the input

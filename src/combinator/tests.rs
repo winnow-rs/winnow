@@ -73,20 +73,29 @@ fn end_of_input() {
 fn rest_on_slices() {
   let input: &[u8] = &b"Hello, world!"[..];
   let empty: &[u8] = &b""[..];
-  assert_parse!(rest(input), Ok((empty, input)));
+  assert_parse!(
+    rest::<_, (&[u8], ErrorKind)>().parse(input),
+    Ok((empty, input))
+  );
 }
 
 #[test]
 fn rest_on_strs() {
   let input: &str = "Hello, world!";
   let empty: &str = "";
-  assert_parse!(rest(input), Ok((empty, input)));
+  assert_parse!(
+    rest::<_, (&str, ErrorKind)>().parse(input),
+    Ok((empty, input))
+  );
 }
 
 #[test]
 fn rest_len_on_slices() {
   let input: &[u8] = &b"Hello, world!"[..];
-  assert_parse!(rest_len(input), Ok((input, input.len())));
+  assert_parse!(
+    rest_len::<_, (&str, ErrorKind)>().parse(input),
+    Ok((input, input.len()))
+  );
 }
 
 use crate::lib::std::convert::From;

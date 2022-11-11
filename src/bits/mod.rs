@@ -110,7 +110,7 @@ where
 ///   bits::<_, Error<(&[u8], usize)>, _, _, _>(tuple((
 ///     take(4usize),
 ///     take(8usize),
-///     bytes::<_, Error<&[u8]>, _, _, _>(rest)
+///     bytes::<_, Error<&[u8]>, _, _, _>(rest())
 ///   ))).parse(input)
 /// }
 ///
