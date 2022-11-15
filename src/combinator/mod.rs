@@ -71,7 +71,7 @@
 //! ## Streaming related
 //!
 //! - [`eof`][eof]: Returns its input if it is at the end of input data
-//! - [`complete`][complete]: Replaces an `Incomplete` returned by the child parser with an `Error`
+//! - [`complete`][complete()]: Replaces an `Incomplete` returned by the child parser with an `Error`
 //!
 //! ## Modifiers
 //!
@@ -117,13 +117,13 @@
 //!
 //! Use these functions with a combinator like `take_while`:
 //!
-//! - [`AsChar::is_alpha`][crate::AsChar::is_alpha]: Tests if byte is ASCII alphabetic: `[A-Za-z]`
-//! - [`AsChar::is_alphanum`][crate::AsChar::is_alphanum]: Tests if byte is ASCII alphanumeric: `[A-Za-z0-9]`
-//! - [`AsChar::is_dec_digit`][crate::AsChar::is_dec_digit]: Tests if byte is ASCII digit: `[0-9]`
-//! - [`AsChar::is_hex_digit`][crate::AsChar::is_hex_digit]: Tests if byte is ASCII hex digit: `[0-9A-Fa-f]`
-//! - [`AsChar::is_oct_digit`][crate::AsChar::is_oct_digit]: Tests if byte is ASCII octal digit: `[0-7]`
-//! - [`AsChar::is_space`][crate::AsChar::is_space]: Tests if byte is ASCII space or tab: `[ \t]`
-//! - [`AsChar::is_newline`][crate::AsChar::is_newline]: Tests if byte is ASCII newline: `[\n]`
+//! - [`AsChar::is_alpha`][crate::input::AsChar::is_alpha]: Tests if byte is ASCII alphabetic: `[A-Za-z]`
+//! - [`AsChar::is_alphanum`][crate::input::AsChar::is_alphanum]: Tests if byte is ASCII alphanumeric: `[A-Za-z0-9]`
+//! - [`AsChar::is_dec_digit`][crate::input::AsChar::is_dec_digit]: Tests if byte is ASCII digit: `[0-9]`
+//! - [`AsChar::is_hex_digit`][crate::input::AsChar::is_hex_digit]: Tests if byte is ASCII hex digit: `[0-9A-Fa-f]`
+//! - [`AsChar::is_oct_digit`][crate::input::AsChar::is_oct_digit]: Tests if byte is ASCII octal digit: `[0-7]`
+//! - [`AsChar::is_space`][crate::input::AsChar::is_space]: Tests if byte is ASCII space or tab: `[ \t]`
+//! - [`AsChar::is_newline`][crate::input::AsChar::is_newline]: Tests if byte is ASCII newline: `[\n]`
 //!
 //! Alternatively there are ready to use functions:
 //!
@@ -151,6 +151,8 @@
 use crate::lib::std::boxed::Box;
 
 use crate::error::{ErrorKind, FromExternalError, ParseError};
+use crate::input::{AsChar, InputIter, InputLength, InputTakeAtPosition, ParseTo};
+use crate::input::{Compare, CompareResult, Offset, Slice};
 use crate::internal::*;
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::convert;
@@ -158,8 +160,6 @@ use crate::lib::std::convert;
 use crate::lib::std::fmt::Debug;
 use crate::lib::std::mem::transmute;
 use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
-use crate::traits::{AsChar, InputIter, InputLength, InputTakeAtPosition, ParseTo};
-use crate::traits::{Compare, CompareResult, Offset, Slice};
 
 #[cfg(test)]
 mod tests;

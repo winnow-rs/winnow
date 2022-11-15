@@ -3,8 +3,8 @@ use crate::character::streaming::{
   multispace1 as multispace, oct_digit1 as oct_digit, space1 as space,
 };
 use crate::error::ErrorKind;
+use crate::input::AsChar;
 use crate::internal::{Err, IResult, Needed};
-use crate::AsChar;
 #[cfg(feature = "alloc")]
 use crate::{
   branch::alt,

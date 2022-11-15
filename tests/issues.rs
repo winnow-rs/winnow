@@ -20,7 +20,7 @@ pub fn take_char(input: &[u8]) -> IResult<&[u8], char> {
 
 #[cfg(feature = "std")]
 mod parse_int {
-  use nom::HexDisplay;
+  use nom::input::HexDisplay;
   use nom::{
     character::streaming::{digit1 as digit, space1 as space},
     combinator::{complete, map, opt},
