@@ -6,9 +6,9 @@ use crate::input::{
   Compare, CompareResult, FindSubstring, FindToken, InputIter, InputLength, InputTake,
   InputTakeAtPosition, Slice, ToUsize,
 };
-use crate::internal::{Err, IResult, Parser};
 use crate::lib::std::ops::RangeFrom;
 use crate::lib::std::result::Result::*;
+use crate::{Err, IResult, Parser};
 
 /// Recognizes a pattern
 ///

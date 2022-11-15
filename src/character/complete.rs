@@ -10,8 +10,8 @@ use crate::input::{
   AsChar, FindToken, InputIter, InputLength, InputTake, InputTakeAtPosition, Slice,
 };
 use crate::input::{Compare, CompareResult};
-use crate::internal::{Err, IResult};
 use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
+use crate::{Err, IResult};
 
 /// Recognizes one character.
 ///
@@ -832,7 +832,7 @@ uints! { u8 u16 u32 u64 u128 }
 mod tests {
   use super::*;
   use crate::input::ParseTo;
-  use crate::internal::Err;
+  use crate::Err;
   use proptest::prelude::*;
 
   macro_rules! assert_parse(

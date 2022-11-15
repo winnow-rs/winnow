@@ -10,8 +10,8 @@ use crate::input::{
   AsChar, FindToken, InputIter, InputLength, InputTake, InputTakeAtPositionPartial, Slice,
 };
 use crate::input::{Compare, CompareResult};
-use crate::internal::{Err, IResult, Needed};
 use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
+use crate::{Err, IResult, Needed};
 
 /// Recognizes one character.
 ///
@@ -739,8 +739,8 @@ mod tests {
   use super::*;
   use crate::error::ErrorKind;
   use crate::input::ParseTo;
-  use crate::internal::{Err, Needed};
   use crate::sequence::pair;
+  use crate::{Err, Needed};
   use proptest::prelude::*;
 
   macro_rules! assert_parse(

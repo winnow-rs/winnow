@@ -9,9 +9,9 @@ use crate::input::{
   AsBytes, AsChar, Compare, InputIter, InputLength, InputTake, InputTakeAtPositionPartial, Offset,
   Slice,
 };
-use crate::internal::*;
 use crate::lib::std::ops::{RangeFrom, RangeTo};
 use crate::sequence::{pair, tuple};
+use crate::*;
 
 #[doc(hidden)]
 macro_rules! map(
@@ -1634,7 +1634,7 @@ where
 mod tests {
   use super::*;
   use crate::error::ErrorKind;
-  use crate::internal::{Err, Needed};
+  use crate::{Err, Needed};
   use proptest::prelude::*;
 
   macro_rules! assert_parse(

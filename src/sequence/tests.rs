@@ -1,8 +1,8 @@
 use super::*;
 use crate::bytes::streaming::{tag, take};
-use crate::error::{ErrorKind, Error};
-use crate::internal::{Err, IResult, Needed};
+use crate::error::{Error, ErrorKind};
 use crate::number::streaming::be_u16;
+use crate::{Err, IResult, Needed};
 
 #[test]
 fn single_element_tuples() {
@@ -275,7 +275,16 @@ fn tuple_test() {
 
 #[test]
 fn unit_type() {
-  assert_eq!(tuple::<&'static str, (), Error<&'static str>, ()>(())("abxsbsh"), Ok(("abxsbsh", ())));
-  assert_eq!(tuple::<&'static str, (), Error<&'static str>, ()>(())("sdfjakdsas"), Ok(("sdfjakdsas", ())));
-  assert_eq!(tuple::<&'static str, (), Error<&'static str>, ()>(())(""), Ok(("", ())));
+  assert_eq!(
+    tuple::<&'static str, (), Error<&'static str>, ()>(())("abxsbsh"),
+    Ok(("abxsbsh", ()))
+  );
+  assert_eq!(
+    tuple::<&'static str, (), Error<&'static str>, ()>(())("sdfjakdsas"),
+    Ok(("sdfjakdsas", ()))
+  );
+  assert_eq!(
+    tuple::<&'static str, (), Error<&'static str>, ()>(())(""),
+    Ok(("", ()))
+  );
 }

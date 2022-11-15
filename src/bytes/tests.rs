@@ -4,7 +4,6 @@ use crate::character::streaming::{
 };
 use crate::error::ErrorKind;
 use crate::input::AsChar;
-use crate::internal::{Err, IResult, Needed};
 #[cfg(feature = "alloc")]
 use crate::{
   branch::alt,
@@ -13,6 +12,7 @@ use crate::{
   lib::std::string::String,
   lib::std::vec::Vec,
 };
+use crate::{Err, IResult, Needed};
 
 #[test]
 fn is_a() {

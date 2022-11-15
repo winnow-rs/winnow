@@ -6,8 +6,8 @@ pub mod streaming;
 
 use crate::error::{ErrorKind, ParseError};
 use crate::input::{ErrorConvert, Slice};
-use crate::internal::{Err, IResult, Needed, Parser};
 use crate::lib::std::ops::RangeFrom;
+use crate::{Err, IResult, Needed, Parser};
 
 /// Converts a byte-level input to a bit-level input, for consumption by a parser that uses bits.
 ///
