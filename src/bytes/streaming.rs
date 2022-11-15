@@ -2,13 +2,13 @@
 
 use crate::error::ErrorKind;
 use crate::error::ParseError;
-use crate::internal::{Err, IResult, Needed, Parser};
-use crate::lib::std::ops::RangeFrom;
-use crate::lib::std::result::Result::*;
-use crate::traits::{
+use crate::input::{
   Compare, CompareResult, FindSubstring, FindToken, InputIter, InputLength, InputTake,
   InputTakeAtPositionPartial, Slice, ToUsize,
 };
+use crate::lib::std::ops::RangeFrom;
+use crate::lib::std::result::Result::*;
+use crate::{Err, IResult, Needed, Parser};
 
 /// Recognizes a pattern.
 ///
@@ -174,7 +174,7 @@ where
 /// ```rust
 /// # use nom::{Err, error::ErrorKind, Needed, IResult};
 /// use nom::bytes::streaming::take_while;
-/// use nom::AsChar;
+/// use nom::input::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while(AsChar::is_alpha)(s)
@@ -209,7 +209,7 @@ where
 /// ```rust
 /// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
 /// use nom::bytes::streaming::take_while1;
-/// use nom::AsChar;
+/// use nom::input::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while1(AsChar::is_alpha)(s)
@@ -245,7 +245,7 @@ where
 /// ```rust
 /// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
 /// use nom::bytes::streaming::take_while_m_n;
-/// use nom::AsChar;
+/// use nom::input::AsChar;
 ///
 /// fn short_alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while_m_n(3, 6, AsChar::is_alpha)(s)
@@ -529,18 +529,18 @@ pub fn escaped<Input, Error, F, G, O1, O2>(
 ) -> impl FnMut(Input) -> IResult<Input, Input, Error>
 where
   Input: Clone
-    + crate::traits::Offset
+    + crate::input::Offset
     + InputLength
     + InputTake
     + InputTakeAtPositionPartial
     + Slice<RangeFrom<usize>>
     + InputIter,
-  <Input as InputIter>::Item: crate::traits::AsChar,
+  <Input as InputIter>::Item: crate::input::AsChar,
   F: Parser<Input, O1, Error>,
   G: Parser<Input, O2, Error>,
   Error: ParseError<Input>,
 {
-  use crate::traits::AsChar;
+  use crate::input::AsChar;
 
   move |input: Input| {
     let mut i = input.clone();
@@ -630,21 +630,21 @@ pub fn escaped_transform<Input, Error, F, G, O1, O2, ExtendItem, Output>(
 ) -> impl FnMut(Input) -> IResult<Input, Output, Error>
 where
   Input: Clone
-    + crate::traits::Offset
+    + crate::input::Offset
     + InputLength
     + InputTake
     + InputTakeAtPositionPartial
     + Slice<RangeFrom<usize>>
     + InputIter,
-  Input: crate::traits::ExtendInto<Item = ExtendItem, Extender = Output>,
-  O1: crate::traits::ExtendInto<Item = ExtendItem, Extender = Output>,
-  O2: crate::traits::ExtendInto<Item = ExtendItem, Extender = Output>,
-  <Input as InputIter>::Item: crate::traits::AsChar,
+  Input: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
+  O1: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
+  O2: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
+  <Input as InputIter>::Item: crate::input::AsChar,
   F: Parser<Input, O1, Error>,
   G: Parser<Input, O2, Error>,
   Error: ParseError<Input>,
 {
-  use crate::traits::AsChar;
+  use crate::input::AsChar;
 
   move |input: Input| {
     let mut index = 0;

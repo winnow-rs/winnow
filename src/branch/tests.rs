@@ -1,7 +1,6 @@
 use crate::branch::{alt, permutation};
 use crate::bytes::streaming::tag;
 use crate::error::ErrorKind;
-use crate::internal::{Err, IResult, Needed};
 #[cfg(feature = "alloc")]
 use crate::{
   error::ParseError,
@@ -10,6 +9,7 @@ use crate::{
     string::{String, ToString},
   },
 };
+use crate::{Err, IResult, Needed};
 
 #[cfg(feature = "alloc")]
 #[derive(Debug, Clone, PartialEq)]

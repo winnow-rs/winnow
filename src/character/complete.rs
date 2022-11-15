@@ -6,12 +6,12 @@ use crate::branch::alt;
 use crate::combinator::opt;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
-use crate::internal::{Err, IResult};
-use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
-use crate::traits::{
+use crate::input::{
   AsChar, FindToken, InputIter, InputLength, InputTake, InputTakeAtPosition, Slice,
 };
-use crate::traits::{Compare, CompareResult};
+use crate::input::{Compare, CompareResult};
+use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
+use crate::{Err, IResult};
 
 /// Recognizes one character.
 ///
@@ -831,8 +831,8 @@ uints! { u8 u16 u32 u64 u128 }
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::internal::Err;
-  use crate::traits::ParseTo;
+  use crate::input::ParseTo;
+  use crate::Err;
   use proptest::prelude::*;
 
   macro_rules! assert_parse(
@@ -919,7 +919,7 @@ mod tests {
     assert_eq!(space1::<_, (_, ErrorKind)>(e), Ok((empty, e)));
   }
 
-  use crate::traits::Offset;
+  use crate::input::Offset;
   #[test]
   fn offset() {
     let a = &b"abcd;"[..];

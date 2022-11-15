@@ -5,13 +5,13 @@ use crate::bytes::streaming::tag;
 use crate::character::streaming::{char, digit1, sign};
 use crate::combinator::{cut, map, opt, recognize};
 use crate::error::{ErrorKind, ParseError};
-use crate::internal::*;
-use crate::lib::std::ops::{RangeFrom, RangeTo};
-use crate::sequence::{pair, tuple};
-use crate::traits::{
+use crate::input::{
   AsBytes, AsChar, Compare, InputIter, InputLength, InputTake, InputTakeAtPositionPartial, Offset,
   Slice,
 };
+use crate::lib::std::ops::{RangeFrom, RangeTo};
+use crate::sequence::{pair, tuple};
+use crate::*;
 
 #[doc(hidden)]
 macro_rules! map(
@@ -1435,7 +1435,7 @@ pub fn recognize_float_parts<T, E: ParseError<T>>(input: T) -> IResult<T, (bool,
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   T: Clone + Offset,
-  T: InputIter + crate::traits::ParseTo<i32>,
+  T: InputIter + crate::input::ParseTo<i32>,
   <T as InputIter>::Item: AsChar,
   T: InputTakeAtPositionPartial + InputTake + InputLength,
   <T as InputTakeAtPositionPartial>::Item: AsChar,
@@ -1544,7 +1544,7 @@ pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   T: Clone + Offset,
-  T: InputIter + InputLength + InputTake + crate::traits::ParseTo<f32> + Compare<&'static str>,
+  T: InputIter + InputLength + InputTake + crate::input::ParseTo<f32> + Compare<&'static str>,
   <T as InputIter>::Item: AsChar,
   <T as InputIter>::IterElem: Clone,
   T: InputTakeAtPositionPartial,
@@ -1598,7 +1598,7 @@ pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   T: Clone + Offset,
-  T: InputIter + InputLength + InputTake + crate::traits::ParseTo<f64> + Compare<&'static str>,
+  T: InputIter + InputLength + InputTake + crate::input::ParseTo<f64> + Compare<&'static str>,
   <T as InputIter>::Item: AsChar,
   <T as InputIter>::IterElem: Clone,
   T: InputTakeAtPositionPartial,
@@ -1634,7 +1634,7 @@ where
 mod tests {
   use super::*;
   use crate::error::ErrorKind;
-  use crate::internal::{Err, Needed};
+  use crate::{Err, Needed};
   use proptest::prelude::*;
 
   macro_rules! assert_parse(
@@ -2191,7 +2191,7 @@ mod tests {
 
   #[cfg(feature = "std")]
   fn parse_f64(i: &str) -> IResult<&str, f64, ()> {
-    use crate::traits::ParseTo;
+    use crate::input::ParseTo;
     match recognize_float(i) {
       Err(e) => Err(e),
       Ok((i, s)) => {

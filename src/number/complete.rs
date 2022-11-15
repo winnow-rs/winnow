@@ -6,12 +6,12 @@ use crate::character::complete::{char, digit1, sign};
 use crate::combinator::{cut, map, opt, recognize};
 use crate::error::ParseError;
 use crate::error::{make_error, ErrorKind};
-use crate::internal::*;
-use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
-use crate::sequence::{pair, tuple};
-use crate::traits::{
+use crate::input::{
   AsBytes, AsChar, Compare, InputIter, InputLength, InputTake, InputTakeAtPosition, Offset, Slice,
 };
+use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
+use crate::sequence::{pair, tuple};
+use crate::*;
 
 #[doc(hidden)]
 macro_rules! map(
@@ -1548,7 +1548,7 @@ where
   Ok((i, (sign, integer, fraction, exp)))
 }
 
-use crate::traits::ParseTo;
+use crate::input::ParseTo;
 
 /// Recognizes floating point number in text format and returns a f32.
 ///
@@ -1660,7 +1660,7 @@ where
 mod tests {
   use super::*;
   use crate::error::ErrorKind;
-  use crate::internal::Err;
+  use crate::Err;
   use proptest::prelude::*;
 
   macro_rules! assert_parse(

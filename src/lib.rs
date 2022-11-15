@@ -434,8 +434,7 @@ pub mod lib {
 }
 
 pub use self::bits::*;
-pub use self::internal::*;
-pub use self::traits::*;
+pub use self::parser::*;
 
 pub use self::str::*;
 
@@ -446,10 +445,10 @@ pub mod error;
 
 pub mod branch;
 pub mod combinator;
-mod internal;
+pub mod input;
 pub mod multi;
+mod parser;
 pub mod sequence;
-mod traits;
 
 pub mod bits;
 pub mod bytes;

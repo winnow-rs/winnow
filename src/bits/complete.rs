@@ -2,9 +2,9 @@
 //!
 
 use crate::error::{ErrorKind, ParseError};
-use crate::internal::{Err, IResult};
+use crate::input::{InputIter, InputLength, Slice, ToUsize};
 use crate::lib::std::ops::{AddAssign, Div, RangeFrom, Shl, Shr};
-use crate::traits::{InputIter, InputLength, Slice, ToUsize};
+use crate::{Err, IResult};
 
 /// Generates a parser taking `count` bits
 ///

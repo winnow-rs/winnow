@@ -3,8 +3,7 @@ use crate::character::streaming::{
   multispace1 as multispace, oct_digit1 as oct_digit, space1 as space,
 };
 use crate::error::ErrorKind;
-use crate::internal::{Err, IResult, Needed};
-use crate::AsChar;
+use crate::input::AsChar;
 #[cfg(feature = "alloc")]
 use crate::{
   branch::alt,
@@ -13,6 +12,7 @@ use crate::{
   lib::std::string::String,
   lib::std::vec::Vec,
 };
+use crate::{Err, IResult, Needed};
 
 #[test]
 fn is_a() {
