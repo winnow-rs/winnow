@@ -8,9 +8,11 @@
 //! ```rust
 //! use nom::{
 //!   IResult,
+//!   Finish,
 //!   bytes::complete::{tag, take_while_m_n},
 //!   combinator::map_res,
-//!   sequence::tuple};
+//!   sequence::tuple,
+//! };
 //!
 //! #[derive(Debug,PartialEq)]
 //! pub struct Color {
@@ -42,7 +44,8 @@
 //! }
 //!
 //! fn main() {
-//!   assert_eq!(hex_color("#2F14DF"), Ok(("", Color {
+//!   let result = hex_color("#2F14DF").finish();
+//!   assert_eq!(result, Ok(("", Color {
 //!     red: 47,
 //!     green: 20,
 //!     blue: 223,
