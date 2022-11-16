@@ -652,9 +652,9 @@ impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
   where
     P: Fn(Self::Item) -> bool,
   {
-    match self.split_at_position_streaming(predicate) {
-      Err(Err::Incomplete(_)) => Ok(self.take_split(self.input_len())),
-      res => res,
+    match self.position(predicate) {
+      Some(n) => Ok(self.take_split(n)),
+      None => Ok(self.take_split(self.input_len())),
     }
   }
 
@@ -666,15 +666,16 @@ impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
   where
     P: Fn(Self::Item) -> bool,
   {
-    match self.split_at_position1_streaming(predicate, e) {
-      Err(Err::Incomplete(_)) => {
+    match self.position(predicate) {
+      Some(0) => Err(Err::Error(E::from_error_kind(self.clone(), e))),
+      Some(n) => Ok(self.take_split(n)),
+      None => {
         if self.input_len() == 0 {
           Err(Err::Error(E::from_error_kind(self.clone(), e)))
         } else {
           Ok(self.take_split(self.input_len()))
         }
       }
-      res => res,
     }
   }
 }
