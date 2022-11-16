@@ -4,7 +4,7 @@ use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{
   Compare, CompareResult, FindSubstring, FindToken, InputIter, InputLength, InputTake,
-  InputTakeAtPositionPartial, Slice, ToUsize,
+  InputTakeAtPositionStreaming, Slice, ToUsize,
 };
 use crate::lib::std::ops::RangeFrom;
 use crate::lib::std::result::Result::*;
@@ -118,12 +118,12 @@ pub fn is_not<T, Input, Error: ParseError<Input>>(
   arr: T,
 ) -> impl Fn(Input) -> IResult<Input, Input, Error>
 where
-  Input: InputTakeAtPositionPartial,
-  T: FindToken<<Input as InputTakeAtPositionPartial>::Item>,
+  Input: InputTakeAtPositionStreaming,
+  T: FindToken<<Input as InputTakeAtPositionStreaming>::Item>,
 {
   move |i: Input| {
     let e: ErrorKind = ErrorKind::IsNot;
-    i.split_at_position1_partial(|c| arr.find_token(c), e)
+    i.split_at_position1_streaming(|c| arr.find_token(c), e)
   }
 }
 
@@ -154,12 +154,12 @@ pub fn is_a<T, Input, Error: ParseError<Input>>(
   arr: T,
 ) -> impl Fn(Input) -> IResult<Input, Input, Error>
 where
-  Input: InputTakeAtPositionPartial,
-  T: FindToken<<Input as InputTakeAtPositionPartial>::Item>,
+  Input: InputTakeAtPositionStreaming,
+  T: FindToken<<Input as InputTakeAtPositionStreaming>::Item>,
 {
   move |i: Input| {
     let e: ErrorKind = ErrorKind::IsA;
-    i.split_at_position1_partial(|c| !arr.find_token(c), e)
+    i.split_at_position1_streaming(|c| !arr.find_token(c), e)
   }
 }
 
@@ -189,10 +189,10 @@ pub fn take_while<F, Input, Error: ParseError<Input>>(
   cond: F,
 ) -> impl Fn(Input) -> IResult<Input, Input, Error>
 where
-  Input: InputTakeAtPositionPartial,
-  F: Fn(<Input as InputTakeAtPositionPartial>::Item) -> bool,
+  Input: InputTakeAtPositionStreaming,
+  F: Fn(<Input as InputTakeAtPositionStreaming>::Item) -> bool,
 {
-  move |i: Input| i.split_at_position_partial(|c| !cond(c))
+  move |i: Input| i.split_at_position_streaming(|c| !cond(c))
 }
 
 /// Returns the longest (at least 1) input slice that matches the predicate.
@@ -223,12 +223,12 @@ pub fn take_while1<F, Input, Error: ParseError<Input>>(
   cond: F,
 ) -> impl Fn(Input) -> IResult<Input, Input, Error>
 where
-  Input: InputTakeAtPositionPartial,
-  F: Fn(<Input as InputTakeAtPositionPartial>::Item) -> bool,
+  Input: InputTakeAtPositionStreaming,
+  F: Fn(<Input as InputTakeAtPositionStreaming>::Item) -> bool,
 {
   move |i: Input| {
     let e: ErrorKind = ErrorKind::TakeWhile1;
-    i.split_at_position1_partial(|c| !cond(c), e)
+    i.split_at_position1_streaming(|c| !cond(c), e)
   }
 }
 
@@ -344,10 +344,10 @@ pub fn take_till<F, Input, Error: ParseError<Input>>(
   cond: F,
 ) -> impl Fn(Input) -> IResult<Input, Input, Error>
 where
-  Input: InputTakeAtPositionPartial,
-  F: Fn(<Input as InputTakeAtPositionPartial>::Item) -> bool,
+  Input: InputTakeAtPositionStreaming,
+  F: Fn(<Input as InputTakeAtPositionStreaming>::Item) -> bool,
 {
-  move |i: Input| i.split_at_position_partial(|c| cond(c))
+  move |i: Input| i.split_at_position_streaming(|c| cond(c))
 }
 
 /// Returns the longest (at least 1) input slice till a predicate is met.
@@ -376,12 +376,12 @@ pub fn take_till1<F, Input, Error: ParseError<Input>>(
   cond: F,
 ) -> impl Fn(Input) -> IResult<Input, Input, Error>
 where
-  Input: InputTakeAtPositionPartial,
-  F: Fn(<Input as InputTakeAtPositionPartial>::Item) -> bool,
+  Input: InputTakeAtPositionStreaming,
+  F: Fn(<Input as InputTakeAtPositionStreaming>::Item) -> bool,
 {
   move |i: Input| {
     let e: ErrorKind = ErrorKind::TakeTill1;
-    i.split_at_position1_partial(|c| cond(c), e)
+    i.split_at_position1_streaming(|c| cond(c), e)
   }
 }
 
@@ -532,7 +532,7 @@ where
     + crate::input::Offset
     + InputLength
     + InputTake
-    + InputTakeAtPositionPartial
+    + InputTakeAtPositionStreaming
     + Slice<RangeFrom<usize>>
     + InputIter,
   <Input as InputIter>::Item: crate::input::AsChar,
@@ -633,7 +633,7 @@ where
     + crate::input::Offset
     + InputLength
     + InputTake
-    + InputTakeAtPositionPartial
+    + InputTakeAtPositionStreaming
     + Slice<RangeFrom<usize>>
     + InputIter,
   Input: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
