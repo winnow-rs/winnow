@@ -1289,21 +1289,6 @@ impl ExtendInto for &str {
   }
 }
 
-#[cfg(feature = "alloc")]
-impl ExtendInto for char {
-  type Item = char;
-  type Extender = String;
-
-  #[inline]
-  fn new_builder(&self) -> String {
-    String::new()
-  }
-  #[inline]
-  fn extend_into(&self, acc: &mut String) {
-    acc.push(*self);
-  }
-}
-
 /// Helper trait to convert numbers to usize.
 ///
 /// By default, usize implements `From<u8>` and `From<u16>` but not
