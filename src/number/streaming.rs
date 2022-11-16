@@ -6,8 +6,8 @@ use crate::character::streaming::{char, digit1, sign};
 use crate::combinator::{cut, map, opt, recognize};
 use crate::error::{ErrorKind, ParseError};
 use crate::input::{
-  AsBytes, AsChar, Compare, InputIter, InputLength, InputTake, InputTakeAtPositionPartial, Offset,
-  Slice,
+  AsBytes, AsChar, Compare, InputIter, InputLength, InputTake, InputTakeAtPositionStreaming,
+  Offset, Slice,
 };
 use crate::lib::std::ops::{RangeFrom, RangeTo};
 use crate::sequence::{pair, tuple};
@@ -1371,8 +1371,8 @@ where
   T: Clone + Offset,
   T: InputIter,
   <T as InputIter>::Item: AsChar,
-  T: InputTakeAtPositionPartial + InputLength,
-  <T as InputTakeAtPositionPartial>::Item: AsChar
+  T: InputTakeAtPositionStreaming + InputLength,
+  <T as InputTakeAtPositionStreaming>::Item: AsChar
 {
   recognize(
     tuple((
@@ -1398,8 +1398,8 @@ where
   T: Clone + Offset,
   T: InputIter + InputTake + InputLength + Compare<&'static str>,
   <T as InputIter>::Item: AsChar,
-  T: InputTakeAtPositionPartial,
-  <T as InputTakeAtPositionPartial>::Item: AsChar,
+  T: InputTakeAtPositionStreaming,
+  <T as InputTakeAtPositionStreaming>::Item: AsChar,
 {
   alt((
     |i: T| {
@@ -1437,14 +1437,14 @@ where
   T: Clone + Offset,
   T: InputIter + crate::input::ParseTo<i32>,
   <T as InputIter>::Item: AsChar,
-  T: InputTakeAtPositionPartial + InputTake + InputLength,
-  <T as InputTakeAtPositionPartial>::Item: AsChar,
+  T: InputTakeAtPositionStreaming + InputTake + InputLength,
+  <T as InputTakeAtPositionStreaming>::Item: AsChar,
   T: for<'a> Compare<&'a [u8]>,
   T: AsBytes,
 {
   let (i, sign) = sign(input.clone())?;
 
-  //let (i, zeroes) = take_while(|c: <T as InputTakeAtPositionPartial>::Item| c.as_char() == '0')(i)?;
+  //let (i, zeroes) = take_while(|c: <T as InputTakeAtPositionStreaming>::Item| c.as_char() == '0')(i)?;
   let (i, zeroes) = match i.as_bytes().iter().position(|c| *c != b'0') {
     Some(index) => i.take_split(index),
     None => i.take_split(i.input_len()),
@@ -1547,8 +1547,8 @@ where
   T: InputIter + InputLength + InputTake + crate::input::ParseTo<f32> + Compare<&'static str>,
   <T as InputIter>::Item: AsChar,
   <T as InputIter>::IterElem: Clone,
-  T: InputTakeAtPositionPartial,
-  <T as InputTakeAtPositionPartial>::Item: AsChar,
+  T: InputTakeAtPositionStreaming,
+  <T as InputTakeAtPositionStreaming>::Item: AsChar,
   T: AsBytes,
   T: for<'a> Compare<&'a [u8]>,
 {
@@ -1601,8 +1601,8 @@ where
   T: InputIter + InputLength + InputTake + crate::input::ParseTo<f64> + Compare<&'static str>,
   <T as InputIter>::Item: AsChar,
   <T as InputIter>::IterElem: Clone,
-  T: InputTakeAtPositionPartial,
-  <T as InputTakeAtPositionPartial>::Item: AsChar,
+  T: InputTakeAtPositionStreaming,
+  <T as InputTakeAtPositionStreaming>::Item: AsChar,
   T: AsBytes,
   T: for<'a> Compare<&'a [u8]>,
 {

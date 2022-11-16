@@ -7,7 +7,7 @@ use crate::combinator::opt;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{
-  AsChar, FindToken, InputIter, InputLength, InputTake, InputTakeAtPositionPartial, Slice,
+  AsChar, FindToken, InputIter, InputLength, InputTake, InputTakeAtPositionStreaming, Slice,
 };
 use crate::input::{Compare, CompareResult};
 use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
@@ -316,10 +316,10 @@ where
 /// ```
 pub fn alpha0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionPartial,
-  <T as InputTakeAtPositionPartial>::Item: AsChar,
+  T: InputTakeAtPositionStreaming,
+  <T as InputTakeAtPositionStreaming>::Item: AsChar,
 {
-  input.split_at_position_partial(|item| !item.is_alpha())
+  input.split_at_position_streaming(|item| !item.is_alpha())
 }
 
 /// Recognizes one or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
@@ -337,10 +337,10 @@ where
 /// ```
 pub fn alpha1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionPartial,
-  <T as InputTakeAtPositionPartial>::Item: AsChar,
+  T: InputTakeAtPositionStreaming,
+  <T as InputTakeAtPositionStreaming>::Item: AsChar,
 {
-  input.split_at_position1_partial(|item| !item.is_alpha(), ErrorKind::Alpha)
+  input.split_at_position1_streaming(|item| !item.is_alpha(), ErrorKind::Alpha)
 }
 
 /// Recognizes zero or more ASCII numerical characters: 0-9
@@ -358,10 +358,10 @@ where
 /// ```
 pub fn digit0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionPartial,
-  <T as InputTakeAtPositionPartial>::Item: AsChar,
+  T: InputTakeAtPositionStreaming,
+  <T as InputTakeAtPositionStreaming>::Item: AsChar,
 {
-  input.split_at_position_partial(|item| !item.is_dec_digit())
+  input.split_at_position_streaming(|item| !item.is_dec_digit())
 }
 
 /// Recognizes one or more ASCII numerical characters: 0-9
@@ -379,10 +379,10 @@ where
 /// ```
 pub fn digit1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionPartial,
-  <T as InputTakeAtPositionPartial>::Item: AsChar,
+  T: InputTakeAtPositionStreaming,
+  <T as InputTakeAtPositionStreaming>::Item: AsChar,
 {
-  input.split_at_position1_partial(|item| !item.is_dec_digit(), ErrorKind::Digit)
+  input.split_at_position1_streaming(|item| !item.is_dec_digit(), ErrorKind::Digit)
 }
 
 /// Recognizes zero or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
@@ -400,10 +400,10 @@ where
 /// ```
 pub fn hex_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionPartial,
-  <T as InputTakeAtPositionPartial>::Item: AsChar,
+  T: InputTakeAtPositionStreaming,
+  <T as InputTakeAtPositionStreaming>::Item: AsChar,
 {
-  input.split_at_position_partial(|item| !item.is_hex_digit())
+  input.split_at_position_streaming(|item| !item.is_hex_digit())
 }
 
 /// Recognizes one or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
@@ -421,10 +421,10 @@ where
 /// ```
 pub fn hex_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionPartial,
-  <T as InputTakeAtPositionPartial>::Item: AsChar,
+  T: InputTakeAtPositionStreaming,
+  <T as InputTakeAtPositionStreaming>::Item: AsChar,
 {
-  input.split_at_position1_partial(|item| !item.is_hex_digit(), ErrorKind::HexDigit)
+  input.split_at_position1_streaming(|item| !item.is_hex_digit(), ErrorKind::HexDigit)
 }
 
 /// Recognizes zero or more octal characters: 0-7
@@ -442,10 +442,10 @@ where
 /// ```
 pub fn oct_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionPartial,
-  <T as InputTakeAtPositionPartial>::Item: AsChar,
+  T: InputTakeAtPositionStreaming,
+  <T as InputTakeAtPositionStreaming>::Item: AsChar,
 {
-  input.split_at_position_partial(|item| !item.is_oct_digit())
+  input.split_at_position_streaming(|item| !item.is_oct_digit())
 }
 
 /// Recognizes one or more octal characters: 0-7
@@ -463,10 +463,10 @@ where
 /// ```
 pub fn oct_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionPartial,
-  <T as InputTakeAtPositionPartial>::Item: AsChar,
+  T: InputTakeAtPositionStreaming,
+  <T as InputTakeAtPositionStreaming>::Item: AsChar,
 {
-  input.split_at_position1_partial(|item| !item.is_oct_digit(), ErrorKind::OctDigit)
+  input.split_at_position1_streaming(|item| !item.is_oct_digit(), ErrorKind::OctDigit)
 }
 
 /// Recognizes zero or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
@@ -484,10 +484,10 @@ where
 /// ```
 pub fn alphanumeric0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionPartial,
-  <T as InputTakeAtPositionPartial>::Item: AsChar,
+  T: InputTakeAtPositionStreaming,
+  <T as InputTakeAtPositionStreaming>::Item: AsChar,
 {
-  input.split_at_position_partial(|item| !item.is_alphanum())
+  input.split_at_position_streaming(|item| !item.is_alphanum())
 }
 
 /// Recognizes one or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
@@ -505,10 +505,10 @@ where
 /// ```
 pub fn alphanumeric1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionPartial,
-  <T as InputTakeAtPositionPartial>::Item: AsChar,
+  T: InputTakeAtPositionStreaming,
+  <T as InputTakeAtPositionStreaming>::Item: AsChar,
 {
-  input.split_at_position1_partial(|item| !item.is_alphanum(), ErrorKind::AlphaNumeric)
+  input.split_at_position1_streaming(|item| !item.is_alphanum(), ErrorKind::AlphaNumeric)
 }
 
 /// Recognizes zero or more spaces and tabs.
@@ -526,10 +526,10 @@ where
 /// ```
 pub fn space0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionPartial,
-  <T as InputTakeAtPositionPartial>::Item: AsChar + Clone,
+  T: InputTakeAtPositionStreaming,
+  <T as InputTakeAtPositionStreaming>::Item: AsChar + Clone,
 {
-  input.split_at_position_partial(|item| {
+  input.split_at_position_streaming(|item| {
     let c = item.as_char();
     !(c == ' ' || c == '\t')
   })
@@ -549,10 +549,10 @@ where
 /// ```
 pub fn space1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionPartial,
-  <T as InputTakeAtPositionPartial>::Item: AsChar + Clone,
+  T: InputTakeAtPositionStreaming,
+  <T as InputTakeAtPositionStreaming>::Item: AsChar + Clone,
 {
-  input.split_at_position1_partial(
+  input.split_at_position1_streaming(
     |item| {
       let c = item.as_char();
       !(c == ' ' || c == '\t')
@@ -576,10 +576,10 @@ where
 /// ```
 pub fn multispace0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionPartial,
-  <T as InputTakeAtPositionPartial>::Item: AsChar + Clone,
+  T: InputTakeAtPositionStreaming,
+  <T as InputTakeAtPositionStreaming>::Item: AsChar + Clone,
 {
-  input.split_at_position_partial(|item| {
+  input.split_at_position_streaming(|item| {
     let c = item.as_char();
     !(c == ' ' || c == '\t' || c == '\r' || c == '\n')
   })
@@ -600,10 +600,10 @@ where
 /// ```
 pub fn multispace1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionPartial,
-  <T as InputTakeAtPositionPartial>::Item: AsChar + Clone,
+  T: InputTakeAtPositionStreaming,
+  <T as InputTakeAtPositionStreaming>::Item: AsChar + Clone,
 {
-  input.split_at_position1_partial(
+  input.split_at_position1_streaming(
     |item| {
       let c = item.as_char();
       !(c == ' ' || c == '\t' || c == '\r' || c == '\n')

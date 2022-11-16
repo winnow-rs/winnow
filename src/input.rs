@@ -34,6 +34,7 @@
 //! | [InputLength][InputLength] |Calculate the input length|
 //! | [InputTake][InputTake] |Slicing operations|
 //! | [InputTakeAtPosition][InputTakeAtPosition] |Look for a specific token and split at its position|
+//! | [InputTakeAtPositionStreaming] |Look for a specific token and split at its position|
 //! | [Offset][Offset] |Calculate the offset between slices|
 //! | [ParseTo][ParseTo] |Used to integrate `&str`'s `parse()` method|
 //! | [Slice][Slice] |Slicing operations using ranges|
@@ -544,7 +545,7 @@ pub trait UnspecializedInput {}
 /// Methods to take as much input as possible until the provided function returns true for the current element.
 ///
 /// A large part of nom's basic parsers are built using this trait.
-pub trait InputTakeAtPositionPartial: Sized {
+pub trait InputTakeAtPositionStreaming: Sized {
   /// The current input type is a sequence of that `Item` type.
   ///
   /// Example: `u8` for `&[u8]` or `char` for `&str`
@@ -554,7 +555,7 @@ pub trait InputTakeAtPositionPartial: Sized {
   /// and returns the input up to this position.
   ///
   /// *streaming version*: If no element is found matching the condition, this will return `Incomplete`
-  fn split_at_position_partial<P, E: ParseError<Self>>(
+  fn split_at_position_streaming<P, E: ParseError<Self>>(
     &self,
     predicate: P,
   ) -> IResult<Self, Self, E>
@@ -567,7 +568,7 @@ pub trait InputTakeAtPositionPartial: Sized {
   /// Fails if the produced slice is empty.
   ///
   /// *streaming version*: If no element is found matching the condition, this will return `Incomplete`
-  fn split_at_position1_partial<P, E: ParseError<Self>>(
+  fn split_at_position1_streaming<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
@@ -608,12 +609,12 @@ pub trait InputTakeAtPosition: Sized {
     P: Fn(Self::Item) -> bool;
 }
 
-impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputTakeAtPositionPartial
-  for T
+impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput>
+  InputTakeAtPositionStreaming for T
 {
   type Item = <T as InputIter>::Item;
 
-  fn split_at_position_partial<P, E: ParseError<Self>>(
+  fn split_at_position_streaming<P, E: ParseError<Self>>(
     &self,
     predicate: P,
   ) -> IResult<Self, Self, E>
@@ -626,7 +627,7 @@ impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
     }
   }
 
-  fn split_at_position1_partial<P, E: ParseError<Self>>(
+  fn split_at_position1_streaming<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
@@ -643,16 +644,16 @@ impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
 }
 
 impl<
-    T: InputLength + InputIter + InputTake + Clone + UnspecializedInput + InputTakeAtPositionPartial,
+    T: InputLength + InputIter + InputTake + Clone + UnspecializedInput + InputTakeAtPositionStreaming,
   > InputTakeAtPosition for T
 {
-  type Item = <T as InputTakeAtPositionPartial>::Item;
+  type Item = <T as InputTakeAtPositionStreaming>::Item;
 
   fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
   {
-    match self.split_at_position_partial(predicate) {
+    match self.split_at_position_streaming(predicate) {
       Err(Err::Incomplete(_)) => Ok(self.take_split(self.input_len())),
       res => res,
     }
@@ -666,7 +667,7 @@ impl<
   where
     P: Fn(Self::Item) -> bool,
   {
-    match self.split_at_position1_partial(predicate, e) {
+    match self.split_at_position1_streaming(predicate, e) {
       Err(Err::Incomplete(_)) => {
         if self.input_len() == 0 {
           Err(Err::Error(E::from_error_kind(self.clone(), e)))
@@ -679,10 +680,10 @@ impl<
   }
 }
 
-impl<'a> InputTakeAtPositionPartial for &'a [u8] {
+impl<'a> InputTakeAtPositionStreaming for &'a [u8] {
   type Item = u8;
 
-  fn split_at_position_partial<P, E: ParseError<Self>>(
+  fn split_at_position_streaming<P, E: ParseError<Self>>(
     &self,
     predicate: P,
   ) -> IResult<Self, Self, E>
@@ -695,7 +696,7 @@ impl<'a> InputTakeAtPositionPartial for &'a [u8] {
     }
   }
 
-  fn split_at_position1_partial<P, E: ParseError<Self>>(
+  fn split_at_position1_streaming<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
@@ -746,10 +747,10 @@ impl<'a> InputTakeAtPosition for &'a [u8] {
   }
 }
 
-impl<'a> InputTakeAtPositionPartial for &'a str {
+impl<'a> InputTakeAtPositionStreaming for &'a str {
   type Item = char;
 
-  fn split_at_position_partial<P, E: ParseError<Self>>(
+  fn split_at_position_streaming<P, E: ParseError<Self>>(
     &self,
     predicate: P,
   ) -> IResult<Self, Self, E>
@@ -763,7 +764,7 @@ impl<'a> InputTakeAtPositionPartial for &'a str {
     }
   }
 
-  fn split_at_position1_partial<P, E: ParseError<Self>>(
+  fn split_at_position1_streaming<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
