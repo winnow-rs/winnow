@@ -643,11 +643,10 @@ impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput>
   }
 }
 
-impl<
-    T: InputLength + InputIter + InputTake + Clone + UnspecializedInput + InputTakeAtPositionStreaming,
-  > InputTakeAtPosition for T
+impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputTakeAtPosition
+  for T
 {
-  type Item = <T as InputTakeAtPositionStreaming>::Item;
+  type Item = <T as InputIter>::Item;
 
   fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
   where
