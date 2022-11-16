@@ -44,6 +44,20 @@ impl<'a> InputLength for (&'a [u8], usize) {
   }
 }
 
+impl<const LEN: usize> InputLength for [u8; LEN] {
+  #[inline]
+  fn input_len(&self) -> usize {
+    self.len()
+  }
+}
+
+impl<'a, const LEN: usize> InputLength for &'a [u8; LEN] {
+  #[inline]
+  fn input_len(&self) -> usize {
+    self.len()
+  }
+}
+
 /// Useful functions to calculate the offset between slices and show a hexdump of a slice
 pub trait Offset {
   /// Offset between the first byte of self and the first byte of the argument
@@ -120,31 +134,18 @@ impl AsBytes for [u8] {
   }
 }
 
-macro_rules! as_bytes_array_impls {
-  ($($N:expr)+) => {
-    $(
-      impl<'a> AsBytes for &'a [u8; $N] {
-        #[inline(always)]
-        fn as_bytes(&self) -> &[u8] {
-          *self
-        }
-      }
-
-      impl AsBytes for [u8; $N] {
-        #[inline(always)]
-        fn as_bytes(&self) -> &[u8] {
-          self
-        }
-      }
-    )+
-  };
+impl<'a, const LEN: usize> AsBytes for &'a [u8; LEN] {
+  #[inline(always)]
+  fn as_bytes(&self) -> &[u8] {
+    *self
+  }
 }
 
-as_bytes_array_impls! {
-     0  1  2  3  4  5  6  7  8  9
-    10 11 12 13 14 15 16 17 18 19
-    20 21 22 23 24 25 26 27 28 29
-    30 31 32
+impl<const LEN: usize> AsBytes for [u8; LEN] {
+  #[inline(always)]
+  fn as_bytes(&self) -> &[u8] {
+    self
+  }
 }
 
 /// Transforms common types to a char for basic token parsing
@@ -456,6 +457,31 @@ impl<'a> InputTake for &'a str {
   fn take_split(&self, count: usize) -> (Self, Self) {
     let (prefix, suffix) = self.split_at(count);
     (suffix, prefix)
+  }
+}
+
+impl<'a, const LEN: usize> InputIter for &'a [u8; LEN] {
+  type Item = u8;
+  type Iter = Enumerate<Self::IterElem>;
+  type IterElem = Copied<Iter<'a, u8>>;
+
+  fn iter_indices(&self) -> Self::Iter {
+    (&self[..]).iter_indices()
+  }
+
+  fn iter_elements(&self) -> Self::IterElem {
+    (&self[..]).iter_elements()
+  }
+
+  fn position<P>(&self, predicate: P) -> Option<usize>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    (&self[..]).position(predicate)
+  }
+
+  fn slice_index(&self, count: usize) -> Result<usize, Needed> {
+    (&self[..]).slice_index(count)
   }
 }
 
@@ -929,6 +955,30 @@ impl<'a, 'b> Compare<&'b [u8]> for &'a str {
   }
 }
 
+impl<'a, const LEN: usize> Compare<[u8; LEN]> for &'a [u8] {
+  #[inline(always)]
+  fn compare(&self, t: [u8; LEN]) -> CompareResult {
+    self.compare(&t[..])
+  }
+
+  #[inline(always)]
+  fn compare_no_case(&self, t: [u8; LEN]) -> CompareResult {
+    self.compare_no_case(&t[..])
+  }
+}
+
+impl<'a, 'b, const LEN: usize> Compare<&'b [u8; LEN]> for &'a [u8] {
+  #[inline(always)]
+  fn compare(&self, t: &'b [u8; LEN]) -> CompareResult {
+    self.compare(&t[..])
+  }
+
+  #[inline(always)]
+  fn compare_no_case(&self, t: &'b [u8; LEN]) -> CompareResult {
+    self.compare_no_case(&t[..])
+  }
+}
+
 /// Look for a token in self
 pub trait FindToken<T> {
   /// Returns true if self contains the token
@@ -979,6 +1029,18 @@ impl<'a> FindToken<char> for &'a [char] {
 
 impl<'a, 'b> FindToken<&'a char> for &'b [char] {
   fn find_token(&self, token: &char) -> bool {
+    self.find_token(*token)
+  }
+}
+
+impl<const LEN: usize> FindToken<u8> for [u8; LEN] {
+  fn find_token(&self, token: u8) -> bool {
+    memchr::memchr(token, &self[..]).is_some()
+  }
+}
+
+impl<'a, const LEN: usize> FindToken<&'a u8> for [u8; LEN] {
+  fn find_token(&self, token: &u8) -> bool {
     self.find_token(*token)
   }
 }
@@ -1103,92 +1165,6 @@ macro_rules! slice_ranges_impl {
 
 slice_ranges_impl! {str}
 slice_ranges_impl! {[T]}
-
-macro_rules! array_impls {
-  ($($N:expr)+) => {
-    $(
-      impl InputLength for [u8; $N] {
-        #[inline]
-        fn input_len(&self) -> usize {
-          self.len()
-        }
-      }
-
-      impl<'a> InputLength for &'a [u8; $N] {
-        #[inline]
-        fn input_len(&self) -> usize {
-          self.len()
-        }
-      }
-
-      impl<'a> InputIter for &'a [u8; $N] {
-        type Item = u8;
-        type Iter = Enumerate<Self::IterElem>;
-        type IterElem = Copied<Iter<'a, u8>>;
-
-        fn iter_indices(&self) -> Self::Iter {
-          (&self[..]).iter_indices()
-        }
-
-        fn iter_elements(&self) -> Self::IterElem {
-          (&self[..]).iter_elements()
-        }
-
-        fn position<P>(&self, predicate: P) -> Option<usize>
-          where P: Fn(Self::Item) -> bool {
-          (&self[..]).position(predicate)
-        }
-
-        fn slice_index(&self, count: usize) -> Result<usize, Needed> {
-          (&self[..]).slice_index(count)
-        }
-      }
-
-      impl<'a> Compare<[u8; $N]> for &'a [u8] {
-        #[inline(always)]
-        fn compare(&self, t: [u8; $N]) -> CompareResult {
-          self.compare(&t[..])
-        }
-
-        #[inline(always)]
-        fn compare_no_case(&self, t: [u8;$N]) -> CompareResult {
-          self.compare_no_case(&t[..])
-        }
-      }
-
-      impl<'a,'b> Compare<&'b [u8; $N]> for &'a [u8] {
-        #[inline(always)]
-        fn compare(&self, t: &'b [u8; $N]) -> CompareResult {
-          self.compare(&t[..])
-        }
-
-        #[inline(always)]
-        fn compare_no_case(&self, t: &'b [u8;$N]) -> CompareResult {
-          self.compare_no_case(&t[..])
-        }
-      }
-
-      impl FindToken<u8> for [u8; $N] {
-        fn find_token(&self, token: u8) -> bool {
-          memchr::memchr(token, &self[..]).is_some()
-        }
-      }
-
-      impl<'a> FindToken<&'a u8> for [u8; $N] {
-        fn find_token(&self, token: &u8) -> bool {
-          self.find_token(*token)
-        }
-      }
-    )+
-  };
-}
-
-array_impls! {
-     0  1  2  3  4  5  6  7  8  9
-    10 11 12 13 14 15 16 17 18 19
-    20 21 22 23 24 25 26 27 28 29
-    30 31 32
-}
 
 /// Abstracts something which can extend an `Extend`.
 /// Used to build modified input slices in `escaped_transform`
