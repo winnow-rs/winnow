@@ -25,6 +25,7 @@
 //!
 //! | trait | usage |
 //! |---|---|
+//! | [InputIsStreaming] | Marks the input as being the complete buffer or a partial buffer for streaming input |
 //! | [AsBytes] |Casts the input type to a byte slice|
 //! | [Compare] |Character comparison operations|
 //! | [ExtendInto] |Abstracts something which can extend an `Extend`|
@@ -62,11 +63,166 @@ use crate::lib::std::string::String;
 #[cfg(feature = "alloc")]
 use crate::lib::std::vec::Vec;
 
+/// Marks the input as being the complete buffer or a partial buffer for streaming input
+///
+/// See [Streaming] for marking a presumed complete buffer type as a streaming buffer.
+pub trait InputIsStreaming<const YES: bool>: Sized {
+  /// Complete counterpart
+  ///
+  /// - Set to `Self` if this is a complete buffer.
+  /// - Set to [`std::convert::Infallible`] if there isn't an associated complete buffer type
+  type Complete: InputIsStreaming<false>;
+  /// Streaming counterpart
+  ///
+  /// - Set to `Self` if this is a streaming buffer.
+  /// - Set to [`std::convert::Infallible`] if there isn't an associated streaming buffer type
+  type Streaming: InputIsStreaming<true>;
+
+  /// Convert to complete counterpart
+  fn into_complete(self) -> Self::Complete;
+  /// Convert to streaming counterpart
+  fn into_streaming(self) -> Self::Streaming;
+}
+
+impl<'a, T> InputIsStreaming<false> for &'a [T] {
+  type Complete = Self;
+  type Streaming = Streaming<Self>;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    Streaming(self)
+  }
+}
+
+impl<T, const L: usize> InputIsStreaming<false> for [T; L] {
+  type Complete = Self;
+  type Streaming = Streaming<Self>;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    Streaming(self)
+  }
+}
+
+impl<'a, T, const L: usize> InputIsStreaming<false> for &'a [T; L] {
+  type Complete = Self;
+  type Streaming = Streaming<Self>;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    Streaming(self)
+  }
+}
+
+impl<'a> InputIsStreaming<false> for &'a str {
+  type Complete = Self;
+  type Streaming = Streaming<Self>;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    Streaming(self)
+  }
+}
+
+impl<'a> InputIsStreaming<false> for (&'a [u8], usize) {
+  type Complete = Self;
+  type Streaming = Streaming<Self>;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    Streaming(self)
+  }
+}
+
+impl<const YES: bool> InputIsStreaming<YES> for crate::lib::std::convert::Infallible {
+  type Complete = Self;
+  type Streaming = Self;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    self
+  }
+}
+
+/// Mark the input as streaming
+///
+/// See also [`InputIsStreaming`]
+#[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Streaming<I>(pub I);
+
+impl<I> Streaming<I> {
+  /// Convert to complete counterpart
+  #[inline(always)]
+  pub fn into_complete(self) -> I {
+    self.0
+  }
+}
+
+impl<I> crate::lib::std::ops::Deref for Streaming<I> {
+  type Target = I;
+
+  #[inline(always)]
+  fn deref(&self) -> &Self::Target {
+    &self.0
+  }
+}
+
+impl<I> InputIsStreaming<true> for Streaming<I>
+where
+  I: InputIsStreaming<false>,
+{
+  type Complete = I;
+  type Streaming = Self;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self.0
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    self
+  }
+}
+
 /// Abstract method to calculate the input length
 pub trait InputLength {
   /// Calculates the input length, as indicated by its name,
   /// and the name of the trait itself
   fn input_len(&self) -> usize;
+}
+
+impl<I> InputLength for Streaming<I>
+where
+  I: InputLength,
+{
+  #[inline(always)]
+  fn input_len(&self) -> usize {
+    self.0.input_len()
+  }
 }
 
 impl<'a, T> InputLength for &'a [T] {
@@ -110,6 +266,16 @@ pub trait Offset {
   fn offset(&self, second: &Self) -> usize;
 }
 
+impl<I> Offset for Streaming<I>
+where
+  I: Offset,
+{
+  #[inline(always)]
+  fn offset(&self, second: &Self) -> usize {
+    self.0.offset(&second.0)
+  }
+}
+
 impl Offset for [u8] {
   fn offset(&self, second: &Self) -> usize {
     let fst = self.as_ptr();
@@ -150,6 +316,16 @@ impl<'a> Offset for &'a str {
 pub trait AsBytes {
   /// Casts the input type to a byte slice
   fn as_bytes(&self) -> &[u8];
+}
+
+impl<I> AsBytes for Streaming<I>
+where
+  I: AsBytes,
+{
+  #[inline(always)]
+  fn as_bytes(&self) -> &[u8] {
+    self.0.as_bytes()
+  }
 }
 
 impl AsBytes for [u8] {
@@ -403,6 +579,34 @@ pub trait InputIter {
   fn slice_index(&self, count: usize) -> Result<usize, Needed>;
 }
 
+impl<I> InputIter for Streaming<I>
+where
+  I: InputIter,
+{
+  type Item = I::Item;
+  type Iter = I::Iter;
+  type IterElem = I::IterElem;
+
+  #[inline(always)]
+  fn iter_indices(&self) -> Self::Iter {
+    self.0.iter_indices()
+  }
+  #[inline(always)]
+  fn iter_elements(&self) -> Self::IterElem {
+    self.0.iter_elements()
+  }
+  #[inline(always)]
+  fn position<P>(&self, predicate: P) -> Option<usize>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    self.0.position(predicate)
+  }
+  #[inline(always)]
+  fn slice_index(&self, count: usize) -> Result<usize, Needed> {
+    self.0.slice_index(count)
+  }
+}
 impl<'a> InputIter for &'a [u8] {
   type Item = u8;
   type Iter = Enumerate<Self::IterElem>;
@@ -503,6 +707,21 @@ pub trait InputTake: Sized {
   fn take(&self, count: usize) -> Self;
   /// Split the stream at the `count` byte offset. panics if count > length
   fn take_split(&self, count: usize) -> (Self, Self);
+}
+
+impl<I> InputTake for Streaming<I>
+where
+  I: InputTake,
+{
+  #[inline(always)]
+  fn take(&self, count: usize) -> Self {
+    Streaming(self.0.take(count))
+  }
+  #[inline(always)]
+  fn take_split(&self, count: usize) -> (Self, Self) {
+    let (start, end) = self.0.take_split(count);
+    (Streaming(start), Streaming(end))
+  }
 }
 
 impl<'a> InputTake for &'a [u8] {
@@ -818,6 +1037,174 @@ impl<'a> InputTakeAtPosition for &'a str {
   }
 }
 
+impl<'a> InputTakeAtPosition for Streaming<&'a [u8]> {
+  type Item = u8;
+
+  fn split_at_position_streaming<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.iter().position(|c| predicate(*c)) {
+      Some(i) => Ok(self.take_split(i)),
+      None => Err(Err::Incomplete(Needed::new(1))),
+    }
+  }
+
+  fn split_at_position1_streaming<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+    e: ErrorKind,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.iter().position(|c| predicate(*c)) {
+      Some(0) => Err(Err::Error(E::from_error_kind(Streaming(self), e))),
+      Some(i) => Ok(self.take_split(i)),
+      None => Err(Err::Incomplete(Needed::new(1))),
+    }
+  }
+
+  fn split_at_position_complete<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.iter().position(|c| predicate(*c)) {
+      Some(i) => Ok(self.take_split(i)),
+      None => Ok(self.take_split(self.input_len())),
+    }
+  }
+
+  fn split_at_position1_complete<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+    e: ErrorKind,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.iter().position(|c| predicate(*c)) {
+      Some(0) => Err(Err::Error(E::from_error_kind(Streaming(self), e))),
+      Some(i) => Ok(self.take_split(i)),
+      None => {
+        if self.is_empty() {
+          Err(Err::Error(E::from_error_kind(Streaming(self), e)))
+        } else {
+          Ok(self.take_split(self.input_len()))
+        }
+      }
+    }
+  }
+}
+
+impl<'a> InputTakeAtPosition for Streaming<&'a str> {
+  type Item = char;
+
+  fn split_at_position_streaming<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.find(predicate) {
+      // find() returns a byte index that is already in the slice at a char boundary
+      Some(i) => unsafe {
+        Ok((
+          Streaming(self.get_unchecked(i..)),
+          Streaming(self.get_unchecked(..i)),
+        ))
+      },
+      None => Err(Err::Incomplete(Needed::new(1))),
+    }
+  }
+
+  fn split_at_position1_streaming<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+    e: ErrorKind,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.find(predicate) {
+      Some(0) => Err(Err::Error(E::from_error_kind(Streaming(self), e))),
+      // find() returns a byte index that is already in the slice at a char boundary
+      Some(i) => unsafe {
+        Ok((
+          Streaming(self.get_unchecked(i..)),
+          Streaming(self.get_unchecked(..i)),
+        ))
+      },
+      None => Err(Err::Incomplete(Needed::new(1))),
+    }
+  }
+
+  fn split_at_position_complete<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.find(predicate) {
+      // find() returns a byte index that is already in the slice at a char boundary
+      Some(i) => unsafe {
+        Ok((
+          Streaming(self.get_unchecked(i..)),
+          Streaming(self.get_unchecked(..i)),
+        ))
+      },
+      // the end of slice is a char boundary
+      None => unsafe {
+        Ok((
+          Streaming(self.get_unchecked(self.len()..)),
+          Streaming(self.get_unchecked(..self.len())),
+        ))
+      },
+    }
+  }
+
+  fn split_at_position1_complete<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+    e: ErrorKind,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.find(predicate) {
+      Some(0) => Err(Err::Error(E::from_error_kind(Streaming(self), e))),
+      // find() returns a byte index that is already in the slice at a char boundary
+      Some(i) => unsafe {
+        Ok((
+          Streaming(self.get_unchecked(i..)),
+          Streaming(self.get_unchecked(..i)),
+        ))
+      },
+      None => {
+        if self.is_empty() {
+          Err(Err::Error(E::from_error_kind(Streaming(self), e)))
+        } else {
+          // the end of slice is a char boundary
+          unsafe {
+            Ok((
+              Streaming(self.get_unchecked(self.len()..)),
+              Streaming(self.get_unchecked(..self.len())),
+            ))
+          }
+        }
+      }
+    }
+  }
+}
+
 /// Indicates whether a comparison was successful, an error, or
 /// if more data was needed
 #[derive(Debug, PartialEq)]
@@ -842,6 +1229,21 @@ pub trait Compare<T> {
   /// the result. This is a temporary solution until
   /// a better one appears
   fn compare_no_case(&self, t: T) -> CompareResult;
+}
+
+impl<I, T> Compare<T> for Streaming<I>
+where
+  I: Compare<T>,
+{
+  #[inline(always)]
+  fn compare(&self, t: T) -> CompareResult {
+    self.0.compare(t)
+  }
+
+  #[inline(always)]
+  fn compare_no_case(&self, t: T) -> CompareResult {
+    self.0.compare_no_case(t)
+  }
 }
 
 fn lowercase_byte(c: u8) -> u8 {
@@ -1003,6 +1405,16 @@ pub trait FindToken<T> {
   fn find_token(&self, token: T) -> bool;
 }
 
+impl<I, T> FindToken<T> for Streaming<I>
+where
+  I: FindToken<T>,
+{
+  #[inline(always)]
+  fn find_token(&self, token: T) -> bool {
+    self.0.find_token(token)
+  }
+}
+
 impl<'a> FindToken<u8> for &'a [u8] {
   fn find_token(&self, token: u8) -> bool {
     memchr::memchr(token, self).is_some()
@@ -1069,6 +1481,16 @@ pub trait FindSubstring<T> {
   fn find_substring(&self, substr: T) -> Option<usize>;
 }
 
+impl<I, T> FindSubstring<T> for Streaming<I>
+where
+  I: FindSubstring<T>,
+{
+  #[inline(always)]
+  fn find_substring(&self, substr: T) -> Option<usize> {
+    self.0.find_substring(substr)
+  }
+}
+
 impl<'a, 'b> FindSubstring<&'b [u8]> for &'a [u8] {
   fn find_substring(&self, substr: &'b [u8]) -> Option<usize> {
     if substr.len() > self.len() {
@@ -1123,6 +1545,16 @@ pub trait ParseTo<R> {
   fn parse_to(&self) -> Option<R>;
 }
 
+impl<I, R> ParseTo<R> for Streaming<I>
+where
+  I: ParseTo<R>,
+{
+  #[inline(always)]
+  fn parse_to(&self) -> Option<R> {
+    self.0.parse_to()
+  }
+}
+
 impl<'a, R: FromStr> ParseTo<R> for &'a [u8] {
   fn parse_to(&self) -> Option<R> {
     from_utf8(self).ok().and_then(|s| s.parse().ok())
@@ -1143,6 +1575,16 @@ impl<'a, R: FromStr> ParseTo<R> for &'a str {
 pub trait Slice<R> {
   /// Slices self according to the range argument
   fn slice(&self, range: R) -> Self;
+}
+
+impl<I, R> Slice<R> for Streaming<I>
+where
+  I: Slice<R>,
+{
+  #[inline(always)]
+  fn slice(&self, range: R) -> Self {
+    Streaming(self.0.slice(range))
+  }
 }
 
 macro_rules! impl_fn_slice {
@@ -1232,6 +1674,17 @@ impl<'a> IntoOutput for (&'a [u8], usize) {
   }
 }
 
+impl<T> IntoOutput for Streaming<T>
+where
+  T: IntoOutput,
+{
+  type Output = T::Output;
+  #[inline]
+  fn into_output(self) -> Self::Output {
+    self.into_complete().into_output()
+  }
+}
+
 /// Abstracts something which can extend an `Extend`.
 /// Used to build modified input slices in `escaped_transform`
 pub trait ExtendInto {
@@ -1247,6 +1700,23 @@ pub trait ExtendInto {
   fn new_builder(&self) -> Self::Extender;
   /// Accumulate the input into an accumulator
   fn extend_into(&self, acc: &mut Self::Extender);
+}
+
+impl<I> ExtendInto for Streaming<I>
+where
+  I: ExtendInto,
+{
+  type Item = I::Item;
+  type Extender = I::Extender;
+
+  #[inline(always)]
+  fn new_builder(&self) -> Self::Extender {
+    self.0.new_builder()
+  }
+  #[inline(always)]
+  fn extend_into(&self, acc: &mut Self::Extender) {
+    self.0.extend_into(acc)
+  }
 }
 
 #[cfg(feature = "alloc")]
@@ -1426,6 +1896,22 @@ pub trait HexDisplay {
 
 #[cfg(feature = "std")]
 static CHARS: &[u8] = b"0123456789abcdef";
+
+#[cfg(feature = "std")]
+impl<I> HexDisplay for Streaming<I>
+where
+  I: HexDisplay,
+{
+  #[inline(always)]
+  fn to_hex(&self, chunk_size: usize) -> String {
+    self.0.to_hex(chunk_size)
+  }
+
+  #[inline(always)]
+  fn to_hex_from(&self, chunk_size: usize, from: usize) -> String {
+    self.0.to_hex_from(chunk_size, from)
+  }
+}
 
 #[cfg(feature = "std")]
 impl HexDisplay for [u8] {

@@ -486,6 +486,7 @@ pub mod _tutorial;
 /// }
 /// ```
 pub mod prelude {
+  pub use crate::input::InputIsStreaming as _;
   pub use crate::FinishIResult as _;
   pub use crate::IResult;
   pub use crate::IntoOutputIResult as _;
