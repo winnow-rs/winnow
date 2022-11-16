@@ -25,19 +25,19 @@
 //!
 //! | trait | usage |
 //! |---|---|
-//! | [AsBytes][AsBytes] |Casts the input type to a byte slice|
-//! | [Compare][Compare] |Character comparison operations|
-//! | [ExtendInto][ExtendInto] |Abstracts something which can extend an `Extend`|
-//! | [FindSubstring][FindSubstring] |Look for a substring in self|
-//! | [FindToken][FindToken] |Look for self in the given input stream|
-//! | [InputIter][InputIter] |Common iteration operations on the input type|
-//! | [InputLength][InputLength] |Calculate the input length|
-//! | [InputTake][InputTake] |Slicing operations|
-//! | [InputTakeAtPosition][InputTakeAtPosition] |Look for a specific token and split at its position|
+//! | [AsBytes] |Casts the input type to a byte slice|
+//! | [Compare] |Character comparison operations|
+//! | [ExtendInto] |Abstracts something which can extend an `Extend`|
+//! | [FindSubstring] |Look for a substring in self|
+//! | [FindToken] |Look for self in the given input stream|
+//! | [InputIter] |Common iteration operations on the input type|
+//! | [InputLength] |Calculate the input length|
+//! | [InputTake] |Slicing operations|
+//! | [InputTakeAtPosition] |Look for a specific token and split at its position|
 //! | [InputTakeAtPositionStreaming] |Look for a specific token and split at its position|
-//! | [Offset][Offset] |Calculate the offset between slices|
-//! | [ParseTo][ParseTo] |Used to integrate `&str`'s `parse()` method|
-//! | [Slice][Slice] |Slicing operations using ranges|
+//! | [Offset] |Calculate the offset between slices|
+//! | [ParseTo] |Used to integrate `&str`'s `parse()` method|
+//! | [Slice] |Slicing operations using ranges|
 //!
 //! Here are the traits we have to implement for `MyItem`:
 //!
