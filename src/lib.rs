@@ -8,7 +8,7 @@
 //! ```rust
 //! use nom::{
 //!   IResult,
-//!   Finish,
+//!   FinishIResult as _,
 //!   bytes::complete::{tag, take_while_m_n},
 //!   combinator::map_res,
 //!   sequence::tuple,
