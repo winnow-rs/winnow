@@ -49,7 +49,10 @@ impl<I, O, E> FinishIResult<I, O, E> for IResult<I, O, E> {
 }
 
 #[doc(hidden)]
-#[deprecated(since = "8.0.0", note = "Replaced with `FinishIResult")]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `FinishIResult` which is available via `nom::prelude`"
+)]
 pub trait Finish<I, O, E> {
   fn finish(self) -> Result<(I, O), E>;
 }
