@@ -6,13 +6,10 @@
 //! ## Example
 //!
 //! ```rust
-//! use nom::{
-//!   IResult,
-//!   Finish,
-//!   bytes::complete::{tag, take_while_m_n},
-//!   combinator::map_res,
-//!   sequence::tuple,
-//! };
+//! use nom::prelude::*;
+//! use nom::bytes::complete::{tag, take_while_m_n};
+//! use nom::combinator::map_res;
+//! use nom::sequence::tuple;
 //!
 //! #[derive(Debug,PartialEq)]
 //! pub struct Color {
@@ -466,3 +463,30 @@ pub mod number;
 pub mod _cookbook;
 #[cfg(feature = "unstable-doc")]
 pub mod _tutorial;
+
+/// Core concepts available for glob import
+///
+/// Including
+/// - [`FinishIResult`]
+/// - [`Parser`]
+///
+/// ## Example
+///
+/// ```rust
+/// use nom::prelude::*;
+///
+/// fn parse_data(input: &str) -> IResult<&str, u64> {
+///     // ...
+/// #   nom::character::complete::u64(input)
+/// }
+///
+/// fn main() {
+///   let result = parse_data.parse("100").finish();
+///   assert_eq!(result, Ok(("", 100)));
+/// }
+/// ```
+pub mod prelude {
+  pub use crate::FinishIResult as _;
+  pub use crate::IResult;
+  pub use crate::Parser as _;
+}
