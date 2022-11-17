@@ -18,13 +18,16 @@ use core::num::NonZeroUsize;
 /// it to a more common result type
 pub type IResult<I, O, E = error::Error<I>> = Result<(I, O), Err<E>>;
 
-/// Helper trait to convert a parser's result to a more manageable type
+/// Extension trait to convert a parser's [`IResult`] to a more manageable type
 pub trait Finish<I, O, E> {
-  /// converts the parser's result to a type that is more consumable by error
-  /// management libraries. It keeps the same `Ok` branch, and merges `Err::Error`
-  /// and `Err::Failure` into the `Err` side.
+  /// Converts the parser's [`IResult`] to a type that is more consumable by errors.
   ///
-  /// *warning*: if the result is `Err(Err::Incomplete(_))`, this method will panic.
+  ///  It keeps the same `Ok` branch, and merges `Err::Error` and `Err::Failure` into the `Err`
+  ///  side.
+  ///
+  /// # Panic
+  ///
+  /// If the result is `Err(Err::Incomplete(_))`, this method will panic.
   /// - "complete" parsers: It will not be an issue, `Incomplete` is never used
   /// - "streaming" parsers: `Incomplete` will be returned if there's not enough data
   /// for the parser to decide, and you should gather more data before parsing again.
