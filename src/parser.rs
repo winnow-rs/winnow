@@ -117,6 +117,9 @@ where
 }
 
 /// Contains information on needed data if a parser returned `Incomplete`
+///
+/// **Note:** This is only possible for `Input` types that implement [`InputIsStreaming<true>`],
+/// like [`Streaming`][crate::input::Streaming].
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub enum Needed {
@@ -154,7 +157,7 @@ impl Needed {
 ///
 /// It has three cases:
 ///
-/// * `Incomplete` indicates that more data is needed to decide. The `Needed` enum
+/// * `Incomplete` indicates that more data is needed to decide. The [`Needed`] enum
 /// can contain how many additional bytes are necessary. If you are sure your parser
 /// is working on full data, you can wrap your parser with the `complete` combinator
 /// to transform that case in `Error`
@@ -168,6 +171,9 @@ impl Needed {
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub enum Err<E> {
   /// There was not enough data
+  ///
+  /// This must only be set when the `Input` is [`InputIsStreaming<true>`], like with
+  /// [`Streaming`][crate::input::Streaming]
   Incomplete(Needed),
   /// The parser had an error (recoverable)
   Error(E),
