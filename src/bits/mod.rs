@@ -7,8 +7,8 @@ pub mod streaming;
 mod tests;
 
 use crate::error::{ErrorKind, ParseError};
-use crate::input::{ErrorConvert, Slice};
-use crate::lib::std::ops::RangeFrom;
+use crate::input::{ErrorConvert, InputIsStreaming, InputIter, InputLength, Slice, ToUsize};
+use crate::lib::std::ops::{AddAssign, RangeFrom, Shl, Shr};
 use crate::{Err, IResult, Needed, Parser};
 
 /// Converts a byte-level input to a bit-level input, for consumption by a parser that uses bits.
@@ -108,6 +108,74 @@ where
       }),
       Err(Err::Error(e)) => Err(Err::Error(e.convert())),
       Err(Err::Failure(e)) => Err(Err::Failure(e.convert())),
+    }
+  }
+}
+
+/// Generates a parser taking `count` bits
+///
+/// # Example
+/// ```rust
+/// # use nom::bits::complete::take;
+/// # use nom::IResult;
+/// # use nom::error::{Error, ErrorKind};
+/// // Input is a tuple of (input: I, bit_offset: usize)
+/// fn parser(input: (&[u8], usize), count: usize)-> IResult<(&[u8], usize), u8> {
+///  take(count)(input)
+/// }
+///
+/// // Consumes 0 bits, returns 0
+/// assert_eq!(parser(([0b00010010].as_ref(), 0), 0), Ok((([0b00010010].as_ref(), 0), 0)));
+///
+/// // Consumes 4 bits, returns their values and increase offset to 4
+/// assert_eq!(parser(([0b00010010].as_ref(), 0), 4), Ok((([0b00010010].as_ref(), 4), 0b00000001)));
+///
+/// // Consumes 4 bits, offset is 4, returns their values and increase offset to 0 of next byte
+/// assert_eq!(parser(([0b00010010].as_ref(), 4), 4), Ok((([].as_ref(), 0), 0b00000010)));
+///
+/// // Tries to consume 12 bits but only 8 are available
+/// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(nom::Err::Error(Error{input: ([0b00010010].as_ref(), 0), code: ErrorKind::Eof })));
+/// ```
+#[inline(always)]
+pub fn take<I, O, C, E: ParseError<(I, usize)>, const STREAMING: bool>(
+  count: C,
+) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
+where
+  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength + InputIsStreaming<STREAMING>,
+  C: ToUsize,
+  O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
+{
+  let count = count.to_usize();
+  move |input: (I, usize)| {
+    if STREAMING {
+      streaming::take_internal(input, count)
+    } else {
+      complete::take_internal(input, count)
+    }
+  }
+}
+
+/// Generates a parser taking `count` bits and comparing them to `pattern`
+#[inline(always)]
+pub fn tag<I, O, C, E: ParseError<(I, usize)>, const STREAMING: bool>(
+  pattern: O,
+  count: C,
+) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
+where
+  I: Slice<RangeFrom<usize>>
+    + InputIter<Item = u8>
+    + InputLength
+    + InputIsStreaming<STREAMING>
+    + Clone,
+  C: ToUsize,
+  O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
+{
+  let count = count.to_usize();
+  move |input: (I, usize)| {
+    if STREAMING {
+      streaming::tag_internal(input, &pattern, count)
+    } else {
+      complete::tag_internal(input, &pattern, count)
     }
   }
 }

@@ -39,44 +39,53 @@ where
   O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
   let count = count.to_usize();
-  move |(input, bit_offset): (I, usize)| {
-    if count == 0 {
-      Ok(((input, bit_offset), 0u8.into()))
+  move |input: (I, usize)| take_internal(input, count)
+}
+
+pub(crate) fn take_internal<I, O, E: ParseError<(I, usize)>>(
+  (input, bit_offset): (I, usize),
+  count: usize,
+) -> IResult<(I, usize), O, E>
+where
+  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
+  O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
+{
+  if count == 0 {
+    Ok(((input, bit_offset), 0u8.into()))
+  } else {
+    let cnt = (count + bit_offset).div(8);
+    if input.input_len() * 8 < count + bit_offset {
+      Err(Err::Error(E::from_error_kind(
+        (input, bit_offset),
+        ErrorKind::Eof,
+      )))
     } else {
-      let cnt = (count + bit_offset).div(8);
-      if input.input_len() * 8 < count + bit_offset {
-        Err(Err::Error(E::from_error_kind(
-          (input, bit_offset),
-          ErrorKind::Eof,
-        )))
-      } else {
-        let mut acc: O = 0_u8.into();
-        let mut offset: usize = bit_offset;
-        let mut remaining: usize = count;
-        let mut end_offset: usize = 0;
+      let mut acc: O = 0_u8.into();
+      let mut offset: usize = bit_offset;
+      let mut remaining: usize = count;
+      let mut end_offset: usize = 0;
 
-        for byte in input.iter_elements().take(cnt + 1) {
-          if remaining == 0 {
-            break;
-          }
-          let val: O = if offset == 0 {
-            byte.into()
-          } else {
-            ((byte << offset) as u8 >> offset).into()
-          };
-
-          if remaining < 8 - offset {
-            acc += val >> (8 - offset - remaining);
-            end_offset = remaining + offset;
-            break;
-          } else {
-            acc += val << (remaining - (8 - offset));
-            remaining -= 8 - offset;
-            offset = 0;
-          }
+      for byte in input.iter_elements().take(cnt + 1) {
+        if remaining == 0 {
+          break;
         }
-        Ok(((input.slice(cnt..), end_offset), acc))
+        let val: O = if offset == 0 {
+          byte.into()
+        } else {
+          ((byte << offset) as u8 >> offset).into()
+        };
+
+        if remaining < 8 - offset {
+          acc += val >> (8 - offset - remaining);
+          end_offset = remaining + offset;
+          break;
+        } else {
+          acc += val << (remaining - (8 - offset));
+          remaining -= 8 - offset;
+          offset = 0;
+        }
       }
+      Ok(((input.slice(cnt..), end_offset), acc))
     }
   }
 }
@@ -92,17 +101,27 @@ where
   O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
   let count = count.to_usize();
-  move |input: (I, usize)| {
-    let inp = input.clone();
+  move |input: (I, usize)| tag_internal(input, &pattern, count)
+}
 
-    take(count)(input).and_then(|(i, o)| {
-      if pattern == o {
-        Ok((i, o))
-      } else {
-        Err(Err::Error(error_position!(inp, ErrorKind::TagBits)))
-      }
-    })
-  }
+pub(crate) fn tag_internal<I, O, E: ParseError<(I, usize)>>(
+  input: (I, usize),
+  pattern: &O,
+  count: usize,
+) -> IResult<(I, usize), O, E>
+where
+  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength + Clone,
+  O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
+{
+  let inp = input.clone();
+
+  take_internal(input, count).and_then(|(i, o)| {
+    if *pattern == o {
+      Ok((i, o))
+    } else {
+      Err(Err::Error(error_position!(inp, ErrorKind::TagBits)))
+    }
+  })
 }
 
 #[cfg(test)]
