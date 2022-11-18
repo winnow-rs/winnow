@@ -84,8 +84,6 @@ impl<'a> InputLength for &'a str {
 impl<'a> InputLength for (&'a [u8], usize) {
   #[inline]
   fn input_len(&self) -> usize {
-    //println!("bit input length for ({:?}, {}):", self.0, self.1);
-    //println!("-> {}", self.0.len() * 8 - self.1);
     self.0.len() * 8 - self.1
   }
 }
@@ -878,22 +876,6 @@ impl<'a, 'b> Compare<&'b [u8]> for &'a [u8] {
         }
       }
     }
-
-    /*
-    let len = self.len();
-    let blen = t.len();
-    let m = if len < blen { len } else { blen };
-    let reduced = &self[..m];
-    let b = &t[..m];
-
-    if reduced != b {
-      CompareResult::Error
-    } else if m < blen {
-      CompareResult::Incomplete
-    } else {
-      CompareResult::Ok
-    }
-    */
   }
 
   #[inline(always)]
