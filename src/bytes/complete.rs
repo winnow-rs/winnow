@@ -38,18 +38,27 @@ where
   Input: IntoOutput,
   T: InputLength + Clone,
 {
-  move |i: Input| {
-    let tag_len = tag.input_len();
-    let t = tag.clone();
-    let res: IResult<_, _, Error> = match i.compare(t) {
-      CompareResult::Ok => Ok(i.take_split(tag_len)),
-      _ => {
-        let e: ErrorKind = ErrorKind::Tag;
-        Err(Err::Error(Error::from_error_kind(i, e)))
-      }
-    };
-    res.into_output()
-  }
+  move |i: Input| tag_internal(i, tag.clone())
+}
+
+pub(crate) fn tag_internal<T, Input, Error: ParseError<Input>>(
+  i: Input,
+  t: T,
+) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+where
+  Input: InputTake + Compare<T>,
+  Input: IntoOutput,
+  T: InputLength,
+{
+  let tag_len = t.input_len();
+  let res: IResult<_, _, Error> = match i.compare(t) {
+    CompareResult::Ok => Ok(i.take_split(tag_len)),
+    _ => {
+      let e: ErrorKind = ErrorKind::Tag;
+      Err(Err::Error(Error::from_error_kind(i, e)))
+    }
+  };
+  res.into_output()
 }
 
 /// Recognizes a case insensitive pattern.
@@ -81,19 +90,28 @@ where
   Input: IntoOutput,
   T: InputLength + Clone,
 {
-  move |i: Input| {
-    let tag_len = tag.input_len();
-    let t = tag.clone();
+  move |i: Input| tag_no_case_internal(i, tag.clone())
+}
 
-    let res: IResult<_, _, Error> = match (i).compare_no_case(t) {
-      CompareResult::Ok => Ok(i.take_split(tag_len)),
-      _ => {
-        let e: ErrorKind = ErrorKind::Tag;
-        Err(Err::Error(Error::from_error_kind(i, e)))
-      }
-    };
-    res.into_output()
-  }
+pub(crate) fn tag_no_case_internal<T, Input, Error: ParseError<Input>>(
+  i: Input,
+  t: T,
+) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+where
+  Input: InputTake + Compare<T>,
+  Input: IntoOutput,
+  T: InputLength,
+{
+  let tag_len = t.input_len();
+
+  let res: IResult<_, _, Error> = match (i).compare_no_case(t) {
+    CompareResult::Ok => Ok(i.take_split(tag_len)),
+    _ => {
+      let e: ErrorKind = ErrorKind::Tag;
+      Err(Err::Error(Error::from_error_kind(i, e)))
+    }
+  };
+  res.into_output()
 }
 
 /// Parse till certain characters are met.
@@ -125,11 +143,21 @@ where
   Input: IntoOutput,
   T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
-  move |i: Input| {
-    let e: ErrorKind = ErrorKind::IsNot;
-    i.split_at_position1_complete(|c| arr.find_token(c), e)
-      .into_output()
-  }
+  move |i: Input| is_not_internal(i, &arr)
+}
+
+pub(crate) fn is_not_internal<T, Input, Error: ParseError<Input>>(
+  i: Input,
+  arr: &T,
+) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+where
+  Input: InputTakeAtPosition,
+  Input: IntoOutput,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+{
+  let e: ErrorKind = ErrorKind::IsNot;
+  i.split_at_position1_complete(|c| arr.find_token(c), e)
+    .into_output()
 }
 
 /// Returns the longest slice of the matches the pattern.
@@ -161,11 +189,21 @@ where
   Input: IntoOutput,
   T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
-  move |i: Input| {
-    let e: ErrorKind = ErrorKind::IsA;
-    i.split_at_position1_complete(|c| !arr.find_token(c), e)
-      .into_output()
-  }
+  move |i: Input| is_a_internal(i, &arr)
+}
+
+pub(crate) fn is_a_internal<T, Input, Error: ParseError<Input>>(
+  i: Input,
+  arr: &T,
+) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+where
+  Input: InputTakeAtPosition,
+  Input: IntoOutput,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+{
+  let e: ErrorKind = ErrorKind::IsA;
+  i.split_at_position1_complete(|c| !arr.find_token(c), e)
+    .into_output()
 }
 
 /// Returns the longest input slice (if any) that matches the predicate.
@@ -195,7 +233,19 @@ where
   Input: IntoOutput,
   F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
 {
-  move |i: Input| i.split_at_position_complete(|c| !cond(c)).into_output()
+  move |i: Input| take_while_internal(i, &cond)
+}
+
+pub(crate) fn take_while_internal<F, Input, Error: ParseError<Input>>(
+  i: Input,
+  cond: &F,
+) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+where
+  Input: InputTakeAtPosition,
+  Input: IntoOutput,
+  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+{
+  i.split_at_position_complete(|c| !cond(c)).into_output()
 }
 
 /// Returns the longest (at least 1) input slice that matches the predicate.
@@ -226,10 +276,20 @@ where
   Input: IntoOutput,
   F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
 {
-  move |i: Input| {
-    let e: ErrorKind = ErrorKind::TakeWhile1;
-    i.split_at_position1_complete(|c| !cond(c), e).into_output()
-  }
+  move |i: Input| take_while1_internal(i, &cond)
+}
+
+pub(crate) fn take_while1_internal<F, Input, Error: ParseError<Input>>(
+  i: Input,
+  cond: &F,
+) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+where
+  Input: InputTakeAtPosition,
+  Input: IntoOutput,
+  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+{
+  let e: ErrorKind = ErrorKind::TakeWhile1;
+  i.split_at_position1_complete(|c| !cond(c), e).into_output()
 }
 
 /// Returns the longest (m <= len <= n) input slice  that matches the predicate.
@@ -265,55 +325,65 @@ where
   Input: IntoOutput,
   F: Fn(<Input as InputIter>::Item) -> bool,
 {
-  move |i: Input| {
-    let input = i;
+  move |i: Input| take_while_m_n_internal(i, m, n, &cond)
+}
 
-    match input.position(|c| !cond(c)) {
-      Some(idx) => {
-        if idx >= m {
-          if idx <= n {
-            let res: IResult<_, _, Error> = if let Ok(index) = input.slice_index(idx) {
-              Ok(input.take_split(index))
-            } else {
-              Err(Err::Error(Error::from_error_kind(
-                input,
-                ErrorKind::TakeWhileMN,
-              )))
-            };
-            res.into_output()
+pub(crate) fn take_while_m_n_internal<F, Input, Error: ParseError<Input>>(
+  input: Input,
+  m: usize,
+  n: usize,
+  cond: &F,
+) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+where
+  Input: InputTake + InputIter + InputLength + Slice<RangeFrom<usize>>,
+  Input: IntoOutput,
+  F: Fn(<Input as InputIter>::Item) -> bool,
+{
+  match input.position(|c| !cond(c)) {
+    Some(idx) => {
+      if idx >= m {
+        if idx <= n {
+          let res: IResult<_, _, Error> = if let Ok(index) = input.slice_index(idx) {
+            Ok(input.take_split(index)).into_output()
           } else {
-            let res: IResult<_, _, Error> = if let Ok(index) = input.slice_index(n) {
-              Ok(input.take_split(index))
-            } else {
-              Err(Err::Error(Error::from_error_kind(
-                input,
-                ErrorKind::TakeWhileMN,
-              )))
-            };
-            res.into_output()
-          }
-        } else {
-          let e = ErrorKind::TakeWhileMN;
-          Err(Err::Error(Error::from_error_kind(input, e)))
-        }
-      }
-      None => {
-        let len = input.input_len();
-        if len >= n {
-          match input.slice_index(n) {
-            Ok(index) => Ok(input.take_split(index)).into_output(),
-            Err(_needed) => Err(Err::Error(Error::from_error_kind(
+            Err(Err::Error(Error::from_error_kind(
               input,
               ErrorKind::TakeWhileMN,
-            ))),
-          }
-        } else if len >= m && len <= n {
-          let res: IResult<_, _, Error> = Ok((input.slice(len..), input));
-          res.into_output()
+            )))
+          };
+          res
         } else {
-          let e = ErrorKind::TakeWhileMN;
-          Err(Err::Error(Error::from_error_kind(input, e)))
+          let res: IResult<_, _, Error> = if let Ok(index) = input.slice_index(n) {
+            Ok(input.take_split(index)).into_output()
+          } else {
+            Err(Err::Error(Error::from_error_kind(
+              input,
+              ErrorKind::TakeWhileMN,
+            )))
+          };
+          res
         }
+      } else {
+        let e = ErrorKind::TakeWhileMN;
+        Err(Err::Error(Error::from_error_kind(input, e)))
+      }
+    }
+    None => {
+      let len = input.input_len();
+      if len >= n {
+        match input.slice_index(n) {
+          Ok(index) => Ok(input.take_split(index)).into_output(),
+          Err(_needed) => Err(Err::Error(Error::from_error_kind(
+            input,
+            ErrorKind::TakeWhileMN,
+          ))),
+        }
+      } else if len >= m && len <= n {
+        let res: IResult<_, _, Error> = Ok((input.slice(len..), input));
+        res.into_output()
+      } else {
+        let e = ErrorKind::TakeWhileMN;
+        Err(Err::Error(Error::from_error_kind(input, e)))
       }
     }
   }
@@ -345,7 +415,19 @@ where
   Input: IntoOutput,
   F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
 {
-  move |i: Input| i.split_at_position_complete(|c| cond(c)).into_output()
+  move |i: Input| take_till_internal(i, &cond)
+}
+
+pub(crate) fn take_till_internal<F, Input, Error: ParseError<Input>>(
+  i: Input,
+  cond: &F,
+) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+where
+  Input: InputTakeAtPosition,
+  Input: IntoOutput,
+  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+{
+  i.split_at_position_complete(|c| cond(c)).into_output()
 }
 
 /// Returns the longest (at least 1) input slice till a predicate is met.
@@ -377,10 +459,20 @@ where
   Input: IntoOutput,
   F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
 {
-  move |i: Input| {
-    let e: ErrorKind = ErrorKind::TakeTill1;
-    i.split_at_position1_complete(|c| cond(c), e).into_output()
-  }
+  move |i: Input| take_till1_internal(i, &cond)
+}
+
+pub(crate) fn take_till1_internal<F, Input, Error: ParseError<Input>>(
+  i: Input,
+  cond: &F,
+) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+where
+  Input: InputTakeAtPosition,
+  Input: IntoOutput,
+  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+{
+  let e: ErrorKind = ErrorKind::TakeTill1;
+  i.split_at_position1_complete(|c| cond(c), e).into_output()
 }
 
 /// Returns an input slice containing the first N input elements (Input[..N]).
@@ -421,7 +513,18 @@ where
   C: ToUsize,
 {
   let c = count.to_usize();
-  move |i: Input| match i.slice_index(c) {
+  move |i: Input| take_internal(i, c)
+}
+
+pub(crate) fn take_internal<Input, Error: ParseError<Input>>(
+  i: Input,
+  c: usize,
+) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+where
+  Input: InputIter + InputTake,
+  Input: IntoOutput,
+{
+  match i.slice_index(c) {
     Err(_needed) => Err(Err::Error(Error::from_error_kind(i, ErrorKind::Eof))),
     Ok(index) => Ok(i.take_split(index)).into_output(),
   }
@@ -453,14 +556,23 @@ where
   Input: IntoOutput,
   T: InputLength + Clone,
 {
-  move |i: Input| {
-    let t = tag.clone();
-    let res: IResult<_, _, Error> = match i.find_substring(t) {
-      None => Err(Err::Error(Error::from_error_kind(i, ErrorKind::TakeUntil))),
-      Some(index) => Ok(i.take_split(index)),
-    };
-    res.into_output()
-  }
+  move |i: Input| take_until_internal(i, tag.clone())
+}
+
+pub(crate) fn take_until_internal<T, Input, Error: ParseError<Input>>(
+  i: Input,
+  t: T,
+) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+where
+  Input: InputTake + FindSubstring<T>,
+  Input: IntoOutput,
+  T: InputLength,
+{
+  let res: IResult<_, _, Error> = match i.find_substring(t) {
+    None => Err(Err::Error(Error::from_error_kind(i, ErrorKind::TakeUntil))),
+    Some(index) => Ok(i.take_split(index)),
+  };
+  res.into_output()
 }
 
 /// Returns the non empty input slice up to the first occurrence of the pattern.
@@ -490,15 +602,24 @@ where
   Input: IntoOutput,
   T: InputLength + Clone,
 {
-  move |i: Input| {
-    let t = tag.clone();
-    let res: IResult<_, _, Error> = match i.find_substring(t) {
-      None => Err(Err::Error(Error::from_error_kind(i, ErrorKind::TakeUntil))),
-      Some(0) => Err(Err::Error(Error::from_error_kind(i, ErrorKind::TakeUntil))),
-      Some(index) => Ok(i.take_split(index)),
-    };
-    res.into_output()
-  }
+  move |i: Input| take_until1_internal(i, tag.clone())
+}
+
+pub(crate) fn take_until1_internal<T, Input, Error: ParseError<Input>>(
+  i: Input,
+  t: T,
+) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+where
+  Input: InputTake + FindSubstring<T>,
+  Input: IntoOutput,
+  T: InputLength,
+{
+  let res: IResult<_, _, Error> = match i.find_substring(t) {
+    None => Err(Err::Error(Error::from_error_kind(i, ErrorKind::TakeUntil))),
+    Some(0) => Err(Err::Error(Error::from_error_kind(i, ErrorKind::TakeUntil))),
+    Some(index) => Ok(i.take_split(index)),
+  };
+  res.into_output()
 }
 
 /// Matches a byte string with escaped characters.
@@ -540,67 +661,88 @@ where
   G: Parser<Input, O2, Error>,
   Error: ParseError<Input>,
 {
+  move |input: Input| escaped_internal(input, &mut normal, control_char, &mut escapable)
+}
+
+pub(crate) fn escaped_internal<'a, Input: 'a, Error, F, G, O1, O2>(
+  input: Input,
+  normal: &mut F,
+  control_char: char,
+  escapable: &mut G,
+) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+where
+  Input: Clone
+    + crate::input::Offset
+    + InputLength
+    + InputTake
+    + InputTakeAtPosition
+    + Slice<RangeFrom<usize>>
+    + InputIter,
+  Input: IntoOutput,
+  <Input as InputIter>::Item: crate::input::AsChar,
+  F: Parser<Input, O1, Error>,
+  G: Parser<Input, O2, Error>,
+  Error: ParseError<Input>,
+{
   use crate::input::AsChar;
 
-  move |input: Input| {
-    let mut i = input.clone();
+  let mut i = input.clone();
 
-    while i.input_len() > 0 {
-      let current_len = i.input_len();
+  while i.input_len() > 0 {
+    let current_len = i.input_len();
 
-      match normal.parse(i.clone()) {
-        Ok((i2, _)) => {
-          // return if we consumed everything or if the normal parser
-          // does not consume anything
-          if i2.input_len() == 0 {
-            return Ok((input.slice(input.input_len()..), input)).into_output();
-          } else if i2.input_len() == current_len {
-            let index = input.offset(&i2);
-            return Ok(input.take_split(index)).into_output();
-          } else {
-            i = i2;
-          }
-        }
-        Err(Err::Error(_)) => {
-          // unwrap() should be safe here since index < $i.input_len()
-          if i.iter_elements().next().unwrap().as_char() == control_char {
-            let next = control_char.len_utf8();
-            if next >= i.input_len() {
-              return Err(Err::Error(Error::from_error_kind(
-                input,
-                ErrorKind::Escaped,
-              )));
-            } else {
-              match escapable.parse(i.slice(next..)) {
-                Ok((i2, _)) => {
-                  if i2.input_len() == 0 {
-                    return Ok((input.slice(input.input_len()..), input)).into_output();
-                  } else {
-                    i = i2;
-                  }
-                }
-                Err(e) => return Err(e),
-              }
-            }
-          } else {
-            let index = input.offset(&i);
-            if index == 0 {
-              return Err(Err::Error(Error::from_error_kind(
-                input,
-                ErrorKind::Escaped,
-              )));
-            }
-            return Ok(input.take_split(index)).into_output();
-          }
-        }
-        Err(e) => {
-          return Err(e);
+    match normal.parse(i.clone()) {
+      Ok((i2, _)) => {
+        // return if we consumed everything or if the normal parser
+        // does not consume anything
+        if i2.input_len() == 0 {
+          return Ok((input.slice(input.input_len()..), input)).into_output();
+        } else if i2.input_len() == current_len {
+          let index = input.offset(&i2);
+          return Ok(input.take_split(index)).into_output();
+        } else {
+          i = i2;
         }
       }
+      Err(Err::Error(_)) => {
+        // unwrap() should be safe here since index < $i.input_len()
+        if i.iter_elements().next().unwrap().as_char() == control_char {
+          let next = control_char.len_utf8();
+          if next >= i.input_len() {
+            return Err(Err::Error(Error::from_error_kind(
+              input,
+              ErrorKind::Escaped,
+            )));
+          } else {
+            match escapable.parse(i.slice(next..)) {
+              Ok((i2, _)) => {
+                if i2.input_len() == 0 {
+                  return Ok((input.slice(input.input_len()..), input)).into_output();
+                } else {
+                  i = i2;
+                }
+              }
+              Err(e) => return Err(e),
+            }
+          }
+        } else {
+          let index = input.offset(&i);
+          if index == 0 {
+            return Err(Err::Error(Error::from_error_kind(
+              input,
+              ErrorKind::Escaped,
+            )));
+          }
+          return Ok(input.take_split(index)).into_output();
+        }
+      }
+      Err(e) => {
+        return Err(e);
+      }
     }
-
-    Ok((input.slice(input.input_len()..), input)).into_output()
   }
+
+  Ok((input.slice(input.input_len()..), input)).into_output()
 }
 
 /// Matches a byte string with escaped characters.
@@ -656,67 +798,91 @@ where
   G: Parser<Input, O2, Error>,
   Error: ParseError<Input>,
 {
+  move |input: Input| escaped_transform_internal(input, &mut normal, control_char, &mut transform)
+}
+
+#[cfg(feature = "alloc")]
+pub(crate) fn escaped_transform_internal<Input, Error, F, G, O1, O2, ExtendItem, Output>(
+  input: Input,
+  normal: &mut F,
+  control_char: char,
+  transform: &mut G,
+) -> IResult<Input, Output, Error>
+where
+  Input: Clone
+    + crate::input::Offset
+    + InputLength
+    + InputTake
+    + InputTakeAtPosition
+    + Slice<RangeFrom<usize>>
+    + InputIter,
+  Input: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
+  O1: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
+  O2: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
+  <Input as InputIter>::Item: crate::input::AsChar,
+  F: Parser<Input, O1, Error>,
+  G: Parser<Input, O2, Error>,
+  Error: ParseError<Input>,
+{
   use crate::input::AsChar;
 
-  move |input: Input| {
-    let mut index = 0;
-    let mut res = input.new_builder();
+  let mut index = 0;
+  let mut res = input.new_builder();
 
-    let i = input.clone();
+  let i = input.clone();
 
-    while index < i.input_len() {
-      let current_len = i.input_len();
-      let remainder = i.slice(index..);
-      match normal.parse(remainder.clone()) {
-        Ok((i2, o)) => {
-          o.extend_into(&mut res);
-          if i2.input_len() == 0 {
-            return Ok((i.slice(i.input_len()..), res));
-          } else if i2.input_len() == current_len {
-            return Ok((remainder, res));
-          } else {
-            index = input.offset(&i2);
-          }
+  while index < i.input_len() {
+    let current_len = i.input_len();
+    let remainder = i.slice(index..);
+    match normal.parse(remainder.clone()) {
+      Ok((i2, o)) => {
+        o.extend_into(&mut res);
+        if i2.input_len() == 0 {
+          return Ok((i.slice(i.input_len()..), res));
+        } else if i2.input_len() == current_len {
+          return Ok((remainder, res));
+        } else {
+          index = input.offset(&i2);
         }
-        Err(Err::Error(_)) => {
-          // unwrap() should be safe here since index < $i.input_len()
-          if remainder.iter_elements().next().unwrap().as_char() == control_char {
-            let next = index + control_char.len_utf8();
-            let input_len = input.input_len();
-
-            if next >= input_len {
-              return Err(Err::Error(Error::from_error_kind(
-                remainder,
-                ErrorKind::EscapedTransform,
-              )));
-            } else {
-              match transform.parse(i.slice(next..)) {
-                Ok((i2, o)) => {
-                  o.extend_into(&mut res);
-                  if i2.input_len() == 0 {
-                    return Ok((i.slice(i.input_len()..), res));
-                  } else {
-                    index = input.offset(&i2);
-                  }
-                }
-                Err(e) => return Err(e),
-              }
-            }
-          } else {
-            if index == 0 {
-              return Err(Err::Error(Error::from_error_kind(
-                remainder,
-                ErrorKind::EscapedTransform,
-              )));
-            }
-            return Ok((remainder, res));
-          }
-        }
-        Err(e) => return Err(e),
       }
+      Err(Err::Error(_)) => {
+        // unwrap() should be safe here since index < $i.input_len()
+        if remainder.iter_elements().next().unwrap().as_char() == control_char {
+          let next = index + control_char.len_utf8();
+          let input_len = input.input_len();
+
+          if next >= input_len {
+            return Err(Err::Error(Error::from_error_kind(
+              remainder,
+              ErrorKind::EscapedTransform,
+            )));
+          } else {
+            match transform.parse(i.slice(next..)) {
+              Ok((i2, o)) => {
+                o.extend_into(&mut res);
+                if i2.input_len() == 0 {
+                  return Ok((i.slice(i.input_len()..), res));
+                } else {
+                  index = input.offset(&i2);
+                }
+              }
+              Err(e) => return Err(e),
+            }
+          }
+        } else {
+          if index == 0 {
+            return Err(Err::Error(Error::from_error_kind(
+              remainder,
+              ErrorKind::EscapedTransform,
+            )));
+          }
+          return Ok((remainder, res));
+        }
+      }
+      Err(e) => return Err(e),
     }
-    Ok((input.slice(index..), res))
   }
+  Ok((input.slice(index..), res))
 }
 
 #[cfg(test)]
