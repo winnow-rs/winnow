@@ -34,7 +34,6 @@
 //! | [InputLength] |Calculate the input length|
 //! | [InputTake] |Slicing operations|
 //! | [InputTakeAtPosition] |Look for a specific token and split at its position|
-//! | [InputTakeAtPositionStreaming] |Look for a specific token and split at its position|
 //! | [Offset] |Calculate the offset between slices|
 //! | [ParseTo] |Used to integrate `&str`'s `parse()` method|
 //! | [Slice] |Slicing operations using ranges|
@@ -543,7 +542,7 @@ pub trait UnspecializedInput {}
 /// Methods to take as much input as possible until the provided function returns true for the current element.
 ///
 /// A large part of nom's basic parsers are built using this trait.
-pub trait InputTakeAtPositionStreaming: Sized {
+pub trait InputTakeAtPosition: Sized {
   /// The current input type is a sequence of that `Item` type.
   ///
   /// Example: `u8` for `&[u8]` or `char` for `&str`
@@ -573,10 +572,35 @@ pub trait InputTakeAtPositionStreaming: Sized {
   ) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool;
+
+  /// Looks for the first element of the input type for which the condition returns true,
+  /// and returns the input up to this position.
+  ///
+  /// *complete version*: If no element is found matching the condition, this will return the whole input
+  fn split_at_position_complete<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool;
+
+  /// Looks for the first element of the input type for which the condition returns true
+  /// and returns the input up to this position.
+  ///
+  /// Fails if the produced slice is empty.
+  ///
+  /// *complete version*: If no element is found matching the condition, this will return the whole input
+  fn split_at_position1_complete<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+    e: ErrorKind,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool;
 }
 
-impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput>
-  InputTakeAtPositionStreaming for T
+impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputTakeAtPosition
+  for T
 {
   type Item = <T as InputIter>::Item;
 
@@ -607,112 +631,11 @@ impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput>
       None => Err(Err::Incomplete(Needed::new(1))),
     }
   }
-}
 
-impl<'a> InputTakeAtPositionStreaming for &'a [u8] {
-  type Item = u8;
-
-  fn split_at_position_streaming<P, E: ParseError<Self>>(
+  fn split_at_position_complete<P, E: ParseError<Self>>(
     &self,
     predicate: P,
   ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.iter().position(|c| predicate(*c)) {
-      Some(i) => Ok(self.take_split(i)),
-      None => Err(Err::Incomplete(Needed::new(1))),
-    }
-  }
-
-  fn split_at_position1_streaming<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-    e: ErrorKind,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.iter().position(|c| predicate(*c)) {
-      Some(0) => Err(Err::Error(E::from_error_kind(self, e))),
-      Some(i) => Ok(self.take_split(i)),
-      None => Err(Err::Incomplete(Needed::new(1))),
-    }
-  }
-}
-
-impl<'a> InputTakeAtPositionStreaming for &'a str {
-  type Item = char;
-
-  fn split_at_position_streaming<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.find(predicate) {
-      // find() returns a byte index that is already in the slice at a char boundary
-      Some(i) => unsafe { Ok((self.get_unchecked(i..), self.get_unchecked(..i))) },
-      None => Err(Err::Incomplete(Needed::new(1))),
-    }
-  }
-
-  fn split_at_position1_streaming<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-    e: ErrorKind,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.find(predicate) {
-      Some(0) => Err(Err::Error(E::from_error_kind(self, e))),
-      // find() returns a byte index that is already in the slice at a char boundary
-      Some(i) => unsafe { Ok((self.get_unchecked(i..), self.get_unchecked(..i))) },
-      None => Err(Err::Incomplete(Needed::new(1))),
-    }
-  }
-}
-
-/// Methods to take as much input as possible until the provided function returns true for the current element.
-///
-/// A large part of nom's basic parsers are built using this trait.
-pub trait InputTakeAtPosition: Sized {
-  /// The current input type is a sequence of that `Item` type.
-  ///
-  /// Example: `u8` for `&[u8]` or `char` for `&str`
-  type Item;
-
-  /// Looks for the first element of the input type for which the condition returns true,
-  /// and returns the input up to this position.
-  ///
-  /// *complete version*: If no element is found matching the condition, this will return the whole input
-  fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool;
-
-  /// Looks for the first element of the input type for which the condition returns true
-  /// and returns the input up to this position.
-  ///
-  /// Fails if the produced slice is empty.
-  ///
-  /// *complete version*: If no element is found matching the condition, this will return the whole input
-  fn split_at_position1<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-    e: ErrorKind,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool;
-}
-
-impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputTakeAtPosition
-  for T
-{
-  type Item = <T as InputIter>::Item;
-
-  fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
   {
@@ -722,7 +645,7 @@ impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
     }
   }
 
-  fn split_at_position1<P, E: ParseError<Self>>(
+  fn split_at_position1_complete<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
@@ -747,7 +670,38 @@ impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
 impl<'a> InputTakeAtPosition for &'a [u8] {
   type Item = u8;
 
-  fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
+  fn split_at_position_streaming<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.iter().position(|c| predicate(*c)) {
+      Some(i) => Ok(self.take_split(i)),
+      None => Err(Err::Incomplete(Needed::new(1))),
+    }
+  }
+
+  fn split_at_position1_streaming<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+    e: ErrorKind,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.iter().position(|c| predicate(*c)) {
+      Some(0) => Err(Err::Error(E::from_error_kind(self, e))),
+      Some(i) => Ok(self.take_split(i)),
+      None => Err(Err::Incomplete(Needed::new(1))),
+    }
+  }
+
+  fn split_at_position_complete<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+  ) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
   {
@@ -757,7 +711,7 @@ impl<'a> InputTakeAtPosition for &'a [u8] {
     }
   }
 
-  fn split_at_position1<P, E: ParseError<Self>>(
+  fn split_at_position1_complete<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
@@ -782,7 +736,40 @@ impl<'a> InputTakeAtPosition for &'a [u8] {
 impl<'a> InputTakeAtPosition for &'a str {
   type Item = char;
 
-  fn split_at_position<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
+  fn split_at_position_streaming<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.find(predicate) {
+      // find() returns a byte index that is already in the slice at a char boundary
+      Some(i) => unsafe { Ok((self.get_unchecked(i..), self.get_unchecked(..i))) },
+      None => Err(Err::Incomplete(Needed::new(1))),
+    }
+  }
+
+  fn split_at_position1_streaming<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+    e: ErrorKind,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.find(predicate) {
+      Some(0) => Err(Err::Error(E::from_error_kind(self, e))),
+      // find() returns a byte index that is already in the slice at a char boundary
+      Some(i) => unsafe { Ok((self.get_unchecked(i..), self.get_unchecked(..i))) },
+      None => Err(Err::Incomplete(Needed::new(1))),
+    }
+  }
+
+  fn split_at_position_complete<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+  ) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
   {
@@ -799,7 +786,7 @@ impl<'a> InputTakeAtPosition for &'a str {
     }
   }
 
-  fn split_at_position1<P, E: ParseError<Self>>(
+  fn split_at_position1_complete<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
