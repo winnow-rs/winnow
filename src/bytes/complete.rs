@@ -123,7 +123,7 @@ where
 {
   move |i: Input| {
     let e: ErrorKind = ErrorKind::IsNot;
-    i.split_at_position1(|c| arr.find_token(c), e)
+    i.split_at_position1_complete(|c| arr.find_token(c), e)
   }
 }
 
@@ -157,7 +157,7 @@ where
 {
   move |i: Input| {
     let e: ErrorKind = ErrorKind::IsA;
-    i.split_at_position1(|c| !arr.find_token(c), e)
+    i.split_at_position1_complete(|c| !arr.find_token(c), e)
   }
 }
 
@@ -187,7 +187,7 @@ where
   Input: InputTakeAtPosition,
   F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
 {
-  move |i: Input| i.split_at_position(|c| !cond(c))
+  move |i: Input| i.split_at_position_complete(|c| !cond(c))
 }
 
 /// Returns the longest (at least 1) input slice that matches the predicate.
@@ -219,7 +219,7 @@ where
 {
   move |i: Input| {
     let e: ErrorKind = ErrorKind::TakeWhile1;
-    i.split_at_position1(|c| !cond(c), e)
+    i.split_at_position1_complete(|c| !cond(c), e)
   }
 }
 
@@ -334,7 +334,7 @@ where
   Input: InputTakeAtPosition,
   F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
 {
-  move |i: Input| i.split_at_position(|c| cond(c))
+  move |i: Input| i.split_at_position_complete(|c| cond(c))
 }
 
 /// Returns the longest (at least 1) input slice till a predicate is met.
@@ -367,7 +367,7 @@ where
 {
   move |i: Input| {
     let e: ErrorKind = ErrorKind::TakeTill1;
-    i.split_at_position1(|c| cond(c), e)
+    i.split_at_position1_complete(|c| cond(c), e)
   }
 }
 

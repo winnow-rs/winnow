@@ -7,7 +7,7 @@ use crate::combinator::opt;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{
-  AsChar, FindToken, InputIter, InputLength, InputTake, InputTakeAtPositionStreaming, Slice,
+  AsChar, FindToken, InputIter, InputLength, InputTake, InputTakeAtPosition, Slice,
 };
 use crate::input::{Compare, CompareResult};
 use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
@@ -316,8 +316,8 @@ where
 /// ```
 pub fn alpha0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionStreaming,
-  <T as InputTakeAtPositionStreaming>::Item: AsChar,
+  T: InputTakeAtPosition,
+  <T as InputTakeAtPosition>::Item: AsChar,
 {
   input.split_at_position_streaming(|item| !item.is_alpha())
 }
@@ -337,8 +337,8 @@ where
 /// ```
 pub fn alpha1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionStreaming,
-  <T as InputTakeAtPositionStreaming>::Item: AsChar,
+  T: InputTakeAtPosition,
+  <T as InputTakeAtPosition>::Item: AsChar,
 {
   input.split_at_position1_streaming(|item| !item.is_alpha(), ErrorKind::Alpha)
 }
@@ -358,8 +358,8 @@ where
 /// ```
 pub fn digit0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionStreaming,
-  <T as InputTakeAtPositionStreaming>::Item: AsChar,
+  T: InputTakeAtPosition,
+  <T as InputTakeAtPosition>::Item: AsChar,
 {
   input.split_at_position_streaming(|item| !item.is_dec_digit())
 }
@@ -379,8 +379,8 @@ where
 /// ```
 pub fn digit1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionStreaming,
-  <T as InputTakeAtPositionStreaming>::Item: AsChar,
+  T: InputTakeAtPosition,
+  <T as InputTakeAtPosition>::Item: AsChar,
 {
   input.split_at_position1_streaming(|item| !item.is_dec_digit(), ErrorKind::Digit)
 }
@@ -400,8 +400,8 @@ where
 /// ```
 pub fn hex_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionStreaming,
-  <T as InputTakeAtPositionStreaming>::Item: AsChar,
+  T: InputTakeAtPosition,
+  <T as InputTakeAtPosition>::Item: AsChar,
 {
   input.split_at_position_streaming(|item| !item.is_hex_digit())
 }
@@ -421,8 +421,8 @@ where
 /// ```
 pub fn hex_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionStreaming,
-  <T as InputTakeAtPositionStreaming>::Item: AsChar,
+  T: InputTakeAtPosition,
+  <T as InputTakeAtPosition>::Item: AsChar,
 {
   input.split_at_position1_streaming(|item| !item.is_hex_digit(), ErrorKind::HexDigit)
 }
@@ -442,8 +442,8 @@ where
 /// ```
 pub fn oct_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionStreaming,
-  <T as InputTakeAtPositionStreaming>::Item: AsChar,
+  T: InputTakeAtPosition,
+  <T as InputTakeAtPosition>::Item: AsChar,
 {
   input.split_at_position_streaming(|item| !item.is_oct_digit())
 }
@@ -463,8 +463,8 @@ where
 /// ```
 pub fn oct_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionStreaming,
-  <T as InputTakeAtPositionStreaming>::Item: AsChar,
+  T: InputTakeAtPosition,
+  <T as InputTakeAtPosition>::Item: AsChar,
 {
   input.split_at_position1_streaming(|item| !item.is_oct_digit(), ErrorKind::OctDigit)
 }
@@ -484,8 +484,8 @@ where
 /// ```
 pub fn alphanumeric0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionStreaming,
-  <T as InputTakeAtPositionStreaming>::Item: AsChar,
+  T: InputTakeAtPosition,
+  <T as InputTakeAtPosition>::Item: AsChar,
 {
   input.split_at_position_streaming(|item| !item.is_alphanum())
 }
@@ -505,8 +505,8 @@ where
 /// ```
 pub fn alphanumeric1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionStreaming,
-  <T as InputTakeAtPositionStreaming>::Item: AsChar,
+  T: InputTakeAtPosition,
+  <T as InputTakeAtPosition>::Item: AsChar,
 {
   input.split_at_position1_streaming(|item| !item.is_alphanum(), ErrorKind::AlphaNumeric)
 }
@@ -526,8 +526,8 @@ where
 /// ```
 pub fn space0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionStreaming,
-  <T as InputTakeAtPositionStreaming>::Item: AsChar + Clone,
+  T: InputTakeAtPosition,
+  <T as InputTakeAtPosition>::Item: AsChar + Clone,
 {
   input.split_at_position_streaming(|item| {
     let c = item.as_char();
@@ -549,8 +549,8 @@ where
 /// ```
 pub fn space1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionStreaming,
-  <T as InputTakeAtPositionStreaming>::Item: AsChar + Clone,
+  T: InputTakeAtPosition,
+  <T as InputTakeAtPosition>::Item: AsChar + Clone,
 {
   input.split_at_position1_streaming(
     |item| {
@@ -576,8 +576,8 @@ where
 /// ```
 pub fn multispace0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionStreaming,
-  <T as InputTakeAtPositionStreaming>::Item: AsChar + Clone,
+  T: InputTakeAtPosition,
+  <T as InputTakeAtPosition>::Item: AsChar + Clone,
 {
   input.split_at_position_streaming(|item| {
     let c = item.as_char();
@@ -600,8 +600,8 @@ where
 /// ```
 pub fn multispace1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
 where
-  T: InputTakeAtPositionStreaming,
-  <T as InputTakeAtPositionStreaming>::Item: AsChar + Clone,
+  T: InputTakeAtPosition,
+  <T as InputTakeAtPosition>::Item: AsChar + Clone,
 {
   input.split_at_position1_streaming(
     |item| {
