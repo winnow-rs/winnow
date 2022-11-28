@@ -1,6 +1,4 @@
-
 use super::*;
-use crate::bits::streaming::take;
 use crate::error::Error;
 use crate::sequence::tuple;
 
@@ -8,6 +6,8 @@ use crate::sequence::tuple;
 /// Take the `bits` function and assert that remaining bytes are correctly returned, if the
 /// previous bytes are fully consumed
 fn test_complete_byte_consumption_bits() {
+  use crate::bits::streaming::take;
+
   let input = &[0x12, 0x34, 0x56, 0x78];
 
   // Take 3 bit slices with sizes [4, 8, 4].
@@ -33,6 +33,8 @@ fn test_complete_byte_consumption_bits() {
 /// I.e. if we consume 1.5 bytes of 4 bytes, 2 bytes will be returned, bits 13-16 will be
 /// dropped.
 fn test_partial_byte_consumption_bits() {
+  use crate::bits::streaming::take;
+
   let input = &[0x12, 0x34, 0x56, 0x78];
 
   // Take bit slices with sizes [4, 8].
@@ -53,6 +55,7 @@ fn test_partial_byte_consumption_bits() {
 #[cfg(feature = "std")]
 /// Ensure that in Incomplete error is thrown, if too few bytes are passed for a given parser.
 fn test_incomplete_bits() {
+  use crate::bits::streaming::take;
   let input = &[0x12];
 
   // Take bit slices with sizes [4, 8].
