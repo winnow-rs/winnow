@@ -37,6 +37,7 @@ pub fn is_oct_digit(chr: u8) -> bool {
 #[doc(hidden)]
 #[deprecated(since = "8.0.0", note = "Replaced with `AsChar::is_alphanum`")]
 pub fn is_alphanumeric(chr: u8) -> bool {
+  #![allow(deprecated)]
   is_alphabetic(chr) || is_digit(chr)
 }
 
