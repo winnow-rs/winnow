@@ -49,7 +49,7 @@ proptest = "1.0.0"
 [package.metadata.docs.rs]
 features = ["unstable-doc"]
 rustdoc-args = ["--cfg", "docsrs"]
-cargo-args = ["-Zunstable-options", "-Zrustdoc-scrape-examples=examples"]
+cargo-args = ["-Zunstable-options", "-Zrustdoc-scrape-examples"]
 
 [profile.bench]
 debug = true
