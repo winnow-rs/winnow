@@ -39,8 +39,8 @@
 //!
 //! ```rust,ignore
 //! # use nom::IResult;
-//! # use nom::Finish;
-//! # let parser = nom::bytes::complete::take_while1(|c| c == ' ');
+//! # use nom::prelude::*;
+//! # let parser = nom::bytes::complete::take_while1(|c: char| c == ' ');
 //! # let input = " ";
 //! let parser_result: IResult<_, _, _> = parser(input);
 //! let result: Result<(_, _), _> = parser_result.finish();
@@ -53,7 +53,7 @@
 //! ```rust,ignore
 //! # use nom::Err;
 //! # type Value<'s> = &'s [u8];
-//! # let parser = nom::bytes::complete::take_while1(|c| c == b' ');
+//! # let parser = nom::bytes::complete::take_while1(|c: u8| c == b' ');
 //! # let data = " ";
 //! let result: Result<(&[u8], Value<'_>), Err<Vec<u8>>> =
 //!   parser(data).map_err(|e: E<&[u8]>| e.to_owned());
