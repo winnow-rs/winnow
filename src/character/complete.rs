@@ -35,7 +35,15 @@ where
   I: Slice<RangeFrom<usize>> + InputIter,
   <I as InputIter>::Item: AsChar,
 {
-  move |i: I| match (i).iter_elements().next().map(|t| {
+  move |i: I| char_internal(i, c)
+}
+
+pub(crate) fn char_internal<I, Error: ParseError<I>>(i: I, c: char) -> IResult<I, char, Error>
+where
+  I: Slice<RangeFrom<usize>> + InputIter,
+  <I as InputIter>::Item: AsChar,
+{
+  match (i).iter_elements().next().map(|t| {
     let b = t.as_char() == c;
     (&c, b)
   }) {
@@ -65,7 +73,19 @@ where
   <I as InputIter>::Item: AsChar,
   F: Fn(char) -> bool,
 {
-  move |i: I| match (i).iter_elements().next().map(|t| {
+  move |i: I| satisfy_internal(i, &cond)
+}
+
+pub(crate) fn satisfy_internal<F, I, Error: ParseError<I>>(
+  i: I,
+  cond: &F,
+) -> IResult<I, char, Error>
+where
+  I: Slice<RangeFrom<usize>> + InputIter,
+  <I as InputIter>::Item: AsChar,
+  F: Fn(char) -> bool,
+{
+  match (i).iter_elements().next().map(|t| {
     let c = t.as_char();
     let b = cond(c);
     (c, b)
@@ -93,7 +113,16 @@ where
   <I as InputIter>::Item: AsChar + Copy,
   T: FindToken<<I as InputIter>::Item>,
 {
-  move |i: I| match (i).iter_elements().next().map(|c| (c, list.find_token(c))) {
+  move |i: I| one_of_internal(i, &list)
+}
+
+pub(crate) fn one_of_internal<I, T, Error: ParseError<I>>(i: I, list: &T) -> IResult<I, char, Error>
+where
+  I: Slice<RangeFrom<usize>> + InputIter,
+  <I as InputIter>::Item: AsChar + Copy,
+  T: FindToken<<I as InputIter>::Item>,
+{
+  match (i).iter_elements().next().map(|c| (c, list.find_token(c))) {
     Some((c, true)) => Ok((i.slice(c.len()..), c.as_char())),
     _ => Err(Err::Error(Error::from_error_kind(i, ErrorKind::OneOf))),
   }
@@ -117,7 +146,19 @@ where
   <I as InputIter>::Item: AsChar + Copy,
   T: FindToken<<I as InputIter>::Item>,
 {
-  move |i: I| match (i).iter_elements().next().map(|c| (c, !list.find_token(c))) {
+  move |i: I| none_of_internal(i, &list)
+}
+
+pub(crate) fn none_of_internal<I, T, Error: ParseError<I>>(
+  i: I,
+  list: &T,
+) -> IResult<I, char, Error>
+where
+  I: Slice<RangeFrom<usize>> + InputIter,
+  <I as InputIter>::Item: AsChar + Copy,
+  T: FindToken<<I as InputIter>::Item>,
+{
+  match (i).iter_elements().next().map(|c| (c, !list.find_token(c))) {
     Some((c, true)) => Ok((i.slice(c.len()..), c.as_char())),
     _ => Err(Err::Error(Error::from_error_kind(i, ErrorKind::NoneOf))),
   }
