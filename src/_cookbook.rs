@@ -374,8 +374,8 @@
 //!   type Err = Error<String>;
 //!
 //!   fn from_str(s: &str) -> Result<Self, Self::Err> {
-//!       match parse_name(s).finish_err() {
-//!           Ok((_remaining, name)) => Ok(Name(name.to_string())),
+//!       match parse_name(s).finish() {
+//!           Ok(name) => Ok(Name(name.to_string())),
 //!           Err(Error { input, code }) => Err(Error {
 //!               input: input.to_string(),
 //!               code,

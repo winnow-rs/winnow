@@ -35,7 +35,7 @@
 //!
 //! If we are running a parser and know it will not return `Err::Incomplete`, we can
 //! directly extract the error type from `Err::Error` or `Err::Failure` with the
-//! `finish_err()` method:
+//! `finish()` method:
 //!
 //! ```rust,ignore
 //! # use nom::IResult;
@@ -43,7 +43,7 @@
 //! # let parser = nom::bytes::complete::take_while1(|c: char| c == ' ');
 //! # let input = " ";
 //! let parser_result: IResult<_, _, _> = parser(input);
-//! let result: Result<(_, _), _> = parser_result.finish_err();
+//! let result: Result<_, _> = parser_result.finish();
 //! ```
 //!
 //! If we used a borrowed type as input, like `&[u8]` or `&str`, we might want to
@@ -225,7 +225,7 @@
 //! can build such a message.
 //!
 //! ```rust,ignore
-//! let e = json::<VerboseError<&str>>(data).finish_err().err().unwrap();
+//! let e = json::<VerboseError<&str>>(data).finish().err().unwrap();
 //! // here we use the `convert_error` function, to transform a `VerboseError<&str>`
 //! // into a printable trace.
 //! //

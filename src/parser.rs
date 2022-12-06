@@ -14,12 +14,27 @@ use core::num::NonZeroUsize;
 /// The `Ok` side is a pair containing the remainder of the input (the part of the data that
 /// was not parsed) and the produced value. The `Err` side contains an instance of `nom::Err`.
 ///
-/// Outside of the parsing code, you can use the [`FinishIResult::finish_err`] method to convert
+/// Outside of the parsing code, you can use the [`FinishIResult::finish`] method to convert
 /// it to a more common result type
 pub type IResult<I, O, E = error::Error<I>> = Result<(I, O), Err<E>>;
 
 /// Extension trait to convert a parser's [`IResult`] to a more manageable type
 pub trait FinishIResult<I, O, E> {
+  /// Converts the parser's [`IResult`] to a type that is more consumable by callers.
+  ///
+  /// Errors if the parser is not at the [end of input][crate::combinator::eof].  See
+  /// [`FinishIResult::finish_err`] if the remaining input is needed.
+  ///
+  /// # Panic
+  ///
+  /// If the result is `Err(Err::Incomplete(_))`, this method will panic.
+  /// - "complete" parsers: It will not be an issue, `Incomplete` is never used
+  /// - "streaming" parsers: `Incomplete` will be returned if there's not enough data
+  /// for the parser to decide, and you should gather more data before parsing again.
+  /// Once the parser returns either `Ok(_)`, `Err(Err::Error(_))` or `Err(Err::Failure(_))`,
+  /// you can get out of the parsing loop and call `finish_err()` on the parser's result
+  fn finish(self) -> Result<O, E>;
+
   /// Converts the parser's [`IResult`] to a type that is more consumable by errors.
   ///
   ///  It keeps the same `Ok` branch, and merges `Err::Error` and `Err::Failure` into the `Err`
@@ -36,7 +51,17 @@ pub trait FinishIResult<I, O, E> {
   fn finish_err(self) -> Result<(I, O), E>;
 }
 
-impl<I, O, E> FinishIResult<I, O, E> for IResult<I, O, E> {
+impl<I, O, E> FinishIResult<I, O, E> for IResult<I, O, E>
+where
+  I: crate::input::InputLength + Clone,
+  E: crate::error::ParseError<I>,
+{
+  fn finish(self) -> Result<O, E> {
+    let (i, o) = self.finish_err()?;
+    crate::combinator::eof(i).finish_err()?;
+    Ok(o)
+  }
+
   fn finish_err(self) -> Result<(I, O), E> {
     match self {
       Ok(res) => Ok(res),
