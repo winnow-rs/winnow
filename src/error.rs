@@ -43,7 +43,7 @@
 //! # let parser = nom::bytes::complete::take_while1(|c: char| c == ' ');
 //! # let input = " ";
 //! let parser_result: IResult<_, _, _> = parser(input);
-//! let result: Result<(_, _), _> = parser_result.finish();
+//! let result: Result<_, _> = parser_result.finish();
 //! ```
 //!
 //! If we used a borrowed type as input, like `&[u8]` or `&str`, we might want to

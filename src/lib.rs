@@ -42,11 +42,11 @@
 //!
 //! fn main() {
 //!   let result = hex_color("#2F14DF").finish();
-//!   assert_eq!(result, Ok(("", Color {
+//!   assert_eq!(result, Ok(Color {
 //!     red: 47,
 //!     green: 20,
 //!     blue: 223,
-//!   })));
+//!   }));
 //! }
 //! ```
 //!
@@ -482,7 +482,7 @@ pub mod _tutorial;
 ///
 /// fn main() {
 ///   let result = parse_data.parse("100").finish();
-///   assert_eq!(result, Ok(("", 100)));
+///   assert_eq!(result, Ok(100));
 /// }
 /// ```
 pub mod prelude {
