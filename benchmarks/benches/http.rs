@@ -173,7 +173,7 @@ Connection: keep-alive
     b.iter(|| parse(data).unwrap());
   });
 
-  http_group.finish();
+  http_group.finish_err();
 }
 
 /*

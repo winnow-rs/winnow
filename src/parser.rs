@@ -14,7 +14,7 @@ use core::num::NonZeroUsize;
 /// The `Ok` side is a pair containing the remainder of the input (the part of the data that
 /// was not parsed) and the produced value. The `Err` side contains an instance of `nom::Err`.
 ///
-/// Outside of the parsing code, you can use the [`FinishIResult::finish`] method to convert
+/// Outside of the parsing code, you can use the [`FinishIResult::finish_err`] method to convert
 /// it to a more common result type
 pub type IResult<I, O, E = error::Error<I>> = Result<(I, O), Err<E>>;
 
@@ -32,17 +32,17 @@ pub trait FinishIResult<I, O, E> {
   /// - "streaming" parsers: `Incomplete` will be returned if there's not enough data
   /// for the parser to decide, and you should gather more data before parsing again.
   /// Once the parser returns either `Ok(_)`, `Err(Err::Error(_))` or `Err(Err::Failure(_))`,
-  /// you can get out of the parsing loop and call `finish()` on the parser's result
-  fn finish(self) -> Result<(I, O), E>;
+  /// you can get out of the parsing loop and call `finish_err()` on the parser's result
+  fn finish_err(self) -> Result<(I, O), E>;
 }
 
 impl<I, O, E> FinishIResult<I, O, E> for IResult<I, O, E> {
-  fn finish(self) -> Result<(I, O), E> {
+  fn finish_err(self) -> Result<(I, O), E> {
     match self {
       Ok(res) => Ok(res),
       Err(Err::Error(e)) | Err(Err::Failure(e)) => Err(e),
       Err(Err::Incomplete(_)) => {
-        panic!("Cannot call `finish()` on `Err(Err::Incomplete(_))`: this result means that the parser does not have enough data to decide, you should gather more data and try to reapply  the parser instead")
+        panic!("Cannot call `finish_err()` on `Err(Err::Incomplete(_))`: this result means that the parser does not have enough data to decide, you should gather more data and try to reapply  the parser instead")
       }
     }
   }
@@ -54,6 +54,10 @@ impl<I, O, E> FinishIResult<I, O, E> for IResult<I, O, E> {
   note = "Replaced with `FinishIResult` which is available via `nom::prelude`"
 )]
 pub trait Finish<I, O, E> {
+  #[deprecated(
+    since = "8.0.0",
+    note = "Replaced with `FinishIResult::finish_err` which is available via `nom::prelude`"
+  )]
   fn finish(self) -> Result<(I, O), E>;
 }
 

@@ -41,7 +41,7 @@
 //! }
 //!
 //! fn main() {
-//!   let result = hex_color("#2F14DF").finish();
+//!   let result = hex_color("#2F14DF").finish_err();
 //!   assert_eq!(result, Ok(("", Color {
 //!     red: 47,
 //!     green: 20,
@@ -481,7 +481,7 @@ pub mod _tutorial;
 /// }
 ///
 /// fn main() {
-///   let result = parse_data.parse("100").finish();
+///   let result = parse_data.parse("100").finish_err();
 ///   assert_eq!(result, Ok(("", 100)));
 /// }
 /// ```
