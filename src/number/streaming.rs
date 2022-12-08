@@ -1438,7 +1438,18 @@ where
 ///
 /// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there is not enough data.
 ///
-pub fn recognize_float_parts<T, E: ParseError<T>>(input: T) -> IResult<T, (bool, T, T, i32), E>
+pub fn recognize_float_parts<T, E: ParseError<T>>(
+  input: T,
+) -> IResult<
+  T,
+  (
+    bool,
+    <T as IntoOutput>::Output,
+    <T as IntoOutput>::Output,
+    i32,
+  ),
+  E,
+>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   T: Clone + Offset,
@@ -1527,7 +1538,10 @@ where
     (i2, 0)
   };
 
-  Ok((i, (sign, integer, fraction, exp)))
+  Ok((
+    i,
+    (sign, integer.into_output(), fraction.into_output(), exp),
+  ))
 }
 
 /// Recognizes floating point number in text format and returns a f32.
