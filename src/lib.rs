@@ -7,7 +7,7 @@
 //!
 //! ```rust
 //! use nom::prelude::*;
-//! use nom::bytes::complete::{tag, take_while_m_n};
+//! use nom::bytes::{tag, take_while_m_n};
 //! use nom::combinator::map_res;
 //! use nom::sequence::tuple;
 //!
@@ -90,8 +90,8 @@
 //!   IResult,
 //!   sequence::delimited,
 //!   // see the "streaming/complete" paragraph lower for an explanation of these submodules
-//!   character::complete::char,
-//!   bytes::complete::is_not
+//!   character::char,
+//!   bytes::is_not
 //! };
 //!
 //! fn parens(input: &str) -> IResult<&str, &str> {
@@ -127,8 +127,8 @@
 //! With functions, you would write it like this:
 //!
 //! ```rust
-//! use nom::{IResult, bytes::streaming::take};
-//! fn take4(input: &str) -> IResult<&str, &str> {
+//! use nom::{IResult, bytes::take, input::Streaming};
+//! fn take4(input: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
 //!   take(4u8)(input)
 //! }
 //! ```
@@ -183,7 +183,7 @@
 //!
 //! ```rust
 //! use nom::IResult;
-//! use nom::bytes::complete::{tag, take};
+//! use nom::bytes::{tag, take};
 //! fn abcd_parser(i: &str) -> IResult<&str, &str> {
 //!   tag("abcd")(i) // will consume bytes if the input begins with "abcd"
 //! }
@@ -202,7 +202,7 @@
 //! ```rust
 //! use nom::IResult;
 //! use nom::branch::alt;
-//! use nom::bytes::complete::tag;
+//! use nom::bytes::tag;
 //!
 //! let mut alt_tags = alt((tag("abcd"), tag("efgh")));
 //!
@@ -215,7 +215,7 @@
 //! an error, **`opt`** will still succeed and return None:
 //!
 //! ```rust
-//! use nom::{IResult, combinator::opt, bytes::complete::tag};
+//! use nom::{IResult, combinator::opt, bytes::tag};
 //! fn abcd_opt(i: &[u8]) -> IResult<&[u8], Option<&[u8]>> {
 //!   opt(tag("abcd"))(i)
 //! }
@@ -229,7 +229,7 @@
 //! ```rust
 //! # #[cfg(feature = "alloc")]
 //! # fn main() {
-//! use nom::{IResult, multi::many0, bytes::complete::tag};
+//! use nom::{IResult, multi::many0, bytes::tag};
 //! use std::str;
 //!
 //! fn multi(i: &str) -> IResult<&str, Vec<&str>> {
@@ -260,23 +260,26 @@
 //!
 //! ```rust
 //! # fn main() {
-//! use nom::{error::ErrorKind, Needed,
-//! number::streaming::be_u16,
-//! bytes::streaming::{tag, take},
-//! sequence::tuple};
+//! use nom::{
+//!     error::ErrorKind, Needed,
+//!     number::be_u16,
+//!     bytes::{tag, take},
+//!     sequence::tuple,
+//!     input::Streaming,
+//! };
 //!
 //! let mut tpl = tuple((be_u16, take(3u8), tag("fg")));
 //!
 //! assert_eq!(
-//!   tpl(&b"abcdefgh"[..]),
+//!   tpl(Streaming(&b"abcdefgh"[..])),
 //!   Ok((
-//!     &b"h"[..],
+//!     Streaming(&b"h"[..]),
 //!     (0x6162u16, &b"cde"[..], &b"fg"[..])
 //!   ))
 //! );
-//! assert_eq!(tpl(&b"abcde"[..]), Err(nom::Err::Incomplete(Needed::new(2))));
+//! assert_eq!(tpl(Streaming(&b"abcde"[..])), Err(nom::Err::Incomplete(Needed::new(2))));
 //! let input = &b"abcdejk"[..];
-//! assert_eq!(tpl(input), Err(nom::Err::Error((&input[5..], ErrorKind::Tag))));
+//! assert_eq!(tpl(Streaming(input)), Err(nom::Err::Error((Streaming(&input[5..]), ErrorKind::Tag))));
 //! # }
 //! ```
 //!
@@ -285,7 +288,7 @@
 //!
 //! ```rust
 //! # fn main() {
-//! use nom::{IResult, bytes::complete::tag};
+//! use nom::{IResult, bytes::tag};
 //!
 //! #[derive(Debug, PartialEq)]
 //! struct A {
@@ -327,44 +330,44 @@
 //! Here is how it works in practice:
 //!
 //! ```rust
-//! use nom::{IResult, Err, Needed, error::{Error, ErrorKind}, bytes, character};
+//! use nom::{IResult, Err, Needed, error::{Error, ErrorKind}, bytes, character, input::Streaming};
 //!
-//! fn take_streaming(i: &[u8]) -> IResult<&[u8], &[u8]> {
-//!   bytes::streaming::take(4u8)(i)
+//! fn take_streaming(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+//!   bytes::take(4u8)(i)
 //! }
 //!
 //! fn take_complete(i: &[u8]) -> IResult<&[u8], &[u8]> {
-//!   bytes::complete::take(4u8)(i)
+//!   bytes::take(4u8)(i)
 //! }
 //!
 //! // both parsers will take 4 bytes as expected
-//! assert_eq!(take_streaming(&b"abcde"[..]), Ok((&b"e"[..], &b"abcd"[..])));
+//! assert_eq!(take_streaming(Streaming(&b"abcde"[..])), Ok((Streaming(&b"e"[..]), &b"abcd"[..])));
 //! assert_eq!(take_complete(&b"abcde"[..]), Ok((&b"e"[..], &b"abcd"[..])));
 //!
 //! // if the input is smaller than 4 bytes, the streaming parser
 //! // will return `Incomplete` to indicate that we need more data
-//! assert_eq!(take_streaming(&b"abc"[..]), Err(Err::Incomplete(Needed::new(1))));
+//! assert_eq!(take_streaming(Streaming(&b"abc"[..])), Err(Err::Incomplete(Needed::new(1))));
 //!
 //! // but the complete parser will return an error
 //! assert_eq!(take_complete(&b"abc"[..]), Err(Err::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
 //!
 //! // the alpha0 function recognizes 0 or more alphabetic characters
-//! fn alpha0_streaming(i: &str) -> IResult<&str, &str> {
-//!   character::streaming::alpha0(i)
+//! fn alpha0_streaming(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+//!   character::alpha0(i)
 //! }
 //!
 //! fn alpha0_complete(i: &str) -> IResult<&str, &str> {
-//!   character::complete::alpha0(i)
+//!   character::alpha0(i)
 //! }
 //!
 //! // if there's a clear limit to the recognized characters, both parsers work the same way
-//! assert_eq!(alpha0_streaming("abcd;"), Ok((";", "abcd")));
+//! assert_eq!(alpha0_streaming(Streaming("abcd;")), Ok((Streaming(";"), "abcd")));
 //! assert_eq!(alpha0_complete("abcd;"), Ok((";", "abcd")));
 //!
 //! // but when there's no limit, the streaming version returns `Incomplete`, because it cannot
 //! // know if more input data should be recognized. The whole input could be "abcd;", or
 //! // "abcde;"
-//! assert_eq!(alpha0_streaming("abcd"), Err(Err::Incomplete(Needed::new(1))));
+//! assert_eq!(alpha0_streaming(Streaming("abcd")), Err(Err::Incomplete(Needed::new(1))));
 //!
 //! // while the complete version knows that all of the data is there
 //! assert_eq!(alpha0_complete("abcd"), Ok(("", "abcd")));
@@ -477,7 +480,7 @@ pub mod _tutorial;
 ///
 /// fn parse_data(input: &str) -> IResult<&str, u64> {
 ///     // ...
-/// #   nom::character::complete::u64(input)
+/// #   nom::character::u64(input)
 /// }
 ///
 /// fn main() {

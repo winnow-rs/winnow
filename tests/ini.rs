@@ -1,8 +1,6 @@
 use nom::{
-  bytes::complete::take_while,
-  character::complete::{
-    alphanumeric1 as alphanumeric, char, multispace0 as multispace, space0 as space,
-  },
+  bytes::take_while,
+  character::{alphanumeric1 as alphanumeric, char, multispace0 as multispace, space0 as space},
   combinator::{map, map_res, opt},
   multi::many0,
   sequence::{delimited, pair, separated_pair, terminated, tuple},

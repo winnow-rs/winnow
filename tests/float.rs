@@ -1,6 +1,6 @@
 use nom::branch::alt;
-use nom::bytes::complete::tag;
-use nom::character::streaming::digit1 as digit;
+use nom::bytes::tag;
+use nom::character::digit1 as digit;
 use nom::combinator::{map, map_res, opt, recognize};
 use nom::sequence::{delimited, pair};
 use nom::IResult;

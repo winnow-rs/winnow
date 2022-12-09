@@ -1,9 +1,10 @@
 #[cfg(test)]
 mod test {
+  use crate::input::Streaming;
   #[cfg(feature = "alloc")]
-  use crate::{branch::alt, bytes::complete::tag_no_case, combinator::recognize, multi::many1};
+  use crate::{branch::alt, bytes::tag_no_case, combinator::recognize, multi::many1};
   use crate::{
-    bytes::complete::{is_a, is_not, tag, take, take_till, take_until},
+    bytes::{is_a, is_not, tag, take, take_till, take_until},
     error::{self, ErrorKind},
     Err, IResult,
   };
@@ -37,12 +38,12 @@ mod test {
 
   #[test]
   fn tagtr_incomplete() {
-    use crate::bytes::streaming::tag;
+    use crate::bytes::tag;
 
     const INPUT: &str = "Hello";
     const TAG: &str = "Hello World!";
 
-    let res: IResult<_, _, error::Error<_>> = tag(TAG)(INPUT);
+    let res: IResult<_, _, error::Error<_>> = tag(TAG)(Streaming(INPUT));
     match res {
       Err(Err::Incomplete(_)) => (),
       other => {
@@ -135,11 +136,11 @@ mod test {
 
   #[test]
   fn take_s_incomplete() {
-    use crate::bytes::streaming::take;
+    use crate::bytes::take;
 
     const INPUT: &str = "βèƒôřèÂßÇá";
 
-    let res: IResult<_, _, (_, ErrorKind)> = take(13_usize)(INPUT);
+    let res: IResult<_, _, (_, ErrorKind)> = take(13_usize)(Streaming(INPUT));
     match res {
       Err(Err::Incomplete(_)) => (),
       other => panic!(
@@ -158,9 +159,9 @@ mod test {
 
   #[test]
   fn take_while() {
-    use crate::bytes::streaming::take_while;
+    use crate::bytes::take_while;
 
-    fn f(i: &str) -> IResult<&str, &str> {
+    fn f(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
       take_while(is_alphabetic)(i)
     }
     let a = "";
@@ -168,17 +169,17 @@ mod test {
     let c = "abcd123";
     let d = "123";
 
-    assert_eq!(f(&a[..]), Err(Err::Incomplete(Needed::new(1))));
-    assert_eq!(f(&b[..]), Err(Err::Incomplete(Needed::new(1))));
-    assert_eq!(f(&c[..]), Ok((&d[..], &b[..])));
-    assert_eq!(f(&d[..]), Ok((&d[..], &a[..])));
+    assert_eq!(f(Streaming(&a[..])), Err(Err::Incomplete(Needed::new(1))));
+    assert_eq!(f(Streaming(&b[..])), Err(Err::Incomplete(Needed::new(1))));
+    assert_eq!(f(Streaming(&c[..])), Ok((Streaming(&d[..]), &b[..])));
+    assert_eq!(f(Streaming(&d[..])), Ok((Streaming(&d[..]), &a[..])));
   }
 
   #[test]
   fn take_while1() {
-    use crate::bytes::streaming::take_while1;
+    use crate::bytes::take_while1;
 
-    fn f(i: &str) -> IResult<&str, &str> {
+    fn f(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
       take_while1(is_alphabetic)(i)
     }
     let a = "";
@@ -186,12 +187,15 @@ mod test {
     let c = "abcd123";
     let d = "123";
 
-    assert_eq!(f(&a[..]), Err(Err::Incomplete(Needed::new(1))));
-    assert_eq!(f(&b[..]), Err(Err::Incomplete(Needed::new(1))));
-    assert_eq!(f(&c[..]), Ok((&"123"[..], &b[..])));
+    assert_eq!(f(Streaming(&a[..])), Err(Err::Incomplete(Needed::new(1))));
+    assert_eq!(f(Streaming(&b[..])), Err(Err::Incomplete(Needed::new(1))));
+    assert_eq!(f(Streaming(&c[..])), Ok((Streaming(&"123"[..]), &b[..])));
     assert_eq!(
-      f(&d[..]),
-      Err(Err::Error(error_position!(&d[..], ErrorKind::TakeWhile1)))
+      f(Streaming(&d[..])),
+      Err(Err::Error(error_position!(
+        Streaming(&d[..]),
+        ErrorKind::TakeWhile1
+      )))
     );
   }
 
@@ -230,7 +234,7 @@ mod test {
 
   #[test]
   fn take_while_succeed_none() {
-    use crate::bytes::complete::take_while;
+    use crate::bytes::take_while;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const CONSUMED: &str = "";
@@ -296,7 +300,7 @@ mod test {
 
   #[test]
   fn take_while_succeed_some() {
-    use crate::bytes::complete::take_while;
+    use crate::bytes::take_while;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const CONSUMED: &str = "βèƒôřèÂßÇ";
@@ -355,7 +359,7 @@ mod test {
 
   #[test]
   fn take_while1_succeed() {
-    use crate::bytes::complete::take_while1;
+    use crate::bytes::take_while1;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const CONSUMED: &str = "βèƒôřèÂßÇ";
@@ -398,12 +402,12 @@ mod test {
 
   #[test]
   fn take_until_incomplete() {
-    use crate::bytes::streaming::take_until;
+    use crate::bytes::take_until;
 
     const INPUT: &str = "βèƒôřè";
     const FIND: &str = "βèƒôřèÂßÇ";
 
-    let res: IResult<_, _, (_, ErrorKind)> = take_until(FIND)(INPUT);
+    let res: IResult<_, _, (_, ErrorKind)> = take_until(FIND)(Streaming(INPUT));
     match res {
       Err(Err::Incomplete(_)) => (),
       other => panic!(
@@ -447,7 +451,7 @@ mod test {
 
   #[test]
   fn take_while1_fail() {
-    use crate::bytes::complete::take_while1;
+    use crate::bytes::take_while1;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     fn while1_s(c: char) -> bool {
@@ -484,12 +488,12 @@ mod test {
 
   #[test]
   fn take_until_error() {
-    use crate::bytes::streaming::take_until;
+    use crate::bytes::take_until;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const FIND: &str = "Ráñδô₥";
 
-    let res: IResult<_, _, (_, ErrorKind)> = take_until(FIND)(INPUT);
+    let res: IResult<_, _, (_, ErrorKind)> = take_until(FIND)(Streaming(INPUT));
     match res {
       Err(Err::Incomplete(_)) => (),
       other => panic!(

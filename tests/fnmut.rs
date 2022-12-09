@@ -1,5 +1,5 @@
 use nom::{
-  bytes::complete::tag,
+  bytes::tag,
   multi::{many0, many0_count},
 };
 

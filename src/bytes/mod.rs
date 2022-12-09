@@ -726,9 +726,9 @@ where
 /// # Example
 /// ```
 /// # use nom::{Err, error::ErrorKind, Needed, IResult};
-/// # use nom::character::complete::digit1;
+/// # use nom::character::digit1;
 /// use nom::bytes::escaped;
-/// use nom::character::complete::one_of;
+/// use nom::character::one_of;
 ///
 /// fn esc(s: &str) -> IResult<&str, &str> {
 ///   escaped(digit1, '\\', one_of(r#""n\"#))(s)
@@ -740,10 +740,10 @@ where
 ///
 /// ```
 /// # use nom::{Err, error::ErrorKind, Needed, IResult};
-/// # use nom::character::streaming::digit1;
+/// # use nom::character::digit1;
 /// # use nom::input::Streaming;
 /// use nom::bytes::escaped;
-/// use nom::character::streaming::one_of;
+/// use nom::character::one_of;
 ///
 /// fn esc(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
 ///   escaped(digit1, '\\', one_of("\"n\\"))(s)
@@ -794,7 +794,7 @@ where
 /// # use nom::{Err, error::ErrorKind, Needed, IResult};
 /// # use std::str::from_utf8;
 /// use nom::bytes::{escaped_transform, tag};
-/// use nom::character::complete::alpha1;
+/// use nom::character::alpha1;
 /// use nom::branch::alt;
 /// use nom::combinator::value;
 ///
@@ -819,7 +819,7 @@ where
 /// # use std::str::from_utf8;
 /// # use nom::input::Streaming;
 /// use nom::bytes::{escaped_transform, tag};
-/// use nom::character::streaming::alpha1;
+/// use nom::character::alpha1;
 /// use nom::branch::alt;
 /// use nom::combinator::value;
 ///

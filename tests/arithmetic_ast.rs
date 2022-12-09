@@ -5,8 +5,8 @@ use std::str::FromStr;
 
 use nom::{
   branch::alt,
-  bytes::complete::tag,
-  character::complete::{digit1 as digit, multispace0 as multispace},
+  bytes::tag,
+  character::{digit1 as digit, multispace0 as multispace},
   combinator::{map, map_res},
   multi::many0,
   sequence::{delimited, preceded},

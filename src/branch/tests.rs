@@ -1,6 +1,7 @@
 use crate::branch::{alt, permutation};
-use crate::bytes::streaming::tag;
+use crate::bytes::tag;
 use crate::error::ErrorKind;
+use crate::input::Streaming;
 #[cfg(feature = "alloc")]
 use crate::{
   error::ParseError,
@@ -94,49 +95,52 @@ fn alt_test() {
 
 #[test]
 fn alt_incomplete() {
-  fn alt1(i: &[u8]) -> IResult<&[u8], &[u8]> {
+  fn alt1(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
     alt((tag("a"), tag("bc"), tag("def")))(i)
   }
 
   let a = &b""[..];
-  assert_eq!(alt1(a), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(alt1(Streaming(a)), Err(Err::Incomplete(Needed::new(1))));
   let a = &b"b"[..];
-  assert_eq!(alt1(a), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(alt1(Streaming(a)), Err(Err::Incomplete(Needed::new(1))));
   let a = &b"bcd"[..];
-  assert_eq!(alt1(a), Ok((&b"d"[..], &b"bc"[..])));
+  assert_eq!(alt1(Streaming(a)), Ok((Streaming(&b"d"[..]), &b"bc"[..])));
   let a = &b"cde"[..];
-  assert_eq!(alt1(a), Err(Err::Error(error_position!(a, ErrorKind::Tag))));
+  assert_eq!(
+    alt1(Streaming(a)),
+    Err(Err::Error(error_position!(Streaming(a), ErrorKind::Tag)))
+  );
   let a = &b"de"[..];
-  assert_eq!(alt1(a), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(alt1(Streaming(a)), Err(Err::Incomplete(Needed::new(1))));
   let a = &b"defg"[..];
-  assert_eq!(alt1(a), Ok((&b"g"[..], &b"def"[..])));
+  assert_eq!(alt1(Streaming(a)), Ok((Streaming(&b"g"[..]), &b"def"[..])));
 }
 
 #[test]
 fn permutation_test() {
-  fn perm(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8], &[u8])> {
+  fn perm(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (&[u8], &[u8], &[u8])> {
     permutation((tag("abcd"), tag("efg"), tag("hi")))(i)
   }
 
   let expected = (&b"abcd"[..], &b"efg"[..], &b"hi"[..]);
 
   let a = &b"abcdefghijk"[..];
-  assert_eq!(perm(a), Ok((&b"jk"[..], expected)));
+  assert_eq!(perm(Streaming(a)), Ok((Streaming(&b"jk"[..]), expected)));
   let b = &b"efgabcdhijk"[..];
-  assert_eq!(perm(b), Ok((&b"jk"[..], expected)));
+  assert_eq!(perm(Streaming(b)), Ok((Streaming(&b"jk"[..]), expected)));
   let c = &b"hiefgabcdjk"[..];
-  assert_eq!(perm(c), Ok((&b"jk"[..], expected)));
+  assert_eq!(perm(Streaming(c)), Ok((Streaming(&b"jk"[..]), expected)));
 
   let d = &b"efgxyzabcdefghi"[..];
   assert_eq!(
-    perm(d),
+    perm(Streaming(d)),
     Err(Err::Error(error_node_position!(
-      &b"efgxyzabcdefghi"[..],
+      Streaming(&b"efgxyzabcdefghi"[..]),
       ErrorKind::Permutation,
-      error_position!(&b"xyzabcdefghi"[..], ErrorKind::Tag)
+      error_position!(Streaming(&b"xyzabcdefghi"[..]), ErrorKind::Tag)
     )))
   );
 
   let e = &b"efgabc"[..];
-  assert_eq!(perm(e), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(perm(Streaming(e)), Err(Err::Incomplete(Needed::new(1))));
 }

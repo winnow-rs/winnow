@@ -1,5 +1,5 @@
 use nom::{
-  character::complete::{alphanumeric1 as alphanumeric, line_ending as eol},
+  character::{alphanumeric1 as alphanumeric, line_ending as eol},
   multi::many0,
   sequence::terminated,
   IResult,

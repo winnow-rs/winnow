@@ -3,8 +3,8 @@
 
 use std::str;
 
-use nom::bytes::complete::is_not;
-use nom::character::complete::char;
+use nom::bytes::is_not;
+use nom::character::char;
 use nom::combinator::{map, map_res};
 use nom::multi::fold_many0;
 use nom::sequence::delimited;

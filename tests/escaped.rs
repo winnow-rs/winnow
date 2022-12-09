@@ -1,6 +1,6 @@
-use nom::bytes::complete::escaped;
-use nom::character::complete::digit1;
-use nom::character::complete::one_of;
+use nom::bytes::escaped;
+use nom::character::digit1;
+use nom::character::one_of;
 use nom::{error::ErrorKind, Err, IResult};
 
 fn esc(s: &str) -> IResult<&str, &str, (&str, ErrorKind)> {
@@ -9,7 +9,7 @@ fn esc(s: &str) -> IResult<&str, &str, (&str, ErrorKind)> {
 
 #[cfg(feature = "alloc")]
 fn esc_trans(s: &str) -> IResult<&str, String, (&str, ErrorKind)> {
-  use nom::bytes::complete::{escaped_transform, tag};
+  use nom::bytes::{escaped_transform, tag};
   escaped_transform(digit1, '\\', tag("n"))(s)
 }
 

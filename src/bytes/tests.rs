@@ -34,7 +34,7 @@ fn complete_take_while_m_n_utf8_all_matching_substring() {
 fn complete_escaped_hang() {
   // issue #1336 "escaped hangs if normal parser accepts empty"
   fn escaped_string(input: &str) -> IResult<&str, &str> {
-    use crate::character::complete::{alpha0, one_of};
+    use crate::character::{alpha0, one_of};
     escaped(alpha0, '\\', one_of("n"))(input)
   }
 
@@ -46,7 +46,7 @@ fn complete_escaped_hang() {
 fn complete_escaped_hang_1118() {
   // issue ##1118 escaped does not work with empty string
   fn unquote<'a>(input: &'a str) -> IResult<&'a str, &'a str> {
-    use crate::character::complete::*;
+    use crate::character::*;
     use crate::combinator::opt;
     use crate::sequence::delimited;
 
@@ -64,8 +64,8 @@ fn complete_escaped_hang_1118() {
 #[allow(unused_variables)]
 #[test]
 fn complete_escaping() {
-  use crate::character::complete::one_of;
-  use crate::character::complete::{alpha1 as alpha, digit1 as digit};
+  use crate::character::one_of;
+  use crate::character::{alpha1 as alpha, digit1 as digit};
 
   fn esc(i: &[u8]) -> IResult<&[u8], &[u8]> {
     escaped(alpha, '\\', one_of("\"n\\"))(i)
@@ -100,8 +100,8 @@ fn complete_escaping() {
 #[cfg(feature = "alloc")]
 #[test]
 fn complete_escaping_str() {
-  use crate::character::complete::one_of;
-  use crate::character::complete::{alpha1 as alpha, digit1 as digit};
+  use crate::character::one_of;
+  use crate::character::{alpha1 as alpha, digit1 as digit};
 
   fn esc(i: &str) -> IResult<&str, &str> {
     escaped(alpha, '\\', one_of("\"n\\"))(i)
@@ -143,7 +143,7 @@ fn to_s(i: Vec<u8>) -> String {
 #[cfg(feature = "alloc")]
 #[test]
 fn complete_escape_transform() {
-  use crate::character::complete::alpha1 as alpha;
+  use crate::character::alpha1 as alpha;
 
   fn esc(i: &[u8]) -> IResult<&[u8], String> {
     map(
@@ -216,7 +216,7 @@ fn complete_escape_transform() {
 #[cfg(feature = "std")]
 #[test]
 fn complete_escape_transform_str() {
-  use crate::character::complete::alpha1 as alpha;
+  use crate::character::alpha1 as alpha;
 
   fn esc(i: &str) -> IResult<&str, String> {
     escaped_transform(
@@ -353,7 +353,7 @@ fn streaming_take_until_incomplete_s() {
 
 #[test]
 fn streaming_recognize() {
-  use crate::character::streaming::{
+  use crate::character::{
     alpha1 as alpha, alphanumeric1 as alphanumeric, digit1 as digit, hex_digit1 as hex_digit,
     multispace1 as multispace, oct_digit1 as oct_digit, space1 as space,
   };
@@ -611,7 +611,7 @@ fn streaming_recognize_take_while() {
 
 #[test]
 fn streaming_length_bytes() {
-  use crate::number::streaming::le_u8;
+  use crate::number::le_u8;
 
   fn x(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
     length_data(le_u8)(i)

@@ -1,4 +1,4 @@
-use nom::bytes::complete::{tag, take_while_m_n};
+use nom::bytes::{tag, take_while_m_n};
 use nom::combinator::map_res;
 use nom::sequence::tuple;
 use nom::IResult;

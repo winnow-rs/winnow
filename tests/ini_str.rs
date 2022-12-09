@@ -1,6 +1,6 @@
 use nom::{
-  bytes::complete::{is_a, tag, take_till, take_while},
-  character::complete::{alphanumeric1 as alphanumeric, char, space0 as space},
+  bytes::{is_a, tag, take_till, take_while},
+  character::{alphanumeric1 as alphanumeric, char, space0 as space},
   combinator::opt,
   multi::many0,
   sequence::{delimited, pair, terminated, tuple},
