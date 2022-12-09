@@ -198,7 +198,7 @@ fn issue_1027_convert_error_panic_nonempty() {
 
 #[test]
 fn issue_1231_bits_expect_fn_closure() {
-  use nom::bits::{bits, complete::take};
+  use nom::bits::{bits, take};
   use nom::error::Error;
   use nom::sequence::tuple;
   pub fn example(input: &[u8]) -> IResult<&[u8], (u8, u8)> {

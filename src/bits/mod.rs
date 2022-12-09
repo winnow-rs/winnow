@@ -18,7 +18,7 @@ use crate::{Err, IResult, Needed, Parser};
 ///
 /// # Example
 /// ```
-/// use nom::bits::{bits, streaming::take};
+/// use nom::bits::{bits, take};
 /// use nom::error::Error;
 /// use nom::sequence::tuple;
 /// use nom::IResult;
@@ -67,7 +67,7 @@ where
 /// at the next full byte.
 ///
 /// ```
-/// use nom::bits::{bits, bytes, streaming::take};
+/// use nom::bits::{bits, bytes, take};
 /// use nom::combinator::rest;
 /// use nom::error::Error;
 /// use nom::sequence::tuple;
@@ -116,7 +116,7 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom::bits::complete::take;
+/// # use nom::bits::take;
 /// # use nom::IResult;
 /// # use nom::error::{Error, ErrorKind};
 /// // Input is a tuple of (input: I, bit_offset: usize)
