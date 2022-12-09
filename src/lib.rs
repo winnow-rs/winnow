@@ -488,5 +488,6 @@ pub mod _tutorial;
 pub mod prelude {
   pub use crate::FinishIResult as _;
   pub use crate::IResult;
+  pub use crate::IntoOutputIResult as _;
   pub use crate::Parser as _;
 }

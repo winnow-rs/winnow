@@ -7,10 +7,11 @@ use crate::combinator::opt;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{
-  AsChar, FindToken, InputIter, InputLength, InputTake, InputTakeAtPosition, Slice,
+  AsChar, FindToken, InputIter, InputLength, InputTake, InputTakeAtPosition, IntoOutput, Slice,
 };
 use crate::input::{Compare, CompareResult};
 use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
+use crate::IntoOutputIResult as _;
 use crate::{Err, IResult, Needed};
 
 /// Recognizes one character.
@@ -137,15 +138,16 @@ where
 /// assert_eq!(crlf::<_, (_, ErrorKind)>("ab\r\nc"), Err(Err::Error(("ab\r\nc", ErrorKind::CrLf))));
 /// assert_eq!(crlf::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(2))));
 /// ```
-pub fn crlf<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn crlf<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<Range<usize>> + Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   T: InputIter,
+  T: IntoOutput,
   T: Compare<&'static str>,
 {
   match input.compare("\r\n") {
     //FIXME: is this the right index?
-    CompareResult::Ok => Ok((input.slice(2..), input.slice(0..2))),
+    CompareResult::Ok => Ok((input.slice(2..), input.slice(0..2))).into_output(),
     CompareResult::Incomplete => Err(Err::Incomplete(Needed::new(2))),
     CompareResult::Error => {
       let e: ErrorKind = ErrorKind::CrLf;
@@ -168,10 +170,11 @@ where
 /// assert_eq!(not_line_ending::<_, (_, ErrorKind)>("a\rb\nc"), Err(Err::Error(("a\rb\nc", ErrorKind::Tag ))));
 /// assert_eq!(not_line_ending::<_, (_, ErrorKind)>("a\rbc"), Err(Err::Error(("a\rbc", ErrorKind::Tag ))));
 /// ```
-pub fn not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<Range<usize>> + Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   T: InputIter + InputLength,
+  T: IntoOutput,
   T: Compare<&'static str>,
   <T as InputIter>::Item: AsChar,
   <T as InputIter>::Item: AsChar,
@@ -194,10 +197,10 @@ where
             let e: ErrorKind = ErrorKind::Tag;
             Err(Err::Error(E::from_error_kind(input, e)))
           }
-          CompareResult::Ok => Ok((input.slice(index..), input.slice(..index))),
+          CompareResult::Ok => Ok((input.slice(index..), input.slice(..index))).into_output(),
         }
       } else {
-        Ok((input.slice(index..), input.slice(..index)))
+        Ok((input.slice(index..), input.slice(..index))).into_output()
       }
     }
   }
@@ -215,19 +218,20 @@ where
 /// assert_eq!(line_ending::<_, (_, ErrorKind)>("ab\r\nc"), Err(Err::Error(("ab\r\nc", ErrorKind::CrLf))));
 /// assert_eq!(line_ending::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<Range<usize>> + Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   T: InputIter + InputLength,
+  T: IntoOutput,
   T: Compare<&'static str>,
 {
   match input.compare("\n") {
-    CompareResult::Ok => Ok((input.slice(1..), input.slice(0..1))),
+    CompareResult::Ok => Ok((input.slice(1..), input.slice(0..1))).into_output(),
     CompareResult::Incomplete => Err(Err::Incomplete(Needed::new(1))),
     CompareResult::Error => {
       match input.compare("\r\n") {
         //FIXME: is this the right index?
-        CompareResult::Ok => Ok((input.slice(2..), input.slice(0..2))),
+        CompareResult::Ok => Ok((input.slice(2..), input.slice(0..2))).into_output(),
         CompareResult::Incomplete => Err(Err::Incomplete(Needed::new(2))),
         CompareResult::Error => Err(Err::Error(E::from_error_kind(input, ErrorKind::CrLf))),
       }
@@ -314,12 +318,15 @@ where
 /// assert_eq!(alpha0::<_, (_, ErrorKind)>("1c"), Ok(("1c", "")));
 /// assert_eq!(alpha0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn alpha0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn alpha0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
+  T: IntoOutput,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position_streaming(|item| !item.is_alpha())
+  input
+    .split_at_position_streaming(|item| !item.is_alpha())
+    .into_output()
 }
 
 /// Recognizes one or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
@@ -335,12 +342,15 @@ where
 /// assert_eq!(alpha1::<_, (_, ErrorKind)>("1c"), Err(Err::Error(("1c", ErrorKind::Alpha))));
 /// assert_eq!(alpha1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn alpha1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn alpha1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
+  T: IntoOutput,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position1_streaming(|item| !item.is_alpha(), ErrorKind::Alpha)
+  input
+    .split_at_position1_streaming(|item| !item.is_alpha(), ErrorKind::Alpha)
+    .into_output()
 }
 
 /// Recognizes zero or more ASCII numerical characters: 0-9
@@ -356,12 +366,15 @@ where
 /// assert_eq!(digit0::<_, (_, ErrorKind)>("a21c"), Ok(("a21c", "")));
 /// assert_eq!(digit0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn digit0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
+  T: IntoOutput,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position_streaming(|item| !item.is_dec_digit())
+  input
+    .split_at_position_streaming(|item| !item.is_dec_digit())
+    .into_output()
 }
 
 /// Recognizes one or more ASCII numerical characters: 0-9
@@ -377,12 +390,15 @@ where
 /// assert_eq!(digit1::<_, (_, ErrorKind)>("c1"), Err(Err::Error(("c1", ErrorKind::Digit))));
 /// assert_eq!(digit1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn digit1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
+  T: IntoOutput,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position1_streaming(|item| !item.is_dec_digit(), ErrorKind::Digit)
+  input
+    .split_at_position1_streaming(|item| !item.is_dec_digit(), ErrorKind::Digit)
+    .into_output()
 }
 
 /// Recognizes zero or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
@@ -398,12 +414,15 @@ where
 /// assert_eq!(hex_digit0::<_, (_, ErrorKind)>("Z21c"), Ok(("Z21c", "")));
 /// assert_eq!(hex_digit0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn hex_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn hex_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
+  T: IntoOutput,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position_streaming(|item| !item.is_hex_digit())
+  input
+    .split_at_position_streaming(|item| !item.is_hex_digit())
+    .into_output()
 }
 
 /// Recognizes one or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
@@ -419,12 +438,15 @@ where
 /// assert_eq!(hex_digit1::<_, (_, ErrorKind)>("H2"), Err(Err::Error(("H2", ErrorKind::HexDigit))));
 /// assert_eq!(hex_digit1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn hex_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn hex_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
+  T: IntoOutput,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position1_streaming(|item| !item.is_hex_digit(), ErrorKind::HexDigit)
+  input
+    .split_at_position1_streaming(|item| !item.is_hex_digit(), ErrorKind::HexDigit)
+    .into_output()
 }
 
 /// Recognizes zero or more octal characters: 0-7
@@ -440,12 +462,15 @@ where
 /// assert_eq!(oct_digit0::<_, (_, ErrorKind)>("Z21c"), Ok(("Z21c", "")));
 /// assert_eq!(oct_digit0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn oct_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn oct_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
+  T: IntoOutput,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position_streaming(|item| !item.is_oct_digit())
+  input
+    .split_at_position_streaming(|item| !item.is_oct_digit())
+    .into_output()
 }
 
 /// Recognizes one or more octal characters: 0-7
@@ -461,12 +486,15 @@ where
 /// assert_eq!(oct_digit1::<_, (_, ErrorKind)>("H2"), Err(Err::Error(("H2", ErrorKind::OctDigit))));
 /// assert_eq!(oct_digit1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn oct_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn oct_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
+  T: IntoOutput,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position1_streaming(|item| !item.is_oct_digit(), ErrorKind::OctDigit)
+  input
+    .split_at_position1_streaming(|item| !item.is_oct_digit(), ErrorKind::OctDigit)
+    .into_output()
 }
 
 /// Recognizes zero or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
@@ -482,12 +510,15 @@ where
 /// assert_eq!(alphanumeric0::<_, (_, ErrorKind)>("&Z21c"), Ok(("&Z21c", "")));
 /// assert_eq!(alphanumeric0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn alphanumeric0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn alphanumeric0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
+  T: IntoOutput,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position_streaming(|item| !item.is_alphanum())
+  input
+    .split_at_position_streaming(|item| !item.is_alphanum())
+    .into_output()
 }
 
 /// Recognizes one or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
@@ -503,12 +534,15 @@ where
 /// assert_eq!(alphanumeric1::<_, (_, ErrorKind)>("&H2"), Err(Err::Error(("&H2", ErrorKind::AlphaNumeric))));
 /// assert_eq!(alphanumeric1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn alphanumeric1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn alphanumeric1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
+  T: IntoOutput,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
-  input.split_at_position1_streaming(|item| !item.is_alphanum(), ErrorKind::AlphaNumeric)
+  input
+    .split_at_position1_streaming(|item| !item.is_alphanum(), ErrorKind::AlphaNumeric)
+    .into_output()
 }
 
 /// Recognizes zero or more spaces and tabs.
@@ -524,15 +558,18 @@ where
 /// assert_eq!(space0::<_, (_, ErrorKind)>("Z21c"), Ok(("Z21c", "")));
 /// assert_eq!(space0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn space0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn space0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
+  T: IntoOutput,
   <T as InputTakeAtPosition>::Item: AsChar + Clone,
 {
-  input.split_at_position_streaming(|item| {
-    let c = item.as_char();
-    !(c == ' ' || c == '\t')
-  })
+  input
+    .split_at_position_streaming(|item| {
+      let c = item.as_char();
+      !(c == ' ' || c == '\t')
+    })
+    .into_output()
 }
 /// Recognizes one or more spaces and tabs.
 ///
@@ -547,18 +584,21 @@ where
 /// assert_eq!(space1::<_, (_, ErrorKind)>("H2"), Err(Err::Error(("H2", ErrorKind::Space))));
 /// assert_eq!(space1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn space1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn space1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
+  T: IntoOutput,
   <T as InputTakeAtPosition>::Item: AsChar + Clone,
 {
-  input.split_at_position1_streaming(
-    |item| {
-      let c = item.as_char();
-      !(c == ' ' || c == '\t')
-    },
-    ErrorKind::Space,
-  )
+  input
+    .split_at_position1_streaming(
+      |item| {
+        let c = item.as_char();
+        !(c == ' ' || c == '\t')
+      },
+      ErrorKind::Space,
+    )
+    .into_output()
 }
 
 /// Recognizes zero or more spaces, tabs, carriage returns and line feeds.
@@ -574,15 +614,18 @@ where
 /// assert_eq!(multispace0::<_, (_, ErrorKind)>("Z21c"), Ok(("Z21c", "")));
 /// assert_eq!(multispace0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn multispace0<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn multispace0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
+  T: IntoOutput,
   <T as InputTakeAtPosition>::Item: AsChar + Clone,
 {
-  input.split_at_position_streaming(|item| {
-    let c = item.as_char();
-    !(c == ' ' || c == '\t' || c == '\r' || c == '\n')
-  })
+  input
+    .split_at_position_streaming(|item| {
+      let c = item.as_char();
+      !(c == ' ' || c == '\t' || c == '\r' || c == '\n')
+    })
+    .into_output()
 }
 
 /// Recognizes one or more spaces, tabs, carriage returns and line feeds.
@@ -598,23 +641,27 @@ where
 /// assert_eq!(multispace1::<_, (_, ErrorKind)>("H2"), Err(Err::Error(("H2", ErrorKind::MultiSpace))));
 /// assert_eq!(multispace1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
-pub fn multispace1<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn multispace1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
+  T: IntoOutput,
   <T as InputTakeAtPosition>::Item: AsChar + Clone,
 {
-  input.split_at_position1_streaming(
-    |item| {
-      let c = item.as_char();
-      !(c == ' ' || c == '\t' || c == '\r' || c == '\n')
-    },
-    ErrorKind::MultiSpace,
-  )
+  input
+    .split_at_position1_streaming(
+      |item| {
+        let c = item.as_char();
+        !(c == ' ' || c == '\t' || c == '\r' || c == '\n')
+      },
+      ErrorKind::MultiSpace,
+    )
+    .into_output()
 }
 
 pub(crate) fn sign<T, E: ParseError<T>>(input: T) -> IResult<T, bool, E>
 where
   T: Clone + InputTake + InputLength,
+  T: IntoOutput,
   T: for<'a> Compare<&'a [u8]>,
 {
   use crate::bytes::streaming::tag;
@@ -639,6 +686,7 @@ macro_rules! ints {
         pub fn $t<T, E: ParseError<T>>(input: T) -> IResult<T, $t, E>
             where
             T: InputIter + Slice<RangeFrom<usize>> + InputLength + InputTake + Clone,
+            T: IntoOutput,
             <T as InputIter>::Item: AsChar,
             T: for <'a> Compare<&'a[u8]>,
             {
@@ -701,6 +749,7 @@ macro_rules! uints {
         pub fn $t<T, E: ParseError<T>>(input: T) -> IResult<T, $t, E>
             where
             T: InputIter + Slice<RangeFrom<usize>> + InputLength,
+            T: IntoOutput,
             <T as InputIter>::Item: AsChar,
             {
                 let i = input;

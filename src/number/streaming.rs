@@ -6,7 +6,8 @@ use crate::character::streaming::{char, digit1, sign};
 use crate::combinator::{cut, map, opt, recognize};
 use crate::error::{ErrorKind, ParseError};
 use crate::input::{
-  AsBytes, AsChar, Compare, InputIter, InputLength, InputTake, InputTakeAtPosition, Offset, Slice,
+  AsBytes, AsChar, Compare, InputIter, InputLength, InputTake, InputTakeAtPosition, IntoOutput,
+  Offset, Slice,
 };
 use crate::lib::std::ops::{RangeFrom, RangeTo};
 use crate::sequence::{pair, tuple};
@@ -1367,11 +1368,12 @@ where
 /// assert_eq!(parser("abc"), Err(Err::Error(("abc", ErrorKind::Char))));
 /// ```
 #[rustfmt::skip]
-pub fn recognize_float<T, E:ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn recognize_float<T, E:ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   T: Clone + Offset,
   T: InputIter,
+  T: IntoOutput,
   <T as InputIter>::Item: AsChar,
   T: InputTakeAtPosition + InputLength,
   <T as InputTakeAtPosition>::Item: AsChar
@@ -1394,11 +1396,14 @@ where
 
 // workaround until issues with minimal-lexical are fixed
 #[doc(hidden)]
-pub fn recognize_float_or_exceptions<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn recognize_float_or_exceptions<T, E: ParseError<T>>(
+  input: T,
+) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   T: Clone + Offset,
   T: InputIter + InputTake + InputLength + Compare<&'static str>,
+  T: IntoOutput,
   <T as InputIter>::Item: AsChar,
   T: InputTakeAtPosition,
   <T as InputTakeAtPosition>::Item: AsChar,
@@ -1438,6 +1443,7 @@ where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   T: Clone + Offset,
   T: InputIter,
+  T: IntoOutput,
   <T as InputIter>::Item: AsChar,
   T: InputTakeAtPosition + InputTake + InputLength,
   <T as InputTakeAtPosition>::Item: AsChar,
@@ -1546,7 +1552,9 @@ pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   T: Clone + Offset,
-  T: InputIter + InputLength + InputTake + crate::input::ParseTo<f32> + Compare<&'static str>,
+  T: InputIter + InputLength + InputTake + Compare<&'static str>,
+  T: IntoOutput,
+  <T as IntoOutput>::Output: crate::input::ParseTo<f32>,
   <T as InputIter>::Item: AsChar,
   <T as InputIter>::IterElem: Clone,
   T: InputTakeAtPosition,
@@ -1568,6 +1576,8 @@ where
 
   Ok((i, float))
   */
+  use crate::input::ParseTo;
+
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
     Some(f) => Ok((i, f)),
@@ -1600,7 +1610,9 @@ pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   T: Clone + Offset,
-  T: InputIter + InputLength + InputTake + crate::input::ParseTo<f64> + Compare<&'static str>,
+  T: InputIter + InputLength + InputTake + Compare<&'static str>,
+  T: IntoOutput,
+  <T as IntoOutput>::Output: crate::input::ParseTo<f64>,
   <T as InputIter>::Item: AsChar,
   <T as InputIter>::IterElem: Clone,
   T: InputTakeAtPosition,
@@ -1622,6 +1634,8 @@ where
 
   Ok((i, float))
   */
+  use crate::input::ParseTo;
+
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
     Some(f) => Ok((i, f)),

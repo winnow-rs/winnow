@@ -151,6 +151,7 @@
 use crate::lib::std::boxed::Box;
 
 use crate::error::{ErrorKind, FromExternalError, ParseError};
+use crate::input::IntoOutput;
 use crate::input::{AsChar, InputIter, InputLength, InputTakeAtPosition, ParseTo};
 use crate::input::{Compare, CompareResult, Offset, Slice};
 use crate::lib::std::borrow::Borrow;
@@ -159,6 +160,7 @@ use crate::lib::std::convert;
 use crate::lib::std::fmt::Debug;
 use crate::lib::std::mem::transmute;
 use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
+use crate::IntoOutputIResult;
 use crate::*;
 
 #[cfg(test)]
@@ -173,12 +175,13 @@ mod tests;
 /// assert_eq!(rest::<_,(_, ErrorKind)>(""), Ok(("", "")));
 /// ```
 #[inline]
-pub fn rest<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn rest<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<RangeFrom<usize>>,
   T: InputLength,
+  T: IntoOutput,
 {
-  Ok((input.slice(input.input_len()..), input))
+  Ok((input.slice(input.input_len()..), input)).into_output()
 }
 
 /// Return the length of the remaining input.
@@ -623,10 +626,15 @@ where
 /// assert_eq!(parser(""), Ok(("", "")));
 /// # }
 /// ```
-pub fn eof<I: InputLength + Clone, E: ParseError<I>>(input: I) -> IResult<I, I, E> {
+pub fn eof<I, E: ParseError<I>>(input: I) -> IResult<I, <I as IntoOutput>::Output, E>
+where
+  I: InputLength,
+  I: Clone,
+  I: IntoOutput,
+{
   if input.input_len() == 0 {
     let clone = input.clone();
-    Ok((input, clone))
+    Ok((input, clone)).into_output()
   } else {
     Err(Err::Error(E::from_error_kind(input, ErrorKind::Eof)))
   }
@@ -796,10 +804,14 @@ where
 /// assert_eq!(parser("abcd;"),Err(Err::Error((";", ErrorKind::Char))));
 /// # }
 /// ```
-pub fn recognize<I: Clone + Offset + Slice<RangeTo<usize>>, O, E: ParseError<I>, F>(
+pub fn recognize<I, O, E: ParseError<I>, F>(
   mut parser: F,
-) -> impl FnMut(I) -> IResult<I, I, E>
+) -> impl FnMut(I) -> IResult<I, <I as IntoOutput>::Output, E>
 where
+  I: Clone,
+  I: Offset,
+  I: Slice<RangeTo<usize>>,
+  I: IntoOutput,
   F: Parser<I, O, E>,
 {
   move |input: I| {
@@ -807,7 +819,7 @@ where
     match parser.parse(i) {
       Ok((i, _)) => {
         let index = input.offset(&i);
-        Ok((i, input.slice(..index)))
+        Ok((i, input.slice(..index))).into_output()
       }
       Err(e) => Err(e),
     }
@@ -851,9 +863,12 @@ where
 /// assert_eq!(recognize_parser("abcd"), consumed_parser("abcd"));
 /// # }
 /// ```
-pub fn consumed<I, O, F, E>(mut parser: F) -> impl FnMut(I) -> IResult<I, (I, O), E>
+pub fn consumed<I, O, F, E>(
+  mut parser: F,
+) -> impl FnMut(I) -> IResult<I, (<I as IntoOutput>::Output, O), E>
 where
   I: Clone + Offset + Slice<RangeTo<usize>>,
+  I: IntoOutput,
   E: ParseError<I>,
   F: Parser<I, O, E>,
 {
@@ -862,7 +877,7 @@ where
     match parser.parse(i) {
       Ok((remaining, result)) => {
         let index = input.offset(&remaining);
-        let consumed = input.slice(..index);
+        let consumed = input.slice(..index).into_output();
         Ok((remaining, (consumed, result)))
       }
       Err(e) => Err(e),

@@ -6,9 +6,10 @@ mod tests;
 use crate::combinator::complete;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
-use crate::input::{InputLength, InputTake, ToUsize};
+use crate::input::{InputLength, InputTake, IntoOutput, ToUsize};
 #[cfg(feature = "alloc")]
 use crate::lib::std::vec::Vec;
+use crate::IntoOutputIResult as _;
 use crate::{Err, IResult, Needed, Parser};
 use core::num::NonZeroUsize;
 
@@ -853,9 +854,11 @@ where
 /// assert_eq!(parser(b"\x00\x03abcefg"), Ok((&b"efg"[..], &b"abc"[..])));
 /// assert_eq!(parser(b"\x00\x03a"), Err(Err::Incomplete(Needed::new(2))));
 /// ```
-pub fn length_data<I, N, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, I, E>
+pub fn length_data<I, N, E, F>(
+  mut f: F,
+) -> impl FnMut(I) -> IResult<I, <I as IntoOutput>::Output, E>
 where
-  I: InputLength + InputTake,
+  I: InputLength + InputTake + IntoOutput,
   N: ToUsize,
   F: Parser<I, N, E>,
   E: ParseError<I>,
@@ -871,7 +874,7 @@ where
     {
       Err(Err::Incomplete(Needed::Size(needed)))
     } else {
-      Ok(i.take_split(length))
+      Ok(i.take_split(length)).into_output()
     }
   }
 }

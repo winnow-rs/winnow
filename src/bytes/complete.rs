@@ -4,10 +4,11 @@ use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{
   Compare, CompareResult, FindSubstring, FindToken, InputIter, InputLength, InputTake,
-  InputTakeAtPosition, Slice, ToUsize,
+  InputTakeAtPosition, IntoOutput, Slice, ToUsize,
 };
 use crate::lib::std::ops::RangeFrom;
 use crate::lib::std::result::Result::*;
+use crate::IntoOutputIResult;
 use crate::{Err, IResult, Parser};
 
 /// Recognizes a pattern
@@ -31,9 +32,10 @@ use crate::{Err, IResult, Parser};
 /// ```
 pub fn tag<T, Input, Error: ParseError<Input>>(
   tag: T,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
+) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTake + Compare<T>,
+  Input: IntoOutput,
   T: InputLength + Clone,
 {
   move |i: Input| {
@@ -46,7 +48,7 @@ where
         Err(Err::Error(Error::from_error_kind(i, e)))
       }
     };
-    res
+    res.into_output()
   }
 }
 
@@ -73,9 +75,10 @@ where
 /// ```
 pub fn tag_no_case<T, Input, Error: ParseError<Input>>(
   tag: T,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
+) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTake + Compare<T>,
+  Input: IntoOutput,
   T: InputLength + Clone,
 {
   move |i: Input| {
@@ -89,7 +92,7 @@ where
         Err(Err::Error(Error::from_error_kind(i, e)))
       }
     };
-    res
+    res.into_output()
   }
 }
 
@@ -116,14 +119,16 @@ where
 /// ```
 pub fn is_not<T, Input, Error: ParseError<Input>>(
   arr: T,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
+) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
+  Input: IntoOutput,
   T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
   move |i: Input| {
     let e: ErrorKind = ErrorKind::IsNot;
     i.split_at_position1_complete(|c| arr.find_token(c), e)
+      .into_output()
   }
 }
 
@@ -150,14 +155,16 @@ where
 /// ```
 pub fn is_a<T, Input, Error: ParseError<Input>>(
   arr: T,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
+) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
+  Input: IntoOutput,
   T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
   move |i: Input| {
     let e: ErrorKind = ErrorKind::IsA;
     i.split_at_position1_complete(|c| !arr.find_token(c), e)
+      .into_output()
   }
 }
 
@@ -182,12 +189,13 @@ where
 /// ```
 pub fn take_while<F, Input, Error: ParseError<Input>>(
   cond: F,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
+) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
+  Input: IntoOutput,
   F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
 {
-  move |i: Input| i.split_at_position_complete(|c| !cond(c))
+  move |i: Input| i.split_at_position_complete(|c| !cond(c)).into_output()
 }
 
 /// Returns the longest (at least 1) input slice that matches the predicate.
@@ -212,14 +220,15 @@ where
 /// ```
 pub fn take_while1<F, Input, Error: ParseError<Input>>(
   cond: F,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
+) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
+  Input: IntoOutput,
   F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
 {
   move |i: Input| {
     let e: ErrorKind = ErrorKind::TakeWhile1;
-    i.split_at_position1_complete(|c| !cond(c), e)
+    i.split_at_position1_complete(|c| !cond(c), e).into_output()
   }
 }
 
@@ -250,9 +259,10 @@ pub fn take_while_m_n<F, Input, Error: ParseError<Input>>(
   m: usize,
   n: usize,
   cond: F,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
+) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTake + InputIter + InputLength + Slice<RangeFrom<usize>>,
+  Input: IntoOutput,
   F: Fn(<Input as InputIter>::Item) -> bool,
 {
   move |i: Input| {
@@ -270,7 +280,7 @@ where
                 ErrorKind::TakeWhileMN,
               )))
             };
-            res
+            res.into_output()
           } else {
             let res: IResult<_, _, Error> = if let Ok(index) = input.slice_index(n) {
               Ok(input.take_split(index))
@@ -280,7 +290,7 @@ where
                 ErrorKind::TakeWhileMN,
               )))
             };
-            res
+            res.into_output()
           }
         } else {
           let e = ErrorKind::TakeWhileMN;
@@ -291,7 +301,7 @@ where
         let len = input.input_len();
         if len >= n {
           match input.slice_index(n) {
-            Ok(index) => Ok(input.take_split(index)),
+            Ok(index) => Ok(input.take_split(index)).into_output(),
             Err(_needed) => Err(Err::Error(Error::from_error_kind(
               input,
               ErrorKind::TakeWhileMN,
@@ -299,7 +309,7 @@ where
           }
         } else if len >= m && len <= n {
           let res: IResult<_, _, Error> = Ok((input.slice(len..), input));
-          res
+          res.into_output()
         } else {
           let e = ErrorKind::TakeWhileMN;
           Err(Err::Error(Error::from_error_kind(input, e)))
@@ -329,12 +339,13 @@ where
 /// ```
 pub fn take_till<F, Input, Error: ParseError<Input>>(
   cond: F,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
+) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
+  Input: IntoOutput,
   F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
 {
-  move |i: Input| i.split_at_position_complete(|c| cond(c))
+  move |i: Input| i.split_at_position_complete(|c| cond(c)).into_output()
 }
 
 /// Returns the longest (at least 1) input slice till a predicate is met.
@@ -360,14 +371,15 @@ where
 /// ```
 pub fn take_till1<F, Input, Error: ParseError<Input>>(
   cond: F,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
+) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
+  Input: IntoOutput,
   F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
 {
   move |i: Input| {
     let e: ErrorKind = ErrorKind::TakeTill1;
-    i.split_at_position1_complete(|c| cond(c), e)
+    i.split_at_position1_complete(|c| cond(c), e).into_output()
   }
 }
 
@@ -402,15 +414,16 @@ where
 /// ```
 pub fn take<C, Input, Error: ParseError<Input>>(
   count: C,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
+) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputIter + InputTake,
+  Input: IntoOutput,
   C: ToUsize,
 {
   let c = count.to_usize();
   move |i: Input| match i.slice_index(c) {
     Err(_needed) => Err(Err::Error(Error::from_error_kind(i, ErrorKind::Eof))),
-    Ok(index) => Ok(i.take_split(index)),
+    Ok(index) => Ok(i.take_split(index)).into_output(),
   }
 }
 
@@ -434,9 +447,10 @@ where
 /// ```
 pub fn take_until<T, Input, Error: ParseError<Input>>(
   tag: T,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
+) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTake + FindSubstring<T>,
+  Input: IntoOutput,
   T: InputLength + Clone,
 {
   move |i: Input| {
@@ -445,7 +459,7 @@ where
       None => Err(Err::Error(Error::from_error_kind(i, ErrorKind::TakeUntil))),
       Some(index) => Ok(i.take_split(index)),
     };
-    res
+    res.into_output()
   }
 }
 
@@ -470,9 +484,10 @@ where
 /// ```
 pub fn take_until1<T, Input, Error: ParseError<Input>>(
   tag: T,
-) -> impl Fn(Input) -> IResult<Input, Input, Error>
+) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTake + FindSubstring<T>,
+  Input: IntoOutput,
   T: InputLength + Clone,
 {
   move |i: Input| {
@@ -482,7 +497,7 @@ where
       Some(0) => Err(Err::Error(Error::from_error_kind(i, ErrorKind::TakeUntil))),
       Some(index) => Ok(i.take_split(index)),
     };
-    res
+    res.into_output()
   }
 }
 
@@ -510,7 +525,7 @@ pub fn escaped<'a, Input: 'a, Error, F, G, O1, O2>(
   mut normal: F,
   control_char: char,
   mut escapable: G,
-) -> impl FnMut(Input) -> IResult<Input, Input, Error>
+) -> impl FnMut(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: Clone
     + crate::input::Offset
@@ -519,6 +534,7 @@ where
     + InputTakeAtPosition
     + Slice<RangeFrom<usize>>
     + InputIter,
+  Input: IntoOutput,
   <Input as InputIter>::Item: crate::input::AsChar,
   F: Parser<Input, O1, Error>,
   G: Parser<Input, O2, Error>,
@@ -537,10 +553,10 @@ where
           // return if we consumed everything or if the normal parser
           // does not consume anything
           if i2.input_len() == 0 {
-            return Ok((input.slice(input.input_len()..), input));
+            return Ok((input.slice(input.input_len()..), input)).into_output();
           } else if i2.input_len() == current_len {
             let index = input.offset(&i2);
-            return Ok(input.take_split(index));
+            return Ok(input.take_split(index)).into_output();
           } else {
             i = i2;
           }
@@ -558,7 +574,7 @@ where
               match escapable.parse(i.slice(next..)) {
                 Ok((i2, _)) => {
                   if i2.input_len() == 0 {
-                    return Ok((input.slice(input.input_len()..), input));
+                    return Ok((input.slice(input.input_len()..), input)).into_output();
                   } else {
                     i = i2;
                   }
@@ -574,7 +590,7 @@ where
                 ErrorKind::Escaped,
               )));
             }
-            return Ok(input.take_split(index));
+            return Ok(input.take_split(index)).into_output();
           }
         }
         Err(e) => {
@@ -583,7 +599,7 @@ where
       }
     }
 
-    Ok((input.slice(input.input_len()..), input))
+    Ok((input.slice(input.input_len()..), input)).into_output()
   }
 }
 

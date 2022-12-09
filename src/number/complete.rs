@@ -7,7 +7,8 @@ use crate::combinator::{cut, map, opt, recognize};
 use crate::error::ParseError;
 use crate::error::{make_error, ErrorKind};
 use crate::input::{
-  AsBytes, AsChar, Compare, InputIter, InputLength, InputTake, InputTakeAtPosition, Offset, Slice,
+  AsBytes, AsChar, Compare, InputIter, InputLength, InputTake, InputTakeAtPosition, IntoOutput,
+  Offset, Slice,
 };
 use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
 use crate::sequence::{pair, tuple};
@@ -1399,11 +1400,12 @@ where
 /// assert_eq!(parser("abc"), Err(Err::Error(("abc", ErrorKind::Char))));
 /// ```
 #[rustfmt::skip]
-pub fn recognize_float<T, E:ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn recognize_float<T, E:ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   T: Clone + Offset,
   T: InputIter,
+  T: IntoOutput,
   <T as InputIter>::Item: AsChar,
   T: InputTakeAtPosition,
   <T as InputTakeAtPosition>::Item: AsChar,
@@ -1426,13 +1428,16 @@ where
 
 // workaround until issues with minimal-lexical are fixed
 #[doc(hidden)]
-pub fn recognize_float_or_exceptions<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn recognize_float_or_exceptions<T, E: ParseError<T>>(
+  input: T,
+) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   T: Clone + Offset,
   T: InputIter + InputTake + Compare<&'static str>,
   <T as InputIter>::Item: AsChar,
   T: InputTakeAtPosition,
+  T: IntoOutput,
   <T as InputTakeAtPosition>::Item: AsChar,
 {
   alt((
@@ -1470,6 +1475,7 @@ where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>> + Slice<Range<usize>>,
   T: Clone + Offset,
   T: InputIter + InputTake,
+  T: IntoOutput,
   <T as InputIter>::Item: AsChar + Copy,
   T: InputTakeAtPosition + InputLength,
   <T as InputTakeAtPosition>::Item: AsChar,
@@ -1574,8 +1580,10 @@ use crate::input::ParseTo;
 pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>> + Slice<Range<usize>>,
-  T: Clone + Offset + ParseTo<f32> + Compare<&'static str>,
+  T: Clone + Offset + Compare<&'static str>,
   T: InputIter + InputLength + InputTake,
+  T: IntoOutput,
+  <T as IntoOutput>::Output: ParseTo<f32>,
   <T as InputIter>::Item: AsChar + Copy,
   <T as InputIter>::IterElem: Clone,
   T: InputTakeAtPosition,
@@ -1627,8 +1635,10 @@ where
 pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>> + Slice<Range<usize>>,
-  T: Clone + Offset + ParseTo<f64> + Compare<&'static str>,
+  T: Clone + Offset + Compare<&'static str>,
   T: InputIter + InputLength + InputTake,
+  T: IntoOutput,
+  <T as IntoOutput>::Output: ParseTo<f64>,
   <T as InputIter>::Item: AsChar + Copy,
   <T as InputIter>::IterElem: Clone,
   T: InputTakeAtPosition,
