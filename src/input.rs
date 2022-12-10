@@ -32,6 +32,7 @@
 //! | [FindToken] |Look for self in the given input stream|
 //! | [InputIter] |Common iteration operations on the input type|
 //! | [InputLength] |Calculate the input length|
+//! | [IntoOutput] |Adapt a captired `Input` into an appropriate type|
 //! | [InputTake] |Slicing operations|
 //! | [InputTakeAtPosition] |Look for a specific token and split at its position|
 //! | [Offset] |Calculate the offset between slices|
@@ -1182,6 +1183,54 @@ macro_rules! slice_ranges_impl {
 
 slice_ranges_impl! {[T]}
 slice_ranges_impl! {str}
+
+/// Convert an `Input` into an appropriate `Output` type
+pub trait IntoOutput {
+  /// Output type
+  type Output;
+  /// Convert an `Input` into an appropriate `Output` type
+  fn into_output(self) -> Self::Output;
+}
+
+impl<'a, T> IntoOutput for &'a [T] {
+  type Output = Self;
+  #[inline]
+  fn into_output(self) -> Self::Output {
+    self
+  }
+}
+
+impl<const LEN: usize> IntoOutput for [u8; LEN] {
+  type Output = Self;
+  #[inline]
+  fn into_output(self) -> Self::Output {
+    self
+  }
+}
+
+impl<'a, const LEN: usize> IntoOutput for &'a [u8; LEN] {
+  type Output = Self;
+  #[inline]
+  fn into_output(self) -> Self::Output {
+    self
+  }
+}
+
+impl<'a> IntoOutput for &'a str {
+  type Output = Self;
+  #[inline]
+  fn into_output(self) -> Self::Output {
+    self
+  }
+}
+
+impl<'a> IntoOutput for (&'a [u8], usize) {
+  type Output = Self;
+  #[inline]
+  fn into_output(self) -> Self::Output {
+    self
+  }
+}
 
 /// Abstracts something which can extend an `Extend`.
 /// Used to build modified input slices in `escaped_transform`
