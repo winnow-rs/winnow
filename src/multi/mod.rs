@@ -837,8 +837,6 @@ where
 
 /// Gets a number from the parser and returns a
 /// subslice of the input of that size.
-/// If the parser returns `Incomplete`,
-/// `length_data` will return an error.
 /// # Arguments
 /// * `f` The parser to apply.
 /// ```rust
