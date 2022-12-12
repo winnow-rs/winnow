@@ -1,5 +1,7 @@
 //! Parsers recognizing bytes streams, streaming version
 
+#![allow(deprecated)]
+
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{
@@ -29,6 +31,12 @@ use crate::{Err, IResult, Needed, Parser};
 /// assert_eq!(parser("S"), Err(Err::Error(Error::new("S", ErrorKind::Tag))));
 /// assert_eq!(parser("H"), Err(Err::Incomplete(Needed::new(4))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::tag`][crate::bytes::tag] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::bytes::tag` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn tag<T, Input, Error: ParseError<Input>>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -81,6 +89,12 @@ where
 /// assert_eq!(parser("Something"), Err(Err::Error(Error::new("Something", ErrorKind::Tag))));
 /// assert_eq!(parser(""), Err(Err::Incomplete(Needed::new(5))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::tag_no_case`][crate::bytes::tag_no_case] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::bytes::tag_no_case` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn tag_no_case<T, Input, Error: ParseError<Input>>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -135,6 +149,12 @@ where
 /// assert_eq!(not_space("Nospace"), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(not_space(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::is_not`][crate::bytes::is_not] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::bytes::is_not` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn is_not<T, Input, Error: ParseError<Input>>(
   arr: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -183,6 +203,12 @@ where
 /// assert_eq!(hex("D15EA5E"), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(hex(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::is_a`][crate::bytes::is_a] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::bytes::is_a` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn is_a<T, Input, Error: ParseError<Input>>(
   arr: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -230,6 +256,12 @@ where
 /// assert_eq!(alpha(b"latin"), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(alpha(b""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_while`][crate::bytes::take_while] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::bytes::take_while` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn take_while<F, Input, Error: ParseError<Input>>(
   cond: F,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -277,6 +309,12 @@ where
 /// assert_eq!(alpha(b"latin"), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(alpha(b"12345"), Err(Err::Error(Error::new(&b"12345"[..], ErrorKind::TakeWhile1))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_while1`][crate::bytes::take_while1] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::bytes::take_while1` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn take_while1<F, Input, Error: ParseError<Input>>(
   cond: F,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -327,6 +365,12 @@ where
 /// assert_eq!(short_alpha(b"ed"), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(short_alpha(b"12345"), Err(Err::Error(Error::new(&b"12345"[..], ErrorKind::TakeWhileMN))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_while_m_n`][crate::bytes::take_while_m_n] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::bytes::take_while_m_n` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn take_while_m_n<F, Input, Error: ParseError<Input>>(
   m: usize,
   n: usize,
@@ -423,6 +467,12 @@ where
 /// assert_eq!(till_colon("12345"), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(till_colon(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_till`][crate::bytes::take_till] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::bytes::take_till` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn take_till<F, Input, Error: ParseError<Input>>(
   cond: F,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -468,6 +518,12 @@ where
 /// assert_eq!(till_colon("12345"), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(till_colon(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_till1`][crate::bytes::take_till1] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::bytes::take_till1` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn take_till1<F, Input, Error: ParseError<Input>>(
   cond: F,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -515,6 +571,12 @@ where
 /// assert_eq!(take6("things"), Ok(("", "things")));
 /// assert_eq!(take6("short"), Err(Err::Incomplete(Needed::Unknown)));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take`][crate::bytes::take] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::bytes::take` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn take<C, Input, Error: ParseError<Input>>(
   count: C,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -562,6 +624,12 @@ where
 /// assert_eq!(until_eof("hello, worldeo"), Err(Err::Incomplete(Needed::Unknown)));
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_until`][crate::bytes::take_until] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::bytes::take_until` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn take_until<T, Input, Error: ParseError<Input>>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -610,6 +678,12 @@ where
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
 /// assert_eq!(until_eof("eof"),  Err(Err::Error(Error::new("eof", ErrorKind::TakeUntil))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_until1`][crate::bytes::take_until1] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::bytes::take_until1` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn take_until1<T, Input, Error: ParseError<Input>>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -657,6 +731,12 @@ where
 /// assert_eq!(esc("12\\\"34;"), Ok((";", "12\\\"34")));
 /// ```
 ///
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::escaped`][crate::bytes::escaped] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::bytes::escaped` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn escaped<Input, Error, F, G, O1, O2>(
   mut normal: F,
   control_char: char,
@@ -780,6 +860,12 @@ where
 /// assert_eq!(parser("ab\\\"cd\""), Ok(("\"", String::from("ab\"cd"))));
 /// ```
 #[cfg(feature = "alloc")]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::escaped_transform`][crate::bytes::escaped_transform] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::bytes::escaped_transform` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn escaped_transform<Input, Error, F, G, O1, O2, ExtendItem, Output>(
   mut normal: F,
   control_char: char,

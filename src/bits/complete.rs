@@ -1,6 +1,8 @@
 //! Bit level parsers
 //!
 
+#![allow(deprecated)]
+
 use crate::error::{ErrorKind, ParseError};
 use crate::input::{InputIter, InputLength, Slice, ToUsize};
 use crate::lib::std::ops::{AddAssign, Div, RangeFrom, Shl, Shr};
@@ -30,6 +32,9 @@ use crate::{Err, IResult};
 /// // Tries to consume 12 bits but only 8 are available
 /// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(nom::Err::Error(Error{input: ([0b00010010].as_ref(), 0), code: ErrorKind::Eof })));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bits::take`][crate::bits::take]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bits::take`")]
 pub fn take<I, O, C, E: ParseError<(I, usize)>>(
   count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
@@ -91,6 +96,9 @@ where
 }
 
 /// Generates a parser taking `count` bits and comparing them to `pattern`
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bits::tag`][crate::bits::tag]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bits::tag`")]
 pub fn tag<I, O, C, E: ParseError<(I, usize)>>(
   pattern: O,
   count: C,

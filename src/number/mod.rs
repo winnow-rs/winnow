@@ -1,5 +1,7 @@
 //! Parsers recognizing numbers
 
+#![allow(deprecated)] // will just become `pub(crate)` later
+
 pub mod complete;
 pub mod streaming;
 #[cfg(test)]

@@ -2,6 +2,8 @@
 //!
 //! Functions recognizing specific characters.
 
+#![allow(deprecated)]
+
 use crate::branch::alt;
 use crate::combinator::opt;
 use crate::error::ErrorKind;
@@ -30,6 +32,9 @@ use crate::{Err, IResult};
 /// assert_eq!(parser("bc"), Err(Err::Error(Error::new("bc", ErrorKind::Char))));
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Char))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::char`][crate::character::char]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::char`")]
 pub fn char<I, Error: ParseError<I>>(c: char) -> impl Fn(I) -> IResult<I, char, Error>
 where
   I: Slice<RangeFrom<usize>> + InputIter,
@@ -67,6 +72,9 @@ where
 /// assert_eq!(parser("cd"), Err(Err::Error(Error::new("cd", ErrorKind::Satisfy))));
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Satisfy))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::satisfy`][crate::character::satisfy]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::satisfy`")]
 pub fn satisfy<F, I, Error: ParseError<I>>(cond: F) -> impl Fn(I) -> IResult<I, char, Error>
 where
   I: Slice<RangeFrom<usize>> + InputIter,
@@ -107,6 +115,9 @@ where
 /// assert_eq!(one_of::<_, _, (&str, ErrorKind)>("a")("bc"), Err(Err::Error(("bc", ErrorKind::OneOf))));
 /// assert_eq!(one_of::<_, _, (&str, ErrorKind)>("a")(""), Err(Err::Error(("", ErrorKind::OneOf))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::one_of`][crate::character::one_of]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::one_of`")]
 pub fn one_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
   I: Slice<RangeFrom<usize>> + InputIter,
@@ -140,6 +151,9 @@ where
 /// assert_eq!(none_of::<_, _, (&str, ErrorKind)>("ab")("a"), Err(Err::Error(("a", ErrorKind::NoneOf))));
 /// assert_eq!(none_of::<_, _, (&str, ErrorKind)>("a")(""), Err(Err::Error(("", ErrorKind::NoneOf))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::none_of`][crate::character::none_of]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::none_of`")]
 pub fn none_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
   I: Slice<RangeFrom<usize>> + InputIter,
@@ -180,6 +194,9 @@ where
 /// assert_eq!(parser("ab\r\nc"), Err(Err::Error(Error::new("ab\r\nc", ErrorKind::CrLf))));
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::CrLf))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::crlf`][crate::character::crlf]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::crlf`")]
 pub fn crlf<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<Range<usize>> + Slice<RangeFrom<usize>>,
@@ -217,6 +234,12 @@ where
 /// assert_eq!(parser("a\rb\nc"), Err(Err::Error(Error { input: "a\rb\nc", code: ErrorKind::Tag })));
 /// assert_eq!(parser("a\rbc"), Err(Err::Error(Error { input: "a\rbc", code: ErrorKind::Tag })));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::not_line_ending`][crate::character::not_line_ending]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::character::not_line_ending`"
+)]
 pub fn not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<Range<usize>> + Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
@@ -268,6 +291,9 @@ where
 /// assert_eq!(parser("ab\r\nc"), Err(Err::Error(Error::new("ab\r\nc", ErrorKind::CrLf))));
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::CrLf))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::line_ending`][crate::character::line_ending]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::line_ending`")]
 pub fn line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<Range<usize>> + Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
@@ -304,6 +330,9 @@ where
 /// assert_eq!(parser("\r\nc"), Err(Err::Error(Error::new("\r\nc", ErrorKind::Char))));
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Char))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::newline`][crate::character::newline]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::newline`")]
 pub fn newline<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
 where
   I: Slice<RangeFrom<usize>> + InputIter,
@@ -328,6 +357,9 @@ where
 /// assert_eq!(parser("\r\nc"), Err(Err::Error(Error::new("\r\nc", ErrorKind::Char))));
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Char))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::tab`][crate::character::tab]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::tab`")]
 pub fn tab<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
 where
   I: Slice<RangeFrom<usize>> + InputIter,
@@ -351,6 +383,9 @@ where
 /// assert_eq!(parser("abc"), Ok(("bc",'a')));
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Eof))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::anychar`][crate::character::anychar]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::anychar`")]
 pub fn anychar<T, E: ParseError<T>>(input: T) -> IResult<T, char, E>
 where
   T: InputIter + InputLength + Slice<RangeFrom<usize>>,
@@ -383,6 +418,9 @@ where
 /// assert_eq!(parser("1c"), Ok(("1c", "")));
 /// assert_eq!(parser(""), Ok(("", "")));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::alpha0`][crate::character::alpha0]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::alpha0`")]
 pub fn alpha0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -411,6 +449,9 @@ where
 /// assert_eq!(parser("1c"), Err(Err::Error(Error::new("1c", ErrorKind::Alpha))));
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Alpha))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::alpha1`][crate::character::alpha1]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::alpha1`")]
 pub fn alpha1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -440,6 +481,9 @@ where
 /// assert_eq!(parser("a21c"), Ok(("a21c", "")));
 /// assert_eq!(parser(""), Ok(("", "")));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::digit0`][crate::character::digit0]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::digit0`")]
 pub fn digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -486,6 +530,9 @@ where
 /// ```
 ///
 /// [`map_res`]: crate::combinator::map_res
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::digit1`][crate::character::digit1]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::digit1`")]
 pub fn digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -513,6 +560,9 @@ where
 /// assert_eq!(parser("Z21c"), Ok(("Z21c", "")));
 /// assert_eq!(parser(""), Ok(("", "")));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::hex_digit0`][crate::character::hex_digit0]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::hex_digit0`")]
 pub fn hex_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -540,6 +590,9 @@ where
 /// assert_eq!(parser("H2"), Err(Err::Error(Error::new("H2", ErrorKind::HexDigit))));
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::HexDigit))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::hex_digit1`][crate::character::hex_digit1]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::hex_digit1`")]
 pub fn hex_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -568,6 +621,9 @@ where
 /// assert_eq!(parser("Z21c"), Ok(("Z21c", "")));
 /// assert_eq!(parser(""), Ok(("", "")));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::oct_digit0`][crate::character::oct_digit0]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::oct_digit0`")]
 pub fn oct_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -596,6 +652,9 @@ where
 /// assert_eq!(parser("H2"), Err(Err::Error(Error::new("H2", ErrorKind::OctDigit))));
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::OctDigit))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::oct_digit1`][crate::character::oct_digit1]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::oct_digit1`")]
 pub fn oct_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -624,6 +683,12 @@ where
 /// assert_eq!(parser("&Z21c"), Ok(("&Z21c", "")));
 /// assert_eq!(parser(""), Ok(("", "")));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::alphanumeric0`][crate::character::alphanumeric0]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::character::alphanumeric0`"
+)]
 pub fn alphanumeric0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -652,6 +717,12 @@ where
 /// assert_eq!(parser("&H2"), Err(Err::Error(Error::new("&H2", ErrorKind::AlphaNumeric))));
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::AlphaNumeric))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::alphanumeric1`][crate::character::alphanumeric1]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::character::alphanumeric1`"
+)]
 pub fn alphanumeric1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -680,6 +751,9 @@ where
 /// assert_eq!(parser("Z21c"), Ok(("Z21c", "")));
 /// assert_eq!(parser(""), Ok(("", "")));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::space0`][crate::character::space0]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::space0`")]
 pub fn space0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -711,6 +785,9 @@ where
 /// assert_eq!(parser("H2"), Err(Err::Error(Error::new("H2", ErrorKind::Space))));
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Space))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::space1`][crate::character::space1]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::space1`")]
 pub fn space1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -745,6 +822,9 @@ where
 /// assert_eq!(parser("Z21c"), Ok(("Z21c", "")));
 /// assert_eq!(parser(""), Ok(("", "")));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::multispace0`][crate::character::multispace0]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::multispace0`")]
 pub fn multispace0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -776,6 +856,9 @@ where
 /// assert_eq!(parser("H2"), Err(Err::Error(Error::new("H2", ErrorKind::MultiSpace))));
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::MultiSpace))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::character::multispace1`][crate::character::multispace1]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::multispace1`")]
 pub fn multispace1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,

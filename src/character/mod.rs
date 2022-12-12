@@ -2,6 +2,8 @@
 //!
 //! Functions recognizing specific characters
 
+#![allow(deprecated)] // will just become `pub(crate)` later
+
 pub mod complete;
 pub mod streaming;
 #[cfg(test)]

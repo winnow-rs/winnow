@@ -1,5 +1,7 @@
 //! Parsers recognizing bytes streams, complete input version
 
+#![allow(deprecated)]
+
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{
@@ -30,6 +32,9 @@ use crate::{Err, IResult, Parser};
 /// assert_eq!(parser("Something"), Err(Err::Error(Error::new("Something", ErrorKind::Tag))));
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Tag))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::tag`][crate::bytes::tag]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::tag`")]
 pub fn tag<T, Input, Error: ParseError<Input>>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -82,6 +87,9 @@ where
 /// assert_eq!(parser("Something"), Err(Err::Error(Error::new("Something", ErrorKind::Tag))));
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Tag))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::tag_no_case`][crate::bytes::tag_no_case]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::tag_no_case`")]
 pub fn tag_no_case<T, Input, Error: ParseError<Input>>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -135,6 +143,9 @@ where
 /// assert_eq!(not_space("Nospace"), Ok(("", "Nospace")));
 /// assert_eq!(not_space(""), Err(Err::Error(Error::new("", ErrorKind::IsNot))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::is_not`][crate::bytes::is_not]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::is_not`")]
 pub fn is_not<T, Input, Error: ParseError<Input>>(
   arr: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -181,6 +192,9 @@ where
 /// assert_eq!(hex("D15EA5E"), Ok(("", "D15EA5E")));
 /// assert_eq!(hex(""), Err(Err::Error(Error::new("", ErrorKind::IsA))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::is_a`][crate::bytes::is_a]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::is_a`")]
 pub fn is_a<T, Input, Error: ParseError<Input>>(
   arr: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -225,6 +239,9 @@ where
 /// assert_eq!(alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
 /// assert_eq!(alpha(b""), Ok((&b""[..], &b""[..])));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_while`][crate::bytes::take_while]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_while`")]
 pub fn take_while<F, Input, Error: ParseError<Input>>(
   cond: F,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -268,6 +285,9 @@ where
 /// assert_eq!(alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
 /// assert_eq!(alpha(b"12345"), Err(Err::Error(Error::new(&b"12345"[..], ErrorKind::TakeWhile1))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_while1`][crate::bytes::take_while1]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_while1`")]
 pub fn take_while1<F, Input, Error: ParseError<Input>>(
   cond: F,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -315,6 +335,9 @@ where
 /// assert_eq!(short_alpha(b"ed"), Err(Err::Error(Error::new(&b"ed"[..], ErrorKind::TakeWhileMN))));
 /// assert_eq!(short_alpha(b"12345"), Err(Err::Error(Error::new(&b"12345"[..], ErrorKind::TakeWhileMN))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_while_m_n`][crate::bytes::take_while_m_n]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_while_m_n`")]
 pub fn take_while_m_n<F, Input, Error: ParseError<Input>>(
   m: usize,
   n: usize,
@@ -407,6 +430,9 @@ where
 /// assert_eq!(till_colon("12345"), Ok(("", "12345")));
 /// assert_eq!(till_colon(""), Ok(("", "")));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_till`][crate::bytes::take_till]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_till`")]
 pub fn take_till<F, Input, Error: ParseError<Input>>(
   cond: F,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -451,6 +477,9 @@ where
 /// assert_eq!(till_colon("12345"), Ok(("", "12345")));
 /// assert_eq!(till_colon(""), Err(Err::Error(Error::new("", ErrorKind::TakeTill1))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_till1`][crate::bytes::take_till1]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_till1`")]
 pub fn take_till1<F, Input, Error: ParseError<Input>>(
   cond: F,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -504,6 +533,9 @@ where
 /// assert_eq!(take::<_, _, Error<_>>(1usize)("💙"), Ok(("", "💙")));
 /// assert_eq!(take::<_, _, Error<_>>(1usize)("💙".as_bytes()), Ok((b"\x9F\x92\x99".as_ref(), b"\xF0".as_ref())));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take`][crate::bytes::take]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take`")]
 pub fn take<C, Input, Error: ParseError<Input>>(
   count: C,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -548,6 +580,9 @@ where
 /// assert_eq!(until_eof(""), Err(Err::Error(Error::new("", ErrorKind::TakeUntil))));
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_until`][crate::bytes::take_until]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_until`")]
 pub fn take_until<T, Input, Error: ParseError<Input>>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -594,6 +629,9 @@ where
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
 /// assert_eq!(until_eof("eof"), Err(Err::Error(Error::new("eof", ErrorKind::TakeUntil))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_until1`][crate::bytes::take_until1]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_until1`")]
 pub fn take_until1<T, Input, Error: ParseError<Input>>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -642,6 +680,9 @@ where
 /// assert_eq!(esc(r#"12\"34;"#), Ok((";", r#"12\"34"#)));
 /// ```
 ///
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::escaped`][crate::bytes::escaped]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::escaped`")]
 pub fn escaped<'a, Input: 'a, Error, F, G, O1, O2>(
   mut normal: F,
   control_char: char,
@@ -777,6 +818,12 @@ where
 /// assert_eq!(parser("ab\\ncd"), Ok(("", String::from("ab\ncd"))));
 /// ```
 #[cfg(feature = "alloc")]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::escaped_transform`][crate::bytes::escaped_transform]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::bytes::escaped_transform`"
+)]
 pub fn escaped_transform<Input, Error, F, G, O1, O2, ExtendItem, Output>(
   mut normal: F,
   control_char: char,

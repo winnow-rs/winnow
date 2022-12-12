@@ -454,6 +454,7 @@ mod complete {
 
   #[cfg(feature = "std")]
   fn parse_f64(i: &str) -> IResult<&str, f64, ()> {
+    #[allow(deprecated)] // will just become `pub(crate)` later
     match crate::number::complete::recognize_float_or_exceptions(i) {
       Err(e) => Err(e),
       Ok((i, s)) => {
@@ -1248,6 +1249,7 @@ mod streaming {
 
   #[cfg(feature = "std")]
   fn parse_f64(i: Streaming<&str>) -> IResult<Streaming<&str>, f64, ()> {
+    #[allow(deprecated)] // will just become `pub(crate)` later
     match crate::number::streaming::recognize_float_or_exceptions(i) {
       Err(e) => Err(e),
       Ok((i, s)) => {
