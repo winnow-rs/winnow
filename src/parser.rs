@@ -302,7 +302,7 @@ pub trait Parser<I, O, E> {
   ///
   /// Because parsers are `FnMut`, they can be called multiple times.  This prevents moving `f`
   /// into [`length_data`][crate::multi::length_data] and `g` into
-  /// [`complete`][crate::combinator::combinator]:
+  /// [`complete`][crate::combinator::complete]:
   /// ```rust,compile_fail
   /// # use nom::prelude::*;
   /// # use nom::IResult;
