@@ -381,6 +381,34 @@ where
   }
 }
 
+/// Implementation of `Parser::and_then`
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct AndThen<F, G, O1> {
+  f: F,
+  g: G,
+  phantom: core::marker::PhantomData<O1>,
+}
+
+impl<F, G, O1> AndThen<F, G, O1> {
+  pub(crate) fn new(f: F, g: G) -> Self {
+    Self {
+      f,
+      g,
+      phantom: Default::default(),
+    }
+  }
+}
+
+impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, E>
+  for AndThen<F, G, O1>
+{
+  fn parse(&mut self, i: I) -> IResult<I, O2, E> {
+    let (i, o1) = self.f.parse(i)?;
+    let (_, o2) = self.g.parse(o1)?;
+    Ok((i, o2))
+  }
+}
+
 /// Creates a new parser from the output of the first parser, then apply that parser over the rest of the input.
 ///
 /// ```rust
@@ -465,34 +493,6 @@ where
       Err(Err::Error(_)) => Ok((i, None)),
       Err(e) => Err(e),
     }
-  }
-}
-
-/// Implementation of `Parser::and_then`
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct AndThen<F, G, O1> {
-  f: F,
-  g: G,
-  phantom: core::marker::PhantomData<O1>,
-}
-
-impl<F, G, O1> AndThen<F, G, O1> {
-  pub(crate) fn new(f: F, g: G) -> Self {
-    Self {
-      f,
-      g,
-      phantom: Default::default(),
-    }
-  }
-}
-
-impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, E>
-  for AndThen<F, G, O1>
-{
-  fn parse(&mut self, i: I) -> IResult<I, O2, E> {
-    let (i, o1) = self.f.parse(i)?;
-    let (_, o2) = self.g.parse(o1)?;
-    Ok((i, o2))
   }
 }
 
