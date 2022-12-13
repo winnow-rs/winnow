@@ -1632,6 +1632,8 @@ pub trait IntoOutput {
   type Output;
   /// Convert an `Input` into an appropriate `Output` type
   fn into_output(self) -> Self::Output;
+  /// Convert an `Output` type to be used as `Input`
+  fn from_output(inner: Self::Output) -> Self;
 }
 
 impl<'a, T> IntoOutput for &'a [T] {
@@ -1639,6 +1641,10 @@ impl<'a, T> IntoOutput for &'a [T] {
   #[inline]
   fn into_output(self) -> Self::Output {
     self
+  }
+  #[inline]
+  fn from_output(inner: Self::Output) -> Self {
+    inner
   }
 }
 
@@ -1648,6 +1654,10 @@ impl<const LEN: usize> IntoOutput for [u8; LEN] {
   fn into_output(self) -> Self::Output {
     self
   }
+  #[inline]
+  fn from_output(inner: Self::Output) -> Self {
+    inner
+  }
 }
 
 impl<'a, const LEN: usize> IntoOutput for &'a [u8; LEN] {
@@ -1655,6 +1665,10 @@ impl<'a, const LEN: usize> IntoOutput for &'a [u8; LEN] {
   #[inline]
   fn into_output(self) -> Self::Output {
     self
+  }
+  #[inline]
+  fn from_output(inner: Self::Output) -> Self {
+    inner
   }
 }
 
@@ -1664,6 +1678,10 @@ impl<'a> IntoOutput for &'a str {
   fn into_output(self) -> Self::Output {
     self
   }
+  #[inline]
+  fn from_output(inner: Self::Output) -> Self {
+    inner
+  }
 }
 
 impl<'a> IntoOutput for (&'a [u8], usize) {
@@ -1671,6 +1689,10 @@ impl<'a> IntoOutput for (&'a [u8], usize) {
   #[inline]
   fn into_output(self) -> Self::Output {
     self
+  }
+  #[inline]
+  fn from_output(inner: Self::Output) -> Self {
+    inner
   }
 }
 
@@ -1682,6 +1704,10 @@ where
   #[inline]
   fn into_output(self) -> Self::Output {
     self.into_complete().into_output()
+  }
+  #[inline]
+  fn from_output(inner: Self::Output) -> Self {
+    Streaming(T::from_output(inner))
   }
 }
 
