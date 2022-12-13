@@ -201,6 +201,24 @@ where
   Ok((input, len))
 }
 
+/// Implementation of [`Parser::as_mut_parser`][Parser::as_mut_parser]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct MutParser<'p, P> {
+  p: &'p mut P,
+}
+
+impl<'p, P> MutParser<'p, P> {
+  pub(crate) fn new(p: &'p mut P) -> Self {
+    Self { p }
+  }
+}
+
+impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for MutParser<'p, P> {
+  fn parse(&mut self, i: I) -> IResult<I, O, E> {
+    self.p.parse(i)
+  }
+}
+
 /// Maps a function on the result of a parser.
 ///
 /// ```rust
@@ -226,24 +244,6 @@ where
   move |input: I| {
     let (input, o1) = parser.parse(input)?;
     Ok((input, f(o1)))
-  }
-}
-
-/// Implementation of [`Parser::as_mut_parser`][Parser::as_mut_parser]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct MutParser<'p, P> {
-  p: &'p mut P,
-}
-
-impl<'p, P> MutParser<'p, P> {
-  pub(crate) fn new(p: &'p mut P) -> Self {
-    Self { p }
-  }
-}
-
-impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for MutParser<'p, P> {
-  fn parse(&mut self, i: I) -> IResult<I, O, E> {
-    self.p.parse(i)
   }
 }
 
