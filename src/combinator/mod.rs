@@ -220,6 +220,8 @@ impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for MutParser<'p, P> {
 
 /// Maps a function on the result of a parser.
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::map`]
+///
 /// ```rust
 /// use nom::{Err,error::ErrorKind, IResult,Parser};
 /// use nom::character::digit1;
@@ -235,6 +237,7 @@ impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for MutParser<'p, P> {
 /// assert_eq!(parser.parse("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
 /// # }
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::map")]
 pub fn map<I, O1, O2, E, F, G>(mut parser: F, mut f: G) -> impl FnMut(I) -> IResult<I, O2, E>
 where
   F: Parser<I, O1, E>,
