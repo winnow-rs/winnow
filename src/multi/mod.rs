@@ -3,6 +3,7 @@
 #[cfg(test)]
 mod tests;
 
+use crate::combinator::complete;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{InputLength, InputTake, ToUsize};
@@ -906,23 +907,9 @@ where
   E: ParseError<I>,
 {
   move |i: I| {
-    let (i, length) = f.parse(i)?;
-
-    let length: usize = length.to_usize();
-
-    if let Some(needed) = length
-      .checked_sub(i.input_len())
-      .and_then(NonZeroUsize::new)
-    {
-      Err(Err::Incomplete(Needed::Size(needed)))
-    } else {
-      let (rest, i) = i.take_split(length);
-      match g.parse(i.clone()) {
-        Err(Err::Incomplete(_)) => Err(Err::Error(E::from_error_kind(i, ErrorKind::Complete))),
-        Err(e) => Err(e),
-        Ok((_, o)) => Ok((rest, o)),
-      }
-    }
+    let (i, data) = length_data(f.as_mut_parser()).parse(i)?;
+    let (_, o) = complete(g.as_mut_parser()).parse(data)?;
+    Ok((i, o))
   }
 }
 
