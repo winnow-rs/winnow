@@ -44,6 +44,8 @@
 //! |---|---|
 //! | [AsChar][AsChar] |Transforms common types to a char for basic token parsing|
 
+use core::num::NonZeroUsize;
+
 use crate::error::{ErrorKind, ParseError};
 use crate::lib::std::iter::{Copied, Enumerate};
 use crate::lib::std::ops::{Range, RangeFrom, RangeFull, RangeTo};
@@ -422,10 +424,10 @@ impl<'a> InputIter for &'a [u8] {
   }
   #[inline]
   fn slice_index(&self, count: usize) -> Result<usize, Needed> {
-    if self.len() >= count {
-      Ok(count)
+    if let Some(needed) = count.checked_sub(self.len()).and_then(NonZeroUsize::new) {
+      Err(Needed::Size(needed))
     } else {
-      Err(Needed::new(count - self.len()))
+      Ok(count)
     }
   }
 }

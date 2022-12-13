@@ -294,6 +294,60 @@ pub trait Parser<I, O, E> {
   /// either the remaining input and the output value, or an error
   fn parse(&mut self, input: I) -> IResult<I, O, E>;
 
+  /// Treat `&mut Self` as a parser
+  ///
+  /// This helps when needing to move a `Parser` when all you have is a `&mut Parser`.
+  ///
+  /// # Example
+  ///
+  /// Because parsers are `FnMut`, they can be called multiple times.  This prevents moving `f`
+  /// into [`length_data`][crate::multi::length_data] and `g` into
+  /// [`complete`][crate::combinator::combinator]:
+  /// ```rust,compile_fail
+  /// # use nom::prelude::*;
+  /// # use nom::IResult;
+  /// # use nom::Parser;
+  /// # use nom::error::ParseError;
+  /// # use nom::multi::length_data;
+  /// # use nom::combinator::complete;
+  /// pub fn length_value<'i, O, E: ParseError<&'i [u8]>>(
+  ///     mut f: impl Parser<&'i [u8], usize, E>,
+  ///     mut g: impl Parser<&'i [u8], O, E>
+  /// ) -> impl FnMut(&'i [u8]) -> IResult<&'i [u8], O, E> {
+  ///   move |i: &'i [u8]| {
+  ///     let (i, data) = length_data(f).parse(i)?;
+  ///     let (_, o) = complete(g).parse(data)?;
+  ///     Ok((i, o))
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// By adding `as_mut_parser`, we can make this work:
+  /// ```rust
+  /// # use nom::prelude::*;
+  /// # use nom::IResult;
+  /// # use nom::Parser;
+  /// # use nom::error::ParseError;
+  /// # use nom::multi::length_data;
+  /// # use nom::combinator::complete;
+  /// pub fn length_value<'i, O, E: ParseError<&'i [u8]>>(
+  ///     mut f: impl Parser<&'i [u8], usize, E>,
+  ///     mut g: impl Parser<&'i [u8], O, E>
+  /// ) -> impl FnMut(&'i [u8]) -> IResult<&'i [u8], O, E> {
+  ///   move |i: &'i [u8]| {
+  ///     let (i, data) = length_data(f.as_mut_parser()).parse(i)?;
+  ///     let (_, o) = complete(g.as_mut_parser()).parse(data)?;
+  ///     Ok((i, o))
+  ///   }
+  /// }
+  /// ```
+  fn as_mut_parser(&mut self) -> MutParser<Self>
+  where
+    Self: core::marker::Sized,
+  {
+    MutParser::new(self)
+  }
+
   /// Maps a function over the result of a parser
   fn map<G, O2>(self, g: G) -> Map<Self, G, O>
   where
