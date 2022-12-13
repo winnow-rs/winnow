@@ -1,7 +1,9 @@
 //! # nom, eating data byte by byte
 //!
-//! nom is a parser combinator library with a focus on safe parsing,
-//! streaming patterns, and as much as possible zero copy.
+//! nom is a parser combinator library, supporting:
+//! - String (`&str`), byte (`&[u8]`), and [custom input types][crate::input]
+//! - [Streaming parsing][crate::input::Streaming]
+//! - Zero copy parsing
 //!
 //! ## Example
 //!
@@ -313,67 +315,6 @@
 //! assert_eq!(r, Ok((&b"X"[..], A{a: 1, b: 2})));
 //! # }
 //! ```
-//!
-//! ## Streaming / Complete
-//!
-//! Some of nom's modules have `streaming` or `complete` submodules. They hold
-//! different variants of the same combinators.
-//!
-//! A streaming parser assumes that we might not have all of the input data.
-//! This can happen with some network protocol or large file parsers, where the
-//! input buffer can be full and need to be resized or refilled.
-//!
-//! A complete parser assumes that we already have all of the input data.
-//! This will be the common case with small files that can be read entirely to
-//! memory.
-//!
-//! Here is how it works in practice:
-//!
-//! ```rust
-//! use nom::{IResult, Err, Needed, error::{Error, ErrorKind}, bytes, character, input::Streaming};
-//!
-//! fn take_streaming(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
-//!   bytes::take(4u8)(i)
-//! }
-//!
-//! fn take_complete(i: &[u8]) -> IResult<&[u8], &[u8]> {
-//!   bytes::take(4u8)(i)
-//! }
-//!
-//! // both parsers will take 4 bytes as expected
-//! assert_eq!(take_streaming(Streaming(&b"abcde"[..])), Ok((Streaming(&b"e"[..]), &b"abcd"[..])));
-//! assert_eq!(take_complete(&b"abcde"[..]), Ok((&b"e"[..], &b"abcd"[..])));
-//!
-//! // if the input is smaller than 4 bytes, the streaming parser
-//! // will return `Incomplete` to indicate that we need more data
-//! assert_eq!(take_streaming(Streaming(&b"abc"[..])), Err(Err::Incomplete(Needed::new(1))));
-//!
-//! // but the complete parser will return an error
-//! assert_eq!(take_complete(&b"abc"[..]), Err(Err::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
-//!
-//! // the alpha0 function recognizes 0 or more alphabetic characters
-//! fn alpha0_streaming(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
-//!   character::alpha0(i)
-//! }
-//!
-//! fn alpha0_complete(i: &str) -> IResult<&str, &str> {
-//!   character::alpha0(i)
-//! }
-//!
-//! // if there's a clear limit to the recognized characters, both parsers work the same way
-//! assert_eq!(alpha0_streaming(Streaming("abcd;")), Ok((Streaming(";"), "abcd")));
-//! assert_eq!(alpha0_complete("abcd;"), Ok((";", "abcd")));
-//!
-//! // but when there's no limit, the streaming version returns `Incomplete`, because it cannot
-//! // know if more input data should be recognized. The whole input could be "abcd;", or
-//! // "abcde;"
-//! assert_eq!(alpha0_streaming(Streaming("abcd")), Err(Err::Incomplete(Needed::new(1))));
-//!
-//! // while the complete version knows that all of the data is there
-//! assert_eq!(alpha0_complete("abcd"), Ok(("", "abcd")));
-//! ```
-//! **Going further:** Read the [guides](https://github.com/Geal/nom/tree/main/doc),
-//! check out the [_cookbook]!
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(docsrs, feature(extended_key_value_attributes))]

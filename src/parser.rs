@@ -174,6 +174,8 @@ pub enum Err<E> {
   ///
   /// This must only be set when the `Input` is [`InputIsStreaming<true>`], like with
   /// [`Streaming`][crate::input::Streaming]
+  ///
+  /// Convert this into an `Error` with [`nom::combinator::complete`][crate::combinator::complete]
   Incomplete(Needed),
   /// The parser had an error (recoverable)
   Error(E),
