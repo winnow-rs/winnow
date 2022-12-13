@@ -1,11 +1,12 @@
 use super::*;
-use crate::bytes::complete::take;
-use crate::bytes::streaming::tag;
+use crate::bytes::tag;
+use crate::bytes::take;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
+use crate::input::Streaming;
 #[cfg(feature = "alloc")]
 use crate::lib::std::boxed::Box;
-use crate::number::complete::u8;
+use crate::number::u8;
 use crate::{Err, IResult, Needed};
 
 macro_rules! assert_parse(
@@ -110,7 +111,7 @@ struct CustomError;
 #[allow(dead_code)]
 fn custom_error(input: &[u8]) -> IResult<&[u8], &[u8], CustomError> {
   //fix_error!(input, CustomError, alphanumeric)
-  crate::character::streaming::alphanumeric1(input)
+  crate::character::alphanumeric1(input)
 }
 
 #[test]
@@ -160,7 +161,7 @@ fn test_all_consuming() {
 #[test]
 #[allow(unused)]
 fn test_verify_ref() {
-  use crate::bytes::complete::take;
+  use crate::bytes::take;
 
   let mut parser1 = verify(take(3u8), |s: &[u8]| s == &b"abc"[..]);
 
@@ -171,14 +172,14 @@ fn test_verify_ref() {
   );
 
   fn parser2(i: &[u8]) -> IResult<&[u8], u32> {
-    verify(crate::number::streaming::be_u32, |val: &u32| *val < 3)(i)
+    verify(crate::number::be_u32, |val: &u32| *val < 3)(i)
   }
 }
 
 #[test]
 #[cfg(feature = "alloc")]
 fn test_verify_alloc() {
-  use crate::bytes::complete::take;
+  use crate::bytes::take;
   let mut parser1 = verify(map(take(3u8), |s: &[u8]| s.to_vec()), |s: &[u8]| {
     s == &b"abc"[..]
   });
@@ -193,13 +194,13 @@ fn test_verify_alloc() {
 #[test]
 #[cfg(feature = "std")]
 fn test_into() {
-  use crate::bytes::complete::take;
+  use crate::bytes::take;
   use crate::{
     error::{Error, ParseError},
     Err,
   };
 
-  let mut parser = into(take::<_, _, Error<_>>(3u8));
+  let mut parser = into(take::<_, _, Error<_>, false>(3u8));
   let result: IResult<&[u8], Vec<u8>> = parser(&b"abcdefg"[..]);
 
   assert_eq!(result, Ok((&b"defg"[..], vec![97, 98, 99])));
@@ -207,62 +208,92 @@ fn test_into() {
 
 #[test]
 fn opt_test() {
-  fn opt_abcd(i: &[u8]) -> IResult<&[u8], Option<&[u8]>> {
+  fn opt_abcd(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, Option<&[u8]>> {
     opt(tag("abcd"))(i)
   }
 
   let a = &b"abcdef"[..];
   let b = &b"bcdefg"[..];
   let c = &b"ab"[..];
-  assert_eq!(opt_abcd(a), Ok((&b"ef"[..], Some(&b"abcd"[..]))));
-  assert_eq!(opt_abcd(b), Ok((&b"bcdefg"[..], None)));
-  assert_eq!(opt_abcd(c), Err(Err::Incomplete(Needed::new(2))));
+  assert_eq!(
+    opt_abcd(Streaming(a)),
+    Ok((Streaming(&b"ef"[..]), Some(&b"abcd"[..])))
+  );
+  assert_eq!(
+    opt_abcd(Streaming(b)),
+    Ok((Streaming(&b"bcdefg"[..]), None))
+  );
+  assert_eq!(opt_abcd(Streaming(c)), Err(Err::Incomplete(Needed::new(2))));
 }
 
 #[test]
 fn peek_test() {
-  fn peek_tag(i: &[u8]) -> IResult<&[u8], &[u8]> {
+  fn peek_tag(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
     peek(tag("abcd"))(i)
   }
 
-  assert_eq!(peek_tag(&b"abcdef"[..]), Ok((&b"abcdef"[..], &b"abcd"[..])));
-  assert_eq!(peek_tag(&b"ab"[..]), Err(Err::Incomplete(Needed::new(2))));
   assert_eq!(
-    peek_tag(&b"xxx"[..]),
-    Err(Err::Error(error_position!(&b"xxx"[..], ErrorKind::Tag)))
+    peek_tag(Streaming(&b"abcdef"[..])),
+    Ok((Streaming(&b"abcdef"[..]), &b"abcd"[..]))
+  );
+  assert_eq!(
+    peek_tag(Streaming(&b"ab"[..])),
+    Err(Err::Incomplete(Needed::new(2)))
+  );
+  assert_eq!(
+    peek_tag(Streaming(&b"xxx"[..])),
+    Err(Err::Error(error_position!(
+      Streaming(&b"xxx"[..]),
+      ErrorKind::Tag
+    )))
   );
 }
 
 #[test]
 fn not_test() {
-  fn not_aaa(i: &[u8]) -> IResult<&[u8], ()> {
+  fn not_aaa(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, ()> {
     not(tag("aaa"))(i)
   }
 
   assert_eq!(
-    not_aaa(&b"aaa"[..]),
-    Err(Err::Error(error_position!(&b"aaa"[..], ErrorKind::Not)))
+    not_aaa(Streaming(&b"aaa"[..])),
+    Err(Err::Error(error_position!(
+      Streaming(&b"aaa"[..]),
+      ErrorKind::Not
+    )))
   );
-  assert_eq!(not_aaa(&b"aa"[..]), Err(Err::Incomplete(Needed::new(1))));
-  assert_eq!(not_aaa(&b"abcd"[..]), Ok((&b"abcd"[..], ())));
+  assert_eq!(
+    not_aaa(Streaming(&b"aa"[..])),
+    Err(Err::Incomplete(Needed::new(1)))
+  );
+  assert_eq!(
+    not_aaa(Streaming(&b"abcd"[..])),
+    Ok((Streaming(&b"abcd"[..]), ()))
+  );
 }
 
 #[test]
 fn verify_test() {
-  use crate::bytes::streaming::take;
+  use crate::bytes::take;
 
-  fn test(i: &[u8]) -> IResult<&[u8], &[u8]> {
+  fn test(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
     verify(take(5u8), |slice: &[u8]| slice[0] == b'a')(i)
   }
-  assert_eq!(test(&b"bcd"[..]), Err(Err::Incomplete(Needed::new(2))));
   assert_eq!(
-    test(&b"bcdefg"[..]),
+    test(Streaming(&b"bcd"[..])),
+    Err(Err::Incomplete(Needed::new(2)))
+  );
+  assert_eq!(
+    test(Streaming(&b"bcdefg"[..])),
     Err(Err::Error(error_position!(
-      &b"bcdefg"[..],
+      Streaming(&b"bcdefg"[..]),
       ErrorKind::Verify
     )))
   );
-  assert_eq!(test(&b"abcdefg"[..]), Ok((&b"fg"[..], &b"abcde"[..])));
+  assert_eq!(
+    test(Streaming(&b"abcdefg"[..])),
+    Ok((Streaming(&b"fg"[..]), &b"abcde"[..]))
+  );
 }
 
 #[test]

@@ -40,7 +40,7 @@
 //! ```rust,ignore
 //! # use nom::IResult;
 //! # use nom::prelude::*;
-//! # let parser = nom::bytes::complete::take_while1(|c: char| c == ' ');
+//! # let parser = nom::bytes::take_while1(|c: char| c == ' ');
 //! # let input = " ";
 //! let parser_result: IResult<_, _, _> = parser(input);
 //! let result: Result<_, _> = parser_result.finish();
@@ -53,7 +53,7 @@
 //! ```rust,ignore
 //! # use nom::Err;
 //! # type Value<'s> = &'s [u8];
-//! # let parser = nom::bytes::complete::take_while1(|c: u8| c == b' ');
+//! # let parser = nom::bytes::take_while1(|c: u8| c == b' ');
 //! # let data = " ";
 //! let result: Result<(&[u8], Value<'_>), Err<Vec<u8>>> =
 //!   parser(data).map_err(|e: E<&[u8]>| e.to_owned());
@@ -177,10 +177,10 @@
 //! ```rust,ignore
 //! # use nom::error::context;
 //! # use nom::sequence::preceded;
-//! # use nom::character::complete::char;
+//! # use nom::character::char;
 //! # use nom::combinator::cut;
 //! # use nom::sequence::terminated;
-//! # let parse_str = nom::bytes::complete::take_while1(|c| c == ' ');
+//! # let parse_str = nom::bytes::take_while1(|c| c == ' ');
 //! # let i = " ";
 //! context(
 //!   "string",
@@ -461,7 +461,7 @@
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
 //! # use nom::IResult;
 //! # use nom::error::dbg_dmp;
-//! # use nom::bytes::complete::tag;
+//! # use nom::bytes::tag;
 //! fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
 //!     dbg_dmp(tag("abcd"), "tag")(i)
 //! }
@@ -1039,7 +1039,7 @@ macro_rules! error_node_position(
 /// It also displays the input in hexdump format
 ///
 /// ```rust
-/// use nom::{IResult, error::dbg_dmp, bytes::complete::tag};
+/// use nom::{IResult, error::dbg_dmp, bytes::tag};
 ///
 /// fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   dbg_dmp(tag("abcd"), "tag")(i)
@@ -1074,7 +1074,7 @@ where
 #[cfg(feature = "alloc")]
 mod tests {
   use super::*;
-  use crate::character::complete::char;
+  use crate::character::char;
 
   #[test]
   fn convert_error_panic() {

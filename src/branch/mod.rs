@@ -24,7 +24,7 @@ pub trait Alt<I, O, E> {
 /// ```rust
 /// # use nom::error_position;
 /// # use nom::{Err,error::ErrorKind, Needed, IResult};
-/// use nom::character::complete::{alpha1, digit1};
+/// use nom::character::{alpha1, digit1};
 /// use nom::branch::alt;
 /// # fn main() {
 /// fn parser(input: &str) -> IResult<&str, &str> {
@@ -66,7 +66,7 @@ pub trait Permutation<I, O, E> {
 ///
 /// ```rust
 /// # use nom::{Err,error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::character::complete::{alpha1, digit1};
+/// use nom::character::{alpha1, digit1};
 /// use nom::branch::permutation;
 /// # fn main() {
 /// fn parser(input: &str) -> IResult<&str, (&str, &str)> {
@@ -89,7 +89,7 @@ pub trait Permutation<I, O, E> {
 /// ```rust
 /// # use nom::{Err, error::{Error, ErrorKind}, IResult};
 /// use nom::branch::permutation;
-/// use nom::character::complete::{anychar, char};
+/// use nom::character::{anychar, char};
 ///
 /// fn parser(input: &str) -> IResult<&str, (char, char)> {
 ///   permutation((anychar, char('a')))(input)

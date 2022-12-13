@@ -6,11 +6,10 @@ mod tests;
 use crate::combinator::complete;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
-use crate::input::{InputLength, InputTake, ToUsize};
+use crate::input::{InputIsStreaming, InputIter, InputLength, InputTake, IntoOutput, ToUsize};
 #[cfg(feature = "alloc")]
 use crate::lib::std::vec::Vec;
-use crate::{Err, IResult, Needed, Parser};
-use core::num::NonZeroUsize;
+use crate::{Err, IResult, Parser};
 
 /// Don't pre-allocate more than 64KiB when calling `Vec::with_capacity`.
 ///
@@ -36,7 +35,7 @@ const MAX_INITIAL_CAPACITY: usize = 65536;
 /// ```rust
 /// # use nom::{Err, error::ErrorKind, Needed, IResult};
 /// use nom::multi::many0;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   many0(tag("abc"))(s)
@@ -90,7 +89,7 @@ where
 /// ```rust
 /// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
 /// use nom::multi::many1;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   many1(tag("abc"))(s)
@@ -142,7 +141,7 @@ where
 /// ```rust
 /// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
 /// use nom::multi::many_till;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, (Vec<&str>, &str)> {
 ///   many_till(tag("abc"), tag("end"))(s)
@@ -201,7 +200,7 @@ where
 /// ```rust
 /// # use nom::{Err, error::ErrorKind, Needed, IResult};
 /// use nom::multi::separated_list0;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   separated_list0(tag("|"), tag("abc"))(s)
@@ -270,7 +269,7 @@ where
 /// ```rust
 /// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
 /// use nom::multi::separated_list1;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   separated_list1(tag("|"), tag("abc"))(s)
@@ -340,7 +339,7 @@ where
 /// ```rust
 /// # use nom::{Err, error::ErrorKind, Needed, IResult};
 /// use nom::multi::many_m_n;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   many_m_n(0, 2, tag("abc"))(s)
@@ -405,7 +404,7 @@ where
 /// ```rust
 /// # use nom::{Err, error::ErrorKind, Needed, IResult};
 /// use nom::multi::many0_count;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, usize> {
 ///   many0_count(tag("abc"))(s)
@@ -457,7 +456,7 @@ where
 /// ```rust
 /// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
 /// use nom::multi::many1_count;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, usize> {
 ///   many1_count(tag("abc"))(s)
@@ -513,7 +512,7 @@ where
 /// ```rust
 /// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
 /// use nom::multi::count;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   count(tag("abc"), 2)(s)
@@ -564,7 +563,7 @@ where
 /// ```rust
 /// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
 /// use nom::multi::fill;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, [&str; 2]> {
 ///   let mut buf = ["", ""];
@@ -617,7 +616,7 @@ where
 /// ```rust
 /// # use nom::{Err, error::ErrorKind, Needed, IResult};
 /// use nom::multi::fold_many0;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   fold_many0(
@@ -687,7 +686,7 @@ where
 /// ```rust
 /// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
 /// use nom::multi::fold_many1;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   fold_many1(
@@ -767,7 +766,7 @@ where
 /// ```rust
 /// # use nom::{Err, error::ErrorKind, Needed, IResult};
 /// use nom::multi::fold_many_m_n;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   fold_many_m_n(
@@ -838,24 +837,31 @@ where
 
 /// Gets a number from the parser and returns a
 /// subslice of the input of that size.
+///
+/// *Complete version*: Returns an error if there is not enough input data.
+///
+/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there is not enough data.
+///
 /// # Arguments
 /// * `f` The parser to apply.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
-/// use nom::number::complete::be_u16;
+/// # use nom::{Err, error::ErrorKind, Needed, IResult, input::Streaming};
+/// use nom::number::be_u16;
 /// use nom::multi::length_data;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
-/// fn parser(s: &[u8]) -> IResult<&[u8], &[u8]> {
+/// fn parser(s: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
 ///   length_data(be_u16)(s)
 /// }
 ///
-/// assert_eq!(parser(b"\x00\x03abcefg"), Ok((&b"efg"[..], &b"abc"[..])));
-/// assert_eq!(parser(b"\x00\x03a"), Err(Err::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Streaming(b"\x00\x03abcefg")), Ok((Streaming(&b"efg"[..]), &b"abc"[..])));
+/// assert_eq!(parser(Streaming(b"\x00\x03a")), Err(Err::Incomplete(Needed::new(2))));
 /// ```
-pub fn length_data<I, N, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, I, E>
+pub fn length_data<I, N, E, F, const STREAMING: bool>(
+  mut f: F,
+) -> impl FnMut(I) -> IResult<I, <I as IntoOutput>::Output, E>
 where
-  I: InputLength + InputTake,
+  I: InputLength + InputTake + InputIter + IntoOutput + InputIsStreaming<STREAMING>,
   N: ToUsize,
   F: Parser<I, N, E>,
   E: ParseError<I>,
@@ -863,16 +869,7 @@ where
   move |i: I| {
     let (i, length) = f.parse(i)?;
 
-    let length: usize = length.to_usize();
-
-    if let Some(needed) = length
-      .checked_sub(i.input_len())
-      .and_then(NonZeroUsize::new)
-    {
-      Err(Err::Incomplete(Needed::Size(needed)))
-    } else {
-      Ok(i.take_split(length))
-    }
+    crate::bytes::take(length).parse(i)
   }
 }
 
@@ -881,26 +878,35 @@ where
 /// then applies the second parser on that subslice.
 /// If the second parser returns `Incomplete`,
 /// `length_value` will return an error.
+///
+/// *Complete version*: Returns an error if there is not enough input data.
+///
+/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there is not enough data.
+///
 /// # Arguments
 /// * `f` The parser to apply.
 /// * `g` The parser to apply on the subslice.
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::number::complete::be_u16;
+/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult, input::Streaming};
+/// use nom::number::be_u16;
 /// use nom::multi::length_value;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
-/// fn parser(s: &[u8]) -> IResult<&[u8], &[u8]> {
+/// fn parser(s: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
 ///   length_value(be_u16, tag("abc"))(s)
 /// }
 ///
-/// assert_eq!(parser(b"\x00\x03abcefg"), Ok((&b"efg"[..], &b"abc"[..])));
-/// assert_eq!(parser(b"\x00\x03123123"), Err(Err::Error(Error::new(&b"123"[..], ErrorKind::Tag))));
-/// assert_eq!(parser(b"\x00\x03a"), Err(Err::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Streaming(b"\x00\x03abcefg")), Ok((Streaming(&b"efg"[..]), &b"abc"[..])));
+/// assert_eq!(parser(Streaming(b"\x00\x03123123")), Err(Err::Error(Error::new(Streaming(&b"123"[..]), ErrorKind::Tag))));
+/// assert_eq!(parser(Streaming(b"\x00\x03a")), Err(Err::Incomplete(Needed::new(2))));
 /// ```
-pub fn length_value<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IResult<I, O, E>
+pub fn length_value<I, O, N, E, F, G, const STREAMING: bool>(
+  mut f: F,
+  mut g: G,
+) -> impl FnMut(I) -> IResult<I, O, E>
 where
-  I: Clone + InputLength + InputTake,
+  I: InputLength + InputTake + InputIter + IntoOutput + InputIsStreaming<STREAMING>,
+  I: Clone,
   N: ToUsize,
   F: Parser<I, N, E>,
   G: Parser<I, O, E>,
@@ -908,6 +914,7 @@ where
 {
   move |i: I| {
     let (i, data) = length_data(f.as_mut_parser()).parse(i)?;
+    let data = I::from_output(data);
     let (_, o) = complete(g.as_mut_parser()).parse(data)?;
     Ok((i, o))
   }
@@ -920,9 +927,9 @@ where
 /// * `g` The parser to apply repeatedly.
 /// ```rust
 /// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::number::complete::u8;
+/// use nom::number::u8;
 /// use nom::multi::length_count;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 /// use nom::combinator::map;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {

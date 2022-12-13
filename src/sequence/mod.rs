@@ -17,7 +17,7 @@ use crate::{IResult, Parser};
 /// # use nom::{Err, error::ErrorKind, Needed};
 /// # use nom::Needed::Size;
 /// use nom::sequence::pair;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
 /// let mut parser = pair(tag("abc"), tag("efg"));
 ///
@@ -51,7 +51,7 @@ where
 /// # use nom::{Err, error::ErrorKind, Needed};
 /// # use nom::Needed::Size;
 /// use nom::sequence::preceded;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
 /// let mut parser = preceded(tag("abc"), tag("efg"));
 ///
@@ -85,7 +85,7 @@ where
 /// # use nom::{Err, error::ErrorKind, Needed};
 /// # use nom::Needed::Size;
 /// use nom::sequence::terminated;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
 /// let mut parser = terminated(tag("abc"), tag("efg"));
 ///
@@ -121,7 +121,7 @@ where
 /// # use nom::{Err, error::ErrorKind, Needed};
 /// # use nom::Needed::Size;
 /// use nom::sequence::separated_pair;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
 /// let mut parser = separated_pair(tag("abc"), tag("|"), tag("efg"));
 ///
@@ -160,7 +160,7 @@ where
 /// # use nom::{Err, error::ErrorKind, Needed};
 /// # use nom::Needed::Size;
 /// use nom::sequence::delimited;
-/// use nom::bytes::complete::tag;
+/// use nom::bytes::tag;
 ///
 /// let mut parser = delimited(tag("("), tag("abc"), tag(")"));
 ///
@@ -266,7 +266,7 @@ impl<I, E: ParseError<I>> Tuple<I, (), E> for () {
 /// ```rust
 /// # use nom::{Err, error::ErrorKind};
 /// use nom::sequence::tuple;
-/// use nom::character::complete::{alpha1, digit1};
+/// use nom::character::{alpha1, digit1};
 /// let mut parser = tuple((alpha1, digit1, alpha1));
 ///
 /// assert_eq!(parser("abc123def"), Ok(("", ("abc", "123", "def"))));

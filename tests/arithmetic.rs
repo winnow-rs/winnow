@@ -1,8 +1,8 @@
 use nom::{
   branch::alt,
-  bytes::complete::tag,
-  character::complete::char,
-  character::complete::{digit1 as digit, space0 as space},
+  bytes::tag,
+  character::char,
+  character::{digit1 as digit, space0 as space},
   combinator::map_res,
   multi::fold_many0,
   sequence::{delimited, pair},

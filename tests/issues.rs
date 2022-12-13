@@ -2,6 +2,7 @@
 #![allow(dead_code)]
 #![cfg_attr(feature = "cargo-clippy", allow(redundant_closure))]
 
+use nom::input::Streaming;
 use nom::{error::ErrorKind, Err, IResult, Needed};
 
 #[allow(dead_code)]
@@ -21,19 +22,20 @@ pub fn take_char(input: &[u8]) -> IResult<&[u8], char> {
 #[cfg(feature = "std")]
 mod parse_int {
   use nom::input::HexDisplay;
+  use nom::input::Streaming;
   use nom::{
-    character::streaming::{digit1 as digit, space1 as space},
+    character::{digit1 as digit, space1 as space},
     combinator::{complete, map, opt},
     multi::many0,
     IResult,
   };
   use std::str;
 
-  fn parse_ints(input: &[u8]) -> IResult<&[u8], Vec<i32>> {
+  fn parse_ints(input: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, Vec<i32>> {
     many0(spaces_or_int)(input)
   }
 
-  fn spaces_or_int(input: &[u8]) -> IResult<&[u8], i32> {
+  fn spaces_or_int(input: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, i32> {
     println!("{}", input.to_hex(8));
     let (i, _) = opt(complete(space))(input)?;
     let (i, res) = map(complete(digit), |x| {
@@ -52,12 +54,12 @@ mod parse_int {
 
   #[test]
   fn issue_142() {
-    let subject = parse_ints(&b"12 34 5689a"[..]);
-    let expected = Ok((&b"a"[..], vec![12, 34, 5689]));
+    let subject = parse_ints(Streaming(&b"12 34 5689a"[..]));
+    let expected = Ok((Streaming(&b"a"[..]), vec![12, 34, 5689]));
     assert_eq!(subject, expected);
 
-    let subject = parse_ints(&b"12 34 5689 "[..]);
-    let expected = Ok((&b" "[..], vec![12, 34, 5689]));
+    let subject = parse_ints(Streaming(&b"12 34 5689 "[..]));
+    let expected = Ok((Streaming(&b" "[..]), vec![12, 34, 5689]));
     assert_eq!(subject, expected)
   }
 }
@@ -65,26 +67,33 @@ mod parse_int {
 #[test]
 fn usize_length_bytes_issue() {
   use nom::multi::length_data;
-  use nom::number::streaming::be_u16;
-  let _: IResult<&[u8], &[u8], (&[u8], ErrorKind)> = length_data(be_u16)(b"012346");
+  use nom::number::be_u16;
+  let _: IResult<Streaming<&[u8]>, &[u8], (Streaming<&[u8]>, ErrorKind)> =
+    length_data(be_u16)(Streaming(b"012346"));
 }
 
 #[test]
 fn take_till_issue() {
-  use nom::bytes::streaming::take_till;
+  use nom::bytes::take_till;
 
-  fn nothing(i: &[u8]) -> IResult<&[u8], &[u8]> {
+  fn nothing(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
     take_till(|_| true)(i)
   }
 
-  assert_eq!(nothing(b""), Err(Err::Incomplete(Needed::new(1))));
-  assert_eq!(nothing(b"abc"), Ok((&b"abc"[..], &b""[..])));
+  assert_eq!(
+    nothing(Streaming(b"")),
+    Err(Err::Incomplete(Needed::new(1)))
+  );
+  assert_eq!(
+    nothing(Streaming(b"abc")),
+    Ok((Streaming(&b"abc"[..]), &b""[..]))
+  );
 }
 
 #[test]
 fn issue_655() {
-  use nom::character::streaming::{line_ending, not_line_ending};
-  fn twolines(i: &str) -> IResult<&str, (&str, &str)> {
+  use nom::character::{line_ending, not_line_ending};
+  fn twolines(i: Streaming<&str>) -> IResult<Streaming<&str>, (&str, &str)> {
     let (i, l1) = not_line_ending(i)?;
     let (i, _) = line_ending(i)?;
     let (i, l2) = not_line_ending(i)?;
@@ -93,26 +102,38 @@ fn issue_655() {
     Ok((i, (l1, l2)))
   }
 
-  assert_eq!(twolines("foo\nbar\n"), Ok(("", ("foo", "bar"))));
-  assert_eq!(twolines("féo\nbar\n"), Ok(("", ("féo", "bar"))));
-  assert_eq!(twolines("foé\nbar\n"), Ok(("", ("foé", "bar"))));
-  assert_eq!(twolines("foé\r\nbar\n"), Ok(("", ("foé", "bar"))));
+  assert_eq!(
+    twolines(Streaming("foo\nbar\n")),
+    Ok((Streaming(""), ("foo", "bar")))
+  );
+  assert_eq!(
+    twolines(Streaming("féo\nbar\n")),
+    Ok((Streaming(""), ("féo", "bar")))
+  );
+  assert_eq!(
+    twolines(Streaming("foé\nbar\n")),
+    Ok((Streaming(""), ("foé", "bar")))
+  );
+  assert_eq!(
+    twolines(Streaming("foé\r\nbar\n")),
+    Ok((Streaming(""), ("foé", "bar")))
+  );
 }
 
 #[cfg(feature = "alloc")]
 fn issue_717(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-  use nom::bytes::complete::{is_not, tag};
+  use nom::bytes::{is_not, tag};
   use nom::multi::separated_list0;
 
   separated_list0(tag([0x0]), is_not([0x0u8]))(i)
 }
 
 mod issue_647 {
-  use nom::bytes::streaming::tag;
+  use nom::bytes::tag;
   use nom::combinator::complete;
   use nom::multi::separated_list0;
-  use nom::{error::Error, number::streaming::be_f64, Err, IResult};
-  pub type Input<'a> = &'a [u8];
+  use nom::{error::Error, number::be_f64, Err, IResult};
+  pub type Input<'a> = nom::input::Streaming<&'a [u8]>;
 
   #[derive(PartialEq, Debug, Clone)]
   struct Data {
@@ -123,7 +144,7 @@ mod issue_647 {
   fn list<'a, 'b>(
     input: Input<'a>,
     _cs: &'b f64,
-  ) -> Result<(Input<'a>, Vec<f64>), Err<Error<&'a [u8]>>> {
+  ) -> Result<(Input<'a>, Vec<f64>), Err<Error<Input<'a>>>> {
     separated_list0(complete(tag(",")), complete(be_f64))(input)
   }
 
@@ -137,19 +158,19 @@ mod issue_647 {
 
 #[test]
 fn issue_848_overflow_incomplete_bits_to_bytes() {
-  fn take(i: &[u8]) -> IResult<&[u8], &[u8]> {
-    use nom::bytes::streaming::take;
+  fn take(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+    use nom::bytes::take;
     take(0x2000000000000000_usize)(i)
   }
-  fn parser(i: &[u8]) -> IResult<&[u8], &[u8]> {
+  fn parser(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
     use nom::bits::{bits, bytes};
 
     bits(bytes(take))(i)
   }
   assert_eq!(
-    parser(&b""[..]),
+    parser(Streaming(&b""[..])),
     Err(Err::Failure(nom::error_position!(
-      &b""[..],
+      Streaming(&b""[..]),
       ErrorKind::TooLarge
     )))
   );
@@ -161,7 +182,7 @@ fn issue_942() {
   pub fn parser<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
     i: &'a str,
   ) -> IResult<&'a str, usize, E> {
-    use nom::{character::complete::char, error::context, multi::many0_count};
+    use nom::{character::char, error::context, multi::many0_count};
     many0_count(context("char_a", char('a')))(i)
   }
   assert_eq!(parser::<()>("aaa"), Ok(("", 3)));
@@ -169,7 +190,7 @@ fn issue_942() {
 
 #[test]
 fn issue_many_m_n_with_zeros() {
-  use nom::character::complete::char;
+  use nom::character::char;
   use nom::multi::many_m_n;
   let mut parser = many_m_n::<_, _, (), _>(0, 0, char('a'));
   assert_eq!(parser("aaa"), Ok(("aaa", vec![])));
@@ -177,7 +198,7 @@ fn issue_many_m_n_with_zeros() {
 
 #[test]
 fn issue_1027_convert_error_panic_nonempty() {
-  use nom::character::complete::char;
+  use nom::character::char;
   use nom::error::{convert_error, VerboseError};
   use nom::sequence::pair;
 
@@ -198,7 +219,7 @@ fn issue_1027_convert_error_panic_nonempty() {
 
 #[test]
 fn issue_1231_bits_expect_fn_closure() {
-  use nom::bits::{bits, complete::take};
+  use nom::bits::{bits, take};
   use nom::error::Error;
   use nom::sequence::tuple;
   pub fn example(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
@@ -209,15 +230,15 @@ fn issue_1231_bits_expect_fn_closure() {
 
 #[test]
 fn issue_1282_findtoken_char() {
-  use nom::character::complete::one_of;
+  use nom::character::one_of;
   use nom::error::Error;
-  let parser = one_of::<_, _, Error<_>>(&['a', 'b', 'c'][..]);
+  let parser = one_of::<_, _, Error<_>, false>(&['a', 'b', 'c'][..]);
   assert_eq!(parser("aaa"), Ok(("aa", 'a')));
 }
 
 #[test]
 fn issue_1459_clamp_capacity() {
-  use nom::character::complete::char;
+  use nom::character::char;
 
   // shouldn't panic
   use nom::multi::many_m_n;

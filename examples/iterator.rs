@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::iter::Iterator;
 
-use nom::bytes::complete::tag;
-use nom::character::complete::alphanumeric1;
+use nom::bytes::tag;
+use nom::character::alphanumeric1;
 use nom::combinator::iterator;
 use nom::sequence::{separated_pair, terminated};
 use nom::IResult;

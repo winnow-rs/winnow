@@ -1,12 +1,15 @@
 //! Parsers recognizing numbers, streaming version
 
+#![allow(deprecated)]
+
 use crate::branch::alt;
 use crate::bytes::streaming::tag;
 use crate::character::streaming::{char, digit1, sign};
 use crate::combinator::{cut, map, opt, recognize};
 use crate::error::{ErrorKind, ParseError};
 use crate::input::{
-  AsBytes, AsChar, Compare, InputIter, InputLength, InputTake, InputTakeAtPosition, Offset, Slice,
+  AsBytes, AsChar, Compare, InputIter, InputLength, InputTake, InputTakeAtPosition, IntoOutput,
+  Offset, Slice,
 };
 use crate::lib::std::ops::{RangeFrom, RangeTo};
 use crate::sequence::{pair, tuple};
@@ -27,6 +30,12 @@ use crate::*;
 /// assert_eq!(parser(&b""[..]), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::be_u8`][crate::number::be_u8] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::be_u8` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn be_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -57,6 +66,12 @@ where
 /// assert_eq!(parser(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::be_u16`][crate::number::be_u16] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::be_u16` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn be_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -90,6 +105,12 @@ where
 /// assert_eq!(parser(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(2))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::be_u24`][crate::number::be_u24] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::be_u24` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn be_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -123,6 +144,12 @@ where
 /// assert_eq!(parser(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(3))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::be_u32`][crate::number::be_u32] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::be_u32` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn be_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -156,6 +183,12 @@ where
 /// assert_eq!(parser(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(7))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::be_u64`][crate::number::be_u64] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::be_u64` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn be_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -188,6 +221,12 @@ where
 /// assert_eq!(parser(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(15))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::be_u128`][crate::number::be_u128] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::be_u128` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn be_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -218,6 +257,12 @@ where
 /// assert_eq!(parser(&b""[..]), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::be_i8`][crate::number::be_i8] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::be_i8` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn be_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -238,6 +283,12 @@ where
 /// assert_eq!(parser(&b""[..]), Err(Err::Incomplete(Needed::new(2))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::be_i16`][crate::number::be_i16] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::be_i16` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn be_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -258,6 +309,12 @@ where
 /// assert_eq!(parser(&b""[..]), Err(Err::Incomplete(Needed::new(3))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::be_i24`][crate::number::be_i24] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::be_i24` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn be_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -287,6 +344,12 @@ where
 /// assert_eq!(parser(&b""[..]), Err(Err::Incomplete(Needed::new(4))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::be_i32`][crate::number::be_i32] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::be_i32` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn be_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -308,6 +371,12 @@ where
 /// assert_eq!(parser(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(7))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::be_i64`][crate::number::be_i64] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::be_i64` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn be_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -328,6 +397,12 @@ where
 /// assert_eq!(parser(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(15))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::be_i128`][crate::number::be_i128] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::be_i128` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn be_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -348,6 +423,12 @@ where
 /// assert_eq!(parser(&b""[..]), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::le_u8`][crate::number::le_u8] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::le_u8` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn le_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -378,6 +459,12 @@ where
 /// assert_eq!(parser(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::le_u16`][crate::number::le_u16] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::le_u16` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn le_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -411,6 +498,12 @@ where
 /// assert_eq!(parser(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(2))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::le_u24`][crate::number::le_u24] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::le_u24` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn le_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -444,6 +537,12 @@ where
 /// assert_eq!(parser(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(3))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::le_u32`][crate::number::le_u32] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::le_u32` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn le_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -477,6 +576,12 @@ where
 /// assert_eq!(parser(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(7))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::le_u64`][crate::number::le_u64] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::le_u64` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn le_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -510,6 +615,12 @@ where
 /// assert_eq!(parser(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(15))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::le_u128`][crate::number::le_u128] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::le_u128` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn le_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -540,6 +651,12 @@ where
 /// assert_eq!(parser(&b""[..]), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::le_i8`][crate::number::le_i8] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::le_i8` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn le_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -563,6 +680,12 @@ where
 /// assert_eq!(parser(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::le_i16`][crate::number::le_i16] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::le_i16` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn le_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -586,6 +709,12 @@ where
 /// assert_eq!(parser(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(2))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::le_i24`][crate::number::le_i24] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::le_i24` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn le_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -618,6 +747,12 @@ where
 /// assert_eq!(parser(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(3))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::le_i32`][crate::number::le_i32] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::le_i32` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn le_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -641,6 +776,12 @@ where
 /// assert_eq!(parser(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(7))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::le_i64`][crate::number::le_i64] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::le_i64` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn le_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -664,6 +805,12 @@ where
 /// assert_eq!(parser(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(15))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::le_i128`][crate::number::le_i128] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::le_i128` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn le_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -688,6 +835,12 @@ where
 /// assert_eq!(parser(&b""[..]), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::u8`][crate::number::u8] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::u8` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -728,6 +881,12 @@ where
 /// assert_eq!(le_u16(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::u16`][crate::number::u16] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::u16` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn u16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u16, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -767,6 +926,12 @@ where
 /// assert_eq!(le_u24(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(2))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::u24`][crate::number::u24] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::u24` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn u24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -806,6 +971,12 @@ where
 /// assert_eq!(le_u32(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(3))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::u32`][crate::number::u32] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::u32` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn u32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -845,6 +1016,12 @@ where
 /// assert_eq!(le_u64(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(7))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::u64`][crate::number::u64] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::u64` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn u64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -884,6 +1061,12 @@ where
 /// assert_eq!(le_u128(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(15))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::u128`][crate::number::u128] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::u128` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn u128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u128, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -915,6 +1098,12 @@ where
 /// assert_eq!(parser(&b""[..]), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::i8`][crate::number::i8] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::i8` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn i8<I, E: ParseError<I>>(i: I) -> IResult<I, i8, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -947,6 +1136,12 @@ where
 /// assert_eq!(le_i16(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::i16`][crate::number::i16] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::i16` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn i16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i16, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -986,6 +1181,12 @@ where
 /// assert_eq!(le_i24(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(2))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::i24`][crate::number::i24] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::i24` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn i24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1025,6 +1226,12 @@ where
 /// assert_eq!(le_i32(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(3))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::i32`][crate::number::i32] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::i32` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn i32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1064,6 +1271,12 @@ where
 /// assert_eq!(le_i64(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(7))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::i64`][crate::number::i64] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::i64` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn i64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1103,6 +1316,12 @@ where
 /// assert_eq!(le_i128(&b"\x01"[..]), Err(Err::Incomplete(Needed::new(15))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::i128`][crate::number::i128] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::i128` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn i128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i128, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1132,6 +1351,12 @@ where
 /// assert_eq!(parser(&[0x01][..]), Err(Err::Incomplete(Needed::new(3))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::be_f32`][crate::number::be_f32] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::be_f32` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn be_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1157,6 +1382,12 @@ where
 /// assert_eq!(parser(&[0x01][..]), Err(Err::Incomplete(Needed::new(7))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::be_f64`][crate::number::be_f64] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::be_f64` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn be_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1182,6 +1413,12 @@ where
 /// assert_eq!(parser(&[0x01][..]), Err(Err::Incomplete(Needed::new(3))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::le_f32`][crate::number::le_f32] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::le_f32` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn le_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1207,6 +1444,12 @@ where
 /// assert_eq!(parser(&[0x01][..]), Err(Err::Incomplete(Needed::new(7))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::le_f64`][crate::number::le_f64] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::le_f64` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn le_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1242,6 +1485,12 @@ where
 /// assert_eq!(le_f32(&b"abc"[..]), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::f32`][crate::number::f32] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::f32` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn f32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, f32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1281,6 +1530,12 @@ where
 /// assert_eq!(le_f64(&b"abc"[..]), Err(Err::Incomplete(Needed::new(5))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::f64`][crate::number::f64] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::f64` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn f64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, f64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1311,6 +1566,12 @@ where
 /// assert_eq!(parser(&b"ggg"[..]), Err(Err::Error((&b"ggg"[..], ErrorKind::IsA))));
 /// ```
 #[inline]
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::hex_u32`][crate::number::hex_u32] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::hex_u32` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn hex_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: InputTakeAtPosition,
@@ -1367,11 +1628,15 @@ where
 /// assert_eq!(parser("abc"), Err(Err::Error(("abc", ErrorKind::Char))));
 /// ```
 #[rustfmt::skip]
-pub fn recognize_float<T, E:ParseError<T>>(input: T) -> IResult<T, T, E>
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::recognize_float`][crate::number::recognize_float] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::recognize_float` with input wrapped in `nom::input::Streaming`")]
+pub fn recognize_float<T, E:ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   T: Clone + Offset,
   T: InputIter,
+  T: IntoOutput,
   <T as InputIter>::Item: AsChar,
   T: InputTakeAtPosition + InputLength,
   <T as InputTakeAtPosition>::Item: AsChar
@@ -1394,11 +1659,20 @@ where
 
 // workaround until issues with minimal-lexical are fixed
 #[doc(hidden)]
-pub fn recognize_float_or_exceptions<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::recognize_float_or_exceptions`][crate::number::recognize_float_or_exceptions] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::recognize_float_or_exceptions` with input wrapped in `nom::input::Streaming`"
+)]
+pub fn recognize_float_or_exceptions<T, E: ParseError<T>>(
+  input: T,
+) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   T: Clone + Offset,
   T: InputIter + InputTake + InputLength + Compare<&'static str>,
+  T: IntoOutput,
   <T as InputIter>::Item: AsChar,
   T: InputTakeAtPosition,
   <T as InputTakeAtPosition>::Item: AsChar,
@@ -1433,11 +1707,29 @@ where
 ///
 /// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there is not enough data.
 ///
-pub fn recognize_float_parts<T, E: ParseError<T>>(input: T) -> IResult<T, (bool, T, T, i32), E>
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::recognize_float_parts`][crate::number::recognize_float_parts] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::recognize_float_parts` with input wrapped in `nom::input::Streaming`"
+)]
+pub fn recognize_float_parts<T, E: ParseError<T>>(
+  input: T,
+) -> IResult<
+  T,
+  (
+    bool,
+    <T as IntoOutput>::Output,
+    <T as IntoOutput>::Output,
+    i32,
+  ),
+  E,
+>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   T: Clone + Offset,
   T: InputIter,
+  T: IntoOutput,
   <T as InputIter>::Item: AsChar,
   T: InputTakeAtPosition + InputTake + InputLength,
   <T as InputTakeAtPosition>::Item: AsChar,
@@ -1521,7 +1813,10 @@ where
     (i2, 0)
   };
 
-  Ok((i, (sign, integer, fraction, exp)))
+  Ok((
+    i,
+    (sign, integer.into_output(), fraction.into_output(), exp),
+  ))
 }
 
 /// Recognizes floating point number in text format and returns a f32.
@@ -1542,11 +1837,19 @@ where
 /// assert_eq!(parser("123K-01"), Ok(("K-01", 123.0)));
 /// assert_eq!(parser("abc"), Err(Err::Error(("abc", ErrorKind::Float))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::float`][crate::number::float] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::float` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   T: Clone + Offset,
-  T: InputIter + InputLength + InputTake + crate::input::ParseTo<f32> + Compare<&'static str>,
+  T: InputIter + InputLength + InputTake + Compare<&'static str>,
+  T: IntoOutput,
+  <T as IntoOutput>::Output: crate::input::ParseTo<f32>,
   <T as InputIter>::Item: AsChar,
   <T as InputIter>::IterElem: Clone,
   T: InputTakeAtPosition,
@@ -1568,6 +1871,8 @@ where
 
   Ok((i, float))
   */
+  use crate::input::ParseTo;
+
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
     Some(f) => Ok((i, f)),
@@ -1596,11 +1901,19 @@ where
 /// assert_eq!(parser("123K-01"), Ok(("K-01", 123.0)));
 /// assert_eq!(parser("abc"), Err(Err::Error(("abc", ErrorKind::Float))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`nom::number::double`][crate::number::double] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `nom::number::double` with input wrapped in `nom::input::Streaming`"
+)]
 pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   T: Clone + Offset,
-  T: InputIter + InputLength + InputTake + crate::input::ParseTo<f64> + Compare<&'static str>,
+  T: InputIter + InputLength + InputTake + Compare<&'static str>,
+  T: IntoOutput,
+  <T as IntoOutput>::Output: crate::input::ParseTo<f64>,
   <T as InputIter>::Item: AsChar,
   <T as InputIter>::IterElem: Clone,
   T: InputTakeAtPosition,
@@ -1622,6 +1935,8 @@ where
 
   Ok((i, float))
   */
+  use crate::input::ParseTo;
+
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
     Some(f) => Ok((i, f)),

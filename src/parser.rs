@@ -3,6 +3,7 @@
 use self::Needed::*;
 use crate::combinator::*;
 use crate::error::{self, ErrorKind};
+use crate::input::InputIsStreaming;
 use crate::lib::std::fmt;
 use core::num::NonZeroUsize;
 
@@ -42,18 +43,19 @@ pub trait FinishIResult<I, O, E> {
   ///
   /// # Panic
   ///
-  /// If the result is `Err(Err::Incomplete(_))`, this method will panic.
-  /// - "complete" parsers: It will not be an issue, `Incomplete` is never used
-  /// - "streaming" parsers: `Incomplete` will be returned if there's not enough data
-  /// for the parser to decide, and you should gather more data before parsing again.
-  /// Once the parser returns either `Ok(_)`, `Err(Err::Error(_))` or `Err(Err::Failure(_))`,
-  /// you can get out of the parsing loop and call `finish_err()` on the parser's result
+  /// If the result is `Err(Err::Incomplete(_))`, this method will panic as [`Err::Incomplete`]
+  /// should only be set when the input is [`InputIsStreaming<false>`] which this isn't implemented
+  /// for.
   fn finish_err(self) -> Result<(I, O), E>;
 }
 
 impl<I, O, E> FinishIResult<I, O, E> for IResult<I, O, E>
 where
-  I: crate::input::InputLength + Clone,
+  I: crate::input::InputLength,
+  I: crate::input::IntoOutput,
+  // Force users to deal with `Incomplete` when `InputIsStreaming<true>`
+  I: InputIsStreaming<false>,
+  I: Clone,
   E: crate::error::ParseError<I>,
 {
   fn finish(self) -> Result<O, E> {
@@ -67,7 +69,7 @@ where
       Ok(res) => Ok(res),
       Err(Err::Error(e)) | Err(Err::Failure(e)) => Err(e),
       Err(Err::Incomplete(_)) => {
-        panic!("Cannot call `finish_err()` on `Err(Err::Incomplete(_))`: this result means that the parser does not have enough data to decide, you should gather more data and try to reapply  the parser instead")
+        panic!("`InputIsStreaming<false>` conflicts with `Err(Err::Incomplete(_))`")
       }
     }
   }
@@ -99,7 +101,25 @@ impl<I, O, E> Finish<I, O, E> for IResult<I, O, E> {
   }
 }
 
+/// Convert an `Input` into an appropriate `Output` type
+pub trait IntoOutputIResult<I, O, E> {
+  /// Convert an `Input` into an appropriate `Output` type
+  fn into_output(self) -> IResult<I, O, E>;
+}
+
+impl<I, E> IntoOutputIResult<I, <I as crate::input::IntoOutput>::Output, E> for IResult<I, I, E>
+where
+  I: crate::input::IntoOutput,
+{
+  fn into_output(self) -> IResult<I, <I as crate::input::IntoOutput>::Output, E> {
+    self.map(|(i, o)| (i, o.into_output()))
+  }
+}
+
 /// Contains information on needed data if a parser returned `Incomplete`
+///
+/// **Note:** This is only possible for `Input` types that implement [`InputIsStreaming<true>`],
+/// like [`Streaming`][crate::input::Streaming].
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub enum Needed {
@@ -137,7 +157,7 @@ impl Needed {
 ///
 /// It has three cases:
 ///
-/// * `Incomplete` indicates that more data is needed to decide. The `Needed` enum
+/// * `Incomplete` indicates that more data is needed to decide. The [`Needed`] enum
 /// can contain how many additional bytes are necessary. If you are sure your parser
 /// is working on full data, you can wrap your parser with the `complete` combinator
 /// to transform that case in `Error`
@@ -151,6 +171,11 @@ impl Needed {
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub enum Err<E> {
   /// There was not enough data
+  ///
+  /// This must only be set when the `Input` is [`InputIsStreaming<true>`], like with
+  /// [`Streaming`][crate::input::Streaming]
+  ///
+  /// Convert this into an `Error` with [`nom::combinator::complete`][crate::combinator::complete]
   Incomplete(Needed),
   /// The parser had an error (recoverable)
   Error(E),

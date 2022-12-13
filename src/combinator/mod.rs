@@ -151,6 +151,7 @@
 use crate::lib::std::boxed::Box;
 
 use crate::error::{ErrorKind, FromExternalError, ParseError};
+use crate::input::IntoOutput;
 use crate::input::{AsChar, InputIter, InputLength, InputTakeAtPosition, ParseTo};
 use crate::input::{Compare, CompareResult, Offset, Slice};
 use crate::lib::std::borrow::Borrow;
@@ -159,6 +160,7 @@ use crate::lib::std::convert;
 use crate::lib::std::fmt::Debug;
 use crate::lib::std::mem::transmute;
 use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
+use crate::IntoOutputIResult;
 use crate::*;
 
 #[cfg(test)]
@@ -173,12 +175,13 @@ mod tests;
 /// assert_eq!(rest::<_,(_, ErrorKind)>(""), Ok(("", "")));
 /// ```
 #[inline]
-pub fn rest<T, E: ParseError<T>>(input: T) -> IResult<T, T, E>
+pub fn rest<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<RangeFrom<usize>>,
   T: InputLength,
+  T: IntoOutput,
 {
-  Ok((input.slice(input.input_len()..), input))
+  Ok((input.slice(input.input_len()..), input)).into_output()
 }
 
 /// Return the length of the remaining input.
@@ -202,7 +205,7 @@ where
 ///
 /// ```rust
 /// use nom::{Err,error::ErrorKind, IResult,Parser};
-/// use nom::character::complete::digit1;
+/// use nom::character::digit1;
 /// use nom::combinator::map;
 /// # fn main() {
 ///
@@ -275,7 +278,7 @@ impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> O2> Parser<I, O2, E> fo
 ///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
-/// use nom::character::complete::digit1;
+/// use nom::character::digit1;
 /// use nom::combinator::map_res;
 /// # fn main() {
 ///
@@ -313,7 +316,7 @@ where
 ///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
-/// use nom::character::complete::digit1;
+/// use nom::character::digit1;
 /// use nom::combinator::map_opt;
 /// # fn main() {
 ///
@@ -351,8 +354,8 @@ where
 ///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
-/// use nom::character::complete::digit1;
-/// use nom::bytes::complete::take;
+/// use nom::character::digit1;
+/// use nom::bytes::take;
 /// use nom::combinator::map_parser;
 /// # fn main() {
 ///
@@ -382,8 +385,8 @@ where
 ///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
-/// use nom::bytes::complete::take;
-/// use nom::number::complete::u8;
+/// use nom::bytes::take;
+/// use nom::number::u8;
 /// use nom::combinator::flat_map;
 /// # fn main() {
 ///
@@ -440,7 +443,7 @@ impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> H, H: Parser<I, O2, E>>
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::combinator::opt;
-/// use nom::character::complete::alpha1;
+/// use nom::character::alpha1;
 /// # fn main() {
 ///
 /// fn parser(i: &str) -> IResult<&str, Option<&str>> {
@@ -548,7 +551,7 @@ impl<'a, I: Clone, O, E: crate::error::ParseError<I>, F: Parser<I, O, E>, G: Par
 /// ```rust
 /// # use nom::{Err, error::{Error, ErrorKind}, IResult};
 /// use nom::combinator::cond;
-/// use nom::character::complete::alpha1;
+/// use nom::character::alpha1;
 /// # fn main() {
 ///
 /// fn parser(b: bool, i: &str) -> IResult<&str, Option<&str>> {
@@ -585,7 +588,7 @@ where
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::combinator::peek;
-/// use nom::character::complete::alpha1;
+/// use nom::character::alpha1;
 /// # fn main() {
 ///
 /// let mut parser = peek(alpha1);
@@ -623,10 +626,15 @@ where
 /// assert_eq!(parser(""), Ok(("", "")));
 /// # }
 /// ```
-pub fn eof<I: InputLength + Clone, E: ParseError<I>>(input: I) -> IResult<I, I, E> {
+pub fn eof<I, E: ParseError<I>>(input: I) -> IResult<I, <I as IntoOutput>::Output, E>
+where
+  I: InputLength,
+  I: Clone,
+  I: IntoOutput,
+{
   if input.input_len() == 0 {
     let clone = input.clone();
-    Ok((input, clone))
+    Ok((input, clone)).into_output()
   } else {
     Err(Err::Error(E::from_error_kind(input, ErrorKind::Eof)))
   }
@@ -635,15 +643,15 @@ pub fn eof<I: InputLength + Clone, E: ParseError<I>>(input: I) -> IResult<I, I, 
 /// Transforms Incomplete into `Error`.
 ///
 /// ```rust
-/// # use nom::{Err,error::ErrorKind, IResult};
-/// use nom::bytes::streaming::take;
+/// # use nom::{Err,error::ErrorKind, IResult, input::Streaming};
+/// use nom::bytes::take;
 /// use nom::combinator::complete;
 /// # fn main() {
 ///
 /// let mut parser = complete(take(5u8));
 ///
-/// assert_eq!(parser("abcdefg"), Ok(("fg", "abcde")));
-/// assert_eq!(parser("abcd"), Err(Err::Error(("abcd", ErrorKind::Complete))));
+/// assert_eq!(parser(Streaming("abcdefg")), Ok((Streaming("fg"), "abcde")));
+/// assert_eq!(parser(Streaming("abcd")), Err(Err::Error((Streaming("abcd"), ErrorKind::Complete))));
 /// # }
 /// ```
 pub fn complete<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
@@ -664,7 +672,7 @@ where
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::combinator::all_consuming;
-/// use nom::character::complete::alpha1;
+/// use nom::character::alpha1;
 /// # fn main() {
 ///
 /// let mut parser = all_consuming(alpha1);
@@ -697,7 +705,7 @@ where
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::combinator::verify;
-/// use nom::character::complete::alpha1;
+/// use nom::character::alpha1;
 /// # fn main() {
 ///
 /// let mut parser = verify(alpha1, |s: &str| s.len() == 4);
@@ -734,7 +742,7 @@ where
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::combinator::value;
-/// use nom::character::complete::alpha1;
+/// use nom::character::alpha1;
 /// # fn main() {
 ///
 /// let mut parser = value(1234, alpha1);
@@ -758,7 +766,7 @@ where
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::combinator::not;
-/// use nom::character::complete::alpha1;
+/// use nom::character::alpha1;
 /// # fn main() {
 ///
 /// let mut parser = not(alpha1);
@@ -786,7 +794,7 @@ where
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::combinator::recognize;
-/// use nom::character::complete::{char, alpha1};
+/// use nom::character::{char, alpha1};
 /// use nom::sequence::separated_pair;
 /// # fn main() {
 ///
@@ -796,10 +804,14 @@ where
 /// assert_eq!(parser("abcd;"),Err(Err::Error((";", ErrorKind::Char))));
 /// # }
 /// ```
-pub fn recognize<I: Clone + Offset + Slice<RangeTo<usize>>, O, E: ParseError<I>, F>(
+pub fn recognize<I, O, E: ParseError<I>, F>(
   mut parser: F,
-) -> impl FnMut(I) -> IResult<I, I, E>
+) -> impl FnMut(I) -> IResult<I, <I as IntoOutput>::Output, E>
 where
+  I: Clone,
+  I: Offset,
+  I: Slice<RangeTo<usize>>,
+  I: IntoOutput,
   F: Parser<I, O, E>,
 {
   move |input: I| {
@@ -807,7 +819,7 @@ where
     match parser.parse(i) {
       Ok((i, _)) => {
         let index = input.offset(&i);
-        Ok((i, input.slice(..index)))
+        Ok((i, input.slice(..index))).into_output()
       }
       Err(e) => Err(e),
     }
@@ -826,8 +838,8 @@ where
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::combinator::{consumed, value, recognize, map};
-/// use nom::character::complete::{char, alpha1};
-/// use nom::bytes::complete::tag;
+/// use nom::character::{char, alpha1};
+/// use nom::bytes::tag;
 /// use nom::sequence::separated_pair;
 ///
 /// fn inner_parser(input: &str) -> IResult<&str, bool> {
@@ -851,9 +863,12 @@ where
 /// assert_eq!(recognize_parser("abcd"), consumed_parser("abcd"));
 /// # }
 /// ```
-pub fn consumed<I, O, F, E>(mut parser: F) -> impl FnMut(I) -> IResult<I, (I, O), E>
+pub fn consumed<I, O, F, E>(
+  mut parser: F,
+) -> impl FnMut(I) -> IResult<I, (<I as IntoOutput>::Output, O), E>
 where
   I: Clone + Offset + Slice<RangeTo<usize>>,
+  I: IntoOutput,
   E: ParseError<I>,
   F: Parser<I, O, E>,
 {
@@ -862,7 +877,7 @@ where
     match parser.parse(i) {
       Ok((remaining, result)) => {
         let index = input.offset(&remaining);
-        let consumed = input.slice(..index);
+        let consumed = input.slice(..index).into_output();
         Ok((remaining, (consumed, result)))
       }
       Err(e) => Err(e),
@@ -875,7 +890,7 @@ where
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::combinator::cut;
-/// use nom::character::complete::alpha1;
+/// use nom::character::alpha1;
 /// # fn main() {
 ///
 /// let mut parser = cut(alpha1);
@@ -902,7 +917,7 @@ where
 /// ```rust
 /// # use nom::IResult;
 /// use nom::combinator::into;
-/// use nom::character::complete::alpha1;
+/// use nom::character::alpha1;
 /// # fn main() {
 ///
 ///  fn parser1(i: &str) -> IResult<&str, &str> {
@@ -980,7 +995,7 @@ impl<
 /// or the error value if we encountered an error.
 ///
 /// ```rust
-/// use nom::{combinator::iterator, IResult, bytes::complete::tag, character::complete::alpha1, sequence::terminated};
+/// use nom::{combinator::iterator, IResult, bytes::tag, character::alpha1, sequence::terminated};
 /// use std::collections::HashMap;
 ///
 /// let data = "abc|defg|hijkl|mnopqr|123";
@@ -1080,7 +1095,7 @@ enum State<E> {
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::branch::alt;
 /// use nom::combinator::{success, value};
-/// use nom::character::complete::char;
+/// use nom::character::char;
 /// # fn main() {
 ///
 /// let mut parser = success::<_,_,(_,ErrorKind)>(10);

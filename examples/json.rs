@@ -2,12 +2,12 @@
 
 use nom::{
   branch::alt,
-  bytes::complete::{escaped, tag, take_while},
-  character::complete::{alphanumeric1 as alphanumeric, char, one_of},
+  bytes::{escaped, tag, take_while},
+  character::{alphanumeric1 as alphanumeric, char, one_of},
   combinator::{cut, map, opt, value},
   error::{context, convert_error, ContextError, ErrorKind, ParseError, VerboseError},
   multi::separated_list0,
-  number::complete::double,
+  number::double,
   sequence::{delimited, preceded, separated_pair, terminated},
   Err, IResult,
 };
