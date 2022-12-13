@@ -5,17 +5,17 @@ use std::str;
 
 use nom::bytes::is_not;
 use nom::character::char;
-use nom::combinator::{map, map_res};
+use nom::combinator::map_res;
 use nom::multi::fold_many0;
+use nom::prelude::*;
 use nom::sequence::delimited;
 use nom::IResult;
 
 fn atom<'a>(_tomb: &'a mut ()) -> impl FnMut(&'a [u8]) -> IResult<&'a [u8], String> {
   move |input| {
-    map(
-      map_res(is_not(" \t\r\n"), str::from_utf8),
-      ToString::to_string,
-    )(input)
+    map_res(is_not(" \t\r\n"), str::from_utf8)
+      .map(ToString::to_string)
+      .parse(input)
   }
 }
 

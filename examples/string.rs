@@ -14,9 +14,10 @@
 use nom::branch::alt;
 use nom::bytes::{is_not, take_while_m_n};
 use nom::character::{char, multispace1};
-use nom::combinator::{map, map_opt, map_res, value, verify};
+use nom::combinator::{map_opt, map_res, value, verify};
 use nom::error::{FromExternalError, ParseError};
 use nom::multi::fold_many0;
+use nom::prelude::*;
 use nom::sequence::{delimited, preceded};
 use nom::IResult;
 
@@ -124,8 +125,8 @@ where
   alt((
     // The `map` combinator runs a parser, then applies a function to the output
     // of that parser.
-    map(parse_literal, StringFragment::Literal),
-    map(parse_escaped_char, StringFragment::EscapedChar),
+    parse_literal.map(StringFragment::Literal),
+    parse_escaped_char.map(StringFragment::EscapedChar),
     value(StringFragment::EscapedWS, parse_escaped_whitespace),
   ))(input)
 }

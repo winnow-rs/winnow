@@ -23,9 +23,10 @@ pub fn take_char(input: &[u8]) -> IResult<&[u8], char> {
 mod parse_int {
   use nom::input::HexDisplay;
   use nom::input::Streaming;
+  use nom::prelude::*;
   use nom::{
     character::{digit1 as digit, space1 as space},
-    combinator::{complete, map, opt},
+    combinator::{complete, opt},
     multi::many0,
     IResult,
   };
@@ -38,16 +39,18 @@ mod parse_int {
   fn spaces_or_int(input: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, i32> {
     println!("{}", input.to_hex(8));
     let (i, _) = opt(complete(space))(input)?;
-    let (i, res) = map(complete(digit), |x| {
-      println!("x: {:?}", x);
-      let result = str::from_utf8(x).unwrap();
-      println!("Result: {}", result);
-      println!("int is empty?: {}", x.is_empty());
-      match result.parse() {
-        Ok(i) => i,
-        Err(e) => panic!("UH OH! NOT A DIGIT! {:?}", e),
-      }
-    })(i)?;
+    let (i, res) = complete(digit)
+      .map(|x| {
+        println!("x: {:?}", x);
+        let result = str::from_utf8(x).unwrap();
+        println!("Result: {}", result);
+        println!("int is empty?: {}", x.is_empty());
+        match result.parse() {
+          Ok(i) => i,
+          Err(e) => panic!("UH OH! NOT A DIGIT! {:?}", e),
+        }
+      })
+      .parse(i)?;
 
     Ok((i, res))
   }

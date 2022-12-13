@@ -1,7 +1,8 @@
+use nom::prelude::*;
 use nom::{
   bytes::take_while,
   character::{alphanumeric1 as alphanumeric, char, multispace0 as multispace, space0 as space},
-  combinator::{map, map_res, opt},
+  combinator::{map_res, opt},
   multi::many0,
   sequence::{delimited, pair, separated_pair, terminated, tuple},
   IResult,
@@ -26,9 +27,9 @@ fn key_value(i: &[u8]) -> IResult<&[u8], (&str, &str)> {
 }
 
 fn keys_and_values(i: &[u8]) -> IResult<&[u8], HashMap<&str, &str>> {
-  map(many0(terminated(key_value, opt(multispace))), |vec| {
-    vec.into_iter().collect()
-  })(i)
+  many0(terminated(key_value, opt(multispace)))
+    .map(|vec| vec.into_iter().collect())
+    .parse(i)
 }
 
 fn category_and_keys(i: &[u8]) -> IResult<&[u8], (&str, HashMap<&str, &str>)> {
@@ -38,17 +39,13 @@ fn category_and_keys(i: &[u8]) -> IResult<&[u8], (&str, HashMap<&str, &str>)> {
 }
 
 fn categories(i: &[u8]) -> IResult<&[u8], HashMap<&str, HashMap<&str, &str>>> {
-  map(
-    many0(separated_pair(
-      category,
-      opt(multispace),
-      map(
-        many0(terminated(key_value, opt(multispace))),
-        |vec: Vec<_>| vec.into_iter().collect(),
-      ),
-    )),
-    |vec: Vec<_>| vec.into_iter().collect(),
-  )(i)
+  many0(separated_pair(
+    category,
+    opt(multispace),
+    many0(terminated(key_value, opt(multispace))).map(|vec: Vec<_>| vec.into_iter().collect()),
+  ))
+  .map(|vec: Vec<_>| vec.into_iter().collect())
+  .parse(i)
 }
 
 #[test]

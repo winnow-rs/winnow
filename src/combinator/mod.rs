@@ -79,7 +79,6 @@
 //! - [`Parser::flat_map`][crate::Parser::flat_map]: method to map a new parser from the output of the first parser, then apply that parser over the rest of the input
 //! - [`flat_map`][flat_map]: function variant of `Parser::flat_map`
 //! - [`Parser::map`][crate::Parser::map]: method to map a function on the result of a parser
-//! - [`map`][map]: function variant of `Parser::map`
 //! - [`map_opt`][map_opt]: Maps a function returning an `Option` on the output of a parser
 //! - [`map_res`][map_res]: Maps a function returning a `Result` on the output of a parser
 //! - [`not`][not]: Returns a result only if the embedded parser returns `Error` or `Incomplete`. Does not consume the input
@@ -836,6 +835,7 @@ where
 /// Returned tuple is of the format `(consumed input, produced output)`.
 ///
 /// ```rust
+/// # use nom::prelude::*;
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::combinator::{consumed, value, recognize, map};
 /// use nom::character::{char, alpha1};
@@ -857,10 +857,10 @@ where
 /// // the first output (representing the consumed input)
 /// // should be the same as that of the `recognize` parser.
 /// let mut recognize_parser = recognize(inner_parser);
-/// let mut consumed_parser = map(consumed(inner_parser), |(consumed, output)| consumed);
+/// let mut consumed_parser = consumed(inner_parser).map(|(consumed, output)| consumed);
 ///
-/// assert_eq!(recognize_parser("1234"), consumed_parser("1234"));
-/// assert_eq!(recognize_parser("abcd"), consumed_parser("abcd"));
+/// assert_eq!(recognize_parser("1234"), consumed_parser.parse("1234"));
+/// assert_eq!(recognize_parser("abcd"), consumed_parser.parse("abcd"));
 /// # }
 /// ```
 pub fn consumed<I, O, F, E>(

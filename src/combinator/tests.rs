@@ -199,7 +199,7 @@ fn test_verify_ref() {
 #[cfg(feature = "alloc")]
 fn test_verify_alloc() {
   use crate::bytes::take;
-  let mut parser1 = verify(map(take(3u8), |s: &[u8]| s.to_vec()), |s: &[u8]| {
+  let mut parser1 = verify(take(3u8).map(|s: &[u8]| s.to_vec()), |s: &[u8]| {
     s == &b"abc"[..]
   });
 

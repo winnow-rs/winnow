@@ -1,10 +1,11 @@
 #![cfg(feature = "alloc")]
 
+use nom::prelude::*;
 use nom::{
   branch::alt,
   bytes::{escaped, tag, take_while},
   character::{alphanumeric1 as alphanumeric, char, one_of},
-  combinator::{cut, map, opt, value},
+  combinator::{cut, opt, value},
   error::{context, convert_error, ContextError, ErrorKind, ParseError, VerboseError},
   multi::separated_list0,
   number::double,
@@ -137,15 +138,12 @@ fn hash<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
     preceded(
       char('{'),
       cut(terminated(
-        map(
-          separated_list0(preceded(sp, char(',')), key_value),
-          |tuple_vec| {
-            tuple_vec
-              .into_iter()
-              .map(|(k, v)| (String::from(k), v))
-              .collect()
-          },
-        ),
+        separated_list0(preceded(sp, char(',')), key_value).map(|tuple_vec| {
+          tuple_vec
+            .into_iter()
+            .map(|(k, v)| (String::from(k), v))
+            .collect()
+        }),
         preceded(sp, char('}')),
       )),
     ),
@@ -159,12 +157,12 @@ fn json_value<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
   preceded(
     sp,
     alt((
-      map(hash, JsonValue::Object),
-      map(array, JsonValue::Array),
-      map(string, |s| JsonValue::Str(String::from(s))),
-      map(double, JsonValue::Num),
-      map(boolean, JsonValue::Boolean),
-      map(null, |_| JsonValue::Null),
+      hash.map(JsonValue::Object),
+      array.map(JsonValue::Array),
+      string.map(|s| JsonValue::Str(String::from(s))),
+      double.map(JsonValue::Num),
+      boolean.map(JsonValue::Boolean),
+      null.map(|_| JsonValue::Null),
     )),
   )(i)
 }
@@ -176,9 +174,9 @@ fn root<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
   delimited(
     sp,
     alt((
-      map(hash, JsonValue::Object),
-      map(array, JsonValue::Array),
-      map(null, |_| JsonValue::Null),
+      hash.map(JsonValue::Object),
+      array.map(JsonValue::Array),
+      null.map(|_| JsonValue::Null),
     )),
     opt(sp),
   )(i)

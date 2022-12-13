@@ -4,7 +4,7 @@ use nom::{
   branch::alt,
   bytes::{tag, take},
   character::{anychar, char, multispace0, none_of},
-  combinator::{map, map_opt, map_res, value, verify},
+  combinator::{map_opt, map_res, value, verify},
   error::ParseError,
   multi::{fold_many0, separated_list0},
   number::double,
@@ -36,21 +36,17 @@ fn unicode_escape(input: &str) -> IResult<&str, char> {
   map_opt(
     alt((
       // Not a surrogate
-      map(verify(u16_hex, |cp| !(0xD800..0xE000).contains(cp)), |cp| {
-        cp as u32
-      }),
+      verify(u16_hex, |cp| !(0xD800..0xE000).contains(cp)).map(|cp| cp as u32),
       // See https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF for details
-      map(
-        verify(
-          separated_pair(u16_hex, tag("\\u"), u16_hex),
-          |(high, low)| (0xD800..0xDC00).contains(high) && (0xDC00..0xE000).contains(low),
-        ),
-        |(high, low)| {
-          let high_ten = (high as u32) - 0xD800;
-          let low_ten = (low as u32) - 0xDC00;
-          (high_ten << 10) + low_ten + 0x10000
-        },
-      ),
+      verify(
+        separated_pair(u16_hex, tag("\\u"), u16_hex),
+        |(high, low)| (0xD800..0xDC00).contains(high) && (0xDC00..0xE000).contains(low),
+      )
+      .map(|(high, low)| {
+        let high_ten = (high as u32) - 0xD800;
+        let low_ten = (low as u32) - 0xDC00;
+        (high_ten << 10) + low_ten + 0x10000
+      }),
     )),
     // Could be probably replaced with .unwrap() or _unchecked due to the verify checks
     std::char::from_u32,
@@ -103,17 +99,16 @@ fn array(input: &str) -> IResult<&str, Vec<JsonValue>> {
 }
 
 fn object(input: &str) -> IResult<&str, HashMap<String, JsonValue>> {
-  map(
-    delimited(
-      char('{'),
-      ws(separated_list0(
-        ws(char(',')),
-        separated_pair(string, ws(char(':')), json_value),
-      )),
-      char('}'),
-    ),
-    |key_values| key_values.into_iter().collect(),
-  )(input)
+  delimited(
+    char('{'),
+    ws(separated_list0(
+      ws(char(',')),
+      separated_pair(string, ws(char(':')), json_value),
+    )),
+    char('}'),
+  )
+  .map(|key_values| key_values.into_iter().collect())
+  .parse(input)
 }
 
 fn json_value(input: &str) -> IResult<&str, JsonValue> {
@@ -121,11 +116,11 @@ fn json_value(input: &str) -> IResult<&str, JsonValue> {
 
   alt((
     value(Null, tag("null")),
-    map(boolean, Bool),
-    map(string, Str),
-    map(double, Num),
-    map(array, Array),
-    map(object, Object),
+    boolean.map(Bool),
+    string.map(Str),
+    double.map(Num),
+    array.map(Array),
+    object.map(Object),
   ))(input)
 }
 
