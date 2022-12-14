@@ -201,6 +201,24 @@ where
   Ok((input, len))
 }
 
+/// Implementation of [`Parser::as_mut_parser`][Parser::as_mut_parser]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct MutParser<'p, P> {
+  p: &'p mut P,
+}
+
+impl<'p, P> MutParser<'p, P> {
+  pub(crate) fn new(p: &'p mut P) -> Self {
+    Self { p }
+  }
+}
+
+impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for MutParser<'p, P> {
+  fn parse(&mut self, i: I) -> IResult<I, O, E> {
+    self.p.parse(i)
+  }
+}
+
 /// Maps a function on the result of a parser.
 ///
 /// ```rust
@@ -229,25 +247,7 @@ where
   }
 }
 
-/// Implementation of [`Parser::as_mut_parser`][Parser::as_mut_parser]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct MutParser<'p, P> {
-  p: &'p mut P,
-}
-
-impl<'p, P> MutParser<'p, P> {
-  pub(crate) fn new(p: &'p mut P) -> Self {
-    Self { p }
-  }
-}
-
-impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for MutParser<'p, P> {
-  fn parse(&mut self, i: I) -> IResult<I, O, E> {
-    self.p.parse(i)
-  }
-}
-
-/// Implementation of `Parser::map`
+/// Implementation of [`Parser::map`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Map<F, G, O1> {
   f: F,
@@ -381,6 +381,34 @@ where
   }
 }
 
+/// Implementation of [`Parser::and_then`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct AndThen<F, G, O1> {
+  f: F,
+  g: G,
+  phantom: core::marker::PhantomData<O1>,
+}
+
+impl<F, G, O1> AndThen<F, G, O1> {
+  pub(crate) fn new(f: F, g: G) -> Self {
+    Self {
+      f,
+      g,
+      phantom: Default::default(),
+    }
+  }
+}
+
+impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, E>
+  for AndThen<F, G, O1>
+{
+  fn parse(&mut self, i: I) -> IResult<I, O2, E> {
+    let (i, o1) = self.f.parse(i)?;
+    let (_, o2) = self.g.parse(o1)?;
+    Ok((i, o2))
+  }
+}
+
 /// Creates a new parser from the output of the first parser, then apply that parser over the rest of the input.
 ///
 /// ```rust
@@ -411,7 +439,7 @@ where
   }
 }
 
-/// Implementation of `Parser::flat_map`
+/// Implementation of [`Parser::flat_map`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct FlatMap<F, G, O1> {
   f: F,
@@ -468,35 +496,7 @@ where
   }
 }
 
-/// Implementation of `Parser::and_then`
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct AndThen<F, G, O1> {
-  f: F,
-  g: G,
-  phantom: core::marker::PhantomData<O1>,
-}
-
-impl<F, G, O1> AndThen<F, G, O1> {
-  pub(crate) fn new(f: F, g: G) -> Self {
-    Self {
-      f,
-      g,
-      phantom: Default::default(),
-    }
-  }
-}
-
-impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, E>
-  for AndThen<F, G, O1>
-{
-  fn parse(&mut self, i: I) -> IResult<I, O2, E> {
-    let (i, o1) = self.f.parse(i)?;
-    let (_, o2) = self.g.parse(o1)?;
-    Ok((i, o2))
-  }
-}
-
-/// Implementation of `Parser::and`
+/// Implementation of [`Parser::and`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct And<F, G> {
   f: F,
@@ -519,7 +519,7 @@ impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<I, O2, E>> Parser<I, (O1, 
   }
 }
 
-/// Implementation of `Parser::or`
+/// Implementation of [`Parser::or`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Or<F, G> {
   f: F,
@@ -948,7 +948,7 @@ where
   }
 }
 
-/// Implementation of `Parser::into`
+/// Implementation of [`Parser::into`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Into<F, O1, O2: From<O1>, E1, E2: From<E1>> {
   f: F,

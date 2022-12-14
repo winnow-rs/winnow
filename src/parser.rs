@@ -374,6 +374,23 @@ pub trait Parser<I, O, E> {
   }
 
   /// Maps a function over the result of a parser
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// use nom::{Err,error::ErrorKind, IResult,Parser};
+  /// use nom::character::digit1;
+  /// # fn main() {
+  ///
+  /// let mut parser = digit1.map(|s: &str| s.len());
+  ///
+  /// // the parser will count how many characters were returned by digit1
+  /// assert_eq!(parser.parse("123456"), Ok(("", 6)));
+  ///
+  /// // this will fail if digit1 fails
+  /// assert_eq!(parser.parse("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
+  /// # }
+  /// ```
   fn map<G, O2>(self, g: G) -> Map<Self, G, O>
   where
     G: Fn(O) -> O2,
@@ -383,6 +400,21 @@ pub trait Parser<I, O, E> {
   }
 
   /// Creates a second parser from the output of the first one, then apply over the rest of the input
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::{Err,error::ErrorKind, IResult, Parser};
+  /// use nom::bytes::take;
+  /// use nom::number::u8;
+  /// # fn main() {
+  ///
+  /// let mut length_data = u8.flat_map(take);
+  ///
+  /// assert_eq!(length_data.parse(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
+  /// assert_eq!(length_data.parse(&[4, 0, 1, 2][..]), Err(Err::Error((&[0, 1, 2][..], ErrorKind::Eof))));
+  /// # }
+  /// ```
   fn flat_map<G, H, O2>(self, g: G) -> FlatMap<Self, G, O>
   where
     G: FnMut(O) -> H,
@@ -393,6 +425,22 @@ pub trait Parser<I, O, E> {
   }
 
   /// Applies a second parser over the output of the first one
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::{Err,error::ErrorKind, IResult, Parser};
+  /// use nom::character::digit1;
+  /// use nom::bytes::take;
+  /// # fn main() {
+  ///
+  /// let mut digits = take(5u8).and_then(digit1);
+  ///
+  /// assert_eq!(digits.parse("12345"), Ok(("", "12345")));
+  /// assert_eq!(digits.parse("123ab"), Ok(("", "123")));
+  /// assert_eq!(digits.parse("123"), Err(Err::Error(("123", ErrorKind::Eof))));
+  /// # }
+  /// ```
   fn and_then<G, O2>(self, g: G) -> AndThen<Self, G, O>
   where
     G: Parser<O, O2, E>,
@@ -421,6 +469,26 @@ pub trait Parser<I, O, E> {
 
   /// automatically converts the parser's output and error values to another type, as long as they
   /// implement the `From` trait
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::IResult;
+  /// # use nom::Parser;
+  /// use nom::character::alpha1;
+  /// # fn main() {
+  ///
+  ///  fn parser1(i: &str) -> IResult<&str, &str> {
+  ///    alpha1(i)
+  ///  }
+  ///
+  ///  let mut parser2 = Parser::into(parser1);
+  ///
+  /// // the parser converts the &str output of the child parser into a Vec<u8>
+  /// let bytes: IResult<&str, Vec<u8>> = parser2.parse("abcd");
+  /// assert_eq!(bytes, Ok(("", vec![97, 98, 99, 100])));
+  /// # }
+  /// ```
   fn into<O2: From<O>, E2: From<E>>(self) -> Into<Self, O, O2, E, E2>
   where
     Self: core::marker::Sized,
