@@ -474,7 +474,9 @@ impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> H, H: Parser<I, O2, E>>
   }
 }
 
-/// Optional parser: Will return `None` if not successful.
+/// Optional parser, will return `None` on [`Err::Error`].
+///
+/// To chain an error up, see [`cut`].
 ///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
@@ -894,18 +896,57 @@ where
   }
 }
 
-/// transforms an error to failure
+/// Transforms an [`Err::Error`] (recoverable) to [`Err::Failure`] (unrecoverable)
 ///
+/// This commits the parse result, preventing alternative branch paths like with
+/// [`nom::branch::alt`][crate::branch::alt].
+///
+/// # Example
+///
+/// Without `cut`:
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
-/// use nom::combinator::cut;
-/// use nom::character::alpha1;
+/// # use nom::character::one_of;
+/// # use nom::character::digit1;
+/// # use nom::combinator::rest;
+/// # use nom::branch::alt;
+/// # use nom::sequence::preceded;
 /// # fn main() {
 ///
-/// let mut parser = cut(alpha1);
+/// fn parser(input: &str) -> IResult<&str, &str> {
+///   alt((
+///     preceded(one_of("+-"), digit1),
+///     rest
+///   ))(input)
+/// }
 ///
-/// assert_eq!(parser("abcd;"), Ok((";", "abcd")));
-/// assert_eq!(parser("123;"), Err(Err::Failure(("123;", ErrorKind::Alpha))));
+/// assert_eq!(parser("+10 ab"), Ok((" ab", "10")));
+/// assert_eq!(parser("ab"), Ok(("", "ab")));
+/// assert_eq!(parser("+"), Ok(("", "+")));
+/// # }
+/// ```
+///
+/// With `cut`:
+/// ```rust
+/// # use nom::{Err,error::ErrorKind, IResult, error::Error};
+/// # use nom::character::one_of;
+/// # use nom::character::digit1;
+/// # use nom::combinator::rest;
+/// # use nom::branch::alt;
+/// # use nom::sequence::preceded;
+/// use nom::combinator::cut;
+/// # fn main() {
+///
+/// fn parser(input: &str) -> IResult<&str, &str> {
+///   alt((
+///     preceded(one_of("+-"), cut(digit1)),
+///     rest
+///   ))(input)
+/// }
+///
+/// assert_eq!(parser("+10 ab"), Ok((" ab", "10")));
+/// assert_eq!(parser("ab"), Ok(("", "ab")));
+/// assert_eq!(parser("+"), Err(Err::Failure(Error { input: "", code: ErrorKind::Digit })));
 /// # }
 /// ```
 pub fn cut<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O, E>
@@ -1005,6 +1046,8 @@ impl<
 ///
 /// Call the iterator's [ParserIterator::finish] method to get the remaining input if successful,
 /// or the error value if we encountered an error.
+///
+/// On [`Err::Error`], iteration will stop.  To instead chain an error up, see [`cut`].
 ///
 /// ```rust
 /// use nom::{combinator::iterator, IResult, bytes::tag, character::alpha1, sequence::terminated};
