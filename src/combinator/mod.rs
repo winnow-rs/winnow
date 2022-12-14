@@ -413,6 +413,8 @@ impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, 
 
 /// Creates a new parser from the output of the first parser, then apply that parser over the rest of the input.
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::flat_map`]
+///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::bytes::take;
@@ -426,6 +428,7 @@ impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, 
 /// assert_eq!(parse(&[4, 0, 1, 2][..]), Err(Err::Error((&[0, 1, 2][..], ErrorKind::Eof))));
 /// # }
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::flat_map")]
 pub fn flat_map<I, O1, O2, E: ParseError<I>, F, G, H>(
   mut parser: F,
   mut applied_parser: G,

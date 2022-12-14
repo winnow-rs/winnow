@@ -117,6 +117,7 @@ fn custom_error(input: &[u8]) -> IResult<&[u8], &[u8], CustomError> {
 
 #[test]
 fn test_flat_map() {
+  #![allow(deprecated)]
   let input: &[u8] = &[3, 100, 101, 102, 103, 104][..];
   assert_parse!(
     flat_map(u8, take)(input),
