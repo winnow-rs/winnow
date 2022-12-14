@@ -923,6 +923,8 @@ where
 /// it will be able to convert the output value and the error value
 /// as long as the `Into` implementations are available
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::into`]
+///
 /// ```rust
 /// # use nom::IResult;
 /// use nom::combinator::into;
@@ -940,6 +942,7 @@ where
 /// assert_eq!(bytes, Ok(("", vec![97, 98, 99, 100])));
 /// # }
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::into")]
 pub fn into<I, O1, O2, E1, E2, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O2, E2>
 where
   O1: convert::Into<O2>,

@@ -215,6 +215,7 @@ fn test_verify_alloc() {
 #[test]
 #[cfg(feature = "std")]
 fn test_into() {
+  #![allow(deprecated)]
   use crate::bytes::take;
   use crate::{
     error::{Error, ParseError},
