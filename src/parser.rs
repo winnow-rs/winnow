@@ -450,6 +450,9 @@ pub trait Parser<I, O, E> {
   }
 
   /// Applies a second parser after the first one, return their results as a tuple
+  ///
+  /// **WARNING:** Deprecated, replaced with [`nom::sequence::tuple`][crate::sequence::tuple]
+  #[deprecated(since = "8.0.0", note = "Replaced with `nom::sequence::tuple")]
   fn and<G, O2>(self, g: G) -> And<Self, G>
   where
     G: Parser<I, O2, E>,
