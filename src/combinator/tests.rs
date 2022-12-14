@@ -226,6 +226,21 @@ fn test_into() {
 }
 
 #[test]
+#[cfg(feature = "std")]
+fn test_parser_into() {
+  use crate::bytes::take;
+  use crate::{
+    error::{Error, ParseError},
+    Err,
+  };
+
+  let mut parser = Parser::into(take::<_, _, Error<_>, false>(3u8));
+  let result: IResult<&[u8], Vec<u8>> = parser.parse(&b"abcdefg"[..]);
+
+  assert_eq!(result, Ok((&b"defg"[..], vec![97, 98, 99])));
+}
+
+#[test]
 fn opt_test() {
   fn opt_abcd(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, Option<&[u8]>> {
     opt(tag("abcd"))(i)
