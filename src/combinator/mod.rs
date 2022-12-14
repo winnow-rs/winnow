@@ -356,6 +356,8 @@ where
 
 /// Applies a function returning an `Option` over the result of a parser.
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::map_opt`]
+///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::character::digit1;
@@ -374,6 +376,7 @@ where
 /// assert_eq!(parse("123456"), Err(Err::Error(("123456", ErrorKind::MapOpt))));
 /// # }
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::map_res")]
 pub fn map_opt<I: Clone, O1, O2, E: ParseError<I>, F, G>(
   mut parser: F,
   mut f: G,

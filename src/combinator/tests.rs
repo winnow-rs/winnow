@@ -136,6 +136,7 @@ fn test_parser_flat_map() {
 
 #[test]
 fn test_map_opt() {
+  #![allow(deprecated)]
   let input: &[u8] = &[50][..];
   assert_parse!(
     map_opt(u8, |u| if u < 20 { Some(u) } else { None })(input),
