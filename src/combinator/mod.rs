@@ -354,6 +354,8 @@ where
 
 /// Applies a parser over the result of another one.
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::and_then`]
+///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::character::digit1;
@@ -368,6 +370,7 @@ where
 /// assert_eq!(parse("123"), Err(Err::Error(("123", ErrorKind::Eof))));
 /// # }
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::and_then")]
 pub fn map_parser<I, O1, O2, E: ParseError<I>, F, G>(
   mut parser: F,
   mut applied_parser: G,

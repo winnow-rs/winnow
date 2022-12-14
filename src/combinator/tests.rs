@@ -149,6 +149,7 @@ fn test_map_opt() {
 
 #[test]
 fn test_map_parser() {
+  #![allow(deprecated)]
   let input: &[u8] = &[100, 101, 102, 103, 104][..];
   assert_parse!(
     map_parser(take(4usize), take(2usize))(input),
