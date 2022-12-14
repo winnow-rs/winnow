@@ -747,6 +747,33 @@ where
   }
 }
 
+/// Implementation of [`Parser::complete`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct Complete<F> {
+  f: F,
+}
+
+impl<F> Complete<F> {
+  pub(crate) fn new(f: F) -> Self {
+    Self { f }
+  }
+}
+
+impl<F, I, O, E> Parser<I, O, E> for Complete<F>
+where
+  I: Clone,
+  F: Parser<I, O, E>,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    let i = input.clone();
+    match (self.f).parse(input) {
+      Err(Err::Incomplete(_)) => Err(Err::Error(E::from_error_kind(i, ErrorKind::Complete))),
+      rest => rest,
+    }
+  }
+}
+
 /// Succeeds if all the input has been consumed by its child parser.
 ///
 /// ```rust

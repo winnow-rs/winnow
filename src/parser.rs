@@ -507,6 +507,28 @@ pub trait Parser<I, O, E> {
     AndThen::new(self, g)
   }
 
+  /// Transforms [`Incomplete`][crate::Err::Incomplete] into [`Error`][crate::Err::Error]
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::{Err,error::ErrorKind, IResult, input::Streaming, Parser};
+  /// # use nom::bytes::take;
+  /// # fn main() {
+  ///
+  /// let mut parser = take(5u8).complete();
+  ///
+  /// assert_eq!(parser.parse(Streaming("abcdefg")), Ok((Streaming("fg"), "abcde")));
+  /// assert_eq!(parser.parse(Streaming("abcd")), Err(Err::Error((Streaming("abcd"), ErrorKind::Complete))));
+  /// # }
+  /// ```
+  fn complete(self) -> Complete<Self>
+  where
+    Self: core::marker::Sized,
+  {
+    Complete::new(self)
+  }
+
   /// Applies a second parser after the first one, return their results as a tuple
   ///
   /// **WARNING:** Deprecated, replaced with [`nom::sequence::tuple`][crate::sequence::tuple]
