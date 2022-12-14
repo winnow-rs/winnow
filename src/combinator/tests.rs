@@ -148,6 +148,21 @@ fn test_map_opt() {
 }
 
 #[test]
+fn test_parser_map_opt() {
+  let input: &[u8] = &[50][..];
+  assert_parse!(
+    u8.map_opt(|u| if u < 20 { Some(u) } else { None })
+      .parse(input),
+    Err(Err::Error((&[50][..], ErrorKind::MapOpt)))
+  );
+  assert_parse!(
+    u8.map_opt(|u| if u > 20 { Some(u) } else { None })
+      .parse(input),
+    Ok((&[][..], 50))
+  );
+}
+
+#[test]
 fn test_map_parser() {
   #![allow(deprecated)]
   let input: &[u8] = &[100, 101, 102, 103, 104][..];

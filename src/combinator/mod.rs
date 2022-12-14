@@ -387,6 +387,41 @@ where
   }
 }
 
+/// Implementation of [`Parser::map_opt`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct MapOpt<F, G, O1> {
+  f: F,
+  g: G,
+  phantom: core::marker::PhantomData<O1>,
+}
+
+impl<F, G, O1> MapOpt<F, G, O1> {
+  pub(crate) fn new(f: F, g: G) -> Self {
+    Self {
+      f,
+      g,
+      phantom: Default::default(),
+    }
+  }
+}
+
+impl<I, O1, O2, E, F, G> Parser<I, O2, E> for MapOpt<F, G, O1>
+where
+  I: Clone,
+  F: Parser<I, O1, E>,
+  G: FnMut(O1) -> Option<O2>,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, O2, E> {
+    let i = input.clone();
+    let (input, o1) = self.f.parse(input)?;
+    match (self.g)(o1) {
+      Some(o2) => Ok((input, o2)),
+      None => Err(Err::Error(E::from_error_kind(i, ErrorKind::MapOpt))),
+    }
+  }
+}
+
 /// Applies a parser over the result of another one.
 ///
 /// **WARNING:** Deprecated, replaced with [`Parser::and_then`]

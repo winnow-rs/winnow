@@ -428,6 +428,35 @@ pub trait Parser<I, O, E> {
     MapRes::new(self, g)
   }
 
+  /// Applies a function returning an `Option` over the result of a parser.
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::{Err,error::ErrorKind, IResult, Parser};
+  /// use nom::character::digit1;
+  /// # fn main() {
+  ///
+  /// let mut parse = digit1.map_opt(|s: &str| s.parse::<u8>().ok());
+  ///
+  /// // the parser will convert the result of digit1 to a number
+  /// assert_eq!(parse.parse("123"), Ok(("", 123)));
+  ///
+  /// // this will fail if digit1 fails
+  /// assert_eq!(parse.parse("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
+  ///
+  /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
+  /// assert_eq!(parse.parse("123456"), Err(Err::Error(("123456", ErrorKind::MapOpt))));
+  /// # }
+  /// ```
+  fn map_opt<G, O2>(self, g: G) -> MapOpt<Self, G, O>
+  where
+    Self: core::marker::Sized,
+    G: FnMut(O) -> Option<O2>,
+  {
+    MapOpt::new(self, g)
+  }
+
   /// Creates a second parser from the output of the first one, then apply over the rest of the input
   ///
   /// # Example
