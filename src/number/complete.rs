@@ -1532,8 +1532,8 @@ where
 /// ```
 #[rustfmt::skip]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::recognize_float`][crate::number::recognize_float]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::recognize_float`")]
+/// **WARNING:** Deprecated, replaced with [`nom::character::recognize_float`][crate::character::recognize_float]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::recognize_float`")]
 pub fn recognize_float<T, E:ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
@@ -1563,10 +1563,10 @@ where
 // workaround until issues with minimal-lexical are fixed
 #[doc(hidden)]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::recognize_float_or_exceptions`][crate::number::recognize_float_or_exceptions]
+/// **WARNING:** Deprecated, replaced with [`nom::character::recognize_float_or_exceptions`][crate::character::recognize_float_or_exceptions]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::number::recognize_float_or_exceptions`"
+  note = "Replaced with `nom::character::recognize_float_or_exceptions`"
 )]
 pub fn recognize_float_or_exceptions<T, E: ParseError<T>>(
   input: T,
@@ -1611,10 +1611,10 @@ where
 /// *Complete version*: Can parse until the end of input.
 ///
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::recognize_float_parts`][crate::number::recognize_float_parts]
+/// **WARNING:** Deprecated, replaced with [`nom::character::recognize_float_parts`][crate::character::recognize_float_parts]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::number::recognize_float_parts`"
+  note = "Replaced with `nom::character::recognize_float_parts`"
 )]
 pub fn recognize_float_parts<T, E: ParseError<T>>(
   input: T,
@@ -1738,8 +1738,8 @@ use crate::input::ParseTo;
 /// assert_eq!(parser("abc"), Err(Err::Error(("abc", ErrorKind::Float))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::float`][crate::number::float]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::float`")]
+/// **WARNING:** Deprecated, replaced with [`nom::character::f32`][crate::character::f32]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::f32`")]
 pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>> + Slice<Range<usize>>,
@@ -1796,8 +1796,8 @@ where
 /// assert_eq!(parser("abc"), Err(Err::Error(("abc", ErrorKind::Float))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::double`][crate::number::double]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::double`")]
+/// **WARNING:** Deprecated, replaced with [`nom::character::f64`][crate::character::f64]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::f64`")]
 pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>> + Slice<Range<usize>>,

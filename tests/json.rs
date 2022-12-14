@@ -3,11 +3,10 @@
 use nom::{
   branch::alt,
   bytes::{tag, take},
-  character::{anychar, char, multispace0, none_of},
+  character::{anychar, char, f64, multispace0, none_of},
   combinator::{map_opt, map_res, value, verify},
   error::ParseError,
   multi::{fold_many0, separated_list0},
-  number::double,
   sequence::{delimited, preceded, separated_pair},
   IResult, Parser,
 };
@@ -118,7 +117,7 @@ fn json_value(input: &str) -> IResult<&str, JsonValue> {
     value(Null, tag("null")),
     boolean.map(Bool),
     string.map(Str),
-    double.map(Num),
+    f64.map(Num),
     array.map(Array),
     object.map(Object),
   ))(input)

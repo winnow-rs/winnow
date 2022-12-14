@@ -418,6 +418,88 @@ mod complete {
         assert_eq!(res1, res2);
     }
   }
+
+  #[test]
+  #[cfg(feature = "std")]
+  fn float_test() {
+    let mut test_cases = vec![
+      "+3.14",
+      "3.14",
+      "-3.14",
+      "0",
+      "0.0",
+      "1.",
+      ".789",
+      "-.5",
+      "1e7",
+      "-1E-7",
+      ".3e-2",
+      "1.e4",
+      "1.2e4",
+      "12.34",
+      "-1.234E-12",
+      "-1.234e-12",
+      "0.00000000000000000087",
+    ];
+
+    for test in test_cases.drain(..) {
+      let expected32 = str::parse::<f32>(test).unwrap();
+      let expected64 = str::parse::<f64>(test).unwrap();
+
+      println!("now parsing: {} -> {}", test, expected32);
+
+      let larger = format!("{}", test);
+      assert_parse!(recognize_float(&larger[..]), Ok(("", test)));
+
+      assert_parse!(f32(larger.as_bytes()), Ok((&b""[..], expected32)));
+      assert_parse!(f32(&larger[..]), Ok(("", expected32)));
+
+      assert_parse!(f64(larger.as_bytes()), Ok((&b""[..], expected64)));
+      assert_parse!(f64(&larger[..]), Ok(("", expected64)));
+    }
+
+    let remaining_exponent = "-1.234E-";
+    assert_parse!(
+      recognize_float(remaining_exponent),
+      Err(Err::Failure(("", ErrorKind::Digit)))
+    );
+
+    let (_i, nan) = f32::<_, (), false>("NaN").unwrap();
+    assert!(nan.is_nan());
+
+    let (_i, inf) = f32::<_, (), false>("inf").unwrap();
+    assert!(inf.is_infinite());
+    let (_i, inf) = f32::<_, (), false>("infinite").unwrap();
+    assert!(inf.is_infinite());
+  }
+
+  #[cfg(feature = "std")]
+  fn parse_f64(i: &str) -> IResult<&str, f64, ()> {
+    #[allow(deprecated)] // will just become `pub(crate)` later
+    match crate::number::complete::recognize_float_or_exceptions(i) {
+      Err(e) => Err(e),
+      Ok((i, s)) => {
+        if s.is_empty() {
+          return Err(Err::Error(()));
+        }
+        match s.parse_to() {
+          Some(n) => Ok((i, n)),
+          None => Err(Err::Error(())),
+        }
+      }
+    }
+  }
+
+  proptest! {
+    #[test]
+    #[cfg(feature = "std")]
+    fn floats(s in "\\PC*") {
+        println!("testing {}", s);
+        let res1 = parse_f64(&s);
+        let res2 = f64::<_, (), false>(s.as_str());
+        assert_eq!(res1, res2);
+    }
+  }
 }
 
 mod streaming {

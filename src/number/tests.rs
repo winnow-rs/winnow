@@ -4,7 +4,6 @@ mod complete {
   use super::*;
   use crate::error::ErrorKind;
   use crate::Err;
-  use proptest::prelude::*;
 
   macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
@@ -316,60 +315,6 @@ mod complete {
   }
 
   #[test]
-  #[cfg(feature = "std")]
-  fn float_test() {
-    let mut test_cases = vec![
-      "+3.14",
-      "3.14",
-      "-3.14",
-      "0",
-      "0.0",
-      "1.",
-      ".789",
-      "-.5",
-      "1e7",
-      "-1E-7",
-      ".3e-2",
-      "1.e4",
-      "1.2e4",
-      "12.34",
-      "-1.234E-12",
-      "-1.234e-12",
-      "0.00000000000000000087",
-    ];
-
-    for test in test_cases.drain(..) {
-      let expected32 = str::parse::<f32>(test).unwrap();
-      let expected64 = str::parse::<f64>(test).unwrap();
-
-      println!("now parsing: {} -> {}", test, expected32);
-
-      let larger = format!("{}", test);
-      assert_parse!(recognize_float(&larger[..]), Ok(("", test)));
-
-      assert_parse!(float(larger.as_bytes()), Ok((&b""[..], expected32)));
-      assert_parse!(float(&larger[..]), Ok(("", expected32)));
-
-      assert_parse!(double(larger.as_bytes()), Ok((&b""[..], expected64)));
-      assert_parse!(double(&larger[..]), Ok(("", expected64)));
-    }
-
-    let remaining_exponent = "-1.234E-";
-    assert_parse!(
-      recognize_float(remaining_exponent),
-      Err(Err::Failure(("", ErrorKind::Digit)))
-    );
-
-    let (_i, nan) = float::<_, (), false>("NaN").unwrap();
-    assert!(nan.is_nan());
-
-    let (_i, inf) = float::<_, (), false>("inf").unwrap();
-    assert!(inf.is_infinite());
-    let (_i, inf) = float::<_, (), false>("infinite").unwrap();
-    assert!(inf.is_infinite());
-  }
-
-  #[test]
   fn configurable_endianness() {
     use crate::number::Endianness;
 
@@ -451,34 +396,6 @@ mod complete {
       Ok((&b""[..], 36_028_874_334_732_032_i64))
     );
   }
-
-  #[cfg(feature = "std")]
-  fn parse_f64(i: &str) -> IResult<&str, f64, ()> {
-    #[allow(deprecated)] // will just become `pub(crate)` later
-    match crate::number::complete::recognize_float_or_exceptions(i) {
-      Err(e) => Err(e),
-      Ok((i, s)) => {
-        if s.is_empty() {
-          return Err(Err::Error(()));
-        }
-        match s.parse_to() {
-          Some(n) => Ok((i, n)),
-          None => Err(Err::Error(())),
-        }
-      }
-    }
-  }
-
-  proptest! {
-    #[test]
-    #[cfg(feature = "std")]
-    fn floats(s in "\\PC*") {
-        println!("testing {}", s);
-        let res1 = parse_f64(&s);
-        let res2 = double::<_, (), false>(s.as_str());
-        assert_eq!(res1, res2);
-    }
-  }
 }
 
 mod streaming {
@@ -486,7 +403,6 @@ mod streaming {
   use crate::error::ErrorKind;
   use crate::input::Streaming;
   use crate::{Err, Needed};
-  use proptest::prelude::*;
 
   macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
@@ -1084,75 +1000,6 @@ mod streaming {
   }
 
   #[test]
-  #[cfg(feature = "std")]
-  fn float_test() {
-    let mut test_cases = vec![
-      "+3.14",
-      "3.14",
-      "-3.14",
-      "0",
-      "0.0",
-      "1.",
-      ".789",
-      "-.5",
-      "1e7",
-      "-1E-7",
-      ".3e-2",
-      "1.e4",
-      "1.2e4",
-      "12.34",
-      "-1.234E-12",
-      "-1.234e-12",
-      "0.00000000000000000087",
-    ];
-
-    for test in test_cases.drain(..) {
-      let expected32 = str::parse::<f32>(test).unwrap();
-      let expected64 = str::parse::<f64>(test).unwrap();
-
-      println!("now parsing: {} -> {}", test, expected32);
-
-      let larger = format!("{};", test);
-      assert_parse!(
-        recognize_float(Streaming(&larger[..])),
-        Ok((Streaming(";"), test))
-      );
-
-      assert_parse!(
-        float(Streaming(larger.as_bytes())),
-        Ok((Streaming(&b";"[..]), expected32))
-      );
-      assert_parse!(
-        float(Streaming(&larger[..])),
-        Ok((Streaming(";"), expected32))
-      );
-
-      assert_parse!(
-        double(Streaming(larger.as_bytes())),
-        Ok((Streaming(&b";"[..]), expected64))
-      );
-      assert_parse!(
-        double(Streaming(&larger[..])),
-        Ok((Streaming(";"), expected64))
-      );
-    }
-
-    let remaining_exponent = "-1.234E-";
-    assert_parse!(
-      recognize_float(Streaming(remaining_exponent)),
-      Err(Err::Incomplete(Needed::new(1)))
-    );
-
-    let (_i, nan) = float::<_, (), true>(Streaming("NaN")).unwrap();
-    assert!(nan.is_nan());
-
-    let (_i, inf) = float::<_, (), true>(Streaming("inf")).unwrap();
-    assert!(inf.is_infinite());
-    let (_i, inf) = float::<_, (), true>(Streaming("infinite")).unwrap();
-    assert!(inf.is_infinite());
-  }
-
-  #[test]
   fn configurable_endianness() {
     use crate::number::Endianness;
 
@@ -1245,33 +1092,5 @@ mod streaming {
       le_tsti64(Streaming(&[0x00, 0xFF, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00])),
       Ok((Streaming(&b""[..]), 36_028_874_334_732_032_i64))
     );
-  }
-
-  #[cfg(feature = "std")]
-  fn parse_f64(i: Streaming<&str>) -> IResult<Streaming<&str>, f64, ()> {
-    #[allow(deprecated)] // will just become `pub(crate)` later
-    match crate::number::streaming::recognize_float_or_exceptions(i) {
-      Err(e) => Err(e),
-      Ok((i, s)) => {
-        if s.is_empty() {
-          return Err(Err::Error(()));
-        }
-        match s.parse_to() {
-          Some(n) => Ok((i, n)),
-          None => Err(Err::Error(())),
-        }
-      }
-    }
-  }
-
-  proptest! {
-    #[test]
-    #[cfg(feature = "std")]
-    fn floats(s in "\\PC*") {
-        println!("testing {}", s);
-        let res1 = parse_f64(Streaming(&s));
-        let res2 = double::<_, (), true>(Streaming(s.as_str()));
-        assert_eq!(res1, res2);
-    }
   }
 }
