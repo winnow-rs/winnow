@@ -80,7 +80,7 @@
 //! - [`Parser::value`][crate::Parser::value]: method to replace the result of a parser
 //! - [`Parser::map`][crate::Parser::map]: method to map a function on the result of a parser
 //! - [`Parser::and_then`][crate::Parser::and_then]: Applies a second parser over the output of the first one
-//! - [`map_opt`][map_opt]: Maps a function returning an `Option` on the output of a parser
+//! - [`Parser::map_opt`][Parser::map_opt]: Maps a function returning an `Option` on the output of a parser
 //! - [`Parser::map_res`][Parser::map_res]: Maps a function returning a `Result` on the output of a parser
 //! - [`not`][not]: Returns a result only if the embedded parser returns `Error` or `Incomplete`. Does not consume the input
 //! - [`opt`][opt]: Make the underlying parser optional

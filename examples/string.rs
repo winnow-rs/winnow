@@ -14,7 +14,7 @@
 use nom::branch::alt;
 use nom::bytes::{is_not, take_while_m_n};
 use nom::character::{char, multispace1};
-use nom::combinator::{map_opt, value, verify};
+use nom::combinator::{value, verify};
 use nom::error::{FromExternalError, ParseError};
 use nom::multi::fold_many0;
 use nom::prelude::*;
@@ -55,7 +55,9 @@ where
   // the function returns None, map_opt returns an error. In this case, because
   // not all u32 values are valid unicode code points, we have to fallibly
   // convert to char with from_u32.
-  map_opt(parse_u32, |value| std::char::from_u32(value))(input)
+  parse_u32
+    .map_opt(|value| std::char::from_u32(value))
+    .parse(input)
 }
 
 /// Parse an escaped character: \n, \t, \r, \u{00AC}, etc.
