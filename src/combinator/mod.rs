@@ -77,7 +77,6 @@
 //!
 //! - [`cond`][cond]: Conditional combinator. Wraps another parser and calls it if the condition is met
 //! - [`Parser::flat_map`][crate::Parser::flat_map]: method to map a new parser from the output of the first parser, then apply that parser over the rest of the input
-//! - [`flat_map`][flat_map]: function variant of `Parser::flat_map`
 //! - [`Parser::map`][crate::Parser::map]: method to map a function on the result of a parser
 //! - [`map_opt`][map_opt]: Maps a function returning an `Option` on the output of a parser
 //! - [`map_res`][map_res]: Maps a function returning a `Result` on the output of a parser
