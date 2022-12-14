@@ -8,7 +8,6 @@ use nom::{
   branch::alt,
   bytes::tag,
   character::{digit1 as digit, multispace0 as multispace},
-  combinator::map_res,
   multi::many0,
   sequence::{delimited, preceded},
   IResult,
@@ -69,7 +68,9 @@ fn parens(i: &str) -> IResult<&str, Expr> {
 
 fn factor(i: &str) -> IResult<&str, Expr> {
   alt((
-    map_res(delimited(multispace, digit, multispace), FromStr::from_str).map(Expr::Value),
+    delimited(multispace, digit, multispace)
+      .map_res(FromStr::from_str)
+      .map(Expr::Value),
     parens,
   ))(i)
 }

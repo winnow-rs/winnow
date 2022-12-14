@@ -14,7 +14,7 @@
 use nom::branch::alt;
 use nom::bytes::{is_not, take_while_m_n};
 use nom::character::{char, multispace1};
-use nom::combinator::{map_opt, map_res, value, verify};
+use nom::combinator::{map_opt, value, verify};
 use nom::error::{FromExternalError, ParseError};
 use nom::multi::fold_many0;
 use nom::prelude::*;
@@ -49,7 +49,7 @@ where
   // `map_res` takes the result of a parser and applies a function that returns
   // a Result. In this case we take the hex bytes from parse_hex and attempt to
   // convert them to a u32.
-  let parse_u32 = map_res(parse_delimited_hex, move |hex| u32::from_str_radix(hex, 16));
+  let parse_u32 = parse_delimited_hex.map_res(move |hex| u32::from_str_radix(hex, 16));
 
   // map_opt is like map_res, but it takes an Option instead of a Result. If
   // the function returns None, map_opt returns an error. In this case, because

@@ -4,7 +4,7 @@ use nom::{
   branch::alt,
   bytes::{tag, take},
   character::{anychar, char, f64, multispace0, none_of},
-  combinator::{map_opt, map_res, value, verify},
+  combinator::{map_opt, value, verify},
   error::ParseError,
   multi::{fold_many0, separated_list0},
   sequence::{delimited, preceded, separated_pair},
@@ -28,7 +28,9 @@ fn boolean(input: &str) -> IResult<&str, bool> {
 }
 
 fn u16_hex(input: &str) -> IResult<&str, u16> {
-  map_res(take(4usize), |s| u16::from_str_radix(s, 16))(input)
+  take(4usize)
+    .map_res(|s| u16::from_str_radix(s, 16))
+    .parse(input)
 }
 
 fn unicode_escape(input: &str) -> IResult<&str, char> {
@@ -56,7 +58,7 @@ fn character(input: &str) -> IResult<&str, char> {
   let (input, c) = none_of("\"")(input)?;
   if c == '\\' {
     alt((
-      map_res(anychar, |c| {
+      anychar.map_res(|c| {
         Ok(match c {
           '"' | '\\' | '/' => c,
           'b' => '\x08',

@@ -1,9 +1,9 @@
+use nom::prelude::*;
 use nom::{
   branch::alt,
   bytes::tag,
   character::char,
   character::{digit1 as digit, space0 as space},
-  combinator::map_res,
   multi::fold_many0,
   sequence::{delimited, pair},
   IResult,
@@ -24,7 +24,7 @@ fn parens(i: &str) -> IResult<&str, i64> {
 // we fallback to the parens parser defined above
 fn factor(i: &str) -> IResult<&str, i64> {
   alt((
-    map_res(delimited(space, digit, space), FromStr::from_str),
+    delimited(space, digit, space).map_res(FromStr::from_str),
     parens,
   ))(i)
 }

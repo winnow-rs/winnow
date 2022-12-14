@@ -632,22 +632,19 @@ where
 ///
 /// ## Parsing an integer
 ///
-/// You can use `digit1` in combination with [`map_res`] to parse an integer:
+/// You can use `digit1` in combination with [`Parser::map_res`][crate::Parser::map_res] to parse an integer:
 ///
 /// ```
-/// # use nom::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom::combinator::map_res;
+/// # use nom::{Err, error::{Error, ErrorKind}, IResult, Needed, Parser};
 /// # use nom::character::digit1;
 /// fn parser(input: &str) -> IResult<&str, u32> {
-///   map_res(digit1, str::parse)(input)
+///   digit1.map_res(str::parse).parse(input)
 /// }
 ///
 /// assert_eq!(parser("416"), Ok(("", 416)));
 /// assert_eq!(parser("12b"), Ok(("b", 12)));
 /// assert!(parser("b").is_err());
 /// ```
-///
-/// [`map_res`]: crate::combinator::map_res
 #[inline(always)]
 pub fn digit1<T, E: ParseError<T>, const STREAMING: bool>(
   input: T,

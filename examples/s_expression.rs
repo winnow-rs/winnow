@@ -8,7 +8,7 @@ use nom::{
   branch::alt,
   bytes::tag,
   character::{alpha1, char, digit1, multispace0, multispace1, one_of},
-  combinator::{cut, map_res, opt},
+  combinator::{cut, opt},
   error::{context, VerboseError},
   multi::many0,
   sequence::{delimited, preceded, terminated, tuple},
@@ -119,9 +119,7 @@ fn parse_keyword<'a>(i: &'a str) -> IResult<&'a str, Atom, VerboseError<&'a str>
 /// of digits but ending the program if it doesn't fit into an i32.
 fn parse_num<'a>(i: &'a str) -> IResult<&'a str, Atom, VerboseError<&'a str>> {
   alt((
-    map_res(digit1, |digit_str: &str| {
-      digit_str.parse::<i32>().map(Atom::Num)
-    }),
+    digit1.map_res(|digit_str: &str| digit_str.parse::<i32>().map(Atom::Num)),
     preceded(tag("-"), digit1)
       .map(|digit_str: &str| Atom::Num(-1 * digit_str.parse::<i32>().unwrap())),
   ))(i)

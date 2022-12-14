@@ -188,28 +188,28 @@
 //! If you want it to return the integer value instead, use map:
 //!
 //! ```rust
+//! use nom::prelude::*;
 //! use nom::{
 //!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
-//!   combinator::{map_res, recognize},
+//!   combinator::{recognize},
 //!   sequence::{preceded, terminated},
 //!   character::complete::{char, one_of},
 //!   bytes::complete::tag,
 //! };
 //!
 //! fn hexadecimal_value(input: &str) -> IResult<&str, i64> {
-//!   map_res(
-//!     preceded(
-//!       alt((tag("0x"), tag("0X"))),
-//!       recognize(
-//!         many1(
-//!           terminated(one_of("0123456789abcdefABCDEF"), many0(char('_')))
-//!         )
+//!   preceded(
+//!     alt((tag("0x"), tag("0X"))),
+//!     recognize(
+//!       many1(
+//!         terminated(one_of("0123456789abcdefABCDEF"), many0(char('_')))
 //!       )
-//!     ),
+//!     )
+//!   ).map_res(
 //!     |out: &str| i64::from_str_radix(&str::replace(&out, "_", ""), 16)
-//!   )(input)
+//!   ).parse(input)
 //! }
 //! ```
 //!

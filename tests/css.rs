@@ -1,5 +1,5 @@
 use nom::bytes::{tag, take_while_m_n};
-use nom::combinator::map_res;
+use nom::prelude::*;
 use nom::sequence::tuple;
 use nom::IResult;
 
@@ -19,7 +19,9 @@ fn is_hex_digit(c: char) -> bool {
 }
 
 fn hex_primary(input: &str) -> IResult<&str, u8> {
-  map_res(take_while_m_n(2, 2, is_hex_digit), from_hex)(input)
+  take_while_m_n(2, 2, is_hex_digit)
+    .map_res(from_hex)
+    .parse(input)
 }
 
 fn hex_color(input: &str) -> IResult<&str, Color> {
