@@ -7,6 +7,7 @@ use crate::input::Streaming;
 #[cfg(feature = "alloc")]
 use crate::lib::std::boxed::Box;
 use crate::number::u8;
+use crate::Parser;
 use crate::{Err, IResult, Needed};
 
 macro_rules! assert_parse(
@@ -119,6 +120,15 @@ fn test_flat_map() {
   let input: &[u8] = &[3, 100, 101, 102, 103, 104][..];
   assert_parse!(
     flat_map(u8, take)(input),
+    Ok((&[103, 104][..], &[100, 101, 102][..]))
+  );
+}
+
+#[test]
+fn test_parser_flat_map() {
+  let input: &[u8] = &[3, 100, 101, 102, 103, 104][..];
+  assert_parse!(
+    u8.flat_map(take).parse(input),
     Ok((&[103, 104][..], &[100, 101, 102][..]))
   );
 }
