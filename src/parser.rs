@@ -462,6 +462,9 @@ pub trait Parser<I, O, E> {
   }
 
   /// Applies a second parser over the input if the first one failed
+  ///
+  /// **WARNING:** Deprecated, replaced with [`nom::branch::alt`][crate::branch::alt]
+  #[deprecated(since = "8.0.0", note = "Replaced with `nom::branch::alt")]
   fn or<G>(self, g: G) -> Or<Self, G>
   where
     G: Parser<I, O, E>,
