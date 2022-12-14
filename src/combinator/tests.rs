@@ -156,6 +156,15 @@ fn test_map_parser() {
 }
 
 #[test]
+fn test_parser_map_parser() {
+  let input: &[u8] = &[100, 101, 102, 103, 104][..];
+  assert_parse!(
+    take(4usize).and_then(take(2usize)).parse(input),
+    Ok((&[104][..], &[100, 101][..]))
+  );
+}
+
+#[test]
 fn test_all_consuming() {
   let input: &[u8] = &[100, 101, 102][..];
   assert_parse!(
