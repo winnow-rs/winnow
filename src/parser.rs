@@ -177,7 +177,7 @@ pub enum Err<E> {
   /// This must only be set when the `Input` is [`InputIsStreaming<true>`], like with
   /// [`Streaming`][crate::input::Streaming]
   ///
-  /// Convert this into an `Error` with [`nom::combinator::complete`][crate::combinator::complete]
+  /// Convert this into an `Error` with [`Parser::complete`][Parser::complete]
   Incomplete(Needed),
   /// The parser had an error (recoverable)
   Error(E),
@@ -329,21 +329,20 @@ pub trait Parser<I, O, E> {
   ///
   /// Because parsers are `FnMut`, they can be called multiple times.  This prevents moving `f`
   /// into [`length_data`][crate::multi::length_data] and `g` into
-  /// [`complete`][crate::combinator::complete]:
+  /// [`complete`][Parser::complete]:
   /// ```rust,compile_fail
   /// # use nom::prelude::*;
   /// # use nom::IResult;
   /// # use nom::Parser;
   /// # use nom::error::ParseError;
   /// # use nom::multi::length_data;
-  /// # use nom::combinator::complete;
   /// pub fn length_value<'i, O, E: ParseError<&'i [u8]>>(
   ///     mut f: impl Parser<&'i [u8], usize, E>,
   ///     mut g: impl Parser<&'i [u8], O, E>
   /// ) -> impl FnMut(&'i [u8]) -> IResult<&'i [u8], O, E> {
   ///   move |i: &'i [u8]| {
   ///     let (i, data) = length_data(f).parse(i)?;
-  ///     let (_, o) = complete(g).parse(data)?;
+  ///     let (_, o) = g.complete().parse(data)?;
   ///     Ok((i, o))
   ///   }
   /// }
@@ -356,14 +355,13 @@ pub trait Parser<I, O, E> {
   /// # use nom::Parser;
   /// # use nom::error::ParseError;
   /// # use nom::multi::length_data;
-  /// # use nom::combinator::complete;
   /// pub fn length_value<'i, O, E: ParseError<&'i [u8]>>(
   ///     mut f: impl Parser<&'i [u8], usize, E>,
   ///     mut g: impl Parser<&'i [u8], O, E>
   /// ) -> impl FnMut(&'i [u8]) -> IResult<&'i [u8], O, E> {
   ///   move |i: &'i [u8]| {
   ///     let (i, data) = length_data(f.as_mut_parser()).parse(i)?;
-  ///     let (_, o) = complete(g.as_mut_parser()).parse(data)?;
+  ///     let (_, o) = g.as_mut_parser().complete().parse(data)?;
   ///     Ok((i, o))
   ///   }
   /// }

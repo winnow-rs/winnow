@@ -71,7 +71,7 @@
 //! ## Streaming related
 //!
 //! - [`eof`][eof]: Returns its input if it is at the end of input data
-//! - [`complete`][complete()]: Replaces an `Incomplete` returned by the child parser with an `Error`
+//! - [`Parser::complete`][Parser::complete()]: Replaces an `Incomplete` returned by the child parser with an `Error`
 //!
 //! ## Modifiers
 //!
