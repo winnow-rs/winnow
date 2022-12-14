@@ -1,7 +1,8 @@
 use nom::branch::alt;
 use nom::bytes::tag;
 use nom::character::digit1 as digit;
-use nom::combinator::{map, map_res, opt, recognize};
+use nom::combinator::{map_res, opt, recognize};
+use nom::prelude::*;
 use nom::sequence::{delimited, pair};
 use nom::IResult;
 
@@ -18,15 +19,14 @@ fn unsigned_float(i: &[u8]) -> IResult<&[u8], f32> {
 }
 
 fn float(i: &[u8]) -> IResult<&[u8], f32> {
-  map(
-    pair(opt(alt((tag("+"), tag("-")))), unsigned_float),
-    |(sign, value)| {
+  pair(opt(alt((tag("+"), tag("-")))), unsigned_float)
+    .map(|(sign, value)| {
       sign
         .and_then(|s| if s[0] == b'-' { Some(-1f32) } else { None })
         .unwrap_or(1f32)
         * value
-    },
-  )(i)
+    })
+    .parse(i)
 }
 
 #[test]

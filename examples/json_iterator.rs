@@ -1,10 +1,11 @@
 #![cfg(feature = "alloc")]
 
+use nom::prelude::*;
 use nom::{
   branch::alt,
   bytes::{escaped, tag, take_while},
   character::{alphanumeric1 as alphanumeric, char, one_of},
-  combinator::{cut, map},
+  combinator::cut,
   error::{context, ParseError},
   multi::separated_list0,
   number::double,
@@ -233,7 +234,7 @@ fn string<'a>(i: &'a str) -> IResult<&'a str, &'a str> {
 }
 
 fn boolean<'a>(input: &'a str) -> IResult<&'a str, bool> {
-  alt((map(tag("false"), |_| false), map(tag("true"), |_| true)))(input)
+  alt((tag("false").map(|_| false), tag("true").map(|_| true)))(input)
 }
 
 fn array<'a>(i: &'a str) -> IResult<&'a str, ()> {
@@ -242,7 +243,7 @@ fn array<'a>(i: &'a str) -> IResult<&'a str, ()> {
     preceded(
       char('['),
       cut(terminated(
-        map(separated_list0(preceded(sp, char(',')), value), |_| ()),
+        separated_list0(preceded(sp, char(',')), value).map(|_| ()),
         preceded(sp, char(']')),
       )),
     ),
@@ -259,7 +260,7 @@ fn hash<'a>(i: &'a str) -> IResult<&'a str, ()> {
     preceded(
       char('{'),
       cut(terminated(
-        map(separated_list0(preceded(sp, char(',')), key_value), |_| ()),
+        separated_list0(preceded(sp, char(',')), key_value).map(|_| ()),
         preceded(sp, char('}')),
       )),
     ),
@@ -272,9 +273,9 @@ fn value<'a>(i: &'a str) -> IResult<&'a str, ()> {
     alt((
       hash,
       array,
-      map(string, |_| ()),
-      map(double, |_| ()),
-      map(boolean, |_| ()),
+      string.map(|_| ()),
+      double.map(|_| ()),
+      boolean.map(|_| ()),
     )),
   )(i)
 }

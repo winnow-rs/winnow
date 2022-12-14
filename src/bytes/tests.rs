@@ -10,12 +10,7 @@ use crate::Err;
 use crate::IResult;
 use crate::Needed;
 #[cfg(feature = "alloc")]
-use crate::{
-  branch::alt,
-  combinator::{map, value},
-  lib::std::string::String,
-  lib::std::vec::Vec,
-};
+use crate::{branch::alt, combinator::value, lib::std::string::String, lib::std::vec::Vec};
 
 #[test]
 fn complete_take_while_m_n_utf8_all_matching() {
@@ -146,18 +141,17 @@ fn complete_escape_transform() {
   use crate::character::alpha1 as alpha;
 
   fn esc(i: &[u8]) -> IResult<&[u8], String> {
-    map(
-      escaped_transform(
-        alpha,
-        '\\',
-        alt((
-          value(&b"\\"[..], tag("\\")),
-          value(&b"\""[..], tag("\"")),
-          value(&b"\n"[..], tag("n")),
-        )),
-      ),
-      to_s,
-    )(i)
+    escaped_transform(
+      alpha,
+      '\\',
+      alt((
+        value(&b"\\"[..], tag("\\")),
+        value(&b"\""[..], tag("\"")),
+        value(&b"\n"[..], tag("n")),
+      )),
+    )
+    .map(to_s)
+    .parse(i)
   }
 
   assert_eq!(esc(&b"abcd;"[..]), Ok((&b";"[..], String::from("abcd"))));
@@ -191,17 +185,16 @@ fn complete_escape_transform() {
   );
 
   fn esc2(i: &[u8]) -> IResult<&[u8], String> {
-    map(
-      escaped_transform(
-        alpha,
-        '&',
-        alt((
-          value("è".as_bytes(), tag("egrave;")),
-          value("à".as_bytes(), tag("agrave;")),
-        )),
-      ),
-      to_s,
-    )(i)
+    escaped_transform(
+      alpha,
+      '&',
+      alt((
+        value("è".as_bytes(), tag("egrave;")),
+        value("à".as_bytes(), tag("agrave;")),
+      )),
+    )
+    .map(to_s)
+    .parse(i)
   }
   assert_eq!(
     esc2(&b"ab&egrave;DEF;"[..]),

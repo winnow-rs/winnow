@@ -77,9 +77,8 @@
 //!
 //! - [`cond`][cond]: Conditional combinator. Wraps another parser and calls it if the condition is met
 //! - [`Parser::flat_map`][crate::Parser::flat_map]: method to map a new parser from the output of the first parser, then apply that parser over the rest of the input
-//! - [`flat_map`][flat_map]: function variant of `Parser::flat_map`
 //! - [`Parser::map`][crate::Parser::map]: method to map a function on the result of a parser
-//! - [`map`][map]: function variant of `Parser::map`
+//! - [`Parser::and_then`][crate::Parser::and_then]: Applies a second parser over the output of the first one
 //! - [`map_opt`][map_opt]: Maps a function returning an `Option` on the output of a parser
 //! - [`map_res`][map_res]: Maps a function returning a `Result` on the output of a parser
 //! - [`not`][not]: Returns a result only if the embedded parser returns `Error` or `Incomplete`. Does not consume the input
@@ -221,6 +220,8 @@ impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for MutParser<'p, P> {
 
 /// Maps a function on the result of a parser.
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::map`]
+///
 /// ```rust
 /// use nom::{Err,error::ErrorKind, IResult,Parser};
 /// use nom::character::digit1;
@@ -236,6 +237,7 @@ impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for MutParser<'p, P> {
 /// assert_eq!(parser.parse("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
 /// # }
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::map")]
 pub fn map<I, O1, O2, E, F, G>(mut parser: F, mut f: G) -> impl FnMut(I) -> IResult<I, O2, E>
 where
   F: Parser<I, O1, E>,
@@ -352,6 +354,8 @@ where
 
 /// Applies a parser over the result of another one.
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::and_then`]
+///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::character::digit1;
@@ -366,6 +370,7 @@ where
 /// assert_eq!(parse("123"), Err(Err::Error(("123", ErrorKind::Eof))));
 /// # }
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::and_then")]
 pub fn map_parser<I, O1, O2, E: ParseError<I>, F, G>(
   mut parser: F,
   mut applied_parser: G,
@@ -411,6 +416,8 @@ impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, 
 
 /// Creates a new parser from the output of the first parser, then apply that parser over the rest of the input.
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::flat_map`]
+///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::bytes::take;
@@ -424,6 +431,7 @@ impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, 
 /// assert_eq!(parse(&[4, 0, 1, 2][..]), Err(Err::Error((&[0, 1, 2][..], ErrorKind::Eof))));
 /// # }
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::flat_map")]
 pub fn flat_map<I, O1, O2, E: ParseError<I>, F, G, H>(
   mut parser: F,
   mut applied_parser: G,
@@ -836,6 +844,7 @@ where
 /// Returned tuple is of the format `(consumed input, produced output)`.
 ///
 /// ```rust
+/// # use nom::prelude::*;
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::combinator::{consumed, value, recognize, map};
 /// use nom::character::{char, alpha1};
@@ -857,10 +866,10 @@ where
 /// // the first output (representing the consumed input)
 /// // should be the same as that of the `recognize` parser.
 /// let mut recognize_parser = recognize(inner_parser);
-/// let mut consumed_parser = map(consumed(inner_parser), |(consumed, output)| consumed);
+/// let mut consumed_parser = consumed(inner_parser).map(|(consumed, output)| consumed);
 ///
-/// assert_eq!(recognize_parser("1234"), consumed_parser("1234"));
-/// assert_eq!(recognize_parser("abcd"), consumed_parser("abcd"));
+/// assert_eq!(recognize_parser("1234"), consumed_parser.parse("1234"));
+/// assert_eq!(recognize_parser("abcd"), consumed_parser.parse("abcd"));
 /// # }
 /// ```
 pub fn consumed<I, O, F, E>(
@@ -914,6 +923,8 @@ where
 /// it will be able to convert the output value and the error value
 /// as long as the `Into` implementations are available
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::into`]
+///
 /// ```rust
 /// # use nom::IResult;
 /// use nom::combinator::into;
@@ -931,6 +942,7 @@ where
 /// assert_eq!(bytes, Ok(("", vec![97, 98, 99, 100])));
 /// # }
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::into")]
 pub fn into<I, O1, O2, E1, E2, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O2, E2>
 where
   O1: convert::Into<O2>,

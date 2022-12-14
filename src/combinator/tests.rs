@@ -7,6 +7,7 @@ use crate::input::Streaming;
 #[cfg(feature = "alloc")]
 use crate::lib::std::boxed::Box;
 use crate::number::u8;
+use crate::Parser;
 use crate::{Err, IResult, Needed};
 
 macro_rules! assert_parse(
@@ -116,9 +117,19 @@ fn custom_error(input: &[u8]) -> IResult<&[u8], &[u8], CustomError> {
 
 #[test]
 fn test_flat_map() {
+  #![allow(deprecated)]
   let input: &[u8] = &[3, 100, 101, 102, 103, 104][..];
   assert_parse!(
     flat_map(u8, take)(input),
+    Ok((&[103, 104][..], &[100, 101, 102][..]))
+  );
+}
+
+#[test]
+fn test_parser_flat_map() {
+  let input: &[u8] = &[3, 100, 101, 102, 103, 104][..];
+  assert_parse!(
+    u8.flat_map(take).parse(input),
     Ok((&[103, 104][..], &[100, 101, 102][..]))
   );
 }
@@ -138,9 +149,19 @@ fn test_map_opt() {
 
 #[test]
 fn test_map_parser() {
+  #![allow(deprecated)]
   let input: &[u8] = &[100, 101, 102, 103, 104][..];
   assert_parse!(
     map_parser(take(4usize), take(2usize))(input),
+    Ok((&[104][..], &[100, 101][..]))
+  );
+}
+
+#[test]
+fn test_parser_map_parser() {
+  let input: &[u8] = &[100, 101, 102, 103, 104][..];
+  assert_parse!(
+    take(4usize).and_then(take(2usize)).parse(input),
     Ok((&[104][..], &[100, 101][..]))
   );
 }
@@ -180,7 +201,7 @@ fn test_verify_ref() {
 #[cfg(feature = "alloc")]
 fn test_verify_alloc() {
   use crate::bytes::take;
-  let mut parser1 = verify(map(take(3u8), |s: &[u8]| s.to_vec()), |s: &[u8]| {
+  let mut parser1 = verify(take(3u8).map(|s: &[u8]| s.to_vec()), |s: &[u8]| {
     s == &b"abc"[..]
   });
 
@@ -194,6 +215,7 @@ fn test_verify_alloc() {
 #[test]
 #[cfg(feature = "std")]
 fn test_into() {
+  #![allow(deprecated)]
   use crate::bytes::take;
   use crate::{
     error::{Error, ParseError},
@@ -202,6 +224,21 @@ fn test_into() {
 
   let mut parser = into(take::<_, _, Error<_>, false>(3u8));
   let result: IResult<&[u8], Vec<u8>> = parser(&b"abcdefg"[..]);
+
+  assert_eq!(result, Ok((&b"defg"[..], vec![97, 98, 99])));
+}
+
+#[test]
+#[cfg(feature = "std")]
+fn test_parser_into() {
+  use crate::bytes::take;
+  use crate::{
+    error::{Error, ParseError},
+    Err,
+  };
+
+  let mut parser = Parser::into(take::<_, _, Error<_>, false>(3u8));
+  let result: IResult<&[u8], Vec<u8>> = parser.parse(&b"abcdefg"[..]);
 
   assert_eq!(result, Ok((&b"defg"[..], vec![97, 98, 99])));
 }

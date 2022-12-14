@@ -1,10 +1,11 @@
 #![allow(dead_code)]
 
 use nom::input::Streaming;
+use nom::prelude::*;
 use nom::{
   branch::alt,
   bytes::{tag, take},
-  combinator::{map, map_res},
+  combinator::map_res,
   error::ErrorKind,
   multi::many0,
   number::{be_f32, be_u16, be_u32, be_u64},
@@ -281,12 +282,12 @@ fn unknown_box_type(input: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, MP4Box
 
 fn box_type(input: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, MP4BoxType> {
   alt((
-    map(tag("ftyp"), |_| MP4BoxType::Ftyp),
-    map(tag("moov"), |_| MP4BoxType::Moov),
-    map(tag("mdat"), |_| MP4BoxType::Mdat),
-    map(tag("free"), |_| MP4BoxType::Free),
-    map(tag("skip"), |_| MP4BoxType::Skip),
-    map(tag("wide"), |_| MP4BoxType::Wide),
+    tag("ftyp").map(|_| MP4BoxType::Ftyp),
+    tag("moov").map(|_| MP4BoxType::Moov),
+    tag("mdat").map(|_| MP4BoxType::Mdat),
+    tag("free").map(|_| MP4BoxType::Free),
+    tag("skip").map(|_| MP4BoxType::Skip),
+    tag("wide").map(|_| MP4BoxType::Wide),
     unknown_box_type,
   ))(input)
 }
@@ -296,15 +297,15 @@ fn box_type(input: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, MP4BoxType> {
 // or split into multiple alt parsers if it gets slow
 fn moov_type(input: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, MP4BoxType> {
   alt((
-    map(tag("mdra"), |_| MP4BoxType::Mdra),
-    map(tag("dref"), |_| MP4BoxType::Dref),
-    map(tag("cmov"), |_| MP4BoxType::Cmov),
-    map(tag("rmra"), |_| MP4BoxType::Rmra),
-    map(tag("iods"), |_| MP4BoxType::Iods),
-    map(tag("mvhd"), |_| MP4BoxType::Mvhd),
-    map(tag("clip"), |_| MP4BoxType::Clip),
-    map(tag("trak"), |_| MP4BoxType::Trak),
-    map(tag("udta"), |_| MP4BoxType::Udta),
+    tag("mdra").map(|_| MP4BoxType::Mdra),
+    tag("dref").map(|_| MP4BoxType::Dref),
+    tag("cmov").map(|_| MP4BoxType::Cmov),
+    tag("rmra").map(|_| MP4BoxType::Rmra),
+    tag("iods").map(|_| MP4BoxType::Iods),
+    tag("mvhd").map(|_| MP4BoxType::Mvhd),
+    tag("clip").map(|_| MP4BoxType::Clip),
+    tag("trak").map(|_| MP4BoxType::Trak),
+    tag("udta").map(|_| MP4BoxType::Udta),
   ))(input)
 }
 

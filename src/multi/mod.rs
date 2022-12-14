@@ -926,6 +926,7 @@ where
 /// * `f` The parser to apply to obtain the count.
 /// * `g` The parser to apply repeatedly.
 /// ```rust
+/// # use nom::prelude::*;
 /// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
 /// use nom::number::u8;
 /// use nom::multi::length_count;
@@ -933,7 +934,7 @@ where
 /// use nom::combinator::map;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-///   length_count(map(u8, |i| {
+///   length_count(u8.map(|i| {
 ///      println!("got number: {}", i);
 ///      i
 ///   }), tag("abc"))(s)

@@ -3,11 +3,12 @@ use std::fmt::{Debug, Display, Formatter};
 
 use std::str::FromStr;
 
+use nom::prelude::*;
 use nom::{
   branch::alt,
   bytes::tag,
   character::{digit1 as digit, multispace0 as multispace},
-  combinator::{map, map_res},
+  combinator::map_res,
   multi::many0,
   sequence::{delimited, preceded},
   IResult,
@@ -61,17 +62,14 @@ impl Debug for Expr {
 fn parens(i: &str) -> IResult<&str, Expr> {
   delimited(
     multispace,
-    delimited(tag("("), map(expr, |e| Expr::Paren(Box::new(e))), tag(")")),
+    delimited(tag("("), expr.map(|e| Expr::Paren(Box::new(e))), tag(")")),
     multispace,
   )(i)
 }
 
 fn factor(i: &str) -> IResult<&str, Expr> {
   alt((
-    map(
-      map_res(delimited(multispace, digit, multispace), FromStr::from_str),
-      Expr::Value,
-    ),
+    map_res(delimited(multispace, digit, multispace), FromStr::from_str).map(Expr::Value),
     parens,
   ))(i)
 }
