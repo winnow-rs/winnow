@@ -399,6 +399,35 @@ pub trait Parser<I, O, E> {
     Map::new(self, g)
   }
 
+  /// Applies a function returning a `Result` over the result of a parser.
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::{Err,error::ErrorKind, IResult, Parser};
+  /// use nom::character::digit1;
+  /// # fn main() {
+  ///
+  /// let mut parse = digit1.map_res(|s: &str| s.parse::<u8>());
+  ///
+  /// // the parser will convert the result of digit1 to a number
+  /// assert_eq!(parse.parse("123"), Ok(("", 123)));
+  ///
+  /// // this will fail if digit1 fails
+  /// assert_eq!(parse.parse("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
+  ///
+  /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
+  /// assert_eq!(parse.parse("123456"), Err(Err::Error(("123456", ErrorKind::MapRes))));
+  /// # }
+  /// ```
+  fn map_res<G, O2, E2>(self, g: G) -> MapRes<Self, G, O>
+  where
+    Self: core::marker::Sized,
+    G: FnMut(O) -> Result<O2, E2>,
+  {
+    MapRes::new(self, g)
+  }
+
   /// Creates a second parser from the output of the first one, then apply over the rest of the input
   ///
   /// # Example

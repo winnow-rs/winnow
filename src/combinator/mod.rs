@@ -314,6 +314,41 @@ where
   }
 }
 
+/// Implementation of [`Parser::map_res`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct MapRes<F, G, O1> {
+  f: F,
+  g: G,
+  phantom: core::marker::PhantomData<O1>,
+}
+
+impl<F, G, O1> MapRes<F, G, O1> {
+  pub(crate) fn new(f: F, g: G) -> Self {
+    Self {
+      f,
+      g,
+      phantom: Default::default(),
+    }
+  }
+}
+
+impl<I, O1, O2, E, E2, F, G> Parser<I, O2, E> for MapRes<F, G, O1>
+where
+  I: Clone,
+  F: Parser<I, O1, E>,
+  G: FnMut(O1) -> Result<O2, E2>,
+  E: FromExternalError<I, E2>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, O2, E> {
+    let i = input.clone();
+    let (input, o1) = self.f.parse(input)?;
+    match (self.g)(o1) {
+      Ok(o2) => Ok((input, o2)),
+      Err(e) => Err(Err::Error(E::from_external_error(i, ErrorKind::MapRes, e))),
+    }
+  }
+}
+
 /// Applies a function returning an `Option` over the result of a parser.
 ///
 /// ```rust
