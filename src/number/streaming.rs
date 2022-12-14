@@ -1629,8 +1629,8 @@ where
 /// ```
 #[rustfmt::skip]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::recognize_float`][crate::number::recognize_float] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::recognize_float` with input wrapped in `nom::input::Streaming`")]
+/// **WARNING:** Deprecated, replaced with [`nom::character::recognize_float`][crate::character::recognize_float] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::recognize_float` with input wrapped in `nom::input::Streaming`")]
 pub fn recognize_float<T, E:ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
@@ -1660,10 +1660,10 @@ where
 // workaround until issues with minimal-lexical are fixed
 #[doc(hidden)]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::recognize_float_or_exceptions`][crate::number::recognize_float_or_exceptions] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom::character::recognize_float_or_exceptions`][character::number::recognize_float_or_exceptions] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::number::recognize_float_or_exceptions` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom::character::recognize_float_or_exceptions` with input wrapped in `nom::input::Streaming`"
 )]
 pub fn recognize_float_or_exceptions<T, E: ParseError<T>>(
   input: T,
@@ -1708,10 +1708,10 @@ where
 /// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there is not enough data.
 ///
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::recognize_float_parts`][crate::number::recognize_float_parts] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom::character::recognize_float_parts`][crate::character::recognize_float_parts] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::number::recognize_float_parts` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom::character::recognize_float_parts` with input wrapped in `nom::input::Streaming`"
 )]
 pub fn recognize_float_parts<T, E: ParseError<T>>(
   input: T,
@@ -1838,10 +1838,10 @@ where
 /// assert_eq!(parser("abc"), Err(Err::Error(("abc", ErrorKind::Float))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::float`][crate::number::float] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom::character::f32`][crate::character::f32] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::number::float` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom::character::f32` with input wrapped in `nom::input::Streaming`"
 )]
 pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>
 where
@@ -1902,10 +1902,10 @@ where
 /// assert_eq!(parser("abc"), Err(Err::Error(("abc", ErrorKind::Float))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::double`][crate::number::double] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom::character::f64`][crate::character::f64] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::number::double` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom::character::f64` with input wrapped in `nom::input::Streaming`"
 )]
 pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>
 where

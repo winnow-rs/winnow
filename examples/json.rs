@@ -4,11 +4,10 @@ use nom::prelude::*;
 use nom::{
   branch::alt,
   bytes::{escaped, tag, take_while},
-  character::{alphanumeric1 as alphanumeric, char, one_of},
+  character::{alphanumeric1 as alphanumeric, char, f64, one_of},
   combinator::{cut, opt, value},
   error::{context, convert_error, ContextError, ErrorKind, ParseError, VerboseError},
   multi::separated_list0,
-  number::double,
   sequence::{delimited, preceded, separated_pair, terminated},
   Err, IResult,
 };
@@ -160,7 +159,7 @@ fn json_value<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
       hash.map(JsonValue::Object),
       array.map(JsonValue::Array),
       string.map(|s| JsonValue::Str(String::from(s))),
-      double.map(JsonValue::Num),
+      f64.map(JsonValue::Num),
       boolean.map(JsonValue::Boolean),
       null.map(|_| JsonValue::Null),
     )),

@@ -12,8 +12,8 @@ mod tests;
 use crate::error::ParseError;
 use crate::input::Compare;
 use crate::input::{
-  AsChar, FindToken, InputIsStreaming, InputIter, InputLength, InputTake, InputTakeAtPosition,
-  IntoOutput, Slice,
+  AsBytes, AsChar, FindToken, InputIsStreaming, InputIter, InputLength, InputTake,
+  InputTakeAtPosition, IntoOutput, Offset, ParseTo, Slice,
 };
 use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
 use crate::IResult;
@@ -1167,6 +1167,225 @@ macro_rules! uints {
 }
 
 uints! { u8 u16 u32 u64 u128 }
+
+/// Recognizes floating point number in text format and returns a f32.
+///
+/// *Complete version*: Can parse until the end of input.
+///
+/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there is not enough data.
+///
+/// # Example
+///
+/// ```rust
+/// # use nom::{Err, error::ErrorKind, Needed};
+/// # use nom::Needed::Size;
+/// use nom::character::f32;
+///
+/// let parser = |s| {
+///   f32(s)
+/// };
+///
+/// assert_eq!(parser("11e-1"), Ok(("", 1.1)));
+/// assert_eq!(parser("123E-02"), Ok(("", 1.23)));
+/// assert_eq!(parser("123K-01"), Ok(("K-01", 123.0)));
+/// assert_eq!(parser("abc"), Err(Err::Error(("abc", ErrorKind::Float))));
+/// ```
+///
+/// ```rust
+/// # use nom::{Err, error::ErrorKind, Needed};
+/// # use nom::Needed::Size;
+/// # use nom::input::Streaming;
+/// use nom::character::f32;
+///
+/// let parser = |s| {
+///   f32(s)
+/// };
+///
+/// assert_eq!(parser(Streaming("11e-1 ")), Ok((Streaming(" "), 1.1)));
+/// assert_eq!(parser(Streaming("11e-1")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming("123E-02")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming("123K-01")), Ok((Streaming("K-01"), 123.0)));
+/// assert_eq!(parser(Streaming("abc")), Err(Err::Error((Streaming("abc"), ErrorKind::Float))));
+/// ```
+#[inline(always)]
+pub fn f32<T, E: ParseError<T>, const STREAMING: bool>(input: T) -> IResult<T, f32, E>
+where
+  T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>> + Slice<Range<usize>>,
+  T: Clone + Offset + Compare<&'static str>,
+  T: InputIter + InputLength + InputTake + InputIsStreaming<STREAMING>,
+  T: IntoOutput,
+  <T as IntoOutput>::Output: ParseTo<f32>,
+  <T as InputIter>::Item: AsChar + Copy,
+  <T as InputIter>::IterElem: Clone,
+  T: InputTakeAtPosition,
+  <T as InputTakeAtPosition>::Item: AsChar,
+  T: AsBytes,
+  T: for<'a> Compare<&'a [u8]>,
+{
+  if STREAMING {
+    crate::number::streaming::float(input)
+  } else {
+    crate::number::complete::float(input)
+  }
+}
+
+/// Recognizes floating point number in text format and returns a f64.
+///
+/// *Complete version*: Can parse until the end of input.
+///
+/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there is not enough data.
+///
+/// # Example
+///
+/// ```rust
+/// # use nom::{Err, error::ErrorKind, Needed};
+/// # use nom::Needed::Size;
+/// use nom::character::f64;
+///
+/// let parser = |s| {
+///   f64(s)
+/// };
+///
+/// assert_eq!(parser("11e-1"), Ok(("", 1.1)));
+/// assert_eq!(parser("123E-02"), Ok(("", 1.23)));
+/// assert_eq!(parser("123K-01"), Ok(("K-01", 123.0)));
+/// assert_eq!(parser("abc"), Err(Err::Error(("abc", ErrorKind::Float))));
+/// ```
+///
+/// ```rust
+/// # use nom::{Err, error::ErrorKind, Needed};
+/// # use nom::Needed::Size;
+/// # use nom::input::Streaming;
+/// use nom::character::f64;
+///
+/// let parser = |s| {
+///   f64(s)
+/// };
+///
+/// assert_eq!(parser(Streaming("11e-1 ")), Ok((Streaming(" "), 1.1)));
+/// assert_eq!(parser(Streaming("11e-1")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming("123E-02")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming("123K-01")), Ok((Streaming("K-01"), 123.0)));
+/// assert_eq!(parser(Streaming("abc")), Err(Err::Error((Streaming("abc"), ErrorKind::Float))));
+/// ```
+#[inline(always)]
+pub fn f64<T, E: ParseError<T>, const STREAMING: bool>(input: T) -> IResult<T, f64, E>
+where
+  T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>> + Slice<Range<usize>>,
+  T: Clone + Offset + Compare<&'static str>,
+  T: InputIter + InputLength + InputTake + InputIsStreaming<STREAMING>,
+  T: IntoOutput,
+  <T as IntoOutput>::Output: ParseTo<f64>,
+  <T as InputIter>::Item: AsChar + Copy,
+  <T as InputIter>::IterElem: Clone,
+  T: InputTakeAtPosition,
+  <T as InputTakeAtPosition>::Item: AsChar,
+  T: AsBytes,
+  T: for<'a> Compare<&'a [u8]>,
+{
+  if STREAMING {
+    crate::number::streaming::double(input)
+  } else {
+    crate::number::complete::double(input)
+  }
+}
+
+/// Recognizes floating point number in a byte string and returns the corresponding slice.
+///
+/// *Complete version*: Can parse until the end of input.
+///
+/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there is not enough data.
+///
+/// # Example
+///
+/// ```rust
+/// # use nom::{Err, error::ErrorKind, Needed};
+/// # use nom::Needed::Size;
+/// use nom::character::recognize_float;
+///
+/// let parser = |s| {
+///   recognize_float(s)
+/// };
+///
+/// assert_eq!(parser("11e-1"), Ok(("", "11e-1")));
+/// assert_eq!(parser("123E-02"), Ok(("", "123E-02")));
+/// assert_eq!(parser("123K-01"), Ok(("K-01", "123")));
+/// assert_eq!(parser("abc"), Err(Err::Error(("abc", ErrorKind::Char))));
+/// ```
+///
+/// ```rust
+/// # use nom::{Err, error::ErrorKind, Needed};
+/// # use nom::input::Streaming;
+/// use nom::character::recognize_float;
+///
+/// let parser = |s| {
+///   recognize_float(s)
+/// };
+///
+/// assert_eq!(parser(Streaming("11e-1;")), Ok((Streaming(";"), "11e-1")));
+/// assert_eq!(parser(Streaming("123E-02;")), Ok((Streaming(";"), "123E-02")));
+/// assert_eq!(parser(Streaming("123K-01")), Ok((Streaming("K-01"), "123")));
+/// assert_eq!(parser(Streaming("abc")), Err(Err::Error((Streaming("abc"), ErrorKind::Char))));
+/// ```
+#[inline(always)]
+pub fn recognize_float<T, E: ParseError<T>, const STREAMING: bool>(
+  input: T,
+) -> IResult<T, <T as IntoOutput>::Output, E>
+where
+  T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
+  T: Clone + Offset,
+  T: InputIter + InputLength + InputIsStreaming<STREAMING>,
+  T: IntoOutput,
+  <T as InputIter>::Item: AsChar,
+  T: InputTakeAtPosition,
+  <T as InputTakeAtPosition>::Item: AsChar,
+{
+  if STREAMING {
+    crate::number::streaming::recognize_float(input)
+  } else {
+    crate::number::complete::recognize_float(input)
+  }
+}
+
+/// Recognizes a floating point number in text format
+///
+/// It returns a tuple of (`sign`, `integer part`, `fraction part` and `exponent`) of the input
+/// data.
+///
+/// *Complete version*: Can parse until the end of input.
+///
+/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there is not enough data.
+///
+#[inline(always)]
+pub fn recognize_float_parts<T, E: ParseError<T>, const STREAMING: bool>(
+  input: T,
+) -> IResult<
+  T,
+  (
+    bool,
+    <T as IntoOutput>::Output,
+    <T as IntoOutput>::Output,
+    i32,
+  ),
+  E,
+>
+where
+  T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>> + Slice<Range<usize>>,
+  T: Clone + Offset,
+  T: InputIter + InputTake + InputIsStreaming<STREAMING>,
+  T: IntoOutput,
+  <T as InputIter>::Item: AsChar + Copy,
+  T: InputTakeAtPosition + InputLength,
+  <T as InputTakeAtPosition>::Item: AsChar,
+  T: for<'a> Compare<&'a [u8]>,
+  T: AsBytes,
+{
+  if STREAMING {
+    crate::number::streaming::recognize_float_parts(input)
+  } else {
+    crate::number::complete::recognize_float_parts(input)
+  }
+}
 
 #[inline]
 #[doc(hidden)]

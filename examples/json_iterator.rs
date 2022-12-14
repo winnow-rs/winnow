@@ -4,11 +4,10 @@ use nom::prelude::*;
 use nom::{
   branch::alt,
   bytes::{escaped, tag, take_while},
-  character::{alphanumeric1 as alphanumeric, char, one_of},
+  character::{alphanumeric1 as alphanumeric, char, f64, one_of},
   combinator::cut,
   error::{context, ParseError},
   multi::separated_list0,
-  number::double,
   sequence::{preceded, separated_pair, terminated},
   IResult,
 };
@@ -63,7 +62,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
 
   pub fn number(&self) -> Option<f64> {
     println!("number()");
-    match double::<_, (), false>(self.data()) {
+    match f64::<_, (), false>(self.data()) {
       Ok((i, o)) => {
         self.offset(i);
         println!("-> {}", o);
@@ -274,7 +273,7 @@ fn value<'a>(i: &'a str) -> IResult<&'a str, ()> {
       hash,
       array,
       string.map(|_| ()),
-      double.map(|_| ()),
+      f64.map(|_| ()),
       boolean.map(|_| ()),
     )),
   )(i)
