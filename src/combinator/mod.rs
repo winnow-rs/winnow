@@ -247,7 +247,7 @@ where
   }
 }
 
-/// Implementation of `Parser::map`
+/// Implementation of [`Parser::map`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Map<F, G, O1> {
   f: F,
@@ -381,7 +381,7 @@ where
   }
 }
 
-/// Implementation of `Parser::and_then`
+/// Implementation of [`Parser::and_then`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct AndThen<F, G, O1> {
   f: F,
@@ -439,7 +439,7 @@ where
   }
 }
 
-/// Implementation of `Parser::flat_map`
+/// Implementation of [`Parser::flat_map`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct FlatMap<F, G, O1> {
   f: F,
@@ -496,7 +496,7 @@ where
   }
 }
 
-/// Implementation of `Parser::and`
+/// Implementation of [`Parser::and`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct And<F, G> {
   f: F,
@@ -519,7 +519,7 @@ impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<I, O2, E>> Parser<I, (O1, 
   }
 }
 
-/// Implementation of `Parser::or`
+/// Implementation of [`Parser::or`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Or<F, G> {
   f: F,
@@ -948,7 +948,7 @@ where
   }
 }
 
-/// Implementation of `Parser::into`
+/// Implementation of [`Parser::into`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Into<F, O1, O2: From<O1>, E1, E2: From<E1>> {
   f: F,
