@@ -730,6 +730,8 @@ where
 
 /// Transforms Incomplete into `Error`.
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::complete`]
+///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult, input::Streaming};
 /// use nom::bytes::take;
@@ -742,6 +744,7 @@ where
 /// assert_eq!(parser(Streaming("abcd")), Err(Err::Error((Streaming("abcd"), ErrorKind::Complete))));
 /// # }
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::complete")]
 pub fn complete<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
   F: Parser<I, O, E>,
