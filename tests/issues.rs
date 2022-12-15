@@ -3,6 +3,7 @@
 #![cfg_attr(feature = "cargo-clippy", allow(redundant_closure))]
 
 use nom::input::Streaming;
+use nom::prelude::*;
 use nom::{error::ErrorKind, Err, IResult, Needed};
 
 #[allow(dead_code)]
@@ -186,8 +187,8 @@ fn issue_942() {
   pub fn parser<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
     i: &'a str,
   ) -> IResult<&'a str, usize, E> {
-    use nom::{character::char, error::context, multi::many0_count};
-    many0_count(context("char_a", char('a')))(i)
+    use nom::{character::char, multi::many0_count};
+    many0_count(char('a').context("char_a"))(i)
   }
   assert_eq!(parser::<()>("aaa"), Ok(("", 3)));
 }

@@ -6,7 +6,7 @@ use nom::{
   bytes::{escaped, tag, take_while},
   character::{alphanumeric1 as alphanumeric, char, f64, one_of},
   combinator::cut,
-  error::{context, ParseError},
+  error::ParseError,
   multi::separated_list0,
   sequence::{preceded, separated_pair, terminated},
   IResult,
@@ -226,10 +226,9 @@ fn parse_str<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str
 }
 
 fn string<'a>(i: &'a str) -> IResult<&'a str, &'a str> {
-  context(
-    "string",
-    preceded(char('\"'), cut(terminated(parse_str, char('\"')))),
-  )(i)
+  preceded(char('\"'), cut(terminated(parse_str, char('\"'))))
+    .context("string")
+    .parse(i)
 }
 
 fn boolean<'a>(input: &'a str) -> IResult<&'a str, bool> {
@@ -237,16 +236,15 @@ fn boolean<'a>(input: &'a str) -> IResult<&'a str, bool> {
 }
 
 fn array<'a>(i: &'a str) -> IResult<&'a str, ()> {
-  context(
-    "array",
-    preceded(
-      char('['),
-      cut(terminated(
-        separated_list0(preceded(sp, char(',')), value).map(|_| ()),
-        preceded(sp, char(']')),
-      )),
-    ),
-  )(i)
+  preceded(
+    char('['),
+    cut(terminated(
+      separated_list0(preceded(sp, char(',')), value).map(|_| ()),
+      preceded(sp, char(']')),
+    )),
+  )
+  .context("array")
+  .parse(i)
 }
 
 fn key_value<'a>(i: &'a str) -> IResult<&'a str, (&'a str, ())> {
@@ -254,16 +252,15 @@ fn key_value<'a>(i: &'a str) -> IResult<&'a str, (&'a str, ())> {
 }
 
 fn hash<'a>(i: &'a str) -> IResult<&'a str, ()> {
-  context(
-    "map",
-    preceded(
-      char('{'),
-      cut(terminated(
-        separated_list0(preceded(sp, char(',')), key_value).map(|_| ()),
-        preceded(sp, char('}')),
-      )),
-    ),
-  )(i)
+  preceded(
+    char('{'),
+    cut(terminated(
+      separated_list0(preceded(sp, char(',')), key_value).map(|_| ()),
+      preceded(sp, char('}')),
+    )),
+  )
+  .context("map")
+  .parse(i)
 }
 
 fn value<'a>(i: &'a str) -> IResult<&'a str, ()> {
