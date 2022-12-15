@@ -1066,6 +1066,8 @@ where
 ///
 /// Returned tuple is of the format `(consumed input, produced output)`.
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::with_recognized`] (output ordering is changed)
+///
 /// ```rust
 /// # use nom::prelude::*;
 /// # use nom::{Err,error::ErrorKind, IResult};
@@ -1095,6 +1097,10 @@ where
 /// assert_eq!(recognize_parser("abcd"), consumed_parser.parse("abcd"));
 /// # }
 /// ```
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `Parser::with_recognized (output ordering is changed)"
+)]
 pub fn consumed<I, O, F, E>(
   mut parser: F,
 ) -> impl FnMut(I) -> IResult<I, (<I as IntoOutput>::Output, O), E>
