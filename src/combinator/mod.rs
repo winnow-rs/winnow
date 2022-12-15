@@ -982,6 +982,8 @@ where
 
 /// If the child parser was successful, return the consumed input as produced value.
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::recognize`]
+///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::combinator::recognize;
@@ -995,6 +997,7 @@ where
 /// assert_eq!(parser("abcd;"),Err(Err::Error((";", ErrorKind::Char))));
 /// # }
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::recognize")]
 pub fn recognize<I, O, E: ParseError<I>, F>(
   mut parser: F,
 ) -> impl FnMut(I) -> IResult<I, <I as IntoOutput>::Output, E>
