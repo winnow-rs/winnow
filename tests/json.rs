@@ -4,7 +4,6 @@ use nom::{
   branch::alt,
   bytes::{tag, take},
   character::{anychar, char, f64, multispace0, none_of},
-  combinator::value,
   error::ParseError,
   multi::{fold_many0, separated_list0},
   sequence::{delimited, preceded, separated_pair},
@@ -24,7 +23,7 @@ pub enum JsonValue {
 }
 
 fn boolean(input: &str) -> IResult<&str, bool> {
-  alt((value(false, tag("false")), value(true, tag("true"))))(input)
+  alt((tag("false").value(false), tag("true").value(true)))(input)
 }
 
 fn u16_hex(input: &str) -> IResult<&str, u16> {
@@ -117,7 +116,7 @@ fn json_value(input: &str) -> IResult<&str, JsonValue> {
   use JsonValue::*;
 
   alt((
-    value(Null, tag("null")),
+    tag("null").value(Null),
     boolean.map(Bool),
     string.map(Str),
     f64.map(Num),

@@ -28,7 +28,6 @@
 //! use nom::{
 //!   IResult,
 //!   error::ParseError,
-//!   combinator::value,
 //!   sequence::delimited,
 //!   character::complete::multispace0,
 //! };
@@ -60,10 +59,10 @@
 //! output of `()`.
 //!
 //! ```rust
+//! use nom::prelude::*;
 //! use nom::{
 //!   IResult,
 //!   error::ParseError,
-//!   combinator::value,
 //!   sequence::pair,
 //!   bytes::complete::is_not,
 //!   character::complete::char,
@@ -71,10 +70,9 @@
 //!
 //! pub fn peol_comment<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, (), E>
 //! {
-//!   value(
-//!     (), // Output is thrown away.
-//!     pair(char('%'), is_not("\n\r"))
-//!   )(i)
+//!   pair(char('%'), is_not("\n\r"))
+//!     .value(()) // Output is thrown away.
+//!     .parse(i)
 //! }
 //! ```
 //!
@@ -84,23 +82,22 @@
 //! and does not handle nested comments.
 //!
 //! ```rust
+//! use nom::prelude::*;
 //! use nom::{
 //!   IResult,
 //!   error::ParseError,
-//!   combinator::value,
 //!   sequence::tuple,
 //!   bytes::complete::{tag, take_until},
 //! };
 //!
 //! pub fn pinline_comment<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, (), E> {
-//!   value(
-//!     (), // Output is thrown away.
-//!     tuple((
-//!       tag("(*"),
-//!       take_until("*)"),
-//!       tag("*)")
-//!     ))
-//!   )(i)
+//!   tuple((
+//!     tag("(*"),
+//!     take_until("*)"),
+//!     tag("*)")
+//!   ))
+//!     .value(()) // Output is thrown away.
+//!     .parse(i)
 //! }
 //! ```
 //!

@@ -14,7 +14,6 @@
 use nom::branch::alt;
 use nom::bytes::{is_not, take_while_m_n};
 use nom::character::{char, multispace1};
-use nom::combinator::value;
 use nom::error::{FromExternalError, ParseError};
 use nom::multi::fold_many0;
 use nom::prelude::*;
@@ -75,14 +74,14 @@ where
       // parser (the second argument) succeeds. In these cases, it looks for
       // the marker characters (n, r, t, etc) and returns the matching
       // character (\n, \r, \t, etc).
-      value('\n', char('n')),
-      value('\r', char('r')),
-      value('\t', char('t')),
-      value('\u{08}', char('b')),
-      value('\u{0C}', char('f')),
-      value('\\', char('\\')),
-      value('/', char('/')),
-      value('"', char('"')),
+      char('n').value('\n'),
+      char('r').value('\r'),
+      char('t').value('\t'),
+      char('b').value('\u{08}'),
+      char('f').value('\u{0C}'),
+      char('\\').value('\\'),
+      char('/').value('/'),
+      char('"').value('"'),
     )),
   )(input)
 }
@@ -129,7 +128,7 @@ where
     // of that parser.
     parse_literal.map(StringFragment::Literal),
     parse_escaped_char.map(StringFragment::EscapedChar),
-    value(StringFragment::EscapedWS, parse_escaped_whitespace),
+    parse_escaped_whitespace.value(StringFragment::EscapedWS),
   ))(input)
 }
 

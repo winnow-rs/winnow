@@ -10,7 +10,7 @@ use crate::Err;
 use crate::IResult;
 use crate::Needed;
 #[cfg(feature = "alloc")]
-use crate::{branch::alt, combinator::value, lib::std::string::String, lib::std::vec::Vec};
+use crate::{branch::alt, lib::std::string::String, lib::std::vec::Vec};
 
 #[test]
 fn complete_take_while_m_n_utf8_all_matching() {
@@ -145,9 +145,9 @@ fn complete_escape_transform() {
       alpha,
       '\\',
       alt((
-        value(&b"\\"[..], tag("\\")),
-        value(&b"\""[..], tag("\"")),
-        value(&b"\n"[..], tag("n")),
+        tag("\\").value(&b"\\"[..]),
+        tag("\"").value(&b"\""[..]),
+        tag("n").value(&b"\n"[..]),
       )),
     )
     .map(to_s)
@@ -189,8 +189,8 @@ fn complete_escape_transform() {
       alpha,
       '&',
       alt((
-        value("è".as_bytes(), tag("egrave;")),
-        value("à".as_bytes(), tag("agrave;")),
+        tag("egrave;").value("è".as_bytes()),
+        tag("agrave;").value("à".as_bytes()),
       )),
     )
     .map(to_s)
@@ -216,9 +216,9 @@ fn complete_escape_transform_str() {
       alpha,
       '\\',
       alt((
-        value("\\", tag("\\")),
-        value("\"", tag("\"")),
-        value("\n", tag("n")),
+        tag("\\").value("\\"),
+        tag("\"").value("\""),
+        tag("n").value("\n"),
       )),
     )(i)
   }
@@ -248,7 +248,7 @@ fn complete_escape_transform_str() {
     escaped_transform(
       alpha,
       '&',
-      alt((value("è", tag("egrave;")), value("à", tag("agrave;")))),
+      alt((tag("egrave;").value("è"), tag("agrave;").value("à"))),
     )(i)
   }
   assert_eq!(esc2("ab&egrave;DEF;"), Ok((";", String::from("abèDEF"))));
@@ -261,7 +261,7 @@ fn complete_escape_transform_str() {
     escaped_transform(
       alpha,
       '␛',
-      alt((value("\0", tag("0")), value("\n", tag("n")))),
+      alt((tag("0").value("\0"), tag("n").value("\n"))),
     )(i)
   }
   assert_eq!(esc3("a␛0bc␛n"), Ok(("", String::from("a\0bc\n"))));

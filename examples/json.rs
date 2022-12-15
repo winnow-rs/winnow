@@ -5,7 +5,7 @@ use nom::{
   branch::alt,
   bytes::{escaped, tag, take_while},
   character::{alphanumeric1 as alphanumeric, char, f64, one_of},
-  combinator::{cut, opt, value},
+  combinator::{cut, opt},
   error::{context, convert_error, ContextError, ErrorKind, ParseError, VerboseError},
   multi::separated_list0,
   sequence::{delimited, preceded, separated_pair, terminated},
@@ -65,11 +65,11 @@ fn parse_str<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str
 fn boolean<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str, bool, E> {
   // This is a parser that returns `true` if it sees the string "true", and
   // an error otherwise
-  let parse_true = value(true, tag("true"));
+  let parse_true = tag("true").value(true);
 
   // This is a parser that returns `false` if it sees the string "false", and
   // an error otherwise
-  let parse_false = value(false, tag("false"));
+  let parse_false = tag("false").value(false);
 
   // `alt` combines the two parsers. It returns the result of the first
   // successful parser, or an error
@@ -77,7 +77,7 @@ fn boolean<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str, bool,
 }
 
 fn null<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str, (), E> {
-  value((), tag("null"))(input)
+  tag("null").value(()).parse(input)
 }
 
 /// this parser combines the previous `parse_str` parser, that recognizes the
