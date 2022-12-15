@@ -899,6 +899,8 @@ where
 
 /// Returns the provided value if the child parser succeeds.
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::value`]
+///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::combinator::value;
@@ -911,6 +913,7 @@ where
 /// assert_eq!(parser("123abcd;"), Err(Err::Error(("123abcd;", ErrorKind::Alpha))));
 /// # }
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::value")]
 pub fn value<I, O1: Clone, O2, E: ParseError<I>, F>(
   val: O1,
   mut parser: F,
