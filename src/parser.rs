@@ -418,6 +418,51 @@ pub trait Parser<I, O, E> {
     Recognize::new(self)
   }
 
+  /// if the child parser was successful, return the consumed input with the output
+  /// as a tuple. Functions similarly to [recognize](fn.recognize.html) except it
+  /// returns the parser output as well.
+  ///
+  /// This can be useful especially in cases where the output is not the same type
+  /// as the input, or the input is a user defined type.
+  ///
+  /// Returned tuple is of the format `(produced output, consumed input)`.
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::prelude::*;
+  /// # use nom::{Err,error::ErrorKind, IResult};
+  /// use nom::character::{char, alpha1};
+  /// use nom::bytes::tag;
+  /// use nom::sequence::separated_pair;
+  ///
+  /// fn inner_parser(input: &str) -> IResult<&str, bool> {
+  ///     tag("1234").value(true).parse(input)
+  /// }
+  ///
+  /// # fn main() {
+  ///
+  /// let mut consumed_parser = separated_pair(alpha1, char(','), alpha1).value(true).with_recognized();
+  ///
+  /// assert_eq!(consumed_parser.parse("abcd,efgh1"), Ok(("1", (true, "abcd,efgh"))));
+  /// assert_eq!(consumed_parser.parse("abcd;"),Err(Err::Error((";", ErrorKind::Char))));
+  ///
+  /// // the second output (representing the consumed input)
+  /// // should be the same as that of the `recognize` parser.
+  /// let mut recognize_parser = inner_parser.recognize();
+  /// let mut consumed_parser = inner_parser.with_recognized().map(|(output, consumed)| consumed);
+  ///
+  /// assert_eq!(recognize_parser.parse("1234"), consumed_parser.parse("1234"));
+  /// assert_eq!(recognize_parser.parse("abcd"), consumed_parser.parse("abcd"));
+  /// # }
+  /// ```
+  fn with_recognized(self) -> WithRecognized<Self, O>
+  where
+    Self: core::marker::Sized,
+  {
+    WithRecognized::new(self)
+  }
+
   /// Maps a function over the result of a parser
   ///
   /// # Example

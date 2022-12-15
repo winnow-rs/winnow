@@ -1098,6 +1098,44 @@ where
   }
 }
 
+/// Implementation of [`Parser::with_recognized`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct WithRecognized<F, O> {
+  parser: F,
+  o: core::marker::PhantomData<O>,
+}
+
+impl<F, O> WithRecognized<F, O> {
+  pub(crate) fn new(parser: F) -> Self {
+    Self {
+      parser,
+      o: Default::default(),
+    }
+  }
+}
+
+impl<I, O, E, F> Parser<I, (O, <I as IntoOutput>::Output), E> for WithRecognized<F, O>
+where
+  I: Clone,
+  I: Offset,
+  I: Slice<RangeTo<usize>>,
+  I: IntoOutput,
+  E: ParseError<I>,
+  F: Parser<I, O, E>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, (O, <I as IntoOutput>::Output), E> {
+    let i = input.clone();
+    match (self.parser).parse(i) {
+      Ok((remaining, result)) => {
+        let index = input.offset(&remaining);
+        let consumed = input.slice(..index).into_output();
+        Ok((remaining, (result, consumed)))
+      }
+      Err(e) => Err(e),
+    }
+  }
+}
+
 /// Transforms an [`Err::Error`] (recoverable) to [`Err::Failure`] (unrecoverable)
 ///
 /// This commits the parse result, preventing alternative branch paths like with
