@@ -87,7 +87,7 @@
 //! - [`peek`][peek]: Returns a result without consuming the input
 //! - [`recognize`][recognize]: If the child parser was successful, return the consumed input as the produced value
 //! - [`consumed`][consumed]: If the child parser was successful, return a tuple of the consumed input and the produced output.
-//! - [`verify`][verify]: Returns the result of the child parser if it satisfies a verification function
+//! - [`Parser::verify`]: Returns the result of the child parser if it satisfies a verification function
 //!
 //! ## Error management and debugging
 //!

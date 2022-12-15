@@ -2,11 +2,11 @@
 
 use nom::bytes::tag;
 use nom::character::digit1 as digit;
-use nom::combinator::verify;
 use nom::error::{ErrorKind, ParseError};
 use nom::input::Streaming;
 #[cfg(feature = "alloc")]
 use nom::multi::count;
+use nom::prelude::*;
 use nom::sequence::terminated;
 use nom::IResult;
 
@@ -40,7 +40,7 @@ fn test2(input: Streaming<&str>) -> IResult<Streaming<&str>, &str, CustomError> 
 }
 
 fn test3(input: Streaming<&str>) -> IResult<Streaming<&str>, &str, CustomError> {
-  verify(test1, |s: &str| s.starts_with("abcd"))(input)
+  test1.verify(|s: &str| s.starts_with("abcd")).parse(input)
 }
 
 #[cfg(feature = "alloc")]

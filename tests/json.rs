@@ -4,7 +4,7 @@ use nom::{
   branch::alt,
   bytes::{tag, take},
   character::{anychar, char, f64, multispace0, none_of},
-  combinator::{value, verify},
+  combinator::value,
   error::ParseError,
   multi::{fold_many0, separated_list0},
   sequence::{delimited, preceded, separated_pair},
@@ -36,17 +36,17 @@ fn u16_hex(input: &str) -> IResult<&str, u16> {
 fn unicode_escape(input: &str) -> IResult<&str, char> {
   alt((
     // Not a surrogate
-    verify(u16_hex, |cp| !(0xD800..0xE000).contains(cp)).map(|cp| cp as u32),
+    u16_hex
+      .verify(|cp| !(0xD800..0xE000).contains(cp))
+      .map(|cp| cp as u32),
     // See https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF for details
-    verify(
-      separated_pair(u16_hex, tag("\\u"), u16_hex),
-      |(high, low)| (0xD800..0xDC00).contains(high) && (0xDC00..0xE000).contains(low),
-    )
-    .map(|(high, low)| {
-      let high_ten = (high as u32) - 0xD800;
-      let low_ten = (low as u32) - 0xDC00;
-      (high_ten << 10) + low_ten + 0x10000
-    }),
+    separated_pair(u16_hex, tag("\\u"), u16_hex)
+      .verify(|(high, low)| (0xD800..0xDC00).contains(high) && (0xDC00..0xE000).contains(low))
+      .map(|(high, low)| {
+        let high_ten = (high as u32) - 0xD800;
+        let low_ten = (low as u32) - 0xDC00;
+        (high_ten << 10) + low_ten + 0x10000
+      }),
   ))
   .map_opt(
     // Could be probably replaced with .unwrap() or _unchecked due to the verify checks

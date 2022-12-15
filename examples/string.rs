@@ -14,7 +14,7 @@
 use nom::branch::alt;
 use nom::bytes::{is_not, take_while_m_n};
 use nom::character::{char, multispace1};
-use nom::combinator::{value, verify};
+use nom::combinator::value;
 use nom::error::{FromExternalError, ParseError};
 use nom::multi::fold_many0;
 use nom::prelude::*;
@@ -105,7 +105,7 @@ fn parse_literal<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str,
   // the parser. The verification function accepts out output only if it
   // returns true. In this case, we want to ensure that the output of is_not
   // is non-empty.
-  verify(not_quote_slash, |s: &str| !s.is_empty())(input)
+  not_quote_slash.verify(|s: &str| !s.is_empty()).parse(input)
 }
 
 /// A string fragment contains a fragment of a string being parsed: either
