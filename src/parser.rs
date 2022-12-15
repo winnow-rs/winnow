@@ -372,6 +372,28 @@ pub trait Parser<I, O, E> {
   {
     MutParser::new(self)
   }
+  /// Returns the provided value if the child parser succeeds.
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::{Err,error::ErrorKind, IResult, Parser};
+  /// use nom::character::alpha1;
+  /// # fn main() {
+  ///
+  /// let mut parser = alpha1.value(1234);
+  ///
+  /// assert_eq!(parser.parse("abcd"), Ok(("", 1234)));
+  /// assert_eq!(parser.parse("123abcd;"), Err(Err::Error(("123abcd;", ErrorKind::Alpha))));
+  /// # }
+  /// ```
+  fn value<O2>(self, val: O2) -> Value<Self, O, O2>
+  where
+    Self: core::marker::Sized,
+    O2: Clone,
+  {
+    Value::new(self, val)
+  }
 
   /// Maps a function over the result of a parser
   ///

@@ -77,6 +77,7 @@
 //!
 //! - [`cond`][cond]: Conditional combinator. Wraps another parser and calls it if the condition is met
 //! - [`Parser::flat_map`][crate::Parser::flat_map]: method to map a new parser from the output of the first parser, then apply that parser over the rest of the input
+//! - [`Parser::value`][crate::Parser::value]: method to replace the result of a parser
 //! - [`Parser::map`][crate::Parser::map]: method to map a function on the result of a parser
 //! - [`Parser::and_then`][crate::Parser::and_then]: Applies a second parser over the output of the first one
 //! - [`map_opt`][map_opt]: Maps a function returning an `Option` on the output of a parser
@@ -905,6 +906,34 @@ where
   F: Parser<I, O2, E>,
 {
   move |input: I| parser.parse(input).map(|(i, _)| (i, val.clone()))
+}
+
+/// Implementation of [`Parser::value`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct Value<F, O1, O2> {
+  parser: F,
+  val: O2,
+  phantom: core::marker::PhantomData<O1>,
+}
+
+impl<F, O1, O2> Value<F, O1, O2> {
+  pub(crate) fn new(parser: F, val: O2) -> Self {
+    Self {
+      parser,
+      val,
+      phantom: Default::default(),
+    }
+  }
+}
+
+impl<I, O1, O2: Clone, E: ParseError<I>, F: Parser<I, O1, E>> Parser<I, O2, E>
+  for Value<F, O1, O2>
+{
+  fn parse(&mut self, input: I) -> IResult<I, O2, E> {
+    (self.parser)
+      .parse(input)
+      .map(|(i, _)| (i, self.val.clone()))
+  }
 }
 
 /// Succeeds if the child parser returns an error.
