@@ -1,6 +1,5 @@
 use super::*;
 
-use crate::combinator::recognize;
 use crate::error::ErrorKind;
 use crate::input::AsChar;
 use crate::input::Streaming;
@@ -352,7 +351,9 @@ fn streaming_recognize() {
   };
 
   fn x(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
-    recognize(delimited(tag("<!--"), take(5_usize), tag("-->")))(i)
+    delimited(tag("<!--"), take(5_usize), tag("-->"))
+      .recognize()
+      .parse(i)
   }
   let r = x(Streaming(&b"<!-- abc --> aaa"[..]));
   assert_eq!(r, Ok((Streaming(&b" aaa"[..]), &b"<!-- abc -->"[..])));
@@ -360,43 +361,43 @@ fn streaming_recognize() {
   let semicolon = &b";"[..];
 
   fn ya(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
-    recognize(alpha)(i)
+    alpha.recognize().parse(i)
   }
   let ra = ya(Streaming(&b"abc;"[..]));
   assert_eq!(ra, Ok((Streaming(semicolon), &b"abc"[..])));
 
   fn yd(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
-    recognize(digit)(i)
+    digit.recognize().parse(i)
   }
   let rd = yd(Streaming(&b"123;"[..]));
   assert_eq!(rd, Ok((Streaming(semicolon), &b"123"[..])));
 
   fn yhd(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
-    recognize(hex_digit)(i)
+    hex_digit.recognize().parse(i)
   }
   let rhd = yhd(Streaming(&b"123abcDEF;"[..]));
   assert_eq!(rhd, Ok((Streaming(semicolon), &b"123abcDEF"[..])));
 
   fn yod(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
-    recognize(oct_digit)(i)
+    oct_digit.recognize().parse(i)
   }
   let rod = yod(Streaming(&b"1234567;"[..]));
   assert_eq!(rod, Ok((Streaming(semicolon), &b"1234567"[..])));
 
   fn yan(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
-    recognize(alphanumeric)(i)
+    alphanumeric.recognize().parse(i)
   }
   let ran = yan(Streaming(&b"123abc;"[..]));
   assert_eq!(ran, Ok((Streaming(semicolon), &b"123abc"[..])));
 
   fn ys(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
-    recognize(space)(i)
+    space.recognize().parse(i)
   }
   let rs = ys(Streaming(&b" \t;"[..]));
   assert_eq!(rs, Ok((Streaming(semicolon), &b" \t"[..])));
 
   fn yms(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
-    recognize(multispace)(i)
+    multispace.recognize().parse(i)
   }
   let rms = yms(Streaming(&b" \t\r\n;"[..]));
   assert_eq!(rms, Ok((Streaming(semicolon), &b" \t\r\n"[..])));
@@ -590,7 +591,7 @@ fn streaming_recognize_take_while() {
     take_while(AsChar::is_alphanum)(i)
   }
   fn y(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
-    recognize(x)(i)
+    x.recognize().parse(i)
   }
   assert_eq!(
     x(Streaming(&b"ab."[..])),

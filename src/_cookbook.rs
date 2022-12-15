@@ -109,23 +109,23 @@
 //! letters and numbers may be parsed like this:
 //!
 //! ```rust
+//! use nom::prelude::*;
 //! use nom::{
 //!   IResult,
 //!   branch::alt,
 //!   multi::many0_count,
-//!   combinator::recognize,
 //!   sequence::pair,
 //!   character::complete::{alpha1, alphanumeric1},
 //!   bytes::complete::tag,
 //! };
 //!
 //! pub fn identifier(input: &str) -> IResult<&str, &str> {
-//!   recognize(
-//!     pair(
-//!       alt((alpha1, tag("_"))),
-//!       many0_count(alt((alphanumeric1, tag("_"))))
-//!     )
-//!   )(input)
+//!   pair(
+//!     alt((alpha1, tag("_"))),
+//!     many0_count(alt((alphanumeric1, tag("_"))))
+//!   )
+//!      .recognize()
+//!      .parse(input)
 //! }
 //! ```
 //!
@@ -164,7 +164,6 @@
 //!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
-//!   combinator::recognize,
 //!   sequence::{preceded, terminated},
 //!   character::complete::{char, one_of},
 //!   bytes::complete::tag,
@@ -173,11 +172,9 @@
 //! fn hexadecimal(input: &str) -> IResult<&str, &str> { // <'a, E: ParseError<&'a str>>
 //!   preceded(
 //!     alt((tag("0x"), tag("0X"))),
-//!     recognize(
-//!       many1(
-//!         terminated(one_of("0123456789abcdefABCDEF"), many0(char('_')))
-//!       )
-//!     )
+//!     many1(
+//!       terminated(one_of("0123456789abcdefABCDEF"), many0(char('_')))
+//!     ).recognize()
 //!   )(input)
 //! }
 //! ```
@@ -190,7 +187,6 @@
 //!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
-//!   combinator::{recognize},
 //!   sequence::{preceded, terminated},
 //!   character::complete::{char, one_of},
 //!   bytes::complete::tag,
@@ -199,11 +195,9 @@
 //! fn hexadecimal_value(input: &str) -> IResult<&str, i64> {
 //!   preceded(
 //!     alt((tag("0x"), tag("0X"))),
-//!     recognize(
-//!       many1(
-//!         terminated(one_of("0123456789abcdefABCDEF"), many0(char('_')))
-//!       )
-//!     )
+//!     many1(
+//!       terminated(one_of("0123456789abcdefABCDEF"), many0(char('_')))
+//!     ).recognize()
 //!   ).map_res(
 //!     |out: &str| i64::from_str_radix(&str::replace(&out, "_", ""), 16)
 //!   ).parse(input)
@@ -217,7 +211,6 @@
 //!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
-//!   combinator::recognize,
 //!   sequence::{preceded, terminated},
 //!   character::complete::{char, one_of},
 //!   bytes::complete::tag,
@@ -226,11 +219,9 @@
 //! fn octal(input: &str) -> IResult<&str, &str> {
 //!   preceded(
 //!     alt((tag("0o"), tag("0O"))),
-//!     recognize(
-//!       many1(
-//!         terminated(one_of("01234567"), many0(char('_')))
-//!       )
-//!     )
+//!     many1(
+//!       terminated(one_of("01234567"), many0(char('_')))
+//!     ).recognize()
 //!   )(input)
 //! }
 //! ```
@@ -242,7 +233,6 @@
 //!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
-//!   combinator::recognize,
 //!   sequence::{preceded, terminated},
 //!   character::complete::{char, one_of},
 //!   bytes::complete::tag,
@@ -251,11 +241,9 @@
 //! fn binary(input: &str) -> IResult<&str, &str> {
 //!   preceded(
 //!     alt((tag("0b"), tag("0B"))),
-//!     recognize(
-//!       many1(
-//!         terminated(one_of("01"), many0(char('_')))
-//!       )
-//!     )
+//!     many1(
+//!       terminated(one_of("01"), many0(char('_')))
+//!     ).recognize()
 //!   )(input)
 //! }
 //! ```
@@ -263,20 +251,20 @@
 //! #### Decimal
 //!
 //! ```rust
+//! use nom::prelude::*;
 //! use nom::{
 //!   IResult,
 //!   multi::{many0, many1},
-//!   combinator::recognize,
 //!   sequence::terminated,
 //!   character::complete::{char, one_of},
 //! };
 //!
 //! fn decimal(input: &str) -> IResult<&str, &str> {
-//!   recognize(
-//!     many1(
-//!       terminated(one_of("0123456789"), many0(char('_')))
-//!     )
-//!   )(input)
+//!   many1(
+//!     terminated(one_of("0123456789"), many0(char('_')))
+//!   )
+//!     .recognize()
+//!     .parse(input)
 //! }
 //! ```
 //!
@@ -289,7 +277,7 @@
 //!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
-//!   combinator::{opt, recognize},
+//!   combinator::opt,
 //!   sequence::{preceded, terminated, tuple},
 //!   character::complete::{char, one_of},
 //! };
@@ -297,47 +285,41 @@
 //! fn float(input: &str) -> IResult<&str, &str> {
 //!   alt((
 //!     // Case one: .42
-//!     recognize(
-//!       tuple((
-//!         char('.'),
-//!         decimal,
-//!         opt(tuple((
-//!           one_of("eE"),
-//!           opt(one_of("+-")),
-//!           decimal
-//!         )))
-//!       ))
-//!     )
-//!     , // Case two: 42e42 and 42.42e42
-//!     recognize(
-//!       tuple((
-//!         decimal,
-//!         opt(preceded(
-//!           char('.'),
-//!           decimal,
-//!         )),
+//!     tuple((
+//!       char('.'),
+//!       decimal,
+//!       opt(tuple((
 //!         one_of("eE"),
 //!         opt(one_of("+-")),
 //!         decimal
-//!       ))
-//!     )
-//!     , // Case three: 42. and 42.42
-//!     recognize(
-//!       tuple((
-//!         decimal,
+//!       )))
+//!     )).recognize()
+//!     , // Case two: 42e42 and 42.42e42
+//!     tuple((
+//!       decimal,
+//!       opt(preceded(
 //!         char('.'),
-//!         opt(decimal)
-//!       ))
-//!     )
+//!         decimal,
+//!       )),
+//!       one_of("eE"),
+//!       opt(one_of("+-")),
+//!       decimal
+//!     )).recognize()
+//!     , // Case three: 42. and 42.42
+//!     tuple((
+//!       decimal,
+//!       char('.'),
+//!       opt(decimal)
+//!     )).recognize()
 //!   ))(input)
 //! }
 //!
 //! fn decimal(input: &str) -> IResult<&str, &str> {
-//!   recognize(
-//!     many1(
-//!       terminated(one_of("0123456789"), many0(char('_')))
-//!     )
-//!   )(input)
+//!   many1(
+//!     terminated(one_of("0123456789"), many0(char('_')))
+//!   )
+//!     .recognize()
+//!     .parse(input)
 //! }
 //! ```
 //!

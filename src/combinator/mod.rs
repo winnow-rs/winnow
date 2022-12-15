@@ -85,7 +85,7 @@
 //! - [`not`][not]: Returns a result only if the embedded parser returns `Error` or `Incomplete`. Does not consume the input
 //! - [`opt`][opt]: Make the underlying parser optional
 //! - [`peek`][peek]: Returns a result without consuming the input
-//! - [`recognize`][recognize]: If the child parser was successful, return the consumed input as the produced value
+//! - [`Parser::recognize`][Parser::recognize]: If the child parser was successful, return the consumed input as the produced value
 //! - [`consumed`][consumed]: If the child parser was successful, return a tuple of the consumed input and the produced output.
 //! - [`Parser::verify`]: Returns the result of the child parser if it satisfies a verification function
 //!
