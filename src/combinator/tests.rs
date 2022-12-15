@@ -349,6 +349,66 @@ fn verify_test() {
 }
 
 #[test]
+fn test_parser_verify() {
+  use crate::bytes::take;
+
+  fn test(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+    take(5u8).verify(|slice: &[u8]| slice[0] == b'a').parse(i)
+  }
+  assert_eq!(
+    test(Streaming(&b"bcd"[..])),
+    Err(Err::Incomplete(Needed::new(2)))
+  );
+  assert_eq!(
+    test(Streaming(&b"bcdefg"[..])),
+    Err(Err::Error(error_position!(
+      Streaming(&b"bcdefg"[..]),
+      ErrorKind::Verify
+    )))
+  );
+  assert_eq!(
+    test(Streaming(&b"abcdefg"[..])),
+    Ok((Streaming(&b"fg"[..]), &b"abcde"[..]))
+  );
+}
+
+#[test]
+#[allow(unused)]
+fn test_parser_verify_ref() {
+  use crate::bytes::take;
+
+  let mut parser1 = take(3u8).verify(|s: &[u8]| s == &b"abc"[..]);
+
+  assert_eq!(parser1.parse(&b"abcd"[..]), Ok((&b"d"[..], &b"abc"[..])));
+  assert_eq!(
+    parser1.parse(&b"defg"[..]),
+    Err(Err::Error((&b"defg"[..], ErrorKind::Verify)))
+  );
+
+  fn parser2(i: &[u8]) -> IResult<&[u8], u32> {
+    crate::number::be_u32.verify(|val: &u32| *val < 3).parse(i)
+  }
+}
+
+#[test]
+#[cfg(feature = "alloc")]
+fn test_parser_verify_alloc() {
+  use crate::bytes::take;
+  let mut parser1 = take(3u8)
+    .map(|s: &[u8]| s.to_vec())
+    .verify(|s: &[u8]| s == &b"abc"[..]);
+
+  assert_eq!(
+    parser1.parse(&b"abcd"[..]),
+    Ok((&b"d"[..], (&b"abc").to_vec()))
+  );
+  assert_eq!(
+    parser1.parse(&b"defg"[..]),
+    Err(Err::Error((&b"defg"[..], ErrorKind::Verify)))
+  );
+}
+
+#[test]
 fn fail_test() {
   let a = "string";
   let b = "another string";

@@ -844,6 +844,45 @@ where
   }
 }
 
+/// Implementation of [`Parser::verify`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct Verify<F, G, O2: ?Sized> {
+  first: F,
+  second: G,
+  phantom: core::marker::PhantomData<O2>,
+}
+
+impl<F, G, O2: ?Sized> Verify<F, G, O2> {
+  pub(crate) fn new(first: F, second: G) -> Self {
+    Self {
+      first,
+      second,
+      phantom: Default::default(),
+    }
+  }
+}
+
+impl<I, O1, O2, E, F: Parser<I, O1, E>, G> Parser<I, O1, E> for Verify<F, G, O2>
+where
+  I: Clone,
+  E: ParseError<I>,
+  F: Parser<I, O1, E>,
+  G: Fn(&O2) -> bool,
+  O1: Borrow<O2>,
+  O2: ?Sized,
+{
+  fn parse(&mut self, input: I) -> IResult<I, O1, E> {
+    let i = input.clone();
+    let (input, o) = (self.first).parse(input)?;
+
+    if (self.second)(o.borrow()) {
+      Ok((input, o))
+    } else {
+      Err(Err::Error(E::from_error_kind(i, ErrorKind::Verify)))
+    }
+  }
+}
+
 /// Returns the provided value if the child parser succeeds.
 ///
 /// ```rust

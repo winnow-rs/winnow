@@ -507,6 +507,33 @@ pub trait Parser<I, O, E> {
     AndThen::new(self, g)
   }
 
+  /// Returns the result of the child parser if it satisfies a verification function.
+  ///
+  /// The verification function takes as argument a reference to the output of the
+  /// parser.
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::{Err,error::ErrorKind, IResult, Parser};
+  /// # use nom::character::alpha1;
+  /// # fn main() {
+  ///
+  /// let mut parser = alpha1.verify(|s: &str| s.len() == 4);
+  ///
+  /// assert_eq!(parser.parse("abcd"), Ok(("", "abcd")));
+  /// assert_eq!(parser.parse("abcde"), Err(Err::Error(("abcde", ErrorKind::Verify))));
+  /// assert_eq!(parser.parse("123abcd;"),Err(Err::Error(("123abcd;", ErrorKind::Alpha))));
+  /// # }
+  /// ```
+  fn verify<G, O2: ?Sized>(self, second: G) -> Verify<Self, G, O2>
+  where
+    Self: core::marker::Sized,
+    G: Fn(&O2) -> bool,
+  {
+    Verify::new(self, second)
+  }
+
   /// Transforms [`Incomplete`][crate::Err::Incomplete] into [`Error`][crate::Err::Error]
   ///
   /// # Example
