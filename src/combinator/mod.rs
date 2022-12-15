@@ -820,6 +820,8 @@ where
 /// The verification function takes as argument a reference to the output of the
 /// parser.
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::map`]
+///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::combinator::verify;
@@ -833,6 +835,7 @@ where
 /// assert_eq!(parser("123abcd;"),Err(Err::Error(("123abcd;", ErrorKind::Alpha))));
 /// # }
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::verify")]
 pub fn verify<I: Clone, O1, O2, E: ParseError<I>, F, G>(
   mut first: F,
   second: G,

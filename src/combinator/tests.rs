@@ -198,6 +198,7 @@ fn test_all_consuming() {
 #[test]
 #[allow(unused)]
 fn test_verify_ref() {
+  #![allow(deprecated)]
   use crate::bytes::take;
 
   let mut parser1 = verify(take(3u8), |s: &[u8]| s == &b"abc"[..]);
@@ -216,6 +217,7 @@ fn test_verify_ref() {
 #[test]
 #[cfg(feature = "alloc")]
 fn test_verify_alloc() {
+  #![allow(deprecated)]
   use crate::bytes::take;
   let mut parser1 = verify(take(3u8).map(|s: &[u8]| s.to_vec()), |s: &[u8]| {
     s == &b"abc"[..]
@@ -327,6 +329,7 @@ fn not_test() {
 
 #[test]
 fn verify_test() {
+  #![allow(deprecated)]
   use crate::bytes::take;
 
   fn test(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
