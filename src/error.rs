@@ -697,6 +697,9 @@ use crate::{Err, IResult};
 /// Create a new error from an input position, a static string and an existing error.
 /// This is used mainly in the [context] combinator, to add user friendly information
 /// to errors when backtracking through a parse tree
+///
+/// **WARNING:** Deprecated, replaced with [`Parser::context`]
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::context")]
 pub fn context<I: Clone, E: ContextError<I>, F, O>(
   context: &'static str,
   mut f: F,
