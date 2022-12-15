@@ -2,7 +2,7 @@
 
 use self::Needed::*;
 use crate::combinator::*;
-use crate::error::{self, ErrorKind};
+use crate::error::{self, Context, ErrorKind};
 use crate::input::InputIsStreaming;
 use crate::lib::std::fmt;
 use core::num::NonZeroUsize;
@@ -622,6 +622,17 @@ pub trait Parser<I, O, E> {
     G: Fn(&O2) -> bool,
   {
     Verify::new(self, second)
+  }
+
+  /// If parsing fails, add context to the error
+  ///
+  /// This is used mainly to add user friendly information
+  /// to errors when backtracking through a parse tree.
+  fn context(self, context: &'static str) -> Context<Self, O>
+  where
+    Self: core::marker::Sized,
+  {
+    Context::new(self, context)
   }
 
   /// Transforms [`Incomplete`][crate::Err::Incomplete] into [`Error`][crate::Err::Error]

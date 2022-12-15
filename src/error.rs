@@ -713,6 +713,40 @@ where
   }
 }
 
+/// Implementation of [`Parser::context`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct Context<F, O> {
+  f: F,
+  context: &'static str,
+  phantom: core::marker::PhantomData<O>,
+}
+
+impl<F, O> Context<F, O> {
+  pub(crate) fn new(f: F, context: &'static str) -> Self {
+    Self {
+      f,
+      context,
+      phantom: Default::default(),
+    }
+  }
+}
+
+impl<I, O, E, F: Parser<I, O, E>> Parser<I, O, E> for Context<F, O>
+where
+  I: Clone,
+  E: ContextError<I>,
+  F: Parser<I, O, E>,
+{
+  fn parse(&mut self, i: I) -> IResult<I, O, E> {
+    match (self.f).parse(i.clone()) {
+      Ok(o) => Ok(o),
+      Err(Err::Incomplete(i)) => Err(Err::Incomplete(i)),
+      Err(Err::Error(e)) => Err(Err::Error(E::add_context(i, self.context, e))),
+      Err(Err::Failure(e)) => Err(Err::Failure(E::add_context(i, self.context, e))),
+    }
+  }
+}
+
 /// Transforms a `VerboseError` into a trace with input position information
 #[cfg(feature = "alloc")]
 pub fn convert_error<I: core::ops::Deref<Target = str>>(
