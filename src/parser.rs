@@ -395,6 +395,29 @@ pub trait Parser<I, O, E> {
     Value::new(self, val)
   }
 
+  /// If the child parser was successful, return the consumed input as produced value.
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::{Err,error::ErrorKind, IResult, Parser};
+  /// use nom::character::{char, alpha1};
+  /// use nom::sequence::separated_pair;
+  /// # fn main() {
+  ///
+  /// let mut parser = separated_pair(alpha1, char(','), alpha1).recognize();
+  ///
+  /// assert_eq!(parser.parse("abcd,efgh"), Ok(("", "abcd,efgh")));
+  /// assert_eq!(parser.parse("abcd;"),Err(Err::Error((";", ErrorKind::Char))));
+  /// # }
+  /// ```
+  fn recognize(self) -> Recognize<Self, O>
+  where
+    Self: core::marker::Sized,
+  {
+    Recognize::new(self)
+  }
+
   /// Maps a function over the result of a parser
   ///
   /// # Example

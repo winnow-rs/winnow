@@ -1001,6 +1001,43 @@ where
   }
 }
 
+/// Implementation of [`Parser::recognize`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct Recognize<F, O> {
+  parser: F,
+  o: core::marker::PhantomData<O>,
+}
+
+impl<F, O> Recognize<F, O> {
+  pub(crate) fn new(parser: F) -> Self {
+    Self {
+      parser,
+      o: Default::default(),
+    }
+  }
+}
+
+impl<I, O, E, F> Parser<I, <I as IntoOutput>::Output, E> for Recognize<F, O>
+where
+  I: Clone,
+  I: Offset,
+  I: Slice<RangeTo<usize>>,
+  I: IntoOutput,
+  E: ParseError<I>,
+  F: Parser<I, O, E>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, <I as IntoOutput>::Output, E> {
+    let i = input.clone();
+    match (self.parser).parse(i) {
+      Ok((i, _)) => {
+        let index = input.offset(&i);
+        Ok((i, input.slice(..index))).into_output()
+      }
+      Err(e) => Err(e),
+    }
+  }
+}
+
 /// if the child parser was successful, return the consumed input with the output
 /// as a tuple. Functions similarly to [recognize](fn.recognize.html) except it
 /// returns the parser output as well.
