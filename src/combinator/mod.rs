@@ -86,7 +86,7 @@
 //! - [`opt`][opt]: Make the underlying parser optional
 //! - [`peek`][peek]: Returns a result without consuming the input
 //! - [`Parser::recognize`][Parser::recognize]: If the child parser was successful, return the consumed input as the produced value
-//! - [`consumed`][consumed]: If the child parser was successful, return a tuple of the consumed input and the produced output.
+//! - [`Parser::with_recognized`][Parser::with_recognized]: If the child parser was successful, return a tuple of the consumed input and the produced output.
 //! - [`Parser::verify`]: Returns the result of the child parser if it satisfies a verification function
 //!
 //! ## Error management and debugging
