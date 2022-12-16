@@ -453,17 +453,16 @@
 //! While you are writing your parsers, you will sometimes need to follow
 //! which part of the parser sees which part of the input.
 //!
-//! To that end, nom provides the `dbg_dmp` function that will observe
+//! To that end, nom provides the `dbg_err` function that will observe
 //! a parser's input and output, and print a hexdump of the input if there was an
 //! error. Here is what it could return:
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! # use nom::IResult;
-//! # use nom::error::dbg_dmp;
+//! use nom::prelude::*;
 //! # use nom::bytes::tag;
 //! fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
-//!     dbg_dmp(tag("abcd"), "tag")(i)
+//!     tag("abcd").dbg_err("tag").parse(i)
 //! }
 //!
 //! let a = &b"efghijkl"[..];

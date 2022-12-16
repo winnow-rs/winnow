@@ -196,24 +196,23 @@
 //!
 //! There are a few tools you can use to debug how code is generated.
 //!
-//! ## dbg_dmp
+//! ## dbg_err
 //!
-//! This function wraps a parser that accepts a `&[u8]` as input and
+//! This function wraps a parser that accepts byte-like input (bytes, str) and
 //! prints its hexdump if the child parser encountered an error:
 //!
 //! ```rust
-//! # use nom::IResult;
+//! use nom::prelude::*;
 //! use nom::bytes::complete::tag;
-//! use nom::error::dbg_dmp;
 //!
 //! fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
-//!   dbg_dmp(tag("abcd"), "tag")(i)
+//!   tag("abcd").dbg_err("tag").parse(i)
 //! }
 //!
 //! let a = &b"efghijkl"[..];
 //!
 //! // Will print the following message:
-//! // Error(Position(0, [101, 102, 103, 104, 105, 106, 107, 108])) at l.5 by ' tag ! ( "abcd" ) '
+//! // tag: Error(Position(0, [101, 102, 103, 104, 105, 106, 107, 108])):
 //! // 00000000        65 66 67 68 69 6a 6b 6c         efghijkl
 //! f(a);
 //! ```

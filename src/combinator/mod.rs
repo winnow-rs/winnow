@@ -92,7 +92,7 @@
 //! ## Error management and debugging
 //!
 //! - [`Parser::context`]: Add context to the error if the parser fails
-//! - [`dbg_dmp`][crate::error::dbg_dmp]: Prints a message and the input if the parser fails
+//! - [`Parser::dbg_err`]: Prints a message and the input if the parser fails
 //!
 //! ## Text parsing
 //!
