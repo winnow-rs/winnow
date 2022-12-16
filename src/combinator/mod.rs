@@ -10,17 +10,17 @@
 //!
 //! | combinator | usage | input | output | comment |
 //! |---|---|---|---|---|
-//! | [char][crate::character::complete::char] | `char('a')` |  `"abc"` | `Ok(("bc", 'a'))` |Matches one character (works with non ASCII chars too) |
-//! | [is_a][crate::bytes::complete::is_a] | ` is_a("ab")` |  `"ababc"` | `Ok(("c", "abab"))` |Matches a sequence of any of the characters passed as arguments|
-//! | [is_not][crate::bytes::complete::is_not] | `is_not("cd")` |  `"ababc"` | `Ok(("c", "abab"))` |Matches a sequence of none of the characters passed as arguments|
-//! | [one_of][crate::character::complete::one_of] | `one_of("abc")` |  `"abc"` | `Ok(("bc", 'a'))` |Matches one of the provided characters (works with non ASCII characters too)|
-//! | [none_of][crate::character::complete::none_of] | `none_of("abc")` |  `"xyab"` | `Ok(("yab", 'x'))` |Matches anything but the provided characters|
-//! | [tag][crate::bytes::complete::tag] | `tag("hello")` |  `"hello world"` | `Ok((" world", "hello"))` |Recognizes a specific suite of characters or bytes|
-//! | [tag_no_case][crate::bytes::complete::tag_no_case] | `tag_no_case("hello")` |  `"HeLLo World"` | `Ok((" World", "HeLLo"))` |Case insensitive comparison. Note that case insensitive comparison is not well defined for unicode, and that you might have bad surprises|
-//! | [take][crate::bytes::complete::take] | `take(4)` |  `"hello"` | `Ok(("o", "hell"))` |Takes a specific number of bytes or characters|
-//! | [take_while][crate::bytes::complete::take_while] | `take_while(is_alphabetic)` |  `"abc123"` | `Ok(("123", "abc"))` |Returns the longest list of bytes for which the provided function returns true. `take_while1` does the same, but must return at least one character|
-//! | [take_till][crate::bytes::complete::take_till] | `take_till(is_alphabetic)` |  `"123abc"` | `Ok(("abc", "123"))` |Returns the longest list of bytes or characters until the provided function returns true. `take_till1` does the same, but must return at least one character. This is the reverse behaviour from `take_while`: `take_till(f)` is equivalent to `take_while(\|c\| !f(c))`|
-//! | [take_until][crate::bytes::complete::take_until] | `take_until("world")` |  `"Hello world"` | `Ok(("world", "Hello "))` |Returns the longest list of bytes or characters until the provided tag is found. `take_until1` does the same, but must return at least one character|
+//! | [char][crate::character::char] | `char('a')` |  `"abc"` | `Ok(("bc", 'a'))` |Matches one character (works with non ASCII chars too) |
+//! | [is_a][crate::bytes::is_a] | ` is_a("ab")` |  `"ababc"` | `Ok(("c", "abab"))` |Matches a sequence of any of the characters passed as arguments|
+//! | [is_not][crate::bytes::is_not] | `is_not("cd")` |  `"ababc"` | `Ok(("c", "abab"))` |Matches a sequence of none of the characters passed as arguments|
+//! | [one_of][crate::character::one_of] | `one_of("abc")` |  `"abc"` | `Ok(("bc", 'a'))` |Matches one of the provided characters (works with non ASCII characters too)|
+//! | [none_of][crate::character::none_of] | `none_of("abc")` |  `"xyab"` | `Ok(("yab", 'x'))` |Matches anything but the provided characters|
+//! | [tag][crate::bytes::tag] | `tag("hello")` |  `"hello world"` | `Ok((" world", "hello"))` |Recognizes a specific suite of characters or bytes|
+//! | [tag_no_case][crate::bytes::tag_no_case] | `tag_no_case("hello")` |  `"HeLLo World"` | `Ok((" World", "HeLLo"))` |Case insensitive comparison. Note that case insensitive comparison is not well defined for unicode, and that you might have bad surprises|
+//! | [take][crate::bytes::take] | `take(4)` |  `"hello"` | `Ok(("o", "hell"))` |Takes a specific number of bytes or characters|
+//! | [take_while][crate::bytes::take_while] | `take_while(is_alphabetic)` |  `"abc123"` | `Ok(("123", "abc"))` |Returns the longest list of bytes for which the provided function returns true. `take_while1` does the same, but must return at least one character|
+//! | [take_till][crate::bytes::take_till] | `take_till(is_alphabetic)` |  `"123abc"` | `Ok(("abc", "123"))` |Returns the longest list of bytes or characters until the provided function returns true. `take_till1` does the same, but must return at least one character. This is the reverse behaviour from `take_while`: `take_till(f)` is equivalent to `take_while(\|c\| !f(c))`|
+//! | [take_until][crate::bytes::take_until] | `take_until("world")` |  `"Hello world"` | `Ok(("world", "Hello "))` |Returns the longest list of bytes or characters until the provided tag is found. `take_until1` does the same, but must return at least one character|
 //!
 //! ## Choice combinators
 //!
@@ -59,14 +59,14 @@
 //!
 //! The following parsers could be found on [docs.rs number section][number/complete/index].
 //!
-//! - **configurable endianness:** [`i16`][crate::number::complete::i16], [`i32`][crate::number::complete::i32], [`i64`][crate::number::complete::i64], [`u16`][crate::number::complete::u16], [`u32`][crate::number::complete::u32], [`u64`][crate::number::complete::u64] are combinators that take as argument a [`nom::number::Endianness`][number/enum.Endianness], like this: `i16(endianness)`. If the parameter is `nom::number::Endianness::Big`, parse a big endian `i16` integer, otherwise a little endian `i16` integer.
+//! - **configurable endianness:** [`i16`][crate::number::i16], [`i32`][crate::number::i32], [`i64`][crate::number::i64], [`u16`][crate::number::u16], [`u32`][crate::number::u32], [`u64`][crate::number::u64] are combinators that take as argument a [`nom::number::Endianness`][number/enum.Endianness], like this: `i16(endianness)`. If the parameter is `nom::number::Endianness::Big`, parse a big endian `i16` integer, otherwise a little endian `i16` integer.
 //! - **fixed endianness**: The functions are prefixed by `be_` for big endian numbers, and by `le_` for little endian numbers, and the suffix is the type they parse to. As an example, `be_u32` parses a big endian unsigned integer stored in 32 bits.
-//!   - [`be_f32`][crate::number::complete::be_f32], [`be_f64`][crate::number::complete::be_f64]: Big endian floating point numbers
-//!   - [`le_f32`][crate::number::complete::le_f32], [`le_f64`][crate::number::complete::le_f64]: Little endian floating point numbers
-//!   - [`be_i8`][crate::number::complete::be_i8], [`be_i16`][crate::number::complete::be_i16], [`be_i24`][crate::number::complete::be_i24], [`be_i32`][crate::number::complete::be_i32], [`be_i64`][crate::number::complete::be_i64], [`be_i128`][crate::number::complete::be_i128]: Big endian signed integers
-//!   - [`be_u8`][crate::number::complete::be_u8], [`be_u16`][crate::number::complete::be_u16], [`be_u24`][crate::number::complete::be_u24], [`be_u32`][crate::number::complete::be_u32], [`be_u64`][crate::number::complete::be_u64], [`be_u128`][crate::number::complete::be_u128]: Big endian unsigned integers
-//!   - [`le_i8`][crate::number::complete::le_i8], [`le_i16`][crate::number::complete::le_i16], [`le_i24`][crate::number::complete::le_i24], [`le_i32`][crate::number::complete::le_i32], [`le_i64`][crate::number::complete::le_i64], [`le_i128`][crate::number::complete::le_i128]: Little endian signed integers
-//!   - [`le_u8`][crate::number::complete::le_u8], [`le_u16`][crate::number::complete::le_u16], [`le_u24`][crate::number::complete::le_u24], [`le_u32`][crate::number::complete::le_u32], [`le_u64`][crate::number::complete::le_u64], [`le_u128`][crate::number::complete::le_u128]: Little endian unsigned integers
+//!   - [`be_f32`][crate::number::be_f32], [`be_f64`][crate::number::be_f64]: Big endian floating point numbers
+//!   - [`le_f32`][crate::number::le_f32], [`le_f64`][crate::number::le_f64]: Little endian floating point numbers
+//!   - [`be_i8`][crate::number::be_i8], [`be_i16`][crate::number::be_i16], [`be_i24`][crate::number::be_i24], [`be_i32`][crate::number::be_i32], [`be_i64`][crate::number::be_i64], [`be_i128`][crate::number::be_i128]: Big endian signed integers
+//!   - [`be_u8`][crate::number::be_u8], [`be_u16`][crate::number::be_u16], [`be_u24`][crate::number::be_u24], [`be_u32`][crate::number::be_u32], [`be_u64`][crate::number::be_u64], [`be_u128`][crate::number::be_u128]: Big endian unsigned integers
+//!   - [`le_i8`][crate::number::le_i8], [`le_i16`][crate::number::le_i16], [`le_i24`][crate::number::le_i24], [`le_i32`][crate::number::le_i32], [`le_i64`][crate::number::le_i64], [`le_i128`][crate::number::le_i128]: Little endian signed integers
+//!   - [`le_u8`][crate::number::le_u8], [`le_u16`][crate::number::le_u16], [`le_u24`][crate::number::le_u24], [`le_u32`][crate::number::le_u32], [`le_u64`][crate::number::le_u64], [`le_u128`][crate::number::le_u128]: Little endian unsigned integers
 //!
 //! ## Streaming related
 //!
@@ -96,8 +96,8 @@
 //!
 //! ## Text parsing
 //!
-//! - [`escaped`][crate::bytes::complete::escaped]: Matches a byte string with escaped characters
-//! - [`escaped_transform`][crate::bytes::complete::escaped_transform]: Matches a byte string with escaped characters, and returns a new string with the escaped characters replaced
+//! - [`escaped`][crate::bytes::escaped]: Matches a byte string with escaped characters
+//! - [`escaped_transform`][crate::bytes::escaped_transform]: Matches a byte string with escaped characters, and returns a new string with the escaped characters replaced
 //!
 //! ## Binary format parsing
 //!
@@ -129,23 +129,23 @@
 //!
 //! Alternatively there are ready to use functions:
 //!
-//! - [`alpha0`][crate::character::complete::alpha0]: Recognizes zero or more lowercase and uppercase alphabetic characters: `[a-zA-Z]`. [`alpha1`][crate::character::complete::alpha1] does the same but returns at least one character
-//! - [`alphanumeric0`][crate::character::complete::alphanumeric0]: Recognizes zero or more numerical and alphabetic characters: `[0-9a-zA-Z]`. [`alphanumeric1`][crate::character::complete::alphanumeric1] does the same but returns at least one character
-//! - [`anychar`][crate::character::complete::anychar]: Matches one byte as a character
-//! - [`crlf`][crate::character::complete::crlf]: Recognizes the string `\r\n`
-//! - [`digit0`][crate::character::complete::digit0]: Recognizes zero or more numerical characters: `[0-9]`. [`digit1`][crate::character::complete::digit1] does the same but returns at least one character
-//! - [`double`][crate::number::complete::double]: Recognizes floating point number in a byte string and returns a `f64`
-//! - [`float`][crate::number::complete::float]: Recognizes floating point number in a byte string and returns a `f32`
-//! - [`hex_digit0`][crate::character::complete::hex_digit0]: Recognizes zero or more hexadecimal numerical characters: `[0-9A-Fa-f]`. [`hex_digit1`][crate::character::complete::hex_digit1] does the same but returns at least one character
-//! - [`hex_u32`][crate::number::complete::hex_u32]: Recognizes a hex-encoded integer
-//! - [`line_ending`][crate::character::complete::line_ending]: Recognizes an end of line (both `\n` and `\r\n`)
-//! - [`multispace0`][crate::character::complete::multispace0]: Recognizes zero or more spaces, tabs, carriage returns and line feeds. [`multispace1`][crate::character::complete::multispace1] does the same but returns at least one character
-//! - [`newline`][crate::character::complete::newline]: Matches a newline character `\n`
-//! - [`not_line_ending`][crate::character::complete::not_line_ending]: Recognizes a string of any char except `\r` or `\n`
-//! - [`oct_digit0`][crate::character::complete::oct_digit0]: Recognizes zero or more octal characters: `[0-7]`. [`oct_digit1`][crate::character::complete::oct_digit1] does the same but returns at least one character
+//! - [`alpha0`][crate::character::alpha0]: Recognizes zero or more lowercase and uppercase alphabetic characters: `[a-zA-Z]`. [`alpha1`][crate::character::alpha1] does the same but returns at least one character
+//! - [`alphanumeric0`][crate::character::alphanumeric0]: Recognizes zero or more numerical and alphabetic characters: `[0-9a-zA-Z]`. [`alphanumeric1`][crate::character::alphanumeric1] does the same but returns at least one character
+//! - [`anychar`][crate::character::anychar]: Matches one byte as a character
+//! - [`crlf`][crate::character::crlf]: Recognizes the string `\r\n`
+//! - [`digit0`][crate::character::digit0]: Recognizes zero or more numerical characters: `[0-9]`. [`digit1`][crate::character::digit1] does the same but returns at least one character
+//! - [`f64`][crate::character::f64]: Recognizes floating point number in a byte string and returns a `f64`
+//! - [`f32`][crate::character::f32]: Recognizes floating point number in a byte string and returns a `f32`
+//! - [`hex_digit0`][crate::character::hex_digit0]: Recognizes zero or more hexadecimal numerical characters: `[0-9A-Fa-f]`. [`hex_digit1`][crate::character::hex_digit1] does the same but returns at least one character
+//! - [`hex_u32`][crate::number::hex_u32]: Recognizes a hex-encoded integer
+//! - [`line_ending`][crate::character::line_ending]: Recognizes an end of line (both `\n` and `\r\n`)
+//! - [`multispace0`][crate::character::multispace0]: Recognizes zero or more spaces, tabs, carriage returns and line feeds. [`multispace1`][crate::character::multispace1] does the same but returns at least one character
+//! - [`newline`][crate::character::newline]: Matches a newline character `\n`
+//! - [`not_line_ending`][crate::character::not_line_ending]: Recognizes a string of any char except `\r` or `\n`
+//! - [`oct_digit0`][crate::character::oct_digit0]: Recognizes zero or more octal characters: `[0-7]`. [`oct_digit1`][crate::character::oct_digit1] does the same but returns at least one character
 //! - [`rest`][rest]: Return the remaining input
-//! - [`space0`][crate::character::complete::space0]: Recognizes zero or more spaces and tabs. [`space1`][crate::character::complete::space1] does the same but returns at least one character
-//! - [`tab`][crate::character::complete::tab]: Matches a tab character `\t`
+//! - [`space0`][crate::character::space0]: Recognizes zero or more spaces and tabs. [`space1`][crate::character::space1] does the same but returns at least one character
+//! - [`tab`][crate::character::tab]: Matches a tab character `\t`
 
 #![allow(unused_imports)]
 
