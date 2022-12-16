@@ -1491,7 +1491,13 @@ impl<'a, 'b> FindToken<&'a u8> for &'b [u8] {
 
 impl<'a> FindToken<char> for &'a [u8] {
   fn find_token(&self, token: char) -> bool {
-    self.iter().any(|i| *i == token as u8)
+    self.iter().any(|i| i.as_char() == token)
+  }
+}
+
+impl<'a, 'b> FindToken<&'a char> for &'b [u8] {
+  fn find_token(&self, token: &char) -> bool {
+    self.find_token(*token)
   }
 }
 
@@ -1503,6 +1509,18 @@ impl<const LEN: usize> FindToken<u8> for [u8; LEN] {
 
 impl<'a, const LEN: usize> FindToken<&'a u8> for [u8; LEN] {
   fn find_token(&self, token: &u8) -> bool {
+    self.find_token(*token)
+  }
+}
+
+impl<'a, const LEN: usize> FindToken<char> for [u8; LEN] {
+  fn find_token(&self, token: char) -> bool {
+    self.iter().any(|i| i.as_char() == token)
+  }
+}
+
+impl<'a, const LEN: usize> FindToken<&'a char> for [u8; LEN] {
+  fn find_token(&self, token: &char) -> bool {
     self.find_token(*token)
   }
 }
@@ -1522,6 +1540,24 @@ impl<'a, 'b> FindToken<&'a u8> for &'b str {
 impl<'a> FindToken<char> for &'a str {
   fn find_token(&self, token: char) -> bool {
     self.chars().any(|i| i == token)
+  }
+}
+
+impl<'a, 'b> FindToken<&'a char> for &'b str {
+  fn find_token(&self, token: &char) -> bool {
+    self.find_token(*token)
+  }
+}
+
+impl<'a> FindToken<u8> for &'a [char] {
+  fn find_token(&self, token: u8) -> bool {
+    self.iter().any(|i| *i == token.as_char())
+  }
+}
+
+impl<'a, 'b> FindToken<&'a u8> for &'b [char] {
+  fn find_token(&self, token: &u8) -> bool {
+    self.find_token(*token)
   }
 }
 
