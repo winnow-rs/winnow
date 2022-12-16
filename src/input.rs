@@ -1603,6 +1603,45 @@ impl<'a, 'b> FindToken<&'a char> for &'b [char] {
   }
 }
 
+impl<T> FindToken<T> for () {
+  fn find_token(&self, _token: T) -> bool {
+    false
+  }
+}
+
+macro_rules! impl_find_token_for_tuple {
+  ($($haystack:ident),+) => (
+    #[allow(non_snake_case)]
+    impl<T, $($haystack),+> FindToken<T> for ($($haystack),+,)
+    where
+    T: Clone,
+      $($haystack: FindToken<T>),+
+    {
+      fn find_token(&self, token: T) -> bool {
+        let ($(ref $haystack),+,) = *self;
+        $($haystack.find_token(token.clone()) || )+ false
+      }
+    }
+  )
+}
+
+macro_rules! impl_find_token_for_tuples {
+    ($haystack1:ident, $($haystack:ident),+) => {
+        impl_find_token_for_tuples!(__impl $haystack1; $($haystack),+);
+    };
+    (__impl $($haystack:ident),+; $haystack1:ident $(,$haystack2:ident)*) => {
+        impl_find_token_for_tuple!($($haystack),+);
+        impl_find_token_for_tuples!(__impl $($haystack),+, $haystack1; $($haystack2),*);
+    };
+    (__impl $($haystack:ident),+;) => {
+        impl_find_token_for_tuple!($($haystack),+);
+    }
+}
+
+impl_find_token_for_tuples!(
+  F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21
+);
+
 /// Look for a substring in self
 pub trait FindSubstring<T> {
   /// Returns the byte position of the substring if it is found
