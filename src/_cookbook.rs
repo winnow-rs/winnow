@@ -29,7 +29,7 @@
 //!   IResult,
 //!   error::ParseError,
 //!   sequence::delimited,
-//!   character::complete::multispace0,
+//!   character::multispace0,
 //! };
 //!
 //! /// A combinator that takes a parser `inner` and produces a parser that also consumes both leading and
@@ -64,8 +64,8 @@
 //!   IResult,
 //!   error::ParseError,
 //!   sequence::pair,
-//!   bytes::complete::is_not,
-//!   character::complete::char,
+//!   bytes::is_not,
+//!   character::char,
 //! };
 //!
 //! pub fn peol_comment<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, (), E>
@@ -86,7 +86,7 @@
 //! use nom::{
 //!   IResult,
 //!   error::ParseError,
-//!   bytes::complete::{tag, take_until},
+//!   bytes::{tag, take_until},
 //! };
 //!
 //! pub fn pinline_comment<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, (), E> {
@@ -114,8 +114,8 @@
 //!   branch::alt,
 //!   multi::many0_count,
 //!   sequence::pair,
-//!   character::complete::{alpha1, alphanumeric1},
-//!   bytes::complete::tag,
+//!   character::{alpha1, alphanumeric1},
+//!   bytes::tag,
 //! };
 //!
 //! pub fn identifier(input: &str) -> IResult<&str, &str> {
@@ -164,8 +164,8 @@
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::complete::{char, one_of},
-//!   bytes::complete::tag,
+//!   character::{char, one_of},
+//!   bytes::tag,
 //! };
 //!
 //! fn hexadecimal(input: &str) -> IResult<&str, &str> { // <'a, E: ParseError<&'a str>>
@@ -187,8 +187,8 @@
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::complete::{char, one_of},
-//!   bytes::complete::tag,
+//!   character::{char, one_of},
+//!   bytes::tag,
 //! };
 //!
 //! fn hexadecimal_value(input: &str) -> IResult<&str, i64> {
@@ -211,8 +211,8 @@
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::complete::{char, one_of},
-//!   bytes::complete::tag,
+//!   character::{char, one_of},
+//!   bytes::tag,
 //! };
 //!
 //! fn octal(input: &str) -> IResult<&str, &str> {
@@ -233,8 +233,8 @@
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::complete::{char, one_of},
-//!   bytes::complete::tag,
+//!   character::{char, one_of},
+//!   bytes::tag,
 //! };
 //!
 //! fn binary(input: &str) -> IResult<&str, &str> {
@@ -255,7 +255,7 @@
 //!   IResult,
 //!   multi::{many0, many1},
 //!   sequence::terminated,
-//!   character::complete::{char, one_of},
+//!   character::{char, one_of},
 //! };
 //!
 //! fn decimal(input: &str) -> IResult<&str, &str> {
@@ -278,7 +278,7 @@
 //!   multi::{many0, many1},
 //!   combinator::opt,
 //!   sequence::{preceded, terminated},
-//!   character::complete::{char, one_of},
+//!   character::{char, one_of},
 //! };
 //!
 //! fn float(input: &str) -> IResult<&str, &str> {
@@ -330,7 +330,7 @@
 //! ```rust
 //! use nom::{
 //!   IResult, Finish, error::Error,
-//!   bytes::complete::{tag, take_while},
+//!   bytes::{tag, take_while},
 //! };
 //! use std::str::FromStr;
 //!
