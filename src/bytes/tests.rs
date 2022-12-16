@@ -310,7 +310,7 @@ fn streaming_none_of_test() {
 #[test]
 fn streaming_is_a() {
   fn a_or_b(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
-    is_a("ab")(i)
+    take_while1("ab")(i)
   }
 
   let a = Streaming(&b"abcd"[..]);
@@ -322,7 +322,7 @@ fn streaming_is_a() {
   let c = Streaming(&b"cdef"[..]);
   assert_eq!(
     a_or_b(c),
-    Err(Err::Error(error_position!(c, ErrorKind::IsA)))
+    Err(Err::Error(error_position!(c, ErrorKind::TakeWhile1)))
   );
 
   let d = Streaming(&b"bacdef"[..]);

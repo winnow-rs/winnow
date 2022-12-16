@@ -11,7 +11,6 @@
 //! | combinator | usage | input | output | comment |
 //! |---|---|---|---|---|
 //! | [char][crate::character::char] | `char('a')` |  `"abc"` | `Ok(("bc", 'a'))` |Matches one character (works with non ASCII chars too) |
-//! | [is_a][crate::bytes::is_a] | ` is_a("ab")` |  `"ababc"` | `Ok(("c", "abab"))` |Matches a sequence of any of the characters passed as arguments|
 //! | [is_not][crate::bytes::is_not] | `is_not("cd")` |  `"ababc"` | `Ok(("c", "abab"))` |Matches a sequence of none of the characters passed as arguments|
 //! | [one_of][crate::bytes::one_of] | `one_of("abc")` |  `"abc"` | `Ok(("bc", 'a'))` |Matches one of the provided characters (works with non ASCII characters too)|
 //! | [none_of][crate::bytes::none_of] | `none_of("abc")` |  `"xyab"` | `Ok(("yab", 'x'))` |Matches anything but the provided characters|

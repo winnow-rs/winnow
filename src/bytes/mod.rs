@@ -265,67 +265,6 @@ where
   }
 }
 
-/// Returns the longest slice of the matches the pattern.
-///
-/// The parser will return the longest slice consisting of the characters in provided in the
-/// combinator's argument.
-///
-/// *Complete version*: It will return a `Err(Err::Error((_, ErrorKind::IsA)))` if the pattern wasn't met.
-///
-/// *Streaming version*: will return a `Err::Incomplete(Needed::new(1))` if the pattern wasn't met
-/// or if the pattern reaches the end of the input.
-///
-/// # Example
-/// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::is_a;
-///
-/// fn hex(s: &str) -> IResult<&str, &str> {
-///   is_a("1234567890ABCDEF")(s)
-/// }
-///
-/// assert_eq!(hex("123 and voila"), Ok((" and voila", "123")));
-/// assert_eq!(hex("DEADBEEF and others"), Ok((" and others", "DEADBEEF")));
-/// assert_eq!(hex("BADBABEsomething"), Ok(("something", "BADBABE")));
-/// assert_eq!(hex("D15EA5E"), Ok(("", "D15EA5E")));
-/// assert_eq!(hex(""), Err(Err::Error(Error::new("", ErrorKind::IsA))));
-/// ```
-///
-/// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
-/// # use nom::input::Streaming;
-/// use nom::bytes::is_a;
-///
-/// fn hex(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
-///   is_a("1234567890ABCDEF")(s)
-/// }
-///
-/// assert_eq!(hex(Streaming("123 and voila")), Ok((Streaming(" and voila"), "123")));
-/// assert_eq!(hex(Streaming("DEADBEEF and others")), Ok((Streaming(" and others"), "DEADBEEF")));
-/// assert_eq!(hex(Streaming("BADBABEsomething")), Ok((Streaming("something"), "BADBABE")));
-/// assert_eq!(hex(Streaming("D15EA5E")), Err(Err::Incomplete(Needed::new(1))));
-/// assert_eq!(hex(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
-/// ```
-#[inline(always)]
-pub fn is_a<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
-  arr: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
-where
-  Input: InputTakeAtPosition + InputIsStreaming<STREAMING>,
-  Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
-  Input: InputTakeAtPosition,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
-{
-  move |i: Input| {
-    if STREAMING {
-      streaming::is_a_internal(i, &arr)
-    } else {
-      complete::is_a_internal(i, &arr)
-    }
-  }
-}
-
 /// Returns the longest input slice (if any) that matches the [pattern][FindToken]
 ///
 /// *Streaming version*: will return a `Err::Incomplete(Needed::new(1))` if the pattern reaches the end of the input.
@@ -398,6 +337,16 @@ where
 /// assert_eq!(alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
 /// assert_eq!(alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
 /// assert_eq!(alpha(b"12345"), Err(Err::Error(Error::new(&b"12345"[..], ErrorKind::TakeWhile1))));
+///
+/// fn hex(s: &str) -> IResult<&str, &str> {
+///   take_while1("1234567890ABCDEF")(s)
+/// }
+///
+/// assert_eq!(hex("123 and voila"), Ok((" and voila", "123")));
+/// assert_eq!(hex("DEADBEEF and others"), Ok((" and others", "DEADBEEF")));
+/// assert_eq!(hex("BADBABEsomething"), Ok(("something", "BADBABE")));
+/// assert_eq!(hex("D15EA5E"), Ok(("", "D15EA5E")));
+/// assert_eq!(hex(""), Err(Err::Error(Error::new("", ErrorKind::TakeWhile1))));
 /// ```
 ///
 /// ```rust
@@ -413,6 +362,16 @@ where
 /// assert_eq!(alpha(Streaming(b"latin123")), Ok((Streaming(&b"123"[..]), &b"latin"[..])));
 /// assert_eq!(alpha(Streaming(b"latin")), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(alpha(Streaming(b"12345")), Err(Err::Error(Error::new(Streaming(&b"12345"[..]), ErrorKind::TakeWhile1))));
+///
+/// fn hex(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+///   take_while1("1234567890ABCDEF")(s)
+/// }
+///
+/// assert_eq!(hex(Streaming("123 and voila")), Ok((Streaming(" and voila"), "123")));
+/// assert_eq!(hex(Streaming("DEADBEEF and others")), Ok((Streaming(" and others"), "DEADBEEF")));
+/// assert_eq!(hex(Streaming("BADBABEsomething")), Ok((Streaming("something"), "BADBABE")));
+/// assert_eq!(hex(Streaming("D15EA5E")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(hex(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn take_while1<T, Input, Error: ParseError<Input>, const STREAMING: bool>(

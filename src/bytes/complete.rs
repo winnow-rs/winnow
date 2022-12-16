@@ -233,8 +233,8 @@ where
 /// assert_eq!(hex(""), Err(Err::Error(Error::new("", ErrorKind::IsA))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::is_a`][crate::bytes::is_a]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::is_a`")]
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_while1`][crate::bytes::take_while1`]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_while1`")]
 pub fn is_a<T, Input, Error: ParseError<Input>>(
   arr: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>

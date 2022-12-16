@@ -244,10 +244,10 @@ where
 /// assert_eq!(hex(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::is_a`][crate::bytes::is_a] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_while1`][crate::bytes::take_while1] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::bytes::is_a` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom::bytes::take_while1` with input wrapped in `nom::input::Streaming`"
 )]
 pub fn is_a<T, Input, Error: ParseError<Input>>(
   arr: T,

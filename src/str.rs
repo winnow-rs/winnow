@@ -5,7 +5,7 @@ mod test {
   #[cfg(feature = "alloc")]
   use crate::{branch::alt, bytes::tag_no_case, multi::many1};
   use crate::{
-    bytes::{is_a, is_not, tag, take, take_till, take_until},
+    bytes::{is_not, tag, take, take_till, take_until, take_while1},
     error::{self, ErrorKind},
     Err, IResult,
   };
@@ -177,9 +177,7 @@ mod test {
   }
 
   #[test]
-  fn take_while1() {
-    use crate::bytes::take_while1;
-
+  fn test_take_while1() {
     fn f(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
       take_while1(is_alphabetic)(i)
     }
@@ -426,7 +424,7 @@ mod test {
     const CONSUMED: &str = "βèƒôřèÂßÇ";
     const LEFTOVER: &str = "áƒƭèř";
     fn test(input: &str) -> IResult<&str, &str> {
-      is_a(MATCH)(input)
+      take_while1(MATCH)(input)
     }
     match test(INPUT) {
       Ok((extra, output)) => {
@@ -476,7 +474,7 @@ mod test {
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const MATCH: &str = "Ûñℓúçƙ¥";
     fn test(input: &str) -> IResult<&str, &str> {
-      is_a(MATCH)(input)
+      take_while1(MATCH)(input)
     }
     match test(INPUT) {
       Err(Err::Error(_)) => (),
