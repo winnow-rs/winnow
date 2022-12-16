@@ -1074,6 +1074,8 @@ macro_rules! error_node_position(
 ///
 /// It also displays the input in hexdump format
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::dbg_err`]
+///
 /// ```rust
 /// use nom::{IResult, error::dbg_dmp, bytes::tag};
 ///
@@ -1088,6 +1090,7 @@ macro_rules! error_node_position(
 /// // 00000000        65 66 67 68 69 6a 6b 6c         efghijkl
 /// f(a);
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::dbg_err")]
 #[cfg(feature = "std")]
 pub fn dbg_dmp<'a, F, O, E: std::fmt::Debug>(
   f: F,
