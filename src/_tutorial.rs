@@ -100,11 +100,10 @@
 //! line parser:
 //!
 //! ```rust
-//! # use nom::IResult;
+//! # use nom::prelude::*;
 //! # use nom::bytes::complete::take_while1;
 //! # use nom::bytes::complete::tag;
 //! # use nom::sequence::preceded;
-//! # use nom::sequence::tuple;
 //! # use nom::AsChar;
 //! struct Request<'s> {
 //!     method: &'s [u8],
@@ -128,10 +127,10 @@
 //!   // if both succeed
 //!   let http_version = preceded(http, version);
 //!
-//!   // tuple takes as argument a tuple of parsers and will return
+//!   // tuples takes as argument a tuple of parsers and will return
 //!   // a tuple of their results
 //!   let (input, (method, _, url, _, version, _)) =
-//!     tuple((method, &space, url, &space, http_version, line_ending))(i)?;
+//!     (method, &space, url, &space, http_version, line_ending).parse(i)?;
 //!
 //!   Ok((input, Request { method, url, version }))
 //! }

@@ -86,16 +86,15 @@
 //! use nom::{
 //!   IResult,
 //!   error::ParseError,
-//!   sequence::tuple,
 //!   bytes::complete::{tag, take_until},
 //! };
 //!
 //! pub fn pinline_comment<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, (), E> {
-//!   tuple((
+//!   (
 //!     tag("(*"),
 //!     take_until("*)"),
 //!     tag("*)")
-//!   ))
+//!   )
 //!     .value(()) // Output is thrown away.
 //!     .parse(i)
 //! }
@@ -278,24 +277,24 @@
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   combinator::opt,
-//!   sequence::{preceded, terminated, tuple},
+//!   sequence::{preceded, terminated},
 //!   character::complete::{char, one_of},
 //! };
 //!
 //! fn float(input: &str) -> IResult<&str, &str> {
 //!   alt((
 //!     // Case one: .42
-//!     tuple((
+//!     (
 //!       char('.'),
 //!       decimal,
-//!       opt(tuple((
+//!       opt((
 //!         one_of("eE"),
 //!         opt(one_of("+-")),
 //!         decimal
-//!       )))
-//!     )).recognize()
+//!       ))
+//!     ).recognize()
 //!     , // Case two: 42e42 and 42.42e42
-//!     tuple((
+//!     (
 //!       decimal,
 //!       opt(preceded(
 //!         char('.'),
@@ -304,13 +303,13 @@
 //!       one_of("eE"),
 //!       opt(one_of("+-")),
 //!       decimal
-//!     )).recognize()
+//!     ).recognize()
 //!     , // Case three: 42. and 42.42
-//!     tuple((
+//!     (
 //!       decimal,
 //!       char('.'),
 //!       opt(decimal)
-//!     )).recognize()
+//!     ).recognize()
 //!   ))(input)
 //! }
 //!

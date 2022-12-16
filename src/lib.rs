@@ -10,7 +10,6 @@
 //! ```rust
 //! use nom::prelude::*;
 //! use nom::bytes::{tag, take_while_m_n};
-//! use nom::sequence::tuple;
 //!
 //! #[derive(Debug,PartialEq)]
 //! pub struct Color {
@@ -33,7 +32,7 @@
 //!
 //! fn hex_color(input: &str) -> IResult<&str, Color> {
 //!   let (input, _) = tag("#")(input)?;
-//!   let (input, (red, green, blue)) = tuple((hex_primary, hex_primary, hex_primary))(input)?;
+//!   let (input, (red, green, blue)) = (hex_primary, hex_primary, hex_primary).parse(input)?;
 //!
 //!   Ok((input, Color { red, green, blue }))
 //! }
@@ -251,33 +250,33 @@
 //! - **`many0`**: Will apply the parser 0 or more times (if it returns the `O` type, the new parser returns `Vec<O>`)
 //! - **`many1`**: Will apply the parser 1 or more times
 //!
-//! There are more complex (and more useful) parsers like `tuple`, which is
+//! There are more complex (and more useful) parsers like tuples, which is
 //! used to apply a series of parsers then assemble their results.
 //!
-//! Example with `tuple`:
+//! Example with tuples:
 //!
 //! ```rust
 //! # fn main() {
+//! use nom::prelude::*;
 //! use nom::{
 //!     error::ErrorKind, Needed,
 //!     number::be_u16,
 //!     bytes::{tag, take},
-//!     sequence::tuple,
 //!     input::Streaming,
 //! };
 //!
-//! let mut tpl = tuple((be_u16, take(3u8), tag("fg")));
+//! let mut tpl = (be_u16, take(3u8), tag("fg"));
 //!
 //! assert_eq!(
-//!   tpl(Streaming(&b"abcdefgh"[..])),
+//!   tpl.parse(Streaming(&b"abcdefgh"[..])),
 //!   Ok((
 //!     Streaming(&b"h"[..]),
 //!     (0x6162u16, &b"cde"[..], &b"fg"[..])
 //!   ))
 //! );
-//! assert_eq!(tpl(Streaming(&b"abcde"[..])), Err(nom::Err::Incomplete(Needed::new(2))));
+//! assert_eq!(tpl.parse(Streaming(&b"abcde"[..])), Err(nom::Err::Incomplete(Needed::new(2))));
 //! let input = &b"abcdejk"[..];
-//! assert_eq!(tpl(Streaming(input)), Err(nom::Err::Error((Streaming(&input[5..]), ErrorKind::Tag))));
+//! assert_eq!(tpl.parse(Streaming(input)), Err(nom::Err::Error((Streaming(&input[5..]), ErrorKind::Tag))));
 //! # }
 //! ```
 //!

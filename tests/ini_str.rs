@@ -1,10 +1,10 @@
+use nom::prelude::*;
 use nom::{
   bytes::{is_a, tag, take_till, take_while},
   character::{alphanumeric1 as alphanumeric, char, space0 as space},
   combinator::opt,
   multi::many0,
-  sequence::{delimited, pair, terminated, tuple},
-  IResult,
+  sequence::{delimited, pair, terminated},
 };
 
 use std::collections::HashMap;
@@ -30,7 +30,7 @@ fn category(i: &str) -> IResult<&str, &str> {
 
 fn key_value(i: &str) -> IResult<&str, (&str, &str)> {
   let (i, key) = alphanumeric(i)?;
-  let (i, _) = tuple((opt(space), tag("="), opt(space)))(i)?;
+  let (i, _) = (opt(space), tag("="), opt(space)).parse(i)?;
   let (i, val) = take_till(is_line_ending_or_comment)(i)?;
   let (i, _) = opt(space)(i)?;
   let (i, _) = opt(pair(tag(";"), not_line_ending))(i)?;

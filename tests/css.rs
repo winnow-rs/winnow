@@ -1,7 +1,5 @@
 use nom::bytes::{tag, take_while_m_n};
 use nom::prelude::*;
-use nom::sequence::tuple;
-use nom::IResult;
 
 #[derive(Debug, PartialEq)]
 pub struct Color {
@@ -26,7 +24,7 @@ fn hex_primary(input: &str) -> IResult<&str, u8> {
 
 fn hex_color(input: &str) -> IResult<&str, Color> {
   let (input, _) = tag("#")(input)?;
-  let (input, (red, green, blue)) = tuple((hex_primary, hex_primary, hex_primary))(input)?;
+  let (input, (red, green, blue)) = (hex_primary, hex_primary, hex_primary).parse(input)?;
 
   Ok((input, Color { red, green, blue }))
 }

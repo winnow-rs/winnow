@@ -11,7 +11,7 @@ use nom::{
   combinator::{cut, opt},
   error::VerboseError,
   multi::many0,
-  sequence::{delimited, preceded, terminated, tuple},
+  sequence::{delimited, preceded, terminated},
   IResult, Parser,
 };
 
@@ -167,11 +167,11 @@ where
 /// that we need to parse an expression and then parse 0 or more expressions, all
 /// wrapped in an S-expression.
 ///
-/// `tuple` is used to sequence parsers together, so we can translate this directly
+/// tuples are used to sequence parsers together, so we can translate this directly
 /// and then map over it to transform the output into an `Expr::Application`
 fn parse_application<'a>(i: &'a str) -> IResult<&'a str, Expr, VerboseError<&'a str>> {
-  let application_inner = tuple((parse_expr, many0(parse_expr)))
-    .map(|(head, tail)| Expr::Application(Box::new(head), tail));
+  let application_inner =
+    (parse_expr, many0(parse_expr)).map(|(head, tail)| Expr::Application(Box::new(head), tail));
   // finally, we wrap it in an s-expression
   s_exp(application_inner)(i)
 }
@@ -188,7 +188,7 @@ fn parse_if<'a>(i: &'a str) -> IResult<&'a str, Expr, VerboseError<&'a str>> {
     // variables to our language, we say that if must be terminated by at least
     // one whitespace character
     terminated(tag("if"), multispace1),
-    cut(tuple((parse_expr, parse_expr, opt(parse_expr)))),
+    cut((parse_expr, parse_expr, opt(parse_expr))),
   )
   .map(|(pred, true_branch, maybe_false_branch)| {
     if let Some(false_branch) = maybe_false_branch {
