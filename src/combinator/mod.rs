@@ -202,19 +202,19 @@ where
   Ok((input, len))
 }
 
-/// Implementation of [`Parser::as_mut_parser`][Parser::as_mut_parser]
+/// Implementation of [`Parser::by_ref`][Parser::by_ref]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct MutParser<'p, P> {
+pub struct ByRef<'p, P> {
   p: &'p mut P,
 }
 
-impl<'p, P> MutParser<'p, P> {
+impl<'p, P> ByRef<'p, P> {
   pub(crate) fn new(p: &'p mut P) -> Self {
     Self { p }
   }
 }
 
-impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for MutParser<'p, P> {
+impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for ByRef<'p, P> {
   fn parse(&mut self, i: I) -> IResult<I, O, E> {
     self.p.parse(i)
   }

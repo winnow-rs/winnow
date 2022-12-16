@@ -964,9 +964,9 @@ where
   E: ParseError<I>,
 {
   move |i: I| {
-    let (i, data) = length_data(f.as_mut_parser()).parse(i)?;
+    let (i, data) = length_data(f.by_ref()).parse(i)?;
     let data = I::from_output(data);
-    let (_, o) = g.as_mut_parser().complete().parse(data)?;
+    let (_, o) = g.by_ref().complete().parse(data)?;
     Ok((i, o))
   }
 }

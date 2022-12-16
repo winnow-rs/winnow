@@ -348,7 +348,7 @@ pub trait Parser<I, O, E> {
   /// }
   /// ```
   ///
-  /// By adding `as_mut_parser`, we can make this work:
+  /// By adding `by_ref`, we can make this work:
   /// ```rust
   /// # use nom::prelude::*;
   /// # use nom::IResult;
@@ -360,17 +360,17 @@ pub trait Parser<I, O, E> {
   ///     mut g: impl Parser<&'i [u8], O, E>
   /// ) -> impl FnMut(&'i [u8]) -> IResult<&'i [u8], O, E> {
   ///   move |i: &'i [u8]| {
-  ///     let (i, data) = length_data(f.as_mut_parser()).parse(i)?;
-  ///     let (_, o) = g.as_mut_parser().complete().parse(data)?;
+  ///     let (i, data) = length_data(f.by_ref()).parse(i)?;
+  ///     let (_, o) = g.by_ref().complete().parse(data)?;
   ///     Ok((i, o))
   ///   }
   /// }
   /// ```
-  fn as_mut_parser(&mut self) -> MutParser<Self>
+  fn by_ref(&mut self) -> ByRef<Self>
   where
     Self: core::marker::Sized,
   {
-    MutParser::new(self)
+    ByRef::new(self)
   }
   /// Returns the provided value if the child parser succeeds.
   ///
