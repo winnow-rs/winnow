@@ -54,7 +54,9 @@ use core::num::NonZeroUsize;
 
 use crate::error::{ErrorKind, ParseError};
 use crate::lib::std::iter::{Copied, Enumerate};
-use crate::lib::std::ops::{Range, RangeFrom, RangeFull, RangeTo};
+use crate::lib::std::ops::{
+  Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive,
+};
 use crate::lib::std::slice::Iter;
 use crate::lib::std::str::from_utf8;
 use crate::lib::std::str::CharIndices;
@@ -1510,6 +1512,49 @@ impl<C: AsChar> FindToken<C> for char {
 impl<C: AsChar, F: Fn(C) -> bool> FindToken<C> for F {
   fn find_token(&self, token: C) -> bool {
     self(token)
+  }
+}
+
+impl<C1: AsChar, C2: AsChar + Clone> FindToken<C1> for Range<C2> {
+  fn find_token(&self, token: C1) -> bool {
+    let start = self.start.clone().as_char();
+    let end = self.end.clone().as_char();
+    (start..end).contains(&token.as_char())
+  }
+}
+
+impl<C1: AsChar, C2: AsChar + Clone> FindToken<C1> for RangeInclusive<C2> {
+  fn find_token(&self, token: C1) -> bool {
+    let start = self.start().clone().as_char();
+    let end = self.end().clone().as_char();
+    (start..=end).contains(&token.as_char())
+  }
+}
+
+impl<C1: AsChar, C2: AsChar + Clone> FindToken<C1> for RangeFrom<C2> {
+  fn find_token(&self, token: C1) -> bool {
+    let start = self.start.clone().as_char();
+    (start..).contains(&token.as_char())
+  }
+}
+
+impl<C1: AsChar, C2: AsChar + Clone> FindToken<C1> for RangeTo<C2> {
+  fn find_token(&self, token: C1) -> bool {
+    let end = self.end.clone().as_char();
+    (..end).contains(&token.as_char())
+  }
+}
+
+impl<C1: AsChar, C2: AsChar + Clone> FindToken<C1> for RangeToInclusive<C2> {
+  fn find_token(&self, token: C1) -> bool {
+    let end = self.end.clone().as_char();
+    (..=end).contains(&token.as_char())
+  }
+}
+
+impl<C1: AsChar> FindToken<C1> for RangeFull {
+  fn find_token(&self, _token: C1) -> bool {
+    true
   }
 }
 
