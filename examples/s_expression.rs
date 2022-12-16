@@ -8,8 +8,8 @@ use nom::{
   branch::alt,
   bytes::tag,
   character::{alpha1, char, digit1, multispace0, multispace1, one_of},
-  combinator::{cut, map_res, opt},
-  error::{context, VerboseError},
+  combinator::{cut, opt},
+  error::VerboseError,
   multi::many0,
   sequence::{delimited, preceded, terminated, tuple},
   IResult, Parser,
@@ -110,7 +110,8 @@ fn parse_bool<'a>(i: &'a str) -> IResult<&'a str, Atom, VerboseError<&'a str>> {
 /// Put plainly: `preceded(tag(":"), cut(alpha1))` means that once we see the `:`
 /// character, we have to see one or more alphabetic chararcters or the input is invalid.
 fn parse_keyword<'a>(i: &'a str) -> IResult<&'a str, Atom, VerboseError<&'a str>> {
-  context("keyword", preceded(tag(":"), cut(alpha1)))
+  preceded(tag(":"), cut(alpha1))
+    .context("keyword")
     .map(|sym_str: &str| Atom::Keyword(sym_str.to_string()))
     .parse(i)
 }
@@ -119,9 +120,7 @@ fn parse_keyword<'a>(i: &'a str) -> IResult<&'a str, Atom, VerboseError<&'a str>
 /// of digits but ending the program if it doesn't fit into an i32.
 fn parse_num<'a>(i: &'a str) -> IResult<&'a str, Atom, VerboseError<&'a str>> {
   alt((
-    map_res(digit1, |digit_str: &str| {
-      digit_str.parse::<i32>().map(Atom::Num)
-    }),
+    digit1.map_res(|digit_str: &str| digit_str.parse::<i32>().map(Atom::Num)),
     preceded(tag("-"), digit1)
       .map(|digit_str: &str| Atom::Num(-1 * digit_str.parse::<i32>().unwrap())),
   ))(i)
@@ -157,7 +156,7 @@ where
   delimited(
     char('('),
     preceded(multispace0, inner),
-    context("closing paren", cut(preceded(multispace0, char(')')))),
+    cut(preceded(multispace0, char(')'))).context("closing paren"),
   )
 }
 
@@ -184,27 +183,25 @@ fn parse_application<'a>(i: &'a str) -> IResult<&'a str, Expr, VerboseError<&'a 
 /// In fact, we define our parser as if `Expr::If` was defined with an Option in it,
 /// we have the `opt` combinator which fits very nicely here.
 fn parse_if<'a>(i: &'a str) -> IResult<&'a str, Expr, VerboseError<&'a str>> {
-  let if_inner = context(
-    "if expression",
-    preceded(
-      // here to avoid ambiguity with other names starting with `if`, if we added
-      // variables to our language, we say that if must be terminated by at least
-      // one whitespace character
-      terminated(tag("if"), multispace1),
-      cut(tuple((parse_expr, parse_expr, opt(parse_expr)))),
-    )
-    .map(|(pred, true_branch, maybe_false_branch)| {
-      if let Some(false_branch) = maybe_false_branch {
-        Expr::IfElse(
-          Box::new(pred),
-          Box::new(true_branch),
-          Box::new(false_branch),
-        )
-      } else {
-        Expr::If(Box::new(pred), Box::new(true_branch))
-      }
-    }),
-  );
+  let if_inner = preceded(
+    // here to avoid ambiguity with other names starting with `if`, if we added
+    // variables to our language, we say that if must be terminated by at least
+    // one whitespace character
+    terminated(tag("if"), multispace1),
+    cut(tuple((parse_expr, parse_expr, opt(parse_expr)))),
+  )
+  .map(|(pred, true_branch, maybe_false_branch)| {
+    if let Some(false_branch) = maybe_false_branch {
+      Expr::IfElse(
+        Box::new(pred),
+        Box::new(true_branch),
+        Box::new(false_branch),
+      )
+    } else {
+      Expr::If(Box::new(pred), Box::new(true_branch))
+    }
+  })
+  .context("if expression");
   s_exp(if_inner)(i)
 }
 
@@ -217,7 +214,8 @@ fn parse_quote<'a>(i: &'a str) -> IResult<&'a str, Expr, VerboseError<&'a str>> 
   // this should look very straight-forward after all we've done:
   // we find the `'` (quote) character, use cut to say that we're unambiguously
   // looking for an s-expression of 0 or more expressions, and then parse them
-  context("quote", preceded(tag("'"), cut(s_exp(many0(parse_expr)))))
+  preceded(tag("'"), cut(s_exp(many0(parse_expr))))
+    .context("quote")
     .map(|exprs| Expr::Quote(exprs))
     .parse(i)
 }

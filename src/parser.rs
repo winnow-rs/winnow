@@ -2,7 +2,9 @@
 
 use self::Needed::*;
 use crate::combinator::*;
-use crate::error::{self, ErrorKind};
+#[cfg(feature = "std")]
+use crate::error::DbgErr;
+use crate::error::{self, Context, ErrorKind};
 use crate::input::InputIsStreaming;
 use crate::lib::std::fmt;
 use core::num::NonZeroUsize;
@@ -175,7 +177,7 @@ pub enum Err<E> {
   /// This must only be set when the `Input` is [`InputIsStreaming<true>`], like with
   /// [`Streaming`][crate::input::Streaming]
   ///
-  /// Convert this into an `Error` with [`nom::combinator::complete`][crate::combinator::complete]
+  /// Convert this into an `Error` with [`Parser::complete`][Parser::complete]
   Incomplete(Needed),
   /// The parser had an error (recoverable)
   Error(E),
@@ -327,21 +329,20 @@ pub trait Parser<I, O, E> {
   ///
   /// Because parsers are `FnMut`, they can be called multiple times.  This prevents moving `f`
   /// into [`length_data`][crate::multi::length_data] and `g` into
-  /// [`complete`][crate::combinator::complete]:
+  /// [`complete`][Parser::complete]:
   /// ```rust,compile_fail
   /// # use nom::prelude::*;
   /// # use nom::IResult;
   /// # use nom::Parser;
   /// # use nom::error::ParseError;
   /// # use nom::multi::length_data;
-  /// # use nom::combinator::complete;
   /// pub fn length_value<'i, O, E: ParseError<&'i [u8]>>(
   ///     mut f: impl Parser<&'i [u8], usize, E>,
   ///     mut g: impl Parser<&'i [u8], O, E>
   /// ) -> impl FnMut(&'i [u8]) -> IResult<&'i [u8], O, E> {
   ///   move |i: &'i [u8]| {
   ///     let (i, data) = length_data(f).parse(i)?;
-  ///     let (_, o) = complete(g).parse(data)?;
+  ///     let (_, o) = g.complete().parse(data)?;
   ///     Ok((i, o))
   ///   }
   /// }
@@ -354,14 +355,13 @@ pub trait Parser<I, O, E> {
   /// # use nom::Parser;
   /// # use nom::error::ParseError;
   /// # use nom::multi::length_data;
-  /// # use nom::combinator::complete;
   /// pub fn length_value<'i, O, E: ParseError<&'i [u8]>>(
   ///     mut f: impl Parser<&'i [u8], usize, E>,
   ///     mut g: impl Parser<&'i [u8], O, E>
   /// ) -> impl FnMut(&'i [u8]) -> IResult<&'i [u8], O, E> {
   ///   move |i: &'i [u8]| {
   ///     let (i, data) = length_data(f.as_mut_parser()).parse(i)?;
-  ///     let (_, o) = complete(g.as_mut_parser()).parse(data)?;
+  ///     let (_, o) = g.as_mut_parser().complete().parse(data)?;
   ///     Ok((i, o))
   ///   }
   /// }
@@ -371,6 +371,96 @@ pub trait Parser<I, O, E> {
     Self: core::marker::Sized,
   {
     MutParser::new(self)
+  }
+  /// Returns the provided value if the child parser succeeds.
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::{Err,error::ErrorKind, IResult, Parser};
+  /// use nom::character::alpha1;
+  /// # fn main() {
+  ///
+  /// let mut parser = alpha1.value(1234);
+  ///
+  /// assert_eq!(parser.parse("abcd"), Ok(("", 1234)));
+  /// assert_eq!(parser.parse("123abcd;"), Err(Err::Error(("123abcd;", ErrorKind::Alpha))));
+  /// # }
+  /// ```
+  fn value<O2>(self, val: O2) -> Value<Self, O, O2>
+  where
+    Self: core::marker::Sized,
+    O2: Clone,
+  {
+    Value::new(self, val)
+  }
+
+  /// If the child parser was successful, return the consumed input as produced value.
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::{Err,error::ErrorKind, IResult, Parser};
+  /// use nom::character::{char, alpha1};
+  /// use nom::sequence::separated_pair;
+  /// # fn main() {
+  ///
+  /// let mut parser = separated_pair(alpha1, char(','), alpha1).recognize();
+  ///
+  /// assert_eq!(parser.parse("abcd,efgh"), Ok(("", "abcd,efgh")));
+  /// assert_eq!(parser.parse("abcd;"),Err(Err::Error((";", ErrorKind::Char))));
+  /// # }
+  /// ```
+  fn recognize(self) -> Recognize<Self, O>
+  where
+    Self: core::marker::Sized,
+  {
+    Recognize::new(self)
+  }
+
+  /// if the child parser was successful, return the consumed input with the output
+  /// as a tuple. Functions similarly to [recognize](fn.recognize.html) except it
+  /// returns the parser output as well.
+  ///
+  /// This can be useful especially in cases where the output is not the same type
+  /// as the input, or the input is a user defined type.
+  ///
+  /// Returned tuple is of the format `(produced output, consumed input)`.
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::prelude::*;
+  /// # use nom::{Err,error::ErrorKind, IResult};
+  /// use nom::character::{char, alpha1};
+  /// use nom::bytes::tag;
+  /// use nom::sequence::separated_pair;
+  ///
+  /// fn inner_parser(input: &str) -> IResult<&str, bool> {
+  ///     tag("1234").value(true).parse(input)
+  /// }
+  ///
+  /// # fn main() {
+  ///
+  /// let mut consumed_parser = separated_pair(alpha1, char(','), alpha1).value(true).with_recognized();
+  ///
+  /// assert_eq!(consumed_parser.parse("abcd,efgh1"), Ok(("1", (true, "abcd,efgh"))));
+  /// assert_eq!(consumed_parser.parse("abcd;"),Err(Err::Error((";", ErrorKind::Char))));
+  ///
+  /// // the second output (representing the consumed input)
+  /// // should be the same as that of the `recognize` parser.
+  /// let mut recognize_parser = inner_parser.recognize();
+  /// let mut consumed_parser = inner_parser.with_recognized().map(|(output, consumed)| consumed);
+  ///
+  /// assert_eq!(recognize_parser.parse("1234"), consumed_parser.parse("1234"));
+  /// assert_eq!(recognize_parser.parse("abcd"), consumed_parser.parse("abcd"));
+  /// # }
+  /// ```
+  fn with_recognized(self) -> WithRecognized<Self, O>
+  where
+    Self: core::marker::Sized,
+  {
+    WithRecognized::new(self)
   }
 
   /// Maps a function over the result of a parser
@@ -397,6 +487,64 @@ pub trait Parser<I, O, E> {
     Self: core::marker::Sized,
   {
     Map::new(self, g)
+  }
+
+  /// Applies a function returning a `Result` over the result of a parser.
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::{Err,error::ErrorKind, IResult, Parser};
+  /// use nom::character::digit1;
+  /// # fn main() {
+  ///
+  /// let mut parse = digit1.map_res(|s: &str| s.parse::<u8>());
+  ///
+  /// // the parser will convert the result of digit1 to a number
+  /// assert_eq!(parse.parse("123"), Ok(("", 123)));
+  ///
+  /// // this will fail if digit1 fails
+  /// assert_eq!(parse.parse("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
+  ///
+  /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
+  /// assert_eq!(parse.parse("123456"), Err(Err::Error(("123456", ErrorKind::MapRes))));
+  /// # }
+  /// ```
+  fn map_res<G, O2, E2>(self, g: G) -> MapRes<Self, G, O>
+  where
+    Self: core::marker::Sized,
+    G: FnMut(O) -> Result<O2, E2>,
+  {
+    MapRes::new(self, g)
+  }
+
+  /// Applies a function returning an `Option` over the result of a parser.
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::{Err,error::ErrorKind, IResult, Parser};
+  /// use nom::character::digit1;
+  /// # fn main() {
+  ///
+  /// let mut parse = digit1.map_opt(|s: &str| s.parse::<u8>().ok());
+  ///
+  /// // the parser will convert the result of digit1 to a number
+  /// assert_eq!(parse.parse("123"), Ok(("", 123)));
+  ///
+  /// // this will fail if digit1 fails
+  /// assert_eq!(parse.parse("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
+  ///
+  /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
+  /// assert_eq!(parse.parse("123456"), Err(Err::Error(("123456", ErrorKind::MapOpt))));
+  /// # }
+  /// ```
+  fn map_opt<G, O2>(self, g: G) -> MapOpt<Self, G, O>
+  where
+    Self: core::marker::Sized,
+    G: FnMut(O) -> Option<O2>,
+  {
+    MapOpt::new(self, g)
   }
 
   /// Creates a second parser from the output of the first one, then apply over the rest of the input
@@ -447,6 +595,99 @@ pub trait Parser<I, O, E> {
     Self: core::marker::Sized,
   {
     AndThen::new(self, g)
+  }
+
+  /// Returns the result of the child parser if it satisfies a verification function.
+  ///
+  /// The verification function takes as argument a reference to the output of the
+  /// parser.
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::{Err,error::ErrorKind, IResult, Parser};
+  /// # use nom::character::alpha1;
+  /// # fn main() {
+  ///
+  /// let mut parser = alpha1.verify(|s: &str| s.len() == 4);
+  ///
+  /// assert_eq!(parser.parse("abcd"), Ok(("", "abcd")));
+  /// assert_eq!(parser.parse("abcde"), Err(Err::Error(("abcde", ErrorKind::Verify))));
+  /// assert_eq!(parser.parse("123abcd;"),Err(Err::Error(("123abcd;", ErrorKind::Alpha))));
+  /// # }
+  /// ```
+  fn verify<G, O2: ?Sized>(self, second: G) -> Verify<Self, G, O2>
+  where
+    Self: core::marker::Sized,
+    G: Fn(&O2) -> bool,
+  {
+    Verify::new(self, second)
+  }
+
+  /// If parsing fails, add context to the error
+  ///
+  /// This is used mainly to add user friendly information
+  /// to errors when backtracking through a parse tree.
+  fn context(self, context: &'static str) -> Context<Self, O>
+  where
+    Self: core::marker::Sized,
+  {
+    Context::new(self, context)
+  }
+
+  /// Transforms [`Incomplete`][crate::Err::Incomplete] into [`Error`][crate::Err::Error]
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::{Err,error::ErrorKind, IResult, input::Streaming, Parser};
+  /// # use nom::bytes::take;
+  /// # fn main() {
+  ///
+  /// let mut parser = take(5u8).complete();
+  ///
+  /// assert_eq!(parser.parse(Streaming("abcdefg")), Ok((Streaming("fg"), "abcde")));
+  /// assert_eq!(parser.parse(Streaming("abcd")), Err(Err::Error((Streaming("abcd"), ErrorKind::Complete))));
+  /// # }
+  /// ```
+  fn complete(self) -> Complete<Self>
+  where
+    Self: core::marker::Sized,
+  {
+    Complete::new(self)
+  }
+
+  /// Prints a message and the input if the parser fails.
+  ///
+  /// The message prints the `Error` or `Incomplete`
+  /// and the parser's calling code.
+  ///
+  /// It also displays the input in hexdump format
+  ///
+  /// ```rust
+  /// use nom::prelude::*;
+  /// use nom::{IResult, bytes::tag};
+  ///
+  /// fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
+  ///   tag("abcd").dbg_err("alpha tag").parse(i)
+  /// }
+  ///
+  /// let a = &b"efghijkl"[..];
+  /// f(a);
+  /// ```
+  ///
+  /// Will print the following message:
+  /// ```console
+  /// alpha tag: Error(Position(0, [101, 102, 103, 104, 105, 106, 107, 108])) at:
+  /// 00000000        65 66 67 68 69 6a 6b 6c         efghijkl
+  /// ```
+  #[cfg(feature = "std")]
+  fn dbg_err<C>(self, context: C) -> DbgErr<Self, O, C>
+  where
+    C: std::fmt::Display,
+    Self: core::marker::Sized,
+  {
+    DbgErr::new(self, context)
   }
 
   /// Applies a second parser after the first one, return their results as a tuple

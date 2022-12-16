@@ -1,8 +1,9 @@
 #[cfg(test)]
 mod test {
   use crate::input::Streaming;
+  use crate::prelude::*;
   #[cfg(feature = "alloc")]
-  use crate::{branch::alt, bytes::tag_no_case, combinator::recognize, multi::many1};
+  use crate::{branch::alt, bytes::tag_no_case, multi::many1};
   use crate::{
     bytes::{is_a, is_not, tag, take, take_till, take_until},
     error::{self, ErrorKind},
@@ -511,7 +512,7 @@ mod test {
     let b = "ababcd";
 
     fn f(i: &str) -> IResult<&str, &str> {
-      recognize(many1(alt((tag("a"), tag("b")))))(i)
+      many1(alt((tag("a"), tag("b")))).recognize().parse(i)
     }
 
     assert_eq!(f(&a[..]), Ok((&a[6..], &a[..])));

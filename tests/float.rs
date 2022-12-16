@@ -1,7 +1,7 @@
 use nom::branch::alt;
 use nom::bytes::tag;
 use nom::character::digit1 as digit;
-use nom::combinator::{map_res, opt, recognize};
+use nom::combinator::opt;
 use nom::prelude::*;
 use nom::sequence::{delimited, pair};
 use nom::IResult;
@@ -10,12 +10,13 @@ use std::str;
 use std::str::FromStr;
 
 fn unsigned_float(i: &[u8]) -> IResult<&[u8], f32> {
-  let float_bytes = recognize(alt((
+  let float_bytes = alt((
     delimited(digit, tag("."), opt(digit)),
     delimited(opt(digit), tag("."), digit),
-  )));
-  let float_str = map_res(float_bytes, str::from_utf8);
-  map_res(float_str, FromStr::from_str)(i)
+  ))
+  .recognize();
+  let float_str = float_bytes.map_res(str::from_utf8);
+  float_str.map_res(FromStr::from_str).parse(i)
 }
 
 fn float(i: &[u8]) -> IResult<&[u8], f32> {

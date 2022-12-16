@@ -1,5 +1,6 @@
 use super::{length_data, length_value, many0_count, many1_count};
 use crate::input::Streaming;
+use crate::Parser;
 use crate::{
   bytes::tag,
   character::digit1 as digit,
@@ -363,9 +364,10 @@ impl<I> ParseError<I> for NilError {
 #[cfg(feature = "alloc")]
 fn length_count_test() {
   fn number(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, u32> {
-    use crate::combinator::map_res;
-
-    map_res(map_res(digit, str::from_utf8), FromStr::from_str)(i)
+    digit
+      .map_res(str::from_utf8)
+      .map_res(FromStr::from_str)
+      .parse(i)
   }
 
   fn cnt(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, Vec<&[u8]>> {
@@ -403,9 +405,10 @@ fn length_count_test() {
 #[test]
 fn length_data_test() {
   fn number(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, u32> {
-    use crate::combinator::map_res;
-
-    map_res(map_res(digit, str::from_utf8), FromStr::from_str)(i)
+    digit
+      .map_res(str::from_utf8)
+      .map_res(FromStr::from_str)
+      .parse(i)
   }
 
   fn take(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {

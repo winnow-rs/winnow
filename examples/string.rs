@@ -14,7 +14,6 @@
 use nom::branch::alt;
 use nom::bytes::{is_not, take_while_m_n};
 use nom::character::{char, multispace1};
-use nom::combinator::{map_opt, map_res, value, verify};
 use nom::error::{FromExternalError, ParseError};
 use nom::multi::fold_many0;
 use nom::prelude::*;
@@ -49,13 +48,15 @@ where
   // `map_res` takes the result of a parser and applies a function that returns
   // a Result. In this case we take the hex bytes from parse_hex and attempt to
   // convert them to a u32.
-  let parse_u32 = map_res(parse_delimited_hex, move |hex| u32::from_str_radix(hex, 16));
+  let parse_u32 = parse_delimited_hex.map_res(move |hex| u32::from_str_radix(hex, 16));
 
   // map_opt is like map_res, but it takes an Option instead of a Result. If
   // the function returns None, map_opt returns an error. In this case, because
   // not all u32 values are valid unicode code points, we have to fallibly
   // convert to char with from_u32.
-  map_opt(parse_u32, |value| std::char::from_u32(value))(input)
+  parse_u32
+    .map_opt(|value| std::char::from_u32(value))
+    .parse(input)
 }
 
 /// Parse an escaped character: \n, \t, \r, \u{00AC}, etc.
@@ -73,14 +74,14 @@ where
       // parser (the second argument) succeeds. In these cases, it looks for
       // the marker characters (n, r, t, etc) and returns the matching
       // character (\n, \r, \t, etc).
-      value('\n', char('n')),
-      value('\r', char('r')),
-      value('\t', char('t')),
-      value('\u{08}', char('b')),
-      value('\u{0C}', char('f')),
-      value('\\', char('\\')),
-      value('/', char('/')),
-      value('"', char('"')),
+      char('n').value('\n'),
+      char('r').value('\r'),
+      char('t').value('\t'),
+      char('b').value('\u{08}'),
+      char('f').value('\u{0C}'),
+      char('\\').value('\\'),
+      char('/').value('/'),
+      char('"').value('"'),
     )),
   )(input)
 }
@@ -103,7 +104,7 @@ fn parse_literal<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str,
   // the parser. The verification function accepts out output only if it
   // returns true. In this case, we want to ensure that the output of is_not
   // is non-empty.
-  verify(not_quote_slash, |s: &str| !s.is_empty())(input)
+  not_quote_slash.verify(|s: &str| !s.is_empty()).parse(input)
 }
 
 /// A string fragment contains a fragment of a string being parsed: either
@@ -127,7 +128,7 @@ where
     // of that parser.
     parse_literal.map(StringFragment::Literal),
     parse_escaped_char.map(StringFragment::EscapedChar),
-    value(StringFragment::EscapedWS, parse_escaped_whitespace),
+    parse_escaped_whitespace.value(StringFragment::EscapedWS),
   ))(input)
 }
 

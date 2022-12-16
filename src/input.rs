@@ -181,7 +181,7 @@ impl<const YES: bool> InputIsStreaming<YES> for crate::lib::std::convert::Infall
 /// This can happen with some network protocol or large file parsers, where the
 /// input buffer can be full and need to be resized or refilled.
 /// - [`Err::Incomplete`] will report how much more data is needed.
-/// - [`nom::combinator::complete`][crate::combinator::complete] transform [`Err::Incomplete`] to
+/// - [`Parser::complete`][crate::Parser::complete] transform [`Err::Incomplete`] to
 ///   [`Err::Error`]
 ///
 /// See also [`InputIsStreaming`] to tell whether the input supports complete or streaming parsing.

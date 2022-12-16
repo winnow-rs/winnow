@@ -3,7 +3,6 @@
 #[cfg(test)]
 mod tests;
 
-use crate::combinator::complete;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{InputIsStreaming, InputIter, InputLength, InputTake, IntoOutput, ToUsize};
@@ -967,7 +966,7 @@ where
   move |i: I| {
     let (i, data) = length_data(f.as_mut_parser()).parse(i)?;
     let data = I::from_output(data);
-    let (_, o) = complete(g.as_mut_parser()).parse(data)?;
+    let (_, o) = g.as_mut_parser().complete().parse(data)?;
     Ok((i, o))
   }
 }

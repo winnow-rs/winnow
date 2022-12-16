@@ -5,7 +5,6 @@ use nom::prelude::*;
 use nom::{
   branch::alt,
   bytes::{tag, take},
-  combinator::map_res,
   error::ErrorKind,
   multi::many0,
   number::{be_f32, be_u16, be_u32, be_u64},
@@ -246,7 +245,7 @@ struct MP4BoxHeader {
 }
 
 fn brand_name(input: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &str> {
-  map_res(take(4_usize), str::from_utf8)(input)
+  take(4_usize).map_res(str::from_utf8).parse(input)
 }
 
 fn filetype_parser(input: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, FileType<'_>> {

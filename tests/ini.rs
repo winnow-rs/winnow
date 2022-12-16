@@ -2,7 +2,7 @@ use nom::prelude::*;
 use nom::{
   bytes::take_while,
   character::{alphanumeric1 as alphanumeric, char, multispace0 as multispace, space0 as space},
-  combinator::{map_res, opt},
+  combinator::opt,
   multi::many0,
   sequence::{delimited, pair, separated_pair, terminated, tuple},
   IResult,
@@ -12,16 +12,17 @@ use std::collections::HashMap;
 use std::str;
 
 fn category(i: &[u8]) -> IResult<&[u8], &str> {
-  map_res(
-    delimited(char('['), take_while(|c| c != b']'), char(']')),
-    str::from_utf8,
-  )(i)
+  delimited(char('['), take_while(|c| c != b']'), char(']'))
+    .map_res(str::from_utf8)
+    .parse(i)
 }
 
 fn key_value(i: &[u8]) -> IResult<&[u8], (&str, &str)> {
-  let (i, key) = map_res(alphanumeric, str::from_utf8)(i)?;
+  let (i, key) = alphanumeric.map_res(str::from_utf8).parse(i)?;
   let (i, _) = tuple((opt(space), char('='), opt(space)))(i)?;
-  let (i, val) = map_res(take_while(|c| c != b'\n' && c != b';'), str::from_utf8)(i)?;
+  let (i, val) = take_while(|c| c != b'\n' && c != b';')
+    .map_res(str::from_utf8)
+    .parse(i)?;
   let (i, _) = opt(pair(char(';'), take_while(|c| c != b'\n')))(i)?;
   Ok((i, (key, val)))
 }

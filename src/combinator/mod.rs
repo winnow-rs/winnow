@@ -71,26 +71,28 @@
 //! ## Streaming related
 //!
 //! - [`eof`][eof]: Returns its input if it is at the end of input data
-//! - [`complete`][complete()]: Replaces an `Incomplete` returned by the child parser with an `Error`
+//! - [`Parser::complete`][Parser::complete()]: Replaces an `Incomplete` returned by the child parser with an `Error`
 //!
 //! ## Modifiers
 //!
 //! - [`cond`][cond]: Conditional combinator. Wraps another parser and calls it if the condition is met
 //! - [`Parser::flat_map`][crate::Parser::flat_map]: method to map a new parser from the output of the first parser, then apply that parser over the rest of the input
+//! - [`Parser::value`][crate::Parser::value]: method to replace the result of a parser
 //! - [`Parser::map`][crate::Parser::map]: method to map a function on the result of a parser
 //! - [`Parser::and_then`][crate::Parser::and_then]: Applies a second parser over the output of the first one
-//! - [`map_opt`][map_opt]: Maps a function returning an `Option` on the output of a parser
-//! - [`map_res`][map_res]: Maps a function returning a `Result` on the output of a parser
+//! - [`Parser::map_opt`][Parser::map_opt]: Maps a function returning an `Option` on the output of a parser
+//! - [`Parser::map_res`][Parser::map_res]: Maps a function returning a `Result` on the output of a parser
 //! - [`not`][not]: Returns a result only if the embedded parser returns `Error` or `Incomplete`. Does not consume the input
 //! - [`opt`][opt]: Make the underlying parser optional
 //! - [`peek`][peek]: Returns a result without consuming the input
-//! - [`recognize`][recognize]: If the child parser was successful, return the consumed input as the produced value
-//! - [`consumed`][consumed]: If the child parser was successful, return a tuple of the consumed input and the produced output.
-//! - [`verify`][verify]: Returns the result of the child parser if it satisfies a verification function
+//! - [`Parser::recognize`][Parser::recognize]: If the child parser was successful, return the consumed input as the produced value
+//! - [`Parser::with_recognized`][Parser::with_recognized]: If the child parser was successful, return a tuple of the consumed input and the produced output.
+//! - [`Parser::verify`]: Returns the result of the child parser if it satisfies a verification function
 //!
 //! ## Error management and debugging
 //!
-//! - [`dbg_dmp`][crate::error::dbg_dmp]: Prints a message and the input if the parser fails
+//! - [`Parser::context`]: Add context to the error if the parser fails
+//! - [`Parser::dbg_err`]: Prints a message and the input if the parser fails
 //!
 //! ## Text parsing
 //!
@@ -278,6 +280,8 @@ impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> O2> Parser<I, O2, E> fo
 
 /// Applies a function returning a `Result` over the result of a parser.
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::map_res`]
+///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::character::digit1;
@@ -296,6 +300,7 @@ impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> O2> Parser<I, O2, E> fo
 /// assert_eq!(parse("123456"), Err(Err::Error(("123456", ErrorKind::MapRes))));
 /// # }
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::map_res")]
 pub fn map_res<I: Clone, O1, O2, E: FromExternalError<I, E2>, E2, F, G>(
   mut parser: F,
   mut f: G,
@@ -314,7 +319,44 @@ where
   }
 }
 
+/// Implementation of [`Parser::map_res`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct MapRes<F, G, O1> {
+  f: F,
+  g: G,
+  phantom: core::marker::PhantomData<O1>,
+}
+
+impl<F, G, O1> MapRes<F, G, O1> {
+  pub(crate) fn new(f: F, g: G) -> Self {
+    Self {
+      f,
+      g,
+      phantom: Default::default(),
+    }
+  }
+}
+
+impl<I, O1, O2, E, E2, F, G> Parser<I, O2, E> for MapRes<F, G, O1>
+where
+  I: Clone,
+  F: Parser<I, O1, E>,
+  G: FnMut(O1) -> Result<O2, E2>,
+  E: FromExternalError<I, E2>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, O2, E> {
+    let i = input.clone();
+    let (input, o1) = self.f.parse(input)?;
+    match (self.g)(o1) {
+      Ok(o2) => Ok((input, o2)),
+      Err(e) => Err(Err::Error(E::from_external_error(i, ErrorKind::MapRes, e))),
+    }
+  }
+}
+
 /// Applies a function returning an `Option` over the result of a parser.
+///
+/// **WARNING:** Deprecated, replaced with [`Parser::map_opt`]
 ///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
@@ -334,6 +376,7 @@ where
 /// assert_eq!(parse("123456"), Err(Err::Error(("123456", ErrorKind::MapOpt))));
 /// # }
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::map_res")]
 pub fn map_opt<I: Clone, O1, O2, E: ParseError<I>, F, G>(
   mut parser: F,
   mut f: G,
@@ -346,6 +389,41 @@ where
     let i = input.clone();
     let (input, o1) = parser.parse(input)?;
     match f(o1) {
+      Some(o2) => Ok((input, o2)),
+      None => Err(Err::Error(E::from_error_kind(i, ErrorKind::MapOpt))),
+    }
+  }
+}
+
+/// Implementation of [`Parser::map_opt`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct MapOpt<F, G, O1> {
+  f: F,
+  g: G,
+  phantom: core::marker::PhantomData<O1>,
+}
+
+impl<F, G, O1> MapOpt<F, G, O1> {
+  pub(crate) fn new(f: F, g: G) -> Self {
+    Self {
+      f,
+      g,
+      phantom: Default::default(),
+    }
+  }
+}
+
+impl<I, O1, O2, E, F, G> Parser<I, O2, E> for MapOpt<F, G, O1>
+where
+  I: Clone,
+  F: Parser<I, O1, E>,
+  G: FnMut(O1) -> Option<O2>,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, O2, E> {
+    let i = input.clone();
+    let (input, o1) = self.f.parse(input)?;
+    match (self.g)(o1) {
       Some(o2) => Ok((input, o2)),
       None => Err(Err::Error(E::from_error_kind(i, ErrorKind::MapOpt))),
     }
@@ -652,6 +730,8 @@ where
 
 /// Transforms Incomplete into `Error`.
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::complete`]
+///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult, input::Streaming};
 /// use nom::bytes::take;
@@ -664,6 +744,7 @@ where
 /// assert_eq!(parser(Streaming("abcd")), Err(Err::Error((Streaming("abcd"), ErrorKind::Complete))));
 /// # }
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::complete")]
 pub fn complete<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
   F: Parser<I, O, E>,
@@ -671,6 +752,33 @@ where
   move |input: I| {
     let i = input.clone();
     match f.parse(input) {
+      Err(Err::Incomplete(_)) => Err(Err::Error(E::from_error_kind(i, ErrorKind::Complete))),
+      rest => rest,
+    }
+  }
+}
+
+/// Implementation of [`Parser::complete`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct Complete<F> {
+  f: F,
+}
+
+impl<F> Complete<F> {
+  pub(crate) fn new(f: F) -> Self {
+    Self { f }
+  }
+}
+
+impl<F, I, O, E> Parser<I, O, E> for Complete<F>
+where
+  I: Clone,
+  F: Parser<I, O, E>,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    let i = input.clone();
+    match (self.f).parse(input) {
       Err(Err::Incomplete(_)) => Err(Err::Error(E::from_error_kind(i, ErrorKind::Complete))),
       rest => rest,
     }
@@ -712,6 +820,8 @@ where
 /// The verification function takes as argument a reference to the output of the
 /// parser.
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::map`]
+///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::combinator::verify;
@@ -725,6 +835,7 @@ where
 /// assert_eq!(parser("123abcd;"),Err(Err::Error(("123abcd;", ErrorKind::Alpha))));
 /// # }
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::verify")]
 pub fn verify<I: Clone, O1, O2, E: ParseError<I>, F, G>(
   mut first: F,
   second: G,
@@ -747,7 +858,48 @@ where
   }
 }
 
+/// Implementation of [`Parser::verify`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct Verify<F, G, O2: ?Sized> {
+  first: F,
+  second: G,
+  phantom: core::marker::PhantomData<O2>,
+}
+
+impl<F, G, O2: ?Sized> Verify<F, G, O2> {
+  pub(crate) fn new(first: F, second: G) -> Self {
+    Self {
+      first,
+      second,
+      phantom: Default::default(),
+    }
+  }
+}
+
+impl<I, O1, O2, E, F: Parser<I, O1, E>, G> Parser<I, O1, E> for Verify<F, G, O2>
+where
+  I: Clone,
+  E: ParseError<I>,
+  F: Parser<I, O1, E>,
+  G: Fn(&O2) -> bool,
+  O1: Borrow<O2>,
+  O2: ?Sized,
+{
+  fn parse(&mut self, input: I) -> IResult<I, O1, E> {
+    let i = input.clone();
+    let (input, o) = (self.first).parse(input)?;
+
+    if (self.second)(o.borrow()) {
+      Ok((input, o))
+    } else {
+      Err(Err::Error(E::from_error_kind(i, ErrorKind::Verify)))
+    }
+  }
+}
+
 /// Returns the provided value if the child parser succeeds.
+///
+/// **WARNING:** Deprecated, replaced with [`Parser::value`]
 ///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
@@ -761,6 +913,7 @@ where
 /// assert_eq!(parser("123abcd;"), Err(Err::Error(("123abcd;", ErrorKind::Alpha))));
 /// # }
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::value")]
 pub fn value<I, O1: Clone, O2, E: ParseError<I>, F>(
   val: O1,
   mut parser: F,
@@ -769,6 +922,34 @@ where
   F: Parser<I, O2, E>,
 {
   move |input: I| parser.parse(input).map(|(i, _)| (i, val.clone()))
+}
+
+/// Implementation of [`Parser::value`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct Value<F, O1, O2> {
+  parser: F,
+  val: O2,
+  phantom: core::marker::PhantomData<O1>,
+}
+
+impl<F, O1, O2> Value<F, O1, O2> {
+  pub(crate) fn new(parser: F, val: O2) -> Self {
+    Self {
+      parser,
+      val,
+      phantom: Default::default(),
+    }
+  }
+}
+
+impl<I, O1, O2: Clone, E: ParseError<I>, F: Parser<I, O1, E>> Parser<I, O2, E>
+  for Value<F, O1, O2>
+{
+  fn parse(&mut self, input: I) -> IResult<I, O2, E> {
+    (self.parser)
+      .parse(input)
+      .map(|(i, _)| (i, self.val.clone()))
+  }
 }
 
 /// Succeeds if the child parser returns an error.
@@ -801,6 +982,8 @@ where
 
 /// If the child parser was successful, return the consumed input as produced value.
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::recognize`]
+///
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::combinator::recognize;
@@ -814,6 +997,7 @@ where
 /// assert_eq!(parser("abcd;"),Err(Err::Error((";", ErrorKind::Char))));
 /// # }
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::recognize")]
 pub fn recognize<I, O, E: ParseError<I>, F>(
   mut parser: F,
 ) -> impl FnMut(I) -> IResult<I, <I as IntoOutput>::Output, E>
@@ -836,6 +1020,43 @@ where
   }
 }
 
+/// Implementation of [`Parser::recognize`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct Recognize<F, O> {
+  parser: F,
+  o: core::marker::PhantomData<O>,
+}
+
+impl<F, O> Recognize<F, O> {
+  pub(crate) fn new(parser: F) -> Self {
+    Self {
+      parser,
+      o: Default::default(),
+    }
+  }
+}
+
+impl<I, O, E, F> Parser<I, <I as IntoOutput>::Output, E> for Recognize<F, O>
+where
+  I: Clone,
+  I: Offset,
+  I: Slice<RangeTo<usize>>,
+  I: IntoOutput,
+  E: ParseError<I>,
+  F: Parser<I, O, E>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, <I as IntoOutput>::Output, E> {
+    let i = input.clone();
+    match (self.parser).parse(i) {
+      Ok((i, _)) => {
+        let index = input.offset(&i);
+        Ok((i, input.slice(..index))).into_output()
+      }
+      Err(e) => Err(e),
+    }
+  }
+}
+
 /// if the child parser was successful, return the consumed input with the output
 /// as a tuple. Functions similarly to [recognize](fn.recognize.html) except it
 /// returns the parser output as well.
@@ -844,6 +1065,8 @@ where
 /// as the input, or the input is a user defined type.
 ///
 /// Returned tuple is of the format `(consumed input, produced output)`.
+///
+/// **WARNING:** Deprecated, replaced with [`Parser::with_recognized`] (output ordering is changed)
 ///
 /// ```rust
 /// # use nom::prelude::*;
@@ -874,6 +1097,10 @@ where
 /// assert_eq!(recognize_parser("abcd"), consumed_parser.parse("abcd"));
 /// # }
 /// ```
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `Parser::with_recognized (output ordering is changed)"
+)]
 pub fn consumed<I, O, F, E>(
   mut parser: F,
 ) -> impl FnMut(I) -> IResult<I, (<I as IntoOutput>::Output, O), E>
@@ -890,6 +1117,44 @@ where
         let index = input.offset(&remaining);
         let consumed = input.slice(..index).into_output();
         Ok((remaining, (consumed, result)))
+      }
+      Err(e) => Err(e),
+    }
+  }
+}
+
+/// Implementation of [`Parser::with_recognized`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct WithRecognized<F, O> {
+  parser: F,
+  o: core::marker::PhantomData<O>,
+}
+
+impl<F, O> WithRecognized<F, O> {
+  pub(crate) fn new(parser: F) -> Self {
+    Self {
+      parser,
+      o: Default::default(),
+    }
+  }
+}
+
+impl<I, O, E, F> Parser<I, (O, <I as IntoOutput>::Output), E> for WithRecognized<F, O>
+where
+  I: Clone,
+  I: Offset,
+  I: Slice<RangeTo<usize>>,
+  I: IntoOutput,
+  E: ParseError<I>,
+  F: Parser<I, O, E>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, (O, <I as IntoOutput>::Output), E> {
+    let i = input.clone();
+    match (self.parser).parse(i) {
+      Ok((remaining, result)) => {
+        let index = input.offset(&remaining);
+        let consumed = input.slice(..index).into_output();
+        Ok((remaining, (result, consumed)))
       }
       Err(e) => Err(e),
     }

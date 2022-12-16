@@ -3,6 +3,7 @@
 #![cfg_attr(feature = "cargo-clippy", allow(redundant_closure))]
 
 use nom::input::Streaming;
+use nom::prelude::*;
 use nom::{error::ErrorKind, Err, IResult, Needed};
 
 #[allow(dead_code)]
@@ -26,7 +27,7 @@ mod parse_int {
   use nom::prelude::*;
   use nom::{
     character::{digit1 as digit, space1 as space},
-    combinator::{complete, opt},
+    combinator::opt,
     multi::many0,
     IResult,
   };
@@ -38,8 +39,9 @@ mod parse_int {
 
   fn spaces_or_int(input: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, i32> {
     println!("{}", input.to_hex(8));
-    let (i, _) = opt(complete(space))(input)?;
-    let (i, res) = complete(digit)
+    let (i, _) = opt(space.complete())(input)?;
+    let (i, res) = digit
+      .complete()
       .map(|x| {
         println!("x: {:?}", x);
         let result = str::from_utf8(x).unwrap();
@@ -133,8 +135,8 @@ fn issue_717(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
 
 mod issue_647 {
   use nom::bytes::tag;
-  use nom::combinator::complete;
   use nom::multi::separated_list0;
+  use nom::prelude::*;
   use nom::{error::Error, number::be_f64, Err, IResult};
   pub type Input<'a> = nom::input::Streaming<&'a [u8]>;
 
@@ -148,7 +150,7 @@ mod issue_647 {
     input: Input<'a>,
     _cs: &'b f64,
   ) -> Result<(Input<'a>, Vec<f64>), Err<Error<Input<'a>>>> {
-    separated_list0(complete(tag(",")), complete(be_f64))(input)
+    separated_list0(tag(",").complete(), be_f64.complete())(input)
   }
 
   fn data(input: Input<'_>) -> IResult<Input<'_>, Data> {
@@ -185,8 +187,8 @@ fn issue_942() {
   pub fn parser<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
     i: &'a str,
   ) -> IResult<&'a str, usize, E> {
-    use nom::{character::char, error::context, multi::many0_count};
-    many0_count(context("char_a", char('a')))(i)
+    use nom::{character::char, multi::many0_count};
+    many0_count(char('a').context("char_a"))(i)
   }
   assert_eq!(parser::<()>("aaa"), Ok(("", 3)));
 }

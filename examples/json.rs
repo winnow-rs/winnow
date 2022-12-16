@@ -5,8 +5,8 @@ use nom::{
   branch::alt,
   bytes::{escaped, tag, take_while},
   character::{alphanumeric1 as alphanumeric, char, f64, one_of},
-  combinator::{cut, opt, value},
-  error::{context, convert_error, ContextError, ErrorKind, ParseError, VerboseError},
+  combinator::{cut, opt},
+  error::{convert_error, ContextError, ErrorKind, ParseError, VerboseError},
   multi::separated_list0,
   sequence::{delimited, preceded, separated_pair, terminated},
   Err, IResult,
@@ -65,11 +65,11 @@ fn parse_str<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str
 fn boolean<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str, bool, E> {
   // This is a parser that returns `true` if it sees the string "true", and
   // an error otherwise
-  let parse_true = value(true, tag("true"));
+  let parse_true = tag("true").value(true);
 
   // This is a parser that returns `false` if it sees the string "false", and
   // an error otherwise
-  let parse_false = value(false, tag("false"));
+  let parse_false = tag("false").value(false);
 
   // `alt` combines the two parsers. It returns the result of the first
   // successful parser, or an error
@@ -77,7 +77,7 @@ fn boolean<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str, bool,
 }
 
 fn null<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str, (), E> {
-  value((), tag("null"))(input)
+  tag("null").value(()).parse(input)
 }
 
 /// this parser combines the previous `parse_str` parser, that recognizes the
@@ -94,10 +94,9 @@ fn null<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str, (), E> {
 fn string<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
   i: &'a str,
 ) -> IResult<&'a str, &'a str, E> {
-  context(
-    "string",
-    preceded(char('\"'), cut(terminated(parse_str, char('\"')))),
-  )(i)
+  preceded(char('\"'), cut(terminated(parse_str, char('\"'))))
+    .context("string")
+    .parse(i)
 }
 
 /// some combinators, like `separated_list0` or `many0`, will call a parser repeatedly,
@@ -107,16 +106,15 @@ fn string<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
 fn array<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
   i: &'a str,
 ) -> IResult<&'a str, Vec<JsonValue>, E> {
-  context(
-    "array",
-    preceded(
-      char('['),
-      cut(terminated(
-        separated_list0(preceded(sp, char(',')), json_value),
-        preceded(sp, char(']')),
-      )),
-    ),
-  )(i)
+  preceded(
+    char('['),
+    cut(terminated(
+      separated_list0(preceded(sp, char(',')), json_value),
+      preceded(sp, char(']')),
+    )),
+  )
+  .context("array")
+  .parse(i)
 }
 
 fn key_value<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
@@ -132,21 +130,20 @@ fn key_value<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
 fn hash<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
   i: &'a str,
 ) -> IResult<&'a str, HashMap<String, JsonValue>, E> {
-  context(
-    "map",
-    preceded(
-      char('{'),
-      cut(terminated(
-        separated_list0(preceded(sp, char(',')), key_value).map(|tuple_vec| {
-          tuple_vec
-            .into_iter()
-            .map(|(k, v)| (String::from(k), v))
-            .collect()
-        }),
-        preceded(sp, char('}')),
-      )),
-    ),
-  )(i)
+  preceded(
+    char('{'),
+    cut(terminated(
+      separated_list0(preceded(sp, char(',')), key_value).map(|tuple_vec| {
+        tuple_vec
+          .into_iter()
+          .map(|(k, v)| (String::from(k), v))
+          .collect()
+      }),
+      preceded(sp, char('}')),
+    )),
+  )
+  .context("map")
+  .parse(i)
 }
 
 /// here, we apply the space parser before trying to parse a value

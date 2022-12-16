@@ -4,7 +4,6 @@ use nom::{
   branch::alt,
   bytes::{tag, take},
   character::{anychar, char, f64, multispace0, none_of},
-  combinator::{map_opt, map_res, value, verify},
   error::ParseError,
   multi::{fold_many0, separated_list0},
   sequence::{delimited, preceded, separated_pair},
@@ -24,39 +23,42 @@ pub enum JsonValue {
 }
 
 fn boolean(input: &str) -> IResult<&str, bool> {
-  alt((value(false, tag("false")), value(true, tag("true"))))(input)
+  alt((tag("false").value(false), tag("true").value(true)))(input)
 }
 
 fn u16_hex(input: &str) -> IResult<&str, u16> {
-  map_res(take(4usize), |s| u16::from_str_radix(s, 16))(input)
+  take(4usize)
+    .map_res(|s| u16::from_str_radix(s, 16))
+    .parse(input)
 }
 
 fn unicode_escape(input: &str) -> IResult<&str, char> {
-  map_opt(
-    alt((
-      // Not a surrogate
-      verify(u16_hex, |cp| !(0xD800..0xE000).contains(cp)).map(|cp| cp as u32),
-      // See https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF for details
-      verify(
-        separated_pair(u16_hex, tag("\\u"), u16_hex),
-        |(high, low)| (0xD800..0xDC00).contains(high) && (0xDC00..0xE000).contains(low),
-      )
+  alt((
+    // Not a surrogate
+    u16_hex
+      .verify(|cp| !(0xD800..0xE000).contains(cp))
+      .map(|cp| cp as u32),
+    // See https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF for details
+    separated_pair(u16_hex, tag("\\u"), u16_hex)
+      .verify(|(high, low)| (0xD800..0xDC00).contains(high) && (0xDC00..0xE000).contains(low))
       .map(|(high, low)| {
         let high_ten = (high as u32) - 0xD800;
         let low_ten = (low as u32) - 0xDC00;
         (high_ten << 10) + low_ten + 0x10000
       }),
-    )),
+  ))
+  .map_opt(
     // Could be probably replaced with .unwrap() or _unchecked due to the verify checks
     std::char::from_u32,
-  )(input)
+  )
+  .parse(input)
 }
 
 fn character(input: &str) -> IResult<&str, char> {
   let (input, c) = none_of("\"")(input)?;
   if c == '\\' {
     alt((
-      map_res(anychar, |c| {
+      anychar.map_res(|c| {
         Ok(match c {
           '"' | '\\' | '/' => c,
           'b' => '\x08',
@@ -114,7 +116,7 @@ fn json_value(input: &str) -> IResult<&str, JsonValue> {
   use JsonValue::*;
 
   alt((
-    value(Null, tag("null")),
+    tag("null").value(Null),
     boolean.map(Bool),
     string.map(Str),
     f64.map(Num),

@@ -453,17 +453,16 @@
 //! While you are writing your parsers, you will sometimes need to follow
 //! which part of the parser sees which part of the input.
 //!
-//! To that end, nom provides the `dbg_dmp` function that will observe
+//! To that end, nom provides the `dbg_err` function that will observe
 //! a parser's input and output, and print a hexdump of the input if there was an
 //! error. Here is what it could return:
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! # use nom::IResult;
-//! # use nom::error::dbg_dmp;
+//! use nom::prelude::*;
 //! # use nom::bytes::tag;
 //! fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
-//!     dbg_dmp(tag("abcd"), "tag")(i)
+//!     tag("abcd").dbg_err("tag").parse(i)
 //! }
 //!
 //! let a = &b"efghijkl"[..];
@@ -698,6 +697,9 @@ use crate::{Err, IResult};
 /// Create a new error from an input position, a static string and an existing error.
 /// This is used mainly in the [context] combinator, to add user friendly information
 /// to errors when backtracking through a parse tree
+///
+/// **WARNING:** Deprecated, replaced with [`Parser::context`]
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::context")]
 pub fn context<I: Clone, E: ContextError<I>, F, O>(
   context: &'static str,
   mut f: F,
@@ -710,6 +712,40 @@ where
     Err(Err::Incomplete(i)) => Err(Err::Incomplete(i)),
     Err(Err::Error(e)) => Err(Err::Error(E::add_context(i, context, e))),
     Err(Err::Failure(e)) => Err(Err::Failure(E::add_context(i, context, e))),
+  }
+}
+
+/// Implementation of [`Parser::context`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct Context<F, O> {
+  f: F,
+  context: &'static str,
+  phantom: core::marker::PhantomData<O>,
+}
+
+impl<F, O> Context<F, O> {
+  pub(crate) fn new(f: F, context: &'static str) -> Self {
+    Self {
+      f,
+      context,
+      phantom: Default::default(),
+    }
+  }
+}
+
+impl<I, O, E, F: Parser<I, O, E>> Parser<I, O, E> for Context<F, O>
+where
+  I: Clone,
+  E: ContextError<I>,
+  F: Parser<I, O, E>,
+{
+  fn parse(&mut self, i: I) -> IResult<I, O, E> {
+    match (self.f).parse(i.clone()) {
+      Ok(o) => Ok(o),
+      Err(Err::Incomplete(i)) => Err(Err::Incomplete(i)),
+      Err(Err::Error(e)) => Err(Err::Error(E::add_context(i, self.context, e))),
+      Err(Err::Failure(e)) => Err(Err::Failure(E::add_context(i, self.context, e))),
+    }
   }
 }
 
@@ -1038,6 +1074,8 @@ macro_rules! error_node_position(
 ///
 /// It also displays the input in hexdump format
 ///
+/// **WARNING:** Deprecated, replaced with [`Parser::dbg_err`]
+///
 /// ```rust
 /// use nom::{IResult, error::dbg_dmp, bytes::tag};
 ///
@@ -1052,6 +1090,7 @@ macro_rules! error_node_position(
 /// // 00000000        65 66 67 68 69 6a 6b 6c         efghijkl
 /// f(a);
 /// ```
+#[deprecated(since = "8.0.0", note = "Replaced with `Parser::dbg_err")]
 #[cfg(feature = "std")]
 pub fn dbg_dmp<'a, F, O, E: std::fmt::Debug>(
   f: F,
@@ -1067,6 +1106,49 @@ where
       Err(e)
     }
     a => a,
+  }
+}
+
+/// Implementation of [`Parser::dbg_err`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+#[cfg(feature = "std")]
+pub struct DbgErr<F, O, C> {
+  f: F,
+  context: C,
+  phantom: core::marker::PhantomData<O>,
+}
+
+#[cfg(feature = "std")]
+impl<F, O, C> DbgErr<F, O, C> {
+  pub(crate) fn new(f: F, context: C) -> Self {
+    Self {
+      f,
+      context,
+      phantom: Default::default(),
+    }
+  }
+}
+
+#[cfg(feature = "std")]
+impl<I, O, E, F: Parser<I, O, E>, C> Parser<I, O, E> for DbgErr<F, O, C>
+where
+  I: crate::input::AsBytes,
+  I: Clone,
+  E: std::fmt::Debug,
+  F: Parser<I, O, E>,
+  C: std::fmt::Display,
+{
+  fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    use crate::input::HexDisplay;
+    let i = input.clone();
+    match self.f.parse(i) {
+      Err(e) => {
+        let input = input.as_bytes();
+        eprintln!("{}: Error({:?}) at:\n{}", self.context, e, input.to_hex(8));
+        Err(e)
+      }
+      a => a,
+    }
   }
 }
 
