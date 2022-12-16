@@ -475,27 +475,28 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`nom::bytes::take_till`][crate::bytes::take_till]
 #[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_till`")]
-pub fn take_till<F, Input, Error: ParseError<Input>>(
-  cond: F,
+pub fn take_till<T, Input, Error: ParseError<Input>>(
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
-  move |i: Input| take_till_internal(i, &cond)
+  move |i: Input| take_till_internal(i, &list)
 }
 
-pub(crate) fn take_till_internal<F, Input, Error: ParseError<Input>>(
+pub(crate) fn take_till_internal<T, Input, Error: ParseError<Input>>(
   i: Input,
-  cond: &F,
+  list: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
-  i.split_at_position_complete(|c| cond(c)).into_output()
+  i.split_at_position_complete(|c| list.find_token(c))
+    .into_output()
 }
 
 /// Returns the longest (at least 1) input slice till a predicate is met.
@@ -522,28 +523,29 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`nom::bytes::take_till1`][crate::bytes::take_till1]
 #[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_till1`")]
-pub fn take_till1<F, Input, Error: ParseError<Input>>(
-  cond: F,
+pub fn take_till1<T, Input, Error: ParseError<Input>>(
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
-  move |i: Input| take_till1_internal(i, &cond)
+  move |i: Input| take_till1_internal(i, &list)
 }
 
-pub(crate) fn take_till1_internal<F, Input, Error: ParseError<Input>>(
+pub(crate) fn take_till1_internal<T, Input, Error: ParseError<Input>>(
   i: Input,
-  cond: &F,
+  list: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
   let e: ErrorKind = ErrorKind::TakeTill1;
-  i.split_at_position1_complete(|c| cond(c), e).into_output()
+  i.split_at_position1_complete(|c| list.find_token(c), e)
+    .into_output()
 }
 
 /// Returns an input slice containing the first N input elements (Input[..N]).

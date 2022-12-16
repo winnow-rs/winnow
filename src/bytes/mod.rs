@@ -493,10 +493,7 @@ where
   }
 }
 
-/// Returns the longest input slice (if any) till a predicate is met.
-///
-/// The parser will return the longest slice till the given predicate *(a function that
-/// takes the input and returns a bool)*.
+/// Returns the longest input slice (if any) till a [pattern][FindToken] is met.
 ///
 /// *Streaming version* will return a `Err::Incomplete(Needed::new(1))` if the match reaches the
 /// end of input or if there was not match.
@@ -531,27 +528,24 @@ where
 /// assert_eq!(till_colon(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_till<F, Input, Error: ParseError<Input>, const STREAMING: bool>(
-  cond: F,
+pub fn take_till<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
   move |i: Input| {
     if STREAMING {
-      streaming::take_till_internal(i, &cond)
+      streaming::take_till_internal(i, &list)
     } else {
-      complete::take_till_internal(i, &cond)
+      complete::take_till_internal(i, &list)
     }
   }
 }
 
-/// Returns the longest (at least 1) input slice till a predicate is met.
-///
-/// The parser will return the longest slice till the given predicate *(a function that
-/// takes the input and returns a bool)*.
+/// Returns the longest (at least 1) input slice till a [pattern][FindToken] is met.
 ///
 /// It will return `Err(Err::Error((_, ErrorKind::TakeTill1)))` if the input is empty or the
 /// predicate matches the first input.
@@ -589,19 +583,19 @@ where
 /// assert_eq!(till_colon(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_till1<F, Input, Error: ParseError<Input>, const STREAMING: bool>(
-  cond: F,
+pub fn take_till1<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
   move |i: Input| {
     if STREAMING {
-      streaming::take_till1_internal(i, &cond)
+      streaming::take_till1_internal(i, &list)
     } else {
-      complete::take_till1_internal(i, &cond)
+      complete::take_till1_internal(i, &list)
     }
   }
 }
