@@ -128,6 +128,26 @@ where
   res.into_output()
 }
 
+pub(crate) fn one_of_internal<I, T, E: ParseError<I>>(
+  input: I,
+  list: &T,
+) -> IResult<I, <I as InputIter>::Item, E>
+where
+  I: Slice<RangeFrom<usize>> + InputIter + InputLength,
+  <I as InputIter>::Item: Copy,
+  T: FindToken<<I as InputIter>::Item>,
+{
+  let mut it = input.iter_indices();
+  match it.next() {
+    Some((_, c)) if list.find_token(c) => match it.next() {
+      None => Ok((input.slice(input.input_len()..), c)),
+      Some((idx, _)) => Ok((input.slice(idx..), c)),
+    },
+    Some(_) => Err(Err::Error(E::from_error_kind(input, ErrorKind::OneOf))),
+    None => Err(Err::Incomplete(Needed::new(1))),
+  }
+}
+
 /// Parse till certain characters are met.
 ///
 /// The parser will return the longest slice till one of the characters of the combinator's argument are met.

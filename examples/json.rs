@@ -3,8 +3,9 @@
 use nom::prelude::*;
 use nom::{
   branch::alt,
+  bytes::one_of,
   bytes::{escaped, tag, take_while},
-  character::{alphanumeric1 as alphanumeric, char, f64, one_of},
+  character::{alphanumeric1 as alphanumeric, char, f64},
   combinator::{cut, opt},
   error::{convert_error, ContextError, ErrorKind, ParseError, VerboseError},
   multi::separated_list0,

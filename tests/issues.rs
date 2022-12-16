@@ -234,7 +234,7 @@ fn issue_1231_bits_expect_fn_closure() {
 
 #[test]
 fn issue_1282_findtoken_char() {
-  use nom::character::one_of;
+  use nom::bytes::one_of;
   use nom::error::Error;
   let parser = one_of::<_, _, Error<_>, false>(&['a', 'b', 'c'][..]);
   assert_eq!(parser("aaa"), Ok(("aa", 'a')));

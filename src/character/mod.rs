@@ -114,48 +114,6 @@ where
   }
 }
 
-/// Recognizes one of the provided characters.
-///
-/// *Complete version*: Will return an error if there's not enough input data.
-///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
-///
-/// # Example
-///
-/// ```
-/// # use nom::{Err, error::ErrorKind};
-/// # use nom::character::one_of;
-/// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("abc")("b"), Ok(("", 'b')));
-/// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("a")("bc"), Err(Err::Error(("bc", ErrorKind::OneOf))));
-/// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("a")(""), Err(Err::Error(("", ErrorKind::OneOf))));
-/// ```
-///
-/// ```
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::one_of;
-/// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("abc")(Streaming("b")), Ok((Streaming(""), 'b')));
-/// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("a")(Streaming("bc")), Err(Err::Error((Streaming("bc"), ErrorKind::OneOf))));
-/// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("a")(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
-/// ```
-#[inline(always)]
-pub fn one_of<I, T, Error: ParseError<I>, const STREAMING: bool>(
-  list: T,
-) -> impl Fn(I) -> IResult<I, char, Error>
-where
-  I: Slice<RangeFrom<usize>> + InputIter + InputIsStreaming<STREAMING>,
-  <I as InputIter>::Item: AsChar + Copy,
-  T: FindToken<<I as InputIter>::Item>,
-{
-  move |i: I| {
-    if STREAMING {
-      streaming::one_of_internal(i, &list)
-    } else {
-      complete::one_of_internal(i, &list)
-    }
-  }
-}
-
 /// Recognizes a character that is not in the provided characters.
 ///
 /// *Complete version*: Will return an error if there's not enough input data.

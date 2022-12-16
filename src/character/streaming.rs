@@ -123,31 +123,18 @@ where
 /// assert_eq!(one_of::<_, _, (_, ErrorKind)>("a")(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::one_of`][crate::character::one_of] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::one_of` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom::bytes::one_of` with input wrapped in `nom::input::Streaming`"
 )]
 pub fn one_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
-  I: Slice<RangeFrom<usize>> + InputIter,
+  I: Slice<RangeFrom<usize>> + InputIter + InputLength,
   <I as InputIter>::Item: AsChar + Copy,
   T: FindToken<<I as InputIter>::Item>,
 {
-  move |i: I| one_of_internal(i, &list)
-}
-
-pub(crate) fn one_of_internal<I, T, Error: ParseError<I>>(i: I, list: &T) -> IResult<I, char, Error>
-where
-  I: Slice<RangeFrom<usize>> + InputIter,
-  <I as InputIter>::Item: AsChar + Copy,
-  T: FindToken<<I as InputIter>::Item>,
-{
-  match (i).iter_elements().next().map(|c| (c, list.find_token(c))) {
-    None => Err(Err::Incomplete(Needed::new(1))),
-    Some((_, false)) => Err(Err::Error(Error::from_error_kind(i, ErrorKind::OneOf))),
-    Some((c, true)) => Ok((i.slice(c.len()..), c.as_char())),
-  }
+  move |i: I| crate::bytes::streaming::one_of_internal(i, &list).map(|(i, c)| (i, c.as_char()))
 }
 
 /// Recognizes a character that is not in the provided characters.

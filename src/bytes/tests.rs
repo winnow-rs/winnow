@@ -28,7 +28,8 @@ fn complete_take_while_m_n_utf8_all_matching_substring() {
 fn complete_escaped_hang() {
   // issue #1336 "escaped hangs if normal parser accepts empty"
   fn escaped_string(input: &str) -> IResult<&str, &str> {
-    use crate::character::{alpha0, one_of};
+    use crate::bytes::one_of;
+    use crate::character::alpha0;
     escaped(alpha0, '\\', one_of("n"))(input)
   }
 
@@ -40,6 +41,7 @@ fn complete_escaped_hang() {
 fn complete_escaped_hang_1118() {
   // issue ##1118 escaped does not work with empty string
   fn unquote<'a>(input: &'a str) -> IResult<&'a str, &'a str> {
+    use crate::bytes::one_of;
     use crate::character::*;
     use crate::combinator::opt;
     use crate::sequence::delimited;
@@ -58,7 +60,7 @@ fn complete_escaped_hang_1118() {
 #[allow(unused_variables)]
 #[test]
 fn complete_escaping() {
-  use crate::character::one_of;
+  use crate::bytes::one_of;
   use crate::character::{alpha1 as alpha, digit1 as digit};
 
   fn esc(i: &[u8]) -> IResult<&[u8], &[u8]> {
@@ -94,7 +96,7 @@ fn complete_escaping() {
 #[cfg(feature = "alloc")]
 #[test]
 fn complete_escaping_str() {
-  use crate::character::one_of;
+  use crate::bytes::one_of;
   use crate::character::{alpha1 as alpha, digit1 as digit};
 
   fn esc(i: &str) -> IResult<&str, &str> {
@@ -264,6 +266,29 @@ fn complete_escape_transform_str() {
     )(i)
   }
   assert_eq!(esc3("a␛0bc␛n"), Ok(("", String::from("a\0bc\n"))));
+}
+
+#[test]
+fn streaming_one_of_test() {
+  fn f(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, u8> {
+    one_of("ab")(i)
+  }
+
+  let a = &b"abcd"[..];
+  assert_eq!(f(Streaming(a)), Ok((Streaming(&b"bcd"[..]), b'a')));
+
+  let b = &b"cde"[..];
+  assert_eq!(
+    f(Streaming(b)),
+    Err(Err::Error(error_position!(Streaming(b), ErrorKind::OneOf)))
+  );
+
+  fn utf8(i: Streaming<&str>) -> IResult<Streaming<&str>, char> {
+    one_of("+\u{FF0B}")(i)
+  }
+
+  assert!(utf8(Streaming("+")).is_ok());
+  assert!(utf8(Streaming("\u{FF0B}")).is_ok());
 }
 
 #[test]

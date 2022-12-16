@@ -6,8 +6,9 @@
 
 use nom::{
   branch::alt,
+  bytes::one_of,
   bytes::tag,
-  character::{alpha1, char, digit1, multispace0, multispace1, one_of},
+  character::{alpha1, char, digit1, multispace0, multispace1},
   combinator::{cut, opt},
   error::VerboseError,
   multi::many0,

@@ -122,6 +122,48 @@ where
   }
 }
 
+/// Returns a token that matches the [pattern][FindToken]
+///
+/// *Complete version*: Will return an error if there's not enough input data.
+///
+/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+///
+/// # Example
+///
+/// ```
+/// # use nom::{Err, error::ErrorKind};
+/// # use nom::bytes::one_of;
+/// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("abc")("b"), Ok(("", 'b')));
+/// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("a")("bc"), Err(Err::Error(("bc", ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("a")(""), Err(Err::Error(("", ErrorKind::OneOf))));
+/// ```
+///
+/// ```
+/// # use nom::{Err, error::ErrorKind, Needed};
+/// # use nom::input::Streaming;
+/// # use nom::bytes::one_of;
+/// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("abc")(Streaming("b")), Ok((Streaming(""), 'b')));
+/// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("a")(Streaming("bc")), Err(Err::Error((Streaming("bc"), ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("a")(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// ```
+#[inline(always)]
+pub fn one_of<I, T, Error: ParseError<I>, const STREAMING: bool>(
+  list: T,
+) -> impl Fn(I) -> IResult<I, <I as InputIter>::Item, Error>
+where
+  I: Slice<RangeFrom<usize>> + InputIter + InputLength + InputIsStreaming<STREAMING>,
+  <I as InputIter>::Item: Copy,
+  T: FindToken<<I as InputIter>::Item>,
+{
+  move |i: I| {
+    if STREAMING {
+      streaming::one_of_internal(i, &list)
+    } else {
+      complete::one_of_internal(i, &list)
+    }
+  }
+}
+
 /// Parse till certain characters are met.
 ///
 /// The parser will return the longest slice till one of the characters of the combinator's argument are met.
@@ -728,7 +770,7 @@ where
 /// # use nom::{Err, error::ErrorKind, Needed, IResult};
 /// # use nom::character::digit1;
 /// use nom::bytes::escaped;
-/// use nom::character::one_of;
+/// use nom::bytes::one_of;
 ///
 /// fn esc(s: &str) -> IResult<&str, &str> {
 ///   escaped(digit1, '\\', one_of(r#""n\"#))(s)
@@ -743,7 +785,7 @@ where
 /// # use nom::character::digit1;
 /// # use nom::input::Streaming;
 /// use nom::bytes::escaped;
-/// use nom::character::one_of;
+/// use nom::bytes::one_of;
 ///
 /// fn esc(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
 ///   escaped(digit1, '\\', one_of("\"n\\"))(s)

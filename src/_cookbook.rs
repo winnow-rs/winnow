@@ -164,7 +164,8 @@
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::{char, one_of},
+//!   character::char,
+//!   bytes::one_of,
 //!   bytes::tag,
 //! };
 //!
@@ -187,7 +188,8 @@
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::{char, one_of},
+//!   character::char,
+//!   bytes::one_of,
 //!   bytes::tag,
 //! };
 //!
@@ -211,7 +213,8 @@
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::{char, one_of},
+//!   character::char,
+//!   bytes::one_of,
 //!   bytes::tag,
 //! };
 //!
@@ -233,7 +236,8 @@
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::{char, one_of},
+//!   character::char,
+//!   bytes::one_of,
 //!   bytes::tag,
 //! };
 //!
@@ -255,7 +259,8 @@
 //!   IResult,
 //!   multi::{many0, many1},
 //!   sequence::terminated,
-//!   character::{char, one_of},
+//!   character::char,
+//!   bytes::one_of,
 //! };
 //!
 //! fn decimal(input: &str) -> IResult<&str, &str> {
@@ -278,7 +283,8 @@
 //!   multi::{many0, many1},
 //!   combinator::opt,
 //!   sequence::{preceded, terminated},
-//!   character::{char, one_of},
+//!   character::char,
+//!   bytes::one_of,
 //! };
 //!
 //! fn float(input: &str) -> IResult<&str, &str> {
