@@ -2,6 +2,8 @@
 
 use self::Needed::*;
 use crate::combinator::*;
+#[cfg(feature = "std")]
+use crate::error::DbgErr;
 use crate::error::{self, Context, ErrorKind};
 use crate::input::InputIsStreaming;
 use crate::lib::std::fmt;
@@ -655,6 +657,39 @@ pub trait Parser<I, O, E> {
     Self: core::marker::Sized,
   {
     Complete::new(self)
+  }
+
+  /// Prints a message and the input if the parser fails.
+  ///
+  /// The message prints the `Error` or `Incomplete`
+  /// and the parser's calling code.
+  ///
+  /// It also displays the input in hexdump format
+  ///
+  /// ```rust
+  /// use nom::prelude::*;
+  /// use nom::{IResult, bytes::tag};
+  ///
+  /// fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
+  ///   tag("abcd").dbg_err("alpha tag").parse(i)
+  /// }
+  ///
+  /// let a = &b"efghijkl"[..];
+  /// f(a);
+  /// ```
+  ///
+  /// Will print the following message:
+  /// ```console
+  /// alpha tag: Error(Position(0, [101, 102, 103, 104, 105, 106, 107, 108])) at:
+  /// 00000000        65 66 67 68 69 6a 6b 6c         efghijkl
+  /// ```
+  #[cfg(feature = "std")]
+  fn dbg_err<C>(self, context: C) -> DbgErr<Self, O, C>
+  where
+    C: std::fmt::Display,
+    Self: core::marker::Sized,
+  {
+    DbgErr::new(self, context)
   }
 
   /// Applies a second parser after the first one, return their results as a tuple

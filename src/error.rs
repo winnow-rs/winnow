@@ -1104,6 +1104,49 @@ where
   }
 }
 
+/// Implementation of [`Parser::dbg_err`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+#[cfg(feature = "std")]
+pub struct DbgErr<F, O, C> {
+  f: F,
+  context: C,
+  phantom: core::marker::PhantomData<O>,
+}
+
+#[cfg(feature = "std")]
+impl<F, O, C> DbgErr<F, O, C> {
+  pub(crate) fn new(f: F, context: C) -> Self {
+    Self {
+      f,
+      context,
+      phantom: Default::default(),
+    }
+  }
+}
+
+#[cfg(feature = "std")]
+impl<I, O, E, F: Parser<I, O, E>, C> Parser<I, O, E> for DbgErr<F, O, C>
+where
+  I: crate::input::AsBytes,
+  I: Clone,
+  E: std::fmt::Debug,
+  F: Parser<I, O, E>,
+  C: std::fmt::Display,
+{
+  fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    use crate::input::HexDisplay;
+    let i = input.clone();
+    match self.f.parse(i) {
+      Err(e) => {
+        let input = input.as_bytes();
+        eprintln!("{}: Error({:?}) at:\n{}", self.context, e, input.to_hex(8));
+        Err(e)
+      }
+      a => a,
+    }
+  }
+}
+
 #[cfg(test)]
 #[cfg(feature = "alloc")]
 mod tests {
