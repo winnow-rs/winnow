@@ -1507,6 +1507,12 @@ impl<C: AsChar> FindToken<C> for char {
   }
 }
 
+impl<C: AsChar, F: Fn(C) -> bool> FindToken<C> for F {
+  fn find_token(&self, token: C) -> bool {
+    self(token)
+  }
+}
+
 impl<'a> FindToken<u8> for &'a [u8] {
   fn find_token(&self, token: u8) -> bool {
     memchr::memchr(token, self).is_some()
