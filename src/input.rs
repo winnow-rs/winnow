@@ -1477,6 +1477,36 @@ where
   }
 }
 
+impl FindToken<u8> for u8 {
+  fn find_token(&self, token: u8) -> bool {
+    *self == token
+  }
+}
+
+impl<'a> FindToken<&'a u8> for u8 {
+  fn find_token(&self, token: &u8) -> bool {
+    self.find_token(*token)
+  }
+}
+
+impl FindToken<char> for u8 {
+  fn find_token(&self, token: char) -> bool {
+    self.as_char() == token
+  }
+}
+
+impl<'a> FindToken<&'a char> for u8 {
+  fn find_token(&self, token: &char) -> bool {
+    self.find_token(*token)
+  }
+}
+
+impl<C: AsChar> FindToken<C> for char {
+  fn find_token(&self, token: C) -> bool {
+    *self == token.as_char()
+  }
+}
+
 impl<'a> FindToken<u8> for &'a [u8] {
   fn find_token(&self, token: u8) -> bool {
     memchr::memchr(token, self).is_some()
