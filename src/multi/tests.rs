@@ -7,7 +7,7 @@ use crate::{
   error::{ErrorKind, ParseError},
   lib::std::str::{self, FromStr},
   number::{be_u16, be_u8},
-  sequence::{pair, tuple},
+  sequence::pair,
   {Err, IResult, Needed},
 };
 #[cfg(feature = "alloc")]
@@ -442,7 +442,7 @@ fn length_value_test() {
     length_value(be_u8, be_u16)(i)
   }
   fn length_value_2(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (u8, u8)> {
-    length_value(be_u8, tuple((be_u8, be_u8)))(i)
+    length_value(be_u8, (be_u8, be_u8))(i)
   }
 
   let i1 = [0, 5, 6];

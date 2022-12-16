@@ -1,7 +1,6 @@
 use super::*;
 use crate::error::Error;
 use crate::input::Streaming;
-use crate::sequence::tuple;
 
 #[test]
 /// Take the `bits` function and assert that remaining bytes are correctly returned, if the
@@ -11,9 +10,7 @@ fn test_complete_byte_consumption_bits() {
 
   // Take 3 bit slices with sizes [4, 8, 4].
   let result: IResult<&[u8], (u8, u8, u8)> =
-    bits::<_, _, Error<(&[u8], usize)>, _, _>(tuple((take(4usize), take(8usize), take(4usize))))(
-      input,
-    );
+    bits::<_, _, Error<(&[u8], usize)>, _, _>((take(4usize), take(8usize), take(4usize)))(input);
 
   let output = result.expect("We take 2 bytes and the input is longer than 2 bytes");
 
@@ -36,7 +33,7 @@ fn test_partial_byte_consumption_bits() {
 
   // Take bit slices with sizes [4, 8].
   let result: IResult<&[u8], (u8, u8)> =
-    bits::<_, _, Error<(&[u8], usize)>, _, _>(tuple((take(4usize), take(8usize))))(input);
+    bits::<_, _, Error<(&[u8], usize)>, _, _>((take(4usize), take(8usize)))(input);
 
   let output = result.expect("We take 1.5 bytes and the input is longer than 2 bytes");
 
@@ -56,7 +53,7 @@ fn test_incomplete_bits() {
 
   // Take bit slices with sizes [4, 8].
   let result: IResult<_, (u8, u8)> =
-    bits::<_, _, Error<(_, usize)>, _, _>(tuple((take(4usize), take(8usize))))(input);
+    bits::<_, _, Error<(_, usize)>, _, _>((take(4usize), take(8usize)))(input);
 
   assert!(result.is_err());
   let error = result.err().unwrap();

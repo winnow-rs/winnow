@@ -4,8 +4,7 @@ use nom::{
   character::{alphanumeric1 as alphanumeric, char, multispace0 as multispace, space0 as space},
   combinator::opt,
   multi::many0,
-  sequence::{delimited, pair, separated_pair, terminated, tuple},
-  IResult,
+  sequence::{delimited, pair, separated_pair, terminated},
 };
 
 use std::collections::HashMap;
@@ -19,7 +18,7 @@ fn category(i: &[u8]) -> IResult<&[u8], &str> {
 
 fn key_value(i: &[u8]) -> IResult<&[u8], (&str, &str)> {
   let (i, key) = alphanumeric.map_res(str::from_utf8).parse(i)?;
-  let (i, _) = tuple((opt(space), char('='), opt(space)))(i)?;
+  let (i, _) = (opt(space), char('='), opt(space)).parse(i)?;
   let (i, val) = take_while(|c| c != b'\n' && c != b';')
     .map_res(str::from_utf8)
     .parse(i)?;

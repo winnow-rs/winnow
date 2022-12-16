@@ -7,14 +7,14 @@ use nom::input::Streaming;
 use nom::multi::{length_data, many0};
 #[cfg(feature = "alloc")]
 use nom::number::be_u64;
-use nom::sequence::tuple;
-use nom::{Err, IResult, Needed};
+use nom::prelude::*;
+use nom::{Err, Needed};
 
 // Parser definition
 
 // We request a length that would trigger an overflow if computing consumed + requested
 fn parser02(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (&[u8], &[u8])> {
-  tuple((take(1_usize), take(18446744073709551615_usize)))(i)
+  (take(1_usize), take(18446744073709551615_usize)).parse(i)
 }
 
 #[test]

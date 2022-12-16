@@ -20,11 +20,10 @@ use crate::{Err, IResult, Needed, Parser};
 /// ```
 /// use nom::bits::{bits, take};
 /// use nom::error::Error;
-/// use nom::sequence::tuple;
 /// use nom::IResult;
 ///
 /// fn parse(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
-///     bits::<_, _, Error<(&[u8], usize)>, _, _>(tuple((take(4usize), take(8usize))))(input)
+///     bits::<_, _, Error<(&[u8], usize)>, _, _>((take(4usize), take(8usize)))(input)
 /// }
 ///
 /// let input = &[0x12, 0x34, 0xff, 0xff];
@@ -70,15 +69,14 @@ where
 /// use nom::bits::{bits, bytes, take};
 /// use nom::combinator::rest;
 /// use nom::error::Error;
-/// use nom::sequence::tuple;
 /// use nom::IResult;
 ///
 /// fn parse(input: &[u8]) -> IResult<&[u8], (u8, u8, &[u8])> {
-///   bits::<_, _, Error<(&[u8], usize)>, _, _>(tuple((
+///   bits::<_, _, Error<(&[u8], usize)>, _, _>((
 ///     take(4usize),
 ///     take(8usize),
 ///     bytes::<_, _, Error<&[u8]>, _, _>(rest)
-///   )))(input)
+///   ))(input)
 /// }
 ///
 /// let input = &[0x12, 0x34, 0xff, 0xff];
