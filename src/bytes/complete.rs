@@ -282,27 +282,28 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`nom::bytes::take_while`][crate::bytes::take_while]
 #[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_while`")]
-pub fn take_while<F, Input, Error: ParseError<Input>>(
-  cond: F,
+pub fn take_while<T, Input, Error: ParseError<Input>>(
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
-  move |i: Input| take_while_internal(i, &cond)
+  move |i: Input| take_while_internal(i, &list)
 }
 
-pub(crate) fn take_while_internal<F, Input, Error: ParseError<Input>>(
+pub(crate) fn take_while_internal<T, Input, Error: ParseError<Input>>(
   i: Input,
-  cond: &F,
+  list: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
-  i.split_at_position_complete(|c| !cond(c)).into_output()
+  i.split_at_position_complete(|c| !list.find_token(c))
+    .into_output()
 }
 
 /// Returns the longest (at least 1) input slice that matches the predicate.
@@ -328,28 +329,29 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`nom::bytes::take_while1`][crate::bytes::take_while1]
 #[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_while1`")]
-pub fn take_while1<F, Input, Error: ParseError<Input>>(
-  cond: F,
+pub fn take_while1<T, Input, Error: ParseError<Input>>(
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
-  move |i: Input| take_while1_internal(i, &cond)
+  move |i: Input| take_while1_internal(i, &list)
 }
 
-pub(crate) fn take_while1_internal<F, Input, Error: ParseError<Input>>(
+pub(crate) fn take_while1_internal<T, Input, Error: ParseError<Input>>(
   i: Input,
-  cond: &F,
+  list: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
   let e: ErrorKind = ErrorKind::TakeWhile1;
-  i.split_at_position1_complete(|c| !cond(c), e).into_output()
+  i.split_at_position1_complete(|c| !list.find_token(c), e)
+    .into_output()
 }
 
 /// Returns the longest (m <= len <= n) input slice  that matches the predicate.
@@ -378,31 +380,31 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`nom::bytes::take_while_m_n`][crate::bytes::take_while_m_n]
 #[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_while_m_n`")]
-pub fn take_while_m_n<F, Input, Error: ParseError<Input>>(
+pub fn take_while_m_n<T, Input, Error: ParseError<Input>>(
   m: usize,
   n: usize,
-  cond: F,
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTake + InputIter + InputLength + Slice<RangeFrom<usize>>,
   Input: IntoOutput,
-  F: Fn(<Input as InputIter>::Item) -> bool,
+  T: FindToken<<Input as InputIter>::Item>,
 {
-  move |i: Input| take_while_m_n_internal(i, m, n, &cond)
+  move |i: Input| take_while_m_n_internal(i, m, n, &list)
 }
 
-pub(crate) fn take_while_m_n_internal<F, Input, Error: ParseError<Input>>(
+pub(crate) fn take_while_m_n_internal<T, Input, Error: ParseError<Input>>(
   input: Input,
   m: usize,
   n: usize,
-  cond: &F,
+  list: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTake + InputIter + InputLength + Slice<RangeFrom<usize>>,
   Input: IntoOutput,
-  F: Fn(<Input as InputIter>::Item) -> bool,
+  T: FindToken<<Input as InputIter>::Item>,
 {
-  match input.position(|c| !cond(c)) {
+  match input.position(|c| !list.find_token(c)) {
     Some(idx) => {
       if idx >= m {
         if idx <= n {

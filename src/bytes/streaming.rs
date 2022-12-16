@@ -302,27 +302,28 @@ where
   since = "8.0.0",
   note = "Replaced with `nom::bytes::take_while` with input wrapped in `nom::input::Streaming`"
 )]
-pub fn take_while<F, Input, Error: ParseError<Input>>(
-  cond: F,
+pub fn take_while<T, Input, Error: ParseError<Input>>(
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
-  move |i: Input| take_while_internal(i, &cond)
+  move |i: Input| take_while_internal(i, &list)
 }
 
-pub(crate) fn take_while_internal<F, Input, Error: ParseError<Input>>(
+pub(crate) fn take_while_internal<T, Input, Error: ParseError<Input>>(
   i: Input,
-  cond: &F,
+  list: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
-  i.split_at_position_streaming(|c| !cond(c)).into_output()
+  i.split_at_position_streaming(|c| !list.find_token(c))
+    .into_output()
 }
 
 /// Returns the longest (at least 1) input slice that matches the predicate.
@@ -355,28 +356,28 @@ where
   since = "8.0.0",
   note = "Replaced with `nom::bytes::take_while1` with input wrapped in `nom::input::Streaming`"
 )]
-pub fn take_while1<F, Input, Error: ParseError<Input>>(
-  cond: F,
+pub fn take_while1<T, Input, Error: ParseError<Input>>(
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
-  move |i: Input| take_while1_internal(i, &cond)
+  move |i: Input| take_while1_internal(i, &list)
 }
 
-pub(crate) fn take_while1_internal<F, Input, Error: ParseError<Input>>(
+pub(crate) fn take_while1_internal<T, Input, Error: ParseError<Input>>(
   i: Input,
-  cond: &F,
+  list: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
   let e: ErrorKind = ErrorKind::TakeWhile1;
-  i.split_at_position1_streaming(|c| !cond(c), e)
+  i.split_at_position1_streaming(|c| !list.find_token(c), e)
     .into_output()
 }
 
@@ -411,33 +412,33 @@ where
   since = "8.0.0",
   note = "Replaced with `nom::bytes::take_while_m_n` with input wrapped in `nom::input::Streaming`"
 )]
-pub fn take_while_m_n<F, Input, Error: ParseError<Input>>(
+pub fn take_while_m_n<T, Input, Error: ParseError<Input>>(
   m: usize,
   n: usize,
-  cond: F,
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTake + InputIter + InputLength,
   Input: IntoOutput,
-  F: Fn(<Input as InputIter>::Item) -> bool,
+  T: FindToken<<Input as InputIter>::Item>,
 {
-  move |i: Input| take_while_m_n_internal(i, m, n, &cond)
+  move |i: Input| take_while_m_n_internal(i, m, n, &list)
 }
 
-pub(crate) fn take_while_m_n_internal<F, Input, Error: ParseError<Input>>(
+pub(crate) fn take_while_m_n_internal<T, Input, Error: ParseError<Input>>(
   i: Input,
   m: usize,
   n: usize,
-  cond: &F,
+  list: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTake + InputIter + InputLength,
   Input: IntoOutput,
-  F: Fn(<Input as InputIter>::Item) -> bool,
+  T: FindToken<<Input as InputIter>::Item>,
 {
   let input = i;
 
-  match input.position(|c| !cond(c)) {
+  match input.position(|c| !list.find_token(c)) {
     Some(idx) => {
       if idx >= m {
         if idx <= n {

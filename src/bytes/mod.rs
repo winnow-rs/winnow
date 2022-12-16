@@ -326,10 +326,7 @@ where
   }
 }
 
-/// Returns the longest input slice (if any) that matches the predicate.
-///
-/// The parser will return the longest slice that matches the given predicate *(a function that
-/// takes the input and returns a bool)*.
+/// Returns the longest input slice (if any) that matches the [pattern][FindToken]
 ///
 /// *Streaming version*: will return a `Err::Incomplete(Needed::new(1))` if the pattern reaches the end of the input.
 /// # Example
@@ -364,29 +361,25 @@ where
 /// assert_eq!(alpha(Streaming(b"")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_while<F, Input, Error: ParseError<Input>, const STREAMING: bool>(
-  cond: F,
+pub fn take_while<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
   Input: InputTakeAtPosition,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
 {
   move |i: Input| {
     if STREAMING {
-      streaming::take_while_internal(i, &cond)
+      streaming::take_while_internal(i, &list)
     } else {
-      complete::take_while_internal(i, &cond)
+      complete::take_while_internal(i, &list)
     }
   }
 }
 
-/// Returns the longest (at least 1) input slice that matches the predicate.
-///
-/// The parser will return the longest slice that matches the given predicate *(a function that
-/// takes the input and returns a bool)*.
+/// Returns the longest (at least 1) input slice that matches the [pattern][FindToken]
 ///
 /// It will return an `Err(Err::Error((_, ErrorKind::TakeWhile1)))` if the pattern wasn't met.
 ///
@@ -422,27 +415,24 @@ where
 /// assert_eq!(alpha(Streaming(b"12345")), Err(Err::Error(Error::new(Streaming(&b"12345"[..]), ErrorKind::TakeWhile1))));
 /// ```
 #[inline(always)]
-pub fn take_while1<F, Input, Error: ParseError<Input>, const STREAMING: bool>(
-  cond: F,
+pub fn take_while1<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
   move |i: Input| {
     if STREAMING {
-      streaming::take_while1_internal(i, &cond)
+      streaming::take_while1_internal(i, &list)
     } else {
-      complete::take_while1_internal(i, &cond)
+      complete::take_while1_internal(i, &list)
     }
   }
 }
 
-/// Returns the longest (m <= len <= n) input slice  that matches the predicate.
-///
-/// The parser will return the longest slice that matches the given predicate *(a function that
-/// takes the input and returns a bool)*.
+/// Returns the longest (m <= len <= n) input slice that matches the [pattern][FindToken]
 ///
 /// It will return an `Err::Error((_, ErrorKind::TakeWhileMN))` if the pattern wasn't met or is out
 /// of range (m <= len <= n).
@@ -483,22 +473,22 @@ where
 /// assert_eq!(short_alpha(Streaming(b"12345")), Err(Err::Error(Error::new(Streaming(&b"12345"[..]), ErrorKind::TakeWhileMN))));
 /// ```
 #[inline(always)]
-pub fn take_while_m_n<F, Input, Error: ParseError<Input>, const STREAMING: bool>(
+pub fn take_while_m_n<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
   m: usize,
   n: usize,
-  cond: F,
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input:
     InputTake + InputIter + InputLength + Slice<RangeFrom<usize>> + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
-  F: Fn(<Input as InputIter>::Item) -> bool,
+  T: FindToken<<Input as InputIter>::Item>,
 {
   move |i: Input| {
     if STREAMING {
-      streaming::take_while_m_n_internal(i, m, n, &cond)
+      streaming::take_while_m_n_internal(i, m, n, &list)
     } else {
-      complete::take_while_m_n_internal(i, m, n, &cond)
+      complete::take_while_m_n_internal(i, m, n, &list)
     }
   }
 }
