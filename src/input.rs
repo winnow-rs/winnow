@@ -436,7 +436,14 @@ impl AsBytes for str {
 
 /// Transforms common types to a char for basic token parsing
 pub trait AsChar {
-  /// makes a char from self
+  /// Makes a char from self
+  ///
+  /// ```
+  /// use nom::input::AsChar as _;
+  ///
+  /// assert_eq!('a'.as_char(), 'a');
+  /// assert_eq!(u8::MAX.as_char(), std::char::from_u32(u8::MAX as u32).unwrap());
+  /// ```
   fn as_char(self) -> char;
 
   /// Tests that self is an alphabetic character
