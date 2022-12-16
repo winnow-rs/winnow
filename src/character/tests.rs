@@ -1055,22 +1055,6 @@ mod streaming {
   }
 
   #[test]
-  fn none_of_test() {
-    fn f(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, char> {
-      none_of("ab")(i)
-    }
-
-    let a = &b"abcd"[..];
-    assert_eq!(
-      f(Streaming(a)),
-      Err(Err::Error(error_position!(Streaming(a), ErrorKind::NoneOf)))
-    );
-
-    let b = &b"cde"[..];
-    assert_eq!(f(Streaming(b)), Ok((Streaming(&b"de"[..]), 'c')));
-  }
-
-  #[test]
   fn char_byteslice() {
     fn f(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, char> {
       char('c')(i)

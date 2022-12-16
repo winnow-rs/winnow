@@ -14,7 +14,7 @@
 //! | [is_a][crate::bytes::is_a] | ` is_a("ab")` |  `"ababc"` | `Ok(("c", "abab"))` |Matches a sequence of any of the characters passed as arguments|
 //! | [is_not][crate::bytes::is_not] | `is_not("cd")` |  `"ababc"` | `Ok(("c", "abab"))` |Matches a sequence of none of the characters passed as arguments|
 //! | [one_of][crate::bytes::one_of] | `one_of("abc")` |  `"abc"` | `Ok(("bc", 'a'))` |Matches one of the provided characters (works with non ASCII characters too)|
-//! | [none_of][crate::character::none_of] | `none_of("abc")` |  `"xyab"` | `Ok(("yab", 'x'))` |Matches anything but the provided characters|
+//! | [none_of][crate::bytes::none_of] | `none_of("abc")` |  `"xyab"` | `Ok(("yab", 'x'))` |Matches anything but the provided characters|
 //! | [tag][crate::bytes::tag] | `tag("hello")` |  `"hello world"` | `Ok((" world", "hello"))` |Recognizes a specific suite of characters or bytes|
 //! | [tag_no_case][crate::bytes::tag_no_case] | `tag_no_case("hello")` |  `"HeLLo World"` | `Ok((" World", "HeLLo"))` |Case insensitive comparison. Note that case insensitive comparison is not well defined for unicode, and that you might have bad surprises|
 //! | [take][crate::bytes::take] | `take(4)` |  `"hello"` | `Ok(("o", "hell"))` |Takes a specific number of bytes or characters|

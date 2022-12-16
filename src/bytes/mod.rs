@@ -164,6 +164,48 @@ where
   }
 }
 
+/// Returns a token that does not match the [pattern][FindToken]
+///
+/// *Complete version*: Will return an error if there's not enough input data.
+///
+/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+///
+/// # Example
+///
+/// ```
+/// # use nom::{Err, error::ErrorKind};
+/// # use nom::bytes::none_of;
+/// assert_eq!(none_of::<_, _, (&str, ErrorKind), false>("abc")("z"), Ok(("", 'z')));
+/// assert_eq!(none_of::<_, _, (&str, ErrorKind), false>("ab")("a"), Err(Err::Error(("a", ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, (&str, ErrorKind), false>("a")(""), Err(Err::Error(("", ErrorKind::NoneOf))));
+/// ```
+///
+/// ```
+/// # use nom::{Err, error::ErrorKind, Needed};
+/// # use nom::input::Streaming;
+/// # use nom::bytes::none_of;
+/// assert_eq!(none_of::<_, _, (_, ErrorKind), true>("abc")(Streaming("z")), Ok((Streaming(""), 'z')));
+/// assert_eq!(none_of::<_, _, (_, ErrorKind), true>("ab")(Streaming("a")), Err(Err::Error((Streaming("a"), ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, (_, ErrorKind), true>("a")(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// ```
+#[inline(always)]
+pub fn none_of<I, T, Error: ParseError<I>, const STREAMING: bool>(
+  list: T,
+) -> impl Fn(I) -> IResult<I, <I as InputIter>::Item, Error>
+where
+  I: Slice<RangeFrom<usize>> + InputIter + InputLength + InputIsStreaming<STREAMING>,
+  <I as InputIter>::Item: Copy,
+  T: FindToken<<I as InputIter>::Item>,
+{
+  move |i: I| {
+    if STREAMING {
+      streaming::none_of_internal(i, &list)
+    } else {
+      complete::none_of_internal(i, &list)
+    }
+  }
+}
+
 /// Parse till certain characters are met.
 ///
 /// The parser will return the longest slice till one of the characters of the combinator's argument are met.

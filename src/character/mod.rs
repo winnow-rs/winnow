@@ -12,8 +12,8 @@ mod tests;
 use crate::error::ParseError;
 use crate::input::Compare;
 use crate::input::{
-  AsBytes, AsChar, FindToken, InputIsStreaming, InputIter, InputLength, InputTake,
-  InputTakeAtPosition, IntoOutput, Offset, ParseTo, Slice,
+  AsBytes, AsChar, InputIsStreaming, InputIter, InputLength, InputTake, InputTakeAtPosition,
+  IntoOutput, Offset, ParseTo, Slice,
 };
 use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
 use crate::IResult;
@@ -110,48 +110,6 @@ where
       streaming::satisfy_internal(i, &cond)
     } else {
       complete::satisfy_internal(i, &cond)
-    }
-  }
-}
-
-/// Recognizes a character that is not in the provided characters.
-///
-/// *Complete version*: Will return an error if there's not enough input data.
-///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
-///
-/// # Example
-///
-/// ```
-/// # use nom::{Err, error::ErrorKind};
-/// # use nom::character::none_of;
-/// assert_eq!(none_of::<_, _, (&str, ErrorKind), false>("abc")("z"), Ok(("", 'z')));
-/// assert_eq!(none_of::<_, _, (&str, ErrorKind), false>("ab")("a"), Err(Err::Error(("a", ErrorKind::NoneOf))));
-/// assert_eq!(none_of::<_, _, (&str, ErrorKind), false>("a")(""), Err(Err::Error(("", ErrorKind::NoneOf))));
-/// ```
-///
-/// ```
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::none_of;
-/// assert_eq!(none_of::<_, _, (_, ErrorKind), true>("abc")(Streaming("z")), Ok((Streaming(""), 'z')));
-/// assert_eq!(none_of::<_, _, (_, ErrorKind), true>("ab")(Streaming("a")), Err(Err::Error((Streaming("a"), ErrorKind::NoneOf))));
-/// assert_eq!(none_of::<_, _, (_, ErrorKind), true>("a")(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
-/// ```
-#[inline(always)]
-pub fn none_of<I, T, Error: ParseError<I>, const STREAMING: bool>(
-  list: T,
-) -> impl Fn(I) -> IResult<I, char, Error>
-where
-  I: Slice<RangeFrom<usize>> + InputIter + InputIsStreaming<STREAMING>,
-  <I as InputIter>::Item: AsChar + Copy,
-  T: FindToken<<I as InputIter>::Item>,
-{
-  move |i: I| {
-    if STREAMING {
-      streaming::none_of_internal(i, &list)
-    } else {
-      complete::none_of_internal(i, &list)
     }
   }
 }

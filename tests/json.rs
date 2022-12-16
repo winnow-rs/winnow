@@ -2,8 +2,8 @@
 
 use nom::{
   branch::alt,
-  bytes::{tag, take},
-  character::{anychar, char, f64, multispace0, none_of},
+  bytes::{none_of, tag, take},
+  character::{anychar, char, f64, multispace0},
   error::ParseError,
   multi::{fold_many0, separated_list0},
   sequence::{delimited, preceded, separated_pair},

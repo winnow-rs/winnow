@@ -292,6 +292,22 @@ fn streaming_one_of_test() {
 }
 
 #[test]
+fn streaming_none_of_test() {
+  fn f(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, u8> {
+    none_of("ab")(i)
+  }
+
+  let a = &b"abcd"[..];
+  assert_eq!(
+    f(Streaming(a)),
+    Err(Err::Error(error_position!(Streaming(a), ErrorKind::NoneOf)))
+  );
+
+  let b = &b"cde"[..];
+  assert_eq!(f(Streaming(b)), Ok((Streaming(&b"de"[..]), b'c')));
+}
+
+#[test]
 fn streaming_is_a() {
   fn a_or_b(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
     is_a("ab")(i)

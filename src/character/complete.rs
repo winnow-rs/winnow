@@ -140,30 +140,15 @@ where
 /// assert_eq!(none_of::<_, _, (&str, ErrorKind)>("a")(""), Err(Err::Error(("", ErrorKind::NoneOf))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::none_of`][crate::character::none_of]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::none_of`")]
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::none_of`][crate::bytes::none_of]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::none_of`")]
 pub fn none_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
-  I: Slice<RangeFrom<usize>> + InputIter,
+  I: Slice<RangeFrom<usize>> + InputLength + InputIter,
   <I as InputIter>::Item: AsChar + Copy,
   T: FindToken<<I as InputIter>::Item>,
 {
-  move |i: I| none_of_internal(i, &list)
-}
-
-pub(crate) fn none_of_internal<I, T, Error: ParseError<I>>(
-  i: I,
-  list: &T,
-) -> IResult<I, char, Error>
-where
-  I: Slice<RangeFrom<usize>> + InputIter,
-  <I as InputIter>::Item: AsChar + Copy,
-  T: FindToken<<I as InputIter>::Item>,
-{
-  match (i).iter_elements().next().map(|c| (c, !list.find_token(c))) {
-    Some((c, true)) => Ok((i.slice(c.len()..), c.as_char())),
-    _ => Err(Err::Error(Error::from_error_kind(i, ErrorKind::NoneOf))),
-  }
+  move |i: I| crate::bytes::complete::none_of_internal(i, &list).map(|(i, c)| (i, c.as_char()))
 }
 
 /// Recognizes the string "\r\n".
