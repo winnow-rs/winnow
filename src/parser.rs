@@ -6,6 +6,7 @@ use crate::combinator::*;
 use crate::error::DbgErr;
 use crate::error::{self, Context, ErrorKind, ParseError};
 use crate::input::InputIsStreaming;
+use crate::input::*;
 use crate::lib::std::fmt;
 use core::num::NonZeroUsize;
 
@@ -750,6 +751,91 @@ where
 {
   fn parse(&mut self, i: I) -> IResult<I, O, E> {
     self(i)
+  }
+}
+
+/// This is a shortcut for [`tag`][crate::bytes::tag].
+///
+/// # Example
+/// ```rust
+/// # use nom::prelude::*;
+/// # use nom::{Err, error::{Error, ErrorKind}, Needed};
+/// # use nom::branch::alt;
+/// # use nom::bytes::take;
+///
+/// fn parser(s: &[u8]) -> IResult<&[u8], &[u8]> {
+///   alt((&"Hello"[..], take(5usize))).parse(s)
+/// }
+///
+/// assert_eq!(parser(&b"Hello, World!"[..]), Ok((&b", World!"[..], &b"Hello"[..])));
+/// assert_eq!(parser(&b"Something"[..]), Ok((&b"hing"[..], &b"Somet"[..])));
+/// assert_eq!(parser(&b"Some"[..]), Err(Err::Error(Error::new(&b"Some"[..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(Err::Error(Error::new(&b""[..], ErrorKind::Eof))));
+/// ```
+impl<'s, I, E: ParseError<I>> Parser<I, <I as IntoOutput>::Output, E> for &'s [u8]
+where
+  I: InputTake + InputLength + Compare<&'s [u8]> + InputIsStreaming<false>,
+  I: IntoOutput,
+{
+  fn parse(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
+    crate::bytes::tag(*self).parse(i)
+  }
+}
+
+/// This is a shortcut for [`tag`][crate::bytes::tag].
+///
+/// # Example
+/// ```rust
+/// # use nom::prelude::*;
+/// # use nom::{Err, error::{Error, ErrorKind}, Needed};
+/// # use nom::branch::alt;
+/// # use nom::bytes::take;
+///
+/// fn parser(s: &[u8]) -> IResult<&[u8], &[u8]> {
+///   alt((b"Hello", take(5usize))).parse(s)
+/// }
+///
+/// assert_eq!(parser(&b"Hello, World!"[..]), Ok((&b", World!"[..], &b"Hello"[..])));
+/// assert_eq!(parser(&b"Something"[..]), Ok((&b"hing"[..], &b"Somet"[..])));
+/// assert_eq!(parser(&b"Some"[..]), Err(Err::Error(Error::new(&b"Some"[..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(Err::Error(Error::new(&b""[..], ErrorKind::Eof))));
+/// ```
+impl<'s, I, E: ParseError<I>, const N: usize> Parser<I, <I as IntoOutput>::Output, E>
+  for &'s [u8; N]
+where
+  I: InputTake + InputLength + Compare<&'s [u8; N]> + InputIsStreaming<false>,
+  I: IntoOutput,
+{
+  fn parse(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
+    crate::bytes::tag(*self).parse(i)
+  }
+}
+
+/// This is a shortcut for [`tag`][crate::bytes::tag].
+///
+/// # Example
+/// ```rust
+/// # use nom::prelude::*;
+/// # use nom::{Err, error::{Error, ErrorKind}, Needed};
+/// # use nom::branch::alt;
+/// # use nom::bytes::take;
+///
+/// fn parser(s: &str) -> IResult<&str, &str> {
+///   alt(("Hello", take(5usize))).parse(s)
+/// }
+///
+/// assert_eq!(parser("Hello, World!"), Ok((", World!", "Hello")));
+/// assert_eq!(parser("Something"), Ok(("hing", "Somet")));
+/// assert_eq!(parser("Some"), Err(Err::Error(Error::new("Some", ErrorKind::Eof))));
+/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Eof))));
+/// ```
+impl<'s, I, E: ParseError<I>> Parser<I, <I as IntoOutput>::Output, E> for &'s str
+where
+  I: InputTake + InputLength + Compare<&'s str> + InputIsStreaming<false>,
+  I: IntoOutput,
+{
+  fn parse(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
+    crate::bytes::tag(*self).parse(i)
   }
 }
 

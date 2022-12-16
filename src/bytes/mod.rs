@@ -57,6 +57,9 @@ where
 /// the input that matches the argument
 ///
 /// It will return `Err(Err::Error((_, ErrorKind::Tag)))` if the input doesn't match the pattern
+///
+/// **Note:** [`Parser`] is implemented for strings and byte strings as a convenience
+///
 /// # Example
 /// ```rust
 /// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
