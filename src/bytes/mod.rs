@@ -206,65 +206,6 @@ where
   }
 }
 
-/// Parse till certain characters are met.
-///
-/// The parser will return the longest slice till one of the characters of the combinator's argument are met.
-///
-/// It doesn't consume the matched character.
-///
-/// *Complete version*: It will return a `Err::Error(("", ErrorKind::IsNot))` if the pattern wasn't met.
-///
-/// *Streaming version*: It will return a `Err::Incomplete(Needed::new(1))` if the pattern wasn't met.
-///
-/// # Example
-/// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::is_not;
-///
-/// fn not_space(s: &str) -> IResult<&str, &str> {
-///   is_not(" \t\r\n")(s)
-/// }
-///
-/// assert_eq!(not_space("Hello, World!"), Ok((" World!", "Hello,")));
-/// assert_eq!(not_space("Sometimes\t"), Ok(("\t", "Sometimes")));
-/// assert_eq!(not_space("Nospace"), Ok(("", "Nospace")));
-/// assert_eq!(not_space(""), Err(Err::Error(Error::new("", ErrorKind::IsNot))));
-/// ```
-///
-/// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
-/// # use nom::input::Streaming;
-/// use nom::bytes::is_not;
-///
-/// fn not_space(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
-///   is_not(" \t\r\n")(s)
-/// }
-///
-/// assert_eq!(not_space(Streaming("Hello, World!")), Ok((Streaming(" World!"), "Hello,")));
-/// assert_eq!(not_space(Streaming("Sometimes\t")), Ok((Streaming("\t"), "Sometimes")));
-/// assert_eq!(not_space(Streaming("Nospace")), Err(Err::Incomplete(Needed::new(1))));
-/// assert_eq!(not_space(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
-/// ```
-#[inline(always)]
-pub fn is_not<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
-  arr: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
-where
-  Input: InputTakeAtPosition + InputIsStreaming<STREAMING>,
-  Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
-  Input: InputTakeAtPosition,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
-{
-  move |i: Input| {
-    if STREAMING {
-      streaming::is_not_internal(i, &arr)
-    } else {
-      complete::is_not_internal(i, &arr)
-    }
-  }
-}
-
 /// Returns the longest input slice (if any) that matches the [pattern][FindToken]
 ///
 /// *Streaming version*: will return a `Err::Incomplete(Needed::new(1))` if the pattern reaches the end of the input.
@@ -525,6 +466,15 @@ where
 /// assert_eq!(till_colon(":empty matched"), Err(Err::Error(Error::new(":empty matched", ErrorKind::TakeTill1))));
 /// assert_eq!(till_colon("12345"), Ok(("", "12345")));
 /// assert_eq!(till_colon(""), Err(Err::Error(Error::new("", ErrorKind::TakeTill1))));
+///
+/// fn not_space(s: &str) -> IResult<&str, &str> {
+///   take_till1(" \t\r\n")(s)
+/// }
+///
+/// assert_eq!(not_space("Hello, World!"), Ok((" World!", "Hello,")));
+/// assert_eq!(not_space("Sometimes\t"), Ok(("\t", "Sometimes")));
+/// assert_eq!(not_space("Nospace"), Ok(("", "Nospace")));
+/// assert_eq!(not_space(""), Err(Err::Error(Error::new("", ErrorKind::TakeTill1))));
 /// ```
 ///
 /// ```rust
@@ -540,6 +490,15 @@ where
 /// assert_eq!(till_colon(Streaming(":empty matched")), Err(Err::Error(Error::new(Streaming(":empty matched"), ErrorKind::TakeTill1))));
 /// assert_eq!(till_colon(Streaming("12345")), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(till_colon(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+///
+/// fn not_space(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+///   take_till1(" \t\r\n")(s)
+/// }
+///
+/// assert_eq!(not_space(Streaming("Hello, World!")), Ok((Streaming(" World!"), "Hello,")));
+/// assert_eq!(not_space(Streaming("Sometimes\t")), Ok((Streaming("\t"), "Sometimes")));
+/// assert_eq!(not_space(Streaming("Nospace")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(not_space(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn take_till1<T, Input, Error: ParseError<Input>, const STREAMING: bool>(

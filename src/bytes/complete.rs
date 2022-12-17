@@ -184,8 +184,8 @@ where
 /// assert_eq!(not_space(""), Err(Err::Error(Error::new("", ErrorKind::IsNot))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::is_not`][crate::bytes::is_not]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::is_not`")]
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_till1`][crate::bytes::take_till1]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_till1`")]
 pub fn is_not<T, Input, Error: ParseError<Input>>(
   arr: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>

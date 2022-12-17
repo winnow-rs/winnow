@@ -190,10 +190,10 @@ where
 /// assert_eq!(not_space(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::is_not`][crate::bytes::is_not] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_till1`][crate::bytes::take_till1] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::bytes::is_not` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom::bytes::take_till1` with input wrapped in `nom::input::Streaming`"
 )]
 pub fn is_not<T, Input, Error: ParseError<Input>>(
   arr: T,

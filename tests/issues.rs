@@ -127,10 +127,10 @@ fn issue_655() {
 
 #[cfg(feature = "alloc")]
 fn issue_717(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-  use nom::bytes::{is_not, tag};
+  use nom::bytes::{tag, take_till1};
   use nom::multi::separated_list0;
 
-  separated_list0(tag([0x0]), is_not([0x0u8]))(i)
+  separated_list0(tag([0x0]), take_till1([0x0u8]))(i)
 }
 
 mod issue_647 {

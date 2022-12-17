@@ -332,7 +332,7 @@ fn streaming_is_a() {
 #[test]
 fn streaming_is_not() {
   fn a_or_b(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
-    is_not("ab")(i)
+    take_till1("ab")(i)
   }
 
   let a = Streaming(&b"cdab"[..]);
@@ -344,7 +344,7 @@ fn streaming_is_not() {
   let c = Streaming(&b"abab"[..]);
   assert_eq!(
     a_or_b(c),
-    Err(Err::Error(error_position!(c, ErrorKind::IsNot)))
+    Err(Err::Error(error_position!(c, ErrorKind::TakeTill1)))
   );
 
   let d = Streaming(&b"cdefba"[..]);

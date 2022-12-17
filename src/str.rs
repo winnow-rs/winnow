@@ -5,7 +5,7 @@ mod test {
   #[cfg(feature = "alloc")]
   use crate::{branch::alt, bytes::tag_no_case, multi::many1};
   use crate::{
-    bytes::{is_not, tag, take, take_till, take_until, take_while1},
+    bytes::{tag, take, take_till, take_till1, take_until, take_while1},
     error::{self, ErrorKind},
     Err, IResult,
   };
@@ -273,7 +273,7 @@ mod test {
     const CONSUMED: &str = "βèƒôřèÂßÇ";
     const LEFTOVER: &str = "áƒƭèř";
     fn test(input: &str) -> IResult<&str, &str> {
-      is_not(AVOID)(input)
+      take_till1(AVOID)(input)
     }
     match test(INPUT) {
       Ok((extra, output)) => {
@@ -345,7 +345,7 @@ mod test {
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const AVOID: &str = "βúçƙ¥";
     fn test(input: &str) -> IResult<&str, &str> {
-      is_not(AVOID)(input)
+      take_till1(AVOID)(input)
     }
     match test(INPUT) {
       Err(Err::Error(_)) => (),
