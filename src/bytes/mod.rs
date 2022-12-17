@@ -169,20 +169,36 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind};
+/// # use nom::*;
+/// # use nom::{Err, error::ErrorKind, error::Error};
 /// # use nom::bytes::one_of;
 /// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("abc")("b"), Ok(("", 'b')));
 /// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("a")("bc"), Err(Err::Error(("bc", ErrorKind::OneOf))));
 /// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("a")(""), Err(Err::Error(("", ErrorKind::OneOf))));
+///
+/// fn parser(i: &str) -> IResult<&str, char> {
+///     one_of(|c| c == 'a' || c == 'b')(i)
+/// }
+/// assert_eq!(parser("abc"), Ok(("bc", 'a')));
+/// assert_eq!(parser("cd"), Err(Err::Error(Error::new("cd", ErrorKind::OneOf))));
+/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::OneOf))));
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, Needed};
+/// # use nom::*;
+/// # use nom::{Err, error::ErrorKind, error::Error, Needed};
 /// # use nom::input::Streaming;
 /// # use nom::bytes::one_of;
 /// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("abc")(Streaming("b")), Ok((Streaming(""), 'b')));
 /// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("a")(Streaming("bc")), Err(Err::Error((Streaming("bc"), ErrorKind::OneOf))));
 /// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("a")(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+///
+/// fn parser(i: Streaming<&str>) -> IResult<Streaming<&str>, char> {
+///     one_of(|c| c == 'a' || c == 'b')(i)
+/// }
+/// assert_eq!(parser(Streaming("abc")), Ok((Streaming("bc"), 'a')));
+/// assert_eq!(parser(Streaming("cd")), Err(Err::Error(Error::new(Streaming("cd"), ErrorKind::OneOf))));
+/// assert_eq!(parser(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn one_of<I, T, Error: ParseError<I>, const STREAMING: bool>(

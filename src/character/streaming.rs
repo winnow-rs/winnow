@@ -76,10 +76,10 @@ where
 /// assert_eq!(parser(""), Err(Err::Incomplete(Needed::Unknown)));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::satisfy`][crate::character::satisfy] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::satisfy` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom::bytes::one_of` with input wrapped in `nom::input::Streaming`"
 )]
 pub fn satisfy<F, I, Error: ParseError<I>>(cond: F) -> impl Fn(I) -> IResult<I, char, Error>
 where

@@ -66,54 +66,6 @@ where
   }
 }
 
-/// Recognizes one character and checks that it satisfies a predicate
-///
-/// *Complete version*: Will return an error if there's not enough input data.
-///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
-///
-/// # Example
-///
-/// ```
-/// # use nom::{Err, error::{ErrorKind, Error}, Needed, IResult};
-/// # use nom::character::satisfy;
-/// fn parser(i: &str) -> IResult<&str, char> {
-///     satisfy(|c| c == 'a' || c == 'b')(i)
-/// }
-/// assert_eq!(parser("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser("cd"), Err(Err::Error(Error::new("cd", ErrorKind::Satisfy))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Satisfy))));
-/// ```
-///
-/// ```
-/// # use nom::{Err, error::{ErrorKind, Error}, Needed, IResult};
-/// # use nom::input::Streaming;
-/// # use nom::character::satisfy;
-/// fn parser(i: Streaming<&str>) -> IResult<Streaming<&str>, char> {
-///     satisfy(|c| c == 'a' || c == 'b')(i)
-/// }
-/// assert_eq!(parser(Streaming("abc")), Ok((Streaming("bc"), 'a')));
-/// assert_eq!(parser(Streaming("cd")), Err(Err::Error(Error::new(Streaming("cd"), ErrorKind::Satisfy))));
-/// assert_eq!(parser(Streaming("")), Err(Err::Incomplete(Needed::Unknown)));
-/// ```
-#[inline(always)]
-pub fn satisfy<F, I, Error: ParseError<I>, const STREAMING: bool>(
-  cond: F,
-) -> impl Fn(I) -> IResult<I, char, Error>
-where
-  I: Slice<RangeFrom<usize>> + InputIter + InputIsStreaming<STREAMING>,
-  <I as InputIter>::Item: AsChar,
-  F: Fn(char) -> bool,
-{
-  move |i: I| {
-    if STREAMING {
-      streaming::satisfy_internal(i, &cond)
-    } else {
-      complete::satisfy_internal(i, &cond)
-    }
-  }
-}
-
 /// Recognizes the string "\r\n".
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
