@@ -1470,7 +1470,29 @@ impl<'a, const LEN: usize> Compare<[u8; LEN]> for &'a [u8] {
   }
 }
 
-/// Look for a token in self
+/// Check if a token in in a set of possible tokens
+///
+/// This is generally implemented on patterns that a token may match and supports `u8` and `char`
+/// tokens along with the following patterns
+/// - `b'c'` and `'c'`
+/// - `b""` and `""`
+/// - `|c| true`
+/// - `b'a'..=b'z'`, `'a'..='z'` (etc for each [range type][std::ops])
+/// - `(pattern1, pattern2, ...)`
+///
+/// For example, you could implement `hex_digit0` as:
+/// ```
+/// # use nom::prelude::*;
+/// # use nom::{Err, error::ErrorKind, error::Error, Needed};
+/// # use nom::bytes::take_while1;
+/// fn hex_digit1(input: &str) -> IResult<&str, &str> {
+///     take_while1(('a'..='f', 'A'..='F', '0'..='9')).parse(input)
+/// }
+///
+/// assert_eq!(hex_digit1("21cZ"), Ok(("Z", "21c")));
+/// assert_eq!(hex_digit1("H2"), Err(Err::Error(Error::new("H2", ErrorKind::TakeWhile1))));
+/// assert_eq!(hex_digit1(""), Err(Err::Error(Error::new("", ErrorKind::TakeWhile1))));
+/// ```
 pub trait FindToken<T> {
   /// Returns true if self contains the token
   fn find_token(&self, token: T) -> bool;
