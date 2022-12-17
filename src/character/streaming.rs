@@ -359,24 +359,17 @@ where
 /// assert_eq!(anychar::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::anychar`][crate::character::anychar] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::any`][crate::bytes::any] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::anychar` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom::bytes::any` with input wrapped in `nom::input::Streaming`"
 )]
 pub fn anychar<T, E: ParseError<T>>(input: T) -> IResult<T, char, E>
 where
   T: InputIter + InputLength + Slice<RangeFrom<usize>>,
   <T as InputIter>::Item: AsChar,
 {
-  let mut it = input.iter_indices();
-  match it.next() {
-    None => Err(Err::Incomplete(Needed::new(1))),
-    Some((_, c)) => match it.next() {
-      None => Ok((input.slice(input.input_len()..), c.as_char())),
-      Some((idx, _)) => Ok((input.slice(idx..), c.as_char())),
-    },
-  }
+  crate::bytes::streaming::any(input).map(|(i, c)| (i, c.as_char()))
 }
 
 /// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z

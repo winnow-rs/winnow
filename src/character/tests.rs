@@ -521,15 +521,6 @@ mod streaming {
   );
 
   #[test]
-  fn anychar_str() {
-    use super::anychar;
-    assert_eq!(
-      anychar::<_, (Streaming<&str>, ErrorKind), true>(Streaming("Ә")),
-      Ok((Streaming(""), 'Ә'))
-    );
-  }
-
-  #[test]
   fn character() {
     let a: &[u8] = b"abcd";
     let b: &[u8] = b"1234";

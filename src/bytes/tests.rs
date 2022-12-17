@@ -269,6 +269,15 @@ fn complete_escape_transform_str() {
 }
 
 #[test]
+fn streaming_any_str() {
+  use super::any;
+  assert_eq!(
+    any::<_, (Streaming<&str>, ErrorKind), true>(Streaming("Ә")),
+    Ok((Streaming(""), 'Ә'))
+  );
+}
+
+#[test]
 fn streaming_one_of_test() {
   fn f(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, u8> {
     one_of("ab")(i)

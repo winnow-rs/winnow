@@ -338,44 +338,6 @@ where
   }
 }
 
-/// Matches one byte as a character. Note that the input type will
-/// accept a `str`, but not a `&[u8]`, unlike many other nom parsers.
-///
-/// *Complete version*: Will return an error if there's not enough input data.
-///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
-///
-/// # Example
-///
-/// ```
-/// # use nom::{character::anychar, Err, error::{Error, ErrorKind}, IResult};
-/// fn parser(input: &str) -> IResult<&str, char> {
-///     anychar(input)
-/// }
-///
-/// assert_eq!(parser("abc"), Ok(("bc",'a')));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Eof))));
-/// ```
-///
-/// ```
-/// # use nom::{character::anychar, Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
-/// assert_eq!(anychar::<_, (_, ErrorKind), true>(Streaming("abc")), Ok((Streaming("bc"),'a')));
-/// assert_eq!(anychar::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
-/// ```
-#[inline(always)]
-pub fn anychar<T, E: ParseError<T>, const STREAMING: bool>(input: T) -> IResult<T, char, E>
-where
-  T: InputIter + InputLength + Slice<RangeFrom<usize>> + InputIsStreaming<STREAMING>,
-  <T as InputIter>::Item: AsChar,
-{
-  if STREAMING {
-    streaming::anychar(input)
-  } else {
-    complete::anychar(input)
-  }
-}
-
 /// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
 ///
 /// *Complete version*: Will return the whole input if no terminating token is found (a non

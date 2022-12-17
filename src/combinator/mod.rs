@@ -129,7 +129,7 @@
 //!
 //! - [`alpha0`][crate::character::alpha0]: Recognizes zero or more lowercase and uppercase alphabetic characters: `[a-zA-Z]`. [`alpha1`][crate::character::alpha1] does the same but returns at least one character
 //! - [`alphanumeric0`][crate::character::alphanumeric0]: Recognizes zero or more numerical and alphabetic characters: `[0-9a-zA-Z]`. [`alphanumeric1`][crate::character::alphanumeric1] does the same but returns at least one character
-//! - [`anychar`][crate::character::anychar]: Matches one byte as a character
+//! - [`any`][crate::bytes::any]: Matches one token
 //! - [`crlf`][crate::character::crlf]: Recognizes the string `\r\n`
 //! - [`digit0`][crate::character::digit0]: Recognizes zero or more numerical characters: `[0-9]`. [`digit1`][crate::character::digit1] does the same but returns at least one character
 //! - [`f64`][crate::character::f64]: Recognizes floating point number in a byte string and returns a `f64`

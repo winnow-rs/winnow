@@ -13,6 +13,44 @@ use crate::input::{
 use crate::lib::std::ops::RangeFrom;
 use crate::{IResult, Parser};
 
+/// Matches one token
+///
+/// *Complete version*: Will return an error if there's not enough input data.
+///
+/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+///
+/// # Example
+///
+/// ```
+/// # use nom::{bytes::any, Err, error::{Error, ErrorKind}, IResult};
+/// fn parser(input: &str) -> IResult<&str, char> {
+///     any(input)
+/// }
+///
+/// assert_eq!(parser("abc"), Ok(("bc",'a')));
+/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Eof))));
+/// ```
+///
+/// ```
+/// # use nom::{bytes::any, Err, error::ErrorKind, IResult, Needed};
+/// # use nom::input::Streaming;
+/// assert_eq!(any::<_, (_, ErrorKind), true>(Streaming("abc")), Ok((Streaming("bc"),'a')));
+/// assert_eq!(any::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// ```
+#[inline(always)]
+pub fn any<I, E: ParseError<I>, const STREAMING: bool>(
+  input: I,
+) -> IResult<I, <I as InputIter>::Item, E>
+where
+  I: InputIter + InputLength + Slice<RangeFrom<usize>> + InputIsStreaming<STREAMING>,
+{
+  if STREAMING {
+    streaming::any(input)
+  } else {
+    complete::any(input)
+  }
+}
+
 /// Recognizes a pattern
 ///
 /// The input data will be compared to the tag combinator's argument and will return the part of

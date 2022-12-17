@@ -13,6 +13,20 @@ use crate::lib::std::result::Result::*;
 use crate::IntoOutputIResult;
 use crate::{Err, IResult, Parser};
 
+pub(crate) fn any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as InputIter>::Item, E>
+where
+  I: InputIter + InputLength + Slice<RangeFrom<usize>>,
+{
+  let mut it = input.iter_indices();
+  match it.next() {
+    None => Err(Err::Error(E::from_error_kind(input, ErrorKind::Eof))),
+    Some((_, c)) => match it.next() {
+      None => Ok((input.slice(input.input_len()..), c)),
+      Some((idx, _)) => Ok((input.slice(idx..), c)),
+    },
+  }
+}
+
 /// Recognizes a pattern
 ///
 /// The input data will be compared to the tag combinator's argument and will return the part of

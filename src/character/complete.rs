@@ -357,21 +357,14 @@ where
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Eof))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::anychar`][crate::character::anychar]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::anychar`")]
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::any`][crate::bytes::any]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::any`")]
 pub fn anychar<T, E: ParseError<T>>(input: T) -> IResult<T, char, E>
 where
   T: InputIter + InputLength + Slice<RangeFrom<usize>>,
   <T as InputIter>::Item: AsChar,
 {
-  let mut it = input.iter_indices();
-  match it.next() {
-    None => Err(Err::Error(E::from_error_kind(input, ErrorKind::Eof))),
-    Some((_, c)) => match it.next() {
-      None => Ok((input.slice(input.input_len()..), c.as_char())),
-      Some((idx, _)) => Ok((input.slice(idx..), c.as_char())),
-    },
-  }
+  crate::bytes::complete::any(input).map(|(i, c)| (i, c.as_char()))
 }
 
 /// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
