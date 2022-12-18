@@ -127,10 +127,10 @@ fn issue_655() {
 
 #[cfg(feature = "alloc")]
 fn issue_717(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-  use nom::bytes::{is_not, tag};
+  use nom::bytes::{tag, take_till1};
   use nom::multi::separated_list0;
 
-  separated_list0(tag([0x0]), is_not([0x0u8]))(i)
+  separated_list0(tag([0x0]), take_till1([0x0u8]))(i)
 }
 
 mod issue_647 {
@@ -234,7 +234,7 @@ fn issue_1231_bits_expect_fn_closure() {
 
 #[test]
 fn issue_1282_findtoken_char() {
-  use nom::character::one_of;
+  use nom::bytes::one_of;
   use nom::error::Error;
   let parser = one_of::<_, _, Error<_>, false>(&['a', 'b', 'c'][..]);
   assert_eq!(parser("aaa"), Ok(("aa", 'a')));

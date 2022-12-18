@@ -12,7 +12,7 @@
 #![cfg(feature = "alloc")]
 
 use nom::branch::alt;
-use nom::bytes::{is_not, take_while_m_n};
+use nom::bytes::{take_till1, take_while_m_n};
 use nom::character::{char, multispace1};
 use nom::error::{FromExternalError, ParseError};
 use nom::multi::fold_many0;
@@ -96,13 +96,13 @@ fn parse_escaped_whitespace<'a, E: ParseError<&'a str>>(
 
 /// Parse a non-empty block of text that doesn't include \ or "
 fn parse_literal<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str, &'a str, E> {
-  // `is_not` parses a string of 0 or more characters that aren't one of the
+  // `take_till1` parses a string of 0 or more characters that aren't one of the
   // given characters.
-  let not_quote_slash = is_not("\"\\");
+  let not_quote_slash = take_till1("\"\\");
 
   // `verify` runs a parser, then runs a verification function on the output of
   // the parser. The verification function accepts out output only if it
-  // returns true. In this case, we want to ensure that the output of is_not
+  // returns true. In this case, we want to ensure that the output of take_till1
   // is non-empty.
   not_quote_slash.verify(|s: &str| !s.is_empty()).parse(input)
 }

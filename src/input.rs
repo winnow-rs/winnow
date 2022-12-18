@@ -54,7 +54,9 @@ use core::num::NonZeroUsize;
 
 use crate::error::{ErrorKind, ParseError};
 use crate::lib::std::iter::{Copied, Enumerate};
-use crate::lib::std::ops::{Range, RangeFrom, RangeFull, RangeTo};
+use crate::lib::std::ops::{
+  Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive,
+};
 use crate::lib::std::slice::Iter;
 use crate::lib::std::str::from_utf8;
 use crate::lib::std::str::CharIndices;
@@ -434,7 +436,14 @@ impl AsBytes for str {
 
 /// Transforms common types to a char for basic token parsing
 pub trait AsChar {
-  /// makes a char from self
+  /// Makes a char from self
+  ///
+  /// ```
+  /// use nom::input::AsChar as _;
+  ///
+  /// assert_eq!('a'.as_char(), 'a');
+  /// assert_eq!(u8::MAX.as_char(), std::char::from_u32(u8::MAX as u32).unwrap());
+  /// ```
   fn as_char(self) -> char;
 
   /// Tests that self is an alphabetic character
@@ -1461,7 +1470,29 @@ impl<'a, const LEN: usize> Compare<[u8; LEN]> for &'a [u8] {
   }
 }
 
-/// Look for a token in self
+/// Check if a token in in a set of possible tokens
+///
+/// This is generally implemented on patterns that a token may match and supports `u8` and `char`
+/// tokens along with the following patterns
+/// - `b'c'` and `'c'`
+/// - `b""` and `""`
+/// - `|c| true`
+/// - `b'a'..=b'z'`, `'a'..='z'` (etc for each [range type][std::ops])
+/// - `(pattern1, pattern2, ...)`
+///
+/// For example, you could implement `hex_digit0` as:
+/// ```
+/// # use nom::prelude::*;
+/// # use nom::{Err, error::ErrorKind, error::Error, Needed};
+/// # use nom::bytes::take_while1;
+/// fn hex_digit1(input: &str) -> IResult<&str, &str> {
+///     take_while1(('a'..='f', 'A'..='F', '0'..='9')).parse(input)
+/// }
+///
+/// assert_eq!(hex_digit1("21cZ"), Ok(("Z", "21c")));
+/// assert_eq!(hex_digit1("H2"), Err(Err::Error(Error::new("H2", ErrorKind::TakeWhile1))));
+/// assert_eq!(hex_digit1(""), Err(Err::Error(Error::new("", ErrorKind::TakeWhile1))));
+/// ```
 pub trait FindToken<T> {
   /// Returns true if self contains the token
   fn find_token(&self, token: T) -> bool;
@@ -1474,6 +1505,85 @@ where
   #[inline(always)]
   fn find_token(&self, token: T) -> bool {
     self.0.find_token(token)
+  }
+}
+
+impl FindToken<u8> for u8 {
+  fn find_token(&self, token: u8) -> bool {
+    *self == token
+  }
+}
+
+impl<'a> FindToken<&'a u8> for u8 {
+  fn find_token(&self, token: &u8) -> bool {
+    self.find_token(*token)
+  }
+}
+
+impl FindToken<char> for u8 {
+  fn find_token(&self, token: char) -> bool {
+    self.as_char() == token
+  }
+}
+
+impl<'a> FindToken<&'a char> for u8 {
+  fn find_token(&self, token: &char) -> bool {
+    self.find_token(*token)
+  }
+}
+
+impl<C: AsChar> FindToken<C> for char {
+  fn find_token(&self, token: C) -> bool {
+    *self == token.as_char()
+  }
+}
+
+impl<C: AsChar, F: Fn(C) -> bool> FindToken<C> for F {
+  fn find_token(&self, token: C) -> bool {
+    self(token)
+  }
+}
+
+impl<C1: AsChar, C2: AsChar + Clone> FindToken<C1> for Range<C2> {
+  fn find_token(&self, token: C1) -> bool {
+    let start = self.start.clone().as_char();
+    let end = self.end.clone().as_char();
+    (start..end).contains(&token.as_char())
+  }
+}
+
+impl<C1: AsChar, C2: AsChar + Clone> FindToken<C1> for RangeInclusive<C2> {
+  fn find_token(&self, token: C1) -> bool {
+    let start = self.start().clone().as_char();
+    let end = self.end().clone().as_char();
+    (start..=end).contains(&token.as_char())
+  }
+}
+
+impl<C1: AsChar, C2: AsChar + Clone> FindToken<C1> for RangeFrom<C2> {
+  fn find_token(&self, token: C1) -> bool {
+    let start = self.start.clone().as_char();
+    (start..).contains(&token.as_char())
+  }
+}
+
+impl<C1: AsChar, C2: AsChar + Clone> FindToken<C1> for RangeTo<C2> {
+  fn find_token(&self, token: C1) -> bool {
+    let end = self.end.clone().as_char();
+    (..end).contains(&token.as_char())
+  }
+}
+
+impl<C1: AsChar, C2: AsChar + Clone> FindToken<C1> for RangeToInclusive<C2> {
+  fn find_token(&self, token: C1) -> bool {
+    let end = self.end.clone().as_char();
+    (..=end).contains(&token.as_char())
+  }
+}
+
+impl<C1: AsChar> FindToken<C1> for RangeFull {
+  fn find_token(&self, _token: C1) -> bool {
+    true
   }
 }
 
@@ -1491,7 +1601,13 @@ impl<'a, 'b> FindToken<&'a u8> for &'b [u8] {
 
 impl<'a> FindToken<char> for &'a [u8] {
   fn find_token(&self, token: char) -> bool {
-    self.iter().any(|i| *i == token as u8)
+    self.iter().any(|i| i.as_char() == token)
+  }
+}
+
+impl<'a, 'b> FindToken<&'a char> for &'b [u8] {
+  fn find_token(&self, token: &char) -> bool {
+    self.find_token(*token)
   }
 }
 
@@ -1503,6 +1619,18 @@ impl<const LEN: usize> FindToken<u8> for [u8; LEN] {
 
 impl<'a, const LEN: usize> FindToken<&'a u8> for [u8; LEN] {
   fn find_token(&self, token: &u8) -> bool {
+    self.find_token(*token)
+  }
+}
+
+impl<'a, const LEN: usize> FindToken<char> for [u8; LEN] {
+  fn find_token(&self, token: char) -> bool {
+    self.iter().any(|i| i.as_char() == token)
+  }
+}
+
+impl<'a, const LEN: usize> FindToken<&'a char> for [u8; LEN] {
+  fn find_token(&self, token: &char) -> bool {
     self.find_token(*token)
   }
 }
@@ -1525,6 +1653,24 @@ impl<'a> FindToken<char> for &'a str {
   }
 }
 
+impl<'a, 'b> FindToken<&'a char> for &'b str {
+  fn find_token(&self, token: &char) -> bool {
+    self.find_token(*token)
+  }
+}
+
+impl<'a> FindToken<u8> for &'a [char] {
+  fn find_token(&self, token: u8) -> bool {
+    self.iter().any(|i| *i == token.as_char())
+  }
+}
+
+impl<'a, 'b> FindToken<&'a u8> for &'b [char] {
+  fn find_token(&self, token: &u8) -> bool {
+    self.find_token(*token)
+  }
+}
+
 impl<'a> FindToken<char> for &'a [char] {
   fn find_token(&self, token: char) -> bool {
     self.iter().any(|i| *i == token)
@@ -1536,6 +1682,45 @@ impl<'a, 'b> FindToken<&'a char> for &'b [char] {
     self.find_token(*token)
   }
 }
+
+impl<T> FindToken<T> for () {
+  fn find_token(&self, _token: T) -> bool {
+    false
+  }
+}
+
+macro_rules! impl_find_token_for_tuple {
+  ($($haystack:ident),+) => (
+    #[allow(non_snake_case)]
+    impl<T, $($haystack),+> FindToken<T> for ($($haystack),+,)
+    where
+    T: Clone,
+      $($haystack: FindToken<T>),+
+    {
+      fn find_token(&self, token: T) -> bool {
+        let ($(ref $haystack),+,) = *self;
+        $($haystack.find_token(token.clone()) || )+ false
+      }
+    }
+  )
+}
+
+macro_rules! impl_find_token_for_tuples {
+    ($haystack1:ident, $($haystack:ident),+) => {
+        impl_find_token_for_tuples!(__impl $haystack1; $($haystack),+);
+    };
+    (__impl $($haystack:ident),+; $haystack1:ident $(,$haystack2:ident)*) => {
+        impl_find_token_for_tuple!($($haystack),+);
+        impl_find_token_for_tuples!(__impl $($haystack),+, $haystack1; $($haystack2),*);
+    };
+    (__impl $($haystack:ident),+;) => {
+        impl_find_token_for_tuple!($($haystack),+);
+    }
+}
+
+impl_find_token_for_tuples!(
+  F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21
+);
 
 /// Look for a substring in self
 pub trait FindSubstring<T> {

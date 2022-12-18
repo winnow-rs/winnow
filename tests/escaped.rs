@@ -1,6 +1,6 @@
 use nom::bytes::escaped;
+use nom::bytes::one_of;
 use nom::character::digit1;
-use nom::character::one_of;
 use nom::{error::ErrorKind, Err, IResult};
 
 fn esc(s: &str) -> IResult<&str, &str, (&str, ErrorKind)> {

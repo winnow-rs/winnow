@@ -64,13 +64,13 @@
 //!   IResult,
 //!   error::ParseError,
 //!   sequence::pair,
-//!   bytes::is_not,
+//!   bytes::take_till1,
 //!   character::char,
 //! };
 //!
 //! pub fn peol_comment<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, (), E>
 //! {
-//!   pair(char('%'), is_not("\n\r"))
+//!   pair(char('%'), take_till1("\n\r"))
 //!     .value(()) // Output is thrown away.
 //!     .parse(i)
 //! }
@@ -164,7 +164,8 @@
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::{char, one_of},
+//!   character::char,
+//!   bytes::one_of,
 //!   bytes::tag,
 //! };
 //!
@@ -187,7 +188,8 @@
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::{char, one_of},
+//!   character::char,
+//!   bytes::one_of,
 //!   bytes::tag,
 //! };
 //!
@@ -211,7 +213,8 @@
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::{char, one_of},
+//!   character::char,
+//!   bytes::one_of,
 //!   bytes::tag,
 //! };
 //!
@@ -233,7 +236,8 @@
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::{char, one_of},
+//!   character::char,
+//!   bytes::one_of,
 //!   bytes::tag,
 //! };
 //!
@@ -255,7 +259,8 @@
 //!   IResult,
 //!   multi::{many0, many1},
 //!   sequence::terminated,
-//!   character::{char, one_of},
+//!   character::char,
+//!   bytes::one_of,
 //! };
 //!
 //! fn decimal(input: &str) -> IResult<&str, &str> {
@@ -278,7 +283,8 @@
 //!   multi::{many0, many1},
 //!   combinator::opt,
 //!   sequence::{preceded, terminated},
-//!   character::{char, one_of},
+//!   character::char,
+//!   bytes::one_of,
 //! };
 //!
 //! fn float(input: &str) -> IResult<&str, &str> {

@@ -521,15 +521,6 @@ mod streaming {
   );
 
   #[test]
-  fn anychar_str() {
-    use super::anychar;
-    assert_eq!(
-      anychar::<_, (Streaming<&str>, ErrorKind), true>(Streaming("Ә")),
-      Ok((Streaming(""), 'Ә'))
-    );
-  }
-
-  #[test]
   fn character() {
     let a: &[u8] = b"abcd";
     let b: &[u8] = b"1234";
@@ -1052,45 +1043,6 @@ mod streaming {
         ErrorKind::Digit,
       ))),
     }
-  }
-
-  #[test]
-  fn one_of_test() {
-    fn f(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, char> {
-      one_of("ab")(i)
-    }
-
-    let a = &b"abcd"[..];
-    assert_eq!(f(Streaming(a)), Ok((Streaming(&b"bcd"[..]), 'a')));
-
-    let b = &b"cde"[..];
-    assert_eq!(
-      f(Streaming(b)),
-      Err(Err::Error(error_position!(Streaming(b), ErrorKind::OneOf)))
-    );
-
-    fn utf8(i: Streaming<&str>) -> IResult<Streaming<&str>, char> {
-      one_of("+\u{FF0B}")(i)
-    }
-
-    assert!(utf8(Streaming("+")).is_ok());
-    assert!(utf8(Streaming("\u{FF0B}")).is_ok());
-  }
-
-  #[test]
-  fn none_of_test() {
-    fn f(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, char> {
-      none_of("ab")(i)
-    }
-
-    let a = &b"abcd"[..];
-    assert_eq!(
-      f(Streaming(a)),
-      Err(Err::Error(error_position!(Streaming(a), ErrorKind::NoneOf)))
-    );
-
-    let b = &b"cde"[..];
-    assert_eq!(f(Streaming(b)), Ok((Streaming(&b"de"[..]), 'c')));
   }
 
   #[test]

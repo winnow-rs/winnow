@@ -13,6 +13,20 @@ use crate::lib::std::result::Result::*;
 use crate::IntoOutputIResult;
 use crate::{Err, IResult, Parser};
 
+pub(crate) fn any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as InputIter>::Item, E>
+where
+  I: InputIter + InputLength + Slice<RangeFrom<usize>>,
+{
+  let mut it = input.iter_indices();
+  match it.next() {
+    None => Err(Err::Error(E::from_error_kind(input, ErrorKind::Eof))),
+    Some((_, c)) => match it.next() {
+      None => Ok((input.slice(input.input_len()..), c)),
+      Some((idx, _)) => Ok((input.slice(idx..), c)),
+    },
+  }
+}
+
 /// Recognizes a pattern
 ///
 /// The input data will be compared to the tag combinator's argument and will return the part of
@@ -122,6 +136,46 @@ where
   res.into_output()
 }
 
+pub(crate) fn one_of_internal<I, T, E: ParseError<I>>(
+  input: I,
+  list: &T,
+) -> IResult<I, <I as InputIter>::Item, E>
+where
+  I: Slice<RangeFrom<usize>> + InputIter + InputLength,
+  <I as InputIter>::Item: Copy,
+  T: FindToken<<I as InputIter>::Item>,
+{
+  let mut it = input.iter_indices();
+  match it.next() {
+    Some((_, c)) if list.find_token(c) => match it.next() {
+      None => Ok((input.slice(input.input_len()..), c)),
+      Some((idx, _)) => Ok((input.slice(idx..), c)),
+    },
+    Some(_) => Err(Err::Error(E::from_error_kind(input, ErrorKind::OneOf))),
+    None => Err(Err::Error(E::from_error_kind(input, ErrorKind::OneOf))),
+  }
+}
+
+pub(crate) fn none_of_internal<I, T, E: ParseError<I>>(
+  input: I,
+  list: &T,
+) -> IResult<I, <I as InputIter>::Item, E>
+where
+  I: Slice<RangeFrom<usize>> + InputIter + InputLength,
+  <I as InputIter>::Item: Copy,
+  T: FindToken<<I as InputIter>::Item>,
+{
+  let mut it = input.iter_indices();
+  match it.next() {
+    Some((_, c)) if !list.find_token(c) => match it.next() {
+      None => Ok((input.slice(input.input_len()..), c)),
+      Some((idx, _)) => Ok((input.slice(idx..), c)),
+    },
+    Some(_) => Err(Err::Error(E::from_error_kind(input, ErrorKind::NoneOf))),
+    None => Err(Err::Error(E::from_error_kind(input, ErrorKind::NoneOf))),
+  }
+}
+
 /// Parse till certain characters are met.
 ///
 /// The parser will return the longest slice till one of the characters of the combinator's argument are met.
@@ -144,8 +198,8 @@ where
 /// assert_eq!(not_space(""), Err(Err::Error(Error::new("", ErrorKind::IsNot))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::is_not`][crate::bytes::is_not]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::is_not`")]
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_till1`][crate::bytes::take_till1]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_till1`")]
 pub fn is_not<T, Input, Error: ParseError<Input>>(
   arr: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -193,8 +247,8 @@ where
 /// assert_eq!(hex(""), Err(Err::Error(Error::new("", ErrorKind::IsA))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::is_a`][crate::bytes::is_a]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::is_a`")]
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_while1`][crate::bytes::take_while1`]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_while1`")]
 pub fn is_a<T, Input, Error: ParseError<Input>>(
   arr: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -242,27 +296,28 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`nom::bytes::take_while`][crate::bytes::take_while]
 #[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_while`")]
-pub fn take_while<F, Input, Error: ParseError<Input>>(
-  cond: F,
+pub fn take_while<T, Input, Error: ParseError<Input>>(
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
-  move |i: Input| take_while_internal(i, &cond)
+  move |i: Input| take_while_internal(i, &list)
 }
 
-pub(crate) fn take_while_internal<F, Input, Error: ParseError<Input>>(
+pub(crate) fn take_while_internal<T, Input, Error: ParseError<Input>>(
   i: Input,
-  cond: &F,
+  list: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
-  i.split_at_position_complete(|c| !cond(c)).into_output()
+  i.split_at_position_complete(|c| !list.find_token(c))
+    .into_output()
 }
 
 /// Returns the longest (at least 1) input slice that matches the predicate.
@@ -288,28 +343,29 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`nom::bytes::take_while1`][crate::bytes::take_while1]
 #[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_while1`")]
-pub fn take_while1<F, Input, Error: ParseError<Input>>(
-  cond: F,
+pub fn take_while1<T, Input, Error: ParseError<Input>>(
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
-  move |i: Input| take_while1_internal(i, &cond)
+  move |i: Input| take_while1_internal(i, &list)
 }
 
-pub(crate) fn take_while1_internal<F, Input, Error: ParseError<Input>>(
+pub(crate) fn take_while1_internal<T, Input, Error: ParseError<Input>>(
   i: Input,
-  cond: &F,
+  list: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
   let e: ErrorKind = ErrorKind::TakeWhile1;
-  i.split_at_position1_complete(|c| !cond(c), e).into_output()
+  i.split_at_position1_complete(|c| !list.find_token(c), e)
+    .into_output()
 }
 
 /// Returns the longest (m <= len <= n) input slice  that matches the predicate.
@@ -338,31 +394,31 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`nom::bytes::take_while_m_n`][crate::bytes::take_while_m_n]
 #[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_while_m_n`")]
-pub fn take_while_m_n<F, Input, Error: ParseError<Input>>(
+pub fn take_while_m_n<T, Input, Error: ParseError<Input>>(
   m: usize,
   n: usize,
-  cond: F,
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTake + InputIter + InputLength + Slice<RangeFrom<usize>>,
   Input: IntoOutput,
-  F: Fn(<Input as InputIter>::Item) -> bool,
+  T: FindToken<<Input as InputIter>::Item>,
 {
-  move |i: Input| take_while_m_n_internal(i, m, n, &cond)
+  move |i: Input| take_while_m_n_internal(i, m, n, &list)
 }
 
-pub(crate) fn take_while_m_n_internal<F, Input, Error: ParseError<Input>>(
+pub(crate) fn take_while_m_n_internal<T, Input, Error: ParseError<Input>>(
   input: Input,
   m: usize,
   n: usize,
-  cond: &F,
+  list: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTake + InputIter + InputLength + Slice<RangeFrom<usize>>,
   Input: IntoOutput,
-  F: Fn(<Input as InputIter>::Item) -> bool,
+  T: FindToken<<Input as InputIter>::Item>,
 {
-  match input.position(|c| !cond(c)) {
+  match input.position(|c| !list.find_token(c)) {
     Some(idx) => {
       if idx >= m {
         if idx <= n {
@@ -433,27 +489,28 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`nom::bytes::take_till`][crate::bytes::take_till]
 #[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_till`")]
-pub fn take_till<F, Input, Error: ParseError<Input>>(
-  cond: F,
+pub fn take_till<T, Input, Error: ParseError<Input>>(
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
-  move |i: Input| take_till_internal(i, &cond)
+  move |i: Input| take_till_internal(i, &list)
 }
 
-pub(crate) fn take_till_internal<F, Input, Error: ParseError<Input>>(
+pub(crate) fn take_till_internal<T, Input, Error: ParseError<Input>>(
   i: Input,
-  cond: &F,
+  list: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
-  i.split_at_position_complete(|c| cond(c)).into_output()
+  i.split_at_position_complete(|c| list.find_token(c))
+    .into_output()
 }
 
 /// Returns the longest (at least 1) input slice till a predicate is met.
@@ -480,28 +537,29 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`nom::bytes::take_till1`][crate::bytes::take_till1]
 #[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_till1`")]
-pub fn take_till1<F, Input, Error: ParseError<Input>>(
-  cond: F,
+pub fn take_till1<T, Input, Error: ParseError<Input>>(
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
-  move |i: Input| take_till1_internal(i, &cond)
+  move |i: Input| take_till1_internal(i, &list)
 }
 
-pub(crate) fn take_till1_internal<F, Input, Error: ParseError<Input>>(
+pub(crate) fn take_till1_internal<T, Input, Error: ParseError<Input>>(
   i: Input,
-  cond: &F,
+  list: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
   let e: ErrorKind = ErrorKind::TakeTill1;
-  i.split_at_position1_complete(|c| cond(c), e).into_output()
+  i.split_at_position1_complete(|c| list.find_token(c), e)
+    .into_output()
 }
 
 /// Returns an input slice containing the first N input elements (Input[..N]).

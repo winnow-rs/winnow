@@ -73,8 +73,8 @@ where
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Satisfy))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::satisfy`][crate::character::satisfy]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::satisfy`")]
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::one_of`][crate::bytes::one_of]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::one_of`")]
 pub fn satisfy<F, I, Error: ParseError<I>>(cond: F) -> impl Fn(I) -> IResult<I, char, Error>
 where
   I: Slice<RangeFrom<usize>> + InputIter,
@@ -116,27 +116,15 @@ where
 /// assert_eq!(one_of::<_, _, (&str, ErrorKind)>("a")(""), Err(Err::Error(("", ErrorKind::OneOf))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::one_of`][crate::character::one_of]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::one_of`")]
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::one_of`][crate::bytes::one_of]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::one_of`")]
 pub fn one_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
-  I: Slice<RangeFrom<usize>> + InputIter,
+  I: Slice<RangeFrom<usize>> + InputIter + InputLength,
   <I as InputIter>::Item: AsChar + Copy,
   T: FindToken<<I as InputIter>::Item>,
 {
-  move |i: I| one_of_internal(i, &list)
-}
-
-pub(crate) fn one_of_internal<I, T, Error: ParseError<I>>(i: I, list: &T) -> IResult<I, char, Error>
-where
-  I: Slice<RangeFrom<usize>> + InputIter,
-  <I as InputIter>::Item: AsChar + Copy,
-  T: FindToken<<I as InputIter>::Item>,
-{
-  match (i).iter_elements().next().map(|c| (c, list.find_token(c))) {
-    Some((c, true)) => Ok((i.slice(c.len()..), c.as_char())),
-    _ => Err(Err::Error(Error::from_error_kind(i, ErrorKind::OneOf))),
-  }
+  move |i: I| crate::bytes::complete::one_of_internal(i, &list).map(|(i, c)| (i, c.as_char()))
 }
 
 /// Recognizes a character that is not in the provided characters.
@@ -152,30 +140,15 @@ where
 /// assert_eq!(none_of::<_, _, (&str, ErrorKind)>("a")(""), Err(Err::Error(("", ErrorKind::NoneOf))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::none_of`][crate::character::none_of]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::none_of`")]
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::none_of`][crate::bytes::none_of]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::none_of`")]
 pub fn none_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
-  I: Slice<RangeFrom<usize>> + InputIter,
+  I: Slice<RangeFrom<usize>> + InputLength + InputIter,
   <I as InputIter>::Item: AsChar + Copy,
   T: FindToken<<I as InputIter>::Item>,
 {
-  move |i: I| none_of_internal(i, &list)
-}
-
-pub(crate) fn none_of_internal<I, T, Error: ParseError<I>>(
-  i: I,
-  list: &T,
-) -> IResult<I, char, Error>
-where
-  I: Slice<RangeFrom<usize>> + InputIter,
-  <I as InputIter>::Item: AsChar + Copy,
-  T: FindToken<<I as InputIter>::Item>,
-{
-  match (i).iter_elements().next().map(|c| (c, !list.find_token(c))) {
-    Some((c, true)) => Ok((i.slice(c.len()..), c.as_char())),
-    _ => Err(Err::Error(Error::from_error_kind(i, ErrorKind::NoneOf))),
-  }
+  move |i: I| crate::bytes::complete::none_of_internal(i, &list).map(|(i, c)| (i, c.as_char()))
 }
 
 /// Recognizes the string "\r\n".
@@ -384,21 +357,14 @@ where
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Eof))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::anychar`][crate::character::anychar]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::anychar`")]
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::any`][crate::bytes::any]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::any`")]
 pub fn anychar<T, E: ParseError<T>>(input: T) -> IResult<T, char, E>
 where
   T: InputIter + InputLength + Slice<RangeFrom<usize>>,
   <T as InputIter>::Item: AsChar,
 {
-  let mut it = input.iter_indices();
-  match it.next() {
-    None => Err(Err::Error(E::from_error_kind(input, ErrorKind::Eof))),
-    Some((_, c)) => match it.next() {
-      None => Ok((input.slice(input.input_len()..), c.as_char())),
-      Some((idx, _)) => Ok((input.slice(idx..), c.as_char())),
-    },
-  }
+  crate::bytes::complete::any(input).map(|(i, c)| (i, c.as_char()))
 }
 
 /// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z

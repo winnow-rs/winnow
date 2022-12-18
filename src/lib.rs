@@ -88,11 +88,11 @@
 //!   sequence::delimited,
 //!   // see the "streaming/complete" paragraph lower for an explanation of these submodules
 //!   character::char,
-//!   bytes::is_not
+//!   bytes::take_till1
 //! };
 //!
 //! fn parens(input: &str) -> IResult<&str, &str> {
-//!   delimited(char('('), is_not(")"), char(')'))(input)
+//!   delimited(char('('), take_till1(")"), char(')'))(input)
 //! }
 //! ```
 //!

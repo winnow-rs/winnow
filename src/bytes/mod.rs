@@ -13,6 +13,44 @@ use crate::input::{
 use crate::lib::std::ops::RangeFrom;
 use crate::{IResult, Parser};
 
+/// Matches one token
+///
+/// *Complete version*: Will return an error if there's not enough input data.
+///
+/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+///
+/// # Example
+///
+/// ```
+/// # use nom::{bytes::any, Err, error::{Error, ErrorKind}, IResult};
+/// fn parser(input: &str) -> IResult<&str, char> {
+///     any(input)
+/// }
+///
+/// assert_eq!(parser("abc"), Ok(("bc",'a')));
+/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Eof))));
+/// ```
+///
+/// ```
+/// # use nom::{bytes::any, Err, error::ErrorKind, IResult, Needed};
+/// # use nom::input::Streaming;
+/// assert_eq!(any::<_, (_, ErrorKind), true>(Streaming("abc")), Ok((Streaming("bc"),'a')));
+/// assert_eq!(any::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// ```
+#[inline(always)]
+pub fn any<I, E: ParseError<I>, const STREAMING: bool>(
+  input: I,
+) -> IResult<I, <I as InputIter>::Item, E>
+where
+  I: InputIter + InputLength + Slice<RangeFrom<usize>> + InputIsStreaming<STREAMING>,
+{
+  if STREAMING {
+    streaming::any(input)
+  } else {
+    complete::any(input)
+  }
+}
+
 /// Recognizes a pattern
 ///
 /// The input data will be compared to the tag combinator's argument and will return the part of
@@ -122,130 +160,107 @@ where
   }
 }
 
-/// Parse till certain characters are met.
+/// Returns a token that matches the [pattern][FindToken]
 ///
-/// The parser will return the longest slice till one of the characters of the combinator's argument are met.
+/// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// It doesn't consume the matched character.
-///
-/// *Complete version*: It will return a `Err::Error(("", ErrorKind::IsNot))` if the pattern wasn't met.
-///
-/// *Streaming version*: It will return a `Err::Incomplete(Needed::new(1))` if the pattern wasn't met.
+/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
-/// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::is_not;
 ///
-/// fn not_space(s: &str) -> IResult<&str, &str> {
-///   is_not(" \t\r\n")(s)
+/// ```
+/// # use nom::*;
+/// # use nom::{Err, error::ErrorKind, error::Error};
+/// # use nom::bytes::one_of;
+/// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("abc")("b"), Ok(("", 'b')));
+/// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("a")("bc"), Err(Err::Error(("bc", ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("a")(""), Err(Err::Error(("", ErrorKind::OneOf))));
+///
+/// fn parser(i: &str) -> IResult<&str, char> {
+///     one_of(|c| c == 'a' || c == 'b')(i)
 /// }
-///
-/// assert_eq!(not_space("Hello, World!"), Ok((" World!", "Hello,")));
-/// assert_eq!(not_space("Sometimes\t"), Ok(("\t", "Sometimes")));
-/// assert_eq!(not_space("Nospace"), Ok(("", "Nospace")));
-/// assert_eq!(not_space(""), Err(Err::Error(Error::new("", ErrorKind::IsNot))));
+/// assert_eq!(parser("abc"), Ok(("bc", 'a')));
+/// assert_eq!(parser("cd"), Err(Err::Error(Error::new("cd", ErrorKind::OneOf))));
+/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::OneOf))));
 /// ```
 ///
-/// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
+/// ```
+/// # use nom::*;
+/// # use nom::{Err, error::ErrorKind, error::Error, Needed};
 /// # use nom::input::Streaming;
-/// use nom::bytes::is_not;
+/// # use nom::bytes::one_of;
+/// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("abc")(Streaming("b")), Ok((Streaming(""), 'b')));
+/// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("a")(Streaming("bc")), Err(Err::Error((Streaming("bc"), ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("a")(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 ///
-/// fn not_space(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
-///   is_not(" \t\r\n")(s)
+/// fn parser(i: Streaming<&str>) -> IResult<Streaming<&str>, char> {
+///     one_of(|c| c == 'a' || c == 'b')(i)
 /// }
-///
-/// assert_eq!(not_space(Streaming("Hello, World!")), Ok((Streaming(" World!"), "Hello,")));
-/// assert_eq!(not_space(Streaming("Sometimes\t")), Ok((Streaming("\t"), "Sometimes")));
-/// assert_eq!(not_space(Streaming("Nospace")), Err(Err::Incomplete(Needed::new(1))));
-/// assert_eq!(not_space(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming("abc")), Ok((Streaming("bc"), 'a')));
+/// assert_eq!(parser(Streaming("cd")), Err(Err::Error(Error::new(Streaming("cd"), ErrorKind::OneOf))));
+/// assert_eq!(parser(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn is_not<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
-  arr: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+pub fn one_of<I, T, Error: ParseError<I>, const STREAMING: bool>(
+  list: T,
+) -> impl Fn(I) -> IResult<I, <I as InputIter>::Item, Error>
 where
-  Input: InputTakeAtPosition + InputIsStreaming<STREAMING>,
-  Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
-  Input: InputTakeAtPosition,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+  I: Slice<RangeFrom<usize>> + InputIter + InputLength + InputIsStreaming<STREAMING>,
+  <I as InputIter>::Item: Copy,
+  T: FindToken<<I as InputIter>::Item>,
 {
-  move |i: Input| {
+  move |i: I| {
     if STREAMING {
-      streaming::is_not_internal(i, &arr)
+      streaming::one_of_internal(i, &list)
     } else {
-      complete::is_not_internal(i, &arr)
+      complete::one_of_internal(i, &list)
     }
   }
 }
 
-/// Returns the longest slice of the matches the pattern.
+/// Returns a token that does not match the [pattern][FindToken]
 ///
-/// The parser will return the longest slice consisting of the characters in provided in the
-/// combinator's argument.
+/// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Complete version*: It will return a `Err(Err::Error((_, ErrorKind::IsA)))` if the pattern wasn't met.
-///
-/// *Streaming version*: will return a `Err::Incomplete(Needed::new(1))` if the pattern wasn't met
-/// or if the pattern reaches the end of the input.
+/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
-/// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::is_a;
 ///
-/// fn hex(s: &str) -> IResult<&str, &str> {
-///   is_a("1234567890ABCDEF")(s)
-/// }
-///
-/// assert_eq!(hex("123 and voila"), Ok((" and voila", "123")));
-/// assert_eq!(hex("DEADBEEF and others"), Ok((" and others", "DEADBEEF")));
-/// assert_eq!(hex("BADBABEsomething"), Ok(("something", "BADBABE")));
-/// assert_eq!(hex("D15EA5E"), Ok(("", "D15EA5E")));
-/// assert_eq!(hex(""), Err(Err::Error(Error::new("", ErrorKind::IsA))));
+/// ```
+/// # use nom::{Err, error::ErrorKind};
+/// # use nom::bytes::none_of;
+/// assert_eq!(none_of::<_, _, (&str, ErrorKind), false>("abc")("z"), Ok(("", 'z')));
+/// assert_eq!(none_of::<_, _, (&str, ErrorKind), false>("ab")("a"), Err(Err::Error(("a", ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, (&str, ErrorKind), false>("a")(""), Err(Err::Error(("", ErrorKind::NoneOf))));
 /// ```
 ///
-/// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
+/// ```
+/// # use nom::{Err, error::ErrorKind, Needed};
 /// # use nom::input::Streaming;
-/// use nom::bytes::is_a;
-///
-/// fn hex(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
-///   is_a("1234567890ABCDEF")(s)
-/// }
-///
-/// assert_eq!(hex(Streaming("123 and voila")), Ok((Streaming(" and voila"), "123")));
-/// assert_eq!(hex(Streaming("DEADBEEF and others")), Ok((Streaming(" and others"), "DEADBEEF")));
-/// assert_eq!(hex(Streaming("BADBABEsomething")), Ok((Streaming("something"), "BADBABE")));
-/// assert_eq!(hex(Streaming("D15EA5E")), Err(Err::Incomplete(Needed::new(1))));
-/// assert_eq!(hex(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// # use nom::bytes::none_of;
+/// assert_eq!(none_of::<_, _, (_, ErrorKind), true>("abc")(Streaming("z")), Ok((Streaming(""), 'z')));
+/// assert_eq!(none_of::<_, _, (_, ErrorKind), true>("ab")(Streaming("a")), Err(Err::Error((Streaming("a"), ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, (_, ErrorKind), true>("a")(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn is_a<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
-  arr: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+pub fn none_of<I, T, Error: ParseError<I>, const STREAMING: bool>(
+  list: T,
+) -> impl Fn(I) -> IResult<I, <I as InputIter>::Item, Error>
 where
-  Input: InputTakeAtPosition + InputIsStreaming<STREAMING>,
-  Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
-  Input: InputTakeAtPosition,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+  I: Slice<RangeFrom<usize>> + InputIter + InputLength + InputIsStreaming<STREAMING>,
+  <I as InputIter>::Item: Copy,
+  T: FindToken<<I as InputIter>::Item>,
 {
-  move |i: Input| {
+  move |i: I| {
     if STREAMING {
-      streaming::is_a_internal(i, &arr)
+      streaming::none_of_internal(i, &list)
     } else {
-      complete::is_a_internal(i, &arr)
+      complete::none_of_internal(i, &list)
     }
   }
 }
 
-/// Returns the longest input slice (if any) that matches the predicate.
-///
-/// The parser will return the longest slice that matches the given predicate *(a function that
-/// takes the input and returns a bool)*.
+/// Returns the longest input slice (if any) that matches the [pattern][FindToken]
 ///
 /// *Streaming version*: will return a `Err::Incomplete(Needed::new(1))` if the pattern reaches the end of the input.
 /// # Example
@@ -280,29 +295,25 @@ where
 /// assert_eq!(alpha(Streaming(b"")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_while<F, Input, Error: ParseError<Input>, const STREAMING: bool>(
-  cond: F,
+pub fn take_while<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
   Input: InputTakeAtPosition,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
 {
   move |i: Input| {
     if STREAMING {
-      streaming::take_while_internal(i, &cond)
+      streaming::take_while_internal(i, &list)
     } else {
-      complete::take_while_internal(i, &cond)
+      complete::take_while_internal(i, &list)
     }
   }
 }
 
-/// Returns the longest (at least 1) input slice that matches the predicate.
-///
-/// The parser will return the longest slice that matches the given predicate *(a function that
-/// takes the input and returns a bool)*.
+/// Returns the longest (at least 1) input slice that matches the [pattern][FindToken]
 ///
 /// It will return an `Err(Err::Error((_, ErrorKind::TakeWhile1)))` if the pattern wasn't met.
 ///
@@ -321,6 +332,16 @@ where
 /// assert_eq!(alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
 /// assert_eq!(alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
 /// assert_eq!(alpha(b"12345"), Err(Err::Error(Error::new(&b"12345"[..], ErrorKind::TakeWhile1))));
+///
+/// fn hex(s: &str) -> IResult<&str, &str> {
+///   take_while1("1234567890ABCDEF")(s)
+/// }
+///
+/// assert_eq!(hex("123 and voila"), Ok((" and voila", "123")));
+/// assert_eq!(hex("DEADBEEF and others"), Ok((" and others", "DEADBEEF")));
+/// assert_eq!(hex("BADBABEsomething"), Ok(("something", "BADBABE")));
+/// assert_eq!(hex("D15EA5E"), Ok(("", "D15EA5E")));
+/// assert_eq!(hex(""), Err(Err::Error(Error::new("", ErrorKind::TakeWhile1))));
 /// ```
 ///
 /// ```rust
@@ -336,29 +357,36 @@ where
 /// assert_eq!(alpha(Streaming(b"latin123")), Ok((Streaming(&b"123"[..]), &b"latin"[..])));
 /// assert_eq!(alpha(Streaming(b"latin")), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(alpha(Streaming(b"12345")), Err(Err::Error(Error::new(Streaming(&b"12345"[..]), ErrorKind::TakeWhile1))));
+///
+/// fn hex(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+///   take_while1("1234567890ABCDEF")(s)
+/// }
+///
+/// assert_eq!(hex(Streaming("123 and voila")), Ok((Streaming(" and voila"), "123")));
+/// assert_eq!(hex(Streaming("DEADBEEF and others")), Ok((Streaming(" and others"), "DEADBEEF")));
+/// assert_eq!(hex(Streaming("BADBABEsomething")), Ok((Streaming("something"), "BADBABE")));
+/// assert_eq!(hex(Streaming("D15EA5E")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(hex(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_while1<F, Input, Error: ParseError<Input>, const STREAMING: bool>(
-  cond: F,
+pub fn take_while1<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
   move |i: Input| {
     if STREAMING {
-      streaming::take_while1_internal(i, &cond)
+      streaming::take_while1_internal(i, &list)
     } else {
-      complete::take_while1_internal(i, &cond)
+      complete::take_while1_internal(i, &list)
     }
   }
 }
 
-/// Returns the longest (m <= len <= n) input slice  that matches the predicate.
-///
-/// The parser will return the longest slice that matches the given predicate *(a function that
-/// takes the input and returns a bool)*.
+/// Returns the longest (m <= len <= n) input slice that matches the [pattern][FindToken]
 ///
 /// It will return an `Err::Error((_, ErrorKind::TakeWhileMN))` if the pattern wasn't met or is out
 /// of range (m <= len <= n).
@@ -399,30 +427,27 @@ where
 /// assert_eq!(short_alpha(Streaming(b"12345")), Err(Err::Error(Error::new(Streaming(&b"12345"[..]), ErrorKind::TakeWhileMN))));
 /// ```
 #[inline(always)]
-pub fn take_while_m_n<F, Input, Error: ParseError<Input>, const STREAMING: bool>(
+pub fn take_while_m_n<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
   m: usize,
   n: usize,
-  cond: F,
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input:
     InputTake + InputIter + InputLength + Slice<RangeFrom<usize>> + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
-  F: Fn(<Input as InputIter>::Item) -> bool,
+  T: FindToken<<Input as InputIter>::Item>,
 {
   move |i: Input| {
     if STREAMING {
-      streaming::take_while_m_n_internal(i, m, n, &cond)
+      streaming::take_while_m_n_internal(i, m, n, &list)
     } else {
-      complete::take_while_m_n_internal(i, m, n, &cond)
+      complete::take_while_m_n_internal(i, m, n, &list)
     }
   }
 }
 
-/// Returns the longest input slice (if any) till a predicate is met.
-///
-/// The parser will return the longest slice till the given predicate *(a function that
-/// takes the input and returns a bool)*.
+/// Returns the longest input slice (if any) till a [pattern][FindToken] is met.
 ///
 /// *Streaming version* will return a `Err::Incomplete(Needed::new(1))` if the match reaches the
 /// end of input or if there was not match.
@@ -457,27 +482,24 @@ where
 /// assert_eq!(till_colon(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_till<F, Input, Error: ParseError<Input>, const STREAMING: bool>(
-  cond: F,
+pub fn take_till<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
   move |i: Input| {
     if STREAMING {
-      streaming::take_till_internal(i, &cond)
+      streaming::take_till_internal(i, &list)
     } else {
-      complete::take_till_internal(i, &cond)
+      complete::take_till_internal(i, &list)
     }
   }
 }
 
-/// Returns the longest (at least 1) input slice till a predicate is met.
-///
-/// The parser will return the longest slice till the given predicate *(a function that
-/// takes the input and returns a bool)*.
+/// Returns the longest (at least 1) input slice till a [pattern][FindToken] is met.
 ///
 /// It will return `Err(Err::Error((_, ErrorKind::TakeTill1)))` if the input is empty or the
 /// predicate matches the first input.
@@ -498,6 +520,15 @@ where
 /// assert_eq!(till_colon(":empty matched"), Err(Err::Error(Error::new(":empty matched", ErrorKind::TakeTill1))));
 /// assert_eq!(till_colon("12345"), Ok(("", "12345")));
 /// assert_eq!(till_colon(""), Err(Err::Error(Error::new("", ErrorKind::TakeTill1))));
+///
+/// fn not_space(s: &str) -> IResult<&str, &str> {
+///   take_till1(" \t\r\n")(s)
+/// }
+///
+/// assert_eq!(not_space("Hello, World!"), Ok((" World!", "Hello,")));
+/// assert_eq!(not_space("Sometimes\t"), Ok(("\t", "Sometimes")));
+/// assert_eq!(not_space("Nospace"), Ok(("", "Nospace")));
+/// assert_eq!(not_space(""), Err(Err::Error(Error::new("", ErrorKind::TakeTill1))));
 /// ```
 ///
 /// ```rust
@@ -513,21 +544,30 @@ where
 /// assert_eq!(till_colon(Streaming(":empty matched")), Err(Err::Error(Error::new(Streaming(":empty matched"), ErrorKind::TakeTill1))));
 /// assert_eq!(till_colon(Streaming("12345")), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(till_colon(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+///
+/// fn not_space(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+///   take_till1(" \t\r\n")(s)
+/// }
+///
+/// assert_eq!(not_space(Streaming("Hello, World!")), Ok((Streaming(" World!"), "Hello,")));
+/// assert_eq!(not_space(Streaming("Sometimes\t")), Ok((Streaming("\t"), "Sometimes")));
+/// assert_eq!(not_space(Streaming("Nospace")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(not_space(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_till1<F, Input, Error: ParseError<Input>, const STREAMING: bool>(
-  cond: F,
+pub fn take_till1<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
+  list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
   Input: InputTakeAtPosition + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
-  F: Fn(<Input as InputTakeAtPosition>::Item) -> bool,
+  T: FindToken<<Input as InputTakeAtPosition>::Item>,
 {
   move |i: Input| {
     if STREAMING {
-      streaming::take_till1_internal(i, &cond)
+      streaming::take_till1_internal(i, &list)
     } else {
-      complete::take_till1_internal(i, &cond)
+      complete::take_till1_internal(i, &list)
     }
   }
 }
@@ -728,7 +768,7 @@ where
 /// # use nom::{Err, error::ErrorKind, Needed, IResult};
 /// # use nom::character::digit1;
 /// use nom::bytes::escaped;
-/// use nom::character::one_of;
+/// use nom::bytes::one_of;
 ///
 /// fn esc(s: &str) -> IResult<&str, &str> {
 ///   escaped(digit1, '\\', one_of(r#""n\"#))(s)
@@ -743,7 +783,7 @@ where
 /// # use nom::character::digit1;
 /// # use nom::input::Streaming;
 /// use nom::bytes::escaped;
-/// use nom::character::one_of;
+/// use nom::bytes::one_of;
 ///
 /// fn esc(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
 ///   escaped(digit1, '\\', one_of("\"n\\"))(s)

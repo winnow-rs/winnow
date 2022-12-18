@@ -1,6 +1,6 @@
 use nom::prelude::*;
 use nom::{
-  bytes::{is_a, tag, take_till, take_while},
+  bytes::{tag, take_till, take_while, take_while1},
   character::{alphanumeric1 as alphanumeric, char, space0 as space},
   combinator::opt,
   multi::many0,
@@ -18,13 +18,13 @@ fn not_line_ending(i: &str) -> IResult<&str, &str> {
 }
 
 fn space_or_line_ending(i: &str) -> IResult<&str, &str> {
-  is_a(" \r\n")(i)
+  take_while1(" \r\n")(i)
 }
 
 fn category(i: &str) -> IResult<&str, &str> {
   terminated(
     delimited(char('['), take_while(|c| c != ']'), char(']')),
-    opt(is_a(" \r\n")),
+    opt(take_while1(" \r\n")),
   )(i)
 }
 

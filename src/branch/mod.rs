@@ -89,17 +89,18 @@ pub trait Permutation<I, O, E> {
 /// ```rust
 /// # use nom::{Err, error::{Error, ErrorKind}, IResult};
 /// use nom::branch::permutation;
-/// use nom::character::{anychar, char};
+/// use nom::bytes::any;
+/// use nom::character::{char};
 ///
 /// fn parser(input: &str) -> IResult<&str, (char, char)> {
-///   permutation((anychar, char('a')))(input)
+///   permutation((any, char('a')))(input)
 /// }
 ///
-/// // anychar parses 'b', then char('a') parses 'a'
+/// // any parses 'b', then char('a') parses 'a'
 /// assert_eq!(parser("ba"), Ok(("", ('b', 'a'))));
 ///
-/// // anychar parses 'a', then char('a') fails on 'b',
-/// // even though char('a') followed by anychar would succeed
+/// // any parses 'a', then char('a') fails on 'b',
+/// // even though char('a') followed by any would succeed
 /// assert_eq!(parser("ab"), Err(Err::Error(Error::new("b", ErrorKind::Char))));
 /// ```
 ///

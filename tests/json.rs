@@ -2,8 +2,8 @@
 
 use nom::{
   branch::alt,
-  bytes::{tag, take},
-  character::{anychar, char, f64, multispace0, none_of},
+  bytes::{any, none_of, tag, take},
+  character::{char, f64, multispace0},
   error::ParseError,
   multi::{fold_many0, separated_list0},
   sequence::{delimited, preceded, separated_pair},
@@ -58,7 +58,7 @@ fn character(input: &str) -> IResult<&str, char> {
   let (input, c) = none_of("\"")(input)?;
   if c == '\\' {
     alt((
-      anychar.map_res(|c| {
+      any.map_res(|c| {
         Ok(match c {
           '"' | '\\' | '/' => c,
           'b' => '\x08',
