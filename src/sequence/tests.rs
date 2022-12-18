@@ -88,6 +88,7 @@ fn complete() {
 
 #[test]
 fn pair_test() {
+  #![allow(deprecated)]
   fn pair_abc_def(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (&[u8], &[u8])> {
     pair(tag("abc"), tag("def"))(i)
   }
