@@ -9,6 +9,8 @@ use crate::{IResult, Parser};
 /// Gets an object from the first parser,
 /// then gets another object from the second parser.
 ///
+/// **WARNING:** Deprecated, [`Parser`] is directly implemented for tuples
+///
 /// # Arguments
 /// * `first` The first parser to apply.
 /// * `second` The second parser to apply.
@@ -26,6 +28,7 @@ use crate::{IResult, Parser};
 /// assert_eq!(parser(""), Err(Err::Error(("", ErrorKind::Tag))));
 /// assert_eq!(parser("123"), Err(Err::Error(("123", ErrorKind::Tag))));
 /// ```
+#[deprecated(since = "8.0.0", note = "`Parser` is directly implemented for tuples")]
 pub fn pair<I, O1, O2, E: ParseError<I>, F, G>(
   mut first: F,
   mut second: G,

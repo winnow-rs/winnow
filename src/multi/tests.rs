@@ -7,7 +7,6 @@ use crate::{
   error::{ErrorKind, ParseError},
   lib::std::str::{self, FromStr},
   number::{be_u16, be_u8},
-  sequence::pair,
   {Err, IResult, Needed},
 };
 #[cfg(feature = "alloc")]
@@ -608,7 +607,7 @@ fn fold_many_m_n_test() {
 #[test]
 fn many0_count_test() {
   fn count0_nums(i: &[u8]) -> IResult<&[u8], usize> {
-    many0_count(pair(digit, tag(",")))(i)
+    many0_count((digit, tag(",")))(i)
   }
 
   assert_eq!(count0_nums(&b"123,junk"[..]), Ok((&b"junk"[..], 1)));
@@ -626,7 +625,7 @@ fn many0_count_test() {
 #[test]
 fn many1_count_test() {
   fn count1_nums(i: &[u8]) -> IResult<&[u8], usize> {
-    many1_count(pair(digit, tag(",")))(i)
+    many1_count((digit, tag(",")))(i)
   }
 
   assert_eq!(count1_nums(&b"123,45,junk"[..]), Ok((&b"junk"[..], 2)));
