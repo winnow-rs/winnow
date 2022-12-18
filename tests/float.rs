@@ -3,7 +3,7 @@ use nom::bytes::tag;
 use nom::character::digit1 as digit;
 use nom::combinator::opt;
 use nom::prelude::*;
-use nom::sequence::{delimited, pair};
+use nom::sequence::delimited;
 use nom::IResult;
 
 use std::str;
@@ -20,7 +20,7 @@ fn unsigned_float(i: &[u8]) -> IResult<&[u8], f32> {
 }
 
 fn float(i: &[u8]) -> IResult<&[u8], f32> {
-  pair(opt(alt((tag("+"), tag("-")))), unsigned_float)
+  (opt(alt((tag("+"), tag("-")))), unsigned_float)
     .map(|(sign, value)| {
       sign
         .and_then(|s| if s[0] == b'-' { Some(-1f32) } else { None })

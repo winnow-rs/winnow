@@ -4,7 +4,7 @@ use nom::{
   character::{alphanumeric1 as alphanumeric, char, multispace0 as multispace, space0 as space},
   combinator::opt,
   multi::many0,
-  sequence::{delimited, pair, separated_pair, terminated},
+  sequence::{delimited, separated_pair, terminated},
 };
 
 use std::collections::HashMap;
@@ -22,7 +22,7 @@ fn key_value(i: &[u8]) -> IResult<&[u8], (&str, &str)> {
   let (i, val) = take_while(|c| c != b'\n' && c != b';')
     .map_res(str::from_utf8)
     .parse(i)?;
-  let (i, _) = opt(pair(char(';'), take_while(|c| c != b'\n')))(i)?;
+  let (i, _) = opt((char(';'), take_while(|c| c != b'\n')))(i)?;
   Ok((i, (key, val)))
 }
 

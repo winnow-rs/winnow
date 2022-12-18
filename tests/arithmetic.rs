@@ -5,7 +5,7 @@ use nom::{
   character::char,
   character::{digit1 as digit, space0 as space},
   multi::fold_many0,
-  sequence::{delimited, pair},
+  sequence::delimited,
   IResult,
 };
 
@@ -36,7 +36,7 @@ fn term(i: &str) -> IResult<&str, i64> {
   let (i, init) = factor(i)?;
 
   fold_many0(
-    pair(alt((char('*'), char('/'))), factor),
+    (alt((char('*'), char('/'))), factor),
     move || init,
     |acc, (op, val): (char, i64)| {
       if op == '*' {
@@ -52,7 +52,7 @@ fn expr(i: &str) -> IResult<&str, i64> {
   let (i, init) = term(i)?;
 
   fold_many0(
-    pair(alt((char('+'), char('-'))), term),
+    (alt((char('+'), char('-'))), term),
     move || init,
     |acc, (op, val): (char, i64)| {
       if op == '+' {

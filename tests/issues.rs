@@ -205,11 +205,10 @@ fn issue_many_m_n_with_zeros() {
 fn issue_1027_convert_error_panic_nonempty() {
   use nom::character::char;
   use nom::error::{convert_error, VerboseError};
-  use nom::sequence::pair;
 
   let input = "a";
 
-  let result: IResult<_, _, VerboseError<&str>> = pair(char('a'), char('b'))(input);
+  let result: IResult<_, _, VerboseError<&str>> = (char('a'), char('b')).parse(input);
   let err = match result.unwrap_err() {
     Err::Error(e) => e,
     _ => unreachable!(),

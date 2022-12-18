@@ -4,7 +4,7 @@ use nom::{
   character::{alphanumeric1 as alphanumeric, char, space0 as space},
   combinator::opt,
   multi::many0,
-  sequence::{delimited, pair, terminated},
+  sequence::{delimited, terminated},
 };
 
 use std::collections::HashMap;
@@ -33,7 +33,7 @@ fn key_value(i: &str) -> IResult<&str, (&str, &str)> {
   let (i, _) = (opt(space), tag("="), opt(space)).parse(i)?;
   let (i, val) = take_till(is_line_ending_or_comment)(i)?;
   let (i, _) = opt(space)(i)?;
-  let (i, _) = opt(pair(tag(";"), not_line_ending))(i)?;
+  let (i, _) = opt((tag(";"), not_line_ending))(i)?;
   let (i, _) = opt(space_or_line_ending)(i)?;
 
   Ok((i, (key, val)))
@@ -51,7 +51,7 @@ fn keys_and_values(input: &str) -> IResult<&str, HashMap<&str, &str>> {
 }
 
 fn category_and_keys(i: &str) -> IResult<&str, (&str, HashMap<&str, &str>)> {
-  pair(category, keys_and_values)(i)
+  (category, keys_and_values).parse(i)
 }
 
 fn categories_aggregator(i: &str) -> IResult<&str, Vec<(&str, HashMap<&str, &str>)>> {
