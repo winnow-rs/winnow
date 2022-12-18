@@ -8,6 +8,7 @@ use crate::error::{self, Context, ErrorKind, ParseError};
 use crate::input::InputIsStreaming;
 use crate::input::*;
 use crate::lib::std::fmt;
+use crate::lib::std::ops::RangeFrom;
 use core::num::NonZeroUsize;
 
 /// Holds the result of parsing functions
@@ -751,6 +752,59 @@ where
 {
   fn parse(&mut self, i: I) -> IResult<I, O, E> {
     self(i)
+  }
+}
+
+/// This is a shortcut for [`one_of`][crate::bytes::one_of].
+///
+/// # Example
+///
+/// ```
+/// # use nom::prelude::*;
+/// # use nom::{Err, error::{ErrorKind, Error}};
+/// # use nom::character::char;
+/// fn parser(i: &[u8]) -> IResult<&[u8], u8> {
+///     b'a'.parse(i)
+/// }
+/// assert_eq!(parser(&b"abc"[..]), Ok((&b"bc"[..], b'a')));
+/// assert_eq!(parser(&b" abc"[..]), Err(Err::Error(Error::new(&b" abc"[..], ErrorKind::OneOf))));
+/// assert_eq!(parser(&b"bc"[..]), Err(Err::Error(Error::new(&b"bc"[..], ErrorKind::OneOf))));
+/// assert_eq!(parser(&b""[..]), Err(Err::Error(Error::new(&b""[..], ErrorKind::OneOf))));
+/// ```
+impl<I, E> Parser<I, u8, E> for u8
+where
+  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength + InputIsStreaming<false>,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, i: I) -> IResult<I, u8, E> {
+    crate::bytes::one_of(*self).parse(i)
+  }
+}
+
+/// This is a shortcut for [`char`][crate::character::char].
+///
+/// # Example
+///
+/// ```
+/// # use nom::prelude::*;
+/// # use nom::{Err, error::{ErrorKind, Error}};
+/// # use nom::character::char;
+/// fn parser(i: &str) -> IResult<&str, char> {
+///     'a'.parse(i)
+/// }
+/// assert_eq!(parser("abc"), Ok(("bc", 'a')));
+/// assert_eq!(parser(" abc"), Err(Err::Error(Error::new(" abc", ErrorKind::Char))));
+/// assert_eq!(parser("bc"), Err(Err::Error(Error::new("bc", ErrorKind::Char))));
+/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Char))));
+/// ```
+impl<I, E> Parser<I, char, E> for char
+where
+  I: Slice<RangeFrom<usize>> + InputIter + InputLength + InputIsStreaming<false>,
+  <I as InputIter>::Item: AsChar,
+  E: ParseError<I>,
+{
+  fn parse(&mut self, i: I) -> IResult<I, char, E> {
+    crate::character::char(*self).parse(i)
   }
 }
 
