@@ -6,7 +6,6 @@ use std::str::FromStr;
 use nom::prelude::*;
 use nom::{
   branch::alt,
-  bytes::tag,
   character::{digit1 as digit, multispace0 as multispace},
   multi::many0,
   sequence::{delimited, preceded},
@@ -61,7 +60,7 @@ impl Debug for Expr {
 fn parens(i: &str) -> IResult<&str, Expr> {
   delimited(
     multispace,
-    delimited(tag("("), expr.map(|e| Expr::Paren(Box::new(e))), tag(")")),
+    delimited("(", expr.map(|e| Expr::Paren(Box::new(e))), ")"),
     multispace,
   )(i)
 }
@@ -91,11 +90,11 @@ fn term(i: &str) -> IResult<&str, Expr> {
   let (i, initial) = factor(i)?;
   let (i, remainder) = many0(alt((
     |i| {
-      let (i, mul) = preceded(tag("*"), factor)(i)?;
+      let (i, mul) = preceded("*", factor)(i)?;
       Ok((i, (Oper::Mul, mul)))
     },
     |i| {
-      let (i, div) = preceded(tag("/"), factor)(i)?;
+      let (i, div) = preceded("/", factor)(i)?;
       Ok((i, (Oper::Div, div)))
     },
   )))(i)?;
@@ -107,11 +106,11 @@ fn expr(i: &str) -> IResult<&str, Expr> {
   let (i, initial) = term(i)?;
   let (i, remainder) = many0(alt((
     |i| {
-      let (i, add) = preceded(tag("+"), term)(i)?;
+      let (i, add) = preceded("+", term)(i)?;
       Ok((i, (Oper::Add, add)))
     },
     |i| {
-      let (i, sub) = preceded(tag("-"), term)(i)?;
+      let (i, sub) = preceded("-", term)(i)?;
       Ok((i, (Oper::Sub, sub)))
     },
   )))(i)?;

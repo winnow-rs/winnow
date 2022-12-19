@@ -13,7 +13,8 @@
 
 use nom::branch::alt;
 use nom::bytes::{take_till1, take_while_m_n};
-use nom::character::{char, multispace1};
+use nom::character::char;
+use nom::character::multispace1;
 use nom::error::{FromExternalError, ParseError};
 use nom::multi::fold_many0;
 use nom::prelude::*;
@@ -38,11 +39,11 @@ where
   // `preceded` takes a prefix parser, and if it succeeds, returns the result
   // of the body parser. In this case, it parses u{XXXX}.
   let parse_delimited_hex = preceded(
-    char('u'),
+    'u',
     // `delimited` is like `preceded`, but it parses both a prefix and a suffix.
     // It returns the result of the middle parser. In this case, it parses
     // {XXXX}, where XXXX is 1 to 6 hex numerals, and returns XXXX
-    delimited(char('{'), parse_hex, char('}')),
+    delimited('{', parse_hex, '}'),
   );
 
   // `map_res` takes the result of a parser and applies a function that returns
@@ -65,7 +66,7 @@ where
   E: ParseError<&'a str> + FromExternalError<&'a str, std::num::ParseIntError>,
 {
   preceded(
-    char('\\'),
+    '\\',
     // `alt` tries each parser in sequence, returning the result of
     // the first successful match
     alt((
@@ -91,7 +92,7 @@ where
 fn parse_escaped_whitespace<'a, E: ParseError<&'a str>>(
   input: &'a str,
 ) -> IResult<&'a str, &'a str, E> {
-  preceded(char('\\'), multispace1)(input)
+  preceded('\\', multispace1)(input)
 }
 
 /// Parse a non-empty block of text that doesn't include \ or "
@@ -161,7 +162,7 @@ where
   // " character, the closing delimiter " would never match. When using
   // `delimited` with a looping parser (like fold_many0), be sure that the
   // loop won't accidentally match your closing delimiter!
-  delimited(char('"'), build_string, char('"'))(input)
+  delimited('"', build_string, '"')(input)
 }
 
 fn main() {

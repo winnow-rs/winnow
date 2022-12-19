@@ -93,7 +93,7 @@ pub trait Permutation<I, O, E> {
 /// use nom::character::{char};
 ///
 /// fn parser(input: &str) -> IResult<&str, (char, char)> {
-///   permutation((any, char('a')))(input)
+///   permutation((any, 'a'))(input)
 /// }
 ///
 /// // any parses 'b', then char('a') parses 'a'

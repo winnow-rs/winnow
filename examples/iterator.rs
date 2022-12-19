@@ -64,10 +64,7 @@ fn main() {
   // - we can get the remaining input afterwards, like with the `try_fold` trick
   let mut nom_it = iterator(
     data,
-    terminated(
-      separated_pair(alphanumeric1, tag(":"), alphanumeric1),
-      tag(","),
-    ),
+    terminated(separated_pair(alphanumeric1, ":", alphanumeric1), ","),
   );
 
   let res = nom_it

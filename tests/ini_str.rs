@@ -1,7 +1,7 @@
 use nom::prelude::*;
 use nom::{
-  bytes::{tag, take_till, take_while, take_while1},
-  character::{alphanumeric1 as alphanumeric, char, space0 as space},
+  bytes::{take_till, take_while, take_while1},
+  character::{alphanumeric1 as alphanumeric, space0 as space},
   combinator::opt,
   multi::many0,
   sequence::{delimited, terminated},
@@ -23,17 +23,17 @@ fn space_or_line_ending(i: &str) -> IResult<&str, &str> {
 
 fn category(i: &str) -> IResult<&str, &str> {
   terminated(
-    delimited(char('['), take_while(|c| c != ']'), char(']')),
+    delimited('[', take_while(|c| c != ']'), ']'),
     opt(take_while1(" \r\n")),
   )(i)
 }
 
 fn key_value(i: &str) -> IResult<&str, (&str, &str)> {
   let (i, key) = alphanumeric(i)?;
-  let (i, _) = (opt(space), tag("="), opt(space)).parse(i)?;
+  let (i, _) = (opt(space), "=", opt(space)).parse(i)?;
   let (i, val) = take_till(is_line_ending_or_comment)(i)?;
   let (i, _) = opt(space)(i)?;
-  let (i, _) = opt((tag(";"), not_line_ending))(i)?;
+  let (i, _) = opt((";", not_line_ending))(i)?;
   let (i, _) = opt(space_or_line_ending)(i)?;
 
   Ok((i, (key, val)))

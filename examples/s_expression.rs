@@ -8,7 +8,7 @@ use nom::{
   branch::alt,
   bytes::one_of,
   bytes::tag,
-  character::{alpha1, char, digit1, multispace0, multispace1},
+  character::{alpha1, digit1, multispace0, multispace1},
   combinator::{cut, opt},
   error::VerboseError,
   multi::many0,
@@ -108,10 +108,10 @@ fn parse_bool<'a>(i: &'a str) -> IResult<&'a str, Atom, VerboseError<&'a str>> {
 /// We introduce some error handling combinators: `context` for human readable errors
 /// and `cut` to prevent back-tracking.
 ///
-/// Put plainly: `preceded(tag(":"), cut(alpha1))` means that once we see the `:`
+/// Put plainly: `preceded(":", cut(alpha1))` means that once we see the `:`
 /// character, we have to see one or more alphabetic chararcters or the input is invalid.
 fn parse_keyword<'a>(i: &'a str) -> IResult<&'a str, Atom, VerboseError<&'a str>> {
-  preceded(tag(":"), cut(alpha1))
+  preceded(":", cut(alpha1))
     .context("keyword")
     .map(|sym_str: &str| Atom::Keyword(sym_str.to_string()))
     .parse(i)
@@ -122,8 +122,7 @@ fn parse_keyword<'a>(i: &'a str) -> IResult<&'a str, Atom, VerboseError<&'a str>
 fn parse_num<'a>(i: &'a str) -> IResult<&'a str, Atom, VerboseError<&'a str>> {
   alt((
     digit1.map_res(|digit_str: &str| digit_str.parse::<i32>().map(Atom::Num)),
-    preceded(tag("-"), digit1)
-      .map(|digit_str: &str| Atom::Num(-1 * digit_str.parse::<i32>().unwrap())),
+    preceded("-", digit1).map(|digit_str: &str| Atom::Num(-1 * digit_str.parse::<i32>().unwrap())),
   ))(i)
 }
 
@@ -155,9 +154,9 @@ where
   F: Parser<&'a str, O1, VerboseError<&'a str>>,
 {
   delimited(
-    char('('),
+    '(',
     preceded(multispace0, inner),
-    cut(preceded(multispace0, char(')'))).context("closing paren"),
+    cut(preceded(multispace0, ')')).context("closing paren"),
   )
 }
 
@@ -188,7 +187,7 @@ fn parse_if<'a>(i: &'a str) -> IResult<&'a str, Expr, VerboseError<&'a str>> {
     // here to avoid ambiguity with other names starting with `if`, if we added
     // variables to our language, we say that if must be terminated by at least
     // one whitespace character
-    terminated(tag("if"), multispace1),
+    terminated("if", multispace1),
     cut((parse_expr, parse_expr, opt(parse_expr))),
   )
   .map(|(pred, true_branch, maybe_false_branch)| {
@@ -215,7 +214,7 @@ fn parse_quote<'a>(i: &'a str) -> IResult<&'a str, Expr, VerboseError<&'a str>> 
   // this should look very straight-forward after all we've done:
   // we find the `'` (quote) character, use cut to say that we're unambiguously
   // looking for an s-expression of 0 or more expressions, and then parse them
-  preceded(tag("'"), cut(s_exp(many0(parse_expr))))
+  preceded("'", cut(s_exp(many0(parse_expr))))
     .context("quote")
     .map(|exprs| Expr::Quote(exprs))
     .parse(i)

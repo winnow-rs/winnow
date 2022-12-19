@@ -195,20 +195,18 @@ fn issue_942() {
 
 #[test]
 fn issue_many_m_n_with_zeros() {
-  use nom::character::char;
   use nom::multi::many_m_n;
-  let mut parser = many_m_n::<_, _, (), _>(0, 0, char('a'));
+  let mut parser = many_m_n::<_, _, (), _>(0, 0, 'a');
   assert_eq!(parser("aaa"), Ok(("aaa", vec![])));
 }
 
 #[test]
 fn issue_1027_convert_error_panic_nonempty() {
-  use nom::character::char;
   use nom::error::{convert_error, VerboseError};
 
   let input = "a";
 
-  let result: IResult<_, _, VerboseError<&str>> = (char('a'), char('b')).parse(input);
+  let result: IResult<_, _, VerboseError<&str>> = ('a', 'b').parse(input);
   let err = match result.unwrap_err() {
     Err::Error(e) => e,
     _ => unreachable!(),
@@ -241,15 +239,13 @@ fn issue_1282_findtoken_char() {
 
 #[test]
 fn issue_1459_clamp_capacity() {
-  use nom::character::char;
-
   // shouldn't panic
   use nom::multi::many_m_n;
-  let mut parser = many_m_n::<_, _, (), _>(usize::MAX, usize::MAX, char('a'));
+  let mut parser = many_m_n::<_, _, (), _>(usize::MAX, usize::MAX, 'a');
   assert_eq!(parser("a"), Err(nom::Err::Error(())));
 
   // shouldn't panic
   use nom::multi::count;
-  let mut parser = count::<_, _, (), _>(char('a'), usize::MAX);
+  let mut parser = count::<_, _, (), _>('a', usize::MAX);
   assert_eq!(parser("a"), Err(nom::Err::Error(())));
 }

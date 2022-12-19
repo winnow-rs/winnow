@@ -9,8 +9,8 @@ fn esc(s: &str) -> IResult<&str, &str, (&str, ErrorKind)> {
 
 #[cfg(feature = "alloc")]
 fn esc_trans(s: &str) -> IResult<&str, String, (&str, ErrorKind)> {
-  use nom::bytes::{escaped_transform, tag};
-  escaped_transform(digit1, '\\', tag("n"))(s)
+  use nom::bytes::escaped_transform;
+  escaped_transform(digit1, '\\', "n")(s)
 }
 
 #[test]

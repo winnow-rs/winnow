@@ -57,9 +57,14 @@ where
 /// the input that matches the argument
 ///
 /// It will return `Err(Err::Error((_, ErrorKind::Tag)))` if the input doesn't match the pattern
+///
+/// **Note:** [`Parser`] is implemented for strings and byte strings as a convenience (complete
+/// only)
+///
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use nom::prelude::*;
+/// # use nom::{Err, error::{Error, ErrorKind}, Needed};
 /// use nom::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
@@ -162,6 +167,11 @@ where
 
 /// Returns a token that matches the [pattern][FindToken]
 ///
+/// **Note:** [`Parser`] is implemented as a convenience (complete
+/// only) for
+/// - `u8`
+/// - Ranges of `u8` and `char`
+///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
 /// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
@@ -176,12 +186,19 @@ where
 /// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("a")("bc"), Err(Err::Error(("bc", ErrorKind::OneOf))));
 /// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("a")(""), Err(Err::Error(("", ErrorKind::OneOf))));
 ///
-/// fn parser(i: &str) -> IResult<&str, char> {
+/// fn parser_fn(i: &str) -> IResult<&str, char> {
 ///     one_of(|c| c == 'a' || c == 'b')(i)
 /// }
-/// assert_eq!(parser("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser("cd"), Err(Err::Error(Error::new("cd", ErrorKind::OneOf))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::OneOf))));
+/// assert_eq!(parser_fn("abc"), Ok(("bc", 'a')));
+/// assert_eq!(parser_fn("cd"), Err(Err::Error(Error::new("cd", ErrorKind::OneOf))));
+/// assert_eq!(parser_fn(""), Err(Err::Error(Error::new("", ErrorKind::OneOf))));
+///
+/// fn parser_range_literal(i: &str) -> IResult<&str, char> {
+///     ('a'..='b').parse(i)
+/// }
+/// assert_eq!(parser_range_literal("abc"), Ok(("bc", 'a')));
+/// assert_eq!(parser_range_literal("cd"), Err(Err::Error(Error::new("cd", ErrorKind::OneOf))));
+/// assert_eq!(parser_range_literal(""), Err(Err::Error(Error::new("", ErrorKind::OneOf))));
 /// ```
 ///
 /// ```
@@ -193,12 +210,12 @@ where
 /// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("a")(Streaming("bc")), Err(Err::Error((Streaming("bc"), ErrorKind::OneOf))));
 /// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("a")(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 ///
-/// fn parser(i: Streaming<&str>) -> IResult<Streaming<&str>, char> {
+/// fn parser_fn(i: Streaming<&str>) -> IResult<Streaming<&str>, char> {
 ///     one_of(|c| c == 'a' || c == 'b')(i)
 /// }
-/// assert_eq!(parser(Streaming("abc")), Ok((Streaming("bc"), 'a')));
-/// assert_eq!(parser(Streaming("cd")), Err(Err::Error(Error::new(Streaming("cd"), ErrorKind::OneOf))));
-/// assert_eq!(parser(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(parser_fn(Streaming("abc")), Ok((Streaming("bc"), 'a')));
+/// assert_eq!(parser_fn(Streaming("cd")), Err(Err::Error(Error::new(Streaming("cd"), ErrorKind::OneOf))));
+/// assert_eq!(parser_fn(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn one_of<I, T, Error: ParseError<I>, const STREAMING: bool>(
@@ -831,7 +848,8 @@ where
 /// As an example, the chain `abc\tdef` could be `abc    def` (it also consumes the control character)
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
+/// # use nom::prelude::*;
+/// # use nom::{Err, error::ErrorKind, Needed};
 /// # use std::str::from_utf8;
 /// use nom::bytes::{escaped_transform, tag};
 /// use nom::character::alpha1;
@@ -843,9 +861,9 @@ where
 ///     alpha1,
 ///     '\\',
 ///     alt((
-///       value("\\", tag("\\")),
-///       value("\"", tag("\"")),
-///       value("\n", tag("n")),
+///       tag("\\").value("\\"),
+///       tag("\"").value("\""),
+///       tag("n").value("\n"),
 ///     ))
 ///   )(input)
 /// }
@@ -855,7 +873,8 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
+/// # use nom::prelude::*;
+/// # use nom::{Err, error::ErrorKind, Needed};
 /// # use std::str::from_utf8;
 /// # use nom::input::Streaming;
 /// use nom::bytes::{escaped_transform, tag};
@@ -868,9 +887,9 @@ where
 ///     alpha1,
 ///     '\\',
 ///     alt((
-///       value("\\", tag("\\")),
-///       value("\"", tag("\"")),
-///       value("\n", tag("n")),
+///       tag("\\").value("\\"),
+///       tag("\"").value("\""),
+///       tag("n").value("\n"),
 ///     ))
 ///   )(input)
 /// }

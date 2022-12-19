@@ -42,14 +42,13 @@ fn complete_escaped_hang_1118() {
   // issue ##1118 escaped does not work with empty string
   fn unquote<'a>(input: &'a str) -> IResult<&'a str, &'a str> {
     use crate::bytes::one_of;
-    use crate::character::*;
     use crate::combinator::opt;
     use crate::sequence::delimited;
 
     delimited(
-      char('"'),
+      '"',
       escaped(opt(none_of(r#"\""#)), '\\', one_of(r#"\"rnt"#)),
-      char('"'),
+      '"',
     )(input)
   }
 

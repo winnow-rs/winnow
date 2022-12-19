@@ -70,7 +70,7 @@
 //!
 //! pub fn peol_comment<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, (), E>
 //! {
-//!   pair(char('%'), take_till1("\n\r"))
+//!   pair('%', take_till1("\n\r"))
 //!     .value(()) // Output is thrown away.
 //!     .parse(i)
 //! }
@@ -91,9 +91,9 @@
 //!
 //! pub fn pinline_comment<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, (), E> {
 //!   (
-//!     tag("(*"),
+//!     "(*",
 //!     take_until("*)"),
-//!     tag("*)")
+//!     "*)"
 //!   )
 //!     .value(()) // Output is thrown away.
 //!     .parse(i)
@@ -120,8 +120,8 @@
 //!
 //! pub fn identifier(input: &str) -> IResult<&str, &str> {
 //!   pair(
-//!     alt((alpha1, tag("_"))),
-//!     many0_count(alt((alphanumeric1, tag("_"))))
+//!     alt((alpha1, "_")),
+//!     many0_count(alt((alphanumeric1, "_")))
 //!   )
 //!      .recognize()
 //!      .parse(input)
@@ -171,9 +171,9 @@
 //!
 //! fn hexadecimal(input: &str) -> IResult<&str, &str> { // <'a, E: ParseError<&'a str>>
 //!   preceded(
-//!     alt((tag("0x"), tag("0X"))),
+//!     alt(("0x", "0X")),
 //!     many1(
-//!       terminated(one_of("0123456789abcdefABCDEF"), many0(char('_')))
+//!       terminated(one_of("0123456789abcdefABCDEF"), many0('_'))
 //!     ).recognize()
 //!   )(input)
 //! }
@@ -195,9 +195,9 @@
 //!
 //! fn hexadecimal_value(input: &str) -> IResult<&str, i64> {
 //!   preceded(
-//!     alt((tag("0x"), tag("0X"))),
+//!     alt(("0x", "0X")),
 //!     many1(
-//!       terminated(one_of("0123456789abcdefABCDEF"), many0(char('_')))
+//!       terminated(one_of("0123456789abcdefABCDEF"), many0('_'))
 //!     ).recognize()
 //!   ).map_res(
 //!     |out: &str| i64::from_str_radix(&str::replace(&out, "_", ""), 16)
@@ -220,9 +220,9 @@
 //!
 //! fn octal(input: &str) -> IResult<&str, &str> {
 //!   preceded(
-//!     alt((tag("0o"), tag("0O"))),
+//!     alt(("0o", "0O")),
 //!     many1(
-//!       terminated(one_of("01234567"), many0(char('_')))
+//!       terminated(one_of("01234567"), many0('_'))
 //!     ).recognize()
 //!   )(input)
 //! }
@@ -243,9 +243,9 @@
 //!
 //! fn binary(input: &str) -> IResult<&str, &str> {
 //!   preceded(
-//!     alt((tag("0b"), tag("0B"))),
+//!     alt(("0b", "0B")),
 //!     many1(
-//!       terminated(one_of("01"), many0(char('_')))
+//!       terminated(one_of("01"), many0('_'))
 //!     ).recognize()
 //!   )(input)
 //! }
@@ -265,7 +265,7 @@
 //!
 //! fn decimal(input: &str) -> IResult<&str, &str> {
 //!   many1(
-//!     terminated(one_of("0123456789"), many0(char('_')))
+//!     terminated(one_of("0123456789"), many0('_'))
 //!   )
 //!     .recognize()
 //!     .parse(input)
@@ -291,7 +291,7 @@
 //!   alt((
 //!     // Case one: .42
 //!     (
-//!       char('.'),
+//!       '.',
 //!       decimal,
 //!       opt((
 //!         one_of("eE"),
@@ -303,7 +303,7 @@
 //!     (
 //!       decimal,
 //!       opt(preceded(
-//!         char('.'),
+//!         '.',
 //!         decimal,
 //!       )),
 //!       one_of("eE"),
@@ -313,7 +313,7 @@
 //!     , // Case three: 42. and 42.42
 //!     (
 //!       decimal,
-//!       char('.'),
+//!       '.',
 //!       opt(decimal)
 //!     ).recognize()
 //!   ))(input)
@@ -321,7 +321,7 @@
 //!
 //! fn decimal(input: &str) -> IResult<&str, &str> {
 //!   many1(
-//!     terminated(one_of("0123456789"), many0(char('_')))
+//!     terminated(one_of("0123456789"), many0('_'))
 //!   )
 //!     .recognize()
 //!     .parse(input)
