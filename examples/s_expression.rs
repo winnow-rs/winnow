@@ -8,7 +8,7 @@ use nom::{
   branch::alt,
   bytes::one_of,
   bytes::tag,
-  character::{alpha1, char, digit1, multispace0, multispace1},
+  character::{alpha1, digit1, multispace0, multispace1},
   combinator::{cut, opt},
   error::VerboseError,
   multi::many0,
@@ -155,9 +155,9 @@ where
   F: Parser<&'a str, O1, VerboseError<&'a str>>,
 {
   delimited(
-    char('('),
+    '(',
     preceded(multispace0, inner),
-    cut(preceded(multispace0, char(')'))).context("closing paren"),
+    cut(preceded(multispace0, ')')).context("closing paren"),
   )
 }
 

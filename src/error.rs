@@ -184,7 +184,7 @@
 //! # let i = " ";
 //! context(
 //!   "string",
-//!   preceded(char('\"'), cut(terminated(parse_str, char('\"')))),
+//!   preceded('\"', cut(terminated(parse_str, '\"'))),
 //! )(i);
 //! ```
 //!

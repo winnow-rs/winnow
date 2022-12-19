@@ -5,7 +5,7 @@ use nom::{
   branch::alt,
   bytes::one_of,
   bytes::{escaped, tag, take_while},
-  character::{alphanumeric1 as alphanumeric, char, f64},
+  character::{alphanumeric1 as alphanumeric, f64},
   combinator::cut,
   error::ParseError,
   multi::separated_list0,
@@ -227,7 +227,7 @@ fn parse_str<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str
 }
 
 fn string<'a>(i: &'a str) -> IResult<&'a str, &'a str> {
-  preceded(char('\"'), cut(terminated(parse_str, char('\"'))))
+  preceded('\"', cut(terminated(parse_str, '\"')))
     .context("string")
     .parse(i)
 }
@@ -238,10 +238,10 @@ fn boolean<'a>(input: &'a str) -> IResult<&'a str, bool> {
 
 fn array<'a>(i: &'a str) -> IResult<&'a str, ()> {
   preceded(
-    char('['),
+    '[',
     cut(terminated(
-      separated_list0(preceded(sp, char(',')), value).map(|_| ()),
-      preceded(sp, char(']')),
+      separated_list0(preceded(sp, ','), value).map(|_| ()),
+      preceded(sp, ']'),
     )),
   )
   .context("array")
@@ -249,15 +249,15 @@ fn array<'a>(i: &'a str) -> IResult<&'a str, ()> {
 }
 
 fn key_value<'a>(i: &'a str) -> IResult<&'a str, (&'a str, ())> {
-  separated_pair(preceded(sp, string), cut(preceded(sp, char(':'))), value)(i)
+  separated_pair(preceded(sp, string), cut(preceded(sp, ':')), value)(i)
 }
 
 fn hash<'a>(i: &'a str) -> IResult<&'a str, ()> {
   preceded(
-    char('{'),
+    '{',
     cut(terminated(
-      separated_list0(preceded(sp, char(',')), key_value).map(|_| ()),
-      preceded(sp, char('}')),
+      separated_list0(preceded(sp, ','), key_value).map(|_| ()),
+      preceded(sp, '}'),
     )),
   )
   .context("map")

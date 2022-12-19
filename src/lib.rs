@@ -92,7 +92,7 @@
 //! };
 //!
 //! fn parens(input: &str) -> IResult<&str, &str> {
-//!   delimited(char('('), take_till1(")"), char(')'))(input)
+//!   delimited('(', take_till1(")"), ')')(input)
 //! }
 //! ```
 //!

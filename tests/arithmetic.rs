@@ -2,7 +2,6 @@ use nom::prelude::*;
 use nom::{
   branch::alt,
   bytes::tag,
-  character::char,
   character::{digit1 as digit, space0 as space},
   multi::fold_many0,
   sequence::delimited,
@@ -36,7 +35,7 @@ fn term(i: &str) -> IResult<&str, i64> {
   let (i, init) = factor(i)?;
 
   fold_many0(
-    (alt((char('*'), char('/'))), factor),
+    (alt(('*', '/')), factor),
     move || init,
     |acc, (op, val): (char, i64)| {
       if op == '*' {
@@ -52,7 +51,7 @@ fn expr(i: &str) -> IResult<&str, i64> {
   let (i, init) = term(i)?;
 
   fold_many0(
-    (alt((char('+'), char('-'))), term),
+    (alt(('+', '-')), term),
     move || init,
     |acc, (op, val): (char, i64)| {
       if op == '+' {

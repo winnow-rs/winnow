@@ -990,7 +990,7 @@ where
 /// use nom::sequence::separated_pair;
 /// # fn main() {
 ///
-/// let mut parser = recognize(separated_pair(alpha1, char(','), alpha1));
+/// let mut parser = recognize(separated_pair(alpha1, ',', alpha1));
 ///
 /// assert_eq!(parser("abcd,efgh"), Ok(("", "abcd,efgh")));
 /// assert_eq!(parser("abcd;"),Err(Err::Error((";", ErrorKind::Char))));
@@ -1081,7 +1081,7 @@ where
 ///
 /// # fn main() {
 ///
-/// let mut consumed_parser = consumed(value(true, separated_pair(alpha1, char(','), alpha1)));
+/// let mut consumed_parser = consumed(value(true, separated_pair(alpha1, ',', alpha1)));
 ///
 /// assert_eq!(consumed_parser("abcd,efgh1"), Ok(("1", ("abcd,efgh", true))));
 /// assert_eq!(consumed_parser("abcd;"),Err(Err::Error((";", ErrorKind::Char))));
@@ -1420,7 +1420,7 @@ enum State<E> {
 /// let mut parser = success::<_,_,(_,ErrorKind)>(10);
 /// assert_eq!(parser("xyz"), Ok(("xyz", 10)));
 ///
-/// let mut sign = alt((value(-1, char('-')), value(1, char('+')), success::<_,_,(_,ErrorKind)>(1)));
+/// let mut sign = alt((value(-1, '-'), value(1, '+'), success::<_,_,(_,ErrorKind)>(1)));
 /// assert_eq!(sign("+10"), Ok(("10", 1)));
 /// assert_eq!(sign("-10"), Ok(("10", -1)));
 /// assert_eq!(sign("10"), Ok(("10", 1)));

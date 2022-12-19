@@ -5,7 +5,7 @@ use nom::{
   branch::alt,
   bytes::one_of,
   bytes::{escaped, tag, take_while},
-  character::{alphanumeric1 as alphanumeric, char, f64},
+  character::{alphanumeric1 as alphanumeric, f64},
   combinator::{cut, opt},
   error::{convert_error, ContextError, ErrorKind, ParseError, VerboseError},
   multi::separated_list0,
@@ -95,7 +95,7 @@ fn null<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str, (), E> {
 fn string<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
   i: &'a str,
 ) -> IResult<&'a str, &'a str, E> {
-  preceded(char('\"'), cut(terminated(parse_str, char('\"'))))
+  preceded('\"', cut(terminated(parse_str, '\"')))
     .context("string")
     .parse(i)
 }
@@ -108,10 +108,10 @@ fn array<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
   i: &'a str,
 ) -> IResult<&'a str, Vec<JsonValue>, E> {
   preceded(
-    char('['),
+    '[',
     cut(terminated(
-      separated_list0(preceded(sp, char(',')), json_value),
-      preceded(sp, char(']')),
+      separated_list0(preceded(sp, ','), json_value),
+      preceded(sp, ']'),
     )),
   )
   .context("array")
@@ -121,26 +121,22 @@ fn array<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
 fn key_value<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
   i: &'a str,
 ) -> IResult<&'a str, (&'a str, JsonValue), E> {
-  separated_pair(
-    preceded(sp, string),
-    cut(preceded(sp, char(':'))),
-    json_value,
-  )(i)
+  separated_pair(preceded(sp, string), cut(preceded(sp, ':')), json_value)(i)
 }
 
 fn hash<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
   i: &'a str,
 ) -> IResult<&'a str, HashMap<String, JsonValue>, E> {
   preceded(
-    char('{'),
+    '{',
     cut(terminated(
-      separated_list0(preceded(sp, char(',')), key_value).map(|tuple_vec| {
+      separated_list0(preceded(sp, ','), key_value).map(|tuple_vec| {
         tuple_vec
           .into_iter()
           .map(|(k, v)| (String::from(k), v))
           .collect()
       }),
-      preceded(sp, char('}')),
+      preceded(sp, '}'),
     )),
   )
   .context("map")
