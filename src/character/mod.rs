@@ -20,6 +20,8 @@ use crate::IResult;
 
 /// Recognizes one character.
 ///
+/// **Note:** [`Parser`][crate::Parser] is implemented for `char` literals` as a convenience (complete only)
+///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
 /// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
@@ -27,10 +29,24 @@ use crate::IResult;
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::{ErrorKind, Error}, IResult};
+/// # use nom::prelude::*;
+/// # use nom::{Err, error::{ErrorKind, Error}};
 /// # use nom::character::char;
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     char('a')(i)
+/// }
+/// assert_eq!(parser("abc"), Ok(("bc", 'a')));
+/// assert_eq!(parser(" abc"), Err(Err::Error(Error::new(" abc", ErrorKind::Char))));
+/// assert_eq!(parser("bc"), Err(Err::Error(Error::new("bc", ErrorKind::Char))));
+/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Char))));
+/// ```
+/// or
+/// ```
+/// # use nom::prelude::*;
+/// # use nom::{Err, error::{ErrorKind, Error}};
+/// # use nom::character::char;
+/// fn parser(i: &str) -> IResult<&str, char> {
+///     'a'.parse(i)
 /// }
 /// assert_eq!(parser("abc"), Ok(("bc", 'a')));
 /// assert_eq!(parser(" abc"), Err(Err::Error(Error::new(" abc", ErrorKind::Char))));

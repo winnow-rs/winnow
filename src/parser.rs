@@ -320,6 +320,41 @@ where
 }
 
 /// All nom parsers implement this trait
+///
+/// The simplest way to implement a `Parser` is with a function
+/// ```rust
+/// use nom::prelude::*;
+///
+/// fn success(input: &str) -> IResult<&str, ()> {
+///     let output = ();
+///     Ok((input, output))
+/// }
+///
+/// let (input, output) = success.parse("Hello").unwrap();
+/// assert_eq!(input, "Hello");  // We didn't consume any input
+/// ```
+///
+/// which can be made stateful by returning a function
+/// ```rust
+/// use nom::prelude::*;
+///
+/// fn success<O: Clone>(output: O) -> impl FnMut(&str) -> IResult<&str, O> {
+///     move |input: &str| {
+///         let output = output.clone();
+///         Ok((input, output))
+///     }
+/// }
+///
+/// let (input, output) = success("World").parse("Hello").unwrap();
+/// assert_eq!(input, "Hello");  // We didn't consume any input
+/// assert_eq!(output, "World");
+/// ```
+///
+/// Additionally, some basic types implement `Parser` as well, including
+/// - `char`, see [`nom::character::char`][crate::character::char]
+/// - `u8`, see [`nom::character::char`][crate::bytes::one_of]
+/// - `&[u8]` and `&str`, see [`nom::character::char`][crate::bytes::tag]
+/// - Ranges of `char` or `u8`, see [`nom::character::char`][crate::bytes::one_of]
 pub trait Parser<I, O, E> {
   /// A parser takes in input type, and returns a `Result` containing
   /// either the remaining input and the output value, or an error
