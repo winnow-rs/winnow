@@ -834,7 +834,8 @@ where
 /// As an example, the chain `abc\tdef` could be `abc    def` (it also consumes the control character)
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
+/// # use nom::prelude::*;
+/// # use nom::{Err, error::ErrorKind, Needed};
 /// # use std::str::from_utf8;
 /// use nom::bytes::{escaped_transform, tag};
 /// use nom::character::alpha1;
@@ -846,9 +847,9 @@ where
 ///     alpha1,
 ///     '\\',
 ///     alt((
-///       value("\\", tag("\\")),
-///       value("\"", tag("\"")),
-///       value("\n", tag("n")),
+///       tag("\\").value("\\"),
+///       tag("\"").value("\""),
+///       tag("n").value("\n"),
 ///     ))
 ///   )(input)
 /// }
@@ -858,7 +859,8 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
+/// # use nom::prelude::*;
+/// # use nom::{Err, error::ErrorKind, Needed};
 /// # use std::str::from_utf8;
 /// # use nom::input::Streaming;
 /// use nom::bytes::{escaped_transform, tag};
@@ -871,9 +873,9 @@ where
 ///     alpha1,
 ///     '\\',
 ///     alt((
-///       value("\\", tag("\\")),
-///       value("\"", tag("\"")),
-///       value("\n", tag("n")),
+///       tag("\\").value("\\"),
+///       tag("\"").value("\""),
+///       tag("n").value("\n"),
 ///     ))
 ///   )(input)
 /// }
