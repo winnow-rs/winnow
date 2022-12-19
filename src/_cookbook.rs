@@ -91,9 +91,9 @@
 //!
 //! pub fn pinline_comment<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, (), E> {
 //!   (
-//!     tag("(*"),
+//!     "(*",
 //!     take_until("*)"),
-//!     tag("*)")
+//!     "*)"
 //!   )
 //!     .value(()) // Output is thrown away.
 //!     .parse(i)
@@ -120,8 +120,8 @@
 //!
 //! pub fn identifier(input: &str) -> IResult<&str, &str> {
 //!   pair(
-//!     alt((alpha1, tag("_"))),
-//!     many0_count(alt((alphanumeric1, tag("_"))))
+//!     alt((alpha1, "_")),
+//!     many0_count(alt((alphanumeric1, "_")))
 //!   )
 //!      .recognize()
 //!      .parse(input)
@@ -171,7 +171,7 @@
 //!
 //! fn hexadecimal(input: &str) -> IResult<&str, &str> { // <'a, E: ParseError<&'a str>>
 //!   preceded(
-//!     alt((tag("0x"), tag("0X"))),
+//!     alt(("0x", "0X")),
 //!     many1(
 //!       terminated(one_of("0123456789abcdefABCDEF"), many0('_'))
 //!     ).recognize()
@@ -195,7 +195,7 @@
 //!
 //! fn hexadecimal_value(input: &str) -> IResult<&str, i64> {
 //!   preceded(
-//!     alt((tag("0x"), tag("0X"))),
+//!     alt(("0x", "0X")),
 //!     many1(
 //!       terminated(one_of("0123456789abcdefABCDEF"), many0('_'))
 //!     ).recognize()
@@ -220,7 +220,7 @@
 //!
 //! fn octal(input: &str) -> IResult<&str, &str> {
 //!   preceded(
-//!     alt((tag("0o"), tag("0O"))),
+//!     alt(("0o", "0O")),
 //!     many1(
 //!       terminated(one_of("01234567"), many0('_'))
 //!     ).recognize()
@@ -243,7 +243,7 @@
 //!
 //! fn binary(input: &str) -> IResult<&str, &str> {
 //!   preceded(
-//!     alt((tag("0b"), tag("0B"))),
+//!     alt(("0b", "0B")),
 //!     many1(
 //!       terminated(one_of("01"), many0('_'))
 //!     ).recognize()

@@ -39,7 +39,7 @@ fn unicode_escape(input: &str) -> IResult<&str, char> {
       .verify(|cp| !(0xD800..0xE000).contains(cp))
       .map(|cp| cp as u32),
     // See https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF for details
-    separated_pair(u16_hex, tag("\\u"), u16_hex)
+    separated_pair(u16_hex, "\\u", u16_hex)
       .verify(|(high, low)| (0xD800..0xDC00).contains(high) && (0xDC00..0xE000).contains(low))
       .map(|(high, low)| {
         let high_ten = (high as u32) - 0xD800;

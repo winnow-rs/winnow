@@ -118,14 +118,13 @@
 //!   let space = take_while1(|c| c == b' ');
 //!   let url = take_while1(|c| c != b' ');
 //!   let is_version = |c| c >= b'0' && c <= b'9' || c == b'.';
-//!   let http = tag("HTTP/");
 //!   let version = take_while1(is_version);
 //!   let line_ending = tag("\r\n");
 //!
 //!   // combine http and version to extract the version string
 //!   // preceded will return the result of the second parser
 //!   // if both succeed
-//!   let http_version = preceded(http, version);
+//!   let http_version = preceded("HTTP/", version);
 //!
 //!   // tuples takes as argument a tuple of parsers and will return
 //!   // a tuple of their results

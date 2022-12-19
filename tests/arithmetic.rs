@@ -1,7 +1,6 @@
 use nom::prelude::*;
 use nom::{
   branch::alt,
-  bytes::tag,
   character::{digit1 as digit, space0 as space},
   multi::fold_many0,
   sequence::delimited,
@@ -14,7 +13,7 @@ use std::str::FromStr;
 
 // We parse any expr surrounded by parens, ignoring all whitespaces around those
 fn parens(i: &str) -> IResult<&str, i64> {
-  delimited(space, delimited(tag("("), expr, tag(")")), space)(i)
+  delimited(space, delimited("(", expr, ")"), space)(i)
 }
 
 // We transform an integer string into a i64, ignoring surrounding whitespaces
