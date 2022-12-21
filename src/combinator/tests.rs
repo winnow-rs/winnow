@@ -255,7 +255,7 @@ fn test_parser_into() {
     Err,
   };
 
-  let mut parser = Parser::into(take::<_, _, Error<_>, false>(3u8));
+  let mut parser = take::<_, _, Error<_>, false>(3u8).output_into();
   let result: IResult<&[u8], Vec<u8>> = parser.parse(&b"abcdefg"[..]);
 
   assert_eq!(result, Ok((&b"defg"[..], vec![97, 98, 99])));

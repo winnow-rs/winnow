@@ -434,6 +434,34 @@ pub trait Parser<I, O, E> {
     Value::new(self, val)
   }
 
+  /// Convert the parser's output to another type using [`std::convert::From`]
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::IResult;
+  /// # use nom::Parser;
+  /// use nom::character::alpha1;
+  /// # fn main() {
+  ///
+  ///  fn parser1(i: &str) -> IResult<&str, &str> {
+  ///    alpha1(i)
+  ///  }
+  ///
+  ///  let mut parser2 = parser1.output_into();
+  ///
+  /// // the parser converts the &str output of the child parser into a Vec<u8>
+  /// let bytes: IResult<&str, Vec<u8>> = parser2.parse("abcd");
+  /// assert_eq!(bytes, Ok(("", vec![97, 98, 99, 100])));
+  /// # }
+  /// ```
+  fn output_into<O2: From<O>>(self) -> OutputInto<Self, O, O2>
+  where
+    Self: core::marker::Sized,
+  {
+    OutputInto::new(self)
+  }
+
   /// If the child parser was successful, return the consumed input as produced value.
   ///
   /// # Example
@@ -696,6 +724,14 @@ pub trait Parser<I, O, E> {
     Complete::new(self)
   }
 
+  /// Convert the parser's error to another type using [`std::convert::From`]
+  fn err_into<E2: From<E>>(self) -> ErrInto<Self, E, E2>
+  where
+    Self: core::marker::Sized,
+  {
+    ErrInto::new(self)
+  }
+
   /// Prints a message and the input if the parser fails.
   ///
   /// The message prints the `Error` or `Incomplete`
@@ -751,35 +787,6 @@ pub trait Parser<I, O, E> {
     Self: core::marker::Sized,
   {
     Or::new(self, g)
-  }
-
-  /// automatically converts the parser's output and error values to another type, as long as they
-  /// implement the `From` trait
-  ///
-  /// # Example
-  ///
-  /// ```rust
-  /// # use nom::IResult;
-  /// # use nom::Parser;
-  /// use nom::character::alpha1;
-  /// # fn main() {
-  ///
-  ///  fn parser1(i: &str) -> IResult<&str, &str> {
-  ///    alpha1(i)
-  ///  }
-  ///
-  ///  let mut parser2 = Parser::into(parser1);
-  ///
-  /// // the parser converts the &str output of the child parser into a Vec<u8>
-  /// let bytes: IResult<&str, Vec<u8>> = parser2.parse("abcd");
-  /// assert_eq!(bytes, Ok(("", vec![97, 98, 99, 100])));
-  /// # }
-  /// ```
-  fn into<O2: From<O>, E2: From<E>>(self) -> Into<Self, O, O2, E, E2>
-  where
-    Self: core::marker::Sized,
-  {
-    Into::new(self)
   }
 }
 
