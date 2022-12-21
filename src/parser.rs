@@ -753,8 +753,7 @@ pub trait Parser<I, O, E> {
     Or::new(self, g)
   }
 
-  /// automatically converts the parser's output and error values to another type, as long as they
-  /// implement the `From` trait
+  /// Convert the parser's output to another type using [`std::convert::From`]
   ///
   /// # Example
   ///
@@ -768,18 +767,26 @@ pub trait Parser<I, O, E> {
   ///    alpha1(i)
   ///  }
   ///
-  ///  let mut parser2 = Parser::into(parser1);
+  ///  let mut parser2 = parser1.output_into();
   ///
   /// // the parser converts the &str output of the child parser into a Vec<u8>
   /// let bytes: IResult<&str, Vec<u8>> = parser2.parse("abcd");
   /// assert_eq!(bytes, Ok(("", vec![97, 98, 99, 100])));
   /// # }
   /// ```
-  fn into<O2: From<O>, E2: From<E>>(self) -> Into<Self, O, O2, E, E2>
+  fn output_into<O2: From<O>>(self) -> OutputInto<Self, O, O2>
   where
     Self: core::marker::Sized,
   {
-    Into::new(self)
+    OutputInto::new(self)
+  }
+
+  /// Convert the parser's error to another type using [`std::convert::From`]
+  fn err_into<E2: From<E>>(self) -> ErrInto<Self, E, E2>
+  where
+    Self: core::marker::Sized,
+  {
+    ErrInto::new(self)
   }
 }
 

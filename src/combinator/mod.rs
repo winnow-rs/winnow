@@ -1228,7 +1228,7 @@ where
 /// it will be able to convert the output value and the error value
 /// as long as the `Into` implementations are available
 ///
-/// **WARNING:** Deprecated, replaced with [`Parser::into`]
+/// **WARNING:** Deprecated, replaced with [`Parser::output_into`] and [`Parser::err_into`]
 ///
 /// ```rust
 /// # use nom::IResult;
@@ -1247,7 +1247,10 @@ where
 /// assert_eq!(bytes, Ok(("", vec![97, 98, 99, 100])));
 /// # }
 /// ```
-#[deprecated(since = "8.0.0", note = "Replaced with `Parser::into")]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `Parser::output_into` and `Parser::err_into`"
+)]
 pub fn into<I, O1, O2, E1, E2, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O2, E2>
 where
   O1: convert::Into<O2>,
@@ -1265,47 +1268,66 @@ where
   }
 }
 
-/// Implementation of [`Parser::into`]
+/// Implementation of [`Parser::output_into`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct Into<F, O1, O2: From<O1>, E1, E2: From<E1>> {
+pub struct OutputInto<F, O1, O2: From<O1>> {
   f: F,
   phantom_out1: core::marker::PhantomData<O1>,
-  phantom_err1: core::marker::PhantomData<E1>,
   phantom_out2: core::marker::PhantomData<O2>,
-  phantom_err2: core::marker::PhantomData<E2>,
 }
 
-impl<F, O1, O2: From<O1>, E1, E2: From<E1>> Into<F, O1, O2, E1, E2> {
+impl<F, O1, O2: From<O1>> OutputInto<F, O1, O2> {
   pub(crate) fn new(f: F) -> Self {
     Self {
       f,
       phantom_out1: Default::default(),
-      phantom_err1: Default::default(),
       phantom_out2: Default::default(),
+    }
+  }
+}
+
+impl<'a, I: Clone, O1, O2: From<O1>, E, F: Parser<I, O1, E>> Parser<I, O2, E>
+  for OutputInto<F, O1, O2>
+{
+  fn parse(&mut self, i: I) -> IResult<I, O2, E> {
+    match self.f.parse(i) {
+      Ok((i, o)) => Ok((i, o.into())),
+      Err(err) => Err(err),
+    }
+  }
+}
+
+/// Implementation of [`Parser::err_into`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct ErrInto<F, E1, E2: From<E1>> {
+  f: F,
+  phantom_err1: core::marker::PhantomData<E1>,
+  phantom_err2: core::marker::PhantomData<E2>,
+}
+
+impl<F, E1, E2: From<E1>> ErrInto<F, E1, E2> {
+  pub(crate) fn new(f: F) -> Self {
+    Self {
+      f,
+      phantom_err1: Default::default(),
       phantom_err2: Default::default(),
     }
   }
 }
 
-impl<
-    'a,
-    I: Clone,
-    O1,
-    O2: From<O1>,
-    E1,
-    E2: crate::error::ParseError<I> + From<E1>,
-    F: Parser<I, O1, E1>,
-  > Parser<I, O2, E2> for Into<F, O1, O2, E1, E2>
+impl<'a, I: Clone, O, E1, E2: crate::error::ParseError<I> + From<E1>, F: Parser<I, O, E1>>
+  Parser<I, O, E2> for ErrInto<F, E1, E2>
 {
-  fn parse(&mut self, i: I) -> IResult<I, O2, E2> {
+  fn parse(&mut self, i: I) -> IResult<I, O, E2> {
     match self.f.parse(i) {
-      Ok((i, o)) => Ok((i, o.into())),
+      Ok(ok) => Ok(ok),
       Err(Err::Error(e)) => Err(Err::Error(e.into())),
       Err(Err::Failure(e)) => Err(Err::Failure(e.into())),
       Err(Err::Incomplete(e)) => Err(Err::Incomplete(e)),
     }
   }
 }
+
 /// Creates an iterator from input data and a parser.
 ///
 /// Call the iterator's [ParserIterator::finish] method to get the remaining input if successful,
