@@ -4,12 +4,12 @@ static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 use criterion::*;
 
 use nom::{
-  bytes::complete::{is_a, tag, take_till, take_while},
-  character::complete::{alphanumeric1 as alphanumeric, char, not_line_ending, space0 as space},
+  bytes::{tag, take_till, take_while, take_while1},
+  character::{alphanumeric1 as alphanumeric, char, not_line_ending, space0 as space},
   combinator::opt,
   multi::many0,
-  sequence::{delimited, pair, terminated, tuple},
-  IResult,
+  sequence::{delimited, terminated},
+  IResult, Parser,
 };
 
 use std::collections::HashMap;
@@ -19,22 +19,22 @@ fn is_line_ending_or_comment(chr: char) -> bool {
 }
 
 fn space_or_line_ending(i: &str) -> IResult<&str, &str> {
-  is_a(" \r\n")(i)
+  take_while1(" \r\n")(i)
 }
 
 fn category(i: &str) -> IResult<&str, &str> {
   terminated(
     delimited(char('['), take_while(|c| c != ']'), char(']')),
-    opt(is_a(" \r\n")),
+    opt(take_while1(" \r\n")),
   )(i)
 }
 
 fn key_value(i: &str) -> IResult<&str, (&str, &str)> {
   let (i, key) = alphanumeric(i)?;
-  let (i, _) = tuple((opt(space), tag("="), opt(space)))(i)?;
+  let (i, _) = ((opt(space), tag("="), opt(space))).parse(i)?;
   let (i, val) = take_till(is_line_ending_or_comment)(i)?;
   let (i, _) = opt(space)(i)?;
-  let (i, _) = opt(pair(tag(";"), not_line_ending))(i)?;
+  let (i, _) = opt((tag(";"), not_line_ending))(i)?;
   let (i, _) = opt(space_or_line_ending)(i)?;
   Ok((i, (key, val)))
 }
@@ -51,7 +51,7 @@ fn keys_and_values(input: &str) -> IResult<&str, HashMap<&str, &str>> {
 }
 
 fn category_and_keys(i: &str) -> IResult<&str, (&str, HashMap<&str, &str>)> {
-  pair(category, keys_and_values)(i)
+  (category, keys_and_values).parse(i)
 }
 
 fn categories_aggregator(i: &str) -> IResult<&str, Vec<(&str, HashMap<&str, &str>)>> {
