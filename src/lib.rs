@@ -1,5 +1,7 @@
 //! # nom, eating data byte by byte
 //!
+//! **NOTE:** This is an unofficial, short-lived fork.  I'm nominating nom8 to be nom v8.
+//!
 //! nom is a parser combinator library, supporting:
 //! - String (`&str`), byte (`&[u8]`), and [custom input types][crate::input]
 //! - [Streaming parsing][crate::input::Streaming]
