@@ -14,10 +14,10 @@ use core::num::NonZeroUsize;
 /// Holds the result of parsing functions
 ///
 /// It depends on the input type `I`, the output type `O`, and the error type `E`
-/// (by default `(I, nom::ErrorKind)`)
+/// (by default `(I, nom8::ErrorKind)`)
 ///
 /// The `Ok` side is a pair containing the remainder of the input (the part of the data that
-/// was not parsed) and the produced value. The `Err` side contains an instance of `nom::Err`.
+/// was not parsed) and the produced value. The `Err` side contains an instance of `nom8::Err`.
 ///
 /// Outside of the parsing code, you can use the [`FinishIResult::finish`] method to convert
 /// it to a more common result type
@@ -82,12 +82,12 @@ where
 #[doc(hidden)]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `FinishIResult` which is available via `nom::prelude`"
+  note = "Replaced with `FinishIResult` which is available via `nom8::prelude`"
 )]
 pub trait Finish<I, O, E> {
   #[deprecated(
     since = "8.0.0",
-    note = "Replaced with `FinishIResult::finish_err` which is available via `nom::prelude`"
+    note = "Replaced with `FinishIResult::finish_err` which is available via `nom8::prelude`"
   )]
   fn finish(self) -> Result<(I, O), E>;
 }
@@ -321,7 +321,7 @@ where
 ///
 /// The simplest way to implement a `Parser` is with a function
 /// ```rust
-/// use nom::prelude::*;
+/// use nom8::prelude::*;
 ///
 /// fn success(input: &str) -> IResult<&str, ()> {
 ///     let output = ();
@@ -334,7 +334,7 @@ where
 ///
 /// which can be made stateful by returning a function
 /// ```rust
-/// use nom::prelude::*;
+/// use nom8::prelude::*;
 ///
 /// fn success<O: Clone>(output: O) -> impl FnMut(&str) -> IResult<&str, O> {
 ///     move |input: &str| {
@@ -349,9 +349,9 @@ where
 /// ```
 ///
 /// Additionally, some basic types implement `Parser` as well, including
-/// - `char`, see [`nom::character::char`][crate::character::char]
-/// - `u8`, see [`nom::character::char`][crate::bytes::one_of]
-/// - `&[u8]` and `&str`, see [`nom::character::char`][crate::bytes::tag]
+/// - `char`, see [`nom8::character::char`][crate::character::char]
+/// - `u8`, see [`nom8::character::char`][crate::bytes::one_of]
+/// - `&[u8]` and `&str`, see [`nom8::character::char`][crate::bytes::tag]
 pub trait Parser<I, O, E> {
   /// A parser takes in input type, and returns a `Result` containing
   /// either the remaining input and the output value, or an error
@@ -367,11 +367,11 @@ pub trait Parser<I, O, E> {
   /// into [`length_data`][crate::multi::length_data] and `g` into
   /// [`complete`][Parser::complete]:
   /// ```rust,compile_fail
-  /// # use nom::prelude::*;
-  /// # use nom::IResult;
-  /// # use nom::Parser;
-  /// # use nom::error::ParseError;
-  /// # use nom::multi::length_data;
+  /// # use nom8::prelude::*;
+  /// # use nom8::IResult;
+  /// # use nom8::Parser;
+  /// # use nom8::error::ParseError;
+  /// # use nom8::multi::length_data;
   /// pub fn length_value<'i, O, E: ParseError<&'i [u8]>>(
   ///     mut f: impl Parser<&'i [u8], usize, E>,
   ///     mut g: impl Parser<&'i [u8], O, E>
@@ -386,11 +386,11 @@ pub trait Parser<I, O, E> {
   ///
   /// By adding `by_ref`, we can make this work:
   /// ```rust
-  /// # use nom::prelude::*;
-  /// # use nom::IResult;
-  /// # use nom::Parser;
-  /// # use nom::error::ParseError;
-  /// # use nom::multi::length_data;
+  /// # use nom8::prelude::*;
+  /// # use nom8::IResult;
+  /// # use nom8::Parser;
+  /// # use nom8::error::ParseError;
+  /// # use nom8::multi::length_data;
   /// pub fn length_value<'i, O, E: ParseError<&'i [u8]>>(
   ///     mut f: impl Parser<&'i [u8], usize, E>,
   ///     mut g: impl Parser<&'i [u8], O, E>
@@ -413,8 +413,8 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom::{Err,error::ErrorKind, IResult, Parser};
-  /// use nom::character::alpha1;
+  /// # use nom8::{Err,error::ErrorKind, IResult, Parser};
+  /// use nom8::character::alpha1;
   /// # fn main() {
   ///
   /// let mut parser = alpha1.value(1234);
@@ -436,9 +436,9 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom::IResult;
-  /// # use nom::Parser;
-  /// use nom::character::alpha1;
+  /// # use nom8::IResult;
+  /// # use nom8::Parser;
+  /// use nom8::character::alpha1;
   /// # fn main() {
   ///
   ///  fn parser1(i: &str) -> IResult<&str, &str> {
@@ -464,9 +464,9 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom::{Err,error::ErrorKind, IResult, Parser};
-  /// use nom::character::{char, alpha1};
-  /// use nom::sequence::separated_pair;
+  /// # use nom8::{Err,error::ErrorKind, IResult, Parser};
+  /// use nom8::character::{char, alpha1};
+  /// use nom8::sequence::separated_pair;
   /// # fn main() {
   ///
   /// let mut parser = separated_pair(alpha1, ',', alpha1).recognize();
@@ -494,11 +494,11 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom::prelude::*;
-  /// # use nom::{Err,error::ErrorKind, IResult};
-  /// use nom::character::{char, alpha1};
-  /// use nom::bytes::tag;
-  /// use nom::sequence::separated_pair;
+  /// # use nom8::prelude::*;
+  /// # use nom8::{Err,error::ErrorKind, IResult};
+  /// use nom8::character::{char, alpha1};
+  /// use nom8::bytes::tag;
+  /// use nom8::sequence::separated_pair;
   ///
   /// fn inner_parser(input: &str) -> IResult<&str, bool> {
   ///     tag("1234").value(true).parse(input)
@@ -532,8 +532,8 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// use nom::{Err,error::ErrorKind, IResult,Parser};
-  /// use nom::character::digit1;
+  /// use nom8::{Err,error::ErrorKind, IResult,Parser};
+  /// use nom8::character::digit1;
   /// # fn main() {
   ///
   /// let mut parser = digit1.map(|s: &str| s.len());
@@ -558,8 +558,8 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom::{Err,error::ErrorKind, IResult, Parser};
-  /// use nom::character::digit1;
+  /// # use nom8::{Err,error::ErrorKind, IResult, Parser};
+  /// use nom8::character::digit1;
   /// # fn main() {
   ///
   /// let mut parse = digit1.map_res(|s: &str| s.parse::<u8>());
@@ -587,8 +587,8 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom::{Err,error::ErrorKind, IResult, Parser};
-  /// use nom::character::digit1;
+  /// # use nom8::{Err,error::ErrorKind, IResult, Parser};
+  /// use nom8::character::digit1;
   /// # fn main() {
   ///
   /// let mut parse = digit1.map_opt(|s: &str| s.parse::<u8>().ok());
@@ -616,9 +616,9 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom::{Err,error::ErrorKind, IResult, Parser};
-  /// use nom::bytes::take;
-  /// use nom::number::u8;
+  /// # use nom8::{Err,error::ErrorKind, IResult, Parser};
+  /// use nom8::bytes::take;
+  /// use nom8::number::u8;
   /// # fn main() {
   ///
   /// let mut length_data = u8.flat_map(take);
@@ -641,9 +641,9 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom::{Err,error::ErrorKind, IResult, Parser};
-  /// use nom::character::digit1;
-  /// use nom::bytes::take;
+  /// # use nom8::{Err,error::ErrorKind, IResult, Parser};
+  /// use nom8::character::digit1;
+  /// use nom8::bytes::take;
   /// # fn main() {
   ///
   /// let mut digits = take(5u8).and_then(digit1);
@@ -669,8 +669,8 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom::{Err,error::ErrorKind, IResult, Parser};
-  /// # use nom::character::alpha1;
+  /// # use nom8::{Err,error::ErrorKind, IResult, Parser};
+  /// # use nom8::character::alpha1;
   /// # fn main() {
   ///
   /// let mut parser = alpha1.verify(|s: &str| s.len() == 4);
@@ -706,8 +706,8 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom::{Err,error::ErrorKind, IResult, input::Streaming, Parser};
-  /// # use nom::bytes::take;
+  /// # use nom8::{Err,error::ErrorKind, IResult, input::Streaming, Parser};
+  /// # use nom8::bytes::take;
   /// # fn main() {
   ///
   /// let mut parser = take(5u8).complete();
@@ -739,8 +739,8 @@ pub trait Parser<I, O, E> {
   /// It also displays the input in hexdump format
   ///
   /// ```rust
-  /// use nom::prelude::*;
-  /// use nom::{IResult, bytes::tag};
+  /// use nom8::prelude::*;
+  /// use nom8::{IResult, bytes::tag};
   ///
   /// fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
   ///   tag("abcd").dbg_err("alpha tag").parse(i)
@@ -766,8 +766,8 @@ pub trait Parser<I, O, E> {
 
   /// Applies a second parser after the first one, return their results as a tuple
   ///
-  /// **WARNING:** Deprecated, replaced with [`nom::sequence::tuple`][crate::sequence::tuple]
-  #[deprecated(since = "8.0.0", note = "Replaced with `nom::sequence::tuple")]
+  /// **WARNING:** Deprecated, replaced with [`nom8::sequence::tuple`][crate::sequence::tuple]
+  #[deprecated(since = "8.0.0", note = "Replaced with `nom8::sequence::tuple")]
   fn and<G, O2>(self, g: G) -> And<Self, G>
   where
     G: Parser<I, O2, E>,
@@ -778,8 +778,8 @@ pub trait Parser<I, O, E> {
 
   /// Applies a second parser over the input if the first one failed
   ///
-  /// **WARNING:** Deprecated, replaced with [`nom::branch::alt`][crate::branch::alt]
-  #[deprecated(since = "8.0.0", note = "Replaced with `nom::branch::alt")]
+  /// **WARNING:** Deprecated, replaced with [`nom8::branch::alt`][crate::branch::alt]
+  #[deprecated(since = "8.0.0", note = "Replaced with `nom8::branch::alt")]
   fn or<G>(self, g: G) -> Or<Self, G>
   where
     G: Parser<I, O, E>,
@@ -803,9 +803,9 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom::prelude::*;
-/// # use nom::{Err, error::{ErrorKind, Error}};
-/// # use nom::character::char;
+/// # use nom8::prelude::*;
+/// # use nom8::{Err, error::{ErrorKind, Error}};
+/// # use nom8::character::char;
 /// fn parser(i: &[u8]) -> IResult<&[u8], u8> {
 ///     b'a'.parse(i)
 /// }
@@ -829,9 +829,9 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom::prelude::*;
-/// # use nom::{Err, error::{ErrorKind, Error}};
-/// # use nom::character::char;
+/// # use nom8::prelude::*;
+/// # use nom8::{Err, error::{ErrorKind, Error}};
+/// # use nom8::character::char;
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     'a'.parse(i)
 /// }
@@ -855,10 +855,10 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom::prelude::*;
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed};
-/// # use nom::branch::alt;
-/// # use nom::bytes::take;
+/// # use nom8::prelude::*;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed};
+/// # use nom8::branch::alt;
+/// # use nom8::bytes::take;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   alt((&"Hello"[..], take(5usize))).parse(s)
@@ -883,10 +883,10 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom::prelude::*;
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed};
-/// # use nom::branch::alt;
-/// # use nom::bytes::take;
+/// # use nom8::prelude::*;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed};
+/// # use nom8::branch::alt;
+/// # use nom8::bytes::take;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   alt((b"Hello", take(5usize))).parse(s)
@@ -912,10 +912,10 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom::prelude::*;
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed};
-/// # use nom::branch::alt;
-/// # use nom::bytes::take;
+/// # use nom8::prelude::*;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed};
+/// # use nom8::branch::alt;
+/// # use nom8::bytes::take;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
 ///   alt(("Hello", take(5usize))).parse(s)

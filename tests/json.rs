@@ -1,6 +1,6 @@
 #![cfg(feature = "alloc")]
 
-use nom::{
+use nom8::{
   branch::alt,
   bytes::{any, none_of, tag, take},
   character::{f64, multispace0},

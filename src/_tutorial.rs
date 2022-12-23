@@ -48,9 +48,9 @@
 //! And the `src/parser.rs` file:
 //!
 //! ```rust
-//! use nom::IResult;
-//! use nom::number::complete::be_u16;
-//! use nom::bytes::complete::take;
+//! use nom8::IResult;
+//! use nom8::number::complete::be_u16;
+//! use nom8::bytes::complete::take;
 //!
 //! pub fn length_value(input: &[u8]) -> IResult<&[u8],&[u8]> {
 //!     let (input, length) = be_u16(input)?;
@@ -61,7 +61,7 @@
 //! # Writing a first parser
 //!
 //! Let's parse a simple expression like `(12345)`. nom parsers are functions that
-//! use the `nom::IResult` type everywhere. As an example, a parser taking a byte
+//! use the `nom8::IResult` type everywhere. As an example, a parser taking a byte
 //! slice `&[u8]` and returning a 32 bits unsigned integer `u32` would have this
 //! signature: `fn parse_u32(input: &[u8]) -> IResult<&[u8], u32>`.
 //!
@@ -71,7 +71,7 @@
 //! data is needed.
 //!
 //! ```rust
-//! # use nom::error::ErrorKind;
+//! # use nom8::error::ErrorKind;
 //! pub type IResult<I, O, E=(I,ErrorKind)> = Result<(I, O), Err<E>>;
 //!
 //! #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -100,11 +100,11 @@
 //! line parser:
 //!
 //! ```rust
-//! # use nom::prelude::*;
-//! # use nom::bytes::complete::take_while1;
-//! # use nom::bytes::complete::tag;
-//! # use nom::sequence::preceded;
-//! # use nom::AsChar;
+//! # use nom8::prelude::*;
+//! # use nom8::bytes::complete::take_while1;
+//! # use nom8::bytes::complete::tag;
+//! # use nom8::sequence::preceded;
+//! # use nom8::AsChar;
 //! struct Request<'s> {
 //!     method: &'s [u8],
 //!     url: &'s [u8],
@@ -200,8 +200,8 @@
 //! prints its hexdump if the child parser encountered an error:
 //!
 //! ```rust
-//! use nom::prelude::*;
-//! use nom::bytes::complete::tag;
+//! use nom8::prelude::*;
+//! use nom8::bytes::complete::tag;
 //!
 //! fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
 //!   tag("abcd").dbg_err("tag").parse(i)

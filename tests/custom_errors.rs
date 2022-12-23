@@ -1,14 +1,14 @@
 #![allow(dead_code)]
 
-use nom::bytes::tag;
-use nom::character::digit1 as digit;
-use nom::error::{ErrorKind, ParseError};
-use nom::input::Streaming;
+use nom8::bytes::tag;
+use nom8::character::digit1 as digit;
+use nom8::error::{ErrorKind, ParseError};
+use nom8::input::Streaming;
 #[cfg(feature = "alloc")]
-use nom::multi::count;
-use nom::prelude::*;
-use nom::sequence::terminated;
-use nom::IResult;
+use nom8::multi::count;
+use nom8::prelude::*;
+use nom8::sequence::terminated;
+use nom8::IResult;
 
 #[derive(Debug)]
 pub struct CustomError(String);

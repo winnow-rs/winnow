@@ -1,5 +1,9 @@
 # nom, eating data byte by byte
 
+**NOTE:** This is an unofficial, short-lived fork.  I'm nominating nom8 to be nom v8.
+- `main` branch is for proposed changes to `nom`
+- `nom8` branch adapts `main` for `nom8` releases
+
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Join the chat at https://gitter.im/Geal/nom](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Geal/nom?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://github.com/Geal/nom/actions/workflows/ci.yml/badge.svg)](https://github.com/Geal/nom/actions/workflows/ci.yml)
@@ -40,8 +44,8 @@ error prone plumbing.
 [Hexadecimal color](https://developer.mozilla.org/en-US/docs/Web/CSS/color) parser:
 
 ```rust
-use nom::prelude::*;
-use nom::{
+use nom8::prelude::*;
+use nom8::{
   IResult,
   bytes::complete::{tag, take_while_m_n},
   sequence::tuple

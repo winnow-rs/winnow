@@ -1,9 +1,9 @@
-use nom::branch::alt;
-use nom::character::digit1 as digit;
-use nom::combinator::opt;
-use nom::prelude::*;
-use nom::sequence::delimited;
-use nom::IResult;
+use nom8::branch::alt;
+use nom8::character::digit1 as digit;
+use nom8::combinator::opt;
+use nom8::prelude::*;
+use nom8::sequence::delimited;
+use nom8::IResult;
 
 use std::str;
 use std::str::FromStr;

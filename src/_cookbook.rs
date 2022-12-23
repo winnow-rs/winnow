@@ -25,7 +25,7 @@
 //! ### Wrapper combinators that eat whitespace before and after a parser
 //!
 //! ```rust
-//! use nom::{
+//! use nom8::{
 //!   IResult,
 //!   error::ParseError,
 //!   sequence::delimited,
@@ -59,8 +59,8 @@
 //! output of `()`.
 //!
 //! ```rust
-//! use nom::prelude::*;
-//! use nom::{
+//! use nom8::prelude::*;
+//! use nom8::{
 //!   IResult,
 //!   error::ParseError,
 //!   sequence::pair,
@@ -82,8 +82,8 @@
 //! and does not handle nested comments.
 //!
 //! ```rust
-//! use nom::prelude::*;
-//! use nom::{
+//! use nom8::prelude::*;
+//! use nom8::{
 //!   IResult,
 //!   error::ParseError,
 //!   bytes::{tag, take_until},
@@ -108,8 +108,8 @@
 //! letters and numbers may be parsed like this:
 //!
 //! ```rust
-//! use nom::prelude::*;
-//! use nom::{
+//! use nom8::prelude::*;
+//! use nom8::{
 //!   IResult,
 //!   branch::alt,
 //!   multi::many0_count,
@@ -159,7 +159,7 @@
 //! The parser outputs the string slice of the digits without the leading `0x`/`0X`.
 //!
 //! ```rust
-//! use nom::{
+//! use nom8::{
 //!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
@@ -182,8 +182,8 @@
 //! If you want it to return the integer value instead, use map:
 //!
 //! ```rust
-//! use nom::prelude::*;
-//! use nom::{
+//! use nom8::prelude::*;
+//! use nom8::{
 //!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
@@ -208,7 +208,7 @@
 //! #### Octal
 //!
 //! ```rust
-//! use nom::{
+//! use nom8::{
 //!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
@@ -231,7 +231,7 @@
 //! #### Binary
 //!
 //! ```rust
-//! use nom::{
+//! use nom8::{
 //!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
@@ -254,8 +254,8 @@
 //! #### Decimal
 //!
 //! ```rust
-//! use nom::prelude::*;
-//! use nom::{
+//! use nom8::prelude::*;
+//! use nom8::{
 //!   IResult,
 //!   multi::{many0, many1},
 //!   sequence::terminated,
@@ -277,7 +277,7 @@
 //! The following is adapted from [the Python parser by Valentin Lorentz (ProgVal)](https://github.com/ProgVal/rust-python-parser/blob/master/src/numbers.rs).
 //!
 //! ```rust
-//! use nom::{
+//! use nom8::{
 //!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
@@ -334,7 +334,7 @@
 //! a common interface to parse from a string.
 //!
 //! ```rust
-//! use nom::{
+//! use nom8::{
 //!   IResult, Finish, error::Error,
 //!   bytes::{tag, take_while},
 //! };

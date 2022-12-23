@@ -4,7 +4,7 @@
 
 #![cfg(feature = "alloc")]
 
-use nom::{
+use nom8::{
   branch::alt,
   bytes::one_of,
   bytes::tag,
@@ -352,7 +352,7 @@ fn eval_expression(e: Expr) -> Option<Expr> {
 /// us call eval on a string directly
 fn eval_from_str(src: &str) -> Result<Expr, String> {
   parse_expr(src)
-    .map_err(|e: nom::Err<VerboseError<&str>>| format!("{:#?}", e))
+    .map_err(|e: nom8::Err<VerboseError<&str>>| format!("{:#?}", e))
     .and_then(|(_, exp)| eval_expression(exp).ok_or("Eval failed".to_string()))
 }
 

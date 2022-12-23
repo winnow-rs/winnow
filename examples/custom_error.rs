@@ -1,9 +1,7 @@
-extern crate nom;
-
-use nom::error::ErrorKind;
-use nom::error::ParseError;
-use nom::Err::Error;
-use nom::IResult;
+use nom8::error::ErrorKind;
+use nom8::error::ParseError;
+use nom8::Err::Error;
+use nom8::IResult;
 
 #[derive(Debug, PartialEq)]
 pub enum CustomError<I> {
@@ -31,7 +29,7 @@ fn main() {}
 mod tests {
   use super::parse;
   use super::CustomError;
-  use nom::Err::Error;
+  use nom8::Err::Error;
 
   #[test]
   fn it_works() {

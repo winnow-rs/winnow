@@ -12,9 +12,9 @@ use crate::{Err, IResult};
 ///
 /// # Example
 /// ```rust
-/// # use nom::bits::complete::take;
-/// # use nom::IResult;
-/// # use nom::error::{Error, ErrorKind};
+/// # use nom8::bits::complete::take;
+/// # use nom8::IResult;
+/// # use nom8::error::{Error, ErrorKind};
 /// // Input is a tuple of (input: I, bit_offset: usize)
 /// fn parser(input: (&[u8], usize), count: usize)-> IResult<(&[u8], usize), u8> {
 ///  take(count)(input)
@@ -30,11 +30,11 @@ use crate::{Err, IResult};
 /// assert_eq!(parser(([0b00010010].as_ref(), 4), 4), Ok((([].as_ref(), 0), 0b00000010)));
 ///
 /// // Tries to consume 12 bits but only 8 are available
-/// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(nom::Err::Error(Error{input: ([0b00010010].as_ref(), 0), code: ErrorKind::Eof })));
+/// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(nom8::Err::Error(Error{input: ([0b00010010].as_ref(), 0), code: ErrorKind::Eof })));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bits::take`][crate::bits::take]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::bits::take`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::bits::take`][crate::bits::take]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bits::take`")]
 pub fn take<I, O, C, E: ParseError<(I, usize)>>(
   count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
@@ -97,8 +97,8 @@ where
 
 /// Generates a parser taking `count` bits and comparing them to `pattern`
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bits::tag`][crate::bits::tag]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::bits::tag`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::bits::tag`][crate::bits::tag]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bits::tag`")]
 pub fn tag<I, O, C, E: ParseError<(I, usize)>>(
   pattern: O,
   count: C,

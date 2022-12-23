@@ -24,14 +24,14 @@ use crate::IResult;
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::prelude::*;
-/// # use nom::{Err, error::{ErrorKind, Error}};
-/// # use nom::character::char;
+/// # use nom8::prelude::*;
+/// # use nom8::{Err, error::{ErrorKind, Error}};
+/// # use nom8::character::char;
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     char('a')(i)
 /// }
@@ -42,9 +42,9 @@ use crate::IResult;
 /// ```
 /// or
 /// ```
-/// # use nom::prelude::*;
-/// # use nom::{Err, error::{ErrorKind, Error}};
-/// # use nom::character::char;
+/// # use nom8::prelude::*;
+/// # use nom8::{Err, error::{ErrorKind, Error}};
+/// # use nom8::character::char;
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     'a'.parse(i)
 /// }
@@ -55,9 +55,9 @@ use crate::IResult;
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::{ErrorKind, Error}, Needed, IResult};
-/// # use nom::input::Streaming;
-/// # use nom::character::char;
+/// # use nom8::{Err, error::{ErrorKind, Error}, Needed, IResult};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::char;
 /// fn parser(i: Streaming<&str>) -> IResult<Streaming<&str>, char> {
 ///     char('a')(i)
 /// }
@@ -86,13 +86,13 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::{Error, ErrorKind}, IResult};
-/// # use nom::character::crlf;
+/// # use nom8::{Err, error::{Error, ErrorKind}, IResult};
+/// # use nom8::character::crlf;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     crlf(input)
 /// }
@@ -103,9 +103,9 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::crlf;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::crlf;
 /// assert_eq!(crlf::<_, (_, ErrorKind), true>(Streaming("\r\nc")), Ok((Streaming("c"), "\r\n")));
 /// assert_eq!(crlf::<_, (_, ErrorKind), true>(Streaming("ab\r\nc")), Err(Err::Error((Streaming("ab\r\nc"), ErrorKind::CrLf))));
 /// assert_eq!(crlf::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(2))));
@@ -131,13 +131,13 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom::character::not_line_ending;
+/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use nom8::character::not_line_ending;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     not_line_ending(input)
 /// }
@@ -151,9 +151,9 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::not_line_ending;
+/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::not_line_ending;
 /// assert_eq!(not_line_ending::<_, (_, ErrorKind), true>(Streaming("ab\r\nc")), Ok((Streaming("\r\nc"), "ab")));
 /// assert_eq!(not_line_ending::<_, (_, ErrorKind), true>(Streaming("abc")), Err(Err::Incomplete(Needed::Unknown)));
 /// assert_eq!(not_line_ending::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::Unknown)));
@@ -183,13 +183,13 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom::character::line_ending;
+/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use nom8::character::line_ending;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     line_ending(input)
 /// }
@@ -200,9 +200,9 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::line_ending;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::line_ending;
 /// assert_eq!(line_ending::<_, (_, ErrorKind), true>(Streaming("\r\nc")), Ok((Streaming("c"), "\r\n")));
 /// assert_eq!(line_ending::<_, (_, ErrorKind), true>(Streaming("ab\r\nc")), Err(Err::Error((Streaming("ab\r\nc"), ErrorKind::CrLf))));
 /// assert_eq!(line_ending::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
@@ -228,13 +228,13 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom::character::newline;
+/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use nom8::character::newline;
 /// fn parser(input: &str) -> IResult<&str, char> {
 ///     newline(input)
 /// }
@@ -245,9 +245,9 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::newline;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::newline;
 /// assert_eq!(newline::<_, (_, ErrorKind), true>(Streaming("\nc")), Ok((Streaming("c"), '\n')));
 /// assert_eq!(newline::<_, (_, ErrorKind), true>(Streaming("\r\nc")), Err(Err::Error((Streaming("\r\nc"), ErrorKind::Char))));
 /// assert_eq!(newline::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
@@ -269,13 +269,13 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom::character::tab;
+/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use nom8::character::tab;
 /// fn parser(input: &str) -> IResult<&str, char> {
 ///     tab(input)
 /// }
@@ -286,9 +286,9 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::tab;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::tab;
 /// assert_eq!(tab::<_, (_, ErrorKind), true>(Streaming("\tc")), Ok((Streaming("c"), '\t')));
 /// assert_eq!(tab::<_, (_, ErrorKind), true>(Streaming("\r\nc")), Err(Err::Error((Streaming("\r\nc"), ErrorKind::Char))));
 /// assert_eq!(tab::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
@@ -311,14 +311,14 @@ where
 /// *Complete version*: Will return the whole input if no terminating token is found (a non
 /// alphabetic character).
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphabetic character).
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::alpha0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::alpha0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alpha0(input)
 /// }
@@ -329,9 +329,9 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::alpha0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::alpha0;
 /// assert_eq!(alpha0::<_, (_, ErrorKind), true>(Streaming("ab1c")), Ok((Streaming("1c"), "ab")));
 /// assert_eq!(alpha0::<_, (_, ErrorKind), true>(Streaming("1c")), Ok((Streaming("1c"), "")));
 /// assert_eq!(alpha0::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
@@ -357,14 +357,14 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found  (a non alphabetic character).
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphabetic character).
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom::character::alpha1;
+/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use nom8::character::alpha1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alpha1(input)
 /// }
@@ -375,9 +375,9 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::alpha1;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::alpha1;
 /// assert_eq!(alpha1::<_, (_, ErrorKind), true>(Streaming("aB1c")), Ok((Streaming("1c"), "aB")));
 /// assert_eq!(alpha1::<_, (_, ErrorKind), true>(Streaming("1c")), Err(Err::Error((Streaming("1c"), ErrorKind::Alpha))));
 /// assert_eq!(alpha1::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
@@ -403,14 +403,14 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non digit character).
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non digit character).
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::digit0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::digit0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     digit0(input)
 /// }
@@ -422,9 +422,9 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::digit0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::digit0;
 /// assert_eq!(digit0::<_, (_, ErrorKind), true>(Streaming("21c")), Ok((Streaming("c"), "21")));
 /// assert_eq!(digit0::<_, (_, ErrorKind), true>(Streaming("a21c")), Ok((Streaming("a21c"), "")));
 /// assert_eq!(digit0::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
@@ -450,14 +450,14 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non digit character).
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non digit character).
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom::character::digit1;
+/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use nom8::character::digit1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     digit1(input)
 /// }
@@ -468,9 +468,9 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::digit1;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::digit1;
 /// assert_eq!(digit1::<_, (_, ErrorKind), true>(Streaming("21c")), Ok((Streaming("c"), "21")));
 /// assert_eq!(digit1::<_, (_, ErrorKind), true>(Streaming("c1")), Err(Err::Error((Streaming("c1"), ErrorKind::Digit))));
 /// assert_eq!(digit1::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
@@ -481,8 +481,8 @@ where
 /// You can use `digit1` in combination with [`Parser::map_res`][crate::Parser::map_res] to parse an integer:
 ///
 /// ```
-/// # use nom::{Err, error::{Error, ErrorKind}, IResult, Needed, Parser};
-/// # use nom::character::digit1;
+/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed, Parser};
+/// # use nom8::character::digit1;
 /// fn parser(input: &str) -> IResult<&str, u32> {
 ///   digit1.map_res(str::parse).parse(input)
 /// }
@@ -511,14 +511,14 @@ where
 ///
 /// *Complete version*: Will return the whole input if no terminating token is found (a non hexadecimal digit character).
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non hexadecimal digit character).
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::hex_digit0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::hex_digit0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     hex_digit0(input)
 /// }
@@ -529,9 +529,9 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::hex_digit0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::hex_digit0;
 /// assert_eq!(hex_digit0::<_, (_, ErrorKind), true>(Streaming("21cZ")), Ok((Streaming("Z"), "21c")));
 /// assert_eq!(hex_digit0::<_, (_, ErrorKind), true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
 /// assert_eq!(hex_digit0::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
@@ -557,14 +557,14 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non hexadecimal digit character).
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non hexadecimal digit character).
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom::character::hex_digit1;
+/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use nom8::character::hex_digit1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     hex_digit1(input)
 /// }
@@ -575,9 +575,9 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::hex_digit1;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::hex_digit1;
 /// assert_eq!(hex_digit1::<_, (_, ErrorKind), true>(Streaming("21cZ")), Ok((Streaming("Z"), "21c")));
 /// assert_eq!(hex_digit1::<_, (_, ErrorKind), true>(Streaming("H2")), Err(Err::Error((Streaming("H2"), ErrorKind::HexDigit))));
 /// assert_eq!(hex_digit1::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
@@ -603,14 +603,14 @@ where
 /// *Complete version*: Will return the whole input if no terminating token is found (a non octal
 /// digit character).
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non octal digit character).
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::oct_digit0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::oct_digit0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     oct_digit0(input)
 /// }
@@ -621,9 +621,9 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::oct_digit0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::oct_digit0;
 /// assert_eq!(oct_digit0::<_, (_, ErrorKind), true>(Streaming("21cZ")), Ok((Streaming("cZ"), "21")));
 /// assert_eq!(oct_digit0::<_, (_, ErrorKind), true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
 /// assert_eq!(oct_digit0::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
@@ -649,14 +649,14 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non octal digit character).
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non octal digit character).
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom::character::oct_digit1;
+/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use nom8::character::oct_digit1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     oct_digit1(input)
 /// }
@@ -667,9 +667,9 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::oct_digit1;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::oct_digit1;
 /// assert_eq!(oct_digit1::<_, (_, ErrorKind), true>(Streaming("21cZ")), Ok((Streaming("cZ"), "21")));
 /// assert_eq!(oct_digit1::<_, (_, ErrorKind), true>(Streaming("H2")), Err(Err::Error((Streaming("H2"), ErrorKind::OctDigit))));
 /// assert_eq!(oct_digit1::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
@@ -695,14 +695,14 @@ where
 /// *Complete version*: Will return the whole input if no terminating token is found (a non
 /// alphanumerical character).
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphanumerical character).
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::alphanumeric0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::alphanumeric0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alphanumeric0(input)
 /// }
@@ -713,9 +713,9 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::alphanumeric0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::alphanumeric0;
 /// assert_eq!(alphanumeric0::<_, (_, ErrorKind), true>(Streaming("21cZ%1")), Ok((Streaming("%1"), "21cZ")));
 /// assert_eq!(alphanumeric0::<_, (_, ErrorKind), true>(Streaming("&Z21c")), Ok((Streaming("&Z21c"), "")));
 /// assert_eq!(alphanumeric0::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
@@ -741,14 +741,14 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non alphanumerical character).
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphanumerical character).
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom::character::alphanumeric1;
+/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use nom8::character::alphanumeric1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alphanumeric1(input)
 /// }
@@ -759,9 +759,9 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::alphanumeric1;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::alphanumeric1;
 /// assert_eq!(alphanumeric1::<_, (_, ErrorKind), true>(Streaming("21cZ%1")), Ok((Streaming("%1"), "21cZ")));
 /// assert_eq!(alphanumeric1::<_, (_, ErrorKind), true>(Streaming("&H2")), Err(Err::Error((Streaming("&H2"), ErrorKind::AlphaNumeric))));
 /// assert_eq!(alphanumeric1::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
@@ -787,15 +787,15 @@ where
 /// *Complete version*: Will return the whole input if no terminating token is found (a non space
 /// character).
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::space0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::space0;
 /// assert_eq!(space0::<_, (_, ErrorKind), true>(Streaming(" \t21c")), Ok((Streaming("21c"), " \t")));
 /// assert_eq!(space0::<_, (_, ErrorKind), true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
 /// assert_eq!(space0::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
@@ -821,14 +821,14 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non space character).
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom::character::space1;
+/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use nom8::character::space1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     space1(input)
 /// }
@@ -839,9 +839,9 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::space1;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::space1;
 /// assert_eq!(space1::<_, (_, ErrorKind), true>(Streaming(" \t21c")), Ok((Streaming("21c"), " \t")));
 /// assert_eq!(space1::<_, (_, ErrorKind), true>(Streaming("H2")), Err(Err::Error((Streaming("H2"), ErrorKind::Space))));
 /// assert_eq!(space1::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
@@ -867,14 +867,14 @@ where
 /// *Complete version*: will return the whole input if no terminating token is found (a non space
 /// character).
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::multispace0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::multispace0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     multispace0(input)
 /// }
@@ -885,9 +885,9 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::multispace0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::multispace0;
 /// assert_eq!(multispace0::<_, (_, ErrorKind), true>(Streaming(" \t\n\r21c")), Ok((Streaming("21c"), " \t\n\r")));
 /// assert_eq!(multispace0::<_, (_, ErrorKind), true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
 /// assert_eq!(multispace0::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
@@ -913,14 +913,14 @@ where
 /// *Complete version*: will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non space character).
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom::character::multispace1;
+/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use nom8::character::multispace1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     multispace1(input)
 /// }
@@ -931,9 +931,9 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::character::multispace1;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::character::multispace1;
 /// assert_eq!(multispace1::<_, (_, ErrorKind), true>(Streaming(" \t\n\r21c")), Ok((Streaming("21c"), " \t\n\r")));
 /// assert_eq!(multispace1::<_, (_, ErrorKind), true>(Streaming("H2")), Err(Err::Error((Streaming("H2"), ErrorKind::MultiSpace))));
 /// assert_eq!(multispace1::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
@@ -962,7 +962,7 @@ macro_rules! ints {
         ///
         /// *Complete version*: can parse until the end of input.
         ///
-        /// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+        /// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
         #[inline(always)]
         pub fn $t<T, E: ParseError<T>, const STREAMING: bool>(input: T) -> IResult<T, $t, E>
             where
@@ -991,7 +991,7 @@ macro_rules! uints {
         ///
         /// *Complete version*: can parse until the end of input.
         ///
-        /// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+        /// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
         #[inline(always)]
         pub fn $t<T, E: ParseError<T>, const STREAMING: bool>(input: T) -> IResult<T, $t, E>
             where
@@ -1015,14 +1015,14 @@ uints! { u8 u16 u32 u64 u128 }
 ///
 /// *Complete version*: Can parse until the end of input.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::character::f32;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::character::f32;
 ///
 /// let parser = |s| {
 ///   f32(s)
@@ -1035,10 +1035,10 @@ uints! { u8 u16 u32 u64 u128 }
 /// ```
 ///
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// # use nom::input::Streaming;
-/// use nom::character::f32;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// # use nom8::input::Streaming;
+/// use nom8::character::f32;
 ///
 /// let parser = |s| {
 ///   f32(s)
@@ -1076,14 +1076,14 @@ where
 ///
 /// *Complete version*: Can parse until the end of input.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::character::f64;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::character::f64;
 ///
 /// let parser = |s| {
 ///   f64(s)
@@ -1096,10 +1096,10 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// # use nom::input::Streaming;
-/// use nom::character::f64;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// # use nom8::input::Streaming;
+/// use nom8::character::f64;
 ///
 /// let parser = |s| {
 ///   f64(s)
@@ -1137,14 +1137,14 @@ where
 ///
 /// *Complete version*: Can parse until the end of input.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::character::recognize_float;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::character::recognize_float;
 ///
 /// let parser = |s| {
 ///   recognize_float(s)
@@ -1157,9 +1157,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::input::Streaming;
-/// use nom::character::recognize_float;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::input::Streaming;
+/// use nom8::character::recognize_float;
 ///
 /// let parser = |s| {
 ///   recognize_float(s)
@@ -1197,7 +1197,7 @@ where
 ///
 /// *Complete version*: Can parse until the end of input.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
 ///
 #[inline(always)]
 pub fn recognize_float_parts<T, E: ParseError<T>, const STREAMING: bool>(

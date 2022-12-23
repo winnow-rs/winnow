@@ -18,12 +18,12 @@ use crate::{Err, IResult, Needed};
 
 /// Recognizes one character.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::{ErrorKind, Error}, Needed, IResult};
-/// # use nom::character::streaming::char;
+/// # use nom8::{Err, error::{ErrorKind, Error}, Needed, IResult};
+/// # use nom8::character::streaming::char;
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     char('a')(i)
 /// }
@@ -32,10 +32,10 @@ use crate::{Err, IResult, Needed};
 /// assert_eq!(parser(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::char`][crate::character::char] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::char`][crate::character::char] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::char` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::char` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn char<I, Error: ParseError<I>>(c: char) -> impl Fn(I) -> IResult<I, char, Error>
 where
@@ -62,12 +62,12 @@ where
 
 /// Recognizes one character and checks that it satisfies a predicate
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::{ErrorKind, Error}, Needed, IResult};
-/// # use nom::character::streaming::satisfy;
+/// # use nom8::{Err, error::{ErrorKind, Error}, Needed, IResult};
+/// # use nom8::character::streaming::satisfy;
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     satisfy(|c| c == 'a' || c == 'b')(i)
 /// }
@@ -76,10 +76,10 @@ where
 /// assert_eq!(parser(""), Err(Err::Incomplete(Needed::Unknown)));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::bytes::one_of` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::bytes::one_of` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn satisfy<F, I, Error: ParseError<I>>(cond: F) -> impl Fn(I) -> IResult<I, char, Error>
 where
@@ -112,21 +112,21 @@ where
 
 /// Recognizes one of the provided characters.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::character::streaming::one_of;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::character::streaming::one_of;
 /// assert_eq!(one_of::<_, _, (_, ErrorKind)>("abc")("b"), Ok(("", 'b')));
 /// assert_eq!(one_of::<_, _, (_, ErrorKind)>("a")("bc"), Err(Err::Error(("bc", ErrorKind::OneOf))));
 /// assert_eq!(one_of::<_, _, (_, ErrorKind)>("a")(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::bytes::one_of` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::bytes::one_of` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn one_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
@@ -139,21 +139,21 @@ where
 
 /// Recognizes a character that is not in the provided characters.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::character::streaming::none_of;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::character::streaming::none_of;
 /// assert_eq!(none_of::<_, _, (_, ErrorKind)>("abc")("z"), Ok(("", 'z')));
 /// assert_eq!(none_of::<_, _, (_, ErrorKind)>("ab")("a"), Err(Err::Error(("a", ErrorKind::NoneOf))));
 /// assert_eq!(none_of::<_, _, (_, ErrorKind)>("a")(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::none_of`][crate::bytes::none_of] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::bytes::none_of`][crate::bytes::none_of] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::bytes::none_of` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::bytes::none_of` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn none_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
@@ -166,21 +166,21 @@ where
 
 /// Recognizes the string "\r\n".
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::streaming::crlf;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::streaming::crlf;
 /// assert_eq!(crlf::<_, (_, ErrorKind)>("\r\nc"), Ok(("c", "\r\n")));
 /// assert_eq!(crlf::<_, (_, ErrorKind)>("ab\r\nc"), Err(Err::Error(("ab\r\nc", ErrorKind::CrLf))));
 /// assert_eq!(crlf::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(2))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::crlf`][crate::character::crlf] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::crlf`][crate::character::crlf] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::crlf` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::crlf` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn crlf<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
@@ -202,12 +202,12 @@ where
 
 /// Recognizes a string of any char except '\r\n' or '\n'.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom::character::streaming::not_line_ending;
+/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use nom8::character::streaming::not_line_ending;
 /// assert_eq!(not_line_ending::<_, (_, ErrorKind)>("ab\r\nc"), Ok(("\r\nc", "ab")));
 /// assert_eq!(not_line_ending::<_, (_, ErrorKind)>("abc"), Err(Err::Incomplete(Needed::Unknown)));
 /// assert_eq!(not_line_ending::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::Unknown)));
@@ -215,10 +215,10 @@ where
 /// assert_eq!(not_line_ending::<_, (_, ErrorKind)>("a\rbc"), Err(Err::Error(("a\rbc", ErrorKind::Tag ))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::not_line_ending`][crate::character::not_line_ending] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::not_line_ending`][crate::character::not_line_ending] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::not_line_ending` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::not_line_ending` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
@@ -258,21 +258,21 @@ where
 
 /// Recognizes an end of line (both '\n' and '\r\n').
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::streaming::line_ending;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::streaming::line_ending;
 /// assert_eq!(line_ending::<_, (_, ErrorKind)>("\r\nc"), Ok(("c", "\r\n")));
 /// assert_eq!(line_ending::<_, (_, ErrorKind)>("ab\r\nc"), Err(Err::Error(("ab\r\nc", ErrorKind::CrLf))));
 /// assert_eq!(line_ending::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::line_ending`][crate::character::line_ending] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::line_ending`][crate::character::line_ending] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::line_ending` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::line_ending` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
@@ -297,21 +297,21 @@ where
 
 /// Matches a newline character '\\n'.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::streaming::newline;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::streaming::newline;
 /// assert_eq!(newline::<_, (_, ErrorKind)>("\nc"), Ok(("c", '\n')));
 /// assert_eq!(newline::<_, (_, ErrorKind)>("\r\nc"), Err(Err::Error(("\r\nc", ErrorKind::Char))));
 /// assert_eq!(newline::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::newline`][crate::character::newline] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::newline`][crate::character::newline] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::newline` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::newline` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn newline<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
 where
@@ -323,21 +323,21 @@ where
 
 /// Matches a tab character '\t'.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::streaming::tab;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::streaming::tab;
 /// assert_eq!(tab::<_, (_, ErrorKind)>("\tc"), Ok(("c", '\t')));
 /// assert_eq!(tab::<_, (_, ErrorKind)>("\r\nc"), Err(Err::Error(("\r\nc", ErrorKind::Char))));
 /// assert_eq!(tab::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::tab`][crate::character::tab] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::tab`][crate::character::tab] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::tab` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::tab` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn tab<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
 where
@@ -350,19 +350,19 @@ where
 /// Matches one byte as a character. Note that the input type will
 /// accept a `str`, but not a `&[u8]`, unlike many other nom parsers.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use nom::{character::streaming::anychar, Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::{character::streaming::anychar, Err, error::ErrorKind, IResult, Needed};
 /// assert_eq!(anychar::<_, (_, ErrorKind)>("abc"), Ok(("bc",'a')));
 /// assert_eq!(anychar::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::any`][crate::bytes::any] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::bytes::any`][crate::bytes::any] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::bytes::any` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::bytes::any` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn anychar<T, E: ParseError<T>>(input: T) -> IResult<T, char, E>
 where
@@ -374,22 +374,22 @@ where
 
 /// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphabetic character).
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::streaming::alpha0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::streaming::alpha0;
 /// assert_eq!(alpha0::<_, (_, ErrorKind)>("ab1c"), Ok(("1c", "ab")));
 /// assert_eq!(alpha0::<_, (_, ErrorKind)>("1c"), Ok(("1c", "")));
 /// assert_eq!(alpha0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::alpha0`][crate::character::alpha0] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::alpha0`][crate::character::alpha0] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::alpha0` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::alpha0` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn alpha0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
@@ -404,22 +404,22 @@ where
 
 /// Recognizes one or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphabetic character).
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::streaming::alpha1;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::streaming::alpha1;
 /// assert_eq!(alpha1::<_, (_, ErrorKind)>("aB1c"), Ok(("1c", "aB")));
 /// assert_eq!(alpha1::<_, (_, ErrorKind)>("1c"), Err(Err::Error(("1c", ErrorKind::Alpha))));
 /// assert_eq!(alpha1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::alpha1`][crate::character::alpha1] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::alpha1`][crate::character::alpha1] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::alpha1` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::alpha1` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn alpha1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
@@ -434,22 +434,22 @@ where
 
 /// Recognizes zero or more ASCII numerical characters: 0-9
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non digit character).
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::streaming::digit0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::streaming::digit0;
 /// assert_eq!(digit0::<_, (_, ErrorKind)>("21c"), Ok(("c", "21")));
 /// assert_eq!(digit0::<_, (_, ErrorKind)>("a21c"), Ok(("a21c", "")));
 /// assert_eq!(digit0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::digit0`][crate::character::digit0] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::digit0`][crate::character::digit0] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::digit0` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::digit0` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
@@ -464,22 +464,22 @@ where
 
 /// Recognizes one or more ASCII numerical characters: 0-9
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non digit character).
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::streaming::digit1;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::streaming::digit1;
 /// assert_eq!(digit1::<_, (_, ErrorKind)>("21c"), Ok(("c", "21")));
 /// assert_eq!(digit1::<_, (_, ErrorKind)>("c1"), Err(Err::Error(("c1", ErrorKind::Digit))));
 /// assert_eq!(digit1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::digit1`][crate::character::digit1] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::digit1`][crate::character::digit1] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::digit1` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::digit1` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
@@ -494,22 +494,22 @@ where
 
 /// Recognizes zero or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non hexadecimal digit character).
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::streaming::hex_digit0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::streaming::hex_digit0;
 /// assert_eq!(hex_digit0::<_, (_, ErrorKind)>("21cZ"), Ok(("Z", "21c")));
 /// assert_eq!(hex_digit0::<_, (_, ErrorKind)>("Z21c"), Ok(("Z21c", "")));
 /// assert_eq!(hex_digit0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::hex_digit0`][crate::character::hex_digit0] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::hex_digit0`][crate::character::hex_digit0] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::hex_digit0` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::hex_digit0` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn hex_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
@@ -524,22 +524,22 @@ where
 
 /// Recognizes one or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non hexadecimal digit character).
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::streaming::hex_digit1;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::streaming::hex_digit1;
 /// assert_eq!(hex_digit1::<_, (_, ErrorKind)>("21cZ"), Ok(("Z", "21c")));
 /// assert_eq!(hex_digit1::<_, (_, ErrorKind)>("H2"), Err(Err::Error(("H2", ErrorKind::HexDigit))));
 /// assert_eq!(hex_digit1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::hex_digit1`][crate::character::hex_digit1] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::hex_digit1`][crate::character::hex_digit1] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::hex_digit1` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::hex_digit1` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn hex_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
@@ -554,22 +554,22 @@ where
 
 /// Recognizes zero or more octal characters: 0-7
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non octal digit character).
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::streaming::oct_digit0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::streaming::oct_digit0;
 /// assert_eq!(oct_digit0::<_, (_, ErrorKind)>("21cZ"), Ok(("cZ", "21")));
 /// assert_eq!(oct_digit0::<_, (_, ErrorKind)>("Z21c"), Ok(("Z21c", "")));
 /// assert_eq!(oct_digit0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::oct_digit0`][crate::character::oct_digit0] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::oct_digit0`][crate::character::oct_digit0] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::oct_digit0` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::oct_digit0` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn oct_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
@@ -584,22 +584,22 @@ where
 
 /// Recognizes one or more octal characters: 0-7
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non octal digit character).
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::streaming::oct_digit1;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::streaming::oct_digit1;
 /// assert_eq!(oct_digit1::<_, (_, ErrorKind)>("21cZ"), Ok(("cZ", "21")));
 /// assert_eq!(oct_digit1::<_, (_, ErrorKind)>("H2"), Err(Err::Error(("H2", ErrorKind::OctDigit))));
 /// assert_eq!(oct_digit1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::oct_digit1`][crate::character::oct_digit1] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::oct_digit1`][crate::character::oct_digit1] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::oct_digit1` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::oct_digit1` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn oct_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
@@ -614,22 +614,22 @@ where
 
 /// Recognizes zero or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphanumerical character).
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::streaming::alphanumeric0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::streaming::alphanumeric0;
 /// assert_eq!(alphanumeric0::<_, (_, ErrorKind)>("21cZ%1"), Ok(("%1", "21cZ")));
 /// assert_eq!(alphanumeric0::<_, (_, ErrorKind)>("&Z21c"), Ok(("&Z21c", "")));
 /// assert_eq!(alphanumeric0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::alphanumeric0`][crate::character::alphanumeric0] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::alphanumeric0`][crate::character::alphanumeric0] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::alphanumeric0` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::alphanumeric0` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn alphanumeric0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
@@ -644,22 +644,22 @@ where
 
 /// Recognizes one or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphanumerical character).
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::streaming::alphanumeric1;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::streaming::alphanumeric1;
 /// assert_eq!(alphanumeric1::<_, (_, ErrorKind)>("21cZ%1"), Ok(("%1", "21cZ")));
 /// assert_eq!(alphanumeric1::<_, (_, ErrorKind)>("&H2"), Err(Err::Error(("&H2", ErrorKind::AlphaNumeric))));
 /// assert_eq!(alphanumeric1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::alphanumeric1`][crate::character::alphanumeric1] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::alphanumeric1`][crate::character::alphanumeric1] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::alphanumeric1` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::alphanumeric1` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn alphanumeric1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
@@ -674,22 +674,22 @@ where
 
 /// Recognizes zero or more spaces and tabs.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::streaming::space0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::streaming::space0;
 /// assert_eq!(space0::<_, (_, ErrorKind)>(" \t21c"), Ok(("21c", " \t")));
 /// assert_eq!(space0::<_, (_, ErrorKind)>("Z21c"), Ok(("Z21c", "")));
 /// assert_eq!(space0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::space0`][crate::character::space0] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::space0`][crate::character::space0] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::space0` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::space0` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn space0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
@@ -706,22 +706,22 @@ where
 }
 /// Recognizes one or more spaces and tabs.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::streaming::space1;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::streaming::space1;
 /// assert_eq!(space1::<_, (_, ErrorKind)>(" \t21c"), Ok(("21c", " \t")));
 /// assert_eq!(space1::<_, (_, ErrorKind)>("H2"), Err(Err::Error(("H2", ErrorKind::Space))));
 /// assert_eq!(space1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::space1`][crate::character::space1] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::space1`][crate::character::space1] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::space1` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::space1` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn space1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
@@ -742,22 +742,22 @@ where
 
 /// Recognizes zero or more spaces, tabs, carriage returns and line feeds.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::streaming::multispace0;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::streaming::multispace0;
 /// assert_eq!(multispace0::<_, (_, ErrorKind)>(" \t\n\r21c"), Ok(("21c", " \t\n\r")));
 /// assert_eq!(multispace0::<_, (_, ErrorKind)>("Z21c"), Ok(("Z21c", "")));
 /// assert_eq!(multispace0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::multispace0`][crate::character::multispace0] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::multispace0`][crate::character::multispace0] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::multispace0` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::multispace0` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn multispace0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
@@ -775,22 +775,22 @@ where
 
 /// Recognizes one or more spaces, tabs, carriage returns and line feeds.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom::character::streaming::multispace1;
+/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::character::streaming::multispace1;
 /// assert_eq!(multispace1::<_, (_, ErrorKind)>(" \t\n\r21c"), Ok(("21c", " \t\n\r")));
 /// assert_eq!(multispace1::<_, (_, ErrorKind)>("H2"), Err(Err::Error(("H2", ErrorKind::MultiSpace))));
 /// assert_eq!(multispace1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::multispace1`][crate::character::multispace1] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::multispace1`][crate::character::multispace1] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::multispace1` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::character::multispace1` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn multispace1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where

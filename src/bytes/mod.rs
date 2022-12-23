@@ -17,12 +17,12 @@ use crate::{IResult, Parser};
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{bytes::any, Err, error::{Error, ErrorKind}, IResult};
+/// # use nom8::{bytes::any, Err, error::{Error, ErrorKind}, IResult};
 /// fn parser(input: &str) -> IResult<&str, char> {
 ///     any(input)
 /// }
@@ -32,8 +32,8 @@ use crate::{IResult, Parser};
 /// ```
 ///
 /// ```
-/// # use nom::{bytes::any, Err, error::ErrorKind, IResult, Needed};
-/// # use nom::input::Streaming;
+/// # use nom8::{bytes::any, Err, error::ErrorKind, IResult, Needed};
+/// # use nom8::input::Streaming;
 /// assert_eq!(any::<_, (_, ErrorKind), true>(Streaming("abc")), Ok((Streaming("bc"),'a')));
 /// assert_eq!(any::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
@@ -63,9 +63,9 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom::prelude::*;
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed};
-/// use nom::bytes::tag;
+/// # use nom8::prelude::*;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed};
+/// use nom8::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
 ///   tag("Hello")(s)
@@ -77,9 +77,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// # use nom::input::Streaming;
-/// use nom::bytes::tag;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use nom8::input::Streaming;
+/// use nom8::bytes::tag;
 ///
 /// fn parser(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
 ///   tag("Hello")(s)
@@ -117,8 +117,8 @@ where
 /// It will return `Err(Err::Error((_, ErrorKind::Tag)))` if the input doesn't match the pattern.
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::tag_no_case;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use nom8::bytes::tag_no_case;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
 ///   tag_no_case("hello")(s)
@@ -132,9 +132,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// # use nom::input::Streaming;
-/// use nom::bytes::tag_no_case;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use nom8::input::Streaming;
+/// use nom8::bytes::tag_no_case;
 ///
 /// fn parser(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
 ///   tag_no_case("hello")(s)
@@ -173,14 +173,14 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::*;
-/// # use nom::{Err, error::ErrorKind, error::Error};
-/// # use nom::bytes::one_of;
+/// # use nom8::*;
+/// # use nom8::{Err, error::ErrorKind, error::Error};
+/// # use nom8::bytes::one_of;
 /// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("abc")("b"), Ok(("", 'b')));
 /// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("a")("bc"), Err(Err::Error(("bc", ErrorKind::OneOf))));
 /// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("a")(""), Err(Err::Error(("", ErrorKind::OneOf))));
@@ -194,10 +194,10 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::*;
-/// # use nom::{Err, error::ErrorKind, error::Error, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::bytes::one_of;
+/// # use nom8::*;
+/// # use nom8::{Err, error::ErrorKind, error::Error, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::bytes::one_of;
 /// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("abc")(Streaming("b")), Ok((Streaming(""), 'b')));
 /// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("a")(Streaming("bc")), Err(Err::Error((Streaming("bc"), ErrorKind::OneOf))));
 /// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("a")(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
@@ -231,22 +231,22 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind};
-/// # use nom::bytes::none_of;
+/// # use nom8::{Err, error::ErrorKind};
+/// # use nom8::bytes::none_of;
 /// assert_eq!(none_of::<_, _, (&str, ErrorKind), false>("abc")("z"), Ok(("", 'z')));
 /// assert_eq!(none_of::<_, _, (&str, ErrorKind), false>("ab")("a"), Err(Err::Error(("a", ErrorKind::NoneOf))));
 /// assert_eq!(none_of::<_, _, (&str, ErrorKind), false>("a")(""), Err(Err::Error(("", ErrorKind::NoneOf))));
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::input::Streaming;
-/// # use nom::bytes::none_of;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::input::Streaming;
+/// # use nom8::bytes::none_of;
 /// assert_eq!(none_of::<_, _, (_, ErrorKind), true>("abc")(Streaming("z")), Ok((Streaming(""), 'z')));
 /// assert_eq!(none_of::<_, _, (_, ErrorKind), true>("ab")(Streaming("a")), Err(Err::Error((Streaming("a"), ErrorKind::NoneOf))));
 /// assert_eq!(none_of::<_, _, (_, ErrorKind), true>("a")(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
@@ -274,9 +274,9 @@ where
 /// *Streaming version*: will return a `Err::Incomplete(Needed::new(1))` if the pattern reaches the end of the input.
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
-/// use nom::bytes::take_while;
-/// use nom::input::AsChar;
+/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
+/// use nom8::bytes::take_while;
+/// use nom8::input::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while(AsChar::is_alpha)(s)
@@ -289,10 +289,10 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
-/// # use nom::input::Streaming;
-/// use nom::bytes::take_while;
-/// use nom::input::AsChar;
+/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
+/// # use nom8::input::Streaming;
+/// use nom8::bytes::take_while;
+/// use nom8::input::AsChar;
 ///
 /// fn alpha(s: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
 ///   take_while(AsChar::is_alpha)(s)
@@ -330,9 +330,9 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::take_while1;
-/// use nom::input::AsChar;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use nom8::bytes::take_while1;
+/// use nom8::input::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while1(AsChar::is_alpha)(s)
@@ -354,10 +354,10 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// # use nom::input::Streaming;
-/// use nom::bytes::take_while1;
-/// use nom::input::AsChar;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use nom8::input::Streaming;
+/// use nom8::bytes::take_while1;
+/// use nom8::input::AsChar;
 ///
 /// fn alpha(s: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
 ///   take_while1(AsChar::is_alpha)(s)
@@ -404,9 +404,9 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::take_while_m_n;
-/// use nom::input::AsChar;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use nom8::bytes::take_while_m_n;
+/// use nom8::input::AsChar;
 ///
 /// fn short_alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while_m_n(3, 6, AsChar::is_alpha)(s)
@@ -420,10 +420,10 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// # use nom::input::Streaming;
-/// use nom::bytes::take_while_m_n;
-/// use nom::input::AsChar;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use nom8::input::Streaming;
+/// use nom8::bytes::take_while_m_n;
+/// use nom8::input::AsChar;
 ///
 /// fn short_alpha(s: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
 ///   take_while_m_n(3, 6, AsChar::is_alpha)(s)
@@ -463,8 +463,8 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
-/// use nom::bytes::take_till;
+/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
+/// use nom8::bytes::take_till;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
 ///   take_till(|c| c == ':')(s)
@@ -477,9 +477,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
-/// # use nom::input::Streaming;
-/// use nom::bytes::take_till;
+/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
+/// # use nom8::input::Streaming;
+/// use nom8::bytes::take_till;
 ///
 /// fn till_colon(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
 ///   take_till(|c| c == ':')(s)
@@ -518,8 +518,8 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::take_till1;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use nom8::bytes::take_till1;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
 ///   take_till1(|c| c == ':')(s)
@@ -541,9 +541,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// # use nom::input::Streaming;
-/// use nom::bytes::take_till1;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use nom8::input::Streaming;
+/// use nom8::bytes::take_till1;
 ///
 /// fn till_colon(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
 ///   take_till1(|c| c == ':')(s)
@@ -594,8 +594,8 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::take;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use nom8::bytes::take;
 ///
 /// fn take6(s: &str) -> IResult<&str, &str> {
 ///   take(6usize)(s)
@@ -612,17 +612,17 @@ where
 /// take that many `u8`'s:
 ///
 /// ```rust
-/// use nom::error::Error;
-/// use nom::bytes::take;
+/// use nom8::error::Error;
+/// use nom8::bytes::take;
 ///
 /// assert_eq!(take::<_, _, Error<_>, false>(1usize)("💙"), Ok(("", "💙")));
 /// assert_eq!(take::<_, _, Error<_>, false>(1usize)("💙".as_bytes()), Ok((b"\x9F\x92\x99".as_ref(), b"\xF0".as_ref())));
 /// ```
 ///
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
-/// # use nom::input::Streaming;
-/// use nom::bytes::take;
+/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
+/// # use nom8::input::Streaming;
+/// use nom8::bytes::take;
 ///
 /// fn take6(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
 ///   take(6usize)(s)
@@ -663,8 +663,8 @@ where
 /// contain the pattern or if the input is smaller than the pattern.
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::take_until;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use nom8::bytes::take_until;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
 ///   take_until("eof")(s)
@@ -677,9 +677,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
-/// # use nom::input::Streaming;
-/// use nom::bytes::take_until;
+/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
+/// # use nom8::input::Streaming;
+/// use nom8::bytes::take_until;
 ///
 /// fn until_eof(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
 ///   take_until("eof")(s)
@@ -720,8 +720,8 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::take_until1;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use nom8::bytes::take_until1;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
 ///   take_until1("eof")(s)
@@ -735,9 +735,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// # use nom::input::Streaming;
-/// use nom::bytes::take_until1;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use nom8::input::Streaming;
+/// use nom8::bytes::take_until1;
 ///
 /// fn until_eof(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
 ///   take_until1("eof")(s)
@@ -774,10 +774,10 @@ where
 /// * The third argument matches the escaped characters
 /// # Example
 /// ```
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
-/// # use nom::character::digit1;
-/// use nom::bytes::escaped;
-/// use nom::bytes::one_of;
+/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
+/// # use nom8::character::digit1;
+/// use nom8::bytes::escaped;
+/// use nom8::bytes::one_of;
 ///
 /// fn esc(s: &str) -> IResult<&str, &str> {
 ///   escaped(digit1, '\\', one_of(r#""n\"#))(s)
@@ -788,11 +788,11 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
-/// # use nom::character::digit1;
-/// # use nom::input::Streaming;
-/// use nom::bytes::escaped;
-/// use nom::bytes::one_of;
+/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
+/// # use nom8::character::digit1;
+/// # use nom8::input::Streaming;
+/// use nom8::bytes::escaped;
+/// use nom8::bytes::one_of;
 ///
 /// fn esc(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
 ///   escaped(digit1, '\\', one_of("\"n\\"))(s)
@@ -840,13 +840,13 @@ where
 /// As an example, the chain `abc\tdef` could be `abc    def` (it also consumes the control character)
 ///
 /// ```
-/// # use nom::prelude::*;
-/// # use nom::{Err, error::ErrorKind, Needed};
+/// # use nom8::prelude::*;
+/// # use nom8::{Err, error::ErrorKind, Needed};
 /// # use std::str::from_utf8;
-/// use nom::bytes::{escaped_transform, tag};
-/// use nom::character::alpha1;
-/// use nom::branch::alt;
-/// use nom::combinator::value;
+/// use nom8::bytes::{escaped_transform, tag};
+/// use nom8::character::alpha1;
+/// use nom8::branch::alt;
+/// use nom8::combinator::value;
 ///
 /// fn parser(input: &str) -> IResult<&str, String> {
 ///   escaped_transform(
@@ -865,14 +865,14 @@ where
 /// ```
 ///
 /// ```
-/// # use nom::prelude::*;
-/// # use nom::{Err, error::ErrorKind, Needed};
+/// # use nom8::prelude::*;
+/// # use nom8::{Err, error::ErrorKind, Needed};
 /// # use std::str::from_utf8;
-/// # use nom::input::Streaming;
-/// use nom::bytes::{escaped_transform, tag};
-/// use nom::character::alpha1;
-/// use nom::branch::alt;
-/// use nom::combinator::value;
+/// # use nom8::input::Streaming;
+/// use nom8::bytes::{escaped_transform, tag};
+/// use nom8::character::alpha1;
+/// use nom8::branch::alt;
+/// use nom8::combinator::value;
 ///
 /// fn parser(input: Streaming<&str>) -> IResult<Streaming<&str>, String> {
 ///   escaped_transform(

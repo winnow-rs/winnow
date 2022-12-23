@@ -20,9 +20,9 @@ use crate::*;
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::be_u8;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::be_u8;
 ///
 /// let parser = |s| {
 ///   be_u8(s)
@@ -33,8 +33,8 @@ use crate::*;
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::be_u8`][crate::number::be_u8]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::be_u8`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::be_u8`][crate::number::be_u8]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::be_u8`")]
 pub fn be_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -53,9 +53,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::be_u16;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::be_u16;
 ///
 /// let parser = |s| {
 ///   be_u16(s)
@@ -66,8 +66,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::be_u16`][crate::number::be_u16]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::be_u16`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::be_u16`][crate::number::be_u16]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::be_u16`")]
 pub fn be_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -89,9 +89,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::be_u24;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::be_u24;
 ///
 /// let parser = |s| {
 ///   be_u24(s)
@@ -102,8 +102,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::be_u24`][crate::number::be_u24]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::be_u24`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::be_u24`][crate::number::be_u24]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::be_u24`")]
 pub fn be_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -125,9 +125,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::be_u32;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::be_u32;
 ///
 /// let parser = |s| {
 ///   be_u32(s)
@@ -138,8 +138,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::be_u32`][crate::number::be_u32]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::be_u32`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::be_u32`][crate::number::be_u32]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::be_u32`")]
 pub fn be_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -161,9 +161,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::be_u64;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::be_u64;
 ///
 /// let parser = |s| {
 ///   be_u64(s)
@@ -174,8 +174,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::be_u64`][crate::number::be_u64]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::be_u64`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::be_u64`][crate::number::be_u64]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::be_u64`")]
 pub fn be_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -197,9 +197,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::be_u128;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::be_u128;
 ///
 /// let parser = |s| {
 ///   be_u128(s)
@@ -210,8 +210,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::be_u128`][crate::number::be_u128]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::be_u128`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::be_u128`][crate::number::be_u128]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::be_u128`")]
 pub fn be_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -233,9 +233,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::be_i8;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::be_i8;
 ///
 /// let parser = |s| {
 ///   be_i8(s)
@@ -246,8 +246,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::be_i8`][crate::number::be_i8]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::be_i8`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::be_i8`][crate::number::be_i8]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::be_i8`")]
 pub fn be_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -259,9 +259,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::be_i16;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::be_i16;
 ///
 /// let parser = |s| {
 ///   be_i16(s)
@@ -272,8 +272,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::be_i16`][crate::number::be_i16]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::be_i16`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::be_i16`][crate::number::be_i16]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::be_i16`")]
 pub fn be_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -285,9 +285,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::be_i24;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::be_i24;
 ///
 /// let parser = |s| {
 ///   be_i24(s)
@@ -298,8 +298,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::be_i24`][crate::number::be_i24]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::be_i24`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::be_i24`][crate::number::be_i24]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::be_i24`")]
 pub fn be_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -320,9 +320,9 @@ where
 ///
 /// *Complete version*: Teturns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::be_i32;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::be_i32;
 ///
 /// let parser = |s| {
 ///   be_i32(s)
@@ -333,8 +333,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::be_i32`][crate::number::be_i32]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::be_i32`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::be_i32`][crate::number::be_i32]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::be_i32`")]
 pub fn be_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -346,9 +346,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::be_i64;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::be_i64;
 ///
 /// let parser = |s| {
 ///   be_i64(s)
@@ -359,8 +359,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::be_i64`][crate::number::be_i64]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::be_i64`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::be_i64`][crate::number::be_i64]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::be_i64`")]
 pub fn be_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -372,9 +372,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::be_i128;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::be_i128;
 ///
 /// let parser = |s| {
 ///   be_i128(s)
@@ -385,8 +385,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::be_i128`][crate::number::be_i128]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::be_i128`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::be_i128`][crate::number::be_i128]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::be_i128`")]
 pub fn be_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -398,9 +398,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::le_u8;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::le_u8;
 ///
 /// let parser = |s| {
 ///   le_u8(s)
@@ -411,8 +411,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::le_u8`][crate::number::le_u8]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::le_u8`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::le_u8`][crate::number::le_u8]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::le_u8`")]
 pub fn le_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -431,9 +431,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::le_u16;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::le_u16;
 ///
 /// let parser = |s| {
 ///   le_u16(s)
@@ -444,8 +444,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::le_u16`][crate::number::le_u16]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::le_u16`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::le_u16`][crate::number::le_u16]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::le_u16`")]
 pub fn le_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -467,9 +467,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::le_u24;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::le_u24;
 ///
 /// let parser = |s| {
 ///   le_u24(s)
@@ -480,8 +480,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::le_u24`][crate::number::le_u24]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::le_u24`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::le_u24`][crate::number::le_u24]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::le_u24`")]
 pub fn le_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -503,9 +503,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::le_u32;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::le_u32;
 ///
 /// let parser = |s| {
 ///   le_u32(s)
@@ -516,8 +516,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::le_u32`][crate::number::le_u32]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::le_u32`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::le_u32`][crate::number::le_u32]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::le_u32`")]
 pub fn le_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -539,9 +539,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::le_u64;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::le_u64;
 ///
 /// let parser = |s| {
 ///   le_u64(s)
@@ -552,8 +552,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::le_u64`][crate::number::le_u64]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::le_u64`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::le_u64`][crate::number::le_u64]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::le_u64`")]
 pub fn le_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -575,9 +575,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::le_u128;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::le_u128;
 ///
 /// let parser = |s| {
 ///   le_u128(s)
@@ -588,8 +588,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::le_u128`][crate::number::le_u128]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::le_u128`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::le_u128`][crate::number::le_u128]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::le_u128`")]
 pub fn le_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -611,9 +611,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::le_i8;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::le_i8;
 ///
 /// let parser = |s| {
 ///   le_i8(s)
@@ -624,8 +624,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::le_i8`][crate::number::le_i8]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::le_i8`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::le_i8`][crate::number::le_i8]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::le_i8`")]
 pub fn le_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -637,9 +637,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::le_i16;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::le_i16;
 ///
 /// let parser = |s| {
 ///   le_i16(s)
@@ -650,8 +650,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::le_i16`][crate::number::le_i16]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::le_i16`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::le_i16`][crate::number::le_i16]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::le_i16`")]
 pub fn le_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -663,9 +663,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::le_i24;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::le_i24;
 ///
 /// let parser = |s| {
 ///   le_i24(s)
@@ -676,8 +676,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::le_i24`][crate::number::le_i24]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::le_i24`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::le_i24`][crate::number::le_i24]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::le_i24`")]
 pub fn le_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -698,9 +698,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::le_i32;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::le_i32;
 ///
 /// let parser = |s| {
 ///   le_i32(s)
@@ -711,8 +711,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::le_i32`][crate::number::le_i32]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::le_i32`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::le_i32`][crate::number::le_i32]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::le_i32`")]
 pub fn le_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -724,9 +724,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::le_i64;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::le_i64;
 ///
 /// let parser = |s| {
 ///   le_i64(s)
@@ -737,8 +737,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::le_i64`][crate::number::le_i64]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::le_i64`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::le_i64`][crate::number::le_i64]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::le_i64`")]
 pub fn le_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -750,9 +750,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::le_i128;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::le_i128;
 ///
 /// let parser = |s| {
 ///   le_i128(s)
@@ -763,8 +763,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::le_i128`][crate::number::le_i128]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::le_i128`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::le_i128`][crate::number::le_i128]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::le_i128`")]
 pub fn le_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -777,9 +777,9 @@ where
 /// Note that endianness does not apply to 1 byte numbers.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::u8;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::u8;
 ///
 /// let parser = |s| {
 ///   u8(s)
@@ -790,8 +790,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::u8`][crate::number::u8]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::u8`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::u8`][crate::number::u8]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::u8`")]
 pub fn u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -808,24 +808,24 @@ where
 
 /// Recognizes an unsigned 2 bytes integer
 ///
-/// If the parameter is `nom::number::Endianness::Big`, parse a big endian u16 integer,
-/// otherwise if `nom::number::Endianness::Little` parse a little endian u16 integer.
+/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian u16 integer,
+/// otherwise if `nom8::number::Endianness::Little` parse a little endian u16 integer.
 /// *complete version*: returns an error if there is not enough input data
 ///
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::u16;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::u16;
 ///
 /// let be_u16 = |s| {
-///   u16(nom::number::Endianness::Big)(s)
+///   u16(nom8::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_u16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
 /// assert_eq!(be_u16(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u16 = |s| {
-///   u16(nom::number::Endianness::Little)(s)
+///   u16(nom8::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
@@ -833,8 +833,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::u16`][crate::number::u16]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::u16`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::u16`][crate::number::u16]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::u16`")]
 pub fn u16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u16, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -851,23 +851,23 @@ where
 
 /// Recognizes an unsigned 3 byte integer
 ///
-/// If the parameter is `nom::number::Endianness::Big`, parse a big endian u24 integer,
-/// otherwise if `nom::number::Endianness::Little` parse a little endian u24 integer.
+/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian u24 integer,
+/// otherwise if `nom8::number::Endianness::Little` parse a little endian u24 integer.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::u24;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::u24;
 ///
 /// let be_u24 = |s| {
-///   u24(nom::number::Endianness::Big)(s)
+///   u24(nom8::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_u24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
 /// assert_eq!(be_u24(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u24 = |s| {
-///   u24(nom::number::Endianness::Little)(s)
+///   u24(nom8::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
@@ -875,8 +875,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::u24`][crate::number::u24]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::u24`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::u24`][crate::number::u24]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::u24`")]
 pub fn u24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -893,23 +893,23 @@ where
 
 /// Recognizes an unsigned 4 byte integer
 ///
-/// If the parameter is `nom::number::Endianness::Big`, parse a big endian u32 integer,
-/// otherwise if `nom::number::Endianness::Little` parse a little endian u32 integer.
+/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian u32 integer,
+/// otherwise if `nom8::number::Endianness::Little` parse a little endian u32 integer.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::u32;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::u32;
 ///
 /// let be_u32 = |s| {
-///   u32(nom::number::Endianness::Big)(s)
+///   u32(nom8::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_u32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
 /// assert_eq!(be_u32(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u32 = |s| {
-///   u32(nom::number::Endianness::Little)(s)
+///   u32(nom8::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
@@ -917,8 +917,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::u32`][crate::number::u32]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::u32`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::u32`][crate::number::u32]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::u32`")]
 pub fn u32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -935,23 +935,23 @@ where
 
 /// Recognizes an unsigned 8 byte integer
 ///
-/// If the parameter is `nom::number::Endianness::Big`, parse a big endian u64 integer,
-/// otherwise if `nom::number::Endianness::Little` parse a little endian u64 integer.
+/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian u64 integer,
+/// otherwise if `nom8::number::Endianness::Little` parse a little endian u64 integer.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::u64;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::u64;
 ///
 /// let be_u64 = |s| {
-///   u64(nom::number::Endianness::Big)(s)
+///   u64(nom8::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_u64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
 /// assert_eq!(be_u64(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u64 = |s| {
-///   u64(nom::number::Endianness::Little)(s)
+///   u64(nom8::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
@@ -959,8 +959,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::u64`][crate::number::u64]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::u64`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::u64`][crate::number::u64]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::u64`")]
 pub fn u64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -977,23 +977,23 @@ where
 
 /// Recognizes an unsigned 16 byte integer
 ///
-/// If the parameter is `nom::number::Endianness::Big`, parse a big endian u128 integer,
-/// otherwise if `nom::number::Endianness::Little` parse a little endian u128 integer.
+/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian u128 integer,
+/// otherwise if `nom8::number::Endianness::Little` parse a little endian u128 integer.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::u128;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::u128;
 ///
 /// let be_u128 = |s| {
-///   u128(nom::number::Endianness::Big)(s)
+///   u128(nom8::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_u128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
 /// assert_eq!(be_u128(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u128 = |s| {
-///   u128(nom::number::Endianness::Little)(s)
+///   u128(nom8::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
@@ -1001,8 +1001,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::u128`][crate::number::u128]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::u128`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::u128`][crate::number::u128]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::u128`")]
 pub fn u128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u128, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1022,9 +1022,9 @@ where
 /// Note that endianness does not apply to 1 byte numbers.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::i8;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::i8;
 ///
 /// let parser = |s| {
 ///   i8(s)
@@ -1035,8 +1035,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::i8`][crate::number::i8]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::i8`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::i8`][crate::number::i8]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::i8`")]
 pub fn i8<I, E: ParseError<I>>(i: I) -> IResult<I, i8, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1046,23 +1046,23 @@ where
 
 /// Recognizes a signed 2 byte integer
 ///
-/// If the parameter is `nom::number::Endianness::Big`, parse a big endian i16 integer,
-/// otherwise if `nom::number::Endianness::Little` parse a little endian i16 integer.
+/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian i16 integer,
+/// otherwise if `nom8::number::Endianness::Little` parse a little endian i16 integer.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::i16;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::i16;
 ///
 /// let be_i16 = |s| {
-///   i16(nom::number::Endianness::Big)(s)
+///   i16(nom8::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_i16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
 /// assert_eq!(be_i16(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i16 = |s| {
-///   i16(nom::number::Endianness::Little)(s)
+///   i16(nom8::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
@@ -1070,8 +1070,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::i16`][crate::number::i16]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::i16`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::i16`][crate::number::i16]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::i16`")]
 pub fn i16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i16, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1088,23 +1088,23 @@ where
 
 /// Recognizes a signed 3 byte integer
 ///
-/// If the parameter is `nom::number::Endianness::Big`, parse a big endian i24 integer,
-/// otherwise if `nom::number::Endianness::Little` parse a little endian i24 integer.
+/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian i24 integer,
+/// otherwise if `nom8::number::Endianness::Little` parse a little endian i24 integer.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::i24;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::i24;
 ///
 /// let be_i24 = |s| {
-///   i24(nom::number::Endianness::Big)(s)
+///   i24(nom8::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_i24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
 /// assert_eq!(be_i24(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i24 = |s| {
-///   i24(nom::number::Endianness::Little)(s)
+///   i24(nom8::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
@@ -1112,8 +1112,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::i24`][crate::number::i24]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::i24`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::i24`][crate::number::i24]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::i24`")]
 pub fn i24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1130,23 +1130,23 @@ where
 
 /// Recognizes a signed 4 byte integer
 ///
-/// If the parameter is `nom::number::Endianness::Big`, parse a big endian i32 integer,
-/// otherwise if `nom::number::Endianness::Little` parse a little endian i32 integer.
+/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian i32 integer,
+/// otherwise if `nom8::number::Endianness::Little` parse a little endian i32 integer.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::i32;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::i32;
 ///
 /// let be_i32 = |s| {
-///   i32(nom::number::Endianness::Big)(s)
+///   i32(nom8::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_i32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
 /// assert_eq!(be_i32(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i32 = |s| {
-///   i32(nom::number::Endianness::Little)(s)
+///   i32(nom8::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
@@ -1154,8 +1154,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::i32`][crate::number::i32]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::i32`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::i32`][crate::number::i32]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::i32`")]
 pub fn i32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1172,23 +1172,23 @@ where
 
 /// Recognizes a signed 8 byte integer
 ///
-/// If the parameter is `nom::number::Endianness::Big`, parse a big endian i64 integer,
-/// otherwise if `nom::number::Endianness::Little` parse a little endian i64 integer.
+/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian i64 integer,
+/// otherwise if `nom8::number::Endianness::Little` parse a little endian i64 integer.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::i64;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::i64;
 ///
 /// let be_i64 = |s| {
-///   i64(nom::number::Endianness::Big)(s)
+///   i64(nom8::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_i64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
 /// assert_eq!(be_i64(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i64 = |s| {
-///   i64(nom::number::Endianness::Little)(s)
+///   i64(nom8::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
@@ -1196,8 +1196,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::i64`][crate::number::i64]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::i64`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::i64`][crate::number::i64]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::i64`")]
 pub fn i64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1214,23 +1214,23 @@ where
 
 /// Recognizes a signed 16 byte integer
 ///
-/// If the parameter is `nom::number::Endianness::Big`, parse a big endian i128 integer,
-/// otherwise if `nom::number::Endianness::Little` parse a little endian i128 integer.
+/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian i128 integer,
+/// otherwise if `nom8::number::Endianness::Little` parse a little endian i128 integer.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::i128;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::i128;
 ///
 /// let be_i128 = |s| {
-///   i128(nom::number::Endianness::Big)(s)
+///   i128(nom8::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_i128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
 /// assert_eq!(be_i128(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i128 = |s| {
-///   i128(nom::number::Endianness::Little)(s)
+///   i128(nom8::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
@@ -1238,8 +1238,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::i128`][crate::number::i128]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::i128`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::i128`][crate::number::i128]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::i128`")]
 pub fn i128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i128, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1258,9 +1258,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::be_f32;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::be_f32;
 ///
 /// let parser = |s| {
 ///   be_f32(s)
@@ -1271,8 +1271,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::be_f32`][crate::number::be_f32]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::be_f32`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::be_f32`][crate::number::be_f32]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::be_f32`")]
 pub fn be_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1287,9 +1287,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::be_f64;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::be_f64;
 ///
 /// let parser = |s| {
 ///   be_f64(s)
@@ -1300,8 +1300,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::be_f64`][crate::number::be_f64]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::be_f64`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::be_f64`][crate::number::be_f64]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::be_f64`")]
 pub fn be_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1316,9 +1316,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::le_f32;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::le_f32;
 ///
 /// let parser = |s| {
 ///   le_f32(s)
@@ -1329,8 +1329,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::le_f32`][crate::number::le_f32]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::le_f32`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::le_f32`][crate::number::le_f32]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::le_f32`")]
 pub fn le_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1345,9 +1345,9 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::le_f64;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::le_f64;
 ///
 /// let parser = |s| {
 ///   le_f64(s)
@@ -1358,8 +1358,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::le_f64`][crate::number::le_f64]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::le_f64`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::le_f64`][crate::number::le_f64]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::le_f64`")]
 pub fn le_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1372,23 +1372,23 @@ where
 
 /// Recognizes a 4 byte floating point number
 ///
-/// If the parameter is `nom::number::Endianness::Big`, parse a big endian f32 float,
-/// otherwise if `nom::number::Endianness::Little` parse a little endian f32 float.
+/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian f32 float,
+/// otherwise if `nom8::number::Endianness::Little` parse a little endian f32 float.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::f32;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::f32;
 ///
 /// let be_f32 = |s| {
-///   f32(nom::number::Endianness::Big)(s)
+///   f32(nom8::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_f32(&[0x41, 0x48, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
 /// assert_eq!(be_f32(&b"abc"[..]), Err(Err::Error((&b"abc"[..], ErrorKind::Eof))));
 ///
 /// let le_f32 = |s| {
-///   f32(nom::number::Endianness::Little)(s)
+///   f32(nom8::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_f32(&[0x00, 0x00, 0x48, 0x41][..]), Ok((&b""[..], 12.5)));
@@ -1396,8 +1396,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::f32`][crate::number::f32]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::f32`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::f32`][crate::number::f32]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::f32`")]
 pub fn f32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, f32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1414,23 +1414,23 @@ where
 
 /// Recognizes an 8 byte floating point number
 ///
-/// If the parameter is `nom::number::Endianness::Big`, parse a big endian f64 float,
-/// otherwise if `nom::number::Endianness::Little` parse a little endian f64 float.
+/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian f64 float,
+/// otherwise if `nom8::number::Endianness::Little` parse a little endian f64 float.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::f64;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::f64;
 ///
 /// let be_f64 = |s| {
-///   f64(nom::number::Endianness::Big)(s)
+///   f64(nom8::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_f64(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
 /// assert_eq!(be_f64(&b"abc"[..]), Err(Err::Error((&b"abc"[..], ErrorKind::Eof))));
 ///
 /// let le_f64 = |s| {
-///   f64(nom::number::Endianness::Little)(s)
+///   f64(nom8::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_f64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29, 0x40][..]), Ok((&b""[..], 12.5)));
@@ -1438,8 +1438,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::f64`][crate::number::f64]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::f64`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::f64`][crate::number::f64]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::f64`")]
 pub fn f64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, f64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
@@ -1458,9 +1458,9 @@ where
 ///
 /// *Complete version*: Will parse until the end of input if it has less than 8 bytes.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::hex_u32;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::hex_u32;
 ///
 /// let parser = |s| {
 ///   hex_u32(s)
@@ -1472,8 +1472,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::number::hex_u32`][crate::number::hex_u32]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::number::hex_u32`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::number::hex_u32`][crate::number::hex_u32]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::number::hex_u32`")]
 pub fn hex_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: InputTakeAtPosition,
@@ -1517,9 +1517,9 @@ where
 /// *Complete version*: Can parse until the end of input.
 ///
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::recognize_float;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::recognize_float;
 ///
 /// let parser = |s| {
 ///   recognize_float(s)
@@ -1532,8 +1532,8 @@ where
 /// ```
 #[rustfmt::skip]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::recognize_float`][crate::character::recognize_float]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::recognize_float`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::recognize_float`][crate::character::recognize_float]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::character::recognize_float`")]
 pub fn recognize_float<T, E:ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
@@ -1563,10 +1563,10 @@ where
 // workaround until issues with minimal-lexical are fixed
 #[doc(hidden)]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::recognize_float_or_exceptions`][crate::character::recognize_float_or_exceptions]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::recognize_float_or_exceptions`][crate::character::recognize_float_or_exceptions]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::recognize_float_or_exceptions`"
+  note = "Replaced with `nom8::character::recognize_float_or_exceptions`"
 )]
 pub fn recognize_float_or_exceptions<T, E: ParseError<T>>(
   input: T,
@@ -1611,10 +1611,10 @@ where
 /// *Complete version*: Can parse until the end of input.
 ///
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::recognize_float_parts`][crate::character::recognize_float_parts]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::recognize_float_parts`][crate::character::recognize_float_parts]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::character::recognize_float_parts`"
+  note = "Replaced with `nom8::character::recognize_float_parts`"
 )]
 pub fn recognize_float_parts<T, E: ParseError<T>>(
   input: T,
@@ -1724,9 +1724,9 @@ use crate::input::ParseTo;
 ///
 /// *Complete version*: Can parse until the end of input.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::float;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::float;
 ///
 /// let parser = |s| {
 ///   float(s)
@@ -1738,8 +1738,8 @@ use crate::input::ParseTo;
 /// assert_eq!(parser("abc"), Err(Err::Error(("abc", ErrorKind::Float))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::f32`][crate::character::f32]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::f32`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::f32`][crate::character::f32]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::character::f32`")]
 pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>> + Slice<Range<usize>>,
@@ -1782,9 +1782,9 @@ where
 ///
 /// *Complete version*: Can parse until the end of input.
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed};
-/// # use nom::Needed::Size;
-/// use nom::number::complete::double;
+/// # use nom8::{Err, error::ErrorKind, Needed};
+/// # use nom8::Needed::Size;
+/// use nom8::number::complete::double;
 ///
 /// let parser = |s| {
 ///   double(s)
@@ -1796,8 +1796,8 @@ where
 /// assert_eq!(parser("abc"), Err(Err::Error(("abc", ErrorKind::Float))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::f64`][crate::character::f64]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::f64`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::character::f64`][crate::character::f64]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::character::f64`")]
 pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>
 where
   T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>> + Slice<Range<usize>>,

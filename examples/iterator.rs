@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 use std::iter::Iterator;
 
-use nom::bytes::tag;
-use nom::character::alphanumeric1;
-use nom::combinator::iterator;
-use nom::sequence::{separated_pair, terminated};
-use nom::IResult;
+use nom8::bytes::tag;
+use nom8::character::alphanumeric1;
+use nom8::combinator::iterator;
+use nom8::sequence::{separated_pair, terminated};
+use nom8::IResult;
 
 fn main() {
   let mut data = "abcabcabcabc";
@@ -57,7 +57,7 @@ fn main() {
 
   let data = "key1:value1,key2:value2,key3:value3,;";
 
-  // `nom::combinator::iterator` will return an iterator
+  // `nom8::combinator::iterator` will return an iterator
   // producing the parsed values. Compared to the previous
   // solutions:
   // - we can work with a normal iterator like `from_fn`

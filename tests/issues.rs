@@ -2,9 +2,9 @@
 #![allow(dead_code)]
 #![cfg_attr(feature = "cargo-clippy", allow(redundant_closure))]
 
-use nom::input::Streaming;
-use nom::prelude::*;
-use nom::{error::ErrorKind, Err, IResult, Needed};
+use nom8::input::Streaming;
+use nom8::prelude::*;
+use nom8::{error::ErrorKind, Err, IResult, Needed};
 
 #[allow(dead_code)]
 struct Range {
@@ -22,10 +22,10 @@ pub fn take_char(input: &[u8]) -> IResult<&[u8], char> {
 
 #[cfg(feature = "std")]
 mod parse_int {
-  use nom::input::HexDisplay;
-  use nom::input::Streaming;
-  use nom::prelude::*;
-  use nom::{
+  use nom8::input::HexDisplay;
+  use nom8::input::Streaming;
+  use nom8::prelude::*;
+  use nom8::{
     character::{digit1 as digit, space1 as space},
     combinator::opt,
     multi::many0,
@@ -71,15 +71,15 @@ mod parse_int {
 
 #[test]
 fn usize_length_bytes_issue() {
-  use nom::multi::length_data;
-  use nom::number::be_u16;
+  use nom8::multi::length_data;
+  use nom8::number::be_u16;
   let _: IResult<Streaming<&[u8]>, &[u8], (Streaming<&[u8]>, ErrorKind)> =
     length_data(be_u16)(Streaming(b"012346"));
 }
 
 #[test]
 fn take_till_issue() {
-  use nom::bytes::take_till;
+  use nom8::bytes::take_till;
 
   fn nothing(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
     take_till(|_| true)(i)
@@ -97,7 +97,7 @@ fn take_till_issue() {
 
 #[test]
 fn issue_655() {
-  use nom::character::{line_ending, not_line_ending};
+  use nom8::character::{line_ending, not_line_ending};
   fn twolines(i: Streaming<&str>) -> IResult<Streaming<&str>, (&str, &str)> {
     let (i, l1) = not_line_ending(i)?;
     let (i, _) = line_ending(i)?;
@@ -127,18 +127,18 @@ fn issue_655() {
 
 #[cfg(feature = "alloc")]
 fn issue_717(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-  use nom::bytes::{tag, take_till1};
-  use nom::multi::separated_list0;
+  use nom8::bytes::{tag, take_till1};
+  use nom8::multi::separated_list0;
 
   separated_list0(tag([0x0]), take_till1([0x0u8]))(i)
 }
 
 mod issue_647 {
-  use nom::bytes::tag;
-  use nom::multi::separated_list0;
-  use nom::prelude::*;
-  use nom::{error::Error, number::be_f64, Err, IResult};
-  pub type Input<'a> = nom::input::Streaming<&'a [u8]>;
+  use nom8::bytes::tag;
+  use nom8::multi::separated_list0;
+  use nom8::prelude::*;
+  use nom8::{error::Error, number::be_f64, Err, IResult};
+  pub type Input<'a> = nom8::input::Streaming<&'a [u8]>;
 
   #[derive(PartialEq, Debug, Clone)]
   struct Data {
@@ -164,17 +164,17 @@ mod issue_647 {
 #[test]
 fn issue_848_overflow_incomplete_bits_to_bytes() {
   fn take(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
-    use nom::bytes::take;
+    use nom8::bytes::take;
     take(0x2000000000000000_usize)(i)
   }
   fn parser(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
-    use nom::bits::{bits, bytes};
+    use nom8::bits::{bits, bytes};
 
     bits(bytes(take))(i)
   }
   assert_eq!(
     parser(Streaming(&b""[..])),
-    Err(Err::Failure(nom::error_position!(
+    Err(Err::Failure(nom8::error_position!(
       Streaming(&b""[..]),
       ErrorKind::TooLarge
     )))
@@ -183,11 +183,11 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
 
 #[test]
 fn issue_942() {
-  use nom::error::{ContextError, ParseError};
+  use nom8::error::{ContextError, ParseError};
   pub fn parser<'a, E: ParseError<&'a str> + ContextError<&'a str, &'static str>>(
     i: &'a str,
   ) -> IResult<&'a str, usize, E> {
-    use nom::{character::char, multi::many0_count};
+    use nom8::{character::char, multi::many0_count};
     many0_count(char('a').context("char_a"))(i)
   }
   assert_eq!(parser::<()>("aaa"), Ok(("", 3)));
@@ -195,14 +195,14 @@ fn issue_942() {
 
 #[test]
 fn issue_many_m_n_with_zeros() {
-  use nom::multi::many_m_n;
+  use nom8::multi::many_m_n;
   let mut parser = many_m_n::<_, _, (), _>(0, 0, 'a');
   assert_eq!(parser("aaa"), Ok(("aaa", vec![])));
 }
 
 #[test]
 fn issue_1027_convert_error_panic_nonempty() {
-  use nom::error::{convert_error, VerboseError};
+  use nom8::error::{convert_error, VerboseError};
 
   let input = "a";
 
@@ -221,8 +221,8 @@ fn issue_1027_convert_error_panic_nonempty() {
 
 #[test]
 fn issue_1231_bits_expect_fn_closure() {
-  use nom::bits::{bits, take};
-  use nom::error::Error;
+  use nom8::bits::{bits, take};
+  use nom8::error::Error;
   pub fn example(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
     bits::<_, _, Error<_>, _, _>((take(1usize), take(1usize)))(input)
   }
@@ -231,8 +231,8 @@ fn issue_1231_bits_expect_fn_closure() {
 
 #[test]
 fn issue_1282_findtoken_char() {
-  use nom::bytes::one_of;
-  use nom::error::Error;
+  use nom8::bytes::one_of;
+  use nom8::error::Error;
   let parser = one_of::<_, _, Error<_>, false>(&['a', 'b', 'c'][..]);
   assert_eq!(parser("aaa"), Ok(("aa", 'a')));
 }
@@ -240,12 +240,12 @@ fn issue_1282_findtoken_char() {
 #[test]
 fn issue_1459_clamp_capacity() {
   // shouldn't panic
-  use nom::multi::many_m_n;
+  use nom8::multi::many_m_n;
   let mut parser = many_m_n::<_, _, (), _>(usize::MAX, usize::MAX, 'a');
-  assert_eq!(parser("a"), Err(nom::Err::Error(())));
+  assert_eq!(parser("a"), Err(nom8::Err::Error(())));
 
   // shouldn't panic
-  use nom::multi::count;
+  use nom8::multi::count;
   let mut parser = count::<_, _, (), _>('a', usize::MAX);
-  assert_eq!(parser("a"), Err(nom::Err::Error(())));
+  assert_eq!(parser("a"), Err(nom8::Err::Error(())));
 }

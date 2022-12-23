@@ -5,9 +5,9 @@ extern crate criterion;
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 use criterion::Criterion;
-use nom::number::complete;
+use nom8::number::complete;
 
-fn parser(i: &[u8]) -> nom::IResult<&[u8], u64> {
+fn parser(i: &[u8]) -> nom8::IResult<&[u8], u64> {
   complete::be_u64(i)
 }
 

@@ -5,7 +5,7 @@ extern crate criterion;
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 use criterion::Criterion;
-use nom::{
+use nom8::{
   branch::alt,
   bytes::complete::{tag, take},
   character::complete::{anychar, char, multispace0, none_of},
@@ -191,8 +191,8 @@ fn float_str(c: &mut Criterion) {
   });
 }
 
-use nom::Err;
-use nom::ParseTo;
+use nom8::Err;
+use nom8::ParseTo;
 fn std_float(input: &[u8]) -> IResult<&[u8], f64, (&[u8], ErrorKind)> {
   match recognize_float(input) {
     Err(e) => Err(e),

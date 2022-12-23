@@ -1,5 +1,5 @@
-use nom::bytes::{tag, take_while_m_n};
-use nom::prelude::*;
+use nom8::bytes::{tag, take_while_m_n};
+use nom8::prelude::*;
 
 #[derive(Debug, PartialEq)]
 pub struct Color {

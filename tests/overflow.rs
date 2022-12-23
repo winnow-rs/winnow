@@ -1,14 +1,14 @@
 #![cfg_attr(feature = "cargo-clippy", allow(unreadable_literal))]
 #![cfg(target_pointer_width = "64")]
 
-use nom::bytes::take;
-use nom::input::Streaming;
+use nom8::bytes::take;
+use nom8::input::Streaming;
 #[cfg(feature = "alloc")]
-use nom::multi::{length_data, many0};
+use nom8::multi::{length_data, many0};
 #[cfg(feature = "alloc")]
-use nom::number::be_u64;
-use nom::prelude::*;
-use nom::{Err, Needed};
+use nom8::number::be_u64;
+use nom8::prelude::*;
+use nom8::{Err, Needed};
 
 // Parser definition
 
@@ -60,7 +60,7 @@ fn overflow_incomplete_many0() {
 #[test]
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_many1() {
-  use nom::multi::many1;
+  use nom8::multi::many1;
 
   fn multi(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, Vec<&[u8]>> {
     many1(length_data(be_u64))(i)
@@ -78,7 +78,7 @@ fn overflow_incomplete_many1() {
 #[test]
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_many_till() {
-  use nom::{bytes::tag, multi::many_till};
+  use nom8::{bytes::tag, multi::many_till};
 
   fn multi(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (Vec<&[u8]>, &[u8])> {
     many_till(length_data(be_u64), tag("abc"))(i)
@@ -96,7 +96,7 @@ fn overflow_incomplete_many_till() {
 #[test]
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_many_m_n() {
-  use nom::multi::many_m_n;
+  use nom8::multi::many_m_n;
 
   fn multi(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, Vec<&[u8]>> {
     many_m_n(2, 4, length_data(be_u64))(i)
@@ -114,7 +114,7 @@ fn overflow_incomplete_many_m_n() {
 #[test]
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_count() {
-  use nom::multi::count;
+  use nom8::multi::count;
 
   fn counter(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, Vec<&[u8]>> {
     count(length_data(be_u64), 2)(i)
@@ -131,8 +131,8 @@ fn overflow_incomplete_count() {
 #[test]
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_length_count() {
-  use nom::multi::length_count;
-  use nom::number::be_u8;
+  use nom8::multi::length_count;
+  use nom8::number::be_u8;
 
   fn multi(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, Vec<&[u8]>> {
     length_count(be_u8, length_data(be_u64))(i)

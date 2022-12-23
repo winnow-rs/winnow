@@ -10,10 +10,10 @@ use crate::{Err, IResult, Needed};
 
 /// Generates a parser taking `count` bits
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bits::take`][crate::bits::take] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::bits::take`][crate::bits::take] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::bits::take` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::bits::take` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn take<I, O, C, E: ParseError<(I, usize)>>(
   count: C,
@@ -74,10 +74,10 @@ where
 
 /// Generates a parser taking `count` bits and comparing them to `pattern`
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bits::tag`][crate::bits::tag] with input wrapped in [`nom::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::bits::tag`][crate::bits::tag] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::bits::tag` with input wrapped in `nom::input::Streaming`"
+  note = "Replaced with `nom8::bits::tag` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn tag<I, O, C, E: ParseError<(I, usize)>>(
   pattern: O,

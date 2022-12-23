@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 
-use nom::input::Streaming;
-use nom::prelude::*;
-use nom::{
+use nom8::input::Streaming;
+use nom8::prelude::*;
+use nom8::{
   branch::alt,
   bytes::{tag, take},
   error::ErrorKind,
@@ -269,7 +269,10 @@ fn mvhd_box(input: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, MvhdBox> {
   } else if input.len() == 112 {
     mvhd64(input)
   } else {
-    Err(Err::Error(nom::error_position!(input, ErrorKind::TooLarge)))
+    Err(Err::Error(nom8::error_position!(
+      input,
+      ErrorKind::TooLarge
+    )))
   };
   println!("res: {:?}", res);
   res

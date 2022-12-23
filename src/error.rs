@@ -10,7 +10,7 @@
 //! type:
 //!
 //! ```rust
-//! pub type IResult<I, O, E=nom::error::Error<I>> = Result<(I, O), nom::Err<E>>;
+//! pub type IResult<I, O, E=nom8::error::Error<I>> = Result<(I, O), nom8::Err<E>>;
 //!
 //! #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 //! pub enum Needed {
@@ -26,8 +26,8 @@
 //! ```
 //!
 //! The result is either an `Ok((I, O))` containing the remaining input and the
-//! parsed value, or an `Err(nom::Err<E>)` with `E` the error type.
-//! `nom::Err<E>` is an enum because combinators can have different behaviours
+//! parsed value, or an `Err(nom8::Err<E>)` with `E` the error type.
+//! `nom8::Err<E>` is an enum because combinators can have different behaviours
 //! depending on the value:
 //! - `Error` is a normal parser error. If a child parser of the `alt` combinator returns `Error`, it will try another child parser
 //! - `Failure` is an error from which we cannot recover: The `alt` combinator will not try other branches if a child parser returns `Failure`. This is used when we know we were in the right branch of `alt` and do not need to try other branches
@@ -38,9 +38,9 @@
 //! `finish()` method:
 //!
 //! ```rust,ignore
-//! # use nom::IResult;
-//! # use nom::prelude::*;
-//! # let parser = nom::bytes::take_while1(|c: char| c == ' ');
+//! # use nom8::IResult;
+//! # use nom8::prelude::*;
+//! # let parser = nom8::bytes::take_while1(|c: char| c == ' ');
 //! # let input = " ";
 //! let parser_result: IResult<_, _, _> = parser(input);
 //! let result: Result<_, _> = parser_result.finish();
@@ -51,9 +51,9 @@
 //! method:
 //!
 //! ```rust,ignore
-//! # use nom::Err;
+//! # use nom8::Err;
 //! # type Value<'s> = &'s [u8];
-//! # let parser = nom::bytes::take_while1(|c: u8| c == b' ');
+//! # let parser = nom8::bytes::take_while1(|c: u8| c == b' ');
 //! # let data = " ";
 //! let result: Result<(&[u8], Value<'_>), Err<Vec<u8>>> =
 //!   parser(data).map_err(|e: E<&[u8]>| e.to_owned());
@@ -67,7 +67,7 @@
 //! type:
 //!
 //! ```rust
-//! pub type IResult<I, O, E=nom::error::Error<I>> = Result<(I, O), Err<E>>;
+//! pub type IResult<I, O, E=nom8::error::Error<I>> = Result<(I, O), Err<E>>;
 //!
 //! #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 //! pub enum Needed {
@@ -95,10 +95,10 @@
 //!
 //! ## Common error types
 //!
-//! ### the default error type: nom::error::Error
+//! ### the default error type: nom8::error::Error
 //!
 //! ```rust
-//! # use nom::error::ErrorKind;
+//! # use nom8::error::ErrorKind;
 //! #[derive(Debug, PartialEq)]
 //! pub struct Error<I> {
 //!   /// position of the error in the input data
@@ -108,7 +108,7 @@
 //! }
 //! ```
 //!
-//! This structure contains a `nom::error::ErrorKind` indicating which kind of
+//! This structure contains a `nom8::error::ErrorKind` indicating which kind of
 //! parser encountered an error (example: `ErrorKind::Tag` for the `tag()`
 //! combinator), and the input position of the error.
 //!
@@ -141,13 +141,13 @@
 //! );
 //! ```
 //!
-//! ### getting more information: nom::error::VerboseError
+//! ### getting more information: nom8::error::VerboseError
 //!
 //! The  `VerboseError<I>` type accumulates more information about the chain of
 //! parsers that encountered an error:
 //!
 //! ```rust
-//! # use nom::error::ErrorKind;
+//! # use nom8::error::ErrorKind;
 //! #[derive(Clone, Debug, PartialEq)]
 //! pub struct VerboseError<I> {
 //!   /// List of errors accumulated by `VerboseError`, containing the affected
@@ -171,16 +171,16 @@
 //! It does not accumulate errors from the different branches of `alt`, it will
 //! only contain errors from the last branch it tried.
 //!
-//! It can be used along with the `nom::error::context` combinator to inform about
+//! It can be used along with the `nom8::error::context` combinator to inform about
 //! the parser chain:
 //!
 //! ```rust,ignore
-//! # use nom::error::context;
-//! # use nom::sequence::preceded;
-//! # use nom::character::char;
-//! # use nom::combinator::cut;
-//! # use nom::sequence::terminated;
-//! # let parse_str = nom::bytes::take_while1(|c| c == ' ');
+//! # use nom8::error::context;
+//! # use nom8::sequence::preceded;
+//! # use nom8::character::char;
+//! # use nom8::combinator::cut;
+//! # use nom8::sequence::terminated;
+//! # let parse_str = nom8::bytes::take_while1(|c| c == ' ');
 //! # let i = " ";
 //! context(
 //!   "string",
@@ -221,7 +221,7 @@
 //! ```
 //!
 //! But by looking at the original input and the chain of errors, we can build
-//! a more user friendly error message. The `nom::error::convert_error` function
+//! a more user friendly error message. The `nom8::error::convert_error` function
 //! can build such a message.
 //!
 //! ```rust,ignore
@@ -281,7 +281,7 @@
 //! and it will be used everywhere.
 //!
 //! ```rust
-//! # use nom::error::ErrorKind;
+//! # use nom8::error::ErrorKind;
 //! pub trait ParseError<I>: Sized {
 //!     /// Creates an error from the input position and an [ErrorKind]
 //!     fn from_error_kind(input: I, kind: ErrorKind) -> Self;
@@ -326,7 +326,7 @@
 //! errors returned by other functions:
 //!
 //! ```rust
-//! # use nom::error::ErrorKind;
+//! # use nom8::error::ErrorKind;
 //! pub trait FromExternalError<I, ExternalError> {
 //!   fn from_external_error(input: I, kind: ErrorKind, e: ExternalError) -> Self;
 //! }
@@ -348,9 +348,9 @@
 //! Now let's implement `ParseError` and `ContextError` on it:
 //!
 //! ```rust
-//! # use nom::error::ParseError;
-//! # use nom::error::ErrorKind;
-//! # use nom::error::ContextError;
+//! # use nom8::error::ParseError;
+//! # use nom8::error::ErrorKind;
+//! # use nom8::error::ContextError;
 //! # struct DebugError {
 //! #     message: String,
 //! # }
@@ -459,8 +459,8 @@
 //!
 #![cfg_attr(feature = "std", doc = "```")]
 #![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use nom::prelude::*;
-//! # use nom::bytes::tag;
+//! use nom8::prelude::*;
+//! # use nom8::bytes::tag;
 //! fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
 //!     tag("abcd").dbg_err("tag").parse(i)
 //! }
@@ -1078,7 +1078,7 @@ macro_rules! error_node_position(
 /// **WARNING:** Deprecated, replaced with [`Parser::dbg_err`]
 ///
 /// ```rust
-/// use nom::{IResult, error::dbg_dmp, bytes::tag};
+/// use nom8::{IResult, error::dbg_dmp, bytes::tag};
 ///
 /// fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   dbg_dmp(tag("abcd"), "tag")(i)

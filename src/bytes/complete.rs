@@ -35,8 +35,8 @@ where
 /// It will return `Err(Err::Error((_, ErrorKind::Tag)))` if the input doesn't match the pattern
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::complete::tag;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use nom8::bytes::complete::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
 ///   tag("Hello")(s)
@@ -47,8 +47,8 @@ where
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Tag))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::tag`][crate::bytes::tag]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::tag`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::bytes::tag`][crate::bytes::tag]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bytes::tag`")]
 pub fn tag<T, Input, Error: ParseError<Input>>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -88,8 +88,8 @@ where
 /// It will return `Err(Err::Error((_, ErrorKind::Tag)))` if the input doesn't match the pattern.
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::complete::tag_no_case;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use nom8::bytes::complete::tag_no_case;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
 ///   tag_no_case("hello")(s)
@@ -102,8 +102,8 @@ where
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Tag))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::tag_no_case`][crate::bytes::tag_no_case]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::tag_no_case`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::bytes::tag_no_case`][crate::bytes::tag_no_case]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bytes::tag_no_case`")]
 pub fn tag_no_case<T, Input, Error: ParseError<Input>>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -185,8 +185,8 @@ where
 /// It will return a `Err::Error(("", ErrorKind::IsNot))` if the pattern wasn't met.
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::complete::is_not;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use nom8::bytes::complete::is_not;
 ///
 /// fn not_space(s: &str) -> IResult<&str, &str> {
 ///   is_not(" \t\r\n")(s)
@@ -198,8 +198,8 @@ where
 /// assert_eq!(not_space(""), Err(Err::Error(Error::new("", ErrorKind::IsNot))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_till1`][crate::bytes::take_till1]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_till1`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take_till1`][crate::bytes::take_till1]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bytes::take_till1`")]
 pub fn is_not<T, Input, Error: ParseError<Input>>(
   arr: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -233,8 +233,8 @@ where
 /// It will return a `Err(Err::Error((_, ErrorKind::IsA)))` if the pattern wasn't met.
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::complete::is_a;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use nom8::bytes::complete::is_a;
 ///
 /// fn hex(s: &str) -> IResult<&str, &str> {
 ///   is_a("1234567890ABCDEF")(s)
@@ -247,8 +247,8 @@ where
 /// assert_eq!(hex(""), Err(Err::Error(Error::new("", ErrorKind::IsA))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_while1`][crate::bytes::take_while1`]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_while1`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take_while1`][crate::bytes::take_while1`]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bytes::take_while1`")]
 pub fn is_a<T, Input, Error: ParseError<Input>>(
   arr: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -280,9 +280,9 @@ where
 /// takes the input and returns a bool)*.
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
-/// use nom::bytes::complete::take_while;
-/// use nom::input::AsChar;
+/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
+/// use nom8::bytes::complete::take_while;
+/// use nom8::input::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while(AsChar::is_alpha)(s)
@@ -294,8 +294,8 @@ where
 /// assert_eq!(alpha(b""), Ok((&b""[..], &b""[..])));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_while`][crate::bytes::take_while]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_while`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take_while`][crate::bytes::take_while]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bytes::take_while`")]
 pub fn take_while<T, Input, Error: ParseError<Input>>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -328,9 +328,9 @@ where
 /// It will return an `Err(Err::Error((_, ErrorKind::TakeWhile1)))` if the pattern wasn't met.
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::complete::take_while1;
-/// use nom::input::AsChar;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use nom8::bytes::complete::take_while1;
+/// use nom8::input::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while1(AsChar::is_alpha)(s)
@@ -341,8 +341,8 @@ where
 /// assert_eq!(alpha(b"12345"), Err(Err::Error(Error::new(&b"12345"[..], ErrorKind::TakeWhile1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_while1`][crate::bytes::take_while1]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_while1`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take_while1`][crate::bytes::take_while1]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bytes::take_while1`")]
 pub fn take_while1<T, Input, Error: ParseError<Input>>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -377,9 +377,9 @@ where
 /// of range (m <= len <= n).
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::complete::take_while_m_n;
-/// use nom::input::AsChar;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use nom8::bytes::complete::take_while_m_n;
+/// use nom8::input::AsChar;
 ///
 /// fn short_alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while_m_n(3, 6, AsChar::is_alpha)(s)
@@ -392,8 +392,8 @@ where
 /// assert_eq!(short_alpha(b"12345"), Err(Err::Error(Error::new(&b"12345"[..], ErrorKind::TakeWhileMN))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_while_m_n`][crate::bytes::take_while_m_n]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_while_m_n`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take_while_m_n`][crate::bytes::take_while_m_n]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bytes::take_while_m_n`")]
 pub fn take_while_m_n<T, Input, Error: ParseError<Input>>(
   m: usize,
   n: usize,
@@ -474,8 +474,8 @@ where
 /// takes the input and returns a bool)*.
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
-/// use nom::bytes::complete::take_till;
+/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
+/// use nom8::bytes::complete::take_till;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
 ///   take_till(|c| c == ':')(s)
@@ -487,8 +487,8 @@ where
 /// assert_eq!(till_colon(""), Ok(("", "")));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_till`][crate::bytes::take_till]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_till`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take_till`][crate::bytes::take_till]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bytes::take_till`")]
 pub fn take_till<T, Input, Error: ParseError<Input>>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -522,8 +522,8 @@ where
 /// predicate matches the first input.
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::complete::take_till1;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use nom8::bytes::complete::take_till1;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
 ///   take_till1(|c| c == ':')(s)
@@ -535,8 +535,8 @@ where
 /// assert_eq!(till_colon(""), Err(Err::Error(Error::new("", ErrorKind::TakeTill1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_till1`][crate::bytes::take_till1]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_till1`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take_till1`][crate::bytes::take_till1]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bytes::take_till1`")]
 pub fn take_till1<T, Input, Error: ParseError<Input>>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -567,8 +567,8 @@ where
 /// It will return `Err(Err::Error((_, ErrorKind::Eof)))` if the input is shorter than the argument.
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::complete::take;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use nom8::bytes::complete::take;
 ///
 /// fn take6(s: &str) -> IResult<&str, &str> {
 ///   take(6usize)(s)
@@ -585,15 +585,15 @@ where
 /// take that many `u8`'s:
 ///
 /// ```rust
-/// use nom::error::Error;
-/// use nom::bytes::complete::take;
+/// use nom8::error::Error;
+/// use nom8::bytes::complete::take;
 ///
 /// assert_eq!(take::<_, _, Error<_>>(1usize)("💙"), Ok(("", "💙")));
 /// assert_eq!(take::<_, _, Error<_>>(1usize)("💙".as_bytes()), Ok((b"\x9F\x92\x99".as_ref(), b"\xF0".as_ref())));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::take`][crate::bytes::take]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take`][crate::bytes::take]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bytes::take`")]
 pub fn take<C, Input, Error: ParseError<Input>>(
   count: C,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -626,8 +626,8 @@ where
 /// if the pattern wasn't met.
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::complete::take_until;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use nom8::bytes::complete::take_until;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
 ///   take_until("eof")(s)
@@ -639,8 +639,8 @@ where
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_until`][crate::bytes::take_until]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_until`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take_until`][crate::bytes::take_until]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bytes::take_until`")]
 pub fn take_until<T, Input, Error: ParseError<Input>>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -674,8 +674,8 @@ where
 /// if the pattern wasn't met.
 /// # Example
 /// ```rust
-/// # use nom::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom::bytes::complete::take_until1;
+/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use nom8::bytes::complete::take_until1;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
 ///   take_until1("eof")(s)
@@ -688,8 +688,8 @@ where
 /// assert_eq!(until_eof("eof"), Err(Err::Error(Error::new("eof", ErrorKind::TakeUntil))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::take_until1`][crate::bytes::take_until1]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::take_until1`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take_until1`][crate::bytes::take_until1]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bytes::take_until1`")]
 pub fn take_until1<T, Input, Error: ParseError<Input>>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -725,10 +725,10 @@ where
 /// * The third argument matches the escaped characters
 /// # Example
 /// ```
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
-/// # use nom::character::complete::digit1;
-/// use nom::bytes::complete::escaped;
-/// use nom::character::complete::one_of;
+/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
+/// # use nom8::character::complete::digit1;
+/// use nom8::bytes::complete::escaped;
+/// use nom8::character::complete::one_of;
 ///
 /// fn esc(s: &str) -> IResult<&str, &str> {
 ///   escaped(digit1, '\\', one_of(r#""n\"#))(s)
@@ -739,8 +739,8 @@ where
 /// ```
 ///
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::escaped`][crate::bytes::escaped]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::escaped`")]
+/// **WARNING:** Deprecated, replaced with [`nom8::bytes::escaped`][crate::bytes::escaped]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bytes::escaped`")]
 pub fn escaped<'a, Input: 'a, Error, F, G, O1, O2>(
   mut normal: F,
   control_char: char,
@@ -853,12 +853,12 @@ where
 /// As an example, the chain `abc\tdef` could be `abc    def` (it also consumes the control character)
 ///
 /// ```
-/// # use nom::{Err, error::ErrorKind, Needed, IResult};
+/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
 /// # use std::str::from_utf8;
-/// use nom::bytes::complete::{escaped_transform, tag};
-/// use nom::character::complete::alpha1;
-/// use nom::branch::alt;
-/// use nom::combinator::value;
+/// use nom8::bytes::complete::{escaped_transform, tag};
+/// use nom8::character::complete::alpha1;
+/// use nom8::branch::alt;
+/// use nom8::combinator::value;
 ///
 /// fn parser(input: &str) -> IResult<&str, String> {
 ///   escaped_transform(
@@ -877,10 +877,10 @@ where
 /// ```
 #[cfg(feature = "alloc")]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::bytes::escaped_transform`][crate::bytes::escaped_transform]
+/// **WARNING:** Deprecated, replaced with [`nom8::bytes::escaped_transform`][crate::bytes::escaped_transform]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom::bytes::escaped_transform`"
+  note = "Replaced with `nom8::bytes::escaped_transform`"
 )]
 pub fn escaped_transform<Input, Error, F, G, O1, O2, ExtendItem, Output>(
   mut normal: F,

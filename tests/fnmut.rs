@@ -1,4 +1,4 @@
-use nom::{
+use nom8::{
   bytes::tag,
   multi::{many0, many0_count},
 };

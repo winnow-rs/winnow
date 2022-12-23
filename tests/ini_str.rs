@@ -1,5 +1,5 @@
-use nom::prelude::*;
-use nom::{
+use nom8::prelude::*;
+use nom8::{
   bytes::{take_till, take_while, take_while1},
   character::{alphanumeric1 as alphanumeric, space0 as space},
   combinator::opt,
