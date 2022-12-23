@@ -8,9 +8,7 @@ use crate::error::{self, Context, ContextError, ErrorKind, ParseError};
 use crate::input::InputIsStreaming;
 use crate::input::*;
 use crate::lib::std::fmt;
-use crate::lib::std::ops::{
-  Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive,
-};
+use crate::lib::std::ops::RangeFrom;
 use core::num::NonZeroUsize;
 
 /// Holds the result of parsing functions
@@ -354,7 +352,6 @@ where
 /// - `char`, see [`nom::character::char`][crate::character::char]
 /// - `u8`, see [`nom::character::char`][crate::bytes::one_of]
 /// - `&[u8]` and `&str`, see [`nom::character::char`][crate::bytes::tag]
-/// - Ranges of `char` or `u8`, see [`nom::character::char`][crate::bytes::one_of]
 pub trait Parser<I, O, E> {
   /// A parser takes in input type, and returns a `Result` containing
   /// either the remaining input and the output value, or an error
@@ -936,173 +933,6 @@ where
 {
   fn parse(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
     crate::bytes::tag(*self).parse(i)
-  }
-}
-
-/// This is a shortcut for [`one_of`][crate::bytes::one_of].
-///
-/// # Example
-///
-/// ```
-/// # use nom::prelude::*;
-/// # use nom::{Err, error::{ErrorKind, Error}};
-/// # use nom::character::char;
-/// fn parser(i: &str) -> IResult<&str, char> {
-///     ('a'..='d').parse(i)
-/// }
-/// assert_eq!(parser("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser("def"), Ok(("ef", 'd')));
-/// assert_eq!(parser("efg"), Err(Err::Error(Error::new("efg", ErrorKind::OneOf))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::OneOf))));
-/// ```
-impl<I, E> Parser<I, <I as InputIter>::Item, E> for RangeInclusive<<I as InputIter>::Item>
-where
-  Self: Clone,
-  I: Slice<RangeFrom<usize>> + InputIter + InputLength + InputIsStreaming<false>,
-  <I as InputIter>::Item: Copy + AsChar,
-  E: ParseError<I>,
-{
-  fn parse(&mut self, i: I) -> IResult<I, <I as InputIter>::Item, E> {
-    crate::bytes::one_of(self.clone()).parse(i)
-  }
-}
-
-/// This is a shortcut for [`one_of`][crate::bytes::one_of].
-///
-/// # Example
-///
-/// ```
-/// # use nom::prelude::*;
-/// # use nom::{Err, error::{ErrorKind, Error}};
-/// # use nom::character::char;
-/// fn parser(i: &str) -> IResult<&str, char> {
-///     ('d'..).parse(i)
-/// }
-/// assert_eq!(parser("def"), Ok(("ef", 'd')));
-/// assert_eq!(parser("efg"), Ok(("fg", 'e')));
-/// assert_eq!(parser("abc"), Err(Err::Error(Error::new("abc", ErrorKind::OneOf))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::OneOf))));
-/// ```
-impl<I, E> Parser<I, <I as InputIter>::Item, E> for RangeFrom<<I as InputIter>::Item>
-where
-  Self: Clone,
-  I: Slice<RangeFrom<usize>> + InputIter + InputLength + InputIsStreaming<false>,
-  <I as InputIter>::Item: Copy + AsChar,
-  E: ParseError<I>,
-{
-  fn parse(&mut self, i: I) -> IResult<I, <I as InputIter>::Item, E> {
-    crate::bytes::one_of(self.clone()).parse(i)
-  }
-}
-
-/// This is a shortcut for [`one_of`][crate::bytes::one_of].
-///
-/// # Example
-///
-/// ```
-/// # use nom::prelude::*;
-/// # use nom::{Err, error::{ErrorKind, Error}};
-/// # use nom::character::char;
-/// fn parser(i: &str) -> IResult<&str, char> {
-///     (..'d').parse(i)
-/// }
-/// assert_eq!(parser("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser("bc"), Ok(("c", 'b')));
-/// assert_eq!(parser("def"), Err(Err::Error(Error::new("def", ErrorKind::OneOf))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::OneOf))));
-/// ```
-impl<I, E> Parser<I, <I as InputIter>::Item, E> for RangeTo<<I as InputIter>::Item>
-where
-  Self: Clone,
-  I: Slice<RangeFrom<usize>> + InputIter + InputLength + InputIsStreaming<false>,
-  <I as InputIter>::Item: Copy + AsChar,
-  E: ParseError<I>,
-{
-  fn parse(&mut self, i: I) -> IResult<I, <I as InputIter>::Item, E> {
-    crate::bytes::one_of(self.clone()).parse(i)
-  }
-}
-
-/// This is a shortcut for [`one_of`][crate::bytes::one_of].
-///
-/// # Example
-///
-/// ```
-/// # use nom::prelude::*;
-/// # use nom::{Err, error::{ErrorKind, Error}};
-/// # use nom::character::char;
-/// fn parser(i: &str) -> IResult<&str, char> {
-///     (..='d').parse(i)
-/// }
-/// assert_eq!(parser("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser("def"), Ok(("ef", 'd')));
-/// assert_eq!(parser("efg"), Err(Err::Error(Error::new("efg", ErrorKind::OneOf))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::OneOf))));
-/// ```
-impl<I, E> Parser<I, <I as InputIter>::Item, E> for RangeToInclusive<<I as InputIter>::Item>
-where
-  Self: Clone,
-  I: Slice<RangeFrom<usize>> + InputIter + InputLength + InputIsStreaming<false>,
-  <I as InputIter>::Item: Copy + AsChar,
-  E: ParseError<I>,
-{
-  fn parse(&mut self, i: I) -> IResult<I, <I as InputIter>::Item, E> {
-    crate::bytes::one_of(self.clone()).parse(i)
-  }
-}
-
-/// This is a shortcut for [`one_of`][crate::bytes::one_of].
-///
-/// # Example
-///
-/// ```
-/// # use nom::prelude::*;
-/// # use nom::{Err, error::{ErrorKind, Error}};
-/// # use nom::character::char;
-/// fn parser(i: &str) -> IResult<&str, char> {
-///     ('a'..'d').parse(i)
-/// }
-/// assert_eq!(parser("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser("bc"), Ok(("c", 'b')));
-/// assert_eq!(parser("def"), Err(Err::Error(Error::new("def", ErrorKind::OneOf))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::OneOf))));
-/// ```
-impl<I, E> Parser<I, <I as InputIter>::Item, E> for Range<<I as InputIter>::Item>
-where
-  Self: Clone,
-  I: Slice<RangeFrom<usize>> + InputIter + InputLength + InputIsStreaming<false>,
-  <I as InputIter>::Item: Copy + AsChar,
-  E: ParseError<I>,
-{
-  fn parse(&mut self, i: I) -> IResult<I, <I as InputIter>::Item, E> {
-    crate::bytes::one_of(self.clone()).parse(i)
-  }
-}
-
-/// This is a shortcut for [`one_of`][crate::bytes::one_of].
-///
-/// # Example
-///
-/// ```
-/// # use nom::prelude::*;
-/// # use nom::{Err, error::{ErrorKind, Error}};
-/// # use nom::character::char;
-/// fn parser(i: &str) -> IResult<&str, char> {
-///     (..).parse(i)
-/// }
-/// assert_eq!(parser("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser("bc"), Ok(("c", 'b')));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::OneOf))));
-/// ```
-impl<I, E> Parser<I, <I as InputIter>::Item, E> for RangeFull
-where
-  Self: Clone,
-  I: Slice<RangeFrom<usize>> + InputIter + InputLength + InputIsStreaming<false>,
-  <I as InputIter>::Item: Copy + AsChar,
-  E: ParseError<I>,
-{
-  fn parse(&mut self, i: I) -> IResult<I, <I as InputIter>::Item, E> {
-    crate::bytes::one_of(self.clone()).parse(i)
   }
 }
 
