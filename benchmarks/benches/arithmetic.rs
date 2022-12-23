@@ -8,11 +8,10 @@ use criterion::Criterion;
 use nom::{
   branch::alt,
   bytes::one_of,
-  character::complete::{char, digit1, space0},
-  combinator::map_res,
+  character::{char, digit1, space0},
   multi::fold_many0,
-  sequence::{delimited, pair},
-  IResult,
+  sequence::delimited,
+  IResult, Parser,
 };
 
 // Parser definition
@@ -24,9 +23,7 @@ fn factor(input: &[u8]) -> IResult<&[u8], i64> {
   delimited(
     space0,
     alt((
-      map_res(digit1, |digits| {
-        unsafe { std::str::from_utf8_unchecked(digits) }.parse()
-      }),
+      digit1.map_res(|digits| unsafe { std::str::from_utf8_unchecked(digits) }.parse()),
       delimited(char('('), expr, char(')')),
     )),
     space0,
@@ -39,10 +36,10 @@ fn factor(input: &[u8]) -> IResult<&[u8], i64> {
 fn term(input: &[u8]) -> IResult<&[u8], i64> {
   let (input, init) = factor(input)?;
   fold_many0(
-    pair(one_of("*/"), factor),
+    (one_of("*/"), factor),
     move || init,
     |acc, (op, val)| {
-      if op == '*' {
+      if op == b'*' {
         acc * val
       } else {
         acc / val
@@ -54,10 +51,10 @@ fn term(input: &[u8]) -> IResult<&[u8], i64> {
 fn expr(input: &[u8]) -> IResult<&[u8], i64> {
   let (input, init) = term(input)?;
   fold_many0(
-    pair(one_of("+-"), term),
+    (one_of("+-"), term),
     move || init,
     |acc, (op, val)| {
-      if op == '+' {
+      if op == b'+' {
         acc + val
       } else {
         acc - val
