@@ -170,7 +170,6 @@ where
 /// **Note:** [`Parser`] is implemented as a convenience (complete
 /// only) for
 /// - `u8`
-/// - Ranges of `u8` and `char`
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
@@ -192,13 +191,6 @@ where
 /// assert_eq!(parser_fn("abc"), Ok(("bc", 'a')));
 /// assert_eq!(parser_fn("cd"), Err(Err::Error(Error::new("cd", ErrorKind::OneOf))));
 /// assert_eq!(parser_fn(""), Err(Err::Error(Error::new("", ErrorKind::OneOf))));
-///
-/// fn parser_range_literal(i: &str) -> IResult<&str, char> {
-///     ('a'..='b').parse(i)
-/// }
-/// assert_eq!(parser_range_literal("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser_range_literal("cd"), Err(Err::Error(Error::new("cd", ErrorKind::OneOf))));
-/// assert_eq!(parser_range_literal(""), Err(Err::Error(Error::new("", ErrorKind::OneOf))));
 /// ```
 ///
 /// ```
