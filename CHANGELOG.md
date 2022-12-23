@@ -5,9 +5,53 @@
 
 ## [0.1.0] - 2022-12-23
 
-### Thanks
+### Breaking Changes
 
-### Changed
+- Moved input traits from `nom` to `nom::input` (epage/nom-experiment#13)
+- Renamed `InputTakeAtPosition` functions to be explicit about complete vs streaming policy
+- Removed `impl ExtendInto for char` (epage/nom-experiment#19)
+- Combinator structs returned by `Parser` were moved to `combinator` module (epage/nom-experiment#4)
+- Tweaks were made to what input traits are needed for various types
+
+### Deprecations
+
+- `character::is_*` functions in favor of `AsChar` (epage/nom-experiment#25)
+- `*::complete::*` and `*::streaming::*` parsers in favor of merged ones (epage/nom-experiment#28)
+- Freestanding `map`, `flat_map`, `map_parser` in favor of `Parser` functions (epage/nom-experiment#37)
+- Freestanding `map_res`, `map_opt`, `complete`, `verify`, `value`, `recognize_with_value`, `context`, `dbg_dmp` in favor of `Parser` methods (epage/nom-experiment#40)
+- Freestanding `into` in favor of `Parser::output_into` and `Parser::err_into` (epage/nom-experiment#37, epage/nom-experiment#48)
+- `is_a` with `take_while1` thanks to new `FindToken` impls (epage/nom-experiment#44)
+- `is_not` with `take_till1` thanks to new `FindToken` impls (epage/nom-experiment#44)
+- `satisfy` with `one_of` thanks to new `FindToken` impls (epage/nom-experiment#44)
+- `Parser::and`, `Parser::or` in favor of `impl Parser for <tuples>` and `alt` (epage/nom-experiment#37)
+- `tuple`, `pair` parser in favor of using tuples (epage/nom-experiment#42, epage/nom-experiment#46)
+
+### Features
+
+- Merged streaming/complete parsers, opting in to streaming with the `Streaming<I>` input type (epage/nom-experiment#28)
+  - Merged ASCII float parsers moved to `character` and renamed to their rust types (epage/nom-experiment#38)
+  - Moved `one_of`, `none_of` from `character` to `bytes` as they are more general (epage/nom-experiment#44)
+  - Moved `character::anychar` to `bytes::any` with a more generic return type (epage/nom-experiment#44)
+- Allow generic context in errors (epage/nom-experiment#49)
+- `Parser::by_ref` to allow using `&mut impl Parser` as a `Parser` (epage/nom-experiment#34, epage/nom-experiment#41)
+- `impl Parser for <tuples>` as an alternative to `tuple(())` (epage/nom-experiment#42)
+- `impl Parser for (char|u8|&str|&[u8])` as an alternative to `one_of`, `char`, and `tag` (epage/nom-experiment#47, epage/nom-experiment#50)
+- Add `Parser::map_res`, `Parser::map_opt`, `Parser::complete`, `Parser::verify`, `Parser::value`, `Parser::with_recognized`, `Parser::context`, `Parser::dbg_err` (epage/nom-experiment#40)
+- Allow `u8` / `char` / ranges of the prior, functions, and tuples of the prior whereever `FindToken` is accepted (epage/nom-experiment#44)
+- Generalize `take_while`, `take_till` with `FindToken` trait (epage/nom-experiment#44)
+- Add `character::is_*` functions to `AsChar` that were missing (epage/nom-experiment#2)
+
+### Fixes
+
+- Change `fill`, `iterator`, `bits::bits`, and `bits::byutes` from taking a function to taking a `Parser` (epage/nom-experiment#10, epage/nom-experiment#11, epage/nom-experiment#120)
+- Allow byte arrays of any size (epage/nom-experiment#14)
+- `length_data` and `length_value` now auto-detect complete/streaming, before were streaming only (epage/nom-experiment#28)
+- `hex_u32` is now generic over input (epage/nom-experiment#32)
+- Clamp allocations in `many_m_n`, `count` (Geal/nom#1545)
+
+### Documentation
+
+- Pulled loose markdown into rustdoc (epage/nom-experiment#1)
 
 ## [7.1.0] - 2021-11-04
 
