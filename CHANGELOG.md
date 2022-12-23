@@ -1,12 +1,13 @@
 # Change Log
 
-## [Unreleased][unreleased]
+<!-- next-header -->
+## [Unreleased] - ReleaseDate
 
 ### Thanks
 
 ### Changed
 
-## 7.1.0 - 2021-11-04
+## [7.1.0] - 2021-11-04
 
 ### Thanks
 
@@ -38,7 +39,7 @@
 
 - alt now works with 1 elment tuples
 
-## 7.0.0 - 2021-08-21
+## [7.0.0] - 2021-08-21
 
 This release fixes dependency compilation issues and strengthen the minimum supported Rust version (MSRV) policy. This is also the first release without the macros that were used since nom's beginning.
 
@@ -79,7 +80,7 @@ This release fixes dependency compilation issues and strengthen the minimum supp
 - `many_m_n` now fails if min > max
 
 
-## 6.2.1 - 2021-06-23
+## [6.2.1] - 2021-06-23
 
 ### Thanks
 
@@ -91,7 +92,7 @@ This release was done thanks to the hard work of (by order of appearance in the 
 
 - fix documentation building
 
-## 6.2.0 - 2021-02-15
+## [6.2.0] - 2021-02-15
 
 ### Thanks
 
@@ -118,13 +119,13 @@ This release was done thanks to the hard work of (by order of appearance in the 
 - relax trait bounds
 - workarounds for dependency issues with bitvec and memchr
 
-## 6.1.2 - 2021-02-15
+## [6.1.2] - 2021-02-15
 
 ### Changed
 
 - Fix cargo feature usage in previous release
 
-## 6.1.1 - 2021-02-15
+## [6.1.1] - 2021-02-15
 
 ### Thanks
 
@@ -136,7 +137,7 @@ This release was done thanks to the hard work of (by order of appearance in the 
 
 - Fix dependenciy incompatibilities: Restrict the bitvec->funty dependency to <=1.1
 
-## 6.1.0 - 2021-01-23
+## [6.1.0] - 2021-01-23
 
 ### Thanks
 
@@ -158,7 +159,7 @@ This release was done thanks to the hard work of (by order of appearance in the 
 - implement `std::error::Error` on `VerboseError`
 
 
-## 6.0.1 - 2020-11-24
+## [6.0.1] - 2020-11-24
 
 ### Thanks
 
@@ -191,7 +192,7 @@ This release was done thanks to the hard work of (by order of appearance in the 
 - the `#[deprecated]` attribute was removed from traits because it does not compile anymore on nightly
 - bits and bytes combinators from the bits modules are now converted to use `FnMut`
 
-## 6.0.0 - 2020-10-31
+## [6.0.0] - 2020-10-31
 
 ### Thanks
 
@@ -312,7 +313,7 @@ containing example patterns.
 ### Fixed
 - use `fold_many0c` in the `fold_many0` macro
 
-## 5.1.1 - 2020-02-24
+## [5.1.1] - 2020-02-24
 
 ### Thanks
 
@@ -336,7 +337,7 @@ containing example patterns.
 
 - Make `error::context()` available without `alloc` feature
 
-## 5.1.0 - 2020-01-07
+## [5.1.0] - 2020-01-07
 
 ### Thanks
 
@@ -361,7 +362,7 @@ containing example patterns.
 - `convert_error` optimization
 - `alt` optimization
 
-## 5.0.1 - 2019-08-22
+## [5.0.1] - 2019-08-22
 
 ### Thanks
 
@@ -376,7 +377,7 @@ containing example patterns.
 - `peek!` macro reimplementation
 - type inference in `value!`
 
-## 5.0.0 - 2019-06-24
+## [5.0.0] - 2019-06-24
 
 This version comes with a complete rewrite of nom internals to use functions as a base
 for parsers, instead of macros. Macros have been updated to use functions under
@@ -433,26 +434,26 @@ bound. To get equivalent behaviour to `verbose-errors`, check out `nom::error::V
 - `cond_reduce!`, `cond_with_error!`, `closure!`, `apply`, `map_res_err!`, `expr_opt!`, `expr_res!`
 - `alt_complete`, `separated_list_complete`, `separated_nonempty_list_complete`
 
-## 4.2.3 - 2019-03-23
+## [4.2.3] - 2019-03-23
 
 ### Fixed
 
 - add missing `build.rs` file to the package
 - fix code comparison links in changelog
 
-## 4.2.2 - 2019-03-04
+## [4.2.2] - 2019-03-04
 
 ### Fixed
 
 - regression in do_parse macro import for edition 2018
 
-## 4.2.1 - 2019-02-27
+## [4.2.1] - 2019-02-27
 
 ### Fixed
 
 - macro expansion error in `do_parse` due to `compile_error` macro usage
 
-## 4.2.0 - 2019-01-29
+## [4.2.0] - 2019-01-29
 
 ### Thanks
 
@@ -482,13 +483,13 @@ accumulating its results in a `Vec`
 - overflow in the byte wrapper for bit level parsers
 - `f64` parsing does not use `transmute` anymore
 
-## 4.1.1 - 2018-10-14
+## [4.1.1] - 2018-10-14
 
 ### Fixed
 
 - compilation issue in verbose-errors mode for `add_return_error`
 
-## 4.1.0 - 2018-10-06
+## [4.1.0] - 2018-10-06
 
 ### Thanks
 
@@ -541,7 +542,7 @@ accumulating its results in a `Vec`
 - `CompleteByteSlice` and `CompleteStr` get a small optimization by inlining some functions
 
 
-## 4.0.0 - 2018-05-14
+## [4.0.0] - 2018-05-14
 
 ### Thanks
 
@@ -642,7 +643,7 @@ Special thanks to @corkami for the logo :)
 - the float number parsers now accept more variants
 
 
-## 3.2.1 - 2017-10-27
+## [3.2.1] - 2017-10-27
 
 ### Thanks
 
@@ -659,7 +660,7 @@ Special thanks to @corkami for the logo :)
 - an `into_error_kind` method can be used to transform any error to a common value. This helps when the library is included multiple times as dependency with different feature sets
 
 
-## 3.2.0 - 2017-07-24
+## [3.2.0] - 2017-07-24
 
 ### Thanks
 
@@ -684,7 +685,7 @@ Special thanks to @corkami for the logo :)
 
 - the `bytes` combinator transforms a bit stream back to a byte slice for child parsers
 
-## 3.1.0 - 2017-06-16
+## [3.1.0] - 2017-06-16
 
 ### Thanks
 
@@ -714,7 +715,7 @@ Special thanks to @corkami for the logo :)
 - be_i24 and le_i24, parsing big endian and little endian signed 24 bit integers
 - `separated_list_complete` and `separated_nonempty_list_complete` will treat incomplete from sub parsers as error
 
-## 3.0.0 - 2017-05-12
+## [3.0.0] - 2017-05-12
 
 ### Thanks
 
@@ -758,7 +759,7 @@ Special thanks to @corkami for the logo :)
 - `IResult` now has a `unwrap_or` method
 
 
-## 2.2.1 - 2017-04-03
+## [2.2.1] - 2017-04-03
 
 ### Thanks
 
@@ -770,7 +771,7 @@ Special thanks to @corkami for the logo :)
 
 - when calculating how much data is needed in `IResult::Incomplete`, the addition could overflow (it is stored as a usize). This would apparently not result in any security vulnerability on release code
 
-## 2.2.0 - 2017-03-20
+## [2.2.0] - 2017-03-20
 
 ### Thanks
 
@@ -802,7 +803,7 @@ Special thanks to @corkami for the logo :)
 - `named_args!` now imports `IResult` directly
 - the upgrade to regex 0.2 broke the regex combinators, they work now
 
-## 2.1.0 - 2017-01-27
+## [2.1.0] - 2017-01-27
 
 ### Thanks
 
@@ -828,7 +829,7 @@ Special thanks to @corkami for the logo :)
 - `escaped!` will now return `Incomplete` if needed
 - `permutation!` supports up to 20 child parsers
 
-## 2.0.1 - 2016-12-10
+## [2.0.1] - 2016-12-10
 
 Bugfix release
 
@@ -847,7 +848,7 @@ Bugfix release
 - `tag_no_case!` is now working as accepted (before, it accepted everything)
 
 
-## 2.0 - 2016-11-25
+## [2.0] - 2016-11-25
 
 The 2.0 release is one of the biggest yet. It was a good opportunity to clean up some badly named combinators and fix invalid behaviours.
 
@@ -903,7 +904,7 @@ This version also adds a lot of interesting features, like the permutation combi
 - `eol`, `line_ending` and `not_line_ending` now have a consistent behaviour that works correctly with incomplete data
 - `take_s!` didn't correctly handle the case when the slice is exactly the right length
 
-## 1.2.4 - 2016-07-20
+## [1.2.4] - 2016-07-20
 
 ### Thanks
 - @Phlosioneer for documentation fixes
@@ -930,7 +931,7 @@ This version also adds a lot of interesting features, like the permutation combi
 - the INI parser is simpler
 - `recognize!` had an early `return` that is removed now
 
-## 1.2.3 - 2016-05-10
+## [1.2.3] - 2016-05-10
 
 ### Thanks
 - @lu-zero for the contribution guidelines
@@ -959,7 +960,7 @@ This version also adds a lot of interesting features, like the permutation combi
 ### Changed
 - simpler implementation of `many0!`
 
-## 1.2.2 - 2016-03-09
+## [1.2.2] - 2016-03-09
 
 ### Thanks
 - @conradev for fixing `take_until_s!`
@@ -974,7 +975,7 @@ This version also adds a lot of interesting features, like the permutation combi
 - `hex_u32` does not parses more than 8 chars now
 - `take_while!` and `take_while1!` will not perturb the behaviour of `recognize!` anymore
 
-## 1.2.1 - 2016-02-23
+## [1.2.1] - 2016-02-23
 
 ### Thanks
 - @sourrust for adding methods to `IResult`
@@ -995,7 +996,7 @@ This version also adds a lot of interesting features, like the permutation combi
 - when a parser or combinator was returning an empty buffer as remaining part, it was generating one from a static empty string. This was messing with buffer offset calculation. Now, that empty slice is taken like this: `&input[input.len()..]`.
 - The `regexp_macros` and `no_std` feature build again and are now tested with Travis CI
 
-## 1.2.0 - 2016-02-08
+## [1.2.0] - 2016-02-08
 
 ### Thanks
 - @zentner-kyle for type inference fixes
@@ -1022,7 +1023,7 @@ This version also adds a lot of interesting features, like the permutation combi
 - `&str` parsers were splitting data at the byte level, not at the char level, which can result in inconsistencies in parsing UTF-8 characters. They now use character indexes
 - some method implementations were missing on `IResult<I,O,E>` (with specified error type instead of implicit)
 
-## 1.1.0 - 2016-01-01
+## [1.1.0] - 2016-01-01
 
 This release adds a lot of features related to `&str` parsing. The previous versions
 were focused on `&[u8]` and bit streams parsing, but there's a need for more text
@@ -1055,14 +1056,14 @@ There are also a few performance improvements and documentation fixes.
 - if the child parser of `many0!` or `many1!` returns `Incomplete`, it will return `Incomplete` too, possibly updating the needed size
 - `Option,` `Some`, `None` and `Vec` are now used with full path imports
 
-## 1.0.1 - 2015-11-22
+## [1.0.1] - 2015-11-22
 
 This releases makes the 1.0 version compatible with Rust 1.2 and 1.3
 
 ### Thanks
 - @steveklabnik for fixing lifetime issues in Producers and Consumers
 
-## 1.0.0 - 2015-11-16
+## [1.0.0] - 2015-11-16
 
 Stable release for nom. A lot of new features, a few breaking changes
 
@@ -1096,7 +1097,7 @@ Stable release for nom. A lot of new features, a few breaking changes
 ### Fixed
 - the behaviour around `Incomplete` is better for most parsers now
 
-## 0.5.0 - 2015-10-16
+## [0.5.0] - 2015-10-16
 
 This release fixes a few issues and stabilizes the code.
 
@@ -1116,7 +1117,7 @@ This release fixes a few issues and stabilizes the code.
 - `chain!` calculates how much data is needed if one of the parsers returns `Incomplete
 - optional parsers in `chain!` can return `Incomplete`
 
-## 0.4.0 - 2015-09-08
+## [0.4.0] - 2015-09-08
 
 Considering the number of changes since the last release, this version can contain breaking changes, so the version number becomes 0.4.0. A lot of new features and performance improvements!
 
@@ -1153,7 +1154,7 @@ Considering the number of changes since the last release, this version can conta
 - performance improvement for `filter!`
 - performance improvement for `count!`: a `Vec` of the right size is directly allocated
 
-## 0.3.11 - 2015-08-04
+## [0.3.11] - 2015-08-04
 
 ### Thanks
 - @bluss for remarking that the crate included random junk lying non committed in my local repository
@@ -1161,7 +1162,7 @@ Considering the number of changes since the last release, this version can conta
 ### Fixed
 - cleanup of my local repository will ship less files in the crates, resulting in a smaller download
 
-## 0.3.10 - 2015-08-03
+## [0.3.10] - 2015-08-03
 
 ### Added
 
@@ -1173,7 +1174,7 @@ Considering the number of changes since the last release, this version can conta
 
 - Parsers that specifically handle bytes have been moved to src/bytes.rs`. This applies to `tag!`, `is_not!`, `is_a!`, `filter!`, `take!`, `take_str!`, `take_until_and_consume!`, `take_until!`, `take_until_either_and_consume!`, `take_until_either!`
 
-## 0.3.9 - 2015-07-20
+## [0.3.9] - 2015-07-20
 
 ### Thanks
 - @badboy for fixing `filter!`
@@ -1193,7 +1194,7 @@ Considering the number of changes since the last release, this version can conta
 - `delimited!` did not compile for certain combinations of arguments
 - `filter!` did not return a byte slice but a fixed array
 
-## 0.3.8 - 2015-07-03
+## [0.3.8] - 2015-07-03
 
 ### Added
 - code coverage is now calculated automatically on Travis CI
@@ -1205,7 +1206,7 @@ Considering the number of changes since the last release, this version can conta
 - if a `MemProducer` reached its end, it should always return `Eof`
 - `map!` had issues with argument matching
 
-## 0.3.7 - 2015-06-24
+## [0.3.7] - 2015-06-24
 
 ### Added
 - `expr_res!` and `expr_opt!` evaluate an expression returning a Result or Opt and convert it to IResult
@@ -1214,7 +1215,7 @@ Considering the number of changes since the last release, this version can conta
 ### Fixed
 - `count_fixed!` argument parsing works again
 
-## 0.3.6 - 2015-06-15
+## [0.3.6] - 2015-06-15
 
 ### Added
 - documentation for a few functions
@@ -1225,7 +1226,7 @@ Considering the number of changes since the last release, this version can conta
 - `filter!` now returns the whole input if the filter function never returned false
 - `take!` casts its argument as usize, so it can accepts any integer type now
 
-## 0.3.5 - 2015-06-10
+## [0.3.5] - 2015-06-10
 
 ### Thanks
 - @cmr for some documentation fixes
@@ -1239,7 +1240,7 @@ Considering the number of changes since the last release, this version can conta
 ### Changed
 - functions and traits exported from `nom::util` are now directly in `nom::`
 
-## 0.3.4 - 2015-06-09
+## [0.3.4] - 2015-06-09
 
 ### Thanks
 - @andrew-d for fixes on `cond!`
@@ -1254,7 +1255,7 @@ Considering the number of changes since the last release, this version can conta
 ### Changed
 - `chain!` generates less code now. No apprent compilation time improvement
 
-## 0.3.3 - 2015-06-09
+## [0.3.3] - 2015-06-09
 
 ### Thanks
 - @andrew-d for the little endian signed integer parsers
@@ -1267,7 +1268,7 @@ Considering the number of changes since the last release, this version can conta
 - the `alt!` parser compiles much faster, even with more than 8 branches
 - `count!` can now return a fixed size array instead of a growable vector
 
-## 0.3.2 - 2015-05-31
+## [0.3.2] - 2015-05-31
 
 ### Thanks
 - @keruspe for the `take_str` parser and the function application combinator
@@ -1279,7 +1280,7 @@ Considering the number of changes since the last release, this version can conta
 ### Changed
 - `Needed::Size` now contains a `usize` instead of a `u32`
 
-## 0.3.1 - 2015-05-21
+## [0.3.1] - 2015-05-21
 
 ### Thanks
 - @divarvel for the big endian signed integer parsers
@@ -1289,7 +1290,7 @@ Considering the number of changes since the last release, this version can conta
 - the `core` feature can be passed to cargo to build with `no_std`
 - colored hexdump can be generated from error chains
 
-## 0.3.0 - 2015-05-07
+## [0.3.0] - 2015-05-07
 
 ### Thanks
 - @filipegoncalves for some documentation and the new eof parser
@@ -1308,7 +1309,7 @@ Considering the number of changes since the last release, this version can conta
 ### Removed
 - `FlatMap`, `FlatpMapOpt` and `Functor` traits (replaced by `map!`, `map_opt!` and `map_res!`)
 
-## 0.2.2 - 2015-04-12
+## [0.2.2] - 2015-04-12
 
 ### Thanks
 - @filipegoncalves and @thehydroimpulse for debugging an infinite loop in many0 and many1
@@ -1329,7 +1330,7 @@ Considering the number of changes since the last release, this version can conta
 - `many0!` and `many1!` forbid parsers that do not consume input
 - `is_a!`, `is_not!`, `alpha`, `digit`, `space`, `multispace` will now return an error if they do not consume at least one byte
 
-## 0.2.1 - 2015-04-04
+## [0.2.1] - 2015-04-04
 
 ### Thanks
 - @mtsr for catching the remaining debug println!
@@ -1349,7 +1350,7 @@ Considering the number of changes since the last release, this version can conta
 ### Removed
 - most of the feature gates are now removed. The only one still needed is `collections`
 
-## 0.2.0 - 2015-03-24
+## [0.2.0] - 2015-03-24
 *works with `rustc 1.0.0-dev (81e2396c7 2015-03-19) (built 2015-03-19)`*
 
 ### Thanks
@@ -1379,7 +1380,7 @@ Considering the number of changes since the last release, this version can conta
 - the `o!` macro does less than `chain!`, so it has been removed
 - the `fold0!` and `fold1!` macros were too complex and awkward to use, the `many*` combinators will be useful for most uses for now
 
-## 0.1.6 - 2015-02-24
+## [0.1.6] - 2015-02-24
 ### Changed
 - consumers must have an end method that will be called after parsing
 
@@ -1392,91 +1393,90 @@ Considering the number of changes since the last release, this version can conta
 - lifetime declarations
 - tag! can return Incomplete
 
-## 0.1.5 - 2015-02-17
+## [0.1.5] - 2015-02-17
 ### Changed
 - traits were renamed: FlatMapper -> FlatMap, Mapper -> FlatMapOpt, Mapper2 -> Functor
 
 ### Fixed
 - woeks with rustc f1bb6c2f4
 
-## 0.1.4 - 2015-02-17
+## [0.1.4] - 2015-02-17
 ### Changed
 - the chaining macro can take optional arguments with '?'
 
-## 0.1.3 - 2015-02-16
+## [0.1.3] - 2015-02-16
 ### Changed
 - the chaining macro now takes the closure at the end of the argument list
 
-## 0.1.2 - 2015-02-16
+## [0.1.2] - 2015-02-16
 ### Added
 - flat_map implementation for <&[u8], &[u8]>
 - chaining macro
 - partial MP4 parser example
 
 
-## 0.1.1 - 2015-02-06
+## [0.1.1] - 2015-02-06
 ### Fixed
 - closure syntax change
 
-## Compare code
-
-* [unreleased](https://github.com/Geal/nom/compare/7.0.0...HEAD)
-* [7.0.0](https://github.com/Geal/nom/compare/6.2.1...7.0.0)
-* [6.2.1](https://github.com/Geal/nom/compare/6.2.0...6.2.1)
-* [6.2.0](https://github.com/Geal/nom/compare/6.1.2...6.2.0)
-* [6.1.2](https://github.com/Geal/nom/compare/6.1.1...6.1.2)
-* [6.1.1](https://github.com/Geal/nom/compare/6.1.0...6.1.1)
-* [6.1.0](https://github.com/Geal/nom/compare/6.0.1...6.1.0)
-* [6.0.1](https://github.com/Geal/nom/compare/6.0.0...6.0.1)
-* [6.0.0](https://github.com/Geal/nom/compare/5.1.1...6.0.0)
-* [5.1.1](https://github.com/Geal/nom/compare/5.1.0...5.1.1)
-* [5.1.0](https://github.com/Geal/nom/compare/5.0.1...5.1.0)
-* [5.0.1](https://github.com/Geal/nom/compare/5.0.0...5.0.1)
-* [5.0.0](https://github.com/Geal/nom/compare/4.2.3...5.0.0)
-* [4.2.3](https://github.com/Geal/nom/compare/4.2.2...4.2.3)
-* [4.2.2](https://github.com/Geal/nom/compare/4.2.1...4.2.2)
-* [4.2.1](https://github.com/Geal/nom/compare/4.2.0...4.2.1)
-* [4.2.0](https://github.com/Geal/nom/compare/4.1.1...4.2.0)
-* [4.1.1](https://github.com/Geal/nom/compare/4.1.0...4.1.1)
-* [4.1.0](https://github.com/Geal/nom/compare/4.0.0...4.1.0)
-* [4.0.0](https://github.com/Geal/nom/compare/3.2.1...4.0.0)
-* [3.2.1](https://github.com/Geal/nom/compare/3.2.0...3.2.1)
-* [3.2.0](https://github.com/Geal/nom/compare/3.1.0...3.2.0)
-* [3.1.0](https://github.com/Geal/nom/compare/3.0.0...3.1.0)
-* [3.0.0](https://github.com/Geal/nom/compare/2.2.1...3.0.0)
-* [2.2.1](https://github.com/Geal/nom/compare/2.2.0...2.2.1)
-* [2.2.0](https://github.com/Geal/nom/compare/2.1.0...2.2.0)
-* [2.1.0](https://github.com/Geal/nom/compare/2.0.1...2.1.0)
-* [2.0.1](https://github.com/Geal/nom/compare/2.0.0...2.0.1)
-* [2.0.0](https://github.com/Geal/nom/compare/1.2.4...2.0.0)
-* [1.2.4](https://github.com/Geal/nom/compare/1.2.3...1.2.4)
-* [1.2.3](https://github.com/Geal/nom/compare/1.2.2...1.2.3)
-* [1.2.2](https://github.com/Geal/nom/compare/1.2.1...1.2.2)
-* [1.2.1](https://github.com/Geal/nom/compare/1.2.0...1.2.1)
-* [1.2.0](https://github.com/Geal/nom/compare/1.1.0...1.2.0)
-* [1.1.0](https://github.com/Geal/nom/compare/1.0.1...1.1.0)
-* [1.0.1](https://github.com/Geal/nom/compare/1.0.0...1.0.1)
-* [1.0.0](https://github.com/Geal/nom/compare/0.5.0...1.0.0)
-* [0.5.0](https://github.com/geal/nom/compare/0.4.0...0.5.0)
-* [0.4.0](https://github.com/geal/nom/compare/0.3.11...0.4.0)
-* [0.3.11](https://github.com/geal/nom/compare/0.3.10...0.3.11)
-* [0.3.10](https://github.com/geal/nom/compare/0.3.9...0.3.10)
-* [0.3.9](https://github.com/geal/nom/compare/0.3.8...0.3.9)
-* [0.3.8](https://github.com/Geal/nom/compare/0.3.7...0.3.8)
-* [0.3.7](https://github.com/Geal/nom/compare/0.3.6...0.3.7)
-* [0.3.6](https://github.com/Geal/nom/compare/0.3.5...0.3.6)
-* [0.3.5](https://github.com/Geal/nom/compare/0.3.4...0.3.5)
-* [0.3.4](https://github.com/Geal/nom/compare/0.3.3...0.3.4)
-* [0.3.3](https://github.com/Geal/nom/compare/0.3.2...0.3.3)
-* [0.3.2](https://github.com/Geal/nom/compare/0.3.1...0.3.2)
-* [0.3.1](https://github.com/Geal/nom/compare/0.3.0...0.3.1)
-* [0.3.0](https://github.com/Geal/nom/compare/0.2.2...0.3.0)
-* [0.2.2](https://github.com/Geal/nom/compare/0.2.1...0.2.2)
-* [0.2.1](https://github.com/Geal/nom/compare/0.2.0...0.2.1)
-* [0.2.0](https://github.com/Geal/nom/compare/0.1.6...0.2.0)
-* [0.1.6](https://github.com/Geal/nom/compare/0.1.5...0.1.6)
-* [0.1.5](https://github.com/Geal/nom/compare/0.1.4...0.1.5)
-* [0.1.4](https://github.com/Geal/nom/compare/0.1.3...0.1.4)
-* [0.1.3](https://github.com/Geal/nom/compare/0.1.2...0.1.3)
-* [0.1.2](https://github.com/Geal/nom/compare/0.1.1...0.1.2)
-* [0.1.1](https://github.com/Geal/nom/compare/0.1.0...0.1.1)
+<!-- next-url -->
+[Unreleased]: https://github.com/Geal/nom/compare/294ffb3d9e0ade2c3b7ddfff52484b6d643dcce1...HEAD
+[7.0.0]: https://github.com/Geal/nom/compare/6.2.1...7.0.0
+[6.2.1]: https://github.com/Geal/nom/compare/6.2.0...6.2.1
+[6.2.0]: https://github.com/Geal/nom/compare/6.1.2...6.2.0
+[6.1.2]: https://github.com/Geal/nom/compare/6.1.1...6.1.2
+[6.1.1]: https://github.com/Geal/nom/compare/6.1.0...6.1.1
+[6.1.0]: https://github.com/Geal/nom/compare/6.0.1...6.1.0
+[6.0.1]: https://github.com/Geal/nom/compare/6.0.0...6.0.1
+[6.0.0]: https://github.com/Geal/nom/compare/5.1.1...6.0.0
+[5.1.1]: https://github.com/Geal/nom/compare/5.1.0...5.1.1
+[5.1.0]: https://github.com/Geal/nom/compare/5.0.1...5.1.0
+[5.0.1]: https://github.com/Geal/nom/compare/5.0.0...5.0.1
+[5.0.0]: https://github.com/Geal/nom/compare/4.2.3...5.0.0
+[4.2.3]: https://github.com/Geal/nom/compare/4.2.2...4.2.3
+[4.2.2]: https://github.com/Geal/nom/compare/4.2.1...4.2.2
+[4.2.1]: https://github.com/Geal/nom/compare/4.2.0...4.2.1
+[4.2.0]: https://github.com/Geal/nom/compare/4.1.1...4.2.0
+[4.1.1]: https://github.com/Geal/nom/compare/4.1.0...4.1.1
+[4.1.0]: https://github.com/Geal/nom/compare/4.0.0...4.1.0
+[4.0.0]: https://github.com/Geal/nom/compare/3.2.1...4.0.0
+[3.2.1]: https://github.com/Geal/nom/compare/3.2.0...3.2.1
+[3.2.0]: https://github.com/Geal/nom/compare/3.1.0...3.2.0
+[3.1.0]: https://github.com/Geal/nom/compare/3.0.0...3.1.0
+[3.0.0]: https://github.com/Geal/nom/compare/2.2.1...3.0.0
+[2.2.1]: https://github.com/Geal/nom/compare/2.2.0...2.2.1
+[2.2.0]: https://github.com/Geal/nom/compare/2.1.0...2.2.0
+[2.1.0]: https://github.com/Geal/nom/compare/2.0.1...2.1.0
+[2.0.1]: https://github.com/Geal/nom/compare/2.0.0...2.0.1
+[2.0.0]: https://github.com/Geal/nom/compare/1.2.4...2.0.0
+[1.2.4]: https://github.com/Geal/nom/compare/1.2.3...1.2.4
+[1.2.3]: https://github.com/Geal/nom/compare/1.2.2...1.2.3
+[1.2.2]: https://github.com/Geal/nom/compare/1.2.1...1.2.2
+[1.2.1]: https://github.com/Geal/nom/compare/1.2.0...1.2.1
+[1.2.0]: https://github.com/Geal/nom/compare/1.1.0...1.2.0
+[1.1.0]: https://github.com/Geal/nom/compare/1.0.1...1.1.0
+[1.0.1]: https://github.com/Geal/nom/compare/1.0.0...1.0.1
+[1.0.0]: https://github.com/Geal/nom/compare/0.5.0...1.0.0
+[0.5.0]: https://github.com/geal/nom/compare/0.4.0...0.5.0
+[0.4.0]: https://github.com/geal/nom/compare/0.3.11...0.4.0
+[0.3.11]: https://github.com/geal/nom/compare/0.3.10...0.3.11
+[0.3.10]: https://github.com/geal/nom/compare/0.3.9...0.3.10
+[0.3.9]: https://github.com/geal/nom/compare/0.3.8...0.3.9
+[0.3.8]: https://github.com/Geal/nom/compare/0.3.7...0.3.8
+[0.3.7]: https://github.com/Geal/nom/compare/0.3.6...0.3.7
+[0.3.6]: https://github.com/Geal/nom/compare/0.3.5...0.3.6
+[0.3.5]: https://github.com/Geal/nom/compare/0.3.4...0.3.5
+[0.3.4]: https://github.com/Geal/nom/compare/0.3.3...0.3.4
+[0.3.3]: https://github.com/Geal/nom/compare/0.3.2...0.3.3
+[0.3.2]: https://github.com/Geal/nom/compare/0.3.1...0.3.2
+[0.3.1]: https://github.com/Geal/nom/compare/0.3.0...0.3.1
+[0.3.0]: https://github.com/Geal/nom/compare/0.2.2...0.3.0
+[0.2.2]: https://github.com/Geal/nom/compare/0.2.1...0.2.2
+[0.2.1]: https://github.com/Geal/nom/compare/0.2.0...0.2.1
+[0.2.0]: https://github.com/Geal/nom/compare/0.1.6...0.2.0
+[0.1.6]: https://github.com/Geal/nom/compare/0.1.5...0.1.6
+[0.1.5]: https://github.com/Geal/nom/compare/0.1.4...0.1.5
+[0.1.4]: https://github.com/Geal/nom/compare/0.1.3...0.1.4
+[0.1.3]: https://github.com/Geal/nom/compare/0.1.2...0.1.3
+[0.1.2]: https://github.com/Geal/nom/compare/0.1.1...0.1.2
+[0.1.1]: https://github.com/Geal/nom/compare/0.1.0...0.1.1
