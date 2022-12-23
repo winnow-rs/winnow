@@ -92,7 +92,7 @@ fn null<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str, (), E> {
 /// parsing the string
 /// - `context` lets you add a static string to provide more information in the
 /// error chain (to indicate which parser had an error)
-fn string<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
+fn string<'a, E: ParseError<&'a str> + ContextError<&'a str, &'static str>>(
   i: &'a str,
 ) -> IResult<&'a str, &'a str, E> {
   preceded('\"', cut(terminated(parse_str, '\"')))
@@ -104,7 +104,7 @@ fn string<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
 /// accumulating results in a `Vec`, until it encounters an error.
 /// If you want more control on the parser application, check out the `iterator`
 /// combinator (cf `examples/iterator.rs`)
-fn array<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
+fn array<'a, E: ParseError<&'a str> + ContextError<&'a str, &'static str>>(
   i: &'a str,
 ) -> IResult<&'a str, Vec<JsonValue>, E> {
   preceded(
@@ -118,13 +118,13 @@ fn array<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
   .parse(i)
 }
 
-fn key_value<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
+fn key_value<'a, E: ParseError<&'a str> + ContextError<&'a str, &'static str>>(
   i: &'a str,
 ) -> IResult<&'a str, (&'a str, JsonValue), E> {
   separated_pair(preceded(sp, string), cut(preceded(sp, ':')), json_value)(i)
 }
 
-fn hash<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
+fn hash<'a, E: ParseError<&'a str> + ContextError<&'a str, &'static str>>(
   i: &'a str,
 ) -> IResult<&'a str, HashMap<String, JsonValue>, E> {
   preceded(
@@ -144,7 +144,7 @@ fn hash<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
 }
 
 /// here, we apply the space parser before trying to parse a value
-fn json_value<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
+fn json_value<'a, E: ParseError<&'a str> + ContextError<&'a str, &'static str>>(
   i: &'a str,
 ) -> IResult<&'a str, JsonValue, E> {
   preceded(
@@ -161,7 +161,7 @@ fn json_value<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
 }
 
 /// the root element of a JSON parser is either an object or an array
-fn root<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
+fn root<'a, E: ParseError<&'a str> + ContextError<&'a str, &'static str>>(
   i: &'a str,
 ) -> IResult<&'a str, JsonValue, E> {
   delimited(
