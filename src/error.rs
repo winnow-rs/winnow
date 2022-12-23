@@ -315,8 +315,8 @@
 //! combinator used by `VerboseError<I>`:
 //!
 //! ```rust
-//! pub trait ContextError<I>: Sized {
-//!     fn add_context(_input: I, _ctx: &'static str, other: Self) -> Self {
+//! pub trait ContextError<I, C>: Sized {
+//!     fn add_context(_input: I, _ctx: C, other: Self) -> Self {
 //!         other
 //!     }
 //! }
@@ -382,7 +382,7 @@
 //!     }
 //! }
 //!
-//! impl ContextError<&str> for DebugError {
+//! impl ContextError<&str, &'static str> for DebugError {
 //!     fn add_context(input: &str, ctx: &'static str, other: Self) -> Self {
 //!         let message = format!("{}\"{}\":\t{:?}\n", other.message, ctx, input);
 //!         println!("{}", message);
@@ -508,11 +508,11 @@ pub trait ParseError<I>: Sized {
 
 /// This trait is required by the `context` combinator to add a static string
 /// to an existing error
-pub trait ContextError<I>: Sized {
+pub trait ContextError<I, C>: Sized {
   /// Creates a new error from an input position, a static string and an existing error.
   /// This is used mainly in the [context] combinator, to add user friendly information
   /// to errors when backtracking through a parse tree
-  fn add_context(_input: I, _ctx: &'static str, other: Self) -> Self {
+  fn add_context(_input: I, _ctx: C, other: Self) -> Self {
     other
   }
 }
@@ -551,7 +551,7 @@ impl<I> ParseError<I> for Error<I> {
   }
 }
 
-impl<I> ContextError<I> for Error<I> {}
+impl<I, C> ContextError<I, C> for Error<I> {}
 
 impl<I, E> FromExternalError<I, E> for Error<I> {
   /// Create a new error from an input position and an external error
@@ -582,7 +582,7 @@ impl<I> ParseError<I> for (I, ErrorKind) {
   }
 }
 
-impl<I> ContextError<I> for (I, ErrorKind) {}
+impl<I, C> ContextError<I, C> for (I, ErrorKind) {}
 
 impl<I, E> FromExternalError<I, E> for (I, ErrorKind) {
   fn from_external_error(input: I, kind: ErrorKind, _e: E) -> Self {
@@ -596,7 +596,7 @@ impl<I> ParseError<I> for () {
   fn append(_: I, _: ErrorKind, _: Self) -> Self {}
 }
 
-impl<I> ContextError<I> for () {}
+impl<I, C> ContextError<I, C> for () {}
 
 impl<I, E> FromExternalError<I, E> for () {
   fn from_external_error(_input: I, _kind: ErrorKind, _e: E) -> Self {}
@@ -658,7 +658,7 @@ impl<I> ParseError<I> for VerboseError<I> {
 }
 
 #[cfg(feature = "alloc")]
-impl<I> ContextError<I> for VerboseError<I> {
+impl<I> ContextError<I, &'static str> for VerboseError<I> {
   fn add_context(input: I, ctx: &'static str, mut other: Self) -> Self {
     other.errors.push((input, VerboseErrorKind::Context(ctx)));
     other
@@ -700,7 +700,7 @@ use crate::{Err, IResult};
 ///
 /// **WARNING:** Deprecated, replaced with [`Parser::context`]
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::context")]
-pub fn context<I: Clone, E: ContextError<I>, F, O>(
+pub fn context<I: Clone, E: ContextError<I, &'static str>, F, O>(
   context: &'static str,
   mut f: F,
 ) -> impl FnMut(I) -> IResult<I, O, E>
@@ -717,14 +717,14 @@ where
 
 /// Implementation of [`Parser::context`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct Context<F, O> {
+pub struct Context<F, O, C: Clone> {
   f: F,
-  context: &'static str,
+  context: C,
   phantom: core::marker::PhantomData<O>,
 }
 
-impl<F, O> Context<F, O> {
-  pub(crate) fn new(f: F, context: &'static str) -> Self {
+impl<F, O, C: Clone> Context<F, O, C> {
+  pub(crate) fn new(f: F, context: C) -> Self {
     Self {
       f,
       context,
@@ -733,18 +733,19 @@ impl<F, O> Context<F, O> {
   }
 }
 
-impl<I, O, E, F: Parser<I, O, E>> Parser<I, O, E> for Context<F, O>
+impl<I, O, E, F: Parser<I, O, E>, C> Parser<I, O, E> for Context<F, O, C>
 where
   I: Clone,
-  E: ContextError<I>,
+  C: Clone,
+  E: ContextError<I, C>,
   F: Parser<I, O, E>,
 {
   fn parse(&mut self, i: I) -> IResult<I, O, E> {
     match (self.f).parse(i.clone()) {
       Ok(o) => Ok(o),
       Err(Err::Incomplete(i)) => Err(Err::Incomplete(i)),
-      Err(Err::Error(e)) => Err(Err::Error(E::add_context(i, self.context, e))),
-      Err(Err::Failure(e)) => Err(Err::Failure(E::add_context(i, self.context, e))),
+      Err(Err::Error(e)) => Err(Err::Error(E::add_context(i, self.context.clone(), e))),
+      Err(Err::Failure(e)) => Err(Err::Failure(E::add_context(i, self.context.clone(), e))),
     }
   }
 }

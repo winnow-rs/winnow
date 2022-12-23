@@ -184,7 +184,7 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
 #[test]
 fn issue_942() {
   use nom::error::{ContextError, ParseError};
-  pub fn parser<'a, E: ParseError<&'a str> + ContextError<&'a str>>(
+  pub fn parser<'a, E: ParseError<&'a str> + ContextError<&'a str, &'static str>>(
     i: &'a str,
   ) -> IResult<&'a str, usize, E> {
     use nom::{character::char, multi::many0_count};

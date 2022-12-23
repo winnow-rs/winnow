@@ -4,7 +4,7 @@ use self::Needed::*;
 use crate::combinator::*;
 #[cfg(feature = "std")]
 use crate::error::DbgErr;
-use crate::error::{self, Context, ErrorKind, ParseError};
+use crate::error::{self, Context, ContextError, ErrorKind, ParseError};
 use crate::input::InputIsStreaming;
 use crate::input::*;
 use crate::lib::std::fmt;
@@ -695,9 +695,11 @@ pub trait Parser<I, O, E> {
   ///
   /// This is used mainly to add user friendly information
   /// to errors when backtracking through a parse tree.
-  fn context(self, context: &'static str) -> Context<Self, O>
+  fn context<C>(self, context: C) -> Context<Self, O, C>
   where
     Self: core::marker::Sized,
+    C: Clone,
+    E: ContextError<I, C>,
   {
     Context::new(self, context)
   }
