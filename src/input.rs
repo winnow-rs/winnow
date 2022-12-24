@@ -69,111 +69,6 @@ use crate::lib::std::string::String;
 #[cfg(feature = "alloc")]
 use crate::lib::std::vec::Vec;
 
-/// Marks the input as being the complete buffer or a partial buffer for streaming input
-///
-/// See [Streaming] for marking a presumed complete buffer type as a streaming buffer.
-pub trait InputIsStreaming<const YES: bool>: Sized {
-  /// Complete counterpart
-  ///
-  /// - Set to `Self` if this is a complete buffer.
-  /// - Set to [`std::convert::Infallible`] if there isn't an associated complete buffer type
-  type Complete: InputIsStreaming<false>;
-  /// Streaming counterpart
-  ///
-  /// - Set to `Self` if this is a streaming buffer.
-  /// - Set to [`std::convert::Infallible`] if there isn't an associated streaming buffer type
-  type Streaming: InputIsStreaming<true>;
-
-  /// Convert to complete counterpart
-  fn into_complete(self) -> Self::Complete;
-  /// Convert to streaming counterpart
-  fn into_streaming(self) -> Self::Streaming;
-}
-
-impl<'a, T> InputIsStreaming<false> for &'a [T] {
-  type Complete = Self;
-  type Streaming = Streaming<Self>;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    self
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    Streaming(self)
-  }
-}
-
-impl<T, const L: usize> InputIsStreaming<false> for [T; L] {
-  type Complete = Self;
-  type Streaming = Streaming<Self>;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    self
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    Streaming(self)
-  }
-}
-
-impl<'a, T, const L: usize> InputIsStreaming<false> for &'a [T; L] {
-  type Complete = Self;
-  type Streaming = Streaming<Self>;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    self
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    Streaming(self)
-  }
-}
-
-impl<'a> InputIsStreaming<false> for &'a str {
-  type Complete = Self;
-  type Streaming = Streaming<Self>;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    self
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    Streaming(self)
-  }
-}
-
-impl<'a> InputIsStreaming<false> for (&'a [u8], usize) {
-  type Complete = Self;
-  type Streaming = Streaming<Self>;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    self
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    Streaming(self)
-  }
-}
-
-impl<const YES: bool> InputIsStreaming<YES> for crate::lib::std::convert::Infallible {
-  type Complete = Self;
-  type Streaming = Self;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    self
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    self
-  }
-}
-
 /// Mark the input as a partial buffer for streaming input.
 ///
 /// Complete input means that we already have all of the data.  This will be the common case with
@@ -255,6 +150,27 @@ impl<I> crate::lib::std::ops::Deref for Streaming<I> {
   }
 }
 
+/// Marks the input as being the complete buffer or a partial buffer for streaming input
+///
+/// See [Streaming] for marking a presumed complete buffer type as a streaming buffer.
+pub trait InputIsStreaming<const YES: bool>: Sized {
+  /// Complete counterpart
+  ///
+  /// - Set to `Self` if this is a complete buffer.
+  /// - Set to [`std::convert::Infallible`] if there isn't an associated complete buffer type
+  type Complete: InputIsStreaming<false>;
+  /// Streaming counterpart
+  ///
+  /// - Set to `Self` if this is a streaming buffer.
+  /// - Set to [`std::convert::Infallible`] if there isn't an associated streaming buffer type
+  type Streaming: InputIsStreaming<true>;
+
+  /// Convert to complete counterpart
+  fn into_complete(self) -> Self::Complete;
+  /// Convert to streaming counterpart
+  fn into_streaming(self) -> Self::Streaming;
+}
+
 impl<I> InputIsStreaming<true> for Streaming<I>
 where
   I: InputIsStreaming<false>,
@@ -265,6 +181,90 @@ where
   #[inline(always)]
   fn into_complete(self) -> Self::Complete {
     self.0
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    self
+  }
+}
+
+impl<'a, T> InputIsStreaming<false> for &'a [T] {
+  type Complete = Self;
+  type Streaming = Streaming<Self>;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    Streaming(self)
+  }
+}
+
+impl<T, const L: usize> InputIsStreaming<false> for [T; L] {
+  type Complete = Self;
+  type Streaming = Streaming<Self>;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    Streaming(self)
+  }
+}
+
+impl<'a, T, const L: usize> InputIsStreaming<false> for &'a [T; L] {
+  type Complete = Self;
+  type Streaming = Streaming<Self>;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    Streaming(self)
+  }
+}
+
+impl<'a> InputIsStreaming<false> for &'a str {
+  type Complete = Self;
+  type Streaming = Streaming<Self>;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    Streaming(self)
+  }
+}
+
+impl<'a> InputIsStreaming<false> for (&'a [u8], usize) {
+  type Complete = Self;
+  type Streaming = Streaming<Self>;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    Streaming(self)
+  }
+}
+
+impl<const YES: bool> InputIsStreaming<YES> for crate::lib::std::convert::Infallible {
+  type Complete = Self;
+  type Streaming = Self;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
   }
   #[inline(always)]
   fn into_streaming(self) -> Self::Streaming {
