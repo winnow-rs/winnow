@@ -526,6 +526,77 @@ pub trait Parser<I, O, E> {
     WithRecognized::new(self)
   }
 
+  /// If the child parser was successful, return the location of the consumed input as produced value.
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::prelude::*;
+  /// # use nom::{Err,error::ErrorKind, IResult, Parser, input::Slice};
+  /// use nom::input::Located;
+  /// use nom::character::alpha1;
+  /// use nom::sequence::separated_pair;
+  ///
+  /// let mut parser = separated_pair(alpha1.span(), ',', alpha1.span());
+  ///
+  /// assert_eq!(parser.parse(Located::new("abcd,efgh")).finish(), Ok((0..4, 5..9)));
+  /// assert_eq!(parser.parse(Located::new("abcd;")),Err(Err::Error((Located::new("abcd;").slice(4..), ErrorKind::OneOf))));
+  /// ```
+  fn span(self) -> Span<Self, O>
+  where
+    Self: core::marker::Sized,
+    I: Location + Clone,
+  {
+    Span::new(self)
+  }
+
+  /// if the child parser was successful, return the location of consumed input with the output
+  /// as a tuple. Functions similarly to [Parser::span] except it
+  /// returns the parser output as well.
+  ///
+  /// This can be useful especially in cases where the output is not the same type
+  /// as the input, or the input is a user defined type.
+  ///
+  /// Returned tuple is of the format `(produced output, consumed input)`.
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom::prelude::*;
+  /// # use nom::{Err,error::ErrorKind, IResult, input::Slice};
+  /// use nom::input::Located;
+  /// use nom::character::alpha1;
+  /// use nom::bytes::tag;
+  /// use nom::sequence::separated_pair;
+  ///
+  /// fn inner_parser(input: Located<&str>) -> IResult<Located<&str>, bool> {
+  ///     tag("1234").value(true).parse(input)
+  /// }
+  ///
+  /// # fn main() {
+  ///
+  /// let mut consumed_parser = separated_pair(alpha1.value(1).with_span(), ',', alpha1.value(2).with_span());
+  ///
+  /// assert_eq!(consumed_parser.parse(Located::new("abcd,efgh")).finish(), Ok(((1, 0..4), (2, 5..9))));
+  /// assert_eq!(consumed_parser.parse(Located::new("abcd;")),Err(Err::Error((Located::new("abcd;").slice(4..), ErrorKind::OneOf))));
+  ///
+  /// // the second output (representing the consumed input)
+  /// // should be the same as that of the `span` parser.
+  /// let mut recognize_parser = inner_parser.span();
+  /// let mut consumed_parser = inner_parser.with_span().map(|(output, consumed)| consumed);
+  ///
+  /// assert_eq!(recognize_parser.parse(Located::new("1234")), consumed_parser.parse(Located::new("1234")));
+  /// assert_eq!(recognize_parser.parse(Located::new("abcd")), consumed_parser.parse(Located::new("abcd")));
+  /// # }
+  /// ```
+  fn with_span(self) -> WithSpan<Self, O>
+  where
+    Self: core::marker::Sized,
+    I: Location + Clone,
+  {
+    WithSpan::new(self)
+  }
+
   /// Maps a function over the result of a parser
   ///
   /// # Example

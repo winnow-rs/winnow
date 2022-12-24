@@ -2,6 +2,8 @@
 //!
 //! Input types include:
 //! - `&str` and `&[u8]` are the standard input types
+//! - [`Located`] can track the location within the original buffer to report
+//!   [spans][crate::Parser::with_span]
 //! - [`Stateful`] to thread global state through your parsers
 //! - [`Streaming`] can mark an input as partial buffer that is being streamed into
 //!
@@ -39,6 +41,7 @@
 //! | [InputIter] |Common iteration operations on the input type|
 //! | [InputLength] |Calculate the input length|
 //! | [IntoOutput] |Adapt a captired `Input` into an appropriate type|
+//! | [Location] |Calculate location within initial input|
 //! | [InputTake] |Slicing operations|
 //! | [InputTakeAtPosition] |Look for a specific token and split at its position|
 //! | [Offset] |Calculate the offset between slices|
@@ -69,6 +72,45 @@ use crate::{Err, IResult, Needed};
 use crate::lib::std::string::String;
 #[cfg(feature = "alloc")]
 use crate::lib::std::vec::Vec;
+
+/// Allow collecting the span of a parsed token
+///
+/// See [`Parser::span`][crate::Parser::span] and [`Parser::with_span`][crate::Parser::with_span] for more details
+#[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Located<I> {
+  initial: I,
+  input: I,
+}
+
+impl<I> Located<I>
+where
+  I: Clone + IntoOutput + Offset,
+{
+  /// Wrap another Input with span tracking
+  pub fn new(input: I) -> Self {
+    let initial = input.clone();
+    Self { initial, input }
+  }
+
+  fn location(&self) -> usize {
+    self.initial.offset(&self.input)
+  }
+}
+
+impl<I> AsRef<I> for Located<I> {
+  fn as_ref(&self) -> &I {
+    &self.input
+  }
+}
+
+impl<I> crate::lib::std::ops::Deref for Located<I> {
+  type Target = I;
+
+  #[inline(always)]
+  fn deref(&self) -> &Self::Target {
+    &self.input
+  }
+}
 
 /// Thread global state through your parsers
 ///
@@ -211,6 +253,39 @@ impl<I> crate::lib::std::ops::Deref for Streaming<I> {
   }
 }
 
+/// Number of indices input has advanced since start of parsing
+pub trait Location {
+  /// Number of indices input has advanced since start of parsing
+  fn location(&self) -> usize;
+}
+
+impl<I> Location for Located<I>
+where
+  I: Clone + IntoOutput + Offset,
+{
+  fn location(&self) -> usize {
+    self.location()
+  }
+}
+
+impl<I, S> Location for Stateful<I, S>
+where
+  I: Location,
+{
+  fn location(&self) -> usize {
+    self.input.location()
+  }
+}
+
+impl<I> Location for Streaming<I>
+where
+  I: Location,
+{
+  fn location(&self) -> usize {
+    self.0.location()
+  }
+}
+
 /// Marks the input as being the complete buffer or a partial buffer for streaming input
 ///
 /// See [Streaming] for marking a presumed complete buffer type as a streaming buffer.
@@ -230,6 +305,46 @@ pub trait InputIsStreaming<const YES: bool>: Sized {
   fn into_complete(self) -> Self::Complete;
   /// Convert to streaming counterpart
   fn into_streaming(self) -> Self::Streaming;
+}
+
+impl<I> InputIsStreaming<true> for Located<I>
+where
+  I: InputIsStreaming<true>,
+{
+  type Complete = Located<<I as InputIsStreaming<true>>::Complete>;
+  type Streaming = Self;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    Located {
+      initial: self.initial.into_complete(),
+      input: self.input.into_complete(),
+    }
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    self
+  }
+}
+
+impl<I> InputIsStreaming<false> for Located<I>
+where
+  I: InputIsStreaming<false>,
+{
+  type Complete = Self;
+  type Streaming = Located<<I as InputIsStreaming<false>>::Streaming>;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    Located {
+      initial: self.initial.into_streaming(),
+      input: self.input.into_streaming(),
+    }
+  }
 }
 
 impl<I, S> InputIsStreaming<true> for Stateful<I, S>
@@ -380,6 +495,15 @@ pub trait InputLength {
   fn input_len(&self) -> usize;
 }
 
+impl<I> InputLength for Located<I>
+where
+  I: InputLength,
+{
+  fn input_len(&self) -> usize {
+    self.input.input_len()
+  }
+}
+
 impl<I, S> InputLength for Stateful<I, S>
 where
   I: InputLength,
@@ -438,6 +562,15 @@ impl<'a> InputLength for (&'a [u8], usize) {
 pub trait Offset {
   /// Offset between the first byte of self and the first byte of the argument
   fn offset(&self, second: &Self) -> usize;
+}
+
+impl<I> Offset for Located<I>
+where
+  I: Offset,
+{
+  fn offset(&self, other: &Self) -> usize {
+    self.input.offset(&other.input)
+  }
 }
 
 impl<I, S> Offset for Stateful<I, S>
@@ -499,6 +632,15 @@ impl<'a> Offset for &'a str {
 pub trait AsBytes {
   /// Casts the input type to a byte slice
   fn as_bytes(&self) -> &[u8];
+}
+
+impl<I> AsBytes for Located<I>
+where
+  I: AsBytes,
+{
+  fn as_bytes(&self) -> &[u8] {
+    self.input.as_bytes()
+  }
 }
 
 impl<I, S> AsBytes for Stateful<I, S>
@@ -778,6 +920,34 @@ pub trait InputIter {
   fn slice_index(&self, count: usize) -> Result<usize, Needed>;
 }
 
+impl<I> InputIter for Located<I>
+where
+  I: InputIter,
+{
+  type Item = I::Item;
+  type Iter = I::Iter;
+  type IterElem = I::IterElem;
+
+  fn iter_indices(&self) -> Self::Iter {
+    self.input.iter_indices()
+  }
+
+  fn iter_elements(&self) -> Self::IterElem {
+    self.input.iter_elements()
+  }
+
+  fn position<P>(&self, predicate: P) -> Option<usize>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    self.input.position(predicate)
+  }
+
+  fn slice_index(&self, count: usize) -> Result<usize, Needed> {
+    self.input.slice_index(count)
+  }
+}
+
 impl<I, S> InputIter for Stateful<I, S>
 where
   I: InputIter,
@@ -936,6 +1106,32 @@ pub trait InputTake: Sized {
   fn take_split(&self, count: usize) -> (Self, Self);
 }
 
+impl<I> InputTake for Located<I>
+where
+  I: InputTake + Clone,
+{
+  fn take(&self, count: usize) -> Self {
+    Self {
+      initial: self.initial.clone(),
+      input: self.input.take(count),
+    }
+  }
+
+  fn take_split(&self, count: usize) -> (Self, Self) {
+    let (left, right) = self.input.take_split(count);
+    (
+      Self {
+        initial: self.initial.clone(),
+        input: left,
+      },
+      Self {
+        initial: self.initial.clone(),
+        input: right,
+      },
+    )
+  }
+}
+
 impl<I, S> InputTake for Stateful<I, S>
 where
   I: InputTake,
@@ -1073,6 +1269,94 @@ pub trait InputTakeAtPosition: Sized {
   ) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool;
+}
+
+impl<I> InputTakeAtPosition for Located<I>
+where
+  I: InputTakeAtPosition + Clone,
+{
+  type Item = <I as InputTakeAtPosition>::Item;
+
+  fn split_at_position_complete<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+    E: ParseError<Self>,
+  {
+    located_clone_map_result(self, move |data| data.split_at_position_complete(predicate))
+  }
+
+  fn split_at_position_streaming<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+    E: ParseError<Self>,
+  {
+    located_clone_map_result(self, move |data| {
+      data.split_at_position_streaming(predicate)
+    })
+  }
+
+  fn split_at_position1_streaming<P, E>(
+    &self,
+    predicate: P,
+    kind: ErrorKind,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+    E: ParseError<Self>,
+  {
+    located_clone_map_result(self, move |data| {
+      data.split_at_position1_streaming(predicate, kind)
+    })
+  }
+
+  fn split_at_position1_complete<P, E>(
+    &self,
+    predicate: P,
+    kind: ErrorKind,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+    E: ParseError<Self>,
+  {
+    located_clone_map_result(self, move |data| {
+      data.split_at_position1_complete(predicate, kind)
+    })
+  }
+}
+
+fn located_clone_map_result<I, E, F>(input: &Located<I>, f: F) -> IResult<Located<I>, Located<I>, E>
+where
+  I: Clone,
+  E: ParseError<Located<I>>,
+  F: FnOnce(&I) -> IResult<I, I>,
+{
+  let map_error = |error: crate::error::Error<I>| {
+    E::from_error_kind(
+      Located {
+        initial: input.initial.clone(),
+        input: error.input,
+      },
+      error.code,
+    )
+  };
+  f(&input.input)
+    .map(|(remaining, output)| {
+      (
+        Located {
+          initial: input.initial.clone(),
+          input: remaining,
+        },
+        Located {
+          initial: input.initial.clone(),
+          input: output,
+        },
+      )
+    })
+    .map_err(|error| match error {
+      Err::Error(error) => Err::Error(map_error(error)),
+      Err::Failure(error) => Err::Failure(map_error(error)),
+      Err::Incomplete(needed) => Err::Incomplete(needed),
+    })
 }
 
 impl<I, S> InputTakeAtPosition for Stateful<I, S>
@@ -1479,6 +1763,19 @@ pub trait Compare<T> {
   /// the result. This is a temporary solution until
   /// a better one appears
   fn compare_no_case(&self, t: T) -> CompareResult;
+}
+
+impl<I, U> Compare<U> for Located<I>
+where
+  I: Compare<U>,
+{
+  fn compare(&self, other: U) -> CompareResult {
+    self.input.compare(other)
+  }
+
+  fn compare_no_case(&self, other: U) -> CompareResult {
+    self.input.compare_no_case(other)
+  }
 }
 
 impl<I, S, U> Compare<U> for Stateful<I, S>
@@ -1920,6 +2217,16 @@ pub trait FindSubstring<T> {
   fn find_substring(&self, substr: T) -> Option<usize>;
 }
 
+impl<I, T> FindSubstring<T> for Located<I>
+where
+  I: FindSubstring<T>,
+{
+  #[inline(always)]
+  fn find_substring(&self, substr: T) -> Option<usize> {
+    self.input.find_substring(substr)
+  }
+}
+
 impl<I, S, T> FindSubstring<T> for Stateful<I, S>
 where
   I: FindSubstring<T>,
@@ -1994,6 +2301,16 @@ pub trait ParseTo<R> {
   fn parse_to(&self) -> Option<R>;
 }
 
+impl<I, R> ParseTo<R> for Located<I>
+where
+  I: ParseTo<R>,
+{
+  #[inline(always)]
+  fn parse_to(&self) -> Option<R> {
+    self.input.parse_to()
+  }
+}
+
 impl<I, S, R> ParseTo<R> for Stateful<I, S>
 where
   I: ParseTo<R>,
@@ -2034,6 +2351,19 @@ impl<'a, R: FromStr> ParseTo<R> for &'a str {
 pub trait Slice<R> {
   /// Slices self according to the range argument
   fn slice(&self, range: R) -> Self;
+}
+
+impl<I, R> Slice<R> for Located<I>
+where
+  I: Slice<R> + Clone,
+{
+  #[inline(always)]
+  fn slice(&self, range: R) -> Self {
+    Located {
+      initial: self.initial.clone(),
+      input: self.input.slice(range),
+    }
+  }
 }
 
 impl<I, S, R> Slice<R> for Stateful<I, S>
@@ -2107,6 +2437,22 @@ pub trait IntoOutput {
   fn into_output(self) -> Self::Output;
   /// Convert an `Output` type to be used as `Input`
   fn merge_output(self, inner: Self::Output) -> Self;
+}
+
+impl<I> IntoOutput for Located<I>
+where
+  I: IntoOutput,
+{
+  type Output = I::Output;
+  #[inline]
+  fn into_output(self) -> Self::Output {
+    self.input.into_output()
+  }
+  #[inline]
+  fn merge_output(mut self, inner: Self::Output) -> Self {
+    self.input = I::merge_output(self.input, inner);
+    self
+  }
 }
 
 impl<I, S> IntoOutput for Stateful<I, S>
@@ -2215,6 +2561,22 @@ pub trait ExtendInto {
   fn new_builder(&self) -> Self::Extender;
   /// Accumulate the input into an accumulator
   fn extend_into(&self, acc: &mut Self::Extender);
+}
+
+impl<I> ExtendInto for Located<I>
+where
+  I: ExtendInto,
+{
+  type Item = I::Item;
+  type Extender = I::Extender;
+
+  fn new_builder(&self) -> Self::Extender {
+    self.input.new_builder()
+  }
+
+  fn extend_into(&self, extender: &mut Self::Extender) {
+    self.input.extend_into(extender)
+  }
 }
 
 impl<I, S> ExtendInto for Stateful<I, S>
@@ -2427,6 +2789,22 @@ pub trait HexDisplay {
 
 #[cfg(feature = "std")]
 static CHARS: &[u8] = b"0123456789abcdef";
+
+#[cfg(feature = "std")]
+impl<I> HexDisplay for Located<I>
+where
+  I: HexDisplay,
+{
+  #[inline(always)]
+  fn to_hex(&self, chunk_size: usize) -> String {
+    self.input.to_hex(chunk_size)
+  }
+
+  #[inline(always)]
+  fn to_hex_from(&self, chunk_size: usize, from: usize) -> String {
+    self.input.to_hex_from(chunk_size, from)
+  }
+}
 
 #[cfg(feature = "std")]
 impl<I, S> HexDisplay for Stateful<I, S>

@@ -84,6 +84,8 @@
 //! - [`peek`][peek]: Returns a result without consuming the input
 //! - [`Parser::recognize`][Parser::recognize]: If the child parser was successful, return the consumed input as the produced value
 //! - [`Parser::with_recognized`][Parser::with_recognized]: If the child parser was successful, return a tuple of the consumed input and the produced output.
+//! - [`Parser::span`][Parser::span]: If the child parser was successful, return the location of the consumed input as the produced value
+//! - [`Parser::with_span`][Parser::with_span]: If the child parser was successful, return a tuple of the location of the consumed input and the produced output.
 //! - [`Parser::verify`]: Returns the result of the child parser if it satisfies a verification function
 //!
 //! ## Error management and debugging
@@ -151,7 +153,7 @@ use crate::lib::std::boxed::Box;
 
 use crate::error::{ErrorKind, FromExternalError, ParseError};
 use crate::input::IntoOutput;
-use crate::input::{AsChar, InputIter, InputLength, InputTakeAtPosition, ParseTo};
+use crate::input::{AsChar, InputIter, InputLength, InputTakeAtPosition, Location, ParseTo};
 use crate::input::{Compare, CompareResult, Offset, Slice};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::convert;
@@ -1156,6 +1158,68 @@ where
       }
       Err(e) => Err(e),
     }
+  }
+}
+
+/// Implementation of [`Parser::span`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct Span<F, O> {
+  parser: F,
+  o: core::marker::PhantomData<O>,
+}
+
+impl<F, O> Span<F, O> {
+  pub(crate) fn new(parser: F) -> Self {
+    Self {
+      parser,
+      o: Default::default(),
+    }
+  }
+}
+
+impl<I, O, E, F> Parser<I, Range<usize>, E> for Span<F, O>
+where
+  I: Clone + Location,
+  E: ParseError<I>,
+  F: Parser<I, O, E>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, Range<usize>, E> {
+    let start = input.location();
+    self.parser.parse(input).map(move |(remaining, _)| {
+      let end = remaining.location();
+      (remaining, (start..end))
+    })
+  }
+}
+
+/// Implementation of [`Parser::with_span`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct WithSpan<F, O> {
+  parser: F,
+  o: core::marker::PhantomData<O>,
+}
+
+impl<F, O> WithSpan<F, O> {
+  pub(crate) fn new(parser: F) -> Self {
+    Self {
+      parser,
+      o: Default::default(),
+    }
+  }
+}
+
+impl<I, O, E, F> Parser<I, (O, Range<usize>), E> for WithSpan<F, O>
+where
+  I: Clone + Location,
+  E: ParseError<I>,
+  F: Parser<I, O, E>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, (O, Range<usize>), E> {
+    let start = input.location();
+    self.parser.parse(input).map(move |(remaining, output)| {
+      let end = remaining.location();
+      (remaining, (output, (start..end)))
+    })
   }
 }
 
