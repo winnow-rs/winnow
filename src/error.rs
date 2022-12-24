@@ -291,11 +291,6 @@
 //!     /// through a parse tree, accumulating error context on the way
 //!     fn append(input: I, kind: ErrorKind, other: Self) -> Self;
 //!
-//!     /// Creates an error from an input position and an expected character
-//!     fn from_char(input: I, _: char) -> Self {
-//!         Self::from_error_kind(input, ErrorKind::Char)
-//!     }
-//!
 //!     /// Combines two existing errors. This function is used to compare errors
 //!     /// generated in various branches of `alt`
 //!     fn or(self, other: Self) -> Self {
@@ -365,12 +360,6 @@
 //!     // if combining multiple errors, we show them one after the other
 //!     fn append(input: &str, kind: ErrorKind, other: Self) -> Self {
 //!         let message = format!("{}{:?}:\t{:?}\n", other.message, kind, input);
-//!         println!("{}", message);
-//!         DebugError { message }
-//!     }
-//!
-//!     fn from_char(input: &str, c: char) -> Self {
-//!         let message = format!("'{}':\t{:?}\n", c, input);
 //!         println!("{}", message);
 //!         DebugError { message }
 //!     }
@@ -495,6 +484,7 @@ pub trait ParseError<I>: Sized {
   fn append(input: I, kind: ErrorKind, other: Self) -> Self;
 
   /// Creates an error from an input position and an expected character
+  #[deprecated(since = "8.0.0", note = "Replaced with `ContextError`")]
   fn from_char(input: I, _: char) -> Self {
     Self::from_error_kind(input, ErrorKind::Char)
   }
