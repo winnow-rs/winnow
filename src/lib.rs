@@ -372,7 +372,6 @@ pub mod lib {
   }
 }
 
-pub use self::bits::*;
 pub use self::parser::*;
 
 #[macro_use]
