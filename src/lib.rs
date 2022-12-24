@@ -372,10 +372,7 @@ pub mod lib {
   }
 }
 
-pub use self::bits::*;
 pub use self::parser::*;
-
-pub use self::str::*;
 
 #[macro_use]
 mod macros;
