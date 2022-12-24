@@ -8,7 +8,7 @@ use criterion::Criterion;
 use nom::{
   branch::alt,
   bytes::{any, none_of, tag, take},
-  character::{char, f64, multispace0, recognize_float},
+  character::{f64, multispace0, recognize_float},
   error::{ErrorKind, ParseError},
   multi::{fold_many0, separated_list0},
   sequence::{delimited, preceded, separated_pair},
@@ -74,7 +74,7 @@ fn character(input: &str) -> IResult<&str, char> {
           _ => return Err(()),
         })
       }),
-      preceded(char('u'), unicode_escape),
+      preceded('u', unicode_escape),
     ))(input)
   } else {
     Ok((input, c))
@@ -83,12 +83,12 @@ fn character(input: &str) -> IResult<&str, char> {
 
 fn string(input: &str) -> IResult<&str, String> {
   delimited(
-    char('"'),
+    '"',
     fold_many0(character, String::new, |mut string, c| {
       string.push(c);
       string
     }),
-    char('"'),
+    '"',
   )(input)
 }
 
@@ -97,21 +97,17 @@ fn ws<'a, O, E: ParseError<&'a str>, F: Parser<&'a str, O, E>>(f: F) -> impl Par
 }
 
 fn array(input: &str) -> IResult<&str, Vec<JsonValue>> {
-  delimited(
-    char('['),
-    ws(separated_list0(ws(char(',')), json_value)),
-    char(']'),
-  )(input)
+  delimited('[', ws(separated_list0(ws(','), json_value)), ']')(input)
 }
 
 fn object(input: &str) -> IResult<&str, HashMap<String, JsonValue>> {
   delimited(
-    char('{'),
+    '{',
     ws(separated_list0(
-      ws(char(',')),
-      separated_pair(string, ws(char(':')), json_value),
+      ws(','),
+      separated_pair(string, ws(':'), json_value),
     )),
-    char('}'),
+    '}',
   )
   .map(|key_values| key_values.into_iter().collect())
   .parse(input)

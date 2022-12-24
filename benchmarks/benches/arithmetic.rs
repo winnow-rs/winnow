@@ -8,7 +8,7 @@ use criterion::Criterion;
 use nom::{
   branch::alt,
   bytes::one_of,
-  character::{char, digit1, space0},
+  character::{digit1, space0},
   multi::fold_many0,
   sequence::delimited,
   IResult, Parser,
@@ -24,7 +24,7 @@ fn factor(input: &[u8]) -> IResult<&[u8], i64> {
     space0,
     alt((
       digit1.map_res(|digits| unsafe { std::str::from_utf8_unchecked(digits) }.parse()),
-      delimited(char('('), expr, char(')')),
+      delimited('(', expr, ')'),
     )),
     space0,
   )(input)

@@ -12,8 +12,7 @@
 #![cfg(feature = "alloc")]
 
 use nom::branch::alt;
-use nom::bytes::{take_till1, take_while_m_n};
-use nom::character::char;
+use nom::bytes::{one_of, take_till1, take_while_m_n};
 use nom::character::multispace1;
 use nom::error::{FromExternalError, ParseError};
 use nom::multi::fold_many0;
@@ -75,14 +74,14 @@ where
       // parser (the second argument) succeeds. In these cases, it looks for
       // the marker characters (n, r, t, etc) and returns the matching
       // character (\n, \r, \t, etc).
-      char('n').value('\n'),
-      char('r').value('\r'),
-      char('t').value('\t'),
-      char('b').value('\u{08}'),
-      char('f').value('\u{0C}'),
-      char('\\').value('\\'),
-      char('/').value('/'),
-      char('"').value('"'),
+      one_of('n').value('\n'),
+      one_of('r').value('\r'),
+      one_of('t').value('\t'),
+      one_of('b').value('\u{08}'),
+      one_of('f').value('\u{0C}'),
+      one_of('\\').value('\\'),
+      one_of('/').value('/'),
+      one_of('"').value('"'),
     )),
   )(input)
 }

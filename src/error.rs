@@ -1042,13 +1042,13 @@ where
 #[cfg(feature = "alloc")]
 mod tests {
   use super::*;
-  use crate::character::char;
+  use crate::bytes::one_of;
 
   #[test]
   fn convert_error_panic() {
     let input = "";
 
-    let _result: IResult<_, _, VerboseError<&str>> = char('x')(input);
+    let _result: IResult<_, _, VerboseError<&str>> = one_of('x')(input);
   }
 }
 

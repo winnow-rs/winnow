@@ -5,7 +5,7 @@ use criterion::*;
 
 use nom::{
   bytes::take_while,
-  character::{alphanumeric1 as alphanumeric, char, multispace1 as multispace, space1 as space},
+  character::{alphanumeric1 as alphanumeric, multispace1 as multispace, space1 as space},
   combinator::opt,
   multi::many0,
   sequence::{delimited, separated_pair, terminated},
@@ -15,18 +15,18 @@ use std::collections::HashMap;
 use std::str;
 
 fn category(i: &[u8]) -> IResult<&[u8], &str> {
-  delimited(char('['), take_while(|c| c != b']'), char(']'))
+  delimited('[', take_while(|c| c != b']'), ']')
     .map_res(str::from_utf8)
     .parse(i)
 }
 
 fn key_value(i: &[u8]) -> IResult<&[u8], (&str, &str)> {
   let (i, key) = alphanumeric.map_res(str::from_utf8).parse(i)?;
-  let (i, _) = ((opt(space), char('='), opt(space))).parse(i)?;
+  let (i, _) = ((opt(space), '=', opt(space))).parse(i)?;
   let (i, val) = take_while(|c| c != b'\n' && c != b';')
     .map_res(str::from_utf8)
     .parse(i)?;
-  let (i, _) = opt((char(';'), take_while(|c| c != b'\n')))(i)?;
+  let (i, _) = opt((';', take_while(|c| c != b'\n')))(i)?;
   Ok((i, (key, val)))
 }
 
