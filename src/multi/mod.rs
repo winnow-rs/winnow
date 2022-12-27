@@ -965,7 +965,7 @@ where
 {
   move |i: I| {
     let (i, data) = length_data(f.by_ref()).parse(i)?;
-    let data = I::from_output(data);
+    let data = I::merge_output(i.clone(), data);
     let (_, o) = g.by_ref().complete().parse(data)?;
     Ok((i, o))
   }

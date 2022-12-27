@@ -88,8 +88,6 @@
 //! use nom8::{
 //!   IResult,
 //!   sequence::delimited,
-//!   // see the "streaming/complete" paragraph lower for an explanation of these submodules
-//!   character::char,
 //!   bytes::take_till1
 //! };
 //!
@@ -374,10 +372,7 @@ pub mod lib {
   }
 }
 
-pub use self::bits::*;
 pub use self::parser::*;
-
-pub use self::str::*;
 
 #[macro_use]
 mod macros;

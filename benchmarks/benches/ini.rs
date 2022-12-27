@@ -4,45 +4,42 @@ static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 use criterion::*;
 
 use nom8::{
-  bytes::complete::take_while,
-  character::complete::{
-    alphanumeric1 as alphanumeric, char, multispace1 as multispace, space1 as space,
-  },
-  combinator::{map, map_res, opt},
+  bytes::{one_of, take_while},
+  character::{alphanumeric1 as alphanumeric, multispace1 as multispace, space1 as space},
+  combinator::opt,
   multi::many0,
-  sequence::{delimited, pair, separated_pair, terminated, tuple},
-  IResult,
+  sequence::{delimited, separated_pair, terminated},
+  IResult, Parser,
 };
 use std::collections::HashMap;
 use std::str;
 
-fn category(i: &[u8]) -> IResult<&[u8], &str> {
-  map_res(
-    delimited(char('['), take_while(|c| c != b']'), char(']')),
-    str::from_utf8,
-  )(i)
+type Input<'i> = &'i [u8];
+
+fn category(i: Input<'_>) -> IResult<Input<'_>, &str> {
+  delimited(one_of('['), take_while(|c| c != b']'), one_of(']'))
+    .map_res(str::from_utf8)
+    .parse(i)
 }
 
-fn key_value(i: &[u8]) -> IResult<&[u8], (&str, &str)> {
-  let (i, key) = map_res(alphanumeric, str::from_utf8)(i)?;
-  let (i, _) = tuple((opt(space), char('='), opt(space)))(i)?;
-  let (i, val) = map_res(take_while(|c| c != b'\n' && c != b';'), str::from_utf8)(i)?;
-  let (i, _) = opt(pair(char(';'), take_while(|c| c != b'\n')))(i)?;
+fn key_value(i: Input<'_>) -> IResult<Input<'_>, (&str, &str)> {
+  let (i, key) = alphanumeric.map_res(str::from_utf8).parse(i)?;
+  let (i, _) = ((opt(space), one_of('='), opt(space))).parse(i)?;
+  let (i, val) = take_while(|c| c != b'\n' && c != b';')
+    .map_res(str::from_utf8)
+    .parse(i)?;
+  let (i, _) = opt((one_of(';'), take_while(|c| c != b'\n')))(i)?;
   Ok((i, (key, val)))
 }
 
-fn categories(i: &[u8]) -> IResult<&[u8], HashMap<&str, HashMap<&str, &str>>> {
-  map(
-    many0(separated_pair(
-      category,
-      opt(multispace),
-      map(
-        many0(terminated(key_value, opt(multispace))),
-        |vec: Vec<_>| vec.into_iter().collect(),
-      ),
-    )),
-    |vec: Vec<_>| vec.into_iter().collect(),
-  )(i)
+fn categories(i: Input<'_>) -> IResult<Input<'_>, HashMap<&str, HashMap<&str, &str>>> {
+  many0(separated_pair(
+    category,
+    opt(multispace),
+    many0(terminated(key_value, opt(multispace))).map(|vec: Vec<_>| vec.into_iter().collect()),
+  ))
+  .map(|vec: Vec<_>| vec.into_iter().collect())
+  .parse(i)
 }
 
 fn bench_ini(c: &mut Criterion) {
@@ -69,7 +66,7 @@ port=143
 file=payroll.dat
 \0";
 
-  fn acc(i: &[u8]) -> IResult<&[u8], Vec<(&str, &str)>> {
+  fn acc(i: Input<'_>) -> IResult<Input<'_>, Vec<(&str, &str)>> {
     many0(key_value)(i)
   }
 

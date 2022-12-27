@@ -349,8 +349,7 @@ where
 /// ```
 ///
 /// Additionally, some basic types implement `Parser` as well, including
-/// - `char`, see [`nom8::character::char`][crate::character::char]
-/// - `u8`, see [`nom8::character::char`][crate::bytes::one_of]
+/// - `u8` and `char`, see [`nom8::character::char`][crate::bytes::one_of]
 /// - `&[u8]` and `&str`, see [`nom8::character::char`][crate::bytes::tag]
 pub trait Parser<I, O, E> {
   /// A parser takes in input type, and returns a `Result` containing
@@ -465,14 +464,14 @@ pub trait Parser<I, O, E> {
   ///
   /// ```rust
   /// # use nom8::{Err,error::ErrorKind, IResult, Parser};
-  /// use nom8::character::{char, alpha1};
+  /// use nom8::character::{alpha1};
   /// use nom8::sequence::separated_pair;
   /// # fn main() {
   ///
   /// let mut parser = separated_pair(alpha1, ',', alpha1).recognize();
   ///
   /// assert_eq!(parser.parse("abcd,efgh"), Ok(("", "abcd,efgh")));
-  /// assert_eq!(parser.parse("abcd;"),Err(Err::Error((";", ErrorKind::Char))));
+  /// assert_eq!(parser.parse("abcd;"),Err(Err::Error((";", ErrorKind::OneOf))));
   /// # }
   /// ```
   fn recognize(self) -> Recognize<Self, O>
@@ -496,7 +495,7 @@ pub trait Parser<I, O, E> {
   /// ```rust
   /// # use nom8::prelude::*;
   /// # use nom8::{Err,error::ErrorKind, IResult};
-  /// use nom8::character::{char, alpha1};
+  /// use nom8::character::{alpha1};
   /// use nom8::bytes::tag;
   /// use nom8::sequence::separated_pair;
   ///
@@ -509,7 +508,7 @@ pub trait Parser<I, O, E> {
   /// let mut consumed_parser = separated_pair(alpha1, ',', alpha1).value(true).with_recognized();
   ///
   /// assert_eq!(consumed_parser.parse("abcd,efgh1"), Ok(("1", (true, "abcd,efgh"))));
-  /// assert_eq!(consumed_parser.parse("abcd;"),Err(Err::Error((";", ErrorKind::Char))));
+  /// assert_eq!(consumed_parser.parse("abcd;"),Err(Err::Error((";", ErrorKind::OneOf))));
   ///
   /// // the second output (representing the consumed input)
   /// // should be the same as that of the `recognize` parser.
@@ -525,6 +524,77 @@ pub trait Parser<I, O, E> {
     Self: core::marker::Sized,
   {
     WithRecognized::new(self)
+  }
+
+  /// If the child parser was successful, return the location of the consumed input as produced value.
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom8::prelude::*;
+  /// # use nom8::{Err,error::ErrorKind, IResult, Parser, input::Slice};
+  /// use nom8::input::Located;
+  /// use nom8::character::alpha1;
+  /// use nom8::sequence::separated_pair;
+  ///
+  /// let mut parser = separated_pair(alpha1.span(), ',', alpha1.span());
+  ///
+  /// assert_eq!(parser.parse(Located::new("abcd,efgh")).finish(), Ok((0..4, 5..9)));
+  /// assert_eq!(parser.parse(Located::new("abcd;")),Err(Err::Error((Located::new("abcd;").slice(4..), ErrorKind::OneOf))));
+  /// ```
+  fn span(self) -> Span<Self, O>
+  where
+    Self: core::marker::Sized,
+    I: Location + Clone,
+  {
+    Span::new(self)
+  }
+
+  /// if the child parser was successful, return the location of consumed input with the output
+  /// as a tuple. Functions similarly to [Parser::span] except it
+  /// returns the parser output as well.
+  ///
+  /// This can be useful especially in cases where the output is not the same type
+  /// as the input, or the input is a user defined type.
+  ///
+  /// Returned tuple is of the format `(produced output, consumed input)`.
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use nom8::prelude::*;
+  /// # use nom8::{Err,error::ErrorKind, IResult, input::Slice};
+  /// use nom8::input::Located;
+  /// use nom8::character::alpha1;
+  /// use nom8::bytes::tag;
+  /// use nom8::sequence::separated_pair;
+  ///
+  /// fn inner_parser(input: Located<&str>) -> IResult<Located<&str>, bool> {
+  ///     tag("1234").value(true).parse(input)
+  /// }
+  ///
+  /// # fn main() {
+  ///
+  /// let mut consumed_parser = separated_pair(alpha1.value(1).with_span(), ',', alpha1.value(2).with_span());
+  ///
+  /// assert_eq!(consumed_parser.parse(Located::new("abcd,efgh")).finish(), Ok(((1, 0..4), (2, 5..9))));
+  /// assert_eq!(consumed_parser.parse(Located::new("abcd;")),Err(Err::Error((Located::new("abcd;").slice(4..), ErrorKind::OneOf))));
+  ///
+  /// // the second output (representing the consumed input)
+  /// // should be the same as that of the `span` parser.
+  /// let mut recognize_parser = inner_parser.span();
+  /// let mut consumed_parser = inner_parser.with_span().map(|(output, consumed)| consumed);
+  ///
+  /// assert_eq!(recognize_parser.parse(Located::new("1234")), consumed_parser.parse(Located::new("1234")));
+  /// assert_eq!(recognize_parser.parse(Located::new("abcd")), consumed_parser.parse(Located::new("abcd")));
+  /// # }
+  /// ```
+  fn with_span(self) -> WithSpan<Self, O>
+  where
+    Self: core::marker::Sized,
+    I: Location + Clone,
+  {
+    WithSpan::new(self)
   }
 
   /// Maps a function over the result of a parser
@@ -805,7 +875,6 @@ where
 /// ```
 /// # use nom8::prelude::*;
 /// # use nom8::{Err, error::{ErrorKind, Error}};
-/// # use nom8::character::char;
 /// fn parser(i: &[u8]) -> IResult<&[u8], u8> {
 ///     b'a'.parse(i)
 /// }
@@ -824,30 +893,29 @@ where
   }
 }
 
-/// This is a shortcut for [`char`][crate::character::char].
+/// This is a shortcut for [`one_of`][crate::bytes::one_of].
 ///
 /// # Example
 ///
 /// ```
 /// # use nom8::prelude::*;
 /// # use nom8::{Err, error::{ErrorKind, Error}};
-/// # use nom8::character::char;
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     'a'.parse(i)
 /// }
 /// assert_eq!(parser("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser(" abc"), Err(Err::Error(Error::new(" abc", ErrorKind::Char))));
-/// assert_eq!(parser("bc"), Err(Err::Error(Error::new("bc", ErrorKind::Char))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Char))));
+/// assert_eq!(parser(" abc"), Err(Err::Error(Error::new(" abc", ErrorKind::OneOf))));
+/// assert_eq!(parser("bc"), Err(Err::Error(Error::new("bc", ErrorKind::OneOf))));
+/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::OneOf))));
 /// ```
-impl<I, E> Parser<I, char, E> for char
+impl<I, E> Parser<I, <I as InputIter>::Item, E> for char
 where
   I: Slice<RangeFrom<usize>> + InputIter + InputLength + InputIsStreaming<false>,
-  <I as InputIter>::Item: AsChar,
+  <I as InputIter>::Item: AsChar + Copy,
   E: ParseError<I>,
 {
-  fn parse(&mut self, i: I) -> IResult<I, char, E> {
-    crate::character::char(*self).parse(i)
+  fn parse(&mut self, i: I) -> IResult<I, <I as InputIter>::Item, E> {
+    crate::bytes::one_of(*self).parse(i)
   }
 }
 

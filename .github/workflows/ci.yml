@@ -115,13 +115,13 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: bench
-          args: --verbose --no-run --features ""
+          args: -p benchmarks --verbose --no-run --features ""
 
       - name: Run bench
         uses: actions-rs/cargo@v1
         with:
           command: bench
-          args: --verbose --features ""
+          args: -p benchmarks --verbose --features ""
 
   doc:
     name: Build documentation

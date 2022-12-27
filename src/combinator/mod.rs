@@ -10,7 +10,6 @@
 //!
 //! | combinator | usage | input | output | comment |
 //! |---|---|---|---|---|
-//! | [char][crate::character::char] | `char('a')` |  `"abc"` | `Ok(("bc", 'a'))` |Matches one character (works with non ASCII chars too) |
 //! | [one_of][crate::bytes::one_of] | `one_of("abc")` |  `"abc"` | `Ok(("bc", 'a'))` |Matches one of the provided characters (works with non ASCII characters too)|
 //! | [none_of][crate::bytes::none_of] | `none_of("abc")` |  `"xyab"` | `Ok(("yab", 'x'))` |Matches anything but the provided characters|
 //! | [tag][crate::bytes::tag] | `tag("hello")` |  `"hello world"` | `Ok((" world", "hello"))` |Recognizes a specific suite of characters or bytes|
@@ -85,6 +84,8 @@
 //! - [`peek`][peek]: Returns a result without consuming the input
 //! - [`Parser::recognize`][Parser::recognize]: If the child parser was successful, return the consumed input as the produced value
 //! - [`Parser::with_recognized`][Parser::with_recognized]: If the child parser was successful, return a tuple of the consumed input and the produced output.
+//! - [`Parser::span`][Parser::span]: If the child parser was successful, return the location of the consumed input as the produced value
+//! - [`Parser::with_span`][Parser::with_span]: If the child parser was successful, return a tuple of the location of the consumed input and the produced output.
 //! - [`Parser::verify`]: Returns the result of the child parser if it satisfies a verification function
 //!
 //! ## Error management and debugging
@@ -152,7 +153,7 @@ use crate::lib::std::boxed::Box;
 
 use crate::error::{ErrorKind, FromExternalError, ParseError};
 use crate::input::IntoOutput;
-use crate::input::{AsChar, InputIter, InputLength, InputTakeAtPosition, ParseTo};
+use crate::input::{AsChar, InputIter, InputLength, InputTakeAtPosition, Location, ParseTo};
 use crate::input::{Compare, CompareResult, Offset, Slice};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::convert;
@@ -986,14 +987,14 @@ where
 /// ```rust
 /// # use nom8::{Err,error::ErrorKind, IResult};
 /// use nom8::combinator::recognize;
-/// use nom8::character::{char, alpha1};
+/// use nom8::character::{alpha1};
 /// use nom8::sequence::separated_pair;
 /// # fn main() {
 ///
 /// let mut parser = recognize(separated_pair(alpha1, ',', alpha1));
 ///
 /// assert_eq!(parser("abcd,efgh"), Ok(("", "abcd,efgh")));
-/// assert_eq!(parser("abcd;"),Err(Err::Error((";", ErrorKind::Char))));
+/// assert_eq!(parser("abcd;"),Err(Err::Error((";", ErrorKind::OneOf))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::recognize")]
@@ -1071,7 +1072,7 @@ where
 /// # use nom8::prelude::*;
 /// # use nom8::{Err,error::ErrorKind, IResult};
 /// use nom8::combinator::{consumed, value, recognize, map};
-/// use nom8::character::{char, alpha1};
+/// use nom8::character::{alpha1};
 /// use nom8::bytes::tag;
 /// use nom8::sequence::separated_pair;
 ///
@@ -1084,7 +1085,7 @@ where
 /// let mut consumed_parser = consumed(value(true, separated_pair(alpha1, ',', alpha1)));
 ///
 /// assert_eq!(consumed_parser("abcd,efgh1"), Ok(("1", ("abcd,efgh", true))));
-/// assert_eq!(consumed_parser("abcd;"),Err(Err::Error((";", ErrorKind::Char))));
+/// assert_eq!(consumed_parser("abcd;"),Err(Err::Error((";", ErrorKind::OneOf))));
 ///
 ///
 /// // the first output (representing the consumed input)
@@ -1157,6 +1158,68 @@ where
       }
       Err(e) => Err(e),
     }
+  }
+}
+
+/// Implementation of [`Parser::span`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct Span<F, O> {
+  parser: F,
+  o: core::marker::PhantomData<O>,
+}
+
+impl<F, O> Span<F, O> {
+  pub(crate) fn new(parser: F) -> Self {
+    Self {
+      parser,
+      o: Default::default(),
+    }
+  }
+}
+
+impl<I, O, E, F> Parser<I, Range<usize>, E> for Span<F, O>
+where
+  I: Clone + Location,
+  E: ParseError<I>,
+  F: Parser<I, O, E>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, Range<usize>, E> {
+    let start = input.location();
+    self.parser.parse(input).map(move |(remaining, _)| {
+      let end = remaining.location();
+      (remaining, (start..end))
+    })
+  }
+}
+
+/// Implementation of [`Parser::with_span`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct WithSpan<F, O> {
+  parser: F,
+  o: core::marker::PhantomData<O>,
+}
+
+impl<F, O> WithSpan<F, O> {
+  pub(crate) fn new(parser: F) -> Self {
+    Self {
+      parser,
+      o: Default::default(),
+    }
+  }
+}
+
+impl<I, O, E, F> Parser<I, (O, Range<usize>), E> for WithSpan<F, O>
+where
+  I: Clone + Location,
+  E: ParseError<I>,
+  F: Parser<I, O, E>,
+{
+  fn parse(&mut self, input: I) -> IResult<I, (O, Range<usize>), E> {
+    let start = input.location();
+    self.parser.parse(input).map(move |(remaining, output)| {
+      let end = remaining.location();
+      (remaining, (output, (start..end)))
+    })
   }
 }
 
@@ -1436,7 +1499,6 @@ enum State<E> {
 /// # use nom8::{Err,error::ErrorKind, IResult};
 /// use nom8::branch::alt;
 /// use nom8::combinator::{success, value};
-/// use nom8::character::char;
 /// # fn main() {
 ///
 /// let mut parser = success::<_,_,(_,ErrorKind)>(10);

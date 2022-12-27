@@ -170,6 +170,7 @@ where
 /// **Note:** [`Parser`] is implemented as a convenience (complete
 /// only) for
 /// - `u8`
+/// - `char`
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///

@@ -187,8 +187,8 @@ fn issue_942() {
   pub fn parser<'a, E: ParseError<&'a str> + ContextError<&'a str, &'static str>>(
     i: &'a str,
   ) -> IResult<&'a str, usize, E> {
-    use nom8::{character::char, multi::many0_count};
-    many0_count(char('a').context("char_a"))(i)
+    use nom8::{bytes::one_of, multi::many0_count};
+    many0_count(one_of('a').context("char_a"))(i)
   }
   assert_eq!(parser::<()>("aaa"), Ok(("", 3)));
 }
@@ -213,10 +213,7 @@ fn issue_1027_convert_error_panic_nonempty() {
   };
 
   let msg = convert_error(input, err);
-  assert_eq!(
-    msg,
-    "0: at line 1:\na\n ^\nexpected \'b\', got end of input\n\n"
-  );
+  assert_eq!(msg, "0: at line 1, in OneOf:\na\n ^\n\n",);
 }
 
 #[test]

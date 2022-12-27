@@ -32,10 +32,10 @@ use crate::{Err, IResult, Needed};
 /// assert_eq!(parser(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::char`][crate::character::char] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`nom8::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom8::character::char` with input wrapped in `nom8::input::Streaming`"
+  note = "Replaced with `nom8::bytes::one_of` with input wrapped in `nom8::input::Streaming`"
 )]
 pub fn char<I, Error: ParseError<I>>(c: char) -> impl Fn(I) -> IResult<I, char, Error>
 where

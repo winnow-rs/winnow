@@ -8,26 +8,25 @@ use criterion::Criterion;
 use nom8::{
   branch::alt,
   bytes::one_of,
-  character::complete::{char, digit1, space0},
-  combinator::map_res,
+  character::{digit1, space0},
   multi::fold_many0,
-  sequence::{delimited, pair},
-  IResult,
+  sequence::delimited,
+  IResult, Parser,
 };
 
 // Parser definition
 
+type Input<'i> = &'i [u8];
+
 // We transform an integer string into a i64, ignoring surrounding whitespaces
 // We look for a digit suite, and try to convert it.
 // If there are no digits, we look for a parenthesized expression.
-fn factor(input: &[u8]) -> IResult<&[u8], i64> {
+fn factor(input: Input<'_>) -> IResult<Input<'_>, i64> {
   delimited(
     space0,
     alt((
-      map_res(digit1, |digits| {
-        unsafe { std::str::from_utf8_unchecked(digits) }.parse()
-      }),
-      delimited(char('('), expr, char(')')),
+      digit1.map_res(|digits| unsafe { std::str::from_utf8_unchecked(digits) }.parse()),
+      delimited(one_of('('), expr, one_of(')')),
     )),
     space0,
   )(input)
@@ -36,13 +35,13 @@ fn factor(input: &[u8]) -> IResult<&[u8], i64> {
 // We read an initial factor and for each time we find
 // a * or / operator followed by another factor, we do
 // the math by folding everything
-fn term(input: &[u8]) -> IResult<&[u8], i64> {
+fn term(input: Input<'_>) -> IResult<Input<'_>, i64> {
   let (input, init) = factor(input)?;
   fold_many0(
-    pair(one_of("*/"), factor),
+    (one_of("*/"), factor),
     move || init,
     |acc, (op, val)| {
-      if op == '*' {
+      if op == b'*' {
         acc * val
       } else {
         acc / val
@@ -51,13 +50,13 @@ fn term(input: &[u8]) -> IResult<&[u8], i64> {
   )(input)
 }
 
-fn expr(input: &[u8]) -> IResult<&[u8], i64> {
+fn expr(input: Input<'_>) -> IResult<Input<'_>, i64> {
   let (input, init) = term(input)?;
   fold_many0(
-    pair(one_of("+-"), term),
+    (one_of("+-"), term),
     move || init,
     |acc, (op, val)| {
-      if op == '+' {
+      if op == b'+' {
         acc + val
       } else {
         acc - val

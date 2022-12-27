@@ -4,61 +4,63 @@ static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 use criterion::*;
 
 use nom8::{
-  bytes::complete::{is_a, tag, take_till, take_while},
-  character::complete::{alphanumeric1 as alphanumeric, char, not_line_ending, space0 as space},
+  bytes::{one_of, tag, take_till, take_while, take_while1},
+  character::{alphanumeric1 as alphanumeric, not_line_ending, space0 as space},
   combinator::opt,
   multi::many0,
-  sequence::{delimited, pair, terminated, tuple},
-  IResult,
+  sequence::{delimited, terminated},
+  IResult, Parser,
 };
 
 use std::collections::HashMap;
+
+type Input<'i> = &'i str;
 
 fn is_line_ending_or_comment(chr: char) -> bool {
   chr == ';' || chr == '\n'
 }
 
-fn space_or_line_ending(i: &str) -> IResult<&str, &str> {
-  is_a(" \r\n")(i)
+fn space_or_line_ending(i: Input<'_>) -> IResult<Input<'_>, &str> {
+  take_while1(" \r\n")(i)
 }
 
-fn category(i: &str) -> IResult<&str, &str> {
+fn category(i: Input<'_>) -> IResult<Input<'_>, &str> {
   terminated(
-    delimited(char('['), take_while(|c| c != ']'), char(']')),
-    opt(is_a(" \r\n")),
+    delimited(one_of('['), take_while(|c| c != ']'), one_of(']')),
+    opt(take_while1(" \r\n")),
   )(i)
 }
 
-fn key_value(i: &str) -> IResult<&str, (&str, &str)> {
+fn key_value(i: Input<'_>) -> IResult<Input<'_>, (&str, &str)> {
   let (i, key) = alphanumeric(i)?;
-  let (i, _) = tuple((opt(space), tag("="), opt(space)))(i)?;
+  let (i, _) = ((opt(space), tag("="), opt(space))).parse(i)?;
   let (i, val) = take_till(is_line_ending_or_comment)(i)?;
   let (i, _) = opt(space)(i)?;
-  let (i, _) = opt(pair(tag(";"), not_line_ending))(i)?;
+  let (i, _) = opt((tag(";"), not_line_ending))(i)?;
   let (i, _) = opt(space_or_line_ending)(i)?;
   Ok((i, (key, val)))
 }
 
-fn keys_and_values_aggregator(i: &str) -> IResult<&str, Vec<(&str, &str)>> {
+fn keys_and_values_aggregator(i: Input<'_>) -> IResult<Input<'_>, Vec<(&str, &str)>> {
   many0(key_value)(i)
 }
 
-fn keys_and_values(input: &str) -> IResult<&str, HashMap<&str, &str>> {
+fn keys_and_values(input: Input<'_>) -> IResult<Input<'_>, HashMap<&str, &str>> {
   match keys_and_values_aggregator(input) {
     Ok((i, tuple_vec)) => Ok((i, tuple_vec.into_iter().collect())),
     Err(e) => Err(e),
   }
 }
 
-fn category_and_keys(i: &str) -> IResult<&str, (&str, HashMap<&str, &str>)> {
-  pair(category, keys_and_values)(i)
+fn category_and_keys(i: Input<'_>) -> IResult<Input<'_>, (&str, HashMap<&str, &str>)> {
+  (category, keys_and_values).parse(i)
 }
 
-fn categories_aggregator(i: &str) -> IResult<&str, Vec<(&str, HashMap<&str, &str>)>> {
+fn categories_aggregator(i: Input<'_>) -> IResult<Input<'_>, Vec<(&str, HashMap<&str, &str>)>> {
   many0(category_and_keys)(i)
 }
 
-fn categories(input: &str) -> IResult<&str, HashMap<&str, HashMap<&str, &str>>> {
+fn categories(input: Input<'_>) -> IResult<Input<'_>, HashMap<&str, HashMap<&str, &str>>> {
   match categories_aggregator(input) {
     Ok((i, tuple_vec)) => Ok((i, tuple_vec.into_iter().collect())),
     Err(e) => Err(e),

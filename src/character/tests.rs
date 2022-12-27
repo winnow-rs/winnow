@@ -193,23 +193,6 @@ mod complete {
 
   #[test]
   fn is_not_line_ending_str() {
-    /*
-    let a: &str = "ab12cd\nefgh";
-    assert_eq!(not_line_ending(a), Ok((&"\nefgh"[..], &"ab12cd"[..])));
-
-    let b: &str = "ab12cd\nefgh\nijkl";
-    assert_eq!(not_line_ending(b), Ok((&"\nefgh\nijkl"[..], &"ab12cd"[..])));
-
-    let c: &str = "ab12cd\r\nefgh\nijkl";
-    assert_eq!(not_line_ending(c), Ok((&"\r\nefgh\nijkl"[..], &"ab12cd"[..])));
-
-    let d = "βèƒôřè\nÂßÇáƒƭèř";
-    assert_eq!(not_line_ending(d), Ok((&"\nÂßÇáƒƭèř"[..], &"βèƒôřè"[..])));
-
-    let e = "βèƒôřè\r\nÂßÇáƒƭèř";
-    assert_eq!(not_line_ending(e), Ok((&"\r\nÂßÇáƒƭèř"[..], &"βèƒôřè"[..])));
-    */
-
     let f = "βèƒôřè\rÂßÇáƒƭèř";
     assert_eq!(not_line_ending(f), Err(Err::Error((f, ErrorKind::Tag))));
 
@@ -504,7 +487,6 @@ mod complete {
 
 mod streaming {
   use super::*;
-  use crate::branch::alt;
   use crate::combinator::opt;
   use crate::error::ErrorKind;
   use crate::input::ParseTo;
@@ -795,23 +777,6 @@ mod streaming {
 
   #[test]
   fn is_not_line_ending_str() {
-    /*
-    let a: &str = "ab12cd\nefgh";
-    assert_eq!(not_line_ending(a), Ok((&"\nefgh"[..], &"ab12cd"[..])));
-
-    let b: &str = "ab12cd\nefgh\nijkl";
-    assert_eq!(not_line_ending(b), Ok((&"\nefgh\nijkl"[..], &"ab12cd"[..])));
-
-    let c: &str = "ab12cd\r\nefgh\nijkl";
-    assert_eq!(not_line_ending(c), Ok((&"\r\nefgh\nijkl"[..], &"ab12cd"[..])));
-
-    let d = "βèƒôřè\nÂßÇáƒƭèř";
-    assert_eq!(not_line_ending(d), Ok((&"\nÂßÇáƒƭèř"[..], &"βèƒôřè"[..])));
-
-    let e = "βèƒôřè\r\nÂßÇáƒƭèř";
-    assert_eq!(not_line_ending(e), Ok((&"\r\nÂßÇáƒƭèř"[..], &"βèƒôřè"[..])));
-    */
-
     let f = "βèƒôřè\rÂßÇáƒƭèř";
     assert_eq!(
       not_line_ending(Streaming(f)),
@@ -1001,8 +966,10 @@ mod streaming {
   }
 
   fn digit_to_i16(input: Streaming<&str>) -> IResult<Streaming<&str>, i16> {
+    use crate::bytes::one_of;
+
     let i = input;
-    let (i, opt_sign) = opt(alt((char('+'), char('-'))))(i)?;
+    let (i, opt_sign) = opt(one_of("+-"))(i)?;
     let sign = match opt_sign {
       Some('+') => true,
       Some('-') => false,
@@ -1043,38 +1010,6 @@ mod streaming {
         ErrorKind::Digit,
       ))),
     }
-  }
-
-  #[test]
-  fn char_byteslice() {
-    fn f(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, char> {
-      char('c')(i)
-    }
-
-    let a = &b"abcd"[..];
-    assert_eq!(
-      f(Streaming(a)),
-      Err(Err::Error(error_position!(Streaming(a), ErrorKind::Char)))
-    );
-
-    let b = &b"cde"[..];
-    assert_eq!(f(Streaming(b)), Ok((Streaming(&b"de"[..]), 'c')));
-  }
-
-  #[test]
-  fn char_str() {
-    fn f(i: Streaming<&str>) -> IResult<Streaming<&str>, char> {
-      char('c')(i)
-    }
-
-    let a = &"abcd"[..];
-    assert_eq!(
-      f(Streaming(a)),
-      Err(Err::Error(error_position!(Streaming(a), ErrorKind::Char)))
-    );
-
-    let b = &"cde"[..];
-    assert_eq!(f(Streaming(b)), Ok((Streaming(&"de"[..]), 'c')));
   }
 
   proptest! {

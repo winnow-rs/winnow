@@ -5,10 +5,12 @@ extern crate criterion;
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 use criterion::Criterion;
-use nom8::number::complete;
+use nom8::number::be_u64;
 
-fn parser(i: &[u8]) -> nom8::IResult<&[u8], u64> {
-  complete::be_u64(i)
+type Input<'i> = &'i [u8];
+
+fn parser(i: Input<'_>) -> nom8::IResult<Input<'_>, u64> {
+  be_u64(i)
 }
 
 fn number(c: &mut Criterion) {
