@@ -1167,6 +1167,78 @@ where
     })
 }
 
+impl<I> InputTakeAtPosition for Streaming<I>
+where
+  I: InputTakeAtPosition,
+{
+  type Item = <I as InputTakeAtPosition>::Item;
+
+  fn split_at_position_complete<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+    E: ParseError<Self>,
+  {
+    streaming_clone_map_result(self, move |data| data.split_at_position_complete(predicate))
+  }
+
+  fn split_at_position_streaming<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+    E: ParseError<Self>,
+  {
+    streaming_clone_map_result(self, move |data| {
+      data.split_at_position_streaming(predicate)
+    })
+  }
+
+  fn split_at_position1_streaming<P, E>(
+    &self,
+    predicate: P,
+    kind: ErrorKind,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+    E: ParseError<Self>,
+  {
+    streaming_clone_map_result(self, move |data| {
+      data.split_at_position1_streaming(predicate, kind)
+    })
+  }
+
+  fn split_at_position1_complete<P, E>(
+    &self,
+    predicate: P,
+    kind: ErrorKind,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+    E: ParseError<Self>,
+  {
+    streaming_clone_map_result(self, move |data| {
+      data.split_at_position1_complete(predicate, kind)
+    })
+  }
+}
+
+fn streaming_clone_map_result<I, E, F>(
+  input: &Streaming<I>,
+  f: F,
+) -> IResult<Streaming<I>, Streaming<I>, E>
+where
+  E: ParseError<Streaming<I>>,
+  F: FnOnce(&I) -> IResult<I, I>,
+{
+  let map_error =
+    |error: crate::error::Error<I>| E::from_error_kind(Streaming(error.input), error.code);
+  f(&input.0)
+    .map(|(remaining, output)| (Streaming(remaining), Streaming(output)))
+    .map_err(|error| match error {
+      Err::Error(error) => Err::Error(map_error(error)),
+      Err::Failure(error) => Err::Failure(map_error(error)),
+      Err::Incomplete(needed) => Err::Incomplete(needed),
+    })
+}
+
 impl<I: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputTakeAtPosition
   for I
 {
@@ -1375,174 +1447,6 @@ impl<'a> InputTakeAtPosition for &'a str {
             Ok((
               self.get_unchecked(self.len()..),
               self.get_unchecked(..self.len()),
-            ))
-          }
-        }
-      }
-    }
-  }
-}
-
-impl<'a> InputTakeAtPosition for Streaming<&'a [u8]> {
-  type Item = u8;
-
-  fn split_at_position_streaming<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.iter().position(|c| predicate(*c)) {
-      Some(i) => Ok(self.take_split(i)),
-      None => Err(Err::Incomplete(Needed::new(1))),
-    }
-  }
-
-  fn split_at_position1_streaming<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-    e: ErrorKind,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.iter().position(|c| predicate(*c)) {
-      Some(0) => Err(Err::Error(E::from_error_kind(Streaming(self), e))),
-      Some(i) => Ok(self.take_split(i)),
-      None => Err(Err::Incomplete(Needed::new(1))),
-    }
-  }
-
-  fn split_at_position_complete<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.iter().position(|c| predicate(*c)) {
-      Some(i) => Ok(self.take_split(i)),
-      None => Ok(self.take_split(self.input_len())),
-    }
-  }
-
-  fn split_at_position1_complete<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-    e: ErrorKind,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.iter().position(|c| predicate(*c)) {
-      Some(0) => Err(Err::Error(E::from_error_kind(Streaming(self), e))),
-      Some(i) => Ok(self.take_split(i)),
-      None => {
-        if self.is_empty() {
-          Err(Err::Error(E::from_error_kind(Streaming(self), e)))
-        } else {
-          Ok(self.take_split(self.input_len()))
-        }
-      }
-    }
-  }
-}
-
-impl<'a> InputTakeAtPosition for Streaming<&'a str> {
-  type Item = char;
-
-  fn split_at_position_streaming<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.find(predicate) {
-      // find() returns a byte index that is already in the slice at a char boundary
-      Some(i) => unsafe {
-        Ok((
-          Streaming(self.get_unchecked(i..)),
-          Streaming(self.get_unchecked(..i)),
-        ))
-      },
-      None => Err(Err::Incomplete(Needed::new(1))),
-    }
-  }
-
-  fn split_at_position1_streaming<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-    e: ErrorKind,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.find(predicate) {
-      Some(0) => Err(Err::Error(E::from_error_kind(Streaming(self), e))),
-      // find() returns a byte index that is already in the slice at a char boundary
-      Some(i) => unsafe {
-        Ok((
-          Streaming(self.get_unchecked(i..)),
-          Streaming(self.get_unchecked(..i)),
-        ))
-      },
-      None => Err(Err::Incomplete(Needed::new(1))),
-    }
-  }
-
-  fn split_at_position_complete<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.find(predicate) {
-      // find() returns a byte index that is already in the slice at a char boundary
-      Some(i) => unsafe {
-        Ok((
-          Streaming(self.get_unchecked(i..)),
-          Streaming(self.get_unchecked(..i)),
-        ))
-      },
-      // the end of slice is a char boundary
-      None => unsafe {
-        Ok((
-          Streaming(self.get_unchecked(self.len()..)),
-          Streaming(self.get_unchecked(..self.len())),
-        ))
-      },
-    }
-  }
-
-  fn split_at_position1_complete<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-    e: ErrorKind,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.find(predicate) {
-      Some(0) => Err(Err::Error(E::from_error_kind(Streaming(self), e))),
-      // find() returns a byte index that is already in the slice at a char boundary
-      Some(i) => unsafe {
-        Ok((
-          Streaming(self.get_unchecked(i..)),
-          Streaming(self.get_unchecked(..i)),
-        ))
-      },
-      None => {
-        if self.is_empty() {
-          Err(Err::Error(E::from_error_kind(Streaming(self), e)))
-        } else {
-          // the end of slice is a char boundary
-          unsafe {
-            Ok((
-              Streaming(self.get_unchecked(self.len()..)),
-              Streaming(self.get_unchecked(..self.len())),
             ))
           }
         }
