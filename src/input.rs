@@ -1883,6 +1883,21 @@ pub trait IntoOutput {
   fn merge_output(self, inner: Self::Output) -> Self;
 }
 
+impl<I> IntoOutput for Streaming<I>
+where
+  I: IntoOutput,
+{
+  type Output = I::Output;
+  #[inline]
+  fn into_output(self) -> Self::Output {
+    self.into_complete().into_output()
+  }
+  #[inline]
+  fn merge_output(self, inner: Self::Output) -> Self {
+    Streaming(I::merge_output(self.0, inner))
+  }
+}
+
 impl<'a, T> IntoOutput for &'a [T] {
   type Output = Self;
   #[inline]
@@ -1940,21 +1955,6 @@ impl<'a> IntoOutput for (&'a [u8], usize) {
   #[inline]
   fn merge_output(self, inner: Self::Output) -> Self {
     inner
-  }
-}
-
-impl<I> IntoOutput for Streaming<I>
-where
-  I: IntoOutput,
-{
-  type Output = I::Output;
-  #[inline]
-  fn into_output(self) -> Self::Output {
-    self.into_complete().into_output()
-  }
-  #[inline]
-  fn merge_output(self, inner: Self::Output) -> Self {
-    Streaming(I::merge_output(self.0, inner))
   }
 }
 
