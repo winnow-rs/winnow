@@ -951,11 +951,11 @@ where
   fn take_split(&self, count: usize) -> (Self, Self) {
     let (left, right) = self.input.take_split(count);
     (
-      Stateful {
+      Self {
         input: left,
         state: self.state.clone(),
       },
-      Stateful {
+      Self {
         input: right,
         state: self.state.clone(),
       },
@@ -2016,6 +2016,16 @@ pub trait FindSubstring<T> {
   fn find_substring(&self, substr: T) -> Option<usize>;
 }
 
+impl<I, S, T> FindSubstring<T> for Stateful<I, S>
+where
+  I: FindSubstring<T>,
+{
+  #[inline(always)]
+  fn find_substring(&self, substr: T) -> Option<usize> {
+    self.input.find_substring(substr)
+  }
+}
+
 impl<I, T> FindSubstring<T> for Streaming<I>
 where
   I: FindSubstring<T>,
@@ -2129,7 +2139,7 @@ where
 {
   #[inline(always)]
   fn slice(&self, range: R) -> Self {
-    Stateful {
+    Self {
       input: self.input.slice(range),
       state: self.state.clone(),
     }
