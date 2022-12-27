@@ -7,7 +7,7 @@ static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 use criterion::Criterion;
 use nom::{
   branch::alt,
-  bytes::{any, none_of, tag, take},
+  bytes::{any, none_of, one_of, tag, take},
   character::{f64, multispace0, recognize_float},
   error::{ErrorKind, ParseError},
   multi::{fold_many0, separated_list0},
@@ -76,7 +76,7 @@ fn character(input: Input<'_>) -> IResult<Input<'_>, char> {
           _ => return Err(()),
         })
       }),
-      preceded('u', unicode_escape),
+      preceded(one_of('u'), unicode_escape),
     ))(input)
   } else {
     Ok((input, c))
@@ -85,12 +85,12 @@ fn character(input: Input<'_>) -> IResult<Input<'_>, char> {
 
 fn string(input: Input<'_>) -> IResult<Input<'_>, String> {
   delimited(
-    '"',
+    one_of('"'),
     fold_many0(character, String::new, |mut string, c| {
       string.push(c);
       string
     }),
-    '"',
+    one_of('"'),
   )(input)
 }
 
@@ -101,17 +101,21 @@ fn ws<'a, O, E: ParseError<Input<'a>>, F: Parser<Input<'a>, O, E>>(
 }
 
 fn array(input: Input<'_>) -> IResult<Input<'_>, Vec<JsonValue>> {
-  delimited('[', ws(separated_list0(ws(','), json_value)), ']')(input)
+  delimited(
+    one_of('['),
+    ws(separated_list0(ws(one_of(',')), json_value)),
+    one_of(']'),
+  )(input)
 }
 
 fn object(input: Input<'_>) -> IResult<Input<'_>, HashMap<String, JsonValue>> {
   delimited(
-    '{',
+    one_of('{'),
     ws(separated_list0(
-      ws(','),
-      separated_pair(string, ws(':'), json_value),
+      ws(one_of(',')),
+      separated_pair(string, ws(one_of(':')), json_value),
     )),
-    '}',
+    one_of('}'),
   )
   .map(|key_values| key_values.into_iter().collect())
   .parse(input)

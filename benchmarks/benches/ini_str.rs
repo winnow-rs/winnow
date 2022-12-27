@@ -4,7 +4,7 @@ static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 use criterion::*;
 
 use nom::{
-  bytes::{tag, take_till, take_while, take_while1},
+  bytes::{one_of, tag, take_till, take_while, take_while1},
   character::{alphanumeric1 as alphanumeric, not_line_ending, space0 as space},
   combinator::opt,
   multi::many0,
@@ -26,7 +26,7 @@ fn space_or_line_ending(i: Input<'_>) -> IResult<Input<'_>, &str> {
 
 fn category(i: Input<'_>) -> IResult<Input<'_>, &str> {
   terminated(
-    delimited('[', take_while(|c| c != ']'), ']'),
+    delimited(one_of('['), take_while(|c| c != ']'), one_of(']')),
     opt(take_while1(" \r\n")),
   )(i)
 }

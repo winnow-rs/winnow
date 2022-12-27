@@ -4,7 +4,7 @@ static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 use criterion::*;
 
 use nom::{
-  bytes::take_while,
+  bytes::{one_of, take_while},
   character::{alphanumeric1 as alphanumeric, multispace1 as multispace, space1 as space},
   combinator::opt,
   multi::many0,
@@ -17,18 +17,18 @@ use std::str;
 type Input<'i> = &'i [u8];
 
 fn category(i: Input<'_>) -> IResult<Input<'_>, &str> {
-  delimited('[', take_while(|c| c != b']'), ']')
+  delimited(one_of('['), take_while(|c| c != b']'), one_of(']'))
     .map_res(str::from_utf8)
     .parse(i)
 }
 
 fn key_value(i: Input<'_>) -> IResult<Input<'_>, (&str, &str)> {
   let (i, key) = alphanumeric.map_res(str::from_utf8).parse(i)?;
-  let (i, _) = ((opt(space), '=', opt(space))).parse(i)?;
+  let (i, _) = ((opt(space), one_of('='), opt(space))).parse(i)?;
   let (i, val) = take_while(|c| c != b'\n' && c != b';')
     .map_res(str::from_utf8)
     .parse(i)?;
-  let (i, _) = opt((';', take_while(|c| c != b'\n')))(i)?;
+  let (i, _) = opt((one_of(';'), take_while(|c| c != b'\n')))(i)?;
   Ok((i, (key, val)))
 }
 

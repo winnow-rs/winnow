@@ -26,7 +26,7 @@ fn factor(input: Input<'_>) -> IResult<Input<'_>, i64> {
     space0,
     alt((
       digit1.map_res(|digits| unsafe { std::str::from_utf8_unchecked(digits) }.parse()),
-      delimited('(', expr, ')'),
+      delimited(one_of('('), expr, one_of(')')),
     )),
     space0,
   )(input)
