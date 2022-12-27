@@ -5,7 +5,7 @@ use criterion::*;
 
 use nom::{
   bytes::{tag, take_till, take_while, take_while1},
-  character::{alphanumeric1 as alphanumeric, char, not_line_ending, space0 as space},
+  character::{alphanumeric1 as alphanumeric, not_line_ending, space0 as space},
   combinator::opt,
   multi::many0,
   sequence::{delimited, terminated},
@@ -24,7 +24,7 @@ fn space_or_line_ending(i: &str) -> IResult<&str, &str> {
 
 fn category(i: &str) -> IResult<&str, &str> {
   terminated(
-    delimited(char('['), take_while(|c| c != ']'), char(']')),
+    delimited('[', take_while(|c| c != ']'), ']'),
     opt(take_while1(" \r\n")),
   )(i)
 }

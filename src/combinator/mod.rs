@@ -10,7 +10,6 @@
 //!
 //! | combinator | usage | input | output | comment |
 //! |---|---|---|---|---|
-//! | [char][crate::character::char] | `char('a')` |  `"abc"` | `Ok(("bc", 'a'))` |Matches one character (works with non ASCII chars too) |
 //! | [one_of][crate::bytes::one_of] | `one_of("abc")` |  `"abc"` | `Ok(("bc", 'a'))` |Matches one of the provided characters (works with non ASCII characters too)|
 //! | [none_of][crate::bytes::none_of] | `none_of("abc")` |  `"xyab"` | `Ok(("yab", 'x'))` |Matches anything but the provided characters|
 //! | [tag][crate::bytes::tag] | `tag("hello")` |  `"hello world"` | `Ok((" world", "hello"))` |Recognizes a specific suite of characters or bytes|
@@ -986,14 +985,14 @@ where
 /// ```rust
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::combinator::recognize;
-/// use nom::character::{char, alpha1};
+/// use nom::character::{alpha1};
 /// use nom::sequence::separated_pair;
 /// # fn main() {
 ///
 /// let mut parser = recognize(separated_pair(alpha1, ',', alpha1));
 ///
 /// assert_eq!(parser("abcd,efgh"), Ok(("", "abcd,efgh")));
-/// assert_eq!(parser("abcd;"),Err(Err::Error((";", ErrorKind::Char))));
+/// assert_eq!(parser("abcd;"),Err(Err::Error((";", ErrorKind::OneOf))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::recognize")]
@@ -1071,7 +1070,7 @@ where
 /// # use nom::prelude::*;
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::combinator::{consumed, value, recognize, map};
-/// use nom::character::{char, alpha1};
+/// use nom::character::{alpha1};
 /// use nom::bytes::tag;
 /// use nom::sequence::separated_pair;
 ///
@@ -1084,7 +1083,7 @@ where
 /// let mut consumed_parser = consumed(value(true, separated_pair(alpha1, ',', alpha1)));
 ///
 /// assert_eq!(consumed_parser("abcd,efgh1"), Ok(("1", ("abcd,efgh", true))));
-/// assert_eq!(consumed_parser("abcd;"),Err(Err::Error((";", ErrorKind::Char))));
+/// assert_eq!(consumed_parser("abcd;"),Err(Err::Error((";", ErrorKind::OneOf))));
 ///
 ///
 /// // the first output (representing the consumed input)
@@ -1436,7 +1435,6 @@ enum State<E> {
 /// # use nom::{Err,error::ErrorKind, IResult};
 /// use nom::branch::alt;
 /// use nom::combinator::{success, value};
-/// use nom::character::char;
 /// # fn main() {
 ///
 /// let mut parser = success::<_,_,(_,ErrorKind)>(10);

@@ -86,8 +86,6 @@
 //! use nom::{
 //!   IResult,
 //!   sequence::delimited,
-//!   // see the "streaming/complete" paragraph lower for an explanation of these submodules
-//!   character::char,
 //!   bytes::take_till1
 //! };
 //!

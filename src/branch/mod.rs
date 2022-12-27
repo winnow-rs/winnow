@@ -90,7 +90,6 @@ pub trait Permutation<I, O, E> {
 /// # use nom::{Err, error::{Error, ErrorKind}, IResult};
 /// use nom::branch::permutation;
 /// use nom::bytes::any;
-/// use nom::character::{char};
 ///
 /// fn parser(input: &str) -> IResult<&str, (char, char)> {
 ///   permutation((any, 'a'))(input)
@@ -101,7 +100,7 @@ pub trait Permutation<I, O, E> {
 ///
 /// // any parses 'a', then char('a') fails on 'b',
 /// // even though char('a') followed by any would succeed
-/// assert_eq!(parser("ab"), Err(Err::Error(Error::new("b", ErrorKind::Char))));
+/// assert_eq!(parser("ab"), Err(Err::Error(Error::new("b", ErrorKind::OneOf))));
 /// ```
 ///
 pub fn permutation<I: Clone, O, E: ParseError<I>, List: Permutation<I, O, E>>(

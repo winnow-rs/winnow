@@ -291,11 +291,6 @@
 //!     /// through a parse tree, accumulating error context on the way
 //!     fn append(input: I, kind: ErrorKind, other: Self) -> Self;
 //!
-//!     /// Creates an error from an input position and an expected character
-//!     fn from_char(input: I, _: char) -> Self {
-//!         Self::from_error_kind(input, ErrorKind::Char)
-//!     }
-//!
 //!     /// Combines two existing errors. This function is used to compare errors
 //!     /// generated in various branches of `alt`
 //!     fn or(self, other: Self) -> Self {
@@ -365,12 +360,6 @@
 //!     // if combining multiple errors, we show them one after the other
 //!     fn append(input: &str, kind: ErrorKind, other: Self) -> Self {
 //!         let message = format!("{}{:?}:\t{:?}\n", other.message, kind, input);
-//!         println!("{}", message);
-//!         DebugError { message }
-//!     }
-//!
-//!     fn from_char(input: &str, c: char) -> Self {
-//!         let message = format!("'{}':\t{:?}\n", c, input);
 //!         println!("{}", message);
 //!         DebugError { message }
 //!     }
@@ -495,6 +484,7 @@ pub trait ParseError<I>: Sized {
   fn append(input: I, kind: ErrorKind, other: Self) -> Self;
 
   /// Creates an error from an input position and an expected character
+  #[deprecated(since = "8.0.0", note = "Replaced with `ContextError`")]
   fn from_char(input: I, _: char) -> Self {
     Self::from_error_kind(input, ErrorKind::Char)
   }
@@ -631,8 +621,6 @@ pub struct VerboseError<I> {
 pub enum VerboseErrorKind {
   /// Static string added by the `context` function
   Context(&'static str),
-  /// Indicates which character was expected by the `char` function
-  Char(char),
   /// Error kind given by various nom parsers
   Nom(ErrorKind),
 }
@@ -648,12 +636,6 @@ impl<I> ParseError<I> for VerboseError<I> {
   fn append(input: I, kind: ErrorKind, mut other: Self) -> Self {
     other.errors.push((input, VerboseErrorKind::Nom(kind)));
     other
-  }
-
-  fn from_char(input: I, c: char) -> Self {
-    VerboseError {
-      errors: vec![(input, VerboseErrorKind::Char(c))],
-    }
   }
 }
 
@@ -680,7 +662,6 @@ impl<I: fmt::Display> fmt::Display for VerboseError<I> {
     for (input, error) in &self.errors {
       match error {
         VerboseErrorKind::Nom(e) => writeln!(f, "{:?} at: {}", e, input)?,
-        VerboseErrorKind::Char(c) => writeln!(f, "expected '{}' at: {}", c, input)?,
         VerboseErrorKind::Context(s) => writeln!(f, "in section '{}', at: {}", s, input)?,
       }
     }
@@ -766,9 +747,6 @@ pub fn convert_error<I: core::ops::Deref<Target = str>>(
 
     if input.is_empty() {
       match kind {
-        VerboseErrorKind::Char(c) => {
-          write!(&mut result, "{}: expected '{}', got empty input\n\n", i, c)
-        }
         VerboseErrorKind::Context(s) => write!(&mut result, "{}: in {}, got empty input\n\n", i, s),
         VerboseErrorKind::Nom(e) => write!(&mut result, "{}: in {:?}, got empty input\n\n", i, e),
       }
@@ -798,38 +776,6 @@ pub fn convert_error<I: core::ops::Deref<Target = str>>(
       let column_number = line.offset(substring) + 1;
 
       match kind {
-        VerboseErrorKind::Char(c) => {
-          if let Some(actual) = substring.chars().next() {
-            write!(
-              &mut result,
-              "{i}: at line {line_number}:\n\
-               {line}\n\
-               {caret:>column$}\n\
-               expected '{expected}', found {actual}\n\n",
-              i = i,
-              line_number = line_number,
-              line = line,
-              caret = '^',
-              column = column_number,
-              expected = c,
-              actual = actual,
-            )
-          } else {
-            write!(
-              &mut result,
-              "{i}: at line {line_number}:\n\
-               {line}\n\
-               {caret:>column$}\n\
-               expected '{expected}', got end of input\n\n",
-              i = i,
-              line_number = line_number,
-              line = line,
-              caret = '^',
-              column = column_number,
-              expected = c,
-            )
-          }
-        }
         VerboseErrorKind::Context(s) => write!(
           &mut result,
           "{i}: at line {line_number}, in {context}:\n\
@@ -1096,13 +1042,13 @@ where
 #[cfg(feature = "alloc")]
 mod tests {
   use super::*;
-  use crate::character::char;
+  use crate::bytes::one_of;
 
   #[test]
   fn convert_error_panic() {
     let input = "";
 
-    let _result: IResult<_, _, VerboseError<&str>> = char('x')(input);
+    let _result: IResult<_, _, VerboseError<&str>> = one_of('x')(input);
   }
 }
 

@@ -33,8 +33,8 @@ use crate::{Err, IResult};
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Char))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom::character::char`][crate::character::char]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom::character::char`")]
+/// **WARNING:** Deprecated, replaced with [`nom::bytes::one_of`][crate::bytes::one_of]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom::bytes::one_of`")]
 pub fn char<I, Error: ParseError<I>>(c: char) -> impl Fn(I) -> IResult<I, char, Error>
 where
   I: Slice<RangeFrom<usize>> + InputIter,
