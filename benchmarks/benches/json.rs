@@ -17,6 +17,8 @@ use nom::{
 
 use std::collections::HashMap;
 
+type Input<'i> = &'i str;
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum JsonValue {
   Null,
@@ -27,17 +29,17 @@ pub enum JsonValue {
   Object(HashMap<String, JsonValue>),
 }
 
-fn boolean(input: &str) -> IResult<&str, bool> {
+fn boolean(input: Input<'_>) -> IResult<Input<'_>, bool> {
   alt((tag("false").value(false), tag("true").value(true)))(input)
 }
 
-fn u16_hex(input: &str) -> IResult<&str, u16> {
+fn u16_hex(input: Input<'_>) -> IResult<Input<'_>, u16> {
   take(4usize)
     .map_res(|s| u16::from_str_radix(s, 16))
     .parse(input)
 }
 
-fn unicode_escape(input: &str) -> IResult<&str, char> {
+fn unicode_escape(input: Input<'_>) -> IResult<Input<'_>, char> {
   alt((
     // Not a surrogate
     u16_hex
@@ -59,7 +61,7 @@ fn unicode_escape(input: &str) -> IResult<&str, char> {
   .parse(input)
 }
 
-fn character(input: &str) -> IResult<&str, char> {
+fn character(input: Input<'_>) -> IResult<Input<'_>, char> {
   let (input, c) = none_of("\"")(input)?;
   if c == '\\' {
     alt((
@@ -81,7 +83,7 @@ fn character(input: &str) -> IResult<&str, char> {
   }
 }
 
-fn string(input: &str) -> IResult<&str, String> {
+fn string(input: Input<'_>) -> IResult<Input<'_>, String> {
   delimited(
     '"',
     fold_many0(character, String::new, |mut string, c| {
@@ -92,15 +94,17 @@ fn string(input: &str) -> IResult<&str, String> {
   )(input)
 }
 
-fn ws<'a, O, E: ParseError<&'a str>, F: Parser<&'a str, O, E>>(f: F) -> impl Parser<&'a str, O, E> {
+fn ws<'a, O, E: ParseError<Input<'a>>, F: Parser<Input<'a>, O, E>>(
+  f: F,
+) -> impl Parser<Input<'a>, O, E> {
   delimited(multispace0, f, multispace0)
 }
 
-fn array(input: &str) -> IResult<&str, Vec<JsonValue>> {
+fn array(input: Input<'_>) -> IResult<Input<'_>, Vec<JsonValue>> {
   delimited('[', ws(separated_list0(ws(','), json_value)), ']')(input)
 }
 
-fn object(input: &str) -> IResult<&str, HashMap<String, JsonValue>> {
+fn object(input: Input<'_>) -> IResult<Input<'_>, HashMap<String, JsonValue>> {
   delimited(
     '{',
     ws(separated_list0(
@@ -113,7 +117,7 @@ fn object(input: &str) -> IResult<&str, HashMap<String, JsonValue>> {
   .parse(input)
 }
 
-fn json_value(input: &str) -> IResult<&str, JsonValue> {
+fn json_value(input: Input<'_>) -> IResult<Input<'_>, JsonValue> {
   use JsonValue::*;
 
   alt((
@@ -126,7 +130,7 @@ fn json_value(input: &str) -> IResult<&str, JsonValue> {
   ))(input)
 }
 
-fn json(input: &str) -> IResult<&str, JsonValue> {
+fn json(input: Input<'_>) -> IResult<Input<'_>, JsonValue> {
   ws(json_value).parse(input)
 }
 

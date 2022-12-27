@@ -14,13 +14,15 @@ use nom::{
 use std::collections::HashMap;
 use std::str;
 
-fn category(i: &[u8]) -> IResult<&[u8], &str> {
+type Input<'i> = &'i [u8];
+
+fn category(i: Input<'_>) -> IResult<Input<'_>, &str> {
   delimited('[', take_while(|c| c != b']'), ']')
     .map_res(str::from_utf8)
     .parse(i)
 }
 
-fn key_value(i: &[u8]) -> IResult<&[u8], (&str, &str)> {
+fn key_value(i: Input<'_>) -> IResult<Input<'_>, (&str, &str)> {
   let (i, key) = alphanumeric.map_res(str::from_utf8).parse(i)?;
   let (i, _) = ((opt(space), '=', opt(space))).parse(i)?;
   let (i, val) = take_while(|c| c != b'\n' && c != b';')
@@ -30,7 +32,7 @@ fn key_value(i: &[u8]) -> IResult<&[u8], (&str, &str)> {
   Ok((i, (key, val)))
 }
 
-fn categories(i: &[u8]) -> IResult<&[u8], HashMap<&str, HashMap<&str, &str>>> {
+fn categories(i: Input<'_>) -> IResult<Input<'_>, HashMap<&str, HashMap<&str, &str>>> {
   many0(separated_pair(
     category,
     opt(multispace),
@@ -64,7 +66,7 @@ port=143
 file=payroll.dat
 \0";
 
-  fn acc(i: &[u8]) -> IResult<&[u8], Vec<(&str, &str)>> {
+  fn acc(i: Input<'_>) -> IResult<Input<'_>, Vec<(&str, &str)>> {
     many0(key_value)(i)
   }
 

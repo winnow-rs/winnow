@@ -7,7 +7,9 @@ static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 use criterion::Criterion;
 use nom::number::be_u64;
 
-fn parser(i: &[u8]) -> nom::IResult<&[u8], u64> {
+type Input<'i> = &'i [u8];
+
+fn parser(i: Input<'_>) -> nom::IResult<Input<'_>, u64> {
   be_u64(i)
 }
 
