@@ -951,11 +951,11 @@ where
   fn take_split(&self, count: usize) -> (Self, Self) {
     let (left, right) = self.input.take_split(count);
     (
-      Stateful {
+      Self {
         input: left,
         state: self.state.clone(),
       },
-      Stateful {
+      Self {
         input: right,
         state: self.state.clone(),
       },
@@ -2129,7 +2129,7 @@ where
 {
   #[inline(always)]
   fn slice(&self, range: R) -> Self {
-    Stateful {
+    Self {
       input: self.input.slice(range),
       state: self.state.clone(),
     }
