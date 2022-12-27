@@ -31,45 +31,6 @@ struct C {
   b: Option<u8>,
 }
 
-/*FIXME: convert code examples to new error management
-use util::{add_error_pattern, error_to_list, print_error};
-
-#[cfg(feature = "std")]
-#[rustfmt::skip]
-fn error_to_string<P: Clone + PartialEq>(e: &Context<P, u32>) -> &'static str {
-  let v: Vec<(P, ErrorKind<u32>)> = error_to_list(e);
-  // do it this way if you can use slice patterns
-  //match &v[..] {
-  //  [ErrorKind::Custom(42), ErrorKind::Tag]                         => "missing `ijkl` tag",
-  //  [ErrorKind::Custom(42), ErrorKind::Custom(128), ErrorKind::Tag] => "missing `mnop` tag after `ijkl`",
-  //  _            => "unrecognized error"
-  //}
-
-  let collected: Vec<ErrorKind<u32>> = v.iter().map(|&(_, ref e)| e.clone()).collect();
-  if &collected[..] == [ErrorKind::Custom(42), ErrorKind::Tag] {
-    "missing `ijkl` tag"
-  } else if &collected[..] == [ErrorKind::Custom(42), ErrorKind::Custom(128), ErrorKind::Tag] {
-    "missing `mnop` tag after `ijkl`"
-  } else {
-    "unrecognized error"
-  }
-}
-
-// do it this way if you can use box patterns
-//use $crate::lib::std::str;
-//fn error_to_string(e:Err) -> String
-//  match e {
-//    NodePosition(ErrorKind::Custom(42), i1, box Position(ErrorKind::Tag, i2)) => {
-//      format!("missing `ijkl` tag, found '{}' instead", str::from_utf8(i2).unwrap())
-//    },
-//    NodePosition(ErrorKind::Custom(42), i1, box NodePosition(ErrorKind::Custom(128), i2,  box Position(ErrorKind::Tag, i3))) => {
-//      format!("missing `mnop` tag after `ijkl`, found '{}' instead", str::from_utf8(i3).unwrap())
-//    },
-//    _ => "unrecognized error".to_string()
-//  }
-//}
-*/
-
 #[test]
 fn complete() {
   use crate::bytes::tag;

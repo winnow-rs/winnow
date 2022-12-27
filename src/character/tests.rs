@@ -193,23 +193,6 @@ mod complete {
 
   #[test]
   fn is_not_line_ending_str() {
-    /*
-    let a: &str = "ab12cd\nefgh";
-    assert_eq!(not_line_ending(a), Ok((&"\nefgh"[..], &"ab12cd"[..])));
-
-    let b: &str = "ab12cd\nefgh\nijkl";
-    assert_eq!(not_line_ending(b), Ok((&"\nefgh\nijkl"[..], &"ab12cd"[..])));
-
-    let c: &str = "ab12cd\r\nefgh\nijkl";
-    assert_eq!(not_line_ending(c), Ok((&"\r\nefgh\nijkl"[..], &"ab12cd"[..])));
-
-    let d = "βèƒôřè\nÂßÇáƒƭèř";
-    assert_eq!(not_line_ending(d), Ok((&"\nÂßÇáƒƭèř"[..], &"βèƒôřè"[..])));
-
-    let e = "βèƒôřè\r\nÂßÇáƒƭèř";
-    assert_eq!(not_line_ending(e), Ok((&"\r\nÂßÇáƒƭèř"[..], &"βèƒôřè"[..])));
-    */
-
     let f = "βèƒôřè\rÂßÇáƒƭèř";
     assert_eq!(not_line_ending(f), Err(Err::Error((f, ErrorKind::Tag))));
 
@@ -794,23 +777,6 @@ mod streaming {
 
   #[test]
   fn is_not_line_ending_str() {
-    /*
-    let a: &str = "ab12cd\nefgh";
-    assert_eq!(not_line_ending(a), Ok((&"\nefgh"[..], &"ab12cd"[..])));
-
-    let b: &str = "ab12cd\nefgh\nijkl";
-    assert_eq!(not_line_ending(b), Ok((&"\nefgh\nijkl"[..], &"ab12cd"[..])));
-
-    let c: &str = "ab12cd\r\nefgh\nijkl";
-    assert_eq!(not_line_ending(c), Ok((&"\r\nefgh\nijkl"[..], &"ab12cd"[..])));
-
-    let d = "βèƒôřè\nÂßÇáƒƭèř";
-    assert_eq!(not_line_ending(d), Ok((&"\nÂßÇáƒƭèř"[..], &"βèƒôřè"[..])));
-
-    let e = "βèƒôřè\r\nÂßÇáƒƭèř";
-    assert_eq!(not_line_ending(e), Ok((&"\r\nÂßÇáƒƭèř"[..], &"βèƒôřè"[..])));
-    */
-
     let f = "βèƒôřè\rÂßÇáƒƭèř";
     assert_eq!(
       not_line_ending(Streaming(f)),

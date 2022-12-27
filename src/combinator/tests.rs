@@ -17,15 +17,6 @@ macro_rules! assert_parse(
   };
 );
 
-/*#[test]
-fn t1() {
-  let v1:Vec<u8> = vec![1,2,3];
-  let v2:Vec<u8> = vec![4,5,6];
-  let d = Ok((&v1[..], &v2[..]));
-  let res = d.flat_map(print);
-  assert_eq!(res, Ok((&v2[..], ())));
-}*/
-
 #[test]
 fn eof_on_slices() {
   let not_over: &[u8] = &b"Hello, world!"[..];
@@ -55,21 +46,6 @@ fn eof_on_strs() {
   let res_over = eof(is_over);
   assert_parse!(res_over, Ok((is_over, is_over)));
 }
-
-/*
-#[test]
-fn end_of_input() {
-    let not_over = &b"Hello, world!"[..];
-    let is_over = &b""[..];
-    named!(eof_test, eof!());
-
-    let res_not_over = eof_test(not_over);
-    assert_eq!(res_not_over, Err(Err::Error(error_position!(not_over, ErrorKind::Eof))));
-
-    let res_over = eof_test(is_over);
-    assert_eq!(res_over, Ok((is_over, is_over)));
-}
-*/
 
 #[test]
 fn rest_on_slices() {
