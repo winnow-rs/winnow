@@ -892,10 +892,10 @@ pub trait InputTakeAtPosition: Sized {
     P: Fn(Self::Item) -> bool;
 }
 
-impl<T: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputTakeAtPosition
-  for T
+impl<I: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputTakeAtPosition
+  for I
 {
-  type Item = <T as InputIter>::Item;
+  type Item = <I as InputIter>::Item;
 
   fn split_at_position_streaming<P, E: ParseError<Self>>(
     &self,
@@ -1943,18 +1943,18 @@ impl<'a> IntoOutput for (&'a [u8], usize) {
   }
 }
 
-impl<T> IntoOutput for Streaming<T>
+impl<I> IntoOutput for Streaming<I>
 where
-  T: IntoOutput,
+  I: IntoOutput,
 {
-  type Output = T::Output;
+  type Output = I::Output;
   #[inline]
   fn into_output(self) -> Self::Output {
     self.into_complete().into_output()
   }
   #[inline]
   fn merge_output(self, inner: Self::Output) -> Self {
-    Streaming(T::merge_output(self.0, inner))
+    Streaming(I::merge_output(self.0, inner))
   }
 }
 
