@@ -2,6 +2,7 @@
 //!
 //! Input types include:
 //! - `&str` and `&[u8]` are the standard input types
+//! - [`Stateful`] to thread global state through your parsers
 //! - [`Streaming`] can mark an input as partial buffer that is being streamed into
 //!
 //! # How do a parse a custom input type?
@@ -68,6 +69,66 @@ use crate::{Err, IResult, Needed};
 use crate::lib::std::string::String;
 #[cfg(feature = "alloc")]
 use crate::lib::std::vec::Vec;
+
+/// Thread global state through your parsers
+///
+/// Use cases
+/// - Recusion checks
+/// - Errror recovery
+/// - Debugging
+///
+/// # Example
+///
+/// ```
+/// # use std::cell::Cell;
+/// # use nom::prelude::*;
+/// # use nom::input::Stateful;
+/// # use nom::character::alpha1;
+/// # type Error = ();
+///
+/// #[derive(Clone, Debug)]
+/// struct State<'s>(&'s Cell<u32>);
+///
+/// impl<'s> State<'s> {
+///     fn count(&self) {
+///         self.0.set(self.0.get() + 1);
+///     }
+/// }
+///
+/// type Input<'is> = Stateful<&'is str, State<'is>>;
+///
+/// fn word(i: Input<'_>) -> IResult<Input<'_>, &str> {
+///   i.state.count();
+///   alpha1(i)
+/// }
+///
+/// let data = "Hello";
+/// let state = Cell::new(0);
+/// let input = Input { input: data, state: State(&state) };
+/// let output = word.parse(input).finish().unwrap();
+/// assert_eq!(state.get(), 1);
+/// ```
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct Stateful<I, S> {
+  /// Inner input being wrapped in state
+  pub input: I,
+  /// User-provided state
+  pub state: S,
+}
+
+impl<I, S> AsRef<I> for Stateful<I, S> {
+  fn as_ref(&self) -> &I {
+    &self.input
+  }
+}
+
+impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
+  type Target = I;
+
+  fn deref(&self) -> &Self::Target {
+    self.as_ref()
+  }
+}
 
 /// Mark the input as a partial buffer for streaming input.
 ///
@@ -169,6 +230,46 @@ pub trait InputIsStreaming<const YES: bool>: Sized {
   fn into_complete(self) -> Self::Complete;
   /// Convert to streaming counterpart
   fn into_streaming(self) -> Self::Streaming;
+}
+
+impl<I, S> InputIsStreaming<true> for Stateful<I, S>
+where
+  I: InputIsStreaming<true>,
+{
+  type Complete = Stateful<<I as InputIsStreaming<true>>::Complete, S>;
+  type Streaming = Self;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    Stateful {
+      input: self.input.into_complete(),
+      state: self.state,
+    }
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    self
+  }
+}
+
+impl<I, S> InputIsStreaming<false> for Stateful<I, S>
+where
+  I: InputIsStreaming<false>,
+{
+  type Complete = Self;
+  type Streaming = Stateful<<I as InputIsStreaming<false>>::Streaming, S>;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    Stateful {
+      input: self.input.into_streaming(),
+      state: self.state,
+    }
+  }
 }
 
 impl<I> InputIsStreaming<true> for Streaming<I>
@@ -279,6 +380,15 @@ pub trait InputLength {
   fn input_len(&self) -> usize;
 }
 
+impl<I, S> InputLength for Stateful<I, S>
+where
+  I: InputLength,
+{
+  fn input_len(&self) -> usize {
+    self.input.input_len()
+  }
+}
+
 impl<I> InputLength for Streaming<I>
 where
   I: InputLength,
@@ -328,6 +438,15 @@ impl<'a> InputLength for (&'a [u8], usize) {
 pub trait Offset {
   /// Offset between the first byte of self and the first byte of the argument
   fn offset(&self, second: &Self) -> usize;
+}
+
+impl<I, S> Offset for Stateful<I, S>
+where
+  I: Offset,
+{
+  fn offset(&self, other: &Self) -> usize {
+    self.input.offset(&other.input)
+  }
 }
 
 impl<I> Offset for Streaming<I>
@@ -380,6 +499,15 @@ impl<'a> Offset for &'a str {
 pub trait AsBytes {
   /// Casts the input type to a byte slice
   fn as_bytes(&self) -> &[u8];
+}
+
+impl<I, S> AsBytes for Stateful<I, S>
+where
+  I: AsBytes,
+{
+  fn as_bytes(&self) -> &[u8] {
+    self.input.as_bytes()
+  }
 }
 
 impl<I> AsBytes for Streaming<I>
@@ -650,6 +778,34 @@ pub trait InputIter {
   fn slice_index(&self, count: usize) -> Result<usize, Needed>;
 }
 
+impl<I, S> InputIter for Stateful<I, S>
+where
+  I: InputIter,
+{
+  type Item = I::Item;
+  type Iter = I::Iter;
+  type IterElem = I::IterElem;
+
+  fn iter_indices(&self) -> Self::Iter {
+    self.input.iter_indices()
+  }
+
+  fn iter_elements(&self) -> Self::IterElem {
+    self.input.iter_elements()
+  }
+
+  fn position<P>(&self, predicate: P) -> Option<usize>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    self.input.position(predicate)
+  }
+
+  fn slice_index(&self, count: usize) -> Result<usize, Needed> {
+    self.input.slice_index(count)
+  }
+}
+
 impl<I> InputIter for Streaming<I>
 where
   I: InputIter,
@@ -780,6 +936,33 @@ pub trait InputTake: Sized {
   fn take_split(&self, count: usize) -> (Self, Self);
 }
 
+impl<I, S> InputTake for Stateful<I, S>
+where
+  I: InputTake,
+  S: Clone,
+{
+  fn take(&self, count: usize) -> Self {
+    Self {
+      input: self.input.take(count),
+      state: self.state.clone(),
+    }
+  }
+
+  fn take_split(&self, count: usize) -> (Self, Self) {
+    let (left, right) = self.input.take_split(count);
+    (
+      Stateful {
+        input: left,
+        state: self.state.clone(),
+      },
+      Stateful {
+        input: right,
+        state: self.state.clone(),
+      },
+    )
+  }
+}
+
 impl<I> InputTake for Streaming<I>
 where
   I: InputTake,
@@ -890,6 +1073,98 @@ pub trait InputTakeAtPosition: Sized {
   ) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool;
+}
+
+impl<I, S> InputTakeAtPosition for Stateful<I, S>
+where
+  I: InputTakeAtPosition,
+  S: Clone,
+{
+  type Item = <I as InputTakeAtPosition>::Item;
+
+  fn split_at_position_complete<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+    E: ParseError<Self>,
+  {
+    stateful_clone_map_result(self, move |data| data.split_at_position_complete(predicate))
+  }
+
+  fn split_at_position_streaming<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+    E: ParseError<Self>,
+  {
+    stateful_clone_map_result(self, move |data| {
+      data.split_at_position_streaming(predicate)
+    })
+  }
+
+  fn split_at_position1_streaming<P, E>(
+    &self,
+    predicate: P,
+    kind: ErrorKind,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+    E: ParseError<Self>,
+  {
+    stateful_clone_map_result(self, move |data| {
+      data.split_at_position1_streaming(predicate, kind)
+    })
+  }
+
+  fn split_at_position1_complete<P, E>(
+    &self,
+    predicate: P,
+    kind: ErrorKind,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+    E: ParseError<Self>,
+  {
+    stateful_clone_map_result(self, move |data| {
+      data.split_at_position1_complete(predicate, kind)
+    })
+  }
+}
+
+fn stateful_clone_map_result<I, S, E, F>(
+  input: &Stateful<I, S>,
+  f: F,
+) -> IResult<Stateful<I, S>, Stateful<I, S>, E>
+where
+  E: ParseError<Stateful<I, S>>,
+  S: Clone,
+  F: FnOnce(&I) -> IResult<I, I>,
+{
+  let map_error = |error: crate::error::Error<I>| {
+    E::from_error_kind(
+      Stateful {
+        input: error.input,
+        state: input.state.clone(),
+      },
+      error.code,
+    )
+  };
+  f(&input.input)
+    .map(|(remaining, output)| {
+      (
+        Stateful {
+          input: remaining,
+          state: input.state.clone(),
+        },
+        Stateful {
+          input: output,
+          state: input.state.clone(),
+        },
+      )
+    })
+    .map_err(|error| match error {
+      Err::Error(error) => Err::Error(map_error(error)),
+      Err::Failure(error) => Err::Failure(map_error(error)),
+      Err::Incomplete(needed) => Err::Incomplete(needed),
+    })
 }
 
 impl<I: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputTakeAtPosition
@@ -1300,6 +1575,19 @@ pub trait Compare<T> {
   /// the result. This is a temporary solution until
   /// a better one appears
   fn compare_no_case(&self, t: T) -> CompareResult;
+}
+
+impl<I, S, U> Compare<U> for Stateful<I, S>
+where
+  I: Compare<U>,
+{
+  fn compare(&self, other: U) -> CompareResult {
+    self.input.compare(other)
+  }
+
+  fn compare_no_case(&self, other: U) -> CompareResult {
+    self.input.compare_no_case(other)
+  }
 }
 
 impl<I, T> Compare<T> for Streaming<I>
@@ -1792,6 +2080,16 @@ pub trait ParseTo<R> {
   fn parse_to(&self) -> Option<R>;
 }
 
+impl<I, S, R> ParseTo<R> for Stateful<I, S>
+where
+  I: ParseTo<R>,
+{
+  #[inline(always)]
+  fn parse_to(&self) -> Option<R> {
+    self.input.parse_to()
+  }
+}
+
 impl<I, R> ParseTo<R> for Streaming<I>
 where
   I: ParseTo<R>,
@@ -1822,6 +2120,20 @@ impl<'a, R: FromStr> ParseTo<R> for &'a str {
 pub trait Slice<R> {
   /// Slices self according to the range argument
   fn slice(&self, range: R) -> Self;
+}
+
+impl<I, S, R> Slice<R> for Stateful<I, S>
+where
+  I: Slice<R>,
+  S: Clone,
+{
+  #[inline(always)]
+  fn slice(&self, range: R) -> Self {
+    Stateful {
+      input: self.input.slice(range),
+      state: self.state.clone(),
+    }
+  }
 }
 
 impl<I, R> Slice<R> for Streaming<I>
@@ -1881,6 +2193,22 @@ pub trait IntoOutput {
   fn into_output(self) -> Self::Output;
   /// Convert an `Output` type to be used as `Input`
   fn merge_output(self, inner: Self::Output) -> Self;
+}
+
+impl<I, S> IntoOutput for Stateful<I, S>
+where
+  I: IntoOutput,
+{
+  type Output = I::Output;
+  #[inline]
+  fn into_output(self) -> Self::Output {
+    self.input.into_output()
+  }
+  #[inline]
+  fn merge_output(mut self, inner: Self::Output) -> Self {
+    self.input = I::merge_output(self.input, inner);
+    self
+  }
 }
 
 impl<I> IntoOutput for Streaming<I>
@@ -1973,6 +2301,22 @@ pub trait ExtendInto {
   fn new_builder(&self) -> Self::Extender;
   /// Accumulate the input into an accumulator
   fn extend_into(&self, acc: &mut Self::Extender);
+}
+
+impl<I, S> ExtendInto for Stateful<I, S>
+where
+  I: ExtendInto,
+{
+  type Item = I::Item;
+  type Extender = I::Extender;
+
+  fn new_builder(&self) -> Self::Extender {
+    self.input.new_builder()
+  }
+
+  fn extend_into(&self, extender: &mut Self::Extender) {
+    self.input.extend_into(extender)
+  }
 }
 
 impl<I> ExtendInto for Streaming<I>
@@ -2169,6 +2513,22 @@ pub trait HexDisplay {
 
 #[cfg(feature = "std")]
 static CHARS: &[u8] = b"0123456789abcdef";
+
+#[cfg(feature = "std")]
+impl<I, S> HexDisplay for Stateful<I, S>
+where
+  I: HexDisplay,
+{
+  #[inline(always)]
+  fn to_hex(&self, chunk_size: usize) -> String {
+    self.input.to_hex(chunk_size)
+  }
+
+  #[inline(always)]
+  fn to_hex_from(&self, chunk_size: usize, from: usize) -> String {
+    self.input.to_hex_from(chunk_size, from)
+  }
+}
 
 #[cfg(feature = "std")]
 impl<I> HexDisplay for Streaming<I>
