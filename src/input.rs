@@ -76,9 +76,9 @@ use crate::lib::std::vec::Vec;
 /// Allow collecting the span of a parsed token
 ///
 /// See [`Parser::span`][crate::Parser::span] and [`Parser::with_span`][crate::Parser::with_span] for more details
-#[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Located<I> {
-  initial: I,
+#[derive(Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Located<I: IntoOutput> {
+  initial: <I as IntoOutput>::Output,
   input: I,
 }
 
@@ -88,22 +88,28 @@ where
 {
   /// Wrap another Input with span tracking
   pub fn new(input: I) -> Self {
-    let initial = input.clone();
+    let initial = input.clone().into_output();
     Self { initial, input }
   }
 
   fn location(&self) -> usize {
-    self.initial.offset(&self.input)
+    self.initial.offset(&self.input.clone().into_output())
   }
 }
 
-impl<I> AsRef<I> for Located<I> {
+impl<I> AsRef<I> for Located<I>
+where
+  I: IntoOutput,
+{
   fn as_ref(&self) -> &I {
     &self.input
   }
 }
 
-impl<I> crate::lib::std::ops::Deref for Located<I> {
+impl<I> crate::lib::std::ops::Deref for Located<I>
+where
+  I: IntoOutput,
+{
   type Target = I;
 
   #[inline(always)]
@@ -309,7 +315,8 @@ pub trait InputIsStreaming<const YES: bool>: Sized {
 
 impl<I> InputIsStreaming<true> for Located<I>
 where
-  I: InputIsStreaming<true>,
+  I: InputIsStreaming<true> + IntoOutput,
+  <I as InputIsStreaming<true>>::Complete: IntoOutput,
 {
   type Complete = Located<<I as InputIsStreaming<true>>::Complete>;
   type Streaming = Self;
@@ -317,7 +324,7 @@ where
   #[inline(always)]
   fn into_complete(self) -> Self::Complete {
     Located {
-      initial: self.initial.into_complete(),
+      initial: self.initial,
       input: self.input.into_complete(),
     }
   }
@@ -329,7 +336,8 @@ where
 
 impl<I> InputIsStreaming<false> for Located<I>
 where
-  I: InputIsStreaming<false>,
+  I: InputIsStreaming<false> + IntoOutput,
+  <I as InputIsStreaming<false>>::Streaming: IntoOutput,
 {
   type Complete = Self;
   type Streaming = Located<<I as InputIsStreaming<false>>::Streaming>;
@@ -341,7 +349,7 @@ where
   #[inline(always)]
   fn into_streaming(self) -> Self::Streaming {
     Located {
-      initial: self.initial.into_streaming(),
+      initial: self.initial,
       input: self.input.into_streaming(),
     }
   }
@@ -497,7 +505,7 @@ pub trait InputLength {
 
 impl<I> InputLength for Located<I>
 where
-  I: InputLength,
+  I: InputLength + IntoOutput,
 {
   fn input_len(&self) -> usize {
     self.input.input_len()
@@ -566,7 +574,7 @@ pub trait Offset {
 
 impl<I> Offset for Located<I>
 where
-  I: Offset,
+  I: Offset + IntoOutput,
 {
   fn offset(&self, other: &Self) -> usize {
     self.input.offset(&other.input)
@@ -636,7 +644,7 @@ pub trait AsBytes {
 
 impl<I> AsBytes for Located<I>
 where
-  I: AsBytes,
+  I: AsBytes + IntoOutput,
 {
   fn as_bytes(&self) -> &[u8] {
     self.input.as_bytes()
@@ -922,7 +930,7 @@ pub trait InputIter {
 
 impl<I> InputIter for Located<I>
 where
-  I: InputIter,
+  I: InputIter + IntoOutput,
 {
   type Item = I::Item;
   type Iter = I::Iter;
@@ -1108,7 +1116,8 @@ pub trait InputTake: Sized {
 
 impl<I> InputTake for Located<I>
 where
-  I: InputTake + Clone,
+  I: InputTake + IntoOutput,
+  <I as IntoOutput>::Output: Clone,
 {
   fn take(&self, count: usize) -> Self {
     Self {
@@ -1273,7 +1282,8 @@ pub trait InputTakeAtPosition: Sized {
 
 impl<I> InputTakeAtPosition for Located<I>
 where
-  I: InputTakeAtPosition + Clone,
+  I: InputTakeAtPosition + IntoOutput,
+  <I as IntoOutput>::Output: Clone,
 {
   type Item = <I as InputTakeAtPosition>::Item;
 
@@ -1326,7 +1336,8 @@ where
 
 fn located_clone_map_result<I, E, F>(input: &Located<I>, f: F) -> IResult<Located<I>, Located<I>, E>
 where
-  I: Clone,
+  I: IntoOutput,
+  <I as IntoOutput>::Output: Clone,
   E: ParseError<Located<I>>,
   F: FnOnce(&I) -> IResult<I, I>,
 {
@@ -1767,7 +1778,7 @@ pub trait Compare<T> {
 
 impl<I, U> Compare<U> for Located<I>
 where
-  I: Compare<U>,
+  I: Compare<U> + IntoOutput,
 {
   fn compare(&self, other: U) -> CompareResult {
     self.input.compare(other)
@@ -2219,7 +2230,7 @@ pub trait FindSubstring<T> {
 
 impl<I, T> FindSubstring<T> for Located<I>
 where
-  I: FindSubstring<T>,
+  I: FindSubstring<T> + IntoOutput,
 {
   #[inline(always)]
   fn find_substring(&self, substr: T) -> Option<usize> {
@@ -2303,7 +2314,7 @@ pub trait ParseTo<R> {
 
 impl<I, R> ParseTo<R> for Located<I>
 where
-  I: ParseTo<R>,
+  I: ParseTo<R> + IntoOutput,
 {
   #[inline(always)]
   fn parse_to(&self) -> Option<R> {
@@ -2355,7 +2366,8 @@ pub trait Slice<R> {
 
 impl<I, R> Slice<R> for Located<I>
 where
-  I: Slice<R> + Clone,
+  I: Slice<R> + IntoOutput,
+  <I as IntoOutput>::Output: Clone,
 {
   #[inline(always)]
   fn slice(&self, range: R) -> Self {
@@ -2565,7 +2577,7 @@ pub trait ExtendInto {
 
 impl<I> ExtendInto for Located<I>
 where
-  I: ExtendInto,
+  I: ExtendInto + IntoOutput,
 {
   type Item = I::Item;
   type Extender = I::Extender;
@@ -2793,7 +2805,7 @@ static CHARS: &[u8] = b"0123456789abcdef";
 #[cfg(feature = "std")]
 impl<I> HexDisplay for Located<I>
 where
-  I: HexDisplay,
+  I: HexDisplay + IntoOutput,
 {
   #[inline(always)]
   fn to_hex(&self, chunk_size: usize) -> String {
