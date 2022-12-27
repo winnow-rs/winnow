@@ -1,7 +1,7 @@
 [package]
 
 name = "nom8"
-version = "0.1.0"
+version = "0.2.0"
 description = "A byte-oriented, zero-copy, parser combinators library (fork for proposals for v8)"
 license = "MIT"
 repository = "https://github.com/epage/nom-experimental"
