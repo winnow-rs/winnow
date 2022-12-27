@@ -3,6 +3,31 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Breaking Changes
+
+From nom8
+- Removed `pub use bits::*;` into root namespace (epage/nom-experiment#52)
+- Removed `error::error_to_u32` (epage/nom-experiment#54)a
+
+From 0.1.0
+- Removed `nom::character::char` in favor of `nom::bytes::one_of` (epage/nom-experiment#45)
+- Changed `IntoOutput` to allow reconstructing state (epage/nom-experiment#57)
+
+### Deprecations
+
+- Deprecated `ParseError::from_char` in favor of `ContextError` (epage/nom-experiment#45)
+- Deprecated `error::make_error` and `error::append_error` (epage/nom-experiment#55)
+
+### Feature
+
+- `nom::input::Stateful` for attaching state to the input type (epage/nom-experiment#58)
+- `nom::input::Located` for tracking the input's location, along with `Parser::span` and `Parser::with_span` to capture it (epage/nom-experiment#58)
+
+### Fixes
+
+From 0.1.0
+- Generalize `InputTakeAtPosition` for `Streaming`
+
 ## [0.1.0] - 2022-12-23
 
 ### Breaking Changes
