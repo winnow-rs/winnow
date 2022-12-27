@@ -2016,6 +2016,16 @@ pub trait FindSubstring<T> {
   fn find_substring(&self, substr: T) -> Option<usize>;
 }
 
+impl<I, S, T> FindSubstring<T> for Stateful<I, S>
+where
+  I: FindSubstring<T>,
+{
+  #[inline(always)]
+  fn find_substring(&self, substr: T) -> Option<usize> {
+    self.input.find_substring(substr)
+  }
+}
+
 impl<I, T> FindSubstring<T> for Streaming<I>
 where
   I: FindSubstring<T>,
