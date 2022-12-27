@@ -593,6 +593,7 @@ impl<I, E> FromExternalError<I, E> for () {
 }
 
 /// Creates an error from the input position and an [ErrorKind]
+#[deprecated(since = "8.0.0", note = "Replaced with `ParseError::from_error_kind`")]
 pub fn make_error<I, E: ParseError<I>>(input: I, kind: ErrorKind) -> E {
   E::from_error_kind(input, kind)
 }
@@ -600,6 +601,7 @@ pub fn make_error<I, E: ParseError<I>>(input: I, kind: ErrorKind) -> E {
 /// Combines an existing error with a new one created from the input
 /// position and an [ErrorKind]. This is useful when backtracking
 /// through a parse tree, accumulating error context on the way
+#[deprecated(since = "8.0.0", note = "Replaced with `ParseError::append`")]
 pub fn append_error<I, E: ParseError<I>>(input: I, kind: ErrorKind, other: E) -> E {
   E::append(input, kind, other)
 }
@@ -938,7 +940,7 @@ impl ErrorKind {
 #[macro_export(local_inner_macros)]
 macro_rules! error_position(
   ($input:expr, $code:expr) => ({
-    $crate::error::make_error($input, $code)
+    $crate::error::ParseError::from_error_kind($input, $code)
   });
 );
 
@@ -949,7 +951,7 @@ macro_rules! error_position(
 #[macro_export(local_inner_macros)]
 macro_rules! error_node_position(
   ($input:expr, $code:expr, $next:expr) => ({
-    $crate::error::append_error($input, $code, $next)
+    $crate::error::ParseError::append($input, $code, $next)
   });
 );
 
