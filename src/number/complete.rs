@@ -1641,7 +1641,6 @@ where
 {
   let (i, sign) = sign(input.clone())?;
 
-  //let (i, zeroes) = take_while(|c: <T as InputTakeAtPosition>::Item| c.as_char() == '0')(i)?;
   let (i, zeroes) = match i.as_bytes().iter().position(|c| *c != b'0') {
     Some(index) => i.take_split(index),
     None => i.take_split(i.input_len()),
@@ -1754,20 +1753,6 @@ where
   T: AsBytes,
   T: for<'a> Compare<&'a [u8]>,
 {
-  /*
-  let (i, (sign, integer, fraction, exponent)) = recognize_float_parts(input)?;
-
-  let mut float: f32 = minimal_lexical::parse_float(
-    integer.as_bytes().iter(),
-    fraction.as_bytes().iter(),
-    exponent,
-  );
-  if !sign {
-    float = -float;
-  }
-
-  Ok((i, float))
-      */
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
     Some(f) => Ok((i, f)),
@@ -1812,20 +1797,6 @@ where
   T: AsBytes,
   T: for<'a> Compare<&'a [u8]>,
 {
-  /*
-  let (i, (sign, integer, fraction, exponent)) = recognize_float_parts(input)?;
-
-  let mut float: f64 = minimal_lexical::parse_float(
-    integer.as_bytes().iter(),
-    fraction.as_bytes().iter(),
-    exponent,
-  );
-  if !sign {
-    float = -float;
-  }
-
-  Ok((i, float))
-      */
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
     Some(f) => Ok((i, f)),
