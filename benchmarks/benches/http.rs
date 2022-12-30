@@ -4,9 +4,10 @@
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 use criterion::*;
+use nom::input::Located;
 use nom::{IResult, bytes::{tag, one_of, take_while1}, character::{line_ending}, multi::many1};
 
-type Input<'i> = &'i [u8];
+type Input<'i> = Located<&'i [u8]>;
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
 #[derive(Debug)]
@@ -113,7 +114,7 @@ fn request(input: Input<'_>) -> IResult<Input<'_>, (Request<'_>, Vec<Header<'_>>
 
 
 fn parse(data: &[u8]) -> Option<Vec<(Request<'_>, Vec<Header<'_>>)>> {
-  let mut buf = &data[..];
+  let mut buf = Located::new(&data[..]);
   let mut v = Vec::new();
   loop {
     match request(buf) {

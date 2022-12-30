@@ -5,6 +5,7 @@ extern crate criterion;
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 use criterion::Criterion;
+use nom::input::Located;
 use nom::{
   branch::alt,
   bytes::{any, none_of, one_of, tag, take},
@@ -17,7 +18,7 @@ use nom::{
 
 use std::collections::HashMap;
 
-type Input<'i> = &'i str;
+type Input<'i> = Located<&'i str>;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum JsonValue {
@@ -147,7 +148,7 @@ fn json_bench(c: &mut Criterion) {
 
   // println!("data:\n{:?}", json(data));
   c.bench_function("json", |b| {
-    b.iter(|| json(data).unwrap());
+    b.iter(|| json(Located::new(data)).unwrap());
   });
 }
 

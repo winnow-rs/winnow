@@ -5,6 +5,8 @@ extern crate criterion;
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 use criterion::Criterion;
+use nom::input::IntoOutput;
+use nom::input::Located;
 use nom::{
   branch::alt,
   bytes::one_of,
@@ -16,7 +18,7 @@ use nom::{
 
 // Parser definition
 
-type Input<'i> = &'i [u8];
+type Input<'i> = Located<&'i [u8]>;
 
 // We transform an integer string into a i64, ignoring surrounding whitespaces
 // We look for a digit suite, and try to convert it.
@@ -70,14 +72,14 @@ fn arithmetic(c: &mut Criterion) {
   let data = b"  2*2 / ( 5 - 1) + 3 / 4 * (2 - 7 + 567 *12 /2) + 3*(1+2*( 45 /2));";
 
   assert_eq!(
-    expr(data),
+    expr(Located::new(data)).map(|(i, o)| (i.into_output(), o)),
     Ok((
       &b";"[..],
       2 * 2 / (5 - 1) + 3 / 4 * (2 - 7 + 567 * 12 / 2) + 3 * (1 + 2 * (45 / 2)),
     ))
   );
   c.bench_function("arithmetic", |b| {
-    b.iter(|| expr(data).unwrap());
+    b.iter(|| expr(Located::new(data)).unwrap());
   });
 }
 

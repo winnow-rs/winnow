@@ -3,6 +3,7 @@ static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 use criterion::*;
 
+use nom::input::Located;
 use nom::{
   bytes::{one_of, tag, take_till, take_while, take_while1},
   character::{alphanumeric1 as alphanumeric, not_line_ending, space0 as space},
@@ -14,7 +15,7 @@ use nom::{
 
 use std::collections::HashMap;
 
-type Input<'i> = &'i str;
+type Input<'i> = Located<&'i str>;
 
 fn is_line_ending_or_comment(chr: char) -> bool {
   chr == ';' || chr == '\n'
@@ -81,7 +82,7 @@ file=payroll.dat
   let mut group = c.benchmark_group("ini str");
   group.throughput(Throughput::Bytes(s.len() as u64));
   group.bench_function(BenchmarkId::new("parse", s.len()), |b| {
-    b.iter(|| categories(s).unwrap())
+    b.iter(|| categories(Located::new(s)).unwrap())
   });
 }
 

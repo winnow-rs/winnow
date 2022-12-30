@@ -3,6 +3,7 @@ static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 use criterion::*;
 
+use nom::input::Located;
 use nom::{
   bytes::{one_of, take_while},
   character::{alphanumeric1 as alphanumeric, multispace1 as multispace, space1 as space},
@@ -14,7 +15,7 @@ use nom::{
 use std::collections::HashMap;
 use std::str;
 
-type Input<'i> = &'i [u8];
+type Input<'i> = Located<&'i [u8]>;
 
 fn category(i: Input<'_>) -> IResult<Input<'_>, &str> {
   delimited(one_of('['), take_while(|c| c != b']'), one_of(']'))
@@ -56,7 +57,7 @@ file=payroll.dat
   let mut group = c.benchmark_group("ini");
   group.throughput(Throughput::Bytes(str.len() as u64));
   group.bench_function(BenchmarkId::new("parse", str.len()), |b| {
-    b.iter(|| categories(str.as_bytes()).unwrap())
+    b.iter(|| categories(Located::new(str.as_bytes())).unwrap())
   });
 }
 
@@ -73,7 +74,7 @@ file=payroll.dat
   let mut group = c.benchmark_group("ini keys and values");
   group.throughput(Throughput::Bytes(str.len() as u64));
   group.bench_function(BenchmarkId::new("parse", str.len()), |b| {
-    b.iter(|| acc(str.as_bytes()).unwrap())
+    b.iter(|| acc(Located::new(str.as_bytes())).unwrap())
   });
 }
 
@@ -83,7 +84,7 @@ fn bench_ini_key_value(c: &mut Criterion) {
   let mut group = c.benchmark_group("ini key value");
   group.throughput(Throughput::Bytes(str.len() as u64));
   group.bench_function(BenchmarkId::new("parse", str.len()), |b| {
-    b.iter(|| key_value(str.as_bytes()).unwrap())
+    b.iter(|| key_value(Located::new(str.as_bytes())).unwrap())
   });
 }
 
