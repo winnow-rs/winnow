@@ -78,8 +78,8 @@ use crate::lib::std::vec::Vec;
 /// See [`Parser::span`][crate::Parser::span] and [`Parser::with_span`][crate::Parser::with_span] for more details
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Located<I> {
-  initial: I,
   input: I,
+  location: usize,
 }
 
 impl<I> Located<I>
@@ -88,12 +88,11 @@ where
 {
   /// Wrap another Input with span tracking
   pub fn new(input: I) -> Self {
-    let initial = input.clone();
-    Self { initial, input }
+    Self { input, location: 0 }
   }
 
   fn location(&self) -> usize {
-    self.initial.offset(&self.input)
+    self.location
   }
 }
 
@@ -317,8 +316,8 @@ where
   #[inline(always)]
   fn into_complete(self) -> Self::Complete {
     Located {
-      initial: self.initial.into_complete(),
       input: self.input.into_complete(),
+      location: self.location,
     }
   }
   #[inline(always)]
@@ -341,8 +340,8 @@ where
   #[inline(always)]
   fn into_streaming(self) -> Self::Streaming {
     Located {
-      initial: self.initial.into_streaming(),
       input: self.input.into_streaming(),
+      location: self.location,
     }
   }
 }
@@ -1109,26 +1108,14 @@ pub trait InputTake: Sized {
 impl<I> InputTake for Located<I>
 where
   I: InputTake + Clone,
+  Self: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
 {
   fn take(&self, count: usize) -> Self {
-    Self {
-      initial: self.initial.clone(),
-      input: self.input.take(count),
-    }
+    self.slice(..count)
   }
 
   fn take_split(&self, count: usize) -> (Self, Self) {
-    let (left, right) = self.input.take_split(count);
-    (
-      Self {
-        initial: self.initial.clone(),
-        input: left,
-      },
-      Self {
-        initial: self.initial.clone(),
-        input: right,
-      },
-    )
+    (self.slice(count..), self.slice(..count))
   }
 }
 
@@ -1273,16 +1260,20 @@ pub trait InputTakeAtPosition: Sized {
 
 impl<I> InputTakeAtPosition for Located<I>
 where
-  I: InputTakeAtPosition + Clone,
+  I: InputIter + InputLength + InputTakeAtPosition + Clone,
+  Self: InputTake + InputIter + Copy,
 {
-  type Item = <I as InputTakeAtPosition>::Item;
+  type Item = <I as InputIter>::Item;
 
   fn split_at_position_complete<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
     E: ParseError<Self>,
   {
-    located_clone_map_result(self, move |data| data.split_at_position_complete(predicate))
+    match self.split_at_position_streaming(predicate) {
+      Err(Err::Incomplete(_)) => Ok(self.take_split(self.input_len())),
+      result => result,
+    }
   }
 
   fn split_at_position_streaming<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
@@ -1290,9 +1281,10 @@ where
     P: Fn(Self::Item) -> bool,
     E: ParseError<Self>,
   {
-    located_clone_map_result(self, move |data| {
-      data.split_at_position_streaming(predicate)
-    })
+    match self.input.position(predicate) {
+      Some(n) => Ok(self.take_split(n)),
+      None => Err(Err::Incomplete(Needed::new(1))),
+    }
   }
 
   fn split_at_position1_streaming<P, E>(
@@ -1304,9 +1296,11 @@ where
     P: Fn(Self::Item) -> bool,
     E: ParseError<Self>,
   {
-    located_clone_map_result(self, move |data| {
-      data.split_at_position1_streaming(predicate, kind)
-    })
+    match self.input.position(predicate) {
+      Some(0) => Err(Err::Error(E::from_error_kind(*self, kind))),
+      Some(n) => Ok(self.take_split(n)),
+      None => Err(Err::Incomplete(Needed::new(1))),
+    }
   }
 
   fn split_at_position1_complete<P, E>(
@@ -1318,45 +1312,18 @@ where
     P: Fn(Self::Item) -> bool,
     E: ParseError<Self>,
   {
-    located_clone_map_result(self, move |data| {
-      data.split_at_position1_complete(predicate, kind)
-    })
+    match self.input.position(predicate) {
+      Some(0) => Err(Err::Error(E::from_error_kind(*self, kind))),
+      Some(n) => Ok(self.take_split(n)),
+      None => {
+        if self.input.input_len() == 0 {
+          Err(Err::Error(E::from_error_kind(*self, kind)))
+        } else {
+          Ok(self.take_split(self.input_len()))
+        }
+      }
+    }
   }
-}
-
-fn located_clone_map_result<I, E, F>(input: &Located<I>, f: F) -> IResult<Located<I>, Located<I>, E>
-where
-  I: Clone,
-  E: ParseError<Located<I>>,
-  F: FnOnce(&I) -> IResult<I, I>,
-{
-  let map_error = |error: crate::error::Error<I>| {
-    E::from_error_kind(
-      Located {
-        initial: input.initial.clone(),
-        input: error.input,
-      },
-      error.code,
-    )
-  };
-  f(&input.input)
-    .map(|(remaining, output)| {
-      (
-        Located {
-          initial: input.initial.clone(),
-          input: remaining,
-        },
-        Located {
-          initial: input.initial.clone(),
-          input: output,
-        },
-      )
-    })
-    .map_err(|error| match error {
-      Err::Error(error) => Err::Error(map_error(error)),
-      Err::Failure(error) => Err::Failure(map_error(error)),
-      Err::Incomplete(needed) => Err::Incomplete(needed),
-    })
 }
 
 impl<I, S> InputTakeAtPosition for Stateful<I, S>
@@ -2355,13 +2322,15 @@ pub trait Slice<R> {
 
 impl<I, R> Slice<R> for Located<I>
 where
-  I: Slice<R> + Clone,
+  I: AsBytes + Offset + Slice<R> + Slice<RangeTo<usize>>,
 {
   #[inline(always)]
   fn slice(&self, range: R) -> Self {
+    let sliced = self.input.slice(range);
+    let offset = self.input.offset(&sliced);
     Located {
-      initial: self.initial.clone(),
-      input: self.input.slice(range),
+      input: sliced,
+      location: self.location + offset,
     }
   }
 }
