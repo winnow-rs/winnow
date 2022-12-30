@@ -80,6 +80,7 @@ use crate::lib::std::vec::Vec;
 pub struct Located<I> {
   input: I,
   location: usize,
+  line: u32,
 }
 
 impl<I> Located<I>
@@ -88,7 +89,11 @@ where
 {
   /// Wrap another Input with span tracking
   pub fn new(input: I) -> Self {
-    Self { input, location: 0 }
+    Self {
+      input,
+      location: 0,
+      line: 1,
+    }
   }
 
   fn location(&self) -> usize {
@@ -318,6 +323,7 @@ where
     Located {
       input: self.input.into_complete(),
       location: self.location,
+      line: self.line,
     }
   }
   #[inline(always)]
@@ -342,6 +348,7 @@ where
     Located {
       input: self.input.into_streaming(),
       location: self.location,
+      line: self.line,
     }
   }
 }
@@ -2328,9 +2335,17 @@ where
   fn slice(&self, range: R) -> Self {
     let sliced = self.input.slice(range);
     let offset = self.input.offset(&sliced);
+
+    let consumed = self.input.slice(..offset);
+    let consumed_as_bytes = consumed.as_bytes();
+    let iter = memchr::Memchr::new(b'\n', consumed_as_bytes);
+    let number_of_lines = iter.count() as u32;
+    let next_line = self.line + number_of_lines;
+
     Located {
       input: sliced,
       location: self.location + offset,
+      line: next_line,
     }
   }
 }
