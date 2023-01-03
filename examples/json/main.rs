@@ -1,6 +1,8 @@
 #![cfg(feature = "alloc")]
 
 mod parser;
+#[allow(dead_code)]
+mod parser_streaming;
 
 use winnow::error::convert_error;
 use winnow::error::Error;

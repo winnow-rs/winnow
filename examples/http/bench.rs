@@ -1,4 +1,5 @@
 mod parser;
+mod parser_streaming;
 
 fn one_test(c: &mut criterion::Criterion) {
   let data = &b"GET / HTTP/1.1
@@ -14,10 +15,17 @@ Connection: keep-alive
   let mut http_group = c.benchmark_group("http");
   http_group.throughput(criterion::Throughput::Bytes(data.len() as u64));
   http_group.bench_with_input(
-    criterion::BenchmarkId::new("parse", data.len()),
+    criterion::BenchmarkId::new("complete", data.len()),
     data,
     |b, data| {
       b.iter(|| parser::parse(data).unwrap());
+    },
+  );
+  http_group.bench_with_input(
+    criterion::BenchmarkId::new("streaming", data.len()),
+    data,
+    |b, data| {
+      b.iter(|| parser_streaming::parse(data).unwrap());
     },
   );
 
