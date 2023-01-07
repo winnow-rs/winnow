@@ -19,7 +19,8 @@ use crate::{Err, IResult, Parser};
 ///
 /// This does not affect correctness. Nom will always read the full number
 /// of elements regardless of the capacity cap.
-const MAX_INITIAL_CAPACITY: usize = 65536;
+#[cfg(feature = "alloc")]
+const MAX_INITIAL_CAPACITY_BYTES: usize = 65536;
 
 /// Repeats the embedded parser, gathering the results in a `Vec`.
 ///
@@ -384,7 +385,8 @@ where
       return Err(Err::Failure(E::from_error_kind(input, ErrorKind::ManyMN)));
     }
 
-    let mut res = crate::lib::std::vec::Vec::with_capacity(min.clamp(0, MAX_INITIAL_CAPACITY));
+    let max_initial_capacity = MAX_INITIAL_CAPACITY_BYTES / crate::lib::std::mem::size_of::<O>();
+    let mut res = crate::lib::std::vec::Vec::with_capacity(min.clamp(0, max_initial_capacity));
     for count in 0..max {
       let len = input.input_len();
       match parse.parse(input.clone()) {
@@ -563,7 +565,8 @@ where
 {
   move |i: I| {
     let mut input = i.clone();
-    let mut res = crate::lib::std::vec::Vec::with_capacity(count.clamp(0, MAX_INITIAL_CAPACITY));
+    let max_initial_capacity = MAX_INITIAL_CAPACITY_BYTES / crate::lib::std::mem::size_of::<O>();
+    let mut res = crate::lib::std::vec::Vec::with_capacity(count.clamp(0, max_initial_capacity));
 
     for _ in 0..count {
       let input_ = input.clone();

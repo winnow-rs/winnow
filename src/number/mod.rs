@@ -426,7 +426,7 @@ where
 
 /// Recognizes a big endian signed 4 bytes integer.
 ///
-/// *Complete version*: Teturns an error if there is not enough input data.
+/// *Complete version*: Returns an error if there is not enough input data.
 ///
 /// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
 ///
