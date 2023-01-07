@@ -80,6 +80,60 @@ From 0.1.0
 
 - Pulled loose markdown into rustdoc (epage/nom-experiment#1)
 
+## [7.1.2] - 2023-01-01
+
+### Thanks
+
+- @joubs
+- @Fyko
+- @LoganDark
+- @darnuria
+- @jkugelman
+- @barower
+- @puzzlewolf
+- @epage
+- @cky
+- @wolthom
+- @w1ll-i-code
+
+### Changed
+
+- documentation fixes
+- tests fixes
+- limit the initial capacity of the result vector of `many_m_n` to 64kiB
+- bits parser now accept `Parser` implementors instead of only functions
+
+### Added
+
+- implement `Tuple` parsing for the unit type as a special case
+- implement `ErrorConvert` on the unit type to make it usable as error type for bits parsers
+- bool parser for bits input
+
+## [7.1.1] - 2022-03-14
+
+### Thanks
+
+- @ThomasdenH
+- @@SphinxKnight
+- @irevoire
+- @doehyunbaek
+- @pxeger
+- @punkeel
+- @max-sixty
+- @Xiretza
+- @5c077m4n
+- @erihsu
+- @TheNeikos
+- @LoganDark
+- @nickelc
+- @chotchki
+- @ctrlcctrlv
+
+### Changed
+
+- documentation fixes
+- more examples
+
 ## [7.1.0] - 2021-11-04
 
 ### Thanks
@@ -1496,6 +1550,9 @@ Considering the number of changes since the last release, this version can conta
 [Unreleased]: https://github.com/epage/nom8/compare/v0.2.0...HEAD
 [0.2.0]: https://github.com/epage/nom8/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Geal/nom/compare/294ffb3d9e0ade2c3b7ddfff52484b6d643dcce1...v0.1.0
+[7.1.2]: https://github.com/Geal/nom/compare/7.1.1...7.1.2
+[7.1.1]: https://github.com/Geal/nom/compare/7.1.0...7.1.1
+[7.1.0]: https://github.com/Geal/nom/compare/7.0.0...7.1.0
 [7.0.0]: https://github.com/Geal/nom/compare/6.2.1...7.0.0
 [6.2.1]: https://github.com/Geal/nom/compare/6.2.0...6.2.1
 [6.2.0]: https://github.com/Geal/nom/compare/6.1.2...6.2.0

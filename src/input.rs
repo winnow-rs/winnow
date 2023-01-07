@@ -2775,6 +2775,10 @@ impl<I> ErrorConvert<error::VerboseError<(I, usize)>> for error::VerboseError<I>
   }
 }
 
+impl ErrorConvert<()> for () {
+  fn convert(self) {}
+}
+
 /// Helper trait to show a byte slice as a hex dump
 #[cfg(feature = "std")]
 pub trait HexDisplay {

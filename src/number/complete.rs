@@ -318,7 +318,7 @@ where
 
 /// Recognizes a big endian signed 4 bytes integer.
 ///
-/// *Complete version*: Teturns an error if there is not enough input data.
+/// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
 /// # use nom8::{Err, error::ErrorKind, Needed};
 /// # use nom8::Needed::Size;
