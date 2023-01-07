@@ -147,6 +147,8 @@ where
 /// assert_eq!(parse(([0b10000000].as_ref(), 0)), Ok((([0b10000000].as_ref(), 1), true)));
 /// assert_eq!(parse(([0b10000000].as_ref(), 1)), Ok((([0b10000000].as_ref(), 2), false)));
 /// ```
+/// **WARNING:** Deprecated, replaced with [`nom8::bits::bool`][crate::bits::bool]
+#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bits::bool`")]
 pub fn bool<I, E: ParseError<(I, usize)>>(input: (I, usize)) -> IResult<(I, usize), bool, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,

@@ -177,3 +177,33 @@ where
     }
   }
 }
+
+/// Parses one specific bit as a bool.
+///
+/// # Example
+///
+/// ```rust
+/// # use nom8::bits::bool;
+/// # use nom8::IResult;
+/// # use nom8::error::{Error, ErrorKind};
+///
+/// fn parse(input: (&[u8], usize)) -> IResult<(&[u8], usize), bool> {
+///     bool(input)
+/// }
+///
+/// assert_eq!(parse(([0b10000000].as_ref(), 0)), Ok((([0b10000000].as_ref(), 1), true)));
+/// assert_eq!(parse(([0b10000000].as_ref(), 1)), Ok((([0b10000000].as_ref(), 2), false)));
+/// ```
+pub fn bool<I, E: ParseError<(I, usize)>, const STREAMING: bool>(
+  input: (I, usize),
+) -> IResult<(I, usize), bool, E>
+where
+  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength + InputIsStreaming<STREAMING>,
+{
+  #![allow(deprecated)]
+  if STREAMING {
+    streaming::bool(input)
+  } else {
+    complete::bool(input)
+  }
+}

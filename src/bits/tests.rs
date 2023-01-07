@@ -140,3 +140,45 @@ fn test_tag_streaming_err() {
     }))
   );
 }
+
+#[test]
+fn test_bool_0_complete() {
+  let input = [0b10000000].as_ref();
+
+  let result: crate::IResult<(&[u8], usize), bool> = bool((input, 0));
+
+  assert_eq!(result, Ok(((input, 1), true)));
+}
+
+#[test]
+fn test_bool_eof_complete() {
+  let input = [0b10000000].as_ref();
+
+  let result: crate::IResult<(&[u8], usize), bool> = bool((input, 8));
+
+  assert_eq!(
+    result,
+    Err(crate::Err::Error(crate::error::Error {
+      input: (input, 8),
+      code: ErrorKind::Eof
+    }))
+  );
+}
+
+#[test]
+fn test_bool_0_streaming() {
+  let input = Streaming([0b10000000].as_ref());
+
+  let result: crate::IResult<(Streaming<&[u8]>, usize), bool> = bool((input, 0));
+
+  assert_eq!(result, Ok(((input, 1), true)));
+}
+
+#[test]
+fn test_bool_eof_streaming() {
+  let input = Streaming([0b10000000].as_ref());
+
+  let result: crate::IResult<(Streaming<&[u8]>, usize), bool> = bool((input, 8));
+
+  assert_eq!(result, Err(crate::Err::Incomplete(Needed::new(1))));
+}
