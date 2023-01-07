@@ -106,7 +106,10 @@
 //! ## Bit stream parsing
 //!
 //! - [`bits`][crate::bits::bits]: Transforms the current input type (byte slice `&[u8]`) to a bit stream on which bit specific parsers and more general combinators can be applied
-//! - [`bytes`][crate::bits/::bytes]: Transforms its bits stream input back into a byte slice for the underlying parser
+//! - [`bytes`][crate::bits::bytes]: Transforms its bits stream input back into a byte slice for the underlying parser
+//! - [`take`][crate::bits::take]: Take a set number of its
+//! - [`tag`][crate::bits::tag]: Check if a set number of bis matches a pattern
+//! - [`bool`][crate::bits::bool]: Match any one bit
 //!
 //! ## Remaining combinators
 //!
