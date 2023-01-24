@@ -5,7 +5,7 @@ extern crate criterion;
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 use criterion::Criterion;
-use nom8::{
+use winnow::{
   branch::alt,
   bytes::one_of,
   character::{digit1, space0},

@@ -1,9 +1,9 @@
-use nom8::branch::alt;
-use nom8::character::digit1 as digit;
-use nom8::combinator::opt;
-use nom8::prelude::*;
-use nom8::sequence::delimited;
-use nom8::IResult;
+use winnow::branch::alt;
+use winnow::character::digit1 as digit;
+use winnow::combinator::opt;
+use winnow::prelude::*;
+use winnow::sequence::delimited;
+use winnow::IResult;
 
 use std::str;
 use std::str::FromStr;

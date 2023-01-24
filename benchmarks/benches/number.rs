@@ -5,11 +5,11 @@ extern crate criterion;
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 use criterion::Criterion;
-use nom8::number::be_u64;
+use winnow::number::be_u64;
 
 type Input<'i> = &'i [u8];
 
-fn parser(i: Input<'_>) -> nom8::IResult<Input<'_>, u64> {
+fn parser(i: Input<'_>) -> winnow::IResult<Input<'_>, u64> {
   be_u64(i)
 }
 

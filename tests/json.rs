@@ -1,6 +1,6 @@
 #![cfg(feature = "alloc")]
 
-use nom8::{
+use winnow::{
   branch::alt,
   bytes::{any, none_of, tag, take},
   character::{f64, multispace0},

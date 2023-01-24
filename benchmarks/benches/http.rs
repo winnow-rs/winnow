@@ -4,7 +4,7 @@
 static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 use criterion::*;
-use nom8::{IResult, bytes::{tag, one_of, take_while1}, character::{line_ending}, multi::many1};
+use winnow::{IResult, bytes::{tag, one_of, take_while1}, character::{line_ending}, multi::many1};
 
 type Input<'i> = &'i [u8];
 

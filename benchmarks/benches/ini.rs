@@ -3,7 +3,9 @@ static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 use criterion::*;
 
-use nom8::{
+use std::collections::HashMap;
+use std::str;
+use winnow::{
   bytes::{one_of, take_while},
   character::{alphanumeric1 as alphanumeric, multispace1 as multispace, space1 as space},
   combinator::opt,
@@ -11,8 +13,6 @@ use nom8::{
   sequence::{delimited, separated_pair, terminated},
   IResult, Parser,
 };
-use std::collections::HashMap;
-use std::str;
 
 type Input<'i> = &'i [u8];
 

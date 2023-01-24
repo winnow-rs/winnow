@@ -1,18 +1,17 @@
-[package]
+[workspace]
+members = [".", "benchmarks/"]
 
-name = "nom8"
+[package]
+name = "winnow"
 version = "0.2.0"
-description = "A byte-oriented, zero-copy, parser combinators library (fork for proposals for v8)"
+description = "A byte-oriented, zero-copy, parser combinators library"
 license = "MIT"
-repository = "https://github.com/epage/nom-experimental"
+repository = "https://github.com/winnow-rs/winnow"
 keywords = ["parser", "parser-combinators", "parsing", "streaming", "bit"]
 categories = ["parsing"]
 edition = "2018"
-autoexamples = false
-
-# also update in README.md (badge and "Rust version requirements" section)
 rust-version = "1.51.0"  # MSRV
-
+autoexamples = false
 include = [
   "CHANGELOG.md",
   "LICENSE",
@@ -50,7 +49,7 @@ pre-release-replacements = [
   {file="CHANGELOG.md", search="\\.\\.\\.HEAD", replace="...{{tag_name}}", exactly=1},
   {file="CHANGELOG.md", search="ReleaseDate", replace="{{date}}", min=1},
   {file="CHANGELOG.md", search="<!-- next-header -->", replace="<!-- next-header -->\n## [Unreleased] - ReleaseDate\n", exactly=1},
-  {file="CHANGELOG.md", search="<!-- next-url -->", replace="<!-- next-url -->\n[Unreleased]: https://github.com/epage/nom8/compare/{{tag_name}}...HEAD", exactly=1},
+  {file="CHANGELOG.md", search="<!-- next-url -->", replace="<!-- next-url -->\n[Unreleased]: https://github.com/winnow-rs/winnow/compare/{{tag_name}}...HEAD", exactly=1},
 ]
 
 [profile.bench]
@@ -135,11 +134,3 @@ required-features = ["alloc"]
 name = "string"
 required-features = ["alloc"]
 path = "examples/string.rs"
-
-[badges]
-travis-ci = { repository = "Geal/nom" }
-coveralls = { repository = "Geal/nom", branch = "main", service = "github" }
-maintenance = { status = "actively-developed" }
-
-[workspace]
-members = [".", "benchmarks/"]

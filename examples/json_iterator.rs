@@ -1,7 +1,8 @@
 #![cfg(feature = "alloc")]
 
-use nom8::prelude::*;
-use nom8::{
+use std::collections::HashMap;
+use winnow::prelude::*;
+use winnow::{
   branch::alt,
   bytes::one_of,
   bytes::{escaped, tag, take_while},
@@ -12,7 +13,6 @@ use nom8::{
   sequence::{preceded, separated_pair, terminated},
   IResult,
 };
-use std::collections::HashMap;
 
 use std::cell::Cell;
 use std::str;

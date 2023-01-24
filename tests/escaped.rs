@@ -1,7 +1,7 @@
-use nom8::bytes::escaped;
-use nom8::bytes::one_of;
-use nom8::character::digit1;
-use nom8::{error::ErrorKind, Err, IResult};
+use winnow::bytes::escaped;
+use winnow::bytes::one_of;
+use winnow::character::digit1;
+use winnow::{error::ErrorKind, Err, IResult};
 
 fn esc(s: &str) -> IResult<&str, &str, (&str, ErrorKind)> {
   escaped(digit1, '\\', one_of("\"n\\"))(s)
@@ -9,7 +9,7 @@ fn esc(s: &str) -> IResult<&str, &str, (&str, ErrorKind)> {
 
 #[cfg(feature = "alloc")]
 fn esc_trans(s: &str) -> IResult<&str, String, (&str, ErrorKind)> {
-  use nom8::bytes::escaped_transform;
+  use winnow::bytes::escaped_transform;
   escaped_transform(digit1, '\\', "n")(s)
 }
 

@@ -4,7 +4,7 @@ use std::str;
 
 extern crate nom;
 
-use nom8::{
+use winnow::{
   branch::alt,
   bytes::complete::tag,
   character::complete::char,
@@ -34,9 +34,9 @@ fn incr(i: &str) -> IResult<&str, ()> {
 
     // limit the number of recursions, the fuzzer keeps running into them
     if *l.borrow() >= 8192 {
-      return Err(nom8::Err::Failure(nom8::error::Error::new(
+      return Err(winnow::Err::Failure(winnow::error::Error::new(
         i,
-        nom8::error::ErrorKind::Count,
+        winnow::error::ErrorKind::Count,
       )));
     } else {
       Ok((i, ()))

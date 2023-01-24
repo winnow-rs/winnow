@@ -3,8 +3,8 @@ use std::fmt::{Debug, Display, Formatter};
 
 use std::str::FromStr;
 
-use nom8::prelude::*;
-use nom8::{
+use winnow::prelude::*;
+use winnow::{
   branch::alt,
   character::{digit1 as digit, multispace0 as multispace},
   multi::many0,

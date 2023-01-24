@@ -33,8 +33,8 @@ where
 /// the input that matches the argument.
 /// # Example
 /// ```rust
-/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom8::bytes::streaming::tag;
+/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use winnow::bytes::streaming::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
 ///   tag("Hello")(s)
@@ -46,10 +46,10 @@ where
 /// assert_eq!(parser("H"), Err(Err::Incomplete(Needed::new(4))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bytes::tag`][crate::bytes::tag] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::tag`][crate::bytes::tag] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom8::bytes::tag` with input wrapped in `nom8::input::Streaming`"
+  note = "Replaced with `winnow::bytes::tag` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn tag<T, Input, Error: ParseError<Input>>(
   tag: T,
@@ -90,8 +90,8 @@ where
 /// the input that matches the argument with no regard to case.
 /// # Example
 /// ```rust
-/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom8::bytes::streaming::tag_no_case;
+/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use winnow::bytes::streaming::tag_no_case;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
 ///   tag_no_case("hello")(s)
@@ -104,10 +104,10 @@ where
 /// assert_eq!(parser(""), Err(Err::Incomplete(Needed::new(5))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bytes::tag_no_case`][crate::bytes::tag_no_case] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::tag_no_case`][crate::bytes::tag_no_case] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom8::bytes::tag_no_case` with input wrapped in `nom8::input::Streaming`"
+  note = "Replaced with `winnow::bytes::tag_no_case` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn tag_no_case<T, Input, Error: ParseError<Input>>(
   tag: T,
@@ -191,8 +191,8 @@ where
 /// It will return a `Err::Incomplete(Needed::new(1))` if the pattern wasn't met.
 /// # Example
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
-/// use nom8::bytes::streaming::is_not;
+/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// use winnow::bytes::streaming::is_not;
 ///
 /// fn not_space(s: &str) -> IResult<&str, &str> {
 ///   is_not(" \t\r\n")(s)
@@ -204,10 +204,10 @@ where
 /// assert_eq!(not_space(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take_till1`][crate::bytes::take_till1] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till1`][crate::bytes::take_till1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom8::bytes::take_till1` with input wrapped in `nom8::input::Streaming`"
+  note = "Replaced with `winnow::bytes::take_till1` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn is_not<T, Input, Error: ParseError<Input>>(
   arr: T,
@@ -244,8 +244,8 @@ where
 /// or if the pattern reaches the end of the input.
 /// # Example
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
-/// use nom8::bytes::streaming::is_a;
+/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// use winnow::bytes::streaming::is_a;
 ///
 /// fn hex(s: &str) -> IResult<&str, &str> {
 ///   is_a("1234567890ABCDEF")(s)
@@ -258,10 +258,10 @@ where
 /// assert_eq!(hex(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take_while1`][crate::bytes::take_while1] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while1`][crate::bytes::take_while1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom8::bytes::take_while1` with input wrapped in `nom8::input::Streaming`"
+  note = "Replaced with `winnow::bytes::take_while1` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn is_a<T, Input, Error: ParseError<Input>>(
   arr: T,
@@ -297,9 +297,9 @@ where
 /// *Streaming version* will return a `Err::Incomplete(Needed::new(1))` if the pattern reaches the end of the input.
 /// # Example
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
-/// use nom8::bytes::streaming::take_while;
-/// use nom8::input::AsChar;
+/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// use winnow::bytes::streaming::take_while;
+/// use winnow::input::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while(AsChar::is_alpha)(s)
@@ -311,10 +311,10 @@ where
 /// assert_eq!(alpha(b""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take_while`][crate::bytes::take_while] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while`][crate::bytes::take_while] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom8::bytes::take_while` with input wrapped in `nom8::input::Streaming`"
+  note = "Replaced with `winnow::bytes::take_while` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn take_while<T, Input, Error: ParseError<Input>>(
   list: T,
@@ -352,9 +352,9 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom8::bytes::streaming::take_while1;
-/// use nom8::input::AsChar;
+/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use winnow::bytes::streaming::take_while1;
+/// use winnow::input::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while1(AsChar::is_alpha)(s)
@@ -365,10 +365,10 @@ where
 /// assert_eq!(alpha(b"12345"), Err(Err::Error(Error::new(&b"12345"[..], ErrorKind::TakeWhile1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take_while1`][crate::bytes::take_while1] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while1`][crate::bytes::take_while1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom8::bytes::take_while1` with input wrapped in `nom8::input::Streaming`"
+  note = "Replaced with `winnow::bytes::take_while1` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn take_while1<T, Input, Error: ParseError<Input>>(
   list: T,
@@ -406,9 +406,9 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom8::bytes::streaming::take_while_m_n;
-/// use nom8::input::AsChar;
+/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use winnow::bytes::streaming::take_while_m_n;
+/// use winnow::input::AsChar;
 ///
 /// fn short_alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while_m_n(3, 6, AsChar::is_alpha)(s)
@@ -421,10 +421,10 @@ where
 /// assert_eq!(short_alpha(b"12345"), Err(Err::Error(Error::new(&b"12345"[..], ErrorKind::TakeWhileMN))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take_while_m_n`][crate::bytes::take_while_m_n] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while_m_n`][crate::bytes::take_while_m_n] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom8::bytes::take_while_m_n` with input wrapped in `nom8::input::Streaming`"
+  note = "Replaced with `winnow::bytes::take_while_m_n` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn take_while_m_n<T, Input, Error: ParseError<Input>>(
   m: usize,
@@ -510,8 +510,8 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
-/// use nom8::bytes::streaming::take_till;
+/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// use winnow::bytes::streaming::take_till;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
 ///   take_till(|c| c == ':')(s)
@@ -523,10 +523,10 @@ where
 /// assert_eq!(till_colon(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take_till`][crate::bytes::take_till] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till`][crate::bytes::take_till] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom8::bytes::take_till` with input wrapped in `nom8::input::Streaming`"
+  note = "Replaced with `winnow::bytes::take_till` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn take_till<T, Input, Error: ParseError<Input>>(
   list: T,
@@ -562,8 +562,8 @@ where
 /// end of input or if there was not match.
 /// # Example
 /// ```rust
-/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom8::bytes::streaming::take_till1;
+/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use winnow::bytes::streaming::take_till1;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
 ///   take_till1(|c| c == ':')(s)
@@ -575,10 +575,10 @@ where
 /// assert_eq!(till_colon(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take_till1`][crate::bytes::take_till1] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till1`][crate::bytes::take_till1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom8::bytes::take_till1` with input wrapped in `nom8::input::Streaming`"
+  note = "Replaced with `winnow::bytes::take_till1` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn take_till1<T, Input, Error: ParseError<Input>>(
   list: T,
@@ -617,8 +617,8 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
-/// use nom8::bytes::streaming::take;
+/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// use winnow::bytes::streaming::take;
 ///
 /// fn take6(s: &str) -> IResult<&str, &str> {
 ///   take(6usize)(s)
@@ -629,10 +629,10 @@ where
 /// assert_eq!(take6("short"), Err(Err::Incomplete(Needed::Unknown)));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take`][crate::bytes::take] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take`][crate::bytes::take] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom8::bytes::take` with input wrapped in `nom8::input::Streaming`"
+  note = "Replaced with `winnow::bytes::take` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn take<C, Input, Error: ParseError<Input>>(
   count: C,
@@ -669,8 +669,8 @@ where
 /// contain the pattern or if the input is smaller than the pattern.
 /// # Example
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
-/// use nom8::bytes::streaming::take_until;
+/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// use winnow::bytes::streaming::take_until;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
 ///   take_until("eof")(s)
@@ -682,10 +682,10 @@ where
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take_until`][crate::bytes::take_until] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until`][crate::bytes::take_until] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom8::bytes::take_until` with input wrapped in `nom8::input::Streaming`"
+  note = "Replaced with `winnow::bytes::take_until` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn take_until<T, Input, Error: ParseError<Input>>(
   tag: T,
@@ -722,8 +722,8 @@ where
 /// contain the pattern or if the input is smaller than the pattern.
 /// # Example
 /// ```rust
-/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom8::bytes::streaming::take_until1;
+/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use winnow::bytes::streaming::take_until1;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
 ///   take_until1("eof")(s)
@@ -736,10 +736,10 @@ where
 /// assert_eq!(until_eof("eof"),  Err(Err::Error(Error::new("eof", ErrorKind::TakeUntil))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bytes::take_until1`][crate::bytes::take_until1] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until1`][crate::bytes::take_until1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom8::bytes::take_until1` with input wrapped in `nom8::input::Streaming`"
+  note = "Replaced with `winnow::bytes::take_until1` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn take_until1<T, Input, Error: ParseError<Input>>(
   tag: T,
@@ -775,10 +775,10 @@ where
 /// * The third argument matches the escaped characters
 /// # Example
 /// ```
-/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
-/// # use nom8::character::streaming::digit1;
-/// use nom8::bytes::streaming::escaped;
-/// use nom8::character::streaming::one_of;
+/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::character::streaming::digit1;
+/// use winnow::bytes::streaming::escaped;
+/// use winnow::character::streaming::one_of;
 ///
 /// fn esc(s: &str) -> IResult<&str, &str> {
 ///   escaped(digit1, '\\', one_of("\"n\\"))(s)
@@ -789,10 +789,10 @@ where
 /// ```
 ///
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bytes::escaped`][crate::bytes::escaped] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::escaped`][crate::bytes::escaped] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom8::bytes::escaped` with input wrapped in `nom8::input::Streaming`"
+  note = "Replaced with `winnow::bytes::escaped` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn escaped<Input, Error, F, G, O1, O2>(
   mut normal: F,
@@ -895,12 +895,12 @@ where
 /// As an example, the chain `abc\tdef` could be `abc    def` (it also consumes the control character)
 ///
 /// ```
-/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
 /// # use std::str::from_utf8;
-/// use nom8::bytes::streaming::{escaped_transform, tag};
-/// use nom8::character::streaming::alpha1;
-/// use nom8::branch::alt;
-/// use nom8::combinator::value;
+/// use winnow::bytes::streaming::{escaped_transform, tag};
+/// use winnow::character::streaming::alpha1;
+/// use winnow::branch::alt;
+/// use winnow::combinator::value;
 ///
 /// fn parser(input: &str) -> IResult<&str, String> {
 ///   escaped_transform(
@@ -918,10 +918,10 @@ where
 /// ```
 #[cfg(feature = "alloc")]
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bytes::escaped_transform`][crate::bytes::escaped_transform] with input wrapped in [`nom8::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::escaped_transform`][crate::bytes::escaped_transform] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom8::bytes::escaped_transform` with input wrapped in `nom8::input::Streaming`"
+  note = "Replaced with `winnow::bytes::escaped_transform` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn escaped_transform<Input, Error, F, G, O1, O2, ExtendItem, Output>(
   mut normal: F,
