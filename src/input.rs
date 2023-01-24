@@ -123,9 +123,9 @@ impl<I> crate::lib::std::ops::Deref for Located<I> {
 ///
 /// ```
 /// # use std::cell::Cell;
-/// # use nom8::prelude::*;
-/// # use nom8::input::Stateful;
-/// # use nom8::character::alpha1;
+/// # use winnow::prelude::*;
+/// # use winnow::input::Stateful;
+/// # use winnow::character::alpha1;
 /// # type Error = ();
 ///
 /// #[derive(Clone, Debug)]
@@ -191,7 +191,7 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 /// Here is how it works in practice:
 ///
 /// ```rust
-/// use nom8::{IResult, Err, Needed, error::{Error, ErrorKind}, bytes, character, input::Streaming};
+/// use winnow::{IResult, Err, Needed, error::{Error, ErrorKind}, bytes, character, input::Streaming};
 ///
 /// fn take_streaming(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
 ///   bytes::take(4u8)(i)
@@ -709,7 +709,7 @@ pub trait AsChar {
   /// Makes a char from self
   ///
   /// ```
-  /// use nom8::input::AsChar as _;
+  /// use winnow::input::AsChar as _;
   ///
   /// assert_eq!('a'.as_char(), 'a');
   /// assert_eq!(u8::MAX.as_char(), std::char::from_u32(u8::MAX as u32).unwrap());
@@ -1971,9 +1971,9 @@ impl<'a, const LEN: usize> Compare<[u8; LEN]> for &'a [u8] {
 ///
 /// For example, you could implement `hex_digit0` as:
 /// ```
-/// # use nom8::prelude::*;
-/// # use nom8::{Err, error::ErrorKind, error::Error, Needed};
-/// # use nom8::bytes::take_while1;
+/// # use winnow::prelude::*;
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::bytes::take_while1;
 /// fn hex_digit1(input: &str) -> IResult<&str, &str> {
 ///     take_while1(('a'..='f', 'A'..='F', '0'..='9')).parse(input)
 /// }

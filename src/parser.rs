@@ -14,10 +14,10 @@ use core::num::NonZeroUsize;
 /// Holds the result of parsing functions
 ///
 /// It depends on the input type `I`, the output type `O`, and the error type `E`
-/// (by default `(I, nom8::ErrorKind)`)
+/// (by default `(I, winnow::ErrorKind)`)
 ///
 /// The `Ok` side is a pair containing the remainder of the input (the part of the data that
-/// was not parsed) and the produced value. The `Err` side contains an instance of `nom8::Err`.
+/// was not parsed) and the produced value. The `Err` side contains an instance of `winnow::Err`.
 ///
 /// Outside of the parsing code, you can use the [`FinishIResult::finish`] method to convert
 /// it to a more common result type
@@ -82,12 +82,12 @@ where
 #[doc(hidden)]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `FinishIResult` which is available via `nom8::prelude`"
+  note = "Replaced with `FinishIResult` which is available via `winnow::prelude`"
 )]
 pub trait Finish<I, O, E> {
   #[deprecated(
     since = "8.0.0",
-    note = "Replaced with `FinishIResult::finish_err` which is available via `nom8::prelude`"
+    note = "Replaced with `FinishIResult::finish_err` which is available via `winnow::prelude`"
   )]
   fn finish(self) -> Result<(I, O), E>;
 }
@@ -321,7 +321,7 @@ where
 ///
 /// The simplest way to implement a `Parser` is with a function
 /// ```rust
-/// use nom8::prelude::*;
+/// use winnow::prelude::*;
 ///
 /// fn success(input: &str) -> IResult<&str, ()> {
 ///     let output = ();
@@ -334,7 +334,7 @@ where
 ///
 /// which can be made stateful by returning a function
 /// ```rust
-/// use nom8::prelude::*;
+/// use winnow::prelude::*;
 ///
 /// fn success<O: Clone>(output: O) -> impl FnMut(&str) -> IResult<&str, O> {
 ///     move |input: &str| {
@@ -349,8 +349,8 @@ where
 /// ```
 ///
 /// Additionally, some basic types implement `Parser` as well, including
-/// - `u8` and `char`, see [`nom8::character::char`][crate::bytes::one_of]
-/// - `&[u8]` and `&str`, see [`nom8::character::char`][crate::bytes::tag]
+/// - `u8` and `char`, see [`winnow::character::char`][crate::bytes::one_of]
+/// - `&[u8]` and `&str`, see [`winnow::character::char`][crate::bytes::tag]
 pub trait Parser<I, O, E> {
   /// A parser takes in input type, and returns a `Result` containing
   /// either the remaining input and the output value, or an error
@@ -366,11 +366,11 @@ pub trait Parser<I, O, E> {
   /// into [`length_data`][crate::multi::length_data] and `g` into
   /// [`complete`][Parser::complete]:
   /// ```rust,compile_fail
-  /// # use nom8::prelude::*;
-  /// # use nom8::IResult;
-  /// # use nom8::Parser;
-  /// # use nom8::error::ParseError;
-  /// # use nom8::multi::length_data;
+  /// # use winnow::prelude::*;
+  /// # use winnow::IResult;
+  /// # use winnow::Parser;
+  /// # use winnow::error::ParseError;
+  /// # use winnow::multi::length_data;
   /// pub fn length_value<'i, O, E: ParseError<&'i [u8]>>(
   ///     mut f: impl Parser<&'i [u8], usize, E>,
   ///     mut g: impl Parser<&'i [u8], O, E>
@@ -385,11 +385,11 @@ pub trait Parser<I, O, E> {
   ///
   /// By adding `by_ref`, we can make this work:
   /// ```rust
-  /// # use nom8::prelude::*;
-  /// # use nom8::IResult;
-  /// # use nom8::Parser;
-  /// # use nom8::error::ParseError;
-  /// # use nom8::multi::length_data;
+  /// # use winnow::prelude::*;
+  /// # use winnow::IResult;
+  /// # use winnow::Parser;
+  /// # use winnow::error::ParseError;
+  /// # use winnow::multi::length_data;
   /// pub fn length_value<'i, O, E: ParseError<&'i [u8]>>(
   ///     mut f: impl Parser<&'i [u8], usize, E>,
   ///     mut g: impl Parser<&'i [u8], O, E>
@@ -412,8 +412,8 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom8::{Err,error::ErrorKind, IResult, Parser};
-  /// use nom8::character::alpha1;
+  /// # use winnow::{Err,error::ErrorKind, IResult, Parser};
+  /// use winnow::character::alpha1;
   /// # fn main() {
   ///
   /// let mut parser = alpha1.value(1234);
@@ -435,9 +435,9 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom8::IResult;
-  /// # use nom8::Parser;
-  /// use nom8::character::alpha1;
+  /// # use winnow::IResult;
+  /// # use winnow::Parser;
+  /// use winnow::character::alpha1;
   /// # fn main() {
   ///
   ///  fn parser1(i: &str) -> IResult<&str, &str> {
@@ -463,9 +463,9 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom8::{Err,error::ErrorKind, IResult, Parser};
-  /// use nom8::character::{alpha1};
-  /// use nom8::sequence::separated_pair;
+  /// # use winnow::{Err,error::ErrorKind, IResult, Parser};
+  /// use winnow::character::{alpha1};
+  /// use winnow::sequence::separated_pair;
   /// # fn main() {
   ///
   /// let mut parser = separated_pair(alpha1, ',', alpha1).recognize();
@@ -493,11 +493,11 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom8::prelude::*;
-  /// # use nom8::{Err,error::ErrorKind, IResult};
-  /// use nom8::character::{alpha1};
-  /// use nom8::bytes::tag;
-  /// use nom8::sequence::separated_pair;
+  /// # use winnow::prelude::*;
+  /// # use winnow::{Err,error::ErrorKind, IResult};
+  /// use winnow::character::{alpha1};
+  /// use winnow::bytes::tag;
+  /// use winnow::sequence::separated_pair;
   ///
   /// fn inner_parser(input: &str) -> IResult<&str, bool> {
   ///     tag("1234").value(true).parse(input)
@@ -531,11 +531,11 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom8::prelude::*;
-  /// # use nom8::{Err,error::ErrorKind, IResult, Parser, input::Slice};
-  /// use nom8::input::Located;
-  /// use nom8::character::alpha1;
-  /// use nom8::sequence::separated_pair;
+  /// # use winnow::prelude::*;
+  /// # use winnow::{Err,error::ErrorKind, IResult, Parser, input::Slice};
+  /// use winnow::input::Located;
+  /// use winnow::character::alpha1;
+  /// use winnow::sequence::separated_pair;
   ///
   /// let mut parser = separated_pair(alpha1.span(), ',', alpha1.span());
   ///
@@ -562,12 +562,12 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom8::prelude::*;
-  /// # use nom8::{Err,error::ErrorKind, IResult, input::Slice};
-  /// use nom8::input::Located;
-  /// use nom8::character::alpha1;
-  /// use nom8::bytes::tag;
-  /// use nom8::sequence::separated_pair;
+  /// # use winnow::prelude::*;
+  /// # use winnow::{Err,error::ErrorKind, IResult, input::Slice};
+  /// use winnow::input::Located;
+  /// use winnow::character::alpha1;
+  /// use winnow::bytes::tag;
+  /// use winnow::sequence::separated_pair;
   ///
   /// fn inner_parser(input: Located<&str>) -> IResult<Located<&str>, bool> {
   ///     tag("1234").value(true).parse(input)
@@ -602,8 +602,8 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// use nom8::{Err,error::ErrorKind, IResult,Parser};
-  /// use nom8::character::digit1;
+  /// use winnow::{Err,error::ErrorKind, IResult,Parser};
+  /// use winnow::character::digit1;
   /// # fn main() {
   ///
   /// let mut parser = digit1.map(|s: &str| s.len());
@@ -628,8 +628,8 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom8::{Err,error::ErrorKind, IResult, Parser};
-  /// use nom8::character::digit1;
+  /// # use winnow::{Err,error::ErrorKind, IResult, Parser};
+  /// use winnow::character::digit1;
   /// # fn main() {
   ///
   /// let mut parse = digit1.map_res(|s: &str| s.parse::<u8>());
@@ -657,8 +657,8 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom8::{Err,error::ErrorKind, IResult, Parser};
-  /// use nom8::character::digit1;
+  /// # use winnow::{Err,error::ErrorKind, IResult, Parser};
+  /// use winnow::character::digit1;
   /// # fn main() {
   ///
   /// let mut parse = digit1.map_opt(|s: &str| s.parse::<u8>().ok());
@@ -686,9 +686,9 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom8::{Err,error::ErrorKind, IResult, Parser};
-  /// use nom8::bytes::take;
-  /// use nom8::number::u8;
+  /// # use winnow::{Err,error::ErrorKind, IResult, Parser};
+  /// use winnow::bytes::take;
+  /// use winnow::number::u8;
   /// # fn main() {
   ///
   /// let mut length_data = u8.flat_map(take);
@@ -711,9 +711,9 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom8::{Err,error::ErrorKind, IResult, Parser};
-  /// use nom8::character::digit1;
-  /// use nom8::bytes::take;
+  /// # use winnow::{Err,error::ErrorKind, IResult, Parser};
+  /// use winnow::character::digit1;
+  /// use winnow::bytes::take;
   /// # fn main() {
   ///
   /// let mut digits = take(5u8).and_then(digit1);
@@ -739,8 +739,8 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom8::{Err,error::ErrorKind, IResult, Parser};
-  /// # use nom8::character::alpha1;
+  /// # use winnow::{Err,error::ErrorKind, IResult, Parser};
+  /// # use winnow::character::alpha1;
   /// # fn main() {
   ///
   /// let mut parser = alpha1.verify(|s: &str| s.len() == 4);
@@ -776,8 +776,8 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use nom8::{Err,error::ErrorKind, IResult, input::Streaming, Parser};
-  /// # use nom8::bytes::take;
+  /// # use winnow::{Err,error::ErrorKind, IResult, input::Streaming, Parser};
+  /// # use winnow::bytes::take;
   /// # fn main() {
   ///
   /// let mut parser = take(5u8).complete();
@@ -809,8 +809,8 @@ pub trait Parser<I, O, E> {
   /// It also displays the input in hexdump format
   ///
   /// ```rust
-  /// use nom8::prelude::*;
-  /// use nom8::{IResult, bytes::tag};
+  /// use winnow::prelude::*;
+  /// use winnow::{IResult, bytes::tag};
   ///
   /// fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
   ///   tag("abcd").dbg_err("alpha tag").parse(i)
@@ -836,8 +836,8 @@ pub trait Parser<I, O, E> {
 
   /// Applies a second parser after the first one, return their results as a tuple
   ///
-  /// **WARNING:** Deprecated, replaced with [`nom8::sequence::tuple`][crate::sequence::tuple]
-  #[deprecated(since = "8.0.0", note = "Replaced with `nom8::sequence::tuple")]
+  /// **WARNING:** Deprecated, replaced with [`winnow::sequence::tuple`][crate::sequence::tuple]
+  #[deprecated(since = "8.0.0", note = "Replaced with `winnow::sequence::tuple")]
   fn and<G, O2>(self, g: G) -> And<Self, G>
   where
     G: Parser<I, O2, E>,
@@ -848,8 +848,8 @@ pub trait Parser<I, O, E> {
 
   /// Applies a second parser over the input if the first one failed
   ///
-  /// **WARNING:** Deprecated, replaced with [`nom8::branch::alt`][crate::branch::alt]
-  #[deprecated(since = "8.0.0", note = "Replaced with `nom8::branch::alt")]
+  /// **WARNING:** Deprecated, replaced with [`winnow::branch::alt`][crate::branch::alt]
+  #[deprecated(since = "8.0.0", note = "Replaced with `winnow::branch::alt")]
   fn or<G>(self, g: G) -> Or<Self, G>
   where
     G: Parser<I, O, E>,
@@ -873,8 +873,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::prelude::*;
-/// # use nom8::{Err, error::{ErrorKind, Error}};
+/// # use winnow::prelude::*;
+/// # use winnow::{Err, error::{ErrorKind, Error}};
 /// fn parser(i: &[u8]) -> IResult<&[u8], u8> {
 ///     b'a'.parse(i)
 /// }
@@ -898,8 +898,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::prelude::*;
-/// # use nom8::{Err, error::{ErrorKind, Error}};
+/// # use winnow::prelude::*;
+/// # use winnow::{Err, error::{ErrorKind, Error}};
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     'a'.parse(i)
 /// }
@@ -923,10 +923,10 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom8::prelude::*;
-/// # use nom8::{Err, error::{Error, ErrorKind}, Needed};
-/// # use nom8::branch::alt;
-/// # use nom8::bytes::take;
+/// # use winnow::prelude::*;
+/// # use winnow::{Err, error::{Error, ErrorKind}, Needed};
+/// # use winnow::branch::alt;
+/// # use winnow::bytes::take;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   alt((&"Hello"[..], take(5usize))).parse(s)
@@ -951,10 +951,10 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom8::prelude::*;
-/// # use nom8::{Err, error::{Error, ErrorKind}, Needed};
-/// # use nom8::branch::alt;
-/// # use nom8::bytes::take;
+/// # use winnow::prelude::*;
+/// # use winnow::{Err, error::{Error, ErrorKind}, Needed};
+/// # use winnow::branch::alt;
+/// # use winnow::bytes::take;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   alt((b"Hello", take(5usize))).parse(s)
@@ -980,10 +980,10 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom8::prelude::*;
-/// # use nom8::{Err, error::{Error, ErrorKind}, Needed};
-/// # use nom8::branch::alt;
-/// # use nom8::bytes::take;
+/// # use winnow::prelude::*;
+/// # use winnow::{Err, error::{Error, ErrorKind}, Needed};
+/// # use winnow::branch::alt;
+/// # use winnow::bytes::take;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
 ///   alt(("Hello", take(5usize))).parse(s)

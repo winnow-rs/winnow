@@ -12,9 +12,9 @@ use crate::{Err, IResult};
 ///
 /// # Example
 /// ```rust
-/// # use nom8::bits::complete::take;
-/// # use nom8::IResult;
-/// # use nom8::error::{Error, ErrorKind};
+/// # use winnow::bits::complete::take;
+/// # use winnow::IResult;
+/// # use winnow::error::{Error, ErrorKind};
 /// // Input is a tuple of (input: I, bit_offset: usize)
 /// fn parser(input: (&[u8], usize), count: usize)-> IResult<(&[u8], usize), u8> {
 ///  take(count)(input)
@@ -30,11 +30,11 @@ use crate::{Err, IResult};
 /// assert_eq!(parser(([0b00010010].as_ref(), 4), 4), Ok((([].as_ref(), 0), 0b00000010)));
 ///
 /// // Tries to consume 12 bits but only 8 are available
-/// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(nom8::Err::Error(Error{input: ([0b00010010].as_ref(), 0), code: ErrorKind::Eof })));
+/// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(winnow::Err::Error(Error{input: ([0b00010010].as_ref(), 0), code: ErrorKind::Eof })));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bits::take`][crate::bits::take]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bits::take`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::bits::take`][crate::bits::take]
+#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bits::take`")]
 pub fn take<I, O, C, E: ParseError<(I, usize)>>(
   count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
@@ -97,8 +97,8 @@ where
 
 /// Generates a parser taking `count` bits and comparing them to `pattern`
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bits::tag`][crate::bits::tag]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bits::tag`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::bits::tag`][crate::bits::tag]
+#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bits::tag`")]
 pub fn tag<I, O, C, E: ParseError<(I, usize)>>(
   pattern: O,
   count: C,
@@ -136,9 +136,9 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom8::bits::complete::bool;
-/// # use nom8::IResult;
-/// # use nom8::error::{Error, ErrorKind};
+/// # use winnow::bits::complete::bool;
+/// # use winnow::IResult;
+/// # use winnow::error::{Error, ErrorKind};
 ///
 /// fn parse(input: (&[u8], usize)) -> IResult<(&[u8], usize), bool> {
 ///     bool(input)
@@ -147,8 +147,8 @@ where
 /// assert_eq!(parse(([0b10000000].as_ref(), 0)), Ok((([0b10000000].as_ref(), 1), true)));
 /// assert_eq!(parse(([0b10000000].as_ref(), 1)), Ok((([0b10000000].as_ref(), 2), false)));
 /// ```
-/// **WARNING:** Deprecated, replaced with [`nom8::bits::bool`][crate::bits::bool]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bits::bool`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::bits::bool`][crate::bits::bool]
+#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bits::bool`")]
 pub fn bool<I, E: ParseError<(I, usize)>>(input: (I, usize)) -> IResult<(I, usize), bool, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,

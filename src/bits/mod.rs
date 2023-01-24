@@ -18,9 +18,9 @@ use crate::{Err, IResult, Needed, Parser};
 ///
 /// # Example
 /// ```
-/// use nom8::bits::{bits, take};
-/// use nom8::error::Error;
-/// use nom8::IResult;
+/// use winnow::bits::{bits, take};
+/// use winnow::error::Error;
+/// use winnow::IResult;
 ///
 /// fn parse(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
 ///     bits::<_, _, Error<(&[u8], usize)>, _, _>((take(4usize), take(8usize)))(input)
@@ -66,10 +66,10 @@ where
 /// at the next full byte.
 ///
 /// ```
-/// use nom8::bits::{bits, bytes, take};
-/// use nom8::combinator::rest;
-/// use nom8::error::Error;
-/// use nom8::IResult;
+/// use winnow::bits::{bits, bytes, take};
+/// use winnow::combinator::rest;
+/// use winnow::error::Error;
+/// use winnow::IResult;
 ///
 /// fn parse(input: &[u8]) -> IResult<&[u8], (u8, u8, &[u8])> {
 ///   bits::<_, _, Error<(&[u8], usize)>, _, _>((
@@ -114,9 +114,9 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use nom8::bits::take;
-/// # use nom8::IResult;
-/// # use nom8::error::{Error, ErrorKind};
+/// # use winnow::bits::take;
+/// # use winnow::IResult;
+/// # use winnow::error::{Error, ErrorKind};
 /// // Input is a tuple of (input: I, bit_offset: usize)
 /// fn parser(input: (&[u8], usize), count: usize)-> IResult<(&[u8], usize), u8> {
 ///  take(count)(input)
@@ -132,7 +132,7 @@ where
 /// assert_eq!(parser(([0b00010010].as_ref(), 4), 4), Ok((([].as_ref(), 0), 0b00000010)));
 ///
 /// // Tries to consume 12 bits but only 8 are available
-/// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(nom8::Err::Error(Error{input: ([0b00010010].as_ref(), 0), code: ErrorKind::Eof })));
+/// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(winnow::Err::Error(Error{input: ([0b00010010].as_ref(), 0), code: ErrorKind::Eof })));
 /// ```
 #[inline(always)]
 pub fn take<I, O, C, E: ParseError<(I, usize)>, const STREAMING: bool>(
@@ -183,9 +183,9 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use nom8::bits::bool;
-/// # use nom8::IResult;
-/// # use nom8::error::{Error, ErrorKind};
+/// # use winnow::bits::bool;
+/// # use winnow::IResult;
+/// # use winnow::error::{Error, ErrorKind};
 ///
 /// fn parse(input: (&[u8], usize)) -> IResult<(&[u8], usize), bool> {
 ///     bool(input)

@@ -3,7 +3,7 @@ static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 use criterion::*;
 
-use nom8::{
+use winnow::{
   bytes::{one_of, tag, take_till, take_while, take_while1},
   character::{alphanumeric1 as alphanumeric, not_line_ending, space0 as space},
   combinator::opt,

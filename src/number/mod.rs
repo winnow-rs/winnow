@@ -29,14 +29,14 @@ pub enum Endianness {
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::be_u8;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::be_u8;
 ///
 /// let parser = |s| {
 ///   be_u8(s)
@@ -47,9 +47,9 @@ pub enum Endianness {
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::be_u8;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::be_u8;
 ///
 /// let parser = |s| {
 ///   be_u8::<_, (_, ErrorKind), true>(s)
@@ -74,14 +74,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::be_u16;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::be_u16;
 ///
 /// let parser = |s| {
 ///   be_u16(s)
@@ -92,9 +92,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::be_u16;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::be_u16;
 ///
 /// let parser = |s| {
 ///   be_u16::<_, (_, ErrorKind), true>(s)
@@ -119,14 +119,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::be_u24;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::be_u24;
 ///
 /// let parser = |s| {
 ///   be_u24(s)
@@ -137,9 +137,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::be_u24;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::be_u24;
 ///
 /// let parser = |s| {
 ///   be_u24::<_, (_, ErrorKind), true>(s)
@@ -164,14 +164,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::be_u32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::be_u32;
 ///
 /// let parser = |s| {
 ///   be_u32(s)
@@ -182,9 +182,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::be_u32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::be_u32;
 ///
 /// let parser = |s| {
 ///   be_u32::<_, (_, ErrorKind), true>(s)
@@ -209,14 +209,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::be_u64;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::be_u64;
 ///
 /// let parser = |s| {
 ///   be_u64(s)
@@ -227,9 +227,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::be_u64;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::be_u64;
 ///
 /// let parser = |s| {
 ///   be_u64::<_, (_, ErrorKind), true>(s)
@@ -254,14 +254,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::be_u128;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::be_u128;
 ///
 /// let parser = |s| {
 ///   be_u128(s)
@@ -272,9 +272,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::be_u128;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::be_u128;
 ///
 /// let parser = |s| {
 ///   be_u128::<_, (_, ErrorKind), true>(s)
@@ -299,14 +299,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::be_i8;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::be_i8;
 ///
 /// let parser = |s| {
 ///   be_i8(s)
@@ -317,9 +317,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::be_i8;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::be_i8;
 ///
 /// let parser = be_i8::<_, (_, ErrorKind), true>;
 ///
@@ -342,14 +342,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::be_i16;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::be_i16;
 ///
 /// let parser = |s| {
 ///   be_i16(s)
@@ -360,9 +360,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::be_i16;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::be_i16;
 ///
 /// let parser = be_i16::<_, (_, ErrorKind), true>;
 ///
@@ -385,14 +385,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::be_i24;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::be_i24;
 ///
 /// let parser = |s| {
 ///   be_i24(s)
@@ -403,9 +403,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::be_i24;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::be_i24;
 ///
 /// let parser = be_i24::<_, (_, ErrorKind), true>;
 ///
@@ -428,14 +428,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::be_i32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::be_i32;
 ///
 /// let parser = |s| {
 ///   be_i32(s)
@@ -446,9 +446,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::be_i32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::be_i32;
 ///
 /// let parser = be_i32::<_, (_, ErrorKind), true>;
 ///
@@ -471,14 +471,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::be_i64;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::be_i64;
 ///
 /// let parser = |s| {
 ///   be_i64(s)
@@ -489,9 +489,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::be_i64;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::be_i64;
 ///
 /// let parser = be_i64::<_, (_, ErrorKind), true>;
 ///
@@ -514,14 +514,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::be_i128;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::be_i128;
 ///
 /// let parser = |s| {
 ///   be_i128(s)
@@ -532,9 +532,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::be_i128;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::be_i128;
 ///
 /// let parser = be_i128::<_, (_, ErrorKind), true>;
 ///
@@ -557,14 +557,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::le_u8;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::le_u8;
 ///
 /// let parser = |s| {
 ///   le_u8(s)
@@ -575,9 +575,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::le_u8;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::le_u8;
 ///
 /// let parser = le_u8::<_, (_, ErrorKind), true>;
 ///
@@ -600,14 +600,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::le_u16;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::le_u16;
 ///
 /// let parser = |s| {
 ///   le_u16(s)
@@ -618,9 +618,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::le_u16;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::le_u16;
 ///
 /// let parser = |s| {
 ///   le_u16::<_, (_, ErrorKind), true>(s)
@@ -645,14 +645,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::le_u24;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::le_u24;
 ///
 /// let parser = |s| {
 ///   le_u24(s)
@@ -663,9 +663,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::le_u24;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::le_u24;
 ///
 /// let parser = |s| {
 ///   le_u24::<_, (_, ErrorKind), true>(s)
@@ -690,14 +690,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::le_u32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::le_u32;
 ///
 /// let parser = |s| {
 ///   le_u32(s)
@@ -708,9 +708,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::le_u32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::le_u32;
 ///
 /// let parser = |s| {
 ///   le_u32::<_, (_, ErrorKind), true>(s)
@@ -735,14 +735,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::le_u64;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::le_u64;
 ///
 /// let parser = |s| {
 ///   le_u64(s)
@@ -753,9 +753,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::le_u64;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::le_u64;
 ///
 /// let parser = |s| {
 ///   le_u64::<_, (_, ErrorKind), true>(s)
@@ -780,14 +780,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::le_u128;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::le_u128;
 ///
 /// let parser = |s| {
 ///   le_u128(s)
@@ -798,9 +798,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::le_u128;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::le_u128;
 ///
 /// let parser = |s| {
 ///   le_u128::<_, (_, ErrorKind), true>(s)
@@ -825,14 +825,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::le_i8;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::le_i8;
 ///
 /// let parser = |s| {
 ///   le_i8(s)
@@ -843,9 +843,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::le_i8;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::le_i8;
 ///
 /// let parser = le_i8::<_, (_, ErrorKind), true>;
 ///
@@ -868,14 +868,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::le_i16;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::le_i16;
 ///
 /// let parser = |s| {
 ///   le_i16(s)
@@ -886,9 +886,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::le_i16;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::le_i16;
 ///
 /// let parser = |s| {
 ///   le_i16::<_, (_, ErrorKind), true>(s)
@@ -913,14 +913,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::le_i24;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::le_i24;
 ///
 /// let parser = |s| {
 ///   le_i24(s)
@@ -931,9 +931,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::le_i24;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::le_i24;
 ///
 /// let parser = |s| {
 ///   le_i24::<_, (_, ErrorKind), true>(s)
@@ -958,14 +958,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::le_i32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::le_i32;
 ///
 /// let parser = |s| {
 ///   le_i32(s)
@@ -976,9 +976,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::le_i32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::le_i32;
 ///
 /// let parser = |s| {
 ///   le_i32::<_, (_, ErrorKind), true>(s)
@@ -1003,14 +1003,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::le_i64;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::le_i64;
 ///
 /// let parser = |s| {
 ///   le_i64(s)
@@ -1021,9 +1021,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::le_i64;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::le_i64;
 ///
 /// let parser = |s| {
 ///   le_i64::<_, (_, ErrorKind), true>(s)
@@ -1048,14 +1048,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::le_i128;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::le_i128;
 ///
 /// let parser = |s| {
 ///   le_i128(s)
@@ -1066,9 +1066,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::le_i128;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::le_i128;
 ///
 /// let parser = |s| {
 ///   le_i128::<_, (_, ErrorKind), true>(s)
@@ -1095,14 +1095,14 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::u8;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::u8;
 ///
 /// let parser = |s| {
 ///   u8(s)
@@ -1113,10 +1113,10 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// # use nom8::input::Streaming;
-/// use nom8::number::u8;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// # use winnow::input::Streaming;
+/// use winnow::number::u8;
 ///
 /// let parser = |s| {
 ///   u8::<_, (_, ErrorKind), true>(s)
@@ -1139,29 +1139,29 @@ where
 
 /// Recognizes an unsigned 2 bytes integer
 ///
-/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian u16 integer,
-/// otherwise if `nom8::number::Endianness::Little` parse a little endian u16 integer.
+/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian u16 integer,
+/// otherwise if `winnow::number::Endianness::Little` parse a little endian u16 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::u16;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::u16;
 ///
 /// let be_u16 = |s| {
-///   u16(nom8::number::Endianness::Big)(s)
+///   u16(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_u16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
 /// assert_eq!(be_u16(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u16 = |s| {
-///   u16(nom8::number::Endianness::Little)(s)
+///   u16(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
@@ -1169,20 +1169,20 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// # use nom8::input::Streaming;
-/// use nom8::number::u16;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// # use winnow::input::Streaming;
+/// use winnow::number::u16;
 ///
 /// let be_u16 = |s| {
-///   u16::<_, (_, ErrorKind), true>(nom8::number::Endianness::Big)(s)
+///   u16::<_, (_, ErrorKind), true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_u16(Streaming(&b"\x00\x03abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0003)));
 /// assert_eq!(be_u16(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(1))));
 ///
 /// let le_u16 = |s| {
-///   u16::<_, (_, ErrorKind), true>(nom8::number::Endianness::Little)(s)
+///   u16::<_, (_, ErrorKind), true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u16(Streaming(&b"\x00\x03abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0300)));
@@ -1204,29 +1204,29 @@ where
 
 /// Recognizes an unsigned 3 byte integer
 ///
-/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian u24 integer,
-/// otherwise if `nom8::number::Endianness::Little` parse a little endian u24 integer.
+/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian u24 integer,
+/// otherwise if `winnow::number::Endianness::Little` parse a little endian u24 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::u24;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::u24;
 ///
 /// let be_u24 = |s| {
-///   u24(nom8::number::Endianness::Big)(s)
+///   u24(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_u24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
 /// assert_eq!(be_u24(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u24 = |s| {
-///   u24(nom8::number::Endianness::Little)(s)
+///   u24(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
@@ -1234,20 +1234,20 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// # use nom8::input::Streaming;
-/// use nom8::number::u24;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// # use winnow::input::Streaming;
+/// use winnow::number::u24;
 ///
 /// let be_u24 = |s| {
-///   u24::<_,(_, ErrorKind), true>(nom8::number::Endianness::Big)(s)
+///   u24::<_,(_, ErrorKind), true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_u24(Streaming(&b"\x00\x03\x05abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x000305)));
 /// assert_eq!(be_u24(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(2))));
 ///
 /// let le_u24 = |s| {
-///   u24::<_, (_, ErrorKind), true>(nom8::number::Endianness::Little)(s)
+///   u24::<_, (_, ErrorKind), true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u24(Streaming(&b"\x00\x03\x05abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x050300)));
@@ -1269,29 +1269,29 @@ where
 
 /// Recognizes an unsigned 4 byte integer
 ///
-/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian u32 integer,
-/// otherwise if `nom8::number::Endianness::Little` parse a little endian u32 integer.
+/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian u32 integer,
+/// otherwise if `winnow::number::Endianness::Little` parse a little endian u32 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::u32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::u32;
 ///
 /// let be_u32 = |s| {
-///   u32(nom8::number::Endianness::Big)(s)
+///   u32(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_u32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
 /// assert_eq!(be_u32(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u32 = |s| {
-///   u32(nom8::number::Endianness::Little)(s)
+///   u32(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
@@ -1299,20 +1299,20 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// # use nom8::input::Streaming;
-/// use nom8::number::u32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// # use winnow::input::Streaming;
+/// use winnow::number::u32;
 ///
 /// let be_u32 = |s| {
-///   u32::<_, (_, ErrorKind), true>(nom8::number::Endianness::Big)(s)
+///   u32::<_, (_, ErrorKind), true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_u32(Streaming(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x00030507)));
 /// assert_eq!(be_u32(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(3))));
 ///
 /// let le_u32 = |s| {
-///   u32::<_, (_, ErrorKind), true>(nom8::number::Endianness::Little)(s)
+///   u32::<_, (_, ErrorKind), true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u32(Streaming(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x07050300)));
@@ -1334,29 +1334,29 @@ where
 
 /// Recognizes an unsigned 8 byte integer
 ///
-/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian u64 integer,
-/// otherwise if `nom8::number::Endianness::Little` parse a little endian u64 integer.
+/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian u64 integer,
+/// otherwise if `winnow::number::Endianness::Little` parse a little endian u64 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::u64;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::u64;
 ///
 /// let be_u64 = |s| {
-///   u64(nom8::number::Endianness::Big)(s)
+///   u64(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_u64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
 /// assert_eq!(be_u64(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u64 = |s| {
-///   u64(nom8::number::Endianness::Little)(s)
+///   u64(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
@@ -1364,20 +1364,20 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// # use nom8::input::Streaming;
-/// use nom8::number::u64;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// # use winnow::input::Streaming;
+/// use winnow::number::u64;
 ///
 /// let be_u64 = |s| {
-///   u64::<_, (_, ErrorKind), true>(nom8::number::Endianness::Big)(s)
+///   u64::<_, (_, ErrorKind), true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_u64(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0001020304050607)));
 /// assert_eq!(be_u64(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(7))));
 ///
 /// let le_u64 = |s| {
-///   u64::<_, (_, ErrorKind), true>(nom8::number::Endianness::Little)(s)
+///   u64::<_, (_, ErrorKind), true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u64(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0706050403020100)));
@@ -1399,29 +1399,29 @@ where
 
 /// Recognizes an unsigned 16 byte integer
 ///
-/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian u128 integer,
-/// otherwise if `nom8::number::Endianness::Little` parse a little endian u128 integer.
+/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian u128 integer,
+/// otherwise if `winnow::number::Endianness::Little` parse a little endian u128 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::u128;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::u128;
 ///
 /// let be_u128 = |s| {
-///   u128(nom8::number::Endianness::Big)(s)
+///   u128(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_u128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
 /// assert_eq!(be_u128(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u128 = |s| {
-///   u128(nom8::number::Endianness::Little)(s)
+///   u128(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
@@ -1429,20 +1429,20 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// # use nom8::input::Streaming;
-/// use nom8::number::u128;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// # use winnow::input::Streaming;
+/// use winnow::number::u128;
 ///
 /// let be_u128 = |s| {
-///   u128::<_, (_, ErrorKind), true>(nom8::number::Endianness::Big)(s)
+///   u128::<_, (_, ErrorKind), true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_u128(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x00010203040506070001020304050607)));
 /// assert_eq!(be_u128(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(15))));
 ///
 /// let le_u128 = |s| {
-///   u128::<_, (_, ErrorKind), true>(nom8::number::Endianness::Little)(s)
+///   u128::<_, (_, ErrorKind), true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u128(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x07060504030201000706050403020100)));
@@ -1468,14 +1468,14 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::i8;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::i8;
 ///
 /// let parser = |s| {
 ///   i8(s)
@@ -1486,10 +1486,10 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// # use nom8::input::Streaming;
-/// use nom8::number::i8;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// # use winnow::input::Streaming;
+/// use winnow::number::i8;
 ///
 /// let parser = |s| {
 ///   i8::<_, (_, ErrorKind), true>(s)
@@ -1512,29 +1512,29 @@ where
 
 /// Recognizes a signed 2 byte integer
 ///
-/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian i16 integer,
-/// otherwise if `nom8::number::Endianness::Little` parse a little endian i16 integer.
+/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian i16 integer,
+/// otherwise if `winnow::number::Endianness::Little` parse a little endian i16 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::i16;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::i16;
 ///
 /// let be_i16 = |s| {
-///   i16(nom8::number::Endianness::Big)(s)
+///   i16(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_i16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
 /// assert_eq!(be_i16(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i16 = |s| {
-///   i16(nom8::number::Endianness::Little)(s)
+///   i16(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
@@ -1542,20 +1542,20 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// # use nom8::input::Streaming;
-/// use nom8::number::i16;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// # use winnow::input::Streaming;
+/// use winnow::number::i16;
 ///
 /// let be_i16 = |s| {
-///   i16::<_, (_, ErrorKind), true>(nom8::number::Endianness::Big)(s)
+///   i16::<_, (_, ErrorKind), true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_i16(Streaming(&b"\x00\x03abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0003)));
 /// assert_eq!(be_i16(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(1))));
 ///
 /// let le_i16 = |s| {
-///   i16::<_, (_, ErrorKind), true>(nom8::number::Endianness::Little)(s)
+///   i16::<_, (_, ErrorKind), true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i16(Streaming(&b"\x00\x03abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0300)));
@@ -1577,29 +1577,29 @@ where
 
 /// Recognizes a signed 3 byte integer
 ///
-/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian i24 integer,
-/// otherwise if `nom8::number::Endianness::Little` parse a little endian i24 integer.
+/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian i24 integer,
+/// otherwise if `winnow::number::Endianness::Little` parse a little endian i24 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::i24;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::i24;
 ///
 /// let be_i24 = |s| {
-///   i24(nom8::number::Endianness::Big)(s)
+///   i24(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_i24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
 /// assert_eq!(be_i24(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i24 = |s| {
-///   i24(nom8::number::Endianness::Little)(s)
+///   i24(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
@@ -1607,20 +1607,20 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// # use nom8::input::Streaming;
-/// use nom8::number::i24;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// # use winnow::input::Streaming;
+/// use winnow::number::i24;
 ///
 /// let be_i24 = |s| {
-///   i24::<_, (_, ErrorKind), true>(nom8::number::Endianness::Big)(s)
+///   i24::<_, (_, ErrorKind), true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_i24(Streaming(&b"\x00\x03\x05abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x000305)));
 /// assert_eq!(be_i24(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(2))));
 ///
 /// let le_i24 = |s| {
-///   i24::<_, (_, ErrorKind), true>(nom8::number::Endianness::Little)(s)
+///   i24::<_, (_, ErrorKind), true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i24(Streaming(&b"\x00\x03\x05abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x050300)));
@@ -1642,29 +1642,29 @@ where
 
 /// Recognizes a signed 4 byte integer
 ///
-/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian i32 integer,
-/// otherwise if `nom8::number::Endianness::Little` parse a little endian i32 integer.
+/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian i32 integer,
+/// otherwise if `winnow::number::Endianness::Little` parse a little endian i32 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::i32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::i32;
 ///
 /// let be_i32 = |s| {
-///   i32(nom8::number::Endianness::Big)(s)
+///   i32(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_i32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
 /// assert_eq!(be_i32(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i32 = |s| {
-///   i32(nom8::number::Endianness::Little)(s)
+///   i32(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
@@ -1672,20 +1672,20 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// # use nom8::input::Streaming;
-/// use nom8::number::i32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// # use winnow::input::Streaming;
+/// use winnow::number::i32;
 ///
 /// let be_i32 = |s| {
-///   i32::<_, (_, ErrorKind), true>(nom8::number::Endianness::Big)(s)
+///   i32::<_, (_, ErrorKind), true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_i32(Streaming(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x00030507)));
 /// assert_eq!(be_i32(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(3))));
 ///
 /// let le_i32 = |s| {
-///   i32::<_, (_, ErrorKind), true>(nom8::number::Endianness::Little)(s)
+///   i32::<_, (_, ErrorKind), true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i32(Streaming(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x07050300)));
@@ -1707,29 +1707,29 @@ where
 
 /// Recognizes a signed 8 byte integer
 ///
-/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian i64 integer,
-/// otherwise if `nom8::number::Endianness::Little` parse a little endian i64 integer.
+/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian i64 integer,
+/// otherwise if `winnow::number::Endianness::Little` parse a little endian i64 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::i64;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::i64;
 ///
 /// let be_i64 = |s| {
-///   i64(nom8::number::Endianness::Big)(s)
+///   i64(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_i64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
 /// assert_eq!(be_i64(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i64 = |s| {
-///   i64(nom8::number::Endianness::Little)(s)
+///   i64(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
@@ -1737,20 +1737,20 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// # use nom8::input::Streaming;
-/// use nom8::number::i64;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// # use winnow::input::Streaming;
+/// use winnow::number::i64;
 ///
 /// let be_i64 = |s| {
-///   i64::<_, (_, ErrorKind), true>(nom8::number::Endianness::Big)(s)
+///   i64::<_, (_, ErrorKind), true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_i64(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0001020304050607)));
 /// assert_eq!(be_i64(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(7))));
 ///
 /// let le_i64 = |s| {
-///   i64::<_, (_, ErrorKind), true>(nom8::number::Endianness::Little)(s)
+///   i64::<_, (_, ErrorKind), true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i64(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0706050403020100)));
@@ -1772,29 +1772,29 @@ where
 
 /// Recognizes a signed 16 byte integer
 ///
-/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian i128 integer,
-/// otherwise if `nom8::number::Endianness::Little` parse a little endian i128 integer.
+/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian i128 integer,
+/// otherwise if `winnow::number::Endianness::Little` parse a little endian i128 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::i128;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::i128;
 ///
 /// let be_i128 = |s| {
-///   i128(nom8::number::Endianness::Big)(s)
+///   i128(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_i128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
 /// assert_eq!(be_i128(&b"\x01"[..]), Err(Err::Error((&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i128 = |s| {
-///   i128(nom8::number::Endianness::Little)(s)
+///   i128(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
@@ -1802,20 +1802,20 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// # use nom8::input::Streaming;
-/// use nom8::number::i128;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// # use winnow::input::Streaming;
+/// use winnow::number::i128;
 ///
 /// let be_i128 = |s| {
-///   i128::<_, (_, ErrorKind), true>(nom8::number::Endianness::Big)(s)
+///   i128::<_, (_, ErrorKind), true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_i128(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x00010203040506070001020304050607)));
 /// assert_eq!(be_i128(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(15))));
 ///
 /// let le_i128 = |s| {
-///   i128::<_, (_, ErrorKind), true>(nom8::number::Endianness::Little)(s)
+///   i128::<_, (_, ErrorKind), true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i128(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x07060504030201000706050403020100)));
@@ -1839,14 +1839,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::be_f32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::be_f32;
 ///
 /// let parser = |s| {
 ///   be_f32(s)
@@ -1857,9 +1857,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::be_f32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::be_f32;
 ///
 /// let parser = |s| {
 ///   be_f32::<_, (_, ErrorKind), true>(s)
@@ -1884,14 +1884,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::be_f64;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::be_f64;
 ///
 /// let parser = |s| {
 ///   be_f64(s)
@@ -1902,9 +1902,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::be_f64;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::be_f64;
 ///
 /// let parser = |s| {
 ///   be_f64::<_, (_, ErrorKind), true>(s)
@@ -1929,14 +1929,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::le_f32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::le_f32;
 ///
 /// let parser = |s| {
 ///   le_f32(s)
@@ -1947,9 +1947,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::le_f32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::le_f32;
 ///
 /// let parser = |s| {
 ///   le_f32::<_, (_, ErrorKind), true>(s)
@@ -1974,14 +1974,14 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::le_f64;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::le_f64;
 ///
 /// let parser = |s| {
 ///   le_f64(s)
@@ -1992,9 +1992,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::le_f64;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::le_f64;
 ///
 /// let parser = |s| {
 ///   le_f64::<_, (_, ErrorKind), true>(s)
@@ -2017,29 +2017,29 @@ where
 
 /// Recognizes a 4 byte floating point number
 ///
-/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian f32 float,
-/// otherwise if `nom8::number::Endianness::Little` parse a little endian f32 float.
+/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian f32 float,
+/// otherwise if `winnow::number::Endianness::Little` parse a little endian f32 float.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::f32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::f32;
 ///
 /// let be_f32 = |s| {
-///   f32(nom8::number::Endianness::Big)(s)
+///   f32(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_f32(&[0x41, 0x48, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
 /// assert_eq!(be_f32(&b"abc"[..]), Err(Err::Error((&b"abc"[..], ErrorKind::Eof))));
 ///
 /// let le_f32 = |s| {
-///   f32(nom8::number::Endianness::Little)(s)
+///   f32(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_f32(&[0x00, 0x00, 0x48, 0x41][..]), Ok((&b""[..], 12.5)));
@@ -2047,20 +2047,20 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// # use nom8::input::Streaming;
-/// use nom8::number::f32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// # use winnow::input::Streaming;
+/// use winnow::number::f32;
 ///
 /// let be_f32 = |s| {
-///   f32::<_, (_, ErrorKind), true>(nom8::number::Endianness::Big)(s)
+///   f32::<_, (_, ErrorKind), true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_f32(Streaming(&[0x41, 0x48, 0x00, 0x00][..])), Ok((Streaming(&b""[..]), 12.5)));
 /// assert_eq!(be_f32(Streaming(&b"abc"[..])), Err(Err::Incomplete(Needed::new(1))));
 ///
 /// let le_f32 = |s| {
-///   f32::<_, (_, ErrorKind), true>(nom8::number::Endianness::Little)(s)
+///   f32::<_, (_, ErrorKind), true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_f32(Streaming(&[0x00, 0x00, 0x48, 0x41][..])), Ok((Streaming(&b""[..]), 12.5)));
@@ -2082,29 +2082,29 @@ where
 
 /// Recognizes an 8 byte floating point number
 ///
-/// If the parameter is `nom8::number::Endianness::Big`, parse a big endian f64 float,
-/// otherwise if `nom8::number::Endianness::Little` parse a little endian f64 float.
+/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian f64 float,
+/// otherwise if `winnow::number::Endianness::Little` parse a little endian f64 float.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::f64;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::f64;
 ///
 /// let be_f64 = |s| {
-///   f64(nom8::number::Endianness::Big)(s)
+///   f64(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_f64(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
 /// assert_eq!(be_f64(&b"abc"[..]), Err(Err::Error((&b"abc"[..], ErrorKind::Eof))));
 ///
 /// let le_f64 = |s| {
-///   f64(nom8::number::Endianness::Little)(s)
+///   f64(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_f64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29, 0x40][..]), Ok((&b""[..], 12.5)));
@@ -2112,20 +2112,20 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// # use nom8::input::Streaming;
-/// use nom8::number::f64;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// # use winnow::input::Streaming;
+/// use winnow::number::f64;
 ///
 /// let be_f64 = |s| {
-///   f64::<_, (_, ErrorKind), true>(nom8::number::Endianness::Big)(s)
+///   f64::<_, (_, ErrorKind), true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
 /// assert_eq!(be_f64(Streaming(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])), Ok((Streaming(&b""[..]), 12.5)));
 /// assert_eq!(be_f64(Streaming(&b"abc"[..])), Err(Err::Incomplete(Needed::new(5))));
 ///
 /// let le_f64 = |s| {
-///   f64::<_, (_, ErrorKind), true>(nom8::number::Endianness::Little)(s)
+///   f64::<_, (_, ErrorKind), true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_f64(Streaming(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29, 0x40][..])), Ok((Streaming(&b""[..]), 12.5)));
@@ -2149,14 +2149,14 @@ where
 ///
 /// *Complete version*: Will parse until the end of input if it has less than 8 bytes.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::number::hex_u32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::number::hex_u32;
 ///
 /// let parser = |s| {
 ///   hex_u32(s)
@@ -2168,9 +2168,9 @@ where
 /// ```
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::input::Streaming;
-/// use nom8::number::hex_u32;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::number::hex_u32;
 ///
 /// let parser = |s| {
 ///   hex_u32(s)

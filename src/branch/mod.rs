@@ -22,10 +22,10 @@ pub trait Alt<I, O, E> {
 /// like this: `alt(parser_a, alt(parser_b, parser_c))`
 ///
 /// ```rust
-/// # use nom8::error_position;
-/// # use nom8::{Err,error::ErrorKind, Needed, IResult};
-/// use nom8::character::{alpha1, digit1};
-/// use nom8::branch::alt;
+/// # use winnow::error_position;
+/// # use winnow::{Err,error::ErrorKind, Needed, IResult};
+/// use winnow::character::{alpha1, digit1};
+/// use winnow::branch::alt;
 /// # fn main() {
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///   alt((alpha1, digit1))(input)
@@ -65,9 +65,9 @@ pub trait Permutation<I, O, E> {
 /// tuple of the parser results.
 ///
 /// ```rust
-/// # use nom8::{Err,error::{Error, ErrorKind}, Needed, IResult};
-/// use nom8::character::{alpha1, digit1};
-/// use nom8::branch::permutation;
+/// # use winnow::{Err,error::{Error, ErrorKind}, Needed, IResult};
+/// use winnow::character::{alpha1, digit1};
+/// use winnow::branch::permutation;
 /// # fn main() {
 /// fn parser(input: &str) -> IResult<&str, (&str, &str)> {
 ///   permutation((alpha1, digit1))(input)
@@ -87,9 +87,9 @@ pub trait Permutation<I, O, E> {
 /// The parsers are applied greedily: if there are multiple unapplied parsers
 /// that could parse the next slice of input, the first one is used.
 /// ```rust
-/// # use nom8::{Err, error::{Error, ErrorKind}, IResult};
-/// use nom8::branch::permutation;
-/// use nom8::bytes::any;
+/// # use winnow::{Err, error::{Error, ErrorKind}, IResult};
+/// use winnow::branch::permutation;
+/// use winnow::bytes::any;
 ///
 /// fn parser(input: &str) -> IResult<&str, (char, char)> {
 ///   permutation((any, 'a'))(input)

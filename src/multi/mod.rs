@@ -34,9 +34,9 @@ const MAX_INITIAL_CAPACITY_BYTES: usize = 65536;
 /// return an error, to prevent going into an infinite loop
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
-/// use nom8::multi::many0;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// use winnow::multi::many0;
+/// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   many0(tag("abc"))(s)
@@ -88,9 +88,9 @@ where
 /// to prevent going into an infinite loop.
 ///
 /// ```rust
-/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom8::multi::many1;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use winnow::multi::many1;
+/// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   many1(tag("abc"))(s)
@@ -143,9 +143,9 @@ where
 /// `f` keeps going so long as `g` produces [`Err::Error`]. To instead chain an error up, see [`cut`][crate::combinator::cut].
 ///
 /// ```rust
-/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom8::multi::many_till;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use winnow::multi::many_till;
+/// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, (Vec<&str>, &str)> {
 ///   many_till(tag("abc"), tag("end"))(s)
@@ -205,9 +205,9 @@ where
 /// * `f` Parses the elements of the list.
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
-/// use nom8::multi::separated_list0;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// use winnow::multi::separated_list0;
+/// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   separated_list0(tag("|"), tag("abc"))(s)
@@ -278,9 +278,9 @@ where
 /// * `sep` Parses the separator between list elements.
 /// * `f` Parses the elements of the list.
 /// ```rust
-/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom8::multi::separated_list1;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use winnow::multi::separated_list1;
+/// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   separated_list1(tag("|"), tag("abc"))(s)
@@ -355,9 +355,9 @@ where
 /// to prevent going into an infinite loop.
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
-/// use nom8::multi::many_m_n;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// use winnow::multi::many_m_n;
+/// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   many_m_n(0, 2, tag("abc"))(s)
@@ -428,9 +428,9 @@ where
 /// return an error, to prevent going into an infinite loop
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
-/// use nom8::multi::many0_count;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// use winnow::multi::many0_count;
+/// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, usize> {
 ///   many0_count(tag("abc"))(s)
@@ -486,9 +486,9 @@ where
 /// to prevent going into an infinite loop.
 ///
 /// ```rust
-/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom8::multi::many1_count;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use winnow::multi::many1_count;
+/// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, usize> {
 ///   many1_count(tag("abc"))(s)
@@ -542,9 +542,9 @@ where
 /// * `f` The parser to apply.
 /// * `count` How often to apply the parser.
 /// ```rust
-/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom8::multi::count;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use winnow::multi::count;
+/// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   count(tag("abc"), 2)(s)
@@ -596,9 +596,9 @@ where
 /// * `f` The parser to apply.
 /// * `buf` The slice to fill
 /// ```rust
-/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom8::multi::fill;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use winnow::multi::fill;
+/// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, [&str; 2]> {
 ///   let mut buf = ["", ""];
@@ -656,9 +656,9 @@ where
 /// return an error, to prevent going into an infinite loop
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
-/// use nom8::multi::fold_many0;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// use winnow::multi::fold_many0;
+/// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   fold_many0(
@@ -732,9 +732,9 @@ where
 /// to prevent going into an infinite loop.
 ///
 /// ```rust
-/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom8::multi::fold_many1;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use winnow::multi::fold_many1;
+/// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   fold_many1(
@@ -818,9 +818,9 @@ where
 /// to prevent going into an infinite loop.
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed, IResult};
-/// use nom8::multi::fold_many_m_n;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// use winnow::multi::fold_many_m_n;
+/// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   fold_many_m_n(
@@ -894,15 +894,15 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Arguments
 /// * `f` The parser to apply.
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed, IResult, input::Streaming};
-/// use nom8::number::be_u16;
-/// use nom8::multi::length_data;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::ErrorKind, Needed, IResult, input::Streaming};
+/// use winnow::number::be_u16;
+/// use winnow::multi::length_data;
+/// use winnow::bytes::tag;
 ///
 /// fn parser(s: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
 ///   length_data(be_u16)(s)
@@ -935,16 +935,16 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(nom8::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 /// # Arguments
 /// * `f` The parser to apply.
 /// * `g` The parser to apply on the subslice.
 /// ```rust
-/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult, input::Streaming};
-/// use nom8::number::be_u16;
-/// use nom8::multi::length_value;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult, input::Streaming};
+/// use winnow::number::be_u16;
+/// use winnow::multi::length_value;
+/// use winnow::bytes::tag;
 ///
 /// fn parser(s: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
 ///   length_value(be_u16, tag("abc"))(s)
@@ -980,12 +980,12 @@ where
 /// * `f` The parser to apply to obtain the count.
 /// * `g` The parser to apply repeatedly.
 /// ```rust
-/// # use nom8::prelude::*;
-/// # use nom8::{Err, error::{Error, ErrorKind}, Needed, IResult};
-/// use nom8::number::u8;
-/// use nom8::multi::length_count;
-/// use nom8::bytes::tag;
-/// use nom8::combinator::map;
+/// # use winnow::prelude::*;
+/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// use winnow::number::u8;
+/// use winnow::multi::length_count;
+/// use winnow::bytes::tag;
+/// use winnow::combinator::map;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
 ///   length_count(u8.map(|i| {

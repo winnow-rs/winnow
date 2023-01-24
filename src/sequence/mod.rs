@@ -16,10 +16,10 @@ use crate::{IResult, Parser};
 /// * `second` The second parser to apply.
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::sequence::pair;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::sequence::pair;
+/// use winnow::bytes::tag;
 ///
 /// let mut parser = pair(tag("abc"), tag("efg"));
 ///
@@ -51,10 +51,10 @@ where
 /// * `second` The second parser to get object.
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::sequence::preceded;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::sequence::preceded;
+/// use winnow::bytes::tag;
 ///
 /// let mut parser = preceded(tag("abc"), tag("efg"));
 ///
@@ -85,10 +85,10 @@ where
 /// * `second` The second parser to match an object.
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::sequence::terminated;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::sequence::terminated;
+/// use winnow::bytes::tag;
 ///
 /// let mut parser = terminated(tag("abc"), tag("efg"));
 ///
@@ -121,10 +121,10 @@ where
 /// * `second` The second parser to apply.
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::sequence::separated_pair;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::sequence::separated_pair;
+/// use winnow::bytes::tag;
 ///
 /// let mut parser = separated_pair(tag("abc"), tag("|"), tag("efg"));
 ///
@@ -160,10 +160,10 @@ where
 /// * `third` The third parser to apply and discard.
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind, Needed};
-/// # use nom8::Needed::Size;
-/// use nom8::sequence::delimited;
-/// use nom8::bytes::tag;
+/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::Needed::Size;
+/// use winnow::sequence::delimited;
+/// use winnow::bytes::tag;
 ///
 /// let mut parser = delimited(tag("("), tag("abc"), tag(")"));
 ///
@@ -274,9 +274,9 @@ impl<I, E: ParseError<I>> Tuple<I, (), E> for () {
 /// **WARNING:** Deprecated, [`Parser`] is directly implemented for tuples
 ///
 /// ```rust
-/// # use nom8::{Err, error::ErrorKind};
-/// use nom8::sequence::tuple;
-/// use nom8::character::{alpha1, digit1};
+/// # use winnow::{Err, error::ErrorKind};
+/// use winnow::sequence::tuple;
+/// use winnow::character::{alpha1, digit1};
 /// let mut parser = tuple((alpha1, digit1, alpha1));
 ///
 /// assert_eq!(parser("abc123def"), Ok(("", ("abc", "123", "def"))));

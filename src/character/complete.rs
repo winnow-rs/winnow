@@ -22,8 +22,8 @@ use crate::{Err, IResult};
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::{ErrorKind, Error}, IResult};
-/// # use nom8::character::complete::char;
+/// # use winnow::{Err, error::{ErrorKind, Error}, IResult};
+/// # use winnow::character::complete::char;
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     char('a')(i)
 /// }
@@ -33,8 +33,8 @@ use crate::{Err, IResult};
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Char))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bytes::one_of`][crate::bytes::one_of]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bytes::one_of`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of]
+#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::one_of`")]
 pub fn char<I, Error: ParseError<I>>(c: char) -> impl Fn(I) -> IResult<I, char, Error>
 where
   I: Slice<RangeFrom<usize>> + InputIter,
@@ -63,8 +63,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::{ErrorKind, Error}, Needed, IResult};
-/// # use nom8::character::complete::satisfy;
+/// # use winnow::{Err, error::{ErrorKind, Error}, Needed, IResult};
+/// # use winnow::character::complete::satisfy;
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     satisfy(|c| c == 'a' || c == 'b')(i)
 /// }
@@ -73,8 +73,8 @@ where
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Satisfy))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bytes::one_of`][crate::bytes::one_of]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bytes::one_of`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of]
+#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::one_of`")]
 pub fn satisfy<F, I, Error: ParseError<I>>(cond: F) -> impl Fn(I) -> IResult<I, char, Error>
 where
   I: Slice<RangeFrom<usize>> + InputIter,
@@ -109,15 +109,15 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::ErrorKind};
-/// # use nom8::character::complete::one_of;
+/// # use winnow::{Err, error::ErrorKind};
+/// # use winnow::character::complete::one_of;
 /// assert_eq!(one_of::<_, _, (&str, ErrorKind)>("abc")("b"), Ok(("", 'b')));
 /// assert_eq!(one_of::<_, _, (&str, ErrorKind)>("a")("bc"), Err(Err::Error(("bc", ErrorKind::OneOf))));
 /// assert_eq!(one_of::<_, _, (&str, ErrorKind)>("a")(""), Err(Err::Error(("", ErrorKind::OneOf))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bytes::one_of`][crate::bytes::one_of]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bytes::one_of`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of]
+#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::one_of`")]
 pub fn one_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
   I: Slice<RangeFrom<usize>> + InputIter + InputLength,
@@ -133,15 +133,15 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::ErrorKind};
-/// # use nom8::character::complete::none_of;
+/// # use winnow::{Err, error::ErrorKind};
+/// # use winnow::character::complete::none_of;
 /// assert_eq!(none_of::<_, _, (&str, ErrorKind)>("abc")("z"), Ok(("", 'z')));
 /// assert_eq!(none_of::<_, _, (&str, ErrorKind)>("ab")("a"), Err(Err::Error(("a", ErrorKind::NoneOf))));
 /// assert_eq!(none_of::<_, _, (&str, ErrorKind)>("a")(""), Err(Err::Error(("", ErrorKind::NoneOf))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bytes::none_of`][crate::bytes::none_of]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bytes::none_of`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::none_of`][crate::bytes::none_of]
+#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::none_of`")]
 pub fn none_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
   I: Slice<RangeFrom<usize>> + InputLength + InputIter,
@@ -157,8 +157,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::{Error, ErrorKind}, IResult};
-/// # use nom8::character::complete::crlf;
+/// # use winnow::{Err, error::{Error, ErrorKind}, IResult};
+/// # use winnow::character::complete::crlf;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     crlf(input)
 /// }
@@ -168,8 +168,8 @@ where
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::CrLf))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::crlf`][crate::character::crlf]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::character::crlf`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::crlf`][crate::character::crlf]
+#[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::crlf`")]
 pub fn crlf<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<Range<usize>> + Slice<RangeFrom<usize>>,
@@ -194,8 +194,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom8::character::complete::not_line_ending;
+/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::character::complete::not_line_ending;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     not_line_ending(input)
 /// }
@@ -208,10 +208,10 @@ where
 /// assert_eq!(parser("a\rbc"), Err(Err::Error(Error { input: "a\rbc", code: ErrorKind::Tag })));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::not_line_ending`][crate::character::not_line_ending]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::not_line_ending`][crate::character::not_line_ending]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom8::character::not_line_ending`"
+  note = "Replaced with `winnow::character::not_line_ending`"
 )]
 pub fn not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
@@ -254,8 +254,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom8::character::complete::line_ending;
+/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::character::complete::line_ending;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     line_ending(input)
 /// }
@@ -265,8 +265,11 @@ where
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::CrLf))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::line_ending`][crate::character::line_ending]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::character::line_ending`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::line_ending`][crate::character::line_ending]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `winnow::character::line_ending`"
+)]
 pub fn line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<Range<usize>> + Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
@@ -293,8 +296,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom8::character::complete::newline;
+/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::character::complete::newline;
 /// fn parser(input: &str) -> IResult<&str, char> {
 ///     newline(input)
 /// }
@@ -304,8 +307,8 @@ where
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Char))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::newline`][crate::character::newline]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::character::newline`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::newline`][crate::character::newline]
+#[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::newline`")]
 pub fn newline<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
 where
   I: Slice<RangeFrom<usize>> + InputIter,
@@ -320,8 +323,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom8::character::complete::tab;
+/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::character::complete::tab;
 /// fn parser(input: &str) -> IResult<&str, char> {
 ///     tab(input)
 /// }
@@ -331,8 +334,8 @@ where
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Char))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::tab`][crate::character::tab]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::character::tab`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::tab`][crate::character::tab]
+#[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::tab`")]
 pub fn tab<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
 where
   I: Slice<RangeFrom<usize>> + InputIter,
@@ -348,7 +351,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{character::complete::anychar, Err, error::{Error, ErrorKind}, IResult};
+/// # use winnow::{character::complete::anychar, Err, error::{Error, ErrorKind}, IResult};
 /// fn parser(input: &str) -> IResult<&str, char> {
 ///     anychar(input)
 /// }
@@ -357,8 +360,8 @@ where
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Eof))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::bytes::any`][crate::bytes::any]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::bytes::any`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::any`][crate::bytes::any]
+#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::any`")]
 pub fn anychar<T, E: ParseError<T>>(input: T) -> IResult<T, char, E>
 where
   T: InputIter + InputLength + Slice<RangeFrom<usize>>,
@@ -374,8 +377,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom8::character::complete::alpha0;
+/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::character::complete::alpha0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alpha0(input)
 /// }
@@ -385,8 +388,8 @@ where
 /// assert_eq!(parser(""), Ok(("", "")));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::alpha0`][crate::character::alpha0]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::character::alpha0`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::alpha0`][crate::character::alpha0]
+#[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::alpha0`")]
 pub fn alpha0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -405,8 +408,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom8::character::complete::alpha1;
+/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::character::complete::alpha1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alpha1(input)
 /// }
@@ -416,8 +419,8 @@ where
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Alpha))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::alpha1`][crate::character::alpha1]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::character::alpha1`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::alpha1`][crate::character::alpha1]
+#[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::alpha1`")]
 pub fn alpha1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -436,8 +439,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom8::character::complete::digit0;
+/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::character::complete::digit0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     digit0(input)
 /// }
@@ -448,8 +451,8 @@ where
 /// assert_eq!(parser(""), Ok(("", "")));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::digit0`][crate::character::digit0]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::character::digit0`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::digit0`][crate::character::digit0]
+#[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::digit0`")]
 pub fn digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -468,8 +471,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom8::character::complete::digit1;
+/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::character::complete::digit1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     digit1(input)
 /// }
@@ -483,9 +486,9 @@ where
 /// You can use `digit1` in combination with [`map_res`] to parse an integer:
 ///
 /// ```
-/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom8::combinator::map_res;
-/// # use nom8::character::complete::digit1;
+/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::combinator::map_res;
+/// # use winnow::character::complete::digit1;
 /// fn parser(input: &str) -> IResult<&str, u32> {
 ///   map_res(digit1, str::parse)(input)
 /// }
@@ -497,8 +500,8 @@ where
 ///
 /// [`map_res`]: crate::combinator::map_res
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::digit1`][crate::character::digit1]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::character::digit1`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::digit1`][crate::character::digit1]
+#[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::digit1`")]
 pub fn digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -516,8 +519,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom8::character::complete::hex_digit0;
+/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::character::complete::hex_digit0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     hex_digit0(input)
 /// }
@@ -527,8 +530,11 @@ where
 /// assert_eq!(parser(""), Ok(("", "")));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::hex_digit0`][crate::character::hex_digit0]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::character::hex_digit0`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::hex_digit0`][crate::character::hex_digit0]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `winnow::character::hex_digit0`"
+)]
 pub fn hex_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -546,8 +552,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom8::character::complete::hex_digit1;
+/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::character::complete::hex_digit1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     hex_digit1(input)
 /// }
@@ -557,8 +563,11 @@ where
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::HexDigit))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::hex_digit1`][crate::character::hex_digit1]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::character::hex_digit1`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::hex_digit1`][crate::character::hex_digit1]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `winnow::character::hex_digit1`"
+)]
 pub fn hex_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -577,8 +586,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom8::character::complete::oct_digit0;
+/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::character::complete::oct_digit0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     oct_digit0(input)
 /// }
@@ -588,8 +597,11 @@ where
 /// assert_eq!(parser(""), Ok(("", "")));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::oct_digit0`][crate::character::oct_digit0]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::character::oct_digit0`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::oct_digit0`][crate::character::oct_digit0]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `winnow::character::oct_digit0`"
+)]
 pub fn oct_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -608,8 +620,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom8::character::complete::oct_digit1;
+/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::character::complete::oct_digit1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     oct_digit1(input)
 /// }
@@ -619,8 +631,11 @@ where
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::OctDigit))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::oct_digit1`][crate::character::oct_digit1]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::character::oct_digit1`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::oct_digit1`][crate::character::oct_digit1]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `winnow::character::oct_digit1`"
+)]
 pub fn oct_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -639,8 +654,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom8::character::complete::alphanumeric0;
+/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::character::complete::alphanumeric0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alphanumeric0(input)
 /// }
@@ -650,10 +665,10 @@ where
 /// assert_eq!(parser(""), Ok(("", "")));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::alphanumeric0`][crate::character::alphanumeric0]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::alphanumeric0`][crate::character::alphanumeric0]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom8::character::alphanumeric0`"
+  note = "Replaced with `winnow::character::alphanumeric0`"
 )]
 pub fn alphanumeric0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
@@ -673,8 +688,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom8::character::complete::alphanumeric1;
+/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::character::complete::alphanumeric1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alphanumeric1(input)
 /// }
@@ -684,10 +699,10 @@ where
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::AlphaNumeric))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::alphanumeric1`][crate::character::alphanumeric1]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::alphanumeric1`][crate::character::alphanumeric1]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `nom8::character::alphanumeric1`"
+  note = "Replaced with `winnow::character::alphanumeric1`"
 )]
 pub fn alphanumeric1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
@@ -707,8 +722,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom8::character::complete::space0;
+/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::character::complete::space0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     space0(input)
 /// }
@@ -718,8 +733,8 @@ where
 /// assert_eq!(parser(""), Ok(("", "")));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::space0`][crate::character::space0]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::character::space0`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::space0`][crate::character::space0]
+#[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::space0`")]
 pub fn space0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -741,8 +756,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom8::character::complete::space1;
+/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::character::complete::space1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     space1(input)
 /// }
@@ -752,8 +767,8 @@ where
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Space))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::space1`][crate::character::space1]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::character::space1`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::space1`][crate::character::space1]
+#[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::space1`")]
 pub fn space1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -778,8 +793,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::ErrorKind, IResult, Needed};
-/// # use nom8::character::complete::multispace0;
+/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::character::complete::multispace0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     multispace0(input)
 /// }
@@ -789,8 +804,11 @@ where
 /// assert_eq!(parser(""), Ok(("", "")));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::multispace0`][crate::character::multispace0]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::character::multispace0`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::multispace0`][crate::character::multispace0]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `winnow::character::multispace0`"
+)]
 pub fn multispace0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,
@@ -812,8 +830,8 @@ where
 /// # Example
 ///
 /// ```
-/// # use nom8::{Err, error::{Error, ErrorKind}, IResult, Needed};
-/// # use nom8::character::complete::multispace1;
+/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::character::complete::multispace1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     multispace1(input)
 /// }
@@ -823,8 +841,11 @@ where
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::MultiSpace))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`nom8::character::multispace1`][crate::character::multispace1]
-#[deprecated(since = "8.0.0", note = "Replaced with `nom8::character::multispace1`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::multispace1`][crate::character::multispace1]
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `winnow::character::multispace1`"
+)]
 pub fn multispace1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: InputTakeAtPosition,

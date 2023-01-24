@@ -3,11 +3,11 @@
 
 use std::str;
 
-use nom8::bytes::take_till1;
-use nom8::multi::fold_many0;
-use nom8::prelude::*;
-use nom8::sequence::delimited;
-use nom8::IResult;
+use winnow::bytes::take_till1;
+use winnow::multi::fold_many0;
+use winnow::prelude::*;
+use winnow::sequence::delimited;
+use winnow::IResult;
 
 fn atom<'a>(_tomb: &'a mut ()) -> impl FnMut(&'a [u8]) -> IResult<&'a [u8], String> {
   move |input| {

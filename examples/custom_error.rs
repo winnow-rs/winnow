@@ -1,7 +1,7 @@
-use nom8::error::ErrorKind;
-use nom8::error::ParseError;
-use nom8::Err::Error;
-use nom8::IResult;
+use winnow::error::ErrorKind;
+use winnow::error::ParseError;
+use winnow::Err::Error;
+use winnow::IResult;
 
 #[derive(Debug, PartialEq)]
 pub enum CustomError<I> {
@@ -29,7 +29,7 @@ fn main() {}
 mod tests {
   use super::parse;
   use super::CustomError;
-  use nom8::Err::Error;
+  use winnow::Err::Error;
 
   #[test]
   fn it_works() {

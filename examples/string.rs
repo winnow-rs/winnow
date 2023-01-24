@@ -11,14 +11,14 @@
 
 #![cfg(feature = "alloc")]
 
-use nom8::branch::alt;
-use nom8::bytes::{one_of, take_till1, take_while_m_n};
-use nom8::character::multispace1;
-use nom8::error::{FromExternalError, ParseError};
-use nom8::multi::fold_many0;
-use nom8::prelude::*;
-use nom8::sequence::{delimited, preceded};
-use nom8::IResult;
+use winnow::branch::alt;
+use winnow::bytes::{one_of, take_till1, take_while_m_n};
+use winnow::character::multispace1;
+use winnow::error::{FromExternalError, ParseError};
+use winnow::multi::fold_many0;
+use winnow::prelude::*;
+use winnow::sequence::{delimited, preceded};
+use winnow::IResult;
 
 // parser combinators are constructed from the bottom up:
 // first we write parsers for the smallest elements (escaped characters),

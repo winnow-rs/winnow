@@ -1,6 +1,6 @@
 //! # nom, eating data byte by byte
 //!
-//! **NOTE:** This is an unofficial, short-lived fork.  I'm nominating nom8 to be nom v8.
+//! **NOTE:** This is an unofficial, short-lived fork.  I'm nominating winnow to be nom v8.
 //!
 //! nom is a parser combinator library, supporting:
 //! - String (`&str`), byte (`&[u8]`), and [custom input types][crate::input]
@@ -10,8 +10,8 @@
 //! ## Example
 //!
 //! ```rust
-//! use nom8::prelude::*;
-//! use nom8::bytes::{tag, take_while_m_n};
+//! use winnow::prelude::*;
+//! use winnow::bytes::{tag, take_while_m_n};
 //!
 //! #[derive(Debug,PartialEq)]
 //! pub struct Color {
@@ -85,7 +85,7 @@
 //! Here is an example of one such parser, to recognize text between parentheses:
 //!
 //! ```rust
-//! use nom8::{
+//! use winnow::{
 //!   IResult,
 //!   sequence::delimited,
 //!   bytes::take_till1
@@ -103,7 +103,7 @@
 //! Here is another parser, written without using nom's combinators this time:
 //!
 //! ```rust
-//! use nom8::{IResult, Err, Needed};
+//! use winnow::{IResult, Err, Needed};
 //!
 //! # fn main() {
 //! fn take4(i: &[u8]) -> IResult<&[u8], &[u8]>{
@@ -124,7 +124,7 @@
 //! With functions, you would write it like this:
 //!
 //! ```rust
-//! use nom8::{IResult, bytes::take, input::Streaming};
+//! use winnow::{IResult, bytes::take, input::Streaming};
 //! fn take4(input: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
 //!   take(4u8)(input)
 //! }
@@ -146,7 +146,7 @@
 //! `IResult` is an alias for the `Result` type:
 //!
 //! ```rust
-//! use nom8::{Needed, error::Error};
+//! use winnow::{Needed, error::Error};
 //!
 //! type IResult<I, O, E = Error<I>> = Result<(I, O), Err<E>>;
 //!
@@ -179,8 +179,8 @@
 //! Here are some examples:
 //!
 //! ```rust
-//! use nom8::IResult;
-//! use nom8::bytes::{tag, take};
+//! use winnow::IResult;
+//! use winnow::bytes::{tag, take};
 //! fn abcd_parser(i: &str) -> IResult<&str, &str> {
 //!   tag("abcd")(i) // will consume bytes if the input begins with "abcd"
 //! }
@@ -197,22 +197,22 @@
 //! the next, and returns the result of the first parser that succeeds:
 //!
 //! ```rust
-//! use nom8::IResult;
-//! use nom8::branch::alt;
-//! use nom8::bytes::tag;
+//! use winnow::IResult;
+//! use winnow::branch::alt;
+//! use winnow::bytes::tag;
 //!
 //! let mut alt_tags = alt((tag("abcd"), tag("efgh")));
 //!
 //! assert_eq!(alt_tags(&b"abcdxxx"[..]), Ok((&b"xxx"[..], &b"abcd"[..])));
 //! assert_eq!(alt_tags(&b"efghxxx"[..]), Ok((&b"xxx"[..], &b"efgh"[..])));
-//! assert_eq!(alt_tags(&b"ijklxxx"[..]), Err(nom8::Err::Error((&b"ijklxxx"[..], nom8::error::ErrorKind::Tag))));
+//! assert_eq!(alt_tags(&b"ijklxxx"[..]), Err(winnow::Err::Error((&b"ijklxxx"[..], winnow::error::ErrorKind::Tag))));
 //! ```
 //!
 //! The **`opt`** combinator makes a parser optional. If the child parser returns
 //! an error, **`opt`** will still succeed and return None:
 //!
 //! ```rust
-//! use nom8::{IResult, combinator::opt, bytes::tag};
+//! use winnow::{IResult, combinator::opt, bytes::tag};
 //! fn abcd_opt(i: &[u8]) -> IResult<&[u8], Option<&[u8]>> {
 //!   opt(tag("abcd"))(i)
 //! }
@@ -226,7 +226,7 @@
 //! ```rust
 //! # #[cfg(feature = "alloc")]
 //! # fn main() {
-//! use nom8::{IResult, multi::many0, bytes::tag};
+//! use winnow::{IResult, multi::many0, bytes::tag};
 //! use std::str;
 //!
 //! fn multi(i: &str) -> IResult<&str, Vec<&str>> {
@@ -257,8 +257,8 @@
 //!
 //! ```rust
 //! # fn main() {
-//! use nom8::prelude::*;
-//! use nom8::{
+//! use winnow::prelude::*;
+//! use winnow::{
 //!     error::ErrorKind, Needed,
 //!     number::be_u16,
 //!     bytes::{tag, take},
@@ -274,9 +274,9 @@
 //!     (0x6162u16, &b"cde"[..], &b"fg"[..])
 //!   ))
 //! );
-//! assert_eq!(tpl.parse(Streaming(&b"abcde"[..])), Err(nom8::Err::Incomplete(Needed::new(2))));
+//! assert_eq!(tpl.parse(Streaming(&b"abcde"[..])), Err(winnow::Err::Incomplete(Needed::new(2))));
 //! let input = &b"abcdejk"[..];
-//! assert_eq!(tpl.parse(Streaming(input)), Err(nom8::Err::Error((Streaming(&input[5..]), ErrorKind::Tag))));
+//! assert_eq!(tpl.parse(Streaming(input)), Err(winnow::Err::Error((Streaming(&input[5..]), ErrorKind::Tag))));
 //! # }
 //! ```
 //!
@@ -285,7 +285,7 @@
 //!
 //! ```rust
 //! # fn main() {
-//! use nom8::{IResult, bytes::tag};
+//! use winnow::{IResult, bytes::tag};
 //!
 //! #[derive(Debug, PartialEq)]
 //! struct A {
@@ -409,11 +409,11 @@ pub mod _tutorial;
 /// ## Example
 ///
 /// ```rust
-/// use nom8::prelude::*;
+/// use winnow::prelude::*;
 ///
 /// fn parse_data(input: &str) -> IResult<&str, u64> {
 ///     // ...
-/// #   nom8::character::u64(input)
+/// #   winnow::character::u64(input)
 /// }
 ///
 /// fn main() {
