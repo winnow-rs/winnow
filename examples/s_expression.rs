@@ -167,8 +167,8 @@ where
 /// that we need to parse an expression and then parse 0 or more expressions, all
 /// wrapped in an S-expression.
 ///
-/// tuples are used to sequence parsers together, so we can translate this directly
-/// and then map over it to transform the output into an `Expr::Application`
+/// tuples are themselves a parser, used to sequence parsers together, so we can translate this
+/// directly and then map over it to transform the output into an `Expr::Application`
 fn parse_application(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
   let application_inner =
     (parse_expr, many0(parse_expr)).map(|(head, tail)| Expr::Application(Box::new(head), tail));
