@@ -122,7 +122,7 @@ fn object(input: Input<'_>) -> IResult<Input<'_>, HashMap<String, JsonValue>> {
 }
 
 fn json_value(input: Input<'_>) -> IResult<Input<'_>, JsonValue> {
-  use JsonValue::*;
+  use JsonValue::{Array, Bool, Null, Num, Object, Str};
 
   alt((
     tag("null").value(Null),

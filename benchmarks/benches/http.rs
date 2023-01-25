@@ -8,7 +8,7 @@ use winnow::{IResult, bytes::{tag, one_of, take_while1}, character::{line_ending
 
 type Input<'i> = &'i [u8];
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 #[derive(Debug)]
 struct Request<'a> {
   method:  &'a [u8],
@@ -22,8 +22,8 @@ struct Header<'a> {
   value: Vec<&'a [u8]>,
 }
 
-#[cfg_attr(rustfmt, rustfmt_skip)]
-#[cfg_attr(feature = "cargo-clippy", allow(match_same_arms))]
+#[rustfmt::skip]
+#[cfg_attr(feature = "cargo-clippy", allow(clippy::match_same_arms))]
 fn is_token(c: u8) -> bool {
   match c {
     128..=255 => false,
@@ -66,7 +66,7 @@ fn is_horizontal_space(c: u8) -> bool {
 }
 
 fn is_version(c: u8) -> bool {
-  c >= b'0' && c <= b'9' || c == b'.'
+ (b'0'..=b'9').contains(&c) || c == b'.'
 }
 
 fn request_line(input: Input<'_>) -> IResult<Input<'_>, Request<'_>> {
@@ -113,7 +113,7 @@ fn request(input: Input<'_>) -> IResult<Input<'_>, (Request<'_>, Vec<Header<'_>>
 
 
 fn parse(data: &[u8]) -> Option<Vec<(Request<'_>, Vec<Header<'_>>)>> {
-  let mut buf = &data[..];
+  let mut buf = data;
   let mut v = Vec::new();
   loop {
     match request(buf) {

@@ -1617,15 +1617,15 @@ where
     },
     |i: T| {
       crate::bytes::streaming::tag_no_case::<_, _, E>("nan")(i.clone())
-        .map_err(|_| crate::Err::Error(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::Err::Error(E::from_error_kind(i, ErrorKind::Float)))
     },
     |i: T| {
       crate::bytes::streaming::tag_no_case::<_, _, E>("inf")(i.clone())
-        .map_err(|_| crate::Err::Error(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::Err::Error(E::from_error_kind(i, ErrorKind::Float)))
     },
     |i: T| {
       crate::bytes::streaming::tag_no_case::<_, _, E>("infinity")(i.clone())
-        .map_err(|_| crate::Err::Error(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::Err::Error(E::from_error_kind(i, ErrorKind::Float)))
     },
   ))(input)
 }
@@ -1643,6 +1643,7 @@ where
   since = "8.0.0",
   note = "Replaced with `winnow::character::recognize_float_parts` with input wrapped in `winnow::input::Streaming`"
 )]
+#[allow(clippy::type_complexity)]
 pub fn recognize_float_parts<T, E: ParseError<T>>(
   input: T,
 ) -> IResult<
@@ -1732,8 +1733,7 @@ where
 
   let i2 = i.clone();
   let (i, e) = match i.as_bytes().iter().next() {
-    Some(b'e') => (i.slice(1..), true),
-    Some(b'E') => (i.slice(1..), true),
+    Some(b'e') | Some(b'E') => (i.slice(1..), true),
     _ => (i, false),
   };
 
@@ -2214,7 +2214,7 @@ mod tests {
     assert_parse!(be_f32(&[0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 0_f32)));
     assert_parse!(
       be_f32(&[0x4d, 0x31, 0x1f, 0xd8][..]),
-      Ok((&b""[..], 185_728_392_f32))
+      Ok((&b""[..], 185_728_380_f32))
     );
   }
 
@@ -2235,7 +2235,7 @@ mod tests {
     assert_parse!(le_f32(&[0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 0_f32)));
     assert_parse!(
       le_f32(&[0xd8, 0x1f, 0x31, 0x4d][..]),
-      Ok((&b""[..], 185_728_392_f32))
+      Ok((&b""[..], 185_728_380_f32))
     );
   }
 

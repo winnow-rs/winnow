@@ -40,7 +40,7 @@ fn complete_escaped_hang() {
 #[test]
 fn complete_escaped_hang_1118() {
   // issue ##1118 escaped does not work with empty string
-  fn unquote<'a>(input: &'a str) -> IResult<&'a str, &'a str> {
+  fn unquote(input: &str) -> IResult<&str, &str> {
     use crate::bytes::one_of;
     use crate::combinator::opt;
     use crate::sequence::delimited;
@@ -321,14 +321,14 @@ fn char_str() {
     one_of('c')(i)
   }
 
-  let a = &"abcd"[..];
+  let a = "abcd";
   assert_eq!(
     f(Streaming(a)),
     Err(Err::Error(error_position!(Streaming(a), ErrorKind::OneOf)))
   );
 
-  let b = &"cde"[..];
-  assert_eq!(f(Streaming(b)), Ok((Streaming(&"de"[..]), 'c')));
+  let b = "cde";
+  assert_eq!(f(Streaming(b)), Ok((Streaming("de"), 'c')));
 }
 
 #[test]

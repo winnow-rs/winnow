@@ -1,6 +1,6 @@
 //! Basic types to build the parsers
 
-use self::Needed::*;
+use self::Needed::{Size, Unknown};
 use crate::combinator::*;
 #[cfg(feature = "std")]
 use crate::error::DbgErr;
@@ -192,11 +192,7 @@ pub enum Err<E> {
 impl<E> Err<E> {
   /// Tests if the result is Incomplete
   pub fn is_incomplete(&self) -> bool {
-    if let Err::Incomplete(_) = self {
-      true
-    } else {
-      false
-    }
+    matches!(self, Err::Incomplete(_))
   }
 
   /// Applies the given function to the inner error
@@ -401,7 +397,7 @@ pub trait Parser<I, O, E> {
   ///   }
   /// }
   /// ```
-  fn by_ref(&mut self) -> ByRef<Self>
+  fn by_ref(&mut self) -> ByRef<'_, Self>
   where
     Self: core::marker::Sized,
   {
@@ -551,7 +547,7 @@ pub trait Parser<I, O, E> {
   }
 
   /// if the child parser was successful, return the location of consumed input with the output
-  /// as a tuple. Functions similarly to [Parser::span] except it
+  /// as a tuple. Functions similarly to [`Parser::span`] except it
   /// returns the parser output as well.
   ///
   /// This can be useful especially in cases where the output is not the same type
@@ -1087,7 +1083,7 @@ mod tests {
   #[macro_export]
   macro_rules! assert_size (
     ($t:ty, $sz:expr) => (
-      assert!(crate::lib::std::mem::size_of::<$t>() <= $sz, "{} <= {} failed", crate::lib::std::mem::size_of::<$t>(), $sz);
+      assert!($crate::lib::std::mem::size_of::<$t>() <= $sz, "{} <= {} failed", $crate::lib::std::mem::size_of::<$t>(), $sz);
     );
   );
 
@@ -1122,6 +1118,7 @@ mod tests {
 
   #[test]
   fn tuple_test() {
+    #[allow(clippy::type_complexity)]
     fn tuple_3(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (u16, &[u8], &[u8])> {
       (be_u16, take(3u8), tag("fg")).parse(i)
     }

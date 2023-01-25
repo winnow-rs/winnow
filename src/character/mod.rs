@@ -1136,6 +1136,7 @@ where
 /// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 #[inline(always)]
+#[allow(clippy::type_complexity)]
 pub fn recognize_float_parts<T, E: ParseError<T>, const STREAMING: bool>(
   input: T,
 ) -> IResult<

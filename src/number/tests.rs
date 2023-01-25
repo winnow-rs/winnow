@@ -257,7 +257,7 @@ mod complete {
     assert_parse!(be_f32(&[0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 0_f32)));
     assert_parse!(
       be_f32(&[0x4d, 0x31, 0x1f, 0xd8][..]),
-      Ok((&b""[..], 185_728_392_f32))
+      Ok((&b""[..], 185_728_380_f32))
     );
   }
 
@@ -278,7 +278,7 @@ mod complete {
     assert_parse!(le_f32(&[0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 0_f32)));
     assert_parse!(
       le_f32(&[0xd8, 0x1f, 0x31, 0x4d][..]),
-      Ok((&b""[..], 185_728_392_f32))
+      Ok((&b""[..], 185_728_380_f32))
     );
   }
 
@@ -904,7 +904,7 @@ mod streaming {
     );
     assert_parse!(
       be_f32(Streaming(&[0x4d, 0x31, 0x1f, 0xd8][..])),
-      Ok((Streaming(&b""[..]), 185_728_392_f32))
+      Ok((Streaming(&b""[..]), 185_728_380_f32))
     );
   }
 
@@ -932,7 +932,7 @@ mod streaming {
     );
     assert_parse!(
       le_f32(Streaming(&[0xd8, 0x1f, 0x31, 0x4d][..])),
-      Ok((Streaming(&b""[..]), 185_728_392_f32))
+      Ok((Streaming(&b""[..]), 185_728_380_f32))
     );
   }
 

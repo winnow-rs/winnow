@@ -73,7 +73,7 @@ fn arithmetic(c: &mut Criterion) {
     expr(data),
     Ok((
       &b";"[..],
-      2 * 2 / (5 - 1) + 3 / 4 * (2 - 7 + 567 * 12 / 2) + 3 * (1 + 2 * (45 / 2)),
+      2 * 2 / (5 - 1) + 3 * (1 + 2 * (45 / 2)),
     ))
   );
   c.bench_function("arithmetic", |b| {

@@ -65,7 +65,7 @@ mod parse_int {
 
     let subject = parse_ints(Streaming(&b"12 34 5689 "[..]));
     let expected = Ok((Streaming(&b" "[..]), vec![12, 34, 5689]));
-    assert_eq!(subject, expected)
+    assert_eq!(subject, expected);
   }
 }
 
@@ -73,6 +73,7 @@ mod parse_int {
 fn usize_length_bytes_issue() {
   use winnow::multi::length_data;
   use winnow::number::be_u16;
+  #[allow(clippy::type_complexity)]
   let _: IResult<Streaming<&[u8]>, &[u8], (Streaming<&[u8]>, ErrorKind)> =
     length_data(be_u16)(Streaming(b"012346"));
 }

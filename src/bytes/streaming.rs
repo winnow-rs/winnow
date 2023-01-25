@@ -9,7 +9,7 @@ use crate::input::{
   InputTakeAtPosition, IntoOutput, Slice, ToUsize,
 };
 use crate::lib::std::ops::RangeFrom;
-use crate::lib::std::result::Result::*;
+use crate::lib::std::result::Result::Ok;
 use crate::IntoOutputIResult;
 use crate::{Err, IResult, Needed, Parser};
 
@@ -1442,11 +1442,11 @@ mod tests {
     assert_eq!(test2("ab"), Err(Err::Incomplete(Needed::new(2))));
     assert_eq!(
       test2("Hello"),
-      Err(Err::Error(error_position!(&"Hello"[..], ErrorKind::Tag)))
+      Err(Err::Error(error_position!("Hello", ErrorKind::Tag)))
     );
     assert_eq!(
       test2("Hel"),
-      Err(Err::Error(error_position!(&"Hel"[..], ErrorKind::Tag)))
+      Err(Err::Error(error_position!("Hel", ErrorKind::Tag)))
     );
   }
 

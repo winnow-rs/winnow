@@ -255,7 +255,7 @@ fn get_bool_from_expr(e: Expr) -> Option<bool> {
 }
 
 /// This function tries to reduce the AST.
-/// This has to return an Expression rather than an Atom because quoted s_expressions
+/// This has to return an Expression rather than an Atom because quoted `s_expressions`
 /// can't be reduced
 fn eval_expression(e: Expr) -> Option<Expr> {
   match e {

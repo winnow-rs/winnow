@@ -1323,9 +1323,9 @@ mod tests {
     let i = input;
     let (i, opt_sign) = opt(alt((char('+'), char('-'))))(i)?;
     let sign = match opt_sign {
-      Some('+') => true,
+      Some('+') | None => true,
       Some('-') => false,
-      _ => true,
+      _ => unreachable!(),
     };
 
     let (i, s) = match digit1::<_, crate::error::Error<_>>(i) {
@@ -1416,11 +1416,11 @@ mod tests {
       char('c')(i)
     }
 
-    let a = &"abcd"[..];
+    let a = "abcd";
     assert_eq!(f(a), Err(Err::Error(error_position!(a, ErrorKind::Char))));
 
-    let b = &"cde"[..];
-    assert_eq!(f(b), Ok((&"de"[..], 'c')));
+    let b = "cde";
+    assert_eq!(f(b), Ok(("de", 'c')));
   }
 
   proptest! {

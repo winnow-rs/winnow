@@ -109,7 +109,7 @@ fn object(input: &str) -> IResult<&str, HashMap<String, JsonValue>> {
 }
 
 fn json_value(input: &str) -> IResult<&str, JsonValue> {
-  use JsonValue::*;
+  use JsonValue::{Array, Bool, Null, Num, Object, Str};
 
   alt((
     tag("null").value(Null),
@@ -146,7 +146,7 @@ fn json_string() {
 
 #[test]
 fn json_object() {
-  use JsonValue::*;
+  use JsonValue::{Num, Object, Str};
 
   let input = r#"{"a":42,"b":"x"}"#;
 
@@ -164,7 +164,7 @@ fn json_object() {
 
 #[test]
 fn json_array() {
-  use JsonValue::*;
+  use JsonValue::{Array, Num, Str};
 
   let input = r#"[42,"x"]"#;
 
@@ -175,7 +175,7 @@ fn json_array() {
 
 #[test]
 fn json_whitespace() {
-  use JsonValue::*;
+  use JsonValue::{Array, Bool, Null, Num, Object, Str};
 
   let input = r#"
   {

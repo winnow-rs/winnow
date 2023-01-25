@@ -186,13 +186,13 @@ mod test {
     let c = "abcd123";
     let d = "123";
 
-    assert_eq!(f(Streaming(&a[..])), Err(Err::Incomplete(Needed::new(1))));
-    assert_eq!(f(Streaming(&b[..])), Err(Err::Incomplete(Needed::new(1))));
-    assert_eq!(f(Streaming(&c[..])), Ok((Streaming(&"123"[..]), &b[..])));
+    assert_eq!(f(Streaming(a)), Err(Err::Incomplete(Needed::new(1))));
+    assert_eq!(f(Streaming(b)), Err(Err::Incomplete(Needed::new(1))));
+    assert_eq!(f(Streaming(c)), Ok((Streaming("123"), b)));
     assert_eq!(
-      f(Streaming(&d[..])),
+      f(Streaming(d)),
       Err(Err::Error(error_position!(
-        Streaming(&d[..]),
+        Streaming(d),
         ErrorKind::TakeWhile1
       )))
     );

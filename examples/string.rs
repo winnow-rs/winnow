@@ -25,7 +25,7 @@ use winnow::IResult;
 // then combine them into larger parsers.
 
 /// Parse a unicode sequence, of the form u{XXXX}, where XXXX is 1 to 6
-/// hexadecimal numerals. We will combine this later with parse_escaped_char
+/// hexadecimal numerals. We will combine this later with `parse_escaped_char`
 /// to parse sequences like \u{00AC}.
 fn parse_unicode<'a, E>(input: &'a str) -> IResult<&'a str, char, E>
 where
@@ -115,8 +115,8 @@ enum StringFragment<'a> {
   EscapedWS,
 }
 
-/// Combine parse_literal, parse_escaped_whitespace, and parse_escaped_char
-/// into a StringFragment.
+/// Combine `parse_literal`, `parse_escaped_whitespace`, and `parse_escaped_char`
+/// into a `StringFragment`.
 fn parse_fragment<'a, E>(input: &'a str) -> IResult<&'a str, StringFragment<'a>, E>
 where
   E: ParseError<&'a str> + FromExternalError<&'a str, std::num::ParseIntError>,
@@ -130,7 +130,7 @@ where
   ))(input)
 }
 
-/// Parse a string. Use a loop of parse_fragment and push all of the fragments
+/// Parse a string. Use a loop of `parse_fragment` and push all of the fragments
 /// into an output string.
 fn parse_string<'a, E>(input: &'a str) -> IResult<&'a str, String, E>
 where

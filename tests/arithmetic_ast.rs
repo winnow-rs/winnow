@@ -31,7 +31,7 @@ pub enum Oper {
 
 impl Display for Expr {
   fn fmt(&self, format: &mut Formatter<'_>) -> fmt::Result {
-    use self::Expr::*;
+    use self::Expr::{Add, Div, Mul, Paren, Sub, Value};
     match *self {
       Value(val) => write!(format, "{}", val),
       Add(ref left, ref right) => write!(format, "{} + {}", left, right),
@@ -45,7 +45,7 @@ impl Display for Expr {
 
 impl Debug for Expr {
   fn fmt(&self, format: &mut Formatter<'_>) -> fmt::Result {
-    use self::Expr::*;
+    use self::Expr::{Add, Div, Mul, Paren, Sub, Value};
     match *self {
       Value(val) => write!(format, "{}", val),
       Add(ref left, ref right) => write!(format, "({:?} + {:?})", left, right),

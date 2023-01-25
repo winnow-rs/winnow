@@ -84,7 +84,7 @@ fn test_take_complete_eof() {
       input: (input, 8),
       code: ErrorKind::Eof
     }))
-  )
+  );
 }
 
 #[test]
