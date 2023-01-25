@@ -385,8 +385,9 @@ where
       return Err(Err::Failure(E::from_error_kind(input, ErrorKind::ManyMN)));
     }
 
-    let max_initial_capacity = MAX_INITIAL_CAPACITY_BYTES / crate::lib::std::mem::size_of::<O>();
-    let mut res = crate::lib::std::vec::Vec::with_capacity(min.clamp(0, max_initial_capacity));
+    let max_initial_capacity =
+      MAX_INITIAL_CAPACITY_BYTES / crate::lib::std::mem::size_of::<O>().max(1);
+    let mut res = crate::lib::std::vec::Vec::with_capacity(min.min(max_initial_capacity));
     for count in 0..max {
       let len = input.input_len();
       match parse.parse(input.clone()) {
@@ -565,8 +566,9 @@ where
 {
   move |i: I| {
     let mut input = i.clone();
-    let max_initial_capacity = MAX_INITIAL_CAPACITY_BYTES / crate::lib::std::mem::size_of::<O>();
-    let mut res = crate::lib::std::vec::Vec::with_capacity(count.clamp(0, max_initial_capacity));
+    let max_initial_capacity =
+      MAX_INITIAL_CAPACITY_BYTES / crate::lib::std::mem::size_of::<O>().max(1);
+    let mut res = crate::lib::std::vec::Vec::with_capacity(count.min(max_initial_capacity));
 
     for _ in 0..count {
       let input_ = input.clone();

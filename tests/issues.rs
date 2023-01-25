@@ -246,3 +246,14 @@ fn issue_1459_clamp_capacity() {
   let mut parser = count::<_, _, (), _>('a', usize::MAX);
   assert_eq!(parser("a"), Err(winnow::Err::Error(())));
 }
+
+#[test]
+fn issue_1617_count_parser_returning_zero_size() {
+  use winnow::{bytes::tag, error::Error, multi::count};
+
+  // previously, `count()` panicked if the parser had type `O = ()`
+  let parser = tag::<_, _, Error<&str>, false>("abc").map(|_| ());
+  // shouldn't panic
+  let result = count(parser, 3)("abcabcabcdef").expect("parsing should succeed");
+  assert_eq!(result, ("def", vec![(), (), ()]));
+}
