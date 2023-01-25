@@ -170,10 +170,10 @@ mod test {
     let c = "abcd123";
     let d = "123";
 
-    assert_eq!(f(Streaming(&a[..])), Err(Err::Incomplete(Needed::new(1))));
-    assert_eq!(f(Streaming(&b[..])), Err(Err::Incomplete(Needed::new(1))));
-    assert_eq!(f(Streaming(&c[..])), Ok((Streaming(&d[..]), &b[..])));
-    assert_eq!(f(Streaming(&d[..])), Ok((Streaming(&d[..]), &a[..])));
+    assert_eq!(f(Streaming(a)), Err(Err::Incomplete(Needed::new(1))));
+    assert_eq!(f(Streaming(b)), Err(Err::Incomplete(Needed::new(1))));
+    assert_eq!(f(Streaming(c)), Ok((Streaming(d), b)));
+    assert_eq!(f(Streaming(d)), Ok((Streaming(d), a)));
   }
 
   #[test]
@@ -186,13 +186,13 @@ mod test {
     let c = "abcd123";
     let d = "123";
 
-    assert_eq!(f(Streaming(&a[..])), Err(Err::Incomplete(Needed::new(1))));
-    assert_eq!(f(Streaming(&b[..])), Err(Err::Incomplete(Needed::new(1))));
-    assert_eq!(f(Streaming(&c[..])), Ok((Streaming(&"123"[..]), &b[..])));
+    assert_eq!(f(Streaming(a)), Err(Err::Incomplete(Needed::new(1))));
+    assert_eq!(f(Streaming(b)), Err(Err::Incomplete(Needed::new(1))));
+    assert_eq!(f(Streaming(c)), Ok((Streaming("123"), b)));
     assert_eq!(
-      f(Streaming(&d[..])),
+      f(Streaming(d)),
       Err(Err::Error(error_position!(
-        Streaming(&d[..]),
+        Streaming(d),
         ErrorKind::TakeWhile1
       )))
     );
@@ -305,15 +305,7 @@ mod test {
     const CONSUMED: &str = "βèƒôřèÂßÇ";
     const LEFTOVER: &str = "áƒƭèř";
     fn while_s(c: char) -> bool {
-      c == 'β'
-        || c == 'è'
-        || c == 'ƒ'
-        || c == 'ô'
-        || c == 'ř'
-        || c == 'è'
-        || c == 'Â'
-        || c == 'ß'
-        || c == 'Ç'
+      matches!(c, 'β' | 'è' | 'ƒ' | 'ô' | 'ř' | 'Â' | 'ß' | 'Ç')
     }
     fn test(input: &str) -> IResult<&str, &str> {
       take_while(while_s)(input)
@@ -364,15 +356,7 @@ mod test {
     const CONSUMED: &str = "βèƒôřèÂßÇ";
     const LEFTOVER: &str = "áƒƭèř";
     fn while1_s(c: char) -> bool {
-      c == 'β'
-        || c == 'è'
-        || c == 'ƒ'
-        || c == 'ô'
-        || c == 'ř'
-        || c == 'è'
-        || c == 'Â'
-        || c == 'ß'
-        || c == 'Ç'
+      matches!(c, 'β' | 'è' | 'ƒ' | 'ô' | 'ř' | 'Â' | 'ß' | 'Ç')
     }
     fn test(input: &str) -> IResult<&str, &str> {
       take_while1(while1_s)(input)
@@ -513,8 +497,8 @@ mod test {
       many1(alt((tag("a"), tag("b")))).recognize().parse(i)
     }
 
-    assert_eq!(f(&a[..]), Ok((&a[6..], &a[..])));
-    assert_eq!(f(&b[..]), Ok((&b[4..], &b[..4])));
+    assert_eq!(f(a), Ok((&a[6..], a)));
+    assert_eq!(f(b), Ok((&b[4..], &b[..4])));
   }
 
   #[test]

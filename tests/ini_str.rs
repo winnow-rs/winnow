@@ -54,6 +54,7 @@ fn category_and_keys(i: &str) -> IResult<&str, (&str, HashMap<&str, &str>)> {
   (category, keys_and_values).parse(i)
 }
 
+#[allow(clippy::type_complexity)]
 fn categories_aggregator(i: &str) -> IResult<&str, Vec<(&str, HashMap<&str, &str>)>> {
   many0(category_and_keys)(i)
 }

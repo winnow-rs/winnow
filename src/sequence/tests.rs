@@ -50,6 +50,7 @@ fn complete() {
 #[test]
 fn pair_test() {
   #![allow(deprecated)]
+  #[allow(clippy::type_complexity)]
   fn pair_abc_def(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (&[u8], &[u8])> {
     pair(tag("abc"), tag("def"))(i)
   }
@@ -91,6 +92,7 @@ fn pair_test() {
 
 #[test]
 fn separated_pair_test() {
+  #[allow(clippy::type_complexity)]
   fn sep_pair_abc_def(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (&[u8], &[u8])> {
     separated_pair(tag("abc"), tag(","), tag("def"))(i)
   }
@@ -267,6 +269,7 @@ fn delimited_test() {
 #[test]
 fn tuple_test() {
   #![allow(deprecated)]
+  #[allow(clippy::type_complexity)]
   fn tuple_3(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (u16, &[u8], &[u8])> {
     tuple((be_u16, take(3u8), tag("fg")))(i)
   }

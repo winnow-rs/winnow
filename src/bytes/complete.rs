@@ -9,7 +9,7 @@ use crate::input::{
   InputTakeAtPosition, IntoOutput, Slice, ToUsize,
 };
 use crate::lib::std::ops::RangeFrom;
-use crate::lib::std::result::Result::*;
+use crate::lib::std::result::Result::Ok;
 use crate::IntoOutputIResult;
 use crate::{Err, IResult, Parser};
 
@@ -151,8 +151,7 @@ where
       None => Ok((input.slice(input.input_len()..), c)),
       Some((idx, _)) => Ok((input.slice(idx..), c)),
     },
-    Some(_) => Err(Err::Error(E::from_error_kind(input, ErrorKind::OneOf))),
-    None => Err(Err::Error(E::from_error_kind(input, ErrorKind::OneOf))),
+    Some(_) | None => Err(Err::Error(E::from_error_kind(input, ErrorKind::OneOf))),
   }
 }
 
@@ -171,8 +170,7 @@ where
       None => Ok((input.slice(input.input_len()..), c)),
       Some((idx, _)) => Ok((input.slice(idx..), c)),
     },
-    Some(_) => Err(Err::Error(E::from_error_kind(input, ErrorKind::NoneOf))),
-    None => Err(Err::Error(E::from_error_kind(input, ErrorKind::NoneOf))),
+    Some(_) | None => Err(Err::Error(E::from_error_kind(input, ErrorKind::NoneOf))),
   }
 }
 
@@ -492,6 +490,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till`][crate::bytes::take_till]
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_till`")]
+#[allow(clippy::redundant_closure)]
 pub fn take_till<T, Input, Error: ParseError<Input>>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -540,6 +539,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till1`][crate::bytes::take_till1]
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_till1`")]
+#[allow(clippy::redundant_closure)]
 pub fn take_till1<T, Input, Error: ParseError<Input>>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -714,8 +714,7 @@ where
   T: InputLength,
 {
   let res: IResult<_, _, Error> = match i.find_substring(t) {
-    None => Err(Err::Error(Error::from_error_kind(i, ErrorKind::TakeUntil))),
-    Some(0) => Err(Err::Error(Error::from_error_kind(i, ErrorKind::TakeUntil))),
+    None | Some(0) => Err(Err::Error(Error::from_error_kind(i, ErrorKind::TakeUntil))),
     Some(index) => Ok(i.take_split(index)),
   };
   res.into_output()
@@ -1033,7 +1032,7 @@ mod tests {
   }
 
   // issue ##1118 escaped does not work with empty string
-  fn unquote<'a>(input: &'a str) -> IResult<&'a str, &'a str> {
+  fn unquote(input: &str) -> IResult<&str, &str> {
     use crate::bytes::complete::*;
     use crate::character::complete::*;
     use crate::combinator::opt;

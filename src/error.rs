@@ -477,11 +477,11 @@ use crate::Parser;
 /// It provides methods to create an error from some combinators,
 /// and combine existing errors in combinators like `alt`.
 pub trait ParseError<I>: Sized {
-  /// Creates an error from the input position and an [ErrorKind]
+  /// Creates an error from the input position and an [`ErrorKind`]
   fn from_error_kind(input: I, kind: ErrorKind) -> Self;
 
   /// Combines an existing error with a new one created from the input
-  /// position and an [ErrorKind]. This is useful when backtracking
+  /// position and an [`ErrorKind`]. This is useful when backtracking
   /// through a parse tree, accumulating error context on the way
   fn append(input: I, kind: ErrorKind, other: Self) -> Self;
 
@@ -510,15 +510,15 @@ pub trait ContextError<I, C>: Sized {
 }
 
 /// This trait is required by the `map_res` combinator to integrate
-/// error types from external functions, like [std::str::FromStr]
+/// error types from external functions, like [`std::str::FromStr`]
 pub trait FromExternalError<I, E> {
-  /// Creates a new error from an input position, an [ErrorKind] indicating the
+  /// Creates a new error from an input position, an [`ErrorKind`] indicating the
   /// wrapping parser, and an external error
   fn from_external_error(input: I, kind: ErrorKind, e: E) -> Self;
 }
 
 /// default error type, only contains the error' location and code
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct Error<I> {
   /// position of the error in the input data
   pub input: I,
@@ -552,7 +552,7 @@ impl<I, E> FromExternalError<I, E> for Error<I> {
   }
 }
 
-/// The Display implementation allows the std::error::Error implementation
+/// The Display implementation allows the `std::error::Error` implementation
 impl<I: fmt::Display> fmt::Display for Error<I> {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     write!(f, "error {:?} at: {}", self.code, self.input)
@@ -594,14 +594,14 @@ impl<I, E> FromExternalError<I, E> for () {
   fn from_external_error(_input: I, _kind: ErrorKind, _e: E) -> Self {}
 }
 
-/// Creates an error from the input position and an [ErrorKind]
+/// Creates an error from the input position and an [`ErrorKind`]
 #[deprecated(since = "8.0.0", note = "Replaced with `ParseError::from_error_kind`")]
 pub fn make_error<I, E: ParseError<I>>(input: I, kind: ErrorKind) -> E {
   E::from_error_kind(input, kind)
 }
 
 /// Combines an existing error with a new one created from the input
-/// position and an [ErrorKind]. This is useful when backtracking
+/// position and an [`ErrorKind`]. This is useful when backtracking
 /// through a parse tree, accumulating error context on the way
 #[deprecated(since = "8.0.0", note = "Replaced with `ParseError::append`")]
 pub fn append_error<I, E: ParseError<I>>(input: I, kind: ErrorKind, other: E) -> E {
@@ -612,7 +612,7 @@ pub fn append_error<I, E: ParseError<I>>(input: I, kind: ErrorKind, other: E) ->
 /// through a parse tree. With some post processing (cf `examples/json.rs`),
 /// it can be used to display user friendly error messages
 #[cfg(feature = "alloc")]
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct VerboseError<I> {
   /// List of errors accumulated by `VerboseError`, containing the affected
   /// part of input data, and some context
@@ -620,7 +620,7 @@ pub struct VerboseError<I> {
 }
 
 #[cfg(feature = "alloc")]
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 /// Error context for `VerboseError`
 pub enum VerboseErrorKind {
   /// Static string added by the `context` function
@@ -718,7 +718,7 @@ impl<F, O, C: Clone> Context<F, O, C> {
   }
 }
 
-impl<I, O, E, F: Parser<I, O, E>, C> Parser<I, O, E> for Context<F, O, C>
+impl<I, O, E, F, C> Parser<I, O, E> for Context<F, O, C>
 where
   I: Clone,
   C: Clone,
@@ -876,7 +876,7 @@ pub enum ErrorKind {
 impl ErrorKind {
   #[rustfmt::skip]
   #[allow(deprecated)]
-  /// Converts an ErrorKind to a text description
+  /// Converts an `ErrorKind` to a text description
   pub fn description(&self) -> &str {
     match *self {
       ErrorKind::Tag                       => "Tag",
@@ -1020,7 +1020,7 @@ impl<F, O, C> DbgErr<F, O, C> {
 }
 
 #[cfg(feature = "std")]
-impl<I, O, E, F: Parser<I, O, E>, C> Parser<I, O, E> for DbgErr<F, O, C>
+impl<I, O, E, F, C> Parser<I, O, E> for DbgErr<F, O, C>
 where
   I: crate::input::AsBytes,
   I: Clone,

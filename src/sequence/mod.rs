@@ -112,7 +112,7 @@ where
 }
 
 /// Gets an object from the first parser,
-/// then matches an object from the sep_parser and discards it,
+/// then matches an object from the `sep_parser` and discards it,
 /// then gets another object from the second parser.
 ///
 /// # Arguments

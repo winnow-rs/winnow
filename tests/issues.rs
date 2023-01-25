@@ -1,6 +1,6 @@
 //#![feature(trace_macros)]
 #![allow(dead_code)]
-#![cfg_attr(feature = "cargo-clippy", allow(redundant_closure))]
+#![allow(clippy::redundant_closure)]
 
 use winnow::input::Streaming;
 use winnow::prelude::*;
@@ -65,7 +65,7 @@ mod parse_int {
 
     let subject = parse_ints(Streaming(&b"12 34 5689 "[..]));
     let expected = Ok((Streaming(&b" "[..]), vec![12, 34, 5689]));
-    assert_eq!(subject, expected)
+    assert_eq!(subject, expected);
   }
 }
 
@@ -73,6 +73,7 @@ mod parse_int {
 fn usize_length_bytes_issue() {
   use winnow::multi::length_data;
   use winnow::number::be_u16;
+  #[allow(clippy::type_complexity)]
   let _: IResult<Streaming<&[u8]>, &[u8], (Streaming<&[u8]>, ErrorKind)> =
     length_data(be_u16)(Streaming(b"012346"));
 }
@@ -146,6 +147,7 @@ mod issue_647 {
     v: Vec<f64>,
   }
 
+  #[allow(clippy::type_complexity)]
   fn list<'a, 'b>(
     input: Input<'a>,
     _cs: &'b f64,
@@ -235,6 +237,29 @@ fn issue_1282_findtoken_char() {
 }
 
 #[test]
+fn issue_x_looser_fill_bounds() {
+  use winnow::{bytes::tag, character::digit1, error_position, multi::fill, sequence::terminated};
+
+  fn fill_pair(i: &[u8]) -> IResult<&[u8], [&[u8]; 2]> {
+    let mut buf = [&[][..], &[][..]];
+    let (i, _) = fill(terminated(digit1, tag(",")), &mut buf)(i)?;
+    Ok((i, buf))
+  }
+
+  assert_eq!(
+    fill_pair(b"123,456,"),
+    Ok((&b""[..], [&b"123"[..], &b"456"[..]]))
+  );
+  assert_eq!(
+    fill_pair(b"123,456,789"),
+    Ok((&b"789"[..], [&b"123"[..], &b"456"[..]]))
+  );
+  assert_eq!(
+    fill_pair(b"123,,"),
+    Err(Err::Error(error_position!(&b","[..], ErrorKind::Digit)))
+  );
+}
+
 fn issue_1459_clamp_capacity() {
   // shouldn't panic
   use winnow::multi::many_m_n;

@@ -20,7 +20,7 @@ use winnow::{
 /// In this case, we want something tree-like
 
 /// Starting from the most basic, we define some built-in functions that our lisp has
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Eq, PartialEq, Clone, Copy)]
 pub enum BuiltIn {
   Plus,
   Minus,
@@ -33,7 +33,7 @@ pub enum BuiltIn {
 /// We now wrap this type and a few other primitives into our Atom type.
 /// Remember from before that Atoms form one half of our language.
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Atom {
   Num(i32),
   Keyword(String),
@@ -51,7 +51,7 @@ pub enum Atom {
 /// structure that we can deal with programmatically. Thus any valid expression
 /// is also a valid data structure in Lisp itself.
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Expr {
   Constant(Atom),
   /// (func-name arg1 arg2)
@@ -66,7 +66,7 @@ pub enum Expr {
 
 /// Continuing the trend of starting from the simplest piece and building up,
 /// we start by creating a parser for the built-in operator functions.
-fn parse_builtin_op<'a>(i: &'a str) -> IResult<&'a str, BuiltIn, VerboseError<&'a str>> {
+fn parse_builtin_op(i: &str) -> IResult<&str, BuiltIn, VerboseError<&str>> {
   // one_of matches one of the characters we give it
   let (i, t) = one_of("+-*/=")(i)?;
 
@@ -85,7 +85,7 @@ fn parse_builtin_op<'a>(i: &'a str) -> IResult<&'a str, BuiltIn, VerboseError<&'
   ))
 }
 
-fn parse_builtin<'a>(i: &'a str) -> IResult<&'a str, BuiltIn, VerboseError<&'a str>> {
+fn parse_builtin(i: &str) -> IResult<&str, BuiltIn, VerboseError<&str>> {
   // alt gives us the result of first parser that succeeds, of the series of
   // parsers we give it
   alt((
@@ -97,7 +97,7 @@ fn parse_builtin<'a>(i: &'a str) -> IResult<&'a str, BuiltIn, VerboseError<&'a s
 }
 
 /// Our boolean values are also constant, so we can do it the same way
-fn parse_bool<'a>(i: &'a str) -> IResult<&'a str, Atom, VerboseError<&'a str>> {
+fn parse_bool(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
   alt((
     tag("#t").map(|_| Atom::Boolean(true)),
     tag("#f").map(|_| Atom::Boolean(false)),
@@ -110,7 +110,7 @@ fn parse_bool<'a>(i: &'a str) -> IResult<&'a str, Atom, VerboseError<&'a str>> {
 ///
 /// Put plainly: `preceded(":", cut(alpha1))` means that once we see the `:`
 /// character, we have to see one or more alphabetic chararcters or the input is invalid.
-fn parse_keyword<'a>(i: &'a str) -> IResult<&'a str, Atom, VerboseError<&'a str>> {
+fn parse_keyword(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
   preceded(":", cut(alpha1))
     .context("keyword")
     .map(|sym_str: &str| Atom::Keyword(sym_str.to_string()))
@@ -119,16 +119,16 @@ fn parse_keyword<'a>(i: &'a str) -> IResult<&'a str, Atom, VerboseError<&'a str>
 
 /// Next up is number parsing. We're keeping it simple here by accepting any number (> 1)
 /// of digits but ending the program if it doesn't fit into an i32.
-fn parse_num<'a>(i: &'a str) -> IResult<&'a str, Atom, VerboseError<&'a str>> {
+fn parse_num(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
   alt((
     digit1.map_res(|digit_str: &str| digit_str.parse::<i32>().map(Atom::Num)),
-    preceded("-", digit1).map(|digit_str: &str| Atom::Num(-1 * digit_str.parse::<i32>().unwrap())),
+    preceded("-", digit1).map(|digit_str: &str| Atom::Num(-digit_str.parse::<i32>().unwrap())),
   ))(i)
 }
 
 /// Now we take all these simple parsers and connect them.
 /// We can now parse half of our language!
-fn parse_atom<'a>(i: &'a str) -> IResult<&'a str, Atom, VerboseError<&'a str>> {
+fn parse_atom(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
   alt((
     parse_num,
     parse_bool,
@@ -138,8 +138,8 @@ fn parse_atom<'a>(i: &'a str) -> IResult<&'a str, Atom, VerboseError<&'a str>> {
 }
 
 /// We then add the Expr layer on top
-fn parse_constant<'a>(i: &'a str) -> IResult<&'a str, Expr, VerboseError<&'a str>> {
-  parse_atom.map(|atom| Expr::Constant(atom)).parse(i)
+fn parse_constant(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
+  parse_atom.map(Expr::Constant).parse(i)
 }
 
 /// Before continuing, we need a helper function to parse lists.
@@ -169,7 +169,7 @@ where
 ///
 /// tuples are used to sequence parsers together, so we can translate this directly
 /// and then map over it to transform the output into an `Expr::Application`
-fn parse_application<'a>(i: &'a str) -> IResult<&'a str, Expr, VerboseError<&'a str>> {
+fn parse_application(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
   let application_inner =
     (parse_expr, many0(parse_expr)).map(|(head, tail)| Expr::Application(Box::new(head), tail));
   // finally, we wrap it in an s-expression
@@ -182,7 +182,7 @@ fn parse_application<'a>(i: &'a str) -> IResult<&'a str, Expr, VerboseError<&'a 
 ///
 /// In fact, we define our parser as if `Expr::If` was defined with an Option in it,
 /// we have the `opt` combinator which fits very nicely here.
-fn parse_if<'a>(i: &'a str) -> IResult<&'a str, Expr, VerboseError<&'a str>> {
+fn parse_if(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
   let if_inner = preceded(
     // here to avoid ambiguity with other names starting with `if`, if we added
     // variables to our language, we say that if must be terminated by at least
@@ -210,19 +210,19 @@ fn parse_if<'a>(i: &'a str) -> IResult<&'a str, Expr, VerboseError<&'a str>> {
 /// This example doesn't have the symbol atom, but by adding variables and changing
 /// the definition of quote to not always be around an S-expression, we'd get them
 /// naturally.
-fn parse_quote<'a>(i: &'a str) -> IResult<&'a str, Expr, VerboseError<&'a str>> {
+fn parse_quote(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
   // this should look very straight-forward after all we've done:
   // we find the `'` (quote) character, use cut to say that we're unambiguously
   // looking for an s-expression of 0 or more expressions, and then parse them
   preceded("'", cut(s_exp(many0(parse_expr))))
     .context("quote")
-    .map(|exprs| Expr::Quote(exprs))
+    .map(Expr::Quote)
     .parse(i)
 }
 
 /// We tie them all together again, making a top-level expression parser!
 
-fn parse_expr<'a>(i: &'a str) -> IResult<&'a str, Expr, VerboseError<&'a str>> {
+fn parse_expr(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
   preceded(
     multispace0,
     alt((parse_constant, parse_application, parse_if, parse_quote)),
@@ -255,7 +255,7 @@ fn get_bool_from_expr(e: Expr) -> Option<bool> {
 }
 
 /// This function tries to reduce the AST.
-/// This has to return an Expression rather than an Atom because quoted s_expressions
+/// This has to return an Expression rather than an Atom because quoted `s_expressions`
 /// can't be reduced
 fn eval_expression(e: Expr) -> Option<Expr> {
   match e {
@@ -283,7 +283,7 @@ fn eval_expression(e: Expr) -> Option<Expr> {
       let reduced_head = eval_expression(*head)?;
       let reduced_tail = tail
         .into_iter()
-        .map(|expr| eval_expression(expr))
+        .map(eval_expression)
         .collect::<Option<Vec<Expr>>>()?;
       if let Expr::Constant(Atom::BuiltIn(bi)) = reduced_head {
         Some(Expr::Constant(match bi {
@@ -353,7 +353,7 @@ fn eval_expression(e: Expr) -> Option<Expr> {
 fn eval_from_str(src: &str) -> Result<Expr, String> {
   parse_expr(src)
     .map_err(|e: winnow::Err<VerboseError<&str>>| format!("{:#?}", e))
-    .and_then(|(_, exp)| eval_expression(exp).ok_or("Eval failed".to_string()))
+    .and_then(|(_, exp)| eval_expression(exp).ok_or_else(|| "Eval failed".to_string()))
 }
 
 fn main() {

@@ -1036,8 +1036,8 @@ mod tests {
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(alpha1(b), Err(Err::Error((b, ErrorKind::Alpha))));
-    assert_eq!(alpha1::<_, (_, ErrorKind)>(c), Ok((&c[1..], &"a"[..])));
-    assert_eq!(alpha1::<_, (_, ErrorKind)>(d), Ok(("é12", &"az"[..])));
+    assert_eq!(alpha1::<_, (_, ErrorKind)>(c), Ok((&c[1..], "a")));
+    assert_eq!(alpha1::<_, (_, ErrorKind)>(d), Ok(("é12", "az")));
     assert_eq!(digit1(a), Err(Err::Error((a, ErrorKind::Digit))));
     assert_eq!(
       digit1::<_, (_, ErrorKind)>(b),
@@ -1057,7 +1057,7 @@ mod tests {
       hex_digit1::<_, (_, ErrorKind)>(c),
       Err(Err::Incomplete(Needed::new(1)))
     );
-    assert_eq!(hex_digit1::<_, (_, ErrorKind)>(d), Ok(("zé12", &"a"[..])));
+    assert_eq!(hex_digit1::<_, (_, ErrorKind)>(d), Ok(("zé12", "a")));
     assert_eq!(hex_digit1(e), Err(Err::Error((e, ErrorKind::HexDigit))));
     assert_eq!(oct_digit1(a), Err(Err::Error((a, ErrorKind::OctDigit))));
     assert_eq!(
@@ -1323,9 +1323,9 @@ mod tests {
     let i = input;
     let (i, opt_sign) = opt(alt((char('+'), char('-'))))(i)?;
     let sign = match opt_sign {
-      Some('+') => true,
+      Some('+') | None => true,
       Some('-') => false,
-      _ => true,
+      _ => unreachable!(),
     };
 
     let (i, s) = match digit1::<_, crate::error::Error<_>>(i) {
@@ -1416,11 +1416,11 @@ mod tests {
       char('c')(i)
     }
 
-    let a = &"abcd"[..];
+    let a = "abcd";
     assert_eq!(f(a), Err(Err::Error(error_position!(a, ErrorKind::Char))));
 
-    let b = &"cde"[..];
-    assert_eq!(f(b), Ok((&"de"[..], 'c')));
+    let b = "cde";
+    assert_eq!(f(b), Ok(("de", 'c')));
   }
 
   proptest! {

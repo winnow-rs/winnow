@@ -199,7 +199,7 @@ fn test_verify_alloc() {
     s == &b"abc"[..]
   });
 
-  assert_eq!(parser1(&b"abcd"[..]), Ok((&b"d"[..], (&b"abc").to_vec())));
+  assert_eq!(parser1(&b"abcd"[..]), Ok((&b"d"[..], b"abc".to_vec())));
   assert_eq!(
     parser1(&b"defg"[..]),
     Err(Err::Error((&b"defg"[..], ErrorKind::Verify)))
@@ -380,7 +380,7 @@ fn test_parser_verify_alloc() {
 
   assert_eq!(
     parser1.parse(&b"abcd"[..]),
-    Ok((&b"d"[..], (&b"abc").to_vec()))
+    Ok((&b"d"[..], b"abc".to_vec()))
   );
   assert_eq!(
     parser1.parse(&b"defg"[..]),

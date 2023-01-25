@@ -1136,6 +1136,7 @@ where
 /// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
 ///
 #[inline(always)]
+#[allow(clippy::type_complexity)]
 pub fn recognize_float_parts<T, E: ParseError<T>, const STREAMING: bool>(
   input: T,
 ) -> IResult<
@@ -1170,28 +1171,28 @@ where
 #[doc(hidden)]
 #[deprecated(since = "8.0.0", note = "Replaced with `AsChar::is_alpha`")]
 pub fn is_alphabetic(chr: u8) -> bool {
-  (chr >= 0x41 && chr <= 0x5A) || (chr >= 0x61 && chr <= 0x7A)
+  matches!(chr, 0x41..=0x5A | 0x61..=0x7A)
 }
 
 #[inline]
 #[doc(hidden)]
 #[deprecated(since = "8.0.0", note = "Replaced with `AsChar::is_dec_digit`")]
 pub fn is_digit(chr: u8) -> bool {
-  chr >= 0x30 && chr <= 0x39
+  matches!(chr, 0x30..=0x39)
 }
 
 #[inline]
 #[doc(hidden)]
 #[deprecated(since = "8.0.0", note = "Replaced with `AsChar::is_hex_digit`")]
 pub fn is_hex_digit(chr: u8) -> bool {
-  (chr >= 0x30 && chr <= 0x39) || (chr >= 0x41 && chr <= 0x46) || (chr >= 0x61 && chr <= 0x66)
+  matches!(chr, 0x30..=0x39 | 0x41..=0x46 | 0x61..=0x66)
 }
 
 #[inline]
 #[doc(hidden)]
 #[deprecated(since = "8.0.0", note = "Replaced with `AsChar::is_oct_digit`")]
 pub fn is_oct_digit(chr: u8) -> bool {
-  chr >= 0x30 && chr <= 0x37
+  matches!(chr, 0x30..=0x37)
 }
 
 #[inline]

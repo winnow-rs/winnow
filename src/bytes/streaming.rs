@@ -9,7 +9,7 @@ use crate::input::{
   InputTakeAtPosition, IntoOutput, Slice, ToUsize,
 };
 use crate::lib::std::ops::RangeFrom;
-use crate::lib::std::result::Result::*;
+use crate::lib::std::result::Result::Ok;
 use crate::IntoOutputIResult;
 use crate::{Err, IResult, Needed, Parser};
 
@@ -528,6 +528,7 @@ where
   since = "8.0.0",
   note = "Replaced with `winnow::bytes::take_till` with input wrapped in `winnow::input::Streaming`"
 )]
+#[allow(clippy::redundant_closure)]
 pub fn take_till<T, Input, Error: ParseError<Input>>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -580,6 +581,7 @@ where
   since = "8.0.0",
   note = "Replaced with `winnow::bytes::take_till1` with input wrapped in `winnow::input::Streaming`"
 )]
+#[allow(clippy::redundant_closure)]
 pub fn take_till1<T, Input, Error: ParseError<Input>>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -1440,11 +1442,11 @@ mod tests {
     assert_eq!(test2("ab"), Err(Err::Incomplete(Needed::new(2))));
     assert_eq!(
       test2("Hello"),
-      Err(Err::Error(error_position!(&"Hello"[..], ErrorKind::Tag)))
+      Err(Err::Error(error_position!("Hello", ErrorKind::Tag)))
     );
     assert_eq!(
       test2("Hel"),
-      Err(Err::Error(error_position!(&"Hel"[..], ErrorKind::Tag)))
+      Err(Err::Error(error_position!("Hel", ErrorKind::Tag)))
     );
   }
 

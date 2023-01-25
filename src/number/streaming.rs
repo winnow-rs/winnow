@@ -11,7 +11,7 @@ use crate::input::{
   AsBytes, AsChar, Compare, InputIter, InputLength, InputTake, InputTakeAtPosition, IntoOutput,
   Offset, Slice,
 };
-use crate::lib::std::ops::{RangeFrom, RangeTo};
+use crate::lib::std::ops::{Add, RangeFrom, RangeTo, Shl};
 use crate::sequence::{pair, tuple};
 use crate::*;
 
@@ -40,14 +40,7 @@ pub fn be_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  let bound: usize = 1;
-  if input.input_len() < bound {
-    Err(Err::Incomplete(Needed::new(1)))
-  } else {
-    let res = input.iter_elements().next().unwrap();
-
-    Ok((input.slice(bound..), res))
-  }
+  be_uint(input, 1)
 }
 
 /// Recognizes a big endian unsigned 2 bytes integer.
@@ -76,17 +69,7 @@ pub fn be_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  let bound: usize = 2;
-  if input.input_len() < bound {
-    Err(Err::Incomplete(Needed::new(bound - input.input_len())))
-  } else {
-    let mut res = 0u16;
-    for byte in input.iter_elements().take(bound) {
-      res = (res << 8) + byte as u16;
-    }
-
-    Ok((input.slice(bound..), res))
-  }
+  be_uint(input, 2)
 }
 
 /// Recognizes a big endian unsigned 3 byte integer.
@@ -115,17 +98,7 @@ pub fn be_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  let bound: usize = 3;
-  if input.input_len() < bound {
-    Err(Err::Incomplete(Needed::new(bound - input.input_len())))
-  } else {
-    let mut res = 0u32;
-    for byte in input.iter_elements().take(bound) {
-      res = (res << 8) + byte as u32;
-    }
-
-    Ok((input.slice(bound..), res))
-  }
+  be_uint(input, 3)
 }
 
 /// Recognizes a big endian unsigned 4 bytes integer.
@@ -154,17 +127,7 @@ pub fn be_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  let bound: usize = 4;
-  if input.input_len() < bound {
-    Err(Err::Incomplete(Needed::new(bound - input.input_len())))
-  } else {
-    let mut res = 0u32;
-    for byte in input.iter_elements().take(bound) {
-      res = (res << 8) + byte as u32;
-    }
-
-    Ok((input.slice(bound..), res))
-  }
+  be_uint(input, 4)
 }
 
 /// Recognizes a big endian unsigned 8 bytes integer.
@@ -193,17 +156,7 @@ pub fn be_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  let bound: usize = 8;
-  if input.input_len() < bound {
-    Err(Err::Incomplete(Needed::new(bound - input.input_len())))
-  } else {
-    let mut res = 0u64;
-    for byte in input.iter_elements().take(bound) {
-      res = (res << 8) + byte as u64;
-    }
-
-    Ok((input.slice(bound..), res))
-  }
+  be_uint(input, 8)
 }
 
 /// Recognizes a big endian unsigned 16 bytes integer.
@@ -231,13 +184,29 @@ pub fn be_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  let bound: usize = 16;
+  be_uint(input, 16)
+}
+
+#[inline]
+fn be_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
+where
+  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
+  Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
+{
   if input.input_len() < bound {
     Err(Err::Incomplete(Needed::new(bound - input.input_len())))
   } else {
-    let mut res = 0u128;
-    for byte in input.iter_elements().take(bound) {
-      res = (res << 8) + byte as u128;
+    let mut res = Uint::default();
+
+    // special case to avoid shift a byte with overflow
+    if bound > 1 {
+      for byte in input.iter_elements().take(bound) {
+        res = (res << 8) + byte.into();
+      }
+    } else {
+      for byte in input.iter_elements().take(bound) {
+        res = byte.into();
+      }
     }
 
     Ok((input.slice(bound..), res))
@@ -433,14 +402,7 @@ pub fn le_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  let bound: usize = 1;
-  if input.input_len() < bound {
-    Err(Err::Incomplete(Needed::new(1)))
-  } else {
-    let res = input.iter_elements().next().unwrap();
-
-    Ok((input.slice(bound..), res))
-  }
+  le_uint(input, 1)
 }
 
 /// Recognizes a little endian unsigned 2 bytes integer.
@@ -469,17 +431,7 @@ pub fn le_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  let bound: usize = 2;
-  if input.input_len() < bound {
-    Err(Err::Incomplete(Needed::new(bound - input.input_len())))
-  } else {
-    let mut res = 0u16;
-    for (index, byte) in input.iter_indices().take(bound) {
-      res += (byte as u16) << (8 * index);
-    }
-
-    Ok((input.slice(bound..), res))
-  }
+  le_uint(input, 2)
 }
 
 /// Recognizes a little endian unsigned 3 bytes integer.
@@ -508,17 +460,7 @@ pub fn le_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  let bound: usize = 3;
-  if input.input_len() < bound {
-    Err(Err::Incomplete(Needed::new(bound - input.input_len())))
-  } else {
-    let mut res = 0u32;
-    for (index, byte) in input.iter_indices().take(bound) {
-      res += (byte as u32) << (8 * index);
-    }
-
-    Ok((input.slice(bound..), res))
-  }
+  le_uint(input, 3)
 }
 
 /// Recognizes a little endian unsigned 4 bytes integer.
@@ -547,17 +489,7 @@ pub fn le_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  let bound: usize = 4;
-  if input.input_len() < bound {
-    Err(Err::Incomplete(Needed::new(bound - input.input_len())))
-  } else {
-    let mut res = 0u32;
-    for (index, byte) in input.iter_indices().take(bound) {
-      res += (byte as u32) << (8 * index);
-    }
-
-    Ok((input.slice(bound..), res))
-  }
+  le_uint(input, 4)
 }
 
 /// Recognizes a little endian unsigned 8 bytes integer.
@@ -586,17 +518,7 @@ pub fn le_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  let bound: usize = 8;
-  if input.input_len() < bound {
-    Err(Err::Incomplete(Needed::new(bound - input.input_len())))
-  } else {
-    let mut res = 0u64;
-    for (index, byte) in input.iter_indices().take(bound) {
-      res += (byte as u64) << (8 * index);
-    }
-
-    Ok((input.slice(bound..), res))
-  }
+  le_uint(input, 8)
 }
 
 /// Recognizes a little endian unsigned 16 bytes integer.
@@ -625,13 +547,21 @@ pub fn le_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  let bound: usize = 16;
+  le_uint(input, 16)
+}
+
+#[inline]
+fn le_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
+where
+  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
+  Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
+{
   if input.input_len() < bound {
     Err(Err::Incomplete(Needed::new(bound - input.input_len())))
   } else {
-    let mut res = 0u128;
+    let mut res = Uint::default();
     for (index, byte) in input.iter_indices().take(bound) {
-      res += (byte as u128) << (8 * index);
+      res = res + (Uint::from(byte) << (8 * index as u8));
     }
 
     Ok((input.slice(bound..), res))
@@ -1687,15 +1617,15 @@ where
     },
     |i: T| {
       crate::bytes::streaming::tag_no_case::<_, _, E>("nan")(i.clone())
-        .map_err(|_| crate::Err::Error(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::Err::Error(E::from_error_kind(i, ErrorKind::Float)))
     },
     |i: T| {
       crate::bytes::streaming::tag_no_case::<_, _, E>("inf")(i.clone())
-        .map_err(|_| crate::Err::Error(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::Err::Error(E::from_error_kind(i, ErrorKind::Float)))
     },
     |i: T| {
       crate::bytes::streaming::tag_no_case::<_, _, E>("infinity")(i.clone())
-        .map_err(|_| crate::Err::Error(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::Err::Error(E::from_error_kind(i, ErrorKind::Float)))
     },
   ))(input)
 }
@@ -1713,6 +1643,7 @@ where
   since = "8.0.0",
   note = "Replaced with `winnow::character::recognize_float_parts` with input wrapped in `winnow::input::Streaming`"
 )]
+#[allow(clippy::type_complexity)]
 pub fn recognize_float_parts<T, E: ParseError<T>>(
   input: T,
 ) -> IResult<
@@ -1802,8 +1733,7 @@ where
 
   let i2 = i.clone();
   let (i, e) = match i.as_bytes().iter().next() {
-    Some(b'e') => (i.slice(1..), true),
-    Some(b'E') => (i.slice(1..), true),
+    Some(b'e') | Some(b'E') => (i.slice(1..), true),
     _ => (i, false),
   };
 
@@ -2284,7 +2214,7 @@ mod tests {
     assert_parse!(be_f32(&[0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 0_f32)));
     assert_parse!(
       be_f32(&[0x4d, 0x31, 0x1f, 0xd8][..]),
-      Ok((&b""[..], 185_728_392_f32))
+      Ok((&b""[..], 185_728_380_f32))
     );
   }
 
@@ -2305,7 +2235,7 @@ mod tests {
     assert_parse!(le_f32(&[0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 0_f32)));
     assert_parse!(
       le_f32(&[0xd8, 0x1f, 0x31, 0x4d][..]),
-      Ok((&b""[..], 185_728_392_f32))
+      Ok((&b""[..], 185_728_380_f32))
     );
   }
 

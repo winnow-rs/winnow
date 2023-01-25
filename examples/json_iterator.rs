@@ -226,17 +226,17 @@ fn parse_str<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str
   escaped(alphanumeric, '\\', one_of("\"n\\"))(i)
 }
 
-fn string<'a>(i: &'a str) -> IResult<&'a str, &'a str> {
+fn string(i: &str) -> IResult<&str, &str> {
   preceded('\"', cut(terminated(parse_str, '\"')))
     .context("string")
     .parse(i)
 }
 
-fn boolean<'a>(input: &'a str) -> IResult<&'a str, bool> {
+fn boolean(input: &str) -> IResult<&str, bool> {
   alt((tag("false").map(|_| false), tag("true").map(|_| true)))(input)
 }
 
-fn array<'a>(i: &'a str) -> IResult<&'a str, ()> {
+fn array(i: &str) -> IResult<&str, ()> {
   preceded(
     '[',
     cut(terminated(
@@ -248,11 +248,11 @@ fn array<'a>(i: &'a str) -> IResult<&'a str, ()> {
   .parse(i)
 }
 
-fn key_value<'a>(i: &'a str) -> IResult<&'a str, (&'a str, ())> {
+fn key_value(i: &str) -> IResult<&str, (&str, ())> {
   separated_pair(preceded(sp, string), cut(preceded(sp, ':')), value)(i)
 }
 
-fn hash<'a>(i: &'a str) -> IResult<&'a str, ()> {
+fn hash(i: &str) -> IResult<&str, ()> {
   preceded(
     '{',
     cut(terminated(
@@ -264,7 +264,7 @@ fn hash<'a>(i: &'a str) -> IResult<&'a str, ()> {
   .parse(i)
 }
 
-fn value<'a>(i: &'a str) -> IResult<&'a str, ()> {
+fn value(i: &str) -> IResult<&str, ()> {
   preceded(
     sp,
     alt((
@@ -277,8 +277,8 @@ fn value<'a>(i: &'a str) -> IResult<&'a str, ()> {
   )(i)
 }
 
-/// object(input) -> iterator over (key, JsonValue)
-/// array(input) -> iterator over JsonValue
+/// object(input) -> iterator over (key, `JsonValue`)
+/// array(input) -> iterator over `JsonValue`
 ///
 /// JsonValue.string -> iterator over String (returns None after first successful call)
 ///
@@ -305,11 +305,10 @@ fn main() {
         .filter_map(|(_, v)| v.object())
         .flatten()
         .filter_map(|(user, v)| v.object().map(|o| (user, o)))
-        .map(|(user, o)| {
+        .flat_map(|(user, o)| {
           o.filter(|(k, _)| *k == "city")
             .filter_map(move |(_, v)| v.string().map(|s| (user, s)))
         })
-        .flatten()
         .collect();
 
       println!("res = {:?}", s);

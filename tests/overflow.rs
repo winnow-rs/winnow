@@ -1,4 +1,4 @@
-#![cfg_attr(feature = "cargo-clippy", allow(unreadable_literal))]
+#![allow(clippy::unreadable_literal)]
 #![cfg(target_pointer_width = "64")]
 
 use winnow::bytes::take;
@@ -13,6 +13,7 @@ use winnow::{Err, Needed};
 // Parser definition
 
 // We request a length that would trigger an overflow if computing consumed + requested
+#[allow(clippy::type_complexity)]
 fn parser02(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (&[u8], &[u8])> {
   (take(1_usize), take(18446744073709551615_usize)).parse(i)
 }
@@ -80,6 +81,7 @@ fn overflow_incomplete_many1() {
 fn overflow_incomplete_many_till() {
   use winnow::{bytes::tag, multi::many_till};
 
+  #[allow(clippy::type_complexity)]
   fn multi(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (Vec<&[u8]>, &[u8])> {
     many_till(length_data(be_u64), tag("abc"))(i)
   }

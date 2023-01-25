@@ -13,7 +13,7 @@ use crate::{
 use crate::{Err, IResult, Needed};
 
 #[cfg(feature = "alloc")]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ErrorStr(String);
 
 #[cfg(feature = "alloc")]
@@ -118,6 +118,7 @@ fn alt_incomplete() {
 
 #[test]
 fn permutation_test() {
+  #[allow(clippy::type_complexity)]
   fn perm(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (&[u8], &[u8], &[u8])> {
     permutation((tag("abcd"), tag("efg"), tag("hi")))(i)
   }

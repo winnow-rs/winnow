@@ -10,45 +10,45 @@
 //!
 //! | combinator | usage | input | output | comment |
 //! |---|---|---|---|---|
-//! | [one_of][crate::bytes::one_of] | `one_of("abc")` |  `"abc"` | `Ok(("bc", 'a'))` |Matches one of the provided characters (works with non ASCII characters too)|
-//! | [none_of][crate::bytes::none_of] | `none_of("abc")` |  `"xyab"` | `Ok(("yab", 'x'))` |Matches anything but the provided characters|
-//! | [tag][crate::bytes::tag] | `tag("hello")` |  `"hello world"` | `Ok((" world", "hello"))` |Recognizes a specific suite of characters or bytes|
-//! | [tag_no_case][crate::bytes::tag_no_case] | `tag_no_case("hello")` |  `"HeLLo World"` | `Ok((" World", "HeLLo"))` |Case insensitive comparison. Note that case insensitive comparison is not well defined for unicode, and that you might have bad surprises|
-//! | [take][crate::bytes::take] | `take(4)` |  `"hello"` | `Ok(("o", "hell"))` |Takes a specific number of bytes or characters|
-//! | [take_while][crate::bytes::take_while] | `take_while(is_alphabetic)` |  `"abc123"` | `Ok(("123", "abc"))` |Returns the longest list of bytes for which the provided pattern matches. `take_while1` does the same, but must return at least one character|
-//! | [take_till][crate::bytes::take_till] | `take_till(is_alphabetic)` |  `"123abc"` | `Ok(("abc", "123"))` |Returns the longest list of bytes or characters until the provided pattern matches. `take_till1` does the same, but must return at least one character. This is the reverse behaviour from `take_while`: `take_till(f)` is equivalent to `take_while(\|c\| !f(c))`|
-//! | [take_until][crate::bytes::take_until] | `take_until("world")` |  `"Hello world"` | `Ok(("world", "Hello "))` |Returns the longest list of bytes or characters until the provided tag is found. `take_until1` does the same, but must return at least one character|
+//! | [`one_of`][crate::bytes::one_of] | `one_of("abc")` |  `"abc"` | `Ok(("bc", 'a'))` |Matches one of the provided characters (works with non ASCII characters too)|
+//! | [`none_of`][crate::bytes::none_of] | `none_of("abc")` |  `"xyab"` | `Ok(("yab", 'x'))` |Matches anything but the provided characters|
+//! | [`tag`][crate::bytes::tag] | `tag("hello")` |  `"hello world"` | `Ok((" world", "hello"))` |Recognizes a specific suite of characters or bytes|
+//! | [`tag_no_case`][crate::bytes::tag_no_case] | `tag_no_case("hello")` |  `"HeLLo World"` | `Ok((" World", "HeLLo"))` |Case insensitive comparison. Note that case insensitive comparison is not well defined for unicode, and that you might have bad surprises|
+//! | [`take`][crate::bytes::take] | `take(4)` |  `"hello"` | `Ok(("o", "hell"))` |Takes a specific number of bytes or characters|
+//! | [`take_while`][crate::bytes::take_while] | `take_while(is_alphabetic)` |  `"abc123"` | `Ok(("123", "abc"))` |Returns the longest list of bytes for which the provided pattern matches. `take_while1` does the same, but must return at least one character|
+//! | [`take_till`][crate::bytes::take_till] | `take_till(is_alphabetic)` |  `"123abc"` | `Ok(("abc", "123"))` |Returns the longest list of bytes or characters until the provided pattern matches. `take_till1` does the same, but must return at least one character. This is the reverse behaviour from `take_while`: `take_till(f)` is equivalent to `take_while(\|c\| !f(c))`|
+//! | [`take_until`][crate::bytes::take_until] | `take_until("world")` |  `"Hello world"` | `Ok(("world", "Hello "))` |Returns the longest list of bytes or characters until the provided tag is found. `take_until1` does the same, but must return at least one character|
 //!
 //! ## Choice combinators
 //!
 //! | combinator | usage | input | output | comment |
 //! |---|---|---|---|---|
-//! | [alt][crate::branch::alt] | `alt((tag("ab"), tag("cd")))` |  `"cdef"` | `Ok(("ef", "cd"))` |Try a list of parsers and return the result of the first successful one|
-//! | [permutation][crate::branch::permutation] | `permutation(tag("ab"), tag("cd"), tag("12"))` | `"cd12abc"` | `Ok(("c", ("ab", "cd", "12"))` |Succeeds when all its child parser have succeeded, whatever the order|
+//! | [`alt`][crate::branch::alt] | `alt((tag("ab"), tag("cd")))` |  `"cdef"` | `Ok(("ef", "cd"))` |Try a list of parsers and return the result of the first successful one|
+//! | [`permutation`][crate::branch::permutation] | `permutation((tag("ab"), tag("cd"), tag("12")))` | `"cd12abc"` | `Ok(("c", ("ab", "cd", "12"))` |Succeeds when all its child parser have succeeded, whatever the order|
 //!
 //! ## Sequence combinators
 //!
 //! | combinator | usage | input | output | comment |
 //! |---|---|---|---|---|
-//! | [delimited][crate::sequence::delimited] | `delimited(char('('), take(2), char(')'))` | `"(ab)cd"` | `Ok(("cd", "ab"))` ||
-//! | [preceded][crate::sequence::preceded] | `preceded(tag("ab"), tag("XY"))` | `"abXYZ"` | `Ok(("Z", "XY"))` ||
-//! | [terminated][crate::sequence::terminated] | `terminated(tag("ab"), tag("XY"))` | `"abXYZ"` | `Ok(("Z", "ab"))` ||
-//! | [pair][crate::sequence::pair] | `pair(tag("ab"), tag("XY"))` | `"abXYZ"` | `Ok(("Z", ("ab", "XY")))` ||
-//! | [separated_pair][crate::sequence::separated_pair] | `separated_pair(tag("hello"), char(','), tag("world"))` | `"hello,world!"` | `Ok(("!", ("hello", "world")))` ||
+//! | [`delimited`][crate::sequence::delimited] | `delimited(char('('), take(2), char(')'))` | `"(ab)cd"` | `Ok(("cd", "ab"))` ||
+//! | [`preceded`][crate::sequence::preceded] | `preceded(tag("ab"), tag("XY"))` | `"abXYZ"` | `Ok(("Z", "XY"))` ||
+//! | [`terminated`][crate::sequence::terminated] | `terminated(tag("ab"), tag("XY"))` | `"abXYZ"` | `Ok(("Z", "ab"))` ||
+//! | [`pair`][crate::sequence::pair] | `pair(tag("ab"), tag("XY"))` | `"abXYZ"` | `Ok(("Z", ("ab", "XY")))` ||
+//! | [`separated_pair`][crate::sequence::separated_pair] | `separated_pair(tag("hello"), char(','), tag("world"))` | `"hello,world!"` | `Ok(("!", ("hello", "world")))` ||
 //! | [`(...)` (tuples)][crate::Parser] | `(tag("ab"), tag("XY"), take(1))` | `"abXYZ!"` | `Ok(("!", ("ab", "XY", "Z")))` |Chains parsers and assemble the sub results in a tuple. You can use as many child parsers as you can put elements in a tuple|
 //!
 //! ## Applying a parser multiple times
 //!
 //! | combinator | usage | input | output | comment |
 //! |---|---|---|---|---|
-//! | [count][crate::multi::count] | `count(take(2), 3)` | `"abcdefgh"` | `Ok(("gh", vec!["ab", "cd", "ef"]))` |Applies the child parser a specified number of times|
-//! | [many0][crate::multi::many0] | `many0(tag("ab"))` |  `"abababc"` | `Ok(("c", vec!["ab", "ab", "ab"]))` |Applies the parser 0 or more times and returns the list of results in a Vec. `many1` does the same operation but must return at least one element|
-//! | [many_m_n][crate::multi::many_m_n] | `many_m_n(1, 3, tag("ab"))` | `"ababc"` | `Ok(("c", vec!["ab", "ab"]))` |Applies the parser between m and n times (n included) and returns the list of results in a Vec|
-//! | [many_till][crate::multi::many_till] | `many_till(tag( "ab" ), tag( "ef" ))` | `"ababefg"` | `Ok(("g", (vec!["ab", "ab"], "ef")))` |Applies the first parser until the second applies. Returns a tuple containing the list of results from the first in a Vec and the result of the second|
-//! | [separated_list0][crate::multi::separated_list0] | `separated_list0(tag(","), tag("ab"))` | `"ab,ab,ab."` | `Ok((".", vec!["ab", "ab", "ab"]))` |`separated_list1` works like `separated_list0` but must returns at least one element|
-//! | [fold_many0][crate::multi::fold_many0] | `fold_many0(be_u8, \|\| 0, \|acc, item\| acc + item)` | `[1, 2, 3]` | `Ok(([], 6))` |Applies the parser 0 or more times and folds the list of return values. The `fold_many1` version must apply the child parser at least one time|
-//! | [fold_many_m_n][crate::multi::fold_many_m_n] | `fold_many_m_n(1, 2, be_u8, \|\| 0, \|acc, item\| acc + item)` | `[1, 2, 3]` | `Ok(([3], 3))` |Applies the parser between m and n times (n included) and folds the list of return value|
-//! | [length_count][crate::multi::length_count] | `length_count(number, tag("ab"))` | `"2ababab"` | `Ok(("ab", vec!["ab", "ab"]))` |Gets a number from the first parser, then applies the second parser that many times|
+//! | [`count`][crate::multi::count] | `count(take(2), 3)` | `"abcdefgh"` | `Ok(("gh", vec!["ab", "cd", "ef"]))` |Applies the child parser a specified number of times|
+//! | [`many0`][crate::multi::many0] | `many0(tag("ab"))` |  `"abababc"` | `Ok(("c", vec!["ab", "ab", "ab"]))` |Applies the parser 0 or more times and returns the list of results in a Vec. `many1` does the same operation but must return at least one element|
+//! | [`many_m_n`][crate::multi::many_m_n] | `many_m_n(1, 3, tag("ab"))` | `"ababc"` | `Ok(("c", vec!["ab", "ab"]))` |Applies the parser between m and n times (n included) and returns the list of results in a Vec|
+//! | [`many_till`][crate::multi::many_till] | `many_till(tag( "ab" ), tag( "ef" ))` | `"ababefg"` | `Ok(("g", (vec!["ab", "ab"], "ef")))` |Applies the first parser until the second applies. Returns a tuple containing the list of results from the first in a Vec and the result of the second|
+//! | [`separated_list0`][crate::multi::separated_list0] | `separated_list0(tag(","), tag("ab"))` | `"ab,ab,ab."` | `Ok((".", vec!["ab", "ab", "ab"]))` |`separated_list1` works like `separated_list0` but must returns at least one element|
+//! | [`fold_many0`][crate::multi::fold_many0] | `fold_many0(be_u8, \|\| 0, \|acc, item\| acc + item)` | `[1, 2, 3]` | `Ok(([], 6))` |Applies the parser 0 or more times and folds the list of return values. The `fold_many1` version must apply the child parser at least one time|
+//! | [`fold_many_m_n`][crate::multi::fold_many_m_n] | `fold_many_m_n(1, 2, be_u8, \|\| 0, \|acc, item\| acc + item)` | `[1, 2, 3]` | `Ok(([3], 3))` |Applies the parser between m and n times (n included) and folds the list of return value|
+//! | [`length_count`][crate::multi::length_count] | `length_count(number, tag("ab"))` | `"2ababab"` | `Ok(("ab", vec!["ab", "ab"]))` |Gets a number from the first parser, then applies the second parser that many times|
 //!
 //! ## Integers
 //!
@@ -272,7 +272,7 @@ impl<F, G, O1> Map<F, G, O1> {
   }
 }
 
-impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> O2> Parser<I, O2, E> for Map<F, G, O1> {
+impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> O2> Parser<I, O2, E> for Map<F, G, O1> {
   fn parse(&mut self, i: I) -> IResult<I, O2, E> {
     match self.f.parse(i) {
       Err(e) => Err(e),
@@ -485,7 +485,7 @@ impl<F, G, O1> AndThen<F, G, O1> {
   }
 }
 
-impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, E>
+impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, E>
   for AndThen<F, G, O1>
 {
   fn parse(&mut self, i: I) -> IResult<I, O2, E> {
@@ -546,7 +546,7 @@ impl<F, G, O1> FlatMap<F, G, O1> {
   }
 }
 
-impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> H, H: Parser<I, O2, E>> Parser<I, O2, E>
+impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> H, H: Parser<I, O2, E>> Parser<I, O2, E>
   for FlatMap<F, G, O1>
 {
   fn parse(&mut self, i: I) -> IResult<I, O2, E> {
@@ -600,9 +600,7 @@ impl<F, G> And<F, G> {
   }
 }
 
-impl<'a, I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<I, O2, E>> Parser<I, (O1, O2), E>
-  for And<F, G>
-{
+impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<I, O2, E>> Parser<I, (O1, O2), E> for And<F, G> {
   fn parse(&mut self, i: I) -> IResult<I, (O1, O2), E> {
     let (i, o1) = self.f.parse(i)?;
     let (i, o2) = self.g.parse(i)?;
@@ -623,7 +621,7 @@ impl<F, G> Or<F, G> {
   }
 }
 
-impl<'a, I: Clone, O, E: crate::error::ParseError<I>, F: Parser<I, O, E>, G: Parser<I, O, E>>
+impl<I: Clone, O, E: crate::error::ParseError<I>, F: Parser<I, O, E>, G: Parser<I, O, E>>
   Parser<I, O, E> for Or<F, G>
 {
   fn parse(&mut self, i: I) -> IResult<I, O, E> {
@@ -879,7 +877,7 @@ impl<F, G, O2: ?Sized> Verify<F, G, O2> {
   }
 }
 
-impl<I, O1, O2, E, F: Parser<I, O1, E>, G> Parser<I, O1, E> for Verify<F, G, O2>
+impl<I, O1, O2, E, F, G> Parser<I, O1, E> for Verify<F, G, O2>
 where
   I: Clone,
   E: ParseError<I>,
@@ -1352,7 +1350,7 @@ impl<F, O1, O2: From<O1>> OutputInto<F, O1, O2> {
   }
 }
 
-impl<'a, I: Clone, O1, O2: From<O1>, E, F: Parser<I, O1, E>> Parser<I, O2, E>
+impl<I: Clone, O1, O2: From<O1>, E, F: Parser<I, O1, E>> Parser<I, O2, E>
   for OutputInto<F, O1, O2>
 {
   fn parse(&mut self, i: I) -> IResult<I, O2, E> {
@@ -1381,7 +1379,7 @@ impl<F, E1, E2: From<E1>> ErrInto<F, E1, E2> {
   }
 }
 
-impl<'a, I: Clone, O, E1, E2: crate::error::ParseError<I> + From<E1>, F: Parser<I, O, E1>>
+impl<I: Clone, O, E1, E2: crate::error::ParseError<I> + From<E1>, F: Parser<I, O, E1>>
   Parser<I, O, E2> for ErrInto<F, E1, E2>
 {
   fn parse(&mut self, i: I) -> IResult<I, O, E2> {
@@ -1396,7 +1394,7 @@ impl<'a, I: Clone, O, E1, E2: crate::error::ParseError<I> + From<E1>, F: Parser<
 
 /// Creates an iterator from input data and a parser.
 ///
-/// Call the iterator's [ParserIterator::finish] method to get the remaining input if successful,
+/// Call the iterator's [`ParserIterator::finish`] method to get the remaining input if successful,
 /// or the error value if we encountered an error.
 ///
 /// On [`Err::Error`], iteration will stop.  To instead chain an error up, see [`cut`].
