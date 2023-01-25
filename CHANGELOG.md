@@ -80,6 +80,16 @@ From 0.1.0
 
 - Pulled loose markdown into rustdoc (epage/nom-experiment#1)
 
+## [7.1.3] - 2023-01-15
+
+### Thanks
+
+- @Shadow53
+
+### Fixed
+
+- panic in `many` and `count` combinators when the output type is zero sized
+
 ## [7.1.2] - 2023-01-01
 
 ### Thanks
@@ -1550,6 +1560,7 @@ Considering the number of changes since the last release, this version can conta
 [Unreleased]: https://github.com/epage/nom8/compare/v0.2.0...HEAD
 [0.2.0]: https://github.com/epage/nom8/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/Geal/nom/compare/294ffb3d9e0ade2c3b7ddfff52484b6d643dcce1...v0.1.0
+[7.1.3]: https://github.com/Geal/nom/compare/7.1.2...7.1.3
 [7.1.2]: https://github.com/Geal/nom/compare/7.1.1...7.1.2
 [7.1.1]: https://github.com/Geal/nom/compare/7.1.0...7.1.1
 [7.1.0]: https://github.com/Geal/nom/compare/7.0.0...7.1.0
