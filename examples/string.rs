@@ -54,9 +54,7 @@ where
   // the function returns None, map_opt returns an error. In this case, because
   // not all u32 values are valid unicode code points, we have to fallibly
   // convert to char with from_u32.
-  parse_u32
-    .map_opt(|value| std::char::from_u32(value))
-    .parse(input)
+  parse_u32.map_opt(std::char::from_u32).parse(input)
 }
 
 /// Parse an escaped character: \n, \t, \r, \u{00AC}, etc.

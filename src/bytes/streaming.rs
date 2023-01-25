@@ -528,6 +528,7 @@ where
   since = "8.0.0",
   note = "Replaced with `winnow::bytes::take_till` with input wrapped in `winnow::input::Streaming`"
 )]
+#[allow(clippy::redundant_closure)]
 pub fn take_till<T, Input, Error: ParseError<Input>>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -580,6 +581,7 @@ where
   since = "8.0.0",
   note = "Replaced with `winnow::bytes::take_till1` with input wrapped in `winnow::input::Streaming`"
 )]
+#[allow(clippy::redundant_closure)]
 pub fn take_till1<T, Input, Error: ParseError<Input>>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>

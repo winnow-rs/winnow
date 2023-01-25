@@ -492,6 +492,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till`][crate::bytes::take_till]
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_till`")]
+#[allow(clippy::redundant_closure)]
 pub fn take_till<T, Input, Error: ParseError<Input>>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -540,6 +541,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till1`][crate::bytes::take_till1]
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_till1`")]
+#[allow(clippy::redundant_closure)]
 pub fn take_till1<T, Input, Error: ParseError<Input>>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
@@ -1033,7 +1035,7 @@ mod tests {
   }
 
   // issue ##1118 escaped does not work with empty string
-  fn unquote<'a>(input: &'a str) -> IResult<&'a str, &'a str> {
+  fn unquote(input: &str) -> IResult<&str, &str> {
     use crate::bytes::complete::*;
     use crate::character::complete::*;
     use crate::combinator::opt;

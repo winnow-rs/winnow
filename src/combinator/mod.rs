@@ -24,7 +24,7 @@
 //! | combinator | usage | input | output | comment |
 //! |---|---|---|---|---|
 //! | [alt][crate::branch::alt] | `alt((tag("ab"), tag("cd")))` |  `"cdef"` | `Ok(("ef", "cd"))` |Try a list of parsers and return the result of the first successful one|
-//! | [permutation][crate::branch::permutation] | `permutation(tag("ab"), tag("cd"), tag("12"))` | `"cd12abc"` | `Ok(("c", ("ab", "cd", "12"))` |Succeeds when all its child parser have succeeded, whatever the order|
+//! | [permutation][crate::branch::permutation] | `permutation((tag("ab"), tag("cd"), tag("12")))` | `"cd12abc"` | `Ok(("c", ("ab", "cd", "12"))` |Succeeds when all its child parser have succeeded, whatever the order|
 //!
 //! ## Sequence combinators
 //!
