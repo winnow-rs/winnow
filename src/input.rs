@@ -115,8 +115,8 @@ impl<I> crate::lib::std::ops::Deref for Located<I> {
 /// Thread global state through your parsers
 ///
 /// Use cases
-/// - Recusion checks
-/// - Errror recovery
+/// - Recursion checks
+/// - Error recovery
 /// - Debugging
 ///
 /// # Example

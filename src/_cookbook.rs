@@ -149,7 +149,7 @@
 //! The parsers allow the grouping character `_`, which allows one to group the digits by byte, for
 //! example: `0xA4_3F_11_28`. If you prefer to exclude the `_` character, the lambda to convert from a
 //! string slice to an integer value is slightly simpler. You can also strip the `_` from the string
-//! slice that is returned, which is demonstrated in the second hexdecimal number parser.
+//! slice that is returned, which is demonstrated in the second hexadecimal number parser.
 //!
 //! If you wish to limit the number of digits in a valid integer literal, replace `many1` with
 //! `many_m_n` in the recipes.

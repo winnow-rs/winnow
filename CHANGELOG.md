@@ -64,7 +64,7 @@ From 0.1.0
 - `impl Parser for <tuples>` as an alternative to `tuple(())` (epage/nom-experiment#42)
 - `impl Parser for (char|u8|&str|&[u8])` as an alternative to `one_of`, `char`, and `tag` (epage/nom-experiment#47, epage/nom-experiment#50)
 - Add `Parser::map_res`, `Parser::map_opt`, `Parser::complete`, `Parser::verify`, `Parser::value`, `Parser::with_recognized`, `Parser::context`, `Parser::dbg_err` (epage/nom-experiment#40)
-- Allow `u8` / `char` / ranges of the prior, functions, and tuples of the prior whereever `FindToken` is accepted (epage/nom-experiment#44)
+- Allow `u8` / `char` / ranges of the prior, functions, and tuples of the prior wherever `FindToken` is accepted (epage/nom-experiment#44)
 - Generalize `take_while`, `take_till` with `FindToken` trait (epage/nom-experiment#44)
 - Add `character::is_*` functions to `AsChar` that were missing (epage/nom-experiment#2)
 
@@ -174,7 +174,7 @@ From 0.1.0
 
 ### Added
 
-- alt now works with 1 elment tuples
+- alt now works with 1 element tuples
 
 ## [7.0.0] - 2021-08-21
 
