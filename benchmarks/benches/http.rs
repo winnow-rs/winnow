@@ -7,6 +7,7 @@ type Input<'i> = &'i [u8];
 
 #[rustfmt::skip]
 #[derive(Debug)]
+#[allow(dead_code)]
 struct Request<'a> {
   method:  &'a [u8],
   uri:     &'a [u8],
@@ -14,13 +15,15 @@ struct Request<'a> {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 struct Header<'a> {
   name: &'a [u8],
   value: Vec<&'a [u8]>,
 }
 
 #[rustfmt::skip]
-#[cfg_attr(feature = "cargo-clippy", allow(clippy::match_same_arms))]
+#[allow(clippy::match_same_arms)]
+#[allow(clippy::match_like_matches_macro)]
 fn is_token(c: u8) -> bool {
   match c {
     128..=255 => false,

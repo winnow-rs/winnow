@@ -193,7 +193,7 @@
 //!
 //! There are a few tools you can use to debug how code is generated.
 //!
-//! ## dbg_err
+//! ## `dbg_err`
 //!
 //! This function wraps a parser that accepts byte-like input (bytes, str) and
 //! prints its hexdump if the child parser encountered an error:

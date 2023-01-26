@@ -686,7 +686,6 @@ impl<const LEN: usize> AsBytes for [u8; LEN] {
 impl<'a, const LEN: usize> AsBytes for &'a [u8; LEN] {
   #[inline(always)]
   fn as_bytes(&self) -> &[u8] {
-    #[allow(clippy::explicit_auto_deref)] // false positive
     *self
   }
 }

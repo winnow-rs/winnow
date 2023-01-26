@@ -1,6 +1,7 @@
 //! Parsers recognizing numbers, complete input version
 
 #![allow(deprecated)]
+#![allow(clippy::match_same_arms)]
 
 use crate::branch::alt;
 use crate::bytes::complete::tag;

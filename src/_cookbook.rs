@@ -264,7 +264,7 @@
 //!
 //! ### Floating Point Numbers
 //!
-//! The following is adapted from [the Python parser by Valentin Lorentz (ProgVal)](https://github.com/ProgVal/rust-python-parser/blob/master/src/numbers.rs).
+//! The following is adapted from [the Python parser by Valentin Lorentz](https://github.com/ProgVal/rust-python-parser/blob/master/src/numbers.rs).
 //!
 //! ```rust
 //! use winnow::prelude::*;
@@ -317,9 +317,9 @@
 //! }
 //! ```
 //!
-//! # implementing FromStr
+//! # implementing `FromStr`
 //!
-//! The [FromStr trait](https://doc.rust-lang.org/std/str/trait.FromStr.html) provides
+//! The [`FromStr` trait][std::str::FromStr] provides
 //! a common interface to parse from a string.
 //!
 //! ```rust
