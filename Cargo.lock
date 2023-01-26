@@ -20,14 +20,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
-name = "benchmarks"
-version = "0.1.0"
-dependencies = [
- "criterion",
- "winnow",
-]
-
-[[package]]
 name = "bit-set"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -793,6 +785,7 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 name = "winnow"
 version = "0.2.0"
 dependencies = [
+ "criterion",
  "doc-comment",
  "memchr",
  "proptest",
