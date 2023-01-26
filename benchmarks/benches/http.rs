@@ -1,8 +1,5 @@
 #![cfg_attr(rustfmt, rustfmt_skip)]
 
-#[global_allocator]
-static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
-
 use criterion::*;
 use winnow::{IResult, bytes::{tag, one_of, take_while1}, character::{line_ending}, multi::many1};
 
