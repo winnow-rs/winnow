@@ -12,7 +12,7 @@ body:
           required: true
   - type: input
     attributes:
-      label: nom version
+      label: winnow version
       description: Can be found in Cargo.lock or Cargo.toml of your project (i.e. `grep winnow Cargo.lock`). PLEASE DO NOT PUT "latest" HERE, use precise version. Put `master` (or other branch) if you're using the repo directly.
     validations:
       required: true
