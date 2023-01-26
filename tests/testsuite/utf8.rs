@@ -1,10 +1,11 @@
 #[cfg(test)]
 mod test {
-  use crate::input::Streaming;
-  use crate::prelude::*;
+  use winnow::error_position;
+  use winnow::input::Streaming;
+  use winnow::prelude::*;
   #[cfg(feature = "alloc")]
-  use crate::{branch::alt, bytes::tag_no_case, multi::many1};
-  use crate::{
+  use winnow::{branch::alt, bytes::tag_no_case, multi::many1};
+  use winnow::{
     bytes::{tag, take, take_till, take_till1, take_until, take_while1},
     error::{self, ErrorKind},
     Err, IResult,
@@ -39,7 +40,7 @@ mod test {
 
   #[test]
   fn tag_incomplete_str() {
-    use crate::bytes::tag;
+    use winnow::bytes::tag;
 
     const INPUT: &str = "Hello";
     const TAG: &str = "Hello World!";
@@ -116,7 +117,7 @@ mod test {
 
   #[test]
   fn take_incomplete_str() {
-    use crate::bytes::take;
+    use winnow::bytes::take;
 
     const INPUT: &str = "βèƒôřèÂßÇá";
 
@@ -165,7 +166,7 @@ mod test {
 
   #[test]
   fn take_until_incomplete_str() {
-    use crate::bytes::take_until;
+    use winnow::bytes::take_until;
 
     const INPUT: &str = "βèƒôřè";
     const FIND: &str = "βèƒôřèÂßÇ";
@@ -183,7 +184,7 @@ mod test {
 
   #[test]
   fn take_until_error_str() {
-    use crate::bytes::take_until;
+    use winnow::bytes::take_until;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const FIND: &str = "Ráñδô₥";
@@ -205,9 +206,9 @@ mod test {
 
   #[test]
   fn take_while_str() {
-    use crate::Needed;
+    use winnow::Needed;
 
-    use crate::bytes::take_while;
+    use winnow::bytes::take_while;
 
     fn f(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
       take_while(is_alphabetic)(i)
@@ -225,7 +226,7 @@ mod test {
 
   #[test]
   fn take_while_succeed_none_str() {
-    use crate::bytes::take_while;
+    use winnow::bytes::take_while;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const CONSUMED: &str = "";
@@ -260,7 +261,7 @@ mod test {
 
   #[test]
   fn take_while_succeed_some_str() {
-    use crate::bytes::take_while;
+    use winnow::bytes::take_while;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const CONSUMED: &str = "βèƒôřèÂßÇ";
@@ -295,7 +296,7 @@ mod test {
 
   #[test]
   fn test_take_while1_str() {
-    use crate::Needed;
+    use winnow::Needed;
 
     fn f(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
       take_while1(is_alphabetic)(i)
@@ -319,7 +320,7 @@ mod test {
 
   #[test]
   fn take_while1_fn_succeed_str() {
-    use crate::bytes::take_while1;
+    use winnow::bytes::take_while1;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const CONSUMED: &str = "βèƒôřèÂßÇ";
@@ -385,7 +386,7 @@ mod test {
 
   #[test]
   fn take_while1_fn_fail_str() {
-    use crate::bytes::take_while1;
+    use winnow::bytes::take_while1;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     fn while1_s(c: char) -> bool {

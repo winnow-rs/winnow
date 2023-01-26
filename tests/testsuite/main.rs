@@ -13,3 +13,4 @@ mod mp4;
 mod multiline;
 mod overflow;
 mod reborrow_fold;
+mod utf8;

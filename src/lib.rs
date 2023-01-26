@@ -475,8 +475,6 @@ pub mod bytes;
 
 pub mod character;
 
-mod str;
-
 pub mod number;
 
 #[cfg(feature = "unstable-doc")]
