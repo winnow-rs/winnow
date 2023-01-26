@@ -114,13 +114,16 @@ harness = false
 name = "http"
 path = "examples/http/bench.rs"
 harness = false
+required-features = ["alloc"]
 
 [[bench]]
 name = "ini"
 path = "examples/ini/bench.rs"
 harness = false
+required-features = ["alloc"]
 
 [[bench]]
 name = "json"
 path = "examples/json/bench.rs"
 harness = false
+required-features = ["alloc"]
