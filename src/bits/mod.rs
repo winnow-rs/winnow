@@ -6,8 +6,8 @@ pub mod streaming;
 #[cfg(test)]
 mod tests;
 
-use crate::error::{ErrorKind, ParseError};
-use crate::input::{ErrorConvert, InputIsStreaming, InputIter, InputLength, Slice, ToUsize};
+use crate::error::{ErrorConvert, ErrorKind, ParseError};
+use crate::input::{InputIsStreaming, InputIter, InputLength, Slice, ToUsize};
 use crate::lib::std::ops::{AddAssign, RangeFrom, Shl, Shr};
 use crate::{Err, IResult, Needed, Parser};
 
