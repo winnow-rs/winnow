@@ -40,7 +40,9 @@ fn test2(input: Streaming<&str>) -> IResult<Streaming<&str>, &str, CustomError> 
 }
 
 fn test3(input: Streaming<&str>) -> IResult<Streaming<&str>, &str, CustomError> {
-  test1.verify(|s: &str| s.starts_with("abcd")).parse(input)
+  test1
+    .verify(|s: &str| s.starts_with("abcd"))
+    .parse_next(input)
 }
 
 #[cfg(feature = "alloc")]

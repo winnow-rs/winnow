@@ -128,7 +128,7 @@
 //!
 //!   // A tuple of parsers will evaluate each parser sequentally and return a tuple of the results
 //!   let (input, (method, _, url, _, version, _)) =
-//!     (method, &space, url, &space, http_version, line_ending).parse(i)?;
+//!     (method, &space, url, &space, http_version, line_ending).parse_next(i)?;
 //!
 //!   Ok((input, Request { method, url, version }))
 //! }
@@ -203,7 +203,7 @@
 //! use winnow::bytes::tag;
 //!
 //! fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
-//!   tag("abcd").dbg_err("tag").parse(i)
+//!   tag("abcd").dbg_err("tag").parse_next(i)
 //! }
 //!
 //! let a = &b"efghijkl"[..];

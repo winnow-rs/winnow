@@ -70,7 +70,7 @@
 //! {
 //!   pair('%', take_till1("\n\r"))
 //!     .value(()) // Output is thrown away.
-//!     .parse(i)
+//!     .parse_next(i)
 //! }
 //! ```
 //!
@@ -93,7 +93,7 @@
 //!     "*)"
 //!   )
 //!     .value(()) // Output is thrown away.
-//!     .parse(i)
+//!     .parse_next(i)
 //! }
 //! ```
 //!
@@ -120,7 +120,7 @@
 //!     many0_count(alt((alphanumeric1, "_")))
 //!   )
 //!      .recognize()
-//!      .parse(input)
+//!      .parse_next(input)
 //! }
 //! ```
 //!
@@ -194,7 +194,7 @@
 //!     ).recognize()
 //!   ).map_res(
 //!     |out: &str| i64::from_str_radix(&str::replace(&out, "_", ""), 16)
-//!   ).parse(input)
+//!   ).parse_next(input)
 //! }
 //! ```
 //!
@@ -258,7 +258,7 @@
 //!     terminated(one_of("0123456789"), many0('_'))
 //!   )
 //!     .recognize()
-//!     .parse(input)
+//!     .parse_next(input)
 //! }
 //! ```
 //!
@@ -313,7 +313,7 @@
 //!     terminated(one_of("0123456789"), many0('_'))
 //!   )
 //!     .recognize()
-//!     .parse(input)
+//!     .parse_next(input)
 //! }
 //! ```
 //!

@@ -58,7 +58,7 @@ where
     let mut acc = crate::lib::std::vec::Vec::with_capacity(4);
     loop {
       let len = i.input_len();
-      match f.parse(i.clone()) {
+      match f.parse_next(i.clone()) {
         Err(Err::Error(_)) => return Ok((i, acc)),
         Err(e) => return Err(e),
         Ok((i1, o)) => {
@@ -108,7 +108,7 @@ where
   F: Parser<I, O, E>,
   E: ParseError<I>,
 {
-  move |mut i: I| match f.parse(i.clone()) {
+  move |mut i: I| match f.parse_next(i.clone()) {
     Err(Err::Error(err)) => Err(Err::Error(E::append(i, ErrorKind::Many1, err))),
     Err(e) => Err(e),
     Ok((i1, o)) => {
@@ -118,7 +118,7 @@ where
 
       loop {
         let len = i.input_len();
-        match f.parse(i.clone()) {
+        match f.parse_next(i.clone()) {
           Err(Err::Error(_)) => return Ok((i, acc)),
           Err(e) => return Err(e),
           Ok((i1, o)) => {
@@ -172,10 +172,10 @@ where
     let mut res = crate::lib::std::vec::Vec::new();
     loop {
       let len = i.input_len();
-      match g.parse(i.clone()) {
+      match g.parse_next(i.clone()) {
         Ok((i1, o)) => return Ok((i1, (res, o))),
         Err(Err::Error(_)) => {
-          match f.parse(i.clone()) {
+          match f.parse_next(i.clone()) {
             Err(Err::Error(err)) => return Err(Err::Error(E::append(i, ErrorKind::ManyTill, err))),
             Err(e) => return Err(e),
             Ok((i1, o)) => {
@@ -233,7 +233,7 @@ where
   move |mut i: I| {
     let mut res = Vec::new();
 
-    match f.parse(i.clone()) {
+    match f.parse_next(i.clone()) {
       Err(Err::Error(_)) => return Ok((i, res)),
       Err(e) => return Err(e),
       Ok((i1, o)) => {
@@ -244,7 +244,7 @@ where
 
     loop {
       let len = i.input_len();
-      match sep.parse(i.clone()) {
+      match sep.parse_next(i.clone()) {
         Err(Err::Error(_)) => return Ok((i, res)),
         Err(e) => return Err(e),
         Ok((i1, _)) => {
@@ -253,7 +253,7 @@ where
             return Err(Err::Error(E::from_error_kind(i1, ErrorKind::SeparatedList)));
           }
 
-          match f.parse(i1.clone()) {
+          match f.parse_next(i1.clone()) {
             Err(Err::Error(_)) => return Ok((i, res)),
             Err(e) => return Err(e),
             Ok((i2, o)) => {
@@ -307,7 +307,7 @@ where
     let mut res = Vec::new();
 
     // Parse the first element
-    match f.parse(i.clone()) {
+    match f.parse_next(i.clone()) {
       Err(e) => return Err(e),
       Ok((i1, o)) => {
         res.push(o);
@@ -317,7 +317,7 @@ where
 
     loop {
       let len = i.input_len();
-      match sep.parse(i.clone()) {
+      match sep.parse_next(i.clone()) {
         Err(Err::Error(_)) => return Ok((i, res)),
         Err(e) => return Err(e),
         Ok((i1, _)) => {
@@ -326,7 +326,7 @@ where
             return Err(Err::Error(E::from_error_kind(i1, ErrorKind::SeparatedList)));
           }
 
-          match f.parse(i1.clone()) {
+          match f.parse_next(i1.clone()) {
             Err(Err::Error(_)) => return Ok((i, res)),
             Err(e) => return Err(e),
             Ok((i2, o)) => {
@@ -390,7 +390,7 @@ where
     let mut res = crate::lib::std::vec::Vec::with_capacity(min.min(max_initial_capacity));
     for count in 0..max {
       let len = input.input_len();
-      match parse.parse(input.clone()) {
+      match parse.parse_next(input.clone()) {
         Ok((tail, value)) => {
           // infinite loop check: the parser must always consume
           if tail.input_len() == len {
@@ -455,7 +455,7 @@ where
     loop {
       let input_ = input.clone();
       let len = input.input_len();
-      match f.parse(input_) {
+      match f.parse_next(input_) {
         Ok((i, _)) => {
           // infinite loop check: the parser must always consume
           if i.input_len() == len {
@@ -508,7 +508,7 @@ where
 {
   move |i: I| {
     let i_ = i.clone();
-    match f.parse(i_) {
+    match f.parse_next(i_) {
       Err(Err::Error(_)) => Err(Err::Error(E::from_error_kind(i, ErrorKind::Many1Count))),
       Err(i) => Err(i),
       Ok((i1, _)) => {
@@ -518,7 +518,7 @@ where
         loop {
           let len = input.input_len();
           let input_ = input.clone();
-          match f.parse(input_) {
+          match f.parse_next(input_) {
             Err(Err::Error(_)) => return Ok((input, count)),
             Err(e) => return Err(e),
             Ok((i, _)) => {
@@ -572,7 +572,7 @@ where
 
     for _ in 0..count {
       let input_ = input.clone();
-      match f.parse(input_) {
+      match f.parse_next(input_) {
         Ok((i, o)) => {
           res.push(o);
           input = i;
@@ -625,7 +625,7 @@ where
 
     for elem in buf.iter_mut() {
       let input_ = input.clone();
-      match f.parse(input_) {
+      match f.parse_next(input_) {
         Ok((i, o)) => {
           *elem = o;
           input = i;
@@ -697,7 +697,7 @@ where
     loop {
       let i_ = input.clone();
       let len = input.input_len();
-      match f.parse(i_) {
+      match f.parse_next(i_) {
         Ok((i, o)) => {
           // infinite loop check: the parser must always consume
           if i.input_len() == len {
@@ -769,7 +769,7 @@ where
   move |i: I| {
     let _i = i.clone();
     let init = init();
-    match f.parse(_i) {
+    match f.parse_next(_i) {
       Err(Err::Error(_)) => Err(Err::Error(E::from_error_kind(i, ErrorKind::Many1))),
       Err(e) => Err(e),
       Ok((i1, o1)) => {
@@ -779,7 +779,7 @@ where
         loop {
           let _input = input.clone();
           let len = input.input_len();
-          match f.parse(_input) {
+          match f.parse_next(_input) {
             Err(Err::Error(_)) => {
               break;
             }
@@ -865,7 +865,7 @@ where
     let mut acc = init();
     for count in 0..max {
       let len = input.input_len();
-      match parse.parse(input.clone()) {
+      match parse.parse_next(input.clone()) {
         Ok((tail, value)) => {
           // infinite loop check: the parser must always consume
           if tail.input_len() == len {
@@ -923,9 +923,9 @@ where
   E: ParseError<I>,
 {
   move |i: I| {
-    let (i, length) = f.parse(i)?;
+    let (i, length) = f.parse_next(i)?;
 
-    crate::bytes::take(length).parse(i)
+    crate::bytes::take(length).parse_next(i)
   }
 }
 
@@ -969,9 +969,9 @@ where
   E: ParseError<I>,
 {
   move |i: I| {
-    let (i, data) = length_data(f.by_ref()).parse(i)?;
+    let (i, data) = length_data(f.by_ref()).parse_next(i)?;
     let data = I::merge_output(i.clone(), data);
-    let (_, o) = g.by_ref().complete().parse(data)?;
+    let (_, o) = g.by_ref().complete().parse_next(data)?;
     Ok((i, o))
   }
 }
@@ -1009,13 +1009,13 @@ where
   E: ParseError<I>,
 {
   move |i: I| {
-    let (i, count) = f.parse(i)?;
+    let (i, count) = f.parse_next(i)?;
     let mut input = i.clone();
     let mut res = Vec::new();
 
     for _ in 0..count.to_usize() {
       let input_ = input.clone();
-      match g.parse(input_) {
+      match g.parse_next(input_) {
         Ok((i, o)) => {
           res.push(o);
           input = i;

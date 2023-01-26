@@ -222,7 +222,7 @@ pub fn be_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  be_u8.map(|x| x as i8).parse(input)
+  be_u8.map(|x| x as i8).parse_next(input)
 }
 
 /// Recognizes a big endian signed 2 bytes integer.
@@ -248,7 +248,7 @@ pub fn be_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  be_u16.map(|x| x as i16).parse(input)
+  be_u16.map(|x| x as i16).parse_next(input)
 }
 
 /// Recognizes a big endian signed 3 bytes integer.
@@ -283,7 +283,7 @@ where
         x as i32
       }
     })
-    .parse(input)
+    .parse_next(input)
 }
 
 /// Recognizes a big endian signed 4 bytes integer.
@@ -309,7 +309,7 @@ pub fn be_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  be_u32.map(|x| x as i32).parse(input)
+  be_u32.map(|x| x as i32).parse_next(input)
 }
 
 /// Recognizes a big endian signed 8 bytes integer.
@@ -335,7 +335,7 @@ pub fn be_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  be_u64.map(|x| x as i64).parse(input)
+  be_u64.map(|x| x as i64).parse_next(input)
 }
 
 /// Recognizes a big endian signed 16 bytes integer.
@@ -361,7 +361,7 @@ pub fn be_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  be_u128.map(|x| x as i128).parse(input)
+  be_u128.map(|x| x as i128).parse_next(input)
 }
 
 /// Recognizes an unsigned 1 byte integer.
@@ -561,7 +561,7 @@ pub fn le_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  be_u8.map(|x| x as i8).parse(input)
+  be_u8.map(|x| x as i8).parse_next(input)
 }
 
 /// Recognizes a little endian signed 2 bytes integer.
@@ -587,7 +587,7 @@ pub fn le_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  le_u16.map(|x| x as i16).parse(input)
+  le_u16.map(|x| x as i16).parse_next(input)
 }
 
 /// Recognizes a little endian signed 3 bytes integer.
@@ -622,7 +622,7 @@ where
         x as i32
       }
     })
-    .parse(input)
+    .parse_next(input)
 }
 
 /// Recognizes a little endian signed 4 bytes integer.
@@ -648,7 +648,7 @@ pub fn le_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  le_u32.map(|x| x as i32).parse(input)
+  le_u32.map(|x| x as i32).parse_next(input)
 }
 
 /// Recognizes a little endian signed 8 bytes integer.
@@ -674,7 +674,7 @@ pub fn le_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  le_u64.map(|x| x as i64).parse(input)
+  le_u64.map(|x| x as i64).parse_next(input)
 }
 
 /// Recognizes a little endian signed 16 bytes integer.
@@ -700,7 +700,7 @@ pub fn le_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  le_u128.map(|x| x as i128).parse(input)
+  le_u128.map(|x| x as i128).parse_next(input)
 }
 
 /// Recognizes an unsigned 1 byte integer
@@ -972,7 +972,7 @@ pub fn i8<I, E: ParseError<I>>(i: I) -> IResult<I, i8, E>
 where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
 {
-  u8.map(|x| x as i8).parse(i)
+  u8.map(|x| x as i8).parse_next(i)
 }
 
 /// Recognizes a signed 2 byte integer

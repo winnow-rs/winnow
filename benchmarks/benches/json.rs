@@ -33,7 +33,7 @@ fn boolean(input: Input<'_>) -> IResult<Input<'_>, bool> {
 fn u16_hex(input: Input<'_>) -> IResult<Input<'_>, u16> {
   take(4usize)
     .map_res(|s| u16::from_str_radix(s, 16))
-    .parse(input)
+    .parse_next(input)
 }
 
 fn unicode_escape(input: Input<'_>) -> IResult<Input<'_>, char> {
@@ -55,7 +55,7 @@ fn unicode_escape(input: Input<'_>) -> IResult<Input<'_>, char> {
     // Could probably be replaced with .unwrap() or _unchecked due to the verify checks
     std::char::from_u32,
   )
-  .parse(input)
+  .parse_next(input)
 }
 
 fn character(input: Input<'_>) -> IResult<Input<'_>, char> {
@@ -115,7 +115,7 @@ fn object(input: Input<'_>) -> IResult<Input<'_>, HashMap<String, JsonValue>> {
     one_of('}'),
   )
   .map(|key_values| key_values.into_iter().collect())
-  .parse(input)
+  .parse_next(input)
 }
 
 fn json_value(input: Input<'_>) -> IResult<Input<'_>, JsonValue> {
@@ -132,7 +132,7 @@ fn json_value(input: Input<'_>) -> IResult<Input<'_>, JsonValue> {
 }
 
 fn json(input: Input<'_>) -> IResult<Input<'_>, JsonValue> {
-  ws(json_value).parse(input)
+  ws(json_value).parse_next(input)
 }
 
 fn json_bench(c: &mut Criterion) {

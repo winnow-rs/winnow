@@ -52,7 +52,7 @@ mod parse_int {
           Err(e) => panic!("UH OH! NOT A DIGIT! {:?}", e),
         }
       })
-      .parse(i)?;
+      .parse_next(i)?;
 
     Ok((i, res))
   }
@@ -208,7 +208,7 @@ fn issue_1027_convert_error_panic_nonempty() {
 
   let input = "a";
 
-  let result: IResult<_, _, VerboseError<&str>> = ('a', 'b').parse(input);
+  let result: IResult<_, _, VerboseError<&str>> = ('a', 'b').parse_next(input);
   let err = match result.unwrap_err() {
     Err::Error(e) => e,
     _ => unreachable!(),

@@ -30,7 +30,7 @@ fn category(i: Input<'_>) -> IResult<Input<'_>, &str> {
 
 fn key_value(i: Input<'_>) -> IResult<Input<'_>, (&str, &str)> {
   let (i, key) = alphanumeric(i)?;
-  let (i, _) = (opt(space), tag("="), opt(space)).parse(i)?;
+  let (i, _) = (opt(space), tag("="), opt(space)).parse_next(i)?;
   let (i, val) = take_till(is_line_ending_or_comment)(i)?;
   let (i, _) = opt(space)(i)?;
   let (i, _) = opt((tag(";"), not_line_ending))(i)?;
@@ -50,7 +50,7 @@ fn keys_and_values(input: Input<'_>) -> IResult<Input<'_>, HashMap<&str, &str>> 
 }
 
 fn category_and_keys(i: Input<'_>) -> IResult<Input<'_>, (&str, HashMap<&str, &str>)> {
-  (category, keys_and_values).parse(i)
+  (category, keys_and_values).parse_next(i)
 }
 
 #[allow(clippy::type_complexity)]

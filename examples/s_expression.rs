@@ -114,7 +114,7 @@ fn parse_keyword(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
   preceded(":", cut(alpha1))
     .context("keyword")
     .map(|sym_str: &str| Atom::Keyword(sym_str.to_string()))
-    .parse(i)
+    .parse_next(i)
 }
 
 /// Next up is number parsing. We're keeping it simple here by accepting any number (> 1)
@@ -139,7 +139,7 @@ fn parse_atom(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
 
 /// We then add the Expr layer on top
 fn parse_constant(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
-  parse_atom.map(Expr::Constant).parse(i)
+  parse_atom.map(Expr::Constant).parse_next(i)
 }
 
 /// Before continuing, we need a helper function to parse lists.
@@ -217,7 +217,7 @@ fn parse_quote(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
   preceded("'", cut(s_exp(many0(parse_expr))))
     .context("quote")
     .map(Expr::Quote)
-    .parse(i)
+    .parse_next(i)
 }
 
 /// We tie them all together again, making a top-level expression parser!

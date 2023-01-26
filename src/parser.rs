@@ -324,7 +324,7 @@ where
 ///     Ok((input, output))
 /// }
 ///
-/// let (input, output) = success.parse("Hello").unwrap();
+/// let (input, output) = success.parse_next("Hello").unwrap();
 /// assert_eq!(input, "Hello");  // We didn't consume any input
 /// ```
 ///
@@ -339,7 +339,7 @@ where
 ///     }
 /// }
 ///
-/// let (input, output) = success("World").parse("Hello").unwrap();
+/// let (input, output) = success("World").parse_next("Hello").unwrap();
 /// assert_eq!(input, "Hello");  // We didn't consume any input
 /// assert_eq!(output, "World");
 /// ```
@@ -350,7 +350,14 @@ where
 pub trait Parser<I, O, E> {
   /// A parser takes in input type, and returns a `Result` containing
   /// either the remaining input and the output value, or an error
-  fn parse(&mut self, input: I) -> IResult<I, O, E>;
+  #[deprecated(since = "0.3.0", note = "Replaced with `Parser::parse_next`")]
+  fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    self.parse_next(input)
+  }
+
+  /// A parser takes in input type, and returns a `Result` containing
+  /// either the remaining input and the output value, or an error
+  fn parse_next(&mut self, input: I) -> IResult<I, O, E>;
 
   /// Treat `&mut Self` as a parser
   ///
@@ -372,8 +379,8 @@ pub trait Parser<I, O, E> {
   ///     mut g: impl Parser<&'i [u8], O, E>
   /// ) -> impl FnMut(&'i [u8]) -> IResult<&'i [u8], O, E> {
   ///   move |i: &'i [u8]| {
-  ///     let (i, data) = length_data(f).parse(i)?;
-  ///     let (_, o) = g.complete().parse(data)?;
+  ///     let (i, data) = length_data(f).parse_next(i)?;
+  ///     let (_, o) = g.complete().parse_next(data)?;
   ///     Ok((i, o))
   ///   }
   /// }
@@ -391,8 +398,8 @@ pub trait Parser<I, O, E> {
   ///     mut g: impl Parser<&'i [u8], O, E>
   /// ) -> impl FnMut(&'i [u8]) -> IResult<&'i [u8], O, E> {
   ///   move |i: &'i [u8]| {
-  ///     let (i, data) = length_data(f.by_ref()).parse(i)?;
-  ///     let (_, o) = g.by_ref().complete().parse(data)?;
+  ///     let (i, data) = length_data(f.by_ref()).parse_next(i)?;
+  ///     let (_, o) = g.by_ref().complete().parse_next(data)?;
   ///     Ok((i, o))
   ///   }
   /// }
@@ -414,8 +421,8 @@ pub trait Parser<I, O, E> {
   ///
   /// let mut parser = alpha1.value(1234);
   ///
-  /// assert_eq!(parser.parse("abcd"), Ok(("", 1234)));
-  /// assert_eq!(parser.parse("123abcd;"), Err(Err::Error(("123abcd;", ErrorKind::Alpha))));
+  /// assert_eq!(parser.parse_next("abcd"), Ok(("", 1234)));
+  /// assert_eq!(parser.parse_next("123abcd;"), Err(Err::Error(("123abcd;", ErrorKind::Alpha))));
   /// # }
   /// ```
   fn value<O2>(self, val: O2) -> Value<Self, O, O2>
@@ -443,7 +450,7 @@ pub trait Parser<I, O, E> {
   ///  let mut parser2 = parser1.output_into();
   ///
   /// // the parser converts the &str output of the child parser into a Vec<u8>
-  /// let bytes: IResult<&str, Vec<u8>> = parser2.parse("abcd");
+  /// let bytes: IResult<&str, Vec<u8>> = parser2.parse_next("abcd");
   /// assert_eq!(bytes, Ok(("", vec![97, 98, 99, 100])));
   /// # }
   /// ```
@@ -466,8 +473,8 @@ pub trait Parser<I, O, E> {
   ///
   /// let mut parser = separated_pair(alpha1, ',', alpha1).recognize();
   ///
-  /// assert_eq!(parser.parse("abcd,efgh"), Ok(("", "abcd,efgh")));
-  /// assert_eq!(parser.parse("abcd;"),Err(Err::Error((";", ErrorKind::OneOf))));
+  /// assert_eq!(parser.parse_next("abcd,efgh"), Ok(("", "abcd,efgh")));
+  /// assert_eq!(parser.parse_next("abcd;"),Err(Err::Error((";", ErrorKind::OneOf))));
   /// # }
   /// ```
   fn recognize(self) -> Recognize<Self, O>
@@ -496,23 +503,23 @@ pub trait Parser<I, O, E> {
   /// use winnow::sequence::separated_pair;
   ///
   /// fn inner_parser(input: &str) -> IResult<&str, bool> {
-  ///     tag("1234").value(true).parse(input)
+  ///     tag("1234").value(true).parse_next(input)
   /// }
   ///
   /// # fn main() {
   ///
   /// let mut consumed_parser = separated_pair(alpha1, ',', alpha1).value(true).with_recognized();
   ///
-  /// assert_eq!(consumed_parser.parse("abcd,efgh1"), Ok(("1", (true, "abcd,efgh"))));
-  /// assert_eq!(consumed_parser.parse("abcd;"),Err(Err::Error((";", ErrorKind::OneOf))));
+  /// assert_eq!(consumed_parser.parse_next("abcd,efgh1"), Ok(("1", (true, "abcd,efgh"))));
+  /// assert_eq!(consumed_parser.parse_next("abcd;"),Err(Err::Error((";", ErrorKind::OneOf))));
   ///
   /// // the second output (representing the consumed input)
   /// // should be the same as that of the `recognize` parser.
   /// let mut recognize_parser = inner_parser.recognize();
   /// let mut consumed_parser = inner_parser.with_recognized().map(|(output, consumed)| consumed);
   ///
-  /// assert_eq!(recognize_parser.parse("1234"), consumed_parser.parse("1234"));
-  /// assert_eq!(recognize_parser.parse("abcd"), consumed_parser.parse("abcd"));
+  /// assert_eq!(recognize_parser.parse_next("1234"), consumed_parser.parse_next("1234"));
+  /// assert_eq!(recognize_parser.parse_next("abcd"), consumed_parser.parse_next("abcd"));
   /// # }
   /// ```
   fn with_recognized(self) -> WithRecognized<Self, O>
@@ -535,8 +542,8 @@ pub trait Parser<I, O, E> {
   ///
   /// let mut parser = separated_pair(alpha1.span(), ',', alpha1.span());
   ///
-  /// assert_eq!(parser.parse(Located::new("abcd,efgh")).finish(), Ok((0..4, 5..9)));
-  /// assert_eq!(parser.parse(Located::new("abcd;")),Err(Err::Error((Located::new("abcd;").slice(4..), ErrorKind::OneOf))));
+  /// assert_eq!(parser.parse_next(Located::new("abcd,efgh")).finish(), Ok((0..4, 5..9)));
+  /// assert_eq!(parser.parse_next(Located::new("abcd;")),Err(Err::Error((Located::new("abcd;").slice(4..), ErrorKind::OneOf))));
   /// ```
   fn span(self) -> Span<Self, O>
   where
@@ -566,23 +573,23 @@ pub trait Parser<I, O, E> {
   /// use winnow::sequence::separated_pair;
   ///
   /// fn inner_parser(input: Located<&str>) -> IResult<Located<&str>, bool> {
-  ///     tag("1234").value(true).parse(input)
+  ///     tag("1234").value(true).parse_next(input)
   /// }
   ///
   /// # fn main() {
   ///
   /// let mut consumed_parser = separated_pair(alpha1.value(1).with_span(), ',', alpha1.value(2).with_span());
   ///
-  /// assert_eq!(consumed_parser.parse(Located::new("abcd,efgh")).finish(), Ok(((1, 0..4), (2, 5..9))));
-  /// assert_eq!(consumed_parser.parse(Located::new("abcd;")),Err(Err::Error((Located::new("abcd;").slice(4..), ErrorKind::OneOf))));
+  /// assert_eq!(consumed_parser.parse_next(Located::new("abcd,efgh")).finish(), Ok(((1, 0..4), (2, 5..9))));
+  /// assert_eq!(consumed_parser.parse_next(Located::new("abcd;")),Err(Err::Error((Located::new("abcd;").slice(4..), ErrorKind::OneOf))));
   ///
   /// // the second output (representing the consumed input)
   /// // should be the same as that of the `span` parser.
   /// let mut recognize_parser = inner_parser.span();
   /// let mut consumed_parser = inner_parser.with_span().map(|(output, consumed)| consumed);
   ///
-  /// assert_eq!(recognize_parser.parse(Located::new("1234")), consumed_parser.parse(Located::new("1234")));
-  /// assert_eq!(recognize_parser.parse(Located::new("abcd")), consumed_parser.parse(Located::new("abcd")));
+  /// assert_eq!(recognize_parser.parse_next(Located::new("1234")), consumed_parser.parse_next(Located::new("1234")));
+  /// assert_eq!(recognize_parser.parse_next(Located::new("abcd")), consumed_parser.parse_next(Located::new("abcd")));
   /// # }
   /// ```
   fn with_span(self) -> WithSpan<Self, O>
@@ -605,10 +612,10 @@ pub trait Parser<I, O, E> {
   /// let mut parser = digit1.map(|s: &str| s.len());
   ///
   /// // the parser will count how many characters were returned by digit1
-  /// assert_eq!(parser.parse("123456"), Ok(("", 6)));
+  /// assert_eq!(parser.parse_next("123456"), Ok(("", 6)));
   ///
   /// // this will fail if digit1 fails
-  /// assert_eq!(parser.parse("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
+  /// assert_eq!(parser.parse_next("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
   /// # }
   /// ```
   fn map<G, O2>(self, g: G) -> Map<Self, G, O>
@@ -631,13 +638,13 @@ pub trait Parser<I, O, E> {
   /// let mut parse = digit1.map_res(|s: &str| s.parse::<u8>());
   ///
   /// // the parser will convert the result of digit1 to a number
-  /// assert_eq!(parse.parse("123"), Ok(("", 123)));
+  /// assert_eq!(parse.parse_next("123"), Ok(("", 123)));
   ///
   /// // this will fail if digit1 fails
-  /// assert_eq!(parse.parse("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
+  /// assert_eq!(parse.parse_next("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
   ///
   /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
-  /// assert_eq!(parse.parse("123456"), Err(Err::Error(("123456", ErrorKind::MapRes))));
+  /// assert_eq!(parse.parse_next("123456"), Err(Err::Error(("123456", ErrorKind::MapRes))));
   /// # }
   /// ```
   fn map_res<G, O2, E2>(self, g: G) -> MapRes<Self, G, O>
@@ -660,13 +667,13 @@ pub trait Parser<I, O, E> {
   /// let mut parse = digit1.map_opt(|s: &str| s.parse::<u8>().ok());
   ///
   /// // the parser will convert the result of digit1 to a number
-  /// assert_eq!(parse.parse("123"), Ok(("", 123)));
+  /// assert_eq!(parse.parse_next("123"), Ok(("", 123)));
   ///
   /// // this will fail if digit1 fails
-  /// assert_eq!(parse.parse("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
+  /// assert_eq!(parse.parse_next("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
   ///
   /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
-  /// assert_eq!(parse.parse("123456"), Err(Err::Error(("123456", ErrorKind::MapOpt))));
+  /// assert_eq!(parse.parse_next("123456"), Err(Err::Error(("123456", ErrorKind::MapOpt))));
   /// # }
   /// ```
   fn map_opt<G, O2>(self, g: G) -> MapOpt<Self, G, O>
@@ -689,8 +696,8 @@ pub trait Parser<I, O, E> {
   ///
   /// let mut length_data = u8.flat_map(take);
   ///
-  /// assert_eq!(length_data.parse(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
-  /// assert_eq!(length_data.parse(&[4, 0, 1, 2][..]), Err(Err::Error((&[0, 1, 2][..], ErrorKind::Eof))));
+  /// assert_eq!(length_data.parse_next(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
+  /// assert_eq!(length_data.parse_next(&[4, 0, 1, 2][..]), Err(Err::Error((&[0, 1, 2][..], ErrorKind::Eof))));
   /// # }
   /// ```
   fn flat_map<G, H, O2>(self, g: G) -> FlatMap<Self, G, O>
@@ -714,9 +721,9 @@ pub trait Parser<I, O, E> {
   ///
   /// let mut digits = take(5u8).and_then(digit1);
   ///
-  /// assert_eq!(digits.parse("12345"), Ok(("", "12345")));
-  /// assert_eq!(digits.parse("123ab"), Ok(("", "123")));
-  /// assert_eq!(digits.parse("123"), Err(Err::Error(("123", ErrorKind::Eof))));
+  /// assert_eq!(digits.parse_next("12345"), Ok(("", "12345")));
+  /// assert_eq!(digits.parse_next("123ab"), Ok(("", "123")));
+  /// assert_eq!(digits.parse_next("123"), Err(Err::Error(("123", ErrorKind::Eof))));
   /// # }
   /// ```
   fn and_then<G, O2>(self, g: G) -> AndThen<Self, G, O>
@@ -741,9 +748,9 @@ pub trait Parser<I, O, E> {
   ///
   /// let mut parser = alpha1.verify(|s: &str| s.len() == 4);
   ///
-  /// assert_eq!(parser.parse("abcd"), Ok(("", "abcd")));
-  /// assert_eq!(parser.parse("abcde"), Err(Err::Error(("abcde", ErrorKind::Verify))));
-  /// assert_eq!(parser.parse("123abcd;"),Err(Err::Error(("123abcd;", ErrorKind::Alpha))));
+  /// assert_eq!(parser.parse_next("abcd"), Ok(("", "abcd")));
+  /// assert_eq!(parser.parse_next("abcde"), Err(Err::Error(("abcde", ErrorKind::Verify))));
+  /// assert_eq!(parser.parse_next("123abcd;"),Err(Err::Error(("123abcd;", ErrorKind::Alpha))));
   /// # }
   /// ```
   fn verify<G, O2: ?Sized>(self, second: G) -> Verify<Self, G, O2>
@@ -778,8 +785,8 @@ pub trait Parser<I, O, E> {
   ///
   /// let mut parser = take(5u8).complete();
   ///
-  /// assert_eq!(parser.parse(Streaming("abcdefg")), Ok((Streaming("fg"), "abcde")));
-  /// assert_eq!(parser.parse(Streaming("abcd")), Err(Err::Error((Streaming("abcd"), ErrorKind::Complete))));
+  /// assert_eq!(parser.parse_next(Streaming("abcdefg")), Ok((Streaming("fg"), "abcde")));
+  /// assert_eq!(parser.parse_next(Streaming("abcd")), Err(Err::Error((Streaming("abcd"), ErrorKind::Complete))));
   /// # }
   /// ```
   fn complete(self) -> Complete<Self>
@@ -809,7 +816,7 @@ pub trait Parser<I, O, E> {
   /// use winnow::{IResult, bytes::tag};
   ///
   /// fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
-  ///   tag("abcd").dbg_err("alpha tag").parse(i)
+  ///   tag("abcd").dbg_err("alpha tag").parse_next(i)
   /// }
   ///
   /// let a = &b"efghijkl"[..];
@@ -859,7 +866,7 @@ impl<'a, I, O, E, F> Parser<I, O, E> for F
 where
   F: FnMut(I) -> IResult<I, O, E> + 'a,
 {
-  fn parse(&mut self, i: I) -> IResult<I, O, E> {
+  fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
     self(i)
   }
 }
@@ -872,7 +879,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::{Err, error::{ErrorKind, Error}};
 /// fn parser(i: &[u8]) -> IResult<&[u8], u8> {
-///     b'a'.parse(i)
+///     b'a'.parse_next(i)
 /// }
 /// assert_eq!(parser(&b"abc"[..]), Ok((&b"bc"[..], b'a')));
 /// assert_eq!(parser(&b" abc"[..]), Err(Err::Error(Error::new(&b" abc"[..], ErrorKind::OneOf))));
@@ -884,8 +891,8 @@ where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength + InputIsStreaming<false>,
   E: ParseError<I>,
 {
-  fn parse(&mut self, i: I) -> IResult<I, u8, E> {
-    crate::bytes::one_of(*self).parse(i)
+  fn parse_next(&mut self, i: I) -> IResult<I, u8, E> {
+    crate::bytes::one_of(*self).parse_next(i)
   }
 }
 
@@ -897,7 +904,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::{Err, error::{ErrorKind, Error}};
 /// fn parser(i: &str) -> IResult<&str, char> {
-///     'a'.parse(i)
+///     'a'.parse_next(i)
 /// }
 /// assert_eq!(parser("abc"), Ok(("bc", 'a')));
 /// assert_eq!(parser(" abc"), Err(Err::Error(Error::new(" abc", ErrorKind::OneOf))));
@@ -910,8 +917,8 @@ where
   <I as InputIter>::Item: AsChar + Copy,
   E: ParseError<I>,
 {
-  fn parse(&mut self, i: I) -> IResult<I, <I as InputIter>::Item, E> {
-    crate::bytes::one_of(*self).parse(i)
+  fn parse_next(&mut self, i: I) -> IResult<I, <I as InputIter>::Item, E> {
+    crate::bytes::one_of(*self).parse_next(i)
   }
 }
 
@@ -925,7 +932,7 @@ where
 /// # use winnow::bytes::take;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], &[u8]> {
-///   alt((&"Hello"[..], take(5usize))).parse(s)
+///   alt((&"Hello"[..], take(5usize))).parse_next(s)
 /// }
 ///
 /// assert_eq!(parser(&b"Hello, World!"[..]), Ok((&b", World!"[..], &b"Hello"[..])));
@@ -938,8 +945,8 @@ where
   I: InputTake + InputLength + Compare<&'s [u8]> + InputIsStreaming<false>,
   I: IntoOutput,
 {
-  fn parse(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
-    crate::bytes::tag(*self).parse(i)
+  fn parse_next(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
+    crate::bytes::tag(*self).parse_next(i)
   }
 }
 
@@ -953,7 +960,7 @@ where
 /// # use winnow::bytes::take;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], &[u8]> {
-///   alt((b"Hello", take(5usize))).parse(s)
+///   alt((b"Hello", take(5usize))).parse_next(s)
 /// }
 ///
 /// assert_eq!(parser(&b"Hello, World!"[..]), Ok((&b", World!"[..], &b"Hello"[..])));
@@ -967,8 +974,8 @@ where
   I: InputTake + InputLength + Compare<&'s [u8; N]> + InputIsStreaming<false>,
   I: IntoOutput,
 {
-  fn parse(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
-    crate::bytes::tag(*self).parse(i)
+  fn parse_next(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
+    crate::bytes::tag(*self).parse_next(i)
   }
 }
 
@@ -982,7 +989,7 @@ where
 /// # use winnow::bytes::take;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
-///   alt(("Hello", take(5usize))).parse(s)
+///   alt(("Hello", take(5usize))).parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("Hello, World!"), Ok((", World!", "Hello")));
@@ -995,13 +1002,13 @@ where
   I: InputTake + InputLength + Compare<&'s str> + InputIsStreaming<false>,
   I: IntoOutput,
 {
-  fn parse(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
-    crate::bytes::tag(*self).parse(i)
+  fn parse_next(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
+    crate::bytes::tag(*self).parse_next(i)
   }
 }
 
 impl<I, E: ParseError<I>> Parser<I, (), E> for () {
-  fn parse(&mut self, i: I) -> IResult<I, (), E> {
+  fn parse_next(&mut self, i: I) -> IResult<I, (), E> {
     Ok((i, ()))
   }
 }
@@ -1013,10 +1020,10 @@ macro_rules! impl_parser_for_tuple {
     where
       $($parser: Parser<I, $output, E>),+
     {
-      fn parse(&mut self, i: I) -> IResult<I, ($($output),+,), E> {
+      fn parse_next(&mut self, i: I) -> IResult<I, ($($output),+,), E> {
         let ($(ref mut $parser),+,) = *self;
 
-        $(let(i, $output) = $parser.parse(i)?;)+
+        $(let(i, $output) = $parser.parse_next(i)?;)+
 
         Ok((i, ($($output),+,)))
       }
@@ -1066,8 +1073,8 @@ use alloc::boxed::Box;
 
 #[cfg(feature = "alloc")]
 impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a> {
-  fn parse(&mut self, input: I) -> IResult<I, O, E> {
-    (**self).parse(input)
+  fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
+    (**self).parse_next(input)
   }
 }
 
@@ -1109,9 +1116,9 @@ mod tests {
     use crate::{error::ErrorKind, Err};
 
     let mut parser = (alpha1,);
-    assert_eq!(parser.parse("abc123def"), Ok(("123def", ("abc",))));
+    assert_eq!(parser.parse_next("abc123def"), Ok(("123def", ("abc",))));
     assert_eq!(
-      parser.parse("123def"),
+      parser.parse_next("123def"),
       Err(Err::Error(("123def", ErrorKind::Alpha)))
     );
   }
@@ -1120,7 +1127,7 @@ mod tests {
   fn tuple_test() {
     #[allow(clippy::type_complexity)]
     fn tuple_3(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (u16, &[u8], &[u8])> {
-      (be_u16, take(3u8), tag("fg")).parse(i)
+      (be_u16, take(3u8), tag("fg")).parse_next(i)
     }
 
     assert_eq!(
@@ -1147,10 +1154,10 @@ mod tests {
   #[test]
   fn unit_type() {
     fn parser(i: &str) -> IResult<&str, ()> {
-      ().parse(i)
+      ().parse_next(i)
     }
-    assert_eq!(parser.parse("abxsbsh"), Ok(("abxsbsh", ())));
-    assert_eq!(parser.parse("sdfjakdsas"), Ok(("sdfjakdsas", ())));
-    assert_eq!(parser.parse(""), Ok(("", ())));
+    assert_eq!(parser.parse_next("abxsbsh"), Ok(("abxsbsh", ())));
+    assert_eq!(parser.parse_next("sdfjakdsas"), Ok(("sdfjakdsas", ())));
+    assert_eq!(parser.parse_next(""), Ok(("", ())));
   }
 }

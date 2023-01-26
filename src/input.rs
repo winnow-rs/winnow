@@ -147,7 +147,7 @@ impl<I> crate::lib::std::ops::Deref for Located<I> {
 /// let data = "Hello";
 /// let state = Cell::new(0);
 /// let input = Input { input: data, state: State(&state) };
-/// let output = word.parse(input).finish().unwrap();
+/// let output = word.parse_next(input).finish().unwrap();
 /// assert_eq!(state.get(), 1);
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -1973,7 +1973,7 @@ impl<'a, const LEN: usize> Compare<[u8; LEN]> for &'a [u8] {
 /// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
 /// # use winnow::bytes::take_while1;
 /// fn hex_digit1(input: &str) -> IResult<&str, &str> {
-///     take_while1(('a'..='f', 'A'..='F', '0'..='9')).parse(input)
+///     take_while1(('a'..='f', 'A'..='F', '0'..='9')).parse_next(input)
 /// }
 ///
 /// assert_eq!(hex_digit1("21cZ"), Ok(("Z", "21c")));

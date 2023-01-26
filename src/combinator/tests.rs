@@ -105,7 +105,7 @@ fn test_flat_map() {
 fn test_parser_flat_map() {
   let input: &[u8] = &[3, 100, 101, 102, 103, 104][..];
   assert_parse!(
-    u8.flat_map(take).parse(input),
+    u8.flat_map(take).parse_next(input),
     Ok((&[103, 104][..], &[100, 101, 102][..]))
   );
 }
@@ -129,12 +129,12 @@ fn test_parser_map_opt() {
   let input: &[u8] = &[50][..];
   assert_parse!(
     u8.map_opt(|u| if u < 20 { Some(u) } else { None })
-      .parse(input),
+      .parse_next(input),
     Err(Err::Error((&[50][..], ErrorKind::MapOpt)))
   );
   assert_parse!(
     u8.map_opt(|u| if u > 20 { Some(u) } else { None })
-      .parse(input),
+      .parse_next(input),
     Ok((&[][..], 50))
   );
 }
@@ -153,7 +153,7 @@ fn test_map_parser() {
 fn test_parser_map_parser() {
   let input: &[u8] = &[100, 101, 102, 103, 104][..];
   assert_parse!(
-    take(4usize).and_then(take(2usize)).parse(input),
+    take(4usize).and_then(take(2usize)).parse_next(input),
     Ok((&[104][..], &[100, 101][..]))
   );
 }
@@ -232,7 +232,7 @@ fn test_parser_into() {
   };
 
   let mut parser = take::<_, _, Error<_>, false>(3u8).output_into();
-  let result: IResult<&[u8], Vec<u8>> = parser.parse(&b"abcdefg"[..]);
+  let result: IResult<&[u8], Vec<u8>> = parser.parse_next(&b"abcdefg"[..]);
 
   assert_eq!(result, Ok((&b"defg"[..], vec![97, 98, 99])));
 }
@@ -333,7 +333,9 @@ fn test_parser_verify() {
   use crate::bytes::take;
 
   fn test(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
-    take(5u8).verify(|slice: &[u8]| slice[0] == b'a').parse(i)
+    take(5u8)
+      .verify(|slice: &[u8]| slice[0] == b'a')
+      .parse_next(i)
   }
   assert_eq!(
     test(Streaming(&b"bcd"[..])),
@@ -359,14 +361,19 @@ fn test_parser_verify_ref() {
 
   let mut parser1 = take(3u8).verify(|s: &[u8]| s == &b"abc"[..]);
 
-  assert_eq!(parser1.parse(&b"abcd"[..]), Ok((&b"d"[..], &b"abc"[..])));
   assert_eq!(
-    parser1.parse(&b"defg"[..]),
+    parser1.parse_next(&b"abcd"[..]),
+    Ok((&b"d"[..], &b"abc"[..]))
+  );
+  assert_eq!(
+    parser1.parse_next(&b"defg"[..]),
     Err(Err::Error((&b"defg"[..], ErrorKind::Verify)))
   );
 
   fn parser2(i: &[u8]) -> IResult<&[u8], u32> {
-    crate::number::be_u32.verify(|val: &u32| *val < 3).parse(i)
+    crate::number::be_u32
+      .verify(|val: &u32| *val < 3)
+      .parse_next(i)
   }
 }
 
@@ -379,11 +386,11 @@ fn test_parser_verify_alloc() {
     .verify(|s: &[u8]| s == &b"abc"[..]);
 
   assert_eq!(
-    parser1.parse(&b"abcd"[..]),
+    parser1.parse_next(&b"abcd"[..]),
     Ok((&b"d"[..], b"abc".to_vec()))
   );
   assert_eq!(
-    parser1.parse(&b"defg"[..]),
+    parser1.parse_next(&b"defg"[..]),
     Err(Err::Error((&b"defg"[..], ErrorKind::Verify)))
   );
 }

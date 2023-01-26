@@ -845,7 +845,7 @@ where
   while i.input_len() > 0 {
     let current_len = i.input_len();
 
-    match normal.parse(i.clone()) {
+    match normal.parse_next(i.clone()) {
       Ok((i2, _)) => {
         if i2.input_len() == 0 {
           return Err(Err::Incomplete(Needed::Unknown));
@@ -863,7 +863,7 @@ where
           if next >= i.input_len() {
             return Err(Err::Incomplete(Needed::new(1)));
           } else {
-            match escapable.parse(i.slice(next..)) {
+            match escapable.parse_next(i.slice(next..)) {
               Ok((i2, _)) => {
                 if i2.input_len() == 0 {
                   return Err(Err::Incomplete(Needed::Unknown));
@@ -982,7 +982,7 @@ where
   while index < i.input_len() {
     let current_len = i.input_len();
     let remainder = i.slice(index..);
-    match normal.parse(remainder.clone()) {
+    match normal.parse_next(remainder.clone()) {
       Ok((i2, o)) => {
         o.extend_into(&mut res);
         if i2.input_len() == 0 {
@@ -1002,7 +1002,7 @@ where
           if next >= input_len {
             return Err(Err::Incomplete(Needed::Unknown));
           } else {
-            match transform.parse(i.slice(next..)) {
+            match transform.parse_next(i.slice(next..)) {
               Ok((i2, o)) => {
                 o.extend_into(&mut res);
                 if i2.input_len() == 0 {

@@ -29,12 +29,12 @@
 //! }
 //!
 //! fn hex_primary(input: &str) -> IResult<&str, u8> {
-//!   take_while_m_n(2, 2, is_hex_digit).map_res(from_hex).parse(input)
+//!   take_while_m_n(2, 2, is_hex_digit).map_res(from_hex).parse_next(input)
 //! }
 //!
 //! fn hex_color(input: &str) -> IResult<&str, Color> {
 //!   let (input, _) = tag("#")(input)?;
-//!   let (input, (red, green, blue)) = (hex_primary, hex_primary, hex_primary).parse(input)?;
+//!   let (input, (red, green, blue)) = (hex_primary, hex_primary, hex_primary).parse_next(input)?;
 //!
 //!   Ok((input, Color { red, green, blue }))
 //! }
@@ -268,15 +268,15 @@
 //! let mut tpl = (be_u16, take(3u8), tag("fg"));
 //!
 //! assert_eq!(
-//!   tpl.parse(Streaming(&b"abcdefgh"[..])),
+//!   tpl.parse_next(Streaming(&b"abcdefgh"[..])),
 //!   Ok((
 //!     Streaming(&b"h"[..]),
 //!     (0x6162u16, &b"cde"[..], &b"fg"[..])
 //!   ))
 //! );
-//! assert_eq!(tpl.parse(Streaming(&b"abcde"[..])), Err(winnow::Err::Incomplete(Needed::new(2))));
+//! assert_eq!(tpl.parse_next(Streaming(&b"abcde"[..])), Err(winnow::Err::Incomplete(Needed::new(2))));
 //! let input = &b"abcdejk"[..];
-//! assert_eq!(tpl.parse(Streaming(input)), Err(winnow::Err::Error((Streaming(&input[5..]), ErrorKind::Tag))));
+//! assert_eq!(tpl.parse_next(Streaming(input)), Err(winnow::Err::Error((Streaming(&input[5..]), ErrorKind::Tag))));
 //! # }
 //! ```
 //!
@@ -501,7 +501,7 @@ pub mod _tutorial;
 /// }
 ///
 /// fn main() {
-///   let result = parse_data.parse("100").finish();
+///   let result = parse_data.parse_next("100").finish();
 ///   assert_eq!(result, Ok(100));
 /// }
 /// ```

@@ -494,7 +494,7 @@ mod test {
     let b = "ababcd";
 
     fn f(i: &str) -> IResult<&str, &str> {
-      many1(alt((tag("a"), tag("b")))).recognize().parse(i)
+      many1(alt((tag("a"), tag("b")))).recognize().parse_next(i)
     }
 
     assert_eq!(f(a), Ok((&a[6..], a)));

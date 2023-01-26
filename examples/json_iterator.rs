@@ -217,7 +217,7 @@ fn parse_str<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str
 fn string(i: &str) -> IResult<&str, &str> {
   preceded('\"', cut(terminated(parse_str, '\"')))
     .context("string")
-    .parse(i)
+    .parse_next(i)
 }
 
 fn boolean(input: &str) -> IResult<&str, bool> {
@@ -233,7 +233,7 @@ fn array(i: &str) -> IResult<&str, ()> {
     )),
   )
   .context("array")
-  .parse(i)
+  .parse_next(i)
 }
 
 fn key_value(i: &str) -> IResult<&str, (&str, ())> {
@@ -249,7 +249,7 @@ fn hash(i: &str) -> IResult<&str, ()> {
     )),
   )
   .context("map")
-  .parse(i)
+  .parse_next(i)
 }
 
 fn value(i: &str) -> IResult<&str, ()> {

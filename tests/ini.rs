@@ -13,15 +13,15 @@ use std::str;
 fn category(i: &[u8]) -> IResult<&[u8], &str> {
   delimited('[', take_while(|c| c != b']'), ']')
     .map_res(str::from_utf8)
-    .parse(i)
+    .parse_next(i)
 }
 
 fn key_value(i: &[u8]) -> IResult<&[u8], (&str, &str)> {
-  let (i, key) = alphanumeric.map_res(str::from_utf8).parse(i)?;
-  let (i, _) = (opt(space), '=', opt(space)).parse(i)?;
+  let (i, key) = alphanumeric.map_res(str::from_utf8).parse_next(i)?;
+  let (i, _) = (opt(space), '=', opt(space)).parse_next(i)?;
   let (i, val) = take_while(|c| c != b'\n' && c != b';')
     .map_res(str::from_utf8)
-    .parse(i)?;
+    .parse_next(i)?;
   let (i, _) = opt((';', take_while(|c| c != b'\n')))(i)?;
   Ok((i, (key, val)))
 }
@@ -29,7 +29,7 @@ fn key_value(i: &[u8]) -> IResult<&[u8], (&str, &str)> {
 fn keys_and_values(i: &[u8]) -> IResult<&[u8], HashMap<&str, &str>> {
   many0(terminated(key_value, opt(multispace)))
     .map(|vec| vec.into_iter().collect())
-    .parse(i)
+    .parse_next(i)
 }
 
 fn category_and_keys(i: &[u8]) -> IResult<&[u8], (&str, HashMap<&str, &str>)> {
@@ -45,7 +45,7 @@ fn categories(i: &[u8]) -> IResult<&[u8], HashMap<&str, HashMap<&str, &str>>> {
     many0(terminated(key_value, opt(multispace))).map(|vec: Vec<_>| vec.into_iter().collect()),
   ))
   .map(|vec: Vec<_>| vec.into_iter().collect())
-  .parse(i)
+  .parse_next(i)
 }
 
 #[test]
