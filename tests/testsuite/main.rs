@@ -2,7 +2,6 @@ mod arithmetic;
 mod arithmetic_ast;
 mod css;
 mod custom_errors;
-mod escaped;
 mod float;
 mod fnmut;
 mod ini;
