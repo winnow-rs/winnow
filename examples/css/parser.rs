@@ -8,6 +8,18 @@ pub struct Color {
   pub blue: u8,
 }
 
+impl std::str::FromStr for Color {
+  // The error must be owned
+  type Err = winnow::error::Error<String>;
+
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
+    hex_color(s).finish().map_err(|err| winnow::error::Error {
+      input: err.input.to_owned(),
+      code: err.code,
+    })
+  }
+}
+
 pub fn hex_color(input: &str) -> IResult<&str, Color> {
   let (input, _) = tag("#")(input)?;
   let (input, (red, green, blue)) = (hex_primary, hex_primary, hex_primary).parse_next(input)?;
@@ -16,30 +28,7 @@ pub fn hex_color(input: &str) -> IResult<&str, Color> {
 }
 
 fn hex_primary(input: &str) -> IResult<&str, u8> {
-  take_while_m_n(2, 2, is_hex_digit)
-    .map_res(from_hex)
+  take_while_m_n(2, 2, |c: char| c.is_ascii_hexdigit())
+    .map_res(|input| u8::from_str_radix(input, 16))
     .parse_next(input)
-}
-
-fn is_hex_digit(c: char) -> bool {
-  c.is_ascii_hexdigit()
-}
-
-fn from_hex(input: &str) -> Result<u8, std::num::ParseIntError> {
-  u8::from_str_radix(input, 16)
-}
-
-#[test]
-fn parse_color() {
-  assert_eq!(
-    hex_color("#2F14DF"),
-    Ok((
-      "",
-      Color {
-        red: 47,
-        green: 20,
-        blue: 223,
-      }
-    ))
-  );
 }

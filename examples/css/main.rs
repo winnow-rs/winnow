@@ -45,3 +45,18 @@ impl Args {
     Ok(res)
   }
 }
+
+#[test]
+fn parse_color() {
+  assert_eq!(
+    hex_color("#2F14DF"),
+    Ok((
+      "",
+      parser::Color {
+        red: 47,
+        green: 20,
+        blue: 223,
+      }
+    ))
+  );
+}
