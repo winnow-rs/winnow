@@ -5,9 +5,9 @@ mod parser;
 use winnow::error::convert_error;
 use winnow::error::ErrorKind;
 use winnow::error::VerboseError;
-use winnow::Err;
+use winnow::prelude::*;
 
-use parser::root;
+use parser::json;
 
 fn main() {
   let data = "  { \"a\"\t: 42,
@@ -23,40 +23,38 @@ fn main() {
 
   // this will print:
   // Ok(
-  //     (
-  //         "",
-  //         Object(
-  //             {
-  //                 "b": Array(
-  //                     [
-  //                         Str(
-  //                             "x",
-  //                         ),
-  //                         Str(
-  //                             "y",
-  //                         ),
-  //                         Num(
-  //                             12.0,
-  //                         ),
-  //                     ],
-  //                 ),
-  //                 "c": Object(
-  //                     {
-  //                         "hello": Str(
-  //                             "world",
-  //                         ),
-  //                     },
-  //                 ),
-  //                 "a": Num(
-  //                     42.0,
-  //                 ),
-  //             },
-  //         ),
+  //     Object(
+  //         {
+  //             "b": Array(
+  //                 [
+  //                     Str(
+  //                         "x",
+  //                     ),
+  //                     Str(
+  //                         "y",
+  //                     ),
+  //                     Num(
+  //                         12.0,
+  //                     ),
+  //                 ],
+  //             ),
+  //             "c": Object(
+  //                 {
+  //                     "hello": Str(
+  //                         "world",
+  //                     ),
+  //                 },
+  //             ),
+  //             "a": Num(
+  //                 42.0,
+  //             ),
+  //         },
   //     ),
   // )
   println!(
     "parsing a valid file:\n{:#?}\n",
-    root::<(&str, ErrorKind)>(data)
+    // `finish` handles boilerplate from calling a parser
+    json::<(&str, ErrorKind)>(data).finish()
   );
 
   let data = "  { \"a\"\t: 42,
@@ -76,18 +74,16 @@ fn main() {
   // It is fast and small, but does not provide much context.
   //
   // This will print:
-  // basic errors - `root::<(&str, ErrorKind)>(data)`:
+  // basic errors - `json::<(&str, ErrorKind)>(data)`:
   // Err(
-  //   Failure(
-  //       (
-  //           "1\"hello\" : \"world\"\n  }\n  } ",
-  //           Char,
-  //       ),
-  //   ),
+  //     (
+  //       "1\"hello\" : \"world\"\n  }\n  } ",
+  //       Char,
+  //     ),
   // )
   println!(
-    "basic errors - `root::<(&str, ErrorKind)>(data)`:\n{:#?}\n",
-    root::<(&str, ErrorKind)>(data)
+    "basic errors - `json::<(&str, ErrorKind)>(data)`:\n{:#?}\n",
+    json::<(&str, ErrorKind)>(data).finish()
   );
 
   // nom also provides `the `VerboseError<Input>` type, which will generate a sort
@@ -97,59 +93,57 @@ fn main() {
   // This will print:
   //
   // parsed verbose: Err(
-  //   Failure(
-  //       VerboseError {
-  //           errors: [
-  //               (
-  //                   "1\"hello\" : \"world\"\n  }\n  } ",
-  //                   Char(
-  //                       '}',
-  //                   ),
-  //               ),
-  //               (
-  //                   "{ 1\"hello\" : \"world\"\n  }\n  } ",
-  //                   Context(
-  //                       "map",
-  //                   ),
-  //               ),
-  //               (
-  //                   "{ \"a\"\t: 42,\n  \"b\": [ \"x\", \"y\", 12 ] ,\n  \"c\": { 1\"hello\" : \"world\"\n  }\n  } ",
-  //                   Context(
-  //                       "map",
-  //                   ),
-  //               ),
-  //           ],
-  //       },
-  //   ),
+  //     VerboseError {
+  //         errors: [
+  //             (
+  //                 "1\"hello\" : \"world\"\n  }\n  } ",
+  //                 Char(
+  //                     '}',
+  //                 ),
+  //             ),
+  //             (
+  //                 "{ 1\"hello\" : \"world\"\n  }\n  } ",
+  //                 Context(
+  //                     "map",
+  //                 ),
+  //             ),
+  //             (
+  //                 "{ \"a\"\t: 42,\n  \"b\": [ \"x\", \"y\", 12 ] ,\n  \"c\": { 1\"hello\" : \"world\"\n  }\n  } ",
+  //                 Context(
+  //                     "map",
+  //                 ),
+  //             ),
+  //         ],
+  //     },
   // )
-  println!("parsed verbose: {:#?}", root::<VerboseError<&str>>(data));
+  println!(
+    "parsed verbose: {:#?}",
+    json::<VerboseError<&str>>(data).finish()
+  );
 
-  match root::<VerboseError<&str>>(data) {
-    Err(Err::Error(e)) | Err(Err::Failure(e)) => {
-      // here we use the `convert_error` function, to transform a `VerboseError<&str>`
-      // into a printable trace.
-      //
-      // This will print:
-      // verbose errors - `root::<VerboseError>(data)`:
-      // 0: at line 2:
-      //   "c": { 1"hello" : "world"
-      //          ^
-      // expected '}', found 1
-      //
-      // 1: at line 2, in map:
-      //   "c": { 1"hello" : "world"
-      //        ^
-      //
-      // 2: at line 0, in map:
-      //   { "a" : 42,
-      //   ^
-      println!(
-        "verbose errors - `root::<VerboseError>(data)`:\n{}",
-        convert_error(data, e)
-      );
-    }
-    _ => {}
+  if let Err(e) = json::<VerboseError<&str>>(data).finish() {
+    // here we use the `convert_error` function, to transform a `VerboseError<&str>`
+    // into a printable trace.
+    //
+    // This will print:
+    // verbose errors - `json::<VerboseError>(data)`:
+    // 0: at line 2:
+    //   "c": { 1"hello" : "world"
+    //          ^
+    // expected '}', found 1
+    //
+    // 1: at line 2, in map:
+    //   "c": { 1"hello" : "world"
+    //        ^
+    //
+    // 2: at line 0, in map:
+    //   { "a" : 42,
+    //   ^
+    println!(
+      "verbose errors - `json::<VerboseError>(data)`:\n{}",
+      convert_error(data, e)
+    );
   }
 
-  assert!(root::<(&str, ErrorKind)>("null").is_ok());
+  assert!(json::<(&str, ErrorKind)>("null").finish().is_ok());
 }

@@ -59,6 +59,7 @@ required-features = ["alloc"]
 
 [[example]]
 name = "json"
+test = true
 required-features = ["alloc"]
 
 [[example]]
