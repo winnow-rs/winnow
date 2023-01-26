@@ -783,7 +783,7 @@ where
   E: ContextError<I, C>,
   F: Parser<I, O, E>,
 {
-  fn parse(&mut self, i: I) -> IResult<I, O, E> {
+  fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
     match (self.f).parse(i.clone()) {
       Ok(o) => Ok(o),
       Err(Err::Incomplete(i)) => Err(Err::Incomplete(i)),
@@ -1086,7 +1086,7 @@ where
   F: Parser<I, O, E>,
   C: std::fmt::Display,
 {
-  fn parse(&mut self, input: I) -> IResult<I, O, E> {
+  fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
     use crate::input::HexDisplay;
     let i = input.clone();
     match self.f.parse(i) {

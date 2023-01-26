@@ -350,7 +350,13 @@ where
 pub trait Parser<I, O, E> {
   /// A parser takes in input type, and returns a `Result` containing
   /// either the remaining input and the output value, or an error
-  fn parse(&mut self, input: I) -> IResult<I, O, E>;
+  fn parse(&mut self, input: I) -> IResult<I, O, E> {
+    self.parse_next(input)
+  }
+
+  /// A parser takes in input type, and returns a `Result` containing
+  /// either the remaining input and the output value, or an error
+  fn parse_next(&mut self, input: I) -> IResult<I, O, E>;
 
   /// Treat `&mut Self` as a parser
   ///
@@ -859,7 +865,7 @@ impl<'a, I, O, E, F> Parser<I, O, E> for F
 where
   F: FnMut(I) -> IResult<I, O, E> + 'a,
 {
-  fn parse(&mut self, i: I) -> IResult<I, O, E> {
+  fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
     self(i)
   }
 }
@@ -884,7 +890,7 @@ where
   I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength + InputIsStreaming<false>,
   E: ParseError<I>,
 {
-  fn parse(&mut self, i: I) -> IResult<I, u8, E> {
+  fn parse_next(&mut self, i: I) -> IResult<I, u8, E> {
     crate::bytes::one_of(*self).parse(i)
   }
 }
@@ -910,7 +916,7 @@ where
   <I as InputIter>::Item: AsChar + Copy,
   E: ParseError<I>,
 {
-  fn parse(&mut self, i: I) -> IResult<I, <I as InputIter>::Item, E> {
+  fn parse_next(&mut self, i: I) -> IResult<I, <I as InputIter>::Item, E> {
     crate::bytes::one_of(*self).parse(i)
   }
 }
@@ -938,7 +944,7 @@ where
   I: InputTake + InputLength + Compare<&'s [u8]> + InputIsStreaming<false>,
   I: IntoOutput,
 {
-  fn parse(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
+  fn parse_next(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
     crate::bytes::tag(*self).parse(i)
   }
 }
@@ -967,7 +973,7 @@ where
   I: InputTake + InputLength + Compare<&'s [u8; N]> + InputIsStreaming<false>,
   I: IntoOutput,
 {
-  fn parse(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
+  fn parse_next(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
     crate::bytes::tag(*self).parse(i)
   }
 }
@@ -995,13 +1001,13 @@ where
   I: InputTake + InputLength + Compare<&'s str> + InputIsStreaming<false>,
   I: IntoOutput,
 {
-  fn parse(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
+  fn parse_next(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
     crate::bytes::tag(*self).parse(i)
   }
 }
 
 impl<I, E: ParseError<I>> Parser<I, (), E> for () {
-  fn parse(&mut self, i: I) -> IResult<I, (), E> {
+  fn parse_next(&mut self, i: I) -> IResult<I, (), E> {
     Ok((i, ()))
   }
 }
@@ -1013,7 +1019,7 @@ macro_rules! impl_parser_for_tuple {
     where
       $($parser: Parser<I, $output, E>),+
     {
-      fn parse(&mut self, i: I) -> IResult<I, ($($output),+,), E> {
+      fn parse_next(&mut self, i: I) -> IResult<I, ($($output),+,), E> {
         let ($(ref mut $parser),+,) = *self;
 
         $(let(i, $output) = $parser.parse(i)?;)+
@@ -1066,7 +1072,7 @@ use alloc::boxed::Box;
 
 #[cfg(feature = "alloc")]
 impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a> {
-  fn parse(&mut self, input: I) -> IResult<I, O, E> {
+  fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
     (**self).parse(input)
   }
 }
