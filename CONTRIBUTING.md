@@ -1,74 +1,66 @@
-# Contributing to nom
+# Contributing to winnow
+Thanks for wanting to contribute! There are many ways to contribute and we
+appreciate any level you're willing to do.
 
-Thanks a lot for contributing to this project!
+## Feature Requests
 
-The following is a set of guidelines for contributing to [nom][1].
+Need some new functionality to help?  You can let us know by opening an
+[issue][new issue]. It's helpful to look through [all issues][all issues] in
+case its already being talked about.
 
-**Since the project is young**: consider those best practices prone to change. Please suggest improvements!
+## Bug Reports
 
-[1]: https://github.com/geal/nom
+Please let us know about what problems you run into, whether in behavior or
+ergonomics of API.  You can do this by opening an [issue][new issue]. It's
+helpful to look through [all issues][all issues] in case its already being
+talked about.
 
-## Basics
+## Pull Requests
 
-### License
+Looking for an idea? Check our [issues][issues]. If it's look more open ended,
+it is probably best to post on the issue how you are thinking of resolving the
+issue so you can get feedback early in the process. We want you to be
+successful and it can be discouraging to find out a lot of re-work is needed.
 
-The project uses the [MIT][l1] license. By contributing to this project you agree to license
-your changes under this license.
+Already have an idea?  It might be good to first [create an issue][new issue]
+to propose it so we can make sure we are aligned and lower the risk of having
+to re-work some of it and the discouragement that goes along with that.
 
-[l1]: https://opensource.org/licenses/MIT
+### Process
 
+When you first post a PR, we request that the the commit history get cleaned
+up.  We recommend avoiding this during the PR to make it easier to review how
+feedback was handled. Once the commit is ready, we'll ask you to clean up the
+commit history.  Once you let us know this is done, we can move forward with
+merging!  If you are uncomfortable with these parts of git, let us know and we
+can help.
 
-## What to do
+For commit messages, we use [Conventional](https://www.conventionalcommits.org)
+style.  If you already wrote your commits and don't feel comfortable changing
+them, don't worry and go ahead and create your PR.  We'll work with you on the
+best route forward. You can check your branch locally with
+[`committed`](https://github.com/crate-ci/committed).
 
-### Issues
+As a heads up, we'll be running your PR through the following gauntlet:
+- warnings turned to compile errors
+- `cargo test`
+- `rustfmt`
+- `clippy`
+- `rustdoc`
+- [`committed`](https://github.com/crate-ci/committed)
 
-There is plenty of [features missing][i1] and possibly bugs might be already there. Feel free to add new [issues][i2]
-and to wrangle over those already [open][i3] and help fixing them.
+## Releasing
 
-[i1]: https://github.com/geal/nom/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement
-[i2]: https://github.com/geal/nom/issues
-[i3]: https://github.com/geal/nom/issues?q=is%3Aopen+is%3Aissue
+Pre-requisites
+- Running `cargo login`
+- A member of `winnow-rs:Maintainers`
+- Push permission to the repo
 
-### Code
+When we're ready to release, a project owner should do the following
+1. Update the changelog
+2. Determine what the next version is, according to semver
+3. Run [`cargo release -x <level>`](https://github.com/crate-ci/cargo-release)
 
-Implementing new codecs, container formats or protocols is always welcome!
-
-### Tests
-
-It is strongly suggested to provide test along changes so the coverage stays around the **85%**, helping to
-get to full coverage is pretty welcome.
-
-### Benchmark
-
-Help in making sure the code does not have performance regression, by improving the benchmark suite or just by
-running it weekly, is welcome as well.
-
-### Documentation
-
-To preview changes to the documentation: use `cargo doc` with [`cargo
-external-doc`](https://github.com/Geal/cargo-external-doc)
-
-## Style
-
-### Issue style
-
-Try to write at least 3 short paragraphs describing what were you trying to achieve, what is not working and
-the step by step actions that lead to the unwanted outcome.
-
-If possible provide:
-
-- a code snippet or a link to a [gist][is1] showcasing the problem, if is a library usage issue.
-- a backtrace, if it is a crash.
-- a sample file, if it is a decoding or encoding issue.
-
-[is1]: https://gist.github.com
-
-### Coding style
-
-The normal rust coding style is checked by [rustfmt][cs1].
-Readable code is the first step on having good and safe libraries.
-
-To avoid slight differences appearing in nightly versions, please
-use the following command to run rustfmt: `cargo +stable fmt`
-[cs1]: https://github.com/rust-lang-nursery/rustfmt
-
+[issues]: https://github.com/winnow-rs/winnow/issues
+[new issue]: https://github.com/winnow-rs/winnow/issues/new
+[all issues]: https://github.com/winnow-rs/winnow/issues?utf8=%E2%9C%93&q=is%3Aissue

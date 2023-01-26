@@ -49,8 +49,8 @@
 //!
 //! ```rust
 //! use winnow::IResult;
-//! use winnow::number::complete::be_u16;
-//! use winnow::bytes::complete::take;
+//! use winnow::number::be_u16;
+//! use winnow::bytes::take;
 //!
 //! pub fn length_value(input: &[u8]) -> IResult<&[u8],&[u8]> {
 //!     let (input, length) = be_u16(input)?;
@@ -101,10 +101,10 @@
 //!
 //! ```rust
 //! # use winnow::prelude::*;
-//! # use winnow::bytes::complete::take_while1;
-//! # use winnow::bytes::complete::tag;
+//! # use winnow::bytes::take_while1;
+//! # use winnow::bytes::tag;
 //! # use winnow::sequence::preceded;
-//! # use winnow::AsChar;
+//! # use winnow::input::AsChar;
 //! struct Request<'s> {
 //!     method: &'s [u8],
 //!     url: &'s [u8],
@@ -193,14 +193,14 @@
 //!
 //! There are a few tools you can use to debug how code is generated.
 //!
-//! ## dbg_err
+//! ## `dbg_err`
 //!
 //! This function wraps a parser that accepts byte-like input (bytes, str) and
 //! prints its hexdump if the child parser encountered an error:
 //!
 //! ```rust
 //! use winnow::prelude::*;
-//! use winnow::bytes::complete::tag;
+//! use winnow::bytes::tag;
 //!
 //! fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
 //!   tag("abcd").dbg_err("tag").parse(i)

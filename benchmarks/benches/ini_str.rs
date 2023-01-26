@@ -1,6 +1,3 @@
-#[global_allocator]
-static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
-
 use criterion::*;
 
 use winnow::{
@@ -33,7 +30,7 @@ fn category(i: Input<'_>) -> IResult<Input<'_>, &str> {
 
 fn key_value(i: Input<'_>) -> IResult<Input<'_>, (&str, &str)> {
   let (i, key) = alphanumeric(i)?;
-  let (i, _) = ((opt(space), tag("="), opt(space))).parse(i)?;
+  let (i, _) = (opt(space), tag("="), opt(space)).parse(i)?;
   let (i, val) = take_till(is_line_ending_or_comment)(i)?;
   let (i, _) = opt(space)(i)?;
   let (i, _) = opt((tag(";"), not_line_ending))(i)?;
@@ -56,6 +53,7 @@ fn category_and_keys(i: Input<'_>) -> IResult<Input<'_>, (&str, HashMap<&str, &s
   (category, keys_and_values).parse(i)
 }
 
+#[allow(clippy::type_complexity)]
 fn categories_aggregator(i: Input<'_>) -> IResult<Input<'_>, Vec<(&str, HashMap<&str, &str>)>> {
   many0(category_and_keys)(i)
 }

@@ -1,9 +1,6 @@
 #[macro_use]
 extern crate criterion;
 
-#[global_allocator]
-static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
-
 use criterion::Criterion;
 use winnow::{
   branch::alt,

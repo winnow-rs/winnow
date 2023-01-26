@@ -25,8 +25,8 @@
 //! ### Wrapper combinators that eat whitespace before and after a parser
 //!
 //! ```rust
+//! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   error::ParseError,
 //!   sequence::delimited,
 //!   character::multispace0,
@@ -61,11 +61,9 @@
 //! ```rust
 //! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   error::ParseError,
 //!   sequence::pair,
 //!   bytes::take_till1,
-//!   character::char,
 //! };
 //!
 //! pub fn peol_comment<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, (), E>
@@ -84,7 +82,6 @@
 //! ```rust
 //! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   error::ParseError,
 //!   bytes::{tag, take_until},
 //! };
@@ -110,7 +107,6 @@
 //! ```rust
 //! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   branch::alt,
 //!   multi::many0_count,
 //!   sequence::pair,
@@ -149,7 +145,7 @@
 //! The parsers allow the grouping character `_`, which allows one to group the digits by byte, for
 //! example: `0xA4_3F_11_28`. If you prefer to exclude the `_` character, the lambda to convert from a
 //! string slice to an integer value is slightly simpler. You can also strip the `_` from the string
-//! slice that is returned, which is demonstrated in the second hexdecimal number parser.
+//! slice that is returned, which is demonstrated in the second hexadecimal number parser.
 //!
 //! If you wish to limit the number of digits in a valid integer literal, replace `many1` with
 //! `many_m_n` in the recipes.
@@ -159,12 +155,11 @@
 //! The parser outputs the string slice of the digits without the leading `0x`/`0X`.
 //!
 //! ```rust
+//! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::char,
 //!   bytes::one_of,
 //!   bytes::tag,
 //! };
@@ -184,11 +179,9 @@
 //! ```rust
 //! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::char,
 //!   bytes::one_of,
 //!   bytes::tag,
 //! };
@@ -208,12 +201,11 @@
 //! #### Octal
 //!
 //! ```rust
+//! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::char,
 //!   bytes::one_of,
 //!   bytes::tag,
 //! };
@@ -231,12 +223,11 @@
 //! #### Binary
 //!
 //! ```rust
+//! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::char,
 //!   bytes::one_of,
 //!   bytes::tag,
 //! };
@@ -259,7 +250,6 @@
 //!   IResult,
 //!   multi::{many0, many1},
 //!   sequence::terminated,
-//!   character::char,
 //!   bytes::one_of,
 //! };
 //!
@@ -274,16 +264,15 @@
 //!
 //! ### Floating Point Numbers
 //!
-//! The following is adapted from [the Python parser by Valentin Lorentz (ProgVal)](https://github.com/ProgVal/rust-python-parser/blob/master/src/numbers.rs).
+//! The following is adapted from [the Python parser by Valentin Lorentz](https://github.com/ProgVal/rust-python-parser/blob/master/src/numbers.rs).
 //!
 //! ```rust
+//! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   combinator::opt,
 //!   sequence::{preceded, terminated},
-//!   character::char,
 //!   bytes::one_of,
 //! };
 //!
@@ -328,14 +317,15 @@
 //! }
 //! ```
 //!
-//! # implementing FromStr
+//! # implementing `FromStr`
 //!
-//! The [FromStr trait](https://doc.rust-lang.org/std/str/trait.FromStr.html) provides
+//! The [`FromStr` trait][std::str::FromStr] provides
 //! a common interface to parse from a string.
 //!
 //! ```rust
+//! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult, Finish, error::Error,
+//!   error::Error,
 //!   bytes::{tag, take_while},
 //! };
 //! use std::str::FromStr;

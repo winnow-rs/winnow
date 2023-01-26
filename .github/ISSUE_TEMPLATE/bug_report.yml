@@ -1,0 +1,56 @@
+name: Bug report
+description: Things aren't working as expected
+labels: 'C-bug'
+body:
+  - type: checkboxes
+    attributes:
+      label: "Please complete the following tasks"
+      options:
+        - label: "I have searched the [discussions](https://github.com/winnow-rs/winnow/discussions)"
+          required: true
+        - label: "I have searched the [open](https://github.com/winnow-rs/winnow/issues) and [rejected](https://github.com/winnow-rs/winnow/issues?q=is%3Aissue+label%3AS-wont-fix+is%3Aclosed) issues"
+          required: true
+  - type: input
+    attributes:
+      label: rust version
+      description: output of `rustc -V`
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: winnow version
+      description: Can be found in Cargo.lock or Cargo.toml of your project (i.e. `grep winnow Cargo.lock`). PLEASE DO NOT PUT "latest" HERE, use precise version. Put `master` (or other branch) if you're using the repo directly.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Minimal reproducible code
+      description: Please write a minimal complete program which has this bug. Do not point to an existing repository.
+      value: |
+        ```rust
+        fn main() {}
+        ```
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps to reproduce the bug with the above code
+      description: A command like `cargo run -- options...` or multiple commands.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Actual Behaviour
+      description: When I do like *this*, *that* is happening and I think it shouldn't.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected Behaviour
+      description: I think *this* should happen instead.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here.

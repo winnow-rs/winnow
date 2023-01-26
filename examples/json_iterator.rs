@@ -95,23 +95,17 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
           // if we ignored one of the items, skip over the value
           if v.offset.get() == previous {
             println!("skipping value");
-            match value(v.data()) {
-              Ok((i, _)) => {
-                v.offset(i);
-              }
-              Err(_) => {}
+            if let Ok((i, _)) = value(v.data()) {
+              v.offset(i);
             }
           }
 
-          match tag::<_, _, (), false>("]")(v.data()) {
-            Ok((i, _)) => {
-              println!("]");
-              v.offset(i);
-              done = true;
-              return None;
-            }
-            Err(_) => {}
-          };
+          if let Ok((i, _)) = tag::<_, _, (), false>("]")(v.data()) {
+            println!("]");
+            v.offset(i);
+            done = true;
+            return None;
+          }
 
           if first {
             first = false;
@@ -159,23 +153,17 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
           // if we ignored one of the items, skip over the value
           if v.offset.get() == previous {
             println!("skipping value");
-            match value(v.data()) {
-              Ok((i, _)) => {
-                v.offset(i);
-              }
-              Err(_) => {}
+            if let Ok((i, _)) = value(v.data()) {
+              v.offset(i);
             }
           }
 
-          match tag::<_, _, (), false>("}")(v.data()) {
-            Ok((i, _)) => {
-              println!("}}");
-              v.offset(i);
-              done = true;
-              return None;
-            }
-            Err(_) => {}
-          };
+          if let Ok((i, _)) = tag::<_, _, (), false>("}")(v.data()) {
+            println!("}}");
+            v.offset(i);
+            done = true;
+            return None;
+          }
 
           if first {
             first = false;

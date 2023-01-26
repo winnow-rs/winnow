@@ -1,9 +1,6 @@
 #[macro_use]
 extern crate criterion;
 
-#[global_allocator]
-static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
-
 use criterion::Criterion;
 use winnow::{
   branch::alt,
@@ -71,10 +68,7 @@ fn arithmetic(c: &mut Criterion) {
 
   assert_eq!(
     expr(data),
-    Ok((
-      &b";"[..],
-      2 * 2 / (5 - 1) + 3 * (1 + 2 * (45 / 2)),
-    ))
+    Ok((&b";"[..], 2 * 2 / (5 - 1) + 3 * (1 + 2 * (45 / 2)),))
   );
   c.bench_function("arithmetic", |b| {
     b.iter(|| expr(data).unwrap());

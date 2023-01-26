@@ -393,7 +393,6 @@
 // END - Embark standard lints v6 for Rust 1.55+
 #![allow(clippy::branches_sharing_code)]
 #![allow(clippy::collapsible_else_if)]
-#![allow(clippy::bool_to_int_with_if)]
 #![allow(clippy::if_same_then_else)]
 #![allow(clippy::bool_assert_comparison)]
 #![allow(clippy::let_and_return)]

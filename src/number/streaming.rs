@@ -1,6 +1,7 @@
 //! Parsers recognizing numbers, streaming version
 
 #![allow(deprecated)]
+#![allow(clippy::match_same_arms)]
 
 use crate::branch::alt;
 use crate::bytes::streaming::tag;
