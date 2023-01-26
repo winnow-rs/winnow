@@ -2719,65 +2719,6 @@ impl ToUsize for u64 {
   }
 }
 
-/// Equivalent From implementation to avoid orphan rules in bits parsers
-pub trait ErrorConvert<E> {
-  /// Transform to another error type
-  fn convert(self) -> E;
-}
-
-impl<I> ErrorConvert<(I, ErrorKind)> for ((I, usize), ErrorKind) {
-  fn convert(self) -> (I, ErrorKind) {
-    ((self.0).0, self.1)
-  }
-}
-
-impl<I> ErrorConvert<((I, usize), ErrorKind)> for (I, ErrorKind) {
-  fn convert(self) -> ((I, usize), ErrorKind) {
-    ((self.0, 0), self.1)
-  }
-}
-
-use crate::error;
-impl<I> ErrorConvert<error::Error<I>> for error::Error<(I, usize)> {
-  fn convert(self) -> error::Error<I> {
-    error::Error {
-      input: self.input.0,
-      code: self.code,
-    }
-  }
-}
-
-impl<I> ErrorConvert<error::Error<(I, usize)>> for error::Error<I> {
-  fn convert(self) -> error::Error<(I, usize)> {
-    error::Error {
-      input: (self.input, 0),
-      code: self.code,
-    }
-  }
-}
-
-#[cfg(feature = "alloc")]
-impl<I> ErrorConvert<error::VerboseError<I>> for error::VerboseError<(I, usize)> {
-  fn convert(self) -> error::VerboseError<I> {
-    error::VerboseError {
-      errors: self.errors.into_iter().map(|(i, e)| (i.0, e)).collect(),
-    }
-  }
-}
-
-#[cfg(feature = "alloc")]
-impl<I> ErrorConvert<error::VerboseError<(I, usize)>> for error::VerboseError<I> {
-  fn convert(self) -> error::VerboseError<(I, usize)> {
-    error::VerboseError {
-      errors: self.errors.into_iter().map(|(i, e)| ((i, 0), e)).collect(),
-    }
-  }
-}
-
-impl ErrorConvert<()> for () {
-  fn convert(self) {}
-}
-
 /// Helper trait to show a byte slice as a hex dump
 #[cfg(feature = "std")]
 pub trait HexDisplay {

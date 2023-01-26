@@ -517,6 +517,12 @@ pub trait FromExternalError<I, E> {
   fn from_external_error(input: I, kind: ErrorKind, e: E) -> Self;
 }
 
+/// Equivalent From implementation to avoid orphan rules in bits parsers
+pub trait ErrorConvert<E> {
+  /// Transform to another error type
+  fn convert(self) -> E;
+}
+
 /// default error type, only contains the error' location and code
 #[derive(Debug, Eq, PartialEq)]
 pub struct Error<I> {
@@ -552,6 +558,24 @@ impl<I, E> FromExternalError<I, E> for Error<I> {
   }
 }
 
+impl<I> ErrorConvert<Error<(I, usize)>> for Error<I> {
+  fn convert(self) -> Error<(I, usize)> {
+    Error {
+      input: (self.input, 0),
+      code: self.code,
+    }
+  }
+}
+
+impl<I> ErrorConvert<Error<I>> for Error<(I, usize)> {
+  fn convert(self) -> Error<I> {
+    Error {
+      input: self.input.0,
+      code: self.code,
+    }
+  }
+}
+
 /// The Display implementation allows the `std::error::Error` implementation
 impl<I: fmt::Display> fmt::Display for Error<I> {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -582,6 +606,18 @@ impl<I, E> FromExternalError<I, E> for (I, ErrorKind) {
   }
 }
 
+impl<I> ErrorConvert<(I, ErrorKind)> for ((I, usize), ErrorKind) {
+  fn convert(self) -> (I, ErrorKind) {
+    ((self.0).0, self.1)
+  }
+}
+
+impl<I> ErrorConvert<((I, usize), ErrorKind)> for (I, ErrorKind) {
+  fn convert(self) -> ((I, usize), ErrorKind) {
+    ((self.0, 0), self.1)
+  }
+}
+
 impl<I> ParseError<I> for () {
   fn from_error_kind(_: I, _: ErrorKind) -> Self {}
 
@@ -592,6 +628,10 @@ impl<I, C> ContextError<I, C> for () {}
 
 impl<I, E> FromExternalError<I, E> for () {
   fn from_external_error(_input: I, _kind: ErrorKind, _e: E) -> Self {}
+}
+
+impl ErrorConvert<()> for () {
+  fn convert(self) {}
 }
 
 /// Creates an error from the input position and an [`ErrorKind`]
@@ -656,6 +696,24 @@ impl<I, E> FromExternalError<I, E> for VerboseError<I> {
   /// Create a new error from an input position and an external error
   fn from_external_error(input: I, kind: ErrorKind, _e: E) -> Self {
     Self::from_error_kind(input, kind)
+  }
+}
+
+#[cfg(feature = "alloc")]
+impl<I> ErrorConvert<VerboseError<I>> for VerboseError<(I, usize)> {
+  fn convert(self) -> VerboseError<I> {
+    VerboseError {
+      errors: self.errors.into_iter().map(|(i, e)| (i.0, e)).collect(),
+    }
+  }
+}
+
+#[cfg(feature = "alloc")]
+impl<I> ErrorConvert<VerboseError<(I, usize)>> for VerboseError<I> {
+  fn convert(self) -> VerboseError<(I, usize)> {
+    VerboseError {
+      errors: self.errors.into_iter().map(|(i, e)| ((i, 0), e)).collect(),
+    }
   }
 }
 
