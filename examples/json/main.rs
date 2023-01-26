@@ -12,20 +12,18 @@ use parser::json;
 fn main() -> Result<(), lexopt::Error> {
   let args = Args::parse()?;
 
-  let data = args.input.as_deref().unwrap_or_else(|| {
-    if args.invalid {
-      "  { \"a\"\t: 42,
+  let data = args.input.as_deref().unwrap_or(if args.invalid {
+    "  { \"a\"\t: 42,
   \"b\": [ \"x\", \"y\", 12 ] ,
   \"c\": { 1\"hello\" : \"world\"
   }
   } "
-    } else {
-      "  { \"a\"\t: 42,
+  } else {
+    "  { \"a\"\t: 42,
   \"b\": [ \"x\", \"y\", 12 ] ,
   \"c\": { \"hello\" : \"world\"
   }
   } "
-    }
   });
 
   if args.verbose {

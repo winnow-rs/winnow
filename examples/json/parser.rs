@@ -209,9 +209,11 @@ fn ws<'i, E: ParseError<&'i str>>(input: &'i str) -> IResult<&'i str, &'i str, E
 
 #[cfg(test)]
 mod test {
+  #[allow(clippy::useless_attribute)]
   #[allow(dead_code)] // its dead for benches
   use super::*;
 
+  #[allow(clippy::useless_attribute)]
   #[allow(dead_code)] // its dead for benches
   type Error<'i> = winnow::error::Error<&'i str>;
 
