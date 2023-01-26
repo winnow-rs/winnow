@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use winnow::prelude::*;
 use winnow::{
   bytes::{take_till, take_while, take_while1},
@@ -7,18 +9,20 @@ use winnow::{
   sequence::{delimited, terminated},
 };
 
-use std::collections::HashMap;
-
-fn is_line_ending_or_comment(chr: char) -> bool {
-  chr == ';' || chr == '\n'
+pub fn categories(input: &str) -> IResult<&str, HashMap<&str, HashMap<&str, &str>>> {
+  match categories_aggregator(input) {
+    Ok((i, tuple_vec)) => Ok((i, tuple_vec.into_iter().collect())),
+    Err(e) => Err(e),
+  }
 }
 
-fn not_line_ending(i: &str) -> IResult<&str, &str> {
-  take_while(|c| c != '\r' && c != '\n')(i)
+#[allow(clippy::type_complexity)]
+fn categories_aggregator(i: &str) -> IResult<&str, Vec<(&str, HashMap<&str, &str>)>> {
+  many0(category_and_keys)(i)
 }
 
-fn space_or_line_ending(i: &str) -> IResult<&str, &str> {
-  take_while1(" \r\n")(i)
+fn category_and_keys(i: &str) -> IResult<&str, (&str, HashMap<&str, &str>)> {
+  (category, keys_and_values).parse_next(i)
 }
 
 fn category(i: &str) -> IResult<&str, &str> {
@@ -26,6 +30,17 @@ fn category(i: &str) -> IResult<&str, &str> {
     delimited('[', take_while(|c| c != ']'), ']'),
     opt(take_while1(" \r\n")),
   )(i)
+}
+
+fn keys_and_values(input: &str) -> IResult<&str, HashMap<&str, &str>> {
+  match keys_and_values_aggregator(input) {
+    Ok((i, tuple_vec)) => Ok((i, tuple_vec.into_iter().collect())),
+    Err(e) => Err(e),
+  }
+}
+
+fn keys_and_values_aggregator(i: &str) -> IResult<&str, Vec<(&str, &str)>> {
+  many0(key_value)(i)
 }
 
 fn key_value(i: &str) -> IResult<&str, (&str, &str)> {
@@ -39,34 +54,17 @@ fn key_value(i: &str) -> IResult<&str, (&str, &str)> {
   Ok((i, (key, val)))
 }
 
-fn keys_and_values_aggregator(i: &str) -> IResult<&str, Vec<(&str, &str)>> {
-  many0(key_value)(i)
+fn is_line_ending_or_comment(chr: char) -> bool {
+  chr == ';' || chr == '\n'
 }
 
-fn keys_and_values(input: &str) -> IResult<&str, HashMap<&str, &str>> {
-  match keys_and_values_aggregator(input) {
-    Ok((i, tuple_vec)) => Ok((i, tuple_vec.into_iter().collect())),
-    Err(e) => Err(e),
-  }
+fn not_line_ending(i: &str) -> IResult<&str, &str> {
+  take_while(|c| c != '\r' && c != '\n')(i)
 }
 
-fn category_and_keys(i: &str) -> IResult<&str, (&str, HashMap<&str, &str>)> {
-  (category, keys_and_values).parse_next(i)
+fn space_or_line_ending(i: &str) -> IResult<&str, &str> {
+  take_while1(" \r\n")(i)
 }
-
-#[allow(clippy::type_complexity)]
-fn categories_aggregator(i: &str) -> IResult<&str, Vec<(&str, HashMap<&str, &str>)>> {
-  many0(category_and_keys)(i)
-}
-
-fn categories(input: &str) -> IResult<&str, HashMap<&str, HashMap<&str, &str>>> {
-  match categories_aggregator(input) {
-    Ok((i, tuple_vec)) => Ok((i, tuple_vec.into_iter().collect())),
-    Err(e) => Err(e),
-  }
-}
-
-fn main() {}
 
 #[test]
 fn parse_category_test() {

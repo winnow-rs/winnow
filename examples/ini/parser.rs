@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+use std::str;
+
 use winnow::prelude::*;
 use winnow::{
   bytes::take_while,
@@ -7,12 +10,33 @@ use winnow::{
   sequence::{delimited, separated_pair, terminated},
 };
 
-use std::collections::HashMap;
-use std::str;
+pub fn categories(i: &[u8]) -> IResult<&[u8], HashMap<&str, HashMap<&str, &str>>> {
+  many0(separated_pair(
+    category,
+    opt(multispace),
+    many0(terminated(key_value, opt(multispace))).map(|vec: Vec<_>| vec.into_iter().collect()),
+  ))
+  .map(|vec: Vec<_>| vec.into_iter().collect())
+  .parse_next(i)
+}
 
 fn category(i: &[u8]) -> IResult<&[u8], &str> {
   delimited('[', take_while(|c| c != b']'), ']')
     .map_res(str::from_utf8)
+    .parse_next(i)
+}
+
+#[cfg(test)]
+fn category_and_keys(i: &[u8]) -> IResult<&[u8], (&str, HashMap<&str, &str>)> {
+  let (i, category) = terminated(category, opt(multispace))(i)?;
+  let (i, keys) = keys_and_values(i)?;
+  Ok((i, (category, keys)))
+}
+
+#[cfg(test)]
+fn keys_and_values(i: &[u8]) -> IResult<&[u8], HashMap<&str, &str>> {
+  many0(terminated(key_value, opt(multispace)))
+    .map(|vec| vec.into_iter().collect())
     .parse_next(i)
 }
 
@@ -25,30 +49,6 @@ fn key_value(i: &[u8]) -> IResult<&[u8], (&str, &str)> {
   let (i, _) = opt((';', take_while(|c| c != b'\n')))(i)?;
   Ok((i, (key, val)))
 }
-
-fn keys_and_values(i: &[u8]) -> IResult<&[u8], HashMap<&str, &str>> {
-  many0(terminated(key_value, opt(multispace)))
-    .map(|vec| vec.into_iter().collect())
-    .parse_next(i)
-}
-
-fn category_and_keys(i: &[u8]) -> IResult<&[u8], (&str, HashMap<&str, &str>)> {
-  let (i, category) = terminated(category, opt(multispace))(i)?;
-  let (i, keys) = keys_and_values(i)?;
-  Ok((i, (category, keys)))
-}
-
-fn categories(i: &[u8]) -> IResult<&[u8], HashMap<&str, HashMap<&str, &str>>> {
-  many0(separated_pair(
-    category,
-    opt(multispace),
-    many0(terminated(key_value, opt(multispace))).map(|vec: Vec<_>| vec.into_iter().collect()),
-  ))
-  .map(|vec: Vec<_>| vec.into_iter().collect())
-  .parse_next(i)
-}
-
-fn main() {}
 
 #[test]
 fn parse_category_test() {

@@ -57,33 +57,20 @@ impl Debug for Expr {
   }
 }
 
-fn parens(i: &str) -> IResult<&str, Expr> {
-  delimited(
-    multispace,
-    delimited("(", expr.map(|e| Expr::Paren(Box::new(e))), ")"),
-    multispace,
-  )(i)
-}
+pub fn expr(i: &str) -> IResult<&str, Expr> {
+  let (i, initial) = term(i)?;
+  let (i, remainder) = many0(alt((
+    |i| {
+      let (i, add) = preceded("+", term)(i)?;
+      Ok((i, (Oper::Add, add)))
+    },
+    |i| {
+      let (i, sub) = preceded("-", term)(i)?;
+      Ok((i, (Oper::Sub, sub)))
+    },
+  )))(i)?;
 
-fn factor(i: &str) -> IResult<&str, Expr> {
-  alt((
-    delimited(multispace, digit, multispace)
-      .map_res(FromStr::from_str)
-      .map(Expr::Value),
-    parens,
-  ))(i)
-}
-
-fn fold_exprs(initial: Expr, remainder: Vec<(Oper, Expr)>) -> Expr {
-  remainder.into_iter().fold(initial, |acc, pair| {
-    let (oper, expr) = pair;
-    match oper {
-      Oper::Add => Expr::Add(Box::new(acc), Box::new(expr)),
-      Oper::Sub => Expr::Sub(Box::new(acc), Box::new(expr)),
-      Oper::Mul => Expr::Mul(Box::new(acc), Box::new(expr)),
-      Oper::Div => Expr::Div(Box::new(acc), Box::new(expr)),
-    }
-  })
+  Ok((i, fold_exprs(initial, remainder)))
 }
 
 fn term(i: &str) -> IResult<&str, Expr> {
@@ -102,23 +89,34 @@ fn term(i: &str) -> IResult<&str, Expr> {
   Ok((i, fold_exprs(initial, remainder)))
 }
 
-fn expr(i: &str) -> IResult<&str, Expr> {
-  let (i, initial) = term(i)?;
-  let (i, remainder) = many0(alt((
-    |i| {
-      let (i, add) = preceded("+", term)(i)?;
-      Ok((i, (Oper::Add, add)))
-    },
-    |i| {
-      let (i, sub) = preceded("-", term)(i)?;
-      Ok((i, (Oper::Sub, sub)))
-    },
-  )))(i)?;
-
-  Ok((i, fold_exprs(initial, remainder)))
+fn factor(i: &str) -> IResult<&str, Expr> {
+  alt((
+    delimited(multispace, digit, multispace)
+      .map_res(FromStr::from_str)
+      .map(Expr::Value),
+    parens,
+  ))(i)
 }
 
-fn main() {}
+fn parens(i: &str) -> IResult<&str, Expr> {
+  delimited(
+    multispace,
+    delimited("(", expr.map(|e| Expr::Paren(Box::new(e))), ")"),
+    multispace,
+  )(i)
+}
+
+fn fold_exprs(initial: Expr, remainder: Vec<(Oper, Expr)>) -> Expr {
+  remainder.into_iter().fold(initial, |acc, pair| {
+    let (oper, expr) = pair;
+    match oper {
+      Oper::Add => Expr::Add(Box::new(acc), Box::new(expr)),
+      Oper::Sub => Expr::Sub(Box::new(acc), Box::new(expr)),
+      Oper::Mul => Expr::Mul(Box::new(acc), Box::new(expr)),
+      Oper::Div => Expr::Div(Box::new(acc), Box::new(expr)),
+    }
+  })
+}
 
 #[test]
 fn factor_test() {

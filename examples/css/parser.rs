@@ -8,12 +8,11 @@ pub struct Color {
   pub blue: u8,
 }
 
-fn from_hex(input: &str) -> Result<u8, std::num::ParseIntError> {
-  u8::from_str_radix(input, 16)
-}
+pub fn hex_color(input: &str) -> IResult<&str, Color> {
+  let (input, _) = tag("#")(input)?;
+  let (input, (red, green, blue)) = (hex_primary, hex_primary, hex_primary).parse_next(input)?;
 
-fn is_hex_digit(c: char) -> bool {
-  c.is_ascii_hexdigit()
+  Ok((input, Color { red, green, blue }))
 }
 
 fn hex_primary(input: &str) -> IResult<&str, u8> {
@@ -22,14 +21,13 @@ fn hex_primary(input: &str) -> IResult<&str, u8> {
     .parse_next(input)
 }
 
-fn hex_color(input: &str) -> IResult<&str, Color> {
-  let (input, _) = tag("#")(input)?;
-  let (input, (red, green, blue)) = (hex_primary, hex_primary, hex_primary).parse_next(input)?;
-
-  Ok((input, Color { red, green, blue }))
+fn is_hex_digit(c: char) -> bool {
+  c.is_ascii_hexdigit()
 }
 
-fn main() {}
+fn from_hex(input: &str) -> Result<u8, std::num::ParseIntError> {
+  u8::from_str_radix(input, 16)
+}
 
 #[test]
 fn parse_color() {
