@@ -1,7 +1,10 @@
+use std::str::FromStr;
+
 use winnow::prelude::*;
 use winnow::{
   branch::alt,
-  character::{digit1 as digit, space0 as space},
+  bytes::one_of,
+  character::{digit1 as digits, space0 as spaces},
   multi::fold_many0,
   sequence::delimited,
   IResult,
@@ -9,22 +12,20 @@ use winnow::{
 
 // Parser definition
 
-use std::str::FromStr;
+pub fn expr(i: &str) -> IResult<&str, i64> {
+  let (i, init) = term(i)?;
 
-// We parse any expr surrounded by parens, ignoring all whitespaces around those
-fn parens(i: &str) -> IResult<&str, i64> {
-  delimited(space, delimited("(", expr, ")"), space)(i)
-}
-
-// We transform an integer string into a i64, ignoring surrounding whitespaces
-// We look for a digit suite, and try to convert it.
-// If either str::from_utf8 or FromStr::from_str fail,
-// we fallback to the parens parser defined above
-fn factor(i: &str) -> IResult<&str, i64> {
-  alt((
-    delimited(space, digit, space).map_res(FromStr::from_str),
-    parens,
-  ))(i)
+  fold_many0(
+    (one_of("+-"), term),
+    move || init,
+    |acc, (op, val): (char, i64)| {
+      if op == '+' {
+        acc + val
+      } else {
+        acc - val
+      }
+    },
+  )(i)
 }
 
 // We read an initial factor and for each time we find
@@ -34,7 +35,7 @@ fn term(i: &str) -> IResult<&str, i64> {
   let (i, init) = factor(i)?;
 
   fold_many0(
-    (alt(('*', '/')), factor),
+    (one_of("*/"), factor),
     move || init,
     |acc, (op, val): (char, i64)| {
       if op == '*' {
@@ -46,20 +47,25 @@ fn term(i: &str) -> IResult<&str, i64> {
   )(i)
 }
 
-fn expr(i: &str) -> IResult<&str, i64> {
-  let (i, init) = term(i)?;
-
-  fold_many0(
-    (alt(('+', '-')), term),
-    move || init,
-    |acc, (op, val): (char, i64)| {
-      if op == '+' {
-        acc + val
-      } else {
-        acc - val
-      }
-    },
+// We transform an integer string into a i64, ignoring surrounding whitespaces
+// We look for a digit suite, and try to convert it.
+// If either str::from_utf8 or FromStr::from_str fail,
+// we fallback to the parens parser defined above
+fn factor(i: &str) -> IResult<&str, i64> {
+  delimited(
+    spaces,
+    alt((
+      digits.map_res(FromStr::from_str),
+      delimited(one_of('('), expr, one_of(')')),
+      parens,
+    )),
+    spaces,
   )(i)
+}
+
+// We parse any expr surrounded by parens, ignoring all whitespaces around those
+fn parens(i: &str) -> IResult<&str, i64> {
+  delimited(one_of('('), expr, one_of(')'))(i)
 }
 
 #[test]

@@ -1,6 +1,6 @@
-//! # Nom Recipes
+//! # Cookbook
 //!
-//! These are short recipes for accomplishing common tasks with nom.
+//! These are short recipes for accomplishing common tasks.
 //!
 //! * [Whitespace](#whitespace)
 //!   + [Wrapper combinators that eat whitespace before and after a parser](#wrapper-combinators-that-eat-whitespace-before-and-after-a-parser)
@@ -17,6 +17,7 @@
 //!     - [Binary](#binary)
 //!     - [Decimal](#decimal)
 //!   + [Floating Point Numbers](#floating-point-numbers)
+//! * [Implementing `FromStr`](#implementing-fromstr)
 //!
 //! ## Whitespace
 //!
@@ -134,8 +135,9 @@
 //!
 //! ### Escaped Strings
 //!
-//! This is [one of the examples](https://github.com/Geal/nom/blob/main/examples/string.rs) in the
-//! examples directory.
+//! ```rust
+#![doc = include_str!("../examples/string.rs")]
+//! ```
 //!
 //! ### Integers
 //!
@@ -317,52 +319,11 @@
 //! }
 //! ```
 //!
-//! # implementing `FromStr`
+//! # Implementing `FromStr`
 //!
 //! The [`FromStr` trait][std::str::FromStr] provides
 //! a common interface to parse from a string.
 //!
 //! ```rust
-//! use winnow::prelude::*;
-//! use winnow::{
-//!   error::Error,
-//!   bytes::{tag, take_while},
-//! };
-//! use std::str::FromStr;
-//!
-//! // will recognize the name in "Hello, name!"
-//! fn parse_name(input: &str) -> IResult<&str, &str> {
-//!   let (i, _) = tag("Hello, ")(input)?;
-//!   let (i, name) = take_while(|c:char| c.is_alphabetic())(i)?;
-//!   let (i, _) = tag("!")(i)?;
-//!
-//!   Ok((i, name))
-//! }
-//!
-//! // with FromStr, the result cannot be a reference to the input, it must be owned
-//! #[derive(Debug)]
-//! pub struct Name(pub String);
-//!
-//! impl FromStr for Name {
-//!   // the error must be owned as well
-//!   type Err = Error<String>;
-//!
-//!   fn from_str(s: &str) -> Result<Self, Self::Err> {
-//!       match parse_name(s).finish() {
-//!           Ok(name) => Ok(Name(name.to_string())),
-//!           Err(Error { input, code }) => Err(Error {
-//!               input: input.to_string(),
-//!               code,
-//!           })
-//!       }
-//!   }
-//! }
-//!
-//! fn main() {
-//!   // parsed: Ok(Name("nom"))
-//!   println!("parsed: {:?}", "Hello, nom!".parse::<Name>());
-//!
-//!   // parsed: Err(Error { input: "123!", code: Tag })
-//!   println!("parsed: {:?}", "Hello, 123!".parse::<Name>());
-//! }
+#![doc = include_str!("../examples/css/parser.rs")]
 //! ```

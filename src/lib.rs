@@ -400,6 +400,7 @@
 #![allow(clippy::map_unwrap_or)]
 #![allow(clippy::single_match_else)]
 #![allow(clippy::single_match)]
+#![allow(clippy::unnested_or_patterns)]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 #[cfg(feature = "alloc")]
 #[macro_use]
@@ -474,8 +475,6 @@ pub mod bits;
 pub mod bytes;
 
 pub mod character;
-
-mod str;
 
 pub mod number;
 

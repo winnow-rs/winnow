@@ -1,3 +1,5 @@
+#![cfg(feature = "alloc")]
+
 use winnow::{
   character::{alphanumeric1 as alphanumeric, line_ending as eol},
   multi::many0,

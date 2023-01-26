@@ -130,6 +130,16 @@ fn complete_escaping_str() {
   assert_eq!(esc3("ab␛ncd;"), Ok((";", "ab␛ncd")));
 }
 
+#[test]
+fn test_escaped_error() {
+  fn esc(s: &str) -> IResult<&str, &str, (&str, ErrorKind)> {
+    use crate::character::digit1;
+    escaped(digit1, '\\', one_of("\"n\\"))(s)
+  }
+
+  assert_eq!(esc("abcd"), Err(Err::Error(("abcd", ErrorKind::Escaped))));
+}
+
 #[cfg(feature = "alloc")]
 fn to_s(i: Vec<u8>) -> String {
   String::from_utf8_lossy(&i).into_owned()
@@ -265,6 +275,20 @@ fn complete_escape_transform_str() {
     )(i)
   }
   assert_eq!(esc3("a␛0bc␛n"), Ok(("", String::from("a\0bc\n"))));
+}
+
+#[test]
+#[cfg(feature = "alloc")]
+fn test_escaped_transform_error() {
+  fn esc_trans(s: &str) -> IResult<&str, String, (&str, ErrorKind)> {
+    use crate::character::digit1;
+    escaped_transform(digit1, '\\', "n")(s)
+  }
+
+  assert_eq!(
+    esc_trans("abcd"),
+    Err(Err::Error(("abcd", ErrorKind::EscapedTransform)))
+  );
 }
 
 #[test]
