@@ -10,7 +10,9 @@ use winnow::{
   sequence::{delimited, separated_pair, terminated},
 };
 
-pub fn categories(i: &[u8]) -> IResult<&[u8], HashMap<&str, HashMap<&str, &str>>> {
+pub type Input<'i> = &'i [u8];
+
+pub fn categories(i: Input<'_>) -> IResult<Input<'_>, HashMap<&str, HashMap<&str, &str>>> {
   many0(separated_pair(
     category,
     opt(multispace),
@@ -20,27 +22,13 @@ pub fn categories(i: &[u8]) -> IResult<&[u8], HashMap<&str, HashMap<&str, &str>>
   .parse_next(i)
 }
 
-fn category(i: &[u8]) -> IResult<&[u8], &str> {
+fn category(i: Input<'_>) -> IResult<Input<'_>, &str> {
   delimited('[', take_while(|c| c != b']'), ']')
     .map_res(str::from_utf8)
     .parse_next(i)
 }
 
-#[cfg(test)]
-fn category_and_keys(i: &[u8]) -> IResult<&[u8], (&str, HashMap<&str, &str>)> {
-  let (i, category) = terminated(category, opt(multispace))(i)?;
-  let (i, keys) = keys_and_values(i)?;
-  Ok((i, (category, keys)))
-}
-
-#[cfg(test)]
-fn keys_and_values(i: &[u8]) -> IResult<&[u8], HashMap<&str, &str>> {
-  many0(terminated(key_value, opt(multispace)))
-    .map(|vec| vec.into_iter().collect())
-    .parse_next(i)
-}
-
-fn key_value(i: &[u8]) -> IResult<&[u8], (&str, &str)> {
+pub fn key_value(i: Input<'_>) -> IResult<Input<'_>, (&str, &str)> {
   let (i, key) = alphanumeric.map_res(str::from_utf8).parse_next(i)?;
   let (i, _) = (opt(space), '=', opt(space)).parse_next(i)?;
   let (i, val) = take_while(|c| c != b'\n' && c != b';')
@@ -119,54 +107,6 @@ key = value2"[..];
   }
 
   assert_eq!(res, Ok((ini_without_key_value, ("parameter", "value"))));
-}
-
-#[test]
-fn parse_multiple_keys_and_values_test() {
-  let ini_file = &b"parameter=value;abc
-
-key = value2
-
-[category]"[..];
-
-  let ini_without_key_value = &b"[category]"[..];
-
-  let res = keys_and_values(ini_file);
-  println!("{:?}", res);
-  match res {
-    Ok((i, ref o)) => println!("i: {:?} | o: {:?}", str::from_utf8(i), o),
-    _ => println!("error"),
-  }
-
-  let mut expected: HashMap<&str, &str> = HashMap::new();
-  expected.insert("parameter", "value");
-  expected.insert("key", "value2");
-  assert_eq!(res, Ok((ini_without_key_value, expected)));
-}
-
-#[test]
-fn parse_category_then_multiple_keys_and_values_test() {
-  //FIXME: there can be an empty line or a comment line after a category
-  let ini_file = &b"[abcd]
-parameter=value;abc
-
-key = value2
-
-[category]"[..];
-
-  let ini_after_parser = &b"[category]"[..];
-
-  let res = category_and_keys(ini_file);
-  println!("{:?}", res);
-  match res {
-    Ok((i, ref o)) => println!("i: {:?} | o: {:?}", str::from_utf8(i), o),
-    _ => println!("error"),
-  }
-
-  let mut expected_h: HashMap<&str, &str> = HashMap::new();
-  expected_h.insert("parameter", "value");
-  expected_h.insert("key", "value2");
-  assert_eq!(res, Ok((ini_after_parser, ("abcd", expected_h))));
 }
 
 #[test]

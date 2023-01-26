@@ -99,6 +99,7 @@ required-features = ["alloc"]
 
 [[bench]]
 name = "arithmetic"
+path = "examples/arithmetic/bench.rs"
 harness = false
 
 [[bench]]
@@ -111,12 +112,10 @@ harness = false
 
 [[bench]]
 name = "ini"
-harness = false
-
-[[bench]]
-name = "ini_str"
+path = "examples/ini/bench.rs"
 harness = false
 
 [[bench]]
 name = "json"
+path = "examples/json/bench.rs"
 harness = false
