@@ -73,6 +73,10 @@ test = true
 required-features = ["alloc"]
 
 [[example]]
+name = "http"
+required-features = ["alloc"]
+
+[[example]]
 name = "ini"
 test = true
 required-features = ["alloc"]
@@ -108,6 +112,7 @@ harness = false
 
 [[bench]]
 name = "http"
+path = "examples/http/bench.rs"
 harness = false
 
 [[bench]]
