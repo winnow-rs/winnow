@@ -5,8 +5,8 @@ use criterion::Criterion;
 use winnow::{
   branch::alt,
   bytes::{any, none_of, one_of, tag, take},
-  character::{f64, multispace0, recognize_float},
-  error::{ErrorKind, ParseError},
+  character::{f64, multispace0},
+  error::ParseError,
   multi::{fold_many0, separated_list0},
   sequence::{delimited, preceded, separated_pair},
   IResult, Parser,
@@ -148,75 +148,5 @@ fn json_bench(c: &mut Criterion) {
   });
 }
 
-fn recognize_float_bytes(c: &mut Criterion) {
-  println!(
-    "recognize_float_bytes result: {:?}",
-    recognize_float::<_, (_, ErrorKind), false>(&b"-1.234E-12"[..])
-  );
-  c.bench_function("recognize float bytes", |b| {
-    b.iter(|| recognize_float::<_, (_, ErrorKind), false>(&b"-1.234E-12"[..]));
-  });
-}
-
-fn recognize_float_str(c: &mut Criterion) {
-  println!(
-    "recognize_float_str result: {:?}",
-    recognize_float::<_, (_, ErrorKind), false>("-1.234E-12")
-  );
-  c.bench_function("recognize float str", |b| {
-    b.iter(|| recognize_float::<_, (_, ErrorKind), false>("-1.234E-12"));
-  });
-}
-
-fn float_bytes(c: &mut Criterion) {
-  println!(
-    "float_bytes result: {:?}",
-    f64::<_, (_, ErrorKind), false>(&b"-1.234E-12"[..])
-  );
-  c.bench_function("float bytes", |b| {
-    b.iter(|| f64::<_, (_, ErrorKind), false>(&b"-1.234E-12"[..]));
-  });
-}
-
-fn float_str(c: &mut Criterion) {
-  println!(
-    "float_str result: {:?}",
-    f64::<_, (_, ErrorKind), false>("-1.234E-12")
-  );
-  c.bench_function("float str", |b| {
-    b.iter(|| f64::<_, (_, ErrorKind), false>("-1.234E-12"));
-  });
-}
-
-use winnow::input::ParseTo;
-use winnow::Err;
-fn std_float(input: &[u8]) -> IResult<&[u8], f64, (&[u8], ErrorKind)> {
-  match recognize_float(input) {
-    Err(e) => Err(e),
-    Ok((i, s)) => match s.parse_to() {
-      Some(n) => Ok((i, n)),
-      None => Err(Err::Error((i, ErrorKind::Float))),
-    },
-  }
-}
-
-fn std_float_bytes(c: &mut Criterion) {
-  println!(
-    "std_float_bytes result: {:?}",
-    std_float(&b"-1.234E-12"[..])
-  );
-  c.bench_function("std_float bytes", |b| {
-    b.iter(|| std_float(&b"-1.234E-12"[..]));
-  });
-}
-
-criterion_group!(
-  benches,
-  json_bench,
-  recognize_float_bytes,
-  recognize_float_str,
-  float_bytes,
-  std_float_bytes,
-  float_str
-);
+criterion_group!(benches, json_bench,);
 criterion_main!(benches);
