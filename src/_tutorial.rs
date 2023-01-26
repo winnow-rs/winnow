@@ -126,8 +126,7 @@
 //!   // if both succeed
 //!   let http_version = preceded("HTTP/", version);
 //!
-//!   // tuples takes as argument a tuple of parsers and will return
-//!   // a tuple of their results
+//!   // A tuple of parsers will evaluate each parser sequentally and return a tuple of the results
 //!   let (input, (method, _, url, _, version, _)) =
 //!     (method, &space, url, &space, http_version, line_ending).parse(i)?;
 //!
