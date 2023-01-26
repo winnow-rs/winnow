@@ -1,5 +1,3 @@
-#![cfg(feature = "alloc")]
-
 use winnow::prelude::*;
 use winnow::{
   bytes::take_while,
@@ -49,6 +47,8 @@ fn categories(i: &[u8]) -> IResult<&[u8], HashMap<&str, HashMap<&str, &str>>> {
   .map(|vec: Vec<_>| vec.into_iter().collect())
   .parse_next(i)
 }
+
+fn main() {}
 
 #[test]
 fn parse_category_test() {

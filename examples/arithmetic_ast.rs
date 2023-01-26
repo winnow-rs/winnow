@@ -1,5 +1,3 @@
-#![cfg(feature = "alloc")]
-
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 
@@ -119,6 +117,8 @@ fn expr(i: &str) -> IResult<&str, Expr> {
 
   Ok((i, fold_exprs(initial, remainder)))
 }
+
+fn main() {}
 
 #[test]
 fn factor_test() {

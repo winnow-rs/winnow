@@ -29,6 +29,8 @@ fn hex_color(input: &str) -> IResult<&str, Color> {
   Ok((input, Color { red, green, blue }))
 }
 
+fn main() {}
+
 #[test]
 fn parse_color() {
   assert_eq!(

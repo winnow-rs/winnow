@@ -62,6 +62,8 @@ fn expr(i: &str) -> IResult<&str, i64> {
   )(i)
 }
 
+fn main() {}
+
 #[test]
 fn factor_test() {
   assert_eq!(factor("3"), Ok(("", 3)));

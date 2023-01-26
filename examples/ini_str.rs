@@ -1,5 +1,3 @@
-#![cfg(feature = "alloc")]
-
 use winnow::prelude::*;
 use winnow::{
   bytes::{take_till, take_while, take_while1},
@@ -67,6 +65,8 @@ fn categories(input: &str) -> IResult<&str, HashMap<&str, HashMap<&str, &str>>> 
     Err(e) => Err(e),
   }
 }
+
+fn main() {}
 
 #[test]
 fn parse_category_test() {

@@ -55,7 +55,30 @@ lto = true
 codegen-units = 1
 
 [[example]]
+name = "arithmetic"
+test = true
+
+[[example]]
+name = "arithmetic_ast"
+test = true
+required-features = ["alloc"]
+
+[[example]]
+name = "css"
+test = true
+
+[[example]]
 name = "custom_error"
+test = true
+required-features = ["alloc"]
+
+[[example]]
+name = "ini"
+test = true
+required-features = ["alloc"]
+
+[[example]]
+name = "ini_str"
 test = true
 required-features = ["alloc"]
 
