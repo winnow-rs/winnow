@@ -55,55 +55,6 @@ debug = true
 lto = true
 codegen-units = 1
 
-[[test]]
-name = "arithmetic"
-
-[[test]]
-name = "arithmetic_ast"
-required-features = ["alloc"]
-
-[[test]]
-name = "css"
-
-[[test]]
-name = "custom_errors"
-
-[[test]]
-name = "float"
-
-[[test]]
-name = "ini"
-required-features = ["alloc"]
-
-[[test]]
-name = "ini_str"
-required-features = ["alloc"]
-
-[[test]]
-name = "issues"
-required-features = ["alloc"]
-
-[[test]]
-name = "json"
-
-[[test]]
-name = "mp4"
-required-features = ["alloc"]
-
-[[test]]
-name = "multiline"
-required-features = ["alloc"]
-
-[[test]]
-name = "overflow"
-
-[[test]]
-name = "reborrow_fold"
-
-[[test]]
-name = "fnmut"
-required-features = ["alloc"]
-
 [[example]]
 name = "custom_error"
 required-features = ["alloc"]

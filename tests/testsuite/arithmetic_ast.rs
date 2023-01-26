@@ -1,3 +1,5 @@
+#![cfg(feature = "alloc")]
+
 use std::fmt;
 use std::fmt::{Debug, Display, Formatter};
 

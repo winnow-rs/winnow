@@ -1,3 +1,4 @@
+#![cfg(feature = "alloc")]
 #![allow(dead_code)]
 
 use winnow::input::Streaming;

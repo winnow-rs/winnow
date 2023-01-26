@@ -1,3 +1,5 @@
+#![cfg(feature = "alloc")]
+
 use winnow::prelude::*;
 use winnow::{
   bytes::take_while,

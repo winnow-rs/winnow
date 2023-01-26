@@ -1,4 +1,4 @@
-//#![feature(trace_macros)]
+#![cfg(feature = "alloc")]
 #![allow(dead_code)]
 #![allow(clippy::redundant_closure)]
 
