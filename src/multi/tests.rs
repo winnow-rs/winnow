@@ -367,7 +367,7 @@ fn length_count_test() {
     digit
       .map_res(str::from_utf8)
       .map_res(FromStr::from_str)
-      .parse(i)
+      .parse_next(i)
   }
 
   fn cnt(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, Vec<&[u8]>> {
@@ -408,7 +408,7 @@ fn length_data_test() {
     digit
       .map_res(str::from_utf8)
       .map_res(FromStr::from_str)
-      .parse(i)
+      .parse_next(i)
   }
 
   fn take(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {

@@ -38,8 +38,8 @@ where
   G: Parser<I, O2, E>,
 {
   move |input: I| {
-    let (input, o1) = first.parse(input)?;
-    second.parse(input).map(|(i, o2)| (i, (o1, o2)))
+    let (input, o1) = first.parse_next(input)?;
+    second.parse_next(input).map(|(i, o2)| (i, (o1, o2)))
   }
 }
 
@@ -72,8 +72,8 @@ where
   G: Parser<I, O2, E>,
 {
   move |input: I| {
-    let (input, _) = first.parse(input)?;
-    second.parse(input)
+    let (input, _) = first.parse_next(input)?;
+    second.parse_next(input)
   }
 }
 
@@ -106,8 +106,8 @@ where
   G: Parser<I, O2, E>,
 {
   move |input: I| {
-    let (input, o1) = first.parse(input)?;
-    second.parse(input).map(|(i, _)| (i, o1))
+    let (input, o1) = first.parse_next(input)?;
+    second.parse_next(input).map(|(i, _)| (i, o1))
   }
 }
 
@@ -144,9 +144,9 @@ where
   H: Parser<I, O3, E>,
 {
   move |input: I| {
-    let (input, o1) = first.parse(input)?;
-    let (input, _) = sep.parse(input)?;
-    second.parse(input).map(|(i, o2)| (i, (o1, o2)))
+    let (input, o1) = first.parse_next(input)?;
+    let (input, _) = sep.parse_next(input)?;
+    second.parse_next(input).map(|(i, o2)| (i, (o1, o2)))
   }
 }
 
@@ -183,9 +183,9 @@ where
   H: Parser<I, O3, E>,
 {
   move |input: I| {
-    let (input, _) = first.parse(input)?;
-    let (input, o2) = second.parse(input)?;
-    third.parse(input).map(|(i, _)| (i, o2))
+    let (input, _) = first.parse_next(input)?;
+    let (input, o2) = second.parse_next(input)?;
+    third.parse_next(input).map(|(i, _)| (i, o2))
   }
 }
 
@@ -203,7 +203,7 @@ impl<Input, Output, Error: ParseError<Input>, F: Parser<Input, Output, Error>>
   Tuple<Input, (Output,), Error> for (F,)
 {
   fn parse(&mut self, input: Input) -> IResult<Input, (Output,), Error> {
-    self.0.parse(input).map(|(i, o)| (i, (o,)))
+    self.0.parse_next(input).map(|(i, o)| (i, (o,)))
   }
 }
 
@@ -239,17 +239,17 @@ macro_rules! tuple_trait_impl(
 
 macro_rules! tuple_trait_inner(
   ($it:tt, $self:expr, $input:expr, (), $head:ident $($id:ident)+) => ({
-    let (i, o) = $self.$it.parse($input.clone())?;
+    let (i, o) = $self.$it.parse_next($input.clone())?;
 
     succ!($it, tuple_trait_inner!($self, i, ( o ), $($id)+))
   });
   ($it:tt, $self:expr, $input:expr, ($($parsed:tt)*), $head:ident $($id:ident)+) => ({
-    let (i, o) = $self.$it.parse($input.clone())?;
+    let (i, o) = $self.$it.parse_next($input.clone())?;
 
     succ!($it, tuple_trait_inner!($self, i, ($($parsed)* , o), $($id)+))
   });
   ($it:tt, $self:expr, $input:expr, ($($parsed:tt)*), $head:ident) => ({
-    let (i, o) = $self.$it.parse($input.clone())?;
+    let (i, o) = $self.$it.parse_next($input.clone())?;
 
     Ok((i, ($($parsed)* , o)))
   });

@@ -219,7 +219,7 @@ impl<'p, P> ByRef<'p, P> {
 
 impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for ByRef<'p, P> {
   fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
-    self.p.parse(i)
+    self.p.parse_next(i)
   }
 }
 
@@ -236,10 +236,10 @@ impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for ByRef<'p, P> {
 /// let mut parser = map(digit1, |s: &str| s.len());
 ///
 /// // the parser will count how many characters were returned by digit1
-/// assert_eq!(parser.parse("123456"), Ok(("", 6)));
+/// assert_eq!(parser.parse_next("123456"), Ok(("", 6)));
 ///
 /// // this will fail if digit1 fails
-/// assert_eq!(parser.parse("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
+/// assert_eq!(parser.parse_next("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::map")]
@@ -249,7 +249,7 @@ where
   G: FnMut(O1) -> O2,
 {
   move |input: I| {
-    let (input, o1) = parser.parse(input)?;
+    let (input, o1) = parser.parse_next(input)?;
     Ok((input, f(o1)))
   }
 }
@@ -274,7 +274,7 @@ impl<F, G, O1> Map<F, G, O1> {
 
 impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> O2> Parser<I, O2, E> for Map<F, G, O1> {
   fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
-    match self.f.parse(i) {
+    match self.f.parse_next(i) {
       Err(e) => Err(e),
       Ok((i, o)) => Ok((i, (self.g)(o))),
     }
@@ -314,7 +314,7 @@ where
 {
   move |input: I| {
     let i = input.clone();
-    let (input, o1) = parser.parse(input)?;
+    let (input, o1) = parser.parse_next(input)?;
     match f(o1) {
       Ok(o2) => Ok((input, o2)),
       Err(e) => Err(Err::Error(E::from_external_error(i, ErrorKind::MapRes, e))),
@@ -349,7 +349,7 @@ where
 {
   fn parse_next(&mut self, input: I) -> IResult<I, O2, E> {
     let i = input.clone();
-    let (input, o1) = self.f.parse(input)?;
+    let (input, o1) = self.f.parse_next(input)?;
     match (self.g)(o1) {
       Ok(o2) => Ok((input, o2)),
       Err(e) => Err(Err::Error(E::from_external_error(i, ErrorKind::MapRes, e))),
@@ -390,7 +390,7 @@ where
 {
   move |input: I| {
     let i = input.clone();
-    let (input, o1) = parser.parse(input)?;
+    let (input, o1) = parser.parse_next(input)?;
     match f(o1) {
       Some(o2) => Ok((input, o2)),
       None => Err(Err::Error(E::from_error_kind(i, ErrorKind::MapOpt))),
@@ -425,7 +425,7 @@ where
 {
   fn parse_next(&mut self, input: I) -> IResult<I, O2, E> {
     let i = input.clone();
-    let (input, o1) = self.f.parse(input)?;
+    let (input, o1) = self.f.parse_next(input)?;
     match (self.g)(o1) {
       Some(o2) => Ok((input, o2)),
       None => Err(Err::Error(E::from_error_kind(i, ErrorKind::MapOpt))),
@@ -461,8 +461,8 @@ where
   G: Parser<O1, O2, E>,
 {
   move |input: I| {
-    let (input, o1) = parser.parse(input)?;
-    let (_, o2) = applied_parser.parse(o1)?;
+    let (input, o1) = parser.parse_next(input)?;
+    let (_, o2) = applied_parser.parse_next(o1)?;
     Ok((input, o2))
   }
 }
@@ -489,8 +489,8 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, E>
   for AndThen<F, G, O1>
 {
   fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
-    let (i, o1) = self.f.parse(i)?;
-    let (_, o2) = self.g.parse(o1)?;
+    let (i, o1) = self.f.parse_next(i)?;
+    let (_, o2) = self.g.parse_next(o1)?;
     Ok((i, o2))
   }
 }
@@ -523,8 +523,8 @@ where
   H: Parser<I, O2, E>,
 {
   move |input: I| {
-    let (input, o1) = parser.parse(input)?;
-    applied_parser(o1).parse(input)
+    let (input, o1) = parser.parse_next(input)?;
+    applied_parser(o1).parse_next(input)
   }
 }
 
@@ -550,8 +550,8 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> H, H: Parser<I, O2, E>> Par
   for FlatMap<F, G, O1>
 {
   fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
-    let (i, o1) = self.f.parse(i)?;
-    (self.g)(o1).parse(i)
+    let (i, o1) = self.f.parse_next(i)?;
+    (self.g)(o1).parse_next(i)
   }
 }
 
@@ -579,7 +579,7 @@ where
 {
   move |input: I| {
     let i = input.clone();
-    match f.parse(input) {
+    match f.parse_next(input) {
       Ok((i, o)) => Ok((i, Some(o))),
       Err(Err::Error(_)) => Ok((i, None)),
       Err(e) => Err(e),
@@ -602,8 +602,8 @@ impl<F, G> And<F, G> {
 
 impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<I, O2, E>> Parser<I, (O1, O2), E> for And<F, G> {
   fn parse_next(&mut self, i: I) -> IResult<I, (O1, O2), E> {
-    let (i, o1) = self.f.parse(i)?;
-    let (i, o2) = self.g.parse(i)?;
+    let (i, o1) = self.f.parse_next(i)?;
+    let (i, o2) = self.g.parse_next(i)?;
     Ok((i, (o1, o2)))
   }
 }
@@ -625,8 +625,8 @@ impl<I: Clone, O, E: crate::error::ParseError<I>, F: Parser<I, O, E>, G: Parser<
   Parser<I, O, E> for Or<F, G>
 {
   fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
-    match self.f.parse(i.clone()) {
-      Err(Err::Error(e1)) => match self.g.parse(i) {
+    match self.f.parse_next(i.clone()) {
+      Err(Err::Error(e1)) => match self.g.parse_next(i) {
         Err(Err::Error(e2)) => Err(Err::Error(e1.or(e2))),
         res => res,
       },
@@ -662,7 +662,7 @@ where
 {
   move |input: I| {
     if b {
-      match f.parse(input) {
+      match f.parse_next(input) {
         Ok((i, o)) => Ok((i, Some(o))),
         Err(e) => Err(e),
       }
@@ -692,7 +692,7 @@ where
 {
   move |input: I| {
     let i = input.clone();
-    match f.parse(input) {
+    match f.parse_next(input) {
       Ok((_, o)) => Ok((i, o)),
       Err(e) => Err(e),
     }
@@ -752,7 +752,7 @@ where
 {
   move |input: I| {
     let i = input.clone();
-    match f.parse(input) {
+    match f.parse_next(input) {
       Err(Err::Incomplete(_)) => Err(Err::Error(E::from_error_kind(i, ErrorKind::Complete))),
       rest => rest,
     }
@@ -779,7 +779,7 @@ where
 {
   fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
     let i = input.clone();
-    match (self.f).parse(input) {
+    match (self.f).parse_next(input) {
       Err(Err::Incomplete(_)) => Err(Err::Error(E::from_error_kind(i, ErrorKind::Complete))),
       rest => rest,
     }
@@ -807,7 +807,7 @@ where
   F: Parser<I, O, E>,
 {
   move |input: I| {
-    let (input, res) = f.parse(input)?;
+    let (input, res) = f.parse_next(input)?;
     if input.input_len() == 0 {
       Ok((input, res))
     } else {
@@ -849,7 +849,7 @@ where
 {
   move |input: I| {
     let i = input.clone();
-    let (input, o) = first.parse(input)?;
+    let (input, o) = first.parse_next(input)?;
 
     if second(o.borrow()) {
       Ok((input, o))
@@ -888,7 +888,7 @@ where
 {
   fn parse_next(&mut self, input: I) -> IResult<I, O1, E> {
     let i = input.clone();
-    let (input, o) = (self.first).parse(input)?;
+    let (input, o) = (self.first).parse_next(input)?;
 
     if (self.second)(o.borrow()) {
       Ok((input, o))
@@ -922,7 +922,7 @@ pub fn value<I, O1: Clone, O2, E: ParseError<I>, F>(
 where
   F: Parser<I, O2, E>,
 {
-  move |input: I| parser.parse(input).map(|(i, _)| (i, val.clone()))
+  move |input: I| parser.parse_next(input).map(|(i, _)| (i, val.clone()))
 }
 
 /// Implementation of [`Parser::value`]
@@ -948,7 +948,7 @@ impl<I, O1, O2: Clone, E: ParseError<I>, F: Parser<I, O1, E>> Parser<I, O2, E>
 {
   fn parse_next(&mut self, input: I) -> IResult<I, O2, E> {
     (self.parser)
-      .parse(input)
+      .parse_next(input)
       .map(|(i, _)| (i, self.val.clone()))
   }
 }
@@ -973,7 +973,7 @@ where
 {
   move |input: I| {
     let i = input.clone();
-    match parser.parse(input) {
+    match parser.parse_next(input) {
       Ok(_) => Err(Err::Error(E::from_error_kind(i, ErrorKind::Not))),
       Err(Err::Error(_)) => Ok((i, ())),
       Err(e) => Err(e),
@@ -1011,7 +1011,7 @@ where
 {
   move |input: I| {
     let i = input.clone();
-    match parser.parse(i) {
+    match parser.parse_next(i) {
       Ok((i, _)) => {
         let index = input.offset(&i);
         Ok((i, input.slice(..index))).into_output()
@@ -1048,7 +1048,7 @@ where
 {
   fn parse_next(&mut self, input: I) -> IResult<I, <I as IntoOutput>::Output, E> {
     let i = input.clone();
-    match (self.parser).parse(i) {
+    match (self.parser).parse_next(i) {
       Ok((i, _)) => {
         let index = input.offset(&i);
         Ok((i, input.slice(..index))).into_output()
@@ -1094,8 +1094,8 @@ where
 /// let mut recognize_parser = recognize(inner_parser);
 /// let mut consumed_parser = consumed(inner_parser).map(|(consumed, output)| consumed);
 ///
-/// assert_eq!(recognize_parser("1234"), consumed_parser.parse("1234"));
-/// assert_eq!(recognize_parser("abcd"), consumed_parser.parse("abcd"));
+/// assert_eq!(recognize_parser("1234"), consumed_parser.parse_next("1234"));
+/// assert_eq!(recognize_parser("abcd"), consumed_parser.parse_next("abcd"));
 /// # }
 /// ```
 #[deprecated(
@@ -1113,7 +1113,7 @@ where
 {
   move |input: I| {
     let i = input.clone();
-    match parser.parse(i) {
+    match parser.parse_next(i) {
       Ok((remaining, result)) => {
         let index = input.offset(&remaining);
         let consumed = input.slice(..index).into_output();
@@ -1151,7 +1151,7 @@ where
 {
   fn parse_next(&mut self, input: I) -> IResult<I, (O, <I as IntoOutput>::Output), E> {
     let i = input.clone();
-    match (self.parser).parse(i) {
+    match (self.parser).parse_next(i) {
       Ok((remaining, result)) => {
         let index = input.offset(&remaining);
         let consumed = input.slice(..index).into_output();
@@ -1186,7 +1186,7 @@ where
 {
   fn parse_next(&mut self, input: I) -> IResult<I, Range<usize>, E> {
     let start = input.location();
-    self.parser.parse(input).map(move |(remaining, _)| {
+    self.parser.parse_next(input).map(move |(remaining, _)| {
       let end = remaining.location();
       (remaining, (start..end))
     })
@@ -1217,10 +1217,13 @@ where
 {
   fn parse_next(&mut self, input: I) -> IResult<I, (O, Range<usize>), E> {
     let start = input.location();
-    self.parser.parse(input).map(move |(remaining, output)| {
-      let end = remaining.location();
-      (remaining, (output, (start..end)))
-    })
+    self
+      .parser
+      .parse_next(input)
+      .map(move |(remaining, output)| {
+        let end = remaining.location();
+        (remaining, (output, (start..end)))
+      })
   }
 }
 
@@ -1281,7 +1284,7 @@ pub fn cut<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult
 where
   F: Parser<I, O, E>,
 {
-  move |input: I| match parser.parse(input) {
+  move |input: I| match parser.parse_next(input) {
     Err(Err::Error(e)) => Err(Err::Failure(e)),
     rest => rest,
   }
@@ -1324,7 +1327,7 @@ where
   F: Parser<I, O1, E1>,
 {
   //map(parser, Into::into)
-  move |input: I| match parser.parse(input) {
+  move |input: I| match parser.parse_next(input) {
     Ok((i, o)) => Ok((i, o.into())),
     Err(Err::Error(e)) => Err(Err::Error(e.into())),
     Err(Err::Failure(e)) => Err(Err::Failure(e.into())),
@@ -1354,7 +1357,7 @@ impl<I: Clone, O1, O2: From<O1>, E, F: Parser<I, O1, E>> Parser<I, O2, E>
   for OutputInto<F, O1, O2>
 {
   fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
-    match self.f.parse(i) {
+    match self.f.parse_next(i) {
       Ok((i, o)) => Ok((i, o.into())),
       Err(err) => Err(err),
     }
@@ -1383,7 +1386,7 @@ impl<I: Clone, O, E1, E2: crate::error::ParseError<I> + From<E1>, F: Parser<I, O
   Parser<I, O, E2> for ErrInto<F, E1, E2>
 {
   fn parse_next(&mut self, i: I) -> IResult<I, O, E2> {
-    match self.f.parse(i) {
+    match self.f.parse_next(i) {
       Ok(ok) => Ok(ok),
       Err(Err::Error(e)) => Err(Err::Error(e.into())),
       Err(Err::Failure(e)) => Err(Err::Failure(e.into())),
@@ -1459,7 +1462,7 @@ where
     if let State::Running = self.state.take().unwrap() {
       let input = self.input.clone();
 
-      match self.iterator.parse(input) {
+      match self.iterator.parse_next(input) {
         Ok((i, o)) => {
           self.input = i;
           self.state = Some(State::Running);

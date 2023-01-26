@@ -453,7 +453,7 @@
 //! use winnow::prelude::*;
 //! # use winnow::bytes::tag;
 //! fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
-//!     tag("abcd").dbg_err("tag").parse(i)
+//!     tag("abcd").dbg_err("tag").parse_next(i)
 //! }
 //!
 //! let a = &b"efghijkl"[..];
@@ -750,7 +750,7 @@ pub fn context<I: Clone, E: ContextError<I, &'static str>, F, O>(
 where
   F: Parser<I, O, E>,
 {
-  move |i: I| match f.parse(i.clone()) {
+  move |i: I| match f.parse_next(i.clone()) {
     Ok(o) => Ok(o),
     Err(Err::Incomplete(i)) => Err(Err::Incomplete(i)),
     Err(Err::Error(e)) => Err(Err::Error(E::add_context(i, context, e))),
@@ -784,7 +784,7 @@ where
   F: Parser<I, O, E>,
 {
   fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
-    match (self.f).parse(i.clone()) {
+    match (self.f).parse_next(i.clone()) {
       Ok(o) => Ok(o),
       Err(Err::Incomplete(i)) => Err(Err::Incomplete(i)),
       Err(Err::Error(e)) => Err(Err::Error(E::add_context(i, self.context.clone(), e))),
@@ -1089,7 +1089,7 @@ where
   fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
     use crate::input::HexDisplay;
     let i = input.clone();
-    match self.f.parse(i) {
+    match self.f.parse_next(i) {
       Err(e) => {
         let input = input.as_bytes();
         eprintln!("{}: Error({:?}) at:\n{}", self.context, e, input.to_hex(8));

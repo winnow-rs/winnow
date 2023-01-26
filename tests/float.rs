@@ -15,7 +15,7 @@ fn unsigned_float(i: &[u8]) -> IResult<&[u8], f32> {
   ))
   .recognize();
   let float_str = float_bytes.map_res(str::from_utf8);
-  float_str.map_res(FromStr::from_str).parse(i)
+  float_str.map_res(FromStr::from_str).parse_next(i)
 }
 
 fn float(i: &[u8]) -> IResult<&[u8], f32> {
@@ -26,7 +26,7 @@ fn float(i: &[u8]) -> IResult<&[u8], f32> {
         .unwrap_or(1f32)
         * value
     })
-    .parse(i)
+    .parse_next(i)
 }
 
 #[test]

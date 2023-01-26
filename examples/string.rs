@@ -54,7 +54,7 @@ where
   // the function returns None, map_opt returns an error. In this case, because
   // not all u32 values are valid unicode code points, we have to fallibly
   // convert to char with from_u32.
-  parse_u32.map_opt(std::char::from_u32).parse(input)
+  parse_u32.map_opt(std::char::from_u32).parse_next(input)
 }
 
 /// Parse an escaped character: \n, \t, \r, \u{00AC}, etc.
@@ -102,7 +102,9 @@ fn parse_literal<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str,
   // the parser. The verification function accepts out output only if it
   // returns true. In this case, we want to ensure that the output of take_till1
   // is non-empty.
-  not_quote_slash.verify(|s: &str| !s.is_empty()).parse(input)
+  not_quote_slash
+    .verify(|s: &str| !s.is_empty())
+    .parse_next(input)
 }
 
 /// A string fragment contains a fragment of a string being parsed: either

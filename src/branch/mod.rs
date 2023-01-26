@@ -132,7 +132,7 @@ macro_rules! alt_trait_impl(
     > Alt<Input, Output, Error> for ( $($id),+ ) {
 
       fn choice(&mut self, input: Input) -> IResult<Input, Output, Error> {
-        match self.0.parse(input.clone()) {
+        match self.0.parse_next(input.clone()) {
           Err(Err::Error(e)) => alt_trait_inner!(1, self, input, e, $($id)+),
           res => res,
         }
@@ -143,7 +143,7 @@ macro_rules! alt_trait_impl(
 
 macro_rules! alt_trait_inner(
   ($it:tt, $self:expr, $input:expr, $err:expr, $head:ident $($id:ident)+) => (
-    match $self.$it.parse($input.clone()) {
+    match $self.$it.parse_next($input.clone()) {
       Err(Err::Error(e)) => {
         let err = $err.or(e);
         succ!($it, alt_trait_inner!($self, $input, err, $($id)+))
@@ -163,7 +163,7 @@ impl<Input, Output, Error: ParseError<Input>, A: Parser<Input, Output, Error>>
   Alt<Input, Output, Error> for (A,)
 {
   fn choice(&mut self, input: Input) -> IResult<Input, Output, Error> {
-    self.0.parse(input)
+    self.0.parse_next(input)
   }
 }
 
@@ -222,7 +222,7 @@ macro_rules! permutation_trait_impl(
 macro_rules! permutation_trait_inner(
   ($it:tt, $self:expr, $input:ident, $res:expr, $err:expr, $head:ident $($id:ident)*) => (
     if $res.$it.is_none() {
-      match $self.$it.parse($input.clone()) {
+      match $self.$it.parse_next($input.clone()) {
         Ok((i, o)) => {
           $input = i;
           $res.$it = Some(o);

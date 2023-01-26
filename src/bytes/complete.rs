@@ -792,7 +792,7 @@ where
   while i.input_len() > 0 {
     let current_len = i.input_len();
 
-    match normal.parse(i.clone()) {
+    match normal.parse_next(i.clone()) {
       Ok((i2, _)) => {
         // return if we consumed everything or if the normal parser
         // does not consume anything
@@ -815,7 +815,7 @@ where
               ErrorKind::Escaped,
             )));
           } else {
-            match escapable.parse(i.slice(next..)) {
+            match escapable.parse_next(i.slice(next..)) {
               Ok((i2, _)) => {
                 if i2.input_len() == 0 {
                   return Ok((input.slice(input.input_len()..), input)).into_output();
@@ -941,7 +941,7 @@ where
   while index < i.input_len() {
     let current_len = i.input_len();
     let remainder = i.slice(index..);
-    match normal.parse(remainder.clone()) {
+    match normal.parse_next(remainder.clone()) {
       Ok((i2, o)) => {
         o.extend_into(&mut res);
         if i2.input_len() == 0 {
@@ -964,7 +964,7 @@ where
               ErrorKind::EscapedTransform,
             )));
           } else {
-            match transform.parse(i.slice(next..)) {
+            match transform.parse_next(i.slice(next..)) {
               Ok((i2, o)) => {
                 o.extend_into(&mut res);
                 if i2.input_len() == 0 {

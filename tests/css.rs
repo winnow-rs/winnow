@@ -19,12 +19,12 @@ fn is_hex_digit(c: char) -> bool {
 fn hex_primary(input: &str) -> IResult<&str, u8> {
   take_while_m_n(2, 2, is_hex_digit)
     .map_res(from_hex)
-    .parse(input)
+    .parse_next(input)
 }
 
 fn hex_color(input: &str) -> IResult<&str, Color> {
   let (input, _) = tag("#")(input)?;
-  let (input, (red, green, blue)) = (hex_primary, hex_primary, hex_primary).parse(input)?;
+  let (input, (red, green, blue)) = (hex_primary, hex_primary, hex_primary).parse_next(input)?;
 
   Ok((input, Color { red, green, blue }))
 }

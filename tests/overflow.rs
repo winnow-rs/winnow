@@ -15,7 +15,7 @@ use winnow::{Err, Needed};
 // We request a length that would trigger an overflow if computing consumed + requested
 #[allow(clippy::type_complexity)]
 fn parser02(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (&[u8], &[u8])> {
-  (take(1_usize), take(18446744073709551615_usize)).parse(i)
+  (take(1_usize), take(18446744073709551615_usize)).parse_next(i)
 }
 
 #[test]

@@ -45,7 +45,7 @@ where
   I: Slice<RangeFrom<usize>>,
   P: Parser<(I, usize), O, E1>,
 {
-  move |input: I| match parser.parse((input, 0)) {
+  move |input: I| match parser.parse_next((input, 0)) {
     Ok(((rest, offset), result)) => {
       // If the next byte has been partially read, it will be sliced away as well.
       // The parser functions might already slice away all fully read bytes.
@@ -97,7 +97,7 @@ where
       input.slice((offset / 8)..)
     };
     let i = (input, offset);
-    match parser.parse(inner) {
+    match parser.parse_next(inner) {
       Ok((rest, res)) => Ok(((rest, 0), res)),
       Err(Err::Incomplete(Needed::Unknown)) => Err(Err::Incomplete(Needed::Unknown)),
       Err(Err::Incomplete(Needed::Size(sz))) => Err(match sz.get().checked_mul(8) {

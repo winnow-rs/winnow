@@ -16,15 +16,15 @@ type Input<'i> = &'i [u8];
 fn category(i: Input<'_>) -> IResult<Input<'_>, &str> {
   delimited(one_of('['), take_while(|c| c != b']'), one_of(']'))
     .map_res(str::from_utf8)
-    .parse(i)
+    .parse_next(i)
 }
 
 fn key_value(i: Input<'_>) -> IResult<Input<'_>, (&str, &str)> {
-  let (i, key) = alphanumeric.map_res(str::from_utf8).parse(i)?;
-  let (i, _) = (opt(space), one_of('='), opt(space)).parse(i)?;
+  let (i, key) = alphanumeric.map_res(str::from_utf8).parse_next(i)?;
+  let (i, _) = (opt(space), one_of('='), opt(space)).parse_next(i)?;
   let (i, val) = take_while(|c| c != b'\n' && c != b';')
     .map_res(str::from_utf8)
-    .parse(i)?;
+    .parse_next(i)?;
   let (i, _) = opt((one_of(';'), take_while(|c| c != b'\n')))(i)?;
   Ok((i, (key, val)))
 }
@@ -36,7 +36,7 @@ fn categories(i: Input<'_>) -> IResult<Input<'_>, HashMap<&str, HashMap<&str, &s
     many0(terminated(key_value, opt(multispace))).map(|vec: Vec<_>| vec.into_iter().collect()),
   ))
   .map(|vec: Vec<_>| vec.into_iter().collect())
-  .parse(i)
+  .parse_next(i)
 }
 
 fn bench_ini(c: &mut Criterion) {

@@ -78,7 +78,7 @@ fn boolean<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str, bool,
 }
 
 fn null<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str, (), E> {
-  tag("null").value(()).parse(input)
+  tag("null").value(()).parse_next(input)
 }
 
 /// this parser combines the previous `parse_str` parser, that recognizes the
@@ -97,7 +97,7 @@ fn string<'a, E: ParseError<&'a str> + ContextError<&'a str, &'static str>>(
 ) -> IResult<&'a str, &'a str, E> {
   preceded('\"', cut(terminated(parse_str, '\"')))
     .context("string")
-    .parse(i)
+    .parse_next(i)
 }
 
 /// some combinators, like `separated_list0` or `many0`, will call a parser repeatedly,
@@ -115,7 +115,7 @@ fn array<'a, E: ParseError<&'a str> + ContextError<&'a str, &'static str>>(
     )),
   )
   .context("array")
-  .parse(i)
+  .parse_next(i)
 }
 
 fn key_value<'a, E: ParseError<&'a str> + ContextError<&'a str, &'static str>>(
@@ -140,7 +140,7 @@ fn hash<'a, E: ParseError<&'a str> + ContextError<&'a str, &'static str>>(
     )),
   )
   .context("map")
-  .parse(i)
+  .parse_next(i)
 }
 
 /// here, we apply the space parser before trying to parse a value

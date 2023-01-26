@@ -420,7 +420,7 @@ where
 /// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed, Parser};
 /// # use winnow::character::digit1;
 /// fn parser(input: &str) -> IResult<&str, u32> {
-///   digit1.map_res(str::parse).parse(input)
+///   digit1.map_res(str::parse).parse_next(input)
 /// }
 ///
 /// assert_eq!(parser("416"), Ok(("", 416)));
