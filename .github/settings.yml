@@ -25,6 +25,9 @@ labels:
   - name: "A-combinator"
     description: "Area: combinators"
     color: '#f7e101'
+  - name: "A-input"
+    description: "Area: input / parsing state"
+    color: '#f7e101'
   - name: "A-error"
     description: "Area: error reporting"
     color: '#f7e101'
