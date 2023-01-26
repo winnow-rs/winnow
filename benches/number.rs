@@ -5,12 +5,14 @@ use criterion::Criterion;
 
 use winnow::character::{f64, recognize_float};
 use winnow::error::ErrorKind;
+use winnow::input::ParseTo;
 use winnow::number::be_u64;
 use winnow::prelude::*;
+use winnow::Err;
 
 type Input<'i> = &'i [u8];
 
-fn parser(i: Input<'_>) -> winnow::IResult<Input<'_>, u64> {
+fn parser(i: Input<'_>) -> IResult<Input<'_>, u64> {
   be_u64(i)
 }
 
@@ -63,8 +65,6 @@ fn float_str(c: &mut Criterion) {
   });
 }
 
-use winnow::input::ParseTo;
-use winnow::Err;
 fn std_float(input: &[u8]) -> IResult<&[u8], f64, (&[u8], ErrorKind)> {
   match recognize_float(input) {
     Err(e) => Err(e),
