@@ -25,8 +25,8 @@
 //! ### Wrapper combinators that eat whitespace before and after a parser
 //!
 //! ```rust
+//! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   error::ParseError,
 //!   sequence::delimited,
 //!   character::multispace0,
@@ -61,11 +61,9 @@
 //! ```rust
 //! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   error::ParseError,
 //!   sequence::pair,
 //!   bytes::take_till1,
-//!   character::char,
 //! };
 //!
 //! pub fn peol_comment<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, (), E>
@@ -84,7 +82,6 @@
 //! ```rust
 //! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   error::ParseError,
 //!   bytes::{tag, take_until},
 //! };
@@ -110,7 +107,6 @@
 //! ```rust
 //! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   branch::alt,
 //!   multi::many0_count,
 //!   sequence::pair,
@@ -159,12 +155,11 @@
 //! The parser outputs the string slice of the digits without the leading `0x`/`0X`.
 //!
 //! ```rust
+//! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::char,
 //!   bytes::one_of,
 //!   bytes::tag,
 //! };
@@ -184,11 +179,9 @@
 //! ```rust
 //! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::char,
 //!   bytes::one_of,
 //!   bytes::tag,
 //! };
@@ -208,12 +201,11 @@
 //! #### Octal
 //!
 //! ```rust
+//! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::char,
 //!   bytes::one_of,
 //!   bytes::tag,
 //! };
@@ -231,12 +223,11 @@
 //! #### Binary
 //!
 //! ```rust
+//! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   character::char,
 //!   bytes::one_of,
 //!   bytes::tag,
 //! };
@@ -259,7 +250,6 @@
 //!   IResult,
 //!   multi::{many0, many1},
 //!   sequence::terminated,
-//!   character::char,
 //!   bytes::one_of,
 //! };
 //!
@@ -277,13 +267,12 @@
 //! The following is adapted from [the Python parser by Valentin Lorentz (ProgVal)](https://github.com/ProgVal/rust-python-parser/blob/master/src/numbers.rs).
 //!
 //! ```rust
+//! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   combinator::opt,
 //!   sequence::{preceded, terminated},
-//!   character::char,
 //!   bytes::one_of,
 //! };
 //!
@@ -334,8 +323,9 @@
 //! a common interface to parse from a string.
 //!
 //! ```rust
+//! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult, Finish, error::Error,
+//!   error::Error,
 //!   bytes::{tag, take_while},
 //! };
 //! use std::str::FromStr;
