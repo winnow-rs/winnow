@@ -4,10 +4,11 @@ use std::str;
 use winnow::prelude::*;
 use winnow::{
   branch::alt,
-  bytes::{any, none_of, tag, take, take_while},
+  bytes::{any, none_of, one_of, tag, take, take_while},
   character::f64,
-  combinator::cut,
+  combinator::{cut, rest},
   error::{ContextError, ParseError},
+  input::Streaming,
   multi::{fold_many0, separated_list0},
   sequence::{delimited, preceded, separated_pair, terminated},
 };
@@ -22,7 +23,7 @@ pub enum JsonValue {
   Object(HashMap<String, JsonValue>),
 }
 
-pub type Input<'i> = &'i str;
+pub type Input<'i> = Streaming<&'i str>;
 
 /// The root element of a JSON parser is any value
 ///
@@ -39,7 +40,7 @@ pub type Input<'i> = &'i str;
 pub fn json<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
   input: Input<'i>,
 ) -> IResult<Input<'i>, JsonValue, E> {
-  delimited(ws, json_value, ws)(input)
+  delimited(ws, json_value, ws_or_eof)(input)
 }
 
 /// `alt` is a combinator that tries multiple parsers one by one, until
@@ -88,7 +89,7 @@ fn string<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
   input: Input<'i>,
 ) -> IResult<Input<'i>, String, E> {
   preceded(
-    '\"',
+    one_of('\"'),
     // `cut` transforms an `Err::Error(e)` in `Err::Failure(e)`, signaling to
     // combinators like  `alt` that they should not try other parsers. We were in the
     // right branch (since we found the `"` character) but encountered an error when
@@ -98,7 +99,7 @@ fn string<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
         string.push(c);
         string
       }),
-      '\"',
+      one_of('\"'),
     )),
   )
   // `context` lets you add a static string to errors to provide more information in the
@@ -124,7 +125,7 @@ fn character<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i
           _ => return None,
         })
       }),
-      preceded('u', unicode_escape),
+      preceded(one_of('u'), unicode_escape),
     ))(input)
   } else {
     Ok((input, c))
@@ -138,7 +139,7 @@ fn unicode_escape<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Inp
       .verify(|cp| !(0xD800..0xE000).contains(cp))
       .map(|cp| cp as u32),
     // See https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF for details
-    separated_pair(u16_hex, "\\u", u16_hex)
+    separated_pair(u16_hex, tag("\\u"), u16_hex)
       .verify(|(high, low)| (0xD800..0xDC00).contains(high) && (0xDC00..0xE000).contains(low))
       .map(|(high, low)| {
         let high_ten = (high as u32) - 0xD800;
@@ -167,10 +168,10 @@ fn array<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
   input: Input<'i>,
 ) -> IResult<Input<'i>, Vec<JsonValue>, E> {
   preceded(
-    ('[', ws),
+    (one_of('['), ws),
     cut(terminated(
-      separated_list0((ws, ',', ws), json_value),
-      (ws, ']'),
+      separated_list0((ws, one_of(','), ws), json_value),
+      (ws, one_of(']')),
     )),
   )
   .context("array")
@@ -181,11 +182,11 @@ fn object<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
   input: Input<'i>,
 ) -> IResult<Input<'i>, HashMap<String, JsonValue>, E> {
   preceded(
-    ('{', ws),
+    (one_of('{'), ws),
     cut(terminated(
-      separated_list0((ws, ',', ws), key_value)
+      separated_list0((ws, one_of(','), ws), key_value)
         .map(|tuple_vec| tuple_vec.into_iter().map(|(k, v)| (k, v)).collect()),
-      (ws, '}'),
+      (ws, one_of('}')),
     )),
   )
   .context("object")
@@ -195,7 +196,7 @@ fn object<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
 fn key_value<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
   input: Input<'i>,
 ) -> IResult<Input<'i>, (String, JsonValue), E> {
-  separated_pair(string, cut((ws, ':', ws)), json_value)(input)
+  separated_pair(string, cut((ws, one_of(':'), ws)), json_value)(input)
 }
 
 /// Parser combinators are constructed from the bottom up:
@@ -205,6 +206,12 @@ fn ws<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>, &'i 
   // nom combinators like `take_while` return a function. That function is the
   // parser,to which we can pass the input
   take_while(WS)(input)
+}
+
+fn ws_or_eof<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>, &'i str, E> {
+  rest
+    .verify(|s: &str| s.chars().all(|c| WS.contains(c)))
+    .parse_next(input)
 }
 
 const WS: &str = " \t\r\n";
@@ -217,28 +224,36 @@ mod test {
 
   #[allow(clippy::useless_attribute)]
   #[allow(dead_code)] // its dead for benches
-  type Error<'i> = winnow::error::Error<&'i str>;
+  type Error<'i> = winnow::error::Error<Streaming<&'i str>>;
 
   #[test]
   fn json_string() {
-    assert_eq!(string::<Error<'_>>("\"\""), Ok(("", "".to_string())));
-    assert_eq!(string::<Error<'_>>("\"abc\""), Ok(("", "abc".to_string())));
     assert_eq!(
-      string::<Error<'_>>("\"abc\\\"\\\\\\/\\b\\f\\n\\r\\t\\u0001\\u2014\u{2014}def\""),
-      Ok(("", "abc\"\\/\x08\x0C\n\r\t\x01——def".to_string())),
+      string::<Error<'_>>(Streaming("\"\"")),
+      Ok((Streaming(""), "".to_string()))
     );
     assert_eq!(
-      string::<Error<'_>>("\"\\uD83D\\uDE10\""),
-      Ok(("", "😐".to_string()))
+      string::<Error<'_>>(Streaming("\"abc\"")),
+      Ok((Streaming(""), "abc".to_string()))
+    );
+    assert_eq!(
+      string::<Error<'_>>(Streaming(
+        "\"abc\\\"\\\\\\/\\b\\f\\n\\r\\t\\u0001\\u2014\u{2014}def\""
+      )),
+      Ok((Streaming(""), "abc\"\\/\x08\x0C\n\r\t\x01——def".to_string())),
+    );
+    assert_eq!(
+      string::<Error<'_>>(Streaming("\"\\uD83D\\uDE10\"")),
+      Ok((Streaming(""), "😐".to_string()))
     );
 
-    assert!(string::<Error<'_>>("\"").is_err());
-    assert!(string::<Error<'_>>("\"abc").is_err());
-    assert!(string::<Error<'_>>("\"\\\"").is_err());
-    assert!(string::<Error<'_>>("\"\\u123\"").is_err());
-    assert!(string::<Error<'_>>("\"\\uD800\"").is_err());
-    assert!(string::<Error<'_>>("\"\\uD800\\uD800\"").is_err());
-    assert!(string::<Error<'_>>("\"\\uDC00\"").is_err());
+    assert!(string::<Error<'_>>(Streaming("\"")).is_err());
+    assert!(string::<Error<'_>>(Streaming("\"abc")).is_err());
+    assert!(string::<Error<'_>>(Streaming("\"\\\"")).is_err());
+    assert!(string::<Error<'_>>(Streaming("\"\\u123\"")).is_err());
+    assert!(string::<Error<'_>>(Streaming("\"\\uD800\"")).is_err());
+    assert!(string::<Error<'_>>(Streaming("\"\\uD800\\uD800\"")).is_err());
+    assert!(string::<Error<'_>>(Streaming("\"\\uDC00\"")).is_err());
   }
 
   #[test]
@@ -256,7 +271,10 @@ mod test {
       .collect(),
     );
 
-    assert_eq!(json::<Error<'_>>(input), Ok(("", expected)));
+    assert_eq!(
+      json::<Error<'_>>(Streaming(input)),
+      Ok((Streaming(""), expected))
+    );
   }
 
   #[test]
@@ -267,7 +285,10 @@ mod test {
 
     let expected = Array(vec![Num(42.0), Str("x".to_string())]);
 
-    assert_eq!(json::<Error<'_>>(input), Ok(("", expected)));
+    assert_eq!(
+      json::<Error<'_>>(Streaming(input)),
+      Ok((Streaming(""), expected))
+    );
   }
 
   #[test]
@@ -289,9 +310,9 @@ mod test {
   "#;
 
     assert_eq!(
-      json::<Error<'_>>(input),
+      json::<Error<'_>>(Streaming(input)),
       Ok((
-        "",
+        Streaming(""),
         Object(
           vec![
             ("null".to_string(), Null),

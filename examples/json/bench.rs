@@ -1,8 +1,7 @@
+use winnow::input::Streaming;
+
 mod parser;
-
-use parser::json;
-
-type Error<'i> = winnow::error::Error<&'i str>;
+mod parser_streaming;
 
 fn json_bench(c: &mut criterion::Criterion) {
   let data = "  { \"a\"\t: 42,
@@ -11,8 +10,15 @@ fn json_bench(c: &mut criterion::Criterion) {
   }
   }  ";
 
-  c.bench_function("json", |b| {
-    b.iter(|| json::<Error>(data).unwrap());
+  c.bench_function("compete", |b| {
+    type Error<'i> = winnow::error::Error<parser::Input<'i>>;
+
+    b.iter(|| parser::json::<Error>(data).unwrap());
+  });
+  c.bench_function("streaming", |b| {
+    type Error<'i> = winnow::error::Error<parser_streaming::Input<'i>>;
+
+    b.iter(|| parser_streaming::json::<Error>(Streaming(data)).unwrap());
   });
 }
 
