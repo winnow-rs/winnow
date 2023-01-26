@@ -55,6 +55,7 @@ codegen-units = 1
 
 [[example]]
 name = "custom_error"
+test = true
 required-features = ["alloc"]
 
 [[example]]
