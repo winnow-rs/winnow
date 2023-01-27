@@ -178,7 +178,7 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
     parser(Streaming(&b""[..])),
     Err(Err::Failure(winnow::error::Error {
       input: Streaming(&b""[..]),
-      code: ErrorKind::TooLarge
+      kind: ErrorKind::TooLarge
     }))
   );
 }
@@ -258,7 +258,7 @@ fn issue_x_looser_fill_bounds() {
     fill_pair(b"123,,"),
     Err(Err::Error(winnow::error::Error {
       input: &b","[..],
-      code: ErrorKind::Digit
+      kind: ErrorKind::Digit
     }))
   );
 }

@@ -204,8 +204,8 @@ where
 /// assert_eq!(parser("ab\nc"), Ok(("\nc", "ab")));
 /// assert_eq!(parser("abc"), Ok(("", "abc")));
 /// assert_eq!(parser(""), Ok(("", "")));
-/// assert_eq!(parser("a\rb\nc"), Err(Err::Error(Error { input: "a\rb\nc", code: ErrorKind::Tag })));
-/// assert_eq!(parser("a\rbc"), Err(Err::Error(Error { input: "a\rbc", code: ErrorKind::Tag })));
+/// assert_eq!(parser("a\rb\nc"), Err(Err::Error(Error { input: "a\rb\nc", kind: ErrorKind::Tag })));
+/// assert_eq!(parser("a\rbc"), Err(Err::Error(Error { input: "a\rbc", kind: ErrorKind::Tag })));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::not_line_ending`][crate::character::not_line_ending]

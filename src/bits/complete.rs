@@ -30,7 +30,7 @@ use crate::{Err, IResult};
 /// assert_eq!(parser(([0b00010010].as_ref(), 4), 4), Ok((([].as_ref(), 0), 0b00000010)));
 ///
 /// // Tries to consume 12 bits but only 8 are available
-/// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(winnow::Err::Error(Error{input: ([0b00010010].as_ref(), 0), code: ErrorKind::Eof })));
+/// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(winnow::Err::Error(Error{input: ([0b00010010].as_ref(), 0), kind: ErrorKind::Eof })));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bits::take`][crate::bits::take]
@@ -183,7 +183,7 @@ mod test {
       result,
       Err(crate::Err::Error(crate::error::Error {
         input: (input, 8),
-        code: ErrorKind::Eof
+        kind: ErrorKind::Eof
       }))
     );
   }
@@ -219,7 +219,7 @@ mod test {
       result,
       Err(crate::Err::Error(crate::error::Error {
         input: (input, 8),
-        code: ErrorKind::Eof
+        kind: ErrorKind::Eof
       }))
     );
   }

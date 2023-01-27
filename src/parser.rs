@@ -238,13 +238,13 @@ impl<T> Err<error::Error<T>> {
   {
     match self {
       Err::Incomplete(n) => Err::Incomplete(n),
-      Err::Failure(error::Error { input, code }) => Err::Failure(error::Error {
+      Err::Failure(error::Error { input, kind }) => Err::Failure(error::Error {
         input: f(input),
-        code,
+        kind,
       }),
-      Err::Error(error::Error { input, code }) => Err::Error(error::Error {
+      Err::Error(error::Error { input, kind }) => Err::Error(error::Error {
         input: f(input),
-        code,
+        kind,
       }),
     }
   }
@@ -807,7 +807,7 @@ pub trait Parser<I, O, E> {
   /// Prints a message and the input if the parser fails.
   ///
   /// The message prints the `Error` or `Incomplete`
-  /// and the parser's calling code.
+  /// and the parser's calling kind.
   ///
   /// It also displays the input in hexdump format
   ///

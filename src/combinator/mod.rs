@@ -1277,7 +1277,7 @@ where
 ///
 /// assert_eq!(parser("+10 ab"), Ok((" ab", "10")));
 /// assert_eq!(parser("ab"), Ok(("", "ab")));
-/// assert_eq!(parser("+"), Err(Err::Failure(Error { input: "", code: ErrorKind::Digit })));
+/// assert_eq!(parser("+"), Err(Err::Failure(Error { input: "", kind: ErrorKind::Digit })));
 /// # }
 /// ```
 pub fn cut<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O, E>

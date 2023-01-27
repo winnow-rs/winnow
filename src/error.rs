@@ -105,8 +105,8 @@
 //! pub struct Error<I> {
 //!   /// position of the error in the input data
 //!   pub input: I,
-//!   /// nom error code
-//!   pub code: ErrorKind,
+//!   /// nom error kind
+//!   pub kind: ErrorKind,
 //! }
 //! ```
 //!
@@ -133,7 +133,7 @@
 //! //   Failure(
 //! //       Error {
 //! //           input: "1\"hello\" : \"world\"\n  }\n  } ",
-//! //           code: Char,
+//! //           kind: Char,
 //! //       },
 //! //   ),
 //! // )
@@ -169,7 +169,7 @@
 //! }
 //! ```
 //!
-//! It contains the input position and error code for each of those parsers.
+//! It contains the input position and error kind for each of those parsers.
 //! It does not accumulate errors from the different branches of `alt`, it will
 //! only contain errors from the last branch it tried.
 //!
@@ -352,7 +352,7 @@
 //! #     message: String,
 //! # }
 //! impl ParseError<&str> for DebugError {
-//!     // on one line, we show the error code and the input that caused it
+//!     // on one line, we show the error kind and the input that caused it
 //!     fn from_error_kind(input: &str, kind: ErrorKind) -> Self {
 //!         let message = format!("{:?}:\t{:?}\n", kind, input);
 //!         println!("{}", message);
@@ -459,7 +459,7 @@
 //! let a = &b"efghijkl"[..];
 //!
 //! // Will print the following message:
-//! // tag: Error(Error(Error { input: [101, 102, 103, 104, 105, 106, 107, 108], code: Tag })) at:
+//! // tag: Error(Error(Error { input: [101, 102, 103, 104, 105, 106, 107, 108], kind: Tag })) at:
 //! // 00000000        65 66 67 68 69 6a 6b 6c         efghijkl
 //! f(a);
 //! ```
@@ -523,25 +523,25 @@ pub trait ErrorConvert<E> {
   fn convert(self) -> E;
 }
 
-/// default error type, only contains the error' location and code
+/// default error type, only contains the error' location and kind
 #[derive(Debug, Eq, PartialEq)]
 pub struct Error<I> {
   /// position of the error in the input data
   pub input: I,
-  /// nom error code
-  pub code: ErrorKind,
+  /// nom error kind
+  pub kind: ErrorKind,
 }
 
 impl<I> Error<I> {
   /// creates a new basic error
-  pub fn new(input: I, code: ErrorKind) -> Error<I> {
-    Error { input, code }
+  pub fn new(input: I, kind: ErrorKind) -> Error<I> {
+    Error { input, kind }
   }
 }
 
 impl<I> ParseError<I> for Error<I> {
   fn from_error_kind(input: I, kind: ErrorKind) -> Self {
-    Error { input, code: kind }
+    Error { input, kind }
   }
 
   fn append(self, _: I, _: ErrorKind) -> Self {
@@ -554,7 +554,7 @@ impl<I, C> ContextError<I, C> for Error<I> {}
 impl<I, E> FromExternalError<I, E> for Error<I> {
   /// Create a new error from an input position and an external error
   fn from_external_error(input: I, kind: ErrorKind, _e: E) -> Self {
-    Error { input, code: kind }
+    Error { input, kind }
   }
 }
 
@@ -562,7 +562,7 @@ impl<I> ErrorConvert<Error<(I, usize)>> for Error<I> {
   fn convert(self) -> Error<(I, usize)> {
     Error {
       input: (self.input, 0),
-      code: self.code,
+      kind: self.kind,
     }
   }
 }
@@ -571,7 +571,7 @@ impl<I> ErrorConvert<Error<I>> for Error<(I, usize)> {
   fn convert(self) -> Error<I> {
     Error {
       input: self.input.0,
-      code: self.code,
+      kind: self.kind,
     }
   }
 }
@@ -579,7 +579,7 @@ impl<I> ErrorConvert<Error<I>> for Error<(I, usize)> {
 /// The Display implementation allows the `std::error::Error` implementation
 impl<I: fmt::Display> fmt::Display for Error<I> {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    write!(f, "error {:?} at: {}", self.code, self.input)
+    write!(f, "error {:?} at: {}", self.kind, self.input)
   }
 }
 
@@ -1026,7 +1026,7 @@ macro_rules! error_node_position(
 /// Prints a message and the input if the parser fails.
 ///
 /// The message prints the `Error` or `Incomplete`
-/// and the parser's calling code.
+/// and the parser's calling kind.
 ///
 /// It also displays the input in hexdump format
 ///

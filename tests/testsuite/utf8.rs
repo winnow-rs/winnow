@@ -312,7 +312,7 @@ mod test {
       f(Streaming(d)),
       Err(Err::Error(winnow::error::Error {
         input: Streaming(d),
-        code: ErrorKind::TakeWhile1
+        kind: ErrorKind::TakeWhile1
       }))
     );
   }
