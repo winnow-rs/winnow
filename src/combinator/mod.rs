@@ -1015,7 +1015,7 @@ where
     let i = input.clone();
     match parser.parse_next(i) {
       Ok((i, _)) => {
-        let index = input.offset(&i);
+        let index = input.offset_to(&i);
         Ok((i, input.slice(..index))).into_output()
       }
       Err(e) => Err(e),
@@ -1052,7 +1052,7 @@ where
     let i = input.clone();
     match (self.parser).parse_next(i) {
       Ok((i, _)) => {
-        let index = input.offset(&i);
+        let index = input.offset_to(&i);
         Ok((i, input.slice(..index))).into_output()
       }
       Err(e) => Err(e),
@@ -1117,7 +1117,7 @@ where
     let i = input.clone();
     match parser.parse_next(i) {
       Ok((remaining, result)) => {
-        let index = input.offset(&remaining);
+        let index = input.offset_to(&remaining);
         let consumed = input.slice(..index).into_output();
         Ok((remaining, (consumed, result)))
       }
@@ -1155,7 +1155,7 @@ where
     let i = input.clone();
     match (self.parser).parse_next(i) {
       Ok((remaining, result)) => {
-        let index = input.offset(&remaining);
+        let index = input.offset_to(&remaining);
         let consumed = input.slice(..index).into_output();
         Ok((remaining, (result, consumed)))
       }

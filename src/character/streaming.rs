@@ -1116,43 +1116,43 @@ mod tests {
 
     match alpha1::<_, Error<_>>(a) {
       Ok((i, _)) => {
-        assert_eq!(a.offset(i) + i.len(), a.len());
+        assert_eq!(a.offset_to(i) + i.len(), a.len());
       }
       _ => panic!("wrong return type in offset test for alpha"),
     }
     match digit1::<_, Error<_>>(b) {
       Ok((i, _)) => {
-        assert_eq!(b.offset(i) + i.len(), b.len());
+        assert_eq!(b.offset_to(i) + i.len(), b.len());
       }
       _ => panic!("wrong return type in offset test for digit"),
     }
     match alphanumeric1::<_, Error<_>>(c) {
       Ok((i, _)) => {
-        assert_eq!(c.offset(i) + i.len(), c.len());
+        assert_eq!(c.offset_to(i) + i.len(), c.len());
       }
       _ => panic!("wrong return type in offset test for alphanumeric"),
     }
     match space1::<_, Error<_>>(d) {
       Ok((i, _)) => {
-        assert_eq!(d.offset(i) + i.len(), d.len());
+        assert_eq!(d.offset_to(i) + i.len(), d.len());
       }
       _ => panic!("wrong return type in offset test for space"),
     }
     match multispace1::<_, Error<_>>(e) {
       Ok((i, _)) => {
-        assert_eq!(e.offset(i) + i.len(), e.len());
+        assert_eq!(e.offset_to(i) + i.len(), e.len());
       }
       _ => panic!("wrong return type in offset test for multispace"),
     }
     match hex_digit1::<_, Error<_>>(f) {
       Ok((i, _)) => {
-        assert_eq!(f.offset(i) + i.len(), f.len());
+        assert_eq!(f.offset_to(i) + i.len(), f.len());
       }
       _ => panic!("wrong return type in offset test for hex_digit"),
     }
     match oct_digit1::<_, Error<_>>(f) {
       Ok((i, _)) => {
-        assert_eq!(f.offset(i) + i.len(), f.len());
+        assert_eq!(f.offset_to(i) + i.len(), f.len());
       }
       _ => panic!("wrong return type in offset test for oct_digit"),
     }

@@ -93,7 +93,7 @@ where
   }
 
   fn location(&self) -> usize {
-    self.initial.offset(&self.input)
+    self.initial.offset_to(&self.input)
   }
 }
 
@@ -561,15 +561,15 @@ impl<'a> InputLength for (&'a [u8], usize) {
 /// Useful functions to calculate the offset between slices and show a hexdump of a slice
 pub trait Offset {
   /// Offset between the first byte of self and the first byte of the argument
-  fn offset(&self, second: &Self) -> usize;
+  fn offset_to(&self, second: &Self) -> usize;
 }
 
 impl<I> Offset for Located<I>
 where
   I: Offset,
 {
-  fn offset(&self, other: &Self) -> usize {
-    self.input.offset(&other.input)
+  fn offset_to(&self, other: &Self) -> usize {
+    self.input.offset_to(&other.input)
   }
 }
 
@@ -577,8 +577,8 @@ impl<I, S> Offset for Stateful<I, S>
 where
   I: Offset,
 {
-  fn offset(&self, other: &Self) -> usize {
-    self.input.offset(&other.input)
+  fn offset_to(&self, other: &Self) -> usize {
+    self.input.offset_to(&other.input)
   }
 }
 
@@ -587,13 +587,13 @@ where
   I: Offset,
 {
   #[inline(always)]
-  fn offset(&self, second: &Self) -> usize {
-    self.0.offset(&second.0)
+  fn offset_to(&self, second: &Self) -> usize {
+    self.0.offset_to(&second.0)
   }
 }
 
 impl Offset for [u8] {
-  fn offset(&self, second: &Self) -> usize {
+  fn offset_to(&self, second: &Self) -> usize {
     let fst = self.as_ptr();
     let snd = second.as_ptr();
 
@@ -602,7 +602,7 @@ impl Offset for [u8] {
 }
 
 impl<'a> Offset for &'a [u8] {
-  fn offset(&self, second: &Self) -> usize {
+  fn offset_to(&self, second: &Self) -> usize {
     let fst = self.as_ptr();
     let snd = second.as_ptr();
 
@@ -611,7 +611,7 @@ impl<'a> Offset for &'a [u8] {
 }
 
 impl Offset for str {
-  fn offset(&self, second: &Self) -> usize {
+  fn offset_to(&self, second: &Self) -> usize {
     let fst = self.as_ptr();
     let snd = second.as_ptr();
 
@@ -620,7 +620,7 @@ impl Offset for str {
 }
 
 impl<'a> Offset for &'a str {
-  fn offset(&self, second: &Self) -> usize {
+  fn offset_to(&self, second: &Self) -> usize {
     let fst = self.as_ptr();
     let snd = second.as_ptr();
 
@@ -2796,9 +2796,9 @@ mod tests {
     let b = &a[2..];
     let c = &a[..4];
     let d = &a[3..5];
-    assert_eq!(a.offset(b), 2);
-    assert_eq!(a.offset(c), 0);
-    assert_eq!(a.offset(d), 3);
+    assert_eq!(a.offset_to(b), 2);
+    assert_eq!(a.offset_to(c), 0);
+    assert_eq!(a.offset_to(d), 3);
   }
 
   #[test]
@@ -2807,8 +2807,8 @@ mod tests {
     let b = &a[7..];
     let c = &a[..5];
     let d = &a[5..9];
-    assert_eq!(a.offset(b), 7);
-    assert_eq!(a.offset(c), 0);
-    assert_eq!(a.offset(d), 5);
+    assert_eq!(a.offset_to(b), 7);
+    assert_eq!(a.offset_to(c), 0);
+    assert_eq!(a.offset_to(d), 5);
   }
 }

@@ -799,7 +799,7 @@ where
         if i2.input_len() == 0 {
           return Ok((input.slice(input.input_len()..), input)).into_output();
         } else if i2.input_len() == current_len {
-          let index = input.offset(&i2);
+          let index = input.offset_to(&i2);
           return Ok(input.take_split(index)).into_output();
         } else {
           i = i2;
@@ -827,7 +827,7 @@ where
             }
           }
         } else {
-          let index = input.offset(&i);
+          let index = input.offset_to(&i);
           if index == 0 {
             return Err(Err::Error(Error::from_error_kind(
               input,
@@ -949,7 +949,7 @@ where
         } else if i2.input_len() == current_len {
           return Ok((remainder, res));
         } else {
-          index = input.offset(&i2);
+          index = input.offset_to(&i2);
         }
       }
       Err(Err::Error(_)) => {
@@ -970,7 +970,7 @@ where
                 if i2.input_len() == 0 {
                   return Ok((i.slice(i.input_len()..), res));
                 } else {
-                  index = input.offset(&i2);
+                  index = input.offset_to(&i2);
                 }
               }
               Err(e) => return Err(e),

@@ -850,7 +850,7 @@ where
         if i2.input_len() == 0 {
           return Err(Err::Incomplete(Needed::Unknown));
         } else if i2.input_len() == current_len {
-          let index = input.offset(&i2);
+          let index = input.offset_to(&i2);
           return Ok(input.take_split(index)).into_output();
         } else {
           i = i2;
@@ -875,7 +875,7 @@ where
             }
           }
         } else {
-          let index = input.offset(&i);
+          let index = input.offset_to(&i);
           return Ok(input.take_split(index)).into_output();
         }
       }
@@ -990,7 +990,7 @@ where
         } else if i2.input_len() == current_len {
           return Ok((remainder, res));
         } else {
-          index = input.offset(&i2);
+          index = input.offset_to(&i2);
         }
       }
       Err(Err::Error(_)) => {
@@ -1008,7 +1008,7 @@ where
                 if i2.input_len() == 0 {
                   return Err(Err::Incomplete(Needed::Unknown));
                 } else {
-                  index = input.offset(&i2);
+                  index = input.offset_to(&i2);
                 }
               }
               Err(e) => return Err(e),
