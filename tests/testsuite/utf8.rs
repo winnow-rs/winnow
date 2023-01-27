@@ -1,6 +1,5 @@
 #[cfg(test)]
 mod test {
-  use winnow::error_position;
   use winnow::input::Streaming;
   use winnow::prelude::*;
   #[cfg(feature = "alloc")]
@@ -311,10 +310,10 @@ mod test {
     assert_eq!(f(Streaming(c)), Ok((Streaming("123"), b)));
     assert_eq!(
       f(Streaming(d)),
-      Err(Err::Error(error_position!(
-        Streaming(d),
-        ErrorKind::TakeWhile1
-      )))
+      Err(Err::Error(winnow::error::Error {
+        input: Streaming(d),
+        code: ErrorKind::TakeWhile1
+      }))
     );
   }
 

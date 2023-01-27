@@ -176,10 +176,10 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
   }
   assert_eq!(
     parser(Streaming(&b""[..])),
-    Err(Err::Failure(winnow::error_position!(
-      Streaming(&b""[..]),
-      ErrorKind::TooLarge
-    )))
+    Err(Err::Failure(winnow::error::Error {
+      input: Streaming(&b""[..]),
+      code: ErrorKind::TooLarge
+    }))
   );
 }
 
@@ -238,7 +238,7 @@ fn issue_1282_findtoken_char() {
 
 #[test]
 fn issue_x_looser_fill_bounds() {
-  use winnow::{bytes::tag, character::digit1, error_position, multi::fill, sequence::terminated};
+  use winnow::{bytes::tag, character::digit1, multi::fill, sequence::terminated};
 
   fn fill_pair(i: &[u8]) -> IResult<&[u8], [&[u8]; 2]> {
     let mut buf = [&[][..], &[][..]];
@@ -256,7 +256,10 @@ fn issue_x_looser_fill_bounds() {
   );
   assert_eq!(
     fill_pair(b"123,,"),
-    Err(Err::Error(error_position!(&b","[..], ErrorKind::Digit)))
+    Err(Err::Error(winnow::error::Error {
+      input: &b","[..],
+      code: ErrorKind::Digit
+    }))
   );
 }
 

@@ -998,6 +998,10 @@ impl ErrorKind {
 /// and the position in the input
 #[allow(unused_variables)]
 #[macro_export(local_inner_macros)]
+#[cfg_attr(
+  not(test),
+  deprecated(since = "0.3.0", note = "Replaced with `E::from_error_kind`")
+)]
 macro_rules! error_position(
   ($input:expr, $code:expr) => ({
     $crate::error::ParseError::from_error_kind($input, $code)
@@ -1009,6 +1013,10 @@ macro_rules! error_position(
 /// the parsing tree
 #[allow(unused_variables)]
 #[macro_export(local_inner_macros)]
+#[cfg_attr(
+  not(test),
+  deprecated(since = "0.3.0", note = "Replaced with `E::append`")
+)]
 macro_rules! error_node_position(
   ($input:expr, $code:expr, $next:expr) => ({
     $crate::error::ParseError::append($next, $input, $code)
