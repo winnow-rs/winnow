@@ -6,7 +6,7 @@ use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{
   Compare, CompareResult, FindSubstring, FindToken, InputIter, InputLength, InputTake,
-  InputTakeAtPosition, IntoOutput, Slice, ToUsize,
+  InputTakeAtOffset, IntoOutput, Slice, ToUsize,
 };
 use crate::lib::std::ops::RangeFrom;
 use crate::lib::std::result::Result::Ok;
@@ -202,9 +202,9 @@ pub fn is_not<T, Input, Error: ParseError<Input>>(
   arr: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtPosition,
+  Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+  T: FindToken<<Input as InputTakeAtOffset>::Item>,
 {
   move |i: Input| is_not_internal(i, &arr)
 }
@@ -214,12 +214,12 @@ pub(crate) fn is_not_internal<T, Input, Error: ParseError<Input>>(
   arr: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtPosition,
+  Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+  T: FindToken<<Input as InputTakeAtOffset>::Item>,
 {
   let e: ErrorKind = ErrorKind::IsNot;
-  i.split_at_position1_complete(|c| arr.find_token(c), e)
+  i.split_at_offset1_complete(|c| arr.find_token(c), e)
     .into_output()
 }
 
@@ -251,9 +251,9 @@ pub fn is_a<T, Input, Error: ParseError<Input>>(
   arr: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtPosition,
+  Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+  T: FindToken<<Input as InputTakeAtOffset>::Item>,
 {
   move |i: Input| is_a_internal(i, &arr)
 }
@@ -263,12 +263,12 @@ pub(crate) fn is_a_internal<T, Input, Error: ParseError<Input>>(
   arr: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtPosition,
+  Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+  T: FindToken<<Input as InputTakeAtOffset>::Item>,
 {
   let e: ErrorKind = ErrorKind::IsA;
-  i.split_at_position1_complete(|c| !arr.find_token(c), e)
+  i.split_at_offset1_complete(|c| !arr.find_token(c), e)
     .into_output()
 }
 
@@ -298,9 +298,9 @@ pub fn take_while<T, Input, Error: ParseError<Input>>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtPosition,
+  Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+  T: FindToken<<Input as InputTakeAtOffset>::Item>,
 {
   move |i: Input| take_while_internal(i, &list)
 }
@@ -310,11 +310,11 @@ pub(crate) fn take_while_internal<T, Input, Error: ParseError<Input>>(
   list: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtPosition,
+  Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+  T: FindToken<<Input as InputTakeAtOffset>::Item>,
 {
-  i.split_at_position_complete(|c| !list.find_token(c))
+  i.split_at_offset_complete(|c| !list.find_token(c))
     .into_output()
 }
 
@@ -345,9 +345,9 @@ pub fn take_while1<T, Input, Error: ParseError<Input>>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtPosition,
+  Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+  T: FindToken<<Input as InputTakeAtOffset>::Item>,
 {
   move |i: Input| take_while1_internal(i, &list)
 }
@@ -357,12 +357,12 @@ pub(crate) fn take_while1_internal<T, Input, Error: ParseError<Input>>(
   list: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtPosition,
+  Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+  T: FindToken<<Input as InputTakeAtOffset>::Item>,
 {
   let e: ErrorKind = ErrorKind::TakeWhile1;
-  i.split_at_position1_complete(|c| !list.find_token(c), e)
+  i.split_at_offset1_complete(|c| !list.find_token(c), e)
     .into_output()
 }
 
@@ -495,9 +495,9 @@ pub fn take_till<T, Input, Error: ParseError<Input>>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtPosition,
+  Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+  T: FindToken<<Input as InputTakeAtOffset>::Item>,
 {
   move |i: Input| take_till_internal(i, &list)
 }
@@ -507,11 +507,11 @@ pub(crate) fn take_till_internal<T, Input, Error: ParseError<Input>>(
   list: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtPosition,
+  Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+  T: FindToken<<Input as InputTakeAtOffset>::Item>,
 {
-  i.split_at_position_complete(|c| list.find_token(c))
+  i.split_at_offset_complete(|c| list.find_token(c))
     .into_output()
 }
 
@@ -544,9 +544,9 @@ pub fn take_till1<T, Input, Error: ParseError<Input>>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtPosition,
+  Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+  T: FindToken<<Input as InputTakeAtOffset>::Item>,
 {
   move |i: Input| take_till1_internal(i, &list)
 }
@@ -556,12 +556,12 @@ pub(crate) fn take_till1_internal<T, Input, Error: ParseError<Input>>(
   list: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtPosition,
+  Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+  T: FindToken<<Input as InputTakeAtOffset>::Item>,
 {
   let e: ErrorKind = ErrorKind::TakeTill1;
-  i.split_at_position1_complete(|c| list.find_token(c), e)
+  i.split_at_offset1_complete(|c| list.find_token(c), e)
     .into_output()
 }
 
@@ -753,7 +753,7 @@ where
     + crate::input::Offset
     + InputLength
     + InputTake
-    + InputTakeAtPosition
+    + InputTakeAtOffset
     + Slice<RangeFrom<usize>>
     + InputIter,
   Input: IntoOutput,
@@ -776,7 +776,7 @@ where
     + crate::input::Offset
     + InputLength
     + InputTake
-    + InputTakeAtPosition
+    + InputTakeAtOffset
     + Slice<RangeFrom<usize>>
     + InputIter,
   Input: IntoOutput,
@@ -894,7 +894,7 @@ where
     + crate::input::Offset
     + InputLength
     + InputTake
-    + InputTakeAtPosition
+    + InputTakeAtOffset
     + Slice<RangeFrom<usize>>
     + InputIter,
   Input: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
@@ -920,7 +920,7 @@ where
     + crate::input::Offset
     + InputLength
     + InputTake
-    + InputTakeAtPosition
+    + InputTakeAtOffset
     + Slice<RangeFrom<usize>>
     + InputIter,
   Input: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,

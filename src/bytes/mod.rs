@@ -8,7 +8,7 @@ mod tests;
 use crate::error::ParseError;
 use crate::input::{
   Compare, FindSubstring, FindToken, InputIsStreaming, InputIter, InputLength, InputTake,
-  InputTakeAtPosition, IntoOutput, Slice, ToUsize,
+  InputTakeAtOffset, IntoOutput, Slice, ToUsize,
 };
 use crate::lib::std::ops::RangeFrom;
 use crate::{IResult, Parser};
@@ -309,10 +309,10 @@ pub fn take_while<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtPosition + InputIsStreaming<STREAMING>,
+  Input: InputTakeAtOffset + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
-  Input: InputTakeAtPosition,
+  T: FindToken<<Input as InputTakeAtOffset>::Item>,
+  Input: InputTakeAtOffset,
 {
   move |i: Input| {
     if STREAMING {
@@ -383,9 +383,9 @@ pub fn take_while1<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtPosition + InputIsStreaming<STREAMING>,
+  Input: InputTakeAtOffset + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+  T: FindToken<<Input as InputTakeAtOffset>::Item>,
 {
   move |i: Input| {
     if STREAMING {
@@ -496,9 +496,9 @@ pub fn take_till<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtPosition + InputIsStreaming<STREAMING>,
+  Input: InputTakeAtOffset + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+  T: FindToken<<Input as InputTakeAtOffset>::Item>,
 {
   move |i: Input| {
     if STREAMING {
@@ -569,9 +569,9 @@ pub fn take_till1<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtPosition + InputIsStreaming<STREAMING>,
+  Input: InputTakeAtOffset + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtPosition>::Item>,
+  T: FindToken<<Input as InputTakeAtOffset>::Item>,
 {
   move |i: Input| {
     if STREAMING {
@@ -813,7 +813,7 @@ where
     + crate::input::Offset
     + InputLength
     + InputTake
-    + InputTakeAtPosition
+    + InputTakeAtOffset
     + Slice<RangeFrom<usize>>
     + InputIter
     + InputIsStreaming<STREAMING>,
@@ -901,7 +901,7 @@ where
     + crate::input::Offset
     + InputLength
     + InputTake
-    + InputTakeAtPosition
+    + InputTakeAtOffset
     + Slice<RangeFrom<usize>>
     + InputIter
     + InputIsStreaming<STREAMING>,

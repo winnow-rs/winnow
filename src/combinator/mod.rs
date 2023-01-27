@@ -156,7 +156,7 @@ use crate::lib::std::boxed::Box;
 
 use crate::error::{ErrorKind, FromExternalError, ParseError};
 use crate::input::IntoOutput;
-use crate::input::{AsChar, InputIter, InputLength, InputTakeAtPosition, Location, ParseTo};
+use crate::input::{AsChar, InputIter, InputLength, InputTakeAtOffset, Location, ParseTo};
 use crate::input::{Compare, CompareResult, Offset, Slice};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::convert;

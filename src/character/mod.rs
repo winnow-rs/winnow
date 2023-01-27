@@ -12,7 +12,7 @@ mod tests;
 use crate::error::ParseError;
 use crate::input::Compare;
 use crate::input::{
-  AsBytes, AsChar, InputIsStreaming, InputIter, InputLength, InputTake, InputTakeAtPosition,
+  AsBytes, AsChar, InputIsStreaming, InputIter, InputLength, InputTake, InputTakeAtOffset,
   IntoOutput, Offset, ParseTo, Slice,
 };
 use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
@@ -277,9 +277,9 @@ pub fn alpha0<T, E: ParseError<T>, const STREAMING: bool>(
   input: T,
 ) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition + InputIsStreaming<STREAMING>,
+  T: InputTakeAtOffset + InputIsStreaming<STREAMING>,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   if STREAMING {
     streaming::alpha0(input)
@@ -323,9 +323,9 @@ pub fn alpha1<T, E: ParseError<T>, const STREAMING: bool>(
   input: T,
 ) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition + InputIsStreaming<STREAMING>,
+  T: InputTakeAtOffset + InputIsStreaming<STREAMING>,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   if STREAMING {
     streaming::alpha1(input)
@@ -370,9 +370,9 @@ pub fn digit0<T, E: ParseError<T>, const STREAMING: bool>(
   input: T,
 ) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition + InputIsStreaming<STREAMING>,
+  T: InputTakeAtOffset + InputIsStreaming<STREAMING>,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   if STREAMING {
     streaming::digit0(input)
@@ -432,9 +432,9 @@ pub fn digit1<T, E: ParseError<T>, const STREAMING: bool>(
   input: T,
 ) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition + InputIsStreaming<STREAMING>,
+  T: InputTakeAtOffset + InputIsStreaming<STREAMING>,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   if STREAMING {
     streaming::digit1(input)
@@ -477,9 +477,9 @@ pub fn hex_digit0<T, E: ParseError<T>, const STREAMING: bool>(
   input: T,
 ) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition + InputIsStreaming<STREAMING>,
+  T: InputTakeAtOffset + InputIsStreaming<STREAMING>,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   if STREAMING {
     streaming::hex_digit0(input)
@@ -523,9 +523,9 @@ pub fn hex_digit1<T, E: ParseError<T>, const STREAMING: bool>(
   input: T,
 ) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition + InputIsStreaming<STREAMING>,
+  T: InputTakeAtOffset + InputIsStreaming<STREAMING>,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   if STREAMING {
     streaming::hex_digit1(input)
@@ -569,9 +569,9 @@ pub fn oct_digit0<T, E: ParseError<T>, const STREAMING: bool>(
   input: T,
 ) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition + InputIsStreaming<STREAMING>,
+  T: InputTakeAtOffset + InputIsStreaming<STREAMING>,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   if STREAMING {
     streaming::oct_digit0(input)
@@ -615,9 +615,9 @@ pub fn oct_digit1<T, E: ParseError<T>, const STREAMING: bool>(
   input: T,
 ) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition + InputIsStreaming<STREAMING>,
+  T: InputTakeAtOffset + InputIsStreaming<STREAMING>,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   if STREAMING {
     streaming::oct_digit1(input)
@@ -661,9 +661,9 @@ pub fn alphanumeric0<T, E: ParseError<T>, const STREAMING: bool>(
   input: T,
 ) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition + InputIsStreaming<STREAMING>,
+  T: InputTakeAtOffset + InputIsStreaming<STREAMING>,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   if STREAMING {
     streaming::alphanumeric0(input)
@@ -707,9 +707,9 @@ pub fn alphanumeric1<T, E: ParseError<T>, const STREAMING: bool>(
   input: T,
 ) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition + InputIsStreaming<STREAMING>,
+  T: InputTakeAtOffset + InputIsStreaming<STREAMING>,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   if STREAMING {
     streaming::alphanumeric1(input)
@@ -741,9 +741,9 @@ pub fn space0<T, E: ParseError<T>, const STREAMING: bool>(
   input: T,
 ) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition + InputIsStreaming<STREAMING>,
+  T: InputTakeAtOffset + InputIsStreaming<STREAMING>,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar + Clone,
+  <T as InputTakeAtOffset>::Item: AsChar + Clone,
 {
   if STREAMING {
     streaming::space0(input)
@@ -787,9 +787,9 @@ pub fn space1<T, E: ParseError<T>, const STREAMING: bool>(
   input: T,
 ) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition + InputIsStreaming<STREAMING>,
+  T: InputTakeAtOffset + InputIsStreaming<STREAMING>,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar + Clone,
+  <T as InputTakeAtOffset>::Item: AsChar + Clone,
 {
   if STREAMING {
     streaming::space1(input)
@@ -833,9 +833,9 @@ pub fn multispace0<T, E: ParseError<T>, const STREAMING: bool>(
   input: T,
 ) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition + InputIsStreaming<STREAMING>,
+  T: InputTakeAtOffset + InputIsStreaming<STREAMING>,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar + Clone,
+  <T as InputTakeAtOffset>::Item: AsChar + Clone,
 {
   if STREAMING {
     streaming::multispace0(input)
@@ -879,9 +879,9 @@ pub fn multispace1<T, E: ParseError<T>, const STREAMING: bool>(
   input: T,
 ) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition + InputIsStreaming<STREAMING>,
+  T: InputTakeAtOffset + InputIsStreaming<STREAMING>,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar + Clone,
+  <T as InputTakeAtOffset>::Item: AsChar + Clone,
 {
   if STREAMING {
     streaming::multispace1(input)
@@ -996,8 +996,8 @@ where
   <T as IntoOutput>::Output: ParseTo<f32>,
   <T as InputIter>::Item: AsChar + Copy,
   <T as InputIter>::IterElem: Clone,
-  T: InputTakeAtPosition,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  T: InputTakeAtOffset,
+  <T as InputTakeAtOffset>::Item: AsChar,
   T: AsBytes,
   T: for<'a> Compare<&'a [u8]>,
 {
@@ -1057,8 +1057,8 @@ where
   <T as IntoOutput>::Output: ParseTo<f64>,
   <T as InputIter>::Item: AsChar + Copy,
   <T as InputIter>::IterElem: Clone,
-  T: InputTakeAtPosition,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  T: InputTakeAtOffset,
+  <T as InputTakeAtOffset>::Item: AsChar,
   T: AsBytes,
   T: for<'a> Compare<&'a [u8]>,
 {
@@ -1116,8 +1116,8 @@ where
   T: InputIter + InputLength + InputIsStreaming<STREAMING>,
   T: IntoOutput,
   <T as InputIter>::Item: AsChar,
-  T: InputTakeAtPosition,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  T: InputTakeAtOffset,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   if STREAMING {
     crate::number::streaming::recognize_float(input)
@@ -1155,8 +1155,8 @@ where
   T: InputIter + InputTake + InputIsStreaming<STREAMING>,
   T: IntoOutput,
   <T as InputIter>::Item: AsChar + Copy,
-  T: InputTakeAtPosition + InputLength,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  T: InputTakeAtOffset + InputLength,
+  <T as InputTakeAtOffset>::Item: AsChar,
   T: for<'a> Compare<&'a [u8]>,
   T: AsBytes,
 {

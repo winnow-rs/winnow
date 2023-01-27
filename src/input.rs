@@ -43,7 +43,7 @@
 //! | [`IntoOutput`] |Adapt a captired `Input` into an appropriate type|
 //! | [`Location`] |Calculate location within initial input|
 //! | [`InputTake`] |Slicing operations|
-//! | [`InputTakeAtPosition`] |Look for a specific token and split at its position|
+//! | [`InputTakeAtOffset`] |Look for a specific token and split at its position|
 //! | [`Offset`] |Calculate the offset between slices|
 //! | [`ParseTo`] |Used to integrate `&str`'s `parse()` method|
 //! | [`Slice`] |Slicing operations using ranges|
@@ -1198,21 +1198,21 @@ impl<'a> InputTake for &'a str {
   }
 }
 
-/// Dummy trait used for default implementations (currently only used for `InputTakeAtPosition` and `Compare`).
+/// Dummy trait used for default implementations (currently only used for `InputTakeAtOffset` and `Compare`).
 ///
 /// When implementing a custom input type, it is possible to use directly the
 /// default implementation: If the input type implements `InputLength`, `InputIter`,
 /// `InputTake` and `Clone`, you can implement `UnspecializedInput` and get
-/// a default version of `InputTakeAtPosition` and `Compare`.
+/// a default version of `InputTakeAtOffset` and `Compare`.
 ///
 /// For performance reasons, you might want to write a custom implementation of
-/// `InputTakeAtPosition` (like the one for `&[u8]`).
+/// `InputTakeAtOffset` (like the one for `&[u8]`).
 pub trait UnspecializedInput {}
 
 /// Methods to take as much input as possible until the provided function returns true for the current element.
 ///
 /// A large part of nom's basic parsers are built using this trait.
-pub trait InputTakeAtPosition: Sized {
+pub trait InputTakeAtOffset: Sized {
   /// The current input type is a sequence of that `Item` type.
   ///
   /// Example: `u8` for `&[u8]` or `char` for `&str`
@@ -1222,7 +1222,7 @@ pub trait InputTakeAtPosition: Sized {
   /// and returns the input up to this position.
   ///
   /// *streaming version*: If no element is found matching the condition, this will return `Incomplete`
-  fn split_at_position_streaming<P, E: ParseError<Self>>(
+  fn split_at_offset_streaming<P, E: ParseError<Self>>(
     &self,
     predicate: P,
   ) -> IResult<Self, Self, E>
@@ -1235,7 +1235,7 @@ pub trait InputTakeAtPosition: Sized {
   /// Fails if the produced slice is empty.
   ///
   /// *streaming version*: If no element is found matching the condition, this will return `Incomplete`
-  fn split_at_position1_streaming<P, E: ParseError<Self>>(
+  fn split_at_offset1_streaming<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
@@ -1247,7 +1247,7 @@ pub trait InputTakeAtPosition: Sized {
   /// and returns the input up to this position.
   ///
   /// *complete version*: If no element is found matching the condition, this will return the whole input
-  fn split_at_position_complete<P, E: ParseError<Self>>(
+  fn split_at_offset_complete<P, E: ParseError<Self>>(
     &self,
     predicate: P,
   ) -> IResult<Self, Self, E>
@@ -1260,7 +1260,7 @@ pub trait InputTakeAtPosition: Sized {
   /// Fails if the produced slice is empty.
   ///
   /// *complete version*: If no element is found matching the condition, this will return the whole input
-  fn split_at_position1_complete<P, E: ParseError<Self>>(
+  fn split_at_offset1_complete<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
@@ -1269,31 +1269,29 @@ pub trait InputTakeAtPosition: Sized {
     P: Fn(Self::Item) -> bool;
 }
 
-impl<I> InputTakeAtPosition for Located<I>
+impl<I> InputTakeAtOffset for Located<I>
 where
-  I: InputTakeAtPosition + Clone,
+  I: InputTakeAtOffset + Clone,
 {
-  type Item = <I as InputTakeAtPosition>::Item;
+  type Item = <I as InputTakeAtOffset>::Item;
 
-  fn split_at_position_complete<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
+  fn split_at_offset_complete<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
     E: ParseError<Self>,
   {
-    located_clone_map_result(self, move |data| data.split_at_position_complete(predicate))
+    located_clone_map_result(self, move |data| data.split_at_offset_complete(predicate))
   }
 
-  fn split_at_position_streaming<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
+  fn split_at_offset_streaming<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
     E: ParseError<Self>,
   {
-    located_clone_map_result(self, move |data| {
-      data.split_at_position_streaming(predicate)
-    })
+    located_clone_map_result(self, move |data| data.split_at_offset_streaming(predicate))
   }
 
-  fn split_at_position1_streaming<P, E>(
+  fn split_at_offset1_streaming<P, E>(
     &self,
     predicate: P,
     kind: ErrorKind,
@@ -1303,21 +1301,17 @@ where
     E: ParseError<Self>,
   {
     located_clone_map_result(self, move |data| {
-      data.split_at_position1_streaming(predicate, kind)
+      data.split_at_offset1_streaming(predicate, kind)
     })
   }
 
-  fn split_at_position1_complete<P, E>(
-    &self,
-    predicate: P,
-    kind: ErrorKind,
-  ) -> IResult<Self, Self, E>
+  fn split_at_offset1_complete<P, E>(&self, predicate: P, kind: ErrorKind) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
     E: ParseError<Self>,
   {
     located_clone_map_result(self, move |data| {
-      data.split_at_position1_complete(predicate, kind)
+      data.split_at_offset1_complete(predicate, kind)
     })
   }
 }
@@ -1357,32 +1351,30 @@ where
     })
 }
 
-impl<I, S> InputTakeAtPosition for Stateful<I, S>
+impl<I, S> InputTakeAtOffset for Stateful<I, S>
 where
-  I: InputTakeAtPosition,
+  I: InputTakeAtOffset,
   S: Clone,
 {
-  type Item = <I as InputTakeAtPosition>::Item;
+  type Item = <I as InputTakeAtOffset>::Item;
 
-  fn split_at_position_complete<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
+  fn split_at_offset_complete<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
     E: ParseError<Self>,
   {
-    stateful_clone_map_result(self, move |data| data.split_at_position_complete(predicate))
+    stateful_clone_map_result(self, move |data| data.split_at_offset_complete(predicate))
   }
 
-  fn split_at_position_streaming<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
+  fn split_at_offset_streaming<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
     E: ParseError<Self>,
   {
-    stateful_clone_map_result(self, move |data| {
-      data.split_at_position_streaming(predicate)
-    })
+    stateful_clone_map_result(self, move |data| data.split_at_offset_streaming(predicate))
   }
 
-  fn split_at_position1_streaming<P, E>(
+  fn split_at_offset1_streaming<P, E>(
     &self,
     predicate: P,
     kind: ErrorKind,
@@ -1392,21 +1384,17 @@ where
     E: ParseError<Self>,
   {
     stateful_clone_map_result(self, move |data| {
-      data.split_at_position1_streaming(predicate, kind)
+      data.split_at_offset1_streaming(predicate, kind)
     })
   }
 
-  fn split_at_position1_complete<P, E>(
-    &self,
-    predicate: P,
-    kind: ErrorKind,
-  ) -> IResult<Self, Self, E>
+  fn split_at_offset1_complete<P, E>(&self, predicate: P, kind: ErrorKind) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
     E: ParseError<Self>,
   {
     stateful_clone_map_result(self, move |data| {
-      data.split_at_position1_complete(predicate, kind)
+      data.split_at_offset1_complete(predicate, kind)
     })
   }
 }
@@ -1449,31 +1437,29 @@ where
     })
 }
 
-impl<I> InputTakeAtPosition for Streaming<I>
+impl<I> InputTakeAtOffset for Streaming<I>
 where
-  I: InputTakeAtPosition,
+  I: InputTakeAtOffset,
 {
-  type Item = <I as InputTakeAtPosition>::Item;
+  type Item = <I as InputTakeAtOffset>::Item;
 
-  fn split_at_position_complete<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
+  fn split_at_offset_complete<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
     E: ParseError<Self>,
   {
-    streaming_clone_map_result(self, move |data| data.split_at_position_complete(predicate))
+    streaming_clone_map_result(self, move |data| data.split_at_offset_complete(predicate))
   }
 
-  fn split_at_position_streaming<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
+  fn split_at_offset_streaming<P, E>(&self, predicate: P) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
     E: ParseError<Self>,
   {
-    streaming_clone_map_result(self, move |data| {
-      data.split_at_position_streaming(predicate)
-    })
+    streaming_clone_map_result(self, move |data| data.split_at_offset_streaming(predicate))
   }
 
-  fn split_at_position1_streaming<P, E>(
+  fn split_at_offset1_streaming<P, E>(
     &self,
     predicate: P,
     kind: ErrorKind,
@@ -1483,21 +1469,17 @@ where
     E: ParseError<Self>,
   {
     streaming_clone_map_result(self, move |data| {
-      data.split_at_position1_streaming(predicate, kind)
+      data.split_at_offset1_streaming(predicate, kind)
     })
   }
 
-  fn split_at_position1_complete<P, E>(
-    &self,
-    predicate: P,
-    kind: ErrorKind,
-  ) -> IResult<Self, Self, E>
+  fn split_at_offset1_complete<P, E>(&self, predicate: P, kind: ErrorKind) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
     E: ParseError<Self>,
   {
     streaming_clone_map_result(self, move |data| {
-      data.split_at_position1_complete(predicate, kind)
+      data.split_at_offset1_complete(predicate, kind)
     })
   }
 }
@@ -1521,12 +1503,10 @@ where
     })
 }
 
-impl<I: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputTakeAtPosition
-  for I
-{
+impl<I: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputTakeAtOffset for I {
   type Item = <I as InputIter>::Item;
 
-  fn split_at_position_streaming<P, E: ParseError<Self>>(
+  fn split_at_offset_streaming<P, E: ParseError<Self>>(
     &self,
     predicate: P,
   ) -> IResult<Self, Self, E>
@@ -1539,7 +1519,7 @@ impl<I: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
     }
   }
 
-  fn split_at_position1_streaming<P, E: ParseError<Self>>(
+  fn split_at_offset1_streaming<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
@@ -1554,10 +1534,7 @@ impl<I: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
     }
   }
 
-  fn split_at_position_complete<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-  ) -> IResult<Self, Self, E>
+  fn split_at_offset_complete<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
   {
@@ -1567,7 +1544,7 @@ impl<I: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
     }
   }
 
-  fn split_at_position1_complete<P, E: ParseError<Self>>(
+  fn split_at_offset1_complete<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
@@ -1589,10 +1566,10 @@ impl<I: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
   }
 }
 
-impl<'a> InputTakeAtPosition for &'a [u8] {
+impl<'a> InputTakeAtOffset for &'a [u8] {
   type Item = u8;
 
-  fn split_at_position_streaming<P, E: ParseError<Self>>(
+  fn split_at_offset_streaming<P, E: ParseError<Self>>(
     &self,
     predicate: P,
   ) -> IResult<Self, Self, E>
@@ -1605,7 +1582,7 @@ impl<'a> InputTakeAtPosition for &'a [u8] {
     }
   }
 
-  fn split_at_position1_streaming<P, E: ParseError<Self>>(
+  fn split_at_offset1_streaming<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
@@ -1620,10 +1597,7 @@ impl<'a> InputTakeAtPosition for &'a [u8] {
     }
   }
 
-  fn split_at_position_complete<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-  ) -> IResult<Self, Self, E>
+  fn split_at_offset_complete<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
   {
@@ -1633,7 +1607,7 @@ impl<'a> InputTakeAtPosition for &'a [u8] {
     }
   }
 
-  fn split_at_position1_complete<P, E: ParseError<Self>>(
+  fn split_at_offset1_complete<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
@@ -1655,10 +1629,10 @@ impl<'a> InputTakeAtPosition for &'a [u8] {
   }
 }
 
-impl<'a> InputTakeAtPosition for &'a str {
+impl<'a> InputTakeAtOffset for &'a str {
   type Item = char;
 
-  fn split_at_position_streaming<P, E: ParseError<Self>>(
+  fn split_at_offset_streaming<P, E: ParseError<Self>>(
     &self,
     predicate: P,
   ) -> IResult<Self, Self, E>
@@ -1672,7 +1646,7 @@ impl<'a> InputTakeAtPosition for &'a str {
     }
   }
 
-  fn split_at_position1_streaming<P, E: ParseError<Self>>(
+  fn split_at_offset1_streaming<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,
@@ -1688,10 +1662,7 @@ impl<'a> InputTakeAtPosition for &'a str {
     }
   }
 
-  fn split_at_position_complete<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-  ) -> IResult<Self, Self, E>
+  fn split_at_offset_complete<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool,
   {
@@ -1708,7 +1679,7 @@ impl<'a> InputTakeAtPosition for &'a str {
     }
   }
 
-  fn split_at_position1_complete<P, E: ParseError<Self>>(
+  fn split_at_offset1_complete<P, E: ParseError<Self>>(
     &self,
     predicate: P,
     e: ErrorKind,

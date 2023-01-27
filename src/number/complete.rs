@@ -10,7 +10,7 @@ use crate::combinator::{cut, map, opt, recognize};
 use crate::error::ParseError;
 use crate::error::{make_error, ErrorKind};
 use crate::input::{
-  AsBytes, AsChar, Compare, InputIter, InputLength, InputTake, InputTakeAtPosition, IntoOutput,
+  AsBytes, AsChar, Compare, InputIter, InputLength, InputTake, InputTakeAtOffset, IntoOutput,
   Offset, Slice,
 };
 use crate::lib::std::ops::{Add, Range, RangeFrom, RangeTo, Shl};
@@ -1407,14 +1407,14 @@ where
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::hex_u32`")]
 pub fn hex_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
-  I: InputTakeAtPosition,
+  I: InputTakeAtOffset,
   I: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
-  <I as InputTakeAtPosition>::Item: AsChar,
+  <I as InputTakeAtOffset>::Item: AsChar,
   I: AsBytes,
   I: InputLength,
 {
   let e: ErrorKind = ErrorKind::IsA;
-  let (i, o) = input.split_at_position1_complete(
+  let (i, o) = input.split_at_offset1_complete(
     |c| {
       let c = c.as_char();
       !"0123456789abcdefABCDEF".contains(c)
@@ -1472,8 +1472,8 @@ where
   T: InputIter,
   T: IntoOutput,
   <T as InputIter>::Item: AsChar,
-  T: InputTakeAtPosition,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  T: InputTakeAtOffset,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   recognize(
     tuple((
@@ -1507,9 +1507,9 @@ where
   T: Clone + Offset,
   T: InputIter + InputTake + Compare<&'static str>,
   <T as InputIter>::Item: AsChar,
-  T: InputTakeAtPosition,
+  T: InputTakeAtOffset,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   alt((
     |i: T| {
@@ -1566,8 +1566,8 @@ where
   T: InputIter + InputTake,
   T: IntoOutput,
   <T as InputIter>::Item: AsChar + Copy,
-  T: InputTakeAtPosition + InputLength,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  T: InputTakeAtOffset + InputLength,
+  <T as InputTakeAtOffset>::Item: AsChar,
   T: for<'a> Compare<&'a [u8]>,
   T: AsBytes,
 {
@@ -1679,8 +1679,8 @@ where
   <T as IntoOutput>::Output: ParseTo<f32>,
   <T as InputIter>::Item: AsChar + Copy,
   <T as InputIter>::IterElem: Clone,
-  T: InputTakeAtPosition,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  T: InputTakeAtOffset,
+  <T as InputTakeAtOffset>::Item: AsChar,
   T: AsBytes,
   T: for<'a> Compare<&'a [u8]>,
 {
@@ -1723,8 +1723,8 @@ where
   <T as IntoOutput>::Output: ParseTo<f64>,
   <T as InputIter>::Item: AsChar + Copy,
   <T as InputIter>::IterElem: Clone,
-  T: InputTakeAtPosition,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  T: InputTakeAtOffset,
+  <T as InputTakeAtOffset>::Item: AsChar,
   T: AsBytes,
   T: for<'a> Compare<&'a [u8]>,
 {

@@ -9,7 +9,7 @@ use crate::character::streaming::{char, digit1, sign};
 use crate::combinator::{cut, map, opt, recognize};
 use crate::error::{ErrorKind, ParseError};
 use crate::input::{
-  AsBytes, AsChar, Compare, InputIter, InputLength, InputTake, InputTakeAtPosition, IntoOutput,
+  AsBytes, AsChar, Compare, InputIter, InputLength, InputTake, InputTakeAtOffset, IntoOutput,
   Offset, Slice,
 };
 use crate::lib::std::ops::{Add, RangeFrom, RangeTo, Shl};
@@ -1505,14 +1505,14 @@ where
 )]
 pub fn hex_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
-  I: InputTakeAtPosition,
+  I: InputTakeAtOffset,
   I: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
-  <I as InputTakeAtPosition>::Item: AsChar,
+  <I as InputTakeAtOffset>::Item: AsChar,
   I: AsBytes,
   I: InputLength,
 {
   let e: ErrorKind = ErrorKind::IsA;
-  let (i, o) = input.split_at_position1_streaming(
+  let (i, o) = input.split_at_offset1_streaming(
     |c| {
       let c = c.as_char();
       !"0123456789abcdefABCDEF".contains(c)
@@ -1569,8 +1569,8 @@ where
   T: InputIter,
   T: IntoOutput,
   <T as InputIter>::Item: AsChar,
-  T: InputTakeAtPosition + InputLength,
-  <T as InputTakeAtPosition>::Item: AsChar
+  T: InputTakeAtOffset + InputLength,
+  <T as InputTakeAtOffset>::Item: AsChar
 {
   recognize(
     tuple((
@@ -1605,8 +1605,8 @@ where
   T: InputIter + InputTake + InputLength + Compare<&'static str>,
   T: IntoOutput,
   <T as InputIter>::Item: AsChar,
-  T: InputTakeAtPosition,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  T: InputTakeAtOffset,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   alt((
     |i: T| {
@@ -1663,14 +1663,14 @@ where
   T: InputIter,
   T: IntoOutput,
   <T as InputIter>::Item: AsChar,
-  T: InputTakeAtPosition + InputTake + InputLength,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  T: InputTakeAtOffset + InputTake + InputLength,
+  <T as InputTakeAtOffset>::Item: AsChar,
   T: for<'a> Compare<&'a [u8]>,
   T: AsBytes,
 {
   let (i, sign) = sign(input.clone())?;
 
-  //let (i, zeroes) = take_while(|c: <T as InputTakeAtPosition>::Item| c.as_char() == '0')(i)?;
+  //let (i, zeroes) = take_while(|c: <T as InputTakeAtOffset>::Item| c.as_char() == '0')(i)?;
   let (i, zeroes) = match i.as_bytes().iter().position(|c| *c != b'0') {
     Some(index) => i.take_split(index),
     None => i.take_split(i.input_len()),
@@ -1783,8 +1783,8 @@ where
   <T as IntoOutput>::Output: crate::input::ParseTo<f32>,
   <T as InputIter>::Item: AsChar,
   <T as InputIter>::IterElem: Clone,
-  T: InputTakeAtPosition,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  T: InputTakeAtOffset,
+  <T as InputTakeAtOffset>::Item: AsChar,
   T: AsBytes,
   T: for<'a> Compare<&'a [u8]>,
 {
@@ -1833,8 +1833,8 @@ where
   <T as IntoOutput>::Output: crate::input::ParseTo<f64>,
   <T as InputIter>::Item: AsChar,
   <T as InputIter>::IterElem: Clone,
-  T: InputTakeAtPosition,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  T: InputTakeAtOffset,
+  <T as InputTakeAtOffset>::Item: AsChar,
   T: AsBytes,
   T: for<'a> Compare<&'a [u8]>,
 {

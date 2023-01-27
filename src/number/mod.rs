@@ -9,7 +9,7 @@ mod tests;
 
 use crate::error::ParseError;
 use crate::input::{
-  AsBytes, AsChar, InputIsStreaming, InputIter, InputLength, InputTakeAtPosition, Slice,
+  AsBytes, AsChar, InputIsStreaming, InputIter, InputLength, InputTakeAtOffset, Slice,
 };
 use crate::lib::std::ops::{RangeFrom, RangeTo};
 use crate::IResult;
@@ -2183,9 +2183,9 @@ where
 #[inline(always)]
 pub fn hex_u32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u32, E>
 where
-  I: InputTakeAtPosition + InputIsStreaming<STREAMING>,
+  I: InputTakeAtOffset + InputIsStreaming<STREAMING>,
   I: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
-  <I as InputTakeAtPosition>::Item: AsChar,
+  <I as InputTakeAtOffset>::Item: AsChar,
   I: AsBytes,
   I: InputLength,
 {

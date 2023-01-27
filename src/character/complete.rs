@@ -9,7 +9,7 @@ use crate::combinator::opt;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{
-  AsChar, FindToken, InputIter, InputLength, InputTake, InputTakeAtPosition, IntoOutput, Slice,
+  AsChar, FindToken, InputIter, InputLength, InputTake, InputTakeAtOffset, IntoOutput, Slice,
 };
 use crate::input::{Compare, CompareResult};
 use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
@@ -392,12 +392,12 @@ where
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::alpha0`")]
 pub fn alpha0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition,
+  T: InputTakeAtOffset,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   input
-    .split_at_position_complete(|item| !item.is_alpha())
+    .split_at_offset_complete(|item| !item.is_alpha())
     .into_output()
 }
 
@@ -423,12 +423,12 @@ where
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::alpha1`")]
 pub fn alpha1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition,
+  T: InputTakeAtOffset,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   input
-    .split_at_position1_complete(|item| !item.is_alpha(), ErrorKind::Alpha)
+    .split_at_offset1_complete(|item| !item.is_alpha(), ErrorKind::Alpha)
     .into_output()
 }
 
@@ -455,12 +455,12 @@ where
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::digit0`")]
 pub fn digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition,
+  T: InputTakeAtOffset,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   input
-    .split_at_position_complete(|item| !item.is_dec_digit())
+    .split_at_offset_complete(|item| !item.is_dec_digit())
     .into_output()
 }
 
@@ -504,12 +504,12 @@ where
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::digit1`")]
 pub fn digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition,
+  T: InputTakeAtOffset,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   input
-    .split_at_position1_complete(|item| !item.is_dec_digit(), ErrorKind::Digit)
+    .split_at_offset1_complete(|item| !item.is_dec_digit(), ErrorKind::Digit)
     .into_output()
 }
 
@@ -537,12 +537,12 @@ where
 )]
 pub fn hex_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition,
+  T: InputTakeAtOffset,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   input
-    .split_at_position_complete(|item| !item.is_hex_digit())
+    .split_at_offset_complete(|item| !item.is_hex_digit())
     .into_output()
 }
 /// Recognizes one or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
@@ -570,12 +570,12 @@ where
 )]
 pub fn hex_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition,
+  T: InputTakeAtOffset,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   input
-    .split_at_position1_complete(|item| !item.is_hex_digit(), ErrorKind::HexDigit)
+    .split_at_offset1_complete(|item| !item.is_hex_digit(), ErrorKind::HexDigit)
     .into_output()
 }
 
@@ -604,12 +604,12 @@ where
 )]
 pub fn oct_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition,
+  T: InputTakeAtOffset,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   input
-    .split_at_position_complete(|item| !item.is_oct_digit())
+    .split_at_offset_complete(|item| !item.is_oct_digit())
     .into_output()
 }
 
@@ -638,12 +638,12 @@ where
 )]
 pub fn oct_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition,
+  T: InputTakeAtOffset,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   input
-    .split_at_position1_complete(|item| !item.is_oct_digit(), ErrorKind::OctDigit)
+    .split_at_offset1_complete(|item| !item.is_oct_digit(), ErrorKind::OctDigit)
     .into_output()
 }
 
@@ -672,12 +672,12 @@ where
 )]
 pub fn alphanumeric0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition,
+  T: InputTakeAtOffset,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   input
-    .split_at_position_complete(|item| !item.is_alphanum())
+    .split_at_offset_complete(|item| !item.is_alphanum())
     .into_output()
 }
 
@@ -706,12 +706,12 @@ where
 )]
 pub fn alphanumeric1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition,
+  T: InputTakeAtOffset,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar,
+  <T as InputTakeAtOffset>::Item: AsChar,
 {
   input
-    .split_at_position1_complete(|item| !item.is_alphanum(), ErrorKind::AlphaNumeric)
+    .split_at_offset1_complete(|item| !item.is_alphanum(), ErrorKind::AlphaNumeric)
     .into_output()
 }
 
@@ -737,12 +737,12 @@ where
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::space0`")]
 pub fn space0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition,
+  T: InputTakeAtOffset,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar + Clone,
+  <T as InputTakeAtOffset>::Item: AsChar + Clone,
 {
   input
-    .split_at_position_complete(|item| {
+    .split_at_offset_complete(|item| {
       let c = item.as_char();
       !(c == ' ' || c == '\t')
     })
@@ -771,12 +771,12 @@ where
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::space1`")]
 pub fn space1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition,
+  T: InputTakeAtOffset,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar + Clone,
+  <T as InputTakeAtOffset>::Item: AsChar + Clone,
 {
   input
-    .split_at_position1_complete(
+    .split_at_offset1_complete(
       |item| {
         let c = item.as_char();
         !(c == ' ' || c == '\t')
@@ -811,12 +811,12 @@ where
 )]
 pub fn multispace0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition,
+  T: InputTakeAtOffset,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar + Clone,
+  <T as InputTakeAtOffset>::Item: AsChar + Clone,
 {
   input
-    .split_at_position_complete(|item| {
+    .split_at_offset_complete(|item| {
       let c = item.as_char();
       !(c == ' ' || c == '\t' || c == '\r' || c == '\n')
     })
@@ -848,12 +848,12 @@ where
 )]
 pub fn multispace1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
-  T: InputTakeAtPosition,
+  T: InputTakeAtOffset,
   T: IntoOutput,
-  <T as InputTakeAtPosition>::Item: AsChar + Clone,
+  <T as InputTakeAtOffset>::Item: AsChar + Clone,
 {
   input
-    .split_at_position1_complete(
+    .split_at_offset1_complete(
       |item| {
         let c = item.as_char();
         !(c == ' ' || c == '\t' || c == '\r' || c == '\n')
