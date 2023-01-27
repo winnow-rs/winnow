@@ -291,7 +291,7 @@
 //!     /// Combines an existing error with a new one created from the input
 //!     /// position and an [ErrorKind]. This is useful when backtracking
 //!     /// through a parse tree, accumulating error context on the way
-//!     fn append(input: I, kind: ErrorKind, other: Self) -> Self;
+//!     fn append(self, input: I, kind: ErrorKind) -> Self;
 //!
 //!     /// Combines two existing errors. This function is used to compare errors
 //!     /// generated in various branches of `alt`
@@ -313,8 +313,8 @@
 //!
 //! ```rust
 //! pub trait ContextError<I, C>: Sized {
-//!     fn add_context(_input: I, _ctx: C, other: Self) -> Self {
-//!         other
+//!     fn add_context(self, _input: I, _ctx: C) -> Self {
+//!         self
 //!     }
 //! }
 //! ```
@@ -360,8 +360,8 @@
 //!     }
 //!
 //!     // if combining multiple errors, we show them one after the other
-//!     fn append(input: &str, kind: ErrorKind, other: Self) -> Self {
-//!         let message = format!("{}{:?}:\t{:?}\n", other.message, kind, input);
+//!     fn append(self, input: &str, kind: ErrorKind) -> Self {
+//!         let message = format!("{}{:?}:\t{:?}\n", self.message, kind, input);
 //!         println!("{}", message);
 //!         DebugError { message }
 //!     }
@@ -374,8 +374,8 @@
 //! }
 //!
 //! impl ContextError<&str, &'static str> for DebugError {
-//!     fn add_context(input: &str, ctx: &'static str, other: Self) -> Self {
-//!         let message = format!("{}\"{}\":\t{:?}\n", other.message, ctx, input);
+//!     fn add_context(self, input: &str, ctx: &'static str) -> Self {
+//!         let message = format!("{}\"{}\":\t{:?}\n", self.message, ctx, input);
 //!         println!("{}", message);
 //!         DebugError { message }
 //!     }
@@ -483,7 +483,7 @@ pub trait ParseError<I>: Sized {
   /// Combines an existing error with a new one created from the input
   /// position and an [`ErrorKind`]. This is useful when backtracking
   /// through a parse tree, accumulating error context on the way
-  fn append(input: I, kind: ErrorKind, other: Self) -> Self;
+  fn append(self, input: I, kind: ErrorKind) -> Self;
 
   /// Creates an error from an input position and an expected character
   #[deprecated(since = "8.0.0", note = "Replaced with `ContextError`")]
@@ -504,8 +504,8 @@ pub trait ContextError<I, C>: Sized {
   /// Creates a new error from an input position, a static string and an existing error.
   /// This is used mainly in the [context] combinator, to add user friendly information
   /// to errors when backtracking through a parse tree
-  fn add_context(_input: I, _ctx: C, other: Self) -> Self {
-    other
+  fn add_context(self, _input: I, _ctx: C) -> Self {
+    self
   }
 }
 
@@ -544,8 +544,8 @@ impl<I> ParseError<I> for Error<I> {
     Error { input, code: kind }
   }
 
-  fn append(_: I, _: ErrorKind, other: Self) -> Self {
-    other
+  fn append(self, _: I, _: ErrorKind) -> Self {
+    self
   }
 }
 
@@ -593,8 +593,8 @@ impl<I> ParseError<I> for (I, ErrorKind) {
     (input, kind)
   }
 
-  fn append(_: I, _: ErrorKind, other: Self) -> Self {
-    other
+  fn append(self, _: I, _: ErrorKind) -> Self {
+    self
   }
 }
 
@@ -621,7 +621,7 @@ impl<I> ErrorConvert<((I, usize), ErrorKind)> for (I, ErrorKind) {
 impl<I> ParseError<I> for () {
   fn from_error_kind(_: I, _: ErrorKind) -> Self {}
 
-  fn append(_: I, _: ErrorKind, _: Self) -> Self {}
+  fn append(self, _: I, _: ErrorKind) -> Self {}
 }
 
 impl<I, C> ContextError<I, C> for () {}
@@ -645,7 +645,7 @@ pub fn make_error<I, E: ParseError<I>>(input: I, kind: ErrorKind) -> E {
 /// through a parse tree, accumulating error context on the way
 #[deprecated(since = "8.0.0", note = "Replaced with `ParseError::append`")]
 pub fn append_error<I, E: ParseError<I>>(input: I, kind: ErrorKind, other: E) -> E {
-  E::append(input, kind, other)
+  other.append(input, kind)
 }
 
 /// This error type accumulates errors and their position when backtracking
@@ -677,17 +677,17 @@ impl<I> ParseError<I> for VerboseError<I> {
     }
   }
 
-  fn append(input: I, kind: ErrorKind, mut other: Self) -> Self {
-    other.errors.push((input, VerboseErrorKind::Nom(kind)));
-    other
+  fn append(mut self, input: I, kind: ErrorKind) -> Self {
+    self.errors.push((input, VerboseErrorKind::Nom(kind)));
+    self
   }
 }
 
 #[cfg(feature = "alloc")]
 impl<I> ContextError<I, &'static str> for VerboseError<I> {
-  fn add_context(input: I, ctx: &'static str, mut other: Self) -> Self {
-    other.errors.push((input, VerboseErrorKind::Context(ctx)));
-    other
+  fn add_context(mut self, input: I, ctx: &'static str) -> Self {
+    self.errors.push((input, VerboseErrorKind::Context(ctx)));
+    self
   }
 }
 
@@ -753,8 +753,8 @@ where
   move |i: I| match f.parse_next(i.clone()) {
     Ok(o) => Ok(o),
     Err(Err::Incomplete(i)) => Err(Err::Incomplete(i)),
-    Err(Err::Error(e)) => Err(Err::Error(E::add_context(i, context, e))),
-    Err(Err::Failure(e)) => Err(Err::Failure(E::add_context(i, context, e))),
+    Err(Err::Error(e)) => Err(Err::Error(e.add_context(i, context))),
+    Err(Err::Failure(e)) => Err(Err::Failure(e.add_context(i, context))),
   }
 }
 
@@ -787,8 +787,8 @@ where
     match (self.f).parse_next(i.clone()) {
       Ok(o) => Ok(o),
       Err(Err::Incomplete(i)) => Err(Err::Incomplete(i)),
-      Err(Err::Error(e)) => Err(Err::Error(E::add_context(i, self.context.clone(), e))),
-      Err(Err::Failure(e)) => Err(Err::Failure(E::add_context(i, self.context.clone(), e))),
+      Err(Err::Error(e)) => Err(Err::Error(e.add_context(i, self.context.clone()))),
+      Err(Err::Failure(e)) => Err(Err::Failure(e.add_context(i, self.context.clone()))),
     }
   }
 }
@@ -1011,7 +1011,7 @@ macro_rules! error_position(
 #[macro_export(local_inner_macros)]
 macro_rules! error_node_position(
   ($input:expr, $code:expr, $next:expr) => ({
-    $crate::error::ParseError::append($input, $code, $next)
+    $crate::error::ParseError::append($next, $input, $code)
   });
 );
 

@@ -79,7 +79,7 @@ impl<I> ParseError<I> for CustomError {
     CustomError
   }
 
-  fn append(_: I, _: ErrorKind, _: CustomError) -> Self {
+  fn append(self, _: I, _: ErrorKind) -> Self {
     CustomError
   }
 }

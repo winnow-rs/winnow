@@ -24,8 +24,8 @@ impl<'a> ParseError<Streaming<&'a str>> for CustomError {
     CustomError(format!("error code was: {:?}", kind))
   }
 
-  fn append(_: Streaming<&'a str>, kind: ErrorKind, other: CustomError) -> Self {
-    CustomError(format!("{:?}\nerror code was: {:?}", other, kind))
+  fn append(self, _: Streaming<&'a str>, kind: ErrorKind) -> Self {
+    CustomError(format!("{:?}\nerror code was: {:?}", self, kind))
   }
 }
 

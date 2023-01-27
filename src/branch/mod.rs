@@ -152,7 +152,7 @@ macro_rules! alt_trait_inner(
     }
   );
   ($it:tt, $self:expr, $input:expr, $err:expr, $head:ident) => (
-    Err(Err::Error(Error::append($input, ErrorKind::Alt, $err)))
+    Err(Err::Error($err.append($input, ErrorKind::Alt)))
   );
 );
 
@@ -205,7 +205,7 @@ macro_rules! permutation_trait_impl(
           // or errored on the remaining input
           if let Some(err) = err {
             // There are remaining parsers, and all errored on the remaining input
-            return Err(Err::Error(Error::append(input, ErrorKind::Permutation, err)));
+            return Err(Err::Error(err.append(input, ErrorKind::Permutation)));
           }
 
           // All parsers were applied

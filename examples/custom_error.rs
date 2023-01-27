@@ -14,8 +14,8 @@ impl<I> ParseError<I> for CustomError<I> {
     CustomError::Nom(input, kind)
   }
 
-  fn append(_: I, _: ErrorKind, other: Self) -> Self {
-    other
+  fn append(self, _: I, _: ErrorKind) -> Self {
+    self
   }
 }
 
