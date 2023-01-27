@@ -586,38 +586,6 @@ impl<I: fmt::Display> fmt::Display for Error<I> {
 #[cfg(feature = "std")]
 impl<I: fmt::Debug + fmt::Display> std::error::Error for Error<I> {}
 
-// for backward compatibility, keep those trait implementations
-// for the previously used error type
-impl<I> ParseError<I> for (I, ErrorKind) {
-  fn from_error_kind(input: I, kind: ErrorKind) -> Self {
-    (input, kind)
-  }
-
-  fn append(self, _: I, _: ErrorKind) -> Self {
-    self
-  }
-}
-
-impl<I, C> ContextError<I, C> for (I, ErrorKind) {}
-
-impl<I, E> FromExternalError<I, E> for (I, ErrorKind) {
-  fn from_external_error(input: I, kind: ErrorKind, _e: E) -> Self {
-    (input, kind)
-  }
-}
-
-impl<I> ErrorConvert<(I, ErrorKind)> for ((I, usize), ErrorKind) {
-  fn convert(self) -> (I, ErrorKind) {
-    ((self.0).0, self.1)
-  }
-}
-
-impl<I> ErrorConvert<((I, usize), ErrorKind)> for (I, ErrorKind) {
-  fn convert(self) -> ((I, usize), ErrorKind) {
-    ((self.0, 0), self.1)
-  }
-}
-
 impl<I> ParseError<I> for () {
   fn from_error_kind(_: I, _: ErrorKind) -> Self {}
 
