@@ -174,9 +174,10 @@ mod tests;
 ///
 /// ```rust
 /// # use winnow::error::ErrorKind;
+/// # use winnow::error::Error;
 /// use winnow::combinator::rest;
-/// assert_eq!(rest::<_,(_, ErrorKind)>("abc"), Ok(("", "abc")));
-/// assert_eq!(rest::<_,(_, ErrorKind)>(""), Ok(("", "")));
+/// assert_eq!(rest::<_,Error<_>>("abc"), Ok(("", "abc")));
+/// assert_eq!(rest::<_,Error<_>>(""), Ok(("", "")));
 /// ```
 #[inline]
 pub fn rest<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
@@ -192,9 +193,10 @@ where
 ///
 /// ```rust
 /// # use winnow::error::ErrorKind;
+/// # use winnow::error::Error;
 /// use winnow::combinator::rest_len;
-/// assert_eq!(rest_len::<_,(_, ErrorKind)>("abc"), Ok(("abc", 3)));
-/// assert_eq!(rest_len::<_,(_, ErrorKind)>(""), Ok(("", 0)));
+/// assert_eq!(rest_len::<_,Error<_>>("abc"), Ok(("abc", 3)));
+/// assert_eq!(rest_len::<_,Error<_>>(""), Ok(("", 0)));
 /// ```
 #[inline]
 pub fn rest_len<T, E: ParseError<T>>(input: T) -> IResult<T, usize, E>
@@ -228,7 +230,7 @@ impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for ByRef<'p, P> {
 /// **WARNING:** Deprecated, replaced with [`Parser::map`]
 ///
 /// ```rust
-/// use winnow::{Err,error::ErrorKind, IResult,Parser};
+/// use winnow::{Err, error::ErrorKind, error::Error, IResult,Parser};
 /// use winnow::character::digit1;
 /// use winnow::combinator::map;
 /// # fn main() {
@@ -239,7 +241,7 @@ impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for ByRef<'p, P> {
 /// assert_eq!(parser.parse_next("123456"), Ok(("", 6)));
 ///
 /// // this will fail if digit1 fails
-/// assert_eq!(parser.parse_next("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
+/// assert_eq!(parser.parse_next("abc"), Err(Err::Error(Error::new("abc", ErrorKind::Digit))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::map")]
@@ -286,7 +288,7 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> O2> Parser<I, O2, E> for Ma
 /// **WARNING:** Deprecated, replaced with [`Parser::map_res`]
 ///
 /// ```rust
-/// # use winnow::{Err,error::ErrorKind, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult};
 /// use winnow::character::digit1;
 /// use winnow::combinator::map_res;
 /// # fn main() {
@@ -297,10 +299,10 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> O2> Parser<I, O2, E> for Ma
 /// assert_eq!(parse("123"), Ok(("", 123)));
 ///
 /// // this will fail if digit1 fails
-/// assert_eq!(parse("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
+/// assert_eq!(parse("abc"), Err(Err::Error(Error::new("abc", ErrorKind::Digit))));
 ///
 /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
-/// assert_eq!(parse("123456"), Err(Err::Error(("123456", ErrorKind::MapRes))));
+/// assert_eq!(parse("123456"), Err(Err::Error(Error::new("123456", ErrorKind::MapRes))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::map_res")]
@@ -362,7 +364,7 @@ where
 /// **WARNING:** Deprecated, replaced with [`Parser::map_opt`]
 ///
 /// ```rust
-/// # use winnow::{Err,error::ErrorKind, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult};
 /// use winnow::character::digit1;
 /// use winnow::combinator::map_opt;
 /// # fn main() {
@@ -373,10 +375,10 @@ where
 /// assert_eq!(parse("123"), Ok(("", 123)));
 ///
 /// // this will fail if digit1 fails
-/// assert_eq!(parse("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
+/// assert_eq!(parse("abc"), Err(Err::Error(Error::new("abc", ErrorKind::Digit))));
 ///
 /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
-/// assert_eq!(parse("123456"), Err(Err::Error(("123456", ErrorKind::MapOpt))));
+/// assert_eq!(parse("123456"), Err(Err::Error(Error::new("123456", ErrorKind::MapOpt))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::map_res")]
@@ -438,7 +440,7 @@ where
 /// **WARNING:** Deprecated, replaced with [`Parser::and_then`]
 ///
 /// ```rust
-/// # use winnow::{Err,error::ErrorKind, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult};
 /// use winnow::character::digit1;
 /// use winnow::bytes::take;
 /// use winnow::combinator::map_parser;
@@ -448,7 +450,7 @@ where
 ///
 /// assert_eq!(parse("12345"), Ok(("", "12345")));
 /// assert_eq!(parse("123ab"), Ok(("", "123")));
-/// assert_eq!(parse("123"), Err(Err::Error(("123", ErrorKind::Eof))));
+/// assert_eq!(parse("123"), Err(Err::Error(Error::new("123", ErrorKind::Eof))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::and_then")]
@@ -500,7 +502,7 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, E>
 /// **WARNING:** Deprecated, replaced with [`Parser::flat_map`]
 ///
 /// ```rust
-/// # use winnow::{Err,error::ErrorKind, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult};
 /// use winnow::bytes::take;
 /// use winnow::number::u8;
 /// use winnow::combinator::flat_map;
@@ -509,7 +511,7 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, E>
 /// let mut parse = flat_map(u8, take);
 ///
 /// assert_eq!(parse(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
-/// assert_eq!(parse(&[4, 0, 1, 2][..]), Err(Err::Error((&[0, 1, 2][..], ErrorKind::Eof))));
+/// assert_eq!(parse(&[4, 0, 1, 2][..]), Err(Err::Error(Error::new(&[0, 1, 2][..], ErrorKind::Eof))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::flat_map")]
@@ -560,7 +562,7 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> H, H: Parser<I, O2, E>> Par
 /// To chain an error up, see [`cut`].
 ///
 /// ```rust
-/// # use winnow::{Err,error::ErrorKind, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::opt;
 /// use winnow::character::alpha1;
 /// # fn main() {
@@ -675,7 +677,7 @@ where
 /// Tries to apply its parser without consuming the input.
 ///
 /// ```rust
-/// # use winnow::{Err,error::ErrorKind, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::peek;
 /// use winnow::character::alpha1;
 /// # fn main() {
@@ -683,7 +685,7 @@ where
 /// let mut parser = peek(alpha1);
 ///
 /// assert_eq!(parser("abcd;"), Ok(("abcd;", "abcd")));
-/// assert_eq!(parser("123;"), Err(Err::Error(("123;", ErrorKind::Alpha))));
+/// assert_eq!(parser("123;"), Err(Err::Error(Error::new("123;", ErrorKind::Alpha))));
 /// # }
 /// ```
 pub fn peek<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
@@ -706,12 +708,12 @@ where
 ///
 /// ```
 /// # use std::str;
-/// # use winnow::{Err, error::ErrorKind, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult};
 /// # use winnow::combinator::eof;
 ///
 /// # fn main() {
 /// let parser = eof;
-/// assert_eq!(parser("abc"), Err(Err::Error(("abc", ErrorKind::Eof))));
+/// assert_eq!(parser("abc"), Err(Err::Error(Error::new("abc", ErrorKind::Eof))));
 /// assert_eq!(parser(""), Ok(("", "")));
 /// # }
 /// ```
@@ -734,7 +736,7 @@ where
 /// **WARNING:** Deprecated, replaced with [`Parser::complete`]
 ///
 /// ```rust
-/// # use winnow::{Err,error::ErrorKind, IResult, input::Streaming};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, input::Streaming};
 /// use winnow::bytes::take;
 /// use winnow::combinator::complete;
 /// # fn main() {
@@ -742,7 +744,7 @@ where
 /// let mut parser = complete(take(5u8));
 ///
 /// assert_eq!(parser(Streaming("abcdefg")), Ok((Streaming("fg"), "abcde")));
-/// assert_eq!(parser(Streaming("abcd")), Err(Err::Error((Streaming("abcd"), ErrorKind::Complete))));
+/// assert_eq!(parser(Streaming("abcd")), Err(Err::Error(Error::new(Streaming("abcd"), ErrorKind::Complete))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::complete")]
@@ -789,7 +791,7 @@ where
 /// Succeeds if all the input has been consumed by its child parser.
 ///
 /// ```rust
-/// # use winnow::{Err,error::ErrorKind, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::all_consuming;
 /// use winnow::character::alpha1;
 /// # fn main() {
@@ -797,8 +799,8 @@ where
 /// let mut parser = all_consuming(alpha1);
 ///
 /// assert_eq!(parser("abcd"), Ok(("", "abcd")));
-/// assert_eq!(parser("abcd;"),Err(Err::Error((";", ErrorKind::Eof))));
-/// assert_eq!(parser("123abcd;"),Err(Err::Error(("123abcd;", ErrorKind::Alpha))));
+/// assert_eq!(parser("abcd;"),Err(Err::Error(Error::new(";", ErrorKind::Eof))));
+/// assert_eq!(parser("123abcd;"),Err(Err::Error(Error::new("123abcd;", ErrorKind::Alpha))));
 /// # }
 /// ```
 pub fn all_consuming<I, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
@@ -824,7 +826,7 @@ where
 /// **WARNING:** Deprecated, replaced with [`Parser::map`]
 ///
 /// ```rust
-/// # use winnow::{Err,error::ErrorKind, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::verify;
 /// use winnow::character::alpha1;
 /// # fn main() {
@@ -832,8 +834,8 @@ where
 /// let mut parser = verify(alpha1, |s: &str| s.len() == 4);
 ///
 /// assert_eq!(parser("abcd"), Ok(("", "abcd")));
-/// assert_eq!(parser("abcde"), Err(Err::Error(("abcde", ErrorKind::Verify))));
-/// assert_eq!(parser("123abcd;"),Err(Err::Error(("123abcd;", ErrorKind::Alpha))));
+/// assert_eq!(parser("abcde"), Err(Err::Error(Error::new("abcde", ErrorKind::Verify))));
+/// assert_eq!(parser("123abcd;"),Err(Err::Error(Error::new("123abcd;", ErrorKind::Alpha))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::verify")]
@@ -903,7 +905,7 @@ where
 /// **WARNING:** Deprecated, replaced with [`Parser::value`]
 ///
 /// ```rust
-/// # use winnow::{Err,error::ErrorKind, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::value;
 /// use winnow::character::alpha1;
 /// # fn main() {
@@ -911,7 +913,7 @@ where
 /// let mut parser = value(1234, alpha1);
 ///
 /// assert_eq!(parser("abcd"), Ok(("", 1234)));
-/// assert_eq!(parser("123abcd;"), Err(Err::Error(("123abcd;", ErrorKind::Alpha))));
+/// assert_eq!(parser("123abcd;"), Err(Err::Error(Error::new("123abcd;", ErrorKind::Alpha))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::value")]
@@ -956,7 +958,7 @@ impl<I, O1, O2: Clone, E: ParseError<I>, F: Parser<I, O1, E>> Parser<I, O2, E>
 /// Succeeds if the child parser returns an error.
 ///
 /// ```rust
-/// # use winnow::{Err,error::ErrorKind, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::not;
 /// use winnow::character::alpha1;
 /// # fn main() {
@@ -964,7 +966,7 @@ impl<I, O1, O2: Clone, E: ParseError<I>, F: Parser<I, O1, E>> Parser<I, O2, E>
 /// let mut parser = not(alpha1);
 ///
 /// assert_eq!(parser("123"), Ok(("123", ())));
-/// assert_eq!(parser("abcd"), Err(Err::Error(("abcd", ErrorKind::Not))));
+/// assert_eq!(parser("abcd"), Err(Err::Error(Error::new("abcd", ErrorKind::Not))));
 /// # }
 /// ```
 pub fn not<I: Clone, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, (), E>
@@ -986,7 +988,7 @@ where
 /// **WARNING:** Deprecated, replaced with [`Parser::recognize`]
 ///
 /// ```rust
-/// # use winnow::{Err,error::ErrorKind, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::recognize;
 /// use winnow::character::{alpha1};
 /// use winnow::sequence::separated_pair;
@@ -995,7 +997,7 @@ where
 /// let mut parser = recognize(separated_pair(alpha1, ',', alpha1));
 ///
 /// assert_eq!(parser("abcd,efgh"), Ok(("", "abcd,efgh")));
-/// assert_eq!(parser("abcd;"),Err(Err::Error((";", ErrorKind::OneOf))));
+/// assert_eq!(parser("abcd;"),Err(Err::Error(Error::new(";", ErrorKind::OneOf))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::recognize")]
@@ -1071,7 +1073,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{Err,error::ErrorKind, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::{consumed, value, recognize, map};
 /// use winnow::character::{alpha1};
 /// use winnow::bytes::tag;
@@ -1086,7 +1088,7 @@ where
 /// let mut consumed_parser = consumed(value(true, separated_pair(alpha1, ',', alpha1)));
 ///
 /// assert_eq!(consumed_parser("abcd,efgh1"), Ok(("1", ("abcd,efgh", true))));
-/// assert_eq!(consumed_parser("abcd;"),Err(Err::Error((";", ErrorKind::OneOf))));
+/// assert_eq!(consumed_parser("abcd;"),Err(Err::Error(Error::new(";", ErrorKind::OneOf))));
 ///
 ///
 /// // the first output (representing the consumed input)
@@ -1236,7 +1238,7 @@ where
 ///
 /// Without `cut`:
 /// ```rust
-/// # use winnow::{Err,error::ErrorKind, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult};
 /// # use winnow::bytes::one_of;
 /// # use winnow::character::digit1;
 /// # use winnow::combinator::rest;
@@ -1259,7 +1261,7 @@ where
 ///
 /// With `cut`:
 /// ```rust
-/// # use winnow::{Err,error::ErrorKind, IResult, error::Error};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult};
 /// # use winnow::bytes::one_of;
 /// # use winnow::character::digit1;
 /// # use winnow::combinator::rest;
@@ -1500,15 +1502,15 @@ enum State<E> {
 /// specify the default case.
 ///
 /// ```rust
-/// # use winnow::{Err,error::ErrorKind, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult};
 /// use winnow::branch::alt;
 /// use winnow::combinator::{success, value};
 /// # fn main() {
 ///
-/// let mut parser = success::<_,_,(_,ErrorKind)>(10);
+/// let mut parser = success::<_,_,Error<_>>(10);
 /// assert_eq!(parser("xyz"), Ok(("xyz", 10)));
 ///
-/// let mut sign = alt((value(-1, '-'), value(1, '+'), success::<_,_,(_,ErrorKind)>(1)));
+/// let mut sign = alt((value(-1, '-'), value(1, '+'), success::<_,_,Error<_>>(1)));
 /// assert_eq!(sign("+10"), Ok(("10", 1)));
 /// assert_eq!(sign("-10"), Ok(("10", -1)));
 /// assert_eq!(sign("10"), Ok(("10", 1)));
@@ -1521,11 +1523,11 @@ pub fn success<I, O: Clone, E: ParseError<I>>(val: O) -> impl Fn(I) -> IResult<I
 /// A parser which always fails.
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::fail;
 ///
 /// let s = "string";
-/// assert_eq!(fail::<_, &str, _>(s), Err(Err::Error((s, ErrorKind::Fail))));
+/// assert_eq!(fail::<_, &str, _>(s), Err(Err::Error(Error::new(s, ErrorKind::Fail))));
 /// ```
 pub fn fail<I, O, E: ParseError<I>>(i: I) -> IResult<I, O, E> {
   Err(Err::Error(E::from_error_kind(i, ErrorKind::Fail)))

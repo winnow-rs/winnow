@@ -39,12 +39,12 @@ use crate::IResult;
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::crlf;
-/// assert_eq!(crlf::<_, (_, ErrorKind), true>(Streaming("\r\nc")), Ok((Streaming("c"), "\r\n")));
-/// assert_eq!(crlf::<_, (_, ErrorKind), true>(Streaming("ab\r\nc")), Err(Err::Error((Streaming("ab\r\nc"), ErrorKind::CrLf))));
-/// assert_eq!(crlf::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(2))));
+/// assert_eq!(crlf::<_, Error<_>, true>(Streaming("\r\nc")), Ok((Streaming("c"), "\r\n")));
+/// assert_eq!(crlf::<_, Error<_>, true>(Streaming("ab\r\nc")), Err(Err::Error(Error::new(Streaming("ab\r\nc"), ErrorKind::CrLf))));
+/// assert_eq!(crlf::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
 pub fn crlf<T, E: ParseError<T>, const STREAMING: bool>(
@@ -90,11 +90,11 @@ where
 /// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::not_line_ending;
-/// assert_eq!(not_line_ending::<_, (_, ErrorKind), true>(Streaming("ab\r\nc")), Ok((Streaming("\r\nc"), "ab")));
-/// assert_eq!(not_line_ending::<_, (_, ErrorKind), true>(Streaming("abc")), Err(Err::Incomplete(Needed::Unknown)));
-/// assert_eq!(not_line_ending::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::Unknown)));
-/// assert_eq!(not_line_ending::<_, (_, ErrorKind), true>(Streaming("a\rb\nc")), Err(Err::Error((Streaming("a\rb\nc"), ErrorKind::Tag ))));
-/// assert_eq!(not_line_ending::<_, (_, ErrorKind), true>(Streaming("a\rbc")), Err(Err::Error((Streaming("a\rbc"), ErrorKind::Tag ))));
+/// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("ab\r\nc")), Ok((Streaming("\r\nc"), "ab")));
+/// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("abc")), Err(Err::Incomplete(Needed::Unknown)));
+/// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::Unknown)));
+/// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("a\rb\nc")), Err(Err::Error(Error::new(Streaming("a\rb\nc"), ErrorKind::Tag ))));
+/// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("a\rbc")), Err(Err::Error(Error::new(Streaming("a\rbc"), ErrorKind::Tag ))));
 /// ```
 #[inline(always)]
 pub fn not_line_ending<T, E: ParseError<T>, const STREAMING: bool>(
@@ -136,12 +136,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::line_ending;
-/// assert_eq!(line_ending::<_, (_, ErrorKind), true>(Streaming("\r\nc")), Ok((Streaming("c"), "\r\n")));
-/// assert_eq!(line_ending::<_, (_, ErrorKind), true>(Streaming("ab\r\nc")), Err(Err::Error((Streaming("ab\r\nc"), ErrorKind::CrLf))));
-/// assert_eq!(line_ending::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(line_ending::<_, Error<_>, true>(Streaming("\r\nc")), Ok((Streaming("c"), "\r\n")));
+/// assert_eq!(line_ending::<_, Error<_>, true>(Streaming("ab\r\nc")), Err(Err::Error(Error::new(Streaming("ab\r\nc"), ErrorKind::CrLf))));
+/// assert_eq!(line_ending::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn line_ending<T, E: ParseError<T>, const STREAMING: bool>(
@@ -181,12 +181,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::newline;
-/// assert_eq!(newline::<_, (_, ErrorKind), true>(Streaming("\nc")), Ok((Streaming("c"), '\n')));
-/// assert_eq!(newline::<_, (_, ErrorKind), true>(Streaming("\r\nc")), Err(Err::Error((Streaming("\r\nc"), ErrorKind::Char))));
-/// assert_eq!(newline::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(newline::<_, Error<_>, true>(Streaming("\nc")), Ok((Streaming("c"), '\n')));
+/// assert_eq!(newline::<_, Error<_>, true>(Streaming("\r\nc")), Err(Err::Error(Error::new(Streaming("\r\nc"), ErrorKind::Char))));
+/// assert_eq!(newline::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn newline<I, Error: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, char, Error>
@@ -222,12 +222,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::tab;
-/// assert_eq!(tab::<_, (_, ErrorKind), true>(Streaming("\tc")), Ok((Streaming("c"), '\t')));
-/// assert_eq!(tab::<_, (_, ErrorKind), true>(Streaming("\r\nc")), Err(Err::Error((Streaming("\r\nc"), ErrorKind::Char))));
-/// assert_eq!(tab::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(tab::<_, Error<_>, true>(Streaming("\tc")), Ok((Streaming("c"), '\t')));
+/// assert_eq!(tab::<_, Error<_>, true>(Streaming("\r\nc")), Err(Err::Error(Error::new(Streaming("\r\nc"), ErrorKind::Char))));
+/// assert_eq!(tab::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn tab<I, Error: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, char, Error>
@@ -253,7 +253,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::alpha0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alpha0(input)
@@ -265,12 +265,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::alpha0;
-/// assert_eq!(alpha0::<_, (_, ErrorKind), true>(Streaming("ab1c")), Ok((Streaming("1c"), "ab")));
-/// assert_eq!(alpha0::<_, (_, ErrorKind), true>(Streaming("1c")), Ok((Streaming("1c"), "")));
-/// assert_eq!(alpha0::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha0::<_, Error<_>, true>(Streaming("ab1c")), Ok((Streaming("1c"), "ab")));
+/// assert_eq!(alpha0::<_, Error<_>, true>(Streaming("1c")), Ok((Streaming("1c"), "")));
+/// assert_eq!(alpha0::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn alpha0<T, E: ParseError<T>, const STREAMING: bool>(
@@ -311,12 +311,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::alpha1;
-/// assert_eq!(alpha1::<_, (_, ErrorKind), true>(Streaming("aB1c")), Ok((Streaming("1c"), "aB")));
-/// assert_eq!(alpha1::<_, (_, ErrorKind), true>(Streaming("1c")), Err(Err::Error((Streaming("1c"), ErrorKind::Alpha))));
-/// assert_eq!(alpha1::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha1::<_, Error<_>, true>(Streaming("aB1c")), Ok((Streaming("1c"), "aB")));
+/// assert_eq!(alpha1::<_, Error<_>, true>(Streaming("1c")), Err(Err::Error(Error::new(Streaming("1c"), ErrorKind::Alpha))));
+/// assert_eq!(alpha1::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn alpha1<T, E: ParseError<T>, const STREAMING: bool>(
@@ -345,7 +345,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::digit0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     digit0(input)
@@ -358,12 +358,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::digit0;
-/// assert_eq!(digit0::<_, (_, ErrorKind), true>(Streaming("21c")), Ok((Streaming("c"), "21")));
-/// assert_eq!(digit0::<_, (_, ErrorKind), true>(Streaming("a21c")), Ok((Streaming("a21c"), "")));
-/// assert_eq!(digit0::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(digit0::<_, Error<_>, true>(Streaming("21c")), Ok((Streaming("c"), "21")));
+/// assert_eq!(digit0::<_, Error<_>, true>(Streaming("a21c")), Ok((Streaming("a21c"), "")));
+/// assert_eq!(digit0::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn digit0<T, E: ParseError<T>, const STREAMING: bool>(
@@ -404,12 +404,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::digit1;
-/// assert_eq!(digit1::<_, (_, ErrorKind), true>(Streaming("21c")), Ok((Streaming("c"), "21")));
-/// assert_eq!(digit1::<_, (_, ErrorKind), true>(Streaming("c1")), Err(Err::Error((Streaming("c1"), ErrorKind::Digit))));
-/// assert_eq!(digit1::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(digit1::<_, Error<_>, true>(Streaming("21c")), Ok((Streaming("c"), "21")));
+/// assert_eq!(digit1::<_, Error<_>, true>(Streaming("c1")), Err(Err::Error(Error::new(Streaming("c1"), ErrorKind::Digit))));
+/// assert_eq!(digit1::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// ## Parsing an integer
@@ -453,7 +453,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::hex_digit0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     hex_digit0(input)
@@ -465,12 +465,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::hex_digit0;
-/// assert_eq!(hex_digit0::<_, (_, ErrorKind), true>(Streaming("21cZ")), Ok((Streaming("Z"), "21c")));
-/// assert_eq!(hex_digit0::<_, (_, ErrorKind), true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
-/// assert_eq!(hex_digit0::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(hex_digit0::<_, Error<_>, true>(Streaming("21cZ")), Ok((Streaming("Z"), "21c")));
+/// assert_eq!(hex_digit0::<_, Error<_>, true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
+/// assert_eq!(hex_digit0::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn hex_digit0<T, E: ParseError<T>, const STREAMING: bool>(
@@ -511,12 +511,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::hex_digit1;
-/// assert_eq!(hex_digit1::<_, (_, ErrorKind), true>(Streaming("21cZ")), Ok((Streaming("Z"), "21c")));
-/// assert_eq!(hex_digit1::<_, (_, ErrorKind), true>(Streaming("H2")), Err(Err::Error((Streaming("H2"), ErrorKind::HexDigit))));
-/// assert_eq!(hex_digit1::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(hex_digit1::<_, Error<_>, true>(Streaming("21cZ")), Ok((Streaming("Z"), "21c")));
+/// assert_eq!(hex_digit1::<_, Error<_>, true>(Streaming("H2")), Err(Err::Error(Error::new(Streaming("H2"), ErrorKind::HexDigit))));
+/// assert_eq!(hex_digit1::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn hex_digit1<T, E: ParseError<T>, const STREAMING: bool>(
@@ -545,7 +545,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::oct_digit0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     oct_digit0(input)
@@ -557,12 +557,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::oct_digit0;
-/// assert_eq!(oct_digit0::<_, (_, ErrorKind), true>(Streaming("21cZ")), Ok((Streaming("cZ"), "21")));
-/// assert_eq!(oct_digit0::<_, (_, ErrorKind), true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
-/// assert_eq!(oct_digit0::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(oct_digit0::<_, Error<_>, true>(Streaming("21cZ")), Ok((Streaming("cZ"), "21")));
+/// assert_eq!(oct_digit0::<_, Error<_>, true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
+/// assert_eq!(oct_digit0::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn oct_digit0<T, E: ParseError<T>, const STREAMING: bool>(
@@ -603,12 +603,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::oct_digit1;
-/// assert_eq!(oct_digit1::<_, (_, ErrorKind), true>(Streaming("21cZ")), Ok((Streaming("cZ"), "21")));
-/// assert_eq!(oct_digit1::<_, (_, ErrorKind), true>(Streaming("H2")), Err(Err::Error((Streaming("H2"), ErrorKind::OctDigit))));
-/// assert_eq!(oct_digit1::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(oct_digit1::<_, Error<_>, true>(Streaming("21cZ")), Ok((Streaming("cZ"), "21")));
+/// assert_eq!(oct_digit1::<_, Error<_>, true>(Streaming("H2")), Err(Err::Error(Error::new(Streaming("H2"), ErrorKind::OctDigit))));
+/// assert_eq!(oct_digit1::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn oct_digit1<T, E: ParseError<T>, const STREAMING: bool>(
@@ -637,7 +637,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::alphanumeric0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alphanumeric0(input)
@@ -649,12 +649,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::alphanumeric0;
-/// assert_eq!(alphanumeric0::<_, (_, ErrorKind), true>(Streaming("21cZ%1")), Ok((Streaming("%1"), "21cZ")));
-/// assert_eq!(alphanumeric0::<_, (_, ErrorKind), true>(Streaming("&Z21c")), Ok((Streaming("&Z21c"), "")));
-/// assert_eq!(alphanumeric0::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(alphanumeric0::<_, Error<_>, true>(Streaming("21cZ%1")), Ok((Streaming("%1"), "21cZ")));
+/// assert_eq!(alphanumeric0::<_, Error<_>, true>(Streaming("&Z21c")), Ok((Streaming("&Z21c"), "")));
+/// assert_eq!(alphanumeric0::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn alphanumeric0<T, E: ParseError<T>, const STREAMING: bool>(
@@ -695,12 +695,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::alphanumeric1;
-/// assert_eq!(alphanumeric1::<_, (_, ErrorKind), true>(Streaming("21cZ%1")), Ok((Streaming("%1"), "21cZ")));
-/// assert_eq!(alphanumeric1::<_, (_, ErrorKind), true>(Streaming("&H2")), Err(Err::Error((Streaming("&H2"), ErrorKind::AlphaNumeric))));
-/// assert_eq!(alphanumeric1::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(alphanumeric1::<_, Error<_>, true>(Streaming("21cZ%1")), Ok((Streaming("%1"), "21cZ")));
+/// assert_eq!(alphanumeric1::<_, Error<_>, true>(Streaming("&H2")), Err(Err::Error(Error::new(Streaming("&H2"), ErrorKind::AlphaNumeric))));
+/// assert_eq!(alphanumeric1::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn alphanumeric1<T, E: ParseError<T>, const STREAMING: bool>(
@@ -729,12 +729,12 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::space0;
-/// assert_eq!(space0::<_, (_, ErrorKind), true>(Streaming(" \t21c")), Ok((Streaming("21c"), " \t")));
-/// assert_eq!(space0::<_, (_, ErrorKind), true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
-/// assert_eq!(space0::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(space0::<_, Error<_>, true>(Streaming(" \t21c")), Ok((Streaming("21c"), " \t")));
+/// assert_eq!(space0::<_, Error<_>, true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
+/// assert_eq!(space0::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn space0<T, E: ParseError<T>, const STREAMING: bool>(
@@ -775,12 +775,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::space1;
-/// assert_eq!(space1::<_, (_, ErrorKind), true>(Streaming(" \t21c")), Ok((Streaming("21c"), " \t")));
-/// assert_eq!(space1::<_, (_, ErrorKind), true>(Streaming("H2")), Err(Err::Error((Streaming("H2"), ErrorKind::Space))));
-/// assert_eq!(space1::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(space1::<_, Error<_>, true>(Streaming(" \t21c")), Ok((Streaming("21c"), " \t")));
+/// assert_eq!(space1::<_, Error<_>, true>(Streaming("H2")), Err(Err::Error(Error::new(Streaming("H2"), ErrorKind::Space))));
+/// assert_eq!(space1::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn space1<T, E: ParseError<T>, const STREAMING: bool>(
@@ -809,7 +809,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::multispace0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     multispace0(input)
@@ -821,12 +821,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::multispace0;
-/// assert_eq!(multispace0::<_, (_, ErrorKind), true>(Streaming(" \t\n\r21c")), Ok((Streaming("21c"), " \t\n\r")));
-/// assert_eq!(multispace0::<_, (_, ErrorKind), true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
-/// assert_eq!(multispace0::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(multispace0::<_, Error<_>, true>(Streaming(" \t\n\r21c")), Ok((Streaming("21c"), " \t\n\r")));
+/// assert_eq!(multispace0::<_, Error<_>, true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
+/// assert_eq!(multispace0::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn multispace0<T, E: ParseError<T>, const STREAMING: bool>(
@@ -867,12 +867,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::multispace1;
-/// assert_eq!(multispace1::<_, (_, ErrorKind), true>(Streaming(" \t\n\r21c")), Ok((Streaming("21c"), " \t\n\r")));
-/// assert_eq!(multispace1::<_, (_, ErrorKind), true>(Streaming("H2")), Err(Err::Error((Streaming("H2"), ErrorKind::MultiSpace))));
-/// assert_eq!(multispace1::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(multispace1::<_, Error<_>, true>(Streaming(" \t\n\r21c")), Ok((Streaming("21c"), " \t\n\r")));
+/// assert_eq!(multispace1::<_, Error<_>, true>(Streaming("H2")), Err(Err::Error(Error::new(Streaming("H2"), ErrorKind::MultiSpace))));
+/// assert_eq!(multispace1::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn multispace1<T, E: ParseError<T>, const STREAMING: bool>(
@@ -956,7 +956,7 @@ uints! { u8 u16 u32 u64 u128 }
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
 /// # use winnow::Needed::Size;
 /// use winnow::character::f32;
 ///
@@ -967,11 +967,11 @@ uints! { u8 u16 u32 u64 u128 }
 /// assert_eq!(parser("11e-1"), Ok(("", 1.1)));
 /// assert_eq!(parser("123E-02"), Ok(("", 1.23)));
 /// assert_eq!(parser("123K-01"), Ok(("K-01", 123.0)));
-/// assert_eq!(parser("abc"), Err(Err::Error(("abc", ErrorKind::Float))));
+/// assert_eq!(parser("abc"), Err(Err::Error(Error::new("abc", ErrorKind::Float))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
 /// # use winnow::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::character::f32;
@@ -984,7 +984,7 @@ uints! { u8 u16 u32 u64 u128 }
 /// assert_eq!(parser(Streaming("11e-1")), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(parser(Streaming("123E-02")), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(parser(Streaming("123K-01")), Ok((Streaming("K-01"), 123.0)));
-/// assert_eq!(parser(Streaming("abc")), Err(Err::Error((Streaming("abc"), ErrorKind::Float))));
+/// assert_eq!(parser(Streaming("abc")), Err(Err::Error(Error::new(Streaming("abc"), ErrorKind::Float))));
 /// ```
 #[inline(always)]
 pub fn f32<T, E: ParseError<T>, const STREAMING: bool>(input: T) -> IResult<T, f32, E>
@@ -1017,7 +1017,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
 /// # use winnow::Needed::Size;
 /// use winnow::character::f64;
 ///
@@ -1028,11 +1028,11 @@ where
 /// assert_eq!(parser("11e-1"), Ok(("", 1.1)));
 /// assert_eq!(parser("123E-02"), Ok(("", 1.23)));
 /// assert_eq!(parser("123K-01"), Ok(("K-01", 123.0)));
-/// assert_eq!(parser("abc"), Err(Err::Error(("abc", ErrorKind::Float))));
+/// assert_eq!(parser("abc"), Err(Err::Error(Error::new("abc", ErrorKind::Float))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
 /// # use winnow::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::character::f64;
@@ -1045,7 +1045,7 @@ where
 /// assert_eq!(parser(Streaming("11e-1")), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(parser(Streaming("123E-02")), Err(Err::Incomplete(Needed::new(1))));
 /// assert_eq!(parser(Streaming("123K-01")), Ok((Streaming("K-01"), 123.0)));
-/// assert_eq!(parser(Streaming("abc")), Err(Err::Error((Streaming("abc"), ErrorKind::Float))));
+/// assert_eq!(parser(Streaming("abc")), Err(Err::Error(Error::new(Streaming("abc"), ErrorKind::Float))));
 /// ```
 #[inline(always)]
 pub fn f64<T, E: ParseError<T>, const STREAMING: bool>(input: T) -> IResult<T, f64, E>
@@ -1078,7 +1078,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
 /// # use winnow::Needed::Size;
 /// use winnow::character::recognize_float;
 ///
@@ -1089,11 +1089,11 @@ where
 /// assert_eq!(parser("11e-1"), Ok(("", "11e-1")));
 /// assert_eq!(parser("123E-02"), Ok(("", "123E-02")));
 /// assert_eq!(parser("123K-01"), Ok(("K-01", "123")));
-/// assert_eq!(parser("abc"), Err(Err::Error(("abc", ErrorKind::Char))));
+/// assert_eq!(parser("abc"), Err(Err::Error(Error::new("abc", ErrorKind::Char))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::character::recognize_float;
 ///
@@ -1104,7 +1104,7 @@ where
 /// assert_eq!(parser(Streaming("11e-1;")), Ok((Streaming(";"), "11e-1")));
 /// assert_eq!(parser(Streaming("123E-02;")), Ok((Streaming(";"), "123E-02")));
 /// assert_eq!(parser(Streaming("123K-01")), Ok((Streaming("K-01"), "123")));
-/// assert_eq!(parser(Streaming("abc")), Err(Err::Error((Streaming("abc"), ErrorKind::Char))));
+/// assert_eq!(parser(Streaming("abc")), Err(Err::Error(Error::new(Streaming("abc"), ErrorKind::Char))));
 /// ```
 #[inline(always)]
 pub fn recognize_float<T, E: ParseError<T>, const STREAMING: bool>(

@@ -205,7 +205,7 @@
 //!
 //! assert_eq!(alt_tags(&b"abcdxxx"[..]), Ok((&b"xxx"[..], &b"abcd"[..])));
 //! assert_eq!(alt_tags(&b"efghxxx"[..]), Ok((&b"xxx"[..], &b"efgh"[..])));
-//! assert_eq!(alt_tags(&b"ijklxxx"[..]), Err(winnow::Err::Error((&b"ijklxxx"[..], winnow::error::ErrorKind::Tag))));
+//! assert_eq!(alt_tags(&b"ijklxxx"[..]), Err(winnow::Err::Error(winnow::error::Error::new(&b"ijklxxx"[..], winnow::error::ErrorKind::Tag))));
 //! ```
 //!
 //! The **`opt`** combinator makes a parser optional. If the child parser returns
@@ -259,7 +259,7 @@
 //! # fn main() {
 //! use winnow::prelude::*;
 //! use winnow::{
-//!     error::ErrorKind, Needed,
+//!     error::ErrorKind, error::Error, Needed,
 //!     number::be_u16,
 //!     bytes::{tag, take},
 //!     input::Streaming,
@@ -276,7 +276,7 @@
 //! );
 //! assert_eq!(tpl.parse_next(Streaming(&b"abcde"[..])), Err(winnow::Err::Incomplete(Needed::new(2))));
 //! let input = &b"abcdejk"[..];
-//! assert_eq!(tpl.parse_next(Streaming(input)), Err(winnow::Err::Error((Streaming(&input[5..]), ErrorKind::Tag))));
+//! assert_eq!(tpl.parse_next(Streaming(input)), Err(winnow::Err::Error(Error::new(Streaming(&input[5..]), ErrorKind::Tag))));
 //! # }
 //! ```
 //!

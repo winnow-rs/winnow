@@ -109,11 +109,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind};
+/// # use winnow::{Err, error::ErrorKind, error::Error};
 /// # use winnow::character::complete::one_of;
-/// assert_eq!(one_of::<_, _, (&str, ErrorKind)>("abc")("b"), Ok(("", 'b')));
-/// assert_eq!(one_of::<_, _, (&str, ErrorKind)>("a")("bc"), Err(Err::Error(("bc", ErrorKind::OneOf))));
-/// assert_eq!(one_of::<_, _, (&str, ErrorKind)>("a")(""), Err(Err::Error(("", ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, Error<_>>("abc")("b"), Ok(("", 'b')));
+/// assert_eq!(one_of::<_, _, Error<_>>("a")("bc"), Err(Err::Error(Error::new("bc", ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, Error<_>>("a")(""), Err(Err::Error(Error::new("", ErrorKind::OneOf))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of]
@@ -133,11 +133,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind};
+/// # use winnow::{Err, error::ErrorKind, error::Error};
 /// # use winnow::character::complete::none_of;
-/// assert_eq!(none_of::<_, _, (&str, ErrorKind)>("abc")("z"), Ok(("", 'z')));
-/// assert_eq!(none_of::<_, _, (&str, ErrorKind)>("ab")("a"), Err(Err::Error(("a", ErrorKind::NoneOf))));
-/// assert_eq!(none_of::<_, _, (&str, ErrorKind)>("a")(""), Err(Err::Error(("", ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, Error<_>>("abc")("z"), Ok(("", 'z')));
+/// assert_eq!(none_of::<_, _, Error<_>>("ab")("a"), Err(Err::Error(Error::new("a", ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, Error<_>>("a")(""), Err(Err::Error(Error::new("", ErrorKind::NoneOf))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::none_of`][crate::bytes::none_of]
@@ -991,13 +991,14 @@ uints! { u8 u16 u32 u64 u128 }
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::error::Error;
   use crate::input::ParseTo;
   use crate::Err;
   use proptest::prelude::*;
 
   macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
-      let res: $crate::IResult<_, _, (_, ErrorKind)> = $left;
+      let res: $crate::IResult<_, _> = $left;
       assert_eq!(res, $right);
     };
   );
@@ -1011,39 +1012,84 @@ mod tests {
     let d: &[u8] = "azé12".as_bytes();
     let e: &[u8] = b" ";
     let f: &[u8] = b" ;";
-    //assert_eq!(alpha1::<_, (_, ErrorKind)>(a), Err(Err::Incomplete(Needed::Size(1))));
+    //assert_eq!(alpha1::<_, Error<_>>(a), Err(Err::Incomplete(Needed::Size(1))));
     assert_parse!(alpha1(a), Ok((empty, a)));
-    assert_eq!(alpha1(b), Err(Err::Error((b, ErrorKind::Alpha))));
-    assert_eq!(alpha1::<_, (_, ErrorKind)>(c), Ok((&c[1..], &b"a"[..])));
     assert_eq!(
-      alpha1::<_, (_, ErrorKind)>(d),
-      Ok(("é12".as_bytes(), &b"az"[..]))
+      alpha1(b),
+      Err(Err::Error(Error {
+        input: b,
+        kind: ErrorKind::Alpha
+      }))
     );
-    assert_eq!(digit1(a), Err(Err::Error((a, ErrorKind::Digit))));
-    assert_eq!(digit1::<_, (_, ErrorKind)>(b), Ok((empty, b)));
-    assert_eq!(digit1(c), Err(Err::Error((c, ErrorKind::Digit))));
-    assert_eq!(digit1(d), Err(Err::Error((d, ErrorKind::Digit))));
-    assert_eq!(hex_digit1::<_, (_, ErrorKind)>(a), Ok((empty, a)));
-    assert_eq!(hex_digit1::<_, (_, ErrorKind)>(b), Ok((empty, b)));
-    assert_eq!(hex_digit1::<_, (_, ErrorKind)>(c), Ok((empty, c)));
+    assert_eq!(alpha1::<_, Error<_>>(c), Ok((&c[1..], &b"a"[..])));
+    assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12".as_bytes(), &b"az"[..])));
     assert_eq!(
-      hex_digit1::<_, (_, ErrorKind)>(d),
+      digit1(a),
+      Err(Err::Error(Error {
+        input: a,
+        kind: ErrorKind::Digit
+      }))
+    );
+    assert_eq!(digit1::<_, Error<_>>(b), Ok((empty, b)));
+    assert_eq!(
+      digit1(c),
+      Err(Err::Error(Error {
+        input: c,
+        kind: ErrorKind::Digit
+      }))
+    );
+    assert_eq!(
+      digit1(d),
+      Err(Err::Error(Error {
+        input: d,
+        kind: ErrorKind::Digit
+      }))
+    );
+    assert_eq!(hex_digit1::<_, Error<_>>(a), Ok((empty, a)));
+    assert_eq!(hex_digit1::<_, Error<_>>(b), Ok((empty, b)));
+    assert_eq!(hex_digit1::<_, Error<_>>(c), Ok((empty, c)));
+    assert_eq!(
+      hex_digit1::<_, Error<_>>(d),
       Ok(("zé12".as_bytes(), &b"a"[..]))
     );
-    assert_eq!(hex_digit1(e), Err(Err::Error((e, ErrorKind::HexDigit))));
-    assert_eq!(oct_digit1(a), Err(Err::Error((a, ErrorKind::OctDigit))));
-    assert_eq!(oct_digit1::<_, (_, ErrorKind)>(b), Ok((empty, b)));
-    assert_eq!(oct_digit1(c), Err(Err::Error((c, ErrorKind::OctDigit))));
-    assert_eq!(oct_digit1(d), Err(Err::Error((d, ErrorKind::OctDigit))));
-    assert_eq!(alphanumeric1::<_, (_, ErrorKind)>(a), Ok((empty, a)));
-    //assert_eq!(fix_error!(b,(), alphanumeric), Ok((empty, b)));
-    assert_eq!(alphanumeric1::<_, (_, ErrorKind)>(c), Ok((empty, c)));
     assert_eq!(
-      alphanumeric1::<_, (_, ErrorKind)>(d),
+      hex_digit1(e),
+      Err(Err::Error(Error {
+        input: e,
+        kind: ErrorKind::HexDigit
+      }))
+    );
+    assert_eq!(
+      oct_digit1(a),
+      Err(Err::Error(Error {
+        input: a,
+        kind: ErrorKind::OctDigit
+      }))
+    );
+    assert_eq!(oct_digit1::<_, Error<_>>(b), Ok((empty, b)));
+    assert_eq!(
+      oct_digit1(c),
+      Err(Err::Error(Error {
+        input: c,
+        kind: ErrorKind::OctDigit
+      }))
+    );
+    assert_eq!(
+      oct_digit1(d),
+      Err(Err::Error(Error {
+        input: d,
+        kind: ErrorKind::OctDigit
+      }))
+    );
+    assert_eq!(alphanumeric1::<_, Error<_>>(a), Ok((empty, a)));
+    //assert_eq!(fix_error!(b,(), alphanumeric), Ok((empty, b)));
+    assert_eq!(alphanumeric1::<_, Error<_>>(c), Ok((empty, c)));
+    assert_eq!(
+      alphanumeric1::<_, Error<_>>(d),
       Ok(("é12".as_bytes(), &b"az"[..]))
     );
-    assert_eq!(space1::<_, (_, ErrorKind)>(e), Ok((empty, e)));
-    assert_eq!(space1::<_, (_, ErrorKind)>(f), Ok((&b";"[..], &b" "[..])));
+    assert_eq!(space1::<_, Error<_>>(e), Ok((empty, e)));
+    assert_eq!(space1::<_, Error<_>>(f), Ok((&b";"[..], &b" "[..])));
   }
 
   #[cfg(feature = "alloc")]
@@ -1055,28 +1101,76 @@ mod tests {
     let c = "a123";
     let d = "azé12";
     let e = " ";
-    assert_eq!(alpha1::<_, (_, ErrorKind)>(a), Ok((empty, a)));
-    assert_eq!(alpha1(b), Err(Err::Error((b, ErrorKind::Alpha))));
-    assert_eq!(alpha1::<_, (_, ErrorKind)>(c), Ok((&c[1..], "a")));
-    assert_eq!(alpha1::<_, (_, ErrorKind)>(d), Ok(("é12", "az")));
-    assert_eq!(digit1(a), Err(Err::Error((a, ErrorKind::Digit))));
-    assert_eq!(digit1::<_, (_, ErrorKind)>(b), Ok((empty, b)));
-    assert_eq!(digit1(c), Err(Err::Error((c, ErrorKind::Digit))));
-    assert_eq!(digit1(d), Err(Err::Error((d, ErrorKind::Digit))));
-    assert_eq!(hex_digit1::<_, (_, ErrorKind)>(a), Ok((empty, a)));
-    assert_eq!(hex_digit1::<_, (_, ErrorKind)>(b), Ok((empty, b)));
-    assert_eq!(hex_digit1::<_, (_, ErrorKind)>(c), Ok((empty, c)));
-    assert_eq!(hex_digit1::<_, (_, ErrorKind)>(d), Ok(("zé12", "a")));
-    assert_eq!(hex_digit1(e), Err(Err::Error((e, ErrorKind::HexDigit))));
-    assert_eq!(oct_digit1(a), Err(Err::Error((a, ErrorKind::OctDigit))));
-    assert_eq!(oct_digit1::<_, (_, ErrorKind)>(b), Ok((empty, b)));
-    assert_eq!(oct_digit1(c), Err(Err::Error((c, ErrorKind::OctDigit))));
-    assert_eq!(oct_digit1(d), Err(Err::Error((d, ErrorKind::OctDigit))));
-    assert_eq!(alphanumeric1::<_, (_, ErrorKind)>(a), Ok((empty, a)));
+    assert_eq!(alpha1::<_, Error<_>>(a), Ok((empty, a)));
+    assert_eq!(
+      alpha1(b),
+      Err(Err::Error(Error {
+        input: b,
+        kind: ErrorKind::Alpha
+      }))
+    );
+    assert_eq!(alpha1::<_, Error<_>>(c), Ok((&c[1..], "a")));
+    assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12", "az")));
+    assert_eq!(
+      digit1(a),
+      Err(Err::Error(Error {
+        input: a,
+        kind: ErrorKind::Digit
+      }))
+    );
+    assert_eq!(digit1::<_, Error<_>>(b), Ok((empty, b)));
+    assert_eq!(
+      digit1(c),
+      Err(Err::Error(Error {
+        input: c,
+        kind: ErrorKind::Digit
+      }))
+    );
+    assert_eq!(
+      digit1(d),
+      Err(Err::Error(Error {
+        input: d,
+        kind: ErrorKind::Digit
+      }))
+    );
+    assert_eq!(hex_digit1::<_, Error<_>>(a), Ok((empty, a)));
+    assert_eq!(hex_digit1::<_, Error<_>>(b), Ok((empty, b)));
+    assert_eq!(hex_digit1::<_, Error<_>>(c), Ok((empty, c)));
+    assert_eq!(hex_digit1::<_, Error<_>>(d), Ok(("zé12", "a")));
+    assert_eq!(
+      hex_digit1(e),
+      Err(Err::Error(Error {
+        input: e,
+        kind: ErrorKind::HexDigit
+      }))
+    );
+    assert_eq!(
+      oct_digit1(a),
+      Err(Err::Error(Error {
+        input: a,
+        kind: ErrorKind::OctDigit
+      }))
+    );
+    assert_eq!(oct_digit1::<_, Error<_>>(b), Ok((empty, b)));
+    assert_eq!(
+      oct_digit1(c),
+      Err(Err::Error(Error {
+        input: c,
+        kind: ErrorKind::OctDigit
+      }))
+    );
+    assert_eq!(
+      oct_digit1(d),
+      Err(Err::Error(Error {
+        input: d,
+        kind: ErrorKind::OctDigit
+      }))
+    );
+    assert_eq!(alphanumeric1::<_, Error<_>>(a), Ok((empty, a)));
     //assert_eq!(fix_error!(b,(), alphanumeric), Ok((empty, b)));
-    assert_eq!(alphanumeric1::<_, (_, ErrorKind)>(c), Ok((empty, c)));
-    assert_eq!(alphanumeric1::<_, (_, ErrorKind)>(d), Ok(("é12", "az")));
-    assert_eq!(space1::<_, (_, ErrorKind)>(e), Ok((empty, e)));
+    assert_eq!(alphanumeric1::<_, Error<_>>(c), Ok((empty, c)));
+    assert_eq!(alphanumeric1::<_, Error<_>>(d), Ok(("é12", "az")));
+    assert_eq!(space1::<_, Error<_>>(e), Ok((empty, e)));
   }
 
   use crate::input::Offset;
@@ -1089,43 +1183,43 @@ mod tests {
     let e = &b" \t\r\n;"[..];
     let f = &b"123abcDEF;"[..];
 
-    match alpha1::<_, (_, ErrorKind)>(a) {
+    match alpha1::<_, Error<_>>(a) {
       Ok((i, _)) => {
         assert_eq!(a.offset(i) + i.len(), a.len());
       }
       _ => panic!("wrong return type in offset test for alpha"),
     }
-    match digit1::<_, (_, ErrorKind)>(b) {
+    match digit1::<_, Error<_>>(b) {
       Ok((i, _)) => {
         assert_eq!(b.offset(i) + i.len(), b.len());
       }
       _ => panic!("wrong return type in offset test for digit"),
     }
-    match alphanumeric1::<_, (_, ErrorKind)>(c) {
+    match alphanumeric1::<_, Error<_>>(c) {
       Ok((i, _)) => {
         assert_eq!(c.offset(i) + i.len(), c.len());
       }
       _ => panic!("wrong return type in offset test for alphanumeric"),
     }
-    match space1::<_, (_, ErrorKind)>(d) {
+    match space1::<_, Error<_>>(d) {
       Ok((i, _)) => {
         assert_eq!(d.offset(i) + i.len(), d.len());
       }
       _ => panic!("wrong return type in offset test for space"),
     }
-    match multispace1::<_, (_, ErrorKind)>(e) {
+    match multispace1::<_, Error<_>>(e) {
       Ok((i, _)) => {
         assert_eq!(e.offset(i) + i.len(), e.len());
       }
       _ => panic!("wrong return type in offset test for multispace"),
     }
-    match hex_digit1::<_, (_, ErrorKind)>(f) {
+    match hex_digit1::<_, Error<_>>(f) {
       Ok((i, _)) => {
         assert_eq!(f.offset(i) + i.len(), f.len());
       }
       _ => panic!("wrong return type in offset test for hex_digit"),
     }
-    match oct_digit1::<_, (_, ErrorKind)>(f) {
+    match oct_digit1::<_, Error<_>>(f) {
       Ok((i, _)) => {
         assert_eq!(f.offset(i) + i.len(), f.len());
       }
@@ -1137,24 +1231,24 @@ mod tests {
   fn is_not_line_ending_bytes() {
     let a: &[u8] = b"ab12cd\nefgh";
     assert_eq!(
-      not_line_ending::<_, (_, ErrorKind)>(a),
+      not_line_ending::<_, Error<_>>(a),
       Ok((&b"\nefgh"[..], &b"ab12cd"[..]))
     );
 
     let b: &[u8] = b"ab12cd\nefgh\nijkl";
     assert_eq!(
-      not_line_ending::<_, (_, ErrorKind)>(b),
+      not_line_ending::<_, Error<_>>(b),
       Ok((&b"\nefgh\nijkl"[..], &b"ab12cd"[..]))
     );
 
     let c: &[u8] = b"ab12cd\r\nefgh\nijkl";
     assert_eq!(
-      not_line_ending::<_, (_, ErrorKind)>(c),
+      not_line_ending::<_, Error<_>>(c),
       Ok((&b"\r\nefgh\nijkl"[..], &b"ab12cd"[..]))
     );
 
     let d: &[u8] = b"ab12cd";
-    assert_eq!(not_line_ending::<_, (_, ErrorKind)>(d), Ok((&[][..], d)));
+    assert_eq!(not_line_ending::<_, Error<_>>(d), Ok((&[][..], d)));
   }
 
   #[test]
@@ -1177,10 +1271,16 @@ mod tests {
     */
 
     let f = "βèƒôřè\rÂßÇáƒƭèř";
-    assert_eq!(not_line_ending(f), Err(Err::Error((f, ErrorKind::Tag))));
+    assert_eq!(
+      not_line_ending(f),
+      Err(Err::Error(Error {
+        input: f,
+        kind: ErrorKind::Tag
+      }))
+    );
 
     let g2: &str = "ab12cd";
-    assert_eq!(not_line_ending::<_, (_, ErrorKind)>(g2), Ok(("", g2)));
+    assert_eq!(not_line_ending::<_, Error<_>>(g2), Ok(("", g2)));
   }
 
   #[test]

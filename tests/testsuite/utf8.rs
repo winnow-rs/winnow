@@ -6,7 +6,7 @@ mod test {
   use winnow::{branch::alt, bytes::tag_no_case, multi::many1};
   use winnow::{
     bytes::{tag, take, take_till, take_till1, take_until, take_while1},
-    error::{self, ErrorKind},
+    error::{self, Error, ErrorKind},
     Err, IResult,
   };
 
@@ -120,7 +120,7 @@ mod test {
 
     const INPUT: &str = "βèƒôřèÂßÇá";
 
-    let res: IResult<_, _, (_, ErrorKind)> = take(13_usize)(Streaming(INPUT));
+    let res: IResult<_, _, Error<_>> = take(13_usize)(Streaming(INPUT));
     match res {
       Err(Err::Incomplete(_)) => (),
       other => panic!(
@@ -138,7 +138,7 @@ mod test {
     const CONSUMED: &str = "βèƒôřè";
     const LEFTOVER: &str = "ÂßÇ∂áƒƭèř";
 
-    let res: IResult<_, _, (_, ErrorKind)> = take_until(FIND)(INPUT);
+    let res: IResult<_, _, Error<_>> = take_until(FIND)(INPUT);
     match res {
       Ok((extra, output)) => {
         assert!(
@@ -170,7 +170,7 @@ mod test {
     const INPUT: &str = "βèƒôřè";
     const FIND: &str = "βèƒôřèÂßÇ";
 
-    let res: IResult<_, _, (_, ErrorKind)> = take_until(FIND)(Streaming(INPUT));
+    let res: IResult<_, _, Error<_>> = take_until(FIND)(Streaming(INPUT));
     match res {
       Err(Err::Incomplete(_)) => (),
       other => panic!(
@@ -188,7 +188,7 @@ mod test {
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const FIND: &str = "Ráñδô₥";
 
-    let res: IResult<_, _, (_, ErrorKind)> = take_until(FIND)(Streaming(INPUT));
+    let res: IResult<_, _, Error<_>> = take_until(FIND)(Streaming(INPUT));
     match res {
       Err(Err::Incomplete(_)) => (),
       other => panic!(

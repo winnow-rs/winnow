@@ -16,7 +16,7 @@ use crate::{IResult, Parser};
 /// * `second` The second parser to apply.
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
 /// # use winnow::Needed::Size;
 /// use winnow::sequence::pair;
 /// use winnow::bytes::tag;
@@ -25,8 +25,8 @@ use crate::{IResult, Parser};
 ///
 /// assert_eq!(parser("abcefg"), Ok(("", ("abc", "efg"))));
 /// assert_eq!(parser("abcefghij"), Ok(("hij", ("abc", "efg"))));
-/// assert_eq!(parser(""), Err(Err::Error(("", ErrorKind::Tag))));
-/// assert_eq!(parser("123"), Err(Err::Error(("123", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("123"), Err(Err::Error(Error::new("123", ErrorKind::Tag))));
 /// ```
 #[deprecated(since = "8.0.0", note = "`Parser` is directly implemented for tuples")]
 pub fn pair<I, O1, O2, E: ParseError<I>, F, G>(
@@ -51,7 +51,7 @@ where
 /// * `second` The second parser to get object.
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
 /// # use winnow::Needed::Size;
 /// use winnow::sequence::preceded;
 /// use winnow::bytes::tag;
@@ -60,8 +60,8 @@ where
 ///
 /// assert_eq!(parser("abcefg"), Ok(("", "efg")));
 /// assert_eq!(parser("abcefghij"), Ok(("hij", "efg")));
-/// assert_eq!(parser(""), Err(Err::Error(("", ErrorKind::Tag))));
-/// assert_eq!(parser("123"), Err(Err::Error(("123", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("123"), Err(Err::Error(Error::new("123", ErrorKind::Tag))));
 /// ```
 pub fn preceded<I, O1, O2, E: ParseError<I>, F, G>(
   mut first: F,
@@ -85,7 +85,7 @@ where
 /// * `second` The second parser to match an object.
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
 /// # use winnow::Needed::Size;
 /// use winnow::sequence::terminated;
 /// use winnow::bytes::tag;
@@ -94,8 +94,8 @@ where
 ///
 /// assert_eq!(parser("abcefg"), Ok(("", "abc")));
 /// assert_eq!(parser("abcefghij"), Ok(("hij", "abc")));
-/// assert_eq!(parser(""), Err(Err::Error(("", ErrorKind::Tag))));
-/// assert_eq!(parser("123"), Err(Err::Error(("123", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("123"), Err(Err::Error(Error::new("123", ErrorKind::Tag))));
 /// ```
 pub fn terminated<I, O1, O2, E: ParseError<I>, F, G>(
   mut first: F,
@@ -121,7 +121,7 @@ where
 /// * `second` The second parser to apply.
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
 /// # use winnow::Needed::Size;
 /// use winnow::sequence::separated_pair;
 /// use winnow::bytes::tag;
@@ -130,8 +130,8 @@ where
 ///
 /// assert_eq!(parser("abc|efg"), Ok(("", ("abc", "efg"))));
 /// assert_eq!(parser("abc|efghij"), Ok(("hij", ("abc", "efg"))));
-/// assert_eq!(parser(""), Err(Err::Error(("", ErrorKind::Tag))));
-/// assert_eq!(parser("123"), Err(Err::Error(("123", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("123"), Err(Err::Error(Error::new("123", ErrorKind::Tag))));
 /// ```
 pub fn separated_pair<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
   mut first: F,
@@ -160,7 +160,7 @@ where
 /// * `third` The third parser to apply and discard.
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
 /// # use winnow::Needed::Size;
 /// use winnow::sequence::delimited;
 /// use winnow::bytes::tag;
@@ -169,8 +169,8 @@ where
 ///
 /// assert_eq!(parser("(abc)"), Ok(("", "abc")));
 /// assert_eq!(parser("(abc)def"), Ok(("def", "abc")));
-/// assert_eq!(parser(""), Err(Err::Error(("", ErrorKind::Tag))));
-/// assert_eq!(parser("123"), Err(Err::Error(("123", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("123"), Err(Err::Error(Error::new("123", ErrorKind::Tag))));
 /// ```
 pub fn delimited<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
   mut first: F,
@@ -274,13 +274,13 @@ impl<I, E: ParseError<I>> Tuple<I, (), E> for () {
 /// **WARNING:** Deprecated, [`Parser`] is directly implemented for tuples
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind};
+/// # use winnow::{Err, error::ErrorKind, error::Error};
 /// use winnow::sequence::tuple;
 /// use winnow::character::{alpha1, digit1};
 /// let mut parser = tuple((alpha1, digit1, alpha1));
 ///
 /// assert_eq!(parser("abc123def"), Ok(("", ("abc", "123", "def"))));
-/// assert_eq!(parser("123def"), Err(Err::Error(("123def", ErrorKind::Alpha))));
+/// assert_eq!(parser("123def"), Err(Err::Error(Error::new("123def", ErrorKind::Alpha))));
 /// ```
 #[deprecated(since = "8.0.0", note = "`Parser` is directly implemented for tuples")]
 #[allow(deprecated)]

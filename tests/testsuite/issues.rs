@@ -74,8 +74,7 @@ fn usize_length_bytes_issue() {
   use winnow::multi::length_data;
   use winnow::number::be_u16;
   #[allow(clippy::type_complexity)]
-  let _: IResult<Streaming<&[u8]>, &[u8], (Streaming<&[u8]>, ErrorKind)> =
-    length_data(be_u16)(Streaming(b"012346"));
+  let _: IResult<Streaming<&[u8]>, &[u8]> = length_data(be_u16)(Streaming(b"012346"));
 }
 
 #[test]
