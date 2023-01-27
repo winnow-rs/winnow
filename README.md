@@ -226,7 +226,9 @@ Want to add your parser here? Create a pull request for it!
 
 # Contributors
 
-winnow is the fruit of the work of many contributors over the years, many thanks for your help!
+winnow is the fruit of the work of many contributors over the years, many
+thanks for your help!  In particular, thanks to [Geal](https://github.com/Geal)
+for the original [`nom` crate](https://crates.io/crates/nom).
 
 <a href="https://github.com/winnow-rs/winnow/graphs/contributors">
   <img src="https://contributors-img.web.app/image?repo=winnow-rs/winnow" />
