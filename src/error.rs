@@ -498,11 +498,13 @@ pub trait ParseError<I>: Sized {
   }
 }
 
-/// This trait is required by the `context` combinator to add a static string
-/// to an existing error
+/// Used by the [`context`] to add custom data to errors
+///
+/// May be implemented multiple times for different kinds of context.
 pub trait ContextError<I, C>: Sized {
-  /// Creates a new error from an input position, a static string and an existing error.
-  /// This is used mainly in the [context] combinator, to add user friendly information
+  /// Creates a new error from an input position, a data, and an existing error.
+  ///
+  /// This is used mainly in the [`context`] combinator, to add user friendly information
   /// to errors when backtracking through a parse tree
   fn add_context(self, _input: I, _ctx: C) -> Self {
     self
