@@ -229,7 +229,7 @@ where
   <T as InputIter>::Item: AsChar,
   <T as InputIter>::Item: AsChar,
 {
-  match input.position(|item| {
+  match input.offset_for(|item| {
     let c = item.as_char();
     c == '\r' || c == '\n'
   }) {
@@ -849,7 +849,7 @@ macro_rules! ints {
 
                 let mut value: $t = 0;
                 if sign {
-                    for (pos, c) in i.iter_indices() {
+                    for (pos, c) in i.iter_offsets() {
                         match c.as_char().to_digit(10) {
                             None => {
                                 if pos == 0 {
@@ -865,7 +865,7 @@ macro_rules! ints {
                         }
                     }
                 } else {
-                    for (pos, c) in i.iter_indices() {
+                    for (pos, c) in i.iter_offsets() {
                         match c.as_char().to_digit(10) {
                             None => {
                                 if pos == 0 {
@@ -910,7 +910,7 @@ macro_rules! uints {
                 }
 
                 let mut value: $t = 0;
-                for (pos, c) in i.iter_indices() {
+                for (pos, c) in i.iter_offsets() {
                     match c.as_char().to_digit(10) {
                         None => {
                             if pos == 0 {

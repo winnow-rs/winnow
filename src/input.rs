@@ -901,21 +901,21 @@ pub trait InputIter {
   /// An iterator over the input type, producing the item and its position
   /// for use with [Slice]. If we're iterating over `&str`, the position
   /// corresponds to the byte index of the character
-  type Iter: Iterator<Item = (usize, Self::Item)>;
+  type IterOffsets: Iterator<Item = (usize, Self::Item)>;
 
   /// An iterator over the input type, producing the item
   type IterElem: Iterator<Item = Self::Item>;
 
   /// Returns an iterator over the elements and their byte offsets
-  fn iter_indices(&self) -> Self::Iter;
+  fn iter_offsets(&self) -> Self::IterOffsets;
   /// Returns an iterator over the elements
   fn iter_elements(&self) -> Self::IterElem;
   /// Finds the byte position of the element
-  fn position<P>(&self, predicate: P) -> Option<usize>
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
   where
     P: Fn(Self::Item) -> bool;
   /// Get the byte offset from the element's position in the stream
-  fn slice_index(&self, count: usize) -> Result<usize, Needed>;
+  fn offset_at(&self, count: usize) -> Result<usize, Needed>;
 }
 
 impl<I> InputIter for Located<I>
@@ -923,26 +923,26 @@ where
   I: InputIter,
 {
   type Item = I::Item;
-  type Iter = I::Iter;
+  type IterOffsets = I::IterOffsets;
   type IterElem = I::IterElem;
 
-  fn iter_indices(&self) -> Self::Iter {
-    self.input.iter_indices()
+  fn iter_offsets(&self) -> Self::IterOffsets {
+    self.input.iter_offsets()
   }
 
   fn iter_elements(&self) -> Self::IterElem {
     self.input.iter_elements()
   }
 
-  fn position<P>(&self, predicate: P) -> Option<usize>
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
   where
     P: Fn(Self::Item) -> bool,
   {
-    self.input.position(predicate)
+    self.input.offset_for(predicate)
   }
 
-  fn slice_index(&self, count: usize) -> Result<usize, Needed> {
-    self.input.slice_index(count)
+  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
+    self.input.offset_at(count)
   }
 }
 
@@ -951,26 +951,26 @@ where
   I: InputIter,
 {
   type Item = I::Item;
-  type Iter = I::Iter;
+  type IterOffsets = I::IterOffsets;
   type IterElem = I::IterElem;
 
-  fn iter_indices(&self) -> Self::Iter {
-    self.input.iter_indices()
+  fn iter_offsets(&self) -> Self::IterOffsets {
+    self.input.iter_offsets()
   }
 
   fn iter_elements(&self) -> Self::IterElem {
     self.input.iter_elements()
   }
 
-  fn position<P>(&self, predicate: P) -> Option<usize>
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
   where
     P: Fn(Self::Item) -> bool,
   {
-    self.input.position(predicate)
+    self.input.offset_for(predicate)
   }
 
-  fn slice_index(&self, count: usize) -> Result<usize, Needed> {
-    self.input.slice_index(count)
+  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
+    self.input.offset_at(count)
   }
 }
 
@@ -979,36 +979,36 @@ where
   I: InputIter,
 {
   type Item = I::Item;
-  type Iter = I::Iter;
+  type IterOffsets = I::IterOffsets;
   type IterElem = I::IterElem;
 
   #[inline(always)]
-  fn iter_indices(&self) -> Self::Iter {
-    self.0.iter_indices()
+  fn iter_offsets(&self) -> Self::IterOffsets {
+    self.0.iter_offsets()
   }
   #[inline(always)]
   fn iter_elements(&self) -> Self::IterElem {
     self.0.iter_elements()
   }
   #[inline(always)]
-  fn position<P>(&self, predicate: P) -> Option<usize>
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
   where
     P: Fn(Self::Item) -> bool,
   {
-    self.0.position(predicate)
+    self.0.offset_for(predicate)
   }
   #[inline(always)]
-  fn slice_index(&self, count: usize) -> Result<usize, Needed> {
-    self.0.slice_index(count)
+  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
+    self.0.offset_at(count)
   }
 }
 impl<'a> InputIter for &'a [u8] {
   type Item = u8;
-  type Iter = Enumerate<Self::IterElem>;
+  type IterOffsets = Enumerate<Self::IterElem>;
   type IterElem = Copied<Iter<'a, u8>>;
 
   #[inline]
-  fn iter_indices(&self) -> Self::Iter {
+  fn iter_offsets(&self) -> Self::IterOffsets {
     self.iter_elements().enumerate()
   }
   #[inline]
@@ -1016,14 +1016,14 @@ impl<'a> InputIter for &'a [u8] {
     self.iter().copied()
   }
   #[inline]
-  fn position<P>(&self, predicate: P) -> Option<usize>
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
   where
     P: Fn(Self::Item) -> bool,
   {
     self.iter().position(|b| predicate(*b))
   }
   #[inline]
-  fn slice_index(&self, count: usize) -> Result<usize, Needed> {
+  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
     if let Some(needed) = count.checked_sub(self.len()).and_then(NonZeroUsize::new) {
       Err(Needed::Size(needed))
     } else {
@@ -1034,42 +1034,42 @@ impl<'a> InputIter for &'a [u8] {
 
 impl<'a, const LEN: usize> InputIter for &'a [u8; LEN] {
   type Item = u8;
-  type Iter = Enumerate<Self::IterElem>;
+  type IterOffsets = Enumerate<Self::IterElem>;
   type IterElem = Copied<Iter<'a, u8>>;
 
-  fn iter_indices(&self) -> Self::Iter {
-    (&self[..]).iter_indices()
+  fn iter_offsets(&self) -> Self::IterOffsets {
+    (&self[..]).iter_offsets()
   }
 
   fn iter_elements(&self) -> Self::IterElem {
     (&self[..]).iter_elements()
   }
 
-  fn position<P>(&self, predicate: P) -> Option<usize>
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
   where
     P: Fn(Self::Item) -> bool,
   {
-    (&self[..]).position(predicate)
+    (&self[..]).offset_for(predicate)
   }
 
-  fn slice_index(&self, count: usize) -> Result<usize, Needed> {
-    (&self[..]).slice_index(count)
+  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
+    (&self[..]).offset_at(count)
   }
 }
 
 impl<'a> InputIter for &'a str {
   type Item = char;
-  type Iter = CharIndices<'a>;
+  type IterOffsets = CharIndices<'a>;
   type IterElem = Chars<'a>;
   #[inline]
-  fn iter_indices(&self) -> Self::Iter {
+  fn iter_offsets(&self) -> Self::IterOffsets {
     self.char_indices()
   }
   #[inline]
   fn iter_elements(&self) -> Self::IterElem {
     self.chars()
   }
-  fn position<P>(&self, predicate: P) -> Option<usize>
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
   where
     P: Fn(Self::Item) -> bool,
   {
@@ -1081,7 +1081,7 @@ impl<'a> InputIter for &'a str {
     None
   }
   #[inline]
-  fn slice_index(&self, count: usize) -> Result<usize, Needed> {
+  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
     let mut cnt = 0;
     for (index, _) in self.char_indices() {
       if cnt == count {
@@ -1513,7 +1513,7 @@ impl<I: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
   where
     P: Fn(Self::Item) -> bool,
   {
-    match self.position(predicate) {
+    match self.offset_for(predicate) {
       Some(n) => Ok(self.take_split(n)),
       None => Err(Err::Incomplete(Needed::new(1))),
     }
@@ -1527,7 +1527,7 @@ impl<I: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
   where
     P: Fn(Self::Item) -> bool,
   {
-    match self.position(predicate) {
+    match self.offset_for(predicate) {
       Some(0) => Err(Err::Error(E::from_error_kind(self.clone(), e))),
       Some(n) => Ok(self.take_split(n)),
       None => Err(Err::Incomplete(Needed::new(1))),
@@ -1538,7 +1538,7 @@ impl<I: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
   where
     P: Fn(Self::Item) -> bool,
   {
-    match self.position(predicate) {
+    match self.offset_for(predicate) {
       Some(n) => Ok(self.take_split(n)),
       None => Ok(self.take_split(self.input_len())),
     }
@@ -1552,7 +1552,7 @@ impl<I: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
   where
     P: Fn(Self::Item) -> bool,
   {
-    match self.position(predicate) {
+    match self.offset_for(predicate) {
       Some(0) => Err(Err::Error(E::from_error_kind(self.clone(), e))),
       Some(n) => Ok(self.take_split(n)),
       None => {

@@ -17,7 +17,7 @@ pub(crate) fn any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as InputIter>:
 where
   I: InputIter + InputLength + Slice<RangeFrom<usize>>,
 {
-  let mut it = input.iter_indices();
+  let mut it = input.iter_offsets();
   match it.next() {
     None => Err(Err::Error(E::from_error_kind(input, ErrorKind::Eof))),
     Some((_, c)) => match it.next() {
@@ -145,7 +145,7 @@ where
   <I as InputIter>::Item: Copy,
   T: FindToken<<I as InputIter>::Item>,
 {
-  let mut it = input.iter_indices();
+  let mut it = input.iter_offsets();
   match it.next() {
     Some((_, c)) if list.find_token(c) => match it.next() {
       None => Ok((input.slice(input.input_len()..), c)),
@@ -164,7 +164,7 @@ where
   <I as InputIter>::Item: Copy,
   T: FindToken<<I as InputIter>::Item>,
 {
-  let mut it = input.iter_indices();
+  let mut it = input.iter_offsets();
   match it.next() {
     Some((_, c)) if !list.find_token(c) => match it.next() {
       None => Ok((input.slice(input.input_len()..), c)),
@@ -419,11 +419,11 @@ where
   Input: IntoOutput,
   T: FindToken<<Input as InputIter>::Item>,
 {
-  match input.position(|c| !list.find_token(c)) {
+  match input.offset_for(|c| !list.find_token(c)) {
     Some(idx) => {
       if idx >= m {
         if idx <= n {
-          let res: IResult<_, _, Error> = if let Ok(index) = input.slice_index(idx) {
+          let res: IResult<_, _, Error> = if let Ok(index) = input.offset_at(idx) {
             Ok(input.take_split(index)).into_output()
           } else {
             Err(Err::Error(Error::from_error_kind(
@@ -433,7 +433,7 @@ where
           };
           res
         } else {
-          let res: IResult<_, _, Error> = if let Ok(index) = input.slice_index(n) {
+          let res: IResult<_, _, Error> = if let Ok(index) = input.offset_at(n) {
             Ok(input.take_split(index)).into_output()
           } else {
             Err(Err::Error(Error::from_error_kind(
@@ -451,7 +451,7 @@ where
     None => {
       let len = input.input_len();
       if len >= n {
-        match input.slice_index(n) {
+        match input.offset_at(n) {
           Ok(index) => Ok(input.take_split(index)).into_output(),
           Err(_needed) => Err(Err::Error(Error::from_error_kind(
             input,
@@ -617,7 +617,7 @@ where
   Input: InputIter + InputTake,
   Input: IntoOutput,
 {
-  match i.slice_index(c) {
+  match i.offset_at(c) {
     Err(_needed) => Err(Err::Error(Error::from_error_kind(i, ErrorKind::Eof))),
     Ok(index) => Ok(i.take_split(index)).into_output(),
   }

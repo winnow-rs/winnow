@@ -530,7 +530,7 @@ where
     Err(Err::Error(make_error(input, ErrorKind::Eof)))
   } else {
     let mut res = Uint::default();
-    for (index, byte) in input.iter_indices().take(bound) {
+    for (index, byte) in input.iter_offsets().take(bound) {
       res = res + (Uint::from(byte) << (8 * index as u8));
     }
 
