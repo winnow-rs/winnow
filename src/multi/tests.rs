@@ -355,7 +355,7 @@ impl<I> ParseError<I> for NilError {
   fn from_error_kind(_: I, _: ErrorKind) -> NilError {
     NilError
   }
-  fn append(_: I, _: ErrorKind, _: NilError) -> NilError {
+  fn append(self, _: I, _: ErrorKind) -> NilError {
     NilError
   }
 }

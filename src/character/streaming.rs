@@ -116,11 +116,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
 /// # use winnow::character::streaming::one_of;
-/// assert_eq!(one_of::<_, _, (_, ErrorKind)>("abc")("b"), Ok(("", 'b')));
-/// assert_eq!(one_of::<_, _, (_, ErrorKind)>("a")("bc"), Err(Err::Error(("bc", ErrorKind::OneOf))));
-/// assert_eq!(one_of::<_, _, (_, ErrorKind)>("a")(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(one_of::<_, _, Error<_>>("abc")("b"), Ok(("", 'b')));
+/// assert_eq!(one_of::<_, _, Error<_>>("a")("bc"), Err(Err::Error(Error::new("bc", ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, Error<_>>("a")(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -143,11 +143,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
 /// # use winnow::character::streaming::none_of;
-/// assert_eq!(none_of::<_, _, (_, ErrorKind)>("abc")("z"), Ok(("", 'z')));
-/// assert_eq!(none_of::<_, _, (_, ErrorKind)>("ab")("a"), Err(Err::Error(("a", ErrorKind::NoneOf))));
-/// assert_eq!(none_of::<_, _, (_, ErrorKind)>("a")(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(none_of::<_, _, Error<_>>("abc")("z"), Ok(("", 'z')));
+/// assert_eq!(none_of::<_, _, Error<_>>("ab")("a"), Err(Err::Error(Error::new("a", ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, Error<_>>("a")(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::none_of`][crate::bytes::none_of] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -170,11 +170,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::crlf;
-/// assert_eq!(crlf::<_, (_, ErrorKind)>("\r\nc"), Ok(("c", "\r\n")));
-/// assert_eq!(crlf::<_, (_, ErrorKind)>("ab\r\nc"), Err(Err::Error(("ab\r\nc", ErrorKind::CrLf))));
-/// assert_eq!(crlf::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(2))));
+/// assert_eq!(crlf::<_, Error<_>>("\r\nc"), Ok(("c", "\r\n")));
+/// assert_eq!(crlf::<_, Error<_>>("ab\r\nc"), Err(Err::Error(Error::new("ab\r\nc", ErrorKind::CrLf))));
+/// assert_eq!(crlf::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(2))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::crlf`][crate::character::crlf] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -208,11 +208,11 @@ where
 /// ```
 /// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
 /// # use winnow::character::streaming::not_line_ending;
-/// assert_eq!(not_line_ending::<_, (_, ErrorKind)>("ab\r\nc"), Ok(("\r\nc", "ab")));
-/// assert_eq!(not_line_ending::<_, (_, ErrorKind)>("abc"), Err(Err::Incomplete(Needed::Unknown)));
-/// assert_eq!(not_line_ending::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::Unknown)));
-/// assert_eq!(not_line_ending::<_, (_, ErrorKind)>("a\rb\nc"), Err(Err::Error(("a\rb\nc", ErrorKind::Tag ))));
-/// assert_eq!(not_line_ending::<_, (_, ErrorKind)>("a\rbc"), Err(Err::Error(("a\rbc", ErrorKind::Tag ))));
+/// assert_eq!(not_line_ending::<_, Error<_>>("ab\r\nc"), Ok(("\r\nc", "ab")));
+/// assert_eq!(not_line_ending::<_, Error<_>>("abc"), Err(Err::Incomplete(Needed::Unknown)));
+/// assert_eq!(not_line_ending::<_, Error<_>>(""), Err(Err::Incomplete(Needed::Unknown)));
+/// assert_eq!(not_line_ending::<_, Error<_>>("a\rb\nc"), Err(Err::Error(Error::new("a\rb\nc", ErrorKind::Tag ))));
+/// assert_eq!(not_line_ending::<_, Error<_>>("a\rbc"), Err(Err::Error(Error::new("a\rbc", ErrorKind::Tag ))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::not_line_ending`][crate::character::not_line_ending] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -262,11 +262,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::line_ending;
-/// assert_eq!(line_ending::<_, (_, ErrorKind)>("\r\nc"), Ok(("c", "\r\n")));
-/// assert_eq!(line_ending::<_, (_, ErrorKind)>("ab\r\nc"), Err(Err::Error(("ab\r\nc", ErrorKind::CrLf))));
-/// assert_eq!(line_ending::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(line_ending::<_, Error<_>>("\r\nc"), Ok(("c", "\r\n")));
+/// assert_eq!(line_ending::<_, Error<_>>("ab\r\nc"), Err(Err::Error(Error::new("ab\r\nc", ErrorKind::CrLf))));
+/// assert_eq!(line_ending::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::line_ending`][crate::character::line_ending] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -301,11 +301,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::newline;
-/// assert_eq!(newline::<_, (_, ErrorKind)>("\nc"), Ok(("c", '\n')));
-/// assert_eq!(newline::<_, (_, ErrorKind)>("\r\nc"), Err(Err::Error(("\r\nc", ErrorKind::Char))));
-/// assert_eq!(newline::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(newline::<_, Error<_>>("\nc"), Ok(("c", '\n')));
+/// assert_eq!(newline::<_, Error<_>>("\r\nc"), Err(Err::Error(Error::new("\r\nc", ErrorKind::Char))));
+/// assert_eq!(newline::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::newline`][crate::character::newline] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -327,11 +327,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::tab;
-/// assert_eq!(tab::<_, (_, ErrorKind)>("\tc"), Ok(("c", '\t')));
-/// assert_eq!(tab::<_, (_, ErrorKind)>("\r\nc"), Err(Err::Error(("\r\nc", ErrorKind::Char))));
-/// assert_eq!(tab::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(tab::<_, Error<_>>("\tc"), Ok(("c", '\t')));
+/// assert_eq!(tab::<_, Error<_>>("\r\nc"), Err(Err::Error(Error::new("\r\nc", ErrorKind::Char))));
+/// assert_eq!(tab::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::tab`][crate::character::tab] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -354,9 +354,9 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{character::streaming::anychar, Err, error::ErrorKind, IResult, Needed};
-/// assert_eq!(anychar::<_, (_, ErrorKind)>("abc"), Ok(("bc",'a')));
-/// assert_eq!(anychar::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
+/// # use winnow::{character::streaming::anychar, Err, error::ErrorKind, error::Error, IResult, Needed};
+/// assert_eq!(anychar::<_, Error<_>>("abc"), Ok(("bc",'a')));
+/// assert_eq!(anychar::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::any`][crate::bytes::any] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -379,11 +379,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::alpha0;
-/// assert_eq!(alpha0::<_, (_, ErrorKind)>("ab1c"), Ok(("1c", "ab")));
-/// assert_eq!(alpha0::<_, (_, ErrorKind)>("1c"), Ok(("1c", "")));
-/// assert_eq!(alpha0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha0::<_, Error<_>>("ab1c"), Ok(("1c", "ab")));
+/// assert_eq!(alpha0::<_, Error<_>>("1c"), Ok(("1c", "")));
+/// assert_eq!(alpha0::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::alpha0`][crate::character::alpha0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -409,11 +409,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::alpha1;
-/// assert_eq!(alpha1::<_, (_, ErrorKind)>("aB1c"), Ok(("1c", "aB")));
-/// assert_eq!(alpha1::<_, (_, ErrorKind)>("1c"), Err(Err::Error(("1c", ErrorKind::Alpha))));
-/// assert_eq!(alpha1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha1::<_, Error<_>>("aB1c"), Ok(("1c", "aB")));
+/// assert_eq!(alpha1::<_, Error<_>>("1c"), Err(Err::Error(Error::new("1c", ErrorKind::Alpha))));
+/// assert_eq!(alpha1::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::alpha1`][crate::character::alpha1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -439,11 +439,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::digit0;
-/// assert_eq!(digit0::<_, (_, ErrorKind)>("21c"), Ok(("c", "21")));
-/// assert_eq!(digit0::<_, (_, ErrorKind)>("a21c"), Ok(("a21c", "")));
-/// assert_eq!(digit0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(digit0::<_, Error<_>>("21c"), Ok(("c", "21")));
+/// assert_eq!(digit0::<_, Error<_>>("a21c"), Ok(("a21c", "")));
+/// assert_eq!(digit0::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::digit0`][crate::character::digit0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -469,11 +469,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::digit1;
-/// assert_eq!(digit1::<_, (_, ErrorKind)>("21c"), Ok(("c", "21")));
-/// assert_eq!(digit1::<_, (_, ErrorKind)>("c1"), Err(Err::Error(("c1", ErrorKind::Digit))));
-/// assert_eq!(digit1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(digit1::<_, Error<_>>("21c"), Ok(("c", "21")));
+/// assert_eq!(digit1::<_, Error<_>>("c1"), Err(Err::Error(Error::new("c1", ErrorKind::Digit))));
+/// assert_eq!(digit1::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::digit1`][crate::character::digit1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -499,11 +499,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::hex_digit0;
-/// assert_eq!(hex_digit0::<_, (_, ErrorKind)>("21cZ"), Ok(("Z", "21c")));
-/// assert_eq!(hex_digit0::<_, (_, ErrorKind)>("Z21c"), Ok(("Z21c", "")));
-/// assert_eq!(hex_digit0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(hex_digit0::<_, Error<_>>("21cZ"), Ok(("Z", "21c")));
+/// assert_eq!(hex_digit0::<_, Error<_>>("Z21c"), Ok(("Z21c", "")));
+/// assert_eq!(hex_digit0::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::hex_digit0`][crate::character::hex_digit0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -529,11 +529,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::hex_digit1;
-/// assert_eq!(hex_digit1::<_, (_, ErrorKind)>("21cZ"), Ok(("Z", "21c")));
-/// assert_eq!(hex_digit1::<_, (_, ErrorKind)>("H2"), Err(Err::Error(("H2", ErrorKind::HexDigit))));
-/// assert_eq!(hex_digit1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(hex_digit1::<_, Error<_>>("21cZ"), Ok(("Z", "21c")));
+/// assert_eq!(hex_digit1::<_, Error<_>>("H2"), Err(Err::Error(Error::new("H2", ErrorKind::HexDigit))));
+/// assert_eq!(hex_digit1::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::hex_digit1`][crate::character::hex_digit1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -559,11 +559,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::oct_digit0;
-/// assert_eq!(oct_digit0::<_, (_, ErrorKind)>("21cZ"), Ok(("cZ", "21")));
-/// assert_eq!(oct_digit0::<_, (_, ErrorKind)>("Z21c"), Ok(("Z21c", "")));
-/// assert_eq!(oct_digit0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(oct_digit0::<_, Error<_>>("21cZ"), Ok(("cZ", "21")));
+/// assert_eq!(oct_digit0::<_, Error<_>>("Z21c"), Ok(("Z21c", "")));
+/// assert_eq!(oct_digit0::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::oct_digit0`][crate::character::oct_digit0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -589,11 +589,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::oct_digit1;
-/// assert_eq!(oct_digit1::<_, (_, ErrorKind)>("21cZ"), Ok(("cZ", "21")));
-/// assert_eq!(oct_digit1::<_, (_, ErrorKind)>("H2"), Err(Err::Error(("H2", ErrorKind::OctDigit))));
-/// assert_eq!(oct_digit1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(oct_digit1::<_, Error<_>>("21cZ"), Ok(("cZ", "21")));
+/// assert_eq!(oct_digit1::<_, Error<_>>("H2"), Err(Err::Error(Error::new("H2", ErrorKind::OctDigit))));
+/// assert_eq!(oct_digit1::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::oct_digit1`][crate::character::oct_digit1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -619,11 +619,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::alphanumeric0;
-/// assert_eq!(alphanumeric0::<_, (_, ErrorKind)>("21cZ%1"), Ok(("%1", "21cZ")));
-/// assert_eq!(alphanumeric0::<_, (_, ErrorKind)>("&Z21c"), Ok(("&Z21c", "")));
-/// assert_eq!(alphanumeric0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(alphanumeric0::<_, Error<_>>("21cZ%1"), Ok(("%1", "21cZ")));
+/// assert_eq!(alphanumeric0::<_, Error<_>>("&Z21c"), Ok(("&Z21c", "")));
+/// assert_eq!(alphanumeric0::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::alphanumeric0`][crate::character::alphanumeric0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -649,11 +649,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::alphanumeric1;
-/// assert_eq!(alphanumeric1::<_, (_, ErrorKind)>("21cZ%1"), Ok(("%1", "21cZ")));
-/// assert_eq!(alphanumeric1::<_, (_, ErrorKind)>("&H2"), Err(Err::Error(("&H2", ErrorKind::AlphaNumeric))));
-/// assert_eq!(alphanumeric1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(alphanumeric1::<_, Error<_>>("21cZ%1"), Ok(("%1", "21cZ")));
+/// assert_eq!(alphanumeric1::<_, Error<_>>("&H2"), Err(Err::Error(Error::new("&H2", ErrorKind::AlphaNumeric))));
+/// assert_eq!(alphanumeric1::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::alphanumeric1`][crate::character::alphanumeric1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -679,11 +679,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::space0;
-/// assert_eq!(space0::<_, (_, ErrorKind)>(" \t21c"), Ok(("21c", " \t")));
-/// assert_eq!(space0::<_, (_, ErrorKind)>("Z21c"), Ok(("Z21c", "")));
-/// assert_eq!(space0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(space0::<_, Error<_>>(" \t21c"), Ok(("21c", " \t")));
+/// assert_eq!(space0::<_, Error<_>>("Z21c"), Ok(("Z21c", "")));
+/// assert_eq!(space0::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::space0`][crate::character::space0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -711,11 +711,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::space1;
-/// assert_eq!(space1::<_, (_, ErrorKind)>(" \t21c"), Ok(("21c", " \t")));
-/// assert_eq!(space1::<_, (_, ErrorKind)>("H2"), Err(Err::Error(("H2", ErrorKind::Space))));
-/// assert_eq!(space1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(space1::<_, Error<_>>(" \t21c"), Ok(("21c", " \t")));
+/// assert_eq!(space1::<_, Error<_>>("H2"), Err(Err::Error(Error::new("H2", ErrorKind::Space))));
+/// assert_eq!(space1::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::space1`][crate::character::space1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -747,11 +747,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::multispace0;
-/// assert_eq!(multispace0::<_, (_, ErrorKind)>(" \t\n\r21c"), Ok(("21c", " \t\n\r")));
-/// assert_eq!(multispace0::<_, (_, ErrorKind)>("Z21c"), Ok(("Z21c", "")));
-/// assert_eq!(multispace0::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(multispace0::<_, Error<_>>(" \t\n\r21c"), Ok(("21c", " \t\n\r")));
+/// assert_eq!(multispace0::<_, Error<_>>("Z21c"), Ok(("Z21c", "")));
+/// assert_eq!(multispace0::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::multispace0`][crate::character::multispace0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -780,11 +780,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::multispace1;
-/// assert_eq!(multispace1::<_, (_, ErrorKind)>(" \t\n\r21c"), Ok(("21c", " \t\n\r")));
-/// assert_eq!(multispace1::<_, (_, ErrorKind)>("H2"), Err(Err::Error(("H2", ErrorKind::MultiSpace))));
-/// assert_eq!(multispace1::<_, (_, ErrorKind)>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(multispace1::<_, Error<_>>(" \t\n\r21c"), Ok(("21c", " \t\n\r")));
+/// assert_eq!(multispace1::<_, Error<_>>("H2"), Err(Err::Error(Error::new("H2", ErrorKind::MultiSpace))));
+/// assert_eq!(multispace1::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::multispace1`][crate::character::multispace1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -937,6 +937,7 @@ uints! { u8 u16 u32 u64 u128 }
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::error::Error;
   use crate::error::ErrorKind;
   use crate::input::ParseTo;
   use crate::sequence::pair;
@@ -945,7 +946,7 @@ mod tests {
 
   macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
-      let res: $crate::IResult<_, _, (_, ErrorKind)> = $left;
+      let res: $crate::IResult<_, _, Error<_>> = $left;
       assert_eq!(res, $right);
     };
   );
@@ -953,7 +954,7 @@ mod tests {
   #[test]
   fn anychar_str() {
     use super::anychar;
-    assert_eq!(anychar::<_, (&str, ErrorKind)>("Ә"), Ok(("", 'Ә')));
+    assert_eq!(anychar::<_, Error<_>>("Ә"), Ok(("", 'Ә')));
   }
 
   #[test]
@@ -964,63 +965,72 @@ mod tests {
     let d: &[u8] = "azé12".as_bytes();
     let e: &[u8] = b" ";
     let f: &[u8] = b" ;";
-    //assert_eq!(alpha1::<_, (_, ErrorKind)>(a), Err(Err::Incomplete(Needed::new(1))));
+    //assert_eq!(alpha1::<_, Error<_>>(a), Err(Err::Incomplete(Needed::new(1))));
     assert_parse!(alpha1(a), Err(Err::Incomplete(Needed::new(1))));
-    assert_eq!(alpha1(b), Err(Err::Error((b, ErrorKind::Alpha))));
-    assert_eq!(alpha1::<_, (_, ErrorKind)>(c), Ok((&c[1..], &b"a"[..])));
+    assert_eq!(alpha1(b), Err(Err::Error(Error::new(b, ErrorKind::Alpha))));
+    assert_eq!(alpha1::<_, Error<_>>(c), Ok((&c[1..], &b"a"[..])));
+    assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12".as_bytes(), &b"az"[..])));
+    assert_eq!(digit1(a), Err(Err::Error(Error::new(a, ErrorKind::Digit))));
     assert_eq!(
-      alpha1::<_, (_, ErrorKind)>(d),
-      Ok(("é12".as_bytes(), &b"az"[..]))
-    );
-    assert_eq!(digit1(a), Err(Err::Error((a, ErrorKind::Digit))));
-    assert_eq!(
-      digit1::<_, (_, ErrorKind)>(b),
+      digit1::<_, Error<_>>(b),
       Err(Err::Incomplete(Needed::new(1)))
     );
-    assert_eq!(digit1(c), Err(Err::Error((c, ErrorKind::Digit))));
-    assert_eq!(digit1(d), Err(Err::Error((d, ErrorKind::Digit))));
+    assert_eq!(digit1(c), Err(Err::Error(Error::new(c, ErrorKind::Digit))));
+    assert_eq!(digit1(d), Err(Err::Error(Error::new(d, ErrorKind::Digit))));
     assert_eq!(
-      hex_digit1::<_, (_, ErrorKind)>(a),
+      hex_digit1::<_, Error<_>>(a),
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-      hex_digit1::<_, (_, ErrorKind)>(b),
+      hex_digit1::<_, Error<_>>(b),
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-      hex_digit1::<_, (_, ErrorKind)>(c),
+      hex_digit1::<_, Error<_>>(c),
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-      hex_digit1::<_, (_, ErrorKind)>(d),
+      hex_digit1::<_, Error<_>>(d),
       Ok(("zé12".as_bytes(), &b"a"[..]))
     );
-    assert_eq!(hex_digit1(e), Err(Err::Error((e, ErrorKind::HexDigit))));
-    assert_eq!(oct_digit1(a), Err(Err::Error((a, ErrorKind::OctDigit))));
     assert_eq!(
-      oct_digit1::<_, (_, ErrorKind)>(b),
+      hex_digit1(e),
+      Err(Err::Error(Error::new(e, ErrorKind::HexDigit)))
+    );
+    assert_eq!(
+      oct_digit1(a),
+      Err(Err::Error(Error::new(a, ErrorKind::OctDigit)))
+    );
+    assert_eq!(
+      oct_digit1::<_, Error<_>>(b),
       Err(Err::Incomplete(Needed::new(1)))
     );
-    assert_eq!(oct_digit1(c), Err(Err::Error((c, ErrorKind::OctDigit))));
-    assert_eq!(oct_digit1(d), Err(Err::Error((d, ErrorKind::OctDigit))));
     assert_eq!(
-      alphanumeric1::<_, (_, ErrorKind)>(a),
+      oct_digit1(c),
+      Err(Err::Error(Error::new(c, ErrorKind::OctDigit)))
+    );
+    assert_eq!(
+      oct_digit1(d),
+      Err(Err::Error(Error::new(d, ErrorKind::OctDigit)))
+    );
+    assert_eq!(
+      alphanumeric1::<_, Error<_>>(a),
       Err(Err::Incomplete(Needed::new(1)))
     );
     //assert_eq!(fix_error!(b,(), alphanumeric1), Ok((empty, b)));
     assert_eq!(
-      alphanumeric1::<_, (_, ErrorKind)>(c),
+      alphanumeric1::<_, Error<_>>(c),
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-      alphanumeric1::<_, (_, ErrorKind)>(d),
+      alphanumeric1::<_, Error<_>>(d),
       Ok(("é12".as_bytes(), &b"az"[..]))
     );
     assert_eq!(
-      space1::<_, (_, ErrorKind)>(e),
+      space1::<_, Error<_>>(e),
       Err(Err::Incomplete(Needed::new(1)))
     );
-    assert_eq!(space1::<_, (_, ErrorKind)>(f), Ok((&b";"[..], &b" "[..])));
+    assert_eq!(space1::<_, Error<_>>(f), Ok((&b";"[..], &b" "[..])));
   }
 
   #[cfg(feature = "alloc")]
@@ -1032,52 +1042,64 @@ mod tests {
     let d = "azé12";
     let e = " ";
     assert_eq!(
-      alpha1::<_, (_, ErrorKind)>(a),
+      alpha1::<_, Error<_>>(a),
       Err(Err::Incomplete(Needed::new(1)))
     );
-    assert_eq!(alpha1(b), Err(Err::Error((b, ErrorKind::Alpha))));
-    assert_eq!(alpha1::<_, (_, ErrorKind)>(c), Ok((&c[1..], "a")));
-    assert_eq!(alpha1::<_, (_, ErrorKind)>(d), Ok(("é12", "az")));
-    assert_eq!(digit1(a), Err(Err::Error((a, ErrorKind::Digit))));
+    assert_eq!(alpha1(b), Err(Err::Error(Error::new(b, ErrorKind::Alpha))));
+    assert_eq!(alpha1::<_, Error<_>>(c), Ok((&c[1..], "a")));
+    assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12", "az")));
+    assert_eq!(digit1(a), Err(Err::Error(Error::new(a, ErrorKind::Digit))));
     assert_eq!(
-      digit1::<_, (_, ErrorKind)>(b),
+      digit1::<_, Error<_>>(b),
       Err(Err::Incomplete(Needed::new(1)))
     );
-    assert_eq!(digit1(c), Err(Err::Error((c, ErrorKind::Digit))));
-    assert_eq!(digit1(d), Err(Err::Error((d, ErrorKind::Digit))));
+    assert_eq!(digit1(c), Err(Err::Error(Error::new(c, ErrorKind::Digit))));
+    assert_eq!(digit1(d), Err(Err::Error(Error::new(d, ErrorKind::Digit))));
     assert_eq!(
-      hex_digit1::<_, (_, ErrorKind)>(a),
-      Err(Err::Incomplete(Needed::new(1)))
-    );
-    assert_eq!(
-      hex_digit1::<_, (_, ErrorKind)>(b),
+      hex_digit1::<_, Error<_>>(a),
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-      hex_digit1::<_, (_, ErrorKind)>(c),
+      hex_digit1::<_, Error<_>>(b),
       Err(Err::Incomplete(Needed::new(1)))
     );
-    assert_eq!(hex_digit1::<_, (_, ErrorKind)>(d), Ok(("zé12", "a")));
-    assert_eq!(hex_digit1(e), Err(Err::Error((e, ErrorKind::HexDigit))));
-    assert_eq!(oct_digit1(a), Err(Err::Error((a, ErrorKind::OctDigit))));
     assert_eq!(
-      oct_digit1::<_, (_, ErrorKind)>(b),
+      hex_digit1::<_, Error<_>>(c),
       Err(Err::Incomplete(Needed::new(1)))
     );
-    assert_eq!(oct_digit1(c), Err(Err::Error((c, ErrorKind::OctDigit))));
-    assert_eq!(oct_digit1(d), Err(Err::Error((d, ErrorKind::OctDigit))));
+    assert_eq!(hex_digit1::<_, Error<_>>(d), Ok(("zé12", "a")));
     assert_eq!(
-      alphanumeric1::<_, (_, ErrorKind)>(a),
+      hex_digit1(e),
+      Err(Err::Error(Error::new(e, ErrorKind::HexDigit)))
+    );
+    assert_eq!(
+      oct_digit1(a),
+      Err(Err::Error(Error::new(a, ErrorKind::OctDigit)))
+    );
+    assert_eq!(
+      oct_digit1::<_, Error<_>>(b),
+      Err(Err::Incomplete(Needed::new(1)))
+    );
+    assert_eq!(
+      oct_digit1(c),
+      Err(Err::Error(Error::new(c, ErrorKind::OctDigit)))
+    );
+    assert_eq!(
+      oct_digit1(d),
+      Err(Err::Error(Error::new(d, ErrorKind::OctDigit)))
+    );
+    assert_eq!(
+      alphanumeric1::<_, Error<_>>(a),
       Err(Err::Incomplete(Needed::new(1)))
     );
     //assert_eq!(fix_error!(b,(), alphanumeric1), Ok((empty, b)));
     assert_eq!(
-      alphanumeric1::<_, (_, ErrorKind)>(c),
+      alphanumeric1::<_, Error<_>>(c),
       Err(Err::Incomplete(Needed::new(1)))
     );
-    assert_eq!(alphanumeric1::<_, (_, ErrorKind)>(d), Ok(("é12", "az")));
+    assert_eq!(alphanumeric1::<_, Error<_>>(d), Ok(("é12", "az")));
     assert_eq!(
-      space1::<_, (_, ErrorKind)>(e),
+      space1::<_, Error<_>>(e),
       Err(Err::Incomplete(Needed::new(1)))
     );
   }
@@ -1092,43 +1114,43 @@ mod tests {
     let e = &b" \t\r\n;"[..];
     let f = &b"123abcDEF;"[..];
 
-    match alpha1::<_, (_, ErrorKind)>(a) {
+    match alpha1::<_, Error<_>>(a) {
       Ok((i, _)) => {
         assert_eq!(a.offset(i) + i.len(), a.len());
       }
       _ => panic!("wrong return type in offset test for alpha"),
     }
-    match digit1::<_, (_, ErrorKind)>(b) {
+    match digit1::<_, Error<_>>(b) {
       Ok((i, _)) => {
         assert_eq!(b.offset(i) + i.len(), b.len());
       }
       _ => panic!("wrong return type in offset test for digit"),
     }
-    match alphanumeric1::<_, (_, ErrorKind)>(c) {
+    match alphanumeric1::<_, Error<_>>(c) {
       Ok((i, _)) => {
         assert_eq!(c.offset(i) + i.len(), c.len());
       }
       _ => panic!("wrong return type in offset test for alphanumeric"),
     }
-    match space1::<_, (_, ErrorKind)>(d) {
+    match space1::<_, Error<_>>(d) {
       Ok((i, _)) => {
         assert_eq!(d.offset(i) + i.len(), d.len());
       }
       _ => panic!("wrong return type in offset test for space"),
     }
-    match multispace1::<_, (_, ErrorKind)>(e) {
+    match multispace1::<_, Error<_>>(e) {
       Ok((i, _)) => {
         assert_eq!(e.offset(i) + i.len(), e.len());
       }
       _ => panic!("wrong return type in offset test for multispace"),
     }
-    match hex_digit1::<_, (_, ErrorKind)>(f) {
+    match hex_digit1::<_, Error<_>>(f) {
       Ok((i, _)) => {
         assert_eq!(f.offset(i) + i.len(), f.len());
       }
       _ => panic!("wrong return type in offset test for hex_digit"),
     }
-    match oct_digit1::<_, (_, ErrorKind)>(f) {
+    match oct_digit1::<_, Error<_>>(f) {
       Ok((i, _)) => {
         assert_eq!(f.offset(i) + i.len(), f.len());
       }
@@ -1140,25 +1162,25 @@ mod tests {
   fn is_not_line_ending_bytes() {
     let a: &[u8] = b"ab12cd\nefgh";
     assert_eq!(
-      not_line_ending::<_, (_, ErrorKind)>(a),
+      not_line_ending::<_, Error<_>>(a),
       Ok((&b"\nefgh"[..], &b"ab12cd"[..]))
     );
 
     let b: &[u8] = b"ab12cd\nefgh\nijkl";
     assert_eq!(
-      not_line_ending::<_, (_, ErrorKind)>(b),
+      not_line_ending::<_, Error<_>>(b),
       Ok((&b"\nefgh\nijkl"[..], &b"ab12cd"[..]))
     );
 
     let c: &[u8] = b"ab12cd\r\nefgh\nijkl";
     assert_eq!(
-      not_line_ending::<_, (_, ErrorKind)>(c),
+      not_line_ending::<_, Error<_>>(c),
       Ok((&b"\r\nefgh\nijkl"[..], &b"ab12cd"[..]))
     );
 
     let d: &[u8] = b"ab12cd";
     assert_eq!(
-      not_line_ending::<_, (_, ErrorKind)>(d),
+      not_line_ending::<_, Error<_>>(d),
       Err(Err::Incomplete(Needed::Unknown))
     );
   }
@@ -1183,11 +1205,14 @@ mod tests {
     */
 
     let f = "βèƒôřè\rÂßÇáƒƭèř";
-    assert_eq!(not_line_ending(f), Err(Err::Error((f, ErrorKind::Tag))));
+    assert_eq!(
+      not_line_ending(f),
+      Err(Err::Error(Error::new(f, ErrorKind::Tag)))
+    );
 
     let g2: &str = "ab12cd";
     assert_eq!(
-      not_line_ending::<_, (_, ErrorKind)>(g2),
+      not_line_ending::<_, Error<_>>(g2),
       Err(Err::Incomplete(Needed::Unknown))
     );
   }

@@ -15,7 +15,10 @@ fn single_element_tuples() {
   assert_eq!(parser("abc123def"), Ok(("123def", ("abc",))));
   assert_eq!(
     parser("123def"),
-    Err(Err::Error(("123def", ErrorKind::Alpha)))
+    Err(Err::Error(Error {
+      input: "123def",
+      kind: ErrorKind::Alpha
+    }))
   );
 }
 

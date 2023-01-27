@@ -36,10 +36,10 @@ impl<I: Debug> ParseError<I> for ErrorStr {
     ErrorStr(format!("custom error message: ({:?}, {:?})", input, kind))
   }
 
-  fn append(input: I, kind: ErrorKind, other: Self) -> Self {
+  fn append(self, input: I, kind: ErrorKind) -> Self {
     ErrorStr(format!(
       "custom error message: ({:?}, {:?}) - {:?}",
-      input, kind, other
+      input, kind, self
     ))
   }
 }

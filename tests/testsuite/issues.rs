@@ -74,8 +74,7 @@ fn usize_length_bytes_issue() {
   use winnow::multi::length_data;
   use winnow::number::be_u16;
   #[allow(clippy::type_complexity)]
-  let _: IResult<Streaming<&[u8]>, &[u8], (Streaming<&[u8]>, ErrorKind)> =
-    length_data(be_u16)(Streaming(b"012346"));
+  let _: IResult<Streaming<&[u8]>, &[u8]> = length_data(be_u16)(Streaming(b"012346"));
 }
 
 #[test]
@@ -176,10 +175,10 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
   }
   assert_eq!(
     parser(Streaming(&b""[..])),
-    Err(Err::Failure(winnow::error_position!(
-      Streaming(&b""[..]),
-      ErrorKind::TooLarge
-    )))
+    Err(Err::Failure(winnow::error::Error {
+      input: Streaming(&b""[..]),
+      kind: ErrorKind::TooLarge
+    }))
   );
 }
 
@@ -238,7 +237,7 @@ fn issue_1282_findtoken_char() {
 
 #[test]
 fn issue_x_looser_fill_bounds() {
-  use winnow::{bytes::tag, character::digit1, error_position, multi::fill, sequence::terminated};
+  use winnow::{bytes::tag, character::digit1, multi::fill, sequence::terminated};
 
   fn fill_pair(i: &[u8]) -> IResult<&[u8], [&[u8]; 2]> {
     let mut buf = [&[][..], &[][..]];
@@ -256,7 +255,10 @@ fn issue_x_looser_fill_bounds() {
   );
   assert_eq!(
     fill_pair(b"123,,"),
-    Err(Err::Error(error_position!(&b","[..], ErrorKind::Digit)))
+    Err(Err::Error(winnow::error::Error {
+      input: &b","[..],
+      kind: ErrorKind::Digit
+    }))
   );
 }
 

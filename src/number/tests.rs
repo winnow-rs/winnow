@@ -2,12 +2,13 @@ use super::*;
 
 mod complete {
   use super::*;
+  use crate::error::Error;
   use crate::error::ErrorKind;
   use crate::Err;
 
   macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
-      let res: $crate::IResult<_, _, (_, ErrorKind)> = $left;
+      let res: $crate::IResult<_, _, Error<_>> = $left;
       assert_eq!(res, $right);
     };
   );
@@ -400,13 +401,14 @@ mod complete {
 
 mod streaming {
   use super::*;
+  use crate::error::Error;
   use crate::error::ErrorKind;
   use crate::input::Streaming;
   use crate::{Err, Needed};
 
   macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
-      let res: $crate::IResult<_, _, (_, ErrorKind)> = $left;
+      let res: $crate::IResult<_, _, Error<_>> = $left;
       assert_eq!(res, $right);
     };
   );

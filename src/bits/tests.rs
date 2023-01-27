@@ -82,7 +82,7 @@ fn test_take_complete_eof() {
     result,
     Err(crate::Err::Error(crate::error::Error {
       input: (input, 8),
-      code: ErrorKind::Eof
+      kind: ErrorKind::Eof
     }))
   );
 }
@@ -136,7 +136,7 @@ fn test_tag_streaming_err() {
     result,
     Err(crate::Err::Error(crate::error::Error {
       input: (input, offset),
-      code: ErrorKind::TagBits
+      kind: ErrorKind::TagBits
     }))
   );
 }
@@ -160,7 +160,7 @@ fn test_bool_eof_complete() {
     result,
     Err(crate::Err::Error(crate::error::Error {
       input: (input, 8),
-      code: ErrorKind::Eof
+      kind: ErrorKind::Eof
     }))
   );
 }

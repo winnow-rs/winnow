@@ -1,5 +1,6 @@
 use super::*;
 
+use crate::error::Error;
 use crate::error::ErrorKind;
 use crate::input::AsChar;
 use crate::input::Streaming;
@@ -132,12 +133,18 @@ fn complete_escaping_str() {
 
 #[test]
 fn test_escaped_error() {
-  fn esc(s: &str) -> IResult<&str, &str, (&str, ErrorKind)> {
+  fn esc(s: &str) -> IResult<&str, &str> {
     use crate::character::digit1;
     escaped(digit1, '\\', one_of("\"n\\"))(s)
   }
 
-  assert_eq!(esc("abcd"), Err(Err::Error(("abcd", ErrorKind::Escaped))));
+  assert_eq!(
+    esc("abcd"),
+    Err(Err::Error(Error {
+      input: "abcd",
+      kind: ErrorKind::Escaped
+    }))
+  );
 }
 
 #[cfg(feature = "alloc")]
@@ -280,14 +287,17 @@ fn complete_escape_transform_str() {
 #[test]
 #[cfg(feature = "alloc")]
 fn test_escaped_transform_error() {
-  fn esc_trans(s: &str) -> IResult<&str, String, (&str, ErrorKind)> {
+  fn esc_trans(s: &str) -> IResult<&str, String> {
     use crate::character::digit1;
     escaped_transform(digit1, '\\', "n")(s)
   }
 
   assert_eq!(
     esc_trans("abcd"),
-    Err(Err::Error(("abcd", ErrorKind::EscapedTransform)))
+    Err(Err::Error(Error {
+      input: "abcd",
+      kind: ErrorKind::EscapedTransform
+    }))
   );
 }
 
@@ -295,7 +305,7 @@ fn test_escaped_transform_error() {
 fn streaming_any_str() {
   use super::any;
   assert_eq!(
-    any::<_, (Streaming<&str>, ErrorKind), true>(Streaming("Ә")),
+    any::<_, Error<Streaming<&str>>, true>(Streaming("Ә")),
     Ok((Streaming(""), 'Ә'))
   );
 }

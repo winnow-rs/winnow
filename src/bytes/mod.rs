@@ -32,10 +32,10 @@ use crate::{IResult, Parser};
 /// ```
 ///
 /// ```
-/// # use winnow::{bytes::any, Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{bytes::any, Err, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
-/// assert_eq!(any::<_, (_, ErrorKind), true>(Streaming("abc")), Ok((Streaming("bc"),'a')));
-/// assert_eq!(any::<_, (_, ErrorKind), true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(any::<_, Error<_>, true>(Streaming("abc")), Ok((Streaming("bc"),'a')));
+/// assert_eq!(any::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn any<I, E: ParseError<I>, const STREAMING: bool>(
@@ -56,7 +56,7 @@ where
 /// The input data will be compared to the tag combinator's argument and will return the part of
 /// the input that matches the argument
 ///
-/// It will return `Err(Err::Error((_, ErrorKind::Tag)))` if the input doesn't match the pattern
+/// It will return `Err(Err::Error(Error::new(_, ErrorKind::Tag)))` if the input doesn't match the pattern
 ///
 /// **Note:** [`Parser`] is implemented for strings and byte strings as a convenience (complete
 /// only)
@@ -114,7 +114,7 @@ where
 /// The input data will be compared to the tag combinator's argument and will return the part of
 /// the input that matches the argument with no regard to case.
 ///
-/// It will return `Err(Err::Error((_, ErrorKind::Tag)))` if the input doesn't match the pattern.
+/// It will return `Err(Err::Error(Error::new(_, ErrorKind::Tag)))` if the input doesn't match the pattern.
 /// # Example
 /// ```rust
 /// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
@@ -182,9 +182,9 @@ where
 /// # use winnow::*;
 /// # use winnow::{Err, error::ErrorKind, error::Error};
 /// # use winnow::bytes::one_of;
-/// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("abc")("b"), Ok(("", 'b')));
-/// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("a")("bc"), Err(Err::Error(("bc", ErrorKind::OneOf))));
-/// assert_eq!(one_of::<_, _, (&str, ErrorKind), false>("a")(""), Err(Err::Error(("", ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, Error<_>, false>("abc")("b"), Ok(("", 'b')));
+/// assert_eq!(one_of::<_, _, Error<_>, false>("a")("bc"), Err(Err::Error(Error::new("bc", ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, Error<_>, false>("a")(""), Err(Err::Error(Error::new("", ErrorKind::OneOf))));
 ///
 /// fn parser_fn(i: &str) -> IResult<&str, char> {
 ///     one_of(|c| c == 'a' || c == 'b')(i)
@@ -199,9 +199,9 @@ where
 /// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::bytes::one_of;
-/// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("abc")(Streaming("b")), Ok((Streaming(""), 'b')));
-/// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("a")(Streaming("bc")), Err(Err::Error((Streaming("bc"), ErrorKind::OneOf))));
-/// assert_eq!(one_of::<_, _, (_, ErrorKind), true>("a")(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(one_of::<_, _, Error<_>, true>("abc")(Streaming("b")), Ok((Streaming(""), 'b')));
+/// assert_eq!(one_of::<_, _, Error<_>, true>("a")(Streaming("bc")), Err(Err::Error(Error::new(Streaming("bc"), ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, Error<_>, true>("a")(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 ///
 /// fn parser_fn(i: Streaming<&str>) -> IResult<Streaming<&str>, char> {
 ///     one_of(|c| c == 'a' || c == 'b')(i)
@@ -237,20 +237,20 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind};
+/// # use winnow::{Err, error::ErrorKind, error::Error};
 /// # use winnow::bytes::none_of;
-/// assert_eq!(none_of::<_, _, (&str, ErrorKind), false>("abc")("z"), Ok(("", 'z')));
-/// assert_eq!(none_of::<_, _, (&str, ErrorKind), false>("ab")("a"), Err(Err::Error(("a", ErrorKind::NoneOf))));
-/// assert_eq!(none_of::<_, _, (&str, ErrorKind), false>("a")(""), Err(Err::Error(("", ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, Error<_>, false>("abc")("z"), Ok(("", 'z')));
+/// assert_eq!(none_of::<_, _, Error<_>, false>("ab")("a"), Err(Err::Error(Error::new("a", ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, Error<_>, false>("a")(""), Err(Err::Error(Error::new("", ErrorKind::NoneOf))));
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::bytes::none_of;
-/// assert_eq!(none_of::<_, _, (_, ErrorKind), true>("abc")(Streaming("z")), Ok((Streaming(""), 'z')));
-/// assert_eq!(none_of::<_, _, (_, ErrorKind), true>("ab")(Streaming("a")), Err(Err::Error((Streaming("a"), ErrorKind::NoneOf))));
-/// assert_eq!(none_of::<_, _, (_, ErrorKind), true>("a")(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(none_of::<_, _, Error<_>, true>("abc")(Streaming("z")), Ok((Streaming(""), 'z')));
+/// assert_eq!(none_of::<_, _, Error<_>, true>("ab")(Streaming("a")), Err(Err::Error(Error::new(Streaming("a"), ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, Error<_>, true>("a")(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn none_of<I, T, Error: ParseError<I>, const STREAMING: bool>(
@@ -275,7 +275,7 @@ where
 /// *Streaming version*: will return a `Err::Incomplete(Needed::new(1))` if the pattern reaches the end of the input.
 /// # Example
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed, IResult};
 /// use winnow::bytes::take_while;
 /// use winnow::input::AsChar;
 ///
@@ -290,7 +290,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed, IResult};
 /// # use winnow::input::Streaming;
 /// use winnow::bytes::take_while;
 /// use winnow::input::AsChar;
@@ -325,7 +325,7 @@ where
 
 /// Returns the longest (at least 1) input slice that matches the [pattern][FindToken]
 ///
-/// It will return an `Err(Err::Error((_, ErrorKind::TakeWhile1)))` if the pattern wasn't met.
+/// It will return an `Err(Err::Error(Error::new(_, ErrorKind::TakeWhile1)))` if the pattern wasn't met.
 ///
 /// *Streaming version* will return a `Err::Incomplete(Needed::new(1))` or if the pattern reaches the end of the input.
 ///
@@ -398,7 +398,7 @@ where
 
 /// Returns the longest (m <= len <= n) input slice that matches the [pattern][FindToken]
 ///
-/// It will return an `Err::Error((_, ErrorKind::TakeWhileMN))` if the pattern wasn't met or is out
+/// It will return an `Err::Error(Error::new(_, ErrorKind::TakeWhileMN))` if the pattern wasn't met or is out
 /// of range (m <= len <= n).
 ///
 /// *Streaming version* will return a `Err::Incomplete(Needed::new(1))`  if the pattern reaches the end of the input or is too short.
@@ -464,7 +464,7 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed, IResult};
 /// use winnow::bytes::take_till;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
@@ -478,7 +478,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed, IResult};
 /// # use winnow::input::Streaming;
 /// use winnow::bytes::take_till;
 ///
@@ -511,7 +511,7 @@ where
 
 /// Returns the longest (at least 1) input slice till a [pattern][FindToken] is met.
 ///
-/// It will return `Err(Err::Error((_, ErrorKind::TakeTill1)))` if the input is empty or the
+/// It will return `Err(Err::Error(Error::new(_, ErrorKind::TakeTill1)))` if the input is empty or the
 /// predicate matches the first input.
 ///
 /// *Streaming version* will return a `Err::Incomplete(Needed::new(1))` if the match reaches the
@@ -584,7 +584,7 @@ where
 
 /// Returns an input slice containing the first N input elements (Input[..N]).
 ///
-/// *Complete version*: It will return `Err(Err::Error((_, ErrorKind::Eof)))` if the input is shorter than the argument.
+/// *Complete version*: It will return `Err(Err::Error(Error::new(_, ErrorKind::Eof)))` if the input is shorter than the argument.
 ///
 /// *Streaming version*: if the input has less than N elements, `take` will
 /// return a `Err::Incomplete(Needed::new(M))` where M is the number of
@@ -621,7 +621,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed, IResult};
 /// # use winnow::input::Streaming;
 /// use winnow::bytes::take;
 ///
@@ -657,7 +657,7 @@ where
 ///
 /// It doesn't consume the pattern.
 ///
-/// *Complete version*: It will return `Err(Err::Error((_, ErrorKind::TakeUntil)))`
+/// *Complete version*: It will return `Err(Err::Error(Error::new(_, ErrorKind::TakeUntil)))`
 /// if the pattern wasn't met.
 ///
 /// *Streaming version*: will return a `Err::Incomplete(Needed::new(N))` if the input doesn't
@@ -678,7 +678,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed, IResult};
 /// # use winnow::input::Streaming;
 /// use winnow::bytes::take_until;
 ///
@@ -713,7 +713,7 @@ where
 ///
 /// It doesn't consume the pattern.
 ///
-/// *Complete version*: It will return `Err(Err::Error((_, ErrorKind::TakeUntil)))`
+/// *Complete version*: It will return `Err(Err::Error(Error::new(_, ErrorKind::TakeUntil)))`
 /// if the pattern wasn't met.
 ///
 /// *Streaming version*: will return a `Err::Incomplete(Needed::new(N))` if the input doesn't
@@ -775,7 +775,7 @@ where
 /// * The third argument matches the escaped characters
 /// # Example
 /// ```
-/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed, IResult};
 /// # use winnow::character::digit1;
 /// use winnow::bytes::escaped;
 /// use winnow::bytes::one_of;
@@ -789,7 +789,7 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed, IResult};
 /// # use winnow::character::digit1;
 /// # use winnow::input::Streaming;
 /// use winnow::bytes::escaped;
@@ -842,7 +842,7 @@ where
 ///
 /// ```
 /// # use winnow::prelude::*;
-/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
 /// # use std::str::from_utf8;
 /// use winnow::bytes::{escaped_transform, tag};
 /// use winnow::character::alpha1;
@@ -867,7 +867,7 @@ where
 ///
 /// ```
 /// # use winnow::prelude::*;
-/// # use winnow::{Err, error::ErrorKind, Needed};
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
 /// # use std::str::from_utf8;
 /// # use winnow::input::Streaming;
 /// use winnow::bytes::{escaped_transform, tag};

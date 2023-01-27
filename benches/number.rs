@@ -4,6 +4,7 @@ extern crate criterion;
 use criterion::Criterion;
 
 use winnow::character::{f64, recognize_float};
+use winnow::error::Error;
 use winnow::error::ErrorKind;
 use winnow::input::ParseTo;
 use winnow::number::be_u64;
@@ -28,49 +29,52 @@ fn number(c: &mut Criterion) {
 fn recognize_float_bytes(c: &mut Criterion) {
   println!(
     "recognize_float_bytes result: {:?}",
-    recognize_float::<_, (_, ErrorKind), false>(&b"-1.234E-12"[..])
+    recognize_float::<_, Error<_>, false>(&b"-1.234E-12"[..])
   );
   c.bench_function("recognize float bytes", |b| {
-    b.iter(|| recognize_float::<_, (_, ErrorKind), false>(&b"-1.234E-12"[..]));
+    b.iter(|| recognize_float::<_, Error<_>, false>(&b"-1.234E-12"[..]));
   });
 }
 
 fn recognize_float_str(c: &mut Criterion) {
   println!(
     "recognize_float_str result: {:?}",
-    recognize_float::<_, (_, ErrorKind), false>("-1.234E-12")
+    recognize_float::<_, Error<_>, false>("-1.234E-12")
   );
   c.bench_function("recognize float str", |b| {
-    b.iter(|| recognize_float::<_, (_, ErrorKind), false>("-1.234E-12"));
+    b.iter(|| recognize_float::<_, Error<_>, false>("-1.234E-12"));
   });
 }
 
 fn float_bytes(c: &mut Criterion) {
   println!(
     "float_bytes result: {:?}",
-    f64::<_, (_, ErrorKind), false>(&b"-1.234E-12"[..])
+    f64::<_, Error<_>, false>(&b"-1.234E-12"[..])
   );
   c.bench_function("float bytes", |b| {
-    b.iter(|| f64::<_, (_, ErrorKind), false>(&b"-1.234E-12"[..]));
+    b.iter(|| f64::<_, Error<_>, false>(&b"-1.234E-12"[..]));
   });
 }
 
 fn float_str(c: &mut Criterion) {
   println!(
     "float_str result: {:?}",
-    f64::<_, (_, ErrorKind), false>("-1.234E-12")
+    f64::<_, Error<_>, false>("-1.234E-12")
   );
   c.bench_function("float str", |b| {
-    b.iter(|| f64::<_, (_, ErrorKind), false>("-1.234E-12"));
+    b.iter(|| f64::<_, Error<_>, false>("-1.234E-12"));
   });
 }
 
-fn std_float(input: &[u8]) -> IResult<&[u8], f64, (&[u8], ErrorKind)> {
+fn std_float(input: &[u8]) -> IResult<&[u8], f64, Error<&[u8]>> {
   match recognize_float(input) {
     Err(e) => Err(e),
     Ok((i, s)) => match s.parse_to() {
       Some(n) => Ok((i, n)),
-      None => Err(Err::Error((i, ErrorKind::Float))),
+      None => Err(Err::Error(Error {
+        input: i,
+        kind: ErrorKind::Float,
+      })),
     },
   }
 }

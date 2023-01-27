@@ -180,7 +180,7 @@ mod test {
       result,
       Err(crate::Err::Error(crate::error::Error {
         input: (input, offset),
-        code: ErrorKind::TagBits
+        kind: ErrorKind::TagBits
       }))
     );
   }

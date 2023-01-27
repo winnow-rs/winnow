@@ -1334,7 +1334,7 @@ where
         initial: input.initial.clone(),
         input: error.input,
       },
-      error.code,
+      error.kind,
     )
   };
   f(&input.input)
@@ -1426,7 +1426,7 @@ where
         input: error.input,
         state: input.state.clone(),
       },
-      error.code,
+      error.kind,
     )
   };
   f(&input.input)
@@ -1511,7 +1511,7 @@ where
   F: FnOnce(&I) -> IResult<I, I>,
 {
   let map_error =
-    |error: crate::error::Error<I>| E::from_error_kind(Streaming(error.input), error.code);
+    |error: crate::error::Error<I>| E::from_error_kind(Streaming(error.input), error.kind);
   f(&input.0)
     .map(|(remaining, output)| (Streaming(remaining), Streaming(output)))
     .map_err(|error| match error {

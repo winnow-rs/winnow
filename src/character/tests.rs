@@ -4,13 +4,14 @@ mod complete {
   use super::*;
   use crate::branch::alt;
   use crate::combinator::opt;
+  use crate::error::Error;
   use crate::error::ErrorKind;
   use crate::input::ParseTo;
   use crate::Err;
   use proptest::prelude::*;
   macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
-      let res: $crate::IResult<_, _, (_, ErrorKind)> = $left;
+      let res: $crate::IResult<_, _, Error<_>> = $left;
       assert_eq!(res, $right);
     };
   );
@@ -24,45 +25,51 @@ mod complete {
     let d: &[u8] = "azé12".as_bytes();
     let e: &[u8] = b" ";
     let f: &[u8] = b" ;";
-    //assert_eq!(alpha1::<_, (_, ErrorKind)>(a), Err(Err::Incomplete(Needed::Size(1))));
+    //assert_eq!(alpha1::<_, Error>(a), Err(Err::Incomplete(Needed::Size(1))));
     assert_parse!(alpha1(a), Ok((empty, a)));
-    assert_eq!(alpha1(b), Err(Err::Error((b, ErrorKind::Alpha))));
+    assert_eq!(alpha1(b), Err(Err::Error(Error::new(b, ErrorKind::Alpha))));
+    assert_eq!(alpha1::<_, Error<_>, false>(c), Ok((&c[1..], &b"a"[..])));
     assert_eq!(
-      alpha1::<_, (_, ErrorKind), false>(c),
-      Ok((&c[1..], &b"a"[..]))
-    );
-    assert_eq!(
-      alpha1::<_, (_, ErrorKind), false>(d),
+      alpha1::<_, Error<_>, false>(d),
       Ok(("é12".as_bytes(), &b"az"[..]))
     );
-    assert_eq!(digit1(a), Err(Err::Error((a, ErrorKind::Digit))));
-    assert_eq!(digit1::<_, (_, ErrorKind), false>(b), Ok((empty, b)));
-    assert_eq!(digit1(c), Err(Err::Error((c, ErrorKind::Digit))));
-    assert_eq!(digit1(d), Err(Err::Error((d, ErrorKind::Digit))));
-    assert_eq!(hex_digit1::<_, (_, ErrorKind), false>(a), Ok((empty, a)));
-    assert_eq!(hex_digit1::<_, (_, ErrorKind), false>(b), Ok((empty, b)));
-    assert_eq!(hex_digit1::<_, (_, ErrorKind), false>(c), Ok((empty, c)));
+    assert_eq!(digit1(a), Err(Err::Error(Error::new(a, ErrorKind::Digit))));
+    assert_eq!(digit1::<_, Error<_>, false>(b), Ok((empty, b)));
+    assert_eq!(digit1(c), Err(Err::Error(Error::new(c, ErrorKind::Digit))));
+    assert_eq!(digit1(d), Err(Err::Error(Error::new(d, ErrorKind::Digit))));
+    assert_eq!(hex_digit1::<_, Error<_>, false>(a), Ok((empty, a)));
+    assert_eq!(hex_digit1::<_, Error<_>, false>(b), Ok((empty, b)));
+    assert_eq!(hex_digit1::<_, Error<_>, false>(c), Ok((empty, c)));
     assert_eq!(
-      hex_digit1::<_, (_, ErrorKind), false>(d),
+      hex_digit1::<_, Error<_>, false>(d),
       Ok(("zé12".as_bytes(), &b"a"[..]))
     );
-    assert_eq!(hex_digit1(e), Err(Err::Error((e, ErrorKind::HexDigit))));
-    assert_eq!(oct_digit1(a), Err(Err::Error((a, ErrorKind::OctDigit))));
-    assert_eq!(oct_digit1::<_, (_, ErrorKind), false>(b), Ok((empty, b)));
-    assert_eq!(oct_digit1(c), Err(Err::Error((c, ErrorKind::OctDigit))));
-    assert_eq!(oct_digit1(d), Err(Err::Error((d, ErrorKind::OctDigit))));
-    assert_eq!(alphanumeric1::<_, (_, ErrorKind), false>(a), Ok((empty, a)));
-    //assert_eq!(fix_error!(b,(), alphanumeric), Ok((empty, b)));
-    assert_eq!(alphanumeric1::<_, (_, ErrorKind), false>(c), Ok((empty, c)));
     assert_eq!(
-      alphanumeric1::<_, (_, ErrorKind), false>(d),
+      hex_digit1(e),
+      Err(Err::Error(Error::new(e, ErrorKind::HexDigit)))
+    );
+    assert_eq!(
+      oct_digit1(a),
+      Err(Err::Error(Error::new(a, ErrorKind::OctDigit)))
+    );
+    assert_eq!(oct_digit1::<_, Error<_>, false>(b), Ok((empty, b)));
+    assert_eq!(
+      oct_digit1(c),
+      Err(Err::Error(Error::new(c, ErrorKind::OctDigit)))
+    );
+    assert_eq!(
+      oct_digit1(d),
+      Err(Err::Error(Error::new(d, ErrorKind::OctDigit)))
+    );
+    assert_eq!(alphanumeric1::<_, Error<_>, false>(a), Ok((empty, a)));
+    //assert_eq!(fix_error!(b,(), alphanumeric), Ok((empty, b)));
+    assert_eq!(alphanumeric1::<_, Error<_>, false>(c), Ok((empty, c)));
+    assert_eq!(
+      alphanumeric1::<_, Error<_>, false>(d),
       Ok(("é12".as_bytes(), &b"az"[..]))
     );
-    assert_eq!(space1::<_, (_, ErrorKind), false>(e), Ok((empty, e)));
-    assert_eq!(
-      space1::<_, (_, ErrorKind), false>(f),
-      Ok((&b";"[..], &b" "[..]))
-    );
+    assert_eq!(space1::<_, Error<_>, false>(e), Ok((empty, e)));
+    assert_eq!(space1::<_, Error<_>, false>(f), Ok((&b";"[..], &b" "[..])));
   }
 
   #[cfg(feature = "alloc")]
@@ -74,31 +81,40 @@ mod complete {
     let c = "a123";
     let d = "azé12";
     let e = " ";
-    assert_eq!(alpha1::<_, (_, ErrorKind), false>(a), Ok((empty, a)));
-    assert_eq!(alpha1(b), Err(Err::Error((b, ErrorKind::Alpha))));
-    assert_eq!(alpha1::<_, (_, ErrorKind), false>(c), Ok((&c[1..], "a")));
-    assert_eq!(alpha1::<_, (_, ErrorKind), false>(d), Ok(("é12", "az")));
-    assert_eq!(digit1(a), Err(Err::Error((a, ErrorKind::Digit))));
-    assert_eq!(digit1::<_, (_, ErrorKind), false>(b), Ok((empty, b)));
-    assert_eq!(digit1(c), Err(Err::Error((c, ErrorKind::Digit))));
-    assert_eq!(digit1(d), Err(Err::Error((d, ErrorKind::Digit))));
-    assert_eq!(hex_digit1::<_, (_, ErrorKind), false>(a), Ok((empty, a)));
-    assert_eq!(hex_digit1::<_, (_, ErrorKind), false>(b), Ok((empty, b)));
-    assert_eq!(hex_digit1::<_, (_, ErrorKind), false>(c), Ok((empty, c)));
-    assert_eq!(hex_digit1::<_, (_, ErrorKind), false>(d), Ok(("zé12", "a")));
-    assert_eq!(hex_digit1(e), Err(Err::Error((e, ErrorKind::HexDigit))));
-    assert_eq!(oct_digit1(a), Err(Err::Error((a, ErrorKind::OctDigit))));
-    assert_eq!(oct_digit1::<_, (_, ErrorKind), false>(b), Ok((empty, b)));
-    assert_eq!(oct_digit1(c), Err(Err::Error((c, ErrorKind::OctDigit))));
-    assert_eq!(oct_digit1(d), Err(Err::Error((d, ErrorKind::OctDigit))));
-    assert_eq!(alphanumeric1::<_, (_, ErrorKind), false>(a), Ok((empty, a)));
-    //assert_eq!(fix_error!(b,(), alphanumeric), Ok((empty, b)));
-    assert_eq!(alphanumeric1::<_, (_, ErrorKind), false>(c), Ok((empty, c)));
+    assert_eq!(alpha1::<_, Error<_>, false>(a), Ok((empty, a)));
+    assert_eq!(alpha1(b), Err(Err::Error(Error::new(b, ErrorKind::Alpha))));
+    assert_eq!(alpha1::<_, Error<_>, false>(c), Ok((&c[1..], "a")));
+    assert_eq!(alpha1::<_, Error<_>, false>(d), Ok(("é12", "az")));
+    assert_eq!(digit1(a), Err(Err::Error(Error::new(a, ErrorKind::Digit))));
+    assert_eq!(digit1::<_, Error<_>, false>(b), Ok((empty, b)));
+    assert_eq!(digit1(c), Err(Err::Error(Error::new(c, ErrorKind::Digit))));
+    assert_eq!(digit1(d), Err(Err::Error(Error::new(d, ErrorKind::Digit))));
+    assert_eq!(hex_digit1::<_, Error<_>, false>(a), Ok((empty, a)));
+    assert_eq!(hex_digit1::<_, Error<_>, false>(b), Ok((empty, b)));
+    assert_eq!(hex_digit1::<_, Error<_>, false>(c), Ok((empty, c)));
+    assert_eq!(hex_digit1::<_, Error<_>, false>(d), Ok(("zé12", "a")));
     assert_eq!(
-      alphanumeric1::<_, (_, ErrorKind), false>(d),
-      Ok(("é12", "az"))
+      hex_digit1(e),
+      Err(Err::Error(Error::new(e, ErrorKind::HexDigit)))
     );
-    assert_eq!(space1::<_, (_, ErrorKind), false>(e), Ok((empty, e)));
+    assert_eq!(
+      oct_digit1(a),
+      Err(Err::Error(Error::new(a, ErrorKind::OctDigit)))
+    );
+    assert_eq!(oct_digit1::<_, Error<_>, false>(b), Ok((empty, b)));
+    assert_eq!(
+      oct_digit1(c),
+      Err(Err::Error(Error::new(c, ErrorKind::OctDigit)))
+    );
+    assert_eq!(
+      oct_digit1(d),
+      Err(Err::Error(Error::new(d, ErrorKind::OctDigit)))
+    );
+    assert_eq!(alphanumeric1::<_, Error<_>, false>(a), Ok((empty, a)));
+    //assert_eq!(fix_error!(b,(), alphanumeric), Ok((empty, b)));
+    assert_eq!(alphanumeric1::<_, Error<_>, false>(c), Ok((empty, c)));
+    assert_eq!(alphanumeric1::<_, Error<_>, false>(d), Ok(("é12", "az")));
+    assert_eq!(space1::<_, Error<_>, false>(e), Ok((empty, e)));
   }
 
   use crate::input::Offset;
@@ -111,43 +127,43 @@ mod complete {
     let e = &b" \t\r\n;"[..];
     let f = &b"123abcDEF;"[..];
 
-    match alpha1::<_, (_, ErrorKind), false>(a) {
+    match alpha1::<_, Error<_>, false>(a) {
       Ok((i, _)) => {
         assert_eq!(a.offset(i) + i.len(), a.len());
       }
       _ => panic!("wrong return type in offset test for alpha"),
     }
-    match digit1::<_, (_, ErrorKind), false>(b) {
+    match digit1::<_, Error<_>, false>(b) {
       Ok((i, _)) => {
         assert_eq!(b.offset(i) + i.len(), b.len());
       }
       _ => panic!("wrong return type in offset test for digit"),
     }
-    match alphanumeric1::<_, (_, ErrorKind), false>(c) {
+    match alphanumeric1::<_, Error<_>, false>(c) {
       Ok((i, _)) => {
         assert_eq!(c.offset(i) + i.len(), c.len());
       }
       _ => panic!("wrong return type in offset test for alphanumeric"),
     }
-    match space1::<_, (_, ErrorKind), false>(d) {
+    match space1::<_, Error<_>, false>(d) {
       Ok((i, _)) => {
         assert_eq!(d.offset(i) + i.len(), d.len());
       }
       _ => panic!("wrong return type in offset test for space"),
     }
-    match multispace1::<_, (_, ErrorKind), false>(e) {
+    match multispace1::<_, Error<_>, false>(e) {
       Ok((i, _)) => {
         assert_eq!(e.offset(i) + i.len(), e.len());
       }
       _ => panic!("wrong return type in offset test for multispace"),
     }
-    match hex_digit1::<_, (_, ErrorKind), false>(f) {
+    match hex_digit1::<_, Error<_>, false>(f) {
       Ok((i, _)) => {
         assert_eq!(f.offset(i) + i.len(), f.len());
       }
       _ => panic!("wrong return type in offset test for hex_digit"),
     }
-    match oct_digit1::<_, (_, ErrorKind), false>(f) {
+    match oct_digit1::<_, Error<_>, false>(f) {
       Ok((i, _)) => {
         assert_eq!(f.offset(i) + i.len(), f.len());
       }
@@ -159,39 +175,36 @@ mod complete {
   fn is_not_line_ending_bytes() {
     let a: &[u8] = b"ab12cd\nefgh";
     assert_eq!(
-      not_line_ending::<_, (_, ErrorKind), false>(a),
+      not_line_ending::<_, Error<_>, false>(a),
       Ok((&b"\nefgh"[..], &b"ab12cd"[..]))
     );
 
     let b: &[u8] = b"ab12cd\nefgh\nijkl";
     assert_eq!(
-      not_line_ending::<_, (_, ErrorKind), false>(b),
+      not_line_ending::<_, Error<_>, false>(b),
       Ok((&b"\nefgh\nijkl"[..], &b"ab12cd"[..]))
     );
 
     let c: &[u8] = b"ab12cd\r\nefgh\nijkl";
     assert_eq!(
-      not_line_ending::<_, (_, ErrorKind), false>(c),
+      not_line_ending::<_, Error<_>, false>(c),
       Ok((&b"\r\nefgh\nijkl"[..], &b"ab12cd"[..]))
     );
 
     let d: &[u8] = b"ab12cd";
-    assert_eq!(
-      not_line_ending::<_, (_, ErrorKind), false>(d),
-      Ok((&[][..], d))
-    );
+    assert_eq!(not_line_ending::<_, Error<_>, false>(d), Ok((&[][..], d)));
   }
 
   #[test]
   fn is_not_line_ending_str() {
     let f = "βèƒôřè\rÂßÇáƒƭèř";
-    assert_eq!(not_line_ending(f), Err(Err::Error((f, ErrorKind::Tag))));
+    assert_eq!(
+      not_line_ending(f),
+      Err(Err::Error(Error::new(f, ErrorKind::Tag)))
+    );
 
     let g2: &str = "ab12cd";
-    assert_eq!(
-      not_line_ending::<_, (_, ErrorKind), false>(g2),
-      Ok(("", g2))
-    );
+    assert_eq!(not_line_ending::<_, Error<_>, false>(g2), Ok(("", g2)));
   }
 
   #[test]
@@ -435,7 +448,10 @@ mod complete {
     let remaining_exponent = "-1.234E-";
     assert_parse!(
       recognize_float(remaining_exponent),
-      Err(Err::Failure(("", ErrorKind::Digit)))
+      Err(Err::Failure(Error {
+        input: "",
+        kind: ErrorKind::Digit
+      }))
     );
 
     let (_i, nan) = f32::<_, (), false>("NaN").unwrap();
@@ -479,6 +495,7 @@ mod complete {
 mod streaming {
   use super::*;
   use crate::combinator::opt;
+  use crate::error::Error;
   use crate::error::ErrorKind;
   use crate::input::ParseTo;
   use crate::input::Streaming;
@@ -488,7 +505,7 @@ mod streaming {
 
   macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
-      let res: $crate::IResult<_, _, (_, ErrorKind)> = $left;
+      let res: $crate::IResult<_, _, Error<_>> = $left;
       assert_eq!(res, $right);
     };
   );
@@ -501,91 +518,91 @@ mod streaming {
     let d: &[u8] = "azé12".as_bytes();
     let e: &[u8] = b" ";
     let f: &[u8] = b" ;";
-    //assert_eq!(alpha1::<_, (_, ErrorKind), true>(a), Err(Err::Incomplete(Needed::new(1))));
+    //assert_eq!(alpha1::<_, Error<_>, true>(a), Err(Err::Incomplete(Needed::new(1))));
     assert_parse!(alpha1(Streaming(a)), Err(Err::Incomplete(Needed::new(1))));
     assert_eq!(
       alpha1(Streaming(b)),
-      Err(Err::Error((Streaming(b), ErrorKind::Alpha)))
+      Err(Err::Error(Error::new(Streaming(b), ErrorKind::Alpha)))
     );
     assert_eq!(
-      alpha1::<_, (_, ErrorKind), true>(Streaming(c)),
+      alpha1::<_, Error<_>, true>(Streaming(c)),
       Ok((Streaming(&c[1..]), &b"a"[..]))
     );
     assert_eq!(
-      alpha1::<_, (_, ErrorKind), true>(Streaming(d)),
+      alpha1::<_, Error<_>, true>(Streaming(d)),
       Ok((Streaming("é12".as_bytes()), &b"az"[..]))
     );
     assert_eq!(
       digit1(Streaming(a)),
-      Err(Err::Error((Streaming(a), ErrorKind::Digit)))
+      Err(Err::Error(Error::new(Streaming(a), ErrorKind::Digit)))
     );
     assert_eq!(
-      digit1::<_, (_, ErrorKind), true>(Streaming(b)),
+      digit1::<_, Error<_>, true>(Streaming(b)),
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(
       digit1(Streaming(c)),
-      Err(Err::Error((Streaming(c), ErrorKind::Digit)))
+      Err(Err::Error(Error::new(Streaming(c), ErrorKind::Digit)))
     );
     assert_eq!(
       digit1(Streaming(d)),
-      Err(Err::Error((Streaming(d), ErrorKind::Digit)))
+      Err(Err::Error(Error::new(Streaming(d), ErrorKind::Digit)))
     );
     assert_eq!(
-      hex_digit1::<_, (_, ErrorKind), true>(Streaming(a)),
+      hex_digit1::<_, Error<_>, true>(Streaming(a)),
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-      hex_digit1::<_, (_, ErrorKind), true>(Streaming(b)),
+      hex_digit1::<_, Error<_>, true>(Streaming(b)),
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-      hex_digit1::<_, (_, ErrorKind), true>(Streaming(c)),
+      hex_digit1::<_, Error<_>, true>(Streaming(c)),
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-      hex_digit1::<_, (_, ErrorKind), true>(Streaming(d)),
+      hex_digit1::<_, Error<_>, true>(Streaming(d)),
       Ok((Streaming("zé12".as_bytes()), &b"a"[..]))
     );
     assert_eq!(
       hex_digit1(Streaming(e)),
-      Err(Err::Error((Streaming(e), ErrorKind::HexDigit)))
+      Err(Err::Error(Error::new(Streaming(e), ErrorKind::HexDigit)))
     );
     assert_eq!(
       oct_digit1(Streaming(a)),
-      Err(Err::Error((Streaming(a), ErrorKind::OctDigit)))
+      Err(Err::Error(Error::new(Streaming(a), ErrorKind::OctDigit)))
     );
     assert_eq!(
-      oct_digit1::<_, (_, ErrorKind), true>(Streaming(b)),
+      oct_digit1::<_, Error<_>, true>(Streaming(b)),
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(
       oct_digit1(Streaming(c)),
-      Err(Err::Error((Streaming(c), ErrorKind::OctDigit)))
+      Err(Err::Error(Error::new(Streaming(c), ErrorKind::OctDigit)))
     );
     assert_eq!(
       oct_digit1(Streaming(d)),
-      Err(Err::Error((Streaming(d), ErrorKind::OctDigit)))
+      Err(Err::Error(Error::new(Streaming(d), ErrorKind::OctDigit)))
     );
     assert_eq!(
-      alphanumeric1::<_, (_, ErrorKind), true>(Streaming(a)),
+      alphanumeric1::<_, Error<_>, true>(Streaming(a)),
       Err(Err::Incomplete(Needed::new(1)))
     );
     //assert_eq!(fix_error!(b,(), alphanumeric1), Ok((empty, b)));
     assert_eq!(
-      alphanumeric1::<_, (_, ErrorKind), true>(Streaming(c)),
+      alphanumeric1::<_, Error<_>, true>(Streaming(c)),
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-      alphanumeric1::<_, (_, ErrorKind), true>(Streaming(d)),
+      alphanumeric1::<_, Error<_>, true>(Streaming(d)),
       Ok((Streaming("é12".as_bytes()), &b"az"[..]))
     );
     assert_eq!(
-      space1::<_, (_, ErrorKind), true>(Streaming(e)),
+      space1::<_, Error<_>, true>(Streaming(e)),
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-      space1::<_, (_, ErrorKind), true>(Streaming(f)),
+      space1::<_, Error<_>, true>(Streaming(f)),
       Ok((Streaming(&b";"[..]), &b" "[..]))
     );
   }
@@ -599,88 +616,88 @@ mod streaming {
     let d = "azé12";
     let e = " ";
     assert_eq!(
-      alpha1::<_, (_, ErrorKind), true>(Streaming(a)),
+      alpha1::<_, Error<_>, true>(Streaming(a)),
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(
       alpha1(Streaming(b)),
-      Err(Err::Error((Streaming(b), ErrorKind::Alpha)))
+      Err(Err::Error(Error::new(Streaming(b), ErrorKind::Alpha)))
     );
     assert_eq!(
-      alpha1::<_, (_, ErrorKind), true>(Streaming(c)),
+      alpha1::<_, Error<_>, true>(Streaming(c)),
       Ok((Streaming(&c[1..]), "a"))
     );
     assert_eq!(
-      alpha1::<_, (_, ErrorKind), true>(Streaming(d)),
+      alpha1::<_, Error<_>, true>(Streaming(d)),
       Ok((Streaming("é12"), "az"))
     );
     assert_eq!(
       digit1(Streaming(a)),
-      Err(Err::Error((Streaming(a), ErrorKind::Digit)))
+      Err(Err::Error(Error::new(Streaming(a), ErrorKind::Digit)))
     );
     assert_eq!(
-      digit1::<_, (_, ErrorKind), true>(Streaming(b)),
+      digit1::<_, Error<_>, true>(Streaming(b)),
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(
       digit1(Streaming(c)),
-      Err(Err::Error((Streaming(c), ErrorKind::Digit)))
+      Err(Err::Error(Error::new(Streaming(c), ErrorKind::Digit)))
     );
     assert_eq!(
       digit1(Streaming(d)),
-      Err(Err::Error((Streaming(d), ErrorKind::Digit)))
+      Err(Err::Error(Error::new(Streaming(d), ErrorKind::Digit)))
     );
     assert_eq!(
-      hex_digit1::<_, (_, ErrorKind), true>(Streaming(a)),
+      hex_digit1::<_, Error<_>, true>(Streaming(a)),
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-      hex_digit1::<_, (_, ErrorKind), true>(Streaming(b)),
+      hex_digit1::<_, Error<_>, true>(Streaming(b)),
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-      hex_digit1::<_, (_, ErrorKind), true>(Streaming(c)),
+      hex_digit1::<_, Error<_>, true>(Streaming(c)),
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-      hex_digit1::<_, (_, ErrorKind), true>(Streaming(d)),
+      hex_digit1::<_, Error<_>, true>(Streaming(d)),
       Ok((Streaming("zé12"), "a"))
     );
     assert_eq!(
       hex_digit1(Streaming(e)),
-      Err(Err::Error((Streaming(e), ErrorKind::HexDigit)))
+      Err(Err::Error(Error::new(Streaming(e), ErrorKind::HexDigit)))
     );
     assert_eq!(
       oct_digit1(Streaming(a)),
-      Err(Err::Error((Streaming(a), ErrorKind::OctDigit)))
+      Err(Err::Error(Error::new(Streaming(a), ErrorKind::OctDigit)))
     );
     assert_eq!(
-      oct_digit1::<_, (_, ErrorKind), true>(Streaming(b)),
+      oct_digit1::<_, Error<_>, true>(Streaming(b)),
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(
       oct_digit1(Streaming(c)),
-      Err(Err::Error((Streaming(c), ErrorKind::OctDigit)))
+      Err(Err::Error(Error::new(Streaming(c), ErrorKind::OctDigit)))
     );
     assert_eq!(
       oct_digit1(Streaming(d)),
-      Err(Err::Error((Streaming(d), ErrorKind::OctDigit)))
+      Err(Err::Error(Error::new(Streaming(d), ErrorKind::OctDigit)))
     );
     assert_eq!(
-      alphanumeric1::<_, (_, ErrorKind), true>(Streaming(a)),
+      alphanumeric1::<_, Error<_>, true>(Streaming(a)),
       Err(Err::Incomplete(Needed::new(1)))
     );
     //assert_eq!(fix_error!(b,(), alphanumeric1), Ok((empty, b)));
     assert_eq!(
-      alphanumeric1::<_, (_, ErrorKind), true>(Streaming(c)),
+      alphanumeric1::<_, Error<_>, true>(Streaming(c)),
       Err(Err::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-      alphanumeric1::<_, (_, ErrorKind), true>(Streaming(d)),
+      alphanumeric1::<_, Error<_>, true>(Streaming(d)),
       Ok((Streaming("é12"), "az"))
     );
     assert_eq!(
-      space1::<_, (_, ErrorKind), true>(Streaming(e)),
+      space1::<_, Error<_>, true>(Streaming(e)),
       Err(Err::Incomplete(Needed::new(1)))
     );
   }
@@ -695,43 +712,43 @@ mod streaming {
     let e = &b" \t\r\n;"[..];
     let f = &b"123abcDEF;"[..];
 
-    match alpha1::<_, (_, ErrorKind), true>(Streaming(a)) {
+    match alpha1::<_, Error<_>, true>(Streaming(a)) {
       Ok((Streaming(i), _)) => {
         assert_eq!(a.offset(i) + i.len(), a.len());
       }
       _ => panic!("wrong return type in offset test for alpha"),
     }
-    match digit1::<_, (_, ErrorKind), true>(Streaming(b)) {
+    match digit1::<_, Error<_>, true>(Streaming(b)) {
       Ok((Streaming(i), _)) => {
         assert_eq!(b.offset(i) + i.len(), b.len());
       }
       _ => panic!("wrong return type in offset test for digit"),
     }
-    match alphanumeric1::<_, (_, ErrorKind), true>(Streaming(c)) {
+    match alphanumeric1::<_, Error<_>, true>(Streaming(c)) {
       Ok((Streaming(i), _)) => {
         assert_eq!(c.offset(i) + i.len(), c.len());
       }
       _ => panic!("wrong return type in offset test for alphanumeric"),
     }
-    match space1::<_, (_, ErrorKind), true>(Streaming(d)) {
+    match space1::<_, Error<_>, true>(Streaming(d)) {
       Ok((Streaming(i), _)) => {
         assert_eq!(d.offset(i) + i.len(), d.len());
       }
       _ => panic!("wrong return type in offset test for space"),
     }
-    match multispace1::<_, (_, ErrorKind), true>(Streaming(e)) {
+    match multispace1::<_, Error<_>, true>(Streaming(e)) {
       Ok((Streaming(i), _)) => {
         assert_eq!(e.offset(i) + i.len(), e.len());
       }
       _ => panic!("wrong return type in offset test for multispace"),
     }
-    match hex_digit1::<_, (_, ErrorKind), true>(Streaming(f)) {
+    match hex_digit1::<_, Error<_>, true>(Streaming(f)) {
       Ok((Streaming(i), _)) => {
         assert_eq!(f.offset(i) + i.len(), f.len());
       }
       _ => panic!("wrong return type in offset test for hex_digit"),
     }
-    match oct_digit1::<_, (_, ErrorKind), true>(Streaming(f)) {
+    match oct_digit1::<_, Error<_>, true>(Streaming(f)) {
       Ok((Streaming(i), _)) => {
         assert_eq!(f.offset(i) + i.len(), f.len());
       }
@@ -743,25 +760,25 @@ mod streaming {
   fn is_not_line_ending_bytes() {
     let a: &[u8] = b"ab12cd\nefgh";
     assert_eq!(
-      not_line_ending::<_, (_, ErrorKind), true>(Streaming(a)),
+      not_line_ending::<_, Error<_>, true>(Streaming(a)),
       Ok((Streaming(&b"\nefgh"[..]), &b"ab12cd"[..]))
     );
 
     let b: &[u8] = b"ab12cd\nefgh\nijkl";
     assert_eq!(
-      not_line_ending::<_, (_, ErrorKind), true>(Streaming(b)),
+      not_line_ending::<_, Error<_>, true>(Streaming(b)),
       Ok((Streaming(&b"\nefgh\nijkl"[..]), &b"ab12cd"[..]))
     );
 
     let c: &[u8] = b"ab12cd\r\nefgh\nijkl";
     assert_eq!(
-      not_line_ending::<_, (_, ErrorKind), true>(Streaming(c)),
+      not_line_ending::<_, Error<_>, true>(Streaming(c)),
       Ok((Streaming(&b"\r\nefgh\nijkl"[..]), &b"ab12cd"[..]))
     );
 
     let d: &[u8] = b"ab12cd";
     assert_eq!(
-      not_line_ending::<_, (_, ErrorKind), true>(Streaming(d)),
+      not_line_ending::<_, Error<_>, true>(Streaming(d)),
       Err(Err::Incomplete(Needed::Unknown))
     );
   }
@@ -771,12 +788,12 @@ mod streaming {
     let f = "βèƒôřè\rÂßÇáƒƭèř";
     assert_eq!(
       not_line_ending(Streaming(f)),
-      Err(Err::Error((Streaming(f), ErrorKind::Tag)))
+      Err(Err::Error(Error::new(Streaming(f), ErrorKind::Tag)))
     );
 
     let g2: &str = "ab12cd";
     assert_eq!(
-      not_line_ending::<_, (_, ErrorKind), true>(Streaming(g2)),
+      not_line_ending::<_, Error<_>, true>(Streaming(g2)),
       Err(Err::Incomplete(Needed::Unknown))
     );
   }

@@ -15,7 +15,7 @@ impl std::str::FromStr for Color {
   fn from_str(s: &str) -> Result<Self, Self::Err> {
     hex_color(s).finish().map_err(|err| winnow::error::Error {
       input: err.input.to_owned(),
-      code: err.code,
+      kind: err.kind,
     })
   }
 }

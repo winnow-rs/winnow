@@ -132,7 +132,7 @@ where
 /// assert_eq!(parser(([0b00010010].as_ref(), 4), 4), Ok((([].as_ref(), 0), 0b00000010)));
 ///
 /// // Tries to consume 12 bits but only 8 are available
-/// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(winnow::Err::Error(Error{input: ([0b00010010].as_ref(), 0), code: ErrorKind::Eof })));
+/// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(winnow::Err::Error(Error{input: ([0b00010010].as_ref(), 0), kind: ErrorKind::Eof })));
 /// ```
 #[inline(always)]
 pub fn take<I, O, C, E: ParseError<(I, usize)>, const STREAMING: bool>(
@@ -184,7 +184,7 @@ where
 ///     parser(0b000000_01, 2, ([0b111111_11].as_ref(), 0)),
 ///     Err(winnow::Err::Error(Error {
 ///         input: ([0b11111111].as_ref(), 0),
-///         code: ErrorKind::TagBits
+///         kind: ErrorKind::TagBits
 ///     }))
 /// );
 ///
@@ -193,7 +193,7 @@ where
 ///     parser(0b11111110, 8, ([0b11111111].as_ref(), 0)),
 ///     Err(winnow::Err::Error(Error {
 ///         input: ([0b11111111].as_ref(), 0),
-///         code: ErrorKind::TagBits
+///         kind: ErrorKind::TagBits
 ///     }))
 /// );
 /// ```

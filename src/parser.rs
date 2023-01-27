@@ -238,13 +238,13 @@ impl<T> Err<error::Error<T>> {
   {
     match self {
       Err::Incomplete(n) => Err::Incomplete(n),
-      Err::Failure(error::Error { input, code }) => Err::Failure(error::Error {
+      Err::Failure(error::Error { input, kind }) => Err::Failure(error::Error {
         input: f(input),
-        code,
+        kind,
       }),
-      Err::Error(error::Error { input, code }) => Err::Error(error::Error {
+      Err::Error(error::Error { input, kind }) => Err::Error(error::Error {
         input: f(input),
-        code,
+        kind,
       }),
     }
   }
@@ -415,14 +415,14 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{Err,error::ErrorKind, IResult, Parser};
+  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::character::alpha1;
   /// # fn main() {
   ///
   /// let mut parser = alpha1.value(1234);
   ///
   /// assert_eq!(parser.parse_next("abcd"), Ok(("", 1234)));
-  /// assert_eq!(parser.parse_next("123abcd;"), Err(Err::Error(("123abcd;", ErrorKind::Alpha))));
+  /// assert_eq!(parser.parse_next("123abcd;"), Err(Err::Error(Error::new("123abcd;", ErrorKind::Alpha))));
   /// # }
   /// ```
   fn value<O2>(self, val: O2) -> Value<Self, O, O2>
@@ -466,7 +466,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{Err,error::ErrorKind, IResult, Parser};
+  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::character::{alpha1};
   /// use winnow::sequence::separated_pair;
   /// # fn main() {
@@ -474,7 +474,7 @@ pub trait Parser<I, O, E> {
   /// let mut parser = separated_pair(alpha1, ',', alpha1).recognize();
   ///
   /// assert_eq!(parser.parse_next("abcd,efgh"), Ok(("", "abcd,efgh")));
-  /// assert_eq!(parser.parse_next("abcd;"),Err(Err::Error((";", ErrorKind::OneOf))));
+  /// assert_eq!(parser.parse_next("abcd;"),Err(Err::Error(Error::new(";", ErrorKind::OneOf))));
   /// # }
   /// ```
   fn recognize(self) -> Recognize<Self, O>
@@ -497,7 +497,7 @@ pub trait Parser<I, O, E> {
   ///
   /// ```rust
   /// # use winnow::prelude::*;
-  /// # use winnow::{Err,error::ErrorKind, IResult};
+  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult};
   /// use winnow::character::{alpha1};
   /// use winnow::bytes::tag;
   /// use winnow::sequence::separated_pair;
@@ -511,7 +511,7 @@ pub trait Parser<I, O, E> {
   /// let mut consumed_parser = separated_pair(alpha1, ',', alpha1).value(true).with_recognized();
   ///
   /// assert_eq!(consumed_parser.parse_next("abcd,efgh1"), Ok(("1", (true, "abcd,efgh"))));
-  /// assert_eq!(consumed_parser.parse_next("abcd;"),Err(Err::Error((";", ErrorKind::OneOf))));
+  /// assert_eq!(consumed_parser.parse_next("abcd;"),Err(Err::Error(Error::new(";", ErrorKind::OneOf))));
   ///
   /// // the second output (representing the consumed input)
   /// // should be the same as that of the `recognize` parser.
@@ -535,7 +535,7 @@ pub trait Parser<I, O, E> {
   ///
   /// ```rust
   /// # use winnow::prelude::*;
-  /// # use winnow::{Err,error::ErrorKind, IResult, Parser, input::Slice};
+  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, Parser, input::Slice};
   /// use winnow::input::Located;
   /// use winnow::character::alpha1;
   /// use winnow::sequence::separated_pair;
@@ -543,7 +543,7 @@ pub trait Parser<I, O, E> {
   /// let mut parser = separated_pair(alpha1.span(), ',', alpha1.span());
   ///
   /// assert_eq!(parser.parse_next(Located::new("abcd,efgh")).finish(), Ok((0..4, 5..9)));
-  /// assert_eq!(parser.parse_next(Located::new("abcd;")),Err(Err::Error((Located::new("abcd;").slice(4..), ErrorKind::OneOf))));
+  /// assert_eq!(parser.parse_next(Located::new("abcd;")),Err(Err::Error(Error::new(Located::new("abcd;").slice(4..), ErrorKind::OneOf))));
   /// ```
   fn span(self) -> Span<Self, O>
   where
@@ -566,7 +566,7 @@ pub trait Parser<I, O, E> {
   ///
   /// ```rust
   /// # use winnow::prelude::*;
-  /// # use winnow::{Err,error::ErrorKind, IResult, input::Slice};
+  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, input::Slice};
   /// use winnow::input::Located;
   /// use winnow::character::alpha1;
   /// use winnow::bytes::tag;
@@ -581,7 +581,7 @@ pub trait Parser<I, O, E> {
   /// let mut consumed_parser = separated_pair(alpha1.value(1).with_span(), ',', alpha1.value(2).with_span());
   ///
   /// assert_eq!(consumed_parser.parse_next(Located::new("abcd,efgh")).finish(), Ok(((1, 0..4), (2, 5..9))));
-  /// assert_eq!(consumed_parser.parse_next(Located::new("abcd;")),Err(Err::Error((Located::new("abcd;").slice(4..), ErrorKind::OneOf))));
+  /// assert_eq!(consumed_parser.parse_next(Located::new("abcd;")),Err(Err::Error(Error::new(Located::new("abcd;").slice(4..), ErrorKind::OneOf))));
   ///
   /// // the second output (representing the consumed input)
   /// // should be the same as that of the `span` parser.
@@ -605,7 +605,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// use winnow::{Err,error::ErrorKind, IResult,Parser};
+  /// use winnow::{Err,error::ErrorKind, error::Error, IResult,Parser};
   /// use winnow::character::digit1;
   /// # fn main() {
   ///
@@ -615,7 +615,7 @@ pub trait Parser<I, O, E> {
   /// assert_eq!(parser.parse_next("123456"), Ok(("", 6)));
   ///
   /// // this will fail if digit1 fails
-  /// assert_eq!(parser.parse_next("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
+  /// assert_eq!(parser.parse_next("abc"), Err(Err::Error(Error::new("abc", ErrorKind::Digit))));
   /// # }
   /// ```
   fn map<G, O2>(self, g: G) -> Map<Self, G, O>
@@ -631,7 +631,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{Err,error::ErrorKind, IResult, Parser};
+  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::character::digit1;
   /// # fn main() {
   ///
@@ -641,10 +641,10 @@ pub trait Parser<I, O, E> {
   /// assert_eq!(parse.parse_next("123"), Ok(("", 123)));
   ///
   /// // this will fail if digit1 fails
-  /// assert_eq!(parse.parse_next("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
+  /// assert_eq!(parse.parse_next("abc"), Err(Err::Error(Error::new("abc", ErrorKind::Digit))));
   ///
   /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
-  /// assert_eq!(parse.parse_next("123456"), Err(Err::Error(("123456", ErrorKind::MapRes))));
+  /// assert_eq!(parse.parse_next("123456"), Err(Err::Error(Error::new("123456", ErrorKind::MapRes))));
   /// # }
   /// ```
   fn map_res<G, O2, E2>(self, g: G) -> MapRes<Self, G, O>
@@ -660,7 +660,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{Err,error::ErrorKind, IResult, Parser};
+  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::character::digit1;
   /// # fn main() {
   ///
@@ -670,10 +670,10 @@ pub trait Parser<I, O, E> {
   /// assert_eq!(parse.parse_next("123"), Ok(("", 123)));
   ///
   /// // this will fail if digit1 fails
-  /// assert_eq!(parse.parse_next("abc"), Err(Err::Error(("abc", ErrorKind::Digit))));
+  /// assert_eq!(parse.parse_next("abc"), Err(Err::Error(Error::new("abc", ErrorKind::Digit))));
   ///
   /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
-  /// assert_eq!(parse.parse_next("123456"), Err(Err::Error(("123456", ErrorKind::MapOpt))));
+  /// assert_eq!(parse.parse_next("123456"), Err(Err::Error(Error::new("123456", ErrorKind::MapOpt))));
   /// # }
   /// ```
   fn map_opt<G, O2>(self, g: G) -> MapOpt<Self, G, O>
@@ -689,7 +689,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{Err,error::ErrorKind, IResult, Parser};
+  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::bytes::take;
   /// use winnow::number::u8;
   /// # fn main() {
@@ -697,7 +697,7 @@ pub trait Parser<I, O, E> {
   /// let mut length_data = u8.flat_map(take);
   ///
   /// assert_eq!(length_data.parse_next(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
-  /// assert_eq!(length_data.parse_next(&[4, 0, 1, 2][..]), Err(Err::Error((&[0, 1, 2][..], ErrorKind::Eof))));
+  /// assert_eq!(length_data.parse_next(&[4, 0, 1, 2][..]), Err(Err::Error(Error::new(&[0, 1, 2][..], ErrorKind::Eof))));
   /// # }
   /// ```
   fn flat_map<G, H, O2>(self, g: G) -> FlatMap<Self, G, O>
@@ -714,7 +714,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{Err,error::ErrorKind, IResult, Parser};
+  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::character::digit1;
   /// use winnow::bytes::take;
   /// # fn main() {
@@ -723,7 +723,7 @@ pub trait Parser<I, O, E> {
   ///
   /// assert_eq!(digits.parse_next("12345"), Ok(("", "12345")));
   /// assert_eq!(digits.parse_next("123ab"), Ok(("", "123")));
-  /// assert_eq!(digits.parse_next("123"), Err(Err::Error(("123", ErrorKind::Eof))));
+  /// assert_eq!(digits.parse_next("123"), Err(Err::Error(Error::new("123", ErrorKind::Eof))));
   /// # }
   /// ```
   fn and_then<G, O2>(self, g: G) -> AndThen<Self, G, O>
@@ -742,15 +742,15 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{Err,error::ErrorKind, IResult, Parser};
+  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, Parser};
   /// # use winnow::character::alpha1;
   /// # fn main() {
   ///
   /// let mut parser = alpha1.verify(|s: &str| s.len() == 4);
   ///
   /// assert_eq!(parser.parse_next("abcd"), Ok(("", "abcd")));
-  /// assert_eq!(parser.parse_next("abcde"), Err(Err::Error(("abcde", ErrorKind::Verify))));
-  /// assert_eq!(parser.parse_next("123abcd;"),Err(Err::Error(("123abcd;", ErrorKind::Alpha))));
+  /// assert_eq!(parser.parse_next("abcde"), Err(Err::Error(Error::new("abcde", ErrorKind::Verify))));
+  /// assert_eq!(parser.parse_next("123abcd;"),Err(Err::Error(Error::new("123abcd;", ErrorKind::Alpha))));
   /// # }
   /// ```
   fn verify<G, O2: ?Sized>(self, second: G) -> Verify<Self, G, O2>
@@ -779,14 +779,14 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{Err,error::ErrorKind, IResult, input::Streaming, Parser};
+  /// # use winnow::{Err, error::ErrorKind, error::Error, IResult, input::Streaming, Parser};
   /// # use winnow::bytes::take;
   /// # fn main() {
   ///
   /// let mut parser = take(5u8).complete();
   ///
   /// assert_eq!(parser.parse_next(Streaming("abcdefg")), Ok((Streaming("fg"), "abcde")));
-  /// assert_eq!(parser.parse_next(Streaming("abcd")), Err(Err::Error((Streaming("abcd"), ErrorKind::Complete))));
+  /// assert_eq!(parser.parse_next(Streaming("abcd")), Err(Err::Error(Error::new(Streaming("abcd"), ErrorKind::Complete))));
   /// # }
   /// ```
   fn complete(self) -> Complete<Self>
@@ -807,7 +807,7 @@ pub trait Parser<I, O, E> {
   /// Prints a message and the input if the parser fails.
   ///
   /// The message prints the `Error` or `Incomplete`
-  /// and the parser's calling code.
+  /// and the parser's calling kind.
   ///
   /// It also displays the input in hexdump format
   ///
@@ -1082,6 +1082,7 @@ impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a> {
 mod tests {
   use super::*;
   use crate::bytes::{tag, take};
+  use crate::error::Error;
   use crate::error::ErrorKind;
   use crate::input::Streaming;
   use crate::number::be_u16;
@@ -1119,7 +1120,10 @@ mod tests {
     assert_eq!(parser.parse_next("abc123def"), Ok(("123def", ("abc",))));
     assert_eq!(
       parser.parse_next("123def"),
-      Err(Err::Error(("123def", ErrorKind::Alpha)))
+      Err(Err::Error(Error {
+        input: "123def",
+        kind: ErrorKind::Alpha
+      }))
     );
   }
 

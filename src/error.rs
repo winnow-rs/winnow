@@ -105,8 +105,8 @@
 //! pub struct Error<I> {
 //!   /// position of the error in the input data
 //!   pub input: I,
-//!   /// nom error code
-//!   pub code: ErrorKind,
+//!   /// nom error kind
+//!   pub kind: ErrorKind,
 //! }
 //! ```
 //!
@@ -133,7 +133,7 @@
 //! //   Failure(
 //! //       Error {
 //! //           input: "1\"hello\" : \"world\"\n  }\n  } ",
-//! //           code: Char,
+//! //           kind: Char,
 //! //       },
 //! //   ),
 //! // )
@@ -169,7 +169,7 @@
 //! }
 //! ```
 //!
-//! It contains the input position and error code for each of those parsers.
+//! It contains the input position and error kind for each of those parsers.
 //! It does not accumulate errors from the different branches of `alt`, it will
 //! only contain errors from the last branch it tried.
 //!
@@ -291,7 +291,7 @@
 //!     /// Combines an existing error with a new one created from the input
 //!     /// position and an [ErrorKind]. This is useful when backtracking
 //!     /// through a parse tree, accumulating error context on the way
-//!     fn append(input: I, kind: ErrorKind, other: Self) -> Self;
+//!     fn append(self, input: I, kind: ErrorKind) -> Self;
 //!
 //!     /// Combines two existing errors. This function is used to compare errors
 //!     /// generated in various branches of `alt`
@@ -313,8 +313,8 @@
 //!
 //! ```rust
 //! pub trait ContextError<I, C>: Sized {
-//!     fn add_context(_input: I, _ctx: C, other: Self) -> Self {
-//!         other
+//!     fn add_context(self, _input: I, _ctx: C) -> Self {
+//!         self
 //!     }
 //! }
 //! ```
@@ -352,7 +352,7 @@
 //! #     message: String,
 //! # }
 //! impl ParseError<&str> for DebugError {
-//!     // on one line, we show the error code and the input that caused it
+//!     // on one line, we show the error kind and the input that caused it
 //!     fn from_error_kind(input: &str, kind: ErrorKind) -> Self {
 //!         let message = format!("{:?}:\t{:?}\n", kind, input);
 //!         println!("{}", message);
@@ -360,8 +360,8 @@
 //!     }
 //!
 //!     // if combining multiple errors, we show them one after the other
-//!     fn append(input: &str, kind: ErrorKind, other: Self) -> Self {
-//!         let message = format!("{}{:?}:\t{:?}\n", other.message, kind, input);
+//!     fn append(self, input: &str, kind: ErrorKind) -> Self {
+//!         let message = format!("{}{:?}:\t{:?}\n", self.message, kind, input);
 //!         println!("{}", message);
 //!         DebugError { message }
 //!     }
@@ -374,8 +374,8 @@
 //! }
 //!
 //! impl ContextError<&str, &'static str> for DebugError {
-//!     fn add_context(input: &str, ctx: &'static str, other: Self) -> Self {
-//!         let message = format!("{}\"{}\":\t{:?}\n", other.message, ctx, input);
+//!     fn add_context(self, input: &str, ctx: &'static str) -> Self {
+//!         let message = format!("{}\"{}\":\t{:?}\n", self.message, ctx, input);
 //!         println!("{}", message);
 //!         DebugError { message }
 //!     }
@@ -459,7 +459,7 @@
 //! let a = &b"efghijkl"[..];
 //!
 //! // Will print the following message:
-//! // tag: Error(Error(Error { input: [101, 102, 103, 104, 105, 106, 107, 108], code: Tag })) at:
+//! // tag: Error(Error(Error { input: [101, 102, 103, 104, 105, 106, 107, 108], kind: Tag })) at:
 //! // 00000000        65 66 67 68 69 6a 6b 6c         efghijkl
 //! f(a);
 //! ```
@@ -483,7 +483,7 @@ pub trait ParseError<I>: Sized {
   /// Combines an existing error with a new one created from the input
   /// position and an [`ErrorKind`]. This is useful when backtracking
   /// through a parse tree, accumulating error context on the way
-  fn append(input: I, kind: ErrorKind, other: Self) -> Self;
+  fn append(self, input: I, kind: ErrorKind) -> Self;
 
   /// Creates an error from an input position and an expected character
   #[deprecated(since = "8.0.0", note = "Replaced with `ContextError`")]
@@ -498,14 +498,16 @@ pub trait ParseError<I>: Sized {
   }
 }
 
-/// This trait is required by the `context` combinator to add a static string
-/// to an existing error
+/// Used by the [`context`] to add custom data to errors
+///
+/// May be implemented multiple times for different kinds of context.
 pub trait ContextError<I, C>: Sized {
-  /// Creates a new error from an input position, a static string and an existing error.
-  /// This is used mainly in the [context] combinator, to add user friendly information
+  /// Creates a new error from an input position, a data, and an existing error.
+  ///
+  /// This is used mainly in the [`context`] combinator, to add user friendly information
   /// to errors when backtracking through a parse tree
-  fn add_context(_input: I, _ctx: C, other: Self) -> Self {
-    other
+  fn add_context(self, _input: I, _ctx: C) -> Self {
+    self
   }
 }
 
@@ -523,29 +525,29 @@ pub trait ErrorConvert<E> {
   fn convert(self) -> E;
 }
 
-/// default error type, only contains the error' location and code
+/// default error type, only contains the error' location and kind
 #[derive(Debug, Eq, PartialEq)]
 pub struct Error<I> {
   /// position of the error in the input data
   pub input: I,
-  /// nom error code
-  pub code: ErrorKind,
+  /// nom error kind
+  pub kind: ErrorKind,
 }
 
 impl<I> Error<I> {
   /// creates a new basic error
-  pub fn new(input: I, code: ErrorKind) -> Error<I> {
-    Error { input, code }
+  pub fn new(input: I, kind: ErrorKind) -> Error<I> {
+    Error { input, kind }
   }
 }
 
 impl<I> ParseError<I> for Error<I> {
   fn from_error_kind(input: I, kind: ErrorKind) -> Self {
-    Error { input, code: kind }
+    Error { input, kind }
   }
 
-  fn append(_: I, _: ErrorKind, other: Self) -> Self {
-    other
+  fn append(self, _: I, _: ErrorKind) -> Self {
+    self
   }
 }
 
@@ -554,7 +556,7 @@ impl<I, C> ContextError<I, C> for Error<I> {}
 impl<I, E> FromExternalError<I, E> for Error<I> {
   /// Create a new error from an input position and an external error
   fn from_external_error(input: I, kind: ErrorKind, _e: E) -> Self {
-    Error { input, code: kind }
+    Error { input, kind }
   }
 }
 
@@ -562,7 +564,7 @@ impl<I> ErrorConvert<Error<(I, usize)>> for Error<I> {
   fn convert(self) -> Error<(I, usize)> {
     Error {
       input: (self.input, 0),
-      code: self.code,
+      kind: self.kind,
     }
   }
 }
@@ -571,7 +573,7 @@ impl<I> ErrorConvert<Error<I>> for Error<(I, usize)> {
   fn convert(self) -> Error<I> {
     Error {
       input: self.input.0,
-      code: self.code,
+      kind: self.kind,
     }
   }
 }
@@ -579,49 +581,17 @@ impl<I> ErrorConvert<Error<I>> for Error<(I, usize)> {
 /// The Display implementation allows the `std::error::Error` implementation
 impl<I: fmt::Display> fmt::Display for Error<I> {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    write!(f, "error {:?} at: {}", self.code, self.input)
+    write!(f, "error {:?} at: {}", self.kind, self.input)
   }
 }
 
 #[cfg(feature = "std")]
 impl<I: fmt::Debug + fmt::Display> std::error::Error for Error<I> {}
 
-// for backward compatibility, keep those trait implementations
-// for the previously used error type
-impl<I> ParseError<I> for (I, ErrorKind) {
-  fn from_error_kind(input: I, kind: ErrorKind) -> Self {
-    (input, kind)
-  }
-
-  fn append(_: I, _: ErrorKind, other: Self) -> Self {
-    other
-  }
-}
-
-impl<I, C> ContextError<I, C> for (I, ErrorKind) {}
-
-impl<I, E> FromExternalError<I, E> for (I, ErrorKind) {
-  fn from_external_error(input: I, kind: ErrorKind, _e: E) -> Self {
-    (input, kind)
-  }
-}
-
-impl<I> ErrorConvert<(I, ErrorKind)> for ((I, usize), ErrorKind) {
-  fn convert(self) -> (I, ErrorKind) {
-    ((self.0).0, self.1)
-  }
-}
-
-impl<I> ErrorConvert<((I, usize), ErrorKind)> for (I, ErrorKind) {
-  fn convert(self) -> ((I, usize), ErrorKind) {
-    ((self.0, 0), self.1)
-  }
-}
-
 impl<I> ParseError<I> for () {
   fn from_error_kind(_: I, _: ErrorKind) -> Self {}
 
-  fn append(_: I, _: ErrorKind, _: Self) -> Self {}
+  fn append(self, _: I, _: ErrorKind) -> Self {}
 }
 
 impl<I, C> ContextError<I, C> for () {}
@@ -645,7 +615,7 @@ pub fn make_error<I, E: ParseError<I>>(input: I, kind: ErrorKind) -> E {
 /// through a parse tree, accumulating error context on the way
 #[deprecated(since = "8.0.0", note = "Replaced with `ParseError::append`")]
 pub fn append_error<I, E: ParseError<I>>(input: I, kind: ErrorKind, other: E) -> E {
-  E::append(input, kind, other)
+  other.append(input, kind)
 }
 
 /// This error type accumulates errors and their position when backtracking
@@ -677,17 +647,17 @@ impl<I> ParseError<I> for VerboseError<I> {
     }
   }
 
-  fn append(input: I, kind: ErrorKind, mut other: Self) -> Self {
-    other.errors.push((input, VerboseErrorKind::Nom(kind)));
-    other
+  fn append(mut self, input: I, kind: ErrorKind) -> Self {
+    self.errors.push((input, VerboseErrorKind::Nom(kind)));
+    self
   }
 }
 
 #[cfg(feature = "alloc")]
 impl<I> ContextError<I, &'static str> for VerboseError<I> {
-  fn add_context(input: I, ctx: &'static str, mut other: Self) -> Self {
-    other.errors.push((input, VerboseErrorKind::Context(ctx)));
-    other
+  fn add_context(mut self, input: I, ctx: &'static str) -> Self {
+    self.errors.push((input, VerboseErrorKind::Context(ctx)));
+    self
   }
 }
 
@@ -753,8 +723,8 @@ where
   move |i: I| match f.parse_next(i.clone()) {
     Ok(o) => Ok(o),
     Err(Err::Incomplete(i)) => Err(Err::Incomplete(i)),
-    Err(Err::Error(e)) => Err(Err::Error(E::add_context(i, context, e))),
-    Err(Err::Failure(e)) => Err(Err::Failure(E::add_context(i, context, e))),
+    Err(Err::Error(e)) => Err(Err::Error(e.add_context(i, context))),
+    Err(Err::Failure(e)) => Err(Err::Failure(e.add_context(i, context))),
   }
 }
 
@@ -787,8 +757,8 @@ where
     match (self.f).parse_next(i.clone()) {
       Ok(o) => Ok(o),
       Err(Err::Incomplete(i)) => Err(Err::Incomplete(i)),
-      Err(Err::Error(e)) => Err(Err::Error(E::add_context(i, self.context.clone(), e))),
-      Err(Err::Failure(e)) => Err(Err::Failure(E::add_context(i, self.context.clone(), e))),
+      Err(Err::Error(e)) => Err(Err::Error(e.add_context(i, self.context.clone()))),
+      Err(Err::Failure(e)) => Err(Err::Failure(e.add_context(i, self.context.clone()))),
     }
   }
 }
@@ -998,6 +968,10 @@ impl ErrorKind {
 /// and the position in the input
 #[allow(unused_variables)]
 #[macro_export(local_inner_macros)]
+#[cfg_attr(
+  not(test),
+  deprecated(since = "0.3.0", note = "Replaced with `E::from_error_kind`")
+)]
 macro_rules! error_position(
   ($input:expr, $code:expr) => ({
     $crate::error::ParseError::from_error_kind($input, $code)
@@ -1009,16 +983,20 @@ macro_rules! error_position(
 /// the parsing tree
 #[allow(unused_variables)]
 #[macro_export(local_inner_macros)]
+#[cfg_attr(
+  not(test),
+  deprecated(since = "0.3.0", note = "Replaced with `E::append`")
+)]
 macro_rules! error_node_position(
   ($input:expr, $code:expr, $next:expr) => ({
-    $crate::error::ParseError::append($input, $code, $next)
+    $crate::error::ParseError::append($next, $input, $code)
   });
 );
 
 /// Prints a message and the input if the parser fails.
 ///
 /// The message prints the `Error` or `Incomplete`
-/// and the parser's calling code.
+/// and the parser's calling kind.
 ///
 /// It also displays the input in hexdump format
 ///

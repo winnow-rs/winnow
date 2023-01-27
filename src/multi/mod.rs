@@ -109,7 +109,7 @@ where
   E: ParseError<I>,
 {
   move |mut i: I| match f.parse_next(i.clone()) {
-    Err(Err::Error(err)) => Err(Err::Error(E::append(i, ErrorKind::Many1, err))),
+    Err(Err::Error(err)) => Err(Err::Error(err.append(i, ErrorKind::Many1))),
     Err(e) => Err(e),
     Ok((i1, o)) => {
       let mut acc = crate::lib::std::vec::Vec::with_capacity(4);
@@ -176,7 +176,7 @@ where
         Ok((i1, o)) => return Ok((i1, (res, o))),
         Err(Err::Error(_)) => {
           match f.parse_next(i.clone()) {
-            Err(Err::Error(err)) => return Err(Err::Error(E::append(i, ErrorKind::ManyTill, err))),
+            Err(Err::Error(err)) => return Err(Err::Error(err.append(i, ErrorKind::ManyTill))),
             Err(e) => return Err(e),
             Ok((i1, o)) => {
               // infinite loop check: the parser must always consume
@@ -402,7 +402,7 @@ where
         }
         Err(Err::Error(e)) => {
           if count < min {
-            return Err(Err::Error(E::append(input, ErrorKind::ManyMN, e)));
+            return Err(Err::Error(e.append(input, ErrorKind::ManyMN)));
           } else {
             return Ok((input, res));
           }
@@ -578,7 +578,7 @@ where
           input = i;
         }
         Err(Err::Error(e)) => {
-          return Err(Err::Error(E::append(i, ErrorKind::Count, e)));
+          return Err(Err::Error(e.append(i, ErrorKind::Count)));
         }
         Err(e) => {
           return Err(e);
@@ -631,7 +631,7 @@ where
           input = i;
         }
         Err(Err::Error(e)) => {
-          return Err(Err::Error(E::append(i, ErrorKind::Count, e)));
+          return Err(Err::Error(e.append(i, ErrorKind::Count)));
         }
         Err(e) => {
           return Err(e);
@@ -878,7 +878,7 @@ where
         //FInputXMError: handle failure properly
         Err(Err::Error(err)) => {
           if count < min {
-            return Err(Err::Error(E::append(input, ErrorKind::ManyMN, err)));
+            return Err(Err::Error(err.append(input, ErrorKind::ManyMN)));
           } else {
             break;
           }
@@ -1023,7 +1023,7 @@ where
           input = i;
         }
         Err(Err::Error(e)) => {
-          return Err(Err::Error(E::append(i, ErrorKind::Count, e)));
+          return Err(Err::Error(e.append(i, ErrorKind::Count)));
         }
         Err(e) => {
           return Err(e);
