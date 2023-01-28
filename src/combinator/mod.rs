@@ -1452,13 +1452,12 @@ impl<I: Clone, O, E, F> ParserIterator<I, O, E, F> {
   }
 }
 
-impl<'a, Input, Output, Error, F> core::iter::Iterator
-  for &'a mut ParserIterator<Input, Output, Error, F>
+impl<'a, I, O, E, F> core::iter::Iterator for &'a mut ParserIterator<I, O, E, F>
 where
-  F: Parser<Input, Output, Error>,
-  Input: Clone,
+  F: Parser<I, O, E>,
+  I: Clone,
 {
-  type Item = Output;
+  type Item = O;
 
   fn next(&mut self) -> Option<Self::Item> {
     if let State::Running = self.state.take().unwrap() {

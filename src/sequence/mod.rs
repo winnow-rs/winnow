@@ -199,10 +199,8 @@ pub trait Tuple<I, O, E> {
 }
 
 #[allow(deprecated)]
-impl<Input, Output, Error: ParseError<Input>, F: Parser<Input, Output, Error>>
-  Tuple<Input, (Output,), Error> for (F,)
-{
-  fn parse(&mut self, input: Input) -> IResult<Input, (Output,), Error> {
+impl<I, O, E: ParseError<I>, F: Parser<I, O, E>> Tuple<I, (O,), E> for (F,) {
+  fn parse(&mut self, input: I) -> IResult<I, (O,), E> {
     self.0.parse_next(input).map(|(i, o)| (i, (o,)))
   }
 }
