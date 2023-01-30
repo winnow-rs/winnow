@@ -42,17 +42,18 @@
 //! | [`Compare`] |Character comparison operations|
 //! | [`ExtendInto`] |Abstracts something which can extend an `Extend`|
 //! | [`FindSubstring`] |Look for a substring in self|
-//! | [`ContainsToken`] |Look for self in the given input stream|
 //! | [`IntoOutput`] |Adapt a captired `Input` into an appropriate type|
 //! | [`Location`] |Calculate location within initial input|
 //! | [`Offset`] |Calculate the offset between slices|
 //! | [`ParseTo`] |Used to integrate `&str`'s `parse()` method|
+//! | [`HexDisplay`] |Debug dump of input|
 //!
 //! Here are the traits we have to implement for `MyItem`:
 //!
 //! | trait | usage |
 //! |---|---|
 //! | [`AsChar`] |Transforms common types to a char for basic token parsing|
+//! | [`ContainsToken`] |Look for the token in the given set|
 
 use core::num::NonZeroUsize;
 
@@ -1519,194 +1520,6 @@ where
   }
 }
 
-/// Transforms common types to a char for basic token parsing
-#[allow(clippy::len_without_is_empty)]
-#[allow(clippy::wrong_self_convention)]
-pub trait AsChar {
-  /// Makes a char from self
-  ///
-  /// ```
-  /// use winnow::input::AsChar as _;
-  ///
-  /// assert_eq!('a'.as_char(), 'a');
-  /// assert_eq!(u8::MAX.as_char(), std::char::from_u32(u8::MAX as u32).unwrap());
-  /// ```
-  fn as_char(self) -> char;
-
-  /// Tests that self is an alphabetic character
-  ///
-  /// Warning: for `&str` it recognizes alphabetic
-  /// characters outside of the 52 ASCII letters
-  fn is_alpha(self) -> bool;
-
-  /// Tests that self is an alphabetic character
-  /// or a decimal digit
-  fn is_alphanum(self) -> bool;
-  /// Tests that self is a decimal digit
-  fn is_dec_digit(self) -> bool;
-  /// Tests that self is an hex digit
-  fn is_hex_digit(self) -> bool;
-  /// Tests that self is an octal digit
-  fn is_oct_digit(self) -> bool;
-  /// Gets the len in bytes for self
-  fn len(self) -> usize;
-  /// Tests that self is ASCII space or tab
-  fn is_space(self) -> bool;
-  /// Tests if byte is ASCII newline: \n
-  fn is_newline(self) -> bool;
-}
-
-impl AsChar for u8 {
-  #[inline]
-  fn as_char(self) -> char {
-    self as char
-  }
-  #[inline]
-  fn is_alpha(self) -> bool {
-    matches!(self, 0x41..=0x5A | 0x61..=0x7A)
-  }
-  #[inline]
-  fn is_alphanum(self) -> bool {
-    self.is_alpha() || self.is_dec_digit()
-  }
-  #[inline]
-  fn is_dec_digit(self) -> bool {
-    matches!(self, 0x30..=0x39)
-  }
-  #[inline]
-  fn is_hex_digit(self) -> bool {
-    matches!(self, 0x30..=0x39 | 0x41..=0x46 | 0x61..=0x66)
-  }
-  #[inline]
-  fn is_oct_digit(self) -> bool {
-    matches!(self, 0x30..=0x37)
-  }
-  #[inline]
-  fn len(self) -> usize {
-    1
-  }
-  #[inline]
-  fn is_space(self) -> bool {
-    self == b' ' || self == b'\t'
-  }
-  fn is_newline(self) -> bool {
-    self == b'\n'
-  }
-}
-impl<'a> AsChar for &'a u8 {
-  #[inline]
-  fn as_char(self) -> char {
-    *self as char
-  }
-  #[inline]
-  fn is_alpha(self) -> bool {
-    matches!(*self, 0x41..=0x5A | 0x61..=0x7A)
-  }
-  #[inline]
-  fn is_alphanum(self) -> bool {
-    self.is_alpha() || self.is_dec_digit()
-  }
-  #[inline]
-  fn is_dec_digit(self) -> bool {
-    matches!(*self, 0x30..=0x39)
-  }
-  #[inline]
-  fn is_hex_digit(self) -> bool {
-    matches!(*self, 0x30..=0x39 | 0x41..=0x46 | 0x61..=0x66)
-  }
-  #[inline]
-  fn is_oct_digit(self) -> bool {
-    matches!(*self, 0x30..=0x37)
-  }
-  #[inline]
-  fn len(self) -> usize {
-    1
-  }
-  #[inline]
-  fn is_space(self) -> bool {
-    *self == b' ' || *self == b'\t'
-  }
-  fn is_newline(self) -> bool {
-    *self == b'\n'
-  }
-}
-
-impl AsChar for char {
-  #[inline]
-  fn as_char(self) -> char {
-    self
-  }
-  #[inline]
-  fn is_alpha(self) -> bool {
-    self.is_ascii_alphabetic()
-  }
-  #[inline]
-  fn is_alphanum(self) -> bool {
-    self.is_alpha() || self.is_dec_digit()
-  }
-  #[inline]
-  fn is_dec_digit(self) -> bool {
-    self.is_ascii_digit()
-  }
-  #[inline]
-  fn is_hex_digit(self) -> bool {
-    self.is_ascii_hexdigit()
-  }
-  #[inline]
-  fn is_oct_digit(self) -> bool {
-    self.is_digit(8)
-  }
-  #[inline]
-  fn len(self) -> usize {
-    self.len_utf8()
-  }
-  #[inline]
-  fn is_space(self) -> bool {
-    self == ' ' || self == '\t'
-  }
-  fn is_newline(self) -> bool {
-    self == '\n'
-  }
-}
-
-impl<'a> AsChar for &'a char {
-  #[inline]
-  fn as_char(self) -> char {
-    *self
-  }
-  #[inline]
-  fn is_alpha(self) -> bool {
-    self.is_ascii_alphabetic()
-  }
-  #[inline]
-  fn is_alphanum(self) -> bool {
-    self.is_alpha() || self.is_dec_digit()
-  }
-  #[inline]
-  fn is_dec_digit(self) -> bool {
-    self.is_ascii_digit()
-  }
-  #[inline]
-  fn is_hex_digit(self) -> bool {
-    self.is_ascii_hexdigit()
-  }
-  #[inline]
-  fn is_oct_digit(self) -> bool {
-    self.is_digit(8)
-  }
-  #[inline]
-  fn len(self) -> usize {
-    self.len_utf8()
-  }
-  #[inline]
-  fn is_space(self) -> bool {
-    *self == ' ' || *self == '\t'
-  }
-  fn is_newline(self) -> bool {
-    *self == '\n'
-  }
-}
-
 /// Indicates whether a comparison was successful, an error, or
 /// if more data was needed
 #[derive(Debug, Eq, PartialEq)]
@@ -1926,248 +1739,6 @@ where
     self.0.compare_no_case(t)
   }
 }
-
-/// Check if a token in in a set of possible tokens
-///
-/// This is generally implemented on patterns that a token may match and supports `u8` and `char`
-/// tokens along with the following patterns
-/// - `b'c'` and `'c'`
-/// - `b""` and `""`
-/// - `|c| true`
-/// - `b'a'..=b'z'`, `'a'..='z'` (etc for each [range type][std::ops])
-/// - `(pattern1, pattern2, ...)`
-///
-/// For example, you could implement `hex_digit0` as:
-/// ```
-/// # use winnow::prelude::*;
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::bytes::take_while1;
-/// fn hex_digit1(input: &str) -> IResult<&str, &str> {
-///     take_while1(('a'..='f', 'A'..='F', '0'..='9')).parse_next(input)
-/// }
-///
-/// assert_eq!(hex_digit1("21cZ"), Ok(("Z", "21c")));
-/// assert_eq!(hex_digit1("H2"), Err(Err::Error(Error::new("H2", ErrorKind::TakeWhile1))));
-/// assert_eq!(hex_digit1(""), Err(Err::Error(Error::new("", ErrorKind::TakeWhile1))));
-/// ```
-pub trait ContainsToken<T> {
-  /// Returns true if self contains the token
-  fn contains_token(&self, token: T) -> bool;
-}
-
-impl ContainsToken<u8> for u8 {
-  fn contains_token(&self, token: u8) -> bool {
-    *self == token
-  }
-}
-
-impl<'a> ContainsToken<&'a u8> for u8 {
-  fn contains_token(&self, token: &u8) -> bool {
-    self.contains_token(*token)
-  }
-}
-
-impl ContainsToken<char> for u8 {
-  fn contains_token(&self, token: char) -> bool {
-    self.as_char() == token
-  }
-}
-
-impl<'a> ContainsToken<&'a char> for u8 {
-  fn contains_token(&self, token: &char) -> bool {
-    self.contains_token(*token)
-  }
-}
-
-impl<C: AsChar> ContainsToken<C> for char {
-  fn contains_token(&self, token: C) -> bool {
-    *self == token.as_char()
-  }
-}
-
-impl<C: AsChar, F: Fn(C) -> bool> ContainsToken<C> for F {
-  fn contains_token(&self, token: C) -> bool {
-    self(token)
-  }
-}
-
-impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for Range<C2> {
-  fn contains_token(&self, token: C1) -> bool {
-    let start = self.start.clone().as_char();
-    let end = self.end.clone().as_char();
-    (start..end).contains(&token.as_char())
-  }
-}
-
-impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeInclusive<C2> {
-  fn contains_token(&self, token: C1) -> bool {
-    let start = self.start().clone().as_char();
-    let end = self.end().clone().as_char();
-    (start..=end).contains(&token.as_char())
-  }
-}
-
-impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeFrom<C2> {
-  fn contains_token(&self, token: C1) -> bool {
-    let start = self.start.clone().as_char();
-    (start..).contains(&token.as_char())
-  }
-}
-
-impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeTo<C2> {
-  fn contains_token(&self, token: C1) -> bool {
-    let end = self.end.clone().as_char();
-    (..end).contains(&token.as_char())
-  }
-}
-
-impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeToInclusive<C2> {
-  fn contains_token(&self, token: C1) -> bool {
-    let end = self.end.clone().as_char();
-    (..=end).contains(&token.as_char())
-  }
-}
-
-impl<C1: AsChar> ContainsToken<C1> for RangeFull {
-  fn contains_token(&self, _token: C1) -> bool {
-    true
-  }
-}
-
-impl<'a> ContainsToken<u8> for &'a [u8] {
-  fn contains_token(&self, token: u8) -> bool {
-    memchr::memchr(token, self).is_some()
-  }
-}
-
-impl<'a, 'b> ContainsToken<&'a u8> for &'b [u8] {
-  fn contains_token(&self, token: &u8) -> bool {
-    self.contains_token(*token)
-  }
-}
-
-impl<'a> ContainsToken<char> for &'a [u8] {
-  fn contains_token(&self, token: char) -> bool {
-    self.iter().any(|i| i.as_char() == token)
-  }
-}
-
-impl<'a, 'b> ContainsToken<&'a char> for &'b [u8] {
-  fn contains_token(&self, token: &char) -> bool {
-    self.contains_token(*token)
-  }
-}
-
-impl<const LEN: usize> ContainsToken<u8> for [u8; LEN] {
-  fn contains_token(&self, token: u8) -> bool {
-    memchr::memchr(token, &self[..]).is_some()
-  }
-}
-
-impl<'a, const LEN: usize> ContainsToken<&'a u8> for [u8; LEN] {
-  fn contains_token(&self, token: &u8) -> bool {
-    self.contains_token(*token)
-  }
-}
-
-impl<const LEN: usize> ContainsToken<char> for [u8; LEN] {
-  fn contains_token(&self, token: char) -> bool {
-    self.iter().any(|i| i.as_char() == token)
-  }
-}
-
-impl<'a, const LEN: usize> ContainsToken<&'a char> for [u8; LEN] {
-  fn contains_token(&self, token: &char) -> bool {
-    self.contains_token(*token)
-  }
-}
-
-impl<'a> ContainsToken<u8> for &'a str {
-  fn contains_token(&self, token: u8) -> bool {
-    self.as_bytes().contains_token(token)
-  }
-}
-
-impl<'a, 'b> ContainsToken<&'a u8> for &'b str {
-  fn contains_token(&self, token: &u8) -> bool {
-    self.as_bytes().contains_token(token)
-  }
-}
-
-impl<'a> ContainsToken<char> for &'a str {
-  fn contains_token(&self, token: char) -> bool {
-    self.chars().any(|i| i == token)
-  }
-}
-
-impl<'a, 'b> ContainsToken<&'a char> for &'b str {
-  fn contains_token(&self, token: &char) -> bool {
-    self.contains_token(*token)
-  }
-}
-
-impl<'a> ContainsToken<u8> for &'a [char] {
-  fn contains_token(&self, token: u8) -> bool {
-    self.iter().any(|i| *i == token.as_char())
-  }
-}
-
-impl<'a, 'b> ContainsToken<&'a u8> for &'b [char] {
-  fn contains_token(&self, token: &u8) -> bool {
-    self.contains_token(*token)
-  }
-}
-
-impl<'a> ContainsToken<char> for &'a [char] {
-  fn contains_token(&self, token: char) -> bool {
-    self.iter().any(|i| *i == token)
-  }
-}
-
-impl<'a, 'b> ContainsToken<&'a char> for &'b [char] {
-  fn contains_token(&self, token: &char) -> bool {
-    self.contains_token(*token)
-  }
-}
-
-impl<T> ContainsToken<T> for () {
-  fn contains_token(&self, _token: T) -> bool {
-    false
-  }
-}
-
-macro_rules! impl_contains_token_for_tuple {
-  ($($haystack:ident),+) => (
-    #[allow(non_snake_case)]
-    impl<T, $($haystack),+> ContainsToken<T> for ($($haystack),+,)
-    where
-    T: Clone,
-      $($haystack: ContainsToken<T>),+
-    {
-      fn contains_token(&self, token: T) -> bool {
-        let ($(ref $haystack),+,) = *self;
-        $($haystack.contains_token(token.clone()) || )+ false
-      }
-    }
-  )
-}
-
-macro_rules! impl_contains_token_for_tuples {
-    ($haystack1:ident, $($haystack:ident),+) => {
-        impl_contains_token_for_tuples!(__impl $haystack1; $($haystack),+);
-    };
-    (__impl $($haystack:ident),+; $haystack1:ident $(,$haystack2:ident)*) => {
-        impl_contains_token_for_tuple!($($haystack),+);
-        impl_contains_token_for_tuples!(__impl $($haystack),+, $haystack1; $($haystack2),*);
-    };
-    (__impl $($haystack:ident),+;) => {
-        impl_contains_token_for_tuple!($($haystack),+);
-    }
-}
-
-impl_contains_token_for_tuples!(
-  F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21
-);
 
 /// Look for a substring in self
 pub trait FindSubstring<T> {
@@ -2650,6 +2221,436 @@ where
     self.0.to_hex_from(chunk_size, from)
   }
 }
+
+/// Transforms common types to a char for basic token parsing
+#[allow(clippy::len_without_is_empty)]
+#[allow(clippy::wrong_self_convention)]
+pub trait AsChar {
+  /// Makes a char from self
+  ///
+  /// ```
+  /// use winnow::input::AsChar as _;
+  ///
+  /// assert_eq!('a'.as_char(), 'a');
+  /// assert_eq!(u8::MAX.as_char(), std::char::from_u32(u8::MAX as u32).unwrap());
+  /// ```
+  fn as_char(self) -> char;
+
+  /// Tests that self is an alphabetic character
+  ///
+  /// Warning: for `&str` it recognizes alphabetic
+  /// characters outside of the 52 ASCII letters
+  fn is_alpha(self) -> bool;
+
+  /// Tests that self is an alphabetic character
+  /// or a decimal digit
+  fn is_alphanum(self) -> bool;
+  /// Tests that self is a decimal digit
+  fn is_dec_digit(self) -> bool;
+  /// Tests that self is an hex digit
+  fn is_hex_digit(self) -> bool;
+  /// Tests that self is an octal digit
+  fn is_oct_digit(self) -> bool;
+  /// Gets the len in bytes for self
+  fn len(self) -> usize;
+  /// Tests that self is ASCII space or tab
+  fn is_space(self) -> bool;
+  /// Tests if byte is ASCII newline: \n
+  fn is_newline(self) -> bool;
+}
+
+impl AsChar for u8 {
+  #[inline]
+  fn as_char(self) -> char {
+    self as char
+  }
+  #[inline]
+  fn is_alpha(self) -> bool {
+    matches!(self, 0x41..=0x5A | 0x61..=0x7A)
+  }
+  #[inline]
+  fn is_alphanum(self) -> bool {
+    self.is_alpha() || self.is_dec_digit()
+  }
+  #[inline]
+  fn is_dec_digit(self) -> bool {
+    matches!(self, 0x30..=0x39)
+  }
+  #[inline]
+  fn is_hex_digit(self) -> bool {
+    matches!(self, 0x30..=0x39 | 0x41..=0x46 | 0x61..=0x66)
+  }
+  #[inline]
+  fn is_oct_digit(self) -> bool {
+    matches!(self, 0x30..=0x37)
+  }
+  #[inline]
+  fn len(self) -> usize {
+    1
+  }
+  #[inline]
+  fn is_space(self) -> bool {
+    self == b' ' || self == b'\t'
+  }
+  fn is_newline(self) -> bool {
+    self == b'\n'
+  }
+}
+impl<'a> AsChar for &'a u8 {
+  #[inline]
+  fn as_char(self) -> char {
+    *self as char
+  }
+  #[inline]
+  fn is_alpha(self) -> bool {
+    matches!(*self, 0x41..=0x5A | 0x61..=0x7A)
+  }
+  #[inline]
+  fn is_alphanum(self) -> bool {
+    self.is_alpha() || self.is_dec_digit()
+  }
+  #[inline]
+  fn is_dec_digit(self) -> bool {
+    matches!(*self, 0x30..=0x39)
+  }
+  #[inline]
+  fn is_hex_digit(self) -> bool {
+    matches!(*self, 0x30..=0x39 | 0x41..=0x46 | 0x61..=0x66)
+  }
+  #[inline]
+  fn is_oct_digit(self) -> bool {
+    matches!(*self, 0x30..=0x37)
+  }
+  #[inline]
+  fn len(self) -> usize {
+    1
+  }
+  #[inline]
+  fn is_space(self) -> bool {
+    *self == b' ' || *self == b'\t'
+  }
+  fn is_newline(self) -> bool {
+    *self == b'\n'
+  }
+}
+
+impl AsChar for char {
+  #[inline]
+  fn as_char(self) -> char {
+    self
+  }
+  #[inline]
+  fn is_alpha(self) -> bool {
+    self.is_ascii_alphabetic()
+  }
+  #[inline]
+  fn is_alphanum(self) -> bool {
+    self.is_alpha() || self.is_dec_digit()
+  }
+  #[inline]
+  fn is_dec_digit(self) -> bool {
+    self.is_ascii_digit()
+  }
+  #[inline]
+  fn is_hex_digit(self) -> bool {
+    self.is_ascii_hexdigit()
+  }
+  #[inline]
+  fn is_oct_digit(self) -> bool {
+    self.is_digit(8)
+  }
+  #[inline]
+  fn len(self) -> usize {
+    self.len_utf8()
+  }
+  #[inline]
+  fn is_space(self) -> bool {
+    self == ' ' || self == '\t'
+  }
+  fn is_newline(self) -> bool {
+    self == '\n'
+  }
+}
+
+impl<'a> AsChar for &'a char {
+  #[inline]
+  fn as_char(self) -> char {
+    *self
+  }
+  #[inline]
+  fn is_alpha(self) -> bool {
+    self.is_ascii_alphabetic()
+  }
+  #[inline]
+  fn is_alphanum(self) -> bool {
+    self.is_alpha() || self.is_dec_digit()
+  }
+  #[inline]
+  fn is_dec_digit(self) -> bool {
+    self.is_ascii_digit()
+  }
+  #[inline]
+  fn is_hex_digit(self) -> bool {
+    self.is_ascii_hexdigit()
+  }
+  #[inline]
+  fn is_oct_digit(self) -> bool {
+    self.is_digit(8)
+  }
+  #[inline]
+  fn len(self) -> usize {
+    self.len_utf8()
+  }
+  #[inline]
+  fn is_space(self) -> bool {
+    *self == ' ' || *self == '\t'
+  }
+  fn is_newline(self) -> bool {
+    *self == '\n'
+  }
+}
+
+/// Check if a token in in a set of possible tokens
+///
+/// This is generally implemented on patterns that a token may match and supports `u8` and `char`
+/// tokens along with the following patterns
+/// - `b'c'` and `'c'`
+/// - `b""` and `""`
+/// - `|c| true`
+/// - `b'a'..=b'z'`, `'a'..='z'` (etc for each [range type][std::ops])
+/// - `(pattern1, pattern2, ...)`
+///
+/// For example, you could implement `hex_digit0` as:
+/// ```
+/// # use winnow::prelude::*;
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::bytes::take_while1;
+/// fn hex_digit1(input: &str) -> IResult<&str, &str> {
+///     take_while1(('a'..='f', 'A'..='F', '0'..='9')).parse_next(input)
+/// }
+///
+/// assert_eq!(hex_digit1("21cZ"), Ok(("Z", "21c")));
+/// assert_eq!(hex_digit1("H2"), Err(Err::Error(Error::new("H2", ErrorKind::TakeWhile1))));
+/// assert_eq!(hex_digit1(""), Err(Err::Error(Error::new("", ErrorKind::TakeWhile1))));
+/// ```
+pub trait ContainsToken<T> {
+  /// Returns true if self contains the token
+  fn contains_token(&self, token: T) -> bool;
+}
+
+impl ContainsToken<u8> for u8 {
+  fn contains_token(&self, token: u8) -> bool {
+    *self == token
+  }
+}
+
+impl<'a> ContainsToken<&'a u8> for u8 {
+  fn contains_token(&self, token: &u8) -> bool {
+    self.contains_token(*token)
+  }
+}
+
+impl ContainsToken<char> for u8 {
+  fn contains_token(&self, token: char) -> bool {
+    self.as_char() == token
+  }
+}
+
+impl<'a> ContainsToken<&'a char> for u8 {
+  fn contains_token(&self, token: &char) -> bool {
+    self.contains_token(*token)
+  }
+}
+
+impl<C: AsChar> ContainsToken<C> for char {
+  fn contains_token(&self, token: C) -> bool {
+    *self == token.as_char()
+  }
+}
+
+impl<C: AsChar, F: Fn(C) -> bool> ContainsToken<C> for F {
+  fn contains_token(&self, token: C) -> bool {
+    self(token)
+  }
+}
+
+impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for Range<C2> {
+  fn contains_token(&self, token: C1) -> bool {
+    let start = self.start.clone().as_char();
+    let end = self.end.clone().as_char();
+    (start..end).contains(&token.as_char())
+  }
+}
+
+impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeInclusive<C2> {
+  fn contains_token(&self, token: C1) -> bool {
+    let start = self.start().clone().as_char();
+    let end = self.end().clone().as_char();
+    (start..=end).contains(&token.as_char())
+  }
+}
+
+impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeFrom<C2> {
+  fn contains_token(&self, token: C1) -> bool {
+    let start = self.start.clone().as_char();
+    (start..).contains(&token.as_char())
+  }
+}
+
+impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeTo<C2> {
+  fn contains_token(&self, token: C1) -> bool {
+    let end = self.end.clone().as_char();
+    (..end).contains(&token.as_char())
+  }
+}
+
+impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeToInclusive<C2> {
+  fn contains_token(&self, token: C1) -> bool {
+    let end = self.end.clone().as_char();
+    (..=end).contains(&token.as_char())
+  }
+}
+
+impl<C1: AsChar> ContainsToken<C1> for RangeFull {
+  fn contains_token(&self, _token: C1) -> bool {
+    true
+  }
+}
+
+impl<'a> ContainsToken<u8> for &'a [u8] {
+  fn contains_token(&self, token: u8) -> bool {
+    memchr::memchr(token, self).is_some()
+  }
+}
+
+impl<'a, 'b> ContainsToken<&'a u8> for &'b [u8] {
+  fn contains_token(&self, token: &u8) -> bool {
+    self.contains_token(*token)
+  }
+}
+
+impl<'a> ContainsToken<char> for &'a [u8] {
+  fn contains_token(&self, token: char) -> bool {
+    self.iter().any(|i| i.as_char() == token)
+  }
+}
+
+impl<'a, 'b> ContainsToken<&'a char> for &'b [u8] {
+  fn contains_token(&self, token: &char) -> bool {
+    self.contains_token(*token)
+  }
+}
+
+impl<const LEN: usize> ContainsToken<u8> for [u8; LEN] {
+  fn contains_token(&self, token: u8) -> bool {
+    memchr::memchr(token, &self[..]).is_some()
+  }
+}
+
+impl<'a, const LEN: usize> ContainsToken<&'a u8> for [u8; LEN] {
+  fn contains_token(&self, token: &u8) -> bool {
+    self.contains_token(*token)
+  }
+}
+
+impl<const LEN: usize> ContainsToken<char> for [u8; LEN] {
+  fn contains_token(&self, token: char) -> bool {
+    self.iter().any(|i| i.as_char() == token)
+  }
+}
+
+impl<'a, const LEN: usize> ContainsToken<&'a char> for [u8; LEN] {
+  fn contains_token(&self, token: &char) -> bool {
+    self.contains_token(*token)
+  }
+}
+
+impl<'a> ContainsToken<u8> for &'a str {
+  fn contains_token(&self, token: u8) -> bool {
+    self.as_bytes().contains_token(token)
+  }
+}
+
+impl<'a, 'b> ContainsToken<&'a u8> for &'b str {
+  fn contains_token(&self, token: &u8) -> bool {
+    self.as_bytes().contains_token(token)
+  }
+}
+
+impl<'a> ContainsToken<char> for &'a str {
+  fn contains_token(&self, token: char) -> bool {
+    self.chars().any(|i| i == token)
+  }
+}
+
+impl<'a, 'b> ContainsToken<&'a char> for &'b str {
+  fn contains_token(&self, token: &char) -> bool {
+    self.contains_token(*token)
+  }
+}
+
+impl<'a> ContainsToken<u8> for &'a [char] {
+  fn contains_token(&self, token: u8) -> bool {
+    self.iter().any(|i| *i == token.as_char())
+  }
+}
+
+impl<'a, 'b> ContainsToken<&'a u8> for &'b [char] {
+  fn contains_token(&self, token: &u8) -> bool {
+    self.contains_token(*token)
+  }
+}
+
+impl<'a> ContainsToken<char> for &'a [char] {
+  fn contains_token(&self, token: char) -> bool {
+    self.iter().any(|i| *i == token)
+  }
+}
+
+impl<'a, 'b> ContainsToken<&'a char> for &'b [char] {
+  fn contains_token(&self, token: &char) -> bool {
+    self.contains_token(*token)
+  }
+}
+
+impl<T> ContainsToken<T> for () {
+  fn contains_token(&self, _token: T) -> bool {
+    false
+  }
+}
+
+macro_rules! impl_contains_token_for_tuple {
+  ($($haystack:ident),+) => (
+    #[allow(non_snake_case)]
+    impl<T, $($haystack),+> ContainsToken<T> for ($($haystack),+,)
+    where
+    T: Clone,
+      $($haystack: ContainsToken<T>),+
+    {
+      fn contains_token(&self, token: T) -> bool {
+        let ($(ref $haystack),+,) = *self;
+        $($haystack.contains_token(token.clone()) || )+ false
+      }
+    }
+  )
+}
+
+macro_rules! impl_contains_token_for_tuples {
+    ($haystack1:ident, $($haystack:ident),+) => {
+        impl_contains_token_for_tuples!(__impl $haystack1; $($haystack),+);
+    };
+    (__impl $($haystack:ident),+; $haystack1:ident $(,$haystack2:ident)*) => {
+        impl_contains_token_for_tuple!($($haystack),+);
+        impl_contains_token_for_tuples!(__impl $($haystack),+, $haystack1; $($haystack2),*);
+    };
+    (__impl $($haystack:ident),+;) => {
+        impl_contains_token_for_tuple!($($haystack),+);
+    }
+}
+
+impl_contains_token_for_tuples!(
+  F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21
+);
 
 #[cfg(test)]
 mod tests {
