@@ -32,21 +32,21 @@
 //!
 //! | trait | usage |
 //! |---|---|
+//! | [`InputLength`] |Calculate the input length|
+//! | [`InputTake`] |Slicing operations|
+//! | [`InputTakeAtOffset`] |Look for a specific token and split at its position|
+//! | [`InputIter`] |Common iteration operations on the input type|
+//! | [`Slice`] |Slicing operations using ranges|
 //! | [`InputIsStreaming`] | Marks the input as being the complete buffer or a partial buffer for streaming input |
 //! | [`AsBytes`] |Casts the input type to a byte slice|
 //! | [`Compare`] |Character comparison operations|
 //! | [`ExtendInto`] |Abstracts something which can extend an `Extend`|
 //! | [`FindSubstring`] |Look for a substring in self|
 //! | [`ContainsToken`] |Look for self in the given input stream|
-//! | [`InputIter`] |Common iteration operations on the input type|
-//! | [`InputLength`] |Calculate the input length|
 //! | [`IntoOutput`] |Adapt a captired `Input` into an appropriate type|
 //! | [`Location`] |Calculate location within initial input|
-//! | [`InputTake`] |Slicing operations|
-//! | [`InputTakeAtOffset`] |Look for a specific token and split at its position|
 //! | [`Offset`] |Calculate the offset between slices|
 //! | [`ParseTo`] |Used to integrate `&str`'s `parse()` method|
-//! | [`Slice`] |Slicing operations using ranges|
 //!
 //! Here are the traits we have to implement for `MyItem`:
 //!
@@ -253,199 +253,6 @@ impl<I> crate::lib::std::ops::Deref for Streaming<I> {
   }
 }
 
-/// Number of indices input has advanced since start of parsing
-pub trait Location {
-  /// Number of indices input has advanced since start of parsing
-  fn location(&self) -> usize;
-}
-
-impl<I> Location for Located<I>
-where
-  I: Clone + IntoOutput + Offset,
-{
-  fn location(&self) -> usize {
-    self.location()
-  }
-}
-
-impl<I, S> Location for Stateful<I, S>
-where
-  I: Location,
-{
-  fn location(&self) -> usize {
-    self.input.location()
-  }
-}
-
-impl<I> Location for Streaming<I>
-where
-  I: Location,
-{
-  fn location(&self) -> usize {
-    self.0.location()
-  }
-}
-
-/// Marks the input as being the complete buffer or a partial buffer for streaming input
-///
-/// See [Streaming] for marking a presumed complete buffer type as a streaming buffer.
-pub trait InputIsStreaming<const YES: bool>: Sized {
-  /// Complete counterpart
-  ///
-  /// - Set to `Self` if this is a complete buffer.
-  /// - Set to [`std::convert::Infallible`] if there isn't an associated complete buffer type
-  type Complete: InputIsStreaming<false>;
-  /// Streaming counterpart
-  ///
-  /// - Set to `Self` if this is a streaming buffer.
-  /// - Set to [`std::convert::Infallible`] if there isn't an associated streaming buffer type
-  type Streaming: InputIsStreaming<true>;
-
-  /// Convert to complete counterpart
-  fn into_complete(self) -> Self::Complete;
-  /// Convert to streaming counterpart
-  fn into_streaming(self) -> Self::Streaming;
-}
-
-impl<'a, T> InputIsStreaming<false> for &'a [T] {
-  type Complete = Self;
-  type Streaming = Streaming<Self>;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    self
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    Streaming(self)
-  }
-}
-
-impl<'a> InputIsStreaming<false> for &'a str {
-  type Complete = Self;
-  type Streaming = Streaming<Self>;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    self
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    Streaming(self)
-  }
-}
-
-impl<const YES: bool> InputIsStreaming<YES> for crate::lib::std::convert::Infallible {
-  type Complete = Self;
-  type Streaming = Self;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    self
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    self
-  }
-}
-
-impl<I> InputIsStreaming<true> for Located<I>
-where
-  I: InputIsStreaming<true>,
-{
-  type Complete = Located<<I as InputIsStreaming<true>>::Complete>;
-  type Streaming = Self;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    Located {
-      initial: self.initial.into_complete(),
-      input: self.input.into_complete(),
-    }
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    self
-  }
-}
-
-impl<I> InputIsStreaming<false> for Located<I>
-where
-  I: InputIsStreaming<false>,
-{
-  type Complete = Self;
-  type Streaming = Located<<I as InputIsStreaming<false>>::Streaming>;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    self
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    Located {
-      initial: self.initial.into_streaming(),
-      input: self.input.into_streaming(),
-    }
-  }
-}
-
-impl<I, S> InputIsStreaming<true> for Stateful<I, S>
-where
-  I: InputIsStreaming<true>,
-{
-  type Complete = Stateful<<I as InputIsStreaming<true>>::Complete, S>;
-  type Streaming = Self;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    Stateful {
-      input: self.input.into_complete(),
-      state: self.state,
-    }
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    self
-  }
-}
-
-impl<I, S> InputIsStreaming<false> for Stateful<I, S>
-where
-  I: InputIsStreaming<false>,
-{
-  type Complete = Self;
-  type Streaming = Stateful<<I as InputIsStreaming<false>>::Streaming, S>;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    self
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    Stateful {
-      input: self.input.into_streaming(),
-      state: self.state,
-    }
-  }
-}
-
-impl<I> InputIsStreaming<true> for Streaming<I>
-where
-  I: InputIsStreaming<false>,
-{
-  type Complete = I;
-  type Streaming = Self;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    self.0
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    self
-  }
-}
-
 /// Abstract method to calculate the input length
 pub trait InputLength {
   /// Calculates the input length, as indicated by its name,
@@ -506,506 +313,6 @@ impl<'a> InputLength for &'a str {
   #[inline]
   fn input_len(&self) -> usize {
     self.len()
-  }
-}
-
-/// Useful functions to calculate the offset between slices and show a hexdump of a slice
-pub trait Offset {
-  /// Offset between the first byte of self and the first byte of the argument
-  fn offset_to(&self, second: &Self) -> usize;
-}
-
-impl Offset for [u8] {
-  fn offset_to(&self, second: &Self) -> usize {
-    let fst = self.as_ptr();
-    let snd = second.as_ptr();
-
-    snd as usize - fst as usize
-  }
-}
-
-impl<'a> Offset for &'a [u8] {
-  fn offset_to(&self, second: &Self) -> usize {
-    let fst = self.as_ptr();
-    let snd = second.as_ptr();
-
-    snd as usize - fst as usize
-  }
-}
-
-impl Offset for str {
-  fn offset_to(&self, second: &Self) -> usize {
-    let fst = self.as_ptr();
-    let snd = second.as_ptr();
-
-    snd as usize - fst as usize
-  }
-}
-
-impl<'a> Offset for &'a str {
-  fn offset_to(&self, second: &Self) -> usize {
-    let fst = self.as_ptr();
-    let snd = second.as_ptr();
-
-    snd as usize - fst as usize
-  }
-}
-
-impl<I> Offset for Located<I>
-where
-  I: Offset,
-{
-  fn offset_to(&self, other: &Self) -> usize {
-    self.input.offset_to(&other.input)
-  }
-}
-
-impl<I, S> Offset for Stateful<I, S>
-where
-  I: Offset,
-{
-  fn offset_to(&self, other: &Self) -> usize {
-    self.input.offset_to(&other.input)
-  }
-}
-
-impl<I> Offset for Streaming<I>
-where
-  I: Offset,
-{
-  #[inline(always)]
-  fn offset_to(&self, second: &Self) -> usize {
-    self.0.offset_to(&second.0)
-  }
-}
-
-/// Helper trait for types that can be viewed as a byte slice
-pub trait AsBytes {
-  /// Casts the input type to a byte slice
-  fn as_bytes(&self) -> &[u8];
-}
-
-impl AsBytes for [u8] {
-  #[inline(always)]
-  fn as_bytes(&self) -> &[u8] {
-    self
-  }
-}
-
-impl<'a> AsBytes for &'a [u8] {
-  #[inline(always)]
-  fn as_bytes(&self) -> &[u8] {
-    self
-  }
-}
-
-impl AsBytes for str {
-  #[inline(always)]
-  fn as_bytes(&self) -> &[u8] {
-    self.as_ref()
-  }
-}
-
-impl<'a> AsBytes for &'a str {
-  #[inline(always)]
-  fn as_bytes(&self) -> &[u8] {
-    (*self).as_bytes()
-  }
-}
-
-impl<I> AsBytes for Located<I>
-where
-  I: AsBytes,
-{
-  fn as_bytes(&self) -> &[u8] {
-    self.input.as_bytes()
-  }
-}
-
-impl<I, S> AsBytes for Stateful<I, S>
-where
-  I: AsBytes,
-{
-  fn as_bytes(&self) -> &[u8] {
-    self.input.as_bytes()
-  }
-}
-
-impl<I> AsBytes for Streaming<I>
-where
-  I: AsBytes,
-{
-  #[inline(always)]
-  fn as_bytes(&self) -> &[u8] {
-    self.0.as_bytes()
-  }
-}
-
-/// Transforms common types to a char for basic token parsing
-#[allow(clippy::len_without_is_empty)]
-#[allow(clippy::wrong_self_convention)]
-pub trait AsChar {
-  /// Makes a char from self
-  ///
-  /// ```
-  /// use winnow::input::AsChar as _;
-  ///
-  /// assert_eq!('a'.as_char(), 'a');
-  /// assert_eq!(u8::MAX.as_char(), std::char::from_u32(u8::MAX as u32).unwrap());
-  /// ```
-  fn as_char(self) -> char;
-
-  /// Tests that self is an alphabetic character
-  ///
-  /// Warning: for `&str` it recognizes alphabetic
-  /// characters outside of the 52 ASCII letters
-  fn is_alpha(self) -> bool;
-
-  /// Tests that self is an alphabetic character
-  /// or a decimal digit
-  fn is_alphanum(self) -> bool;
-  /// Tests that self is a decimal digit
-  fn is_dec_digit(self) -> bool;
-  /// Tests that self is an hex digit
-  fn is_hex_digit(self) -> bool;
-  /// Tests that self is an octal digit
-  fn is_oct_digit(self) -> bool;
-  /// Gets the len in bytes for self
-  fn len(self) -> usize;
-  /// Tests that self is ASCII space or tab
-  fn is_space(self) -> bool;
-  /// Tests if byte is ASCII newline: \n
-  fn is_newline(self) -> bool;
-}
-
-impl AsChar for u8 {
-  #[inline]
-  fn as_char(self) -> char {
-    self as char
-  }
-  #[inline]
-  fn is_alpha(self) -> bool {
-    matches!(self, 0x41..=0x5A | 0x61..=0x7A)
-  }
-  #[inline]
-  fn is_alphanum(self) -> bool {
-    self.is_alpha() || self.is_dec_digit()
-  }
-  #[inline]
-  fn is_dec_digit(self) -> bool {
-    matches!(self, 0x30..=0x39)
-  }
-  #[inline]
-  fn is_hex_digit(self) -> bool {
-    matches!(self, 0x30..=0x39 | 0x41..=0x46 | 0x61..=0x66)
-  }
-  #[inline]
-  fn is_oct_digit(self) -> bool {
-    matches!(self, 0x30..=0x37)
-  }
-  #[inline]
-  fn len(self) -> usize {
-    1
-  }
-  #[inline]
-  fn is_space(self) -> bool {
-    self == b' ' || self == b'\t'
-  }
-  fn is_newline(self) -> bool {
-    self == b'\n'
-  }
-}
-impl<'a> AsChar for &'a u8 {
-  #[inline]
-  fn as_char(self) -> char {
-    *self as char
-  }
-  #[inline]
-  fn is_alpha(self) -> bool {
-    matches!(*self, 0x41..=0x5A | 0x61..=0x7A)
-  }
-  #[inline]
-  fn is_alphanum(self) -> bool {
-    self.is_alpha() || self.is_dec_digit()
-  }
-  #[inline]
-  fn is_dec_digit(self) -> bool {
-    matches!(*self, 0x30..=0x39)
-  }
-  #[inline]
-  fn is_hex_digit(self) -> bool {
-    matches!(*self, 0x30..=0x39 | 0x41..=0x46 | 0x61..=0x66)
-  }
-  #[inline]
-  fn is_oct_digit(self) -> bool {
-    matches!(*self, 0x30..=0x37)
-  }
-  #[inline]
-  fn len(self) -> usize {
-    1
-  }
-  #[inline]
-  fn is_space(self) -> bool {
-    *self == b' ' || *self == b'\t'
-  }
-  fn is_newline(self) -> bool {
-    *self == b'\n'
-  }
-}
-
-impl AsChar for char {
-  #[inline]
-  fn as_char(self) -> char {
-    self
-  }
-  #[inline]
-  fn is_alpha(self) -> bool {
-    self.is_ascii_alphabetic()
-  }
-  #[inline]
-  fn is_alphanum(self) -> bool {
-    self.is_alpha() || self.is_dec_digit()
-  }
-  #[inline]
-  fn is_dec_digit(self) -> bool {
-    self.is_ascii_digit()
-  }
-  #[inline]
-  fn is_hex_digit(self) -> bool {
-    self.is_ascii_hexdigit()
-  }
-  #[inline]
-  fn is_oct_digit(self) -> bool {
-    self.is_digit(8)
-  }
-  #[inline]
-  fn len(self) -> usize {
-    self.len_utf8()
-  }
-  #[inline]
-  fn is_space(self) -> bool {
-    self == ' ' || self == '\t'
-  }
-  fn is_newline(self) -> bool {
-    self == '\n'
-  }
-}
-
-impl<'a> AsChar for &'a char {
-  #[inline]
-  fn as_char(self) -> char {
-    *self
-  }
-  #[inline]
-  fn is_alpha(self) -> bool {
-    self.is_ascii_alphabetic()
-  }
-  #[inline]
-  fn is_alphanum(self) -> bool {
-    self.is_alpha() || self.is_dec_digit()
-  }
-  #[inline]
-  fn is_dec_digit(self) -> bool {
-    self.is_ascii_digit()
-  }
-  #[inline]
-  fn is_hex_digit(self) -> bool {
-    self.is_ascii_hexdigit()
-  }
-  #[inline]
-  fn is_oct_digit(self) -> bool {
-    self.is_digit(8)
-  }
-  #[inline]
-  fn len(self) -> usize {
-    self.len_utf8()
-  }
-  #[inline]
-  fn is_space(self) -> bool {
-    *self == ' ' || *self == '\t'
-  }
-  fn is_newline(self) -> bool {
-    *self == '\n'
-  }
-}
-
-/// Abstracts common iteration operations on the input type
-pub trait InputIter {
-  /// The current input type is a sequence of that `Item` type.
-  ///
-  /// Example: `u8` for `&[u8]` or `char` for `&str`
-  type Item;
-  /// An iterator over the input type, producing the item and its position
-  /// for use with [Slice]. If we're iterating over `&str`, the position
-  /// corresponds to the byte index of the character
-  type IterOffsets: Iterator<Item = (usize, Self::Item)>;
-
-  /// An iterator over the input type, producing the item
-  type IterElem: Iterator<Item = Self::Item>;
-
-  /// Returns an iterator over the elements and their byte offsets
-  fn iter_offsets(&self) -> Self::IterOffsets;
-  /// Returns an iterator over the elements
-  fn iter_elements(&self) -> Self::IterElem;
-  /// Finds the byte position of the element
-  fn offset_for<P>(&self, predicate: P) -> Option<usize>
-  where
-    P: Fn(Self::Item) -> bool;
-  /// Get the byte offset from the element's position in the stream
-  fn offset_at(&self, count: usize) -> Result<usize, Needed>;
-}
-
-impl<'a> InputIter for &'a [u8] {
-  type Item = u8;
-  type IterOffsets = Enumerate<Self::IterElem>;
-  type IterElem = Copied<Iter<'a, u8>>;
-
-  #[inline]
-  fn iter_offsets(&self) -> Self::IterOffsets {
-    self.iter_elements().enumerate()
-  }
-  #[inline]
-  fn iter_elements(&self) -> Self::IterElem {
-    self.iter().copied()
-  }
-  #[inline]
-  fn offset_for<P>(&self, predicate: P) -> Option<usize>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    self.iter().position(|b| predicate(*b))
-  }
-  #[inline]
-  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
-    if let Some(needed) = count.checked_sub(self.len()).and_then(NonZeroUsize::new) {
-      Err(Needed::Size(needed))
-    } else {
-      Ok(count)
-    }
-  }
-}
-
-impl<'a> InputIter for &'a str {
-  type Item = char;
-  type IterOffsets = CharIndices<'a>;
-  type IterElem = Chars<'a>;
-  #[inline]
-  fn iter_offsets(&self) -> Self::IterOffsets {
-    self.char_indices()
-  }
-  #[inline]
-  fn iter_elements(&self) -> Self::IterElem {
-    self.chars()
-  }
-  fn offset_for<P>(&self, predicate: P) -> Option<usize>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    for (o, c) in self.char_indices() {
-      if predicate(c) {
-        return Some(o);
-      }
-    }
-    None
-  }
-  #[inline]
-  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
-    let mut cnt = 0;
-    for (index, _) in self.char_indices() {
-      if cnt == count {
-        return Ok(index);
-      }
-      cnt += 1;
-    }
-    if cnt == count {
-      return Ok(self.len());
-    }
-    Err(Needed::Unknown)
-  }
-}
-
-impl<I> InputIter for Located<I>
-where
-  I: InputIter,
-{
-  type Item = I::Item;
-  type IterOffsets = I::IterOffsets;
-  type IterElem = I::IterElem;
-
-  fn iter_offsets(&self) -> Self::IterOffsets {
-    self.input.iter_offsets()
-  }
-
-  fn iter_elements(&self) -> Self::IterElem {
-    self.input.iter_elements()
-  }
-
-  fn offset_for<P>(&self, predicate: P) -> Option<usize>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    self.input.offset_for(predicate)
-  }
-
-  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
-    self.input.offset_at(count)
-  }
-}
-
-impl<I, S> InputIter for Stateful<I, S>
-where
-  I: InputIter,
-{
-  type Item = I::Item;
-  type IterOffsets = I::IterOffsets;
-  type IterElem = I::IterElem;
-
-  fn iter_offsets(&self) -> Self::IterOffsets {
-    self.input.iter_offsets()
-  }
-
-  fn iter_elements(&self) -> Self::IterElem {
-    self.input.iter_elements()
-  }
-
-  fn offset_for<P>(&self, predicate: P) -> Option<usize>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    self.input.offset_for(predicate)
-  }
-
-  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
-    self.input.offset_at(count)
-  }
-}
-
-impl<I> InputIter for Streaming<I>
-where
-  I: InputIter,
-{
-  type Item = I::Item;
-  type IterOffsets = I::IterOffsets;
-  type IterElem = I::IterElem;
-
-  #[inline(always)]
-  fn iter_offsets(&self) -> Self::IterOffsets {
-    self.0.iter_offsets()
-  }
-  #[inline(always)]
-  fn iter_elements(&self) -> Self::IterElem {
-    self.0.iter_elements()
-  }
-  #[inline(always)]
-  fn offset_for<P>(&self, predicate: P) -> Option<usize>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    self.0.offset_for(predicate)
-  }
-  #[inline(always)]
-  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
-    self.0.offset_at(count)
   }
 }
 
@@ -1621,6 +928,785 @@ where
     })
 }
 
+/// Abstracts common iteration operations on the input type
+pub trait InputIter {
+  /// The current input type is a sequence of that `Item` type.
+  ///
+  /// Example: `u8` for `&[u8]` or `char` for `&str`
+  type Item;
+  /// An iterator over the input type, producing the item and its position
+  /// for use with [Slice]. If we're iterating over `&str`, the position
+  /// corresponds to the byte index of the character
+  type IterOffsets: Iterator<Item = (usize, Self::Item)>;
+
+  /// An iterator over the input type, producing the item
+  type IterElem: Iterator<Item = Self::Item>;
+
+  /// Returns an iterator over the elements and their byte offsets
+  fn iter_offsets(&self) -> Self::IterOffsets;
+  /// Returns an iterator over the elements
+  fn iter_elements(&self) -> Self::IterElem;
+  /// Finds the byte position of the element
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
+  where
+    P: Fn(Self::Item) -> bool;
+  /// Get the byte offset from the element's position in the stream
+  fn offset_at(&self, count: usize) -> Result<usize, Needed>;
+}
+
+impl<'a> InputIter for &'a [u8] {
+  type Item = u8;
+  type IterOffsets = Enumerate<Self::IterElem>;
+  type IterElem = Copied<Iter<'a, u8>>;
+
+  #[inline]
+  fn iter_offsets(&self) -> Self::IterOffsets {
+    self.iter_elements().enumerate()
+  }
+  #[inline]
+  fn iter_elements(&self) -> Self::IterElem {
+    self.iter().copied()
+  }
+  #[inline]
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    self.iter().position(|b| predicate(*b))
+  }
+  #[inline]
+  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
+    if let Some(needed) = count.checked_sub(self.len()).and_then(NonZeroUsize::new) {
+      Err(Needed::Size(needed))
+    } else {
+      Ok(count)
+    }
+  }
+}
+
+impl<'a> InputIter for &'a str {
+  type Item = char;
+  type IterOffsets = CharIndices<'a>;
+  type IterElem = Chars<'a>;
+  #[inline]
+  fn iter_offsets(&self) -> Self::IterOffsets {
+    self.char_indices()
+  }
+  #[inline]
+  fn iter_elements(&self) -> Self::IterElem {
+    self.chars()
+  }
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    for (o, c) in self.char_indices() {
+      if predicate(c) {
+        return Some(o);
+      }
+    }
+    None
+  }
+  #[inline]
+  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
+    let mut cnt = 0;
+    for (index, _) in self.char_indices() {
+      if cnt == count {
+        return Ok(index);
+      }
+      cnt += 1;
+    }
+    if cnt == count {
+      return Ok(self.len());
+    }
+    Err(Needed::Unknown)
+  }
+}
+
+impl<I> InputIter for Located<I>
+where
+  I: InputIter,
+{
+  type Item = I::Item;
+  type IterOffsets = I::IterOffsets;
+  type IterElem = I::IterElem;
+
+  fn iter_offsets(&self) -> Self::IterOffsets {
+    self.input.iter_offsets()
+  }
+
+  fn iter_elements(&self) -> Self::IterElem {
+    self.input.iter_elements()
+  }
+
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    self.input.offset_for(predicate)
+  }
+
+  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
+    self.input.offset_at(count)
+  }
+}
+
+impl<I, S> InputIter for Stateful<I, S>
+where
+  I: InputIter,
+{
+  type Item = I::Item;
+  type IterOffsets = I::IterOffsets;
+  type IterElem = I::IterElem;
+
+  fn iter_offsets(&self) -> Self::IterOffsets {
+    self.input.iter_offsets()
+  }
+
+  fn iter_elements(&self) -> Self::IterElem {
+    self.input.iter_elements()
+  }
+
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    self.input.offset_for(predicate)
+  }
+
+  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
+    self.input.offset_at(count)
+  }
+}
+
+impl<I> InputIter for Streaming<I>
+where
+  I: InputIter,
+{
+  type Item = I::Item;
+  type IterOffsets = I::IterOffsets;
+  type IterElem = I::IterElem;
+
+  #[inline(always)]
+  fn iter_offsets(&self) -> Self::IterOffsets {
+    self.0.iter_offsets()
+  }
+  #[inline(always)]
+  fn iter_elements(&self) -> Self::IterElem {
+    self.0.iter_elements()
+  }
+  #[inline(always)]
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    self.0.offset_for(predicate)
+  }
+  #[inline(always)]
+  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
+    self.0.offset_at(count)
+  }
+}
+
+/// Slicing operations using ranges.
+///
+/// This trait is loosely based on
+/// `Index`, but can actually return
+/// something else than a `&[T]` or `&str`
+pub trait Slice<R> {
+  /// Slices self according to the range argument
+  fn slice(&self, range: R) -> Self;
+}
+
+macro_rules! impl_fn_slice {
+  ( $ty:ty ) => {
+    fn slice(&self, range: $ty) -> Self {
+      &self[range]
+    }
+  };
+}
+
+macro_rules! slice_range_impl {
+  ( [ $for_type:ident ], $ty:ty ) => {
+    impl<'a, $for_type> Slice<$ty> for &'a [$for_type] {
+      impl_fn_slice!($ty);
+    }
+  };
+  ( $for_type:ty, $ty:ty ) => {
+    impl<'a> Slice<$ty> for &'a $for_type {
+      impl_fn_slice!($ty);
+    }
+  };
+}
+
+macro_rules! slice_ranges_impl {
+  ( [ $for_type:ident ] ) => {
+    slice_range_impl! {[$for_type], Range<usize>}
+    slice_range_impl! {[$for_type], RangeTo<usize>}
+    slice_range_impl! {[$for_type], RangeFrom<usize>}
+    slice_range_impl! {[$for_type], RangeFull}
+  };
+  ( $for_type:ty ) => {
+    slice_range_impl! {$for_type, Range<usize>}
+    slice_range_impl! {$for_type, RangeTo<usize>}
+    slice_range_impl! {$for_type, RangeFrom<usize>}
+    slice_range_impl! {$for_type, RangeFull}
+  };
+}
+
+slice_ranges_impl! {[T]}
+slice_ranges_impl! {str}
+
+impl<I, R> Slice<R> for Located<I>
+where
+  I: Slice<R> + Clone,
+{
+  #[inline(always)]
+  fn slice(&self, range: R) -> Self {
+    Located {
+      initial: self.initial.clone(),
+      input: self.input.slice(range),
+    }
+  }
+}
+
+impl<I, S, R> Slice<R> for Stateful<I, S>
+where
+  I: Slice<R>,
+  S: Clone,
+{
+  #[inline(always)]
+  fn slice(&self, range: R) -> Self {
+    Self {
+      input: self.input.slice(range),
+      state: self.state.clone(),
+    }
+  }
+}
+
+impl<I, R> Slice<R> for Streaming<I>
+where
+  I: Slice<R>,
+{
+  #[inline(always)]
+  fn slice(&self, range: R) -> Self {
+    Streaming(self.0.slice(range))
+  }
+}
+
+/// Number of indices input has advanced since start of parsing
+pub trait Location {
+  /// Number of indices input has advanced since start of parsing
+  fn location(&self) -> usize;
+}
+
+impl<I> Location for Located<I>
+where
+  I: Clone + IntoOutput + Offset,
+{
+  fn location(&self) -> usize {
+    self.location()
+  }
+}
+
+impl<I, S> Location for Stateful<I, S>
+where
+  I: Location,
+{
+  fn location(&self) -> usize {
+    self.input.location()
+  }
+}
+
+impl<I> Location for Streaming<I>
+where
+  I: Location,
+{
+  fn location(&self) -> usize {
+    self.0.location()
+  }
+}
+
+/// Marks the input as being the complete buffer or a partial buffer for streaming input
+///
+/// See [Streaming] for marking a presumed complete buffer type as a streaming buffer.
+pub trait InputIsStreaming<const YES: bool>: Sized {
+  /// Complete counterpart
+  ///
+  /// - Set to `Self` if this is a complete buffer.
+  /// - Set to [`std::convert::Infallible`] if there isn't an associated complete buffer type
+  type Complete: InputIsStreaming<false>;
+  /// Streaming counterpart
+  ///
+  /// - Set to `Self` if this is a streaming buffer.
+  /// - Set to [`std::convert::Infallible`] if there isn't an associated streaming buffer type
+  type Streaming: InputIsStreaming<true>;
+
+  /// Convert to complete counterpart
+  fn into_complete(self) -> Self::Complete;
+  /// Convert to streaming counterpart
+  fn into_streaming(self) -> Self::Streaming;
+}
+
+impl<'a, T> InputIsStreaming<false> for &'a [T] {
+  type Complete = Self;
+  type Streaming = Streaming<Self>;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    Streaming(self)
+  }
+}
+
+impl<'a> InputIsStreaming<false> for &'a str {
+  type Complete = Self;
+  type Streaming = Streaming<Self>;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    Streaming(self)
+  }
+}
+
+impl<const YES: bool> InputIsStreaming<YES> for crate::lib::std::convert::Infallible {
+  type Complete = Self;
+  type Streaming = Self;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    self
+  }
+}
+
+impl<I> InputIsStreaming<true> for Located<I>
+where
+  I: InputIsStreaming<true>,
+{
+  type Complete = Located<<I as InputIsStreaming<true>>::Complete>;
+  type Streaming = Self;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    Located {
+      initial: self.initial.into_complete(),
+      input: self.input.into_complete(),
+    }
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    self
+  }
+}
+
+impl<I> InputIsStreaming<false> for Located<I>
+where
+  I: InputIsStreaming<false>,
+{
+  type Complete = Self;
+  type Streaming = Located<<I as InputIsStreaming<false>>::Streaming>;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    Located {
+      initial: self.initial.into_streaming(),
+      input: self.input.into_streaming(),
+    }
+  }
+}
+
+impl<I, S> InputIsStreaming<true> for Stateful<I, S>
+where
+  I: InputIsStreaming<true>,
+{
+  type Complete = Stateful<<I as InputIsStreaming<true>>::Complete, S>;
+  type Streaming = Self;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    Stateful {
+      input: self.input.into_complete(),
+      state: self.state,
+    }
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    self
+  }
+}
+
+impl<I, S> InputIsStreaming<false> for Stateful<I, S>
+where
+  I: InputIsStreaming<false>,
+{
+  type Complete = Self;
+  type Streaming = Stateful<<I as InputIsStreaming<false>>::Streaming, S>;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    Stateful {
+      input: self.input.into_streaming(),
+      state: self.state,
+    }
+  }
+}
+
+impl<I> InputIsStreaming<true> for Streaming<I>
+where
+  I: InputIsStreaming<false>,
+{
+  type Complete = I;
+  type Streaming = Self;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self.0
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    self
+  }
+}
+
+/// Useful functions to calculate the offset between slices and show a hexdump of a slice
+pub trait Offset {
+  /// Offset between the first byte of self and the first byte of the argument
+  fn offset_to(&self, second: &Self) -> usize;
+}
+
+impl Offset for [u8] {
+  fn offset_to(&self, second: &Self) -> usize {
+    let fst = self.as_ptr();
+    let snd = second.as_ptr();
+
+    snd as usize - fst as usize
+  }
+}
+
+impl<'a> Offset for &'a [u8] {
+  fn offset_to(&self, second: &Self) -> usize {
+    let fst = self.as_ptr();
+    let snd = second.as_ptr();
+
+    snd as usize - fst as usize
+  }
+}
+
+impl Offset for str {
+  fn offset_to(&self, second: &Self) -> usize {
+    let fst = self.as_ptr();
+    let snd = second.as_ptr();
+
+    snd as usize - fst as usize
+  }
+}
+
+impl<'a> Offset for &'a str {
+  fn offset_to(&self, second: &Self) -> usize {
+    let fst = self.as_ptr();
+    let snd = second.as_ptr();
+
+    snd as usize - fst as usize
+  }
+}
+
+impl<I> Offset for Located<I>
+where
+  I: Offset,
+{
+  fn offset_to(&self, other: &Self) -> usize {
+    self.input.offset_to(&other.input)
+  }
+}
+
+impl<I, S> Offset for Stateful<I, S>
+where
+  I: Offset,
+{
+  fn offset_to(&self, other: &Self) -> usize {
+    self.input.offset_to(&other.input)
+  }
+}
+
+impl<I> Offset for Streaming<I>
+where
+  I: Offset,
+{
+  #[inline(always)]
+  fn offset_to(&self, second: &Self) -> usize {
+    self.0.offset_to(&second.0)
+  }
+}
+
+/// Helper trait for types that can be viewed as a byte slice
+pub trait AsBytes {
+  /// Casts the input type to a byte slice
+  fn as_bytes(&self) -> &[u8];
+}
+
+impl AsBytes for [u8] {
+  #[inline(always)]
+  fn as_bytes(&self) -> &[u8] {
+    self
+  }
+}
+
+impl<'a> AsBytes for &'a [u8] {
+  #[inline(always)]
+  fn as_bytes(&self) -> &[u8] {
+    self
+  }
+}
+
+impl AsBytes for str {
+  #[inline(always)]
+  fn as_bytes(&self) -> &[u8] {
+    self.as_ref()
+  }
+}
+
+impl<'a> AsBytes for &'a str {
+  #[inline(always)]
+  fn as_bytes(&self) -> &[u8] {
+    (*self).as_bytes()
+  }
+}
+
+impl<I> AsBytes for Located<I>
+where
+  I: AsBytes,
+{
+  fn as_bytes(&self) -> &[u8] {
+    self.input.as_bytes()
+  }
+}
+
+impl<I, S> AsBytes for Stateful<I, S>
+where
+  I: AsBytes,
+{
+  fn as_bytes(&self) -> &[u8] {
+    self.input.as_bytes()
+  }
+}
+
+impl<I> AsBytes for Streaming<I>
+where
+  I: AsBytes,
+{
+  #[inline(always)]
+  fn as_bytes(&self) -> &[u8] {
+    self.0.as_bytes()
+  }
+}
+
+/// Transforms common types to a char for basic token parsing
+#[allow(clippy::len_without_is_empty)]
+#[allow(clippy::wrong_self_convention)]
+pub trait AsChar {
+  /// Makes a char from self
+  ///
+  /// ```
+  /// use winnow::input::AsChar as _;
+  ///
+  /// assert_eq!('a'.as_char(), 'a');
+  /// assert_eq!(u8::MAX.as_char(), std::char::from_u32(u8::MAX as u32).unwrap());
+  /// ```
+  fn as_char(self) -> char;
+
+  /// Tests that self is an alphabetic character
+  ///
+  /// Warning: for `&str` it recognizes alphabetic
+  /// characters outside of the 52 ASCII letters
+  fn is_alpha(self) -> bool;
+
+  /// Tests that self is an alphabetic character
+  /// or a decimal digit
+  fn is_alphanum(self) -> bool;
+  /// Tests that self is a decimal digit
+  fn is_dec_digit(self) -> bool;
+  /// Tests that self is an hex digit
+  fn is_hex_digit(self) -> bool;
+  /// Tests that self is an octal digit
+  fn is_oct_digit(self) -> bool;
+  /// Gets the len in bytes for self
+  fn len(self) -> usize;
+  /// Tests that self is ASCII space or tab
+  fn is_space(self) -> bool;
+  /// Tests if byte is ASCII newline: \n
+  fn is_newline(self) -> bool;
+}
+
+impl AsChar for u8 {
+  #[inline]
+  fn as_char(self) -> char {
+    self as char
+  }
+  #[inline]
+  fn is_alpha(self) -> bool {
+    matches!(self, 0x41..=0x5A | 0x61..=0x7A)
+  }
+  #[inline]
+  fn is_alphanum(self) -> bool {
+    self.is_alpha() || self.is_dec_digit()
+  }
+  #[inline]
+  fn is_dec_digit(self) -> bool {
+    matches!(self, 0x30..=0x39)
+  }
+  #[inline]
+  fn is_hex_digit(self) -> bool {
+    matches!(self, 0x30..=0x39 | 0x41..=0x46 | 0x61..=0x66)
+  }
+  #[inline]
+  fn is_oct_digit(self) -> bool {
+    matches!(self, 0x30..=0x37)
+  }
+  #[inline]
+  fn len(self) -> usize {
+    1
+  }
+  #[inline]
+  fn is_space(self) -> bool {
+    self == b' ' || self == b'\t'
+  }
+  fn is_newline(self) -> bool {
+    self == b'\n'
+  }
+}
+impl<'a> AsChar for &'a u8 {
+  #[inline]
+  fn as_char(self) -> char {
+    *self as char
+  }
+  #[inline]
+  fn is_alpha(self) -> bool {
+    matches!(*self, 0x41..=0x5A | 0x61..=0x7A)
+  }
+  #[inline]
+  fn is_alphanum(self) -> bool {
+    self.is_alpha() || self.is_dec_digit()
+  }
+  #[inline]
+  fn is_dec_digit(self) -> bool {
+    matches!(*self, 0x30..=0x39)
+  }
+  #[inline]
+  fn is_hex_digit(self) -> bool {
+    matches!(*self, 0x30..=0x39 | 0x41..=0x46 | 0x61..=0x66)
+  }
+  #[inline]
+  fn is_oct_digit(self) -> bool {
+    matches!(*self, 0x30..=0x37)
+  }
+  #[inline]
+  fn len(self) -> usize {
+    1
+  }
+  #[inline]
+  fn is_space(self) -> bool {
+    *self == b' ' || *self == b'\t'
+  }
+  fn is_newline(self) -> bool {
+    *self == b'\n'
+  }
+}
+
+impl AsChar for char {
+  #[inline]
+  fn as_char(self) -> char {
+    self
+  }
+  #[inline]
+  fn is_alpha(self) -> bool {
+    self.is_ascii_alphabetic()
+  }
+  #[inline]
+  fn is_alphanum(self) -> bool {
+    self.is_alpha() || self.is_dec_digit()
+  }
+  #[inline]
+  fn is_dec_digit(self) -> bool {
+    self.is_ascii_digit()
+  }
+  #[inline]
+  fn is_hex_digit(self) -> bool {
+    self.is_ascii_hexdigit()
+  }
+  #[inline]
+  fn is_oct_digit(self) -> bool {
+    self.is_digit(8)
+  }
+  #[inline]
+  fn len(self) -> usize {
+    self.len_utf8()
+  }
+  #[inline]
+  fn is_space(self) -> bool {
+    self == ' ' || self == '\t'
+  }
+  fn is_newline(self) -> bool {
+    self == '\n'
+  }
+}
+
+impl<'a> AsChar for &'a char {
+  #[inline]
+  fn as_char(self) -> char {
+    *self
+  }
+  #[inline]
+  fn is_alpha(self) -> bool {
+    self.is_ascii_alphabetic()
+  }
+  #[inline]
+  fn is_alphanum(self) -> bool {
+    self.is_alpha() || self.is_dec_digit()
+  }
+  #[inline]
+  fn is_dec_digit(self) -> bool {
+    self.is_ascii_digit()
+  }
+  #[inline]
+  fn is_hex_digit(self) -> bool {
+    self.is_ascii_hexdigit()
+  }
+  #[inline]
+  fn is_oct_digit(self) -> bool {
+    self.is_digit(8)
+  }
+  #[inline]
+  fn len(self) -> usize {
+    self.len_utf8()
+  }
+  #[inline]
+  fn is_space(self) -> bool {
+    *self == ' ' || *self == '\t'
+  }
+  fn is_newline(self) -> bool {
+    *self == '\n'
+  }
+}
+
 /// Indicates whether a comparison was successful, an error, or
 /// if more data was needed
 #[derive(Debug, Eq, PartialEq)]
@@ -2183,92 +2269,6 @@ where
   #[inline(always)]
   fn parse_to(&self) -> Option<R> {
     self.0.parse_to()
-  }
-}
-
-/// Slicing operations using ranges.
-///
-/// This trait is loosely based on
-/// `Index`, but can actually return
-/// something else than a `&[T]` or `&str`
-pub trait Slice<R> {
-  /// Slices self according to the range argument
-  fn slice(&self, range: R) -> Self;
-}
-
-macro_rules! impl_fn_slice {
-  ( $ty:ty ) => {
-    fn slice(&self, range: $ty) -> Self {
-      &self[range]
-    }
-  };
-}
-
-macro_rules! slice_range_impl {
-  ( [ $for_type:ident ], $ty:ty ) => {
-    impl<'a, $for_type> Slice<$ty> for &'a [$for_type] {
-      impl_fn_slice!($ty);
-    }
-  };
-  ( $for_type:ty, $ty:ty ) => {
-    impl<'a> Slice<$ty> for &'a $for_type {
-      impl_fn_slice!($ty);
-    }
-  };
-}
-
-macro_rules! slice_ranges_impl {
-  ( [ $for_type:ident ] ) => {
-    slice_range_impl! {[$for_type], Range<usize>}
-    slice_range_impl! {[$for_type], RangeTo<usize>}
-    slice_range_impl! {[$for_type], RangeFrom<usize>}
-    slice_range_impl! {[$for_type], RangeFull}
-  };
-  ( $for_type:ty ) => {
-    slice_range_impl! {$for_type, Range<usize>}
-    slice_range_impl! {$for_type, RangeTo<usize>}
-    slice_range_impl! {$for_type, RangeFrom<usize>}
-    slice_range_impl! {$for_type, RangeFull}
-  };
-}
-
-slice_ranges_impl! {[T]}
-slice_ranges_impl! {str}
-
-impl<I, R> Slice<R> for Located<I>
-where
-  I: Slice<R> + Clone,
-{
-  #[inline(always)]
-  fn slice(&self, range: R) -> Self {
-    Located {
-      initial: self.initial.clone(),
-      input: self.input.slice(range),
-    }
-  }
-}
-
-impl<I, S, R> Slice<R> for Stateful<I, S>
-where
-  I: Slice<R>,
-  S: Clone,
-{
-  #[inline(always)]
-  fn slice(&self, range: R) -> Self {
-    Self {
-      input: self.input.slice(range),
-      state: self.state.clone(),
-    }
-  }
-}
-
-impl<I, R> Slice<R> for Streaming<I>
-where
-  I: Slice<R>,
-{
-  #[inline(always)]
-  fn slice(&self, range: R) -> Self {
-    Streaming(self.0.slice(range))
   }
 }
 
