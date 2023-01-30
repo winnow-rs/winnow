@@ -5,7 +5,7 @@
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{
-  Compare, CompareResult, FindSubstring, FindToken, InputIter, InputLength, InputTake,
+  Compare, CompareResult, ContainsToken, FindSubstring, InputIter, InputLength, InputTake,
   InputTakeAtOffset, IntoOutput, Slice, ToUsize,
 };
 use crate::lib::std::ops::RangeFrom;
@@ -149,11 +149,11 @@ pub(crate) fn one_of_internal<I, T, E: ParseError<I>>(
 where
   I: Slice<RangeFrom<usize>> + InputIter + InputLength,
   <I as InputIter>::Item: Copy,
-  T: FindToken<<I as InputIter>::Item>,
+  T: ContainsToken<<I as InputIter>::Item>,
 {
   let mut it = input.iter_offsets();
   match it.next() {
-    Some((_, c)) if list.find_token(c) => match it.next() {
+    Some((_, c)) if list.contains_token(c) => match it.next() {
       None => Ok((input.slice(input.input_len()..), c)),
       Some((idx, _)) => Ok((input.slice(idx..), c)),
     },
@@ -169,11 +169,11 @@ pub(crate) fn none_of_internal<I, T, E: ParseError<I>>(
 where
   I: Slice<RangeFrom<usize>> + InputIter + InputLength,
   <I as InputIter>::Item: Copy,
-  T: FindToken<<I as InputIter>::Item>,
+  T: ContainsToken<<I as InputIter>::Item>,
 {
   let mut it = input.iter_offsets();
   match it.next() {
-    Some((_, c)) if !list.find_token(c) => match it.next() {
+    Some((_, c)) if !list.contains_token(c) => match it.next() {
       None => Ok((input.slice(input.input_len()..), c)),
       Some((idx, _)) => Ok((input.slice(idx..), c)),
     },
@@ -215,7 +215,7 @@ pub fn is_not<T, Input, Error: ParseError<Input>>(
 where
   Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtOffset>::Item>,
+  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
 {
   move |i: Input| is_not_internal(i, &arr)
 }
@@ -227,10 +227,10 @@ pub(crate) fn is_not_internal<T, Input, Error: ParseError<Input>>(
 where
   Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtOffset>::Item>,
+  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
 {
   let e: ErrorKind = ErrorKind::IsNot;
-  i.split_at_offset1_streaming(|c| arr.find_token(c), e)
+  i.split_at_offset1_streaming(|c| arr.contains_token(c), e)
     .into_output()
 }
 
@@ -269,7 +269,7 @@ pub fn is_a<T, Input, Error: ParseError<Input>>(
 where
   Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtOffset>::Item>,
+  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
 {
   move |i: Input| is_a_internal(i, &arr)
 }
@@ -281,10 +281,10 @@ pub(crate) fn is_a_internal<T, Input, Error: ParseError<Input>>(
 where
   Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtOffset>::Item>,
+  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
 {
   let e: ErrorKind = ErrorKind::IsA;
-  i.split_at_offset1_streaming(|c| !arr.find_token(c), e)
+  i.split_at_offset1_streaming(|c| !arr.contains_token(c), e)
     .into_output()
 }
 
@@ -322,7 +322,7 @@ pub fn take_while<T, Input, Error: ParseError<Input>>(
 where
   Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtOffset>::Item>,
+  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
 {
   move |i: Input| take_while_internal(i, &list)
 }
@@ -334,9 +334,9 @@ pub(crate) fn take_while_internal<T, Input, Error: ParseError<Input>>(
 where
   Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtOffset>::Item>,
+  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
 {
-  i.split_at_offset_streaming(|c| !list.find_token(c))
+  i.split_at_offset_streaming(|c| !list.contains_token(c))
     .into_output()
 }
 
@@ -376,7 +376,7 @@ pub fn take_while1<T, Input, Error: ParseError<Input>>(
 where
   Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtOffset>::Item>,
+  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
 {
   move |i: Input| take_while1_internal(i, &list)
 }
@@ -388,10 +388,10 @@ pub(crate) fn take_while1_internal<T, Input, Error: ParseError<Input>>(
 where
   Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtOffset>::Item>,
+  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
 {
   let e: ErrorKind = ErrorKind::TakeWhile1;
-  i.split_at_offset1_streaming(|c| !list.find_token(c), e)
+  i.split_at_offset1_streaming(|c| !list.contains_token(c), e)
     .into_output()
 }
 
@@ -434,7 +434,7 @@ pub fn take_while_m_n<T, Input, Error: ParseError<Input>>(
 where
   Input: InputTake + InputIter + InputLength,
   Input: IntoOutput,
-  T: FindToken<<Input as InputIter>::Item>,
+  T: ContainsToken<<Input as InputIter>::Item>,
 {
   move |i: Input| take_while_m_n_internal(i, m, n, &list)
 }
@@ -448,11 +448,11 @@ pub(crate) fn take_while_m_n_internal<T, Input, Error: ParseError<Input>>(
 where
   Input: InputTake + InputIter + InputLength,
   Input: IntoOutput,
-  T: FindToken<<Input as InputIter>::Item>,
+  T: ContainsToken<<Input as InputIter>::Item>,
 {
   let input = i;
 
-  match input.offset_for(|c| !list.find_token(c)) {
+  match input.offset_for(|c| !list.contains_token(c)) {
     Some(idx) => {
       if idx >= m {
         if idx <= n {
@@ -535,7 +535,7 @@ pub fn take_till<T, Input, Error: ParseError<Input>>(
 where
   Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtOffset>::Item>,
+  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
 {
   move |i: Input| take_till_internal(i, &list)
 }
@@ -547,9 +547,9 @@ pub(crate) fn take_till_internal<T, Input, Error: ParseError<Input>>(
 where
   Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtOffset>::Item>,
+  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
 {
-  i.split_at_offset_streaming(|c| list.find_token(c))
+  i.split_at_offset_streaming(|c| list.contains_token(c))
     .into_output()
 }
 
@@ -588,7 +588,7 @@ pub fn take_till1<T, Input, Error: ParseError<Input>>(
 where
   Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtOffset>::Item>,
+  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
 {
   move |i: Input| take_till1_internal(i, &list)
 }
@@ -600,10 +600,10 @@ pub(crate) fn take_till1_internal<T, Input, Error: ParseError<Input>>(
 where
   Input: InputTakeAtOffset,
   Input: IntoOutput,
-  T: FindToken<<Input as InputTakeAtOffset>::Item>,
+  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
 {
   let e: ErrorKind = ErrorKind::TakeTill1;
-  i.split_at_offset1_streaming(|c| list.find_token(c), e)
+  i.split_at_offset1_streaming(|c| list.contains_token(c), e)
     .into_output()
 }
 

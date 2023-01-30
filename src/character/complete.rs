@@ -9,7 +9,7 @@ use crate::combinator::opt;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{
-  AsChar, FindToken, InputIter, InputLength, InputTake, InputTakeAtOffset, IntoOutput, Slice,
+  AsChar, ContainsToken, InputIter, InputLength, InputTake, InputTakeAtOffset, IntoOutput, Slice,
 };
 use crate::input::{Compare, CompareResult};
 use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
@@ -122,7 +122,7 @@ pub fn one_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, c
 where
   I: Slice<RangeFrom<usize>> + InputIter + InputLength,
   <I as InputIter>::Item: AsChar + Copy,
-  T: FindToken<<I as InputIter>::Item>,
+  T: ContainsToken<<I as InputIter>::Item>,
 {
   move |i: I| crate::bytes::complete::one_of_internal(i, &list).map(|(i, c)| (i, c.as_char()))
 }
@@ -146,7 +146,7 @@ pub fn none_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, 
 where
   I: Slice<RangeFrom<usize>> + InputLength + InputIter,
   <I as InputIter>::Item: AsChar + Copy,
-  T: FindToken<<I as InputIter>::Item>,
+  T: ContainsToken<<I as InputIter>::Item>,
 {
   move |i: I| crate::bytes::complete::none_of_internal(i, &list).map(|(i, c)| (i, c.as_char()))
 }

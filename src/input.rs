@@ -37,7 +37,7 @@
 //! | [`Compare`] |Character comparison operations|
 //! | [`ExtendInto`] |Abstracts something which can extend an `Extend`|
 //! | [`FindSubstring`] |Look for a substring in self|
-//! | [`FindToken`] |Look for self in the given input stream|
+//! | [`ContainsToken`] |Look for self in the given input stream|
 //! | [`InputIter`] |Common iteration operations on the input type|
 //! | [`InputLength`] |Calculate the input length|
 //! | [`IntoOutput`] |Adapt a captired `Input` into an appropriate type|
@@ -1864,222 +1864,222 @@ where
 /// assert_eq!(hex_digit1("H2"), Err(Err::Error(Error::new("H2", ErrorKind::TakeWhile1))));
 /// assert_eq!(hex_digit1(""), Err(Err::Error(Error::new("", ErrorKind::TakeWhile1))));
 /// ```
-pub trait FindToken<T> {
+pub trait ContainsToken<T> {
   /// Returns true if self contains the token
-  fn find_token(&self, token: T) -> bool;
+  fn contains_token(&self, token: T) -> bool;
 }
 
-impl FindToken<u8> for u8 {
-  fn find_token(&self, token: u8) -> bool {
+impl ContainsToken<u8> for u8 {
+  fn contains_token(&self, token: u8) -> bool {
     *self == token
   }
 }
 
-impl<'a> FindToken<&'a u8> for u8 {
-  fn find_token(&self, token: &u8) -> bool {
-    self.find_token(*token)
+impl<'a> ContainsToken<&'a u8> for u8 {
+  fn contains_token(&self, token: &u8) -> bool {
+    self.contains_token(*token)
   }
 }
 
-impl FindToken<char> for u8 {
-  fn find_token(&self, token: char) -> bool {
+impl ContainsToken<char> for u8 {
+  fn contains_token(&self, token: char) -> bool {
     self.as_char() == token
   }
 }
 
-impl<'a> FindToken<&'a char> for u8 {
-  fn find_token(&self, token: &char) -> bool {
-    self.find_token(*token)
+impl<'a> ContainsToken<&'a char> for u8 {
+  fn contains_token(&self, token: &char) -> bool {
+    self.contains_token(*token)
   }
 }
 
-impl<C: AsChar> FindToken<C> for char {
-  fn find_token(&self, token: C) -> bool {
+impl<C: AsChar> ContainsToken<C> for char {
+  fn contains_token(&self, token: C) -> bool {
     *self == token.as_char()
   }
 }
 
-impl<C: AsChar, F: Fn(C) -> bool> FindToken<C> for F {
-  fn find_token(&self, token: C) -> bool {
+impl<C: AsChar, F: Fn(C) -> bool> ContainsToken<C> for F {
+  fn contains_token(&self, token: C) -> bool {
     self(token)
   }
 }
 
-impl<C1: AsChar, C2: AsChar + Clone> FindToken<C1> for Range<C2> {
-  fn find_token(&self, token: C1) -> bool {
+impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for Range<C2> {
+  fn contains_token(&self, token: C1) -> bool {
     let start = self.start.clone().as_char();
     let end = self.end.clone().as_char();
     (start..end).contains(&token.as_char())
   }
 }
 
-impl<C1: AsChar, C2: AsChar + Clone> FindToken<C1> for RangeInclusive<C2> {
-  fn find_token(&self, token: C1) -> bool {
+impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeInclusive<C2> {
+  fn contains_token(&self, token: C1) -> bool {
     let start = self.start().clone().as_char();
     let end = self.end().clone().as_char();
     (start..=end).contains(&token.as_char())
   }
 }
 
-impl<C1: AsChar, C2: AsChar + Clone> FindToken<C1> for RangeFrom<C2> {
-  fn find_token(&self, token: C1) -> bool {
+impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeFrom<C2> {
+  fn contains_token(&self, token: C1) -> bool {
     let start = self.start.clone().as_char();
     (start..).contains(&token.as_char())
   }
 }
 
-impl<C1: AsChar, C2: AsChar + Clone> FindToken<C1> for RangeTo<C2> {
-  fn find_token(&self, token: C1) -> bool {
+impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeTo<C2> {
+  fn contains_token(&self, token: C1) -> bool {
     let end = self.end.clone().as_char();
     (..end).contains(&token.as_char())
   }
 }
 
-impl<C1: AsChar, C2: AsChar + Clone> FindToken<C1> for RangeToInclusive<C2> {
-  fn find_token(&self, token: C1) -> bool {
+impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeToInclusive<C2> {
+  fn contains_token(&self, token: C1) -> bool {
     let end = self.end.clone().as_char();
     (..=end).contains(&token.as_char())
   }
 }
 
-impl<C1: AsChar> FindToken<C1> for RangeFull {
-  fn find_token(&self, _token: C1) -> bool {
+impl<C1: AsChar> ContainsToken<C1> for RangeFull {
+  fn contains_token(&self, _token: C1) -> bool {
     true
   }
 }
 
-impl<'a> FindToken<u8> for &'a [u8] {
-  fn find_token(&self, token: u8) -> bool {
+impl<'a> ContainsToken<u8> for &'a [u8] {
+  fn contains_token(&self, token: u8) -> bool {
     memchr::memchr(token, self).is_some()
   }
 }
 
-impl<'a, 'b> FindToken<&'a u8> for &'b [u8] {
-  fn find_token(&self, token: &u8) -> bool {
-    self.find_token(*token)
+impl<'a, 'b> ContainsToken<&'a u8> for &'b [u8] {
+  fn contains_token(&self, token: &u8) -> bool {
+    self.contains_token(*token)
   }
 }
 
-impl<'a> FindToken<char> for &'a [u8] {
-  fn find_token(&self, token: char) -> bool {
+impl<'a> ContainsToken<char> for &'a [u8] {
+  fn contains_token(&self, token: char) -> bool {
     self.iter().any(|i| i.as_char() == token)
   }
 }
 
-impl<'a, 'b> FindToken<&'a char> for &'b [u8] {
-  fn find_token(&self, token: &char) -> bool {
-    self.find_token(*token)
+impl<'a, 'b> ContainsToken<&'a char> for &'b [u8] {
+  fn contains_token(&self, token: &char) -> bool {
+    self.contains_token(*token)
   }
 }
 
-impl<const LEN: usize> FindToken<u8> for [u8; LEN] {
-  fn find_token(&self, token: u8) -> bool {
+impl<const LEN: usize> ContainsToken<u8> for [u8; LEN] {
+  fn contains_token(&self, token: u8) -> bool {
     memchr::memchr(token, &self[..]).is_some()
   }
 }
 
-impl<'a, const LEN: usize> FindToken<&'a u8> for [u8; LEN] {
-  fn find_token(&self, token: &u8) -> bool {
-    self.find_token(*token)
+impl<'a, const LEN: usize> ContainsToken<&'a u8> for [u8; LEN] {
+  fn contains_token(&self, token: &u8) -> bool {
+    self.contains_token(*token)
   }
 }
 
-impl<const LEN: usize> FindToken<char> for [u8; LEN] {
-  fn find_token(&self, token: char) -> bool {
+impl<const LEN: usize> ContainsToken<char> for [u8; LEN] {
+  fn contains_token(&self, token: char) -> bool {
     self.iter().any(|i| i.as_char() == token)
   }
 }
 
-impl<'a, const LEN: usize> FindToken<&'a char> for [u8; LEN] {
-  fn find_token(&self, token: &char) -> bool {
-    self.find_token(*token)
+impl<'a, const LEN: usize> ContainsToken<&'a char> for [u8; LEN] {
+  fn contains_token(&self, token: &char) -> bool {
+    self.contains_token(*token)
   }
 }
 
-impl<'a> FindToken<u8> for &'a str {
-  fn find_token(&self, token: u8) -> bool {
-    self.as_bytes().find_token(token)
+impl<'a> ContainsToken<u8> for &'a str {
+  fn contains_token(&self, token: u8) -> bool {
+    self.as_bytes().contains_token(token)
   }
 }
 
-impl<'a, 'b> FindToken<&'a u8> for &'b str {
-  fn find_token(&self, token: &u8) -> bool {
-    self.as_bytes().find_token(token)
+impl<'a, 'b> ContainsToken<&'a u8> for &'b str {
+  fn contains_token(&self, token: &u8) -> bool {
+    self.as_bytes().contains_token(token)
   }
 }
 
-impl<'a> FindToken<char> for &'a str {
-  fn find_token(&self, token: char) -> bool {
+impl<'a> ContainsToken<char> for &'a str {
+  fn contains_token(&self, token: char) -> bool {
     self.chars().any(|i| i == token)
   }
 }
 
-impl<'a, 'b> FindToken<&'a char> for &'b str {
-  fn find_token(&self, token: &char) -> bool {
-    self.find_token(*token)
+impl<'a, 'b> ContainsToken<&'a char> for &'b str {
+  fn contains_token(&self, token: &char) -> bool {
+    self.contains_token(*token)
   }
 }
 
-impl<'a> FindToken<u8> for &'a [char] {
-  fn find_token(&self, token: u8) -> bool {
+impl<'a> ContainsToken<u8> for &'a [char] {
+  fn contains_token(&self, token: u8) -> bool {
     self.iter().any(|i| *i == token.as_char())
   }
 }
 
-impl<'a, 'b> FindToken<&'a u8> for &'b [char] {
-  fn find_token(&self, token: &u8) -> bool {
-    self.find_token(*token)
+impl<'a, 'b> ContainsToken<&'a u8> for &'b [char] {
+  fn contains_token(&self, token: &u8) -> bool {
+    self.contains_token(*token)
   }
 }
 
-impl<'a> FindToken<char> for &'a [char] {
-  fn find_token(&self, token: char) -> bool {
+impl<'a> ContainsToken<char> for &'a [char] {
+  fn contains_token(&self, token: char) -> bool {
     self.iter().any(|i| *i == token)
   }
 }
 
-impl<'a, 'b> FindToken<&'a char> for &'b [char] {
-  fn find_token(&self, token: &char) -> bool {
-    self.find_token(*token)
+impl<'a, 'b> ContainsToken<&'a char> for &'b [char] {
+  fn contains_token(&self, token: &char) -> bool {
+    self.contains_token(*token)
   }
 }
 
-impl<T> FindToken<T> for () {
-  fn find_token(&self, _token: T) -> bool {
+impl<T> ContainsToken<T> for () {
+  fn contains_token(&self, _token: T) -> bool {
     false
   }
 }
 
-macro_rules! impl_find_token_for_tuple {
+macro_rules! impl_contains_token_for_tuple {
   ($($haystack:ident),+) => (
     #[allow(non_snake_case)]
-    impl<T, $($haystack),+> FindToken<T> for ($($haystack),+,)
+    impl<T, $($haystack),+> ContainsToken<T> for ($($haystack),+,)
     where
     T: Clone,
-      $($haystack: FindToken<T>),+
+      $($haystack: ContainsToken<T>),+
     {
-      fn find_token(&self, token: T) -> bool {
+      fn contains_token(&self, token: T) -> bool {
         let ($(ref $haystack),+,) = *self;
-        $($haystack.find_token(token.clone()) || )+ false
+        $($haystack.contains_token(token.clone()) || )+ false
       }
     }
   )
 }
 
-macro_rules! impl_find_token_for_tuples {
+macro_rules! impl_contains_token_for_tuples {
     ($haystack1:ident, $($haystack:ident),+) => {
-        impl_find_token_for_tuples!(__impl $haystack1; $($haystack),+);
+        impl_contains_token_for_tuples!(__impl $haystack1; $($haystack),+);
     };
     (__impl $($haystack:ident),+; $haystack1:ident $(,$haystack2:ident)*) => {
-        impl_find_token_for_tuple!($($haystack),+);
-        impl_find_token_for_tuples!(__impl $($haystack),+, $haystack1; $($haystack2),*);
+        impl_contains_token_for_tuple!($($haystack),+);
+        impl_contains_token_for_tuples!(__impl $($haystack),+, $haystack1; $($haystack2),*);
     };
     (__impl $($haystack:ident),+;) => {
-        impl_find_token_for_tuple!($($haystack),+);
+        impl_contains_token_for_tuple!($($haystack),+);
     }
 }
 
-impl_find_token_for_tuples!(
+impl_contains_token_for_tuples!(
   F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21
 );
 
