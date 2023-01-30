@@ -418,49 +418,7 @@ impl<'a, T> InputIsStreaming<false> for &'a [T] {
   }
 }
 
-impl<T, const L: usize> InputIsStreaming<false> for [T; L] {
-  type Complete = Self;
-  type Streaming = Streaming<Self>;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    self
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    Streaming(self)
-  }
-}
-
-impl<'a, T, const L: usize> InputIsStreaming<false> for &'a [T; L] {
-  type Complete = Self;
-  type Streaming = Streaming<Self>;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    self
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    Streaming(self)
-  }
-}
-
 impl<'a> InputIsStreaming<false> for &'a str {
-  type Complete = Self;
-  type Streaming = Streaming<Self>;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    self
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    Streaming(self)
-  }
-}
-
-impl<'a> InputIsStreaming<false> for (&'a [u8], usize) {
   type Complete = Self;
   type Streaming = Streaming<Self>;
 
@@ -548,13 +506,6 @@ impl<'a> InputLength for &'a str {
   #[inline]
   fn input_len(&self) -> usize {
     self.len()
-  }
-}
-
-impl<'a> InputLength for (&'a [u8], usize) {
-  #[inline]
-  fn input_len(&self) -> usize {
-    self.0.len() * 8 - self.1
   }
 }
 
@@ -676,17 +627,10 @@ impl<'a> AsBytes for &'a [u8] {
   }
 }
 
-impl<const LEN: usize> AsBytes for [u8; LEN] {
+impl AsBytes for str {
   #[inline(always)]
   fn as_bytes(&self) -> &[u8] {
-    self
-  }
-}
-
-impl<'a, const LEN: usize> AsBytes for &'a [u8; LEN] {
-  #[inline(always)]
-  fn as_bytes(&self) -> &[u8] {
-    *self
+    self.as_ref()
   }
 }
 
@@ -694,13 +638,6 @@ impl<'a> AsBytes for &'a str {
   #[inline(always)]
   fn as_bytes(&self) -> &[u8] {
     (*self).as_bytes()
-  }
-}
-
-impl AsBytes for str {
-  #[inline(always)]
-  fn as_bytes(&self) -> &[u8] {
-    self.as_ref()
   }
 }
 
@@ -1002,6 +939,7 @@ where
     self.0.offset_at(count)
   }
 }
+
 impl<'a> InputIter for &'a [u8] {
   type Item = u8;
   type IterOffsets = Enumerate<Self::IterElem>;
@@ -1029,31 +967,6 @@ impl<'a> InputIter for &'a [u8] {
     } else {
       Ok(count)
     }
-  }
-}
-
-impl<'a, const LEN: usize> InputIter for &'a [u8; LEN] {
-  type Item = u8;
-  type IterOffsets = Enumerate<Self::IterElem>;
-  type IterElem = Copied<Iter<'a, u8>>;
-
-  fn iter_offsets(&self) -> Self::IterOffsets {
-    (&self[..]).iter_offsets()
-  }
-
-  fn iter_elements(&self) -> Self::IterElem {
-    (&self[..]).iter_elements()
-  }
-
-  fn offset_for<P>(&self, predicate: P) -> Option<usize>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    (&self[..]).offset_for(predicate)
-  }
-
-  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
-    (&self[..]).offset_at(count)
   }
 }
 
@@ -1956,16 +1869,6 @@ pub trait FindToken<T> {
   fn find_token(&self, token: T) -> bool;
 }
 
-impl<I, T> FindToken<T> for Streaming<I>
-where
-  I: FindToken<T>,
-{
-  #[inline(always)]
-  fn find_token(&self, token: T) -> bool {
-    self.0.find_token(token)
-  }
-}
-
 impl FindToken<u8> for u8 {
   fn find_token(&self, token: u8) -> bool {
     *self == token
@@ -2439,43 +2342,7 @@ impl<'a, T> IntoOutput for &'a [T] {
   }
 }
 
-impl<const LEN: usize> IntoOutput for [u8; LEN] {
-  type Output = Self;
-  #[inline]
-  fn into_output(self) -> Self::Output {
-    self
-  }
-  #[inline]
-  fn merge_output(self, inner: Self::Output) -> Self {
-    inner
-  }
-}
-
-impl<'a, const LEN: usize> IntoOutput for &'a [u8; LEN] {
-  type Output = Self;
-  #[inline]
-  fn into_output(self) -> Self::Output {
-    self
-  }
-  #[inline]
-  fn merge_output(self, inner: Self::Output) -> Self {
-    inner
-  }
-}
-
 impl<'a> IntoOutput for &'a str {
-  type Output = Self;
-  #[inline]
-  fn into_output(self) -> Self::Output {
-    self
-  }
-  #[inline]
-  fn merge_output(self, inner: Self::Output) -> Self {
-    inner
-  }
-}
-
-impl<'a> IntoOutput for (&'a [u8], usize) {
   type Output = Self;
   #[inline]
   fn into_output(self) -> Self::Output {
