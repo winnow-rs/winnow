@@ -7,7 +7,7 @@ mod tests;
 
 use crate::error::ParseError;
 use crate::input::{
-  Compare, ContainsToken, FindSubstring, InputIsStreaming, InputIter, InputTake, InputTakeAtOffset,
+  Compare, ContainsToken, FindSlice, InputIsStreaming, InputIter, InputTake, InputTakeAtOffset,
   IntoOutput, Slice, SliceLen, ToUsize,
 };
 use crate::lib::std::ops::RangeFrom;
@@ -695,7 +695,7 @@ pub fn take_until<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + SliceLen + FindSubstring<T> + InputIsStreaming<STREAMING>,
+  Input: InputTake + SliceLen + FindSlice<T> + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
   T: SliceLen + Clone,
 {
@@ -754,7 +754,7 @@ pub fn take_until1<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + SliceLen + FindSubstring<T> + InputIsStreaming<STREAMING>,
+  Input: InputTake + SliceLen + FindSlice<T> + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
   T: SliceLen + Clone,
 {

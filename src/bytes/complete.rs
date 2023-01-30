@@ -5,7 +5,7 @@
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{
-  Compare, CompareResult, ContainsToken, FindSubstring, InputIter, InputTake, InputTakeAtOffset,
+  Compare, CompareResult, ContainsToken, FindSlice, InputIter, InputTake, InputTakeAtOffset,
   IntoOutput, Slice, SliceLen, ToUsize,
 };
 use crate::lib::std::ops::RangeFrom;
@@ -648,7 +648,7 @@ pub fn take_until<T, Input, Error: ParseError<Input>>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + FindSubstring<T>,
+  Input: InputTake + FindSlice<T>,
   Input: IntoOutput,
   T: SliceLen + Clone,
 {
@@ -660,11 +660,11 @@ pub(crate) fn take_until_internal<T, Input, Error: ParseError<Input>>(
   t: T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + FindSubstring<T>,
+  Input: InputTake + FindSlice<T>,
   Input: IntoOutput,
   T: SliceLen,
 {
-  let res: IResult<_, _, Error> = match i.find_substring(t) {
+  let res: IResult<_, _, Error> = match i.find_slice(t) {
     None => Err(Err::Error(Error::from_error_kind(i, ErrorKind::TakeUntil))),
     Some(index) => Ok(i.take_split(index)),
   };
@@ -697,7 +697,7 @@ pub fn take_until1<T, Input, Error: ParseError<Input>>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + FindSubstring<T>,
+  Input: InputTake + FindSlice<T>,
   Input: IntoOutput,
   T: SliceLen + Clone,
 {
@@ -709,11 +709,11 @@ pub(crate) fn take_until1_internal<T, Input, Error: ParseError<Input>>(
   t: T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + FindSubstring<T>,
+  Input: InputTake + FindSlice<T>,
   Input: IntoOutput,
   T: SliceLen,
 {
-  let res: IResult<_, _, Error> = match i.find_substring(t) {
+  let res: IResult<_, _, Error> = match i.find_slice(t) {
     None | Some(0) => Err(Err::Error(Error::from_error_kind(i, ErrorKind::TakeUntil))),
     Some(index) => Ok(i.take_split(index)),
   };

@@ -41,7 +41,7 @@
 //! | [`AsBytes`] |Casts the input type to a byte slice|
 //! | [`Compare`] |Character comparison operations|
 //! | [`ExtendInto`] |Abstracts something which can extend an `Extend`|
-//! | [`FindSubstring`] |Look for a substring in self|
+//! | [`FindSlice`] |Look for a substring in self|
 //! | [`IntoOutput`] |Adapt a captired `Input` into an appropriate type|
 //! | [`Location`] |Calculate location within initial input|
 //! | [`Offset`] |Calculate the offset between slices|
@@ -1728,57 +1728,57 @@ where
   }
 }
 
-/// Look for a substring in self
-pub trait FindSubstring<T> {
-  /// Returns the offset of the substring if it is found
-  fn find_substring(&self, substr: T) -> Option<usize>;
+/// Look for a slice in self
+pub trait FindSlice<T> {
+  /// Returns the offset of the slice if it is found
+  fn find_slice(&self, substr: T) -> Option<usize>;
 }
 
-impl<'a, 'b> FindSubstring<&'b [u8]> for &'a [u8] {
-  fn find_substring(&self, substr: &'b [u8]) -> Option<usize> {
+impl<'a, 'b> FindSlice<&'b [u8]> for &'a [u8] {
+  fn find_slice(&self, substr: &'b [u8]) -> Option<usize> {
     memchr::memmem::find(self, substr)
   }
 }
 
-impl<'a, 'b> FindSubstring<&'b str> for &'a [u8] {
-  fn find_substring(&self, substr: &'b str) -> Option<usize> {
-    self.find_substring(substr.as_bytes())
+impl<'a, 'b> FindSlice<&'b str> for &'a [u8] {
+  fn find_slice(&self, substr: &'b str) -> Option<usize> {
+    self.find_slice(substr.as_bytes())
   }
 }
 
-impl<'a, 'b> FindSubstring<&'b str> for &'a str {
-  fn find_substring(&self, substr: &'b str) -> Option<usize> {
+impl<'a, 'b> FindSlice<&'b str> for &'a str {
+  fn find_slice(&self, substr: &'b str) -> Option<usize> {
     self.find(substr)
   }
 }
 
-impl<I, T> FindSubstring<T> for Located<I>
+impl<I, T> FindSlice<T> for Located<I>
 where
-  I: FindSubstring<T>,
+  I: FindSlice<T>,
 {
   #[inline(always)]
-  fn find_substring(&self, substr: T) -> Option<usize> {
-    self.input.find_substring(substr)
+  fn find_slice(&self, substr: T) -> Option<usize> {
+    self.input.find_slice(substr)
   }
 }
 
-impl<I, S, T> FindSubstring<T> for Stateful<I, S>
+impl<I, S, T> FindSlice<T> for Stateful<I, S>
 where
-  I: FindSubstring<T>,
+  I: FindSlice<T>,
 {
   #[inline(always)]
-  fn find_substring(&self, substr: T) -> Option<usize> {
-    self.input.find_substring(substr)
+  fn find_slice(&self, substr: T) -> Option<usize> {
+    self.input.find_slice(substr)
   }
 }
 
-impl<I, T> FindSubstring<T> for Streaming<I>
+impl<I, T> FindSlice<T> for Streaming<I>
 where
-  I: FindSubstring<T>,
+  I: FindSlice<T>,
 {
   #[inline(always)]
-  fn find_substring(&self, substr: T) -> Option<usize> {
-    self.0.find_substring(substr)
+  fn find_slice(&self, substr: T) -> Option<usize> {
+    self.0.find_slice(substr)
   }
 }
 
