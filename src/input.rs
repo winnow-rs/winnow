@@ -1734,20 +1734,20 @@ pub trait FindSlice<T> {
   fn find_slice(&self, substr: T) -> Option<usize>;
 }
 
-impl<'a, 'b> FindSlice<&'b [u8]> for &'a [u8] {
-  fn find_slice(&self, substr: &'b [u8]) -> Option<usize> {
+impl<'i, 's> FindSlice<&'s [u8]> for &'i [u8] {
+  fn find_slice(&self, substr: &'s [u8]) -> Option<usize> {
     memchr::memmem::find(self, substr)
   }
 }
 
-impl<'a, 'b> FindSlice<&'b str> for &'a [u8] {
-  fn find_slice(&self, substr: &'b str) -> Option<usize> {
+impl<'i, 's> FindSlice<&'s str> for &'i [u8] {
+  fn find_slice(&self, substr: &'s str) -> Option<usize> {
     self.find_slice(substr.as_bytes())
   }
 }
 
-impl<'a, 'b> FindSlice<&'b str> for &'a str {
-  fn find_slice(&self, substr: &'b str) -> Option<usize> {
+impl<'i, 's> FindSlice<&'s str> for &'i str {
+  fn find_slice(&self, substr: &'s str) -> Option<usize> {
     self.find(substr)
   }
 }
