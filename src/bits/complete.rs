@@ -4,8 +4,8 @@
 #![allow(deprecated)]
 
 use crate::error::{ErrorKind, ParseError};
-use crate::input::{InputIter, Slice, SliceLen, ToUsize};
-use crate::lib::std::ops::{AddAssign, Div, RangeFrom, Shl, Shr};
+use crate::input::{AsBytes, Input, ToUsize};
+use crate::lib::std::ops::{AddAssign, Div, Shl, Shr};
 use crate::{Err, IResult};
 
 /// Generates a parser taking `count` bits
@@ -39,7 +39,7 @@ pub fn take<I, O, C, E: ParseError<(I, usize)>>(
   count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + SliceLen,
+  I: Input<Token = u8> + AsBytes,
   C: ToUsize,
   O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
@@ -52,14 +52,14 @@ pub(crate) fn take_internal<I, O, E: ParseError<(I, usize)>>(
   count: usize,
 ) -> IResult<(I, usize), O, E>
 where
-  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + SliceLen,
+  I: Input<Token = u8> + AsBytes,
   O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
   if count == 0 {
     Ok(((input, bit_offset), 0u8.into()))
   } else {
     let cnt = (count + bit_offset).div(8);
-    if input.slice_len() * 8 < count + bit_offset {
+    if input.input_len_() * 8 < count + bit_offset {
       Err(Err::Error(E::from_error_kind(
         (input, bit_offset),
         ErrorKind::Eof,
@@ -70,7 +70,7 @@ where
       let mut remaining: usize = count;
       let mut end_offset: usize = 0;
 
-      for byte in input.iter_elements().take(cnt + 1) {
+      for byte in input.as_bytes().iter().copied().take(cnt + 1) {
         if remaining == 0 {
           break;
         }
@@ -90,7 +90,8 @@ where
           offset = 0;
         }
       }
-      Ok(((input.slice(cnt..), end_offset), acc))
+      let (input, _) = input.next_slice(cnt);
+      Ok(((input, end_offset), acc))
     }
   }
 }
@@ -104,7 +105,7 @@ pub fn tag<I, O, C, E: ParseError<(I, usize)>>(
   count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + SliceLen + Clone,
+  I: Input<Token = u8> + AsBytes,
   C: ToUsize,
   O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
@@ -118,7 +119,7 @@ pub(crate) fn tag_internal<I, O, E: ParseError<(I, usize)>>(
   count: usize,
 ) -> IResult<(I, usize), O, E>
 where
-  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + SliceLen + Clone,
+  I: Input<Token = u8> + AsBytes,
   O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
   let inp = input.clone();
@@ -151,7 +152,7 @@ where
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bits::bool`")]
 pub fn bool<I, E: ParseError<(I, usize)>>(input: (I, usize)) -> IResult<(I, usize), bool, E>
 where
-  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + SliceLen,
+  I: Input<Token = u8> + AsBytes,
 {
   let (res, bit): (_, u32) = take(1usize)(input)?;
   Ok((res, bit != 0))
