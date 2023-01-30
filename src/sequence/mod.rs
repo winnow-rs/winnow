@@ -223,11 +223,11 @@ macro_rules! tuple_trait_impl(
   ($($name:ident $ty: ident),+) => (
     #[allow(deprecated)]
     impl<
-      Input: Clone, $($ty),+ , Error: ParseError<Input>,
-      $($name: Parser<Input, $ty, Error>),+
-    > Tuple<Input, ( $($ty),+ ), Error> for ( $($name),+ ) {
+      I: Clone, $($ty),+ , Error: ParseError<I>,
+      $($name: Parser<I, $ty, Error>),+
+    > Tuple<I, ( $($ty),+ ), Error> for ( $($name),+ ) {
 
-      fn parse(&mut self, input: Input) -> IResult<Input, ( $($ty),+ ), Error> {
+      fn parse(&mut self, input: I) -> IResult<I, ( $($ty),+ ), Error> {
         tuple_trait_inner!(0, self, input, (), $($name)+)
 
       }
@@ -253,8 +253,29 @@ macro_rules! tuple_trait_inner(
   });
 );
 
-tuple_trait!(FnA A, FnB B, FnC C, FnD D, FnE E, FnF F, FnG G, FnH H, FnI I, FnJ J, FnK K, FnL L,
-  FnM M, FnN N, FnO O, FnP P, FnQ Q, FnR R, FnS S, FnT T, FnU U);
+tuple_trait!(
+  P1 O1,
+  P2 O2,
+  P3 O3,
+  P4 O4,
+  P5 O5,
+  P6 O6,
+  P7 O7,
+  P8 O8,
+  P9 O9,
+  P10 O10,
+  P11 O11,
+  P12 O12,
+  P13 O13,
+  P14 O14,
+  P15 O15,
+  P16 O16,
+  P17 O17,
+  P18 O18,
+  P19 O19,
+  P20 O20,
+  P21 O21
+);
 
 // Special case: implement `Tuple` for `()`, the unit type.
 // This can come up in macros which accept a variable number of arguments.

@@ -1417,13 +1417,10 @@ impl<I: Clone, O, E1, E2: crate::error::ParseError<I> + From<E1>, F: Parser<I, O
 /// assert_eq!(parsed, [("abc", 3usize), ("defg", 4), ("hijkl", 5), ("mnopqr", 6)].iter().cloned().collect());
 /// assert_eq!(res, Ok(("123", ())));
 /// ```
-pub fn iterator<Input, Output, Error, F>(
-  input: Input,
-  f: F,
-) -> ParserIterator<Input, Output, Error, F>
+pub fn iterator<I, Output, Error, F>(input: I, f: F) -> ParserIterator<I, Output, Error, F>
 where
-  F: Parser<Input, Output, Error>,
-  Error: ParseError<Input>,
+  F: Parser<I, Output, Error>,
+  Error: ParseError<I>,
 {
   ParserIterator {
     iterator: f,

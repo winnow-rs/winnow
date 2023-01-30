@@ -91,15 +91,15 @@ where
 /// assert_eq!(parser(Streaming("H")), Err(Err::Incomplete(Needed::new(4))));
 /// ```
 #[inline(always)]
-pub fn tag<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
+pub fn tag<T, I, Error: ParseError<I>, const STREAMING: bool>(
   tag: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTake + SliceLen + Compare<T> + InputIsStreaming<STREAMING>,
-  Input: IntoOutput,
+  I: InputTake + SliceLen + Compare<T> + InputIsStreaming<STREAMING>,
+  I: IntoOutput,
   T: SliceLen + Clone,
 {
-  move |i: Input| {
+  move |i: I| {
     let t = tag.clone();
     if STREAMING {
       streaming::tag_internal(i, t)
@@ -147,15 +147,15 @@ where
 /// assert_eq!(parser(Streaming("")), Err(Err::Incomplete(Needed::new(5))));
 /// ```
 #[inline(always)]
-pub fn tag_no_case<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
+pub fn tag_no_case<T, I, Error: ParseError<I>, const STREAMING: bool>(
   tag: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTake + SliceLen + Compare<T> + InputIsStreaming<STREAMING>,
-  Input: IntoOutput,
+  I: InputTake + SliceLen + Compare<T> + InputIsStreaming<STREAMING>,
+  I: IntoOutput,
   T: SliceLen + Clone,
 {
-  move |i: Input| {
+  move |i: I| {
     let t = tag.clone();
     if STREAMING {
       streaming::tag_no_case_internal(i, t)
@@ -305,16 +305,16 @@ where
 /// assert_eq!(alpha(Streaming(b"")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_while<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
+pub fn take_while<T, I, Error: ParseError<I>, const STREAMING: bool>(
   list: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtOffset + InputIsStreaming<STREAMING>,
-  Input: IntoOutput,
-  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
-  Input: InputTakeAtOffset,
+  I: InputTakeAtOffset + InputIsStreaming<STREAMING>,
+  I: IntoOutput,
+  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
+  I: InputTakeAtOffset,
 {
-  move |i: Input| {
+  move |i: I| {
     if STREAMING {
       streaming::take_while_internal(i, &list)
     } else {
@@ -379,15 +379,15 @@ where
 /// assert_eq!(hex(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_while1<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
+pub fn take_while1<T, I, Error: ParseError<I>, const STREAMING: bool>(
   list: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtOffset + InputIsStreaming<STREAMING>,
-  Input: IntoOutput,
-  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
+  I: InputTakeAtOffset + InputIsStreaming<STREAMING>,
+  I: IntoOutput,
+  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
 {
-  move |i: Input| {
+  move |i: I| {
     if STREAMING {
       streaming::take_while1_internal(i, &list)
     } else {
@@ -437,17 +437,17 @@ where
 /// assert_eq!(short_alpha(Streaming(b"12345")), Err(Err::Error(Error::new(Streaming(&b"12345"[..]), ErrorKind::TakeWhileMN))));
 /// ```
 #[inline(always)]
-pub fn take_while_m_n<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
+pub fn take_while_m_n<T, I, Error: ParseError<I>, const STREAMING: bool>(
   m: usize,
   n: usize,
   list: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTake + InputIter + SliceLen + Slice<RangeFrom<usize>> + InputIsStreaming<STREAMING>,
-  Input: IntoOutput,
-  T: ContainsToken<<Input as InputIter>::Item>,
+  I: InputTake + InputIter + SliceLen + Slice<RangeFrom<usize>> + InputIsStreaming<STREAMING>,
+  I: IntoOutput,
+  T: ContainsToken<<I as InputIter>::Item>,
 {
-  move |i: Input| {
+  move |i: I| {
     if STREAMING {
       streaming::take_while_m_n_internal(i, m, n, &list)
     } else {
@@ -491,15 +491,15 @@ where
 /// assert_eq!(till_colon(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_till<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
+pub fn take_till<T, I, Error: ParseError<I>, const STREAMING: bool>(
   list: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtOffset + InputIsStreaming<STREAMING>,
-  Input: IntoOutput,
-  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
+  I: InputTakeAtOffset + InputIsStreaming<STREAMING>,
+  I: IntoOutput,
+  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
 {
-  move |i: Input| {
+  move |i: I| {
     if STREAMING {
       streaming::take_till_internal(i, &list)
     } else {
@@ -564,15 +564,15 @@ where
 /// assert_eq!(not_space(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_till1<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
+pub fn take_till1<T, I, Error: ParseError<I>, const STREAMING: bool>(
   list: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtOffset + InputIsStreaming<STREAMING>,
-  Input: IntoOutput,
-  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
+  I: InputTakeAtOffset + InputIsStreaming<STREAMING>,
+  I: IntoOutput,
+  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
 {
-  move |i: Input| {
+  move |i: I| {
     if STREAMING {
       streaming::take_till1_internal(i, &list)
     } else {
@@ -581,7 +581,7 @@ where
   }
 }
 
-/// Returns an input slice containing the first N input elements (Input[..N]).
+/// Returns an input slice containing the first N input elements (I[..N]).
 ///
 /// *Complete version*: It will return `Err(Err::Error(Error::new(_, ErrorKind::Eof)))` if the input is shorter than the argument.
 ///
@@ -634,16 +634,16 @@ where
 /// assert_eq!(take6(Streaming("short")), Err(Err::Incomplete(Needed::Unknown)));
 /// ```
 #[inline(always)]
-pub fn take<C, Input, Error: ParseError<Input>, const STREAMING: bool>(
+pub fn take<C, I, Error: ParseError<I>, const STREAMING: bool>(
   count: C,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputIter + SliceLen + InputTake + InputIsStreaming<STREAMING>,
-  Input: IntoOutput,
+  I: InputIter + SliceLen + InputTake + InputIsStreaming<STREAMING>,
+  I: IntoOutput,
   C: ToUsize,
 {
   let c = count.to_usize();
-  move |i: Input| {
+  move |i: I| {
     if STREAMING {
       streaming::take_internal(i, c)
     } else {
@@ -691,15 +691,15 @@ where
 /// assert_eq!(until_eof(Streaming("1eof2eof")), Ok((Streaming("eof2eof"), "1")));
 /// ```
 #[inline(always)]
-pub fn take_until<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
+pub fn take_until<T, I, Error: ParseError<I>, const STREAMING: bool>(
   tag: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTake + SliceLen + FindSlice<T> + InputIsStreaming<STREAMING>,
-  Input: IntoOutput,
+  I: InputTake + SliceLen + FindSlice<T> + InputIsStreaming<STREAMING>,
+  I: IntoOutput,
   T: SliceLen + Clone,
 {
-  move |i: Input| {
+  move |i: I| {
     if STREAMING {
       streaming::take_until_internal(i, tag.clone())
     } else {
@@ -750,15 +750,15 @@ where
 /// assert_eq!(until_eof(Streaming("eof")),  Err(Err::Error(Error::new(Streaming("eof"), ErrorKind::TakeUntil))));
 /// ```
 #[inline(always)]
-pub fn take_until1<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
+pub fn take_until1<T, I, Error: ParseError<I>, const STREAMING: bool>(
   tag: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTake + SliceLen + FindSlice<T> + InputIsStreaming<STREAMING>,
-  Input: IntoOutput,
+  I: InputTake + SliceLen + FindSlice<T> + InputIsStreaming<STREAMING>,
+  I: IntoOutput,
   T: SliceLen + Clone,
 {
-  move |i: Input| {
+  move |i: I| {
     if STREAMING {
       streaming::take_until1_internal(i, tag.clone())
     } else {
@@ -802,13 +802,13 @@ where
 /// assert_eq!(esc(Streaming("12\\\"34;")), Ok((Streaming(";"), "12\\\"34")));
 /// ```
 #[inline(always)]
-pub fn escaped<'a, Input: 'a, Error, F, G, O1, O2, const STREAMING: bool>(
+pub fn escaped<'a, I: 'a, Error, F, G, O1, O2, const STREAMING: bool>(
   mut normal: F,
   control_char: char,
   mut escapable: G,
-) -> impl FnMut(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl FnMut(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: Clone
+  I: Clone
     + crate::input::Offset
     + SliceLen
     + InputTake
@@ -816,13 +816,13 @@ where
     + Slice<RangeFrom<usize>>
     + InputIter
     + InputIsStreaming<STREAMING>,
-  Input: IntoOutput,
-  <Input as InputIter>::Item: crate::input::AsChar,
-  F: Parser<Input, O1, Error>,
-  G: Parser<Input, O2, Error>,
-  Error: ParseError<Input>,
+  I: IntoOutput,
+  <I as InputIter>::Item: crate::input::AsChar,
+  F: Parser<I, O1, Error>,
+  G: Parser<I, O2, Error>,
+  Error: ParseError<I>,
 {
-  move |input: Input| {
+  move |input: I| {
     if STREAMING {
       streaming::escaped_internal(input, &mut normal, control_char, &mut escapable)
     } else {
@@ -890,13 +890,13 @@ where
 /// ```
 #[cfg(feature = "alloc")]
 #[inline(always)]
-pub fn escaped_transform<Input, Error, F, G, O1, O2, ExtendItem, Output, const STREAMING: bool>(
+pub fn escaped_transform<I, Error, F, G, O1, O2, ExtendItem, Output, const STREAMING: bool>(
   mut normal: F,
   control_char: char,
   mut transform: G,
-) -> impl FnMut(Input) -> IResult<Input, Output, Error>
+) -> impl FnMut(I) -> IResult<I, Output, Error>
 where
-  Input: Clone
+  I: Clone
     + crate::input::Offset
     + SliceLen
     + InputTake
@@ -904,16 +904,16 @@ where
     + Slice<RangeFrom<usize>>
     + InputIter
     + InputIsStreaming<STREAMING>,
-  Input: IntoOutput,
-  Input: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
+  I: IntoOutput,
+  I: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
   O1: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
   O2: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
-  <Input as InputIter>::Item: crate::input::AsChar,
-  F: Parser<Input, O1, Error>,
-  G: Parser<Input, O2, Error>,
-  Error: ParseError<Input>,
+  <I as InputIter>::Item: crate::input::AsChar,
+  F: Parser<I, O1, Error>,
+  G: Parser<I, O2, Error>,
+  Error: ParseError<I>,
 {
-  move |input: Input| {
+  move |input: I| {
     if STREAMING {
       streaming::escaped_transform_internal(input, &mut normal, control_char, &mut transform)
     } else {

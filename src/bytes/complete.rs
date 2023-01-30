@@ -49,24 +49,24 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::tag`][crate::bytes::tag]
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::tag`")]
-pub fn tag<T, Input, Error: ParseError<Input>>(
+pub fn tag<T, I, Error: ParseError<I>>(
   tag: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTake + Compare<T>,
-  Input: IntoOutput,
+  I: InputTake + Compare<T>,
+  I: IntoOutput,
   T: SliceLen + Clone,
 {
-  move |i: Input| tag_internal(i, tag.clone())
+  move |i: I| tag_internal(i, tag.clone())
 }
 
-pub(crate) fn tag_internal<T, Input, Error: ParseError<Input>>(
-  i: Input,
+pub(crate) fn tag_internal<T, I, Error: ParseError<I>>(
+  i: I,
   t: T,
-) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTake + Compare<T>,
-  Input: IntoOutput,
+  I: InputTake + Compare<T>,
+  I: IntoOutput,
   T: SliceLen,
 {
   let tag_len = t.slice_len();
@@ -104,24 +104,24 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::tag_no_case`][crate::bytes::tag_no_case]
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::tag_no_case`")]
-pub fn tag_no_case<T, Input, Error: ParseError<Input>>(
+pub fn tag_no_case<T, I, Error: ParseError<I>>(
   tag: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTake + Compare<T>,
-  Input: IntoOutput,
+  I: InputTake + Compare<T>,
+  I: IntoOutput,
   T: SliceLen + Clone,
 {
-  move |i: Input| tag_no_case_internal(i, tag.clone())
+  move |i: I| tag_no_case_internal(i, tag.clone())
 }
 
-pub(crate) fn tag_no_case_internal<T, Input, Error: ParseError<Input>>(
-  i: Input,
+pub(crate) fn tag_no_case_internal<T, I, Error: ParseError<I>>(
+  i: I,
   t: T,
-) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTake + Compare<T>,
-  Input: IntoOutput,
+  I: InputTake + Compare<T>,
+  I: IntoOutput,
   T: SliceLen,
 {
   let tag_len = t.slice_len();
@@ -198,25 +198,25 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till1`][crate::bytes::take_till1]
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_till1`")]
-pub fn is_not<T, Input, Error: ParseError<Input>>(
+pub fn is_not<T, I, Error: ParseError<I>>(
   arr: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtOffset,
-  Input: IntoOutput,
-  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
+  I: InputTakeAtOffset,
+  I: IntoOutput,
+  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
 {
-  move |i: Input| is_not_internal(i, &arr)
+  move |i: I| is_not_internal(i, &arr)
 }
 
-pub(crate) fn is_not_internal<T, Input, Error: ParseError<Input>>(
-  i: Input,
+pub(crate) fn is_not_internal<T, I, Error: ParseError<I>>(
+  i: I,
   arr: &T,
-) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtOffset,
-  Input: IntoOutput,
-  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
+  I: InputTakeAtOffset,
+  I: IntoOutput,
+  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
 {
   let e: ErrorKind = ErrorKind::IsNot;
   i.split_at_offset1_complete(|c| arr.contains_token(c), e)
@@ -247,25 +247,25 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while1`][crate::bytes::take_while1`]
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_while1`")]
-pub fn is_a<T, Input, Error: ParseError<Input>>(
+pub fn is_a<T, I, Error: ParseError<I>>(
   arr: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtOffset,
-  Input: IntoOutput,
-  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
+  I: InputTakeAtOffset,
+  I: IntoOutput,
+  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
 {
-  move |i: Input| is_a_internal(i, &arr)
+  move |i: I| is_a_internal(i, &arr)
 }
 
-pub(crate) fn is_a_internal<T, Input, Error: ParseError<Input>>(
-  i: Input,
+pub(crate) fn is_a_internal<T, I, Error: ParseError<I>>(
+  i: I,
   arr: &T,
-) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtOffset,
-  Input: IntoOutput,
-  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
+  I: InputTakeAtOffset,
+  I: IntoOutput,
+  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
 {
   let e: ErrorKind = ErrorKind::IsA;
   i.split_at_offset1_complete(|c| !arr.contains_token(c), e)
@@ -294,25 +294,25 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while`][crate::bytes::take_while]
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_while`")]
-pub fn take_while<T, Input, Error: ParseError<Input>>(
+pub fn take_while<T, I, Error: ParseError<I>>(
   list: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtOffset,
-  Input: IntoOutput,
-  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
+  I: InputTakeAtOffset,
+  I: IntoOutput,
+  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
 {
-  move |i: Input| take_while_internal(i, &list)
+  move |i: I| take_while_internal(i, &list)
 }
 
-pub(crate) fn take_while_internal<T, Input, Error: ParseError<Input>>(
-  i: Input,
+pub(crate) fn take_while_internal<T, I, Error: ParseError<I>>(
+  i: I,
   list: &T,
-) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtOffset,
-  Input: IntoOutput,
-  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
+  I: InputTakeAtOffset,
+  I: IntoOutput,
+  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
 {
   i.split_at_offset_complete(|c| !list.contains_token(c))
     .into_output()
@@ -341,25 +341,25 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while1`][crate::bytes::take_while1]
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_while1`")]
-pub fn take_while1<T, Input, Error: ParseError<Input>>(
+pub fn take_while1<T, I, Error: ParseError<I>>(
   list: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtOffset,
-  Input: IntoOutput,
-  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
+  I: InputTakeAtOffset,
+  I: IntoOutput,
+  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
 {
-  move |i: Input| take_while1_internal(i, &list)
+  move |i: I| take_while1_internal(i, &list)
 }
 
-pub(crate) fn take_while1_internal<T, Input, Error: ParseError<Input>>(
-  i: Input,
+pub(crate) fn take_while1_internal<T, I, Error: ParseError<I>>(
+  i: I,
   list: &T,
-) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtOffset,
-  Input: IntoOutput,
-  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
+  I: InputTakeAtOffset,
+  I: IntoOutput,
+  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
 {
   let e: ErrorKind = ErrorKind::TakeWhile1;
   i.split_at_offset1_complete(|c| !list.contains_token(c), e)
@@ -395,29 +395,29 @@ where
   since = "8.0.0",
   note = "Replaced with `winnow::bytes::take_while_m_n`"
 )]
-pub fn take_while_m_n<T, Input, Error: ParseError<Input>>(
+pub fn take_while_m_n<T, I, Error: ParseError<I>>(
   m: usize,
   n: usize,
   list: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTake + InputIter + SliceLen + Slice<RangeFrom<usize>>,
-  Input: IntoOutput,
-  T: ContainsToken<<Input as InputIter>::Item>,
+  I: InputTake + InputIter + SliceLen + Slice<RangeFrom<usize>>,
+  I: IntoOutput,
+  T: ContainsToken<<I as InputIter>::Item>,
 {
-  move |i: Input| take_while_m_n_internal(i, m, n, &list)
+  move |i: I| take_while_m_n_internal(i, m, n, &list)
 }
 
-pub(crate) fn take_while_m_n_internal<T, Input, Error: ParseError<Input>>(
-  input: Input,
+pub(crate) fn take_while_m_n_internal<T, I, Error: ParseError<I>>(
+  input: I,
   m: usize,
   n: usize,
   list: &T,
-) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTake + InputIter + SliceLen + Slice<RangeFrom<usize>>,
-  Input: IntoOutput,
-  T: ContainsToken<<Input as InputIter>::Item>,
+  I: InputTake + InputIter + SliceLen + Slice<RangeFrom<usize>>,
+  I: IntoOutput,
+  T: ContainsToken<<I as InputIter>::Item>,
 {
   match input.offset_for(|c| !list.contains_token(c)) {
     Some(idx) => {
@@ -491,25 +491,25 @@ where
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till`][crate::bytes::take_till]
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_till`")]
 #[allow(clippy::redundant_closure)]
-pub fn take_till<T, Input, Error: ParseError<Input>>(
+pub fn take_till<T, I, Error: ParseError<I>>(
   list: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtOffset,
-  Input: IntoOutput,
-  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
+  I: InputTakeAtOffset,
+  I: IntoOutput,
+  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
 {
-  move |i: Input| take_till_internal(i, &list)
+  move |i: I| take_till_internal(i, &list)
 }
 
-pub(crate) fn take_till_internal<T, Input, Error: ParseError<Input>>(
-  i: Input,
+pub(crate) fn take_till_internal<T, I, Error: ParseError<I>>(
+  i: I,
   list: &T,
-) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtOffset,
-  Input: IntoOutput,
-  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
+  I: InputTakeAtOffset,
+  I: IntoOutput,
+  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
 {
   i.split_at_offset_complete(|c| list.contains_token(c))
     .into_output()
@@ -540,32 +540,32 @@ where
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till1`][crate::bytes::take_till1]
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_till1`")]
 #[allow(clippy::redundant_closure)]
-pub fn take_till1<T, Input, Error: ParseError<Input>>(
+pub fn take_till1<T, I, Error: ParseError<I>>(
   list: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtOffset,
-  Input: IntoOutput,
-  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
+  I: InputTakeAtOffset,
+  I: IntoOutput,
+  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
 {
-  move |i: Input| take_till1_internal(i, &list)
+  move |i: I| take_till1_internal(i, &list)
 }
 
-pub(crate) fn take_till1_internal<T, Input, Error: ParseError<Input>>(
-  i: Input,
+pub(crate) fn take_till1_internal<T, I, Error: ParseError<I>>(
+  i: I,
   list: &T,
-) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTakeAtOffset,
-  Input: IntoOutput,
-  T: ContainsToken<<Input as InputTakeAtOffset>::Item>,
+  I: InputTakeAtOffset,
+  I: IntoOutput,
+  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
 {
   let e: ErrorKind = ErrorKind::TakeTill1;
   i.split_at_offset1_complete(|c| list.contains_token(c), e)
     .into_output()
 }
 
-/// Returns an input slice containing the first N input elements (Input[..N]).
+/// Returns an input slice containing the first N input elements (I[..N]).
 ///
 /// It will return `Err(Err::Error((_, ErrorKind::Eof)))` if the input is shorter than the argument.
 /// # Example
@@ -597,25 +597,25 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take`][crate::bytes::take]
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take`")]
-pub fn take<C, Input, Error: ParseError<Input>>(
+pub fn take<C, I, Error: ParseError<I>>(
   count: C,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputIter + InputTake,
-  Input: IntoOutput,
+  I: InputIter + InputTake,
+  I: IntoOutput,
   C: ToUsize,
 {
   let c = count.to_usize();
-  move |i: Input| take_internal(i, c)
+  move |i: I| take_internal(i, c)
 }
 
-pub(crate) fn take_internal<Input, Error: ParseError<Input>>(
-  i: Input,
+pub(crate) fn take_internal<I, Error: ParseError<I>>(
+  i: I,
   c: usize,
-) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputIter + InputTake,
-  Input: IntoOutput,
+  I: InputIter + InputTake,
+  I: IntoOutput,
 {
   match i.offset_at(c) {
     Err(_needed) => Err(Err::Error(Error::from_error_kind(i, ErrorKind::Eof))),
@@ -644,24 +644,24 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until`][crate::bytes::take_until]
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_until`")]
-pub fn take_until<T, Input, Error: ParseError<Input>>(
+pub fn take_until<T, I, Error: ParseError<I>>(
   tag: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTake + FindSlice<T>,
-  Input: IntoOutput,
+  I: InputTake + FindSlice<T>,
+  I: IntoOutput,
   T: SliceLen + Clone,
 {
-  move |i: Input| take_until_internal(i, tag.clone())
+  move |i: I| take_until_internal(i, tag.clone())
 }
 
-pub(crate) fn take_until_internal<T, Input, Error: ParseError<Input>>(
-  i: Input,
+pub(crate) fn take_until_internal<T, I, Error: ParseError<I>>(
+  i: I,
   t: T,
-) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTake + FindSlice<T>,
-  Input: IntoOutput,
+  I: InputTake + FindSlice<T>,
+  I: IntoOutput,
   T: SliceLen,
 {
   let res: IResult<_, _, Error> = match i.find_slice(t) {
@@ -693,24 +693,24 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until1`][crate::bytes::take_until1]
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_until1`")]
-pub fn take_until1<T, Input, Error: ParseError<Input>>(
+pub fn take_until1<T, I, Error: ParseError<I>>(
   tag: T,
-) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTake + FindSlice<T>,
-  Input: IntoOutput,
+  I: InputTake + FindSlice<T>,
+  I: IntoOutput,
   T: SliceLen + Clone,
 {
-  move |i: Input| take_until1_internal(i, tag.clone())
+  move |i: I| take_until1_internal(i, tag.clone())
 }
 
-pub(crate) fn take_until1_internal<T, Input, Error: ParseError<Input>>(
-  i: Input,
+pub(crate) fn take_until1_internal<T, I, Error: ParseError<I>>(
+  i: I,
   t: T,
-) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: InputTake + FindSlice<T>,
-  Input: IntoOutput,
+  I: InputTake + FindSlice<T>,
+  I: IntoOutput,
   T: SliceLen,
 {
   let res: IResult<_, _, Error> = match i.find_slice(t) {
@@ -743,47 +743,47 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::escaped`][crate::bytes::escaped]
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::escaped`")]
-pub fn escaped<'a, Input: 'a, Error, F, G, O1, O2>(
+pub fn escaped<'a, I: 'a, Error, F, G, O1, O2>(
   mut normal: F,
   control_char: char,
   mut escapable: G,
-) -> impl FnMut(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> impl FnMut(I) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: Clone
+  I: Clone
     + crate::input::Offset
     + SliceLen
     + InputTake
     + InputTakeAtOffset
     + Slice<RangeFrom<usize>>
     + InputIter,
-  Input: IntoOutput,
-  <Input as InputIter>::Item: crate::input::AsChar,
-  F: Parser<Input, O1, Error>,
-  G: Parser<Input, O2, Error>,
-  Error: ParseError<Input>,
+  I: IntoOutput,
+  <I as InputIter>::Item: crate::input::AsChar,
+  F: Parser<I, O1, Error>,
+  G: Parser<I, O2, Error>,
+  Error: ParseError<I>,
 {
-  move |input: Input| escaped_internal(input, &mut normal, control_char, &mut escapable)
+  move |input: I| escaped_internal(input, &mut normal, control_char, &mut escapable)
 }
 
-pub(crate) fn escaped_internal<'a, Input: 'a, Error, F, G, O1, O2>(
-  input: Input,
+pub(crate) fn escaped_internal<'a, I: 'a, Error, F, G, O1, O2>(
+  input: I,
   normal: &mut F,
   control_char: char,
   escapable: &mut G,
-) -> IResult<Input, <Input as IntoOutput>::Output, Error>
+) -> IResult<I, <I as IntoOutput>::Output, Error>
 where
-  Input: Clone
+  I: Clone
     + crate::input::Offset
     + SliceLen
     + InputTake
     + InputTakeAtOffset
     + Slice<RangeFrom<usize>>
     + InputIter,
-  Input: IntoOutput,
-  <Input as InputIter>::Item: crate::input::AsChar,
-  F: Parser<Input, O1, Error>,
-  G: Parser<Input, O2, Error>,
-  Error: ParseError<Input>,
+  I: IntoOutput,
+  <I as InputIter>::Item: crate::input::AsChar,
+  F: Parser<I, O1, Error>,
+  G: Parser<I, O2, Error>,
+  Error: ParseError<I>,
 {
   use crate::input::AsChar;
 
@@ -884,52 +884,52 @@ where
   since = "8.0.0",
   note = "Replaced with `winnow::bytes::escaped_transform`"
 )]
-pub fn escaped_transform<Input, Error, F, G, O1, O2, ExtendItem, Output>(
+pub fn escaped_transform<I, Error, F, G, O1, O2, ExtendItem, Output>(
   mut normal: F,
   control_char: char,
   mut transform: G,
-) -> impl FnMut(Input) -> IResult<Input, Output, Error>
+) -> impl FnMut(I) -> IResult<I, Output, Error>
 where
-  Input: Clone
+  I: Clone
     + crate::input::Offset
     + SliceLen
     + InputTake
     + InputTakeAtOffset
     + Slice<RangeFrom<usize>>
     + InputIter,
-  Input: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
+  I: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
   O1: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
   O2: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
-  <Input as InputIter>::Item: crate::input::AsChar,
-  F: Parser<Input, O1, Error>,
-  G: Parser<Input, O2, Error>,
-  Error: ParseError<Input>,
+  <I as InputIter>::Item: crate::input::AsChar,
+  F: Parser<I, O1, Error>,
+  G: Parser<I, O2, Error>,
+  Error: ParseError<I>,
 {
-  move |input: Input| escaped_transform_internal(input, &mut normal, control_char, &mut transform)
+  move |input: I| escaped_transform_internal(input, &mut normal, control_char, &mut transform)
 }
 
 #[cfg(feature = "alloc")]
-pub(crate) fn escaped_transform_internal<Input, Error, F, G, O1, O2, ExtendItem, Output>(
-  input: Input,
+pub(crate) fn escaped_transform_internal<I, Error, F, G, O1, O2, ExtendItem, Output>(
+  input: I,
   normal: &mut F,
   control_char: char,
   transform: &mut G,
-) -> IResult<Input, Output, Error>
+) -> IResult<I, Output, Error>
 where
-  Input: Clone
+  I: Clone
     + crate::input::Offset
     + SliceLen
     + InputTake
     + InputTakeAtOffset
     + Slice<RangeFrom<usize>>
     + InputIter,
-  Input: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
+  I: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
   O1: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
   O2: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
-  <Input as InputIter>::Item: crate::input::AsChar,
-  F: Parser<Input, O1, Error>,
-  G: Parser<Input, O2, Error>,
-  Error: ParseError<Input>,
+  <I as InputIter>::Item: crate::input::AsChar,
+  F: Parser<I, O1, Error>,
+  G: Parser<I, O2, Error>,
+  Error: ParseError<I>,
 {
   use crate::input::AsChar;
 
