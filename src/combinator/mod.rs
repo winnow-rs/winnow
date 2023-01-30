@@ -156,7 +156,7 @@ use crate::lib::std::boxed::Box;
 
 use crate::error::{ErrorKind, FromExternalError, ParseError};
 use crate::input::IntoOutput;
-use crate::input::{AsChar, InputIter, InputLength, InputTakeAtPosition, Location, ParseTo};
+use crate::input::{AsChar, InputIter, InputTakeAtOffset, Location, ParseTo, SliceLen};
 use crate::input::{Compare, CompareResult, Offset, Slice};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::convert;
@@ -180,13 +180,13 @@ mod tests;
 /// assert_eq!(rest::<_,Error<_>>(""), Ok(("", "")));
 /// ```
 #[inline]
-pub fn rest<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
+pub fn rest<I, E: ParseError<I>>(input: I) -> IResult<I, <I as IntoOutput>::Output, E>
 where
-  T: Slice<RangeFrom<usize>>,
-  T: InputLength,
-  T: IntoOutput,
+  I: Slice<RangeFrom<usize>>,
+  I: SliceLen,
+  I: IntoOutput,
 {
-  Ok((input.slice(input.input_len()..), input)).into_output()
+  Ok((input.slice(input.slice_len()..), input)).into_output()
 }
 
 /// Return the length of the remaining input.
@@ -199,11 +199,11 @@ where
 /// assert_eq!(rest_len::<_,Error<_>>(""), Ok(("", 0)));
 /// ```
 #[inline]
-pub fn rest_len<T, E: ParseError<T>>(input: T) -> IResult<T, usize, E>
+pub fn rest_len<I, E: ParseError<I>>(input: I) -> IResult<I, usize, E>
 where
-  T: InputLength,
+  I: SliceLen,
 {
-  let len = input.input_len();
+  let len = input.slice_len();
   Ok((input, len))
 }
 
@@ -719,11 +719,11 @@ where
 /// ```
 pub fn eof<I, E: ParseError<I>>(input: I) -> IResult<I, <I as IntoOutput>::Output, E>
 where
-  I: InputLength,
+  I: SliceLen,
   I: Clone,
   I: IntoOutput,
 {
-  if input.input_len() == 0 {
+  if input.slice_len() == 0 {
     let clone = input.clone();
     Ok((input, clone)).into_output()
   } else {
@@ -805,12 +805,12 @@ where
 /// ```
 pub fn all_consuming<I, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
-  I: InputLength,
+  I: SliceLen,
   F: Parser<I, O, E>,
 {
   move |input: I| {
     let (input, res) = f.parse_next(input)?;
-    if input.input_len() == 0 {
+    if input.slice_len() == 0 {
       Ok((input, res))
     } else {
       Err(Err::Error(E::from_error_kind(input, ErrorKind::Eof)))
@@ -1015,7 +1015,7 @@ where
     let i = input.clone();
     match parser.parse_next(i) {
       Ok((i, _)) => {
-        let index = input.offset(&i);
+        let index = input.offset_to(&i);
         Ok((i, input.slice(..index))).into_output()
       }
       Err(e) => Err(e),
@@ -1052,7 +1052,7 @@ where
     let i = input.clone();
     match (self.parser).parse_next(i) {
       Ok((i, _)) => {
-        let index = input.offset(&i);
+        let index = input.offset_to(&i);
         Ok((i, input.slice(..index))).into_output()
       }
       Err(e) => Err(e),
@@ -1117,7 +1117,7 @@ where
     let i = input.clone();
     match parser.parse_next(i) {
       Ok((remaining, result)) => {
-        let index = input.offset(&remaining);
+        let index = input.offset_to(&remaining);
         let consumed = input.slice(..index).into_output();
         Ok((remaining, (consumed, result)))
       }
@@ -1155,7 +1155,7 @@ where
     let i = input.clone();
     match (self.parser).parse_next(i) {
       Ok((remaining, result)) => {
-        let index = input.offset(&remaining);
+        let index = input.offset_to(&remaining);
         let consumed = input.slice(..index).into_output();
         Ok((remaining, (result, consumed)))
       }
@@ -1452,13 +1452,12 @@ impl<I: Clone, O, E, F> ParserIterator<I, O, E, F> {
   }
 }
 
-impl<'a, Input, Output, Error, F> core::iter::Iterator
-  for &'a mut ParserIterator<Input, Output, Error, F>
+impl<'a, I, O, E, F> core::iter::Iterator for &'a mut ParserIterator<I, O, E, F>
 where
-  F: Parser<Input, Output, Error>,
-  Input: Clone,
+  F: Parser<I, O, E>,
+  I: Clone,
 {
-  type Item = Output;
+  type Item = O;
 
   fn next(&mut self) -> Option<Self::Item> {
     if let State::Running = self.state.take().unwrap() {

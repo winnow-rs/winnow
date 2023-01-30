@@ -7,7 +7,7 @@ pub mod streaming;
 mod tests;
 
 use crate::error::{ErrorConvert, ErrorKind, ParseError};
-use crate::input::{InputIsStreaming, InputIter, InputLength, Slice, ToUsize};
+use crate::input::{InputIsStreaming, InputIter, Slice, SliceLen, ToUsize};
 use crate::lib::std::ops::{AddAssign, RangeFrom, Shl, Shr};
 use crate::{Err, IResult, Needed, Parser};
 
@@ -139,7 +139,7 @@ pub fn take<I, O, C, E: ParseError<(I, usize)>, const STREAMING: bool>(
   count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength + InputIsStreaming<STREAMING>,
+  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + SliceLen + InputIsStreaming<STREAMING>,
   C: ToUsize,
   O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
@@ -203,11 +203,8 @@ pub fn tag<I, O, C, E: ParseError<(I, usize)>, const STREAMING: bool>(
   count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-  I: Slice<RangeFrom<usize>>
-    + InputIter<Item = u8>
-    + InputLength
-    + InputIsStreaming<STREAMING>
-    + Clone,
+  I:
+    Slice<RangeFrom<usize>> + InputIter<Item = u8> + SliceLen + InputIsStreaming<STREAMING> + Clone,
   C: ToUsize,
   O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
@@ -241,7 +238,7 @@ pub fn bool<I, E: ParseError<(I, usize)>, const STREAMING: bool>(
   input: (I, usize),
 ) -> IResult<(I, usize), bool, E>
 where
-  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength + InputIsStreaming<STREAMING>,
+  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + SliceLen + InputIsStreaming<STREAMING>,
 {
   #![allow(deprecated)]
   if STREAMING {

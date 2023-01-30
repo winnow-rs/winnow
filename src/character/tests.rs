@@ -129,43 +129,43 @@ mod complete {
 
     match alpha1::<_, Error<_>, false>(a) {
       Ok((i, _)) => {
-        assert_eq!(a.offset(i) + i.len(), a.len());
+        assert_eq!(a.offset_to(i) + i.len(), a.len());
       }
       _ => panic!("wrong return type in offset test for alpha"),
     }
     match digit1::<_, Error<_>, false>(b) {
       Ok((i, _)) => {
-        assert_eq!(b.offset(i) + i.len(), b.len());
+        assert_eq!(b.offset_to(i) + i.len(), b.len());
       }
       _ => panic!("wrong return type in offset test for digit"),
     }
     match alphanumeric1::<_, Error<_>, false>(c) {
       Ok((i, _)) => {
-        assert_eq!(c.offset(i) + i.len(), c.len());
+        assert_eq!(c.offset_to(i) + i.len(), c.len());
       }
       _ => panic!("wrong return type in offset test for alphanumeric"),
     }
     match space1::<_, Error<_>, false>(d) {
       Ok((i, _)) => {
-        assert_eq!(d.offset(i) + i.len(), d.len());
+        assert_eq!(d.offset_to(i) + i.len(), d.len());
       }
       _ => panic!("wrong return type in offset test for space"),
     }
     match multispace1::<_, Error<_>, false>(e) {
       Ok((i, _)) => {
-        assert_eq!(e.offset(i) + i.len(), e.len());
+        assert_eq!(e.offset_to(i) + i.len(), e.len());
       }
       _ => panic!("wrong return type in offset test for multispace"),
     }
     match hex_digit1::<_, Error<_>, false>(f) {
       Ok((i, _)) => {
-        assert_eq!(f.offset(i) + i.len(), f.len());
+        assert_eq!(f.offset_to(i) + i.len(), f.len());
       }
       _ => panic!("wrong return type in offset test for hex_digit"),
     }
     match oct_digit1::<_, Error<_>, false>(f) {
       Ok((i, _)) => {
-        assert_eq!(f.offset(i) + i.len(), f.len());
+        assert_eq!(f.offset_to(i) + i.len(), f.len());
       }
       _ => panic!("wrong return type in offset test for oct_digit"),
     }
@@ -714,43 +714,43 @@ mod streaming {
 
     match alpha1::<_, Error<_>, true>(Streaming(a)) {
       Ok((Streaming(i), _)) => {
-        assert_eq!(a.offset(i) + i.len(), a.len());
+        assert_eq!(a.offset_to(i) + i.len(), a.len());
       }
       _ => panic!("wrong return type in offset test for alpha"),
     }
     match digit1::<_, Error<_>, true>(Streaming(b)) {
       Ok((Streaming(i), _)) => {
-        assert_eq!(b.offset(i) + i.len(), b.len());
+        assert_eq!(b.offset_to(i) + i.len(), b.len());
       }
       _ => panic!("wrong return type in offset test for digit"),
     }
     match alphanumeric1::<_, Error<_>, true>(Streaming(c)) {
       Ok((Streaming(i), _)) => {
-        assert_eq!(c.offset(i) + i.len(), c.len());
+        assert_eq!(c.offset_to(i) + i.len(), c.len());
       }
       _ => panic!("wrong return type in offset test for alphanumeric"),
     }
     match space1::<_, Error<_>, true>(Streaming(d)) {
       Ok((Streaming(i), _)) => {
-        assert_eq!(d.offset(i) + i.len(), d.len());
+        assert_eq!(d.offset_to(i) + i.len(), d.len());
       }
       _ => panic!("wrong return type in offset test for space"),
     }
     match multispace1::<_, Error<_>, true>(Streaming(e)) {
       Ok((Streaming(i), _)) => {
-        assert_eq!(e.offset(i) + i.len(), e.len());
+        assert_eq!(e.offset_to(i) + i.len(), e.len());
       }
       _ => panic!("wrong return type in offset test for multispace"),
     }
     match hex_digit1::<_, Error<_>, true>(Streaming(f)) {
       Ok((Streaming(i), _)) => {
-        assert_eq!(f.offset(i) + i.len(), f.len());
+        assert_eq!(f.offset_to(i) + i.len(), f.len());
       }
       _ => panic!("wrong return type in offset test for hex_digit"),
     }
     match oct_digit1::<_, Error<_>, true>(Streaming(f)) {
       Ok((Streaming(i), _)) => {
-        assert_eq!(f.offset(i) + i.len(), f.len());
+        assert_eq!(f.offset_to(i) + i.len(), f.len());
       }
       _ => panic!("wrong return type in offset test for oct_digit"),
     }
