@@ -1740,6 +1740,12 @@ impl<'i, 's> FindSlice<&'s [u8]> for &'i [u8] {
   }
 }
 
+impl<'i> FindSlice<u8> for &'i [u8] {
+  fn find_slice(&self, substr: u8) -> Option<usize> {
+    memchr::memchr(substr, self)
+  }
+}
+
 impl<'i, 's> FindSlice<&'s str> for &'i [u8] {
   fn find_slice(&self, substr: &'s str) -> Option<usize> {
     self.find_slice(substr.as_bytes())
@@ -1748,6 +1754,12 @@ impl<'i, 's> FindSlice<&'s str> for &'i [u8] {
 
 impl<'i, 's> FindSlice<&'s str> for &'i str {
   fn find_slice(&self, substr: &'s str) -> Option<usize> {
+    self.find(substr)
+  }
+}
+
+impl<'i> FindSlice<char> for &'i str {
+  fn find_slice(&self, substr: char) -> Option<usize> {
     self.find(substr)
   }
 }
