@@ -7,8 +7,8 @@ mod tests;
 
 use crate::error::ParseError;
 use crate::input::{
-  Compare, ContainsToken, FindSlice, InputIsStreaming, InputIter, InputTake, InputTakeAtOffset,
-  IntoOutput, Slice, SliceLen, ToUsize,
+  Compare, ContainsToken, FindSlice, Input, InputIsStreaming, InputIter, InputTake,
+  InputTakeAtOffset, IntoOutput, Slice, SliceLen, ToUsize,
 };
 use crate::lib::std::ops::RangeFrom;
 use crate::{IResult, Parser};
@@ -40,9 +40,10 @@ use crate::{IResult, Parser};
 #[inline(always)]
 pub fn any<I, E: ParseError<I>, const STREAMING: bool>(
   input: I,
-) -> IResult<I, <I as InputIter>::Item, E>
+) -> IResult<I, <I as Input>::Token, E>
 where
-  I: InputIter + SliceLen + Slice<RangeFrom<usize>> + InputIsStreaming<STREAMING>,
+  I: InputIsStreaming<STREAMING>,
+  I: Input,
 {
   if STREAMING {
     streaming::any(input)
@@ -93,10 +94,10 @@ where
 #[inline(always)]
 pub fn tag<T, I, Error: ParseError<I>, const STREAMING: bool>(
   tag: T,
-) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputTake + SliceLen + Compare<T> + InputIsStreaming<STREAMING>,
-  I: IntoOutput,
+  I: InputIsStreaming<STREAMING>,
+  I: Input + Compare<T>,
   T: SliceLen + Clone,
 {
   move |i: I| {
@@ -149,10 +150,10 @@ where
 #[inline(always)]
 pub fn tag_no_case<T, I, Error: ParseError<I>, const STREAMING: bool>(
   tag: T,
-) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputTake + SliceLen + Compare<T> + InputIsStreaming<STREAMING>,
-  I: IntoOutput,
+  I: InputIsStreaming<STREAMING>,
+  I: Input + Compare<T>,
   T: SliceLen + Clone,
 {
   move |i: I| {
@@ -213,11 +214,12 @@ where
 #[inline(always)]
 pub fn one_of<I, T, Error: ParseError<I>, const STREAMING: bool>(
   list: T,
-) -> impl Fn(I) -> IResult<I, <I as InputIter>::Item, Error>
+) -> impl Fn(I) -> IResult<I, <I as Input>::Token, Error>
 where
-  I: Slice<RangeFrom<usize>> + InputIter + SliceLen + InputIsStreaming<STREAMING>,
-  <I as InputIter>::Item: Copy,
-  T: ContainsToken<<I as InputIter>::Item>,
+  I: InputIsStreaming<STREAMING>,
+  I: Input,
+  <I as Input>::Token: Copy,
+  T: ContainsToken<<I as Input>::Token>,
 {
   move |i: I| {
     if STREAMING {
@@ -255,11 +257,12 @@ where
 #[inline(always)]
 pub fn none_of<I, T, Error: ParseError<I>, const STREAMING: bool>(
   list: T,
-) -> impl Fn(I) -> IResult<I, <I as InputIter>::Item, Error>
+) -> impl Fn(I) -> IResult<I, <I as Input>::Token, Error>
 where
-  I: Slice<RangeFrom<usize>> + InputIter + SliceLen + InputIsStreaming<STREAMING>,
-  <I as InputIter>::Item: Copy,
-  T: ContainsToken<<I as InputIter>::Item>,
+  I: InputIsStreaming<STREAMING>,
+  I: Input,
+  <I as Input>::Token: Copy,
+  T: ContainsToken<<I as Input>::Token>,
 {
   move |i: I| {
     if STREAMING {
@@ -307,12 +310,11 @@ where
 #[inline(always)]
 pub fn take_while<T, I, Error: ParseError<I>, const STREAMING: bool>(
   list: T,
-) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputTakeAtOffset + InputIsStreaming<STREAMING>,
-  I: IntoOutput,
-  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
-  I: InputTakeAtOffset,
+  I: InputIsStreaming<STREAMING>,
+  I: Input,
+  T: ContainsToken<<I as Input>::Token>,
 {
   move |i: I| {
     if STREAMING {
@@ -381,11 +383,11 @@ where
 #[inline(always)]
 pub fn take_while1<T, I, Error: ParseError<I>, const STREAMING: bool>(
   list: T,
-) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputTakeAtOffset + InputIsStreaming<STREAMING>,
-  I: IntoOutput,
-  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
+  I: InputIsStreaming<STREAMING>,
+  I: Input,
+  T: ContainsToken<<I as Input>::Token>,
 {
   move |i: I| {
     if STREAMING {
@@ -493,11 +495,11 @@ where
 #[inline(always)]
 pub fn take_till<T, I, Error: ParseError<I>, const STREAMING: bool>(
   list: T,
-) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputTakeAtOffset + InputIsStreaming<STREAMING>,
-  I: IntoOutput,
-  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
+  I: InputIsStreaming<STREAMING>,
+  I: Input,
+  T: ContainsToken<<I as Input>::Token>,
 {
   move |i: I| {
     if STREAMING {
@@ -566,11 +568,11 @@ where
 #[inline(always)]
 pub fn take_till1<T, I, Error: ParseError<I>, const STREAMING: bool>(
   list: T,
-) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputTakeAtOffset + InputIsStreaming<STREAMING>,
-  I: IntoOutput,
-  T: ContainsToken<<I as InputTakeAtOffset>::Item>,
+  I: InputIsStreaming<STREAMING>,
+  I: Input,
+  T: ContainsToken<<I as Input>::Token>,
 {
   move |i: I| {
     if STREAMING {
@@ -636,10 +638,10 @@ where
 #[inline(always)]
 pub fn take<C, I, Error: ParseError<I>, const STREAMING: bool>(
   count: C,
-) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputIter + SliceLen + InputTake + InputIsStreaming<STREAMING>,
-  I: IntoOutput,
+  I: InputIsStreaming<STREAMING>,
+  I: Input,
   C: ToUsize,
 {
   let c = count.to_usize();
@@ -693,10 +695,10 @@ where
 #[inline(always)]
 pub fn take_until<T, I, Error: ParseError<I>, const STREAMING: bool>(
   tag: T,
-) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputTake + SliceLen + FindSlice<T> + InputIsStreaming<STREAMING>,
-  I: IntoOutput,
+  I: InputIsStreaming<STREAMING>,
+  I: Input + FindSlice<T>,
   T: SliceLen + Clone,
 {
   move |i: I| {
@@ -752,10 +754,10 @@ where
 #[inline(always)]
 pub fn take_until1<T, I, Error: ParseError<I>, const STREAMING: bool>(
   tag: T,
-) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputTake + SliceLen + FindSlice<T> + InputIsStreaming<STREAMING>,
-  I: IntoOutput,
+  I: InputIsStreaming<STREAMING>,
+  I: Input + FindSlice<T>,
   T: SliceLen + Clone,
 {
   move |i: I| {

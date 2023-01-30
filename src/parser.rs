@@ -5,10 +5,8 @@ use crate::combinator::*;
 #[cfg(feature = "std")]
 use crate::error::DbgErr;
 use crate::error::{self, Context, ContextError, ErrorKind, ParseError};
-use crate::input::InputIsStreaming;
-use crate::input::*;
+use crate::input::{AsChar, Compare, Input, InputIsStreaming, IntoOutput, Location};
 use crate::lib::std::fmt;
-use crate::lib::std::ops::RangeFrom;
 use core::num::NonZeroUsize;
 
 /// Holds the result of parsing functions
@@ -55,7 +53,7 @@ pub trait FinishIResult<I, O, E> {
 
 impl<I, O, E> FinishIResult<I, O, E> for IResult<I, O, E>
 where
-  I: crate::input::Input,
+  I: Input,
   // Force users to deal with `Incomplete` when `InputIsStreaming<true>`
   I: InputIsStreaming<false>,
   I: Clone,
@@ -110,11 +108,11 @@ pub trait IntoOutputIResult<I, O, E> {
   fn into_output(self) -> IResult<I, O, E>;
 }
 
-impl<I, E> IntoOutputIResult<I, <I as crate::input::IntoOutput>::Output, E> for IResult<I, I, E>
+impl<I, E> IntoOutputIResult<I, <I as IntoOutput>::Output, E> for IResult<I, I, E>
 where
-  I: crate::input::IntoOutput,
+  I: IntoOutput,
 {
-  fn into_output(self) -> IResult<I, <I as crate::input::IntoOutput>::Output, E> {
+  fn into_output(self) -> IResult<I, <I as IntoOutput>::Output, E> {
     self.map(|(i, o)| (i, o.into_output()))
   }
 }
@@ -887,7 +885,8 @@ where
 /// ```
 impl<I, E> Parser<I, u8, E> for u8
 where
-  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + SliceLen + InputIsStreaming<false>,
+  I: InputIsStreaming<false>,
+  I: Input<Token = u8>,
   E: ParseError<I>,
 {
   fn parse_next(&mut self, i: I) -> IResult<I, u8, E> {
@@ -910,13 +909,14 @@ where
 /// assert_eq!(parser("bc"), Err(Err::Error(Error::new("bc", ErrorKind::OneOf))));
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::OneOf))));
 /// ```
-impl<I, E> Parser<I, <I as InputIter>::Item, E> for char
+impl<I, E> Parser<I, <I as Input>::Token, E> for char
 where
-  I: Slice<RangeFrom<usize>> + InputIter + SliceLen + InputIsStreaming<false>,
-  <I as InputIter>::Item: AsChar + Copy,
+  I: InputIsStreaming<false>,
+  I: Input,
+  <I as Input>::Token: AsChar + Copy,
   E: ParseError<I>,
 {
-  fn parse_next(&mut self, i: I) -> IResult<I, <I as InputIter>::Item, E> {
+  fn parse_next(&mut self, i: I) -> IResult<I, <I as Input>::Token, E> {
     crate::bytes::one_of(*self).parse_next(i)
   }
 }
@@ -939,12 +939,12 @@ where
 /// assert_eq!(parser(&b"Some"[..]), Err(Err::Error(Error::new(&b"Some"[..], ErrorKind::Eof))));
 /// assert_eq!(parser(&b""[..]), Err(Err::Error(Error::new(&b""[..], ErrorKind::Eof))));
 /// ```
-impl<'s, I, E: ParseError<I>> Parser<I, <I as IntoOutput>::Output, E> for &'s [u8]
+impl<'s, I, E: ParseError<I>> Parser<I, <I as Input>::Slice, E> for &'s [u8]
 where
-  I: InputTake + SliceLen + Compare<&'s [u8]> + InputIsStreaming<false>,
-  I: IntoOutput,
+  I: Compare<&'s [u8]> + InputIsStreaming<false>,
+  I: Input,
 {
-  fn parse_next(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
+  fn parse_next(&mut self, i: I) -> IResult<I, <I as Input>::Slice, E> {
     crate::bytes::tag(*self).parse_next(i)
   }
 }
@@ -967,13 +967,12 @@ where
 /// assert_eq!(parser(&b"Some"[..]), Err(Err::Error(Error::new(&b"Some"[..], ErrorKind::Eof))));
 /// assert_eq!(parser(&b""[..]), Err(Err::Error(Error::new(&b""[..], ErrorKind::Eof))));
 /// ```
-impl<'s, I, E: ParseError<I>, const N: usize> Parser<I, <I as IntoOutput>::Output, E>
-  for &'s [u8; N]
+impl<'s, I, E: ParseError<I>, const N: usize> Parser<I, <I as Input>::Slice, E> for &'s [u8; N]
 where
-  I: InputTake + SliceLen + Compare<&'s [u8; N]> + InputIsStreaming<false>,
-  I: IntoOutput,
+  I: Compare<&'s [u8; N]> + InputIsStreaming<false>,
+  I: Input,
 {
-  fn parse_next(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
+  fn parse_next(&mut self, i: I) -> IResult<I, <I as Input>::Slice, E> {
     crate::bytes::tag(*self).parse_next(i)
   }
 }
@@ -996,12 +995,12 @@ where
 /// assert_eq!(parser("Some"), Err(Err::Error(Error::new("Some", ErrorKind::Eof))));
 /// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Eof))));
 /// ```
-impl<'s, I, E: ParseError<I>> Parser<I, <I as IntoOutput>::Output, E> for &'s str
+impl<'s, I, E: ParseError<I>> Parser<I, <I as Input>::Slice, E> for &'s str
 where
-  I: InputTake + SliceLen + Compare<&'s str> + InputIsStreaming<false>,
-  I: IntoOutput,
+  I: Compare<&'s str> + InputIsStreaming<false>,
+  I: Input,
 {
-  fn parse_next(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
+  fn parse_next(&mut self, i: I) -> IResult<I, <I as Input>::Slice, E> {
     crate::bytes::tag(*self).parse_next(i)
   }
 }

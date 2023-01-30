@@ -157,7 +157,7 @@ use crate::lib::std::boxed::Box;
 use crate::error::{ErrorKind, FromExternalError, ParseError};
 use crate::input::IntoOutput;
 use crate::input::{AsChar, Input, Location, ParseTo};
-use crate::input::{Compare, CompareResult, Offset, Slice};
+use crate::input::{Compare, CompareResult, Offset};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::convert;
 #[cfg(feature = "std")]
@@ -1000,9 +1000,7 @@ pub fn recognize<I, O, E: ParseError<I>, F>(
   mut parser: F,
 ) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: Clone,
-  I: Offset,
-  I: Input,
+  I: Input + Offset,
   F: Parser<I, O, E>,
 {
   move |input: I| {
@@ -1033,21 +1031,18 @@ impl<F, O> Recognize<F, O> {
   }
 }
 
-impl<I, O, E, F> Parser<I, <I as IntoOutput>::Output, E> for Recognize<F, O>
+impl<I, O, E, F> Parser<I, <I as Input>::Slice, E> for Recognize<F, O>
 where
-  I: Clone,
-  I: Offset,
-  I: Slice<RangeTo<usize>>,
-  I: IntoOutput,
+  I: Input + Offset,
   E: ParseError<I>,
   F: Parser<I, O, E>,
 {
-  fn parse_next(&mut self, input: I) -> IResult<I, <I as IntoOutput>::Output, E> {
+  fn parse_next(&mut self, input: I) -> IResult<I, <I as Input>::Slice, E> {
     let i = input.clone();
     match (self.parser).parse_next(i) {
       Ok((i, _)) => {
-        let index = input.offset_to(&i);
-        Ok((i, input.slice(..index))).into_output()
+        let offset = input.offset_to(&i);
+        Ok(input.next_slice(offset))
       }
       Err(e) => Err(e),
     }
@@ -1102,8 +1097,7 @@ pub fn consumed<I, O, F, E>(
   mut parser: F,
 ) -> impl FnMut(I) -> IResult<I, (<I as Input>::Slice, O), E>
 where
-  I: Offset,
-  I: Input,
+  I: Input + Offset,
   E: ParseError<I>,
   F: Parser<I, O, E>,
 {
@@ -1136,22 +1130,19 @@ impl<F, O> WithRecognized<F, O> {
   }
 }
 
-impl<I, O, E, F> Parser<I, (O, <I as IntoOutput>::Output), E> for WithRecognized<F, O>
+impl<I, O, E, F> Parser<I, (O, <I as Input>::Slice), E> for WithRecognized<F, O>
 where
-  I: Clone,
-  I: Offset,
-  I: Slice<RangeTo<usize>>,
-  I: IntoOutput,
+  I: Input + Offset,
   E: ParseError<I>,
   F: Parser<I, O, E>,
 {
-  fn parse_next(&mut self, input: I) -> IResult<I, (O, <I as IntoOutput>::Output), E> {
+  fn parse_next(&mut self, input: I) -> IResult<I, (O, <I as Input>::Slice), E> {
     let i = input.clone();
     match (self.parser).parse_next(i) {
       Ok((remaining, result)) => {
-        let index = input.offset_to(&remaining);
-        let consumed = input.slice(..index).into_output();
-        Ok((remaining, (result, consumed)))
+        let offset = input.offset_to(&remaining);
+        let (remaining, recognized) = input.next_slice(offset);
+        Ok((remaining, (result, recognized)))
       }
       Err(e) => Err(e),
     }

@@ -2979,10 +2979,10 @@ pub(crate) fn split_at_offset_streaming<P, I: Input, E: ParseError<I>>(
 where
   P: Fn(I::Token) -> bool,
 {
-  match input.offset_for(predicate) {
-    Some(n) => Ok(input.next_slice(n)),
-    None => Err(Err::Incomplete(Needed::new(1))),
-  }
+  let offset = input
+    .offset_for(predicate)
+    .ok_or(Err::Incomplete(Needed::new(1)))?;
+  Ok(input.next_slice(offset))
 }
 
 /// Looks for the first element of the input type for which the condition returns true
@@ -2999,10 +2999,13 @@ pub(crate) fn split_at_offset1_streaming<P, I: Input, E: ParseError<I>>(
 where
   P: Fn(I::Token) -> bool,
 {
-  match input.offset_for(predicate) {
-    Some(0) => Err(Err::Error(E::from_error_kind(input.clone(), e))),
-    Some(n) => Ok(input.next_slice(n)),
-    None => Err(Err::Incomplete(Needed::new(1))),
+  let offset = input
+    .offset_for(predicate)
+    .ok_or(Err::Incomplete(Needed::new(1)))?;
+  if offset == 0 {
+    Err(Err::Error(E::from_error_kind(input.clone(), e)))
+  } else {
+    Ok(input.next_slice(offset))
   }
 }
 
@@ -3017,10 +3020,8 @@ pub(crate) fn split_at_offset_complete<P, I: Input, E: ParseError<I>>(
 where
   P: Fn(I::Token) -> bool,
 {
-  match input.offset_for(predicate) {
-    Some(n) => Ok(input.next_slice(n)),
-    None => Ok(input.next_slice(input.input_len_())),
-  }
+  let offset = input.offset_for(predicate).unwrap_or(input.input_len_());
+  Ok(input.next_slice(offset))
 }
 
 /// Looks for the first element of the input type for which the condition returns true
@@ -3037,15 +3038,11 @@ pub(crate) fn split_at_offset1_complete<P, I: Input, E: ParseError<I>>(
 where
   P: Fn(I::Token) -> bool,
 {
-  match input.offset_for(predicate) {
-    Some(n) => Ok(input.next_slice(n)),
-    None => {
-      if input.input_len_() == 0 {
-        Err(Err::Error(E::from_error_kind(input.clone(), e)))
-      } else {
-        Ok(input.next_slice(input.input_len_()))
-      }
-    }
+  let offset = input.offset_for(predicate).unwrap_or(input.input_len_());
+  if offset == 0 {
+    Err(Err::Error(E::from_error_kind(input.clone(), e)))
+  } else {
+    Ok(input.next_slice(offset))
   }
 }
 

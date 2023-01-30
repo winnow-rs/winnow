@@ -5,7 +5,7 @@ mod tests;
 
 use crate::error::ErrorKind;
 use crate::error::ParseError;
-use crate::input::{Input, InputIsStreaming, InputIter, InputTake, IntoOutput, SliceLen, ToUsize};
+use crate::input::{Input, InputIsStreaming, ToUsize, UpdateSlice};
 #[cfg(feature = "alloc")]
 use crate::lib::std::vec::Vec;
 use crate::{Err, IResult, Parser};
@@ -915,9 +915,10 @@ where
 /// ```
 pub fn length_data<I, N, E, F, const STREAMING: bool>(
   mut f: F,
-) -> impl FnMut(I) -> IResult<I, <I as IntoOutput>::Output, E>
+) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: SliceLen + InputTake + InputIter + IntoOutput + InputIsStreaming<STREAMING>,
+  I: InputIsStreaming<STREAMING>,
+  I: Input,
   N: ToUsize,
   F: Parser<I, N, E>,
   E: ParseError<I>,
@@ -961,8 +962,8 @@ pub fn length_value<I, O, N, E, F, G, const STREAMING: bool>(
   mut g: G,
 ) -> impl FnMut(I) -> IResult<I, O, E>
 where
-  I: SliceLen + InputTake + InputIter + IntoOutput + InputIsStreaming<STREAMING>,
-  I: Clone,
+  I: InputIsStreaming<STREAMING>,
+  I: Input + UpdateSlice,
   N: ToUsize,
   F: Parser<I, N, E>,
   G: Parser<I, O, E>,
@@ -970,7 +971,7 @@ where
 {
   move |i: I| {
     let (i, data) = length_data(f.by_ref()).parse_next(i)?;
-    let data = I::merge_output(i.clone(), data);
+    let data = I::update_slice(i.clone(), data);
     let (_, o) = g.by_ref().complete().parse_next(data)?;
     Ok((i, o))
   }

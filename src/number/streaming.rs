@@ -8,11 +8,8 @@ use crate::bytes::streaming::tag;
 use crate::character::streaming::{char, digit1, sign};
 use crate::combinator::{cut, map, opt};
 use crate::error::{ErrorKind, ParseError};
-use crate::input::{
-  AsBytes, AsChar, Compare, Input, InputIter, InputTake, InputTakeAtOffset, IntoOutput, Offset,
-  Slice, SliceLen,
-};
-use crate::lib::std::ops::{Add, RangeFrom, RangeTo, Shl};
+use crate::input::{AsBytes, AsChar, Compare, Input, InputIter, Offset, ParseTo, SliceLen};
+use crate::lib::std::ops::{Add, Shl};
 use crate::sequence::{pair, tuple};
 use crate::*;
 
@@ -1600,15 +1597,14 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::recognize_float`][crate::character::recognize_float] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::recognize_float` with input wrapped in `winnow::input::Streaming`")]
-pub fn recognize_float<T, E:ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
+pub fn recognize_float<T, E:ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
-  T: Clone + Offset,
-  T: InputIter,
-  T: IntoOutput,
-  <T as InputIter>::Item: AsChar,
-  T: InputTakeAtOffset + SliceLen,
-  <T as InputTakeAtOffset>::Item: AsChar
+  T: Input,
+  T: Offset + Compare<&'static str>,
+  <T as Input>::Token: AsChar + Copy,
+  <T as Input>::IterOffsets: Clone,
+  T: AsBytes,
+  T: Compare<&'static str>,
 {
     tuple((
       opt(alt((char('+'), char('-')))),
@@ -1635,15 +1631,14 @@ where
 )]
 pub fn recognize_float_or_exceptions<T, E: ParseError<T>>(
   input: T,
-) -> IResult<T, <T as IntoOutput>::Output, E>
+) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
-  T: Clone + Offset,
-  T: InputIter + InputTake + SliceLen + Compare<&'static str>,
-  T: IntoOutput,
-  <T as InputIter>::Item: AsChar,
-  T: InputTakeAtOffset,
-  <T as InputTakeAtOffset>::Item: AsChar,
+  T: Input,
+  T: Offset + Compare<&'static str>,
+  <T as Input>::Token: AsChar + Copy,
+  <T as Input>::IterOffsets: Clone,
+  T: AsBytes,
+  T: Compare<&'static str>,
 {
   alt((
     |i: T| {
@@ -1684,58 +1679,26 @@ where
 #[allow(clippy::type_complexity)]
 pub fn recognize_float_parts<T, E: ParseError<T>>(
   input: T,
-) -> IResult<
-  T,
-  (
-    bool,
-    <T as IntoOutput>::Output,
-    <T as IntoOutput>::Output,
-    i32,
-  ),
-  E,
->
+) -> IResult<T, (bool, <T as Input>::Slice, <T as Input>::Slice, i32), E>
 where
-  T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
-  T: Clone + Offset,
-  T: InputIter,
-  T: IntoOutput,
-  <T as InputIter>::Item: AsChar,
-  T: InputTakeAtOffset + InputTake + SliceLen,
-  <T as InputTakeAtOffset>::Item: AsChar,
-  T: for<'a> Compare<&'a [u8]>,
-  T: AsBytes,
+  T: Input + Compare<&'static [u8]> + AsBytes,
+  <T as Input>::Token: AsChar + Copy,
+  <T as Input>::Slice: SliceLen,
 {
   let (i, sign) = sign(input.clone())?;
 
-  //let (i, zeroes) = take_while(|c: <T as InputTakeAtOffset>::Item| c.as_char() == '0')(i)?;
-  let (i, zeroes) = match i.as_bytes().iter().position(|c| *c != b'0') {
-    Some(index) => i.take_split(index),
-    None => i.take_split(i.slice_len()),
+  let (i, integer) = match i.offset_for(|c| !c.is_dec_digit()) {
+    Some(offset) => i.next_slice(offset),
+    None => i.next_slice(i.input_len_()),
   };
-
-  //let (i, mut integer) = digit0(i)?;
-  let (i, mut integer) = match i
-    .as_bytes()
-    .iter()
-    .position(|c| !(*c >= b'0' && *c <= b'9'))
-  {
-    Some(index) => i.take_split(index),
-    None => i.take_split(i.slice_len()),
-  };
-
-  if integer.slice_len() == 0 && zeroes.slice_len() > 0 {
-    // keep the last zero if integer is empty
-    integer = zeroes.slice(zeroes.slice_len() - 1..);
-  }
 
   let (i, opt_dot) = opt(tag(&b"."[..]))(i)?;
   let (i, fraction) = if opt_dot.is_none() {
-    let i2 = i.clone();
-    (i2, i.slice(..0))
+    i.next_slice(0)
   } else {
-    // match number, trim right zeroes
+    // match number
     let mut zero_count = 0usize;
-    let mut position = None;
+    let mut offset = None;
     for (pos, c) in i.as_bytes().iter().enumerate() {
       if *c >= b'0' && *c <= b'9' {
         if *c == b'0' {
@@ -1744,25 +1707,19 @@ where
           zero_count = 0;
         }
       } else {
-        position = Some(pos);
+        offset = Some(pos);
         break;
       }
     }
 
-    let position = match position {
-      Some(p) => p,
-      None => return Err(Err::Incomplete(Needed::new(1))),
-    };
+    let offset = offset.ok_or_else(|| Err::Incomplete(Needed::new(1)))?;
 
-    let index = if zero_count == 0 {
-      position
-    } else if zero_count == position {
-      position - zero_count + 1
-    } else {
-      position - zero_count
-    };
+    // trim right zeroes
+    let trimmed_offset = (offset - zero_count).max(1);
 
-    (i.slice(position..), i.slice(..index))
+    let (_, frac) = i.next_slice(trimmed_offset);
+    let (i, _) = i.next_slice(offset);
+    (i, frac)
   };
 
   if integer.slice_len() == 0 && fraction.slice_len() == 0 {
@@ -1770,10 +1727,11 @@ where
   }
 
   let i2 = i.clone();
-  let (i, e) = match i.as_bytes().iter().next() {
-    Some(b'e') | Some(b'E') => (i.slice(1..), true),
-    _ => (i, false),
-  };
+  let (i, e) = i
+    .next_token()
+    .filter(|(_, t)| t.as_char() == 'e' || t.as_char() == 'E')
+    .map(|(i, _)| (i, true))
+    .unwrap_or((i, false));
 
   let (i, exp) = if e {
     cut(crate::character::streaming::i32)(i)?
@@ -1781,10 +1739,7 @@ where
     (i2, 0)
   };
 
-  Ok((
-    i,
-    (sign, integer.into_output(), fraction.into_output(), exp),
-  ))
+  Ok((i, (sign, integer, fraction, exp)))
 }
 
 /// Recognizes floating point number in text format and returns a f32.
@@ -1813,20 +1768,14 @@ where
 )]
 pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>
 where
-  T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
-  T: Clone + Offset,
-  T: InputIter + SliceLen + InputTake + Compare<&'static str>,
-  T: IntoOutput,
-  <T as IntoOutput>::Output: crate::input::ParseTo<f32>,
-  <T as InputIter>::Item: AsChar,
-  <T as InputIter>::IterElem: Clone,
-  T: InputTakeAtOffset,
-  <T as InputTakeAtOffset>::Item: AsChar,
+  T: Input,
+  T: Offset + Compare<&'static str>,
+  <T as Input>::Slice: ParseTo<f32>,
+  <T as Input>::Token: AsChar + Copy,
+  <T as Input>::IterOffsets: Clone,
   T: AsBytes,
-  T: for<'a> Compare<&'a [u8]>,
+  T: Compare<&'static str>,
 {
-  use crate::input::ParseTo;
-
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
     Some(f) => Ok((i, f)),
@@ -1863,20 +1812,14 @@ where
 )]
 pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>
 where
-  T: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
-  T: Clone + Offset,
-  T: InputIter + SliceLen + InputTake + Compare<&'static str>,
-  T: IntoOutput,
-  <T as IntoOutput>::Output: crate::input::ParseTo<f64>,
-  <T as InputIter>::Item: AsChar,
-  <T as InputIter>::IterElem: Clone,
-  T: InputTakeAtOffset,
-  <T as InputTakeAtOffset>::Item: AsChar,
+  T: Input,
+  T: Offset + Compare<&'static str>,
+  <T as Input>::Slice: ParseTo<f64>,
+  <T as Input>::Token: AsChar + Copy,
+  <T as Input>::IterOffsets: Clone,
   T: AsBytes,
-  T: for<'a> Compare<&'a [u8]>,
+  T: Compare<&'static str>,
 {
-  use crate::input::ParseTo;
-
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
     Some(f) => Ok((i, f)),
@@ -2449,7 +2392,6 @@ mod tests {
 
   #[cfg(feature = "std")]
   fn parse_f64(i: &str) -> IResult<&str, f64, ()> {
-    use crate::input::ParseTo;
     match recognize_float_or_exceptions(i) {
       Err(e) => Err(e),
       Ok((i, s)) => {
