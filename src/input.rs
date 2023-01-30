@@ -307,6 +307,48 @@ pub trait InputIsStreaming<const YES: bool>: Sized {
   fn into_streaming(self) -> Self::Streaming;
 }
 
+impl<'a, T> InputIsStreaming<false> for &'a [T] {
+  type Complete = Self;
+  type Streaming = Streaming<Self>;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    Streaming(self)
+  }
+}
+
+impl<'a> InputIsStreaming<false> for &'a str {
+  type Complete = Self;
+  type Streaming = Streaming<Self>;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    Streaming(self)
+  }
+}
+
+impl<const YES: bool> InputIsStreaming<YES> for crate::lib::std::convert::Infallible {
+  type Complete = Self;
+  type Streaming = Self;
+
+  #[inline(always)]
+  fn into_complete(self) -> Self::Complete {
+    self
+  }
+  #[inline(always)]
+  fn into_streaming(self) -> Self::Streaming {
+    self
+  }
+}
+
 impl<I> InputIsStreaming<true> for Located<I>
 where
   I: InputIsStreaming<true>,
@@ -404,48 +446,6 @@ where
   }
 }
 
-impl<'a, T> InputIsStreaming<false> for &'a [T] {
-  type Complete = Self;
-  type Streaming = Streaming<Self>;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    self
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    Streaming(self)
-  }
-}
-
-impl<'a> InputIsStreaming<false> for &'a str {
-  type Complete = Self;
-  type Streaming = Streaming<Self>;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    self
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    Streaming(self)
-  }
-}
-
-impl<const YES: bool> InputIsStreaming<YES> for crate::lib::std::convert::Infallible {
-  type Complete = Self;
-  type Streaming = Self;
-
-  #[inline(always)]
-  fn into_complete(self) -> Self::Complete {
-    self
-  }
-  #[inline(always)]
-  fn into_streaming(self) -> Self::Streaming {
-    self
-  }
-}
-
 /// Abstract method to calculate the input length
 pub trait InputLength {
   /// Calculates the input length, as indicated by its name,
@@ -515,34 +515,6 @@ pub trait Offset {
   fn offset_to(&self, second: &Self) -> usize;
 }
 
-impl<I> Offset for Located<I>
-where
-  I: Offset,
-{
-  fn offset_to(&self, other: &Self) -> usize {
-    self.input.offset_to(&other.input)
-  }
-}
-
-impl<I, S> Offset for Stateful<I, S>
-where
-  I: Offset,
-{
-  fn offset_to(&self, other: &Self) -> usize {
-    self.input.offset_to(&other.input)
-  }
-}
-
-impl<I> Offset for Streaming<I>
-where
-  I: Offset,
-{
-  #[inline(always)]
-  fn offset_to(&self, second: &Self) -> usize {
-    self.0.offset_to(&second.0)
-  }
-}
-
 impl Offset for [u8] {
   fn offset_to(&self, second: &Self) -> usize {
     let fst = self.as_ptr();
@@ -579,38 +551,38 @@ impl<'a> Offset for &'a str {
   }
 }
 
+impl<I> Offset for Located<I>
+where
+  I: Offset,
+{
+  fn offset_to(&self, other: &Self) -> usize {
+    self.input.offset_to(&other.input)
+  }
+}
+
+impl<I, S> Offset for Stateful<I, S>
+where
+  I: Offset,
+{
+  fn offset_to(&self, other: &Self) -> usize {
+    self.input.offset_to(&other.input)
+  }
+}
+
+impl<I> Offset for Streaming<I>
+where
+  I: Offset,
+{
+  #[inline(always)]
+  fn offset_to(&self, second: &Self) -> usize {
+    self.0.offset_to(&second.0)
+  }
+}
+
 /// Helper trait for types that can be viewed as a byte slice
 pub trait AsBytes {
   /// Casts the input type to a byte slice
   fn as_bytes(&self) -> &[u8];
-}
-
-impl<I> AsBytes for Located<I>
-where
-  I: AsBytes,
-{
-  fn as_bytes(&self) -> &[u8] {
-    self.input.as_bytes()
-  }
-}
-
-impl<I, S> AsBytes for Stateful<I, S>
-where
-  I: AsBytes,
-{
-  fn as_bytes(&self) -> &[u8] {
-    self.input.as_bytes()
-  }
-}
-
-impl<I> AsBytes for Streaming<I>
-where
-  I: AsBytes,
-{
-  #[inline(always)]
-  fn as_bytes(&self) -> &[u8] {
-    self.0.as_bytes()
-  }
 }
 
 impl AsBytes for [u8] {
@@ -638,6 +610,34 @@ impl<'a> AsBytes for &'a str {
   #[inline(always)]
   fn as_bytes(&self) -> &[u8] {
     (*self).as_bytes()
+  }
+}
+
+impl<I> AsBytes for Located<I>
+where
+  I: AsBytes,
+{
+  fn as_bytes(&self) -> &[u8] {
+    self.input.as_bytes()
+  }
+}
+
+impl<I, S> AsBytes for Stateful<I, S>
+where
+  I: AsBytes,
+{
+  fn as_bytes(&self) -> &[u8] {
+    self.input.as_bytes()
+  }
+}
+
+impl<I> AsBytes for Streaming<I>
+where
+  I: AsBytes,
+{
+  #[inline(always)]
+  fn as_bytes(&self) -> &[u8] {
+    self.0.as_bytes()
   }
 }
 
@@ -855,6 +855,75 @@ pub trait InputIter {
   fn offset_at(&self, count: usize) -> Result<usize, Needed>;
 }
 
+impl<'a> InputIter for &'a [u8] {
+  type Item = u8;
+  type IterOffsets = Enumerate<Self::IterElem>;
+  type IterElem = Copied<Iter<'a, u8>>;
+
+  #[inline]
+  fn iter_offsets(&self) -> Self::IterOffsets {
+    self.iter_elements().enumerate()
+  }
+  #[inline]
+  fn iter_elements(&self) -> Self::IterElem {
+    self.iter().copied()
+  }
+  #[inline]
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    self.iter().position(|b| predicate(*b))
+  }
+  #[inline]
+  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
+    if let Some(needed) = count.checked_sub(self.len()).and_then(NonZeroUsize::new) {
+      Err(Needed::Size(needed))
+    } else {
+      Ok(count)
+    }
+  }
+}
+
+impl<'a> InputIter for &'a str {
+  type Item = char;
+  type IterOffsets = CharIndices<'a>;
+  type IterElem = Chars<'a>;
+  #[inline]
+  fn iter_offsets(&self) -> Self::IterOffsets {
+    self.char_indices()
+  }
+  #[inline]
+  fn iter_elements(&self) -> Self::IterElem {
+    self.chars()
+  }
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    for (o, c) in self.char_indices() {
+      if predicate(c) {
+        return Some(o);
+      }
+    }
+    None
+  }
+  #[inline]
+  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
+    let mut cnt = 0;
+    for (index, _) in self.char_indices() {
+      if cnt == count {
+        return Ok(index);
+      }
+      cnt += 1;
+    }
+    if cnt == count {
+      return Ok(self.len());
+    }
+    Err(Needed::Unknown)
+  }
+}
+
 impl<I> InputIter for Located<I>
 where
   I: InputIter,
@@ -940,81 +1009,38 @@ where
   }
 }
 
-impl<'a> InputIter for &'a [u8] {
-  type Item = u8;
-  type IterOffsets = Enumerate<Self::IterElem>;
-  type IterElem = Copied<Iter<'a, u8>>;
-
-  #[inline]
-  fn iter_offsets(&self) -> Self::IterOffsets {
-    self.iter_elements().enumerate()
-  }
-  #[inline]
-  fn iter_elements(&self) -> Self::IterElem {
-    self.iter().copied()
-  }
-  #[inline]
-  fn offset_for<P>(&self, predicate: P) -> Option<usize>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    self.iter().position(|b| predicate(*b))
-  }
-  #[inline]
-  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
-    if let Some(needed) = count.checked_sub(self.len()).and_then(NonZeroUsize::new) {
-      Err(Needed::Size(needed))
-    } else {
-      Ok(count)
-    }
-  }
-}
-
-impl<'a> InputIter for &'a str {
-  type Item = char;
-  type IterOffsets = CharIndices<'a>;
-  type IterElem = Chars<'a>;
-  #[inline]
-  fn iter_offsets(&self) -> Self::IterOffsets {
-    self.char_indices()
-  }
-  #[inline]
-  fn iter_elements(&self) -> Self::IterElem {
-    self.chars()
-  }
-  fn offset_for<P>(&self, predicate: P) -> Option<usize>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    for (o, c) in self.char_indices() {
-      if predicate(c) {
-        return Some(o);
-      }
-    }
-    None
-  }
-  #[inline]
-  fn offset_at(&self, count: usize) -> Result<usize, Needed> {
-    let mut cnt = 0;
-    for (index, _) in self.char_indices() {
-      if cnt == count {
-        return Ok(index);
-      }
-      cnt += 1;
-    }
-    if cnt == count {
-      return Ok(self.len());
-    }
-    Err(Needed::Unknown)
-  }
-}
-
 /// Abstracts slicing operations
 pub trait InputTake: Sized {
   /// Returns a slice of `count` bytes. panics if count > length
   fn take(&self, count: usize) -> Self;
   /// Split the stream at the `count` byte offset. panics if count > length
   fn take_split(&self, count: usize) -> (Self, Self);
+}
+
+impl<'a> InputTake for &'a [u8] {
+  #[inline]
+  fn take(&self, count: usize) -> Self {
+    &self[0..count]
+  }
+  #[inline]
+  fn take_split(&self, count: usize) -> (Self, Self) {
+    let (prefix, suffix) = self.split_at(count);
+    (suffix, prefix)
+  }
+}
+
+impl<'a> InputTake for &'a str {
+  #[inline]
+  fn take(&self, count: usize) -> Self {
+    &self[..count]
+  }
+
+  // return byte index
+  #[inline]
+  fn take_split(&self, count: usize) -> (Self, Self) {
+    let (prefix, suffix) = self.split_at(count);
+    (suffix, prefix)
+  }
 }
 
 impl<I> InputTake for Located<I>
@@ -1082,32 +1108,6 @@ where
   fn take_split(&self, count: usize) -> (Self, Self) {
     let (start, end) = self.0.take_split(count);
     (Streaming(start), Streaming(end))
-  }
-}
-
-impl<'a> InputTake for &'a [u8] {
-  #[inline]
-  fn take(&self, count: usize) -> Self {
-    &self[0..count]
-  }
-  #[inline]
-  fn take_split(&self, count: usize) -> (Self, Self) {
-    let (prefix, suffix) = self.split_at(count);
-    (suffix, prefix)
-  }
-}
-
-impl<'a> InputTake for &'a str {
-  #[inline]
-  fn take(&self, count: usize) -> Self {
-    &self[..count]
-  }
-
-  // return byte index
-  #[inline]
-  fn take_split(&self, count: usize) -> (Self, Self) {
-    let (prefix, suffix) = self.split_at(count);
-    (suffix, prefix)
   }
 }
 
@@ -1180,6 +1180,211 @@ pub trait InputTakeAtOffset: Sized {
   ) -> IResult<Self, Self, E>
   where
     P: Fn(Self::Item) -> bool;
+}
+
+impl<I: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputTakeAtOffset for I {
+  type Item = <I as InputIter>::Item;
+
+  fn split_at_offset_streaming<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.offset_for(predicate) {
+      Some(n) => Ok(self.take_split(n)),
+      None => Err(Err::Incomplete(Needed::new(1))),
+    }
+  }
+
+  fn split_at_offset1_streaming<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+    e: ErrorKind,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.offset_for(predicate) {
+      Some(0) => Err(Err::Error(E::from_error_kind(self.clone(), e))),
+      Some(n) => Ok(self.take_split(n)),
+      None => Err(Err::Incomplete(Needed::new(1))),
+    }
+  }
+
+  fn split_at_offset_complete<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.offset_for(predicate) {
+      Some(n) => Ok(self.take_split(n)),
+      None => Ok(self.take_split(self.input_len())),
+    }
+  }
+
+  fn split_at_offset1_complete<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+    e: ErrorKind,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.offset_for(predicate) {
+      Some(0) => Err(Err::Error(E::from_error_kind(self.clone(), e))),
+      Some(n) => Ok(self.take_split(n)),
+      None => {
+        if self.input_len() == 0 {
+          Err(Err::Error(E::from_error_kind(self.clone(), e)))
+        } else {
+          Ok(self.take_split(self.input_len()))
+        }
+      }
+    }
+  }
+}
+
+impl<'a> InputTakeAtOffset for &'a [u8] {
+  type Item = u8;
+
+  fn split_at_offset_streaming<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.iter().position(|c| predicate(*c)) {
+      Some(i) => Ok(self.take_split(i)),
+      None => Err(Err::Incomplete(Needed::new(1))),
+    }
+  }
+
+  fn split_at_offset1_streaming<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+    e: ErrorKind,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.iter().position(|c| predicate(*c)) {
+      Some(0) => Err(Err::Error(E::from_error_kind(self, e))),
+      Some(i) => Ok(self.take_split(i)),
+      None => Err(Err::Incomplete(Needed::new(1))),
+    }
+  }
+
+  fn split_at_offset_complete<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.iter().position(|c| predicate(*c)) {
+      Some(i) => Ok(self.take_split(i)),
+      None => Ok(self.take_split(self.input_len())),
+    }
+  }
+
+  fn split_at_offset1_complete<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+    e: ErrorKind,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.iter().position(|c| predicate(*c)) {
+      Some(0) => Err(Err::Error(E::from_error_kind(self, e))),
+      Some(i) => Ok(self.take_split(i)),
+      None => {
+        if self.is_empty() {
+          Err(Err::Error(E::from_error_kind(self, e)))
+        } else {
+          Ok(self.take_split(self.input_len()))
+        }
+      }
+    }
+  }
+}
+
+impl<'a> InputTakeAtOffset for &'a str {
+  type Item = char;
+
+  fn split_at_offset_streaming<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.find(predicate) {
+      // find() returns a byte index that is already in the slice at a char boundary
+      Some(i) => unsafe { Ok((self.get_unchecked(i..), self.get_unchecked(..i))) },
+      None => Err(Err::Incomplete(Needed::new(1))),
+    }
+  }
+
+  fn split_at_offset1_streaming<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+    e: ErrorKind,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.find(predicate) {
+      Some(0) => Err(Err::Error(E::from_error_kind(self, e))),
+      // find() returns a byte index that is already in the slice at a char boundary
+      Some(i) => unsafe { Ok((self.get_unchecked(i..), self.get_unchecked(..i))) },
+      None => Err(Err::Incomplete(Needed::new(1))),
+    }
+  }
+
+  fn split_at_offset_complete<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.find(predicate) {
+      // find() returns a byte index that is already in the slice at a char boundary
+      Some(i) => unsafe { Ok((self.get_unchecked(i..), self.get_unchecked(..i))) },
+      // the end of slice is a char boundary
+      None => unsafe {
+        Ok((
+          self.get_unchecked(self.len()..),
+          self.get_unchecked(..self.len()),
+        ))
+      },
+    }
+  }
+
+  fn split_at_offset1_complete<P, E: ParseError<Self>>(
+    &self,
+    predicate: P,
+    e: ErrorKind,
+  ) -> IResult<Self, Self, E>
+  where
+    P: Fn(Self::Item) -> bool,
+  {
+    match self.find(predicate) {
+      Some(0) => Err(Err::Error(E::from_error_kind(self, e))),
+      // find() returns a byte index that is already in the slice at a char boundary
+      Some(i) => unsafe { Ok((self.get_unchecked(i..), self.get_unchecked(..i))) },
+      None => {
+        if self.is_empty() {
+          Err(Err::Error(E::from_error_kind(self, e)))
+        } else {
+          // the end of slice is a char boundary
+          unsafe {
+            Ok((
+              self.get_unchecked(self.len()..),
+              self.get_unchecked(..self.len()),
+            ))
+          }
+        }
+      }
+    }
+  }
 }
 
 impl<I> InputTakeAtOffset for Located<I>
@@ -1416,211 +1621,6 @@ where
     })
 }
 
-impl<I: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputTakeAtOffset for I {
-  type Item = <I as InputIter>::Item;
-
-  fn split_at_offset_streaming<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.offset_for(predicate) {
-      Some(n) => Ok(self.take_split(n)),
-      None => Err(Err::Incomplete(Needed::new(1))),
-    }
-  }
-
-  fn split_at_offset1_streaming<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-    e: ErrorKind,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.offset_for(predicate) {
-      Some(0) => Err(Err::Error(E::from_error_kind(self.clone(), e))),
-      Some(n) => Ok(self.take_split(n)),
-      None => Err(Err::Incomplete(Needed::new(1))),
-    }
-  }
-
-  fn split_at_offset_complete<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.offset_for(predicate) {
-      Some(n) => Ok(self.take_split(n)),
-      None => Ok(self.take_split(self.input_len())),
-    }
-  }
-
-  fn split_at_offset1_complete<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-    e: ErrorKind,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.offset_for(predicate) {
-      Some(0) => Err(Err::Error(E::from_error_kind(self.clone(), e))),
-      Some(n) => Ok(self.take_split(n)),
-      None => {
-        if self.input_len() == 0 {
-          Err(Err::Error(E::from_error_kind(self.clone(), e)))
-        } else {
-          Ok(self.take_split(self.input_len()))
-        }
-      }
-    }
-  }
-}
-
-impl<'a> InputTakeAtOffset for &'a [u8] {
-  type Item = u8;
-
-  fn split_at_offset_streaming<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.iter().position(|c| predicate(*c)) {
-      Some(i) => Ok(self.take_split(i)),
-      None => Err(Err::Incomplete(Needed::new(1))),
-    }
-  }
-
-  fn split_at_offset1_streaming<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-    e: ErrorKind,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.iter().position(|c| predicate(*c)) {
-      Some(0) => Err(Err::Error(E::from_error_kind(self, e))),
-      Some(i) => Ok(self.take_split(i)),
-      None => Err(Err::Incomplete(Needed::new(1))),
-    }
-  }
-
-  fn split_at_offset_complete<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.iter().position(|c| predicate(*c)) {
-      Some(i) => Ok(self.take_split(i)),
-      None => Ok(self.take_split(self.input_len())),
-    }
-  }
-
-  fn split_at_offset1_complete<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-    e: ErrorKind,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.iter().position(|c| predicate(*c)) {
-      Some(0) => Err(Err::Error(E::from_error_kind(self, e))),
-      Some(i) => Ok(self.take_split(i)),
-      None => {
-        if self.is_empty() {
-          Err(Err::Error(E::from_error_kind(self, e)))
-        } else {
-          Ok(self.take_split(self.input_len()))
-        }
-      }
-    }
-  }
-}
-
-impl<'a> InputTakeAtOffset for &'a str {
-  type Item = char;
-
-  fn split_at_offset_streaming<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.find(predicate) {
-      // find() returns a byte index that is already in the slice at a char boundary
-      Some(i) => unsafe { Ok((self.get_unchecked(i..), self.get_unchecked(..i))) },
-      None => Err(Err::Incomplete(Needed::new(1))),
-    }
-  }
-
-  fn split_at_offset1_streaming<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-    e: ErrorKind,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.find(predicate) {
-      Some(0) => Err(Err::Error(E::from_error_kind(self, e))),
-      // find() returns a byte index that is already in the slice at a char boundary
-      Some(i) => unsafe { Ok((self.get_unchecked(i..), self.get_unchecked(..i))) },
-      None => Err(Err::Incomplete(Needed::new(1))),
-    }
-  }
-
-  fn split_at_offset_complete<P, E: ParseError<Self>>(&self, predicate: P) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.find(predicate) {
-      // find() returns a byte index that is already in the slice at a char boundary
-      Some(i) => unsafe { Ok((self.get_unchecked(i..), self.get_unchecked(..i))) },
-      // the end of slice is a char boundary
-      None => unsafe {
-        Ok((
-          self.get_unchecked(self.len()..),
-          self.get_unchecked(..self.len()),
-        ))
-      },
-    }
-  }
-
-  fn split_at_offset1_complete<P, E: ParseError<Self>>(
-    &self,
-    predicate: P,
-    e: ErrorKind,
-  ) -> IResult<Self, Self, E>
-  where
-    P: Fn(Self::Item) -> bool,
-  {
-    match self.find(predicate) {
-      Some(0) => Err(Err::Error(E::from_error_kind(self, e))),
-      // find() returns a byte index that is already in the slice at a char boundary
-      Some(i) => unsafe { Ok((self.get_unchecked(i..), self.get_unchecked(..i))) },
-      None => {
-        if self.is_empty() {
-          Err(Err::Error(E::from_error_kind(self, e)))
-        } else {
-          // the end of slice is a char boundary
-          unsafe {
-            Ok((
-              self.get_unchecked(self.len()..),
-              self.get_unchecked(..self.len()),
-            ))
-          }
-        }
-      }
-    }
-  }
-}
-
 /// Indicates whether a comparison was successful, an error, or
 /// if more data was needed
 #[derive(Debug, Eq, PartialEq)]
@@ -1645,47 +1645,6 @@ pub trait Compare<T> {
   /// the result. This is a temporary solution until
   /// a better one appears
   fn compare_no_case(&self, t: T) -> CompareResult;
-}
-
-impl<I, U> Compare<U> for Located<I>
-where
-  I: Compare<U>,
-{
-  fn compare(&self, other: U) -> CompareResult {
-    self.input.compare(other)
-  }
-
-  fn compare_no_case(&self, other: U) -> CompareResult {
-    self.input.compare_no_case(other)
-  }
-}
-
-impl<I, S, U> Compare<U> for Stateful<I, S>
-where
-  I: Compare<U>,
-{
-  fn compare(&self, other: U) -> CompareResult {
-    self.input.compare(other)
-  }
-
-  fn compare_no_case(&self, other: U) -> CompareResult {
-    self.input.compare_no_case(other)
-  }
-}
-
-impl<I, T> Compare<T> for Streaming<I>
-where
-  I: Compare<T>,
-{
-  #[inline(always)]
-  fn compare(&self, t: T) -> CompareResult {
-    self.0.compare(t)
-  }
-
-  #[inline(always)]
-  fn compare_no_case(&self, t: T) -> CompareResult {
-    self.0.compare_no_case(t)
-  }
 }
 
 fn lowercase_byte(c: u8) -> u8 {
@@ -1838,6 +1797,47 @@ impl<'a, const LEN: usize> Compare<[u8; LEN]> for &'a [u8] {
   #[inline(always)]
   fn compare_no_case(&self, t: [u8; LEN]) -> CompareResult {
     self.compare_no_case(&t[..])
+  }
+}
+
+impl<I, U> Compare<U> for Located<I>
+where
+  I: Compare<U>,
+{
+  fn compare(&self, other: U) -> CompareResult {
+    self.input.compare(other)
+  }
+
+  fn compare_no_case(&self, other: U) -> CompareResult {
+    self.input.compare_no_case(other)
+  }
+}
+
+impl<I, S, U> Compare<U> for Stateful<I, S>
+where
+  I: Compare<U>,
+{
+  fn compare(&self, other: U) -> CompareResult {
+    self.input.compare(other)
+  }
+
+  fn compare_no_case(&self, other: U) -> CompareResult {
+    self.input.compare_no_case(other)
+  }
+}
+
+impl<I, T> Compare<T> for Streaming<I>
+where
+  I: Compare<T>,
+{
+  #[inline(always)]
+  fn compare(&self, t: T) -> CompareResult {
+    self.0.compare(t)
+  }
+
+  #[inline(always)]
+  fn compare_no_case(&self, t: T) -> CompareResult {
+    self.0.compare_no_case(t)
   }
 }
 
@@ -2089,6 +2089,25 @@ pub trait FindSubstring<T> {
   fn find_substring(&self, substr: T) -> Option<usize>;
 }
 
+impl<'a, 'b> FindSubstring<&'b [u8]> for &'a [u8] {
+  fn find_substring(&self, substr: &'b [u8]) -> Option<usize> {
+    memchr::memmem::find(self, substr)
+  }
+}
+
+impl<'a, 'b> FindSubstring<&'b str> for &'a [u8] {
+  fn find_substring(&self, substr: &'b str) -> Option<usize> {
+    self.find_substring(AsBytes::as_bytes(substr))
+  }
+}
+
+impl<'a, 'b> FindSubstring<&'b str> for &'a str {
+  //returns byte index
+  fn find_substring(&self, substr: &'b str) -> Option<usize> {
+    self.find(substr)
+  }
+}
+
 impl<I, T> FindSubstring<T> for Located<I>
 where
   I: FindSubstring<T>,
@@ -2119,30 +2138,23 @@ where
   }
 }
 
-impl<'a, 'b> FindSubstring<&'b [u8]> for &'a [u8] {
-  fn find_substring(&self, substr: &'b [u8]) -> Option<usize> {
-    memchr::memmem::find(self, substr)
-  }
-}
-
-impl<'a, 'b> FindSubstring<&'b str> for &'a [u8] {
-  fn find_substring(&self, substr: &'b str) -> Option<usize> {
-    self.find_substring(AsBytes::as_bytes(substr))
-  }
-}
-
-impl<'a, 'b> FindSubstring<&'b str> for &'a str {
-  //returns byte index
-  fn find_substring(&self, substr: &'b str) -> Option<usize> {
-    self.find(substr)
-  }
-}
-
 /// Used to integrate `str`'s `parse()` method
 pub trait ParseTo<R> {
   /// Succeeds if `parse()` succeeded. The byte slice implementation
   /// will first convert it to a `&str`, then apply the `parse()` function
   fn parse_to(&self) -> Option<R>;
+}
+
+impl<'a, R: FromStr> ParseTo<R> for &'a [u8] {
+  fn parse_to(&self) -> Option<R> {
+    from_utf8(self).ok().and_then(|s| s.parse().ok())
+  }
+}
+
+impl<'a, R: FromStr> ParseTo<R> for &'a str {
+  fn parse_to(&self) -> Option<R> {
+    self.parse().ok()
+  }
 }
 
 impl<I, R> ParseTo<R> for Located<I>
@@ -2175,18 +2187,6 @@ where
   }
 }
 
-impl<'a, R: FromStr> ParseTo<R> for &'a [u8] {
-  fn parse_to(&self) -> Option<R> {
-    from_utf8(self).ok().and_then(|s| s.parse().ok())
-  }
-}
-
-impl<'a, R: FromStr> ParseTo<R> for &'a str {
-  fn parse_to(&self) -> Option<R> {
-    self.parse().ok()
-  }
-}
-
 /// Slicing operations using ranges.
 ///
 /// This trait is loosely based on
@@ -2195,43 +2195,6 @@ impl<'a, R: FromStr> ParseTo<R> for &'a str {
 pub trait Slice<R> {
   /// Slices self according to the range argument
   fn slice(&self, range: R) -> Self;
-}
-
-impl<I, R> Slice<R> for Located<I>
-where
-  I: Slice<R> + Clone,
-{
-  #[inline(always)]
-  fn slice(&self, range: R) -> Self {
-    Located {
-      initial: self.initial.clone(),
-      input: self.input.slice(range),
-    }
-  }
-}
-
-impl<I, S, R> Slice<R> for Stateful<I, S>
-where
-  I: Slice<R>,
-  S: Clone,
-{
-  #[inline(always)]
-  fn slice(&self, range: R) -> Self {
-    Self {
-      input: self.input.slice(range),
-      state: self.state.clone(),
-    }
-  }
-}
-
-impl<I, R> Slice<R> for Streaming<I>
-where
-  I: Slice<R>,
-{
-  #[inline(always)]
-  fn slice(&self, range: R) -> Self {
-    Streaming(self.0.slice(range))
-  }
 }
 
 macro_rules! impl_fn_slice {
@@ -2273,6 +2236,43 @@ macro_rules! slice_ranges_impl {
 slice_ranges_impl! {[T]}
 slice_ranges_impl! {str}
 
+impl<I, R> Slice<R> for Located<I>
+where
+  I: Slice<R> + Clone,
+{
+  #[inline(always)]
+  fn slice(&self, range: R) -> Self {
+    Located {
+      initial: self.initial.clone(),
+      input: self.input.slice(range),
+    }
+  }
+}
+
+impl<I, S, R> Slice<R> for Stateful<I, S>
+where
+  I: Slice<R>,
+  S: Clone,
+{
+  #[inline(always)]
+  fn slice(&self, range: R) -> Self {
+    Self {
+      input: self.input.slice(range),
+      state: self.state.clone(),
+    }
+  }
+}
+
+impl<I, R> Slice<R> for Streaming<I>
+where
+  I: Slice<R>,
+{
+  #[inline(always)]
+  fn slice(&self, range: R) -> Self {
+    Streaming(self.0.slice(range))
+  }
+}
+
 /// Convert an `Input` into an appropriate `Output` type
 pub trait IntoOutput {
   /// Output type
@@ -2281,6 +2281,30 @@ pub trait IntoOutput {
   fn into_output(self) -> Self::Output;
   /// Convert an `Output` type to be used as `Input`
   fn merge_output(self, inner: Self::Output) -> Self;
+}
+
+impl<'a, T> IntoOutput for &'a [T] {
+  type Output = Self;
+  #[inline]
+  fn into_output(self) -> Self::Output {
+    self
+  }
+  #[inline]
+  fn merge_output(self, inner: Self::Output) -> Self {
+    inner
+  }
+}
+
+impl<'a> IntoOutput for &'a str {
+  type Output = Self;
+  #[inline]
+  fn into_output(self) -> Self::Output {
+    self
+  }
+  #[inline]
+  fn merge_output(self, inner: Self::Output) -> Self {
+    inner
+  }
 }
 
 impl<I> IntoOutput for Located<I>
@@ -2330,30 +2354,6 @@ where
   }
 }
 
-impl<'a, T> IntoOutput for &'a [T] {
-  type Output = Self;
-  #[inline]
-  fn into_output(self) -> Self::Output {
-    self
-  }
-  #[inline]
-  fn merge_output(self, inner: Self::Output) -> Self {
-    inner
-  }
-}
-
-impl<'a> IntoOutput for &'a str {
-  type Output = Self;
-  #[inline]
-  fn into_output(self) -> Self::Output {
-    self
-  }
-  #[inline]
-  fn merge_output(self, inner: Self::Output) -> Self {
-    inner
-  }
-}
-
 /// Abstracts something which can extend an `Extend`.
 /// Used to build modified input slices in `escaped_transform`
 pub trait ExtendInto {
@@ -2369,55 +2369,6 @@ pub trait ExtendInto {
   fn new_builder(&self) -> Self::Extender;
   /// Accumulate the input into an accumulator
   fn extend_into(&self, acc: &mut Self::Extender);
-}
-
-impl<I> ExtendInto for Located<I>
-where
-  I: ExtendInto,
-{
-  type Item = I::Item;
-  type Extender = I::Extender;
-
-  fn new_builder(&self) -> Self::Extender {
-    self.input.new_builder()
-  }
-
-  fn extend_into(&self, extender: &mut Self::Extender) {
-    self.input.extend_into(extender);
-  }
-}
-
-impl<I, S> ExtendInto for Stateful<I, S>
-where
-  I: ExtendInto,
-{
-  type Item = I::Item;
-  type Extender = I::Extender;
-
-  fn new_builder(&self) -> Self::Extender {
-    self.input.new_builder()
-  }
-
-  fn extend_into(&self, extender: &mut Self::Extender) {
-    self.input.extend_into(extender);
-  }
-}
-
-impl<I> ExtendInto for Streaming<I>
-where
-  I: ExtendInto,
-{
-  type Item = I::Item;
-  type Extender = I::Extender;
-
-  #[inline(always)]
-  fn new_builder(&self) -> Self::Extender {
-    self.0.new_builder()
-  }
-  #[inline(always)]
-  fn extend_into(&self, acc: &mut Self::Extender) {
-    self.0.extend_into(acc);
-  }
 }
 
 #[cfg(feature = "alloc")]
@@ -2477,6 +2428,55 @@ impl ExtendInto for &str {
   #[inline]
   fn extend_into(&self, acc: &mut String) {
     acc.push_str(self);
+  }
+}
+
+impl<I> ExtendInto for Located<I>
+where
+  I: ExtendInto,
+{
+  type Item = I::Item;
+  type Extender = I::Extender;
+
+  fn new_builder(&self) -> Self::Extender {
+    self.input.new_builder()
+  }
+
+  fn extend_into(&self, extender: &mut Self::Extender) {
+    self.input.extend_into(extender);
+  }
+}
+
+impl<I, S> ExtendInto for Stateful<I, S>
+where
+  I: ExtendInto,
+{
+  type Item = I::Item;
+  type Extender = I::Extender;
+
+  fn new_builder(&self) -> Self::Extender {
+    self.input.new_builder()
+  }
+
+  fn extend_into(&self, extender: &mut Self::Extender) {
+    self.input.extend_into(extender);
+  }
+}
+
+impl<I> ExtendInto for Streaming<I>
+where
+  I: ExtendInto,
+{
+  type Item = I::Item;
+  type Extender = I::Extender;
+
+  #[inline(always)]
+  fn new_builder(&self) -> Self::Extender {
+    self.0.new_builder()
+  }
+  #[inline(always)]
+  fn extend_into(&self, acc: &mut Self::Extender) {
+    self.0.extend_into(acc);
   }
 }
 
@@ -2544,54 +2544,6 @@ pub trait HexDisplay {
 static CHARS: &[u8] = b"0123456789abcdef";
 
 #[cfg(feature = "std")]
-impl<I> HexDisplay for Located<I>
-where
-  I: HexDisplay,
-{
-  #[inline(always)]
-  fn to_hex(&self, chunk_size: usize) -> String {
-    self.input.to_hex(chunk_size)
-  }
-
-  #[inline(always)]
-  fn to_hex_from(&self, chunk_size: usize, from: usize) -> String {
-    self.input.to_hex_from(chunk_size, from)
-  }
-}
-
-#[cfg(feature = "std")]
-impl<I, S> HexDisplay for Stateful<I, S>
-where
-  I: HexDisplay,
-{
-  #[inline(always)]
-  fn to_hex(&self, chunk_size: usize) -> String {
-    self.input.to_hex(chunk_size)
-  }
-
-  #[inline(always)]
-  fn to_hex_from(&self, chunk_size: usize, from: usize) -> String {
-    self.input.to_hex_from(chunk_size, from)
-  }
-}
-
-#[cfg(feature = "std")]
-impl<I> HexDisplay for Streaming<I>
-where
-  I: HexDisplay,
-{
-  #[inline(always)]
-  fn to_hex(&self, chunk_size: usize) -> String {
-    self.0.to_hex(chunk_size)
-  }
-
-  #[inline(always)]
-  fn to_hex_from(&self, chunk_size: usize, from: usize) -> String {
-    self.0.to_hex_from(chunk_size, from)
-  }
-}
-
-#[cfg(feature = "std")]
 impl HexDisplay for [u8] {
   #[allow(unused_variables)]
   fn to_hex(&self, chunk_size: usize) -> String {
@@ -2649,6 +2601,54 @@ impl HexDisplay for str {
   #[allow(unused_variables)]
   fn to_hex_from(&self, chunk_size: usize, from: usize) -> String {
     self.as_bytes().to_hex_from(chunk_size, from)
+  }
+}
+
+#[cfg(feature = "std")]
+impl<I> HexDisplay for Located<I>
+where
+  I: HexDisplay,
+{
+  #[inline(always)]
+  fn to_hex(&self, chunk_size: usize) -> String {
+    self.input.to_hex(chunk_size)
+  }
+
+  #[inline(always)]
+  fn to_hex_from(&self, chunk_size: usize, from: usize) -> String {
+    self.input.to_hex_from(chunk_size, from)
+  }
+}
+
+#[cfg(feature = "std")]
+impl<I, S> HexDisplay for Stateful<I, S>
+where
+  I: HexDisplay,
+{
+  #[inline(always)]
+  fn to_hex(&self, chunk_size: usize) -> String {
+    self.input.to_hex(chunk_size)
+  }
+
+  #[inline(always)]
+  fn to_hex_from(&self, chunk_size: usize, from: usize) -> String {
+    self.input.to_hex_from(chunk_size, from)
+  }
+}
+
+#[cfg(feature = "std")]
+impl<I> HexDisplay for Streaming<I>
+where
+  I: HexDisplay,
+{
+  #[inline(always)]
+  fn to_hex(&self, chunk_size: usize) -> String {
+    self.0.to_hex(chunk_size)
+  }
+
+  #[inline(always)]
+  fn to_hex_from(&self, chunk_size: usize, from: usize) -> String {
+    self.0.to_hex_from(chunk_size, from)
   }
 }
 
