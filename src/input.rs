@@ -32,6 +32,7 @@
 //!
 //! | trait | usage |
 //! |---|---|
+//! | [`Input`] |Core trait for driving parsing|
 //! | [`SliceLen`] |Calculate the input length|
 //! | [`InputTake`] |Slicing operations|
 //! | [`InputTakeAtOffset`] |Look for a specific token and split at its position|
@@ -314,6 +315,298 @@ impl<'a> SliceLen for &'a str {
   #[inline]
   fn slice_len(&self) -> usize {
     self.len()
+  }
+}
+
+/// Core definition for parser input state
+pub trait Input: Clone {
+  /// The smallest unit being parsed
+  ///
+  /// Example: `u8` for `&[u8]` or `char` for `&str`
+  type Token;
+  /// Sequence of `Token`s
+  ///
+  /// Example: `&[u8]` for `Located<&[u8]>` or `&str` for `Located<&str>`
+  type Slice;
+
+  /// Iterate with the offset from the current location
+  type IterOffsets: Iterator<Item = (usize, Self::Token)>;
+
+  /// Iterate with the offset from the current location
+  fn iter_offsets_(&self) -> Self::IterOffsets;
+  /// Returns the offaet to the end of the input
+  fn input_len_(&self) -> usize;
+
+  /// Split off the next token from the input
+  fn next_token(&self) -> Option<(Self, Self::Token)>;
+
+  /// Finds the offset of the next matching token
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
+  where
+    P: Fn(Self::Token) -> bool;
+  /// Get the offset for the number of `tokens` into the stream
+  ///
+  /// This means "0 tokens" will return `0` offset
+  fn offset_at(&self, tokens: usize) -> Result<usize, Needed>;
+  /// Split off a slice of tokens from the input
+  ///
+  /// **NOTE:** For inputs with variable width tokens, like `&str`'s `char`, `offset` might not correspond
+  /// with the number of tokens.  To get a valid offset, use:
+  /// - [`Input::input_len_`]
+  /// - [`Input::iter_offsets_`]
+  /// - [`Input::offset_for`]
+  /// - [`Input::offset_at`]
+  ///
+  /// # Panic
+  ///
+  /// This will panic if
+  ///
+  /// * Indexes must be within bounds of the original input;
+  /// * Indexes must uphold invariants of the Input, like for `str` they must lie on UTF-8
+  ///   sequence boundaries.
+  ///
+  fn next_slice(&self, offset: usize) -> (Self, Self::Slice);
+}
+
+impl<'i> Input for &'i [u8] {
+  type Token = u8;
+  type Slice = &'i [u8];
+
+  type IterOffsets = Enumerate<Copied<Iter<'i, u8>>>;
+
+  #[inline(always)]
+  fn iter_offsets_(&self) -> Self::IterOffsets {
+    self.iter().copied().enumerate()
+  }
+  #[inline(always)]
+  fn input_len_(&self) -> usize {
+    self.len()
+  }
+
+  #[inline(always)]
+  fn next_token(&self) -> Option<(Self, Self::Token)> {
+    if self.is_empty() {
+      None
+    } else {
+      Some((&self[1..], self[0]))
+    }
+  }
+
+  #[inline(always)]
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
+  where
+    P: Fn(Self::Token) -> bool,
+  {
+    self.iter().position(|b| predicate(*b))
+  }
+  #[inline(always)]
+  fn offset_at(&self, tokens: usize) -> Result<usize, Needed> {
+    if let Some(needed) = tokens.checked_sub(self.len()).and_then(NonZeroUsize::new) {
+      Err(Needed::Size(needed))
+    } else {
+      Ok(tokens)
+    }
+  }
+  #[inline(always)]
+  fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
+    (&self[offset..], &self[0..offset])
+  }
+}
+
+impl<'i> Input for &'i str {
+  type Token = char;
+  type Slice = &'i str;
+
+  type IterOffsets = CharIndices<'i>;
+
+  #[inline(always)]
+  fn iter_offsets_(&self) -> Self::IterOffsets {
+    self.char_indices()
+  }
+  #[inline(always)]
+  fn input_len_(&self) -> usize {
+    self.len()
+  }
+
+  #[inline(always)]
+  fn next_token(&self) -> Option<(Self, Self::Token)> {
+    let c = self.chars().next()?;
+    let offset = c.len();
+    Some((&self[offset..], c))
+  }
+
+  #[inline(always)]
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
+  where
+    P: Fn(Self::Token) -> bool,
+  {
+    for (o, c) in self.iter_offsets_() {
+      if predicate(c) {
+        return Some(o);
+      }
+    }
+    None
+  }
+  #[inline]
+  fn offset_at(&self, tokens: usize) -> Result<usize, Needed> {
+    let mut cnt = 0;
+    for (offset, _) in self.iter_offsets_() {
+      if cnt == tokens {
+        return Ok(offset);
+      }
+      cnt += 1;
+    }
+
+    if cnt == tokens {
+      Ok(self.input_len_())
+    } else {
+      Err(Needed::Unknown)
+    }
+  }
+  #[inline(always)]
+  fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
+    (&self[offset..], &self[0..offset])
+  }
+}
+
+impl<I: Input> Input for Located<I> {
+  type Token = <I as Input>::Token;
+  type Slice = <I as Input>::Slice;
+
+  type IterOffsets = <I as Input>::IterOffsets;
+
+  #[inline(always)]
+  fn iter_offsets_(&self) -> Self::IterOffsets {
+    self.input.iter_offsets_()
+  }
+  #[inline(always)]
+  fn input_len_(&self) -> usize {
+    self.input.input_len_()
+  }
+
+  #[inline(always)]
+  fn next_token(&self) -> Option<(Self, Self::Token)> {
+    let (next, token) = self.input.next_token()?;
+    Some((
+      Self {
+        initial: self.initial.clone(),
+        input: next,
+      },
+      token,
+    ))
+  }
+
+  #[inline(always)]
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
+  where
+    P: Fn(Self::Token) -> bool,
+  {
+    self.input.offset_for(predicate)
+  }
+  #[inline(always)]
+  fn offset_at(&self, tokens: usize) -> Result<usize, Needed> {
+    self.input.offset_at(tokens)
+  }
+  #[inline(always)]
+  fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
+    let (next, slice) = self.input.next_slice(offset);
+    (
+      Self {
+        initial: self.initial.clone(),
+        input: next,
+      },
+      slice,
+    )
+  }
+}
+
+impl<I: Input, S: Clone> Input for Stateful<I, S> {
+  type Token = <I as Input>::Token;
+  type Slice = <I as Input>::Slice;
+
+  type IterOffsets = <I as Input>::IterOffsets;
+
+  #[inline(always)]
+  fn iter_offsets_(&self) -> Self::IterOffsets {
+    self.input.iter_offsets_()
+  }
+  #[inline(always)]
+  fn input_len_(&self) -> usize {
+    self.input.input_len_()
+  }
+
+  #[inline(always)]
+  fn next_token(&self) -> Option<(Self, Self::Token)> {
+    let (next, token) = self.input.next_token()?;
+    Some((
+      Self {
+        input: next,
+        state: self.state.clone(),
+      },
+      token,
+    ))
+  }
+
+  #[inline(always)]
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
+  where
+    P: Fn(Self::Token) -> bool,
+  {
+    self.input.offset_for(predicate)
+  }
+  #[inline(always)]
+  fn offset_at(&self, tokens: usize) -> Result<usize, Needed> {
+    self.input.offset_at(tokens)
+  }
+  #[inline(always)]
+  fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
+    let (next, slice) = self.input.next_slice(offset);
+    (
+      Self {
+        input: next,
+        state: self.state.clone(),
+      },
+      slice,
+    )
+  }
+}
+
+impl<I: Input> Input for Streaming<I> {
+  type Token = <I as Input>::Token;
+  type Slice = <I as Input>::Slice;
+
+  type IterOffsets = <I as Input>::IterOffsets;
+
+  #[inline(always)]
+  fn iter_offsets_(&self) -> Self::IterOffsets {
+    self.0.iter_offsets_()
+  }
+  #[inline(always)]
+  fn input_len_(&self) -> usize {
+    self.0.input_len_()
+  }
+
+  #[inline(always)]
+  fn next_token(&self) -> Option<(Self, Self::Token)> {
+    let (next, token) = self.0.next_token()?;
+    Some((Streaming(next), token))
+  }
+
+  #[inline(always)]
+  fn offset_for<P>(&self, predicate: P) -> Option<usize>
+  where
+    P: Fn(Self::Token) -> bool,
+  {
+    self.0.offset_for(predicate)
+  }
+  #[inline(always)]
+  fn offset_at(&self, tokens: usize) -> Result<usize, Needed> {
+    self.0.offset_at(tokens)
+  }
+  #[inline(always)]
+  fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
+    let (next, slice) = self.0.next_slice(offset);
+    (Streaming(next), slice)
   }
 }
 
@@ -1844,6 +2137,59 @@ where
 }
 
 /// Convert an `Input` into an appropriate `Output` type
+pub trait UpdateSlice: Input {
+  /// Convert an `Output` type to be used as `Input`
+  fn update_slice(self, inner: Self::Slice) -> Self;
+}
+
+impl<'a> UpdateSlice for &'a [u8] {
+  #[inline]
+  fn update_slice(self, inner: Self::Slice) -> Self {
+    inner
+  }
+}
+
+impl<'a> UpdateSlice for &'a str {
+  #[inline]
+  fn update_slice(self, inner: Self::Slice) -> Self {
+    inner
+  }
+}
+
+impl<I> UpdateSlice for Located<I>
+where
+  I: UpdateSlice,
+{
+  #[inline]
+  fn update_slice(mut self, inner: Self::Slice) -> Self {
+    self.input = I::update_slice(self.input, inner);
+    self
+  }
+}
+
+impl<I, S> UpdateSlice for Stateful<I, S>
+where
+  I: UpdateSlice,
+  S: Clone,
+{
+  #[inline]
+  fn update_slice(mut self, inner: Self::Slice) -> Self {
+    self.input = I::update_slice(self.input, inner);
+    self
+  }
+}
+
+impl<I> UpdateSlice for Streaming<I>
+where
+  I: UpdateSlice,
+{
+  #[inline]
+  fn update_slice(self, inner: Self::Slice) -> Self {
+    Streaming(I::update_slice(self.0, inner))
+  }
+}
+
+/// Convert an `Input` into an appropriate `Output` type
 pub trait IntoOutput {
   /// Output type
   type Output;
@@ -2621,6 +2967,87 @@ macro_rules! impl_contains_token_for_tuples {
 impl_contains_token_for_tuples!(
   F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21
 );
+
+/// Looks for the first element of the input type for which the condition returns true,
+/// and returns the input up to this position.
+///
+/// *streaming version*: If no element is found matching the condition, this will return `Incomplete`
+pub(crate) fn split_at_offset_streaming<P, I: Input, E: ParseError<I>>(
+  input: &I,
+  predicate: P,
+) -> IResult<I, <I as Input>::Slice, E>
+where
+  P: Fn(I::Token) -> bool,
+{
+  match input.offset_for(predicate) {
+    Some(n) => Ok(input.next_slice(n)),
+    None => Err(Err::Incomplete(Needed::new(1))),
+  }
+}
+
+/// Looks for the first element of the input type for which the condition returns true
+/// and returns the input up to this position.
+///
+/// Fails if the produced slice is empty.
+///
+/// *streaming version*: If no element is found matching the condition, this will return `Incomplete`
+pub(crate) fn split_at_offset1_streaming<P, I: Input, E: ParseError<I>>(
+  input: &I,
+  predicate: P,
+  e: ErrorKind,
+) -> IResult<I, <I as Input>::Slice, E>
+where
+  P: Fn(I::Token) -> bool,
+{
+  match input.offset_for(predicate) {
+    Some(0) => Err(Err::Error(E::from_error_kind(input.clone(), e))),
+    Some(n) => Ok(input.next_slice(n)),
+    None => Err(Err::Incomplete(Needed::new(1))),
+  }
+}
+
+/// Looks for the first element of the input type for which the condition returns true,
+/// and returns the input up to this position.
+///
+/// *complete version*: If no element is found matching the condition, this will return the whole input
+pub(crate) fn split_at_offset_complete<P, I: Input, E: ParseError<I>>(
+  input: &I,
+  predicate: P,
+) -> IResult<I, <I as Input>::Slice, E>
+where
+  P: Fn(I::Token) -> bool,
+{
+  match input.offset_for(predicate) {
+    Some(n) => Ok(input.next_slice(n)),
+    None => Ok(input.next_slice(input.input_len_())),
+  }
+}
+
+/// Looks for the first element of the input type for which the condition returns true
+/// and returns the input up to this position.
+///
+/// Fails if the produced slice is empty.
+///
+/// *complete version*: If no element is found matching the condition, this will return the whole input
+pub(crate) fn split_at_offset1_complete<P, I: Input, E: ParseError<I>>(
+  input: &I,
+  predicate: P,
+  e: ErrorKind,
+) -> IResult<I, <I as Input>::Slice, E>
+where
+  P: Fn(I::Token) -> bool,
+{
+  match input.offset_for(predicate) {
+    Some(n) => Ok(input.next_slice(n)),
+    None => {
+      if input.input_len_() == 0 {
+        Err(Err::Error(E::from_error_kind(input.clone(), e)))
+      } else {
+        Ok(input.next_slice(input.input_len_()))
+      }
+    }
+  }
+}
 
 #[cfg(test)]
 mod tests {
