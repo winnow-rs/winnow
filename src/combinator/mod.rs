@@ -180,11 +180,11 @@ mod tests;
 /// assert_eq!(rest::<_,Error<_>>(""), Ok(("", "")));
 /// ```
 #[inline]
-pub fn rest<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
+pub fn rest<I, E: ParseError<I>>(input: I) -> IResult<I, <I as IntoOutput>::Output, E>
 where
-  T: Slice<RangeFrom<usize>>,
-  T: InputLength,
-  T: IntoOutput,
+  I: Slice<RangeFrom<usize>>,
+  I: InputLength,
+  I: IntoOutput,
 {
   Ok((input.slice(input.input_len()..), input)).into_output()
 }
@@ -199,9 +199,9 @@ where
 /// assert_eq!(rest_len::<_,Error<_>>(""), Ok(("", 0)));
 /// ```
 #[inline]
-pub fn rest_len<T, E: ParseError<T>>(input: T) -> IResult<T, usize, E>
+pub fn rest_len<I, E: ParseError<I>>(input: I) -> IResult<I, usize, E>
 where
-  T: InputLength,
+  I: InputLength,
 {
   let len = input.input_len();
   Ok((input, len))
