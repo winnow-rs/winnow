@@ -5,8 +5,8 @@
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{
-  Compare, CompareResult, ContainsToken, FindSubstring, InputIter, InputLength, InputTake,
-  InputTakeAtOffset, IntoOutput, Slice, ToUsize,
+  Compare, CompareResult, ContainsToken, FindSubstring, InputIter, InputTake, InputTakeAtOffset,
+  IntoOutput, Slice, SliceLen, ToUsize,
 };
 use crate::lib::std::ops::RangeFrom;
 use crate::lib::std::result::Result::Ok;
@@ -15,13 +15,13 @@ use crate::{Err, IResult, Needed, Parser};
 
 pub(crate) fn any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as InputIter>::Item, E>
 where
-  I: InputIter + InputLength + Slice<RangeFrom<usize>>,
+  I: InputIter + SliceLen + Slice<RangeFrom<usize>>,
 {
   let mut it = input.iter_offsets();
   match it.next() {
     None => Err(Err::Incomplete(Needed::new(1))),
     Some((_, c)) => match it.next() {
-      None => Ok((input.slice(input.input_len()..), c)),
+      None => Ok((input.slice(input.slice_len()..), c)),
       Some((idx, _)) => Ok((input.slice(idx..), c)),
     },
   }
@@ -55,9 +55,9 @@ pub fn tag<T, Input, Error: ParseError<Input>>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + InputLength + Compare<T>,
+  Input: InputTake + SliceLen + Compare<T>,
   Input: IntoOutput,
-  T: InputLength + Clone,
+  T: SliceLen + Clone,
 {
   move |i: Input| tag_internal(i, tag.clone())
 }
@@ -67,15 +67,15 @@ pub(crate) fn tag_internal<T, Input, Error: ParseError<Input>>(
   t: T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + InputLength + Compare<T>,
+  Input: InputTake + SliceLen + Compare<T>,
   Input: IntoOutput,
-  T: InputLength,
+  T: SliceLen,
 {
-  let tag_len = t.input_len();
+  let tag_len = t.slice_len();
 
   let res: IResult<_, _, Error> = match i.compare(t) {
     CompareResult::Ok => Ok(i.take_split(tag_len)),
-    CompareResult::Incomplete => Err(Err::Incomplete(Needed::new(tag_len - i.input_len()))),
+    CompareResult::Incomplete => Err(Err::Incomplete(Needed::new(tag_len - i.slice_len()))),
     CompareResult::Error => {
       let e: ErrorKind = ErrorKind::Tag;
       Err(Err::Error(Error::from_error_kind(i, e)))
@@ -113,9 +113,9 @@ pub fn tag_no_case<T, Input, Error: ParseError<Input>>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + InputLength + Compare<T>,
+  Input: InputTake + SliceLen + Compare<T>,
   Input: IntoOutput,
-  T: InputLength + Clone,
+  T: SliceLen + Clone,
 {
   move |i: Input| tag_no_case_internal(i, tag.clone())
 }
@@ -125,15 +125,15 @@ pub(crate) fn tag_no_case_internal<T, Input, Error: ParseError<Input>>(
   t: T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + InputLength + Compare<T>,
+  Input: InputTake + SliceLen + Compare<T>,
   Input: IntoOutput,
-  T: InputLength,
+  T: SliceLen,
 {
-  let tag_len = t.input_len();
+  let tag_len = t.slice_len();
 
   let res: IResult<_, _, Error> = match (i).compare_no_case(t) {
     CompareResult::Ok => Ok(i.take_split(tag_len)),
-    CompareResult::Incomplete => Err(Err::Incomplete(Needed::new(tag_len - i.input_len()))),
+    CompareResult::Incomplete => Err(Err::Incomplete(Needed::new(tag_len - i.slice_len()))),
     CompareResult::Error => {
       let e: ErrorKind = ErrorKind::Tag;
       Err(Err::Error(Error::from_error_kind(i, e)))
@@ -147,14 +147,14 @@ pub(crate) fn one_of_internal<I, T, E: ParseError<I>>(
   list: &T,
 ) -> IResult<I, <I as InputIter>::Item, E>
 where
-  I: Slice<RangeFrom<usize>> + InputIter + InputLength,
+  I: Slice<RangeFrom<usize>> + InputIter + SliceLen,
   <I as InputIter>::Item: Copy,
   T: ContainsToken<<I as InputIter>::Item>,
 {
   let mut it = input.iter_offsets();
   match it.next() {
     Some((_, c)) if list.contains_token(c) => match it.next() {
-      None => Ok((input.slice(input.input_len()..), c)),
+      None => Ok((input.slice(input.slice_len()..), c)),
       Some((idx, _)) => Ok((input.slice(idx..), c)),
     },
     Some(_) => Err(Err::Error(E::from_error_kind(input, ErrorKind::OneOf))),
@@ -167,14 +167,14 @@ pub(crate) fn none_of_internal<I, T, E: ParseError<I>>(
   list: &T,
 ) -> IResult<I, <I as InputIter>::Item, E>
 where
-  I: Slice<RangeFrom<usize>> + InputIter + InputLength,
+  I: Slice<RangeFrom<usize>> + InputIter + SliceLen,
   <I as InputIter>::Item: Copy,
   T: ContainsToken<<I as InputIter>::Item>,
 {
   let mut it = input.iter_offsets();
   match it.next() {
     Some((_, c)) if !list.contains_token(c) => match it.next() {
-      None => Ok((input.slice(input.input_len()..), c)),
+      None => Ok((input.slice(input.slice_len()..), c)),
       Some((idx, _)) => Ok((input.slice(idx..), c)),
     },
     Some(_) => Err(Err::Error(E::from_error_kind(input, ErrorKind::NoneOf))),
@@ -432,7 +432,7 @@ pub fn take_while_m_n<T, Input, Error: ParseError<Input>>(
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + InputIter + InputLength,
+  Input: InputTake + InputIter + SliceLen,
   Input: IntoOutput,
   T: ContainsToken<<Input as InputIter>::Item>,
 {
@@ -446,7 +446,7 @@ pub(crate) fn take_while_m_n_internal<T, Input, Error: ParseError<Input>>(
   list: &T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + InputIter + InputLength,
+  Input: InputTake + InputIter + SliceLen,
   Input: IntoOutput,
   T: ContainsToken<<Input as InputIter>::Item>,
 {
@@ -482,7 +482,7 @@ where
       }
     }
     None => {
-      let len = input.input_len();
+      let len = input.slice_len();
       if len >= n {
         match input.offset_at(n) {
           Ok(index) => Ok(input.take_split(index)).into_output(),
@@ -640,7 +640,7 @@ pub fn take<C, Input, Error: ParseError<Input>>(
   count: C,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputIter + InputTake + InputLength,
+  Input: InputIter + InputTake + SliceLen,
   Input: IntoOutput,
   C: ToUsize,
 {
@@ -653,7 +653,7 @@ pub(crate) fn take_internal<Input, Error: ParseError<Input>>(
   c: usize,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputIter + InputTake + InputLength,
+  Input: InputIter + InputTake + SliceLen,
   Input: IntoOutput,
 {
   match i.offset_at(c) {
@@ -693,7 +693,7 @@ pub fn take_until<T, Input, Error: ParseError<Input>>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + InputLength + FindSubstring<T>,
+  Input: InputTake + SliceLen + FindSubstring<T>,
   Input: IntoOutput,
   T: Clone,
 {
@@ -705,7 +705,7 @@ pub(crate) fn take_until_internal<T, Input, Error: ParseError<Input>>(
   t: T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + InputLength + FindSubstring<T>,
+  Input: InputTake + SliceLen + FindSubstring<T>,
   Input: IntoOutput,
 {
   let res: IResult<_, _, Error> = match i.find_substring(t) {
@@ -747,7 +747,7 @@ pub fn take_until1<T, Input, Error: ParseError<Input>>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + InputLength + FindSubstring<T>,
+  Input: InputTake + SliceLen + FindSubstring<T>,
   Input: IntoOutput,
   T: Clone,
 {
@@ -759,7 +759,7 @@ pub(crate) fn take_until1_internal<T, Input, Error: ParseError<Input>>(
   t: T,
 ) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + InputLength + FindSubstring<T>,
+  Input: InputTake + SliceLen + FindSubstring<T>,
   Input: IntoOutput,
 {
   let res: IResult<_, _, Error> = match i.find_substring(t) {
@@ -804,7 +804,7 @@ pub fn escaped<Input, Error, F, G, O1, O2>(
 where
   Input: Clone
     + crate::input::Offset
-    + InputLength
+    + SliceLen
     + InputTake
     + InputTakeAtOffset
     + Slice<RangeFrom<usize>>
@@ -827,7 +827,7 @@ pub(crate) fn escaped_internal<Input, Error, F, G, O1, O2>(
 where
   Input: Clone
     + crate::input::Offset
-    + InputLength
+    + SliceLen
     + InputTake
     + InputTakeAtOffset
     + Slice<RangeFrom<usize>>
@@ -842,14 +842,14 @@ where
 
   let mut i = input.clone();
 
-  while i.input_len() > 0 {
-    let current_len = i.input_len();
+  while i.slice_len() > 0 {
+    let current_len = i.slice_len();
 
     match normal.parse_next(i.clone()) {
       Ok((i2, _)) => {
-        if i2.input_len() == 0 {
+        if i2.slice_len() == 0 {
           return Err(Err::Incomplete(Needed::Unknown));
-        } else if i2.input_len() == current_len {
+        } else if i2.slice_len() == current_len {
           let index = input.offset_to(&i2);
           return Ok(input.take_split(index)).into_output();
         } else {
@@ -857,15 +857,15 @@ where
         }
       }
       Err(Err::Error(_)) => {
-        // unwrap() should be safe here since index < $i.input_len()
+        // unwrap() should be safe here since index < $i.slice_len()
         if i.iter_elements().next().unwrap().as_char() == control_char {
           let next = control_char.len_utf8();
-          if next >= i.input_len() {
+          if next >= i.slice_len() {
             return Err(Err::Incomplete(Needed::new(1)));
           } else {
             match escapable.parse_next(i.slice(next..)) {
               Ok((i2, _)) => {
-                if i2.input_len() == 0 {
+                if i2.slice_len() == 0 {
                   return Err(Err::Incomplete(Needed::Unknown));
                 } else {
                   i = i2;
@@ -933,7 +933,7 @@ pub fn escaped_transform<Input, Error, F, G, O1, O2, ExtendItem, Output>(
 where
   Input: Clone
     + crate::input::Offset
-    + InputLength
+    + SliceLen
     + InputTake
     + InputTakeAtOffset
     + Slice<RangeFrom<usize>>
@@ -959,7 +959,7 @@ pub(crate) fn escaped_transform_internal<Input, Error, F, G, O1, O2, ExtendItem,
 where
   Input: Clone
     + crate::input::Offset
-    + InputLength
+    + SliceLen
     + InputTake
     + InputTakeAtOffset
     + Slice<RangeFrom<usize>>
@@ -979,33 +979,33 @@ where
 
   let i = input.clone();
 
-  while index < i.input_len() {
-    let current_len = i.input_len();
+  while index < i.slice_len() {
+    let current_len = i.slice_len();
     let remainder = i.slice(index..);
     match normal.parse_next(remainder.clone()) {
       Ok((i2, o)) => {
         o.extend_into(&mut res);
-        if i2.input_len() == 0 {
+        if i2.slice_len() == 0 {
           return Err(Err::Incomplete(Needed::Unknown));
-        } else if i2.input_len() == current_len {
+        } else if i2.slice_len() == current_len {
           return Ok((remainder, res));
         } else {
           index = input.offset_to(&i2);
         }
       }
       Err(Err::Error(_)) => {
-        // unwrap() should be safe here since index < $i.input_len()
+        // unwrap() should be safe here since index < $i.slice_len()
         if remainder.iter_elements().next().unwrap().as_char() == control_char {
           let next = index + control_char.len_utf8();
-          let input_len = input.input_len();
+          let slice_len = input.slice_len();
 
-          if next >= input_len {
+          if next >= slice_len {
             return Err(Err::Incomplete(Needed::Unknown));
           } else {
             match transform.parse_next(i.slice(next..)) {
               Ok((i2, o)) => {
                 o.extend_into(&mut res);
-                if i2.input_len() == 0 {
+                if i2.slice_len() == 0 {
                   return Err(Err::Incomplete(Needed::Unknown));
                 } else {
                   index = input.offset_to(&i2);

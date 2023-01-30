@@ -12,8 +12,8 @@ mod tests;
 use crate::error::ParseError;
 use crate::input::Compare;
 use crate::input::{
-  AsBytes, AsChar, InputIsStreaming, InputIter, InputLength, InputTake, InputTakeAtOffset,
-  IntoOutput, Offset, ParseTo, Slice,
+  AsBytes, AsChar, InputIsStreaming, InputIter, InputTake, InputTakeAtOffset, IntoOutput, Offset,
+  ParseTo, Slice, SliceLen,
 };
 use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
 use crate::IResult;
@@ -102,7 +102,7 @@ pub fn not_line_ending<I, E: ParseError<I>, const STREAMING: bool>(
 ) -> IResult<I, <I as IntoOutput>::Output, E>
 where
   I: Slice<Range<usize>> + Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
-  I: InputIter + InputLength + InputIsStreaming<STREAMING>,
+  I: InputIter + SliceLen + InputIsStreaming<STREAMING>,
   I: IntoOutput,
   I: Compare<&'static str>,
   <I as InputIter>::Item: AsChar,
@@ -149,7 +149,7 @@ pub fn line_ending<I, E: ParseError<I>, const STREAMING: bool>(
 ) -> IResult<I, <I as IntoOutput>::Output, E>
 where
   I: Slice<Range<usize>> + Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
-  I: InputIter + InputLength + InputIsStreaming<STREAMING>,
+  I: InputIter + SliceLen + InputIsStreaming<STREAMING>,
   I: IntoOutput,
   I: Compare<&'static str>,
 {
@@ -191,7 +191,7 @@ where
 #[inline(always)]
 pub fn newline<I, Error: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, char, Error>
 where
-  I: Slice<RangeFrom<usize>> + InputIter + InputLength + InputIsStreaming<STREAMING>,
+  I: Slice<RangeFrom<usize>> + InputIter + SliceLen + InputIsStreaming<STREAMING>,
   <I as InputIter>::Item: AsChar,
 {
   if STREAMING {
@@ -232,7 +232,7 @@ where
 #[inline(always)]
 pub fn tab<I, Error: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, char, Error>
 where
-  I: Slice<RangeFrom<usize>> + InputIter + InputLength + InputIsStreaming<STREAMING>,
+  I: Slice<RangeFrom<usize>> + InputIter + SliceLen + InputIsStreaming<STREAMING>,
   <I as InputIter>::Item: AsChar,
 {
   if STREAMING {
@@ -902,7 +902,7 @@ macro_rules! ints {
         #[inline(always)]
         pub fn $t<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, $t, E>
             where
-            I: InputIter + Slice<RangeFrom<usize>> + InputLength + InputTake + Clone + InputIsStreaming<STREAMING>,
+            I: InputIter + Slice<RangeFrom<usize>> + SliceLen + InputTake + Clone + InputIsStreaming<STREAMING>,
             I: IntoOutput,
             <I as InputIter>::Item: AsChar,
             I: for <'a> Compare<&'a[u8]>,
@@ -931,7 +931,7 @@ macro_rules! uints {
         #[inline(always)]
         pub fn $t<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, $t, E>
             where
-            I: InputIter + Slice<RangeFrom<usize>> + InputLength + InputIsStreaming<STREAMING>,
+            I: InputIter + Slice<RangeFrom<usize>> + SliceLen + InputIsStreaming<STREAMING>,
             I: IntoOutput,
             <I as InputIter>::Item: AsChar,
             {
@@ -991,7 +991,7 @@ pub fn f32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f
 where
   I: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>> + Slice<Range<usize>>,
   I: Clone + Offset + Compare<&'static str>,
-  I: InputIter + InputLength + InputTake + InputIsStreaming<STREAMING>,
+  I: InputIter + SliceLen + InputTake + InputIsStreaming<STREAMING>,
   I: IntoOutput,
   <I as IntoOutput>::Output: ParseTo<f32>,
   <I as InputIter>::Item: AsChar + Copy,
@@ -1052,7 +1052,7 @@ pub fn f64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f
 where
   I: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>> + Slice<Range<usize>>,
   I: Clone + Offset + Compare<&'static str>,
-  I: InputIter + InputLength + InputTake + InputIsStreaming<STREAMING>,
+  I: InputIter + SliceLen + InputTake + InputIsStreaming<STREAMING>,
   I: IntoOutput,
   <I as IntoOutput>::Output: ParseTo<f64>,
   <I as InputIter>::Item: AsChar + Copy,
@@ -1113,7 +1113,7 @@ pub fn recognize_float<I, E: ParseError<I>, const STREAMING: bool>(
 where
   I: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
   I: Clone + Offset,
-  I: InputIter + InputLength + InputIsStreaming<STREAMING>,
+  I: InputIter + SliceLen + InputIsStreaming<STREAMING>,
   I: IntoOutput,
   <I as InputIter>::Item: AsChar,
   I: InputTakeAtOffset,
@@ -1155,7 +1155,7 @@ where
   I: InputIter + InputTake + InputIsStreaming<STREAMING>,
   I: IntoOutput,
   <I as InputIter>::Item: AsChar + Copy,
-  I: InputTakeAtOffset + InputLength,
+  I: InputTakeAtOffset + SliceLen,
   <I as InputTakeAtOffset>::Item: AsChar,
   I: for<'a> Compare<&'a [u8]>,
   I: AsBytes,

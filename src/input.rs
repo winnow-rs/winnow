@@ -32,7 +32,7 @@
 //!
 //! | trait | usage |
 //! |---|---|
-//! | [`InputLength`] |Calculate the input length|
+//! | [`SliceLen`] |Calculate the input length|
 //! | [`InputTake`] |Slicing operations|
 //! | [`InputTakeAtOffset`] |Look for a specific token and split at its position|
 //! | [`InputIter`] |Common iteration operations on the input type|
@@ -255,64 +255,64 @@ impl<I> crate::lib::std::ops::Deref for Streaming<I> {
 }
 
 /// Abstract method to calculate the input length
-pub trait InputLength {
+pub trait SliceLen {
   /// Calculates the input length, as indicated by its name,
   /// and the name of the trait itself
-  fn input_len(&self) -> usize;
+  fn slice_len(&self) -> usize;
 }
 
-impl<I> InputLength for Located<I>
+impl<I> SliceLen for Located<I>
 where
-  I: InputLength,
+  I: SliceLen,
 {
-  fn input_len(&self) -> usize {
-    self.input.input_len()
+  fn slice_len(&self) -> usize {
+    self.input.slice_len()
   }
 }
 
-impl<I, S> InputLength for Stateful<I, S>
+impl<I, S> SliceLen for Stateful<I, S>
 where
-  I: InputLength,
+  I: SliceLen,
 {
-  fn input_len(&self) -> usize {
-    self.input.input_len()
+  fn slice_len(&self) -> usize {
+    self.input.slice_len()
   }
 }
 
-impl<I> InputLength for Streaming<I>
+impl<I> SliceLen for Streaming<I>
 where
-  I: InputLength,
+  I: SliceLen,
 {
   #[inline(always)]
-  fn input_len(&self) -> usize {
-    self.0.input_len()
+  fn slice_len(&self) -> usize {
+    self.0.slice_len()
   }
 }
 
-impl<'a, T> InputLength for &'a [T] {
+impl<'a, T> SliceLen for &'a [T] {
   #[inline]
-  fn input_len(&self) -> usize {
+  fn slice_len(&self) -> usize {
     self.len()
   }
 }
 
-impl<const LEN: usize> InputLength for [u8; LEN] {
+impl<const LEN: usize> SliceLen for [u8; LEN] {
   #[inline]
-  fn input_len(&self) -> usize {
+  fn slice_len(&self) -> usize {
     self.len()
   }
 }
 
-impl<'a, const LEN: usize> InputLength for &'a [u8; LEN] {
+impl<'a, const LEN: usize> SliceLen for &'a [u8; LEN] {
   #[inline]
-  fn input_len(&self) -> usize {
+  fn slice_len(&self) -> usize {
     self.len()
   }
 }
 
-impl<'a> InputLength for &'a str {
+impl<'a> SliceLen for &'a str {
   #[inline]
-  fn input_len(&self) -> usize {
+  fn slice_len(&self) -> usize {
     self.len()
   }
 }
@@ -422,7 +422,7 @@ where
 /// Dummy trait used for default implementations (currently only used for `InputTakeAtOffset` and `Compare`).
 ///
 /// When implementing a custom input type, it is possible to use directly the
-/// default implementation: If the input type implements `InputLength`, `InputIter`,
+/// default implementation: If the input type implements `SliceLen`, `InputIter`,
 /// `InputTake` and `Clone`, you can implement `UnspecializedInput` and get
 /// a default version of `InputTakeAtOffset` and `Compare`.
 ///
@@ -490,7 +490,7 @@ pub trait InputTakeAtOffset: Sized {
     P: Fn(Self::Item) -> bool;
 }
 
-impl<I: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputTakeAtOffset for I {
+impl<I: SliceLen + InputIter + InputTake + Clone + UnspecializedInput> InputTakeAtOffset for I {
   type Item = <I as InputIter>::Item;
 
   fn split_at_offset_streaming<P, E: ParseError<Self>>(
@@ -527,7 +527,7 @@ impl<I: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
   {
     match self.offset_for(predicate) {
       Some(n) => Ok(self.take_split(n)),
-      None => Ok(self.take_split(self.input_len())),
+      None => Ok(self.take_split(self.slice_len())),
     }
   }
 
@@ -543,10 +543,10 @@ impl<I: InputLength + InputIter + InputTake + Clone + UnspecializedInput> InputT
       Some(0) => Err(Err::Error(E::from_error_kind(self.clone(), e))),
       Some(n) => Ok(self.take_split(n)),
       None => {
-        if self.input_len() == 0 {
+        if self.slice_len() == 0 {
           Err(Err::Error(E::from_error_kind(self.clone(), e)))
         } else {
-          Ok(self.take_split(self.input_len()))
+          Ok(self.take_split(self.slice_len()))
         }
       }
     }
@@ -590,7 +590,7 @@ impl<'a> InputTakeAtOffset for &'a [u8] {
   {
     match self.iter().position(|c| predicate(*c)) {
       Some(i) => Ok(self.take_split(i)),
-      None => Ok(self.take_split(self.input_len())),
+      None => Ok(self.take_split(self.slice_len())),
     }
   }
 
@@ -609,7 +609,7 @@ impl<'a> InputTakeAtOffset for &'a [u8] {
         if self.is_empty() {
           Err(Err::Error(E::from_error_kind(self, e)))
         } else {
-          Ok(self.take_split(self.input_len()))
+          Ok(self.take_split(self.slice_len()))
         }
       }
     }
@@ -1587,8 +1587,8 @@ impl<'a, 'b, const LEN: usize> Compare<&'b [u8; LEN]> for &'a [u8] {
 }
 
 impl<
-    T: InputLength + InputIter<Item = u8> + InputTake + UnspecializedInput,
-    O: InputLength + InputIter<Item = u8> + InputTake,
+    T: SliceLen + InputIter<Item = u8> + InputTake + UnspecializedInput,
+    O: SliceLen + InputIter<Item = u8> + InputTake,
   > Compare<O> for T
 {
   #[inline(always)]
@@ -1601,7 +1601,7 @@ impl<
     match pos {
       Some(_) => CompareResult::Error,
       None => {
-        if self.input_len() >= t.input_len() {
+        if self.slice_len() >= t.slice_len() {
           CompareResult::Ok
         } else {
           CompareResult::Incomplete
@@ -1618,7 +1618,7 @@ impl<
       .any(|(a, b)| lowercase_byte(a) != lowercase_byte(b))
     {
       CompareResult::Error
-    } else if self.input_len() < t.input_len() {
+    } else if self.slice_len() < t.slice_len() {
       CompareResult::Incomplete
     } else {
       CompareResult::Ok

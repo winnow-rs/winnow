@@ -7,8 +7,8 @@ mod tests;
 
 use crate::error::ParseError;
 use crate::input::{
-  Compare, ContainsToken, FindSubstring, InputIsStreaming, InputIter, InputLength, InputTake,
-  InputTakeAtOffset, IntoOutput, Slice, ToUsize,
+  Compare, ContainsToken, FindSubstring, InputIsStreaming, InputIter, InputTake, InputTakeAtOffset,
+  IntoOutput, Slice, SliceLen, ToUsize,
 };
 use crate::lib::std::ops::RangeFrom;
 use crate::{IResult, Parser};
@@ -42,7 +42,7 @@ pub fn any<I, E: ParseError<I>, const STREAMING: bool>(
   input: I,
 ) -> IResult<I, <I as InputIter>::Item, E>
 where
-  I: InputIter + InputLength + Slice<RangeFrom<usize>> + InputIsStreaming<STREAMING>,
+  I: InputIter + SliceLen + Slice<RangeFrom<usize>> + InputIsStreaming<STREAMING>,
 {
   if STREAMING {
     streaming::any(input)
@@ -95,9 +95,9 @@ pub fn tag<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + InputLength + Compare<T> + InputIsStreaming<STREAMING>,
+  Input: InputTake + SliceLen + Compare<T> + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
-  T: InputLength + Clone,
+  T: SliceLen + Clone,
 {
   move |i: Input| {
     let t = tag.clone();
@@ -151,9 +151,9 @@ pub fn tag_no_case<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + InputLength + Compare<T> + InputIsStreaming<STREAMING>,
+  Input: InputTake + SliceLen + Compare<T> + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
-  T: InputLength + Clone,
+  T: SliceLen + Clone,
 {
   move |i: Input| {
     let t = tag.clone();
@@ -215,7 +215,7 @@ pub fn one_of<I, T, Error: ParseError<I>, const STREAMING: bool>(
   list: T,
 ) -> impl Fn(I) -> IResult<I, <I as InputIter>::Item, Error>
 where
-  I: Slice<RangeFrom<usize>> + InputIter + InputLength + InputIsStreaming<STREAMING>,
+  I: Slice<RangeFrom<usize>> + InputIter + SliceLen + InputIsStreaming<STREAMING>,
   <I as InputIter>::Item: Copy,
   T: ContainsToken<<I as InputIter>::Item>,
 {
@@ -257,7 +257,7 @@ pub fn none_of<I, T, Error: ParseError<I>, const STREAMING: bool>(
   list: T,
 ) -> impl Fn(I) -> IResult<I, <I as InputIter>::Item, Error>
 where
-  I: Slice<RangeFrom<usize>> + InputIter + InputLength + InputIsStreaming<STREAMING>,
+  I: Slice<RangeFrom<usize>> + InputIter + SliceLen + InputIsStreaming<STREAMING>,
   <I as InputIter>::Item: Copy,
   T: ContainsToken<<I as InputIter>::Item>,
 {
@@ -443,8 +443,7 @@ pub fn take_while_m_n<T, Input, Error: ParseError<Input>, const STREAMING: bool>
   list: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input:
-    InputTake + InputIter + InputLength + Slice<RangeFrom<usize>> + InputIsStreaming<STREAMING>,
+  Input: InputTake + InputIter + SliceLen + Slice<RangeFrom<usize>> + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
   T: ContainsToken<<Input as InputIter>::Item>,
 {
@@ -639,7 +638,7 @@ pub fn take<C, Input, Error: ParseError<Input>, const STREAMING: bool>(
   count: C,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputIter + InputLength + InputTake + InputIsStreaming<STREAMING>,
+  Input: InputIter + SliceLen + InputTake + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
   C: ToUsize,
 {
@@ -696,9 +695,9 @@ pub fn take_until<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + InputLength + FindSubstring<T> + InputIsStreaming<STREAMING>,
+  Input: InputTake + SliceLen + FindSubstring<T> + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
-  T: InputLength + Clone,
+  T: SliceLen + Clone,
 {
   move |i: Input| {
     if STREAMING {
@@ -755,9 +754,9 @@ pub fn take_until1<T, Input, Error: ParseError<Input>, const STREAMING: bool>(
   tag: T,
 ) -> impl Fn(Input) -> IResult<Input, <Input as IntoOutput>::Output, Error>
 where
-  Input: InputTake + InputLength + FindSubstring<T> + InputIsStreaming<STREAMING>,
+  Input: InputTake + SliceLen + FindSubstring<T> + InputIsStreaming<STREAMING>,
   Input: IntoOutput,
-  T: InputLength + Clone,
+  T: SliceLen + Clone,
 {
   move |i: Input| {
     if STREAMING {
@@ -811,7 +810,7 @@ pub fn escaped<'a, Input: 'a, Error, F, G, O1, O2, const STREAMING: bool>(
 where
   Input: Clone
     + crate::input::Offset
-    + InputLength
+    + SliceLen
     + InputTake
     + InputTakeAtOffset
     + Slice<RangeFrom<usize>>
@@ -899,7 +898,7 @@ pub fn escaped_transform<Input, Error, F, G, O1, O2, ExtendItem, Output, const S
 where
   Input: Clone
     + crate::input::Offset
-    + InputLength
+    + SliceLen
     + InputTake
     + InputTakeAtOffset
     + Slice<RangeFrom<usize>>

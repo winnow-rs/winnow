@@ -55,7 +55,7 @@ pub trait FinishIResult<I, O, E> {
 
 impl<I, O, E> FinishIResult<I, O, E> for IResult<I, O, E>
 where
-  I: crate::input::InputLength,
+  I: crate::input::SliceLen,
   I: crate::input::IntoOutput,
   // Force users to deal with `Incomplete` when `InputIsStreaming<true>`
   I: InputIsStreaming<false>,
@@ -888,7 +888,7 @@ where
 /// ```
 impl<I, E> Parser<I, u8, E> for u8
 where
-  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength + InputIsStreaming<false>,
+  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + SliceLen + InputIsStreaming<false>,
   E: ParseError<I>,
 {
   fn parse_next(&mut self, i: I) -> IResult<I, u8, E> {
@@ -913,7 +913,7 @@ where
 /// ```
 impl<I, E> Parser<I, <I as InputIter>::Item, E> for char
 where
-  I: Slice<RangeFrom<usize>> + InputIter + InputLength + InputIsStreaming<false>,
+  I: Slice<RangeFrom<usize>> + InputIter + SliceLen + InputIsStreaming<false>,
   <I as InputIter>::Item: AsChar + Copy,
   E: ParseError<I>,
 {
@@ -942,7 +942,7 @@ where
 /// ```
 impl<'s, I, E: ParseError<I>> Parser<I, <I as IntoOutput>::Output, E> for &'s [u8]
 where
-  I: InputTake + InputLength + Compare<&'s [u8]> + InputIsStreaming<false>,
+  I: InputTake + SliceLen + Compare<&'s [u8]> + InputIsStreaming<false>,
   I: IntoOutput,
 {
   fn parse_next(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
@@ -971,7 +971,7 @@ where
 impl<'s, I, E: ParseError<I>, const N: usize> Parser<I, <I as IntoOutput>::Output, E>
   for &'s [u8; N]
 where
-  I: InputTake + InputLength + Compare<&'s [u8; N]> + InputIsStreaming<false>,
+  I: InputTake + SliceLen + Compare<&'s [u8; N]> + InputIsStreaming<false>,
   I: IntoOutput,
 {
   fn parse_next(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {
@@ -999,7 +999,7 @@ where
 /// ```
 impl<'s, I, E: ParseError<I>> Parser<I, <I as IntoOutput>::Output, E> for &'s str
 where
-  I: InputTake + InputLength + Compare<&'s str> + InputIsStreaming<false>,
+  I: InputTake + SliceLen + Compare<&'s str> + InputIsStreaming<false>,
   I: IntoOutput,
 {
   fn parse_next(&mut self, i: I) -> IResult<I, <I as IntoOutput>::Output, E> {

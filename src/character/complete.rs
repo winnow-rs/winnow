@@ -9,7 +9,7 @@ use crate::combinator::opt;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{
-  AsChar, ContainsToken, InputIter, InputLength, InputTake, InputTakeAtOffset, IntoOutput, Slice,
+  AsChar, ContainsToken, InputIter, InputTake, InputTakeAtOffset, IntoOutput, Slice, SliceLen,
 };
 use crate::input::{Compare, CompareResult};
 use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
@@ -120,7 +120,7 @@ where
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::one_of`")]
 pub fn one_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
-  I: Slice<RangeFrom<usize>> + InputIter + InputLength,
+  I: Slice<RangeFrom<usize>> + InputIter + SliceLen,
   <I as InputIter>::Item: AsChar + Copy,
   T: ContainsToken<<I as InputIter>::Item>,
 {
@@ -144,7 +144,7 @@ where
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::none_of`")]
 pub fn none_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
-  I: Slice<RangeFrom<usize>> + InputLength + InputIter,
+  I: Slice<RangeFrom<usize>> + SliceLen + InputIter,
   <I as InputIter>::Item: AsChar + Copy,
   T: ContainsToken<<I as InputIter>::Item>,
 {
@@ -216,7 +216,7 @@ where
 pub fn not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<Range<usize>> + Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
-  T: InputIter + InputLength,
+  T: InputIter + SliceLen,
   T: IntoOutput,
   T: Compare<&'static str>,
   <T as InputIter>::Item: AsChar,
@@ -226,7 +226,7 @@ where
     let c = item.as_char();
     c == '\r' || c == '\n'
   }) {
-    None => Ok((input.slice(input.input_len()..), input)).into_output(),
+    None => Ok((input.slice(input.slice_len()..), input)).into_output(),
     Some(index) => {
       let mut it = input.slice(index..).iter_elements();
       let nth = it.next().unwrap().as_char();
@@ -273,7 +273,7 @@ where
 pub fn line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as IntoOutput>::Output, E>
 where
   T: Slice<Range<usize>> + Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
-  T: InputIter + InputLength,
+  T: InputIter + SliceLen,
   T: IntoOutput,
   T: Compare<&'static str>,
 {
@@ -364,7 +364,7 @@ where
 #[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::any`")]
 pub fn anychar<T, E: ParseError<T>>(input: T) -> IResult<T, char, E>
 where
-  T: InputIter + InputLength + Slice<RangeFrom<usize>>,
+  T: InputIter + SliceLen + Slice<RangeFrom<usize>>,
   <T as InputIter>::Item: AsChar,
 {
   crate::bytes::complete::any(input).map(|(i, c)| (i, c.as_char()))
@@ -890,14 +890,14 @@ macro_rules! ints {
         /// *Complete version*: can parse until the end of input.
         pub fn $t<T, E: ParseError<T>>(input: T) -> IResult<T, $t, E>
             where
-            T: InputIter + Slice<RangeFrom<usize>> + InputLength + InputTake + Clone,
+            T: InputIter + Slice<RangeFrom<usize>> + SliceLen + InputTake + Clone,
             T: IntoOutput,
             <T as InputIter>::Item: AsChar,
             T: for <'a> Compare<&'a[u8]>,
             {
                 let (i, sign) = sign(input.clone())?;
 
-                if i.input_len() == 0 {
+                if i.slice_len() == 0 {
                     return Err(Err::Error(E::from_error_kind(input, ErrorKind::Digit)));
                 }
 
@@ -936,7 +936,7 @@ macro_rules! ints {
                     }
                 }
 
-                Ok((i.slice(i.input_len()..), value))
+                Ok((i.slice(i.slice_len()..), value))
             }
         )+
     }
@@ -953,13 +953,13 @@ macro_rules! uints {
         /// *Complete version*: can parse until the end of input.
         pub fn $t<T, E: ParseError<T>>(input: T) -> IResult<T, $t, E>
             where
-            T: InputIter + Slice<RangeFrom<usize>> + InputLength,
+            T: InputIter + Slice<RangeFrom<usize>> + SliceLen,
             T: IntoOutput,
             <T as InputIter>::Item: AsChar,
             {
                 let i = input;
 
-                if i.input_len() == 0 {
+                if i.slice_len() == 0 {
                     return Err(Err::Error(E::from_error_kind(i, ErrorKind::Digit)));
                 }
 
@@ -980,7 +980,7 @@ macro_rules! uints {
                     }
                 }
 
-                Ok((i.slice(i.input_len()..), value))
+                Ok((i.slice(i.slice_len()..), value))
             }
         )+
     }

@@ -156,7 +156,7 @@ use crate::lib::std::boxed::Box;
 
 use crate::error::{ErrorKind, FromExternalError, ParseError};
 use crate::input::IntoOutput;
-use crate::input::{AsChar, InputIter, InputLength, InputTakeAtOffset, Location, ParseTo};
+use crate::input::{AsChar, InputIter, InputTakeAtOffset, Location, ParseTo, SliceLen};
 use crate::input::{Compare, CompareResult, Offset, Slice};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::convert;
@@ -183,10 +183,10 @@ mod tests;
 pub fn rest<I, E: ParseError<I>>(input: I) -> IResult<I, <I as IntoOutput>::Output, E>
 where
   I: Slice<RangeFrom<usize>>,
-  I: InputLength,
+  I: SliceLen,
   I: IntoOutput,
 {
-  Ok((input.slice(input.input_len()..), input)).into_output()
+  Ok((input.slice(input.slice_len()..), input)).into_output()
 }
 
 /// Return the length of the remaining input.
@@ -201,9 +201,9 @@ where
 #[inline]
 pub fn rest_len<I, E: ParseError<I>>(input: I) -> IResult<I, usize, E>
 where
-  I: InputLength,
+  I: SliceLen,
 {
-  let len = input.input_len();
+  let len = input.slice_len();
   Ok((input, len))
 }
 
@@ -719,11 +719,11 @@ where
 /// ```
 pub fn eof<I, E: ParseError<I>>(input: I) -> IResult<I, <I as IntoOutput>::Output, E>
 where
-  I: InputLength,
+  I: SliceLen,
   I: Clone,
   I: IntoOutput,
 {
-  if input.input_len() == 0 {
+  if input.slice_len() == 0 {
     let clone = input.clone();
     Ok((input, clone)).into_output()
   } else {
@@ -805,12 +805,12 @@ where
 /// ```
 pub fn all_consuming<I, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
-  I: InputLength,
+  I: SliceLen,
   F: Parser<I, O, E>,
 {
   move |input: I| {
     let (input, res) = f.parse_next(input)?;
-    if input.input_len() == 0 {
+    if input.slice_len() == 0 {
       Ok((input, res))
     } else {
       Err(Err::Error(E::from_error_kind(input, ErrorKind::Eof)))
