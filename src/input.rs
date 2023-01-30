@@ -1464,24 +1464,10 @@ pub trait AsBytes {
   fn as_bytes(&self) -> &[u8];
 }
 
-impl AsBytes for [u8] {
-  #[inline(always)]
-  fn as_bytes(&self) -> &[u8] {
-    self
-  }
-}
-
 impl<'a> AsBytes for &'a [u8] {
   #[inline(always)]
   fn as_bytes(&self) -> &[u8] {
     self
-  }
-}
-
-impl AsBytes for str {
-  #[inline(always)]
-  fn as_bytes(&self) -> &[u8] {
-    self.as_ref()
   }
 }
 
@@ -1641,11 +1627,11 @@ impl<
 impl<'a, 'b> Compare<&'b str> for &'a [u8] {
   #[inline(always)]
   fn compare(&self, t: &'b str) -> CompareResult {
-    self.compare(AsBytes::as_bytes(t))
+    self.compare(t.as_bytes())
   }
   #[inline(always)]
   fn compare_no_case(&self, t: &'b str) -> CompareResult {
-    self.compare_no_case(AsBytes::as_bytes(t))
+    self.compare_no_case(t.as_bytes())
   }
 }
 
@@ -1754,7 +1740,7 @@ impl<'a, 'b> FindSubstring<&'b [u8]> for &'a [u8] {
 
 impl<'a, 'b> FindSubstring<&'b str> for &'a [u8] {
   fn find_substring(&self, substr: &'b str) -> Option<usize> {
-    self.find_substring(AsBytes::as_bytes(substr))
+    self.find_substring(substr.as_bytes())
   }
 }
 
