@@ -127,11 +127,11 @@ macro_rules! alt_trait(
 macro_rules! alt_trait_impl(
   ($($id:ident)+) => (
     impl<
-      Input: Clone, Output, Error: ParseError<Input>,
-      $($id: Parser<Input, Output, Error>),+
-    > Alt<Input, Output, Error> for ( $($id),+ ) {
+      I: Clone, Output, Error: ParseError<I>,
+      $($id: Parser<I, Output, Error>),+
+    > Alt<I, Output, Error> for ( $($id),+ ) {
 
-      fn choice(&mut self, input: Input) -> IResult<Input, Output, Error> {
+      fn choice(&mut self, input: I) -> IResult<I, Output, Error> {
         match self.0.parse_next(input.clone()) {
           Err(Err::Error(e)) => alt_trait_inner!(1, self, input, e, $($id)+),
           res => res,
@@ -156,7 +156,7 @@ macro_rules! alt_trait_inner(
   );
 );
 
-alt_trait!(A B C D E F G H I J K L M N O P Q R S T U);
+alt_trait!(Alt2 Alt3 Alt4 Alt5 Alt6 Alt7 Alt8 Alt9 Alt10 Alt11 Alt12 Alt13 Alt14 Alt15 Alt16 Alt17 Alt18 Alt19 Alt20 Alt21 Alt22);
 
 // Manually implement Alt for (A,), the 1-tuple type
 impl<I, O, E: ParseError<I>, A: Parser<I, O, E>> Alt<I, O, E> for (A,) {
@@ -188,11 +188,11 @@ macro_rules! permutation_trait(
 macro_rules! permutation_trait_impl(
   ($($name:ident $ty:ident $item:ident),+) => (
     impl<
-      Input: Clone, $($ty),+ , Error: ParseError<Input>,
-      $($name: Parser<Input, $ty, Error>),+
-    > Permutation<Input, ( $($ty),+ ), Error> for ( $($name),+ ) {
+      I: Clone, $($ty),+ , Error: ParseError<I>,
+      $($name: Parser<I, $ty, Error>),+
+    > Permutation<I, ( $($ty),+ ), Error> for ( $($name),+ ) {
 
-      fn permutation(&mut self, mut input: Input) -> IResult<Input, ( $($ty),+ ), Error> {
+      fn permutation(&mut self, mut input: I) -> IResult<I, ( $($ty),+ ), Error> {
         let mut res = ($(Option::<$ty>::None),+);
 
         loop {
@@ -241,25 +241,25 @@ macro_rules! permutation_trait_inner(
 );
 
 permutation_trait!(
-  FnA A a
-  FnB B b
-  FnC C c
-  FnD D d
-  FnE E e
-  FnF F f
-  FnG G g
-  FnH H h
-  FnI I i
-  FnJ J j
-  FnK K k
-  FnL L l
-  FnM M m
-  FnN N n
-  FnO O o
-  FnP P p
-  FnQ Q q
-  FnR R r
-  FnS S s
-  FnT T t
-  FnU U u
+  P1 O1 o1
+  P2 O2 o2
+  P3 O3 o3
+  P4 O4 o4
+  P5 O5 o5
+  P6 O6 o6
+  P7 O7 o7
+  P8 O8 o8
+  P9 O9 o9
+  P10 O10 o10
+  P11 O11 o11
+  P12 O12 o12
+  P13 O13 o13
+  P14 O14 o14
+  P15 O15 o15
+  P16 O16 o16
+  P17 O17 o17
+  P18 O18 o18
+  P19 O19 o19
+  P20 O20 o20
+  P21 O21 o21
 );
