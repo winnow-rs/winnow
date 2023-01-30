@@ -1394,15 +1394,6 @@ pub trait Offset {
   fn offset_to(&self, second: &Self) -> usize;
 }
 
-impl Offset for [u8] {
-  fn offset_to(&self, second: &Self) -> usize {
-    let fst = self.as_ptr();
-    let snd = second.as_ptr();
-
-    snd as usize - fst as usize
-  }
-}
-
 impl<'a> Offset for &'a [u8] {
   fn offset_to(&self, second: &Self) -> usize {
     let fst = self.as_ptr();
@@ -1412,7 +1403,8 @@ impl<'a> Offset for &'a [u8] {
   }
 }
 
-impl Offset for str {
+/// Convenience implementation to accept `&[u8]` instead of `&&[u8]` as above
+impl Offset for [u8] {
   fn offset_to(&self, second: &Self) -> usize {
     let fst = self.as_ptr();
     let snd = second.as_ptr();
@@ -1422,6 +1414,16 @@ impl Offset for str {
 }
 
 impl<'a> Offset for &'a str {
+  fn offset_to(&self, second: &Self) -> usize {
+    let fst = self.as_ptr();
+    let snd = second.as_ptr();
+
+    snd as usize - fst as usize
+  }
+}
+
+/// Convenience implementation to accept `&str` instead of `&&str` as above
+impl Offset for str {
   fn offset_to(&self, second: &Self) -> usize {
     let fst = self.as_ptr();
     let snd = second.as_ptr();
