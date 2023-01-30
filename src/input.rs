@@ -2085,7 +2085,7 @@ impl_find_token_for_tuples!(
 
 /// Look for a substring in self
 pub trait FindSubstring<T> {
-  /// Returns the byte position of the substring if it is found
+  /// Returns the offset of the substring if it is found
   fn find_substring(&self, substr: T) -> Option<usize>;
 }
 
@@ -2102,7 +2102,6 @@ impl<'a, 'b> FindSubstring<&'b str> for &'a [u8] {
 }
 
 impl<'a, 'b> FindSubstring<&'b str> for &'a str {
-  //returns byte index
   fn find_substring(&self, substr: &'b str) -> Option<usize> {
     self.find(substr)
   }
