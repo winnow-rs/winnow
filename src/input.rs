@@ -2114,7 +2114,7 @@ pub trait HexDisplay {
 static CHARS: &[u8] = b"0123456789abcdef";
 
 #[cfg(feature = "std")]
-impl HexDisplay for [u8] {
+impl HexDisplay for &'_ [u8] {
   #[allow(unused_variables)]
   fn to_hex(&self, chunk_size: usize) -> String {
     self.to_hex_from(chunk_size, 0)
@@ -2162,7 +2162,7 @@ impl HexDisplay for [u8] {
 }
 
 #[cfg(feature = "std")]
-impl HexDisplay for str {
+impl HexDisplay for &'_ str {
   #[allow(unused_variables)]
   fn to_hex(&self, chunk_size: usize) -> String {
     self.to_hex_from(chunk_size, 0)
