@@ -1928,21 +1928,6 @@ pub trait ExtendInto {
 }
 
 #[cfg(feature = "alloc")]
-impl ExtendInto for [u8] {
-  type Item = u8;
-  type Extender = Vec<u8>;
-
-  #[inline]
-  fn new_builder(&self) -> Vec<u8> {
-    Vec::new()
-  }
-  #[inline]
-  fn extend_into(&self, acc: &mut Vec<u8>) {
-    acc.extend(self.iter().cloned());
-  }
-}
-
-#[cfg(feature = "alloc")]
 impl ExtendInto for &[u8] {
   type Item = u8;
   type Extender = Vec<u8>;
@@ -1954,21 +1939,6 @@ impl ExtendInto for &[u8] {
   #[inline]
   fn extend_into(&self, acc: &mut Vec<u8>) {
     acc.extend_from_slice(self);
-  }
-}
-
-#[cfg(feature = "alloc")]
-impl ExtendInto for str {
-  type Item = char;
-  type Extender = String;
-
-  #[inline]
-  fn new_builder(&self) -> String {
-    String::new()
-  }
-  #[inline]
-  fn extend_into(&self, acc: &mut String) {
-    acc.push_str(self);
   }
 }
 
