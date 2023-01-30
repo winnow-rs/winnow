@@ -55,8 +55,7 @@ pub trait FinishIResult<I, O, E> {
 
 impl<I, O, E> FinishIResult<I, O, E> for IResult<I, O, E>
 where
-  I: crate::input::SliceLen,
-  I: crate::input::IntoOutput,
+  I: crate::input::Input,
   // Force users to deal with `Incomplete` when `InputIsStreaming<true>`
   I: InputIsStreaming<false>,
   I: Clone,

@@ -156,7 +156,7 @@ use crate::lib::std::boxed::Box;
 
 use crate::error::{ErrorKind, FromExternalError, ParseError};
 use crate::input::IntoOutput;
-use crate::input::{AsChar, InputIter, InputTakeAtOffset, Location, ParseTo, SliceLen};
+use crate::input::{AsChar, Input, Location, ParseTo};
 use crate::input::{Compare, CompareResult, Offset, Slice};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::convert;
@@ -180,13 +180,11 @@ mod tests;
 /// assert_eq!(rest::<_,Error<_>>(""), Ok(("", "")));
 /// ```
 #[inline]
-pub fn rest<I, E: ParseError<I>>(input: I) -> IResult<I, <I as IntoOutput>::Output, E>
+pub fn rest<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: Slice<RangeFrom<usize>>,
-  I: SliceLen,
-  I: IntoOutput,
+  I: Input,
 {
-  Ok((input.slice(input.slice_len()..), input)).into_output()
+  Ok(input.next_slice(input.input_len_()))
 }
 
 /// Return the length of the remaining input.
@@ -201,9 +199,9 @@ where
 #[inline]
 pub fn rest_len<I, E: ParseError<I>>(input: I) -> IResult<I, usize, E>
 where
-  I: SliceLen,
+  I: Input,
 {
-  let len = input.slice_len();
+  let len = input.input_len_();
   Ok((input, len))
 }
 
@@ -717,15 +715,12 @@ where
 /// assert_eq!(parser(""), Ok(("", "")));
 /// # }
 /// ```
-pub fn eof<I, E: ParseError<I>>(input: I) -> IResult<I, <I as IntoOutput>::Output, E>
+pub fn eof<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: SliceLen,
-  I: Clone,
-  I: IntoOutput,
+  I: Input,
 {
-  if input.slice_len() == 0 {
-    let clone = input.clone();
-    Ok((input, clone)).into_output()
+  if input.input_len_() == 0 {
+    Ok(input.next_slice(0))
   } else {
     Err(Err::Error(E::from_error_kind(input, ErrorKind::Eof)))
   }
@@ -805,12 +800,12 @@ where
 /// ```
 pub fn all_consuming<I, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
-  I: SliceLen,
+  I: Input,
   F: Parser<I, O, E>,
 {
   move |input: I| {
     let (input, res) = f.parse_next(input)?;
-    if input.slice_len() == 0 {
+    if input.input_len_() == 0 {
       Ok((input, res))
     } else {
       Err(Err::Error(E::from_error_kind(input, ErrorKind::Eof)))
