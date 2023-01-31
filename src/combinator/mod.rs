@@ -998,20 +998,19 @@ where
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::recognize")]
 pub fn recognize<I, O, E: ParseError<I>, F>(
   mut parser: F,
-) -> impl FnMut(I) -> IResult<I, <I as IntoOutput>::Output, E>
+) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, E>
 where
   I: Clone,
   I: Offset,
-  I: Slice<RangeTo<usize>>,
-  I: IntoOutput,
+  I: Input,
   F: Parser<I, O, E>,
 {
   move |input: I| {
     let i = input.clone();
     match parser.parse_next(i) {
       Ok((i, _)) => {
-        let index = input.offset_to(&i);
-        Ok((i, input.slice(..index))).into_output()
+        let offset = input.offset_to(&i);
+        Ok(input.next_slice(offset))
       }
       Err(e) => Err(e),
     }
@@ -1101,10 +1100,10 @@ where
 )]
 pub fn consumed<I, O, F, E>(
   mut parser: F,
-) -> impl FnMut(I) -> IResult<I, (<I as IntoOutput>::Output, O), E>
+) -> impl FnMut(I) -> IResult<I, (<I as Input>::Slice, O), E>
 where
-  I: Clone + Offset + Slice<RangeTo<usize>>,
-  I: IntoOutput,
+  I: Offset,
+  I: Input,
   E: ParseError<I>,
   F: Parser<I, O, E>,
 {
@@ -1112,9 +1111,9 @@ where
     let i = input.clone();
     match parser.parse_next(i) {
       Ok((remaining, result)) => {
-        let index = input.offset_to(&remaining);
-        let consumed = input.slice(..index).into_output();
-        Ok((remaining, (consumed, result)))
+        let offset = input.offset_to(&remaining);
+        let (remaining, recognized) = input.next_slice(offset);
+        Ok((remaining, (recognized, result)))
       }
       Err(e) => Err(e),
     }

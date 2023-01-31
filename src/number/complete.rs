@@ -6,7 +6,7 @@
 use crate::branch::alt;
 use crate::bytes::complete::tag;
 use crate::character::complete::{char, digit1, sign};
-use crate::combinator::{cut, map, opt, recognize};
+use crate::combinator::{cut, map, opt};
 use crate::error::ParseError;
 use crate::error::{make_error, ErrorKind};
 use crate::input::{
@@ -1507,7 +1507,6 @@ where
   T: InputTakeAtOffset,
   <T as InputTakeAtOffset>::Item: AsChar,
 {
-  recognize(
     tuple((
       opt(alt((char('+'), char('-')))),
       alt((
@@ -1520,7 +1519,7 @@ where
         cut(digit1)
       )))
     ))
-  )(input)
+  .recognize().parse_next(input)
 }
 
 // workaround until issues with minimal-lexical are fixed

@@ -6,7 +6,7 @@
 use crate::branch::alt;
 use crate::bytes::streaming::tag;
 use crate::character::streaming::{char, digit1, sign};
-use crate::combinator::{cut, map, opt, recognize};
+use crate::combinator::{cut, map, opt};
 use crate::error::{ErrorKind, ParseError};
 use crate::input::{
   AsBytes, AsChar, Compare, Input, InputIter, InputTake, InputTakeAtOffset, IntoOutput, Offset,
@@ -1610,7 +1610,6 @@ where
   T: InputTakeAtOffset + SliceLen,
   <T as InputTakeAtOffset>::Item: AsChar
 {
-  recognize(
     tuple((
       opt(alt((char('+'), char('-')))),
       alt((
@@ -1623,7 +1622,7 @@ where
         cut(digit1)
       )))
     ))
-  )(input)
+  .recognize().parse_next(input)
 }
 
 // workaround until issues with minimal-lexical are fixed
