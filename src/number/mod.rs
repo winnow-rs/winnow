@@ -8,8 +8,7 @@ pub mod streaming;
 mod tests;
 
 use crate::error::ParseError;
-use crate::input::{AsBytes, AsChar, Input, InputIsStreaming, InputTakeAtOffset, Slice, SliceLen};
-use crate::lib::std::ops::{RangeFrom, RangeTo};
+use crate::input::{AsBytes, AsChar, Input, InputIsStreaming};
 use crate::IResult;
 
 /// Configurable endianness
@@ -2259,11 +2258,10 @@ where
 #[inline(always)]
 pub fn hex_u32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u32, E>
 where
-  I: InputTakeAtOffset + InputIsStreaming<STREAMING>,
-  I: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
-  <I as InputTakeAtOffset>::Item: AsChar,
-  I: AsBytes,
-  I: SliceLen,
+  I: InputIsStreaming<STREAMING>,
+  I: Input,
+  <I as Input>::Token: AsChar,
+  <I as Input>::Slice: AsBytes,
 {
   if STREAMING {
     streaming::hex_u32(input)

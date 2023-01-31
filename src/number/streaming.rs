@@ -1537,27 +1537,33 @@ where
 )]
 pub fn hex_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
-  I: InputTakeAtOffset,
-  I: Slice<RangeFrom<usize>> + Slice<RangeTo<usize>>,
-  <I as InputTakeAtOffset>::Item: AsChar,
-  I: AsBytes,
-  I: SliceLen,
+  I: Input,
+  <I as Input>::Token: AsChar,
+  <I as Input>::Slice: AsBytes,
 {
-  let e: ErrorKind = ErrorKind::IsA;
-  let (i, o) = input.split_at_offset1_streaming(
-    |c| {
+  let invalid_offset = input
+    .offset_for(|c| {
       let c = c.as_char();
       !"0123456789abcdefABCDEF".contains(c)
-    },
-    e,
-  )?;
-
-  // Do not parse more than 8 characters for a u32
-  let (parsed, remaining) = if o.slice_len() <= 8 {
-    (o, i)
-  } else {
-    (input.slice(..8), input.slice(8..))
+    })
+    .unwrap_or(input.input_len_());
+  const MAX_DIGITS: usize = 8;
+  let max_offset = input.offset_at(MAX_DIGITS);
+  let offset = match max_offset {
+    Ok(max_offset) => invalid_offset.min(max_offset),
+    Err(_) => {
+      if invalid_offset == input.input_len_() {
+        // Only the next byte is guarenteed required
+        return Err(Err::Incomplete(Needed::new(1)));
+      } else {
+        invalid_offset
+      }
+    }
   };
+  if offset == 0 {
+    return Err(Err::Error(E::from_error_kind(input, ErrorKind::IsA)));
+  }
+  let (remaining, parsed) = input.next_slice(offset);
 
   let res = parsed
     .as_bytes()

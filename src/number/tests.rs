@@ -1005,7 +1005,7 @@ mod streaming {
     );
     assert_parse!(
       hex_u32(Streaming(&b"ffffffffffffffff"[..])),
-      Err(Err::Incomplete(Needed::new(1)))
+      Ok((Streaming(&b"ffffffff"[..]), 4_294_967_295))
     );
     assert_parse!(
       hex_u32(Streaming(&b"0x1be2;"[..])),
