@@ -1550,7 +1550,7 @@ where
     Ok(max_offset) => invalid_offset.min(max_offset),
     Err(_) => {
       if invalid_offset == input.input_len() {
-        // Only the next byte is guarenteed required
+        // Only the next byte is guaranteed required
         return Err(Err::Incomplete(Needed::new(1)));
       } else {
         invalid_offset
