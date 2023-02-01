@@ -532,7 +532,7 @@ pub trait Parser<I, O, E> {
   ///
   /// ```rust
   /// # use winnow::prelude::*;
-  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, Parser, input::Slice};
+  /// # use winnow::{Err,error::ErrorKind, error::Error, input::Input};
   /// use winnow::input::Located;
   /// use winnow::character::alpha1;
   /// use winnow::sequence::separated_pair;
@@ -540,7 +540,7 @@ pub trait Parser<I, O, E> {
   /// let mut parser = separated_pair(alpha1.span(), ',', alpha1.span());
   ///
   /// assert_eq!(parser.parse_next(Located::new("abcd,efgh")).finish(), Ok((0..4, 5..9)));
-  /// assert_eq!(parser.parse_next(Located::new("abcd;")),Err(Err::Error(Error::new(Located::new("abcd;").slice(4..), ErrorKind::OneOf))));
+  /// assert_eq!(parser.parse_next(Located::new("abcd;")),Err(Err::Error(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::OneOf))));
   /// ```
   fn span(self) -> Span<Self, O>
   where
@@ -563,7 +563,7 @@ pub trait Parser<I, O, E> {
   ///
   /// ```rust
   /// # use winnow::prelude::*;
-  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, input::Slice};
+  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, input::Input};
   /// use winnow::input::Located;
   /// use winnow::character::alpha1;
   /// use winnow::bytes::tag;
@@ -578,7 +578,7 @@ pub trait Parser<I, O, E> {
   /// let mut consumed_parser = separated_pair(alpha1.value(1).with_span(), ',', alpha1.value(2).with_span());
   ///
   /// assert_eq!(consumed_parser.parse_next(Located::new("abcd,efgh")).finish(), Ok(((1, 0..4), (2, 5..9))));
-  /// assert_eq!(consumed_parser.parse_next(Located::new("abcd;")),Err(Err::Error(Error::new(Located::new("abcd;").slice(4..), ErrorKind::OneOf))));
+  /// assert_eq!(consumed_parser.parse_next(Located::new("abcd;")),Err(Err::Error(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::OneOf))));
   ///
   /// // the second output (representing the consumed input)
   /// // should be the same as that of the `span` parser.
