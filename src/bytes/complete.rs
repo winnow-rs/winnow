@@ -691,8 +691,8 @@ where
 /// ```
 ///
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::escaped`][crate::bytes::escaped]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::escaped`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::escaped`][crate::character::escaped]
+#[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::escaped`")]
 pub fn escaped<'a, I: 'a, Error, F, G, O1, O2>(
   mut normal: F,
   control_char: char,
@@ -814,10 +814,10 @@ where
 /// ```
 #[cfg(feature = "alloc")]
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::escaped_transform`][crate::bytes::escaped_transform]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::escaped_transform`][crate::character::escaped_transform]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `winnow::bytes::escaped_transform`"
+  note = "Replaced with `winnow::character::escaped_transform`"
 )]
 pub fn escaped_transform<I, Error, F, G, O1, O2, ExtendItem, Output>(
   mut normal: F,

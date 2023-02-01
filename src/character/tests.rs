@@ -3,12 +3,19 @@ use super::*;
 mod complete {
   use super::*;
   use crate::branch::alt;
+  use crate::bytes::none_of;
+  use crate::bytes::one_of;
+  use crate::bytes::tag;
   use crate::combinator::opt;
   use crate::error::Error;
   use crate::error::ErrorKind;
   use crate::input::ParseTo;
   use crate::Err;
+  use crate::Parser;
+  #[cfg(feature = "alloc")]
+  use crate::{lib::std::string::String, lib::std::vec::Vec};
   use proptest::prelude::*;
+
   macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
       let res: $crate::IResult<_, _, Error<_>> = $left;
@@ -489,6 +496,283 @@ mod complete {
         let res2 = f64::<_, (), false>(s.as_str());
         assert_eq!(res1, res2);
     }
+  }
+
+  // issue #1336 "escaped hangs if normal parser accepts empty"
+  #[test]
+  fn complete_escaped_hang() {
+    // issue #1336 "escaped hangs if normal parser accepts empty"
+    fn escaped_string(input: &str) -> IResult<&str, &str> {
+      use crate::bytes::one_of;
+      use crate::character::alpha0;
+      escaped(alpha0, '\\', one_of("n"))(input)
+    }
+
+    escaped_string("7").unwrap();
+    escaped_string("a7").unwrap();
+  }
+
+  #[test]
+  fn complete_escaped_hang_1118() {
+    // issue ##1118 escaped does not work with empty string
+    fn unquote(input: &str) -> IResult<&str, &str> {
+      use crate::bytes::one_of;
+      use crate::combinator::opt;
+      use crate::sequence::delimited;
+
+      delimited(
+        '"',
+        escaped(opt(none_of(r#"\""#)), '\\', one_of(r#"\"rnt"#)),
+        '"',
+      )(input)
+    }
+
+    assert_eq!(unquote(r#""""#), Ok(("", "")));
+  }
+
+  #[cfg(feature = "alloc")]
+  #[allow(unused_variables)]
+  #[test]
+  fn complete_escaping() {
+    use crate::bytes::one_of;
+    use crate::character::{alpha1 as alpha, digit1 as digit};
+
+    fn esc(i: &[u8]) -> IResult<&[u8], &[u8]> {
+      escaped(alpha, '\\', one_of("\"n\\"))(i)
+    }
+    assert_eq!(esc(&b"abcd;"[..]), Ok((&b";"[..], &b"abcd"[..])));
+    assert_eq!(esc(&b"ab\\\"cd;"[..]), Ok((&b";"[..], &b"ab\\\"cd"[..])));
+    assert_eq!(esc(&b"\\\"abcd;"[..]), Ok((&b";"[..], &b"\\\"abcd"[..])));
+    assert_eq!(esc(&b"\\n;"[..]), Ok((&b";"[..], &b"\\n"[..])));
+    assert_eq!(esc(&b"ab\\\"12"[..]), Ok((&b"12"[..], &b"ab\\\""[..])));
+    assert_eq!(
+      esc(&b"AB\\"[..]),
+      Err(Err::Error(error_position!(
+        &b"AB\\"[..],
+        ErrorKind::Escaped
+      )))
+    );
+    assert_eq!(
+      esc(&b"AB\\A"[..]),
+      Err(Err::Error(error_node_position!(
+        &b"AB\\A"[..],
+        ErrorKind::Escaped,
+        error_position!(&b"A"[..], ErrorKind::OneOf)
+      )))
+    );
+
+    fn esc2(i: &[u8]) -> IResult<&[u8], &[u8]> {
+      escaped(digit, '\\', one_of("\"n\\"))(i)
+    }
+    assert_eq!(esc2(&b"12\\nnn34"[..]), Ok((&b"nn34"[..], &b"12\\n"[..])));
+  }
+
+  #[cfg(feature = "alloc")]
+  #[test]
+  fn complete_escaping_str() {
+    use crate::bytes::one_of;
+    use crate::character::{alpha1 as alpha, digit1 as digit};
+
+    fn esc(i: &str) -> IResult<&str, &str> {
+      escaped(alpha, '\\', one_of("\"n\\"))(i)
+    }
+    assert_eq!(esc("abcd;"), Ok((";", "abcd")));
+    assert_eq!(esc("ab\\\"cd;"), Ok((";", "ab\\\"cd")));
+    assert_eq!(esc("\\\"abcd;"), Ok((";", "\\\"abcd")));
+    assert_eq!(esc("\\n;"), Ok((";", "\\n")));
+    assert_eq!(esc("ab\\\"12"), Ok(("12", "ab\\\"")));
+    assert_eq!(
+      esc("AB\\"),
+      Err(Err::Error(error_position!("AB\\", ErrorKind::Escaped)))
+    );
+    assert_eq!(
+      esc("AB\\A"),
+      Err(Err::Error(error_node_position!(
+        "AB\\A",
+        ErrorKind::Escaped,
+        error_position!("A", ErrorKind::OneOf)
+      )))
+    );
+
+    fn esc2(i: &str) -> IResult<&str, &str> {
+      escaped(digit, '\\', one_of("\"n\\"))(i)
+    }
+    assert_eq!(esc2("12\\nnn34"), Ok(("nn34", "12\\n")));
+
+    fn esc3(i: &str) -> IResult<&str, &str> {
+      escaped(alpha, '\u{241b}', one_of("\"n"))(i)
+    }
+    assert_eq!(esc3("ab␛ncd;"), Ok((";", "ab␛ncd")));
+  }
+
+  #[test]
+  fn test_escaped_error() {
+    fn esc(s: &str) -> IResult<&str, &str> {
+      use crate::character::digit1;
+      escaped(digit1, '\\', one_of("\"n\\"))(s)
+    }
+
+    assert_eq!(
+      esc("abcd"),
+      Err(Err::Error(Error {
+        input: "abcd",
+        kind: ErrorKind::Escaped
+      }))
+    );
+  }
+
+  #[cfg(feature = "alloc")]
+  #[test]
+  fn complete_escape_transform() {
+    use crate::character::alpha1 as alpha;
+
+    #[cfg(feature = "alloc")]
+    fn to_s(i: Vec<u8>) -> String {
+      String::from_utf8_lossy(&i).into_owned()
+    }
+
+    fn esc(i: &[u8]) -> IResult<&[u8], String> {
+      escaped_transform(
+        alpha,
+        '\\',
+        alt((
+          tag("\\").value(&b"\\"[..]),
+          tag("\"").value(&b"\""[..]),
+          tag("n").value(&b"\n"[..]),
+        )),
+      )
+      .map(to_s)
+      .parse_next(i)
+    }
+
+    assert_eq!(esc(&b"abcd;"[..]), Ok((&b";"[..], String::from("abcd"))));
+    assert_eq!(
+      esc(&b"ab\\\"cd;"[..]),
+      Ok((&b";"[..], String::from("ab\"cd")))
+    );
+    assert_eq!(
+      esc(&b"\\\"abcd;"[..]),
+      Ok((&b";"[..], String::from("\"abcd")))
+    );
+    assert_eq!(esc(&b"\\n;"[..]), Ok((&b";"[..], String::from("\n"))));
+    assert_eq!(
+      esc(&b"ab\\\"12"[..]),
+      Ok((&b"12"[..], String::from("ab\"")))
+    );
+    assert_eq!(
+      esc(&b"AB\\"[..]),
+      Err(Err::Error(error_position!(
+        &b"\\"[..],
+        ErrorKind::EscapedTransform
+      )))
+    );
+    assert_eq!(
+      esc(&b"AB\\A"[..]),
+      Err(Err::Error(error_node_position!(
+        &b"AB\\A"[..],
+        ErrorKind::EscapedTransform,
+        error_position!(&b"A"[..], ErrorKind::Tag)
+      )))
+    );
+
+    fn esc2(i: &[u8]) -> IResult<&[u8], String> {
+      escaped_transform(
+        alpha,
+        '&',
+        alt((
+          tag("egrave;").value("è".as_bytes()),
+          tag("agrave;").value("à".as_bytes()),
+        )),
+      )
+      .map(to_s)
+      .parse_next(i)
+    }
+    assert_eq!(
+      esc2(&b"ab&egrave;DEF;"[..]),
+      Ok((&b";"[..], String::from("abèDEF")))
+    );
+    assert_eq!(
+      esc2(&b"ab&egrave;D&agrave;EF;"[..]),
+      Ok((&b";"[..], String::from("abèDàEF")))
+    );
+  }
+
+  #[cfg(feature = "std")]
+  #[test]
+  fn complete_escape_transform_str() {
+    use crate::character::alpha1 as alpha;
+
+    fn esc(i: &str) -> IResult<&str, String> {
+      escaped_transform(
+        alpha,
+        '\\',
+        alt((
+          tag("\\").value("\\"),
+          tag("\"").value("\""),
+          tag("n").value("\n"),
+        )),
+      )(i)
+    }
+
+    assert_eq!(esc("abcd;"), Ok((";", String::from("abcd"))));
+    assert_eq!(esc("ab\\\"cd;"), Ok((";", String::from("ab\"cd"))));
+    assert_eq!(esc("\\\"abcd;"), Ok((";", String::from("\"abcd"))));
+    assert_eq!(esc("\\n;"), Ok((";", String::from("\n"))));
+    assert_eq!(esc("ab\\\"12"), Ok(("12", String::from("ab\""))));
+    assert_eq!(
+      esc("AB\\"),
+      Err(Err::Error(error_position!(
+        "\\",
+        ErrorKind::EscapedTransform
+      )))
+    );
+    assert_eq!(
+      esc("AB\\A"),
+      Err(Err::Error(error_node_position!(
+        "AB\\A",
+        ErrorKind::EscapedTransform,
+        error_position!("A", ErrorKind::Tag)
+      )))
+    );
+
+    fn esc2(i: &str) -> IResult<&str, String> {
+      escaped_transform(
+        alpha,
+        '&',
+        alt((tag("egrave;").value("è"), tag("agrave;").value("à"))),
+      )(i)
+    }
+    assert_eq!(esc2("ab&egrave;DEF;"), Ok((";", String::from("abèDEF"))));
+    assert_eq!(
+      esc2("ab&egrave;D&agrave;EF;"),
+      Ok((";", String::from("abèDàEF")))
+    );
+
+    fn esc3(i: &str) -> IResult<&str, String> {
+      escaped_transform(
+        alpha,
+        '␛',
+        alt((tag("0").value("\0"), tag("n").value("\n"))),
+      )(i)
+    }
+    assert_eq!(esc3("a␛0bc␛n"), Ok(("", String::from("a\0bc\n"))));
+  }
+
+  #[test]
+  #[cfg(feature = "alloc")]
+  fn test_escaped_transform_error() {
+    fn esc_trans(s: &str) -> IResult<&str, String> {
+      use crate::character::digit1;
+      escaped_transform(digit1, '\\', "n")(s)
+    }
+
+    assert_eq!(
+      esc_trans("abcd"),
+      Err(Err::Error(Error {
+        input: "abcd",
+        kind: ErrorKind::EscapedTransform
+      }))
+    );
   }
 }
 

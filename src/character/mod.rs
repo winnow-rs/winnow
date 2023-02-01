@@ -13,6 +13,7 @@ use crate::error::ParseError;
 use crate::input::Compare;
 use crate::input::{AsBytes, AsChar, Input, InputIsStreaming, Offset, ParseTo, SliceLen};
 use crate::IResult;
+use crate::Parser;
 
 /// Recognizes the string "\r\n".
 ///
@@ -1134,6 +1135,159 @@ where
     crate::number::streaming::recognize_float_parts(input)
   } else {
     crate::number::complete::recognize_float_parts(input)
+  }
+}
+
+/// Matches a byte string with escaped characters.
+///
+/// * The first argument matches the normal characters (it must not accept the control character)
+/// * The second argument is the control character (like `\` in most languages)
+/// * The third argument matches the escaped characters
+/// # Example
+/// ```
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed, IResult};
+/// # use winnow::character::digit1;
+/// use winnow::character::escaped;
+/// use winnow::bytes::one_of;
+///
+/// fn esc(s: &str) -> IResult<&str, &str> {
+///   escaped(digit1, '\\', one_of(r#""n\"#))(s)
+/// }
+///
+/// assert_eq!(esc("123;"), Ok((";", "123")));
+/// assert_eq!(esc(r#"12\"34;"#), Ok((";", r#"12\"34"#)));
+/// ```
+///
+/// ```
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed, IResult};
+/// # use winnow::character::digit1;
+/// # use winnow::input::Streaming;
+/// use winnow::character::escaped;
+/// use winnow::bytes::one_of;
+///
+/// fn esc(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+///   escaped(digit1, '\\', one_of("\"n\\"))(s)
+/// }
+///
+/// assert_eq!(esc(Streaming("123;")), Ok((Streaming(";"), "123")));
+/// assert_eq!(esc(Streaming("12\\\"34;")), Ok((Streaming(";"), "12\\\"34")));
+/// ```
+#[inline(always)]
+pub fn escaped<'a, I: 'a, Error, F, G, O1, O2, const STREAMING: bool>(
+  mut normal: F,
+  control_char: char,
+  mut escapable: G,
+) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, Error>
+where
+  I: InputIsStreaming<STREAMING>,
+  I: Input + Offset,
+  <I as Input>::Token: crate::input::AsChar,
+  F: Parser<I, O1, Error>,
+  G: Parser<I, O2, Error>,
+  Error: ParseError<I>,
+{
+  move |input: I| {
+    if STREAMING {
+      crate::bytes::streaming::escaped_internal(input, &mut normal, control_char, &mut escapable)
+    } else {
+      crate::bytes::complete::escaped_internal(input, &mut normal, control_char, &mut escapable)
+    }
+  }
+}
+
+/// Matches a byte string with escaped characters.
+///
+/// * The first argument matches the normal characters (it must not match the control character)
+/// * The second argument is the control character (like `\` in most languages)
+/// * The third argument matches the escaped characters and transforms them
+///
+/// As an example, the chain `abc\tdef` could be `abc    def` (it also consumes the control character)
+///
+/// ```
+/// # use winnow::prelude::*;
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use std::str::from_utf8;
+/// use winnow::bytes::tag;
+/// use winnow::character::escaped_transform;
+/// use winnow::character::alpha1;
+/// use winnow::branch::alt;
+/// use winnow::combinator::value;
+///
+/// fn parser(input: &str) -> IResult<&str, String> {
+///   escaped_transform(
+///     alpha1,
+///     '\\',
+///     alt((
+///       tag("\\").value("\\"),
+///       tag("\"").value("\""),
+///       tag("n").value("\n"),
+///     ))
+///   )(input)
+/// }
+///
+/// assert_eq!(parser("ab\\\"cd"), Ok(("", String::from("ab\"cd"))));
+/// assert_eq!(parser("ab\\ncd"), Ok(("", String::from("ab\ncd"))));
+/// ```
+///
+/// ```
+/// # use winnow::prelude::*;
+/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use std::str::from_utf8;
+/// # use winnow::input::Streaming;
+/// use winnow::bytes::tag;
+/// use winnow::character::escaped_transform;
+/// use winnow::character::alpha1;
+/// use winnow::branch::alt;
+/// use winnow::combinator::value;
+///
+/// fn parser(input: Streaming<&str>) -> IResult<Streaming<&str>, String> {
+///   escaped_transform(
+///     alpha1,
+///     '\\',
+///     alt((
+///       tag("\\").value("\\"),
+///       tag("\"").value("\""),
+///       tag("n").value("\n"),
+///     ))
+///   )(input)
+/// }
+///
+/// assert_eq!(parser(Streaming("ab\\\"cd\"")), Ok((Streaming("\""), String::from("ab\"cd"))));
+/// ```
+#[cfg(feature = "alloc")]
+#[inline(always)]
+pub fn escaped_transform<I, Error, F, G, O1, O2, ExtendItem, Output, const STREAMING: bool>(
+  mut normal: F,
+  control_char: char,
+  mut transform: G,
+) -> impl FnMut(I) -> IResult<I, Output, Error>
+where
+  I: InputIsStreaming<STREAMING>,
+  I: Input + Offset,
+  <I as Input>::Token: crate::input::AsChar,
+  I: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
+  O1: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
+  O2: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
+  F: Parser<I, O1, Error>,
+  G: Parser<I, O2, Error>,
+  Error: ParseError<I>,
+{
+  move |input: I| {
+    if STREAMING {
+      crate::bytes::streaming::escaped_transform_internal(
+        input,
+        &mut normal,
+        control_char,
+        &mut transform,
+      )
+    } else {
+      crate::bytes::complete::escaped_transform_internal(
+        input,
+        &mut normal,
+        control_char,
+        &mut transform,
+      )
+    }
   }
 }
 

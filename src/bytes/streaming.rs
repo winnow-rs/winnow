@@ -749,10 +749,10 @@ where
 /// ```
 ///
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::escaped`][crate::bytes::escaped] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::escaped`][crate::character::escaped] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `winnow::bytes::escaped` with input wrapped in `winnow::input::Streaming`"
+  note = "Replaced with `winnow::character::escaped` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn escaped<I, Error, F, G, O1, O2>(
   mut normal: F,
@@ -863,10 +863,10 @@ where
 /// ```
 #[cfg(feature = "alloc")]
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::escaped_transform`][crate::bytes::escaped_transform] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::escaped_transform`][crate::character::escaped_transform] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "8.0.0",
-  note = "Replaced with `winnow::bytes::escaped_transform` with input wrapped in `winnow::input::Streaming`"
+  note = "Replaced with `winnow::character::escaped_transform` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn escaped_transform<I, Error, F, G, O1, O2, ExtendItem, Output>(
   mut normal: F,
