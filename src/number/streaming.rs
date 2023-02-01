@@ -8,7 +8,7 @@ use crate::bytes::streaming::tag;
 use crate::character::streaming::{char, digit1, sign};
 use crate::combinator::{cut, map, opt};
 use crate::error::{ErrorKind, ParseError};
-use crate::input::{AsBytes, AsChar, Compare, Input, InputIter, Offset, ParseTo, SliceLen};
+use crate::input::{AsBytes, AsChar, Compare, Input, Offset, ParseTo, SliceLen};
 use crate::lib::std::ops::{Add, Shl};
 use crate::sequence::{pair, tuple};
 use crate::*;
@@ -575,7 +575,7 @@ where
   let number = number.as_bytes();
 
   let mut res = Uint::default();
-  for (index, byte) in number.iter_offsets().take(bound) {
+  for (index, byte) in number.iter_offsets_().take(bound) {
     res = res + (Uint::from(byte) << (8 * index as u8));
   }
 

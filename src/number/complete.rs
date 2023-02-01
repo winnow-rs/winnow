@@ -9,7 +9,7 @@ use crate::character::complete::{char, digit1, sign};
 use crate::combinator::{cut, map, opt};
 use crate::error::ParseError;
 use crate::error::{make_error, ErrorKind};
-use crate::input::{AsBytes, AsChar, Compare, Input, InputIter, Offset, SliceLen};
+use crate::input::{AsBytes, AsChar, Compare, Input, Offset, SliceLen};
 use crate::lib::std::ops::{Add, Shl};
 use crate::sequence::{pair, tuple};
 use crate::*;
@@ -548,7 +548,7 @@ where
   let number = number.as_bytes();
 
   let mut res = Uint::default();
-  for (index, byte) in number.iter_offsets().take(bound) {
+  for (index, byte) in number.iter_offsets_().take(bound) {
     res = res + (Uint::from(byte) << (8 * index as u8));
   }
 
