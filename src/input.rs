@@ -54,7 +54,7 @@
 use core::num::NonZeroUsize;
 
 use crate::error::{ErrorKind, ParseError};
-use crate::lib::std::iter::{Copied, Enumerate};
+use crate::lib::std::iter::{Cloned, Enumerate};
 use crate::lib::std::ops::{
   Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive,
 };
@@ -291,14 +291,14 @@ impl<'a, T> SliceLen for &'a [T] {
   }
 }
 
-impl<const LEN: usize> SliceLen for [u8; LEN] {
+impl<T, const LEN: usize> SliceLen for [T; LEN] {
   #[inline]
   fn slice_len(&self) -> usize {
     self.len()
   }
 }
 
-impl<'a, const LEN: usize> SliceLen for &'a [u8; LEN] {
+impl<'a, T, const LEN: usize> SliceLen for &'a [T; LEN] {
   #[inline]
   fn slice_len(&self) -> usize {
     self.len()
@@ -362,15 +362,18 @@ pub trait Input: Clone {
   fn next_slice(&self, offset: usize) -> (Self, Self::Slice);
 }
 
-impl<'i> Input for &'i [u8] {
-  type Token = u8;
-  type Slice = &'i [u8];
+impl<'i, T> Input for &'i [T]
+where
+  T: Clone,
+{
+  type Token = T;
+  type Slice = &'i [T];
 
-  type IterOffsets = Enumerate<Copied<Iter<'i, u8>>>;
+  type IterOffsets = Enumerate<Cloned<Iter<'i, T>>>;
 
   #[inline(always)]
   fn iter_offsets(&self) -> Self::IterOffsets {
-    self.iter().copied().enumerate()
+    self.iter().cloned().enumerate()
   }
   #[inline(always)]
   fn input_len(&self) -> usize {
@@ -382,7 +385,7 @@ impl<'i> Input for &'i [u8] {
     if self.is_empty() {
       None
     } else {
-      Some((&self[1..], self[0]))
+      Some((&self[1..], self[0].clone()))
     }
   }
 
@@ -391,7 +394,7 @@ impl<'i> Input for &'i [u8] {
   where
     P: Fn(Self::Token) -> bool,
   {
-    self.iter().position(|b| predicate(*b))
+    self.iter().position(|b| predicate(b.clone()))
   }
   #[inline(always)]
   fn offset_at(&self, tokens: usize) -> Result<usize, Needed> {
@@ -803,7 +806,7 @@ pub trait Offset {
   fn offset_to(&self, second: &Self) -> usize;
 }
 
-impl<'a> Offset for &'a [u8] {
+impl<'a, T> Offset for &'a [T] {
   fn offset_to(&self, second: &Self) -> usize {
     let fst = self.as_ptr();
     let snd = second.as_ptr();
@@ -812,8 +815,8 @@ impl<'a> Offset for &'a [u8] {
   }
 }
 
-/// Convenience implementation to accept `&[u8]` instead of `&&[u8]` as above
-impl Offset for [u8] {
+/// Convenience implementation to accept `&[T]` instead of `&&[T]` as above
+impl<T> Offset for [T] {
   fn offset_to(&self, second: &Self) -> usize {
     let fst = self.as_ptr();
     let snd = second.as_ptr();
@@ -1218,7 +1221,10 @@ pub trait UpdateSlice: Input {
   fn update_slice(self, inner: Self::Slice) -> Self;
 }
 
-impl<'a> UpdateSlice for &'a [u8] {
+impl<'a, T> UpdateSlice for &'a [T]
+where
+  T: Clone,
+{
   #[inline]
   fn update_slice(self, inner: Self::Slice) -> Self {
     inner
