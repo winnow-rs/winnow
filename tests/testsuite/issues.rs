@@ -147,10 +147,7 @@ mod issue_647 {
   }
 
   #[allow(clippy::type_complexity)]
-  fn list<'a, 'b>(
-    input: Input<'a>,
-    _cs: &'b f64,
-  ) -> Result<(Input<'a>, Vec<f64>), Err<Error<Input<'a>>>> {
+  fn list<'a>(input: Input<'a>, _cs: &f64) -> Result<(Input<'a>, Vec<f64>), Err<Error<Input<'a>>>> {
     separated_list0(tag(",").complete(), be_f64.complete())(input)
   }
 

@@ -1976,7 +1976,7 @@ where
 {
   let offset = input
     .offset_for(predicate)
-    .ok_or(Err::Incomplete(Needed::new(1)))?;
+    .ok_or_else(|| Err::Incomplete(Needed::new(1)))?;
   Ok(input.next_slice(offset))
 }
 
@@ -1996,7 +1996,7 @@ where
 {
   let offset = input
     .offset_for(predicate)
-    .ok_or(Err::Incomplete(Needed::new(1)))?;
+    .ok_or_else(|| Err::Incomplete(Needed::new(1)))?;
   if offset == 0 {
     Err(Err::Error(E::from_error_kind(input.clone(), e)))
   } else {
@@ -2015,7 +2015,9 @@ pub(crate) fn split_at_offset_complete<P, I: Input, E: ParseError<I>>(
 where
   P: Fn(I::Token) -> bool,
 {
-  let offset = input.offset_for(predicate).unwrap_or(input.input_len());
+  let offset = input
+    .offset_for(predicate)
+    .unwrap_or_else(|| input.input_len());
   Ok(input.next_slice(offset))
 }
 
@@ -2033,7 +2035,9 @@ pub(crate) fn split_at_offset1_complete<P, I: Input, E: ParseError<I>>(
 where
   P: Fn(I::Token) -> bool,
 {
-  let offset = input.offset_for(predicate).unwrap_or(input.input_len());
+  let offset = input
+    .offset_for(predicate)
+    .unwrap_or_else(|| input.input_len());
   if offset == 0 {
     Err(Err::Error(E::from_error_kind(input.clone(), e)))
   } else {

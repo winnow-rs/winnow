@@ -1543,7 +1543,7 @@ where
       let c = c.as_char();
       !"0123456789abcdefABCDEF".contains(c)
     })
-    .unwrap_or(input.input_len());
+    .unwrap_or_else(|| input.input_len());
   const MAX_DIGITS: usize = 8;
   let max_offset = input.offset_at(MAX_DIGITS);
   let offset = match max_offset {
@@ -1604,7 +1604,6 @@ where
   <T as Input>::Token: AsChar + Copy,
   <T as Input>::IterOffsets: Clone,
   T: AsBytes,
-  T: Compare<&'static str>,
 {
     tuple((
       opt(alt((char('+'), char('-')))),
@@ -1638,7 +1637,6 @@ where
   <T as Input>::Token: AsChar + Copy,
   <T as Input>::IterOffsets: Clone,
   T: AsBytes,
-  T: Compare<&'static str>,
 {
   alt((
     |i: T| {
@@ -1774,7 +1772,6 @@ where
   <T as Input>::Token: AsChar + Copy,
   <T as Input>::IterOffsets: Clone,
   T: AsBytes,
-  T: Compare<&'static str>,
 {
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
@@ -1818,7 +1815,6 @@ where
   <T as Input>::Token: AsChar + Copy,
   <T as Input>::IterOffsets: Clone,
   T: AsBytes,
-  T: Compare<&'static str>,
 {
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {

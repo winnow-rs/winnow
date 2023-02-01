@@ -100,7 +100,7 @@ where
   let (input, token) = i
     .next_token()
     .map(|(i, t)| (i, t.as_char()))
-    .ok_or_else(|| Err::Incomplete(Needed::Unknown))?;
+    .ok_or(Err::Incomplete(Needed::Unknown))?;
   if cond(token) {
     Ok((input, token))
   } else {

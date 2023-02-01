@@ -989,7 +989,6 @@ where
   <I as Input>::Token: AsChar + Copy,
   <I as Input>::IterOffsets: Clone,
   I: AsBytes,
-  I: Compare<&'static str>,
 {
   if STREAMING {
     crate::number::streaming::float(input)
@@ -1047,7 +1046,6 @@ where
   <I as Input>::Token: AsChar + Copy,
   <I as Input>::IterOffsets: Clone,
   I: AsBytes,
-  I: Compare<&'static str>,
 {
   if STREAMING {
     crate::number::streaming::double(input)
@@ -1104,7 +1102,6 @@ where
   <I as Input>::Token: AsChar + Copy,
   <I as Input>::IterOffsets: Clone,
   I: AsBytes,
-  I: Compare<&'static str>,
 {
   if STREAMING {
     crate::number::streaming::recognize_float(input)
