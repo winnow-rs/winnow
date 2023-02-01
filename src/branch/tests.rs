@@ -10,7 +10,7 @@ use crate::{
     string::{String, ToString},
   },
 };
-use crate::{Err, IResult, Needed};
+use crate::{ErrMode, IResult, Needed};
 
 #[cfg(feature = "alloc")]
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -53,7 +53,7 @@ fn alt_test() {
 
   #[allow(unused_variables)]
   fn dont_work(input: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
-    Err(Err::Error(ErrorStr("abcd".to_string())))
+    Err(ErrMode::Error(ErrorStr("abcd".to_string())))
   }
 
   fn work2(input: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
@@ -76,7 +76,7 @@ fn alt_test() {
   let a = &b"abcd"[..];
   assert_eq!(
     alt1(a),
-    Err(Err::Error(error_node_position!(
+    Err(ErrMode::Error(error_node_position!(
       a,
       ErrorKind::Alt,
       ErrorStr("abcd".to_string())
@@ -100,18 +100,21 @@ fn alt_incomplete() {
   }
 
   let a = &b""[..];
-  assert_eq!(alt1(Streaming(a)), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(alt1(Streaming(a)), Err(ErrMode::Incomplete(Needed::new(1))));
   let a = &b"b"[..];
-  assert_eq!(alt1(Streaming(a)), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(alt1(Streaming(a)), Err(ErrMode::Incomplete(Needed::new(1))));
   let a = &b"bcd"[..];
   assert_eq!(alt1(Streaming(a)), Ok((Streaming(&b"d"[..]), &b"bc"[..])));
   let a = &b"cde"[..];
   assert_eq!(
     alt1(Streaming(a)),
-    Err(Err::Error(error_position!(Streaming(a), ErrorKind::Tag)))
+    Err(ErrMode::Error(error_position!(
+      Streaming(a),
+      ErrorKind::Tag
+    )))
   );
   let a = &b"de"[..];
-  assert_eq!(alt1(Streaming(a)), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(alt1(Streaming(a)), Err(ErrMode::Incomplete(Needed::new(1))));
   let a = &b"defg"[..];
   assert_eq!(alt1(Streaming(a)), Ok((Streaming(&b"g"[..]), &b"def"[..])));
 }
@@ -135,7 +138,7 @@ fn permutation_test() {
   let d = &b"efgxyzabcdefghi"[..];
   assert_eq!(
     perm(Streaming(d)),
-    Err(Err::Error(error_node_position!(
+    Err(ErrMode::Error(error_node_position!(
       Streaming(&b"efgxyzabcdefghi"[..]),
       ErrorKind::Permutation,
       error_position!(Streaming(&b"xyzabcdefghi"[..]), ErrorKind::Tag)
@@ -143,5 +146,5 @@ fn permutation_test() {
   );
 
   let e = &b"efgabc"[..];
-  assert_eq!(perm(Streaming(e)), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(perm(Streaming(e)), Err(ErrMode::Incomplete(Needed::new(1))));
 }

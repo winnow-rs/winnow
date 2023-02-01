@@ -9,7 +9,7 @@ use crate::input::{
   FindSlice, Input, Offset, SliceLen, ToUsize,
 };
 use crate::lib::std::result::Result::Ok;
-use crate::{Err, IResult, Parser};
+use crate::{ErrMode, IResult, Parser};
 
 pub(crate) fn any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Input>::Token, E>
 where
@@ -17,7 +17,7 @@ where
 {
   input
     .next_token()
-    .ok_or_else(|| Err::Error(E::from_error_kind(input, ErrorKind::Eof)))
+    .ok_or_else(|| ErrMode::Error(E::from_error_kind(input, ErrorKind::Eof)))
 }
 
 /// Recognizes a pattern
@@ -25,10 +25,10 @@ where
 /// The input data will be compared to the tag combinator's argument and will return the part of
 /// the input that matches the argument
 ///
-/// It will return `Err(Err::Error((_, ErrorKind::Tag)))` if the input doesn't match the pattern
+/// It will return `Err(ErrMode::Error((_, ErrorKind::Tag)))` if the input doesn't match the pattern
 /// # Example
 /// ```rust
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
 /// use winnow::bytes::complete::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
@@ -36,8 +36,8 @@ where
 /// }
 ///
 /// assert_eq!(parser("Hello, World!"), Ok((", World!", "Hello")));
-/// assert_eq!(parser("Something"), Err(Err::Error(Error::new("Something", ErrorKind::Tag))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("Something"), Err(ErrMode::Error(Error::new("Something", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::Tag))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::tag`][crate::bytes::tag]
@@ -65,7 +65,7 @@ where
     CompareResult::Ok => Ok(i.next_slice(tag_len)),
     CompareResult::Incomplete | CompareResult::Error => {
       let e: ErrorKind = ErrorKind::Tag;
-      Err(Err::Error(Error::from_error_kind(i, e)))
+      Err(ErrMode::Error(Error::from_error_kind(i, e)))
     }
   }
 }
@@ -75,10 +75,10 @@ where
 /// The input data will be compared to the tag combinator's argument and will return the part of
 /// the input that matches the argument with no regard to case.
 ///
-/// It will return `Err(Err::Error((_, ErrorKind::Tag)))` if the input doesn't match the pattern.
+/// It will return `Err(ErrMode::Error((_, ErrorKind::Tag)))` if the input doesn't match the pattern.
 /// # Example
 /// ```rust
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
 /// use winnow::bytes::complete::tag_no_case;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
@@ -88,8 +88,8 @@ where
 /// assert_eq!(parser("Hello, World!"), Ok((", World!", "Hello")));
 /// assert_eq!(parser("hello, World!"), Ok((", World!", "hello")));
 /// assert_eq!(parser("HeLlO, World!"), Ok((", World!", "HeLlO")));
-/// assert_eq!(parser("Something"), Err(Err::Error(Error::new("Something", ErrorKind::Tag))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("Something"), Err(ErrMode::Error(Error::new("Something", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::Tag))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::tag_no_case`][crate::bytes::tag_no_case]
@@ -118,7 +118,7 @@ where
     CompareResult::Ok => Ok(i.next_slice(tag_len)),
     CompareResult::Incomplete | CompareResult::Error => {
       let e: ErrorKind = ErrorKind::Tag;
-      Err(Err::Error(Error::from_error_kind(i, e)))
+      Err(ErrMode::Error(Error::from_error_kind(i, e)))
     }
   }
 }
@@ -135,7 +135,7 @@ where
   input
     .next_token()
     .filter(|(_, t)| list.contains_token(*t))
-    .ok_or_else(|| Err::Error(E::from_error_kind(input, ErrorKind::OneOf)))
+    .ok_or_else(|| ErrMode::Error(E::from_error_kind(input, ErrorKind::OneOf)))
 }
 
 pub(crate) fn none_of_internal<I, T, E: ParseError<I>>(
@@ -150,7 +150,7 @@ where
   input
     .next_token()
     .filter(|(_, t)| !list.contains_token(*t))
-    .ok_or_else(|| Err::Error(E::from_error_kind(input, ErrorKind::NoneOf)))
+    .ok_or_else(|| ErrMode::Error(E::from_error_kind(input, ErrorKind::NoneOf)))
 }
 
 /// Parse till certain characters are met.
@@ -159,10 +159,10 @@ where
 ///
 /// It doesn't consume the matched character.
 ///
-/// It will return a `Err::Error(("", ErrorKind::IsNot))` if the pattern wasn't met.
+/// It will return a `ErrMode::Error(("", ErrorKind::IsNot))` if the pattern wasn't met.
 /// # Example
 /// ```rust
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
 /// use winnow::bytes::complete::is_not;
 ///
 /// fn not_space(s: &str) -> IResult<&str, &str> {
@@ -172,7 +172,7 @@ where
 /// assert_eq!(not_space("Hello, World!"), Ok((" World!", "Hello,")));
 /// assert_eq!(not_space("Sometimes\t"), Ok(("\t", "Sometimes")));
 /// assert_eq!(not_space("Nospace"), Ok(("", "Nospace")));
-/// assert_eq!(not_space(""), Err(Err::Error(Error::new("", ErrorKind::IsNot))));
+/// assert_eq!(not_space(""), Err(ErrMode::Error(Error::new("", ErrorKind::IsNot))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till1`][crate::bytes::take_till1]
@@ -204,10 +204,10 @@ where
 /// The parser will return the longest slice consisting of the characters in provided in the
 /// combinator's argument.
 ///
-/// It will return a `Err(Err::Error((_, ErrorKind::IsA)))` if the pattern wasn't met.
+/// It will return a `Err(ErrMode::Error((_, ErrorKind::IsA)))` if the pattern wasn't met.
 /// # Example
 /// ```rust
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
 /// use winnow::bytes::complete::is_a;
 ///
 /// fn hex(s: &str) -> IResult<&str, &str> {
@@ -218,7 +218,7 @@ where
 /// assert_eq!(hex("DEADBEEF and others"), Ok((" and others", "DEADBEEF")));
 /// assert_eq!(hex("BADBABEsomething"), Ok(("something", "BADBABE")));
 /// assert_eq!(hex("D15EA5E"), Ok(("", "D15EA5E")));
-/// assert_eq!(hex(""), Err(Err::Error(Error::new("", ErrorKind::IsA))));
+/// assert_eq!(hex(""), Err(ErrMode::Error(Error::new("", ErrorKind::IsA))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while1`][crate::bytes::take_while1`]
@@ -251,7 +251,7 @@ where
 /// takes the input and returns a bool)*.
 /// # Example
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::{ErrMode, error::ErrorKind, Needed, IResult};
 /// use winnow::bytes::complete::take_while;
 /// use winnow::input::AsChar;
 ///
@@ -293,10 +293,10 @@ where
 /// The parser will return the longest slice that matches the given predicate *(a function that
 /// takes the input and returns a bool)*.
 ///
-/// It will return an `Err(Err::Error((_, ErrorKind::TakeWhile1)))` if the pattern wasn't met.
+/// It will return an `Err(ErrMode::Error((_, ErrorKind::TakeWhile1)))` if the pattern wasn't met.
 /// # Example
 /// ```rust
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
 /// use winnow::bytes::complete::take_while1;
 /// use winnow::input::AsChar;
 ///
@@ -306,7 +306,7 @@ where
 ///
 /// assert_eq!(alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
 /// assert_eq!(alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
-/// assert_eq!(alpha(b"12345"), Err(Err::Error(Error::new(&b"12345"[..], ErrorKind::TakeWhile1))));
+/// assert_eq!(alpha(b"12345"), Err(ErrMode::Error(Error::new(&b"12345"[..], ErrorKind::TakeWhile1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while1`][crate::bytes::take_while1]
@@ -338,11 +338,11 @@ where
 /// The parser will return the longest slice that matches the given predicate *(a function that
 /// takes the input and returns a bool)*.
 ///
-/// It will return an `Err::Error((_, ErrorKind::TakeWhileMN))` if the pattern wasn't met or is out
+/// It will return an `ErrMode::Error((_, ErrorKind::TakeWhileMN))` if the pattern wasn't met or is out
 /// of range (m <= len <= n).
 /// # Example
 /// ```rust
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
 /// use winnow::bytes::complete::take_while_m_n;
 /// use winnow::input::AsChar;
 ///
@@ -353,8 +353,8 @@ where
 /// assert_eq!(short_alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
 /// assert_eq!(short_alpha(b"lengthy"), Ok((&b"y"[..], &b"length"[..])));
 /// assert_eq!(short_alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
-/// assert_eq!(short_alpha(b"ed"), Err(Err::Error(Error::new(&b"ed"[..], ErrorKind::TakeWhileMN))));
-/// assert_eq!(short_alpha(b"12345"), Err(Err::Error(Error::new(&b"12345"[..], ErrorKind::TakeWhileMN))));
+/// assert_eq!(short_alpha(b"ed"), Err(ErrMode::Error(Error::new(&b"ed"[..], ErrorKind::TakeWhileMN))));
+/// assert_eq!(short_alpha(b"12345"), Err(ErrMode::Error(Error::new(&b"12345"[..], ErrorKind::TakeWhileMN))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while_m_n`][crate::bytes::take_while_m_n]
@@ -391,7 +391,7 @@ where
           let res: IResult<_, _, Error> = if let Ok(index) = input.offset_at(idx) {
             Ok(input.next_slice(index))
           } else {
-            Err(Err::Error(Error::from_error_kind(
+            Err(ErrMode::Error(Error::from_error_kind(
               input,
               ErrorKind::TakeWhileMN,
             )))
@@ -401,7 +401,7 @@ where
           let res: IResult<_, _, Error> = if let Ok(index) = input.offset_at(n) {
             Ok(input.next_slice(index))
           } else {
-            Err(Err::Error(Error::from_error_kind(
+            Err(ErrMode::Error(Error::from_error_kind(
               input,
               ErrorKind::TakeWhileMN,
             )))
@@ -410,7 +410,7 @@ where
         }
       } else {
         let e = ErrorKind::TakeWhileMN;
-        Err(Err::Error(Error::from_error_kind(input, e)))
+        Err(ErrMode::Error(Error::from_error_kind(input, e)))
       }
     }
     None => {
@@ -418,7 +418,7 @@ where
       if len >= n {
         match input.offset_at(n) {
           Ok(index) => Ok(input.next_slice(index)),
-          Err(_needed) => Err(Err::Error(Error::from_error_kind(
+          Err(_needed) => Err(ErrMode::Error(Error::from_error_kind(
             input,
             ErrorKind::TakeWhileMN,
           ))),
@@ -427,7 +427,7 @@ where
         Ok(input.next_slice(len))
       } else {
         let e = ErrorKind::TakeWhileMN;
-        Err(Err::Error(Error::from_error_kind(input, e)))
+        Err(ErrMode::Error(Error::from_error_kind(input, e)))
       }
     }
   }
@@ -439,7 +439,7 @@ where
 /// takes the input and returns a bool)*.
 /// # Example
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::{ErrMode, error::ErrorKind, Needed, IResult};
 /// use winnow::bytes::complete::take_till;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
@@ -481,11 +481,11 @@ where
 /// The parser will return the longest slice till the given predicate *(a function that
 /// takes the input and returns a bool)*.
 ///
-/// It will return `Err(Err::Error((_, ErrorKind::TakeTill1)))` if the input is empty or the
+/// It will return `Err(ErrMode::Error((_, ErrorKind::TakeTill1)))` if the input is empty or the
 /// predicate matches the first input.
 /// # Example
 /// ```rust
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
 /// use winnow::bytes::complete::take_till1;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
@@ -493,9 +493,9 @@ where
 /// }
 ///
 /// assert_eq!(till_colon("latin:123"), Ok((":123", "latin")));
-/// assert_eq!(till_colon(":empty matched"), Err(Err::Error(Error::new(":empty matched", ErrorKind::TakeTill1))));
+/// assert_eq!(till_colon(":empty matched"), Err(ErrMode::Error(Error::new(":empty matched", ErrorKind::TakeTill1))));
 /// assert_eq!(till_colon("12345"), Ok(("", "12345")));
-/// assert_eq!(till_colon(""), Err(Err::Error(Error::new("", ErrorKind::TakeTill1))));
+/// assert_eq!(till_colon(""), Err(ErrMode::Error(Error::new("", ErrorKind::TakeTill1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till1`][crate::bytes::take_till1]
@@ -525,10 +525,10 @@ where
 
 /// Returns an input slice containing the first N input elements (I[..N]).
 ///
-/// It will return `Err(Err::Error((_, ErrorKind::Eof)))` if the input is shorter than the argument.
+/// It will return `Err(ErrMode::Error((_, ErrorKind::Eof)))` if the input is shorter than the argument.
 /// # Example
 /// ```rust
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
 /// use winnow::bytes::complete::take;
 ///
 /// fn take6(s: &str) -> IResult<&str, &str> {
@@ -537,8 +537,8 @@ where
 ///
 /// assert_eq!(take6("1234567"), Ok(("7", "123456")));
 /// assert_eq!(take6("things"), Ok(("", "things")));
-/// assert_eq!(take6("short"), Err(Err::Error(Error::new("short", ErrorKind::Eof))));
-/// assert_eq!(take6(""), Err(Err::Error(Error::new("", ErrorKind::Eof))));
+/// assert_eq!(take6("short"), Err(ErrMode::Error(Error::new("short", ErrorKind::Eof))));
+/// assert_eq!(take6(""), Err(ErrMode::Error(Error::new("", ErrorKind::Eof))));
 /// ```
 ///
 /// The units that are taken will depend on the input type. For example, for a
@@ -575,17 +575,17 @@ where
 {
   match i.offset_at(c) {
     Ok(offset) => Ok(i.next_slice(offset)),
-    Err(_needed) => Err(Err::Error(Error::from_error_kind(i, ErrorKind::Eof))),
+    Err(_needed) => Err(ErrMode::Error(Error::from_error_kind(i, ErrorKind::Eof))),
   }
 }
 
 /// Returns the input slice up to the first occurrence of the pattern.
 ///
-/// It doesn't consume the pattern. It will return `Err(Err::Error((_, ErrorKind::TakeUntil)))`
+/// It doesn't consume the pattern. It will return `Err(ErrMode::Error((_, ErrorKind::TakeUntil)))`
 /// if the pattern wasn't met.
 /// # Example
 /// ```rust
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
 /// use winnow::bytes::complete::take_until;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
@@ -593,8 +593,8 @@ where
 /// }
 ///
 /// assert_eq!(until_eof("hello, worldeof"), Ok(("eof", "hello, world")));
-/// assert_eq!(until_eof("hello, world"), Err(Err::Error(Error::new("hello, world", ErrorKind::TakeUntil))));
-/// assert_eq!(until_eof(""), Err(Err::Error(Error::new("", ErrorKind::TakeUntil))));
+/// assert_eq!(until_eof("hello, world"), Err(ErrMode::Error(Error::new("hello, world", ErrorKind::TakeUntil))));
+/// assert_eq!(until_eof(""), Err(ErrMode::Error(Error::new("", ErrorKind::TakeUntil))));
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
 /// ```
 ///
@@ -620,17 +620,20 @@ where
 {
   match i.find_slice(t) {
     Some(offset) => Ok(i.next_slice(offset)),
-    None => Err(Err::Error(Error::from_error_kind(i, ErrorKind::TakeUntil))),
+    None => Err(ErrMode::Error(Error::from_error_kind(
+      i,
+      ErrorKind::TakeUntil,
+    ))),
   }
 }
 
 /// Returns the non empty input slice up to the first occurrence of the pattern.
 ///
-/// It doesn't consume the pattern. It will return `Err(Err::Error((_, ErrorKind::TakeUntil)))`
+/// It doesn't consume the pattern. It will return `Err(ErrMode::Error((_, ErrorKind::TakeUntil)))`
 /// if the pattern wasn't met.
 /// # Example
 /// ```rust
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
 /// use winnow::bytes::complete::take_until1;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
@@ -638,10 +641,10 @@ where
 /// }
 ///
 /// assert_eq!(until_eof("hello, worldeof"), Ok(("eof", "hello, world")));
-/// assert_eq!(until_eof("hello, world"), Err(Err::Error(Error::new("hello, world", ErrorKind::TakeUntil))));
-/// assert_eq!(until_eof(""), Err(Err::Error(Error::new("", ErrorKind::TakeUntil))));
+/// assert_eq!(until_eof("hello, world"), Err(ErrMode::Error(Error::new("hello, world", ErrorKind::TakeUntil))));
+/// assert_eq!(until_eof(""), Err(ErrMode::Error(Error::new("", ErrorKind::TakeUntil))));
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
-/// assert_eq!(until_eof("eof"), Err(Err::Error(Error::new("eof", ErrorKind::TakeUntil))));
+/// assert_eq!(until_eof("eof"), Err(ErrMode::Error(Error::new("eof", ErrorKind::TakeUntil))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until1`][crate::bytes::take_until1]
@@ -665,7 +668,10 @@ where
   T: SliceLen,
 {
   match i.find_slice(t) {
-    None | Some(0) => Err(Err::Error(Error::from_error_kind(i, ErrorKind::TakeUntil))),
+    None | Some(0) => Err(ErrMode::Error(Error::from_error_kind(
+      i,
+      ErrorKind::TakeUntil,
+    ))),
     Some(offset) => Ok(i.next_slice(offset)),
   }
 }
@@ -677,7 +683,7 @@ where
 /// * The third argument matches the escaped characters
 /// # Example
 /// ```
-/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::{ErrMode, error::ErrorKind, Needed, IResult};
 /// # use winnow::character::complete::digit1;
 /// use winnow::bytes::complete::escaped;
 /// use winnow::character::complete::one_of;
@@ -741,11 +747,11 @@ where
           i = i2;
         }
       }
-      Err(Err::Error(_)) => {
+      Err(ErrMode::Error(_)) => {
         if i.next_token().expect("input_len > 0").1.as_char() == control_char {
           let next = control_char.len_utf8();
           if next >= i.input_len() {
-            return Err(Err::Error(Error::from_error_kind(
+            return Err(ErrMode::Error(Error::from_error_kind(
               input,
               ErrorKind::Escaped,
             )));
@@ -764,7 +770,7 @@ where
         } else {
           let offset = input.offset_to(&i);
           if offset == 0 {
-            return Err(Err::Error(Error::from_error_kind(
+            return Err(ErrMode::Error(Error::from_error_kind(
               input,
               ErrorKind::Escaped,
             )));
@@ -790,7 +796,7 @@ where
 /// As an example, the chain `abc\tdef` could be `abc    def` (it also consumes the control character)
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::{ErrMode, error::ErrorKind, Needed, IResult};
 /// # use std::str::from_utf8;
 /// use winnow::bytes::complete::{escaped_transform, tag};
 /// use winnow::character::complete::alpha1;
@@ -875,13 +881,13 @@ where
           offset = input.offset_to(&i2);
         }
       }
-      Err(Err::Error(_)) => {
+      Err(ErrMode::Error(_)) => {
         if remainder.next_token().expect("input_len > 0").1.as_char() == control_char {
           let next = offset + control_char.len_utf8();
           let input_len = input.input_len();
 
           if next >= input_len {
-            return Err(Err::Error(Error::from_error_kind(
+            return Err(ErrMode::Error(Error::from_error_kind(
               remainder,
               ErrorKind::EscapedTransform,
             )));
@@ -900,7 +906,7 @@ where
           }
         } else {
           if offset == 0 {
-            return Err(Err::Error(Error::from_error_kind(
+            return Err(ErrMode::Error(Error::from_error_kind(
               remainder,
               ErrorKind::EscapedTransform,
             )));
@@ -988,14 +994,14 @@ mod tests {
     assert_eq!(esc(&b"ab\\\"12"[..]), Ok((&b"12"[..], &b"ab\\\""[..])));
     assert_eq!(
       esc(&b"AB\\"[..]),
-      Err(Err::Error(error_position!(
+      Err(ErrMode::Error(error_position!(
         &b"AB\\"[..],
         ErrorKind::Escaped
       )))
     );
     assert_eq!(
       esc(&b"AB\\A"[..]),
-      Err(Err::Error(error_node_position!(
+      Err(ErrMode::Error(error_node_position!(
         &b"AB\\A"[..],
         ErrorKind::Escaped,
         error_position!(&b"A"[..], ErrorKind::OneOf)
@@ -1023,11 +1029,11 @@ mod tests {
     assert_eq!(esc("ab\\\"12"), Ok(("12", "ab\\\"")));
     assert_eq!(
       esc("AB\\"),
-      Err(Err::Error(error_position!("AB\\", ErrorKind::Escaped)))
+      Err(ErrMode::Error(error_position!("AB\\", ErrorKind::Escaped)))
     );
     assert_eq!(
       esc("AB\\A"),
-      Err(Err::Error(error_node_position!(
+      Err(ErrMode::Error(error_node_position!(
         "AB\\A",
         ErrorKind::Escaped,
         error_position!("A", ErrorKind::OneOf)
@@ -1084,14 +1090,14 @@ mod tests {
     );
     assert_eq!(
       esc(&b"AB\\"[..]),
-      Err(Err::Error(error_position!(
+      Err(ErrMode::Error(error_position!(
         &b"\\"[..],
         ErrorKind::EscapedTransform
       )))
     );
     assert_eq!(
       esc(&b"AB\\A"[..]),
-      Err(Err::Error(error_node_position!(
+      Err(ErrMode::Error(error_node_position!(
         &b"AB\\A"[..],
         ErrorKind::EscapedTransform,
         error_position!(&b"A"[..], ErrorKind::Tag)
@@ -1143,14 +1149,14 @@ mod tests {
     assert_eq!(esc("ab\\\"12"), Ok(("12", String::from("ab\""))));
     assert_eq!(
       esc("AB\\"),
-      Err(Err::Error(error_position!(
+      Err(ErrMode::Error(error_position!(
         "\\",
         ErrorKind::EscapedTransform
       )))
     );
     assert_eq!(
       esc("AB\\A"),
-      Err(Err::Error(error_node_position!(
+      Err(ErrMode::Error(error_node_position!(
         "AB\\A",
         ErrorKind::EscapedTransform,
         error_position!("A", ErrorKind::Tag)

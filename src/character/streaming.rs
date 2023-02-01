@@ -11,22 +11,22 @@ use crate::input::{
   split_at_offset1_streaming, split_at_offset_streaming, AsBytes, AsChar, ContainsToken, Input,
 };
 use crate::input::{Compare, CompareResult};
-use crate::{Err, IResult, Needed};
+use crate::{ErrMode, IResult, Needed};
 
 /// Recognizes one character.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{ErrorKind, Error}, Needed, IResult};
+/// # use winnow::{ErrMode, error::{ErrorKind, Error}, Needed, IResult};
 /// # use winnow::character::streaming::char;
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     char('a')(i)
 /// }
 /// assert_eq!(parser("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser("bc"), Err(Err::Error(Error::new("bc", ErrorKind::Char))));
-/// assert_eq!(parser(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(parser("bc"), Err(ErrMode::Error(Error::new("bc", ErrorKind::Char))));
+/// assert_eq!(parser(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -50,28 +50,28 @@ where
   let (input, token) = i
     .next_token()
     .map(|(i, t)| (i, t.as_char()))
-    .ok_or_else(|| Err::Incomplete(Needed::new(1)))?;
+    .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
   if c == token {
     Ok((input, token))
   } else {
-    Err(Err::Error(Error::from_char(i, c)))
+    Err(ErrMode::Error(Error::from_char(i, c)))
   }
 }
 
 /// Recognizes one character and checks that it satisfies a predicate
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{ErrorKind, Error}, Needed, IResult};
+/// # use winnow::{ErrMode, error::{ErrorKind, Error}, Needed, IResult};
 /// # use winnow::character::streaming::satisfy;
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     satisfy(|c| c == 'a' || c == 'b')(i)
 /// }
 /// assert_eq!(parser("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser("cd"), Err(Err::Error(Error::new("cd", ErrorKind::Satisfy))));
-/// assert_eq!(parser(""), Err(Err::Incomplete(Needed::Unknown)));
+/// assert_eq!(parser("cd"), Err(ErrMode::Error(Error::new("cd", ErrorKind::Satisfy))));
+/// assert_eq!(parser(""), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -100,25 +100,28 @@ where
   let (input, token) = i
     .next_token()
     .map(|(i, t)| (i, t.as_char()))
-    .ok_or(Err::Incomplete(Needed::Unknown))?;
+    .ok_or(ErrMode::Incomplete(Needed::Unknown))?;
   if cond(token) {
     Ok((input, token))
   } else {
-    Err(Err::Error(Error::from_error_kind(i, ErrorKind::Satisfy)))
+    Err(ErrMode::Error(Error::from_error_kind(
+      i,
+      ErrorKind::Satisfy,
+    )))
   }
 }
 
 /// Recognizes one of the provided characters.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
 /// # use winnow::character::streaming::one_of;
 /// assert_eq!(one_of::<_, _, Error<_>>("abc")("b"), Ok(("", 'b')));
-/// assert_eq!(one_of::<_, _, Error<_>>("a")("bc"), Err(Err::Error(Error::new("bc", ErrorKind::OneOf))));
-/// assert_eq!(one_of::<_, _, Error<_>>("a")(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(one_of::<_, _, Error<_>>("a")("bc"), Err(ErrMode::Error(Error::new("bc", ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -137,15 +140,15 @@ where
 
 /// Recognizes a character that is not in the provided characters.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
 /// # use winnow::character::streaming::none_of;
 /// assert_eq!(none_of::<_, _, Error<_>>("abc")("z"), Ok(("", 'z')));
-/// assert_eq!(none_of::<_, _, Error<_>>("ab")("a"), Err(Err::Error(Error::new("a", ErrorKind::NoneOf))));
-/// assert_eq!(none_of::<_, _, Error<_>>("a")(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(none_of::<_, _, Error<_>>("ab")("a"), Err(ErrMode::Error(Error::new("a", ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::none_of`][crate::bytes::none_of] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -164,15 +167,15 @@ where
 
 /// Recognizes the string "\r\n".
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::crlf;
 /// assert_eq!(crlf::<_, Error<_>>("\r\nc"), Ok(("c", "\r\n")));
-/// assert_eq!(crlf::<_, Error<_>>("ab\r\nc"), Err(Err::Error(Error::new("ab\r\nc", ErrorKind::CrLf))));
-/// assert_eq!(crlf::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(2))));
+/// assert_eq!(crlf::<_, Error<_>>("ab\r\nc"), Err(ErrMode::Error(Error::new("ab\r\nc", ErrorKind::CrLf))));
+/// assert_eq!(crlf::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::crlf`][crate::character::crlf] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -188,27 +191,27 @@ where
   const CRLF: &str = "\r\n";
   match input.compare(CRLF) {
     CompareResult::Ok => Ok(input.next_slice(CRLF.len())),
-    CompareResult::Incomplete => Err(Err::Incomplete(Needed::new(CRLF.len()))),
+    CompareResult::Incomplete => Err(ErrMode::Incomplete(Needed::new(CRLF.len()))),
     CompareResult::Error => {
       let e: ErrorKind = ErrorKind::CrLf;
-      Err(Err::Error(E::from_error_kind(input, e)))
+      Err(ErrMode::Error(E::from_error_kind(input, e)))
     }
   }
 }
 
 /// Recognizes a string of any char except '\r\n' or '\n'.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
 /// # use winnow::character::streaming::not_line_ending;
 /// assert_eq!(not_line_ending::<_, Error<_>>("ab\r\nc"), Ok(("\r\nc", "ab")));
-/// assert_eq!(not_line_ending::<_, Error<_>>("abc"), Err(Err::Incomplete(Needed::Unknown)));
-/// assert_eq!(not_line_ending::<_, Error<_>>(""), Err(Err::Incomplete(Needed::Unknown)));
-/// assert_eq!(not_line_ending::<_, Error<_>>("a\rb\nc"), Err(Err::Error(Error::new("a\rb\nc", ErrorKind::Tag ))));
-/// assert_eq!(not_line_ending::<_, Error<_>>("a\rbc"), Err(Err::Error(Error::new("a\rbc", ErrorKind::Tag ))));
+/// assert_eq!(not_line_ending::<_, Error<_>>("abc"), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(not_line_ending::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(not_line_ending::<_, Error<_>>("a\rb\nc"), Err(ErrMode::Error(Error::new("a\rb\nc", ErrorKind::Tag ))));
+/// assert_eq!(not_line_ending::<_, Error<_>>("a\rbc"), Err(ErrMode::Error(Error::new("a\rbc", ErrorKind::Tag ))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::not_line_ending`][crate::character::not_line_ending] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -226,7 +229,7 @@ where
     let c = item.as_char();
     c == '\r' || c == '\n'
   }) {
-    None => Err(Err::Incomplete(Needed::Unknown)),
+    None => Err(ErrMode::Incomplete(Needed::Unknown)),
     Some(offset) => {
       let (new_input, res) = input.next_slice(offset);
       let bytes = new_input.as_bytes();
@@ -237,11 +240,11 @@ where
           //FIXME: calculate the right index
           CompareResult::Ok => {}
           CompareResult::Incomplete => {
-            return Err(Err::Incomplete(Needed::Unknown));
+            return Err(ErrMode::Incomplete(Needed::Unknown));
           }
           CompareResult::Error => {
             let e: ErrorKind = ErrorKind::Tag;
-            return Err(Err::Error(E::from_error_kind(input, e)));
+            return Err(ErrMode::Error(E::from_error_kind(input, e)));
           }
         }
       }
@@ -252,15 +255,15 @@ where
 
 /// Recognizes an end of line (both '\n' and '\r\n').
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::line_ending;
 /// assert_eq!(line_ending::<_, Error<_>>("\r\nc"), Ok(("c", "\r\n")));
-/// assert_eq!(line_ending::<_, Error<_>>("ab\r\nc"), Err(Err::Error(Error::new("ab\r\nc", ErrorKind::CrLf))));
-/// assert_eq!(line_ending::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(line_ending::<_, Error<_>>("ab\r\nc"), Err(ErrMode::Error(Error::new("ab\r\nc", ErrorKind::CrLf))));
+/// assert_eq!(line_ending::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::line_ending`][crate::character::line_ending] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -277,26 +280,26 @@ where
   const CRLF: &str = "\r\n";
   match input.compare(LF) {
     CompareResult::Ok => Ok(input.next_slice(LF.len())),
-    CompareResult::Incomplete => Err(Err::Incomplete(Needed::new(1))),
+    CompareResult::Incomplete => Err(ErrMode::Incomplete(Needed::new(1))),
     CompareResult::Error => match input.compare("\r\n") {
       CompareResult::Ok => Ok(input.next_slice(CRLF.len())),
-      CompareResult::Incomplete => Err(Err::Incomplete(Needed::new(2))),
-      CompareResult::Error => Err(Err::Error(E::from_error_kind(input, ErrorKind::CrLf))),
+      CompareResult::Incomplete => Err(ErrMode::Incomplete(Needed::new(2))),
+      CompareResult::Error => Err(ErrMode::Error(E::from_error_kind(input, ErrorKind::CrLf))),
     },
   }
 }
 
 /// Matches a newline character '\\n'.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::newline;
 /// assert_eq!(newline::<_, Error<_>>("\nc"), Ok(("c", '\n')));
-/// assert_eq!(newline::<_, Error<_>>("\r\nc"), Err(Err::Error(Error::new("\r\nc", ErrorKind::Char))));
-/// assert_eq!(newline::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(newline::<_, Error<_>>("\r\nc"), Err(ErrMode::Error(Error::new("\r\nc", ErrorKind::Char))));
+/// assert_eq!(newline::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::newline`][crate::character::newline] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -314,15 +317,15 @@ where
 
 /// Matches a tab character '\t'.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::tab;
 /// assert_eq!(tab::<_, Error<_>>("\tc"), Ok(("c", '\t')));
-/// assert_eq!(tab::<_, Error<_>>("\r\nc"), Err(Err::Error(Error::new("\r\nc", ErrorKind::Char))));
-/// assert_eq!(tab::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(tab::<_, Error<_>>("\r\nc"), Err(ErrMode::Error(Error::new("\r\nc", ErrorKind::Char))));
+/// assert_eq!(tab::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::tab`][crate::character::tab] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -341,13 +344,13 @@ where
 /// Matches one byte as a character. Note that the input type will
 /// accept a `str`, but not a `&[u8]`, unlike many other nom parsers.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{character::streaming::anychar, Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{character::streaming::anychar, ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// assert_eq!(anychar::<_, Error<_>>("abc"), Ok(("bc",'a')));
-/// assert_eq!(anychar::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(anychar::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::any`][crate::bytes::any] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -365,16 +368,16 @@ where
 
 /// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphabetic character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::alpha0;
 /// assert_eq!(alpha0::<_, Error<_>>("ab1c"), Ok(("1c", "ab")));
 /// assert_eq!(alpha0::<_, Error<_>>("1c"), Ok(("1c", "")));
-/// assert_eq!(alpha0::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha0::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::alpha0`][crate::character::alpha0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -392,16 +395,16 @@ where
 
 /// Recognizes one or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphabetic character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::alpha1;
 /// assert_eq!(alpha1::<_, Error<_>>("aB1c"), Ok(("1c", "aB")));
-/// assert_eq!(alpha1::<_, Error<_>>("1c"), Err(Err::Error(Error::new("1c", ErrorKind::Alpha))));
-/// assert_eq!(alpha1::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha1::<_, Error<_>>("1c"), Err(ErrMode::Error(Error::new("1c", ErrorKind::Alpha))));
+/// assert_eq!(alpha1::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::alpha1`][crate::character::alpha1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -419,16 +422,16 @@ where
 
 /// Recognizes zero or more ASCII numerical characters: 0-9
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non digit character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::digit0;
 /// assert_eq!(digit0::<_, Error<_>>("21c"), Ok(("c", "21")));
 /// assert_eq!(digit0::<_, Error<_>>("a21c"), Ok(("a21c", "")));
-/// assert_eq!(digit0::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(digit0::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::digit0`][crate::character::digit0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -446,16 +449,16 @@ where
 
 /// Recognizes one or more ASCII numerical characters: 0-9
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non digit character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::digit1;
 /// assert_eq!(digit1::<_, Error<_>>("21c"), Ok(("c", "21")));
-/// assert_eq!(digit1::<_, Error<_>>("c1"), Err(Err::Error(Error::new("c1", ErrorKind::Digit))));
-/// assert_eq!(digit1::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(digit1::<_, Error<_>>("c1"), Err(ErrMode::Error(Error::new("c1", ErrorKind::Digit))));
+/// assert_eq!(digit1::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::digit1`][crate::character::digit1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -473,16 +476,16 @@ where
 
 /// Recognizes zero or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non hexadecimal digit character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::hex_digit0;
 /// assert_eq!(hex_digit0::<_, Error<_>>("21cZ"), Ok(("Z", "21c")));
 /// assert_eq!(hex_digit0::<_, Error<_>>("Z21c"), Ok(("Z21c", "")));
-/// assert_eq!(hex_digit0::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(hex_digit0::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::hex_digit0`][crate::character::hex_digit0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -500,16 +503,16 @@ where
 
 /// Recognizes one or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non hexadecimal digit character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::hex_digit1;
 /// assert_eq!(hex_digit1::<_, Error<_>>("21cZ"), Ok(("Z", "21c")));
-/// assert_eq!(hex_digit1::<_, Error<_>>("H2"), Err(Err::Error(Error::new("H2", ErrorKind::HexDigit))));
-/// assert_eq!(hex_digit1::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(hex_digit1::<_, Error<_>>("H2"), Err(ErrMode::Error(Error::new("H2", ErrorKind::HexDigit))));
+/// assert_eq!(hex_digit1::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::hex_digit1`][crate::character::hex_digit1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -527,16 +530,16 @@ where
 
 /// Recognizes zero or more octal characters: 0-7
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non octal digit character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::oct_digit0;
 /// assert_eq!(oct_digit0::<_, Error<_>>("21cZ"), Ok(("cZ", "21")));
 /// assert_eq!(oct_digit0::<_, Error<_>>("Z21c"), Ok(("Z21c", "")));
-/// assert_eq!(oct_digit0::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(oct_digit0::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::oct_digit0`][crate::character::oct_digit0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -554,16 +557,16 @@ where
 
 /// Recognizes one or more octal characters: 0-7
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non octal digit character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::oct_digit1;
 /// assert_eq!(oct_digit1::<_, Error<_>>("21cZ"), Ok(("cZ", "21")));
-/// assert_eq!(oct_digit1::<_, Error<_>>("H2"), Err(Err::Error(Error::new("H2", ErrorKind::OctDigit))));
-/// assert_eq!(oct_digit1::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(oct_digit1::<_, Error<_>>("H2"), Err(ErrMode::Error(Error::new("H2", ErrorKind::OctDigit))));
+/// assert_eq!(oct_digit1::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::oct_digit1`][crate::character::oct_digit1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -581,16 +584,16 @@ where
 
 /// Recognizes zero or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphanumerical character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::alphanumeric0;
 /// assert_eq!(alphanumeric0::<_, Error<_>>("21cZ%1"), Ok(("%1", "21cZ")));
 /// assert_eq!(alphanumeric0::<_, Error<_>>("&Z21c"), Ok(("&Z21c", "")));
-/// assert_eq!(alphanumeric0::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(alphanumeric0::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::alphanumeric0`][crate::character::alphanumeric0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -608,16 +611,16 @@ where
 
 /// Recognizes one or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphanumerical character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::alphanumeric1;
 /// assert_eq!(alphanumeric1::<_, Error<_>>("21cZ%1"), Ok(("%1", "21cZ")));
-/// assert_eq!(alphanumeric1::<_, Error<_>>("&H2"), Err(Err::Error(Error::new("&H2", ErrorKind::AlphaNumeric))));
-/// assert_eq!(alphanumeric1::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(alphanumeric1::<_, Error<_>>("&H2"), Err(ErrMode::Error(Error::new("&H2", ErrorKind::AlphaNumeric))));
+/// assert_eq!(alphanumeric1::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::alphanumeric1`][crate::character::alphanumeric1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -635,16 +638,16 @@ where
 
 /// Recognizes zero or more spaces and tabs.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::space0;
 /// assert_eq!(space0::<_, Error<_>>(" \t21c"), Ok(("21c", " \t")));
 /// assert_eq!(space0::<_, Error<_>>("Z21c"), Ok(("Z21c", "")));
-/// assert_eq!(space0::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(space0::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::space0`][crate::character::space0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -664,16 +667,16 @@ where
 }
 /// Recognizes one or more spaces and tabs.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::space1;
 /// assert_eq!(space1::<_, Error<_>>(" \t21c"), Ok(("21c", " \t")));
-/// assert_eq!(space1::<_, Error<_>>("H2"), Err(Err::Error(Error::new("H2", ErrorKind::Space))));
-/// assert_eq!(space1::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(space1::<_, Error<_>>("H2"), Err(ErrMode::Error(Error::new("H2", ErrorKind::Space))));
+/// assert_eq!(space1::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::space1`][crate::character::space1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -698,16 +701,16 @@ where
 
 /// Recognizes zero or more spaces, tabs, carriage returns and line feeds.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::multispace0;
 /// assert_eq!(multispace0::<_, Error<_>>(" \t\n\r21c"), Ok(("21c", " \t\n\r")));
 /// assert_eq!(multispace0::<_, Error<_>>("Z21c"), Ok(("Z21c", "")));
-/// assert_eq!(multispace0::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(multispace0::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::multispace0`][crate::character::multispace0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -728,16 +731,16 @@ where
 
 /// Recognizes one or more spaces, tabs, carriage returns and line feeds.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::streaming::multispace1;
 /// assert_eq!(multispace1::<_, Error<_>>(" \t\n\r21c"), Ok(("21c", " \t\n\r")));
-/// assert_eq!(multispace1::<_, Error<_>>("H2"), Err(Err::Error(Error::new("H2", ErrorKind::MultiSpace))));
-/// assert_eq!(multispace1::<_, Error<_>>(""), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(multispace1::<_, Error<_>>("H2"), Err(ErrMode::Error(Error::new("H2", ErrorKind::MultiSpace))));
+/// assert_eq!(multispace1::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::multispace1`][crate::character::multispace1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -791,7 +794,7 @@ macro_rules! ints {
               let (i, sign) = sign(input.clone())?;
 
                 if i.input_len() == 0 {
-                    return Err(Err::Incomplete(Needed::new(1)));
+                    return Err(ErrMode::Incomplete(Needed::new(1)));
                 }
 
                 let mut value: $t = 0;
@@ -799,7 +802,7 @@ macro_rules! ints {
                     match c.as_char().to_digit(10) {
                         None => {
                             if offset == 0 {
-                                return Err(Err::Error(E::from_error_kind(input, ErrorKind::Digit)));
+                                return Err(ErrMode::Error(E::from_error_kind(input, ErrorKind::Digit)));
                             } else {
                                 return Ok((i.next_slice(offset).0, value));
                             }
@@ -811,13 +814,13 @@ macro_rules! ints {
                                v.checked_sub(d as $t)
                             }
                         }) {
-                            None => return Err(Err::Error(E::from_error_kind(input, ErrorKind::Digit))),
+                            None => return Err(ErrMode::Error(E::from_error_kind(input, ErrorKind::Digit))),
                             Some(v) => value = v,
                         }
                    }
                 }
 
-                Err(Err::Incomplete(Needed::new(1)))
+                Err(ErrMode::Incomplete(Needed::new(1)))
             }
         )+
     }
@@ -840,7 +843,7 @@ macro_rules! uints {
                 let i = input;
 
                 if i.input_len() == 0 {
-                    return Err(Err::Incomplete(Needed::new(1)));
+                    return Err(ErrMode::Incomplete(Needed::new(1)));
                 }
 
                 let mut value: $t = 0;
@@ -848,19 +851,19 @@ macro_rules! uints {
                     match c.as_char().to_digit(10) {
                         None => {
                             if offset == 0 {
-                                return Err(Err::Error(E::from_error_kind(i, ErrorKind::Digit)));
+                                return Err(ErrMode::Error(E::from_error_kind(i, ErrorKind::Digit)));
                             } else {
                                 return Ok((i.next_slice(offset).0, value));
                             }
                         },
                         Some(d) => match value.checked_mul(10).and_then(|v| v.checked_add(d as $t)) {
-                            None => return Err(Err::Error(E::from_error_kind(i, ErrorKind::Digit))),
+                            None => return Err(ErrMode::Error(E::from_error_kind(i, ErrorKind::Digit))),
                             Some(v) => value = v,
                         }
                     }
                 }
 
-                Err(Err::Incomplete(Needed::new(1)))
+                Err(ErrMode::Incomplete(Needed::new(1)))
             }
         )+
     }
@@ -876,7 +879,7 @@ mod tests {
   use crate::error::ErrorKind;
   use crate::input::ParseTo;
   use crate::sequence::pair;
-  use crate::{Err, IResult, Needed};
+  use crate::{ErrMode, IResult, Needed};
   use proptest::prelude::*;
 
   macro_rules! assert_parse(
@@ -900,29 +903,41 @@ mod tests {
     let d: &[u8] = "azé12".as_bytes();
     let e: &[u8] = b" ";
     let f: &[u8] = b" ;";
-    //assert_eq!(alpha1::<_, Error<_>>(a), Err(Err::Incomplete(Needed::new(1))));
-    assert_parse!(alpha1(a), Err(Err::Incomplete(Needed::new(1))));
-    assert_eq!(alpha1(b), Err(Err::Error(Error::new(b, ErrorKind::Alpha))));
+    //assert_eq!(alpha1::<_, Error<_>>(a), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_parse!(alpha1(a), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(
+      alpha1(b),
+      Err(ErrMode::Error(Error::new(b, ErrorKind::Alpha)))
+    );
     assert_eq!(alpha1::<_, Error<_>>(c), Ok((&c[1..], &b"a"[..])));
     assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12".as_bytes(), &b"az"[..])));
-    assert_eq!(digit1(a), Err(Err::Error(Error::new(a, ErrorKind::Digit))));
+    assert_eq!(
+      digit1(a),
+      Err(ErrMode::Error(Error::new(a, ErrorKind::Digit)))
+    );
     assert_eq!(
       digit1::<_, Error<_>>(b),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
-    assert_eq!(digit1(c), Err(Err::Error(Error::new(c, ErrorKind::Digit))));
-    assert_eq!(digit1(d), Err(Err::Error(Error::new(d, ErrorKind::Digit))));
+    assert_eq!(
+      digit1(c),
+      Err(ErrMode::Error(Error::new(c, ErrorKind::Digit)))
+    );
+    assert_eq!(
+      digit1(d),
+      Err(ErrMode::Error(Error::new(d, ErrorKind::Digit)))
+    );
     assert_eq!(
       hex_digit1::<_, Error<_>>(a),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
       hex_digit1::<_, Error<_>>(b),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
       hex_digit1::<_, Error<_>>(c),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
       hex_digit1::<_, Error<_>>(d),
@@ -930,32 +945,32 @@ mod tests {
     );
     assert_eq!(
       hex_digit1(e),
-      Err(Err::Error(Error::new(e, ErrorKind::HexDigit)))
+      Err(ErrMode::Error(Error::new(e, ErrorKind::HexDigit)))
     );
     assert_eq!(
       oct_digit1(a),
-      Err(Err::Error(Error::new(a, ErrorKind::OctDigit)))
+      Err(ErrMode::Error(Error::new(a, ErrorKind::OctDigit)))
     );
     assert_eq!(
       oct_digit1::<_, Error<_>>(b),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
       oct_digit1(c),
-      Err(Err::Error(Error::new(c, ErrorKind::OctDigit)))
+      Err(ErrMode::Error(Error::new(c, ErrorKind::OctDigit)))
     );
     assert_eq!(
       oct_digit1(d),
-      Err(Err::Error(Error::new(d, ErrorKind::OctDigit)))
+      Err(ErrMode::Error(Error::new(d, ErrorKind::OctDigit)))
     );
     assert_eq!(
       alphanumeric1::<_, Error<_>>(a),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
     //assert_eq!(fix_error!(b,(), alphanumeric1), Ok((empty, b)));
     assert_eq!(
       alphanumeric1::<_, Error<_>>(c),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
       alphanumeric1::<_, Error<_>>(d),
@@ -963,7 +978,7 @@ mod tests {
     );
     assert_eq!(
       space1::<_, Error<_>>(e),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(space1::<_, Error<_>>(f), Ok((&b";"[..], &b" "[..])));
   }
@@ -978,64 +993,76 @@ mod tests {
     let e = " ";
     assert_eq!(
       alpha1::<_, Error<_>>(a),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
-    assert_eq!(alpha1(b), Err(Err::Error(Error::new(b, ErrorKind::Alpha))));
+    assert_eq!(
+      alpha1(b),
+      Err(ErrMode::Error(Error::new(b, ErrorKind::Alpha)))
+    );
     assert_eq!(alpha1::<_, Error<_>>(c), Ok((&c[1..], "a")));
     assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12", "az")));
-    assert_eq!(digit1(a), Err(Err::Error(Error::new(a, ErrorKind::Digit))));
+    assert_eq!(
+      digit1(a),
+      Err(ErrMode::Error(Error::new(a, ErrorKind::Digit)))
+    );
     assert_eq!(
       digit1::<_, Error<_>>(b),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
-    assert_eq!(digit1(c), Err(Err::Error(Error::new(c, ErrorKind::Digit))));
-    assert_eq!(digit1(d), Err(Err::Error(Error::new(d, ErrorKind::Digit))));
+    assert_eq!(
+      digit1(c),
+      Err(ErrMode::Error(Error::new(c, ErrorKind::Digit)))
+    );
+    assert_eq!(
+      digit1(d),
+      Err(ErrMode::Error(Error::new(d, ErrorKind::Digit)))
+    );
     assert_eq!(
       hex_digit1::<_, Error<_>>(a),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
       hex_digit1::<_, Error<_>>(b),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
       hex_digit1::<_, Error<_>>(c),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(hex_digit1::<_, Error<_>>(d), Ok(("zé12", "a")));
     assert_eq!(
       hex_digit1(e),
-      Err(Err::Error(Error::new(e, ErrorKind::HexDigit)))
+      Err(ErrMode::Error(Error::new(e, ErrorKind::HexDigit)))
     );
     assert_eq!(
       oct_digit1(a),
-      Err(Err::Error(Error::new(a, ErrorKind::OctDigit)))
+      Err(ErrMode::Error(Error::new(a, ErrorKind::OctDigit)))
     );
     assert_eq!(
       oct_digit1::<_, Error<_>>(b),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
       oct_digit1(c),
-      Err(Err::Error(Error::new(c, ErrorKind::OctDigit)))
+      Err(ErrMode::Error(Error::new(c, ErrorKind::OctDigit)))
     );
     assert_eq!(
       oct_digit1(d),
-      Err(Err::Error(Error::new(d, ErrorKind::OctDigit)))
+      Err(ErrMode::Error(Error::new(d, ErrorKind::OctDigit)))
     );
     assert_eq!(
       alphanumeric1::<_, Error<_>>(a),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
     //assert_eq!(fix_error!(b,(), alphanumeric1), Ok((empty, b)));
     assert_eq!(
       alphanumeric1::<_, Error<_>>(c),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(alphanumeric1::<_, Error<_>>(d), Ok(("é12", "az")));
     assert_eq!(
       space1::<_, Error<_>>(e),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
   }
 
@@ -1116,7 +1143,7 @@ mod tests {
     let d: &[u8] = b"ab12cd";
     assert_eq!(
       not_line_ending::<_, Error<_>>(d),
-      Err(Err::Incomplete(Needed::Unknown))
+      Err(ErrMode::Incomplete(Needed::Unknown))
     );
   }
 
@@ -1142,13 +1169,13 @@ mod tests {
     let f = "βèƒôřè\rÂßÇáƒƭèř";
     assert_eq!(
       not_line_ending(f),
-      Err(Err::Error(Error::new(f, ErrorKind::Tag)))
+      Err(ErrMode::Error(Error::new(f, ErrorKind::Tag)))
     );
 
     let g2: &str = "ab12cd";
     assert_eq!(
       not_line_ending::<_, Error<_>>(g2),
-      Err(Err::Incomplete(Needed::Unknown))
+      Err(ErrMode::Incomplete(Needed::Unknown))
     );
   }
 
@@ -1160,13 +1187,13 @@ mod tests {
     let i = &b"g"[..];
     assert_parse!(
       hex_digit1(i),
-      Err(Err::Error(error_position!(i, ErrorKind::HexDigit)))
+      Err(ErrMode::Error(error_position!(i, ErrorKind::HexDigit)))
     );
 
     let i = &b"G"[..];
     assert_parse!(
       hex_digit1(i),
-      Err(Err::Error(error_position!(i, ErrorKind::HexDigit)))
+      Err(ErrMode::Error(error_position!(i, ErrorKind::HexDigit)))
     );
 
     assert!(AsChar::is_hex_digit(b'0'));
@@ -1191,7 +1218,7 @@ mod tests {
     let i = &b"8"[..];
     assert_parse!(
       oct_digit1(i),
-      Err(Err::Error(error_position!(i, ErrorKind::OctDigit)))
+      Err(ErrMode::Error(error_position!(i, ErrorKind::OctDigit)))
     );
 
     assert!(AsChar::is_oct_digit(b'0'));
@@ -1243,17 +1270,20 @@ mod tests {
   #[test]
   fn cr_lf() {
     assert_parse!(crlf(&b"\r\na"[..]), Ok((&b"a"[..], &b"\r\n"[..])));
-    assert_parse!(crlf(&b"\r"[..]), Err(Err::Incomplete(Needed::new(2))));
+    assert_parse!(crlf(&b"\r"[..]), Err(ErrMode::Incomplete(Needed::new(2))));
     assert_parse!(
       crlf(&b"\ra"[..]),
-      Err(Err::Error(error_position!(&b"\ra"[..], ErrorKind::CrLf)))
+      Err(ErrMode::Error(error_position!(
+        &b"\ra"[..],
+        ErrorKind::CrLf
+      )))
     );
 
     assert_parse!(crlf("\r\na"), Ok(("a", "\r\n")));
-    assert_parse!(crlf("\r"), Err(Err::Incomplete(Needed::new(2))));
+    assert_parse!(crlf("\r"), Err(ErrMode::Incomplete(Needed::new(2))));
     assert_parse!(
       crlf("\ra"),
-      Err(Err::Error(error_position!("\ra", ErrorKind::CrLf)))
+      Err(ErrMode::Error(error_position!("\ra", ErrorKind::CrLf)))
     );
   }
 
@@ -1263,19 +1293,22 @@ mod tests {
     assert_parse!(line_ending(&b"\r\na"[..]), Ok((&b"a"[..], &b"\r\n"[..])));
     assert_parse!(
       line_ending(&b"\r"[..]),
-      Err(Err::Incomplete(Needed::new(2)))
+      Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_parse!(
       line_ending(&b"\ra"[..]),
-      Err(Err::Error(error_position!(&b"\ra"[..], ErrorKind::CrLf)))
+      Err(ErrMode::Error(error_position!(
+        &b"\ra"[..],
+        ErrorKind::CrLf
+      )))
     );
 
     assert_parse!(line_ending("\na"), Ok(("a", "\n")));
     assert_parse!(line_ending("\r\na"), Ok(("a", "\r\n")));
-    assert_parse!(line_ending("\r"), Err(Err::Incomplete(Needed::new(2))));
+    assert_parse!(line_ending("\r"), Err(ErrMode::Incomplete(Needed::new(2))));
     assert_parse!(
       line_ending("\ra"),
-      Err(Err::Error(error_position!("\ra", ErrorKind::CrLf)))
+      Err(ErrMode::Error(error_position!("\ra", ErrorKind::CrLf)))
     );
   }
 
@@ -1290,9 +1323,9 @@ mod tests {
 
     let (i, s) = match digit1::<_, crate::error::Error<_>>(i) {
       Ok((i, s)) => (i, s),
-      Err(Err::Incomplete(i)) => return Err(Err::Incomplete(i)),
+      Err(ErrMode::Incomplete(i)) => return Err(ErrMode::Incomplete(i)),
       Err(_) => {
-        return Err(Err::Error(crate::error::Error::from_error_kind(
+        return Err(ErrMode::Error(crate::error::Error::from_error_kind(
           input,
           ErrorKind::Digit,
         )))
@@ -1306,7 +1339,7 @@ mod tests {
           Ok((i, -n))
         }
       }
-      None => Err(Err::Error(crate::error::Error::from_error_kind(
+      None => Err(ErrMode::Error(crate::error::Error::from_error_kind(
         i,
         ErrorKind::Digit,
       ))),
@@ -1317,7 +1350,7 @@ mod tests {
     let (i, s) = digit1(i)?;
     match s.parse_to() {
       Some(n) => Ok((i, n)),
-      None => Err(Err::Error(crate::error::Error::from_error_kind(
+      None => Err(ErrMode::Error(crate::error::Error::from_error_kind(
         i,
         ErrorKind::Digit,
       ))),
@@ -1334,7 +1367,10 @@ mod tests {
     assert_eq!(f(a), Ok((&b"bcd"[..], 'a')));
 
     let b = &b"cde"[..];
-    assert_eq!(f(b), Err(Err::Error(error_position!(b, ErrorKind::OneOf))));
+    assert_eq!(
+      f(b),
+      Err(ErrMode::Error(error_position!(b, ErrorKind::OneOf)))
+    );
 
     fn utf8(i: &str) -> IResult<&str, char> {
       one_of("+\u{FF0B}")(i)
@@ -1351,7 +1387,10 @@ mod tests {
     }
 
     let a = &b"abcd"[..];
-    assert_eq!(f(a), Err(Err::Error(error_position!(a, ErrorKind::NoneOf))));
+    assert_eq!(
+      f(a),
+      Err(ErrMode::Error(error_position!(a, ErrorKind::NoneOf)))
+    );
 
     let b = &b"cde"[..];
     assert_eq!(f(b), Ok((&b"de"[..], 'c')));
@@ -1364,7 +1403,10 @@ mod tests {
     }
 
     let a = &b"abcd"[..];
-    assert_eq!(f(a), Err(Err::Error(error_position!(a, ErrorKind::Char))));
+    assert_eq!(
+      f(a),
+      Err(ErrMode::Error(error_position!(a, ErrorKind::Char)))
+    );
 
     let b = &b"cde"[..];
     assert_eq!(f(b), Ok((&b"de"[..], 'c')));
@@ -1377,7 +1419,10 @@ mod tests {
     }
 
     let a = "abcd";
-    assert_eq!(f(a), Err(Err::Error(error_position!(a, ErrorKind::Char))));
+    assert_eq!(
+      f(a),
+      Err(ErrMode::Error(error_position!(a, ErrorKind::Char)))
+    );
 
     let b = "cde";
     assert_eq!(f(b), Ok(("de", 'c')));

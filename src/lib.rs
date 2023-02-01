@@ -103,12 +103,12 @@
 //! Here is another parser, written without using nom's combinators this time:
 //!
 //! ```rust
-//! use winnow::{IResult, Err, Needed};
+//! use winnow::{IResult, ErrMode, Needed};
 //!
 //! # fn main() {
 //! fn take4(i: &[u8]) -> IResult<&[u8], &[u8]>{
 //!   if i.len() < 4 {
-//!     Err(Err::Incomplete(Needed::new(4)))
+//!     Err(ErrMode::Incomplete(Needed::new(4)))
 //!   } else {
 //!     Ok((&i[4..], &i[0..4]))
 //!   }
@@ -160,9 +160,9 @@
 //! It can have the following values:
 //!
 //! - A correct result `Ok((I,O))` with the first element being the remaining of the input (not parsed yet), and the second the output value;
-//! - An error `Err(Err::Error(c))` with `c` an error that can be built from the input position and a parser specific error
-//! - An error `Err(Err::Incomplete(Needed))` indicating that more input is necessary. `Needed` can indicate how much data is needed
-//! - An error `Err(Err::Failure(c))`. It works like the `Error` case, except it indicates an unrecoverable error: We cannot backtrack and test another parser
+//! - An error `Err(ErrMode::Error(c))` with `c` an error that can be built from the input position and a parser specific error
+//! - An error `Err(ErrMode::Incomplete(Needed))` indicating that more input is necessary. `Needed` can indicate how much data is needed
+//! - An error `Err(ErrMode::Failure(c))`. It works like the `Error` case, except it indicates an unrecoverable error: We cannot backtrack and test another parser
 //!
 //! Please refer to the ["choose a combinator" guide][combinator] for an exhaustive list of parsers.
 //! See also the rest of the documentation [here](https://github.com/Geal/nom/blob/main/doc).
@@ -205,7 +205,7 @@
 //!
 //! assert_eq!(alt_tags(&b"abcdxxx"[..]), Ok((&b"xxx"[..], &b"abcd"[..])));
 //! assert_eq!(alt_tags(&b"efghxxx"[..]), Ok((&b"xxx"[..], &b"efgh"[..])));
-//! assert_eq!(alt_tags(&b"ijklxxx"[..]), Err(winnow::Err::Error(winnow::error::Error::new(&b"ijklxxx"[..], winnow::error::ErrorKind::Tag))));
+//! assert_eq!(alt_tags(&b"ijklxxx"[..]), Err(winnow::ErrMode::Error(winnow::error::Error::new(&b"ijklxxx"[..], winnow::error::ErrorKind::Tag))));
 //! ```
 //!
 //! The **`opt`** combinator makes a parser optional. If the child parser returns
@@ -274,9 +274,9 @@
 //!     (0x6162u16, &b"cde"[..], &b"fg"[..])
 //!   ))
 //! );
-//! assert_eq!(tpl.parse_next(Streaming(&b"abcde"[..])), Err(winnow::Err::Incomplete(Needed::new(2))));
+//! assert_eq!(tpl.parse_next(Streaming(&b"abcde"[..])), Err(winnow::ErrMode::Incomplete(Needed::new(2))));
 //! let input = &b"abcdejk"[..];
-//! assert_eq!(tpl.parse_next(Streaming(input)), Err(winnow::Err::Error(Error::new(Streaming(&input[5..]), ErrorKind::Tag))));
+//! assert_eq!(tpl.parse_next(Streaming(input)), Err(winnow::ErrMode::Error(Error::new(Streaming(&input[5..]), ErrorKind::Tag))));
 //! # }
 //! ```
 //!

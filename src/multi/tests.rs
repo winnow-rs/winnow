@@ -7,7 +7,7 @@ use crate::{
   error::{ErrorKind, ParseError},
   lib::std::str::{self, FromStr},
   number::{be_u16, be_u8},
-  {Err, IResult, Needed},
+  {ErrMode, IResult, Needed},
 };
 #[cfg(feature = "alloc")]
 use crate::{
@@ -60,7 +60,7 @@ fn separated_list0_test() {
   let i_err_pos = &i[3..];
   assert_eq!(
     empty_sep(Streaming(i)),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Error(error_position!(
       Streaming(i_err_pos),
       ErrorKind::SeparatedList
     )))
@@ -68,12 +68,18 @@ fn separated_list0_test() {
   let res4 = vec![&b"abcd"[..], &b"abcd"[..]];
   assert_eq!(multi(Streaming(e)), Ok((Streaming(&b",ef"[..]), res4)));
 
-  assert_eq!(multi(Streaming(f)), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(
+    multi(Streaming(f)),
+    Err(ErrMode::Incomplete(Needed::new(1)))
+  );
   assert_eq!(
     multi_longsep(Streaming(g)),
-    Err(Err::Incomplete(Needed::new(1)))
+    Err(ErrMode::Incomplete(Needed::new(1)))
   );
-  assert_eq!(multi(Streaming(h)), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(
+    multi(Streaming(h)),
+    Err(ErrMode::Incomplete(Needed::new(1)))
+  );
 }
 
 #[test]
@@ -101,17 +107,26 @@ fn separated_list1_test() {
   assert_eq!(multi(Streaming(b)), Ok((Streaming(&b"ef"[..]), res2)));
   assert_eq!(
     multi(Streaming(c)),
-    Err(Err::Error(error_position!(Streaming(c), ErrorKind::Tag)))
+    Err(ErrMode::Error(error_position!(
+      Streaming(c),
+      ErrorKind::Tag
+    )))
   );
   let res3 = vec![&b"abcd"[..], &b"abcd"[..]];
   assert_eq!(multi(Streaming(d)), Ok((Streaming(&b",ef"[..]), res3)));
 
-  assert_eq!(multi(Streaming(f)), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(
+    multi(Streaming(f)),
+    Err(ErrMode::Incomplete(Needed::new(1)))
+  );
   assert_eq!(
     multi_longsep(Streaming(g)),
-    Err(Err::Incomplete(Needed::new(1)))
+    Err(ErrMode::Incomplete(Needed::new(1)))
   );
-  assert_eq!(multi(Streaming(h)), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(
+    multi(Streaming(h)),
+    Err(ErrMode::Incomplete(Needed::new(1)))
+  );
 }
 
 #[test]
@@ -138,19 +153,19 @@ fn many0_test() {
   );
   assert_eq!(
     multi(Streaming(&b"abcdab"[..])),
-    Err(Err::Incomplete(Needed::new(2)))
+    Err(ErrMode::Incomplete(Needed::new(2)))
   );
   assert_eq!(
     multi(Streaming(&b"abcd"[..])),
-    Err(Err::Incomplete(Needed::new(4)))
+    Err(ErrMode::Incomplete(Needed::new(4)))
   );
   assert_eq!(
     multi(Streaming(&b""[..])),
-    Err(Err::Incomplete(Needed::new(4)))
+    Err(ErrMode::Incomplete(Needed::new(4)))
   );
   assert_eq!(
     multi_empty(Streaming(&b"abcdef"[..])),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Error(error_position!(
       Streaming(&b"abcdef"[..]),
       ErrorKind::Many0
     )))
@@ -175,9 +190,15 @@ fn many1_test() {
   assert_eq!(multi(Streaming(b)), Ok((Streaming(&b"efgh"[..]), res2)));
   assert_eq!(
     multi(Streaming(c)),
-    Err(Err::Error(error_position!(Streaming(c), ErrorKind::Tag)))
+    Err(ErrMode::Error(error_position!(
+      Streaming(c),
+      ErrorKind::Tag
+    )))
   );
-  assert_eq!(multi(Streaming(d)), Err(Err::Incomplete(Needed::new(2))));
+  assert_eq!(
+    multi(Streaming(d)),
+    Err(ErrMode::Incomplete(Needed::new(2)))
+  );
 }
 
 #[test]
@@ -198,7 +219,7 @@ fn many_till_test() {
   assert_eq!(multi(&b[..]), Ok((&b"abcd"[..], res_b)));
   assert_eq!(
     multi(&c[..]),
-    Err(Err::Error(error_node_position!(
+    Err(ErrMode::Error(error_node_position!(
       &c[..],
       ErrorKind::ManyTill,
       error_position!(&c[..], ErrorKind::Tag)
@@ -211,7 +232,7 @@ fn many_till_test() {
 fn infinite_many() {
   fn tst(input: &[u8]) -> IResult<&[u8], &[u8]> {
     println!("input: {:?}", input);
-    Err(Err::Error(error_position!(input, ErrorKind::Tag)))
+    Err(ErrMode::Error(error_position!(input, ErrorKind::Tag)))
   }
 
   // should not go into an infinite loop
@@ -227,7 +248,7 @@ fn infinite_many() {
   let a = &b"abcdef"[..];
   assert_eq!(
     multi1(a),
-    Err(Err::Error(error_position!(a, ErrorKind::Tag)))
+    Err(ErrMode::Error(error_position!(a, ErrorKind::Tag)))
   );
 }
 
@@ -246,7 +267,7 @@ fn many_m_n_test() {
 
   assert_eq!(
     multi(Streaming(a)),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Error(error_position!(
       Streaming(&b"ef"[..]),
       ErrorKind::Tag
     )))
@@ -257,7 +278,10 @@ fn many_m_n_test() {
   assert_eq!(multi(Streaming(c)), Ok((Streaming(&b"efgh"[..]), res2)));
   let res3 = vec![&b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..]];
   assert_eq!(multi(Streaming(d)), Ok((Streaming(&b"Abcdefgh"[..]), res3)));
-  assert_eq!(multi(Streaming(e)), Err(Err::Incomplete(Needed::new(2))));
+  assert_eq!(
+    multi(Streaming(e)),
+    Err(ErrMode::Incomplete(Needed::new(2)))
+  );
 }
 
 #[test]
@@ -274,29 +298,29 @@ fn count_test() {
   );
   assert_eq!(
     cnt_2(Streaming(&b"ab"[..])),
-    Err(Err::Incomplete(Needed::new(1)))
+    Err(ErrMode::Incomplete(Needed::new(1)))
   );
   assert_eq!(
     cnt_2(Streaming(&b"abcab"[..])),
-    Err(Err::Incomplete(Needed::new(1)))
+    Err(ErrMode::Incomplete(Needed::new(1)))
   );
   assert_eq!(
     cnt_2(Streaming(&b"xxx"[..])),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Error(error_position!(
       Streaming(&b"xxx"[..]),
       ErrorKind::Tag
     )))
   );
   assert_eq!(
     cnt_2(Streaming(&b"xxxabcabcdef"[..])),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Error(error_position!(
       Streaming(&b"xxxabcabcdef"[..]),
       ErrorKind::Tag
     )))
   );
   assert_eq!(
     cnt_2(Streaming(&b"abcxxxabcdef"[..])),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Error(error_position!(
       Streaming(&b"xxxabcdef"[..]),
       ErrorKind::Tag
     )))
@@ -380,22 +404,22 @@ fn length_count_test() {
   );
   assert_eq!(
     cnt(Streaming(&b"2ab"[..])),
-    Err(Err::Incomplete(Needed::new(1)))
+    Err(ErrMode::Incomplete(Needed::new(1)))
   );
   assert_eq!(
     cnt(Streaming(&b"3abcab"[..])),
-    Err(Err::Incomplete(Needed::new(1)))
+    Err(ErrMode::Incomplete(Needed::new(1)))
   );
   assert_eq!(
     cnt(Streaming(&b"xxx"[..])),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Error(error_position!(
       Streaming(&b"xxx"[..]),
       ErrorKind::Digit
     )))
   );
   assert_eq!(
     cnt(Streaming(&b"2abcxxx"[..])),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Error(error_position!(
       Streaming(&b"xxx"[..]),
       ErrorKind::Tag
     )))
@@ -421,11 +445,11 @@ fn length_data_test() {
   );
   assert_eq!(
     take(Streaming(&b"3ab"[..])),
-    Err(Err::Incomplete(Needed::new(1)))
+    Err(ErrMode::Incomplete(Needed::new(1)))
   );
   assert_eq!(
     take(Streaming(&b"xxx"[..])),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Error(error_position!(
       Streaming(&b"xxx"[..]),
       ErrorKind::Digit
     )))
@@ -448,14 +472,14 @@ fn length_value_test() {
   let i1 = [0, 5, 6];
   assert_eq!(
     length_value_1(Streaming(&i1)),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Error(error_position!(
       Streaming(&b""[..]),
       ErrorKind::Complete
     )))
   );
   assert_eq!(
     length_value_2(Streaming(&i1)),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Error(error_position!(
       Streaming(&b""[..]),
       ErrorKind::Complete
     )))
@@ -464,14 +488,14 @@ fn length_value_test() {
   let i2 = [1, 5, 6, 3];
   assert_eq!(
     length_value_1(Streaming(&i2)),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Error(error_position!(
       Streaming(&i2[1..2]),
       ErrorKind::Complete
     )))
   );
   assert_eq!(
     length_value_2(Streaming(&i2)),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Error(error_position!(
       Streaming(&i2[1..2]),
       ErrorKind::Complete
     )))
@@ -526,19 +550,19 @@ fn fold_many0_test() {
   );
   assert_eq!(
     multi(Streaming(&b"abcdab"[..])),
-    Err(Err::Incomplete(Needed::new(2)))
+    Err(ErrMode::Incomplete(Needed::new(2)))
   );
   assert_eq!(
     multi(Streaming(&b"abcd"[..])),
-    Err(Err::Incomplete(Needed::new(4)))
+    Err(ErrMode::Incomplete(Needed::new(4)))
   );
   assert_eq!(
     multi(Streaming(&b""[..])),
-    Err(Err::Incomplete(Needed::new(4)))
+    Err(ErrMode::Incomplete(Needed::new(4)))
   );
   assert_eq!(
     multi_empty(Streaming(&b"abcdef"[..])),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Error(error_position!(
       Streaming(&b"abcdef"[..]),
       ErrorKind::Many0
     )))
@@ -567,9 +591,15 @@ fn fold_many1_test() {
   assert_eq!(multi(Streaming(b)), Ok((Streaming(&b"efgh"[..]), res2)));
   assert_eq!(
     multi(Streaming(c)),
-    Err(Err::Error(error_position!(Streaming(c), ErrorKind::Many1)))
+    Err(ErrMode::Error(error_position!(
+      Streaming(c),
+      ErrorKind::Many1
+    )))
   );
-  assert_eq!(multi(Streaming(d)), Err(Err::Incomplete(Needed::new(2))));
+  assert_eq!(
+    multi(Streaming(d)),
+    Err(ErrMode::Incomplete(Needed::new(2)))
+  );
 }
 
 #[test]
@@ -591,7 +621,7 @@ fn fold_many_m_n_test() {
 
   assert_eq!(
     multi(Streaming(a)),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Error(error_position!(
       Streaming(&b"ef"[..]),
       ErrorKind::Tag
     )))
@@ -602,7 +632,10 @@ fn fold_many_m_n_test() {
   assert_eq!(multi(Streaming(c)), Ok((Streaming(&b"efgh"[..]), res2)));
   let res3 = vec![&b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..]];
   assert_eq!(multi(Streaming(d)), Ok((Streaming(&b"Abcdefgh"[..]), res3)));
-  assert_eq!(multi(Streaming(e)), Err(Err::Incomplete(Needed::new(2))));
+  assert_eq!(
+    multi(Streaming(e)),
+    Err(ErrMode::Incomplete(Needed::new(2)))
+  );
 }
 
 #[test]
@@ -638,7 +671,7 @@ fn many1_count_test() {
 
   assert_eq!(
     count1_nums(&b"hello"[..]),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Error(error_position!(
       &b"hello"[..],
       ErrorKind::Many1Count
     )))

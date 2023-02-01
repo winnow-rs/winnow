@@ -19,29 +19,29 @@ use crate::Parser;
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult};
 /// # use winnow::character::crlf;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     crlf(input)
 /// }
 ///
 /// assert_eq!(parser("\r\nc"), Ok(("c", "\r\n")));
-/// assert_eq!(parser("ab\r\nc"), Err(Err::Error(Error::new("ab\r\nc", ErrorKind::CrLf))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::CrLf))));
+/// assert_eq!(parser("ab\r\nc"), Err(ErrMode::Error(Error::new("ab\r\nc", ErrorKind::CrLf))));
+/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::CrLf))));
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::crlf;
 /// assert_eq!(crlf::<_, Error<_>, true>(Streaming("\r\nc")), Ok((Streaming("c"), "\r\n")));
-/// assert_eq!(crlf::<_, Error<_>, true>(Streaming("ab\r\nc")), Err(Err::Error(Error::new(Streaming("ab\r\nc"), ErrorKind::CrLf))));
-/// assert_eq!(crlf::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(2))));
+/// assert_eq!(crlf::<_, Error<_>, true>(Streaming("ab\r\nc")), Err(ErrMode::Error(Error::new(Streaming("ab\r\nc"), ErrorKind::CrLf))));
+/// assert_eq!(crlf::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
 pub fn crlf<I, E: ParseError<I>, const STREAMING: bool>(
@@ -63,12 +63,12 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
 /// # use winnow::character::not_line_ending;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     not_line_ending(input)
@@ -78,19 +78,19 @@ where
 /// assert_eq!(parser("ab\nc"), Ok(("\nc", "ab")));
 /// assert_eq!(parser("abc"), Ok(("", "abc")));
 /// assert_eq!(parser(""), Ok(("", "")));
-/// assert_eq!(parser("a\rb\nc"), Err(Err::Error(Error { input: "a\rb\nc", kind: ErrorKind::Tag })));
-/// assert_eq!(parser("a\rbc"), Err(Err::Error(Error { input: "a\rbc", kind: ErrorKind::Tag })));
+/// assert_eq!(parser("a\rb\nc"), Err(ErrMode::Error(Error { input: "a\rb\nc", kind: ErrorKind::Tag })));
+/// assert_eq!(parser("a\rbc"), Err(ErrMode::Error(Error { input: "a\rbc", kind: ErrorKind::Tag })));
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::not_line_ending;
 /// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("ab\r\nc")), Ok((Streaming("\r\nc"), "ab")));
-/// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("abc")), Err(Err::Incomplete(Needed::Unknown)));
-/// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::Unknown)));
-/// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("a\rb\nc")), Err(Err::Error(Error::new(Streaming("a\rb\nc"), ErrorKind::Tag ))));
-/// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("a\rbc")), Err(Err::Error(Error::new(Streaming("a\rbc"), ErrorKind::Tag ))));
+/// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("abc")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("a\rb\nc")), Err(ErrMode::Error(Error::new(Streaming("a\rb\nc"), ErrorKind::Tag ))));
+/// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("a\rbc")), Err(ErrMode::Error(Error::new(Streaming("a\rbc"), ErrorKind::Tag ))));
 /// ```
 #[inline(always)]
 pub fn not_line_ending<I, E: ParseError<I>, const STREAMING: bool>(
@@ -113,29 +113,29 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
 /// # use winnow::character::line_ending;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     line_ending(input)
 /// }
 ///
 /// assert_eq!(parser("\r\nc"), Ok(("c", "\r\n")));
-/// assert_eq!(parser("ab\r\nc"), Err(Err::Error(Error::new("ab\r\nc", ErrorKind::CrLf))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::CrLf))));
+/// assert_eq!(parser("ab\r\nc"), Err(ErrMode::Error(Error::new("ab\r\nc", ErrorKind::CrLf))));
+/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::CrLf))));
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::line_ending;
 /// assert_eq!(line_ending::<_, Error<_>, true>(Streaming("\r\nc")), Ok((Streaming("c"), "\r\n")));
-/// assert_eq!(line_ending::<_, Error<_>, true>(Streaming("ab\r\nc")), Err(Err::Error(Error::new(Streaming("ab\r\nc"), ErrorKind::CrLf))));
-/// assert_eq!(line_ending::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(line_ending::<_, Error<_>, true>(Streaming("ab\r\nc")), Err(ErrMode::Error(Error::new(Streaming("ab\r\nc"), ErrorKind::CrLf))));
+/// assert_eq!(line_ending::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn line_ending<I, E: ParseError<I>, const STREAMING: bool>(
@@ -157,29 +157,29 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
 /// # use winnow::character::newline;
 /// fn parser(input: &str) -> IResult<&str, char> {
 ///     newline(input)
 /// }
 ///
 /// assert_eq!(parser("\nc"), Ok(("c", '\n')));
-/// assert_eq!(parser("\r\nc"), Err(Err::Error(Error::new("\r\nc", ErrorKind::Char))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Char))));
+/// assert_eq!(parser("\r\nc"), Err(ErrMode::Error(Error::new("\r\nc", ErrorKind::Char))));
+/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::Char))));
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::newline;
 /// assert_eq!(newline::<_, Error<_>, true>(Streaming("\nc")), Ok((Streaming("c"), '\n')));
-/// assert_eq!(newline::<_, Error<_>, true>(Streaming("\r\nc")), Err(Err::Error(Error::new(Streaming("\r\nc"), ErrorKind::Char))));
-/// assert_eq!(newline::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(newline::<_, Error<_>, true>(Streaming("\r\nc")), Err(ErrMode::Error(Error::new(Streaming("\r\nc"), ErrorKind::Char))));
+/// assert_eq!(newline::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn newline<I, Error: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, char, Error>
@@ -199,29 +199,29 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
 /// # use winnow::character::tab;
 /// fn parser(input: &str) -> IResult<&str, char> {
 ///     tab(input)
 /// }
 ///
 /// assert_eq!(parser("\tc"), Ok(("c", '\t')));
-/// assert_eq!(parser("\r\nc"), Err(Err::Error(Error::new("\r\nc", ErrorKind::Char))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Char))));
+/// assert_eq!(parser("\r\nc"), Err(ErrMode::Error(Error::new("\r\nc", ErrorKind::Char))));
+/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::Char))));
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::tab;
 /// assert_eq!(tab::<_, Error<_>, true>(Streaming("\tc")), Ok((Streaming("c"), '\t')));
-/// assert_eq!(tab::<_, Error<_>, true>(Streaming("\r\nc")), Err(Err::Error(Error::new(Streaming("\r\nc"), ErrorKind::Char))));
-/// assert_eq!(tab::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(tab::<_, Error<_>, true>(Streaming("\r\nc")), Err(ErrMode::Error(Error::new(Streaming("\r\nc"), ErrorKind::Char))));
+/// assert_eq!(tab::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn tab<I, Error: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, char, Error>
@@ -242,13 +242,13 @@ where
 /// *Complete version*: Will return the whole input if no terminating token is found (a non
 /// alphabetic character).
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphabetic character).
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::alpha0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alpha0(input)
@@ -260,12 +260,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::alpha0;
 /// assert_eq!(alpha0::<_, Error<_>, true>(Streaming("ab1c")), Ok((Streaming("1c"), "ab")));
 /// assert_eq!(alpha0::<_, Error<_>, true>(Streaming("1c")), Ok((Streaming("1c"), "")));
-/// assert_eq!(alpha0::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha0::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn alpha0<I, E: ParseError<I>, const STREAMING: bool>(
@@ -288,30 +288,30 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found  (a non alphabetic character).
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphabetic character).
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
 /// # use winnow::character::alpha1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alpha1(input)
 /// }
 ///
 /// assert_eq!(parser("aB1c"), Ok(("1c", "aB")));
-/// assert_eq!(parser("1c"), Err(Err::Error(Error::new("1c", ErrorKind::Alpha))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Alpha))));
+/// assert_eq!(parser("1c"), Err(ErrMode::Error(Error::new("1c", ErrorKind::Alpha))));
+/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::Alpha))));
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::alpha1;
 /// assert_eq!(alpha1::<_, Error<_>, true>(Streaming("aB1c")), Ok((Streaming("1c"), "aB")));
-/// assert_eq!(alpha1::<_, Error<_>, true>(Streaming("1c")), Err(Err::Error(Error::new(Streaming("1c"), ErrorKind::Alpha))));
-/// assert_eq!(alpha1::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha1::<_, Error<_>, true>(Streaming("1c")), Err(ErrMode::Error(Error::new(Streaming("1c"), ErrorKind::Alpha))));
+/// assert_eq!(alpha1::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn alpha1<I, E: ParseError<I>, const STREAMING: bool>(
@@ -334,13 +334,13 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non digit character).
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non digit character).
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::digit0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     digit0(input)
@@ -353,12 +353,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::digit0;
 /// assert_eq!(digit0::<_, Error<_>, true>(Streaming("21c")), Ok((Streaming("c"), "21")));
 /// assert_eq!(digit0::<_, Error<_>, true>(Streaming("a21c")), Ok((Streaming("a21c"), "")));
-/// assert_eq!(digit0::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(digit0::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn digit0<I, E: ParseError<I>, const STREAMING: bool>(
@@ -381,30 +381,30 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non digit character).
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non digit character).
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
 /// # use winnow::character::digit1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     digit1(input)
 /// }
 ///
 /// assert_eq!(parser("21c"), Ok(("c", "21")));
-/// assert_eq!(parser("c1"), Err(Err::Error(Error::new("c1", ErrorKind::Digit))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Digit))));
+/// assert_eq!(parser("c1"), Err(ErrMode::Error(Error::new("c1", ErrorKind::Digit))));
+/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::Digit))));
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::digit1;
 /// assert_eq!(digit1::<_, Error<_>, true>(Streaming("21c")), Ok((Streaming("c"), "21")));
-/// assert_eq!(digit1::<_, Error<_>, true>(Streaming("c1")), Err(Err::Error(Error::new(Streaming("c1"), ErrorKind::Digit))));
-/// assert_eq!(digit1::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(digit1::<_, Error<_>, true>(Streaming("c1")), Err(ErrMode::Error(Error::new(Streaming("c1"), ErrorKind::Digit))));
+/// assert_eq!(digit1::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// ## Parsing an integer
@@ -412,7 +412,7 @@ where
 /// You can use `digit1` in combination with [`Parser::map_res`][crate::Parser::map_res] to parse an integer:
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed, Parser};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed, Parser};
 /// # use winnow::character::digit1;
 /// fn parser(input: &str) -> IResult<&str, u32> {
 ///   digit1.map_res(str::parse).parse_next(input)
@@ -442,13 +442,13 @@ where
 ///
 /// *Complete version*: Will return the whole input if no terminating token is found (a non hexadecimal digit character).
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non hexadecimal digit character).
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::hex_digit0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     hex_digit0(input)
@@ -460,12 +460,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::hex_digit0;
 /// assert_eq!(hex_digit0::<_, Error<_>, true>(Streaming("21cZ")), Ok((Streaming("Z"), "21c")));
 /// assert_eq!(hex_digit0::<_, Error<_>, true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
-/// assert_eq!(hex_digit0::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(hex_digit0::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn hex_digit0<I, E: ParseError<I>, const STREAMING: bool>(
@@ -488,30 +488,30 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non hexadecimal digit character).
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non hexadecimal digit character).
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
 /// # use winnow::character::hex_digit1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     hex_digit1(input)
 /// }
 ///
 /// assert_eq!(parser("21cZ"), Ok(("Z", "21c")));
-/// assert_eq!(parser("H2"), Err(Err::Error(Error::new("H2", ErrorKind::HexDigit))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::HexDigit))));
+/// assert_eq!(parser("H2"), Err(ErrMode::Error(Error::new("H2", ErrorKind::HexDigit))));
+/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::HexDigit))));
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::hex_digit1;
 /// assert_eq!(hex_digit1::<_, Error<_>, true>(Streaming("21cZ")), Ok((Streaming("Z"), "21c")));
-/// assert_eq!(hex_digit1::<_, Error<_>, true>(Streaming("H2")), Err(Err::Error(Error::new(Streaming("H2"), ErrorKind::HexDigit))));
-/// assert_eq!(hex_digit1::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(hex_digit1::<_, Error<_>, true>(Streaming("H2")), Err(ErrMode::Error(Error::new(Streaming("H2"), ErrorKind::HexDigit))));
+/// assert_eq!(hex_digit1::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn hex_digit1<I, E: ParseError<I>, const STREAMING: bool>(
@@ -534,13 +534,13 @@ where
 /// *Complete version*: Will return the whole input if no terminating token is found (a non octal
 /// digit character).
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non octal digit character).
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::oct_digit0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     oct_digit0(input)
@@ -552,12 +552,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::oct_digit0;
 /// assert_eq!(oct_digit0::<_, Error<_>, true>(Streaming("21cZ")), Ok((Streaming("cZ"), "21")));
 /// assert_eq!(oct_digit0::<_, Error<_>, true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
-/// assert_eq!(oct_digit0::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(oct_digit0::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn oct_digit0<I, E: ParseError<I>, const STREAMING: bool>(
@@ -580,30 +580,30 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non octal digit character).
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non octal digit character).
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
 /// # use winnow::character::oct_digit1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     oct_digit1(input)
 /// }
 ///
 /// assert_eq!(parser("21cZ"), Ok(("cZ", "21")));
-/// assert_eq!(parser("H2"), Err(Err::Error(Error::new("H2", ErrorKind::OctDigit))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::OctDigit))));
+/// assert_eq!(parser("H2"), Err(ErrMode::Error(Error::new("H2", ErrorKind::OctDigit))));
+/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::OctDigit))));
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::oct_digit1;
 /// assert_eq!(oct_digit1::<_, Error<_>, true>(Streaming("21cZ")), Ok((Streaming("cZ"), "21")));
-/// assert_eq!(oct_digit1::<_, Error<_>, true>(Streaming("H2")), Err(Err::Error(Error::new(Streaming("H2"), ErrorKind::OctDigit))));
-/// assert_eq!(oct_digit1::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(oct_digit1::<_, Error<_>, true>(Streaming("H2")), Err(ErrMode::Error(Error::new(Streaming("H2"), ErrorKind::OctDigit))));
+/// assert_eq!(oct_digit1::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn oct_digit1<I, E: ParseError<I>, const STREAMING: bool>(
@@ -626,13 +626,13 @@ where
 /// *Complete version*: Will return the whole input if no terminating token is found (a non
 /// alphanumerical character).
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphanumerical character).
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::alphanumeric0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alphanumeric0(input)
@@ -644,12 +644,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::alphanumeric0;
 /// assert_eq!(alphanumeric0::<_, Error<_>, true>(Streaming("21cZ%1")), Ok((Streaming("%1"), "21cZ")));
 /// assert_eq!(alphanumeric0::<_, Error<_>, true>(Streaming("&Z21c")), Ok((Streaming("&Z21c"), "")));
-/// assert_eq!(alphanumeric0::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(alphanumeric0::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn alphanumeric0<I, E: ParseError<I>, const STREAMING: bool>(
@@ -672,30 +672,30 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non alphanumerical character).
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphanumerical character).
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
 /// # use winnow::character::alphanumeric1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alphanumeric1(input)
 /// }
 ///
 /// assert_eq!(parser("21cZ%1"), Ok(("%1", "21cZ")));
-/// assert_eq!(parser("&H2"), Err(Err::Error(Error::new("&H2", ErrorKind::AlphaNumeric))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::AlphaNumeric))));
+/// assert_eq!(parser("&H2"), Err(ErrMode::Error(Error::new("&H2", ErrorKind::AlphaNumeric))));
+/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::AlphaNumeric))));
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::alphanumeric1;
 /// assert_eq!(alphanumeric1::<_, Error<_>, true>(Streaming("21cZ%1")), Ok((Streaming("%1"), "21cZ")));
-/// assert_eq!(alphanumeric1::<_, Error<_>, true>(Streaming("&H2")), Err(Err::Error(Error::new(Streaming("&H2"), ErrorKind::AlphaNumeric))));
-/// assert_eq!(alphanumeric1::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(alphanumeric1::<_, Error<_>, true>(Streaming("&H2")), Err(ErrMode::Error(Error::new(Streaming("&H2"), ErrorKind::AlphaNumeric))));
+/// assert_eq!(alphanumeric1::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn alphanumeric1<I, E: ParseError<I>, const STREAMING: bool>(
@@ -718,18 +718,18 @@ where
 /// *Complete version*: Will return the whole input if no terminating token is found (a non space
 /// character).
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::space0;
 /// assert_eq!(space0::<_, Error<_>, true>(Streaming(" \t21c")), Ok((Streaming("21c"), " \t")));
 /// assert_eq!(space0::<_, Error<_>, true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
-/// assert_eq!(space0::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(space0::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn space0<I, E: ParseError<I>, const STREAMING: bool>(
@@ -752,30 +752,30 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non space character).
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
 /// # use winnow::character::space1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     space1(input)
 /// }
 ///
 /// assert_eq!(parser(" \t21c"), Ok(("21c", " \t")));
-/// assert_eq!(parser("H2"), Err(Err::Error(Error::new("H2", ErrorKind::Space))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Space))));
+/// assert_eq!(parser("H2"), Err(ErrMode::Error(Error::new("H2", ErrorKind::Space))));
+/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::Space))));
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::space1;
 /// assert_eq!(space1::<_, Error<_>, true>(Streaming(" \t21c")), Ok((Streaming("21c"), " \t")));
-/// assert_eq!(space1::<_, Error<_>, true>(Streaming("H2")), Err(Err::Error(Error::new(Streaming("H2"), ErrorKind::Space))));
-/// assert_eq!(space1::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(space1::<_, Error<_>, true>(Streaming("H2")), Err(ErrMode::Error(Error::new(Streaming("H2"), ErrorKind::Space))));
+/// assert_eq!(space1::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn space1<I, E: ParseError<I>, const STREAMING: bool>(
@@ -798,13 +798,13 @@ where
 /// *Complete version*: will return the whole input if no terminating token is found (a non space
 /// character).
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::character::multispace0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     multispace0(input)
@@ -816,12 +816,12 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::multispace0;
 /// assert_eq!(multispace0::<_, Error<_>, true>(Streaming(" \t\n\r21c")), Ok((Streaming("21c"), " \t\n\r")));
 /// assert_eq!(multispace0::<_, Error<_>, true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
-/// assert_eq!(multispace0::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(multispace0::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn multispace0<I, E: ParseError<I>, const STREAMING: bool>(
@@ -844,30 +844,30 @@ where
 /// *Complete version*: will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non space character).
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
 /// # use winnow::character::multispace1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     multispace1(input)
 /// }
 ///
 /// assert_eq!(parser(" \t\n\r21c"), Ok(("21c", " \t\n\r")));
-/// assert_eq!(parser("H2"), Err(Err::Error(Error::new("H2", ErrorKind::MultiSpace))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::MultiSpace))));
+/// assert_eq!(parser("H2"), Err(ErrMode::Error(Error::new("H2", ErrorKind::MultiSpace))));
+/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::MultiSpace))));
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::character::multispace1;
 /// assert_eq!(multispace1::<_, Error<_>, true>(Streaming(" \t\n\r21c")), Ok((Streaming("21c"), " \t\n\r")));
-/// assert_eq!(multispace1::<_, Error<_>, true>(Streaming("H2")), Err(Err::Error(Error::new(Streaming("H2"), ErrorKind::MultiSpace))));
-/// assert_eq!(multispace1::<_, Error<_>, true>(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(multispace1::<_, Error<_>, true>(Streaming("H2")), Err(ErrMode::Error(Error::new(Streaming("H2"), ErrorKind::MultiSpace))));
+/// assert_eq!(multispace1::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn multispace1<I, E: ParseError<I>, const STREAMING: bool>(
@@ -893,7 +893,7 @@ macro_rules! ints {
         ///
         /// *Complete version*: can parse until the end of input.
         ///
-        /// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data.
+        /// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
         #[inline(always)]
         pub fn $t<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, $t, E>
             where
@@ -921,7 +921,7 @@ macro_rules! uints {
         ///
         /// *Complete version*: can parse until the end of input.
         ///
-        /// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there's not enough input data.
+        /// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
         #[inline(always)]
         pub fn $t<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, $t, E>
             where
@@ -945,12 +945,12 @@ uints! { u8 u16 u32 u64 u128 }
 ///
 /// *Complete version*: Can parse until the end of input.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
 /// # use winnow::Needed::Size;
 /// use winnow::character::f32;
 ///
@@ -961,11 +961,11 @@ uints! { u8 u16 u32 u64 u128 }
 /// assert_eq!(parser("11e-1"), Ok(("", 1.1)));
 /// assert_eq!(parser("123E-02"), Ok(("", 1.23)));
 /// assert_eq!(parser("123K-01"), Ok(("K-01", 123.0)));
-/// assert_eq!(parser("abc"), Err(Err::Error(Error::new("abc", ErrorKind::Float))));
+/// assert_eq!(parser("abc"), Err(ErrMode::Error(Error::new("abc", ErrorKind::Float))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
 /// # use winnow::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::character::f32;
@@ -975,10 +975,10 @@ uints! { u8 u16 u32 u64 u128 }
 /// };
 ///
 /// assert_eq!(parser(Streaming("11e-1 ")), Ok((Streaming(" "), 1.1)));
-/// assert_eq!(parser(Streaming("11e-1")), Err(Err::Incomplete(Needed::new(1))));
-/// assert_eq!(parser(Streaming("123E-02")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming("11e-1")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming("123E-02")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// assert_eq!(parser(Streaming("123K-01")), Ok((Streaming("K-01"), 123.0)));
-/// assert_eq!(parser(Streaming("abc")), Err(Err::Error(Error::new(Streaming("abc"), ErrorKind::Float))));
+/// assert_eq!(parser(Streaming("abc")), Err(ErrMode::Error(Error::new(Streaming("abc"), ErrorKind::Float))));
 /// ```
 #[inline(always)]
 pub fn f32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f32, E>
@@ -1002,12 +1002,12 @@ where
 ///
 /// *Complete version*: Can parse until the end of input.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
 /// # use winnow::Needed::Size;
 /// use winnow::character::f64;
 ///
@@ -1018,11 +1018,11 @@ where
 /// assert_eq!(parser("11e-1"), Ok(("", 1.1)));
 /// assert_eq!(parser("123E-02"), Ok(("", 1.23)));
 /// assert_eq!(parser("123K-01"), Ok(("K-01", 123.0)));
-/// assert_eq!(parser("abc"), Err(Err::Error(Error::new("abc", ErrorKind::Float))));
+/// assert_eq!(parser("abc"), Err(ErrMode::Error(Error::new("abc", ErrorKind::Float))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
 /// # use winnow::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::character::f64;
@@ -1032,10 +1032,10 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming("11e-1 ")), Ok((Streaming(" "), 1.1)));
-/// assert_eq!(parser(Streaming("11e-1")), Err(Err::Incomplete(Needed::new(1))));
-/// assert_eq!(parser(Streaming("123E-02")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming("11e-1")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming("123E-02")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// assert_eq!(parser(Streaming("123K-01")), Ok((Streaming("K-01"), 123.0)));
-/// assert_eq!(parser(Streaming("abc")), Err(Err::Error(Error::new(Streaming("abc"), ErrorKind::Float))));
+/// assert_eq!(parser(Streaming("abc")), Err(ErrMode::Error(Error::new(Streaming("abc"), ErrorKind::Float))));
 /// ```
 #[inline(always)]
 pub fn f64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f64, E>
@@ -1059,12 +1059,12 @@ where
 ///
 /// *Complete version*: Can parse until the end of input.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
 /// # use winnow::Needed::Size;
 /// use winnow::character::recognize_float;
 ///
@@ -1075,11 +1075,11 @@ where
 /// assert_eq!(parser("11e-1"), Ok(("", "11e-1")));
 /// assert_eq!(parser("123E-02"), Ok(("", "123E-02")));
 /// assert_eq!(parser("123K-01"), Ok(("K-01", "123")));
-/// assert_eq!(parser("abc"), Err(Err::Error(Error::new("abc", ErrorKind::Char))));
+/// assert_eq!(parser("abc"), Err(ErrMode::Error(Error::new("abc", ErrorKind::Char))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::character::recognize_float;
 ///
@@ -1090,7 +1090,7 @@ where
 /// assert_eq!(parser(Streaming("11e-1;")), Ok((Streaming(";"), "11e-1")));
 /// assert_eq!(parser(Streaming("123E-02;")), Ok((Streaming(";"), "123E-02")));
 /// assert_eq!(parser(Streaming("123K-01")), Ok((Streaming("K-01"), "123")));
-/// assert_eq!(parser(Streaming("abc")), Err(Err::Error(Error::new(Streaming("abc"), ErrorKind::Char))));
+/// assert_eq!(parser(Streaming("abc")), Err(ErrMode::Error(Error::new(Streaming("abc"), ErrorKind::Char))));
 /// ```
 #[inline(always)]
 pub fn recognize_float<I, E: ParseError<I>, const STREAMING: bool>(
@@ -1118,7 +1118,7 @@ where
 ///
 /// *Complete version*: Can parse until the end of input.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 #[inline(always)]
 #[allow(clippy::type_complexity)]
@@ -1145,7 +1145,7 @@ where
 /// * The third argument matches the escaped characters
 /// # Example
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed, IResult};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed, IResult};
 /// # use winnow::character::digit1;
 /// use winnow::character::escaped;
 /// use winnow::bytes::one_of;
@@ -1159,7 +1159,7 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed, IResult};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed, IResult};
 /// # use winnow::character::digit1;
 /// # use winnow::input::Streaming;
 /// use winnow::character::escaped;
@@ -1205,7 +1205,7 @@ where
 ///
 /// ```
 /// # use winnow::prelude::*;
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
 /// # use std::str::from_utf8;
 /// use winnow::bytes::tag;
 /// use winnow::character::escaped_transform;
@@ -1231,7 +1231,7 @@ where
 ///
 /// ```
 /// # use winnow::prelude::*;
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
 /// # use std::str::from_utf8;
 /// # use winnow::input::Streaming;
 /// use winnow::bytes::tag;

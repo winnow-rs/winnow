@@ -8,7 +8,7 @@ use winnow::multi::{length_data, many0};
 #[cfg(feature = "alloc")]
 use winnow::number::be_u64;
 use winnow::prelude::*;
-use winnow::{Err, Needed};
+use winnow::{ErrMode, Needed};
 
 // Parser definition
 
@@ -22,7 +22,7 @@ fn parser02(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (&[u8], &[u8])> {
 fn overflow_incomplete_tuple() {
   assert_eq!(
     parser02(Streaming(&b"3"[..])),
-    Err(Err::Incomplete(Needed::new(18446744073709551615)))
+    Err(ErrMode::Incomplete(Needed::new(18446744073709551615)))
   );
 }
 
@@ -38,7 +38,7 @@ fn overflow_incomplete_length_bytes() {
     multi(Streaming(
       &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xff"[..]
     )),
-    Err(Err::Incomplete(Needed::new(18446744073709551615)))
+    Err(ErrMode::Incomplete(Needed::new(18446744073709551615)))
   );
 }
 
@@ -54,7 +54,7 @@ fn overflow_incomplete_many0() {
     multi(Streaming(
       &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xef"[..]
     )),
-    Err(Err::Incomplete(Needed::new(18446744073709551599)))
+    Err(ErrMode::Incomplete(Needed::new(18446744073709551599)))
   );
 }
 
@@ -72,7 +72,7 @@ fn overflow_incomplete_many1() {
     multi(Streaming(
       &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xef"[..]
     )),
-    Err(Err::Incomplete(Needed::new(18446744073709551599)))
+    Err(ErrMode::Incomplete(Needed::new(18446744073709551599)))
   );
 }
 
@@ -91,7 +91,7 @@ fn overflow_incomplete_many_till() {
     multi(Streaming(
       &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xef"[..]
     )),
-    Err(Err::Incomplete(Needed::new(18446744073709551599)))
+    Err(ErrMode::Incomplete(Needed::new(18446744073709551599)))
   );
 }
 
@@ -109,7 +109,7 @@ fn overflow_incomplete_many_m_n() {
     multi(Streaming(
       &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xef"[..]
     )),
-    Err(Err::Incomplete(Needed::new(18446744073709551599)))
+    Err(ErrMode::Incomplete(Needed::new(18446744073709551599)))
   );
 }
 
@@ -126,7 +126,7 @@ fn overflow_incomplete_count() {
     counter(Streaming(
       &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xef"[..]
     )),
-    Err(Err::Incomplete(Needed::new(18446744073709551599)))
+    Err(ErrMode::Incomplete(Needed::new(18446744073709551599)))
   );
 }
 
@@ -144,7 +144,7 @@ fn overflow_incomplete_length_count() {
     multi(Streaming(
       &b"\x04\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xee"[..]
     )),
-    Err(Err::Incomplete(Needed::new(18446744073709551598)))
+    Err(ErrMode::Incomplete(Needed::new(18446744073709551598)))
   );
 }
 
@@ -159,6 +159,6 @@ fn overflow_incomplete_length_data() {
     multi(Streaming(
       &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xff"[..]
     )),
-    Err(Err::Incomplete(Needed::new(18446744073709551615)))
+    Err(ErrMode::Incomplete(Needed::new(18446744073709551615)))
   );
 }

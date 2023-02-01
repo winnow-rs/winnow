@@ -1,6 +1,6 @@
 use winnow::error::ErrorKind;
 use winnow::error::ParseError;
-use winnow::Err::Error;
+use winnow::ErrMode::Error;
 use winnow::IResult;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -29,7 +29,7 @@ fn main() {}
 mod tests {
   use super::parse;
   use super::CustomError;
-  use winnow::Err::Error;
+  use winnow::ErrMode::Error;
 
   #[test]
   fn it_works() {

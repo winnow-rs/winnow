@@ -9,7 +9,7 @@ use winnow::error::ErrorKind;
 use winnow::input::ParseTo;
 use winnow::number::be_u64;
 use winnow::prelude::*;
-use winnow::Err;
+use winnow::ErrMode;
 
 type Input<'i> = &'i [u8];
 
@@ -71,7 +71,7 @@ fn std_float(input: &[u8]) -> IResult<&[u8], f64, Error<&[u8]>> {
     Err(e) => Err(e),
     Ok((i, s)) => match s.parse_to() {
       Some(n) => Ok((i, n)),
-      None => Err(Err::Error(Error {
+      None => Err(ErrMode::Error(Error {
         input: i,
         kind: ErrorKind::Float,
       })),

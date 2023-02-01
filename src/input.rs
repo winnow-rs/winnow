@@ -62,7 +62,7 @@ use crate::lib::std::slice::Iter;
 use crate::lib::std::str::from_utf8;
 use crate::lib::std::str::CharIndices;
 use crate::lib::std::str::FromStr;
-use crate::{Err, IResult, Needed};
+use crate::{ErrMode, IResult, Needed};
 
 #[cfg(feature = "alloc")]
 use crate::lib::std::string::String;
@@ -176,9 +176,9 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 /// In contrast, streaming input assumes that we might not have all of the data.
 /// This can happen with some network protocol or large file parsers, where the
 /// input buffer can be full and need to be resized or refilled.
-/// - [`Err::Incomplete`] will report how much more data is needed.
-/// - [`Parser::complete`][crate::Parser::complete] transform [`Err::Incomplete`] to
-///   [`Err::Error`]
+/// - [`ErrMode::Incomplete`] will report how much more data is needed.
+/// - [`Parser::complete`][crate::Parser::complete] transform [`ErrMode::Incomplete`] to
+///   [`ErrMode::Error`]
 ///
 /// See also [`InputIsStreaming`] to tell whether the input supports complete or streaming parsing.
 ///
@@ -187,7 +187,7 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 /// Here is how it works in practice:
 ///
 /// ```rust
-/// use winnow::{IResult, Err, Needed, error::{Error, ErrorKind}, bytes, character, input::Streaming};
+/// use winnow::{IResult, ErrMode, Needed, error::{Error, ErrorKind}, bytes, character, input::Streaming};
 ///
 /// fn take_streaming(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
 ///   bytes::take(4u8)(i)
@@ -203,10 +203,10 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 ///
 /// // if the input is smaller than 4 bytes, the streaming parser
 /// // will return `Incomplete` to indicate that we need more data
-/// assert_eq!(take_streaming(Streaming(&b"abc"[..])), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(take_streaming(Streaming(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// // but the complete parser will return an error
-/// assert_eq!(take_complete(&b"abc"[..]), Err(Err::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
+/// assert_eq!(take_complete(&b"abc"[..]), Err(ErrMode::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
 ///
 /// // the alpha0 function recognizes 0 or more alphabetic characters
 /// fn alpha0_streaming(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
@@ -224,7 +224,7 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 /// // but when there's no limit, the streaming version returns `Incomplete`, because it cannot
 /// // know if more input data should be recognized. The whole input could be "abcd;", or
 /// // "abcde;"
-/// assert_eq!(alpha0_streaming(Streaming("abcd")), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha0_streaming(Streaming("abcd")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// // while the complete version knows that all of the data is there
 /// assert_eq!(alpha0_complete("abcd"), Ok(("", "abcd")));
@@ -1756,15 +1756,15 @@ impl<'a> AsChar for &'a char {
 /// For example, you could implement `hex_digit0` as:
 /// ```
 /// # use winnow::prelude::*;
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
 /// # use winnow::bytes::take_while1;
 /// fn hex_digit1(input: &str) -> IResult<&str, &str> {
 ///     take_while1(('a'..='f', 'A'..='F', '0'..='9')).parse_next(input)
 /// }
 ///
 /// assert_eq!(hex_digit1("21cZ"), Ok(("Z", "21c")));
-/// assert_eq!(hex_digit1("H2"), Err(Err::Error(Error::new("H2", ErrorKind::TakeWhile1))));
-/// assert_eq!(hex_digit1(""), Err(Err::Error(Error::new("", ErrorKind::TakeWhile1))));
+/// assert_eq!(hex_digit1("H2"), Err(ErrMode::Error(Error::new("H2", ErrorKind::TakeWhile1))));
+/// assert_eq!(hex_digit1(""), Err(ErrMode::Error(Error::new("", ErrorKind::TakeWhile1))));
 /// ```
 pub trait ContainsToken<T> {
   /// Returns true if self contains the token
@@ -1998,7 +1998,7 @@ where
 {
   let offset = input
     .offset_for(predicate)
-    .ok_or_else(|| Err::Incomplete(Needed::new(1)))?;
+    .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
   Ok(input.next_slice(offset))
 }
 
@@ -2018,9 +2018,9 @@ where
 {
   let offset = input
     .offset_for(predicate)
-    .ok_or_else(|| Err::Incomplete(Needed::new(1)))?;
+    .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
   if offset == 0 {
-    Err(Err::Error(E::from_error_kind(input.clone(), e)))
+    Err(ErrMode::Error(E::from_error_kind(input.clone(), e)))
   } else {
     Ok(input.next_slice(offset))
   }
@@ -2061,7 +2061,7 @@ where
     .offset_for(predicate)
     .unwrap_or_else(|| input.input_len());
   if offset == 0 {
-    Err(Err::Error(E::from_error_kind(input.clone(), e)))
+    Err(ErrMode::Error(E::from_error_kind(input.clone(), e)))
   } else {
     Ok(input.next_slice(offset))
   }

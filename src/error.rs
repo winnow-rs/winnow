@@ -10,9 +10,9 @@
 //! type:
 //!
 //! ```rust
-//! pub type IResult<I, O, E=winnow::error::Error<I>> = Result<(I, O), winnow::Err<E>>;
+//! pub type IResult<I, O, E=winnow::error::Error<I>> = Result<(I, O), winnow::ErrMode<E>>;
 //!
-//! pub enum Err<E> {
+//! pub enum ErrMode<E> {
 //!     Incomplete(Needed),
 //!     Error(E),
 //!     Failure(E),
@@ -26,24 +26,24 @@
 //! ```
 //!
 //! The result is either an `Ok((I, O))` containing the remaining input and the
-//! parsed value, or an `Err(winnow::Err<E>)` with `E` the error type.
-//! [`winnow::Err<E>`][Err] is an enum because combinators can have different behaviours
-//! depending on the value.  The [`Err<E>`] enum expresses 3 conditions for a parser error:
-//! - [`Incomplete`][Err::Incomplete] indicates that a parser did not have enough data to
+//! parsed value, or an `Err(winnow::ErrMode<E>)` with `E` the error type.
+//! [`winnow::ErrMode<E>`][Err] is an enum because combinators can have different behaviours
+//! depending on the value.  The [`ErrMode<E>`] enum expresses 3 conditions for a parser error:
+//! - [`Incomplete`][ErrMode::Incomplete] indicates that a parser did not have enough data to
 //!   decide. This can be returned by parsers found in `streaming` submodules to indicate that we
 //!   should buffer more data from a file or socket. Parsers in the `complete` submodules assume that
 //!   they have the entire input data, so if it was not sufficient, they will instead return a
-//!   `Err::Error`
-//! - [`Error`][Err::Error] is a normal parser error. If a child parser of the
+//!   `ErrMode::Error`
+//! - [`Error`][ErrMode::Error] is a normal parser error. If a child parser of the
 //!   [`alt`][crate::branch::alt] combinator returns `Error`, it will try another child parser
-//! - [`Failure`][Err::Failure] is an error from which we cannot recover: The
+//! - [`Failure`][ErrMode::Failure] is an error from which we cannot recover: The
 //!   [`alt`][crate::branch::alt] combinator will not try other branches if a child parser returns
 //!   `Failure`. If we know we were in the right branch (example: we found a correct prefix character
-//!   but input after that was wrong), we can transform a `Err::Error` into a `Err::Failure` with the
+//!   but input after that was wrong), we can transform a `ErrMode::Error` into a `ErrMode::Failure` with the
 //!   [`cut()`][crate::combinator::cut] combinator
 //!
-//! If we are running a parser and know it will not return `Err::Incomplete`, we can
-//! directly extract the error type from `Err::Error` or `Err::Failure` with the
+//! If we are running a parser and know it will not return `ErrMode::Incomplete`, we can
+//! directly extract the error type from `ErrMode::Error` or `ErrMode::Failure` with the
 //! [`finish()`][crate::FinishIResult::finish] method:
 //!
 //! ```rust,ignore
@@ -60,11 +60,11 @@
 //! method:
 //!
 //! ```rust,ignore
-//! # use winnow::Err;
+//! # use winnow::ErrMode;
 //! # type Value<'s> = &'s [u8];
 //! # let parser = winnow::bytes::take_while1(|c: u8| c == b' ');
 //! # let data = " ";
-//! let result: Result<(&[u8], Value<'_>), Err<Vec<u8>>> =
+//! let result: Result<(&[u8], Value<'_>), ErrMode<Vec<u8>>> =
 //!   parser(data).map_err(|e: E<&[u8]>| e.to_owned());
 //! ```
 //!
@@ -681,7 +681,7 @@ impl<I: fmt::Display> fmt::Display for VerboseError<I> {
 #[cfg(feature = "std")]
 impl<I: fmt::Debug + fmt::Display> std::error::Error for VerboseError<I> {}
 
-use crate::{Err, IResult};
+use crate::{ErrMode, IResult};
 
 /// Create a new error from an input position, a static string and an existing error.
 /// This is used mainly in the [context] combinator, to add user friendly information
@@ -698,9 +698,9 @@ where
 {
   move |i: I| match f.parse_next(i.clone()) {
     Ok(o) => Ok(o),
-    Err(Err::Incomplete(i)) => Err(Err::Incomplete(i)),
-    Err(Err::Error(e)) => Err(Err::Error(e.add_context(i, context))),
-    Err(Err::Failure(e)) => Err(Err::Failure(e.add_context(i, context))),
+    Err(ErrMode::Incomplete(i)) => Err(ErrMode::Incomplete(i)),
+    Err(ErrMode::Error(e)) => Err(ErrMode::Error(e.add_context(i, context))),
+    Err(ErrMode::Failure(e)) => Err(ErrMode::Failure(e.add_context(i, context))),
   }
 }
 
@@ -732,9 +732,9 @@ where
   fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
     match (self.f).parse_next(i.clone()) {
       Ok(o) => Ok(o),
-      Err(Err::Incomplete(i)) => Err(Err::Incomplete(i)),
-      Err(Err::Error(e)) => Err(Err::Error(e.add_context(i, self.context.clone()))),
-      Err(Err::Failure(e)) => Err(Err::Failure(e.add_context(i, self.context.clone()))),
+      Err(ErrMode::Incomplete(i)) => Err(ErrMode::Incomplete(i)),
+      Err(ErrMode::Error(e)) => Err(ErrMode::Error(e.add_context(i, self.context.clone()))),
+      Err(ErrMode::Failure(e)) => Err(ErrMode::Failure(e.add_context(i, self.context.clone()))),
     }
   }
 }

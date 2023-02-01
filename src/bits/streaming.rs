@@ -6,7 +6,7 @@
 use crate::error::{ErrorKind, ParseError};
 use crate::input::{AsBytes, Input, ToUsize};
 use crate::lib::std::ops::{AddAssign, Div, Shl, Shr};
-use crate::{Err, IResult, Needed};
+use crate::{ErrMode, IResult, Needed};
 
 /// Generates a parser taking `count` bits
 ///
@@ -40,7 +40,7 @@ where
   } else {
     let cnt = (count + bit_offset).div(8);
     if input.input_len() * 8 < count + bit_offset {
-      Err(Err::Incomplete(Needed::new(count)))
+      Err(ErrMode::Incomplete(Needed::new(count)))
     } else {
       let mut acc: O = 0_u8.into();
       let mut offset: usize = bit_offset;
@@ -108,7 +108,7 @@ where
     if *pattern == o {
       Ok((i, o))
     } else {
-      Err(Err::Error(error_position!(inp, ErrorKind::TagBits)))
+      Err(ErrMode::Error(error_position!(inp, ErrorKind::TagBits)))
     }
   })
 }
@@ -179,7 +179,7 @@ mod test {
 
     assert_eq!(
       result,
-      Err(crate::Err::Error(crate::error::Error {
+      Err(crate::ErrMode::Error(crate::error::Error {
         input: (input, offset),
         kind: ErrorKind::TagBits
       }))
@@ -201,6 +201,6 @@ mod test {
 
     let result: crate::IResult<(&[u8], usize), bool> = bool((input, 8));
 
-    assert_eq!(result, Err(crate::Err::Incomplete(Needed::new(1))));
+    assert_eq!(result, Err(crate::ErrMode::Incomplete(Needed::new(1))));
   }
 }

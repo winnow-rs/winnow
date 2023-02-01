@@ -19,7 +19,7 @@ use core::num::NonZeroUsize;
 ///
 /// Outside of the parsing code, you can use the [`FinishIResult::finish`] method to convert
 /// it to a more common result type
-pub type IResult<I, O, E = error::Error<I>> = Result<(I, O), Err<E>>;
+pub type IResult<I, O, E = error::Error<I>> = Result<(I, O), ErrMode<E>>;
 
 /// Extension trait to convert a parser's [`IResult`] to a more manageable type
 pub trait FinishIResult<I, O, E> {
@@ -30,22 +30,22 @@ pub trait FinishIResult<I, O, E> {
   ///
   /// # Panic
   ///
-  /// If the result is `Err(Err::Incomplete(_))`, this method will panic.
+  /// If the result is `Err(ErrMode::Incomplete(_))`, this method will panic.
   /// - "complete" parsers: It will not be an issue, `Incomplete` is never used
   /// - "streaming" parsers: `Incomplete` will be returned if there's not enough data
   /// for the parser to decide, and you should gather more data before parsing again.
-  /// Once the parser returns either `Ok(_)`, `Err(Err::Error(_))` or `Err(Err::Failure(_))`,
+  /// Once the parser returns either `Ok(_)`, `Err(ErrMode::Error(_))` or `Err(ErrMode::Failure(_))`,
   /// you can get out of the parsing loop and call `finish_err()` on the parser's result
   fn finish(self) -> Result<O, E>;
 
   /// Converts the parser's [`IResult`] to a type that is more consumable by errors.
   ///
-  ///  It keeps the same `Ok` branch, and merges `Err::Error` and `Err::Failure` into the `Err`
+  ///  It keeps the same `Ok` branch, and merges `ErrMode::Error` and `ErrMode::Failure` into the `Err`
   ///  side.
   ///
   /// # Panic
   ///
-  /// If the result is `Err(Err::Incomplete(_))`, this method will panic as [`Err::Incomplete`]
+  /// If the result is `Err(ErrMode::Incomplete(_))`, this method will panic as [`ErrMode::Incomplete`]
   /// should only be set when the input is [`InputIsStreaming<false>`] which this isn't implemented
   /// for.
   fn finish_err(self) -> Result<(I, O), E>;
@@ -68,9 +68,9 @@ where
   fn finish_err(self) -> Result<(I, O), E> {
     match self {
       Ok(res) => Ok(res),
-      Err(Err::Error(e)) | Err(Err::Failure(e)) => Err(e),
-      Err(Err::Incomplete(_)) => {
-        panic!("`InputIsStreaming<false>` conflicts with `Err(Err::Incomplete(_))`")
+      Err(ErrMode::Error(e)) | Err(ErrMode::Failure(e)) => Err(e),
+      Err(ErrMode::Incomplete(_)) => {
+        panic!("`InputIsStreaming<false>` conflicts with `Err(ErrMode::Incomplete(_))`")
       }
     }
   }
@@ -94,9 +94,9 @@ impl<I, O, E> Finish<I, O, E> for IResult<I, O, E> {
   fn finish(self) -> Result<(I, O), E> {
     match self {
       Ok(res) => Ok(res),
-      Err(Err::Error(e)) | Err(Err::Failure(e)) => Err(e),
-      Err(Err::Incomplete(_)) => {
-        panic!("Cannot call `finish()` on `Err(Err::Incomplete(_))`: this result means that the parser does not have enough data to decide, you should gather more data and try to reapply  the parser instead")
+      Err(ErrMode::Error(e)) | Err(ErrMode::Failure(e)) => Err(e),
+      Err(ErrMode::Incomplete(_)) => {
+        panic!("Cannot call `finish()` on `Err(ErrMode::Incomplete(_))`: this result means that the parser does not have enough data to decide, you should gather more data and try to reapply  the parser instead")
       }
     }
   }
@@ -155,7 +155,7 @@ impl Needed {
 ///
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub enum Err<E> {
+pub enum ErrMode<E> {
   /// There was not enough data
   ///
   /// This must only be set when the `Input` is [`InputIsStreaming<true>`], like with
@@ -171,26 +171,26 @@ pub enum Err<E> {
   Failure(E),
 }
 
-impl<E> Err<E> {
+impl<E> ErrMode<E> {
   /// Tests if the result is Incomplete
   pub fn is_incomplete(&self) -> bool {
-    matches!(self, Err::Incomplete(_))
+    matches!(self, ErrMode::Incomplete(_))
   }
 
   /// Applies the given function to the inner error
-  pub fn map<E2, F>(self, f: F) -> Err<E2>
+  pub fn map<E2, F>(self, f: F) -> ErrMode<E2>
   where
     F: FnOnce(E) -> E2,
   {
     match self {
-      Err::Incomplete(n) => Err::Incomplete(n),
-      Err::Failure(t) => Err::Failure(f(t)),
-      Err::Error(t) => Err::Error(f(t)),
+      ErrMode::Incomplete(n) => ErrMode::Incomplete(n),
+      ErrMode::Failure(t) => ErrMode::Failure(f(t)),
+      ErrMode::Error(t) => ErrMode::Error(f(t)),
     }
   }
 
   /// Automatically converts between errors if the underlying type supports it
-  pub fn convert<F>(e: Err<F>) -> Self
+  pub fn convert<F>(e: ErrMode<F>) -> Self
   where
     F: Into<E>,
   {
@@ -198,33 +198,33 @@ impl<E> Err<E> {
   }
 }
 
-impl<T> Err<(T, ErrorKind)> {
-  /// Maps `Err<(T, ErrorKind)>` to `Err<(U, ErrorKind)>` with the given `F: T -> U`
-  pub fn map_input<U, F>(self, f: F) -> Err<(U, ErrorKind)>
+impl<T> ErrMode<(T, ErrorKind)> {
+  /// Maps `ErrMode<(T, ErrorKind)>` to `ErrMode<(U, ErrorKind)>` with the given `F: T -> U`
+  pub fn map_input<U, F>(self, f: F) -> ErrMode<(U, ErrorKind)>
   where
     F: FnOnce(T) -> U,
   {
     match self {
-      Err::Incomplete(n) => Err::Incomplete(n),
-      Err::Failure((input, k)) => Err::Failure((f(input), k)),
-      Err::Error((input, k)) => Err::Error((f(input), k)),
+      ErrMode::Incomplete(n) => ErrMode::Incomplete(n),
+      ErrMode::Failure((input, k)) => ErrMode::Failure((f(input), k)),
+      ErrMode::Error((input, k)) => ErrMode::Error((f(input), k)),
     }
   }
 }
 
-impl<T> Err<error::Error<T>> {
-  /// Maps `Err<error::Error<T>>` to `Err<error::Error<U>>` with the given `F: T -> U`
-  pub fn map_input<U, F>(self, f: F) -> Err<error::Error<U>>
+impl<T> ErrMode<error::Error<T>> {
+  /// Maps `ErrMode<error::Error<T>>` to `ErrMode<error::Error<U>>` with the given `F: T -> U`
+  pub fn map_input<U, F>(self, f: F) -> ErrMode<error::Error<U>>
   where
     F: FnOnce(T) -> U,
   {
     match self {
-      Err::Incomplete(n) => Err::Incomplete(n),
-      Err::Failure(error::Error { input, kind }) => Err::Failure(error::Error {
+      ErrMode::Incomplete(n) => ErrMode::Incomplete(n),
+      ErrMode::Failure(error::Error { input, kind }) => ErrMode::Failure(error::Error {
         input: f(input),
         kind,
       }),
-      Err::Error(error::Error { input, kind }) => Err::Error(error::Error {
+      ErrMode::Error(error::Error { input, kind }) => ErrMode::Error(error::Error {
         input: f(input),
         kind,
       }),
@@ -234,50 +234,50 @@ impl<T> Err<error::Error<T>> {
 
 #[cfg(feature = "alloc")]
 use crate::lib::std::{borrow::ToOwned, string::String, vec::Vec};
-impl Err<(&[u8], ErrorKind)> {
+impl ErrMode<(&[u8], ErrorKind)> {
   /// Obtaining ownership
   #[cfg(feature = "alloc")]
-  pub fn to_owned(self) -> Err<(Vec<u8>, ErrorKind)> {
+  pub fn to_owned(self) -> ErrMode<(Vec<u8>, ErrorKind)> {
     self.map_input(ToOwned::to_owned)
   }
 }
 
-impl Err<(&str, ErrorKind)> {
+impl ErrMode<(&str, ErrorKind)> {
   /// Obtaining ownership
   #[cfg(feature = "alloc")]
-  pub fn to_owned(self) -> Err<(String, ErrorKind)> {
+  pub fn to_owned(self) -> ErrMode<(String, ErrorKind)> {
     self.map_input(ToOwned::to_owned)
   }
 }
 
-impl Err<error::Error<&[u8]>> {
+impl ErrMode<error::Error<&[u8]>> {
   /// Obtaining ownership
   #[cfg(feature = "alloc")]
-  pub fn to_owned(self) -> Err<error::Error<Vec<u8>>> {
+  pub fn to_owned(self) -> ErrMode<error::Error<Vec<u8>>> {
     self.map_input(ToOwned::to_owned)
   }
 }
 
-impl Err<error::Error<&str>> {
+impl ErrMode<error::Error<&str>> {
   /// Obtaining ownership
   #[cfg(feature = "alloc")]
-  pub fn to_owned(self) -> Err<error::Error<String>> {
+  pub fn to_owned(self) -> ErrMode<error::Error<String>> {
     self.map_input(ToOwned::to_owned)
   }
 }
 
-impl<E: Eq> Eq for Err<E> {}
+impl<E: Eq> Eq for ErrMode<E> {}
 
-impl<E> fmt::Display for Err<E>
+impl<E> fmt::Display for ErrMode<E>
 where
   E: fmt::Debug,
 {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     match self {
-      Err::Incomplete(Needed::Size(u)) => write!(f, "Parsing requires {} bytes/chars", u),
-      Err::Incomplete(Needed::Unknown) => write!(f, "Parsing requires more data"),
-      Err::Failure(c) => write!(f, "Parsing Failure: {:?}", c),
-      Err::Error(c) => write!(f, "Parsing Error: {:?}", c),
+      ErrMode::Incomplete(Needed::Size(u)) => write!(f, "Parsing requires {} bytes/chars", u),
+      ErrMode::Incomplete(Needed::Unknown) => write!(f, "Parsing requires more data"),
+      ErrMode::Failure(c) => write!(f, "Parsing Failure: {:?}", c),
+      ErrMode::Error(c) => write!(f, "Parsing Error: {:?}", c),
     }
   }
 }
@@ -286,7 +286,7 @@ where
 use std::error::Error;
 
 #[cfg(feature = "std")]
-impl<E> Error for Err<E>
+impl<E> Error for ErrMode<E>
 where
   E: fmt::Debug,
 {
@@ -398,14 +398,14 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, Parser};
+  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::character::alpha1;
   /// # fn main() {
   ///
   /// let mut parser = alpha1.value(1234);
   ///
   /// assert_eq!(parser.parse_next("abcd"), Ok(("", 1234)));
-  /// assert_eq!(parser.parse_next("123abcd;"), Err(Err::Error(Error::new("123abcd;", ErrorKind::Alpha))));
+  /// assert_eq!(parser.parse_next("123abcd;"), Err(ErrMode::Error(Error::new("123abcd;", ErrorKind::Alpha))));
   /// # }
   /// ```
   fn value<O2>(self, val: O2) -> Value<Self, O, O2>
@@ -421,14 +421,14 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, Parser};
+  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::character::alpha1;
   /// # fn main() {
   ///
   /// let mut parser = alpha1.void();
   ///
   /// assert_eq!(parser.parse_next("abcd"), Ok(("", ())));
-  /// assert_eq!(parser.parse_next("123abcd;"), Err(Err::Error(Error::new("123abcd;", ErrorKind::Alpha))));
+  /// assert_eq!(parser.parse_next("123abcd;"), Err(ErrMode::Error(Error::new("123abcd;", ErrorKind::Alpha))));
   /// # }
   /// ```
   fn void(self) -> Void<Self, O>
@@ -472,7 +472,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, Parser};
+  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::character::{alpha1};
   /// use winnow::sequence::separated_pair;
   /// # fn main() {
@@ -480,7 +480,7 @@ pub trait Parser<I, O, E> {
   /// let mut parser = separated_pair(alpha1, ',', alpha1).recognize();
   ///
   /// assert_eq!(parser.parse_next("abcd,efgh"), Ok(("", "abcd,efgh")));
-  /// assert_eq!(parser.parse_next("abcd;"),Err(Err::Error(Error::new(";", ErrorKind::OneOf))));
+  /// assert_eq!(parser.parse_next("abcd;"),Err(ErrMode::Error(Error::new(";", ErrorKind::OneOf))));
   /// # }
   /// ```
   fn recognize(self) -> Recognize<Self, O>
@@ -503,7 +503,7 @@ pub trait Parser<I, O, E> {
   ///
   /// ```rust
   /// # use winnow::prelude::*;
-  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult};
+  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult};
   /// use winnow::character::{alpha1};
   /// use winnow::bytes::tag;
   /// use winnow::sequence::separated_pair;
@@ -517,7 +517,7 @@ pub trait Parser<I, O, E> {
   /// let mut consumed_parser = separated_pair(alpha1, ',', alpha1).value(true).with_recognized();
   ///
   /// assert_eq!(consumed_parser.parse_next("abcd,efgh1"), Ok(("1", (true, "abcd,efgh"))));
-  /// assert_eq!(consumed_parser.parse_next("abcd;"),Err(Err::Error(Error::new(";", ErrorKind::OneOf))));
+  /// assert_eq!(consumed_parser.parse_next("abcd;"),Err(ErrMode::Error(Error::new(";", ErrorKind::OneOf))));
   ///
   /// // the second output (representing the consumed input)
   /// // should be the same as that of the `recognize` parser.
@@ -541,7 +541,7 @@ pub trait Parser<I, O, E> {
   ///
   /// ```rust
   /// # use winnow::prelude::*;
-  /// # use winnow::{Err,error::ErrorKind, error::Error, input::Input};
+  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, input::Input};
   /// use winnow::input::Located;
   /// use winnow::character::alpha1;
   /// use winnow::sequence::separated_pair;
@@ -549,7 +549,7 @@ pub trait Parser<I, O, E> {
   /// let mut parser = separated_pair(alpha1.span(), ',', alpha1.span());
   ///
   /// assert_eq!(parser.parse_next(Located::new("abcd,efgh")).finish(), Ok((0..4, 5..9)));
-  /// assert_eq!(parser.parse_next(Located::new("abcd;")),Err(Err::Error(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::OneOf))));
+  /// assert_eq!(parser.parse_next(Located::new("abcd;")),Err(ErrMode::Error(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::OneOf))));
   /// ```
   fn span(self) -> Span<Self, O>
   where
@@ -572,7 +572,7 @@ pub trait Parser<I, O, E> {
   ///
   /// ```rust
   /// # use winnow::prelude::*;
-  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, input::Input};
+  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult, input::Input};
   /// use winnow::input::Located;
   /// use winnow::character::alpha1;
   /// use winnow::bytes::tag;
@@ -587,7 +587,7 @@ pub trait Parser<I, O, E> {
   /// let mut consumed_parser = separated_pair(alpha1.value(1).with_span(), ',', alpha1.value(2).with_span());
   ///
   /// assert_eq!(consumed_parser.parse_next(Located::new("abcd,efgh")).finish(), Ok(((1, 0..4), (2, 5..9))));
-  /// assert_eq!(consumed_parser.parse_next(Located::new("abcd;")),Err(Err::Error(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::OneOf))));
+  /// assert_eq!(consumed_parser.parse_next(Located::new("abcd;")),Err(ErrMode::Error(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::OneOf))));
   ///
   /// // the second output (representing the consumed input)
   /// // should be the same as that of the `span` parser.
@@ -611,7 +611,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// use winnow::{Err,error::ErrorKind, error::Error, IResult,Parser};
+  /// use winnow::{ErrMode,error::ErrorKind, error::Error, IResult,Parser};
   /// use winnow::character::digit1;
   /// # fn main() {
   ///
@@ -621,7 +621,7 @@ pub trait Parser<I, O, E> {
   /// assert_eq!(parser.parse_next("123456"), Ok(("", 6)));
   ///
   /// // this will fail if digit1 fails
-  /// assert_eq!(parser.parse_next("abc"), Err(Err::Error(Error::new("abc", ErrorKind::Digit))));
+  /// assert_eq!(parser.parse_next("abc"), Err(ErrMode::Error(Error::new("abc", ErrorKind::Digit))));
   /// # }
   /// ```
   fn map<G, O2>(self, g: G) -> Map<Self, G, O>
@@ -637,7 +637,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, Parser};
+  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::character::digit1;
   /// # fn main() {
   ///
@@ -647,10 +647,10 @@ pub trait Parser<I, O, E> {
   /// assert_eq!(parse.parse_next("123"), Ok(("", 123)));
   ///
   /// // this will fail if digit1 fails
-  /// assert_eq!(parse.parse_next("abc"), Err(Err::Error(Error::new("abc", ErrorKind::Digit))));
+  /// assert_eq!(parse.parse_next("abc"), Err(ErrMode::Error(Error::new("abc", ErrorKind::Digit))));
   ///
   /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
-  /// assert_eq!(parse.parse_next("123456"), Err(Err::Error(Error::new("123456", ErrorKind::MapRes))));
+  /// assert_eq!(parse.parse_next("123456"), Err(ErrMode::Error(Error::new("123456", ErrorKind::MapRes))));
   /// # }
   /// ```
   fn map_res<G, O2, E2>(self, g: G) -> MapRes<Self, G, O>
@@ -666,7 +666,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, Parser};
+  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::character::digit1;
   /// # fn main() {
   ///
@@ -676,10 +676,10 @@ pub trait Parser<I, O, E> {
   /// assert_eq!(parse.parse_next("123"), Ok(("", 123)));
   ///
   /// // this will fail if digit1 fails
-  /// assert_eq!(parse.parse_next("abc"), Err(Err::Error(Error::new("abc", ErrorKind::Digit))));
+  /// assert_eq!(parse.parse_next("abc"), Err(ErrMode::Error(Error::new("abc", ErrorKind::Digit))));
   ///
   /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
-  /// assert_eq!(parse.parse_next("123456"), Err(Err::Error(Error::new("123456", ErrorKind::MapOpt))));
+  /// assert_eq!(parse.parse_next("123456"), Err(ErrMode::Error(Error::new("123456", ErrorKind::MapOpt))));
   /// # }
   /// ```
   fn map_opt<G, O2>(self, g: G) -> MapOpt<Self, G, O>
@@ -695,7 +695,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, Parser};
+  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::bytes::take;
   /// use winnow::number::u8;
   /// # fn main() {
@@ -703,7 +703,7 @@ pub trait Parser<I, O, E> {
   /// let mut length_data = u8.flat_map(take);
   ///
   /// assert_eq!(length_data.parse_next(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
-  /// assert_eq!(length_data.parse_next(&[4, 0, 1, 2][..]), Err(Err::Error(Error::new(&[0, 1, 2][..], ErrorKind::Eof))));
+  /// assert_eq!(length_data.parse_next(&[4, 0, 1, 2][..]), Err(ErrMode::Error(Error::new(&[0, 1, 2][..], ErrorKind::Eof))));
   /// # }
   /// ```
   fn flat_map<G, H, O2>(self, g: G) -> FlatMap<Self, G, O>
@@ -720,7 +720,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, Parser};
+  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::character::digit1;
   /// use winnow::bytes::take;
   /// # fn main() {
@@ -729,7 +729,7 @@ pub trait Parser<I, O, E> {
   ///
   /// assert_eq!(digits.parse_next("12345"), Ok(("", "12345")));
   /// assert_eq!(digits.parse_next("123ab"), Ok(("", "123")));
-  /// assert_eq!(digits.parse_next("123"), Err(Err::Error(Error::new("123", ErrorKind::Eof))));
+  /// assert_eq!(digits.parse_next("123"), Err(ErrMode::Error(Error::new("123", ErrorKind::Eof))));
   /// # }
   /// ```
   fn and_then<G, O2>(self, g: G) -> AndThen<Self, G, O>
@@ -748,15 +748,15 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, Parser};
+  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult, Parser};
   /// # use winnow::character::alpha1;
   /// # fn main() {
   ///
   /// let mut parser = alpha1.verify(|s: &str| s.len() == 4);
   ///
   /// assert_eq!(parser.parse_next("abcd"), Ok(("", "abcd")));
-  /// assert_eq!(parser.parse_next("abcde"), Err(Err::Error(Error::new("abcde", ErrorKind::Verify))));
-  /// assert_eq!(parser.parse_next("123abcd;"),Err(Err::Error(Error::new("123abcd;", ErrorKind::Alpha))));
+  /// assert_eq!(parser.parse_next("abcde"), Err(ErrMode::Error(Error::new("abcde", ErrorKind::Verify))));
+  /// assert_eq!(parser.parse_next("123abcd;"),Err(ErrMode::Error(Error::new("123abcd;", ErrorKind::Alpha))));
   /// # }
   /// ```
   fn verify<G, O2: ?Sized>(self, second: G) -> Verify<Self, G, O2>
@@ -780,19 +780,19 @@ pub trait Parser<I, O, E> {
     Context::new(self, context)
   }
 
-  /// Transforms [`Incomplete`][crate::Err::Incomplete] into [`Error`][crate::Err::Error]
+  /// Transforms [`Incomplete`][crate::ErrMode::Incomplete] into [`Error`][crate::ErrMode::Error]
   ///
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{Err, error::ErrorKind, error::Error, IResult, input::Streaming, Parser};
+  /// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, input::Streaming, Parser};
   /// # use winnow::bytes::take;
   /// # fn main() {
   ///
   /// let mut parser = take(5u8).complete();
   ///
   /// assert_eq!(parser.parse_next(Streaming("abcdefg")), Ok((Streaming("fg"), "abcde")));
-  /// assert_eq!(parser.parse_next(Streaming("abcd")), Err(Err::Error(Error::new(Streaming("abcd"), ErrorKind::Complete))));
+  /// assert_eq!(parser.parse_next(Streaming("abcd")), Err(ErrMode::Error(Error::new(Streaming("abcd"), ErrorKind::Complete))));
   /// # }
   /// ```
   fn complete(self) -> Complete<Self>
@@ -884,14 +884,14 @@ where
 ///
 /// ```
 /// # use winnow::prelude::*;
-/// # use winnow::{Err, error::{ErrorKind, Error}};
+/// # use winnow::{ErrMode, error::{ErrorKind, Error}};
 /// fn parser(i: &[u8]) -> IResult<&[u8], u8> {
 ///     b'a'.parse_next(i)
 /// }
 /// assert_eq!(parser(&b"abc"[..]), Ok((&b"bc"[..], b'a')));
-/// assert_eq!(parser(&b" abc"[..]), Err(Err::Error(Error::new(&b" abc"[..], ErrorKind::OneOf))));
-/// assert_eq!(parser(&b"bc"[..]), Err(Err::Error(Error::new(&b"bc"[..], ErrorKind::OneOf))));
-/// assert_eq!(parser(&b""[..]), Err(Err::Error(Error::new(&b""[..], ErrorKind::OneOf))));
+/// assert_eq!(parser(&b" abc"[..]), Err(ErrMode::Error(Error::new(&b" abc"[..], ErrorKind::OneOf))));
+/// assert_eq!(parser(&b"bc"[..]), Err(ErrMode::Error(Error::new(&b"bc"[..], ErrorKind::OneOf))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Error(Error::new(&b""[..], ErrorKind::OneOf))));
 /// ```
 impl<I, E> Parser<I, u8, E> for u8
 where
@@ -910,14 +910,14 @@ where
 ///
 /// ```
 /// # use winnow::prelude::*;
-/// # use winnow::{Err, error::{ErrorKind, Error}};
+/// # use winnow::{ErrMode, error::{ErrorKind, Error}};
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     'a'.parse_next(i)
 /// }
 /// assert_eq!(parser("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser(" abc"), Err(Err::Error(Error::new(" abc", ErrorKind::OneOf))));
-/// assert_eq!(parser("bc"), Err(Err::Error(Error::new("bc", ErrorKind::OneOf))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::OneOf))));
+/// assert_eq!(parser(" abc"), Err(ErrMode::Error(Error::new(" abc", ErrorKind::OneOf))));
+/// assert_eq!(parser("bc"), Err(ErrMode::Error(Error::new("bc", ErrorKind::OneOf))));
+/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::OneOf))));
 /// ```
 impl<I, E> Parser<I, <I as Input>::Token, E> for char
 where
@@ -936,7 +936,7 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed};
 /// # use winnow::branch::alt;
 /// # use winnow::bytes::take;
 ///
@@ -946,8 +946,8 @@ where
 ///
 /// assert_eq!(parser(&b"Hello, World!"[..]), Ok((&b", World!"[..], &b"Hello"[..])));
 /// assert_eq!(parser(&b"Something"[..]), Ok((&b"hing"[..], &b"Somet"[..])));
-/// assert_eq!(parser(&b"Some"[..]), Err(Err::Error(Error::new(&b"Some"[..], ErrorKind::Eof))));
-/// assert_eq!(parser(&b""[..]), Err(Err::Error(Error::new(&b""[..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"Some"[..]), Err(ErrMode::Error(Error::new(&b"Some"[..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Error(Error::new(&b""[..], ErrorKind::Eof))));
 /// ```
 impl<'s, I, E: ParseError<I>> Parser<I, <I as Input>::Slice, E> for &'s [u8]
 where
@@ -964,7 +964,7 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed};
 /// # use winnow::branch::alt;
 /// # use winnow::bytes::take;
 ///
@@ -974,8 +974,8 @@ where
 ///
 /// assert_eq!(parser(&b"Hello, World!"[..]), Ok((&b", World!"[..], &b"Hello"[..])));
 /// assert_eq!(parser(&b"Something"[..]), Ok((&b"hing"[..], &b"Somet"[..])));
-/// assert_eq!(parser(&b"Some"[..]), Err(Err::Error(Error::new(&b"Some"[..], ErrorKind::Eof))));
-/// assert_eq!(parser(&b""[..]), Err(Err::Error(Error::new(&b""[..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"Some"[..]), Err(ErrMode::Error(Error::new(&b"Some"[..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Error(Error::new(&b""[..], ErrorKind::Eof))));
 /// ```
 impl<'s, I, E: ParseError<I>, const N: usize> Parser<I, <I as Input>::Slice, E> for &'s [u8; N]
 where
@@ -992,7 +992,7 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed};
+/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed};
 /// # use winnow::branch::alt;
 /// # use winnow::bytes::take;
 ///
@@ -1002,8 +1002,8 @@ where
 ///
 /// assert_eq!(parser("Hello, World!"), Ok((", World!", "Hello")));
 /// assert_eq!(parser("Something"), Ok(("hing", "Somet")));
-/// assert_eq!(parser("Some"), Err(Err::Error(Error::new("Some", ErrorKind::Eof))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Eof))));
+/// assert_eq!(parser("Some"), Err(ErrMode::Error(Error::new("Some", ErrorKind::Eof))));
+/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::Eof))));
 /// ```
 impl<'s, I, E: ParseError<I>> Parser<I, <I as Input>::Slice, E> for &'s str
 where
@@ -1109,26 +1109,26 @@ mod tests {
     assert_size!(IResult<&[u8], &[u8], (&[u8], u32)>, 40);
     assert_size!(IResult<&str, &str, u32>, 40);
     assert_size!(Needed, 8);
-    assert_size!(Err<u32>, 16);
+    assert_size!(ErrMode<u32>, 16);
     assert_size!(ErrorKind, 1);
   }
 
   #[test]
   fn err_map_test() {
-    let e = Err::Error(1);
-    assert_eq!(e.map(|v| v + 1), Err::Error(2));
+    let e = ErrMode::Error(1);
+    assert_eq!(e.map(|v| v + 1), ErrMode::Error(2));
   }
 
   #[test]
   fn single_element_tuples() {
     use crate::character::alpha1;
-    use crate::{error::ErrorKind, Err};
+    use crate::{error::ErrorKind, ErrMode};
 
     let mut parser = (alpha1,);
     assert_eq!(parser.parse_next("abc123def"), Ok(("123def", ("abc",))));
     assert_eq!(
       parser.parse_next("123def"),
-      Err(Err::Error(Error {
+      Err(ErrMode::Error(Error {
         input: "123def",
         kind: ErrorKind::Alpha
       }))
@@ -1148,15 +1148,15 @@ mod tests {
     );
     assert_eq!(
       tuple_3(Streaming(&b"abcd"[..])),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
       tuple_3(Streaming(&b"abcde"[..])),
-      Err(Err::Incomplete(Needed::new(2)))
+      Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_eq!(
       tuple_3(Streaming(&b"abcdejk"[..])),
-      Err(Err::Error(error_position!(
+      Err(ErrMode::Error(error_position!(
         Streaming(&b"jk"[..]),
         ErrorKind::Tag
       )))
