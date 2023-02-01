@@ -192,7 +192,7 @@ impl<E> Err<E> {
   /// Automatically converts between errors if the underlying type supports it
   pub fn convert<F>(e: Err<F>) -> Self
   where
-    E: From<F>,
+    F: Into<E>,
   {
     e.map(crate::lib::std::convert::Into::into)
   }
@@ -436,9 +436,10 @@ pub trait Parser<I, O, E> {
   /// assert_eq!(bytes, Ok(("", vec![97, 98, 99, 100])));
   /// # }
   /// ```
-  fn output_into<O2: From<O>>(self) -> OutputInto<Self, O, O2>
+  fn output_into<O2>(self) -> OutputInto<Self, O, O2>
   where
     Self: core::marker::Sized,
+    O: Into<O2>,
   {
     OutputInto::new(self)
   }
@@ -779,9 +780,10 @@ pub trait Parser<I, O, E> {
   }
 
   /// Convert the parser's error to another type using [`std::convert::From`]
-  fn err_into<E2: From<E>>(self) -> ErrInto<Self, E, E2>
+  fn err_into<E2>(self) -> ErrInto<Self, E, E2>
   where
     Self: core::marker::Sized,
+    E: Into<E2>,
   {
     ErrInto::new(self)
   }

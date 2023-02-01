@@ -1314,13 +1314,19 @@ where
 
 /// Implementation of [`Parser::output_into`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct OutputInto<F, O1, O2: From<O1>> {
+pub struct OutputInto<F, O1, O2>
+where
+  O1: Into<O2>,
+{
   f: F,
   phantom_out1: core::marker::PhantomData<O1>,
   phantom_out2: core::marker::PhantomData<O2>,
 }
 
-impl<F, O1, O2: From<O1>> OutputInto<F, O1, O2> {
+impl<F, O1, O2> OutputInto<F, O1, O2>
+where
+  O1: Into<O2>,
+{
   pub(crate) fn new(f: F) -> Self {
     Self {
       f,
@@ -1330,8 +1336,9 @@ impl<F, O1, O2: From<O1>> OutputInto<F, O1, O2> {
   }
 }
 
-impl<I: Clone, O1, O2: From<O1>, E, F: Parser<I, O1, E>> Parser<I, O2, E>
-  for OutputInto<F, O1, O2>
+impl<I: Clone, O1, O2, E, F: Parser<I, O1, E>> Parser<I, O2, E> for OutputInto<F, O1, O2>
+where
+  O1: Into<O2>,
 {
   fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
     match self.f.parse_next(i) {
@@ -1343,13 +1350,19 @@ impl<I: Clone, O1, O2: From<O1>, E, F: Parser<I, O1, E>> Parser<I, O2, E>
 
 /// Implementation of [`Parser::err_into`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct ErrInto<F, E1, E2: From<E1>> {
+pub struct ErrInto<F, E1, E2>
+where
+  E1: Into<E2>,
+{
   f: F,
   phantom_err1: core::marker::PhantomData<E1>,
   phantom_err2: core::marker::PhantomData<E2>,
 }
 
-impl<F, E1, E2: From<E1>> ErrInto<F, E1, E2> {
+impl<F, E1, E2> ErrInto<F, E1, E2>
+where
+  E1: Into<E2>,
+{
   pub(crate) fn new(f: F) -> Self {
     Self {
       f,
@@ -1359,8 +1372,10 @@ impl<F, E1, E2: From<E1>> ErrInto<F, E1, E2> {
   }
 }
 
-impl<I: Clone, O, E1, E2: crate::error::ParseError<I> + From<E1>, F: Parser<I, O, E1>>
-  Parser<I, O, E2> for ErrInto<F, E1, E2>
+impl<I: Clone, O, E1, E2: crate::error::ParseError<I>, F: Parser<I, O, E1>> Parser<I, O, E2>
+  for ErrInto<F, E1, E2>
+where
+  E1: Into<E2>,
 {
   fn parse_next(&mut self, i: I) -> IResult<I, O, E2> {
     match self.f.parse_next(i) {
