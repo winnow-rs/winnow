@@ -86,7 +86,7 @@ pub struct Located<I> {
 
 impl<I> Located<I>
 where
-  I: Clone + IntoOutput + Offset,
+  I: Clone + Offset,
 {
   /// Wrap another Input with span tracking
   pub fn new(input: I) -> Self {
@@ -1496,7 +1496,7 @@ pub trait Location {
 
 impl<I> Location for Located<I>
 where
-  I: Clone + IntoOutput + Offset,
+  I: Clone + Offset,
 {
   fn location(&self) -> usize {
     self.location()
