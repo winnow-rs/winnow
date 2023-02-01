@@ -7,10 +7,8 @@ mod tests;
 
 use crate::error::ParseError;
 use crate::input::{
-  Compare, ContainsToken, FindSlice, Input, InputIsStreaming, InputIter, InputTake,
-  InputTakeAtOffset, IntoOutput, Slice, SliceLen, ToUsize,
+  Compare, ContainsToken, FindSlice, Input, InputIsStreaming, Offset, SliceLen, ToUsize,
 };
-use crate::lib::std::ops::RangeFrom;
 use crate::{IResult, Parser};
 
 /// Matches one token
@@ -808,18 +806,11 @@ pub fn escaped<'a, I: 'a, Error, F, G, O1, O2, const STREAMING: bool>(
   mut normal: F,
   control_char: char,
   mut escapable: G,
-) -> impl FnMut(I) -> IResult<I, <I as IntoOutput>::Output, Error>
+) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: Clone
-    + crate::input::Offset
-    + SliceLen
-    + InputTake
-    + InputTakeAtOffset
-    + Slice<RangeFrom<usize>>
-    + InputIter
-    + InputIsStreaming<STREAMING>,
-  I: IntoOutput,
-  <I as InputIter>::Item: crate::input::AsChar,
+  I: InputIsStreaming<STREAMING>,
+  I: Input + Offset,
+  <I as Input>::Token: crate::input::AsChar,
   F: Parser<I, O1, Error>,
   G: Parser<I, O2, Error>,
   Error: ParseError<I>,
@@ -898,19 +889,12 @@ pub fn escaped_transform<I, Error, F, G, O1, O2, ExtendItem, Output, const STREA
   mut transform: G,
 ) -> impl FnMut(I) -> IResult<I, Output, Error>
 where
-  I: Clone
-    + crate::input::Offset
-    + SliceLen
-    + InputTake
-    + InputTakeAtOffset
-    + Slice<RangeFrom<usize>>
-    + InputIter
-    + InputIsStreaming<STREAMING>,
-  I: IntoOutput,
+  I: InputIsStreaming<STREAMING>,
+  I: Input + Offset,
+  <I as Input>::Token: crate::input::AsChar,
   I: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
   O1: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
   O2: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
-  <I as InputIter>::Item: crate::input::AsChar,
   F: Parser<I, O1, Error>,
   G: Parser<I, O2, Error>,
   Error: ParseError<I>,

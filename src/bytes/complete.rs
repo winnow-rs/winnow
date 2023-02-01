@@ -6,11 +6,9 @@ use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{
   split_at_offset1_complete, split_at_offset_complete, Compare, CompareResult, ContainsToken,
-  FindSlice, Input, InputIter, InputTake, InputTakeAtOffset, IntoOutput, Slice, SliceLen, ToUsize,
+  FindSlice, Input, Offset, SliceLen, ToUsize,
 };
-use crate::lib::std::ops::RangeFrom;
 use crate::lib::std::result::Result::Ok;
-use crate::IntoOutputIResult;
 use crate::{Err, IResult, Parser};
 
 pub(crate) fn any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Input>::Token, E>
@@ -699,17 +697,10 @@ pub fn escaped<'a, I: 'a, Error, F, G, O1, O2>(
   mut normal: F,
   control_char: char,
   mut escapable: G,
-) -> impl FnMut(I) -> IResult<I, <I as IntoOutput>::Output, Error>
+) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: Clone
-    + crate::input::Offset
-    + SliceLen
-    + InputTake
-    + InputTakeAtOffset
-    + Slice<RangeFrom<usize>>
-    + InputIter,
-  I: IntoOutput,
-  <I as InputIter>::Item: crate::input::AsChar,
+  I: Input + Offset,
+  <I as Input>::Token: crate::input::AsChar,
   F: Parser<I, O1, Error>,
   G: Parser<I, O2, Error>,
   Error: ParseError<I>,
@@ -722,17 +713,10 @@ pub(crate) fn escaped_internal<'a, I: 'a, Error, F, G, O1, O2>(
   normal: &mut F,
   control_char: char,
   escapable: &mut G,
-) -> IResult<I, <I as IntoOutput>::Output, Error>
+) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: Clone
-    + crate::input::Offset
-    + SliceLen
-    + InputTake
-    + InputTakeAtOffset
-    + Slice<RangeFrom<usize>>
-    + InputIter,
-  I: IntoOutput,
-  <I as InputIter>::Item: crate::input::AsChar,
+  I: Input + Offset,
+  <I as Input>::Token: crate::input::AsChar,
   F: Parser<I, O1, Error>,
   G: Parser<I, O2, Error>,
   Error: ParseError<I>,
@@ -741,36 +725,35 @@ where
 
   let mut i = input.clone();
 
-  while i.slice_len() > 0 {
-    let current_len = i.slice_len();
+  while i.input_len_() > 0 {
+    let current_len = i.input_len_();
 
     match normal.parse_next(i.clone()) {
       Ok((i2, _)) => {
         // return if we consumed everything or if the normal parser
         // does not consume anything
-        if i2.slice_len() == 0 {
-          return Ok((input.slice(input.slice_len()..), input)).into_output();
-        } else if i2.slice_len() == current_len {
-          let index = input.offset_to(&i2);
-          return Ok(input.take_split(index)).into_output();
+        if i2.input_len_() == 0 {
+          return Ok(input.next_slice(input.input_len_()));
+        } else if i2.input_len_() == current_len {
+          let offset = input.offset_to(&i2);
+          return Ok(input.next_slice(offset));
         } else {
           i = i2;
         }
       }
       Err(Err::Error(_)) => {
-        // unwrap() should be safe here since index < $i.slice_len()
-        if i.iter_elements().next().unwrap().as_char() == control_char {
+        if i.next_token().expect("input_len_ > 0").1.as_char() == control_char {
           let next = control_char.len_utf8();
-          if next >= i.slice_len() {
+          if next >= i.input_len_() {
             return Err(Err::Error(Error::from_error_kind(
               input,
               ErrorKind::Escaped,
             )));
           } else {
-            match escapable.parse_next(i.slice(next..)) {
+            match escapable.parse_next(i.next_slice(next).0) {
               Ok((i2, _)) => {
-                if i2.slice_len() == 0 {
-                  return Ok((input.slice(input.slice_len()..), input)).into_output();
+                if i2.input_len_() == 0 {
+                  return Ok(input.next_slice(input.input_len_()));
                 } else {
                   i = i2;
                 }
@@ -779,14 +762,14 @@ where
             }
           }
         } else {
-          let index = input.offset_to(&i);
-          if index == 0 {
+          let offset = input.offset_to(&i);
+          if offset == 0 {
             return Err(Err::Error(Error::from_error_kind(
               input,
               ErrorKind::Escaped,
             )));
           }
-          return Ok(input.take_split(index)).into_output();
+          return Ok(input.next_slice(offset));
         }
       }
       Err(e) => {
@@ -795,7 +778,7 @@ where
     }
   }
 
-  Ok((input.slice(input.slice_len()..), input)).into_output()
+  Ok(input.next_slice(input.input_len_()))
 }
 
 /// Matches a byte string with escaped characters.
@@ -842,17 +825,11 @@ pub fn escaped_transform<I, Error, F, G, O1, O2, ExtendItem, Output>(
   mut transform: G,
 ) -> impl FnMut(I) -> IResult<I, Output, Error>
 where
-  I: Clone
-    + crate::input::Offset
-    + SliceLen
-    + InputTake
-    + InputTakeAtOffset
-    + Slice<RangeFrom<usize>>
-    + InputIter,
+  I: Input + Offset,
+  <I as Input>::Token: crate::input::AsChar,
   I: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
   O1: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
   O2: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
-  <I as InputIter>::Item: crate::input::AsChar,
   F: Parser<I, O1, Error>,
   G: Parser<I, O2, Error>,
   Error: ParseError<I>,
@@ -868,68 +845,61 @@ pub(crate) fn escaped_transform_internal<I, Error, F, G, O1, O2, ExtendItem, Out
   transform: &mut G,
 ) -> IResult<I, Output, Error>
 where
-  I: Clone
-    + crate::input::Offset
-    + SliceLen
-    + InputTake
-    + InputTakeAtOffset
-    + Slice<RangeFrom<usize>>
-    + InputIter,
+  I: Input + Offset,
+  <I as Input>::Token: crate::input::AsChar,
   I: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
   O1: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
   O2: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
-  <I as InputIter>::Item: crate::input::AsChar,
   F: Parser<I, O1, Error>,
   G: Parser<I, O2, Error>,
   Error: ParseError<I>,
 {
   use crate::input::AsChar;
 
-  let mut index = 0;
+  let mut offset = 0;
   let mut res = input.new_builder();
 
   let i = input.clone();
 
-  while index < i.slice_len() {
-    let current_len = i.slice_len();
-    let remainder = i.slice(index..);
+  while offset < i.input_len_() {
+    let current_len = i.input_len_();
+    let (remainder, _) = i.next_slice(offset);
     match normal.parse_next(remainder.clone()) {
       Ok((i2, o)) => {
         o.extend_into(&mut res);
-        if i2.slice_len() == 0 {
-          return Ok((i.slice(i.slice_len()..), res));
-        } else if i2.slice_len() == current_len {
+        if i2.input_len_() == 0 {
+          return Ok((i.next_slice(i.input_len_()).0, res));
+        } else if i2.input_len_() == current_len {
           return Ok((remainder, res));
         } else {
-          index = input.offset_to(&i2);
+          offset = input.offset_to(&i2);
         }
       }
       Err(Err::Error(_)) => {
-        // unwrap() should be safe here since index < $i.slice_len()
-        if remainder.iter_elements().next().unwrap().as_char() == control_char {
-          let next = index + control_char.len_utf8();
-          let slice_len = input.slice_len();
+        if remainder.next_token().expect("input_len_ > 0").1.as_char() == control_char {
+          let next = offset + control_char.len_utf8();
+          let input_len = input.input_len_();
 
-          if next >= slice_len {
+          if next >= input_len {
             return Err(Err::Error(Error::from_error_kind(
               remainder,
               ErrorKind::EscapedTransform,
             )));
           } else {
-            match transform.parse_next(i.slice(next..)) {
+            match transform.parse_next(i.next_slice(next).0) {
               Ok((i2, o)) => {
                 o.extend_into(&mut res);
-                if i2.slice_len() == 0 {
-                  return Ok((i.slice(i.slice_len()..), res));
+                if i2.input_len_() == 0 {
+                  return Ok((i.next_slice(i.input_len_()).0, res));
                 } else {
-                  index = input.offset_to(&i2);
+                  offset = input.offset_to(&i2);
                 }
               }
               Err(e) => return Err(e),
             }
           }
         } else {
-          if index == 0 {
+          if offset == 0 {
             return Err(Err::Error(Error::from_error_kind(
               remainder,
               ErrorKind::EscapedTransform,
@@ -941,7 +911,7 @@ where
       Err(e) => return Err(e),
     }
   }
-  Ok((input.slice(index..), res))
+  Ok((input.next_slice(offset).0, res))
 }
 
 #[cfg(test)]
