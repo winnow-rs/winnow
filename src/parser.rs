@@ -392,6 +392,7 @@ pub trait Parser<I, O, E> {
   {
     ByRef::new(self)
   }
+
   /// Returns the provided value if the child parser succeeds.
   ///
   /// # Example
@@ -413,6 +414,28 @@ pub trait Parser<I, O, E> {
     O2: Clone,
   {
     Value::new(self, val)
+  }
+
+  /// Discards the output of the `Parser`
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use winnow::{Err,error::ErrorKind, error::Error, IResult, Parser};
+  /// use winnow::character::alpha1;
+  /// # fn main() {
+  ///
+  /// let mut parser = alpha1.void();
+  ///
+  /// assert_eq!(parser.parse_next("abcd"), Ok(("", ())));
+  /// assert_eq!(parser.parse_next("123abcd;"), Err(Err::Error(Error::new("123abcd;", ErrorKind::Alpha))));
+  /// # }
+  /// ```
+  fn void(self) -> Void<Self, O>
+  where
+    Self: core::marker::Sized,
+  {
+    Void::new(self)
   }
 
   /// Convert the parser's output to another type using [`std::convert::From`]

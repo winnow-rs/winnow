@@ -947,6 +947,28 @@ impl<I, O1, O2: Clone, E: ParseError<I>, F: Parser<I, O1, E>> Parser<I, O2, E>
   }
 }
 
+/// Implementation of [`Parser::void`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct Void<F, O> {
+  parser: F,
+  phantom: core::marker::PhantomData<O>,
+}
+
+impl<F, O> Void<F, O> {
+  pub(crate) fn new(parser: F) -> Self {
+    Self {
+      parser,
+      phantom: Default::default(),
+    }
+  }
+}
+
+impl<I, O, E: ParseError<I>, F: Parser<I, O, E>> Parser<I, (), E> for Void<F, O> {
+  fn parse_next(&mut self, input: I) -> IResult<I, (), E> {
+    (self.parser).parse_next(input).map(|(i, _)| (i, ()))
+  }
+}
+
 /// Succeeds if the child parser returns an error.
 ///
 /// ```rust

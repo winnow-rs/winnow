@@ -70,7 +70,7 @@
 //! pub fn peol_comment<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, (), E>
 //! {
 //!   pair('%', take_till1("\n\r"))
-//!     .value(()) // Output is thrown away.
+//!     .void() // Output is thrown away.
 //!     .parse_next(i)
 //! }
 //! ```
@@ -93,7 +93,7 @@
 //!     take_until("*)"),
 //!     "*)"
 //!   )
-//!     .value(()) // Output is thrown away.
+//!     .void() // Output is thrown away.
 //!     .parse_next(i)
 //! }
 //! ```
