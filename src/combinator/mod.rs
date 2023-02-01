@@ -149,22 +149,12 @@
 //! - [`space0`][crate::character::space0]: Recognizes zero or more spaces and tabs. [`space1`][crate::character::space1] does the same but returns at least one character
 //! - [`tab`][crate::character::tab]: Matches a tab character `\t`
 
-#![allow(unused_imports)]
-
-#[cfg(feature = "alloc")]
-use crate::lib::std::boxed::Box;
-
 use crate::error::{ErrorKind, FromExternalError, ParseError};
-use crate::input::IntoOutput;
-use crate::input::{AsChar, Input, Location, ParseTo};
-use crate::input::{Compare, CompareResult, Offset};
+use crate::input::Offset;
+use crate::input::{Input, Location};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::convert;
-#[cfg(feature = "std")]
-use crate::lib::std::fmt::Debug;
-use crate::lib::std::mem::transmute;
-use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
-use crate::IntoOutputIResult;
+use crate::lib::std::ops::Range;
 use crate::*;
 
 #[cfg(test)]

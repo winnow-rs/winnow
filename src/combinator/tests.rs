@@ -5,8 +5,6 @@ use crate::error::Error;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::Streaming;
-#[cfg(feature = "alloc")]
-use crate::lib::std::boxed::Box;
 use crate::number::u8;
 use crate::Parser;
 use crate::{Err, IResult, Needed};
@@ -227,10 +225,7 @@ fn test_verify_alloc() {
 fn test_into() {
   #![allow(deprecated)]
   use crate::bytes::take;
-  use crate::{
-    error::{Error, ParseError},
-    Err,
-  };
+  use crate::error::Error;
 
   let mut parser = into(take::<_, _, Error<_>, false>(3u8));
   let result: IResult<&[u8], Vec<u8>> = parser(&b"abcdefg"[..]);
@@ -242,10 +237,7 @@ fn test_into() {
 #[cfg(feature = "std")]
 fn test_parser_into() {
   use crate::bytes::take;
-  use crate::{
-    error::{Error, ParseError},
-    Err,
-  };
+  use crate::error::Error;
 
   let mut parser = take::<_, _, Error<_>, false>(3u8).output_into();
   let result: IResult<&[u8], Vec<u8>> = parser.parse_next(&b"abcdefg"[..]);
