@@ -5,8 +5,8 @@ use winnow::prelude::*;
 use winnow::{
   branch::alt,
   bytes::one_of,
-  bytes::{escaped, tag, take_while},
-  character::{alphanumeric1 as alphanumeric, f64},
+  bytes::{tag, take_while},
+  character::{alphanumeric1 as alphanumeric, escaped, f64},
   combinator::cut,
   error::ParseError,
   multi::separated_list0,

@@ -95,8 +95,8 @@
 //!
 //! ## Text parsing
 //!
-//! - [`escaped`][crate::bytes::escaped]: Matches a byte string with escaped characters
-//! - [`escaped_transform`][crate::bytes::escaped_transform]: Matches a byte string with escaped characters, and returns a new string with the escaped characters replaced
+//! - [`escaped`][crate::character::escaped]: Matches a byte string with escaped characters
+//! - [`escaped_transform`][crate::character::escaped_transform]: Matches a byte string with escaped characters, and returns a new string with the escaped characters replaced
 //!
 //! ## Binary format parsing
 //!
