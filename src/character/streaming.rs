@@ -790,12 +790,12 @@ macro_rules! ints {
             {
               let (i, sign) = sign(input.clone())?;
 
-                if i.input_len_() == 0 {
+                if i.input_len() == 0 {
                     return Err(Err::Incomplete(Needed::new(1)));
                 }
 
                 let mut value: $t = 0;
-                for (offset, c) in i.iter_offsets_() {
+                for (offset, c) in i.iter_offsets() {
                     match c.as_char().to_digit(10) {
                         None => {
                             if offset == 0 {
@@ -839,12 +839,12 @@ macro_rules! uints {
             {
                 let i = input;
 
-                if i.input_len_() == 0 {
+                if i.input_len() == 0 {
                     return Err(Err::Incomplete(Needed::new(1)));
                 }
 
                 let mut value: $t = 0;
-                for (offset, c) in i.iter_offsets_() {
+                for (offset, c) in i.iter_offsets() {
                     match c.as_char().to_digit(10) {
                         None => {
                             if offset == 0 {

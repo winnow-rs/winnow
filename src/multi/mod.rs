@@ -57,13 +57,13 @@ where
   move |mut i: I| {
     let mut acc = crate::lib::std::vec::Vec::with_capacity(4);
     loop {
-      let len = i.input_len_();
+      let len = i.input_len();
       match f.parse_next(i.clone()) {
         Err(Err::Error(_)) => return Ok((i, acc)),
         Err(e) => return Err(e),
         Ok((i1, o)) => {
           // infinite loop check: the parser must always consume
-          if i1.input_len_() == len {
+          if i1.input_len() == len {
             return Err(Err::Error(E::from_error_kind(i, ErrorKind::Many0)));
           }
 
@@ -117,13 +117,13 @@ where
       i = i1;
 
       loop {
-        let len = i.input_len_();
+        let len = i.input_len();
         match f.parse_next(i.clone()) {
           Err(Err::Error(_)) => return Ok((i, acc)),
           Err(e) => return Err(e),
           Ok((i1, o)) => {
             // infinite loop check: the parser must always consume
-            if i1.input_len_() == len {
+            if i1.input_len() == len {
               return Err(Err::Error(E::from_error_kind(i, ErrorKind::Many1)));
             }
 
@@ -171,7 +171,7 @@ where
   move |mut i: I| {
     let mut res = crate::lib::std::vec::Vec::new();
     loop {
-      let len = i.input_len_();
+      let len = i.input_len();
       match g.parse_next(i.clone()) {
         Ok((i1, o)) => return Ok((i1, (res, o))),
         Err(Err::Error(_)) => {
@@ -180,7 +180,7 @@ where
             Err(e) => return Err(e),
             Ok((i1, o)) => {
               // infinite loop check: the parser must always consume
-              if i1.input_len_() == len {
+              if i1.input_len() == len {
                 return Err(Err::Error(E::from_error_kind(i1, ErrorKind::ManyTill)));
               }
 
@@ -243,13 +243,13 @@ where
     }
 
     loop {
-      let len = i.input_len_();
+      let len = i.input_len();
       match sep.parse_next(i.clone()) {
         Err(Err::Error(_)) => return Ok((i, res)),
         Err(e) => return Err(e),
         Ok((i1, _)) => {
           // infinite loop check: the parser must always consume
-          if i1.input_len_() == len {
+          if i1.input_len() == len {
             return Err(Err::Error(E::from_error_kind(i1, ErrorKind::SeparatedList)));
           }
 
@@ -316,13 +316,13 @@ where
     }
 
     loop {
-      let len = i.input_len_();
+      let len = i.input_len();
       match sep.parse_next(i.clone()) {
         Err(Err::Error(_)) => return Ok((i, res)),
         Err(e) => return Err(e),
         Ok((i1, _)) => {
           // infinite loop check: the parser must always consume
-          if i1.input_len_() == len {
+          if i1.input_len() == len {
             return Err(Err::Error(E::from_error_kind(i1, ErrorKind::SeparatedList)));
           }
 
@@ -389,11 +389,11 @@ where
       MAX_INITIAL_CAPACITY_BYTES / crate::lib::std::mem::size_of::<O>().max(1);
     let mut res = crate::lib::std::vec::Vec::with_capacity(min.min(max_initial_capacity));
     for count in 0..max {
-      let len = input.input_len_();
+      let len = input.input_len();
       match parse.parse_next(input.clone()) {
         Ok((tail, value)) => {
           // infinite loop check: the parser must always consume
-          if tail.input_len_() == len {
+          if tail.input_len() == len {
             return Err(Err::Error(E::from_error_kind(input, ErrorKind::ManyMN)));
           }
 
@@ -454,11 +454,11 @@ where
 
     loop {
       let input_ = input.clone();
-      let len = input.input_len_();
+      let len = input.input_len();
       match f.parse_next(input_) {
         Ok((i, _)) => {
           // infinite loop check: the parser must always consume
-          if i.input_len_() == len {
+          if i.input_len() == len {
             return Err(Err::Error(E::from_error_kind(input, ErrorKind::Many0Count)));
           }
 
@@ -516,14 +516,14 @@ where
         let mut input = i1;
 
         loop {
-          let len = input.input_len_();
+          let len = input.input_len();
           let input_ = input.clone();
           match f.parse_next(input_) {
             Err(Err::Error(_)) => return Ok((input, count)),
             Err(e) => return Err(e),
             Ok((i, _)) => {
               // infinite loop check: the parser must always consume
-              if i.input_len_() == len {
+              if i.input_len() == len {
                 return Err(Err::Error(E::from_error_kind(i, ErrorKind::Many1Count)));
               }
 
@@ -696,11 +696,11 @@ where
 
     loop {
       let i_ = input.clone();
-      let len = input.input_len_();
+      let len = input.input_len();
       match f.parse_next(i_) {
         Ok((i, o)) => {
           // infinite loop check: the parser must always consume
-          if i.input_len_() == len {
+          if i.input_len() == len {
             return Err(Err::Error(E::from_error_kind(input, ErrorKind::Many0)));
           }
 
@@ -778,7 +778,7 @@ where
 
         loop {
           let _input = input.clone();
-          let len = input.input_len_();
+          let len = input.input_len();
           match f.parse_next(_input) {
             Err(Err::Error(_)) => {
               break;
@@ -786,7 +786,7 @@ where
             Err(e) => return Err(e),
             Ok((i, o)) => {
               // infinite loop check: the parser must always consume
-              if i.input_len_() == len {
+              if i.input_len() == len {
                 return Err(Err::Failure(E::from_error_kind(i, ErrorKind::Many1)));
               }
 
@@ -864,11 +864,11 @@ where
 
     let mut acc = init();
     for count in 0..max {
-      let len = input.input_len_();
+      let len = input.input_len();
       match parse.parse_next(input.clone()) {
         Ok((tail, value)) => {
           // infinite loop check: the parser must always consume
-          if tail.input_len_() == len {
+          if tail.input_len() == len {
             return Err(Err::Error(E::from_error_kind(tail, ErrorKind::ManyMN)));
           }
 

@@ -327,9 +327,9 @@ pub trait Input: Clone {
   type IterOffsets: Iterator<Item = (usize, Self::Token)>;
 
   /// Iterate with the offset from the current location
-  fn iter_offsets_(&self) -> Self::IterOffsets;
+  fn iter_offsets(&self) -> Self::IterOffsets;
   /// Returns the offaet to the end of the input
-  fn input_len_(&self) -> usize;
+  fn input_len(&self) -> usize;
 
   /// Split off the next token from the input
   fn next_token(&self) -> Option<(Self, Self::Token)>;
@@ -346,8 +346,8 @@ pub trait Input: Clone {
   ///
   /// **NOTE:** For inputs with variable width tokens, like `&str`'s `char`, `offset` might not correspond
   /// with the number of tokens.  To get a valid offset, use:
-  /// - [`Input::input_len_`]
-  /// - [`Input::iter_offsets_`]
+  /// - [`Input::input_len`]
+  /// - [`Input::iter_offsets`]
   /// - [`Input::offset_for`]
   /// - [`Input::offset_at`]
   ///
@@ -369,11 +369,11 @@ impl<'i> Input for &'i [u8] {
   type IterOffsets = Enumerate<Copied<Iter<'i, u8>>>;
 
   #[inline(always)]
-  fn iter_offsets_(&self) -> Self::IterOffsets {
+  fn iter_offsets(&self) -> Self::IterOffsets {
     self.iter().copied().enumerate()
   }
   #[inline(always)]
-  fn input_len_(&self) -> usize {
+  fn input_len(&self) -> usize {
     self.len()
   }
 
@@ -414,11 +414,11 @@ impl<'i> Input for &'i str {
   type IterOffsets = CharIndices<'i>;
 
   #[inline(always)]
-  fn iter_offsets_(&self) -> Self::IterOffsets {
+  fn iter_offsets(&self) -> Self::IterOffsets {
     self.char_indices()
   }
   #[inline(always)]
-  fn input_len_(&self) -> usize {
+  fn input_len(&self) -> usize {
     self.len()
   }
 
@@ -434,7 +434,7 @@ impl<'i> Input for &'i str {
   where
     P: Fn(Self::Token) -> bool,
   {
-    for (o, c) in self.iter_offsets_() {
+    for (o, c) in self.iter_offsets() {
       if predicate(c) {
         return Some(o);
       }
@@ -444,7 +444,7 @@ impl<'i> Input for &'i str {
   #[inline]
   fn offset_at(&self, tokens: usize) -> Result<usize, Needed> {
     let mut cnt = 0;
-    for (offset, _) in self.iter_offsets_() {
+    for (offset, _) in self.iter_offsets() {
       if cnt == tokens {
         return Ok(offset);
       }
@@ -452,7 +452,7 @@ impl<'i> Input for &'i str {
     }
 
     if cnt == tokens {
-      Ok(self.input_len_())
+      Ok(self.input_len())
     } else {
       Err(Needed::Unknown)
     }
@@ -470,12 +470,12 @@ impl<I: Input> Input for Located<I> {
   type IterOffsets = <I as Input>::IterOffsets;
 
   #[inline(always)]
-  fn iter_offsets_(&self) -> Self::IterOffsets {
-    self.input.iter_offsets_()
+  fn iter_offsets(&self) -> Self::IterOffsets {
+    self.input.iter_offsets()
   }
   #[inline(always)]
-  fn input_len_(&self) -> usize {
-    self.input.input_len_()
+  fn input_len(&self) -> usize {
+    self.input.input_len()
   }
 
   #[inline(always)]
@@ -521,12 +521,12 @@ impl<I: Input, S: Clone> Input for Stateful<I, S> {
   type IterOffsets = <I as Input>::IterOffsets;
 
   #[inline(always)]
-  fn iter_offsets_(&self) -> Self::IterOffsets {
-    self.input.iter_offsets_()
+  fn iter_offsets(&self) -> Self::IterOffsets {
+    self.input.iter_offsets()
   }
   #[inline(always)]
-  fn input_len_(&self) -> usize {
-    self.input.input_len_()
+  fn input_len(&self) -> usize {
+    self.input.input_len()
   }
 
   #[inline(always)]
@@ -572,12 +572,12 @@ impl<I: Input> Input for Streaming<I> {
   type IterOffsets = <I as Input>::IterOffsets;
 
   #[inline(always)]
-  fn iter_offsets_(&self) -> Self::IterOffsets {
-    self.0.iter_offsets_()
+  fn iter_offsets(&self) -> Self::IterOffsets {
+    self.0.iter_offsets()
   }
   #[inline(always)]
-  fn input_len_(&self) -> usize {
-    self.0.input_len_()
+  fn input_len(&self) -> usize {
+    self.0.input_len()
   }
 
   #[inline(always)]
@@ -2015,7 +2015,7 @@ pub(crate) fn split_at_offset_complete<P, I: Input, E: ParseError<I>>(
 where
   P: Fn(I::Token) -> bool,
 {
-  let offset = input.offset_for(predicate).unwrap_or(input.input_len_());
+  let offset = input.offset_for(predicate).unwrap_or(input.input_len());
   Ok(input.next_slice(offset))
 }
 
@@ -2033,7 +2033,7 @@ pub(crate) fn split_at_offset1_complete<P, I: Input, E: ParseError<I>>(
 where
   P: Fn(I::Token) -> bool,
 {
-  let offset = input.offset_for(predicate).unwrap_or(input.input_len_());
+  let offset = input.offset_for(predicate).unwrap_or(input.input_len());
   if offset == 0 {
     Err(Err::Error(E::from_error_kind(input.clone(), e)))
   } else {

@@ -39,7 +39,7 @@ where
     Ok(((input, bit_offset), 0u8.into()))
   } else {
     let cnt = (count + bit_offset).div(8);
-    if input.input_len_() * 8 < count + bit_offset {
+    if input.input_len() * 8 < count + bit_offset {
       Err(Err::Incomplete(Needed::new(count)))
     } else {
       let mut acc: O = 0_u8.into();

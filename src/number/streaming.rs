@@ -575,7 +575,7 @@ where
   let number = number.as_bytes();
 
   let mut res = Uint::default();
-  for (index, byte) in number.iter_offsets_().take(bound) {
+  for (index, byte) in number.iter_offsets().take(bound) {
     res = res + (Uint::from(byte) << (8 * index as u8));
   }
 
@@ -1543,13 +1543,13 @@ where
       let c = c.as_char();
       !"0123456789abcdefABCDEF".contains(c)
     })
-    .unwrap_or(input.input_len_());
+    .unwrap_or(input.input_len());
   const MAX_DIGITS: usize = 8;
   let max_offset = input.offset_at(MAX_DIGITS);
   let offset = match max_offset {
     Ok(max_offset) => invalid_offset.min(max_offset),
     Err(_) => {
-      if invalid_offset == input.input_len_() {
+      if invalid_offset == input.input_len() {
         // Only the next byte is guarenteed required
         return Err(Err::Incomplete(Needed::new(1)));
       } else {
@@ -1689,7 +1689,7 @@ where
 
   let (i, integer) = match i.offset_for(|c| !c.is_dec_digit()) {
     Some(offset) => i.next_slice(offset),
-    None => i.next_slice(i.input_len_()),
+    None => i.next_slice(i.input_len()),
   };
 
   let (i, opt_dot) = opt(tag(&b"."[..]))(i)?;

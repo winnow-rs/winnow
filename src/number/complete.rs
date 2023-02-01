@@ -548,7 +548,7 @@ where
   let number = number.as_bytes();
 
   let mut res = Uint::default();
-  for (index, byte) in number.iter_offsets_().take(bound) {
+  for (index, byte) in number.iter_offsets().take(bound) {
     res = res + (Uint::from(byte) << (8 * index as u8));
   }
 
@@ -1449,9 +1449,9 @@ where
       let c = c.as_char();
       !"0123456789abcdefABCDEF".contains(c)
     })
-    .unwrap_or(input.input_len_());
+    .unwrap_or(input.input_len());
   const MAX_DIGITS: usize = 8;
-  let max_offset = input.offset_at(MAX_DIGITS).unwrap_or(input.input_len_());
+  let max_offset = input.offset_at(MAX_DIGITS).unwrap_or(input.input_len());
   let offset = invalid_offset.min(max_offset);
   if offset == 0 {
     return Err(Err::Error(E::from_error_kind(input, ErrorKind::IsA)));
@@ -1586,7 +1586,7 @@ where
 
   let (i, integer) = match i.offset_for(|c| !c.is_dec_digit()) {
     Some(offset) => i.next_slice(offset),
-    None => i.next_slice(i.input_len_()),
+    None => i.next_slice(i.input_len()),
   };
 
   let (i, opt_dot) = opt(tag(&b"."[..]))(i)?;
@@ -1608,7 +1608,7 @@ where
         break;
       }
     }
-    let offset = offset.unwrap_or_else(|| i.input_len_());
+    let offset = offset.unwrap_or_else(|| i.input_len());
 
     // trim right zeroes
     let trimmed_offset = (offset - zero_count).max(1);

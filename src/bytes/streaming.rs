@@ -65,7 +65,7 @@ where
   let tag_len = t.slice_len();
   match i.compare(t) {
     CompareResult::Ok => Ok(i.next_slice(tag_len)),
-    CompareResult::Incomplete => Err(Err::Incomplete(Needed::new(tag_len - i.input_len_()))),
+    CompareResult::Incomplete => Err(Err::Incomplete(Needed::new(tag_len - i.input_len()))),
     CompareResult::Error => {
       let e: ErrorKind = ErrorKind::Tag;
       Err(Err::Error(Error::from_error_kind(i, e)))
@@ -120,7 +120,7 @@ where
 
   match (i).compare_no_case(t) {
     CompareResult::Ok => Ok(i.next_slice(tag_len)),
-    CompareResult::Incomplete => Err(Err::Incomplete(Needed::new(tag_len - i.input_len_()))),
+    CompareResult::Incomplete => Err(Err::Incomplete(Needed::new(tag_len - i.input_len()))),
     CompareResult::Error => {
       let e: ErrorKind = ErrorKind::Tag;
       Err(Err::Error(Error::from_error_kind(i, e)))
@@ -452,7 +452,7 @@ where
       }
     }
     None => {
-      let len = input.input_len_();
+      let len = input.input_len();
       if len >= n {
         match input.offset_at(n) {
           Ok(index) => Ok(input.next_slice(index)),
@@ -786,14 +786,14 @@ where
 
   let mut i = input.clone();
 
-  while i.input_len_() > 0 {
-    let current_len = i.input_len_();
+  while i.input_len() > 0 {
+    let current_len = i.input_len();
 
     match normal.parse_next(i.clone()) {
       Ok((i2, _)) => {
-        if i2.input_len_() == 0 {
+        if i2.input_len() == 0 {
           return Err(Err::Incomplete(Needed::Unknown));
-        } else if i2.input_len_() == current_len {
+        } else if i2.input_len() == current_len {
           let offset = input.offset_to(&i2);
           return Ok(input.next_slice(offset));
         } else {
@@ -801,14 +801,14 @@ where
         }
       }
       Err(Err::Error(_)) => {
-        if i.next_token().expect("input_len_ > 0").1.as_char() == control_char {
+        if i.next_token().expect("input_len > 0").1.as_char() == control_char {
           let next = control_char.len_utf8();
-          if next >= i.input_len_() {
+          if next >= i.input_len() {
             return Err(Err::Incomplete(Needed::new(1)));
           } else {
             match escapable.parse_next(i.next_slice(next).0) {
               Ok((i2, _)) => {
-                if i2.input_len_() == 0 {
+                if i2.input_len() == 0 {
                   return Err(Err::Incomplete(Needed::Unknown));
                 } else {
                   i = i2;
@@ -910,24 +910,24 @@ where
 
   let i = input.clone();
 
-  while offset < i.input_len_() {
-    let current_len = i.input_len_();
+  while offset < i.input_len() {
+    let current_len = i.input_len();
     let remainder = i.next_slice(offset).0;
     match normal.parse_next(remainder.clone()) {
       Ok((i2, o)) => {
         o.extend_into(&mut res);
-        if i2.input_len_() == 0 {
+        if i2.input_len() == 0 {
           return Err(Err::Incomplete(Needed::Unknown));
-        } else if i2.input_len_() == current_len {
+        } else if i2.input_len() == current_len {
           return Ok((remainder, res));
         } else {
           offset = input.offset_to(&i2);
         }
       }
       Err(Err::Error(_)) => {
-        if remainder.next_token().expect("input_len_ > 0").1.as_char() == control_char {
+        if remainder.next_token().expect("input_len > 0").1.as_char() == control_char {
           let next = offset + control_char.len_utf8();
-          let input_len = input.input_len_();
+          let input_len = input.input_len();
 
           if next >= input_len {
             return Err(Err::Incomplete(Needed::Unknown));
@@ -935,7 +935,7 @@ where
             match transform.parse_next(i.next_slice(next).0) {
               Ok((i2, o)) => {
                 o.extend_into(&mut res);
-                if i2.input_len_() == 0 {
+                if i2.input_len() == 0 {
                   return Err(Err::Incomplete(Needed::Unknown));
                 } else {
                   offset = input.offset_to(&i2);

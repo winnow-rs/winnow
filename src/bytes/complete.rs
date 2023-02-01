@@ -414,7 +414,7 @@ where
       }
     }
     None => {
-      let len = input.input_len_();
+      let len = input.input_len();
       if len >= n {
         match input.offset_at(n) {
           Ok(index) => Ok(input.next_slice(index)),
@@ -725,16 +725,16 @@ where
 
   let mut i = input.clone();
 
-  while i.input_len_() > 0 {
-    let current_len = i.input_len_();
+  while i.input_len() > 0 {
+    let current_len = i.input_len();
 
     match normal.parse_next(i.clone()) {
       Ok((i2, _)) => {
         // return if we consumed everything or if the normal parser
         // does not consume anything
-        if i2.input_len_() == 0 {
-          return Ok(input.next_slice(input.input_len_()));
-        } else if i2.input_len_() == current_len {
+        if i2.input_len() == 0 {
+          return Ok(input.next_slice(input.input_len()));
+        } else if i2.input_len() == current_len {
           let offset = input.offset_to(&i2);
           return Ok(input.next_slice(offset));
         } else {
@@ -742,9 +742,9 @@ where
         }
       }
       Err(Err::Error(_)) => {
-        if i.next_token().expect("input_len_ > 0").1.as_char() == control_char {
+        if i.next_token().expect("input_len > 0").1.as_char() == control_char {
           let next = control_char.len_utf8();
-          if next >= i.input_len_() {
+          if next >= i.input_len() {
             return Err(Err::Error(Error::from_error_kind(
               input,
               ErrorKind::Escaped,
@@ -752,8 +752,8 @@ where
           } else {
             match escapable.parse_next(i.next_slice(next).0) {
               Ok((i2, _)) => {
-                if i2.input_len_() == 0 {
-                  return Ok(input.next_slice(input.input_len_()));
+                if i2.input_len() == 0 {
+                  return Ok(input.next_slice(input.input_len()));
                 } else {
                   i = i2;
                 }
@@ -778,7 +778,7 @@ where
     }
   }
 
-  Ok(input.next_slice(input.input_len_()))
+  Ok(input.next_slice(input.input_len()))
 }
 
 /// Matches a byte string with escaped characters.
@@ -861,24 +861,24 @@ where
 
   let i = input.clone();
 
-  while offset < i.input_len_() {
-    let current_len = i.input_len_();
+  while offset < i.input_len() {
+    let current_len = i.input_len();
     let (remainder, _) = i.next_slice(offset);
     match normal.parse_next(remainder.clone()) {
       Ok((i2, o)) => {
         o.extend_into(&mut res);
-        if i2.input_len_() == 0 {
-          return Ok((i.next_slice(i.input_len_()).0, res));
-        } else if i2.input_len_() == current_len {
+        if i2.input_len() == 0 {
+          return Ok((i.next_slice(i.input_len()).0, res));
+        } else if i2.input_len() == current_len {
           return Ok((remainder, res));
         } else {
           offset = input.offset_to(&i2);
         }
       }
       Err(Err::Error(_)) => {
-        if remainder.next_token().expect("input_len_ > 0").1.as_char() == control_char {
+        if remainder.next_token().expect("input_len > 0").1.as_char() == control_char {
           let next = offset + control_char.len_utf8();
-          let input_len = input.input_len_();
+          let input_len = input.input_len();
 
           if next >= input_len {
             return Err(Err::Error(Error::from_error_kind(
@@ -889,8 +889,8 @@ where
             match transform.parse_next(i.next_slice(next).0) {
               Ok((i2, o)) => {
                 o.extend_into(&mut res);
-                if i2.input_len_() == 0 {
-                  return Ok((i.next_slice(i.input_len_()).0, res));
+                if i2.input_len() == 0 {
+                  return Ok((i.next_slice(i.input_len()).0, res));
                 } else {
                   offset = input.offset_to(&i2);
                 }
