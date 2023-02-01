@@ -775,6 +775,9 @@ where
 
 /// Succeeds if all the input has been consumed by its child parser.
 ///
+/// **WARNING:** Deprecated, replaced [`eof`] or
+/// [`FinishIResult::finish`][crate::FinishIResult::finish]
+///
 /// ```rust
 /// # use winnow::{Err, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::all_consuming;
@@ -788,6 +791,10 @@ where
 /// assert_eq!(parser("123abcd;"),Err(Err::Error(Error::new("123abcd;", ErrorKind::Alpha))));
 /// # }
 /// ```
+#[deprecated(
+  since = "8.0.0",
+  note = "Replaced with `eof` or `FinishIResult::finish`"
+)]
 pub fn all_consuming<I, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
   I: Input,
