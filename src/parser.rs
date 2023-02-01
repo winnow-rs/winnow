@@ -5,7 +5,7 @@ use crate::combinator::*;
 #[cfg(feature = "std")]
 use crate::error::DbgErr;
 use crate::error::{self, Context, ContextError, ErrorKind, ParseError};
-use crate::input::{AsChar, Compare, Input, InputIsStreaming, IntoOutput, Location};
+use crate::input::{AsChar, Compare, Input, InputIsStreaming, Location};
 use crate::lib::std::fmt;
 use core::num::NonZeroUsize;
 
@@ -99,21 +99,6 @@ impl<I, O, E> Finish<I, O, E> for IResult<I, O, E> {
         panic!("Cannot call `finish()` on `Err(Err::Incomplete(_))`: this result means that the parser does not have enough data to decide, you should gather more data and try to reapply  the parser instead")
       }
     }
-  }
-}
-
-/// Convert an `Input` into an appropriate `Output` type
-pub trait IntoOutputIResult<I, O, E> {
-  /// Convert an `Input` into an appropriate `Output` type
-  fn into_output(self) -> IResult<I, O, E>;
-}
-
-impl<I, E> IntoOutputIResult<I, <I as IntoOutput>::Output, E> for IResult<I, I, E>
-where
-  I: IntoOutput,
-{
-  fn into_output(self) -> IResult<I, <I as IntoOutput>::Output, E> {
-    self.map(|(i, o)| (i, o.into_output()))
   }
 }
 
