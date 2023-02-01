@@ -443,11 +443,11 @@ pub fn take_while_m_n<T, I, Error: ParseError<I>, const STREAMING: bool>(
   m: usize,
   n: usize,
   list: T,
-) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputTake + InputIter + SliceLen + Slice<RangeFrom<usize>> + InputIsStreaming<STREAMING>,
-  I: IntoOutput,
-  T: ContainsToken<<I as InputIter>::Item>,
+  I: InputIsStreaming<STREAMING>,
+  I: Input,
+  T: ContainsToken<<I as Input>::Token>,
 {
   move |i: I| {
     if STREAMING {

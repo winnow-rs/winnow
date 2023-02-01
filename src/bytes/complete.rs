@@ -368,11 +368,10 @@ pub fn take_while_m_n<T, I, Error: ParseError<I>>(
   m: usize,
   n: usize,
   list: T,
-) -> impl Fn(I) -> IResult<I, <I as IntoOutput>::Output, Error>
+) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputTake + InputIter + SliceLen + Slice<RangeFrom<usize>>,
-  I: IntoOutput,
-  T: ContainsToken<<I as InputIter>::Item>,
+  I: Input,
+  T: ContainsToken<<I as Input>::Token>,
 {
   move |i: I| take_while_m_n_internal(i, m, n, &list)
 }
@@ -382,18 +381,17 @@ pub(crate) fn take_while_m_n_internal<T, I, Error: ParseError<I>>(
   m: usize,
   n: usize,
   list: &T,
-) -> IResult<I, <I as IntoOutput>::Output, Error>
+) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputTake + InputIter + SliceLen + Slice<RangeFrom<usize>>,
-  I: IntoOutput,
-  T: ContainsToken<<I as InputIter>::Item>,
+  I: Input,
+  T: ContainsToken<<I as Input>::Token>,
 {
   match input.offset_for(|c| !list.contains_token(c)) {
     Some(idx) => {
       if idx >= m {
         if idx <= n {
           let res: IResult<_, _, Error> = if let Ok(index) = input.offset_at(idx) {
-            Ok(input.take_split(index)).into_output()
+            Ok(input.next_slice(index))
           } else {
             Err(Err::Error(Error::from_error_kind(
               input,
@@ -403,7 +401,7 @@ where
           res
         } else {
           let res: IResult<_, _, Error> = if let Ok(index) = input.offset_at(n) {
-            Ok(input.take_split(index)).into_output()
+            Ok(input.next_slice(index))
           } else {
             Err(Err::Error(Error::from_error_kind(
               input,
@@ -418,18 +416,17 @@ where
       }
     }
     None => {
-      let len = input.slice_len();
+      let len = input.input_len_();
       if len >= n {
         match input.offset_at(n) {
-          Ok(index) => Ok(input.take_split(index)).into_output(),
+          Ok(index) => Ok(input.next_slice(index)),
           Err(_needed) => Err(Err::Error(Error::from_error_kind(
             input,
             ErrorKind::TakeWhileMN,
           ))),
         }
       } else if len >= m && len <= n {
-        let res: IResult<_, _, Error> = Ok((input.slice(len..), input));
-        res.into_output()
+        Ok(input.next_slice(len))
       } else {
         let e = ErrorKind::TakeWhileMN;
         Err(Err::Error(Error::from_error_kind(input, e)))
