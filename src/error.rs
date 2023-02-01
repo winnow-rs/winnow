@@ -12,37 +12,39 @@
 //! ```rust
 //! pub type IResult<I, O, E=winnow::error::Error<I>> = Result<(I, O), winnow::Err<E>>;
 //!
-//! #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-//! pub enum Needed {
-//!   Unknown,
-//!   Size(u32)
-//! }
-//!
 //! pub enum Err<E> {
 //!     Incomplete(Needed),
 //!     Error(E),
 //!     Failure(E),
 //! }
+//!
+//! #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+//! pub enum Needed {
+//!   Unknown,
+//!   Size(u32)
+//! }
 //! ```
 //!
 //! The result is either an `Ok((I, O))` containing the remaining input and the
 //! parsed value, or an `Err(winnow::Err<E>)` with `E` the error type.
-//! `winnow::Err<E>` is an enum because combinators can have different behaviours
-//! depending on the value.  The `Err<E>` enum expresses 3 conditions for a parser error:
-//! - `Incomplete` indicates that a parser did not have enough data to decide. This can be returned
-//!   by parsers found in `streaming` submodules to indicate that we should buffer more data from a
-//!   file or socket. Parsers in the `complete` submodules assume that they have the entire input
-//!   data, so if it was not sufficient, they will instead return a `Err::Error`
-//! - `Error` is a normal parser error. If a child parser of the `alt` combinator returns `Error`,
-//!   it will try another child parser
-//! - `Failure` is an error from which we cannot recover: The `alt` combinator will not try other
-//!   branches if a child parser returns `Failure`. If we know we were in the right branch (example:
-//!   we found a correct prefix character but input after that was wrong), we can transform a
-//!   `Err::Error` into a `Err::Failure` with the `cut()` combinator
+//! [`winnow::Err<E>`][Err] is an enum because combinators can have different behaviours
+//! depending on the value.  The [`Err<E>`] enum expresses 3 conditions for a parser error:
+//! - [`Incomplete`][Err::Incomplete] indicates that a parser did not have enough data to
+//!   decide. This can be returned by parsers found in `streaming` submodules to indicate that we
+//!   should buffer more data from a file or socket. Parsers in the `complete` submodules assume that
+//!   they have the entire input data, so if it was not sufficient, they will instead return a
+//!   `Err::Error`
+//! - [`Error`][Err::Error] is a normal parser error. If a child parser of the
+//!   [`alt`][crate::branch::alt] combinator returns `Error`, it will try another child parser
+//! - [`Failure`][Err::Failure] is an error from which we cannot recover: The
+//!   [`alt`][crate::branch::alt] combinator will not try other branches if a child parser returns
+//!   `Failure`. If we know we were in the right branch (example: we found a correct prefix character
+//!   but input after that was wrong), we can transform a `Err::Error` into a `Err::Failure` with the
+//!   [`cut()`][crate::combinator::cut] combinator
 //!
 //! If we are running a parser and know it will not return `Err::Incomplete`, we can
 //! directly extract the error type from `Err::Error` or `Err::Failure` with the
-//! `finish()` method:
+//! [`finish()`][crate::FinishIResult::finish] method:
 //!
 //! ```rust,ignore
 //! # use winnow::IResult;
@@ -66,32 +68,6 @@
 //!   parser(data).map_err(|e: E<&[u8]>| e.to_owned());
 //! ```
 //!
-//! nom provides a powerful error system that can adapt to your needs: you can
-//! get reduced error information if you want to improve performance, or you can
-//! get a precise trace of parser application, with fine grained position information.
-//!
-//! This is done through the third type parameter of `IResult`, nom's parser result
-//! type:
-//!
-//! ```rust
-//! pub type IResult<I, O, E=winnow::error::Error<I>> = Result<(I, O), Err<E>>;
-//!
-//! #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-//! pub enum Needed {
-//!   Unknown,
-//!   Size(u32)
-//! }
-//!
-//! pub enum Err<E> {
-//!     Incomplete(Needed),
-//!     Error(E),
-//!     Failure(E),
-//! }
-//! ```
-//!
-//! This error type is completely generic in nom's combinators, so you can choose
-//! exactly which error type you want to use when you define your parsers, or
-//! directly at the call site.
 //! See [the JSON parser](https://github.com/Geal/nom/blob/5405e1173f1052f7e006dcb0b9cfda2b06557b65/examples/json.rs#L209-L286)
 //! for an example of choosing different error types at the call site.
 //!
