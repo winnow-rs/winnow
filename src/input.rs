@@ -808,6 +808,10 @@ impl<'a> Offset for &'a [u8] {
     let fst = self.as_ptr();
     let snd = second.as_ptr();
 
+    debug_assert!(
+      fst <= snd,
+      "`Offset::offset_to` only accepts slices of `self`"
+    );
     snd as usize - fst as usize
   }
 }
@@ -818,6 +822,10 @@ impl Offset for [u8] {
     let fst = self.as_ptr();
     let snd = second.as_ptr();
 
+    debug_assert!(
+      fst <= snd,
+      "`Offset::offset_to` only accepts slices of `self`"
+    );
     snd as usize - fst as usize
   }
 }
@@ -827,6 +835,10 @@ impl<'a> Offset for &'a str {
     let fst = self.as_ptr();
     let snd = second.as_ptr();
 
+    debug_assert!(
+      fst <= snd,
+      "`Offset::offset_to` only accepts slices of `self`"
+    );
     snd as usize - fst as usize
   }
 }
@@ -837,6 +849,10 @@ impl Offset for str {
     let fst = self.as_ptr();
     let snd = second.as_ptr();
 
+    debug_assert!(
+      fst <= snd,
+      "`Offset::offset_to` only accepts slices of `self`"
+    );
     snd as usize - fst as usize
   }
 }
