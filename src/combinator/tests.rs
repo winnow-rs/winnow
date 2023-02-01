@@ -165,6 +165,7 @@ fn test_parser_map_parser() {
 
 #[test]
 fn test_all_consuming() {
+  #![allow(deprecated)]
   let input: &[u8] = &[100, 101, 102][..];
   assert_parse!(
     all_consuming(take(2usize))(input),
