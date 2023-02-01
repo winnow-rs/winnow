@@ -7,8 +7,8 @@ pub mod streaming;
 mod tests;
 
 use crate::error::{ErrorConvert, ErrorKind, ParseError};
-use crate::input::{InputIsStreaming, InputIter, Slice, SliceLen, ToUsize};
-use crate::lib::std::ops::{AddAssign, RangeFrom, Shl, Shr};
+use crate::input::{AsBytes, Input, InputIsStreaming, ToUsize};
+use crate::lib::std::ops::{AddAssign, Shl, Shr};
 use crate::{Err, IResult, Needed, Parser};
 
 /// Converts a byte-level input to a bit-level input, for consumption by a parser that uses bits.
@@ -42,7 +42,7 @@ pub fn bits<I, O, E1, E2, P>(mut parser: P) -> impl FnMut(I) -> IResult<I, O, E2
 where
   E1: ParseError<(I, usize)> + ErrorConvert<E2>,
   E2: ParseError<I>,
-  I: Slice<RangeFrom<usize>>,
+  I: Input,
   P: Parser<(I, usize), O, E1>,
 {
   move |input: I| match parser.parse_next((input, 0)) {
@@ -51,7 +51,8 @@ where
       // The parser functions might already slice away all fully read bytes.
       // That's why `offset / 8` isn't necessarily needed at all times.
       let remaining_bytes_index = offset / 8 + if offset % 8 == 0 { 0 } else { 1 };
-      Ok((rest.slice(remaining_bytes_index..), result))
+      let (input, _) = rest.next_slice(remaining_bytes_index);
+      Ok((input, result))
     }
     Err(Err::Incomplete(n)) => Err(Err::Incomplete(n.map(|u| u.get() / 8 + 1))),
     Err(Err::Error(e)) => Err(Err::Error(e.convert())),
@@ -87,14 +88,14 @@ pub fn bytes<I, O, E1, E2, P>(mut parser: P) -> impl FnMut((I, usize)) -> IResul
 where
   E1: ParseError<I> + ErrorConvert<E2>,
   E2: ParseError<(I, usize)>,
-  I: Slice<RangeFrom<usize>> + Clone,
+  I: Input,
   P: Parser<I, O, E1>,
 {
   move |(input, offset): (I, usize)| {
-    let inner = if offset % 8 != 0 {
-      input.slice((1 + offset / 8)..)
+    let (inner, _) = if offset % 8 != 0 {
+      input.next_slice(1 + offset / 8)
     } else {
-      input.slice((offset / 8)..)
+      input.next_slice(offset / 8)
     };
     let i = (input, offset);
     match parser.parse_next(inner) {
@@ -139,7 +140,7 @@ pub fn take<I, O, C, E: ParseError<(I, usize)>, const STREAMING: bool>(
   count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + SliceLen + InputIsStreaming<STREAMING>,
+  I: Input<Token = u8> + AsBytes + InputIsStreaming<STREAMING>,
   C: ToUsize,
   O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
@@ -203,8 +204,7 @@ pub fn tag<I, O, C, E: ParseError<(I, usize)>, const STREAMING: bool>(
   count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-  I:
-    Slice<RangeFrom<usize>> + InputIter<Item = u8> + SliceLen + InputIsStreaming<STREAMING> + Clone,
+  I: Input<Token = u8> + AsBytes + InputIsStreaming<STREAMING>,
   C: ToUsize,
   O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
@@ -238,7 +238,7 @@ pub fn bool<I, E: ParseError<(I, usize)>, const STREAMING: bool>(
   input: (I, usize),
 ) -> IResult<(I, usize), bool, E>
 where
-  I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + SliceLen + InputIsStreaming<STREAMING>,
+  I: Input<Token = u8> + AsBytes + InputIsStreaming<STREAMING>,
 {
   #![allow(deprecated)]
   if STREAMING {

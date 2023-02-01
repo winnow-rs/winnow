@@ -3,7 +3,7 @@ use winnow::error::ParseError;
 use winnow::Err::Error;
 use winnow::IResult;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum CustomError<I> {
   MyError,
   Nom(I, ErrorKind),

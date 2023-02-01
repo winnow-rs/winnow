@@ -149,22 +149,12 @@
 //! - [`space0`][crate::character::space0]: Recognizes zero or more spaces and tabs. [`space1`][crate::character::space1] does the same but returns at least one character
 //! - [`tab`][crate::character::tab]: Matches a tab character `\t`
 
-#![allow(unused_imports)]
-
-#[cfg(feature = "alloc")]
-use crate::lib::std::boxed::Box;
-
 use crate::error::{ErrorKind, FromExternalError, ParseError};
-use crate::input::IntoOutput;
-use crate::input::{AsChar, InputIter, InputTakeAtOffset, Location, ParseTo, SliceLen};
-use crate::input::{Compare, CompareResult, Offset, Slice};
+use crate::input::Offset;
+use crate::input::{Input, Location};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::convert;
-#[cfg(feature = "std")]
-use crate::lib::std::fmt::Debug;
-use crate::lib::std::mem::transmute;
-use crate::lib::std::ops::{Range, RangeFrom, RangeTo};
-use crate::IntoOutputIResult;
+use crate::lib::std::ops::Range;
 use crate::*;
 
 #[cfg(test)]
@@ -180,13 +170,11 @@ mod tests;
 /// assert_eq!(rest::<_,Error<_>>(""), Ok(("", "")));
 /// ```
 #[inline]
-pub fn rest<I, E: ParseError<I>>(input: I) -> IResult<I, <I as IntoOutput>::Output, E>
+pub fn rest<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: Slice<RangeFrom<usize>>,
-  I: SliceLen,
-  I: IntoOutput,
+  I: Input,
 {
-  Ok((input.slice(input.slice_len()..), input)).into_output()
+  Ok(input.next_slice(input.input_len()))
 }
 
 /// Return the length of the remaining input.
@@ -201,9 +189,9 @@ where
 #[inline]
 pub fn rest_len<I, E: ParseError<I>>(input: I) -> IResult<I, usize, E>
 where
-  I: SliceLen,
+  I: Input,
 {
-  let len = input.slice_len();
+  let len = input.input_len();
   Ok((input, len))
 }
 
@@ -717,15 +705,12 @@ where
 /// assert_eq!(parser(""), Ok(("", "")));
 /// # }
 /// ```
-pub fn eof<I, E: ParseError<I>>(input: I) -> IResult<I, <I as IntoOutput>::Output, E>
+pub fn eof<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: SliceLen,
-  I: Clone,
-  I: IntoOutput,
+  I: Input,
 {
-  if input.slice_len() == 0 {
-    let clone = input.clone();
-    Ok((input, clone)).into_output()
+  if input.input_len() == 0 {
+    Ok(input.next_slice(0))
   } else {
     Err(Err::Error(E::from_error_kind(input, ErrorKind::Eof)))
   }
@@ -805,12 +790,12 @@ where
 /// ```
 pub fn all_consuming<I, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
-  I: SliceLen,
+  I: Input,
   F: Parser<I, O, E>,
 {
   move |input: I| {
     let (input, res) = f.parse_next(input)?;
-    if input.slice_len() == 0 {
+    if input.input_len() == 0 {
       Ok((input, res))
     } else {
       Err(Err::Error(E::from_error_kind(input, ErrorKind::Eof)))
@@ -1003,20 +988,17 @@ where
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::recognize")]
 pub fn recognize<I, O, E: ParseError<I>, F>(
   mut parser: F,
-) -> impl FnMut(I) -> IResult<I, <I as IntoOutput>::Output, E>
+) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: Clone,
-  I: Offset,
-  I: Slice<RangeTo<usize>>,
-  I: IntoOutput,
+  I: Input + Offset,
   F: Parser<I, O, E>,
 {
   move |input: I| {
     let i = input.clone();
     match parser.parse_next(i) {
       Ok((i, _)) => {
-        let index = input.offset_to(&i);
-        Ok((i, input.slice(..index))).into_output()
+        let offset = input.offset_to(&i);
+        Ok(input.next_slice(offset))
       }
       Err(e) => Err(e),
     }
@@ -1039,21 +1021,18 @@ impl<F, O> Recognize<F, O> {
   }
 }
 
-impl<I, O, E, F> Parser<I, <I as IntoOutput>::Output, E> for Recognize<F, O>
+impl<I, O, E, F> Parser<I, <I as Input>::Slice, E> for Recognize<F, O>
 where
-  I: Clone,
-  I: Offset,
-  I: Slice<RangeTo<usize>>,
-  I: IntoOutput,
+  I: Input + Offset,
   E: ParseError<I>,
   F: Parser<I, O, E>,
 {
-  fn parse_next(&mut self, input: I) -> IResult<I, <I as IntoOutput>::Output, E> {
+  fn parse_next(&mut self, input: I) -> IResult<I, <I as Input>::Slice, E> {
     let i = input.clone();
     match (self.parser).parse_next(i) {
       Ok((i, _)) => {
-        let index = input.offset_to(&i);
-        Ok((i, input.slice(..index))).into_output()
+        let offset = input.offset_to(&i);
+        Ok(input.next_slice(offset))
       }
       Err(e) => Err(e),
     }
@@ -1106,10 +1085,9 @@ where
 )]
 pub fn consumed<I, O, F, E>(
   mut parser: F,
-) -> impl FnMut(I) -> IResult<I, (<I as IntoOutput>::Output, O), E>
+) -> impl FnMut(I) -> IResult<I, (<I as Input>::Slice, O), E>
 where
-  I: Clone + Offset + Slice<RangeTo<usize>>,
-  I: IntoOutput,
+  I: Input + Offset,
   E: ParseError<I>,
   F: Parser<I, O, E>,
 {
@@ -1117,9 +1095,9 @@ where
     let i = input.clone();
     match parser.parse_next(i) {
       Ok((remaining, result)) => {
-        let index = input.offset_to(&remaining);
-        let consumed = input.slice(..index).into_output();
-        Ok((remaining, (consumed, result)))
+        let offset = input.offset_to(&remaining);
+        let (remaining, recognized) = input.next_slice(offset);
+        Ok((remaining, (recognized, result)))
       }
       Err(e) => Err(e),
     }
@@ -1142,22 +1120,19 @@ impl<F, O> WithRecognized<F, O> {
   }
 }
 
-impl<I, O, E, F> Parser<I, (O, <I as IntoOutput>::Output), E> for WithRecognized<F, O>
+impl<I, O, E, F> Parser<I, (O, <I as Input>::Slice), E> for WithRecognized<F, O>
 where
-  I: Clone,
-  I: Offset,
-  I: Slice<RangeTo<usize>>,
-  I: IntoOutput,
+  I: Input + Offset,
   E: ParseError<I>,
   F: Parser<I, O, E>,
 {
-  fn parse_next(&mut self, input: I) -> IResult<I, (O, <I as IntoOutput>::Output), E> {
+  fn parse_next(&mut self, input: I) -> IResult<I, (O, <I as Input>::Slice), E> {
     let i = input.clone();
     match (self.parser).parse_next(i) {
       Ok((remaining, result)) => {
-        let index = input.offset_to(&remaining);
-        let consumed = input.slice(..index).into_output();
-        Ok((remaining, (result, consumed)))
+        let offset = input.offset_to(&remaining);
+        let (remaining, recognized) = input.next_slice(offset);
+        Ok((remaining, (result, recognized)))
       }
       Err(e) => Err(e),
     }

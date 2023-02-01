@@ -5,7 +5,7 @@ mod tests;
 
 use crate::error::ErrorKind;
 use crate::error::ParseError;
-use crate::input::{InputIsStreaming, InputIter, InputTake, IntoOutput, SliceLen, ToUsize};
+use crate::input::{Input, InputIsStreaming, ToUsize, UpdateSlice};
 #[cfg(feature = "alloc")]
 use crate::lib::std::vec::Vec;
 use crate::{Err, IResult, Parser};
@@ -50,20 +50,20 @@ const MAX_INITIAL_CAPACITY_BYTES: usize = 65536;
 #[cfg(feature = "alloc")]
 pub fn many0<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
 where
-  I: Clone + SliceLen,
+  I: Input,
   F: Parser<I, O, E>,
   E: ParseError<I>,
 {
   move |mut i: I| {
     let mut acc = crate::lib::std::vec::Vec::with_capacity(4);
     loop {
-      let len = i.slice_len();
+      let len = i.input_len();
       match f.parse_next(i.clone()) {
         Err(Err::Error(_)) => return Ok((i, acc)),
         Err(e) => return Err(e),
         Ok((i1, o)) => {
           // infinite loop check: the parser must always consume
-          if i1.slice_len() == len {
+          if i1.input_len() == len {
             return Err(Err::Error(E::from_error_kind(i, ErrorKind::Many0)));
           }
 
@@ -104,7 +104,7 @@ where
 #[cfg(feature = "alloc")]
 pub fn many1<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
 where
-  I: Clone + SliceLen,
+  I: Input,
   F: Parser<I, O, E>,
   E: ParseError<I>,
 {
@@ -117,13 +117,13 @@ where
       i = i1;
 
       loop {
-        let len = i.slice_len();
+        let len = i.input_len();
         match f.parse_next(i.clone()) {
           Err(Err::Error(_)) => return Ok((i, acc)),
           Err(e) => return Err(e),
           Ok((i1, o)) => {
             // infinite loop check: the parser must always consume
-            if i1.slice_len() == len {
+            if i1.input_len() == len {
               return Err(Err::Error(E::from_error_kind(i, ErrorKind::Many1)));
             }
 
@@ -163,7 +163,7 @@ pub fn many_till<I, O, P, E, F, G>(
   mut g: G,
 ) -> impl FnMut(I) -> IResult<I, (Vec<O>, P), E>
 where
-  I: Clone + SliceLen,
+  I: Input,
   F: Parser<I, O, E>,
   G: Parser<I, P, E>,
   E: ParseError<I>,
@@ -171,7 +171,7 @@ where
   move |mut i: I| {
     let mut res = crate::lib::std::vec::Vec::new();
     loop {
-      let len = i.slice_len();
+      let len = i.input_len();
       match g.parse_next(i.clone()) {
         Ok((i1, o)) => return Ok((i1, (res, o))),
         Err(Err::Error(_)) => {
@@ -180,7 +180,7 @@ where
             Err(e) => return Err(e),
             Ok((i1, o)) => {
               // infinite loop check: the parser must always consume
-              if i1.slice_len() == len {
+              if i1.input_len() == len {
                 return Err(Err::Error(E::from_error_kind(i1, ErrorKind::ManyTill)));
               }
 
@@ -225,7 +225,7 @@ pub fn separated_list0<I, O, O2, E, F, G>(
   mut f: F,
 ) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
 where
-  I: Clone + SliceLen,
+  I: Input,
   F: Parser<I, O, E>,
   G: Parser<I, O2, E>,
   E: ParseError<I>,
@@ -243,13 +243,13 @@ where
     }
 
     loop {
-      let len = i.slice_len();
+      let len = i.input_len();
       match sep.parse_next(i.clone()) {
         Err(Err::Error(_)) => return Ok((i, res)),
         Err(e) => return Err(e),
         Ok((i1, _)) => {
           // infinite loop check: the parser must always consume
-          if i1.slice_len() == len {
+          if i1.input_len() == len {
             return Err(Err::Error(E::from_error_kind(i1, ErrorKind::SeparatedList)));
           }
 
@@ -298,7 +298,7 @@ pub fn separated_list1<I, O, O2, E, F, G>(
   mut f: F,
 ) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
 where
-  I: Clone + SliceLen,
+  I: Input,
   F: Parser<I, O, E>,
   G: Parser<I, O2, E>,
   E: ParseError<I>,
@@ -316,13 +316,13 @@ where
     }
 
     loop {
-      let len = i.slice_len();
+      let len = i.input_len();
       match sep.parse_next(i.clone()) {
         Err(Err::Error(_)) => return Ok((i, res)),
         Err(e) => return Err(e),
         Ok((i1, _)) => {
           // infinite loop check: the parser must always consume
-          if i1.slice_len() == len {
+          if i1.input_len() == len {
             return Err(Err::Error(E::from_error_kind(i1, ErrorKind::SeparatedList)));
           }
 
@@ -376,7 +376,7 @@ pub fn many_m_n<I, O, E, F>(
   mut parse: F,
 ) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
 where
-  I: Clone + SliceLen,
+  I: Input,
   F: Parser<I, O, E>,
   E: ParseError<I>,
 {
@@ -389,11 +389,11 @@ where
       MAX_INITIAL_CAPACITY_BYTES / crate::lib::std::mem::size_of::<O>().max(1);
     let mut res = crate::lib::std::vec::Vec::with_capacity(min.min(max_initial_capacity));
     for count in 0..max {
-      let len = input.slice_len();
+      let len = input.input_len();
       match parse.parse_next(input.clone()) {
         Ok((tail, value)) => {
           // infinite loop check: the parser must always consume
-          if tail.slice_len() == len {
+          if tail.input_len() == len {
             return Err(Err::Error(E::from_error_kind(input, ErrorKind::ManyMN)));
           }
 
@@ -444,7 +444,7 @@ where
 /// ```
 pub fn many0_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>
 where
-  I: Clone + SliceLen,
+  I: Input,
   F: Parser<I, O, E>,
   E: ParseError<I>,
 {
@@ -454,11 +454,11 @@ where
 
     loop {
       let input_ = input.clone();
-      let len = input.slice_len();
+      let len = input.input_len();
       match f.parse_next(input_) {
         Ok((i, _)) => {
           // infinite loop check: the parser must always consume
-          if i.slice_len() == len {
+          if i.input_len() == len {
             return Err(Err::Error(E::from_error_kind(input, ErrorKind::Many0Count)));
           }
 
@@ -502,7 +502,7 @@ where
 /// ```
 pub fn many1_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>
 where
-  I: Clone + SliceLen,
+  I: Input,
   F: Parser<I, O, E>,
   E: ParseError<I>,
 {
@@ -516,14 +516,14 @@ where
         let mut input = i1;
 
         loop {
-          let len = input.slice_len();
+          let len = input.input_len();
           let input_ = input.clone();
           match f.parse_next(input_) {
             Err(Err::Error(_)) => return Ok((input, count)),
             Err(e) => return Err(e),
             Ok((i, _)) => {
               // infinite loop check: the parser must always consume
-              if i.slice_len() == len {
+              if i.input_len() == len {
                 return Err(Err::Error(E::from_error_kind(i, ErrorKind::Many1Count)));
               }
 
@@ -684,7 +684,7 @@ pub fn fold_many0<I, O, E, F, G, H, R>(
   mut g: G,
 ) -> impl FnMut(I) -> IResult<I, R, E>
 where
-  I: Clone + SliceLen,
+  I: Input,
   F: Parser<I, O, E>,
   G: FnMut(R, O) -> R,
   H: FnMut() -> R,
@@ -696,11 +696,11 @@ where
 
     loop {
       let i_ = input.clone();
-      let len = input.slice_len();
+      let len = input.input_len();
       match f.parse_next(i_) {
         Ok((i, o)) => {
           // infinite loop check: the parser must always consume
-          if i.slice_len() == len {
+          if i.input_len() == len {
             return Err(Err::Error(E::from_error_kind(input, ErrorKind::Many0)));
           }
 
@@ -760,7 +760,7 @@ pub fn fold_many1<I, O, E, F, G, H, R>(
   mut g: G,
 ) -> impl FnMut(I) -> IResult<I, R, E>
 where
-  I: Clone + SliceLen,
+  I: Input,
   F: Parser<I, O, E>,
   G: FnMut(R, O) -> R,
   H: FnMut() -> R,
@@ -778,7 +778,7 @@ where
 
         loop {
           let _input = input.clone();
-          let len = input.slice_len();
+          let len = input.input_len();
           match f.parse_next(_input) {
             Err(Err::Error(_)) => {
               break;
@@ -786,7 +786,7 @@ where
             Err(e) => return Err(e),
             Ok((i, o)) => {
               // infinite loop check: the parser must always consume
-              if i.slice_len() == len {
+              if i.input_len() == len {
                 return Err(Err::Failure(E::from_error_kind(i, ErrorKind::Many1)));
               }
 
@@ -851,7 +851,7 @@ pub fn fold_many_m_n<I, O, E, F, G, H, R>(
   mut fold: G,
 ) -> impl FnMut(I) -> IResult<I, R, E>
 where
-  I: Clone + SliceLen,
+  I: Input,
   F: Parser<I, O, E>,
   G: FnMut(R, O) -> R,
   H: FnMut() -> R,
@@ -864,11 +864,11 @@ where
 
     let mut acc = init();
     for count in 0..max {
-      let len = input.slice_len();
+      let len = input.input_len();
       match parse.parse_next(input.clone()) {
         Ok((tail, value)) => {
           // infinite loop check: the parser must always consume
-          if tail.slice_len() == len {
+          if tail.input_len() == len {
             return Err(Err::Error(E::from_error_kind(tail, ErrorKind::ManyMN)));
           }
 
@@ -915,9 +915,10 @@ where
 /// ```
 pub fn length_data<I, N, E, F, const STREAMING: bool>(
   mut f: F,
-) -> impl FnMut(I) -> IResult<I, <I as IntoOutput>::Output, E>
+) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: SliceLen + InputTake + InputIter + IntoOutput + InputIsStreaming<STREAMING>,
+  I: InputIsStreaming<STREAMING>,
+  I: Input,
   N: ToUsize,
   F: Parser<I, N, E>,
   E: ParseError<I>,
@@ -961,8 +962,8 @@ pub fn length_value<I, O, N, E, F, G, const STREAMING: bool>(
   mut g: G,
 ) -> impl FnMut(I) -> IResult<I, O, E>
 where
-  I: SliceLen + InputTake + InputIter + IntoOutput + InputIsStreaming<STREAMING>,
-  I: Clone,
+  I: InputIsStreaming<STREAMING>,
+  I: Input + UpdateSlice,
   N: ToUsize,
   F: Parser<I, N, E>,
   G: Parser<I, O, E>,
@@ -970,7 +971,7 @@ where
 {
   move |i: I| {
     let (i, data) = length_data(f.by_ref()).parse_next(i)?;
-    let data = I::merge_output(i.clone(), data);
+    let data = I::update_slice(i.clone(), data);
     let (_, o) = g.by_ref().complete().parse_next(data)?;
     Ok((i, o))
   }

@@ -311,6 +311,14 @@ mod complete {
       Ok((&b"01;"[..], 3_315_801_058))
     );
     assert_parse!(hex_u32(&b"ffffffff;"[..]), Ok((&b";"[..], 4_294_967_295)));
+    assert_parse!(
+      hex_u32(&b"ffffffffffffffff;"[..]),
+      Ok((&b"ffffffff;"[..], 4_294_967_295))
+    );
+    assert_parse!(
+      hex_u32(&b"ffffffffffffffff"[..]),
+      Ok((&b"ffffffff"[..], 4_294_967_295))
+    );
     assert_parse!(hex_u32(&b"0x1be2;"[..]), Ok((&b"x1be2;"[..], 0)));
     assert_parse!(hex_u32(&b"12af"[..]), Ok((&b""[..], 0x12af)));
   }
@@ -990,6 +998,14 @@ mod streaming {
     assert_parse!(
       hex_u32(Streaming(&b"ffffffff;"[..])),
       Ok((Streaming(&b";"[..]), 4_294_967_295))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"ffffffffffffffff;"[..])),
+      Ok((Streaming(&b"ffffffff;"[..]), 4_294_967_295))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"ffffffffffffffff"[..])),
+      Ok((Streaming(&b"ffffffff"[..]), 4_294_967_295))
     );
     assert_parse!(
       hex_u32(Streaming(&b"0x1be2;"[..])),
