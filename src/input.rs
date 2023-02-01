@@ -1879,46 +1879,6 @@ impl<'a, 'b, const LEN: usize> Compare<&'b [u8; LEN]> for &'a [u8] {
   }
 }
 
-impl<
-    T: SliceLen + InputIter<Item = u8> + InputTake + UnspecializedInput,
-    O: SliceLen + InputIter<Item = u8> + InputTake,
-  > Compare<O> for T
-{
-  #[inline(always)]
-  fn compare(&self, t: O) -> CompareResult {
-    let pos = self
-      .iter_elements()
-      .zip(t.iter_elements())
-      .position(|(a, b)| a != b);
-
-    match pos {
-      Some(_) => CompareResult::Error,
-      None => {
-        if self.slice_len() >= t.slice_len() {
-          CompareResult::Ok
-        } else {
-          CompareResult::Incomplete
-        }
-      }
-    }
-  }
-
-  #[inline(always)]
-  fn compare_no_case(&self, t: O) -> CompareResult {
-    if self
-      .iter_elements()
-      .zip(t.iter_elements())
-      .any(|(a, b)| lowercase_byte(a) != lowercase_byte(b))
-    {
-      CompareResult::Error
-    } else if self.slice_len() < t.slice_len() {
-      CompareResult::Incomplete
-    } else {
-      CompareResult::Ok
-    }
-  }
-}
-
 impl<'a, 'b> Compare<&'b str> for &'a [u8] {
   #[inline(always)]
   fn compare(&self, t: &'b str) -> CompareResult {
