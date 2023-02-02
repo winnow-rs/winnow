@@ -1,6 +1,8 @@
 use winnow::input::Streaming;
 
+mod json;
 mod parser;
+mod parser_dispatch;
 mod parser_streaming;
 
 fn json_bench(c: &mut criterion::Criterion) {
@@ -14,6 +16,11 @@ fn json_bench(c: &mut criterion::Criterion) {
     type Error<'i> = winnow::error::Error<parser::Input<'i>>;
 
     b.iter(|| parser::json::<Error>(data).unwrap());
+  });
+  c.bench_function("dispatch", |b| {
+    type Error<'i> = winnow::error::Error<parser::Input<'i>>;
+
+    b.iter(|| parser_dispatch::json::<Error>(data).unwrap());
   });
   c.bench_function("streaming", |b| {
     type Error<'i> = winnow::error::Error<parser_streaming::Input<'i>>;
