@@ -9,7 +9,7 @@ use winnow::{
   bytes::one_of,
   bytes::tag,
   character::{alpha1, digit1, multispace0, multispace1},
-  combinator::{cut, opt},
+  combinator::{cut_err, opt},
   error::VerboseError,
   multi::many0,
   sequence::{delimited, preceded, terminated},
@@ -106,12 +106,12 @@ fn parse_bool(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
 
 /// The next easiest thing to parse are keywords.
 /// We introduce some error handling combinators: `context` for human readable errors
-/// and `cut` to prevent back-tracking.
+/// and `cut_err` to prevent back-tracking.
 ///
-/// Put plainly: `preceded(":", cut(alpha1))` means that once we see the `:`
+/// Put plainly: `preceded(":", cut_err(alpha1))` means that once we see the `:`
 /// character, we have to see one or more alphabetic chararcters or the input is invalid.
 fn parse_keyword(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
-  preceded(":", cut(alpha1))
+  preceded(":", cut_err(alpha1))
     .context("keyword")
     .map(|sym_str: &str| Atom::Keyword(sym_str.to_string()))
     .parse_next(i)
@@ -156,7 +156,7 @@ where
   delimited(
     '(',
     preceded(multispace0, inner),
-    cut(preceded(multispace0, ')')).context("closing paren"),
+    cut_err(preceded(multispace0, ')')).context("closing paren"),
   )
 }
 
@@ -188,7 +188,7 @@ fn parse_if(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
     // variables to our language, we say that if must be terminated by at least
     // one whitespace character
     terminated("if", multispace1),
-    cut((parse_expr, parse_expr, opt(parse_expr))),
+    cut_err((parse_expr, parse_expr, opt(parse_expr))),
   )
   .map(|(pred, true_branch, maybe_false_branch)| {
     if let Some(false_branch) = maybe_false_branch {
@@ -212,9 +212,9 @@ fn parse_if(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
 /// naturally.
 fn parse_quote(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
   // this should look very straight-forward after all we've done:
-  // we find the `'` (quote) character, use cut to say that we're unambiguously
+  // we find the `'` (quote) character, use cut_err to say that we're unambiguously
   // looking for an s-expression of 0 or more expressions, and then parse them
-  preceded("'", cut(s_exp(many0(parse_expr))))
+  preceded("'", cut_err(s_exp(many0(parse_expr))))
     .context("quote")
     .map(Expr::Quote)
     .parse_next(i)

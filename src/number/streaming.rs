@@ -6,7 +6,7 @@
 use crate::branch::alt;
 use crate::bytes::streaming::tag;
 use crate::character::streaming::{char, digit1, sign};
-use crate::combinator::{cut, map, opt};
+use crate::combinator::{cut_err, map, opt};
 use crate::error::{ErrMode, ErrorKind, Needed, ParseError};
 use crate::input::{AsBytes, AsChar, Compare, Input, Offset, ParseTo, SliceLen};
 use crate::lib::std::ops::{Add, Shl};
@@ -1617,7 +1617,7 @@ where
       opt(tuple((
         alt((char('e'), char('E'))),
         opt(alt((char('+'), char('-')))),
-        cut(digit1)
+        cut_err(digit1)
       )))
     ))
   .recognize().parse_next(input)
@@ -1742,7 +1742,7 @@ where
     .unwrap_or((i, false));
 
   let (i, exp) = if e {
-    cut(crate::character::streaming::i32)(i)?
+    cut_err(crate::character::streaming::i32)(i)?
   } else {
     (i2, 0)
   };

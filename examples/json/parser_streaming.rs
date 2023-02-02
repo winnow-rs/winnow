@@ -6,7 +6,7 @@ use winnow::{
   branch::alt,
   bytes::{any, none_of, one_of, tag, take, take_while},
   character::f64,
-  combinator::{cut, rest},
+  combinator::{cut_err, rest},
   error::{ContextError, ParseError},
   input::Streaming,
   multi::{fold_many0, separated_list0},
@@ -90,11 +90,11 @@ fn string<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
 ) -> IResult<Input<'i>, String, E> {
   preceded(
     one_of('\"'),
-    // `cut` transforms an `ErrMode::Backtrack(e)` to `ErrMode::Cut(e)`, signaling to
+    // `cut_err` transforms an `ErrMode::Backtrack(e)` to `ErrMode::Cut(e)`, signaling to
     // combinators like  `alt` that they should not try other parsers. We were in the
     // right branch (since we found the `"` character) but encountered an error when
     // parsing the string
-    cut(terminated(
+    cut_err(terminated(
       fold_many0(character, String::new, |mut string, c| {
         string.push(c);
         string
@@ -169,7 +169,7 @@ fn array<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
 ) -> IResult<Input<'i>, Vec<JsonValue>, E> {
   preceded(
     (one_of('['), ws),
-    cut(terminated(
+    cut_err(terminated(
       separated_list0((ws, one_of(','), ws), json_value),
       (ws, one_of(']')),
     )),
@@ -183,7 +183,7 @@ fn object<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
 ) -> IResult<Input<'i>, HashMap<String, JsonValue>, E> {
   preceded(
     (one_of('{'), ws),
-    cut(terminated(
+    cut_err(terminated(
       separated_list0((ws, one_of(','), ws), key_value)
         .map(|tuple_vec| tuple_vec.into_iter().map(|(k, v)| (k, v)).collect()),
       (ws, one_of('}')),
@@ -196,7 +196,7 @@ fn object<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
 fn key_value<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
   input: Input<'i>,
 ) -> IResult<Input<'i>, (String, JsonValue), E> {
-  separated_pair(string, cut((ws, one_of(':'), ws)), json_value)(input)
+  separated_pair(string, cut_err((ws, one_of(':'), ws)), json_value)(input)
 }
 
 /// Parser combinators are constructed from the bottom up:

@@ -7,7 +7,7 @@ use winnow::{
   bytes::one_of,
   bytes::{tag, take_while},
   character::{alphanumeric1 as alphanumeric, escaped, f64},
-  combinator::cut,
+  combinator::cut_err,
   error::ParseError,
   multi::separated_list0,
   sequence::{preceded, separated_pair, terminated},
@@ -215,7 +215,7 @@ fn parse_str<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str
 }
 
 fn string(i: &str) -> IResult<&str, &str> {
-  preceded('\"', cut(terminated(parse_str, '\"')))
+  preceded('\"', cut_err(terminated(parse_str, '\"')))
     .context("string")
     .parse_next(i)
 }
@@ -227,7 +227,7 @@ fn boolean(input: &str) -> IResult<&str, bool> {
 fn array(i: &str) -> IResult<&str, ()> {
   preceded(
     '[',
-    cut(terminated(
+    cut_err(terminated(
       separated_list0(preceded(sp, ','), value).map(|_| ()),
       preceded(sp, ']'),
     )),
@@ -237,13 +237,13 @@ fn array(i: &str) -> IResult<&str, ()> {
 }
 
 fn key_value(i: &str) -> IResult<&str, (&str, ())> {
-  separated_pair(preceded(sp, string), cut(preceded(sp, ':')), value)(i)
+  separated_pair(preceded(sp, string), cut_err(preceded(sp, ':')), value)(i)
 }
 
 fn hash(i: &str) -> IResult<&str, ()> {
   preceded(
     '{',
-    cut(terminated(
+    cut_err(terminated(
       separated_list0(preceded(sp, ','), key_value).map(|_| ()),
       preceded(sp, '}'),
     )),

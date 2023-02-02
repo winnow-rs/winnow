@@ -40,7 +40,7 @@
 //!   [`alt`][crate::branch::alt] combinator will not try other branches if a child parser returns
 //!   `Failure`. If we know we were in the right branch (example: we found a correct prefix character
 //!   but input after that was wrong), we can transform a `ErrMode::Backtrack` into a `ErrMode::Cut` with the
-//!   [`cut()`][crate::combinator::cut] combinator
+//!   [`cut_err()`][crate::combinator::cut_err] combinator
 //!
 //! If we are running a parser and know it will not return `ErrMode::Incomplete`, we can
 //! directly extract the error type from `ErrMode::Backtrack` or `ErrMode::Cut` with the
@@ -156,13 +156,13 @@
 //! # use winnow::error::context;
 //! # use winnow::sequence::preceded;
 //! # use winnow::character::char;
-//! # use winnow::combinator::cut;
+//! # use winnow::combinator::cut_err;
 //! # use winnow::sequence::terminated;
 //! # let parse_str = winnow::bytes::take_while1(|c| c == ' ');
 //! # let i = " ";
 //! context(
 //!   "string",
-//!   preceded('\"', cut(terminated(parse_str, '\"'))),
+//!   preceded('\"', cut_err(terminated(parse_str, '\"'))),
 //! )(i);
 //! ```
 //!

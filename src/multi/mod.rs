@@ -26,7 +26,7 @@ const MAX_INITIAL_CAPACITY_BYTES: usize = 65536;
 /// Repeats the embedded parser, gathering the results in a `Vec`.
 ///
 /// This stops on [`ErrMode::Backtrack`].  To instead chain an error up, see
-/// [`cut`][crate::combinator::cut].
+/// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `f` The parser to apply.
@@ -79,7 +79,7 @@ where
 /// Runs the embedded parser, gathering the results in a `Vec`.
 ///
 /// This stops on [`ErrMode::Backtrack`] if there is at least one result.  To instead chain an error up,
-/// see [`cut`][crate::combinator::cut].
+/// see [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `f` The parser to apply.
@@ -141,7 +141,7 @@ where
 ///
 /// Returns a tuple of the results of `f` in a `Vec` and the result of `g`.
 ///
-/// `f` keeps going so long as `g` produces [`ErrMode::Backtrack`]. To instead chain an error up, see [`cut`][crate::combinator::cut].
+/// `f` keeps going so long as `g` produces [`ErrMode::Backtrack`]. To instead chain an error up, see [`cut_err`][crate::combinator::cut_err].
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
@@ -204,7 +204,7 @@ where
 /// Alternates between two parsers to produce a list of elements.
 ///
 /// This stops when either parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
-/// [`cut`][crate::combinator::cut].
+/// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `sep` Parses the separator between list elements.
@@ -281,7 +281,7 @@ where
 /// Fails if the element parser does not produce at least one element.$
 ///
 /// This stops when either parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
-/// [`cut`][crate::combinator::cut].
+/// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `sep` Parses the separator between list elements.
@@ -355,7 +355,7 @@ where
 /// Repeats the embedded parser `m..=n` times
 ///
 /// This stops before `n` when the parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
-/// [`cut`][crate::combinator::cut].
+/// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `m` The minimum number of iterations.
@@ -435,7 +435,7 @@ where
 /// Repeats the embedded parser, counting the results
 ///
 /// This stops on [`ErrMode::Backtrack`].  To instead chain an error up, see
-/// [`cut`][crate::combinator::cut].
+/// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `f` The parser to apply.
@@ -495,7 +495,7 @@ where
 /// Runs the embedded parser, counting the results.
 ///
 /// This stops on [`ErrMode::Backtrack`] if there is at least one result.  To instead chain an error up,
-/// see [`cut`][crate::combinator::cut].
+/// see [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `f` The parser to apply.
@@ -670,7 +670,7 @@ where
 /// Repeats the embedded parser, calling `g` to gather the results.
 ///
 /// This stops on [`ErrMode::Backtrack`].  To instead chain an error up, see
-/// [`cut`][crate::combinator::cut].
+/// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `f` The parser to apply.
@@ -748,7 +748,7 @@ where
 /// Repeats the embedded parser, calling `g` to gather the results.
 ///
 /// This stops on [`ErrMode::Backtrack`] if there is at least one result.  To instead chain an error up,
-/// see [`cut`][crate::combinator::cut].
+/// see [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `f` The parser to apply.
@@ -834,7 +834,7 @@ where
 /// Repeats the embedded parser `m..=n` times, calling `g` to gather the results
 ///
 /// This stops before `n` when the parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
-/// [`cut`][crate::combinator::cut].
+/// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `m` The minimum number of iterations.

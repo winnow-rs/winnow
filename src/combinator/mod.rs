@@ -555,7 +555,7 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> H, H: Parser<I, O2, E>> Par
 
 /// Optional parser, will return `None` on [`ErrMode::Backtrack`].
 ///
-/// To chain an error up, see [`cut`].
+/// To chain an error up, see [`cut_err`].
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
@@ -1260,7 +1260,7 @@ where
 ///
 /// # Example
 ///
-/// Without `cut`:
+/// Without `cut_err`:
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// # use winnow::bytes::one_of;
@@ -1283,7 +1283,7 @@ where
 /// # }
 /// ```
 ///
-/// With `cut`:
+/// With `cut_err`:
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// # use winnow::bytes::one_of;
@@ -1291,12 +1291,12 @@ where
 /// # use winnow::combinator::rest;
 /// # use winnow::branch::alt;
 /// # use winnow::sequence::preceded;
-/// use winnow::combinator::cut;
+/// use winnow::combinator::cut_err;
 /// # fn main() {
 ///
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///   alt((
-///     preceded(one_of("+-"), cut(digit1)),
+///     preceded(one_of("+-"), cut_err(digit1)),
 ///     rest
 ///   ))(input)
 /// }
@@ -1306,7 +1306,7 @@ where
 /// assert_eq!(parser("+"), Err(ErrMode::Cut(Error { input: "", kind: ErrorKind::Digit })));
 /// # }
 /// ```
-pub fn cut<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O, E>
+pub fn cut_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
   F: Parser<I, O, E>,
 {
@@ -1314,6 +1314,15 @@ where
     Err(ErrMode::Backtrack(e)) => Err(ErrMode::Cut(e)),
     rest => rest,
   }
+}
+
+/// Deprecated, see [`cut_err`]
+#[deprecated(since = "0.3.0", note = "Replaced with `cut_err`")]
+pub fn cut<I, O, E: ParseError<I>, F>(parser: F) -> impl FnMut(I) -> IResult<I, O, E>
+where
+  F: Parser<I, O, E>,
+{
+  cut_err(parser)
 }
 
 /// automatically converts the child parser's result to another type
@@ -1441,7 +1450,7 @@ where
 /// Call the iterator's [`ParserIterator::finish`] method to get the remaining input if successful,
 /// or the error value if we encountered an error.
 ///
-/// On [`ErrMode::Backtrack`], iteration will stop.  To instead chain an error up, see [`cut`].
+/// On [`ErrMode::Backtrack`], iteration will stop.  To instead chain an error up, see [`cut_err`].
 ///
 /// ```rust
 /// use winnow::{combinator::iterator, IResult, bytes::tag, character::alpha1, sequence::terminated};

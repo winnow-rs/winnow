@@ -6,7 +6,7 @@
 use crate::branch::alt;
 use crate::bytes::complete::tag;
 use crate::character::complete::{char, digit1, sign};
-use crate::combinator::{cut, map, opt};
+use crate::combinator::{cut_err, map, opt};
 use crate::error::ParseError;
 use crate::error::{make_error, ErrMode, ErrorKind};
 use crate::input::{AsBytes, AsChar, Compare, Input, Offset, SliceLen};
@@ -1516,7 +1516,7 @@ where
       opt(tuple((
         alt((char('e'), char('E'))),
         opt(alt((char('+'), char('-')))),
-        cut(digit1)
+        cut_err(digit1)
       )))
     ))
   .recognize().parse_next(input)
@@ -1640,7 +1640,7 @@ where
     .unwrap_or((i, false));
 
   let (i, exp) = if e {
-    cut(crate::character::complete::i32)(i)?
+    cut_err(crate::character::complete::i32)(i)?
   } else {
     (i2, 0)
   };
