@@ -8,7 +8,7 @@ use crate::bytes::complete::tag;
 use crate::character::complete::{char, digit1, sign};
 use crate::combinator::{cut, map, opt};
 use crate::error::ParseError;
-use crate::error::{make_error, ErrorKind};
+use crate::error::{make_error, ErrMode, ErrorKind};
 use crate::input::{AsBytes, AsChar, Compare, Input, Offset, SliceLen};
 use crate::lib::std::ops::{Add, Shl};
 use crate::sequence::{pair, tuple};
@@ -18,8 +18,8 @@ use crate::*;
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::be_u8;
 ///
 /// let parser = |s| {
@@ -44,8 +44,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::be_u16;
 ///
 /// let parser = |s| {
@@ -71,8 +71,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::be_u24;
 ///
 /// let parser = |s| {
@@ -98,8 +98,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::be_u32;
 ///
 /// let parser = |s| {
@@ -125,8 +125,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::be_u64;
 ///
 /// let parser = |s| {
@@ -152,8 +152,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::be_u128;
 ///
 /// let parser = |s| {
@@ -207,8 +207,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::be_i8;
 ///
 /// let parser = |s| {
@@ -233,8 +233,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::be_i16;
 ///
 /// let parser = |s| {
@@ -260,8 +260,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::be_i24;
 ///
 /// let parser = |s| {
@@ -296,8 +296,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::be_i32;
 ///
 /// let parser = |s| {
@@ -323,8 +323,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::be_i64;
 ///
 /// let parser = |s| {
@@ -350,8 +350,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::be_i128;
 ///
 /// let parser = |s| {
@@ -377,8 +377,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::le_u8;
 ///
 /// let parser = |s| {
@@ -403,8 +403,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::le_u16;
 ///
 /// let parser = |s| {
@@ -430,8 +430,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::le_u24;
 ///
 /// let parser = |s| {
@@ -457,8 +457,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::le_u32;
 ///
 /// let parser = |s| {
@@ -484,8 +484,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::le_u64;
 ///
 /// let parser = |s| {
@@ -511,8 +511,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::le_u128;
 ///
 /// let parser = |s| {
@@ -559,8 +559,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::le_i8;
 ///
 /// let parser = |s| {
@@ -585,8 +585,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::le_i16;
 ///
 /// let parser = |s| {
@@ -612,8 +612,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::le_i24;
 ///
 /// let parser = |s| {
@@ -648,8 +648,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::le_i32;
 ///
 /// let parser = |s| {
@@ -675,8 +675,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::le_i64;
 ///
 /// let parser = |s| {
@@ -702,8 +702,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::le_i128;
 ///
 /// let parser = |s| {
@@ -730,8 +730,8 @@ where
 /// Note that endianness does not apply to 1 byte numbers.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::u8;
 ///
 /// let parser = |s| {
@@ -761,8 +761,8 @@ where
 /// *complete version*: returns an error if there is not enough input data
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::u16;
 ///
 /// let be_u16 = |s| {
@@ -804,8 +804,8 @@ where
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian u24 integer.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::u24;
 ///
 /// let be_u24 = |s| {
@@ -847,8 +847,8 @@ where
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian u32 integer.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::u32;
 ///
 /// let be_u32 = |s| {
@@ -890,8 +890,8 @@ where
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian u64 integer.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::u64;
 ///
 /// let be_u64 = |s| {
@@ -933,8 +933,8 @@ where
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian u128 integer.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::u128;
 ///
 /// let be_u128 = |s| {
@@ -975,8 +975,8 @@ where
 /// Note that endianness does not apply to 1 byte numbers.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::i8;
 ///
 /// let parser = |s| {
@@ -1003,8 +1003,8 @@ where
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian i16 integer.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::i16;
 ///
 /// let be_i16 = |s| {
@@ -1046,8 +1046,8 @@ where
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian i24 integer.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::i24;
 ///
 /// let be_i24 = |s| {
@@ -1089,8 +1089,8 @@ where
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian i32 integer.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::i32;
 ///
 /// let be_i32 = |s| {
@@ -1132,8 +1132,8 @@ where
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian i64 integer.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::i64;
 ///
 /// let be_i64 = |s| {
@@ -1175,8 +1175,8 @@ where
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian i128 integer.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::i128;
 ///
 /// let be_i128 = |s| {
@@ -1216,8 +1216,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::be_f32;
 ///
 /// let parser = |s| {
@@ -1246,8 +1246,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::be_f64;
 ///
 /// let parser = |s| {
@@ -1276,8 +1276,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::le_f32;
 ///
 /// let parser = |s| {
@@ -1306,8 +1306,8 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::le_f64;
 ///
 /// let parser = |s| {
@@ -1338,8 +1338,8 @@ where
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian f32 float.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::f32;
 ///
 /// let be_f32 = |s| {
@@ -1381,8 +1381,8 @@ where
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian f64 float.
 /// *complete version*: returns an error if there is not enough input data
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::f64;
 ///
 /// let be_f64 = |s| {
@@ -1422,8 +1422,8 @@ where
 ///
 /// *Complete version*: Will parse until the end of input if it has less than 8 bytes.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::hex_u32;
 ///
 /// let parser = |s| {
@@ -1479,8 +1479,8 @@ where
 /// *Complete version*: Can parse until the end of input.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::recognize_float;
 ///
 /// let parser = |s| {
@@ -1540,24 +1540,26 @@ where
   alt((
     |i: T| {
       recognize_float::<_, E>(i.clone()).map_err(|e| match e {
-        crate::ErrMode::Error(_) => crate::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)),
-        crate::ErrMode::Failure(_) => {
-          crate::ErrMode::Failure(E::from_error_kind(i, ErrorKind::Float))
+        crate::error::ErrMode::Error(_) => {
+          crate::error::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float))
         }
-        crate::ErrMode::Incomplete(needed) => crate::ErrMode::Incomplete(needed),
+        crate::error::ErrMode::Failure(_) => {
+          crate::error::ErrMode::Failure(E::from_error_kind(i, ErrorKind::Float))
+        }
+        crate::error::ErrMode::Incomplete(needed) => crate::error::ErrMode::Incomplete(needed),
       })
     },
     |i: T| {
       crate::bytes::complete::tag_no_case::<_, _, E>("nan")(i.clone())
-        .map_err(|_err| crate::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::error::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)))
     },
     |i: T| {
       crate::bytes::complete::tag_no_case::<_, _, E>("inf")(i.clone())
-        .map_err(|_err| crate::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::error::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)))
     },
     |i: T| {
       crate::bytes::complete::tag_no_case::<_, _, E>("infinity")(i.clone())
-        .map_err(|_err| crate::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::error::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)))
     },
   ))(input)
 }
@@ -1646,8 +1648,8 @@ use crate::input::ParseTo;
 ///
 /// *Complete version*: Can parse until the end of input.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::float;
 ///
 /// let parser = |s| {
@@ -1674,7 +1676,7 @@ where
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
     Some(f) => Ok((i, f)),
-    None => Err(crate::ErrMode::Error(E::from_error_kind(
+    None => Err(crate::error::ErrMode::Error(E::from_error_kind(
       i,
       crate::error::ErrorKind::Float,
     ))),
@@ -1685,8 +1687,8 @@ where
 ///
 /// *Complete version*: Can parse until the end of input.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::double;
 ///
 /// let parser = |s| {
@@ -1713,7 +1715,7 @@ where
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
     Some(f) => Ok((i, f)),
-    None => Err(crate::ErrMode::Error(E::from_error_kind(
+    None => Err(crate::error::ErrMode::Error(E::from_error_kind(
       i,
       crate::error::ErrorKind::Float,
     ))),
@@ -1723,9 +1725,9 @@ where
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::error::ErrMode;
   use crate::error::Error;
   use crate::error::ErrorKind;
-  use crate::ErrMode;
   use proptest::prelude::*;
 
   macro_rules! assert_parse(

@@ -7,7 +7,7 @@ use crate::branch::alt;
 use crate::bytes::streaming::tag;
 use crate::character::streaming::{char, digit1, sign};
 use crate::combinator::{cut, map, opt};
-use crate::error::{ErrorKind, ParseError};
+use crate::error::{ErrMode, ErrorKind, Needed, ParseError};
 use crate::input::{AsBytes, AsChar, Compare, Input, Offset, ParseTo, SliceLen};
 use crate::lib::std::ops::{Add, Shl};
 use crate::sequence::{pair, tuple};
@@ -15,9 +15,9 @@ use crate::*;
 
 /// Recognizes an unsigned 1 byte integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::be_u8;
 ///
 /// let parser = |s| {
@@ -43,10 +43,10 @@ where
 
 /// Recognizes a big endian unsigned 2 bytes integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::be_u16;
 ///
 /// let parser = |s| {
@@ -73,10 +73,10 @@ where
 
 /// Recognizes a big endian unsigned 3 byte integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::be_u24;
 ///
 /// let parser = |s| {
@@ -103,10 +103,10 @@ where
 
 /// Recognizes a big endian unsigned 4 bytes integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::be_u32;
 ///
 /// let parser = |s| {
@@ -133,10 +133,10 @@ where
 
 /// Recognizes a big endian unsigned 8 bytes integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::be_u64;
 ///
 /// let parser = |s| {
@@ -163,9 +163,9 @@ where
 
 /// Recognizes a big endian unsigned 16 bytes integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::be_u128;
 ///
 /// let parser = |s| {
@@ -218,9 +218,9 @@ where
 
 /// Recognizes a signed 1 byte integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::be_i8;
 ///
 /// let parser = be_i8::<_, Error<_>>;
@@ -244,9 +244,9 @@ where
 
 /// Recognizes a big endian signed 2 bytes integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::be_i16;
 ///
 /// let parser = be_i16::<_, Error<_>>;
@@ -271,9 +271,9 @@ where
 
 /// Recognizes a big endian signed 3 bytes integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::be_i24;
 ///
 /// let parser = be_i24::<_, Error<_>>;
@@ -307,9 +307,9 @@ where
 
 /// Recognizes a big endian signed 4 bytes integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::be_i32;
 ///
 /// let parser = be_i32::<_, Error<_>>;
@@ -334,10 +334,10 @@ where
 
 /// Recognizes a big endian signed 8 bytes integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::be_i64;
 ///
 /// let parser = be_i64::<_, Error<_>>;
@@ -362,9 +362,9 @@ where
 
 /// Recognizes a big endian signed 16 bytes integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::be_i128;
 ///
 /// let parser = be_i128::<_, Error<_>>;
@@ -389,9 +389,9 @@ where
 
 /// Recognizes an unsigned 1 byte integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::le_u8;
 ///
 /// let parser = le_u8::<_, Error<_>>;
@@ -415,10 +415,10 @@ where
 
 /// Recognizes a little endian unsigned 2 bytes integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::le_u16;
 ///
 /// let parser = |s| {
@@ -445,10 +445,10 @@ where
 
 /// Recognizes a little endian unsigned 3 bytes integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::le_u24;
 ///
 /// let parser = |s| {
@@ -475,10 +475,10 @@ where
 
 /// Recognizes a little endian unsigned 4 bytes integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::le_u32;
 ///
 /// let parser = |s| {
@@ -505,10 +505,10 @@ where
 
 /// Recognizes a little endian unsigned 8 bytes integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::le_u64;
 ///
 /// let parser = |s| {
@@ -535,10 +535,10 @@ where
 
 /// Recognizes a little endian unsigned 16 bytes integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::le_u128;
 ///
 /// let parser = |s| {
@@ -584,9 +584,9 @@ where
 
 /// Recognizes a signed 1 byte integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::le_i8;
 ///
 /// let parser = le_i8::<_, Error<_>>;
@@ -610,10 +610,10 @@ where
 
 /// Recognizes a little endian signed 2 bytes integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::le_i16;
 ///
 /// let parser = |s| {
@@ -640,10 +640,10 @@ where
 
 /// Recognizes a little endian signed 3 bytes integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::le_i24;
 ///
 /// let parser = |s| {
@@ -679,10 +679,10 @@ where
 
 /// Recognizes a little endian signed 4 bytes integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::le_i32;
 ///
 /// let parser = |s| {
@@ -709,10 +709,10 @@ where
 
 /// Recognizes a little endian signed 8 bytes integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::le_i64;
 ///
 /// let parser = |s| {
@@ -739,10 +739,10 @@ where
 
 /// Recognizes a little endian signed 16 bytes integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::le_i128;
 ///
 /// let parser = |s| {
@@ -770,10 +770,10 @@ where
 /// Recognizes an unsigned 1 byte integer
 ///
 /// Note that endianness does not apply to 1 byte numbers.
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::streaming::u8;
 ///
 /// let parser = |s| {
@@ -803,11 +803,11 @@ where
 ///
 /// If the parameter is `winnow::number::Endianness::Big`, parse a big endian u16 integer,
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian u16 integer.
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::streaming::u16;
 ///
 /// let be_u16 = |s| {
@@ -850,10 +850,10 @@ where
 ///
 /// If the parameter is `winnow::number::Endianness::Big`, parse a big endian u24 integer,
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian u24 integer.
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::streaming::u24;
 ///
 /// let be_u24 = |s| {
@@ -896,10 +896,10 @@ where
 ///
 /// If the parameter is `winnow::number::Endianness::Big`, parse a big endian u32 integer,
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian u32 integer.
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::streaming::u32;
 ///
 /// let be_u32 = |s| {
@@ -942,10 +942,10 @@ where
 ///
 /// If the parameter is `winnow::number::Endianness::Big`, parse a big endian u64 integer,
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian u64 integer.
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::streaming::u64;
 ///
 /// let be_u64 = |s| {
@@ -988,10 +988,10 @@ where
 ///
 /// If the parameter is `winnow::number::Endianness::Big`, parse a big endian u128 integer,
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian u128 integer.
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::streaming::u128;
 ///
 /// let be_u128 = |s| {
@@ -1033,10 +1033,10 @@ where
 /// Recognizes a signed 1 byte integer
 ///
 /// Note that endianness does not apply to 1 byte numbers.
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::streaming::i8;
 ///
 /// let parser = |s| {
@@ -1064,10 +1064,10 @@ where
 ///
 /// If the parameter is `winnow::number::Endianness::Big`, parse a big endian i16 integer,
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian i16 integer.
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::streaming::i16;
 ///
 /// let be_i16 = |s| {
@@ -1110,10 +1110,10 @@ where
 ///
 /// If the parameter is `winnow::number::Endianness::Big`, parse a big endian i24 integer,
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian i24 integer.
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::streaming::i24;
 ///
 /// let be_i24 = |s| {
@@ -1156,10 +1156,10 @@ where
 ///
 /// If the parameter is `winnow::number::Endianness::Big`, parse a big endian i32 integer,
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian i32 integer.
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::streaming::i32;
 ///
 /// let be_i32 = |s| {
@@ -1202,10 +1202,10 @@ where
 ///
 /// If the parameter is `winnow::number::Endianness::Big`, parse a big endian i64 integer,
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian i64 integer.
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::streaming::i64;
 ///
 /// let be_i64 = |s| {
@@ -1248,10 +1248,10 @@ where
 ///
 /// If the parameter is `winnow::number::Endianness::Big`, parse a big endian i128 integer,
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian i128 integer.
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::streaming::i128;
 ///
 /// let be_i128 = |s| {
@@ -1292,9 +1292,9 @@ where
 
 /// Recognizes a big endian 4 bytes floating point number.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::be_f32;
 ///
 /// let parser = |s| {
@@ -1324,9 +1324,9 @@ where
 
 /// Recognizes a big endian 8 bytes floating point number.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::be_f64;
 ///
 /// let parser = |s| {
@@ -1356,9 +1356,9 @@ where
 
 /// Recognizes a little endian 4 bytes floating point number.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::le_f32;
 ///
 /// let parser = |s| {
@@ -1388,9 +1388,9 @@ where
 
 /// Recognizes a little endian 8 bytes floating point number.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::le_f64;
 ///
 /// let parser = |s| {
@@ -1422,10 +1422,10 @@ where
 ///
 /// If the parameter is `winnow::number::Endianness::Big`, parse a big endian f32 float,
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian f32 float.
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::streaming::f32;
 ///
 /// let be_f32 = |s| {
@@ -1468,10 +1468,10 @@ where
 ///
 /// If the parameter is `winnow::number::Endianness::Big`, parse a big endian f64 float,
 /// otherwise if `winnow::number::Endianness::Little` parse a little endian f64 float.
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::streaming::f64;
 ///
 /// let be_f64 = |s| {
@@ -1512,9 +1512,9 @@ where
 
 /// Recognizes a hex-encoded integer.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::hex_u32;
 ///
 /// let parser = |s| {
@@ -1578,10 +1578,10 @@ where
 
 /// Recognizes a floating point number in text format and returns the corresponding part of the input.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if it reaches the end of input.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if it reaches the end of input.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// use winnow::number::streaming::recognize_float;
 ///
 /// let parser = |s| {
@@ -1641,24 +1641,26 @@ where
   alt((
     |i: T| {
       recognize_float::<_, E>(i.clone()).map_err(|e| match e {
-        crate::ErrMode::Error(_) => crate::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)),
-        crate::ErrMode::Failure(_) => {
-          crate::ErrMode::Failure(E::from_error_kind(i, ErrorKind::Float))
+        crate::error::ErrMode::Error(_) => {
+          crate::error::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float))
         }
-        crate::ErrMode::Incomplete(needed) => crate::ErrMode::Incomplete(needed),
+        crate::error::ErrMode::Failure(_) => {
+          crate::error::ErrMode::Failure(E::from_error_kind(i, ErrorKind::Float))
+        }
+        crate::error::ErrMode::Incomplete(needed) => crate::error::ErrMode::Incomplete(needed),
       })
     },
     |i: T| {
       crate::bytes::streaming::tag_no_case::<_, _, E>("nan")(i.clone())
-        .map_err(|_err| crate::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::error::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)))
     },
     |i: T| {
       crate::bytes::streaming::tag_no_case::<_, _, E>("inf")(i.clone())
-        .map_err(|_err| crate::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::error::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)))
     },
     |i: T| {
       crate::bytes::streaming::tag_no_case::<_, _, E>("infinity")(i.clone())
-        .map_err(|_err| crate::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::error::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)))
     },
   ))(input)
 }
@@ -1668,7 +1670,7 @@ where
 /// It returns a tuple of (`sign`, `integer part`, `fraction part` and `exponent`) of the input
 /// data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::recognize_float_parts`][crate::character::recognize_float_parts] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -1744,11 +1746,11 @@ where
 
 /// Recognizes floating point number in text format and returns a f32.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::float;
 ///
 /// let parser = |s| {
@@ -1778,7 +1780,7 @@ where
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
     Some(f) => Ok((i, f)),
-    None => Err(crate::ErrMode::Error(E::from_error_kind(
+    None => Err(crate::error::ErrMode::Error(E::from_error_kind(
       i,
       crate::error::ErrorKind::Float,
     ))),
@@ -1787,11 +1789,11 @@ where
 
 /// Recognizes floating point number in text format and returns a f64.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::complete::double;
 ///
 /// let parser = |s| {
@@ -1821,7 +1823,7 @@ where
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
     Some(f) => Ok((i, f)),
-    None => Err(crate::ErrMode::Error(E::from_error_kind(
+    None => Err(crate::error::ErrMode::Error(E::from_error_kind(
       i,
       crate::error::ErrorKind::Float,
     ))),
@@ -1833,7 +1835,7 @@ mod tests {
   use super::*;
   use crate::error::Error;
   use crate::error::ErrorKind;
-  use crate::{ErrMode, Needed};
+  use crate::error::{ErrMode, Needed};
   use proptest::prelude::*;
 
   macro_rules! assert_parse(

@@ -13,12 +13,12 @@ use crate::IResult;
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{bytes::any, ErrMode, error::{Error, ErrorKind}, IResult};
+/// # use winnow::{bytes::any, error::ErrMode, error::{Error, ErrorKind}, IResult};
 /// fn parser(input: &str) -> IResult<&str, char> {
 ///     any(input)
 /// }
@@ -28,7 +28,7 @@ use crate::IResult;
 /// ```
 ///
 /// ```
-/// # use winnow::{bytes::any, ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{bytes::any, error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::input::Streaming;
 /// assert_eq!(any::<_, Error<_>, true>(Streaming("abc")), Ok((Streaming("bc"),'a')));
 /// assert_eq!(any::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
@@ -61,7 +61,7 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
@@ -74,7 +74,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// # use winnow::input::Streaming;
 /// use winnow::bytes::tag;
 ///
@@ -114,7 +114,7 @@ where
 /// It will return `Err(ErrMode::Error(Error::new(_, ErrorKind::Tag)))` if the input doesn't match the pattern.
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::tag_no_case;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
@@ -129,7 +129,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// # use winnow::input::Streaming;
 /// use winnow::bytes::tag_no_case;
 ///
@@ -171,13 +171,13 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
 /// ```
 /// # use winnow::*;
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::bytes::one_of;
 /// assert_eq!(one_of::<_, _, Error<_>, false>("abc")("b"), Ok(("", 'b')));
 /// assert_eq!(one_of::<_, _, Error<_>, false>("a")("bc"), Err(ErrMode::Error(Error::new("bc", ErrorKind::OneOf))));
@@ -193,7 +193,7 @@ where
 ///
 /// ```
 /// # use winnow::*;
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::bytes::one_of;
 /// assert_eq!(one_of::<_, _, Error<_>, true>("abc")(Streaming("b")), Ok((Streaming(""), 'b')));
@@ -230,12 +230,12 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::bytes::none_of;
 /// assert_eq!(none_of::<_, _, Error<_>, false>("abc")("z"), Ok(("", 'z')));
 /// assert_eq!(none_of::<_, _, Error<_>, false>("ab")("a"), Err(ErrMode::Error(Error::new("a", ErrorKind::NoneOf))));
@@ -243,7 +243,7 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// # use winnow::bytes::none_of;
 /// assert_eq!(none_of::<_, _, Error<_>, true>("abc")(Streaming("z")), Ok((Streaming(""), 'z')));
@@ -274,7 +274,7 @@ where
 /// *Streaming version*: will return a `ErrMode::Incomplete(Needed::new(1))` if the pattern reaches the end of the input.
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// use winnow::bytes::take_while;
 /// use winnow::input::AsChar;
 ///
@@ -289,7 +289,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// # use winnow::input::Streaming;
 /// use winnow::bytes::take_while;
 /// use winnow::input::AsChar;
@@ -329,7 +329,7 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::take_while1;
 /// use winnow::input::AsChar;
 ///
@@ -353,7 +353,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// # use winnow::input::Streaming;
 /// use winnow::bytes::take_while1;
 /// use winnow::input::AsChar;
@@ -403,7 +403,7 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::take_while_m_n;
 /// use winnow::input::AsChar;
 ///
@@ -419,7 +419,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// # use winnow::input::Streaming;
 /// use winnow::bytes::take_while_m_n;
 /// use winnow::input::AsChar;
@@ -461,7 +461,7 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// use winnow::bytes::take_till;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
@@ -475,7 +475,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// # use winnow::input::Streaming;
 /// use winnow::bytes::take_till;
 ///
@@ -516,7 +516,7 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::take_till1;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
@@ -539,7 +539,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// # use winnow::input::Streaming;
 /// use winnow::bytes::take_till1;
 ///
@@ -592,7 +592,7 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::take;
 ///
 /// fn take6(s: &str) -> IResult<&str, &str> {
@@ -618,7 +618,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// # use winnow::input::Streaming;
 /// use winnow::bytes::take;
 ///
@@ -661,7 +661,7 @@ where
 /// contain the pattern or if the input is smaller than the pattern.
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::take_until;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
@@ -675,7 +675,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// # use winnow::input::Streaming;
 /// use winnow::bytes::take_until;
 ///
@@ -718,7 +718,7 @@ where
 ///
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::take_until1;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
@@ -733,7 +733,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// # use winnow::input::Streaming;
 /// use winnow::bytes::take_until1;
 ///

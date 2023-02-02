@@ -7,10 +7,10 @@ mod complete {
   use crate::bytes::one_of;
   use crate::bytes::tag;
   use crate::combinator::opt;
+  use crate::error::ErrMode;
   use crate::error::Error;
   use crate::error::ErrorKind;
   use crate::input::ParseTo;
-  use crate::ErrMode;
   use crate::Parser;
   #[cfg(feature = "alloc")]
   use crate::{lib::std::string::String, lib::std::vec::Vec};
@@ -811,10 +811,11 @@ mod streaming {
   use crate::combinator::opt;
   use crate::error::Error;
   use crate::error::ErrorKind;
+  use crate::error::{ErrMode, Needed};
   use crate::input::ParseTo;
   use crate::input::Streaming;
   use crate::sequence::pair;
-  use crate::{ErrMode, IResult, Needed};
+  use crate::IResult;
   use proptest::prelude::*;
 
   macro_rules! assert_parse(

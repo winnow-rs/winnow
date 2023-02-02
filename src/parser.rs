@@ -1,299 +1,10 @@
 //! Basic types to build the parsers
 
-use self::Needed::{Size, Unknown};
 use crate::combinator::*;
 #[cfg(feature = "std")]
 use crate::error::DbgErr;
-use crate::error::{self, Context, ContextError, ErrorKind, ParseError};
+use crate::error::{Context, ContextError, IResult, ParseError};
 use crate::input::{AsChar, Compare, Input, InputIsStreaming, Location};
-use crate::lib::std::fmt;
-use core::num::NonZeroUsize;
-
-/// Holds the result of parsing functions
-///
-/// It depends on the input type `I`, the output type `O`, and the error type `E`
-/// (by default `(I, winnow::ErrorKind)`)
-///
-/// The `Ok` side is a pair containing the remainder of the input (the part of the data that
-/// was not parsed) and the produced value. The `Err` side contains an instance of `winnow::Err`.
-///
-/// Outside of the parsing code, you can use the [`FinishIResult::finish`] method to convert
-/// it to a more common result type
-pub type IResult<I, O, E = error::Error<I>> = Result<(I, O), ErrMode<E>>;
-
-/// Extension trait to convert a parser's [`IResult`] to a more manageable type
-pub trait FinishIResult<I, O, E> {
-  /// Converts the parser's [`IResult`] to a type that is more consumable by callers.
-  ///
-  /// Errors if the parser is not at the [end of input][crate::combinator::eof].  See
-  /// [`FinishIResult::finish_err`] if the remaining input is needed.
-  ///
-  /// # Panic
-  ///
-  /// If the result is `Err(ErrMode::Incomplete(_))`, this method will panic.
-  /// - "complete" parsers: It will not be an issue, `Incomplete` is never used
-  /// - "streaming" parsers: `Incomplete` will be returned if there's not enough data
-  /// for the parser to decide, and you should gather more data before parsing again.
-  /// Once the parser returns either `Ok(_)`, `Err(ErrMode::Error(_))` or `Err(ErrMode::Failure(_))`,
-  /// you can get out of the parsing loop and call `finish_err()` on the parser's result
-  fn finish(self) -> Result<O, E>;
-
-  /// Converts the parser's [`IResult`] to a type that is more consumable by errors.
-  ///
-  ///  It keeps the same `Ok` branch, and merges `ErrMode::Error` and `ErrMode::Failure` into the `Err`
-  ///  side.
-  ///
-  /// # Panic
-  ///
-  /// If the result is `Err(ErrMode::Incomplete(_))`, this method will panic as [`ErrMode::Incomplete`]
-  /// should only be set when the input is [`InputIsStreaming<false>`] which this isn't implemented
-  /// for.
-  fn finish_err(self) -> Result<(I, O), E>;
-}
-
-impl<I, O, E> FinishIResult<I, O, E> for IResult<I, O, E>
-where
-  I: Input,
-  // Force users to deal with `Incomplete` when `InputIsStreaming<true>`
-  I: InputIsStreaming<false>,
-  I: Clone,
-  E: crate::error::ParseError<I>,
-{
-  fn finish(self) -> Result<O, E> {
-    let (i, o) = self.finish_err()?;
-    crate::combinator::eof(i).finish_err()?;
-    Ok(o)
-  }
-
-  fn finish_err(self) -> Result<(I, O), E> {
-    match self {
-      Ok(res) => Ok(res),
-      Err(ErrMode::Error(e)) | Err(ErrMode::Failure(e)) => Err(e),
-      Err(ErrMode::Incomplete(_)) => {
-        panic!("`InputIsStreaming<false>` conflicts with `Err(ErrMode::Incomplete(_))`")
-      }
-    }
-  }
-}
-
-#[doc(hidden)]
-#[deprecated(
-  since = "8.0.0",
-  note = "Replaced with `FinishIResult` which is available via `winnow::prelude`"
-)]
-pub trait Finish<I, O, E> {
-  #[deprecated(
-    since = "8.0.0",
-    note = "Replaced with `FinishIResult::finish_err` which is available via `winnow::prelude`"
-  )]
-  fn finish(self) -> Result<(I, O), E>;
-}
-
-#[allow(deprecated)]
-impl<I, O, E> Finish<I, O, E> for IResult<I, O, E> {
-  fn finish(self) -> Result<(I, O), E> {
-    match self {
-      Ok(res) => Ok(res),
-      Err(ErrMode::Error(e)) | Err(ErrMode::Failure(e)) => Err(e),
-      Err(ErrMode::Incomplete(_)) => {
-        panic!("Cannot call `finish()` on `Err(ErrMode::Incomplete(_))`: this result means that the parser does not have enough data to decide, you should gather more data and try to reapply  the parser instead")
-      }
-    }
-  }
-}
-
-/// Contains information on needed data if a parser returned `Incomplete`
-///
-/// **Note:** This is only possible for `Input` types that implement [`InputIsStreaming<true>`],
-/// like [`Streaming`][crate::input::Streaming].
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub enum Needed {
-  /// Needs more data, but we do not know how much
-  Unknown,
-  /// Contains the required data size in bytes
-  Size(NonZeroUsize),
-}
-
-impl Needed {
-  /// Creates `Needed` instance, returns `Needed::Unknown` if the argument is zero
-  pub fn new(s: usize) -> Self {
-    match NonZeroUsize::new(s) {
-      Some(sz) => Needed::Size(sz),
-      None => Needed::Unknown,
-    }
-  }
-
-  /// Indicates if we know how many bytes we need
-  pub fn is_known(&self) -> bool {
-    *self != Unknown
-  }
-
-  /// Maps a `Needed` to `Needed` by applying a function to a contained `Size` value.
-  #[inline]
-  pub fn map<F: Fn(NonZeroUsize) -> usize>(self, f: F) -> Needed {
-    match self {
-      Unknown => Unknown,
-      Size(n) => Needed::new(f(n)),
-    }
-  }
-}
-
-/// The `Err` enum indicates the parser was not successful
-///
-/// It has three cases:
-///
-/// * `Incomplete` indicates that more data is needed to decide. The [`Needed`] enum
-/// can contain how many additional bytes are necessary. If you are sure your parser
-/// is working on full data, you can wrap your parser with the `complete` combinator
-/// to transform that case in `Error`
-/// * `Error` means some parser did not succeed, but another one might (as an example,
-/// when testing different branches of an `alt` combinator)
-/// * `Failure` indicates an unrecoverable error. As an example, if you recognize a prefix
-/// to decide on the next parser to apply, and that parser fails, you know there's no need
-/// to try other parsers, you were already in the right branch, so the data is invalid
-///
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub enum ErrMode<E> {
-  /// There was not enough data
-  ///
-  /// This must only be set when the `Input` is [`InputIsStreaming<true>`], like with
-  /// [`Streaming`][crate::input::Streaming]
-  ///
-  /// Convert this into an `Error` with [`Parser::complete`][Parser::complete]
-  Incomplete(Needed),
-  /// The parser had an error (recoverable)
-  Error(E),
-  /// The parser had an unrecoverable error: we got to the right
-  /// branch and we know other branches won't work, so backtrack
-  /// as fast as possible
-  Failure(E),
-}
-
-impl<E> ErrMode<E> {
-  /// Tests if the result is Incomplete
-  pub fn is_incomplete(&self) -> bool {
-    matches!(self, ErrMode::Incomplete(_))
-  }
-
-  /// Applies the given function to the inner error
-  pub fn map<E2, F>(self, f: F) -> ErrMode<E2>
-  where
-    F: FnOnce(E) -> E2,
-  {
-    match self {
-      ErrMode::Incomplete(n) => ErrMode::Incomplete(n),
-      ErrMode::Failure(t) => ErrMode::Failure(f(t)),
-      ErrMode::Error(t) => ErrMode::Error(f(t)),
-    }
-  }
-
-  /// Automatically converts between errors if the underlying type supports it
-  pub fn convert<F>(e: ErrMode<F>) -> Self
-  where
-    F: Into<E>,
-  {
-    e.map(crate::lib::std::convert::Into::into)
-  }
-}
-
-impl<T> ErrMode<(T, ErrorKind)> {
-  /// Maps `ErrMode<(T, ErrorKind)>` to `ErrMode<(U, ErrorKind)>` with the given `F: T -> U`
-  pub fn map_input<U, F>(self, f: F) -> ErrMode<(U, ErrorKind)>
-  where
-    F: FnOnce(T) -> U,
-  {
-    match self {
-      ErrMode::Incomplete(n) => ErrMode::Incomplete(n),
-      ErrMode::Failure((input, k)) => ErrMode::Failure((f(input), k)),
-      ErrMode::Error((input, k)) => ErrMode::Error((f(input), k)),
-    }
-  }
-}
-
-impl<T> ErrMode<error::Error<T>> {
-  /// Maps `ErrMode<error::Error<T>>` to `ErrMode<error::Error<U>>` with the given `F: T -> U`
-  pub fn map_input<U, F>(self, f: F) -> ErrMode<error::Error<U>>
-  where
-    F: FnOnce(T) -> U,
-  {
-    match self {
-      ErrMode::Incomplete(n) => ErrMode::Incomplete(n),
-      ErrMode::Failure(error::Error { input, kind }) => ErrMode::Failure(error::Error {
-        input: f(input),
-        kind,
-      }),
-      ErrMode::Error(error::Error { input, kind }) => ErrMode::Error(error::Error {
-        input: f(input),
-        kind,
-      }),
-    }
-  }
-}
-
-#[cfg(feature = "alloc")]
-use crate::lib::std::{borrow::ToOwned, string::String, vec::Vec};
-impl ErrMode<(&[u8], ErrorKind)> {
-  /// Obtaining ownership
-  #[cfg(feature = "alloc")]
-  pub fn to_owned(self) -> ErrMode<(Vec<u8>, ErrorKind)> {
-    self.map_input(ToOwned::to_owned)
-  }
-}
-
-impl ErrMode<(&str, ErrorKind)> {
-  /// Obtaining ownership
-  #[cfg(feature = "alloc")]
-  pub fn to_owned(self) -> ErrMode<(String, ErrorKind)> {
-    self.map_input(ToOwned::to_owned)
-  }
-}
-
-impl ErrMode<error::Error<&[u8]>> {
-  /// Obtaining ownership
-  #[cfg(feature = "alloc")]
-  pub fn to_owned(self) -> ErrMode<error::Error<Vec<u8>>> {
-    self.map_input(ToOwned::to_owned)
-  }
-}
-
-impl ErrMode<error::Error<&str>> {
-  /// Obtaining ownership
-  #[cfg(feature = "alloc")]
-  pub fn to_owned(self) -> ErrMode<error::Error<String>> {
-    self.map_input(ToOwned::to_owned)
-  }
-}
-
-impl<E: Eq> Eq for ErrMode<E> {}
-
-impl<E> fmt::Display for ErrMode<E>
-where
-  E: fmt::Debug,
-{
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    match self {
-      ErrMode::Incomplete(Needed::Size(u)) => write!(f, "Parsing requires {} bytes/chars", u),
-      ErrMode::Incomplete(Needed::Unknown) => write!(f, "Parsing requires more data"),
-      ErrMode::Failure(c) => write!(f, "Parsing Failure: {:?}", c),
-      ErrMode::Error(c) => write!(f, "Parsing Error: {:?}", c),
-    }
-  }
-}
-
-#[cfg(feature = "std")]
-use std::error::Error;
-
-#[cfg(feature = "std")]
-impl<E> Error for ErrMode<E>
-where
-  E: fmt::Debug,
-{
-  fn source(&self) -> Option<&(dyn Error + 'static)> {
-    None // no underlying error
-  }
-}
 
 /// All nom parsers implement this trait
 ///
@@ -398,7 +109,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult, Parser};
+  /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::character::alpha1;
   /// # fn main() {
   ///
@@ -421,7 +132,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult, Parser};
+  /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::character::alpha1;
   /// # fn main() {
   ///
@@ -472,7 +183,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult, Parser};
+  /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::character::{alpha1};
   /// use winnow::sequence::separated_pair;
   /// # fn main() {
@@ -503,7 +214,7 @@ pub trait Parser<I, O, E> {
   ///
   /// ```rust
   /// # use winnow::prelude::*;
-  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult};
+  /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult};
   /// use winnow::character::{alpha1};
   /// use winnow::bytes::tag;
   /// use winnow::sequence::separated_pair;
@@ -541,7 +252,7 @@ pub trait Parser<I, O, E> {
   ///
   /// ```rust
   /// # use winnow::prelude::*;
-  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, input::Input};
+  /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, input::Input};
   /// use winnow::input::Located;
   /// use winnow::character::alpha1;
   /// use winnow::sequence::separated_pair;
@@ -572,7 +283,7 @@ pub trait Parser<I, O, E> {
   ///
   /// ```rust
   /// # use winnow::prelude::*;
-  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult, input::Input};
+  /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, input::Input};
   /// use winnow::input::Located;
   /// use winnow::character::alpha1;
   /// use winnow::bytes::tag;
@@ -611,7 +322,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// use winnow::{ErrMode,error::ErrorKind, error::Error, IResult,Parser};
+  /// use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult,Parser};
   /// use winnow::character::digit1;
   /// # fn main() {
   ///
@@ -637,7 +348,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult, Parser};
+  /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::character::digit1;
   /// # fn main() {
   ///
@@ -666,7 +377,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult, Parser};
+  /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::character::digit1;
   /// # fn main() {
   ///
@@ -695,7 +406,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult, Parser};
+  /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::bytes::take;
   /// use winnow::number::u8;
   /// # fn main() {
@@ -720,7 +431,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult, Parser};
+  /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
   /// use winnow::character::digit1;
   /// use winnow::bytes::take;
   /// # fn main() {
@@ -748,7 +459,7 @@ pub trait Parser<I, O, E> {
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{ErrMode,error::ErrorKind, error::Error, IResult, Parser};
+  /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
   /// # use winnow::character::alpha1;
   /// # fn main() {
   ///
@@ -780,12 +491,12 @@ pub trait Parser<I, O, E> {
     Context::new(self, context)
   }
 
-  /// Transforms [`Incomplete`][crate::ErrMode::Incomplete] into [`Error`][crate::ErrMode::Error]
+  /// Transforms [`Incomplete`][crate::error::ErrMode::Incomplete] into [`Error`][crate::error::ErrMode::Error]
   ///
   /// # Example
   ///
   /// ```rust
-  /// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, input::Streaming, Parser};
+  /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, input::Streaming, Parser};
   /// # use winnow::bytes::take;
   /// # fn main() {
   ///
@@ -884,7 +595,7 @@ where
 ///
 /// ```
 /// # use winnow::prelude::*;
-/// # use winnow::{ErrMode, error::{ErrorKind, Error}};
+/// # use winnow::{error::ErrMode, error::{ErrorKind, Error}};
 /// fn parser(i: &[u8]) -> IResult<&[u8], u8> {
 ///     b'a'.parse_next(i)
 /// }
@@ -910,7 +621,7 @@ where
 ///
 /// ```
 /// # use winnow::prelude::*;
-/// # use winnow::{ErrMode, error::{ErrorKind, Error}};
+/// # use winnow::{error::ErrMode, error::{ErrorKind, Error}};
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     'a'.parse_next(i)
 /// }
@@ -936,7 +647,7 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::branch::alt;
 /// # use winnow::bytes::take;
 ///
@@ -964,7 +675,7 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::branch::alt;
 /// # use winnow::bytes::take;
 ///
@@ -992,7 +703,7 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}};
 /// # use winnow::branch::alt;
 /// # use winnow::bytes::take;
 ///
@@ -1090,8 +801,10 @@ impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a> {
 mod tests {
   use super::*;
   use crate::bytes::{tag, take};
+  use crate::error::ErrMode;
   use crate::error::Error;
   use crate::error::ErrorKind;
+  use crate::error::Needed;
   use crate::input::Streaming;
   use crate::number::be_u16;
 
@@ -1122,7 +835,7 @@ mod tests {
   #[test]
   fn single_element_tuples() {
     use crate::character::alpha1;
-    use crate::{error::ErrorKind, ErrMode};
+    use crate::error::ErrorKind;
 
     let mut parser = (alpha1,);
     assert_eq!(parser.parse_next("abc123def"), Ok(("123def", ("abc",))));

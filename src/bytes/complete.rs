@@ -2,6 +2,7 @@
 
 #![allow(deprecated)]
 
+use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{
@@ -9,7 +10,7 @@ use crate::input::{
   FindSlice, Input, Offset, SliceLen, ToUsize,
 };
 use crate::lib::std::result::Result::Ok;
-use crate::{ErrMode, IResult, Parser};
+use crate::{IResult, Parser};
 
 pub(crate) fn any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Input>::Token, E>
 where
@@ -28,7 +29,7 @@ where
 /// It will return `Err(ErrMode::Error((_, ErrorKind::Tag)))` if the input doesn't match the pattern
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::complete::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
@@ -78,7 +79,7 @@ where
 /// It will return `Err(ErrMode::Error((_, ErrorKind::Tag)))` if the input doesn't match the pattern.
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::complete::tag_no_case;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
@@ -162,7 +163,7 @@ where
 /// It will return a `ErrMode::Error(("", ErrorKind::IsNot))` if the pattern wasn't met.
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::complete::is_not;
 ///
 /// fn not_space(s: &str) -> IResult<&str, &str> {
@@ -207,7 +208,7 @@ where
 /// It will return a `Err(ErrMode::Error((_, ErrorKind::IsA)))` if the pattern wasn't met.
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::complete::is_a;
 ///
 /// fn hex(s: &str) -> IResult<&str, &str> {
@@ -251,7 +252,7 @@ where
 /// takes the input and returns a bool)*.
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// use winnow::bytes::complete::take_while;
 /// use winnow::input::AsChar;
 ///
@@ -296,7 +297,7 @@ where
 /// It will return an `Err(ErrMode::Error((_, ErrorKind::TakeWhile1)))` if the pattern wasn't met.
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::complete::take_while1;
 /// use winnow::input::AsChar;
 ///
@@ -342,7 +343,7 @@ where
 /// of range (m <= len <= n).
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::complete::take_while_m_n;
 /// use winnow::input::AsChar;
 ///
@@ -439,7 +440,7 @@ where
 /// takes the input and returns a bool)*.
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// use winnow::bytes::complete::take_till;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
@@ -485,7 +486,7 @@ where
 /// predicate matches the first input.
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::complete::take_till1;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
@@ -528,7 +529,7 @@ where
 /// It will return `Err(ErrMode::Error((_, ErrorKind::Eof)))` if the input is shorter than the argument.
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::complete::take;
 ///
 /// fn take6(s: &str) -> IResult<&str, &str> {
@@ -585,7 +586,7 @@ where
 /// if the pattern wasn't met.
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::complete::take_until;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
@@ -633,7 +634,7 @@ where
 /// if the pattern wasn't met.
 /// # Example
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::complete::take_until1;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
@@ -683,7 +684,7 @@ where
 /// * The third argument matches the escaped characters
 /// # Example
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// # use winnow::character::complete::digit1;
 /// use winnow::bytes::complete::escaped;
 /// use winnow::character::complete::one_of;
@@ -796,7 +797,7 @@ where
 /// As an example, the chain `abc\tdef` could be `abc    def` (it also consumes the control character)
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// # use std::str::from_utf8;
 /// use winnow::bytes::complete::{escaped_transform, tag};
 /// use winnow::character::complete::alpha1;

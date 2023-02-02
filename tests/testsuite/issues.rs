@@ -4,7 +4,7 @@
 
 use winnow::input::Streaming;
 use winnow::prelude::*;
-use winnow::{error::ErrorKind, ErrMode, IResult, Needed};
+use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 
 #[allow(dead_code)]
 struct Range {
@@ -137,7 +137,7 @@ mod issue_647 {
   use winnow::bytes::tag;
   use winnow::multi::separated_list0;
   use winnow::prelude::*;
-  use winnow::{error::Error, number::be_f64, ErrMode, IResult};
+  use winnow::{error::ErrMode, error::Error, number::be_f64, IResult};
   pub type Input<'a> = winnow::input::Streaming<&'a [u8]>;
 
   #[derive(PartialEq, Debug, Clone)]
@@ -266,12 +266,12 @@ fn issue_1459_clamp_capacity() {
   // shouldn't panic
   use winnow::multi::many_m_n;
   let mut parser = many_m_n::<_, _, (), _>(usize::MAX, usize::MAX, 'a');
-  assert_eq!(parser("a"), Err(winnow::ErrMode::Error(())));
+  assert_eq!(parser("a"), Err(winnow::error::ErrMode::Error(())));
 
   // shouldn't panic
   use winnow::multi::count;
   let mut parser = count::<_, _, (), _>('a', usize::MAX);
-  assert_eq!(parser("a"), Err(winnow::ErrMode::Error(())));
+  assert_eq!(parser("a"), Err(winnow::error::ErrMode::Error(())));
 }
 
 #[test]

@@ -1,15 +1,15 @@
 use super::*;
 use crate::bytes::{tag, take};
-use crate::error::{Error, ErrorKind};
+use crate::error::{ErrMode, Error, ErrorKind, Needed};
 use crate::input::Streaming;
 use crate::number::be_u16;
-use crate::{ErrMode, IResult, Needed};
+use crate::IResult;
 
 #[test]
 fn single_element_tuples() {
   #![allow(deprecated)]
   use crate::character::alpha1;
-  use crate::{error::ErrorKind, ErrMode};
+  use crate::error::ErrorKind;
 
   let mut parser = tuple((alpha1,));
   assert_eq!(parser("abc123def"), Ok(("123def", ("abc",))));

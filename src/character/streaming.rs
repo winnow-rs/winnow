@@ -5,21 +5,23 @@
 #![allow(deprecated)]
 
 use crate::combinator::opt;
+use crate::error::ErrMode;
 use crate::error::ErrorKind;
+use crate::error::Needed;
 use crate::error::ParseError;
 use crate::input::{
   split_at_offset1_streaming, split_at_offset_streaming, AsBytes, AsChar, ContainsToken, Input,
 };
 use crate::input::{Compare, CompareResult};
-use crate::{ErrMode, IResult, Needed};
+use crate::IResult;
 
 /// Recognizes one character.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::{ErrorKind, Error}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{ErrorKind, Error}, error::Needed, IResult};
 /// # use winnow::character::streaming::char;
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     char('a')(i)
@@ -60,11 +62,11 @@ where
 
 /// Recognizes one character and checks that it satisfies a predicate
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::{ErrorKind, Error}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{ErrorKind, Error}, error::Needed, IResult};
 /// # use winnow::character::streaming::satisfy;
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     satisfy(|c| c == 'a' || c == 'b')(i)
@@ -113,11 +115,11 @@ where
 
 /// Recognizes one of the provided characters.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::character::streaming::one_of;
 /// assert_eq!(one_of::<_, _, Error<_>>("abc")("b"), Ok(("", 'b')));
 /// assert_eq!(one_of::<_, _, Error<_>>("a")("bc"), Err(ErrMode::Error(Error::new("bc", ErrorKind::OneOf))));
@@ -140,11 +142,11 @@ where
 
 /// Recognizes a character that is not in the provided characters.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::character::streaming::none_of;
 /// assert_eq!(none_of::<_, _, Error<_>>("abc")("z"), Ok(("", 'z')));
 /// assert_eq!(none_of::<_, _, Error<_>>("ab")("a"), Err(ErrMode::Error(Error::new("a", ErrorKind::NoneOf))));
@@ -167,11 +169,11 @@ where
 
 /// Recognizes the string "\r\n".
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::character::streaming::crlf;
 /// assert_eq!(crlf::<_, Error<_>>("\r\nc"), Ok(("c", "\r\n")));
 /// assert_eq!(crlf::<_, Error<_>>("ab\r\nc"), Err(ErrMode::Error(Error::new("ab\r\nc", ErrorKind::CrLf))));
@@ -201,11 +203,11 @@ where
 
 /// Recognizes a string of any char except '\r\n' or '\n'.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::streaming::not_line_ending;
 /// assert_eq!(not_line_ending::<_, Error<_>>("ab\r\nc"), Ok(("\r\nc", "ab")));
 /// assert_eq!(not_line_ending::<_, Error<_>>("abc"), Err(ErrMode::Incomplete(Needed::Unknown)));
@@ -255,11 +257,11 @@ where
 
 /// Recognizes an end of line (both '\n' and '\r\n').
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::character::streaming::line_ending;
 /// assert_eq!(line_ending::<_, Error<_>>("\r\nc"), Ok(("c", "\r\n")));
 /// assert_eq!(line_ending::<_, Error<_>>("ab\r\nc"), Err(ErrMode::Error(Error::new("ab\r\nc", ErrorKind::CrLf))));
@@ -291,11 +293,11 @@ where
 
 /// Matches a newline character '\\n'.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::character::streaming::newline;
 /// assert_eq!(newline::<_, Error<_>>("\nc"), Ok(("c", '\n')));
 /// assert_eq!(newline::<_, Error<_>>("\r\nc"), Err(ErrMode::Error(Error::new("\r\nc", ErrorKind::Char))));
@@ -317,11 +319,11 @@ where
 
 /// Matches a tab character '\t'.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::character::streaming::tab;
 /// assert_eq!(tab::<_, Error<_>>("\tc"), Ok(("c", '\t')));
 /// assert_eq!(tab::<_, Error<_>>("\r\nc"), Err(ErrMode::Error(Error::new("\r\nc", ErrorKind::Char))));
@@ -344,11 +346,11 @@ where
 /// Matches one byte as a character. Note that the input type will
 /// accept a `str`, but not a `&[u8]`, unlike many other nom parsers.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
-/// # use winnow::{character::streaming::anychar, ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{character::streaming::anychar, error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// assert_eq!(anychar::<_, Error<_>>("abc"), Ok(("bc",'a')));
 /// assert_eq!(anychar::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
@@ -368,12 +370,12 @@ where
 
 /// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphabetic character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::character::streaming::alpha0;
 /// assert_eq!(alpha0::<_, Error<_>>("ab1c"), Ok(("1c", "ab")));
 /// assert_eq!(alpha0::<_, Error<_>>("1c"), Ok(("1c", "")));
@@ -395,12 +397,12 @@ where
 
 /// Recognizes one or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphabetic character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::character::streaming::alpha1;
 /// assert_eq!(alpha1::<_, Error<_>>("aB1c"), Ok(("1c", "aB")));
 /// assert_eq!(alpha1::<_, Error<_>>("1c"), Err(ErrMode::Error(Error::new("1c", ErrorKind::Alpha))));
@@ -422,12 +424,12 @@ where
 
 /// Recognizes zero or more ASCII numerical characters: 0-9
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non digit character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::character::streaming::digit0;
 /// assert_eq!(digit0::<_, Error<_>>("21c"), Ok(("c", "21")));
 /// assert_eq!(digit0::<_, Error<_>>("a21c"), Ok(("a21c", "")));
@@ -449,12 +451,12 @@ where
 
 /// Recognizes one or more ASCII numerical characters: 0-9
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non digit character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::character::streaming::digit1;
 /// assert_eq!(digit1::<_, Error<_>>("21c"), Ok(("c", "21")));
 /// assert_eq!(digit1::<_, Error<_>>("c1"), Err(ErrMode::Error(Error::new("c1", ErrorKind::Digit))));
@@ -476,12 +478,12 @@ where
 
 /// Recognizes zero or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non hexadecimal digit character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::character::streaming::hex_digit0;
 /// assert_eq!(hex_digit0::<_, Error<_>>("21cZ"), Ok(("Z", "21c")));
 /// assert_eq!(hex_digit0::<_, Error<_>>("Z21c"), Ok(("Z21c", "")));
@@ -503,12 +505,12 @@ where
 
 /// Recognizes one or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non hexadecimal digit character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::character::streaming::hex_digit1;
 /// assert_eq!(hex_digit1::<_, Error<_>>("21cZ"), Ok(("Z", "21c")));
 /// assert_eq!(hex_digit1::<_, Error<_>>("H2"), Err(ErrMode::Error(Error::new("H2", ErrorKind::HexDigit))));
@@ -530,12 +532,12 @@ where
 
 /// Recognizes zero or more octal characters: 0-7
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non octal digit character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::character::streaming::oct_digit0;
 /// assert_eq!(oct_digit0::<_, Error<_>>("21cZ"), Ok(("cZ", "21")));
 /// assert_eq!(oct_digit0::<_, Error<_>>("Z21c"), Ok(("Z21c", "")));
@@ -557,12 +559,12 @@ where
 
 /// Recognizes one or more octal characters: 0-7
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non octal digit character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::character::streaming::oct_digit1;
 /// assert_eq!(oct_digit1::<_, Error<_>>("21cZ"), Ok(("cZ", "21")));
 /// assert_eq!(oct_digit1::<_, Error<_>>("H2"), Err(ErrMode::Error(Error::new("H2", ErrorKind::OctDigit))));
@@ -584,12 +586,12 @@ where
 
 /// Recognizes zero or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphanumerical character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::character::streaming::alphanumeric0;
 /// assert_eq!(alphanumeric0::<_, Error<_>>("21cZ%1"), Ok(("%1", "21cZ")));
 /// assert_eq!(alphanumeric0::<_, Error<_>>("&Z21c"), Ok(("&Z21c", "")));
@@ -611,12 +613,12 @@ where
 
 /// Recognizes one or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphanumerical character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::character::streaming::alphanumeric1;
 /// assert_eq!(alphanumeric1::<_, Error<_>>("21cZ%1"), Ok(("%1", "21cZ")));
 /// assert_eq!(alphanumeric1::<_, Error<_>>("&H2"), Err(ErrMode::Error(Error::new("&H2", ErrorKind::AlphaNumeric))));
@@ -638,12 +640,12 @@ where
 
 /// Recognizes zero or more spaces and tabs.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::character::streaming::space0;
 /// assert_eq!(space0::<_, Error<_>>(" \t21c"), Ok(("21c", " \t")));
 /// assert_eq!(space0::<_, Error<_>>("Z21c"), Ok(("Z21c", "")));
@@ -667,12 +669,12 @@ where
 }
 /// Recognizes one or more spaces and tabs.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::character::streaming::space1;
 /// assert_eq!(space1::<_, Error<_>>(" \t21c"), Ok(("21c", " \t")));
 /// assert_eq!(space1::<_, Error<_>>("H2"), Err(ErrMode::Error(Error::new("H2", ErrorKind::Space))));
@@ -701,12 +703,12 @@ where
 
 /// Recognizes zero or more spaces, tabs, carriage returns and line feeds.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::character::streaming::multispace0;
 /// assert_eq!(multispace0::<_, Error<_>>(" \t\n\r21c"), Ok(("21c", " \t\n\r")));
 /// assert_eq!(multispace0::<_, Error<_>>("Z21c"), Ok(("Z21c", "")));
@@ -731,12 +733,12 @@ where
 
 /// Recognizes one or more spaces, tabs, carriage returns and line feeds.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::character::streaming::multispace1;
 /// assert_eq!(multispace1::<_, Error<_>>(" \t\n\r21c"), Ok(("21c", " \t\n\r")));
 /// assert_eq!(multispace1::<_, Error<_>>("H2"), Err(ErrMode::Error(Error::new("H2", ErrorKind::MultiSpace))));
@@ -877,9 +879,10 @@ mod tests {
   use crate::branch::alt;
   use crate::error::Error;
   use crate::error::ErrorKind;
+  use crate::error::{ErrMode, Needed};
   use crate::input::ParseTo;
   use crate::sequence::pair;
-  use crate::{ErrMode, IResult, Needed};
+  use crate::IResult;
   use proptest::prelude::*;
 
   macro_rules! assert_parse(

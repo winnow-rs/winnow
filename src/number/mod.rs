@@ -26,13 +26,13 @@ pub enum Endianness {
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_u8;
 ///
 /// let parser = |s| {
@@ -44,7 +44,7 @@ pub enum Endianness {
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_u8;
 ///
@@ -72,13 +72,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_u16;
 ///
 /// let parser = |s| {
@@ -90,7 +90,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_u16;
 ///
@@ -119,13 +119,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_u24;
 ///
 /// let parser = |s| {
@@ -137,7 +137,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_u24;
 ///
@@ -166,13 +166,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_u32;
 ///
 /// let parser = |s| {
@@ -184,7 +184,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_u32;
 ///
@@ -213,13 +213,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_u64;
 ///
 /// let parser = |s| {
@@ -231,7 +231,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_u64;
 ///
@@ -260,13 +260,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_u128;
 ///
 /// let parser = |s| {
@@ -278,7 +278,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_u128;
 ///
@@ -307,13 +307,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_i8;
 ///
 /// let parser = |s| {
@@ -325,7 +325,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_i8;
 ///
@@ -351,13 +351,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_i16;
 ///
 /// let parser = |s| {
@@ -369,7 +369,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_i16;
 ///
@@ -396,13 +396,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_i24;
 ///
 /// let parser = |s| {
@@ -414,7 +414,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_i24;
 ///
@@ -441,13 +441,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_i32;
 ///
 /// let parser = |s| {
@@ -459,7 +459,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_i32;
 ///
@@ -486,13 +486,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_i64;
 ///
 /// let parser = |s| {
@@ -504,7 +504,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_i64;
 ///
@@ -531,13 +531,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_i128;
 ///
 /// let parser = |s| {
@@ -549,7 +549,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_i128;
 ///
@@ -576,13 +576,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_u8;
 ///
 /// let parser = |s| {
@@ -594,7 +594,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_u8;
 ///
@@ -620,13 +620,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_u16;
 ///
 /// let parser = |s| {
@@ -638,7 +638,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_u16;
 ///
@@ -667,13 +667,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_u24;
 ///
 /// let parser = |s| {
@@ -685,7 +685,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_u24;
 ///
@@ -714,13 +714,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_u32;
 ///
 /// let parser = |s| {
@@ -732,7 +732,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_u32;
 ///
@@ -761,13 +761,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_u64;
 ///
 /// let parser = |s| {
@@ -779,7 +779,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_u64;
 ///
@@ -808,13 +808,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_u128;
 ///
 /// let parser = |s| {
@@ -826,7 +826,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_u128;
 ///
@@ -855,13 +855,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_i8;
 ///
 /// let parser = |s| {
@@ -873,7 +873,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_i8;
 ///
@@ -899,13 +899,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_i16;
 ///
 /// let parser = |s| {
@@ -917,7 +917,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_i16;
 ///
@@ -946,13 +946,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_i24;
 ///
 /// let parser = |s| {
@@ -964,7 +964,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_i24;
 ///
@@ -993,13 +993,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_i32;
 ///
 /// let parser = |s| {
@@ -1011,7 +1011,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_i32;
 ///
@@ -1040,13 +1040,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_i64;
 ///
 /// let parser = |s| {
@@ -1058,7 +1058,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_i64;
 ///
@@ -1087,13 +1087,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_i128;
 ///
 /// let parser = |s| {
@@ -1105,7 +1105,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_i128;
 ///
@@ -1136,13 +1136,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::u8;
 ///
 /// let parser = |s| {
@@ -1154,8 +1154,8 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::u8;
 ///
@@ -1186,13 +1186,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::u16;
 ///
 /// let be_u16 = |s| {
@@ -1211,8 +1211,8 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::u16;
 ///
@@ -1253,13 +1253,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::u24;
 ///
 /// let be_u24 = |s| {
@@ -1278,8 +1278,8 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::u24;
 ///
@@ -1320,13 +1320,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::u32;
 ///
 /// let be_u32 = |s| {
@@ -1345,8 +1345,8 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::u32;
 ///
@@ -1387,13 +1387,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::u64;
 ///
 /// let be_u64 = |s| {
@@ -1412,8 +1412,8 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::u64;
 ///
@@ -1454,13 +1454,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::u128;
 ///
 /// let be_u128 = |s| {
@@ -1479,8 +1479,8 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::u128;
 ///
@@ -1520,13 +1520,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::i8;
 ///
 /// let parser = |s| {
@@ -1538,8 +1538,8 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::i8;
 ///
@@ -1570,13 +1570,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::i16;
 ///
 /// let be_i16 = |s| {
@@ -1595,8 +1595,8 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::i16;
 ///
@@ -1637,13 +1637,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::i24;
 ///
 /// let be_i24 = |s| {
@@ -1662,8 +1662,8 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::i24;
 ///
@@ -1704,13 +1704,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::i32;
 ///
 /// let be_i32 = |s| {
@@ -1729,8 +1729,8 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::i32;
 ///
@@ -1771,13 +1771,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::i64;
 ///
 /// let be_i64 = |s| {
@@ -1796,8 +1796,8 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::i64;
 ///
@@ -1838,13 +1838,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::i128;
 ///
 /// let be_i128 = |s| {
@@ -1863,8 +1863,8 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::i128;
 ///
@@ -1902,13 +1902,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_f32;
 ///
 /// let parser = |s| {
@@ -1920,7 +1920,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_f32;
 ///
@@ -1949,13 +1949,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_f64;
 ///
 /// let parser = |s| {
@@ -1967,7 +1967,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_f64;
 ///
@@ -1996,13 +1996,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_f32;
 ///
 /// let parser = |s| {
@@ -2014,7 +2014,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_f32;
 ///
@@ -2043,13 +2043,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_f64;
 ///
 /// let parser = |s| {
@@ -2061,7 +2061,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_f64;
 ///
@@ -2093,13 +2093,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::f32;
 ///
 /// let be_f32 = |s| {
@@ -2118,8 +2118,8 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::f32;
 ///
@@ -2160,13 +2160,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::f64;
 ///
 /// let be_f64 = |s| {
@@ -2185,8 +2185,8 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::f64;
 ///
@@ -2224,13 +2224,13 @@ where
 ///
 /// *Complete version*: Will parse until the end of input if it has less than 8 bytes.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::hex_u32;
 ///
 /// let parser = |s| {
@@ -2243,7 +2243,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::hex_u32;
 ///

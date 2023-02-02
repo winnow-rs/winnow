@@ -6,10 +6,10 @@ pub mod streaming;
 #[cfg(test)]
 mod tests;
 
-use crate::error::{ErrorConvert, ErrorKind, ParseError};
+use crate::error::{ErrMode, ErrorConvert, ErrorKind, Needed, ParseError};
 use crate::input::{AsBytes, Input, InputIsStreaming, ToUsize};
 use crate::lib::std::ops::{AddAssign, Shl, Shr};
-use crate::{ErrMode, IResult, Needed, Parser};
+use crate::{IResult, Parser};
 
 /// Converts a byte-level input to a bit-level input, for consumption by a parser that uses bits.
 ///
@@ -133,7 +133,7 @@ where
 /// assert_eq!(parser(([0b00010010].as_ref(), 4), 4), Ok((([].as_ref(), 0), 0b00000010)));
 ///
 /// // Tries to consume 12 bits but only 8 are available
-/// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(winnow::ErrMode::Error(Error{input: ([0b00010010].as_ref(), 0), kind: ErrorKind::Eof })));
+/// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(winnow::error::ErrMode::Error(Error{input: ([0b00010010].as_ref(), 0), kind: ErrorKind::Eof })));
 /// ```
 #[inline(always)]
 pub fn take<I, O, C, E: ParseError<(I, usize)>, const STREAMING: bool>(
@@ -183,7 +183,7 @@ where
 /// // The lowest 2 bits of 0b11111111 and 0b00000001 are different.
 /// assert_eq!(
 ///     parser(0b000000_01, 2, ([0b111111_11].as_ref(), 0)),
-///     Err(winnow::ErrMode::Error(Error {
+///     Err(winnow::error::ErrMode::Error(Error {
 ///         input: ([0b11111111].as_ref(), 0),
 ///         kind: ErrorKind::TagBits
 ///     }))
@@ -192,7 +192,7 @@ where
 /// // The lowest 8 bits of 0b11111111 and 0b11111110 are different.
 /// assert_eq!(
 ///     parser(0b11111110, 8, ([0b11111111].as_ref(), 0)),
-///     Err(winnow::ErrMode::Error(Error {
+///     Err(winnow::error::ErrMode::Error(Error {
 ///         input: ([0b11111111].as_ref(), 0),
 ///         kind: ErrorKind::TagBits
 ///     }))

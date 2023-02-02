@@ -3,12 +3,13 @@
 #[cfg(test)]
 mod tests;
 
+use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{Input, InputIsStreaming, ToUsize, UpdateSlice};
 #[cfg(feature = "alloc")]
 use crate::lib::std::vec::Vec;
-use crate::{ErrMode, IResult, Parser};
+use crate::{IResult, Parser};
 
 /// Don't pre-allocate more than 64KiB when calling `Vec::with_capacity`.
 ///
@@ -34,7 +35,7 @@ const MAX_INITIAL_CAPACITY_BYTES: usize = 65536;
 /// return an error, to prevent going into an infinite loop
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// use winnow::multi::many0;
 /// use winnow::bytes::tag;
 ///
@@ -88,7 +89,7 @@ where
 /// to prevent going into an infinite loop.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::many1;
 /// use winnow::bytes::tag;
 ///
@@ -143,7 +144,7 @@ where
 /// `f` keeps going so long as `g` produces [`ErrMode::Error`]. To instead chain an error up, see [`cut`][crate::combinator::cut].
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::many_till;
 /// use winnow::bytes::tag;
 ///
@@ -207,7 +208,7 @@ where
 /// * `f` Parses the elements of the list.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// use winnow::multi::separated_list0;
 /// use winnow::bytes::tag;
 ///
@@ -283,7 +284,7 @@ where
 /// * `sep` Parses the separator between list elements.
 /// * `f` Parses the elements of the list.
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::separated_list1;
 /// use winnow::bytes::tag;
 ///
@@ -363,7 +364,7 @@ where
 /// to prevent going into an infinite loop.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// use winnow::multi::many_m_n;
 /// use winnow::bytes::tag;
 ///
@@ -440,7 +441,7 @@ where
 /// return an error, to prevent going into an infinite loop
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// use winnow::multi::many0_count;
 /// use winnow::bytes::tag;
 ///
@@ -501,7 +502,7 @@ where
 /// to prevent going into an infinite loop.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::many1_count;
 /// use winnow::bytes::tag;
 ///
@@ -557,7 +558,7 @@ where
 /// * `f` The parser to apply.
 /// * `count` How often to apply the parser.
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::count;
 /// use winnow::bytes::tag;
 ///
@@ -612,7 +613,7 @@ where
 /// * `f` The parser to apply.
 /// * `buf` The slice to fill
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::fill;
 /// use winnow::bytes::tag;
 ///
@@ -672,7 +673,7 @@ where
 /// return an error, to prevent going into an infinite loop
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// use winnow::multi::fold_many0;
 /// use winnow::bytes::tag;
 ///
@@ -748,7 +749,7 @@ where
 /// to prevent going into an infinite loop.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::fold_many1;
 /// use winnow::bytes::tag;
 ///
@@ -834,7 +835,7 @@ where
 /// to prevent going into an infinite loop.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// use winnow::multi::fold_many_m_n;
 /// use winnow::bytes::tag;
 ///
@@ -913,12 +914,12 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Arguments
 /// * `f` The parser to apply.
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, Needed, IResult, input::Streaming};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult, input::Streaming};
 /// use winnow::number::be_u16;
 /// use winnow::multi::length_data;
 /// use winnow::bytes::tag;
@@ -955,13 +956,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Arguments
 /// * `f` The parser to apply.
 /// * `g` The parser to apply on the subslice.
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult, input::Streaming};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult, input::Streaming};
 /// use winnow::number::be_u16;
 /// use winnow::multi::length_value;
 /// use winnow::bytes::tag;
@@ -1001,7 +1002,7 @@ where
 /// * `g` The parser to apply repeatedly.
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::number::u8;
 /// use winnow::multi::length_count;
 /// use winnow::bytes::tag;

@@ -103,7 +103,7 @@
 //! Here is another parser, written without using nom's combinators this time:
 //!
 //! ```rust
-//! use winnow::{IResult, ErrMode, Needed};
+//! use winnow::{IResult, error::ErrMode, error::Needed};
 //!
 //! # fn main() {
 //! fn take4(i: &[u8]) -> IResult<&[u8], &[u8]>{
@@ -146,7 +146,7 @@
 //! `IResult` is an alias for the `Result` type:
 //!
 //! ```rust
-//! use winnow::{Needed, error::Error};
+//! use winnow::{error::Needed, error::Error};
 //!
 //! type IResult<I, O, E = Error<I>> = Result<(I, O), Err<E>>;
 //!
@@ -205,7 +205,7 @@
 //!
 //! assert_eq!(alt_tags(&b"abcdxxx"[..]), Ok((&b"xxx"[..], &b"abcd"[..])));
 //! assert_eq!(alt_tags(&b"efghxxx"[..]), Ok((&b"xxx"[..], &b"efgh"[..])));
-//! assert_eq!(alt_tags(&b"ijklxxx"[..]), Err(winnow::ErrMode::Error(winnow::error::Error::new(&b"ijklxxx"[..], winnow::error::ErrorKind::Tag))));
+//! assert_eq!(alt_tags(&b"ijklxxx"[..]), Err(winnow::error::ErrMode::Error(winnow::error::Error::new(&b"ijklxxx"[..], winnow::error::ErrorKind::Tag))));
 //! ```
 //!
 //! The **`opt`** combinator makes a parser optional. If the child parser returns
@@ -259,7 +259,7 @@
 //! # fn main() {
 //! use winnow::prelude::*;
 //! use winnow::{
-//!     error::ErrorKind, error::Error, Needed,
+//!     error::ErrorKind, error::Error, error::Needed,
 //!     number::be_u16,
 //!     bytes::{tag, take},
 //!     input::Streaming,
@@ -274,9 +274,9 @@
 //!     (0x6162u16, &b"cde"[..], &b"fg"[..])
 //!   ))
 //! );
-//! assert_eq!(tpl.parse_next(Streaming(&b"abcde"[..])), Err(winnow::ErrMode::Incomplete(Needed::new(2))));
+//! assert_eq!(tpl.parse_next(Streaming(&b"abcde"[..])), Err(winnow::error::ErrMode::Incomplete(Needed::new(2))));
 //! let input = &b"abcdejk"[..];
-//! assert_eq!(tpl.parse_next(Streaming(input)), Err(winnow::ErrMode::Error(Error::new(Streaming(&input[5..]), ErrorKind::Tag))));
+//! assert_eq!(tpl.parse_next(Streaming(input)), Err(winnow::error::ErrMode::Error(Error::new(Streaming(&input[5..]), ErrorKind::Tag))));
 //! # }
 //! ```
 //!
@@ -457,26 +457,24 @@ pub mod lib {
   }
 }
 
-pub use self::parser::*;
-
 #[macro_use]
 mod macros;
+
 #[macro_use]
 pub mod error;
 
-pub mod branch;
-pub mod combinator;
-pub mod input;
-pub mod multi;
 mod parser;
-pub mod sequence;
+
+pub mod input;
 
 pub mod bits;
+pub mod branch;
 pub mod bytes;
-
 pub mod character;
-
+pub mod combinator;
+pub mod multi;
 pub mod number;
+pub mod sequence;
 
 #[cfg(feature = "unstable-doc")]
 pub mod _cookbook;
@@ -510,3 +508,7 @@ pub mod prelude {
   pub use crate::IResult;
   pub use crate::Parser as _;
 }
+
+pub use error::FinishIResult;
+pub use error::IResult;
+pub use parser::*;

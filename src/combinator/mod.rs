@@ -149,7 +149,7 @@
 //! - [`space0`][crate::character::space0]: Recognizes zero or more spaces and tabs. [`space1`][crate::character::space1] does the same but returns at least one character
 //! - [`tab`][crate::character::tab]: Matches a tab character `\t`
 
-use crate::error::{ErrorKind, FromExternalError, ParseError};
+use crate::error::{ErrMode, ErrorKind, FromExternalError, Needed, ParseError};
 use crate::input::Offset;
 use crate::input::{Input, Location};
 use crate::lib::std::borrow::Borrow;
@@ -218,7 +218,7 @@ impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for ByRef<'p, P> {
 /// **WARNING:** Deprecated, replaced with [`Parser::map`]
 ///
 /// ```rust
-/// use winnow::{ErrMode, error::ErrorKind, error::Error, IResult,Parser};
+/// use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult,Parser};
 /// use winnow::character::digit1;
 /// use winnow::combinator::map;
 /// # fn main() {
@@ -276,7 +276,7 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> O2> Parser<I, O2, E> for Ma
 /// **WARNING:** Deprecated, replaced with [`Parser::map_res`]
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// use winnow::character::digit1;
 /// use winnow::combinator::map_res;
 /// # fn main() {
@@ -360,7 +360,7 @@ where
 /// **WARNING:** Deprecated, replaced with [`Parser::map_opt`]
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// use winnow::character::digit1;
 /// use winnow::combinator::map_opt;
 /// # fn main() {
@@ -436,7 +436,7 @@ where
 /// **WARNING:** Deprecated, replaced with [`Parser::and_then`]
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// use winnow::character::digit1;
 /// use winnow::bytes::take;
 /// use winnow::combinator::map_parser;
@@ -498,7 +498,7 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, E>
 /// **WARNING:** Deprecated, replaced with [`Parser::flat_map`]
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// use winnow::bytes::take;
 /// use winnow::number::u8;
 /// use winnow::combinator::flat_map;
@@ -558,7 +558,7 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> H, H: Parser<I, O2, E>> Par
 /// To chain an error up, see [`cut`].
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::opt;
 /// use winnow::character::alpha1;
 /// # fn main() {
@@ -636,7 +636,7 @@ impl<I: Clone, O, E: crate::error::ParseError<I>, F: Parser<I, O, E>, G: Parser<
 /// Calls the parser if the condition is met.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult};
 /// use winnow::combinator::cond;
 /// use winnow::character::alpha1;
 /// # fn main() {
@@ -673,7 +673,7 @@ where
 /// Tries to apply its parser without consuming the input.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::peek;
 /// use winnow::character::alpha1;
 /// # fn main() {
@@ -704,7 +704,7 @@ where
 ///
 /// ```
 /// # use std::str;
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// # use winnow::combinator::eof;
 ///
 /// # fn main() {
@@ -729,7 +729,7 @@ where
 /// **WARNING:** Deprecated, replaced with [`Parser::complete`]
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult, input::Streaming};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, input::Streaming};
 /// use winnow::bytes::take;
 /// use winnow::combinator::complete;
 /// # fn main() {
@@ -791,7 +791,7 @@ where
 /// [`FinishIResult::finish`][crate::FinishIResult::finish]
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::all_consuming;
 /// use winnow::character::alpha1;
 /// # fn main() {
@@ -830,7 +830,7 @@ where
 /// **WARNING:** Deprecated, replaced with [`Parser::map`]
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::verify;
 /// use winnow::character::alpha1;
 /// # fn main() {
@@ -909,7 +909,7 @@ where
 /// **WARNING:** Deprecated, replaced with [`Parser::value`]
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::value;
 /// use winnow::character::alpha1;
 /// # fn main() {
@@ -984,7 +984,7 @@ impl<I, O, E: ParseError<I>, F: Parser<I, O, E>> Parser<I, (), E> for Void<F, O>
 /// Succeeds if the child parser returns an error.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::not;
 /// use winnow::character::alpha1;
 /// # fn main() {
@@ -1014,7 +1014,7 @@ where
 /// **WARNING:** Deprecated, replaced with [`Parser::recognize`]
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::recognize;
 /// use winnow::character::{alpha1};
 /// use winnow::sequence::separated_pair;
@@ -1093,7 +1093,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::{consumed, value, recognize, map};
 /// use winnow::character::{alpha1};
 /// use winnow::bytes::tag;
@@ -1254,7 +1254,7 @@ where
 ///
 /// Without `cut`:
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// # use winnow::bytes::one_of;
 /// # use winnow::character::digit1;
 /// # use winnow::combinator::rest;
@@ -1277,7 +1277,7 @@ where
 ///
 /// With `cut`:
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// # use winnow::bytes::one_of;
 /// # use winnow::character::digit1;
 /// # use winnow::combinator::rest;
@@ -1529,7 +1529,7 @@ enum State<E> {
 /// specify the default case.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// use winnow::branch::alt;
 /// use winnow::combinator::{success, value};
 /// # fn main() {
@@ -1550,7 +1550,7 @@ pub fn success<I, O: Clone, E: ParseError<I>>(val: O) -> impl Fn(I) -> IResult<I
 /// A parser which always fails.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::fail;
 ///
 /// let s = "string";

@@ -4,12 +4,12 @@ extern crate criterion;
 use criterion::Criterion;
 
 use winnow::character::{f64, recognize_float};
+use winnow::error::ErrMode;
 use winnow::error::Error;
 use winnow::error::ErrorKind;
 use winnow::input::ParseTo;
 use winnow::number::be_u64;
 use winnow::prelude::*;
-use winnow::ErrMode;
 
 type Input<'i> = &'i [u8];
 

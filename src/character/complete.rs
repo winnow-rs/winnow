@@ -5,13 +5,14 @@
 #![allow(deprecated)]
 
 use crate::combinator::opt;
+use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{
   split_at_offset1_complete, split_at_offset_complete, AsBytes, AsChar, ContainsToken, Input,
 };
 use crate::input::{Compare, CompareResult};
-use crate::{ErrMode, IResult};
+use crate::IResult;
 
 /// Recognizes one character.
 ///
@@ -19,7 +20,7 @@ use crate::{ErrMode, IResult};
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::{ErrorKind, Error}, IResult};
+/// # use winnow::{error::ErrMode, error::{ErrorKind, Error}, IResult};
 /// # use winnow::character::complete::char;
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     char('a')(i)
@@ -57,7 +58,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::{ErrorKind, Error}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{ErrorKind, Error}, error::Needed, IResult};
 /// # use winnow::character::complete::satisfy;
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     satisfy(|c| c == 'a' || c == 'b')(i)
@@ -99,7 +100,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::character::complete::one_of;
 /// assert_eq!(one_of::<_, _, Error<_>>("abc")("b"), Ok(("", 'b')));
 /// assert_eq!(one_of::<_, _, Error<_>>("a")("bc"), Err(ErrMode::Error(Error::new("bc", ErrorKind::OneOf))));
@@ -123,7 +124,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::character::complete::none_of;
 /// assert_eq!(none_of::<_, _, Error<_>>("abc")("z"), Ok(("", 'z')));
 /// assert_eq!(none_of::<_, _, Error<_>>("ab")("a"), Err(ErrMode::Error(Error::new("a", ErrorKind::NoneOf))));
@@ -147,7 +148,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult};
 /// # use winnow::character::complete::crlf;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     crlf(input)
@@ -182,7 +183,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::not_line_ending;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     not_line_ending(input)
@@ -238,7 +239,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::line_ending;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     line_ending(input)
@@ -279,7 +280,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::newline;
 /// fn parser(input: &str) -> IResult<&str, char> {
 ///     newline(input)
@@ -306,7 +307,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::tab;
 /// fn parser(input: &str) -> IResult<&str, char> {
 ///     tab(input)
@@ -334,7 +335,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{character::complete::anychar, ErrMode, error::{Error, ErrorKind}, IResult};
+/// # use winnow::{character::complete::anychar, error::ErrMode, error::{Error, ErrorKind}, IResult};
 /// fn parser(input: &str) -> IResult<&str, char> {
 ///     anychar(input)
 /// }
@@ -360,7 +361,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, IResult, error::Needed};
 /// # use winnow::character::complete::alpha0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alpha0(input)
@@ -388,7 +389,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::alpha1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alpha1(input)
@@ -416,7 +417,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, IResult, error::Needed};
 /// # use winnow::character::complete::digit0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     digit0(input)
@@ -445,7 +446,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::digit1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     digit1(input)
@@ -460,7 +461,7 @@ where
 /// You can use `digit1` in combination with [`map_res`] to parse an integer:
 ///
 /// ```
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::combinator::map_res;
 /// # use winnow::character::complete::digit1;
 /// fn parser(input: &str) -> IResult<&str, u32> {
@@ -490,7 +491,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, IResult, error::Needed};
 /// # use winnow::character::complete::hex_digit0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     hex_digit0(input)
@@ -521,7 +522,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::hex_digit1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     hex_digit1(input)
@@ -552,7 +553,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, IResult, error::Needed};
 /// # use winnow::character::complete::oct_digit0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     oct_digit0(input)
@@ -583,7 +584,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::oct_digit1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     oct_digit1(input)
@@ -614,7 +615,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, IResult, error::Needed};
 /// # use winnow::character::complete::alphanumeric0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alphanumeric0(input)
@@ -645,7 +646,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::alphanumeric1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alphanumeric1(input)
@@ -676,7 +677,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, IResult, error::Needed};
 /// # use winnow::character::complete::space0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     space0(input)
@@ -707,7 +708,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::space1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     space1(input)
@@ -742,7 +743,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::ErrorKind, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, IResult, error::Needed};
 /// # use winnow::character::complete::multispace0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     multispace0(input)
@@ -776,7 +777,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::multispace1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     multispace1(input)
@@ -919,9 +920,9 @@ uints! { u8 u16 u32 u64 u128 }
 mod tests {
   use super::*;
   use crate::branch::alt;
+  use crate::error::ErrMode;
   use crate::error::Error;
   use crate::input::ParseTo;
-  use crate::ErrMode;
   use proptest::prelude::*;
 
   macro_rules! assert_parse(

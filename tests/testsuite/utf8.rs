@@ -6,8 +6,9 @@ mod test {
   use winnow::{branch::alt, bytes::tag_no_case, multi::many1};
   use winnow::{
     bytes::{tag, take, take_till, take_till1, take_until, take_while1},
+    error::ErrMode,
     error::{self, Error, ErrorKind},
-    ErrMode, IResult,
+    IResult,
   };
 
   #[test]
@@ -205,7 +206,7 @@ mod test {
 
   #[test]
   fn take_while_str() {
-    use winnow::Needed;
+    use winnow::error::Needed;
 
     use winnow::bytes::take_while;
 
@@ -295,7 +296,7 @@ mod test {
 
   #[test]
   fn test_take_while1_str() {
-    use winnow::Needed;
+    use winnow::error::Needed;
 
     fn f(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
       take_while1(is_alphabetic)(i)

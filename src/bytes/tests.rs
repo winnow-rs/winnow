@@ -1,15 +1,15 @@
 use super::*;
 
 use crate::bytes::tag;
+use crate::error::ErrMode;
 use crate::error::Error;
 use crate::error::ErrorKind;
+use crate::error::Needed;
 use crate::input::AsChar;
 use crate::input::Streaming;
 use crate::multi::length_data;
 use crate::sequence::delimited;
-use crate::ErrMode;
 use crate::IResult;
-use crate::Needed;
 use crate::Parser;
 
 #[test]

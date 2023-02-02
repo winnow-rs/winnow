@@ -16,8 +16,8 @@ use crate::{IResult, Parser};
 /// * `second` The second parser to apply.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::sequence::pair;
 /// use winnow::bytes::tag;
 ///
@@ -51,8 +51,8 @@ where
 /// * `second` The second parser to get object.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::sequence::preceded;
 /// use winnow::bytes::tag;
 ///
@@ -85,8 +85,8 @@ where
 /// * `second` The second parser to match an object.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::sequence::terminated;
 /// use winnow::bytes::tag;
 ///
@@ -121,8 +121,8 @@ where
 /// * `second` The second parser to apply.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::sequence::separated_pair;
 /// use winnow::bytes::tag;
 ///
@@ -160,8 +160,8 @@ where
 /// * `third` The third parser to apply and discard.
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::sequence::delimited;
 /// use winnow::bytes::tag;
 ///
@@ -293,7 +293,7 @@ impl<I, E: ParseError<I>> Tuple<I, (), E> for () {
 /// **WARNING:** Deprecated, [`Parser`] is directly implemented for tuples
 ///
 /// ```rust
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// use winnow::sequence::tuple;
 /// use winnow::character::{alpha1, digit1};
 /// let mut parser = tuple((alpha1, digit1, alpha1));

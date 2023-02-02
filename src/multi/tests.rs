@@ -4,10 +4,10 @@ use crate::Parser;
 use crate::{
   bytes::tag,
   character::digit1 as digit,
-  error::{ErrorKind, ParseError},
+  error::{ErrMode, ErrorKind, Needed, ParseError},
   lib::std::str::{self, FromStr},
   number::{be_u16, be_u8},
-  {ErrMode, IResult, Needed},
+  IResult,
 };
 #[cfg(feature = "alloc")]
 use crate::{

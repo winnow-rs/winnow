@@ -53,7 +53,7 @@
 
 use core::num::NonZeroUsize;
 
-use crate::error::{ErrorKind, ParseError};
+use crate::error::{ErrMode, ErrorKind, Needed, ParseError};
 use crate::lib::std::iter::{Cloned, Enumerate};
 use crate::lib::std::ops::{
   Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive,
@@ -62,7 +62,7 @@ use crate::lib::std::slice::Iter;
 use crate::lib::std::str::from_utf8;
 use crate::lib::std::str::CharIndices;
 use crate::lib::std::str::FromStr;
-use crate::{ErrMode, IResult, Needed};
+use crate::IResult;
 
 #[cfg(feature = "alloc")]
 use crate::lib::std::string::String;
@@ -187,7 +187,7 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 /// Here is how it works in practice:
 ///
 /// ```rust
-/// use winnow::{IResult, ErrMode, Needed, error::{Error, ErrorKind}, bytes, character, input::Streaming};
+/// use winnow::{IResult, error::ErrMode, error::Needed, error::{Error, ErrorKind}, bytes, character, input::Streaming};
 ///
 /// fn take_streaming(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
 ///   bytes::take(4u8)(i)
@@ -1756,7 +1756,7 @@ impl<'a> AsChar for &'a char {
 /// For example, you could implement `hex_digit0` as:
 /// ```
 /// # use winnow::prelude::*;
-/// # use winnow::{ErrMode, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::bytes::take_while1;
 /// fn hex_digit1(input: &str) -> IResult<&str, &str> {
 ///     take_while1(('a'..='f', 'A'..='F', '0'..='9')).parse_next(input)

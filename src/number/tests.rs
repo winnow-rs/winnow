@@ -2,9 +2,9 @@ use super::*;
 
 mod complete {
   use super::*;
+  use crate::error::ErrMode;
   use crate::error::Error;
   use crate::error::ErrorKind;
-  use crate::ErrMode;
 
   macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
@@ -409,10 +409,11 @@ mod complete {
 
 mod streaming {
   use super::*;
+  use crate::error::ErrMode;
   use crate::error::Error;
   use crate::error::ErrorKind;
+  use crate::error::Needed;
   use crate::input::Streaming;
-  use crate::{ErrMode, Needed};
 
   macro_rules! assert_parse(
     ($left: expr, $right: expr) => {

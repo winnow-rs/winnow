@@ -3,10 +3,10 @@
 
 #![allow(deprecated)]
 
-use crate::error::{ErrorKind, ParseError};
+use crate::error::{ErrMode, ErrorKind, Needed, ParseError};
 use crate::input::{AsBytes, Input, ToUsize};
 use crate::lib::std::ops::{AddAssign, Div, Shl, Shr};
-use crate::{ErrMode, IResult, Needed};
+use crate::IResult;
 
 /// Generates a parser taking `count` bits
 ///
@@ -179,7 +179,7 @@ mod test {
 
     assert_eq!(
       result,
-      Err(crate::ErrMode::Error(crate::error::Error {
+      Err(crate::error::ErrMode::Error(crate::error::Error {
         input: (input, offset),
         kind: ErrorKind::TagBits
       }))
@@ -201,6 +201,9 @@ mod test {
 
     let result: crate::IResult<(&[u8], usize), bool> = bool((input, 8));
 
-    assert_eq!(result, Err(crate::ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(
+      result,
+      Err(crate::error::ErrMode::Incomplete(Needed::new(1)))
+    );
   }
 }

@@ -3,9 +3,10 @@
 #[cfg(test)]
 mod tests;
 
+use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
-use crate::{ErrMode, IResult, Parser};
+use crate::{IResult, Parser};
 
 /// Helper trait for the [alt()] combinator.
 ///
@@ -23,7 +24,7 @@ pub trait Alt<I, O, E> {
 ///
 /// ```rust
 /// # use winnow::error_position;
-/// # use winnow::{ErrMode,error::ErrorKind, Needed, IResult};
+/// # use winnow::{error::ErrMode,error::ErrorKind, error::Needed, IResult};
 /// use winnow::character::{alpha1, digit1};
 /// use winnow::branch::alt;
 /// # fn main() {
@@ -65,7 +66,7 @@ pub trait Permutation<I, O, E> {
 /// tuple of the parser results.
 ///
 /// ```rust
-/// # use winnow::{ErrMode,error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode,error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::character::{alpha1, digit1};
 /// use winnow::branch::permutation;
 /// # fn main() {
@@ -87,7 +88,7 @@ pub trait Permutation<I, O, E> {
 /// The parsers are applied greedily: if there are multiple unapplied parsers
 /// that could parse the next slice of input, the first one is used.
 /// ```rust
-/// # use winnow::{ErrMode, error::{Error, ErrorKind}, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult};
 /// use winnow::branch::permutation;
 /// use winnow::bytes::any;
 ///

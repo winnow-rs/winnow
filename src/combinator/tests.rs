@@ -1,13 +1,15 @@
 use super::*;
 use crate::bytes::tag;
 use crate::bytes::take;
+use crate::error::ErrMode;
 use crate::error::Error;
 use crate::error::ErrorKind;
+use crate::error::Needed;
 use crate::error::ParseError;
 use crate::input::Streaming;
 use crate::number::u8;
+use crate::IResult;
 use crate::Parser;
-use crate::{ErrMode, IResult, Needed};
 
 macro_rules! assert_parse(
   ($left: expr, $right: expr) => {
