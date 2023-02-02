@@ -692,16 +692,6 @@ where
   }
 }
 
-#[cfg(feature = "std")]
-impl<E> std::error::Error for ErrMode<E>
-where
-  E: fmt::Debug,
-{
-  fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-    None // no underlying error
-  }
-}
-
 /// This trait must be implemented by the error type of a nom parser.
 ///
 /// There are already implementations of it for `(Input, ErrorKind)`
