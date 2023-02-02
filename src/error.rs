@@ -658,17 +658,19 @@ impl<T> ErrMode<Error<T>> {
   }
 }
 
+#[cfg(feature = "alloc")]
 impl ErrMode<Error<&[u8]>> {
-  /// Obtaining ownership
-  #[cfg(feature = "alloc")]
+  /// Deprecated, replaced with [`Error::into_owned`]
+  #[deprecated(since = "0.3.0", note = "Replaced with `Error::into_owned`")]
   pub fn to_owned(self) -> ErrMode<Error<Vec<u8>>> {
     self.map_input(ToOwned::to_owned)
   }
 }
 
+#[cfg(feature = "alloc")]
 impl ErrMode<Error<&str>> {
-  /// Obtaining ownership
-  #[cfg(feature = "alloc")]
+  /// Deprecated, replaced with [`Error::into_owned`]
+  #[deprecated(since = "0.3.0", note = "Replaced with `Error::into_owned`")]
   pub fn to_owned(self) -> ErrMode<Error<String>> {
     self.map_input(ToOwned::to_owned)
   }
@@ -769,6 +771,17 @@ impl<I> Error<I> {
   /// creates a new basic error
   pub fn new(input: I, kind: ErrorKind) -> Error<I> {
     Error { input, kind }
+  }
+}
+
+#[cfg(feature = "alloc")]
+impl<I: ToOwned> Error<I> {
+  /// Obtaining ownership
+  pub fn into_owned(self) -> Error<<I as ToOwned>::Owned> {
+    Error {
+      input: self.input.to_owned(),
+      kind: self.kind,
+    }
   }
 }
 
