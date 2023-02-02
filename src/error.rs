@@ -638,20 +638,6 @@ impl<E> ErrMode<E> {
   }
 }
 
-impl<T> ErrMode<(T, ErrorKind)> {
-  /// Maps `ErrMode<(T, ErrorKind)>` to `ErrMode<(U, ErrorKind)>` with the given `F: T -> U`
-  pub fn map_input<U, F>(self, f: F) -> ErrMode<(U, ErrorKind)>
-  where
-    F: FnOnce(T) -> U,
-  {
-    match self {
-      ErrMode::Incomplete(n) => ErrMode::Incomplete(n),
-      ErrMode::Cut((input, k)) => ErrMode::Cut((f(input), k)),
-      ErrMode::Backtrack((input, k)) => ErrMode::Backtrack((f(input), k)),
-    }
-  }
-}
-
 impl<T> ErrMode<Error<T>> {
   /// Maps `ErrMode<Error<T>>` to `ErrMode<Error<U>>` with the given `F: T -> U`
   pub fn map_input<U, F>(self, f: F) -> ErrMode<Error<U>>
@@ -669,24 +655,6 @@ impl<T> ErrMode<Error<T>> {
         kind,
       }),
     }
-  }
-}
-
-#[cfg(feature = "alloc")]
-use crate::lib::std::{borrow::ToOwned, string::String, vec::Vec};
-impl ErrMode<(&[u8], ErrorKind)> {
-  /// Obtaining ownership
-  #[cfg(feature = "alloc")]
-  pub fn to_owned(self) -> ErrMode<(Vec<u8>, ErrorKind)> {
-    self.map_input(ToOwned::to_owned)
-  }
-}
-
-impl ErrMode<(&str, ErrorKind)> {
-  /// Obtaining ownership
-  #[cfg(feature = "alloc")]
-  pub fn to_owned(self) -> ErrMode<(String, ErrorKind)> {
-    self.map_input(ToOwned::to_owned)
   }
 }
 
