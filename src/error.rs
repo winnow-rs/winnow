@@ -874,6 +874,21 @@ pub struct VerboseError<I> {
 }
 
 #[cfg(feature = "alloc")]
+impl<I: ToOwned> VerboseError<I> {
+  /// Obtaining ownership
+  pub fn into_owned(self) -> VerboseError<<I as ToOwned>::Owned> {
+    #[allow(clippy::redundant_clone)] // false positive
+    VerboseError {
+      errors: self
+        .errors
+        .into_iter()
+        .map(|(i, k)| (i.to_owned(), k))
+        .collect(),
+    }
+  }
+}
+
+#[cfg(feature = "alloc")]
 #[derive(Clone, Debug, Eq, PartialEq)]
 /// Error context for `VerboseError`
 pub enum VerboseErrorKind {
