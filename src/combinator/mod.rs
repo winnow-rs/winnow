@@ -1325,6 +1325,20 @@ where
   cut_err(parser)
 }
 
+/// Transforms an [`ErrMode::Cut`] (unrecoverable) to [`ErrMode::Backtrack`] (recoverable)
+///
+/// This attempts the parse, allowing other parsers to be tried on failure, like with
+/// [`winnow::branch::alt`][crate::branch::alt].
+pub fn backtrack_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O, E>
+where
+  F: Parser<I, O, E>,
+{
+  move |input: I| match parser.parse_next(input) {
+    Err(ErrMode::Cut(e)) => Err(ErrMode::Backtrack(e)),
+    rest => rest,
+  }
+}
+
 /// automatically converts the child parser's result to another type
 ///
 /// it will be able to convert the output value and the error value
