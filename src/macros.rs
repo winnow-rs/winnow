@@ -1,3 +1,58 @@
+/// `match` for parsers
+///
+/// When parsers have unique prefixes to test for, this offers better performance over
+/// [`alt`][crate::branch::alt] though it might be at the cost of duplicating parts of your grammar
+/// if you needed to [`peek`][crate::combinator::peek].
+///
+/// For tight control over the error in a catch-all case, use [`fail`][crate::combinator::fail].
+///
+/// # Example
+///
+/// ```rust
+/// use winnow::prelude::*;
+/// use winnow::branch::dispatch;
+/// # use winnow::bytes::any;
+/// # use winnow::combinator::peek;
+/// # use winnow::sequence::preceded;
+/// # use winnow::combinator::success;
+/// # use winnow::combinator::fail;
+///
+/// fn escaped(input: &str) -> IResult<&str, char> {
+///     preceded('\\', escape_seq_char).parse_next(input)
+/// }
+///
+/// fn escape_seq_char(input: &str) -> IResult<&str, char> {
+///     dispatch! {any;
+///         'b' => success('\u{8}'),
+///         'f' => success('\u{c}'),
+///         'n' => success('\n'),
+///         'r' => success('\r'),
+///         't' => success('\t'),
+///         '\\' => success('\\'),
+///         '"' => success('"'),
+///         _ => fail::<_, char, _>,
+///     }
+///     .parse_next(input)
+/// }
+///
+/// assert_eq!(escaped.parse_next("\\nHello"), Ok(("Hello", '\n')));
+/// ```
+#[macro_export]
+macro_rules! dispatch {
+    ($match_parser: expr; $( $pat:pat $(if $pred:expr)? => $expr: expr ),+ $(,)? ) => {
+        move |i|
+        {
+            use $crate::Parser;
+            let (i, initial) = $match_parser.parse_next(i)?;
+            match initial {
+                $(
+                    $pat $(if $pred)? => $expr.parse_next(i),
+                )*
+            }
+        }
+    }
+}
+
 macro_rules! succ (
   (0, $submac:ident ! ($($rest:tt)*)) => ($submac!(1, $($rest)*));
   (1, $submac:ident ! ($($rest:tt)*)) => ($submac!(2, $($rest)*));
