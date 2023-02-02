@@ -820,7 +820,7 @@ impl<I: fmt::Display> fmt::Display for Error<I> {
 }
 
 #[cfg(feature = "std")]
-impl<I: fmt::Debug + fmt::Display> std::error::Error for Error<I> {}
+impl<I: fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::Error for Error<I> {}
 
 impl<I> ParseError<I> for () {
   fn from_error_kind(_: I, _: ErrorKind) -> Self {}
@@ -952,7 +952,7 @@ impl<I: fmt::Display> fmt::Display for VerboseError<I> {
 }
 
 #[cfg(feature = "std")]
-impl<I: fmt::Debug + fmt::Display> std::error::Error for VerboseError<I> {}
+impl<I: fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::Error for VerboseError<I> {}
 
 /// Create a new error from an input position, a static string and an existing error.
 /// This is used mainly in the [context] combinator, to add user friendly information
