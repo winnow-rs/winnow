@@ -1,6 +1,8 @@
 #![cfg(feature = "alloc")]
 
+mod json;
 mod parser;
+mod parser_dispatch;
 #[allow(dead_code)]
 mod parser_streaming;
 
@@ -8,8 +10,6 @@ use winnow::error::convert_error;
 use winnow::error::Error;
 use winnow::error::VerboseError;
 use winnow::prelude::*;
-
-use parser::json;
 
 fn main() -> Result<(), lexopt::Error> {
   let args = Args::parse()?;
@@ -29,7 +29,7 @@ fn main() -> Result<(), lexopt::Error> {
   });
 
   if args.verbose {
-    match json::<VerboseError<&str>>(data).finish() {
+    match parser::json::<VerboseError<&str>>(data).finish() {
       Ok(json) => {
         println!("{:#?}", json);
       }
@@ -42,7 +42,11 @@ fn main() -> Result<(), lexopt::Error> {
       }
     }
   } else {
-    match json::<Error<&str>>(data).finish() {
+    let result = match args.implementation {
+      Impl::Naive => parser::json::<Error<&str>>(data).finish(),
+      Impl::Dispatch => parser_dispatch::json::<Error<&str>>(data).finish(),
+    };
+    match result {
       Ok(json) => {
         println!("{:#?}", json);
       }
@@ -61,6 +65,18 @@ struct Args {
   invalid: bool,
   verbose: bool,
   pretty: bool,
+  implementation: Impl,
+}
+
+enum Impl {
+  Naive,
+  Dispatch,
+}
+
+impl Default for Impl {
+  fn default() -> Self {
+    Self::Naive
+  }
 }
 
 impl Args {
@@ -85,6 +101,13 @@ impl Args {
           // Only case where pretty matters
           res.pretty = true;
           res.invalid = true;
+        }
+        Long("impl") => {
+          res.implementation = args.value()?.parse_with(|s| match s {
+            "naive" => Ok(Impl::Naive),
+            "dispatch" => Ok(Impl::Dispatch),
+            _ => Err("expected `naive`, `dispatch`"),
+          })?;
         }
         Value(input) => {
           res.input = Some(input.string()?);

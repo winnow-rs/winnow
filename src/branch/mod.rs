@@ -8,6 +8,9 @@ use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::{IResult, Parser};
 
+#[doc(inline)]
+pub use crate::dispatch;
+
 /// Helper trait for the [alt()] combinator.
 ///
 /// This trait is implemented for tuples of up to 21 elements
@@ -21,6 +24,14 @@ pub trait Alt<I, O, E> {
 /// It takes as argument a tuple of parsers. There is a maximum of 21
 /// parsers. If you need more, it is possible to nest them in other `alt` calls,
 /// like this: `alt(parser_a, alt(parser_b, parser_c))`
+///
+/// For tight control over the error, add a final case using [`fail`][crate::combinator::fail].
+/// Alternatively, with a custom error type, it is possible to track all errors or return the error of the
+/// parser that went the farthest in the input data.
+///
+/// When the alternative cases have unique prefixes, [`dispatch`] can offer better performance.
+///
+/// # Example
 ///
 /// ```rust
 /// # use winnow::error_position;
@@ -42,9 +53,6 @@ pub trait Alt<I, O, E> {
 /// assert_eq!(parser(" "), Err(ErrMode::Backtrack(error_position!(" ", ErrorKind::Digit))));
 /// # }
 /// ```
-///
-/// With a custom error type, it is possible to have alt return the error of the parser
-/// that went the farthest in the input data
 pub fn alt<I: Clone, O, E: ParseError<I>, List: Alt<I, O, E>>(
   mut l: List,
 ) -> impl FnMut(I) -> IResult<I, O, E> {
