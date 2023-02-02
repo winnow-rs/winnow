@@ -3,12 +3,13 @@
 #[cfg(test)]
 mod tests;
 
+use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{Input, InputIsStreaming, ToUsize, UpdateSlice};
 #[cfg(feature = "alloc")]
 use crate::lib::std::vec::Vec;
-use crate::{Err, IResult, Parser};
+use crate::{IResult, Parser};
 
 /// Don't pre-allocate more than 64KiB when calling `Vec::with_capacity`.
 ///
@@ -24,8 +25,8 @@ const MAX_INITIAL_CAPACITY_BYTES: usize = 65536;
 
 /// Repeats the embedded parser, gathering the results in a `Vec`.
 ///
-/// This stops on [`Err::Error`].  To instead chain an error up, see
-/// [`cut`][crate::combinator::cut].
+/// This stops on [`ErrMode::Backtrack`].  To instead chain an error up, see
+/// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `f` The parser to apply.
@@ -34,7 +35,7 @@ const MAX_INITIAL_CAPACITY_BYTES: usize = 65536;
 /// return an error, to prevent going into an infinite loop
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// use winnow::multi::many0;
 /// use winnow::bytes::tag;
 ///
@@ -59,12 +60,12 @@ where
     loop {
       let len = i.input_len();
       match f.parse_next(i.clone()) {
-        Err(Err::Error(_)) => return Ok((i, acc)),
+        Err(ErrMode::Backtrack(_)) => return Ok((i, acc)),
         Err(e) => return Err(e),
         Ok((i1, o)) => {
           // infinite loop check: the parser must always consume
           if i1.input_len() == len {
-            return Err(Err::Error(E::from_error_kind(i, ErrorKind::Many0)));
+            return Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Many0)));
           }
 
           i = i1;
@@ -77,8 +78,8 @@ where
 
 /// Runs the embedded parser, gathering the results in a `Vec`.
 ///
-/// This stops on [`Err::Error`] if there is at least one result.  To instead chain an error up,
-/// see [`cut`][crate::combinator::cut].
+/// This stops on [`ErrMode::Backtrack`] if there is at least one result.  To instead chain an error up,
+/// see [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `f` The parser to apply.
@@ -88,7 +89,7 @@ where
 /// to prevent going into an infinite loop.
 ///
 /// ```rust
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::many1;
 /// use winnow::bytes::tag;
 ///
@@ -98,8 +99,8 @@ where
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
 /// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Err(Err::Error(Error::new("123123", ErrorKind::Tag))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// ```
 #[cfg(feature = "alloc")]
 pub fn many1<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
@@ -109,7 +110,7 @@ where
   E: ParseError<I>,
 {
   move |mut i: I| match f.parse_next(i.clone()) {
-    Err(Err::Error(err)) => Err(Err::Error(err.append(i, ErrorKind::Many1))),
+    Err(ErrMode::Backtrack(err)) => Err(ErrMode::Backtrack(err.append(i, ErrorKind::Many1))),
     Err(e) => Err(e),
     Ok((i1, o)) => {
       let mut acc = crate::lib::std::vec::Vec::with_capacity(4);
@@ -119,12 +120,12 @@ where
       loop {
         let len = i.input_len();
         match f.parse_next(i.clone()) {
-          Err(Err::Error(_)) => return Ok((i, acc)),
+          Err(ErrMode::Backtrack(_)) => return Ok((i, acc)),
           Err(e) => return Err(e),
           Ok((i1, o)) => {
             // infinite loop check: the parser must always consume
             if i1.input_len() == len {
-              return Err(Err::Error(E::from_error_kind(i, ErrorKind::Many1)));
+              return Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Many1)));
             }
 
             i = i1;
@@ -140,10 +141,10 @@ where
 ///
 /// Returns a tuple of the results of `f` in a `Vec` and the result of `g`.
 ///
-/// `f` keeps going so long as `g` produces [`Err::Error`]. To instead chain an error up, see [`cut`][crate::combinator::cut].
+/// `f` keeps going so long as `g` produces [`ErrMode::Backtrack`]. To instead chain an error up, see [`cut_err`][crate::combinator::cut_err].
 ///
 /// ```rust
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::many_till;
 /// use winnow::bytes::tag;
 ///
@@ -152,9 +153,9 @@ where
 /// };
 ///
 /// assert_eq!(parser("abcabcend"), Ok(("", (vec!["abc", "abc"], "end"))));
-/// assert_eq!(parser("abc123end"), Err(Err::Error(Error::new("123end", ErrorKind::Tag))));
-/// assert_eq!(parser("123123end"), Err(Err::Error(Error::new("123123end", ErrorKind::Tag))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("abc123end"), Err(ErrMode::Backtrack(Error::new("123end", ErrorKind::Tag))));
+/// assert_eq!(parser("123123end"), Err(ErrMode::Backtrack(Error::new("123123end", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("abcendefg"), Ok(("efg", (vec!["abc"], "end"))));
 /// ```
 #[cfg(feature = "alloc")]
@@ -174,14 +175,19 @@ where
       let len = i.input_len();
       match g.parse_next(i.clone()) {
         Ok((i1, o)) => return Ok((i1, (res, o))),
-        Err(Err::Error(_)) => {
+        Err(ErrMode::Backtrack(_)) => {
           match f.parse_next(i.clone()) {
-            Err(Err::Error(err)) => return Err(Err::Error(err.append(i, ErrorKind::ManyTill))),
+            Err(ErrMode::Backtrack(err)) => {
+              return Err(ErrMode::Backtrack(err.append(i, ErrorKind::ManyTill)))
+            }
             Err(e) => return Err(e),
             Ok((i1, o)) => {
               // infinite loop check: the parser must always consume
               if i1.input_len() == len {
-                return Err(Err::Error(E::from_error_kind(i1, ErrorKind::ManyTill)));
+                return Err(ErrMode::Backtrack(E::from_error_kind(
+                  i1,
+                  ErrorKind::ManyTill,
+                )));
               }
 
               res.push(o);
@@ -197,15 +203,15 @@ where
 
 /// Alternates between two parsers to produce a list of elements.
 ///
-/// This stops when either parser returns [`Err::Error`].  To instead chain an error up, see
-/// [`cut`][crate::combinator::cut].
+/// This stops when either parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
+/// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `sep` Parses the separator between list elements.
 /// * `f` Parses the elements of the list.
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// use winnow::multi::separated_list0;
 /// use winnow::bytes::tag;
 ///
@@ -234,7 +240,7 @@ where
     let mut res = Vec::new();
 
     match f.parse_next(i.clone()) {
-      Err(Err::Error(_)) => return Ok((i, res)),
+      Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
       Err(e) => return Err(e),
       Ok((i1, o)) => {
         res.push(o);
@@ -245,16 +251,19 @@ where
     loop {
       let len = i.input_len();
       match sep.parse_next(i.clone()) {
-        Err(Err::Error(_)) => return Ok((i, res)),
+        Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
         Err(e) => return Err(e),
         Ok((i1, _)) => {
           // infinite loop check: the parser must always consume
           if i1.input_len() == len {
-            return Err(Err::Error(E::from_error_kind(i1, ErrorKind::SeparatedList)));
+            return Err(ErrMode::Backtrack(E::from_error_kind(
+              i1,
+              ErrorKind::SeparatedList,
+            )));
           }
 
           match f.parse_next(i1.clone()) {
-            Err(Err::Error(_)) => return Ok((i, res)),
+            Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
             Err(e) => return Err(e),
             Ok((i2, o)) => {
               res.push(o);
@@ -267,18 +276,18 @@ where
   }
 }
 
-/// Alternates between two parsers to produce a list of elements until [`Err::Error`].
+/// Alternates between two parsers to produce a list of elements until [`ErrMode::Backtrack`].
 ///
 /// Fails if the element parser does not produce at least one element.$
 ///
-/// This stops when either parser returns [`Err::Error`].  To instead chain an error up, see
-/// [`cut`][crate::combinator::cut].
+/// This stops when either parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
+/// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `sep` Parses the separator between list elements.
 /// * `f` Parses the elements of the list.
 /// ```rust
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::separated_list1;
 /// use winnow::bytes::tag;
 ///
@@ -289,8 +298,8 @@ where
 /// assert_eq!(parser("abc|abc|abc"), Ok(("", vec!["abc", "abc", "abc"])));
 /// assert_eq!(parser("abc123abc"), Ok(("123abc", vec!["abc"])));
 /// assert_eq!(parser("abc|def"), Ok(("|def", vec!["abc"])));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Tag))));
-/// assert_eq!(parser("def|abc"), Err(Err::Error(Error::new("def|abc", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(Error::new("def|abc", ErrorKind::Tag))));
 /// ```
 #[cfg(feature = "alloc")]
 pub fn separated_list1<I, O, O2, E, F, G>(
@@ -318,16 +327,19 @@ where
     loop {
       let len = i.input_len();
       match sep.parse_next(i.clone()) {
-        Err(Err::Error(_)) => return Ok((i, res)),
+        Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
         Err(e) => return Err(e),
         Ok((i1, _)) => {
           // infinite loop check: the parser must always consume
           if i1.input_len() == len {
-            return Err(Err::Error(E::from_error_kind(i1, ErrorKind::SeparatedList)));
+            return Err(ErrMode::Backtrack(E::from_error_kind(
+              i1,
+              ErrorKind::SeparatedList,
+            )));
           }
 
           match f.parse_next(i1.clone()) {
-            Err(Err::Error(_)) => return Ok((i, res)),
+            Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
             Err(e) => return Err(e),
             Ok((i2, o)) => {
               res.push(o);
@@ -342,8 +354,8 @@ where
 
 /// Repeats the embedded parser `m..=n` times
 ///
-/// This stops before `n` when the parser returns [`Err::Error`].  To instead chain an error up, see
-/// [`cut`][crate::combinator::cut].
+/// This stops before `n` when the parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
+/// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `m` The minimum number of iterations.
@@ -355,7 +367,7 @@ where
 /// to prevent going into an infinite loop.
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// use winnow::multi::many_m_n;
 /// use winnow::bytes::tag;
 ///
@@ -382,7 +394,7 @@ where
 {
   move |mut input: I| {
     if min > max {
-      return Err(Err::Failure(E::from_error_kind(input, ErrorKind::ManyMN)));
+      return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::ManyMN)));
     }
 
     let max_initial_capacity =
@@ -394,15 +406,18 @@ where
         Ok((tail, value)) => {
           // infinite loop check: the parser must always consume
           if tail.input_len() == len {
-            return Err(Err::Error(E::from_error_kind(input, ErrorKind::ManyMN)));
+            return Err(ErrMode::Backtrack(E::from_error_kind(
+              input,
+              ErrorKind::ManyMN,
+            )));
           }
 
           res.push(value);
           input = tail;
         }
-        Err(Err::Error(e)) => {
+        Err(ErrMode::Backtrack(e)) => {
           if count < min {
-            return Err(Err::Error(e.append(input, ErrorKind::ManyMN)));
+            return Err(ErrMode::Backtrack(e.append(input, ErrorKind::ManyMN)));
           } else {
             return Ok((input, res));
           }
@@ -419,8 +434,8 @@ where
 
 /// Repeats the embedded parser, counting the results
 ///
-/// This stops on [`Err::Error`].  To instead chain an error up, see
-/// [`cut`][crate::combinator::cut].
+/// This stops on [`ErrMode::Backtrack`].  To instead chain an error up, see
+/// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `f` The parser to apply.
@@ -429,7 +444,7 @@ where
 /// return an error, to prevent going into an infinite loop
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// use winnow::multi::many0_count;
 /// use winnow::bytes::tag;
 ///
@@ -459,14 +474,17 @@ where
         Ok((i, _)) => {
           // infinite loop check: the parser must always consume
           if i.input_len() == len {
-            return Err(Err::Error(E::from_error_kind(input, ErrorKind::Many0Count)));
+            return Err(ErrMode::Backtrack(E::from_error_kind(
+              input,
+              ErrorKind::Many0Count,
+            )));
           }
 
           input = i;
           count += 1;
         }
 
-        Err(Err::Error(_)) => return Ok((input, count)),
+        Err(ErrMode::Backtrack(_)) => return Ok((input, count)),
 
         Err(e) => return Err(e),
       }
@@ -476,8 +494,8 @@ where
 
 /// Runs the embedded parser, counting the results.
 ///
-/// This stops on [`Err::Error`] if there is at least one result.  To instead chain an error up,
-/// see [`cut`][crate::combinator::cut].
+/// This stops on [`ErrMode::Backtrack`] if there is at least one result.  To instead chain an error up,
+/// see [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `f` The parser to apply.
@@ -487,7 +505,7 @@ where
 /// to prevent going into an infinite loop.
 ///
 /// ```rust
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::many1_count;
 /// use winnow::bytes::tag;
 ///
@@ -497,8 +515,8 @@ where
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", 2)));
 /// assert_eq!(parser("abc123"), Ok(("123", 1)));
-/// assert_eq!(parser("123123"), Err(Err::Error(Error::new("123123", ErrorKind::Many1Count))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Many1Count))));
+/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Many1Count))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Many1Count))));
 /// ```
 pub fn many1_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>
 where
@@ -509,7 +527,10 @@ where
   move |i: I| {
     let i_ = i.clone();
     match f.parse_next(i_) {
-      Err(Err::Error(_)) => Err(Err::Error(E::from_error_kind(i, ErrorKind::Many1Count))),
+      Err(ErrMode::Backtrack(_)) => Err(ErrMode::Backtrack(E::from_error_kind(
+        i,
+        ErrorKind::Many1Count,
+      ))),
       Err(i) => Err(i),
       Ok((i1, _)) => {
         let mut count = 1;
@@ -519,12 +540,15 @@ where
           let len = input.input_len();
           let input_ = input.clone();
           match f.parse_next(input_) {
-            Err(Err::Error(_)) => return Ok((input, count)),
+            Err(ErrMode::Backtrack(_)) => return Ok((input, count)),
             Err(e) => return Err(e),
             Ok((i, _)) => {
               // infinite loop check: the parser must always consume
               if i.input_len() == len {
-                return Err(Err::Error(E::from_error_kind(i, ErrorKind::Many1Count)));
+                return Err(ErrMode::Backtrack(E::from_error_kind(
+                  i,
+                  ErrorKind::Many1Count,
+                )));
               }
 
               count += 1;
@@ -543,7 +567,7 @@ where
 /// * `f` The parser to apply.
 /// * `count` How often to apply the parser.
 /// ```rust
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::count;
 /// use winnow::bytes::tag;
 ///
@@ -552,9 +576,9 @@ where
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Err(Err::Error(Error::new("123", ErrorKind::Tag))));
-/// assert_eq!(parser("123123"), Err(Err::Error(Error::new("123123", ErrorKind::Tag))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("abc123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
 /// ```
 #[cfg(feature = "alloc")]
@@ -577,8 +601,8 @@ where
           res.push(o);
           input = i;
         }
-        Err(Err::Error(e)) => {
-          return Err(Err::Error(e.append(i, ErrorKind::Count)));
+        Err(ErrMode::Backtrack(e)) => {
+          return Err(ErrMode::Backtrack(e.append(i, ErrorKind::Count)));
         }
         Err(e) => {
           return Err(e);
@@ -598,7 +622,7 @@ where
 /// * `f` The parser to apply.
 /// * `buf` The slice to fill
 /// ```rust
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::fill;
 /// use winnow::bytes::tag;
 ///
@@ -609,9 +633,9 @@ where
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", ["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Err(Err::Error(Error::new("123", ErrorKind::Tag))));
-/// assert_eq!(parser("123123"), Err(Err::Error(Error::new("123123", ErrorKind::Tag))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("abc123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", ["abc", "abc"])));
 /// ```
 pub fn fill<'a, I, O, E, F>(mut f: F, buf: &'a mut [O]) -> impl FnMut(I) -> IResult<I, (), E> + 'a
@@ -630,8 +654,8 @@ where
           *elem = o;
           input = i;
         }
-        Err(Err::Error(e)) => {
-          return Err(Err::Error(e.append(i, ErrorKind::Count)));
+        Err(ErrMode::Backtrack(e)) => {
+          return Err(ErrMode::Backtrack(e.append(i, ErrorKind::Count)));
         }
         Err(e) => {
           return Err(e);
@@ -645,8 +669,8 @@ where
 
 /// Repeats the embedded parser, calling `g` to gather the results.
 ///
-/// This stops on [`Err::Error`].  To instead chain an error up, see
-/// [`cut`][crate::combinator::cut].
+/// This stops on [`ErrMode::Backtrack`].  To instead chain an error up, see
+/// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `f` The parser to apply.
@@ -658,7 +682,7 @@ where
 /// return an error, to prevent going into an infinite loop
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// use winnow::multi::fold_many0;
 /// use winnow::bytes::tag;
 ///
@@ -701,13 +725,16 @@ where
         Ok((i, o)) => {
           // infinite loop check: the parser must always consume
           if i.input_len() == len {
-            return Err(Err::Error(E::from_error_kind(input, ErrorKind::Many0)));
+            return Err(ErrMode::Backtrack(E::from_error_kind(
+              input,
+              ErrorKind::Many0,
+            )));
           }
 
           res = g(res, o);
           input = i;
         }
-        Err(Err::Error(_)) => {
+        Err(ErrMode::Backtrack(_)) => {
           return Ok((input, res));
         }
         Err(e) => {
@@ -720,8 +747,8 @@ where
 
 /// Repeats the embedded parser, calling `g` to gather the results.
 ///
-/// This stops on [`Err::Error`] if there is at least one result.  To instead chain an error up,
-/// see [`cut`][crate::combinator::cut].
+/// This stops on [`ErrMode::Backtrack`] if there is at least one result.  To instead chain an error up,
+/// see [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `f` The parser to apply.
@@ -734,7 +761,7 @@ where
 /// to prevent going into an infinite loop.
 ///
 /// ```rust
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::fold_many1;
 /// use winnow::bytes::tag;
 ///
@@ -751,8 +778,8 @@ where
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
 /// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Err(Err::Error(Error::new("123123", ErrorKind::Many1))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Many1))));
+/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Many1))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Many1))));
 /// ```
 pub fn fold_many1<I, O, E, F, G, H, R>(
   mut f: F,
@@ -770,7 +797,9 @@ where
     let _i = i.clone();
     let init = init();
     match f.parse_next(_i) {
-      Err(Err::Error(_)) => Err(Err::Error(E::from_error_kind(i, ErrorKind::Many1))),
+      Err(ErrMode::Backtrack(_)) => {
+        Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Many1)))
+      }
       Err(e) => Err(e),
       Ok((i1, o1)) => {
         let mut acc = g(init, o1);
@@ -780,14 +809,14 @@ where
           let _input = input.clone();
           let len = input.input_len();
           match f.parse_next(_input) {
-            Err(Err::Error(_)) => {
+            Err(ErrMode::Backtrack(_)) => {
               break;
             }
             Err(e) => return Err(e),
             Ok((i, o)) => {
               // infinite loop check: the parser must always consume
               if i.input_len() == len {
-                return Err(Err::Failure(E::from_error_kind(i, ErrorKind::Many1)));
+                return Err(ErrMode::Cut(E::from_error_kind(i, ErrorKind::Many1)));
               }
 
               acc = g(acc, o);
@@ -804,8 +833,8 @@ where
 
 /// Repeats the embedded parser `m..=n` times, calling `g` to gather the results
 ///
-/// This stops before `n` when the parser returns [`Err::Error`].  To instead chain an error up, see
-/// [`cut`][crate::combinator::cut].
+/// This stops before `n` when the parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
+/// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `m` The minimum number of iterations.
@@ -820,7 +849,7 @@ where
 /// to prevent going into an infinite loop.
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// use winnow::multi::fold_many_m_n;
 /// use winnow::bytes::tag;
 ///
@@ -859,7 +888,7 @@ where
 {
   move |mut input: I| {
     if min > max {
-      return Err(Err::Failure(E::from_error_kind(input, ErrorKind::ManyMN)));
+      return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::ManyMN)));
     }
 
     let mut acc = init();
@@ -869,16 +898,19 @@ where
         Ok((tail, value)) => {
           // infinite loop check: the parser must always consume
           if tail.input_len() == len {
-            return Err(Err::Error(E::from_error_kind(tail, ErrorKind::ManyMN)));
+            return Err(ErrMode::Backtrack(E::from_error_kind(
+              tail,
+              ErrorKind::ManyMN,
+            )));
           }
 
           acc = fold(acc, value);
           input = tail;
         }
         //FInputXMError: handle failure properly
-        Err(Err::Error(err)) => {
+        Err(ErrMode::Backtrack(err)) => {
           if count < min {
-            return Err(Err::Error(err.append(input, ErrorKind::ManyMN)));
+            return Err(ErrMode::Backtrack(err.append(input, ErrorKind::ManyMN)));
           } else {
             break;
           }
@@ -896,12 +928,12 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Arguments
 /// * `f` The parser to apply.
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, Needed, IResult, input::Streaming};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult, input::Streaming};
 /// use winnow::number::be_u16;
 /// use winnow::multi::length_data;
 /// use winnow::bytes::tag;
@@ -911,7 +943,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(Streaming(b"\x00\x03abcefg")), Ok((Streaming(&b"efg"[..]), &b"abc"[..])));
-/// assert_eq!(parser(Streaming(b"\x00\x03a")), Err(Err::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Streaming(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 pub fn length_data<I, N, E, F, const STREAMING: bool>(
   mut f: F,
@@ -938,13 +970,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Arguments
 /// * `f` The parser to apply.
 /// * `g` The parser to apply on the subslice.
 /// ```rust
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult, input::Streaming};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult, input::Streaming};
 /// use winnow::number::be_u16;
 /// use winnow::multi::length_value;
 /// use winnow::bytes::tag;
@@ -954,8 +986,8 @@ where
 /// }
 ///
 /// assert_eq!(parser(Streaming(b"\x00\x03abcefg")), Ok((Streaming(&b"efg"[..]), &b"abc"[..])));
-/// assert_eq!(parser(Streaming(b"\x00\x03123123")), Err(Err::Error(Error::new(Streaming(&b"123"[..]), ErrorKind::Tag))));
-/// assert_eq!(parser(Streaming(b"\x00\x03a")), Err(Err::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Streaming(b"\x00\x03123123")), Err(ErrMode::Backtrack(Error::new(Streaming(&b"123"[..]), ErrorKind::Tag))));
+/// assert_eq!(parser(Streaming(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 pub fn length_value<I, O, N, E, F, G, const STREAMING: bool>(
   mut f: F,
@@ -984,7 +1016,7 @@ where
 /// * `g` The parser to apply repeatedly.
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{Err, error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::number::u8;
 /// use winnow::multi::length_count;
 /// use winnow::bytes::tag;
@@ -998,7 +1030,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x02abcabcabc"[..]), Ok(((&b"abc"[..], vec![&b"abc"[..], &b"abc"[..]]))));
-/// assert_eq!(parser(b"\x03123123123"), Err(Err::Error(Error::new(&b"123123123"[..], ErrorKind::Tag))));
+/// assert_eq!(parser(b"\x03123123123"), Err(ErrMode::Backtrack(Error::new(&b"123123123"[..], ErrorKind::Tag))));
 /// ```
 #[cfg(feature = "alloc")]
 pub fn length_count<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
@@ -1023,8 +1055,8 @@ where
           res.push(o);
           input = i;
         }
-        Err(Err::Error(e)) => {
-          return Err(Err::Error(e.append(i, ErrorKind::Count)));
+        Err(ErrMode::Backtrack(e)) => {
+          return Err(ErrMode::Backtrack(e.append(i, ErrorKind::Count)));
         }
         Err(e) => {
           return Err(e);

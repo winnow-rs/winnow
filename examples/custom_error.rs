@@ -1,6 +1,6 @@
+use winnow::error::ErrMode;
 use winnow::error::ErrorKind;
 use winnow::error::ParseError;
-use winnow::Err::Error;
 use winnow::IResult;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -20,7 +20,7 @@ impl<I> ParseError<I> for CustomError<I> {
 }
 
 pub fn parse(_input: &str) -> IResult<&str, &str, CustomError<&str>> {
-  Err(Error(CustomError::MyError))
+  Err(ErrMode::Backtrack(CustomError::MyError))
 }
 
 fn main() {}
@@ -29,13 +29,13 @@ fn main() {}
 mod tests {
   use super::parse;
   use super::CustomError;
-  use winnow::Err::Error;
+  use winnow::error::ErrMode;
 
   #[test]
   fn it_works() {
     let err = parse("").unwrap_err();
     match err {
-      Error(e) => assert_eq!(e, CustomError::MyError),
+      ErrMode::Backtrack(e) => assert_eq!(e, CustomError::MyError),
       _ => panic!("Unexpected error: {:?}", err),
     }
   }

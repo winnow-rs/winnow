@@ -3,9 +3,10 @@
 #[cfg(test)]
 mod tests;
 
+use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
-use crate::{Err, IResult, Parser};
+use crate::{IResult, Parser};
 
 /// Helper trait for the [alt()] combinator.
 ///
@@ -23,7 +24,7 @@ pub trait Alt<I, O, E> {
 ///
 /// ```rust
 /// # use winnow::error_position;
-/// # use winnow::{Err,error::ErrorKind, Needed, IResult};
+/// # use winnow::{error::ErrMode,error::ErrorKind, error::Needed, IResult};
 /// use winnow::character::{alpha1, digit1};
 /// use winnow::branch::alt;
 /// # fn main() {
@@ -38,7 +39,7 @@ pub trait Alt<I, O, E> {
 /// assert_eq!(parser("123456"), Ok(("", "123456")));
 ///
 /// // both parsers failed, and with the default error type, alt will return the last error
-/// assert_eq!(parser(" "), Err(Err::Error(error_position!(" ", ErrorKind::Digit))));
+/// assert_eq!(parser(" "), Err(ErrMode::Backtrack(error_position!(" ", ErrorKind::Digit))));
 /// # }
 /// ```
 ///
@@ -65,7 +66,7 @@ pub trait Permutation<I, O, E> {
 /// tuple of the parser results.
 ///
 /// ```rust
-/// # use winnow::{Err,error::{Error, ErrorKind}, Needed, IResult};
+/// # use winnow::{error::ErrMode,error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::character::{alpha1, digit1};
 /// use winnow::branch::permutation;
 /// # fn main() {
@@ -80,14 +81,14 @@ pub trait Permutation<I, O, E> {
 /// assert_eq!(parser("123abc"), Ok(("", ("abc", "123"))));
 ///
 /// // it will fail if one of the parsers failed
-/// assert_eq!(parser("abc;"), Err(Err::Error(Error::new(";", ErrorKind::Digit))));
+/// assert_eq!(parser("abc;"), Err(ErrMode::Backtrack(Error::new(";", ErrorKind::Digit))));
 /// # }
 /// ```
 ///
 /// The parsers are applied greedily: if there are multiple unapplied parsers
 /// that could parse the next slice of input, the first one is used.
 /// ```rust
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult};
 /// use winnow::branch::permutation;
 /// use winnow::bytes::any;
 ///
@@ -100,7 +101,7 @@ pub trait Permutation<I, O, E> {
 ///
 /// // any parses 'a', then char('a') fails on 'b',
 /// // even though char('a') followed by any would succeed
-/// assert_eq!(parser("ab"), Err(Err::Error(Error::new("b", ErrorKind::OneOf))));
+/// assert_eq!(parser("ab"), Err(ErrMode::Backtrack(Error::new("b", ErrorKind::OneOf))));
 /// ```
 ///
 pub fn permutation<I: Clone, O, E: ParseError<I>, List: Permutation<I, O, E>>(
@@ -133,7 +134,7 @@ macro_rules! alt_trait_impl(
 
       fn choice(&mut self, input: I) -> IResult<I, Output, Error> {
         match self.0.parse_next(input.clone()) {
-          Err(Err::Error(e)) => alt_trait_inner!(1, self, input, e, $($id)+),
+          Err(ErrMode::Backtrack(e)) => alt_trait_inner!(1, self, input, e, $($id)+),
           res => res,
         }
       }
@@ -144,7 +145,7 @@ macro_rules! alt_trait_impl(
 macro_rules! alt_trait_inner(
   ($it:tt, $self:expr, $input:expr, $err:expr, $head:ident $($id:ident)+) => (
     match $self.$it.parse_next($input.clone()) {
-      Err(Err::Error(e)) => {
+      Err(ErrMode::Backtrack(e)) => {
         let err = $err.or(e);
         succ!($it, alt_trait_inner!($self, $input, err, $($id)+))
       }
@@ -152,7 +153,7 @@ macro_rules! alt_trait_inner(
     }
   );
   ($it:tt, $self:expr, $input:expr, $err:expr, $head:ident) => (
-    Err(Err::Error($err.append($input, ErrorKind::Alt)))
+    Err(ErrMode::Backtrack($err.append($input, ErrorKind::Alt)))
   );
 );
 
@@ -203,7 +204,7 @@ macro_rules! permutation_trait_impl(
           // or errored on the remaining input
           if let Some(err) = err {
             // There are remaining parsers, and all errored on the remaining input
-            return Err(Err::Error(err.append(input, ErrorKind::Permutation)));
+            return Err(ErrMode::Backtrack(err.append(input, ErrorKind::Permutation)));
           }
 
           // All parsers were applied
@@ -226,7 +227,7 @@ macro_rules! permutation_trait_inner(
           $res.$it = Some(o);
           continue;
         }
-        Err(Err::Error(e)) => {
+        Err(ErrMode::Backtrack(e)) => {
           $err = Some(match $err {
             Some(err) => err.or(e),
             None => e,

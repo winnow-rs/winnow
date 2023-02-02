@@ -1,15 +1,15 @@
 use super::*;
 
 use crate::bytes::tag;
+use crate::error::ErrMode;
 use crate::error::Error;
 use crate::error::ErrorKind;
+use crate::error::Needed;
 use crate::input::AsChar;
 use crate::input::Streaming;
 use crate::multi::length_data;
 use crate::sequence::delimited;
-use crate::Err;
 use crate::IResult;
-use crate::Needed;
 use crate::Parser;
 
 #[test]
@@ -45,7 +45,10 @@ fn streaming_one_of_test() {
   let b = &b"cde"[..];
   assert_eq!(
     f(Streaming(b)),
-    Err(Err::Error(error_position!(Streaming(b), ErrorKind::OneOf)))
+    Err(ErrMode::Backtrack(error_position!(
+      Streaming(b),
+      ErrorKind::OneOf
+    )))
   );
 
   fn utf8(i: Streaming<&str>) -> IResult<Streaming<&str>, char> {
@@ -65,7 +68,10 @@ fn char_byteslice() {
   let a = &b"abcd"[..];
   assert_eq!(
     f(Streaming(a)),
-    Err(Err::Error(error_position!(Streaming(a), ErrorKind::OneOf)))
+    Err(ErrMode::Backtrack(error_position!(
+      Streaming(a),
+      ErrorKind::OneOf
+    )))
   );
 
   let b = &b"cde"[..];
@@ -81,7 +87,10 @@ fn char_str() {
   let a = "abcd";
   assert_eq!(
     f(Streaming(a)),
-    Err(Err::Error(error_position!(Streaming(a), ErrorKind::OneOf)))
+    Err(ErrMode::Backtrack(error_position!(
+      Streaming(a),
+      ErrorKind::OneOf
+    )))
   );
 
   let b = "cde";
@@ -97,7 +106,10 @@ fn streaming_none_of_test() {
   let a = &b"abcd"[..];
   assert_eq!(
     f(Streaming(a)),
-    Err(Err::Error(error_position!(Streaming(a), ErrorKind::NoneOf)))
+    Err(ErrMode::Backtrack(error_position!(
+      Streaming(a),
+      ErrorKind::NoneOf
+    )))
   );
 
   let b = &b"cde"[..];
@@ -119,7 +131,10 @@ fn streaming_is_a() {
   let c = Streaming(&b"cdef"[..]);
   assert_eq!(
     a_or_b(c),
-    Err(Err::Error(error_position!(c, ErrorKind::TakeWhile1)))
+    Err(ErrMode::Backtrack(error_position!(
+      c,
+      ErrorKind::TakeWhile1
+    )))
   );
 
   let d = Streaming(&b"bacdef"[..]);
@@ -141,14 +156,14 @@ fn streaming_is_not() {
   let c = Streaming(&b"abab"[..]);
   assert_eq!(
     a_or_b(c),
-    Err(Err::Error(error_position!(c, ErrorKind::TakeTill1)))
+    Err(ErrMode::Backtrack(error_position!(c, ErrorKind::TakeTill1)))
   );
 
   let d = Streaming(&b"cdefba"[..]);
   assert_eq!(a_or_b(d), Ok((Streaming(&b"ba"[..]), &b"cdef"[..])));
 
   let e = Streaming(&b"e"[..]);
-  assert_eq!(a_or_b(e), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(a_or_b(e), Err(ErrMode::Incomplete(Needed::new(1))));
 }
 
 #[test]
@@ -158,15 +173,15 @@ fn streaming_take_until_incomplete() {
   }
   assert_eq!(
     y(Streaming(&b"nd"[..])),
-    Err(Err::Incomplete(Needed::Unknown))
+    Err(ErrMode::Incomplete(Needed::Unknown))
   );
   assert_eq!(
     y(Streaming(&b"123"[..])),
-    Err(Err::Incomplete(Needed::Unknown))
+    Err(ErrMode::Incomplete(Needed::Unknown))
   );
   assert_eq!(
     y(Streaming(&b"123en"[..])),
-    Err(Err::Incomplete(Needed::Unknown))
+    Err(ErrMode::Incomplete(Needed::Unknown))
   );
 }
 
@@ -177,7 +192,7 @@ fn streaming_take_until_incomplete_s() {
   }
   assert_eq!(
     ys(Streaming("123en")),
-    Err(Err::Incomplete(Needed::Unknown))
+    Err(ErrMode::Incomplete(Needed::Unknown))
   );
 }
 
@@ -251,8 +266,8 @@ fn streaming_take_while() {
   let c = &b"abcd123"[..];
   let d = &b"123"[..];
 
-  assert_eq!(f(Streaming(a)), Err(Err::Incomplete(Needed::new(1))));
-  assert_eq!(f(Streaming(b)), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(f(Streaming(a)), Err(ErrMode::Incomplete(Needed::new(1))));
+  assert_eq!(f(Streaming(b)), Err(ErrMode::Incomplete(Needed::new(1))));
   assert_eq!(f(Streaming(c)), Ok((Streaming(d), b)));
   assert_eq!(f(Streaming(d)), Ok((Streaming(d), a)));
 }
@@ -267,12 +282,12 @@ fn streaming_take_while1() {
   let c = &b"abcd123"[..];
   let d = &b"123"[..];
 
-  assert_eq!(f(Streaming(a)), Err(Err::Incomplete(Needed::new(1))));
-  assert_eq!(f(Streaming(b)), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(f(Streaming(a)), Err(ErrMode::Incomplete(Needed::new(1))));
+  assert_eq!(f(Streaming(b)), Err(ErrMode::Incomplete(Needed::new(1))));
   assert_eq!(f(Streaming(c)), Ok((Streaming(&b"123"[..]), b)));
   assert_eq!(
     f(Streaming(d)),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(d),
       ErrorKind::TakeWhile1
     )))
@@ -291,14 +306,14 @@ fn streaming_take_while_m_n() {
   let e = &b"abcde"[..];
   let f = &b"123"[..];
 
-  assert_eq!(x(Streaming(a)), Err(Err::Incomplete(Needed::new(2))));
-  assert_eq!(x(Streaming(b)), Err(Err::Incomplete(Needed::new(1))));
-  assert_eq!(x(Streaming(c)), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(x(Streaming(a)), Err(ErrMode::Incomplete(Needed::new(2))));
+  assert_eq!(x(Streaming(b)), Err(ErrMode::Incomplete(Needed::new(1))));
+  assert_eq!(x(Streaming(c)), Err(ErrMode::Incomplete(Needed::new(1))));
   assert_eq!(x(Streaming(d)), Ok((Streaming(&b"123"[..]), c)));
   assert_eq!(x(Streaming(e)), Ok((Streaming(&b"e"[..]), &b"abcd"[..])));
   assert_eq!(
     x(Streaming(f)),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(f),
       ErrorKind::TakeWhileMN
     )))
@@ -315,10 +330,10 @@ fn streaming_take_till() {
   let c = &b"123abcd"[..];
   let d = &b"123"[..];
 
-  assert_eq!(f(Streaming(a)), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(f(Streaming(a)), Err(ErrMode::Incomplete(Needed::new(1))));
   assert_eq!(f(Streaming(b)), Ok((Streaming(&b"abcd"[..]), &b""[..])));
   assert_eq!(f(Streaming(c)), Ok((Streaming(&b"abcd"[..]), &b"123"[..])));
-  assert_eq!(f(Streaming(d)), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(f(Streaming(d)), Err(ErrMode::Incomplete(Needed::new(1))));
 }
 
 #[test]
@@ -331,16 +346,16 @@ fn streaming_take_till1() {
   let c = &b"123abcd"[..];
   let d = &b"123"[..];
 
-  assert_eq!(f(Streaming(a)), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(f(Streaming(a)), Err(ErrMode::Incomplete(Needed::new(1))));
   assert_eq!(
     f(Streaming(b)),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(b),
       ErrorKind::TakeTill1
     )))
   );
   assert_eq!(f(Streaming(c)), Ok((Streaming(&b"abcd"[..]), &b"123"[..])));
-  assert_eq!(f(Streaming(d)), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(f(Streaming(d)), Err(ErrMode::Incomplete(Needed::new(1))));
 }
 
 #[test]
@@ -349,8 +364,11 @@ fn streaming_take_while_utf8() {
     take_while(|c| c != '點')(i)
   }
 
-  assert_eq!(f(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
-  assert_eq!(f(Streaming("abcd")), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(f(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+  assert_eq!(
+    f(Streaming("abcd")),
+    Err(ErrMode::Incomplete(Needed::new(1)))
+  );
   assert_eq!(f(Streaming("abcd點")), Ok((Streaming("點"), "abcd")));
   assert_eq!(f(Streaming("abcd點a")), Ok((Streaming("點a"), "abcd")));
 
@@ -358,7 +376,7 @@ fn streaming_take_while_utf8() {
     take_while(|c| c == '點')(i)
   }
 
-  assert_eq!(g(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(g(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
   assert_eq!(g(Streaming("點abcd")), Ok((Streaming("abcd"), "點")));
   assert_eq!(g(Streaming("點點點a")), Ok((Streaming("a"), "點點點")));
 }
@@ -369,8 +387,11 @@ fn streaming_take_till_utf8() {
     take_till(|c| c == '點')(i)
   }
 
-  assert_eq!(f(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
-  assert_eq!(f(Streaming("abcd")), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(f(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+  assert_eq!(
+    f(Streaming("abcd")),
+    Err(ErrMode::Incomplete(Needed::new(1)))
+  );
   assert_eq!(f(Streaming("abcd點")), Ok((Streaming("點"), "abcd")));
   assert_eq!(f(Streaming("abcd點a")), Ok((Streaming("點a"), "abcd")));
 
@@ -378,7 +399,7 @@ fn streaming_take_till_utf8() {
     take_till(|c| c != '點')(i)
   }
 
-  assert_eq!(g(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(g(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
   assert_eq!(g(Streaming("點abcd")), Ok((Streaming("abcd"), "點")));
   assert_eq!(g(Streaming("點點點a")), Ok((Streaming("a"), "點點點")));
 }
@@ -389,9 +410,15 @@ fn streaming_take_utf8() {
     take(3_usize)(i)
   }
 
-  assert_eq!(f(Streaming("")), Err(Err::Incomplete(Needed::Unknown)));
-  assert_eq!(f(Streaming("ab")), Err(Err::Incomplete(Needed::Unknown)));
-  assert_eq!(f(Streaming("點")), Err(Err::Incomplete(Needed::Unknown)));
+  assert_eq!(f(Streaming("")), Err(ErrMode::Incomplete(Needed::Unknown)));
+  assert_eq!(
+    f(Streaming("ab")),
+    Err(ErrMode::Incomplete(Needed::Unknown))
+  );
+  assert_eq!(
+    f(Streaming("點")),
+    Err(ErrMode::Incomplete(Needed::Unknown))
+  );
   assert_eq!(f(Streaming("ab點cd")), Ok((Streaming("cd"), "ab點")));
   assert_eq!(f(Streaming("a點bcd")), Ok((Streaming("cd"), "a點b")));
   assert_eq!(f(Streaming("a點b")), Ok((Streaming(""), "a點b")));
@@ -400,7 +427,7 @@ fn streaming_take_utf8() {
     take_while(|c| c == '點')(i)
   }
 
-  assert_eq!(g(Streaming("")), Err(Err::Incomplete(Needed::new(1))));
+  assert_eq!(g(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
   assert_eq!(g(Streaming("點abcd")), Ok((Streaming("abcd"), "點")));
   assert_eq!(g(Streaming("點點點a")), Ok((Streaming("a"), "點點點")));
 }
@@ -456,8 +483,14 @@ fn streaming_length_bytes() {
     x(Streaming(b"\x02..")),
     Ok((Streaming(&[][..]), &b".."[..]))
   );
-  assert_eq!(x(Streaming(b"\x02.")), Err(Err::Incomplete(Needed::new(1))));
-  assert_eq!(x(Streaming(b"\x02")), Err(Err::Incomplete(Needed::new(2))));
+  assert_eq!(
+    x(Streaming(b"\x02.")),
+    Err(ErrMode::Incomplete(Needed::new(1)))
+  );
+  assert_eq!(
+    x(Streaming(b"\x02")),
+    Err(ErrMode::Incomplete(Needed::new(2)))
+  );
 
   fn y(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
     let (i, _) = tag("magic")(i)?;
@@ -473,11 +506,11 @@ fn streaming_length_bytes() {
   );
   assert_eq!(
     y(Streaming(b"magic\x02.")),
-    Err(Err::Incomplete(Needed::new(1)))
+    Err(ErrMode::Incomplete(Needed::new(1)))
   );
   assert_eq!(
     y(Streaming(b"magic\x02")),
-    Err(Err::Incomplete(Needed::new(2)))
+    Err(ErrMode::Incomplete(Needed::new(2)))
   );
 }
 
@@ -501,18 +534,18 @@ fn streaming_case_insensitive() {
   );
   assert_eq!(
     test(Streaming(&b"ab"[..])),
-    Err(Err::Incomplete(Needed::new(2)))
+    Err(ErrMode::Incomplete(Needed::new(2)))
   );
   assert_eq!(
     test(Streaming(&b"Hello"[..])),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"Hello"[..]),
       ErrorKind::Tag
     )))
   );
   assert_eq!(
     test(Streaming(&b"Hel"[..])),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"Hel"[..]),
       ErrorKind::Tag
     )))
@@ -533,17 +566,20 @@ fn streaming_case_insensitive() {
     test2(Streaming("ABCDefgh")),
     Ok((Streaming("efgh"), "ABCD"))
   );
-  assert_eq!(test2(Streaming("ab")), Err(Err::Incomplete(Needed::new(2))));
+  assert_eq!(
+    test2(Streaming("ab")),
+    Err(ErrMode::Incomplete(Needed::new(2)))
+  );
   assert_eq!(
     test2(Streaming("Hello")),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming("Hello"),
       ErrorKind::Tag
     )))
   );
   assert_eq!(
     test2(Streaming("Hel")),
-    Err(Err::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming("Hel"),
       ErrorKind::Tag
     )))

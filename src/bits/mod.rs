@@ -6,10 +6,10 @@ pub mod streaming;
 #[cfg(test)]
 mod tests;
 
-use crate::error::{ErrorConvert, ErrorKind, ParseError};
+use crate::error::{ErrMode, ErrorConvert, ErrorKind, Needed, ParseError};
 use crate::input::{AsBytes, Input, InputIsStreaming, ToUsize};
 use crate::lib::std::ops::{AddAssign, Shl, Shr};
-use crate::{Err, IResult, Needed, Parser};
+use crate::{IResult, Parser};
 
 /// Converts a byte-level input to a bit-level input, for consumption by a parser that uses bits.
 ///
@@ -54,9 +54,9 @@ where
       let (input, _) = rest.next_slice(remaining_bytes_index);
       Ok((input, result))
     }
-    Err(Err::Incomplete(n)) => Err(Err::Incomplete(n.map(|u| u.get() / 8 + 1))),
-    Err(Err::Error(e)) => Err(Err::Error(e.convert())),
-    Err(Err::Failure(e)) => Err(Err::Failure(e.convert())),
+    Err(ErrMode::Incomplete(n)) => Err(ErrMode::Incomplete(n.map(|u| u.get() / 8 + 1))),
+    Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.convert())),
+    Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.convert())),
   }
 }
 
@@ -100,13 +100,13 @@ where
     let i = (input, offset);
     match parser.parse_next(inner) {
       Ok((rest, res)) => Ok(((rest, 0), res)),
-      Err(Err::Incomplete(Needed::Unknown)) => Err(Err::Incomplete(Needed::Unknown)),
-      Err(Err::Incomplete(Needed::Size(sz))) => Err(match sz.get().checked_mul(8) {
-        Some(v) => Err::Incomplete(Needed::new(v)),
-        None => Err::Failure(E2::from_error_kind(i, ErrorKind::TooLarge)),
+      Err(ErrMode::Incomplete(Needed::Unknown)) => Err(ErrMode::Incomplete(Needed::Unknown)),
+      Err(ErrMode::Incomplete(Needed::Size(sz))) => Err(match sz.get().checked_mul(8) {
+        Some(v) => ErrMode::Incomplete(Needed::new(v)),
+        None => ErrMode::Cut(E2::from_error_kind(i, ErrorKind::TooLarge)),
       }),
-      Err(Err::Error(e)) => Err(Err::Error(e.convert())),
-      Err(Err::Failure(e)) => Err(Err::Failure(e.convert())),
+      Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.convert())),
+      Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.convert())),
     }
   }
 }
@@ -133,7 +133,7 @@ where
 /// assert_eq!(parser(([0b00010010].as_ref(), 4), 4), Ok((([].as_ref(), 0), 0b00000010)));
 ///
 /// // Tries to consume 12 bits but only 8 are available
-/// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(winnow::Err::Error(Error{input: ([0b00010010].as_ref(), 0), kind: ErrorKind::Eof })));
+/// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(winnow::error::ErrMode::Backtrack(Error{input: ([0b00010010].as_ref(), 0), kind: ErrorKind::Eof })));
 /// ```
 #[inline(always)]
 pub fn take<I, O, C, E: ParseError<(I, usize)>, const STREAMING: bool>(
@@ -183,7 +183,7 @@ where
 /// // The lowest 2 bits of 0b11111111 and 0b00000001 are different.
 /// assert_eq!(
 ///     parser(0b000000_01, 2, ([0b111111_11].as_ref(), 0)),
-///     Err(winnow::Err::Error(Error {
+///     Err(winnow::error::ErrMode::Backtrack(Error {
 ///         input: ([0b11111111].as_ref(), 0),
 ///         kind: ErrorKind::TagBits
 ///     }))
@@ -192,7 +192,7 @@ where
 /// // The lowest 8 bits of 0b11111111 and 0b11111110 are different.
 /// assert_eq!(
 ///     parser(0b11111110, 8, ([0b11111111].as_ref(), 0)),
-///     Err(winnow::Err::Error(Error {
+///     Err(winnow::error::ErrMode::Backtrack(Error {
 ///         input: ([0b11111111].as_ref(), 0),
 ///         kind: ErrorKind::TagBits
 ///     }))

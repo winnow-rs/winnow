@@ -2,9 +2,9 @@ use super::*;
 
 mod complete {
   use super::*;
+  use crate::error::ErrMode;
   use crate::error::Error;
   use crate::error::ErrorKind;
-  use crate::Err;
 
   macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
@@ -299,7 +299,10 @@ mod complete {
   fn hex_u32_tests() {
     assert_parse!(
       hex_u32(&b";"[..]),
-      Err(Err::Error(error_position!(&b";"[..], ErrorKind::IsA)))
+      Err(ErrMode::Backtrack(error_position!(
+        &b";"[..],
+        ErrorKind::IsA
+      )))
     );
     assert_parse!(hex_u32(&b"ff;"[..]), Ok((&b";"[..], 255)));
     assert_parse!(hex_u32(&b"1be2;"[..]), Ok((&b";"[..], 7138)));
@@ -409,10 +412,11 @@ mod complete {
 
 mod streaming {
   use super::*;
+  use crate::error::ErrMode;
   use crate::error::Error;
   use crate::error::ErrorKind;
+  use crate::error::Needed;
   use crate::input::Streaming;
-  use crate::{Err, Needed};
 
   macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
@@ -435,7 +439,7 @@ mod streaming {
     );
     assert_parse!(
       be_i8(Streaming(&[][..])),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
   }
 
@@ -459,11 +463,11 @@ mod streaming {
     );
     assert_parse!(
       be_i16(Streaming(&[][..])),
-      Err(Err::Incomplete(Needed::new(2)))
+      Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_parse!(
       be_i16(Streaming(&[0x00][..])),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
   }
 
@@ -483,15 +487,15 @@ mod streaming {
     );
     assert_parse!(
       be_u24(Streaming(&[][..])),
-      Err(Err::Incomplete(Needed::new(3)))
+      Err(ErrMode::Incomplete(Needed::new(3)))
     );
     assert_parse!(
       be_u24(Streaming(&[0x00][..])),
-      Err(Err::Incomplete(Needed::new(2)))
+      Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_parse!(
       be_u24(Streaming(&[0x00, 0x00][..])),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
   }
 
@@ -511,15 +515,15 @@ mod streaming {
     );
     assert_parse!(
       be_i24(Streaming(&[][..])),
-      Err(Err::Incomplete(Needed::new(3)))
+      Err(ErrMode::Incomplete(Needed::new(3)))
     );
     assert_parse!(
       be_i24(Streaming(&[0x00][..])),
-      Err(Err::Incomplete(Needed::new(2)))
+      Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_parse!(
       be_i24(Streaming(&[0x00, 0x00][..])),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
   }
 
@@ -543,19 +547,19 @@ mod streaming {
     );
     assert_parse!(
       be_i32(Streaming(&[][..])),
-      Err(Err::Incomplete(Needed::new(4)))
+      Err(ErrMode::Incomplete(Needed::new(4)))
     );
     assert_parse!(
       be_i32(Streaming(&[0x00][..])),
-      Err(Err::Incomplete(Needed::new(3)))
+      Err(ErrMode::Incomplete(Needed::new(3)))
     );
     assert_parse!(
       be_i32(Streaming(&[0x00, 0x00][..])),
-      Err(Err::Incomplete(Needed::new(2)))
+      Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_parse!(
       be_i32(Streaming(&[0x00, 0x00, 0x00][..])),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
   }
 
@@ -587,35 +591,35 @@ mod streaming {
     );
     assert_parse!(
       be_i64(Streaming(&[][..])),
-      Err(Err::Incomplete(Needed::new(8)))
+      Err(ErrMode::Incomplete(Needed::new(8)))
     );
     assert_parse!(
       be_i64(Streaming(&[0x00][..])),
-      Err(Err::Incomplete(Needed::new(7)))
+      Err(ErrMode::Incomplete(Needed::new(7)))
     );
     assert_parse!(
       be_i64(Streaming(&[0x00, 0x00][..])),
-      Err(Err::Incomplete(Needed::new(6)))
+      Err(ErrMode::Incomplete(Needed::new(6)))
     );
     assert_parse!(
       be_i64(Streaming(&[0x00, 0x00, 0x00][..])),
-      Err(Err::Incomplete(Needed::new(5)))
+      Err(ErrMode::Incomplete(Needed::new(5)))
     );
     assert_parse!(
       be_i64(Streaming(&[0x00, 0x00, 0x00, 0x00][..])),
-      Err(Err::Incomplete(Needed::new(4)))
+      Err(ErrMode::Incomplete(Needed::new(4)))
     );
     assert_parse!(
       be_i64(Streaming(&[0x00, 0x00, 0x00, 0x00, 0x00][..])),
-      Err(Err::Incomplete(Needed::new(3)))
+      Err(ErrMode::Incomplete(Needed::new(3)))
     );
     assert_parse!(
       be_i64(Streaming(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])),
-      Err(Err::Incomplete(Needed::new(2)))
+      Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_parse!(
       be_i64(Streaming(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
   }
 
@@ -665,84 +669,84 @@ mod streaming {
     );
     assert_parse!(
       be_i128(Streaming(&[][..])),
-      Err(Err::Incomplete(Needed::new(16)))
+      Err(ErrMode::Incomplete(Needed::new(16)))
     );
     assert_parse!(
       be_i128(Streaming(&[0x00][..])),
-      Err(Err::Incomplete(Needed::new(15)))
+      Err(ErrMode::Incomplete(Needed::new(15)))
     );
     assert_parse!(
       be_i128(Streaming(&[0x00, 0x00][..])),
-      Err(Err::Incomplete(Needed::new(14)))
+      Err(ErrMode::Incomplete(Needed::new(14)))
     );
     assert_parse!(
       be_i128(Streaming(&[0x00, 0x00, 0x00][..])),
-      Err(Err::Incomplete(Needed::new(13)))
+      Err(ErrMode::Incomplete(Needed::new(13)))
     );
     assert_parse!(
       be_i128(Streaming(&[0x00, 0x00, 0x00, 0x00][..])),
-      Err(Err::Incomplete(Needed::new(12)))
+      Err(ErrMode::Incomplete(Needed::new(12)))
     );
     assert_parse!(
       be_i128(Streaming(&[0x00, 0x00, 0x00, 0x00, 0x00][..])),
-      Err(Err::Incomplete(Needed::new(11)))
+      Err(ErrMode::Incomplete(Needed::new(11)))
     );
     assert_parse!(
       be_i128(Streaming(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])),
-      Err(Err::Incomplete(Needed::new(10)))
+      Err(ErrMode::Incomplete(Needed::new(10)))
     );
     assert_parse!(
       be_i128(Streaming(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])),
-      Err(Err::Incomplete(Needed::new(9)))
+      Err(ErrMode::Incomplete(Needed::new(9)))
     );
     assert_parse!(
       be_i128(Streaming(
         &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
       )),
-      Err(Err::Incomplete(Needed::new(8)))
+      Err(ErrMode::Incomplete(Needed::new(8)))
     );
     assert_parse!(
       be_i128(Streaming(
         &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
       )),
-      Err(Err::Incomplete(Needed::new(7)))
+      Err(ErrMode::Incomplete(Needed::new(7)))
     );
     assert_parse!(
       be_i128(Streaming(
         &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
       )),
-      Err(Err::Incomplete(Needed::new(6)))
+      Err(ErrMode::Incomplete(Needed::new(6)))
     );
     assert_parse!(
       be_i128(Streaming(
         &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
       )),
-      Err(Err::Incomplete(Needed::new(5)))
+      Err(ErrMode::Incomplete(Needed::new(5)))
     );
     assert_parse!(
       be_i128(Streaming(
         &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
       )),
-      Err(Err::Incomplete(Needed::new(4)))
+      Err(ErrMode::Incomplete(Needed::new(4)))
     );
     assert_parse!(
       be_i128(Streaming(
         &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
       )),
-      Err(Err::Incomplete(Needed::new(3)))
+      Err(ErrMode::Incomplete(Needed::new(3)))
     );
     assert_parse!(
       be_i128(Streaming(
         &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
       )),
-      Err(Err::Incomplete(Needed::new(2)))
+      Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_parse!(
       be_i128(Streaming(
         &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
           [..]
       )),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
   }
 
@@ -966,7 +970,7 @@ mod streaming {
   fn hex_u32_tests() {
     assert_parse!(
       hex_u32(Streaming(&b";"[..])),
-      Err(Err::Error(error_position!(
+      Err(ErrMode::Backtrack(error_position!(
         Streaming(&b";"[..]),
         ErrorKind::IsA
       )))
@@ -1013,7 +1017,7 @@ mod streaming {
     );
     assert_parse!(
       hex_u32(Streaming(&b"12af"[..])),
-      Err(Err::Incomplete(Needed::new(1)))
+      Err(ErrMode::Incomplete(Needed::new(1)))
     );
   }
 

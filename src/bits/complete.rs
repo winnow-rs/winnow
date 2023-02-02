@@ -3,10 +3,10 @@
 
 #![allow(deprecated)]
 
-use crate::error::{ErrorKind, ParseError};
+use crate::error::{ErrMode, ErrorKind, ParseError};
 use crate::input::{AsBytes, Input, ToUsize};
 use crate::lib::std::ops::{AddAssign, Div, Shl, Shr};
-use crate::{Err, IResult};
+use crate::IResult;
 
 /// Generates a parser taking `count` bits
 ///
@@ -30,7 +30,7 @@ use crate::{Err, IResult};
 /// assert_eq!(parser(([0b00010010].as_ref(), 4), 4), Ok((([].as_ref(), 0), 0b00000010)));
 ///
 /// // Tries to consume 12 bits but only 8 are available
-/// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(winnow::Err::Error(Error{input: ([0b00010010].as_ref(), 0), kind: ErrorKind::Eof })));
+/// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(winnow::error::ErrMode::Backtrack(Error{input: ([0b00010010].as_ref(), 0), kind: ErrorKind::Eof })));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bits::take`][crate::bits::take]
@@ -60,7 +60,7 @@ where
   } else {
     let cnt = (count + bit_offset).div(8);
     if input.input_len() * 8 < count + bit_offset {
-      Err(Err::Error(E::from_error_kind(
+      Err(ErrMode::Backtrack(E::from_error_kind(
         (input, bit_offset),
         ErrorKind::Eof,
       )))
@@ -128,7 +128,7 @@ where
     if *pattern == o {
       Ok((i, o))
     } else {
-      Err(Err::Error(error_position!(inp, ErrorKind::TagBits)))
+      Err(ErrMode::Backtrack(error_position!(inp, ErrorKind::TagBits)))
     }
   })
 }
@@ -182,7 +182,7 @@ mod test {
 
     assert_eq!(
       result,
-      Err(crate::Err::Error(crate::error::Error {
+      Err(crate::error::ErrMode::Backtrack(crate::error::Error {
         input: (input, 8),
         kind: ErrorKind::Eof
       }))
@@ -218,7 +218,7 @@ mod test {
 
     assert_eq!(
       result,
-      Err(crate::Err::Error(crate::error::Error {
+      Err(crate::error::ErrMode::Backtrack(crate::error::Error {
         input: (input, 8),
         kind: ErrorKind::Eof
       }))

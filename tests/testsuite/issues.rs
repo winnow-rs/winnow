@@ -4,7 +4,7 @@
 
 use winnow::input::Streaming;
 use winnow::prelude::*;
-use winnow::{error::ErrorKind, Err, IResult, Needed};
+use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 
 #[allow(dead_code)]
 struct Range {
@@ -16,7 +16,7 @@ pub fn take_char(input: &[u8]) -> IResult<&[u8], char> {
   if !input.is_empty() {
     Ok((&input[1..], input[0] as char))
   } else {
-    Err(Err::Incomplete(Needed::new(1)))
+    Err(ErrMode::Incomplete(Needed::new(1)))
   }
 }
 
@@ -87,7 +87,7 @@ fn take_till_issue() {
 
   assert_eq!(
     nothing(Streaming(b"")),
-    Err(Err::Incomplete(Needed::new(1)))
+    Err(ErrMode::Incomplete(Needed::new(1)))
   );
   assert_eq!(
     nothing(Streaming(b"abc")),
@@ -137,7 +137,7 @@ mod issue_647 {
   use winnow::bytes::tag;
   use winnow::multi::separated_list0;
   use winnow::prelude::*;
-  use winnow::{error::Error, number::be_f64, Err, IResult};
+  use winnow::{error::ErrMode, error::Error, number::be_f64, IResult};
   pub type Input<'a> = winnow::input::Streaming<&'a [u8]>;
 
   #[derive(PartialEq, Debug, Clone)]
@@ -147,7 +147,10 @@ mod issue_647 {
   }
 
   #[allow(clippy::type_complexity)]
-  fn list<'a>(input: Input<'a>, _cs: &f64) -> Result<(Input<'a>, Vec<f64>), Err<Error<Input<'a>>>> {
+  fn list<'a>(
+    input: Input<'a>,
+    _cs: &f64,
+  ) -> Result<(Input<'a>, Vec<f64>), ErrMode<Error<Input<'a>>>> {
     separated_list0(tag(",").complete(), be_f64.complete())(input)
   }
 
@@ -172,7 +175,7 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
   }
   assert_eq!(
     parser(Streaming(&b""[..])),
-    Err(Err::Failure(winnow::error::Error {
+    Err(ErrMode::Cut(winnow::error::Error {
       input: Streaming(&b""[..]),
       kind: ErrorKind::TooLarge
     }))
@@ -206,7 +209,7 @@ fn issue_1027_convert_error_panic_nonempty() {
 
   let result: IResult<_, _, VerboseError<&str>> = ('a', 'b').parse_next(input);
   let err = match result.unwrap_err() {
-    Err::Error(e) => e,
+    ErrMode::Backtrack(e) => e,
     _ => unreachable!(),
   };
 
@@ -252,7 +255,7 @@ fn issue_x_looser_fill_bounds() {
   );
   assert_eq!(
     fill_pair(b"123,,"),
-    Err(Err::Error(winnow::error::Error {
+    Err(ErrMode::Backtrack(winnow::error::Error {
       input: &b","[..],
       kind: ErrorKind::Digit
     }))
@@ -263,12 +266,12 @@ fn issue_1459_clamp_capacity() {
   // shouldn't panic
   use winnow::multi::many_m_n;
   let mut parser = many_m_n::<_, _, (), _>(usize::MAX, usize::MAX, 'a');
-  assert_eq!(parser("a"), Err(winnow::Err::Error(())));
+  assert_eq!(parser("a"), Err(winnow::error::ErrMode::Backtrack(())));
 
   // shouldn't panic
   use winnow::multi::count;
   let mut parser = count::<_, _, (), _>('a', usize::MAX);
-  assert_eq!(parser("a"), Err(winnow::Err::Error(())));
+  assert_eq!(parser("a"), Err(winnow::error::ErrMode::Backtrack(())));
 }
 
 #[test]

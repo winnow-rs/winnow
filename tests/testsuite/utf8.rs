@@ -6,8 +6,9 @@ mod test {
   use winnow::{branch::alt, bytes::tag_no_case, multi::many1};
   use winnow::{
     bytes::{tag, take, take_till, take_till1, take_until, take_while1},
+    error::ErrMode,
     error::{self, Error, ErrorKind},
-    Err, IResult,
+    IResult,
   };
 
   #[test]
@@ -46,7 +47,7 @@ mod test {
 
     let res: IResult<_, _, error::Error<_>> = tag(TAG)(Streaming(INPUT));
     match res {
-      Err(Err::Incomplete(_)) => (),
+      Err(ErrMode::Incomplete(_)) => (),
       other => {
         panic!(
           "Parser `tag` didn't require more input when it should have. \
@@ -64,7 +65,7 @@ mod test {
 
     let res: IResult<_, _, error::Error<_>> = tag(TAG)(INPUT);
     match res {
-      Err(Err::Error(_)) => (),
+      Err(ErrMode::Backtrack(_)) => (),
       other => {
         panic!(
           "Parser `tag` didn't fail when it should have. Got `{:?}`.`",
@@ -122,7 +123,7 @@ mod test {
 
     let res: IResult<_, _, Error<_>> = take(13_usize)(Streaming(INPUT));
     match res {
-      Err(Err::Incomplete(_)) => (),
+      Err(ErrMode::Incomplete(_)) => (),
       other => panic!(
         "Parser `take` didn't require more input when it should have. \
          Got `{:?}`.",
@@ -172,7 +173,7 @@ mod test {
 
     let res: IResult<_, _, Error<_>> = take_until(FIND)(Streaming(INPUT));
     match res {
-      Err(Err::Incomplete(_)) => (),
+      Err(ErrMode::Incomplete(_)) => (),
       other => panic!(
         "Parser `take_until` didn't require more input when it should have. \
          Got `{:?}`.",
@@ -190,7 +191,7 @@ mod test {
 
     let res: IResult<_, _, Error<_>> = take_until(FIND)(Streaming(INPUT));
     match res {
-      Err(Err::Incomplete(_)) => (),
+      Err(ErrMode::Incomplete(_)) => (),
       other => panic!(
         "Parser `take_until` didn't fail when it should have. \
          Got `{:?}`.",
@@ -205,7 +206,7 @@ mod test {
 
   #[test]
   fn take_while_str() {
-    use winnow::Needed;
+    use winnow::error::Needed;
 
     use winnow::bytes::take_while;
 
@@ -217,8 +218,8 @@ mod test {
     let c = "abcd123";
     let d = "123";
 
-    assert_eq!(f(Streaming(a)), Err(Err::Incomplete(Needed::new(1))));
-    assert_eq!(f(Streaming(b)), Err(Err::Incomplete(Needed::new(1))));
+    assert_eq!(f(Streaming(a)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(f(Streaming(b)), Err(ErrMode::Incomplete(Needed::new(1))));
     assert_eq!(f(Streaming(c)), Ok((Streaming(d), b)));
     assert_eq!(f(Streaming(d)), Ok((Streaming(d), a)));
   }
@@ -295,7 +296,7 @@ mod test {
 
   #[test]
   fn test_take_while1_str() {
-    use winnow::Needed;
+    use winnow::error::Needed;
 
     fn f(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
       take_while1(is_alphabetic)(i)
@@ -305,12 +306,12 @@ mod test {
     let c = "abcd123";
     let d = "123";
 
-    assert_eq!(f(Streaming(a)), Err(Err::Incomplete(Needed::new(1))));
-    assert_eq!(f(Streaming(b)), Err(Err::Incomplete(Needed::new(1))));
+    assert_eq!(f(Streaming(a)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(f(Streaming(b)), Err(ErrMode::Incomplete(Needed::new(1))));
     assert_eq!(f(Streaming(c)), Ok((Streaming("123"), b)));
     assert_eq!(
       f(Streaming(d)),
-      Err(Err::Error(winnow::error::Error {
+      Err(ErrMode::Backtrack(winnow::error::Error {
         input: Streaming(d),
         kind: ErrorKind::TakeWhile1
       }))
@@ -395,7 +396,7 @@ mod test {
       take_while1(while1_s)(input)
     }
     match test(INPUT) {
-      Err(Err::Error(_)) => (),
+      Err(ErrMode::Backtrack(_)) => (),
       other => panic!(
         "Parser `take_while1` didn't fail when it should have. \
          Got `{:?}`.",
@@ -412,7 +413,7 @@ mod test {
       take_while1(MATCH)(input)
     }
     match test(INPUT) {
-      Err(Err::Error(_)) => (),
+      Err(ErrMode::Backtrack(_)) => (),
       other => panic!(
         "Parser `is_a` didn't fail when it should have. Got `{:?}`.",
         other
@@ -492,7 +493,7 @@ mod test {
       take_till1(AVOID)(input)
     }
     match test(INPUT) {
-      Err(Err::Error(_)) => (),
+      Err(ErrMode::Backtrack(_)) => (),
       other => panic!(
         "Parser `is_not` didn't fail when it should have. Got `{:?}`.",
         other

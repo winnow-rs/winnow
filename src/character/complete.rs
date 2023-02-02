@@ -5,13 +5,14 @@
 #![allow(deprecated)]
 
 use crate::combinator::opt;
+use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{
   split_at_offset1_complete, split_at_offset_complete, AsBytes, AsChar, ContainsToken, Input,
 };
 use crate::input::{Compare, CompareResult};
-use crate::{Err, IResult};
+use crate::IResult;
 
 /// Recognizes one character.
 ///
@@ -19,15 +20,15 @@ use crate::{Err, IResult};
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{ErrorKind, Error}, IResult};
+/// # use winnow::{error::ErrMode, error::{ErrorKind, Error}, IResult};
 /// # use winnow::character::complete::char;
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     char('a')(i)
 /// }
 /// assert_eq!(parser("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser(" abc"), Err(Err::Error(Error::new(" abc", ErrorKind::Char))));
-/// assert_eq!(parser("bc"), Err(Err::Error(Error::new("bc", ErrorKind::Char))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Char))));
+/// assert_eq!(parser(" abc"), Err(ErrMode::Backtrack(Error::new(" abc", ErrorKind::Char))));
+/// assert_eq!(parser("bc"), Err(ErrMode::Backtrack(Error::new("bc", ErrorKind::Char))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Char))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of]
@@ -48,7 +49,7 @@ where
   i.next_token()
     .map(|(i, t)| (i, t.as_char()))
     .filter(|(_, t)| *t == c)
-    .ok_or_else(|| Err::Error(Error::from_char(i, c)))
+    .ok_or_else(|| ErrMode::Backtrack(Error::from_char(i, c)))
 }
 
 /// Recognizes one character and checks that it satisfies a predicate
@@ -57,14 +58,14 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{ErrorKind, Error}, Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{ErrorKind, Error}, error::Needed, IResult};
 /// # use winnow::character::complete::satisfy;
 /// fn parser(i: &str) -> IResult<&str, char> {
 ///     satisfy(|c| c == 'a' || c == 'b')(i)
 /// }
 /// assert_eq!(parser("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser("cd"), Err(Err::Error(Error::new("cd", ErrorKind::Satisfy))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Satisfy))));
+/// assert_eq!(parser("cd"), Err(ErrMode::Backtrack(Error::new("cd", ErrorKind::Satisfy))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Satisfy))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of]
@@ -90,7 +91,7 @@ where
   i.next_token()
     .map(|(i, t)| (i, t.as_char()))
     .filter(|(_, t)| cond(*t))
-    .ok_or_else(|| Err::Error(Error::from_error_kind(i, ErrorKind::Satisfy)))
+    .ok_or_else(|| ErrMode::Backtrack(Error::from_error_kind(i, ErrorKind::Satisfy)))
 }
 
 /// Recognizes one of the provided characters.
@@ -99,11 +100,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::character::complete::one_of;
 /// assert_eq!(one_of::<_, _, Error<_>>("abc")("b"), Ok(("", 'b')));
-/// assert_eq!(one_of::<_, _, Error<_>>("a")("bc"), Err(Err::Error(Error::new("bc", ErrorKind::OneOf))));
-/// assert_eq!(one_of::<_, _, Error<_>>("a")(""), Err(Err::Error(Error::new("", ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, Error<_>>("a")("bc"), Err(ErrMode::Backtrack(Error::new("bc", ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::OneOf))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of]
@@ -123,11 +124,11 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, error::Error};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::character::complete::none_of;
 /// assert_eq!(none_of::<_, _, Error<_>>("abc")("z"), Ok(("", 'z')));
-/// assert_eq!(none_of::<_, _, Error<_>>("ab")("a"), Err(Err::Error(Error::new("a", ErrorKind::NoneOf))));
-/// assert_eq!(none_of::<_, _, Error<_>>("a")(""), Err(Err::Error(Error::new("", ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, Error<_>>("ab")("a"), Err(ErrMode::Backtrack(Error::new("a", ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::NoneOf))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::none_of`][crate::bytes::none_of]
@@ -147,15 +148,15 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult};
 /// # use winnow::character::complete::crlf;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     crlf(input)
 /// }
 ///
 /// assert_eq!(parser("\r\nc"), Ok(("c", "\r\n")));
-/// assert_eq!(parser("ab\r\nc"), Err(Err::Error(Error::new("ab\r\nc", ErrorKind::CrLf))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::CrLf))));
+/// assert_eq!(parser("ab\r\nc"), Err(ErrMode::Backtrack(Error::new("ab\r\nc", ErrorKind::CrLf))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::CrLf))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::crlf`][crate::character::crlf]
@@ -170,7 +171,7 @@ where
     CompareResult::Ok => Ok(input.next_slice(CRLF.len())),
     CompareResult::Incomplete | CompareResult::Error => {
       let e: ErrorKind = ErrorKind::CrLf;
-      Err(Err::Error(E::from_error_kind(input, e)))
+      Err(ErrMode::Backtrack(E::from_error_kind(input, e)))
     }
   }
 }
@@ -182,7 +183,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::not_line_ending;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     not_line_ending(input)
@@ -192,8 +193,8 @@ where
 /// assert_eq!(parser("ab\nc"), Ok(("\nc", "ab")));
 /// assert_eq!(parser("abc"), Ok(("", "abc")));
 /// assert_eq!(parser(""), Ok(("", "")));
-/// assert_eq!(parser("a\rb\nc"), Err(Err::Error(Error { input: "a\rb\nc", kind: ErrorKind::Tag })));
-/// assert_eq!(parser("a\rbc"), Err(Err::Error(Error { input: "a\rbc", kind: ErrorKind::Tag })));
+/// assert_eq!(parser("a\rb\nc"), Err(ErrMode::Backtrack(Error { input: "a\rb\nc", kind: ErrorKind::Tag })));
+/// assert_eq!(parser("a\rbc"), Err(ErrMode::Backtrack(Error { input: "a\rbc", kind: ErrorKind::Tag })));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::not_line_ending`][crate::character::not_line_ending]
@@ -223,7 +224,7 @@ where
           CompareResult::Ok => {}
           CompareResult::Incomplete | CompareResult::Error => {
             let e: ErrorKind = ErrorKind::Tag;
-            return Err(Err::Error(E::from_error_kind(input, e)));
+            return Err(ErrMode::Backtrack(E::from_error_kind(input, e)));
           }
         }
       }
@@ -238,15 +239,15 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::line_ending;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     line_ending(input)
 /// }
 ///
 /// assert_eq!(parser("\r\nc"), Ok(("c", "\r\n")));
-/// assert_eq!(parser("ab\r\nc"), Err(Err::Error(Error::new("ab\r\nc", ErrorKind::CrLf))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::CrLf))));
+/// assert_eq!(parser("ab\r\nc"), Err(ErrMode::Backtrack(Error::new("ab\r\nc", ErrorKind::CrLf))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::CrLf))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::line_ending`][crate::character::line_ending]
@@ -263,12 +264,15 @@ where
   const CRLF: &str = "\r\n";
   match input.compare(LF) {
     CompareResult::Ok => Ok(input.next_slice(LF.len())),
-    CompareResult::Incomplete => Err(Err::Error(E::from_error_kind(input, ErrorKind::CrLf))),
+    CompareResult::Incomplete => Err(ErrMode::Backtrack(E::from_error_kind(
+      input,
+      ErrorKind::CrLf,
+    ))),
     CompareResult::Error => match input.compare("\r\n") {
       CompareResult::Ok => Ok(input.next_slice(CRLF.len())),
-      CompareResult::Incomplete | CompareResult::Error => {
-        Err(Err::Error(E::from_error_kind(input, ErrorKind::CrLf)))
-      }
+      CompareResult::Incomplete | CompareResult::Error => Err(ErrMode::Backtrack(
+        E::from_error_kind(input, ErrorKind::CrLf),
+      )),
     },
   }
 }
@@ -279,15 +283,15 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::newline;
 /// fn parser(input: &str) -> IResult<&str, char> {
 ///     newline(input)
 /// }
 ///
 /// assert_eq!(parser("\nc"), Ok(("c", '\n')));
-/// assert_eq!(parser("\r\nc"), Err(Err::Error(Error::new("\r\nc", ErrorKind::Char))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Char))));
+/// assert_eq!(parser("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::Char))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Char))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::newline`][crate::character::newline]
@@ -306,15 +310,15 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::tab;
 /// fn parser(input: &str) -> IResult<&str, char> {
 ///     tab(input)
 /// }
 ///
 /// assert_eq!(parser("\tc"), Ok(("c", '\t')));
-/// assert_eq!(parser("\r\nc"), Err(Err::Error(Error::new("\r\nc", ErrorKind::Char))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Char))));
+/// assert_eq!(parser("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::Char))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Char))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::tab`][crate::character::tab]
@@ -334,13 +338,13 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{character::complete::anychar, Err, error::{Error, ErrorKind}, IResult};
+/// # use winnow::{character::complete::anychar, error::ErrMode, error::{Error, ErrorKind}, IResult};
 /// fn parser(input: &str) -> IResult<&str, char> {
 ///     anychar(input)
 /// }
 ///
 /// assert_eq!(parser("abc"), Ok(("bc",'a')));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Eof))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::any`][crate::bytes::any]
@@ -360,7 +364,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, IResult, error::Needed};
 /// # use winnow::character::complete::alpha0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alpha0(input)
@@ -388,15 +392,15 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::alpha1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alpha1(input)
 /// }
 ///
 /// assert_eq!(parser("aB1c"), Ok(("1c", "aB")));
-/// assert_eq!(parser("1c"), Err(Err::Error(Error::new("1c", ErrorKind::Alpha))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Alpha))));
+/// assert_eq!(parser("1c"), Err(ErrMode::Backtrack(Error::new("1c", ErrorKind::Alpha))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Alpha))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::alpha1`][crate::character::alpha1]
@@ -416,7 +420,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, IResult, error::Needed};
 /// # use winnow::character::complete::digit0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     digit0(input)
@@ -445,22 +449,22 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::digit1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     digit1(input)
 /// }
 ///
 /// assert_eq!(parser("21c"), Ok(("c", "21")));
-/// assert_eq!(parser("c1"), Err(Err::Error(Error::new("c1", ErrorKind::Digit))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Digit))));
+/// assert_eq!(parser("c1"), Err(ErrMode::Backtrack(Error::new("c1", ErrorKind::Digit))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Digit))));
 /// ```
 ///
 /// ## Parsing an integer
 /// You can use `digit1` in combination with [`map_res`] to parse an integer:
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::combinator::map_res;
 /// # use winnow::character::complete::digit1;
 /// fn parser(input: &str) -> IResult<&str, u32> {
@@ -490,7 +494,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, IResult, error::Needed};
 /// # use winnow::character::complete::hex_digit0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     hex_digit0(input)
@@ -521,15 +525,15 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::hex_digit1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     hex_digit1(input)
 /// }
 ///
 /// assert_eq!(parser("21cZ"), Ok(("Z", "21c")));
-/// assert_eq!(parser("H2"), Err(Err::Error(Error::new("H2", ErrorKind::HexDigit))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::HexDigit))));
+/// assert_eq!(parser("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::HexDigit))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::HexDigit))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::hex_digit1`][crate::character::hex_digit1]
@@ -552,7 +556,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, IResult, error::Needed};
 /// # use winnow::character::complete::oct_digit0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     oct_digit0(input)
@@ -583,15 +587,15 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::oct_digit1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     oct_digit1(input)
 /// }
 ///
 /// assert_eq!(parser("21cZ"), Ok(("cZ", "21")));
-/// assert_eq!(parser("H2"), Err(Err::Error(Error::new("H2", ErrorKind::OctDigit))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::OctDigit))));
+/// assert_eq!(parser("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::OctDigit))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::OctDigit))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::oct_digit1`][crate::character::oct_digit1]
@@ -614,7 +618,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, IResult, error::Needed};
 /// # use winnow::character::complete::alphanumeric0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alphanumeric0(input)
@@ -645,15 +649,15 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::alphanumeric1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     alphanumeric1(input)
 /// }
 ///
 /// assert_eq!(parser("21cZ%1"), Ok(("%1", "21cZ")));
-/// assert_eq!(parser("&H2"), Err(Err::Error(Error::new("&H2", ErrorKind::AlphaNumeric))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::AlphaNumeric))));
+/// assert_eq!(parser("&H2"), Err(ErrMode::Backtrack(Error::new("&H2", ErrorKind::AlphaNumeric))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::AlphaNumeric))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::alphanumeric1`][crate::character::alphanumeric1]
@@ -676,7 +680,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, IResult, error::Needed};
 /// # use winnow::character::complete::space0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     space0(input)
@@ -707,15 +711,15 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::space1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     space1(input)
 /// }
 ///
 /// assert_eq!(parser(" \t21c"), Ok(("21c", " \t")));
-/// assert_eq!(parser("H2"), Err(Err::Error(Error::new("H2", ErrorKind::Space))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::Space))));
+/// assert_eq!(parser("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::Space))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Space))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::space1`][crate::character::space1]
@@ -742,7 +746,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::ErrorKind, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, IResult, error::Needed};
 /// # use winnow::character::complete::multispace0;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     multispace0(input)
@@ -776,15 +780,15 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{Err, error::{Error, ErrorKind}, IResult, Needed};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::character::complete::multispace1;
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///     multispace1(input)
 /// }
 ///
 /// assert_eq!(parser(" \t\n\r21c"), Ok(("21c", " \t\n\r")));
-/// assert_eq!(parser("H2"), Err(Err::Error(Error::new("H2", ErrorKind::MultiSpace))));
-/// assert_eq!(parser(""), Err(Err::Error(Error::new("", ErrorKind::MultiSpace))));
+/// assert_eq!(parser("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::MultiSpace))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::MultiSpace))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::multispace1`][crate::character::multispace1]
@@ -838,7 +842,7 @@ macro_rules! ints {
                 let (i, sign) = sign(input.clone())?;
 
                 if i.input_len() == 0 {
-                    return Err(Err::Error(E::from_error_kind(input, ErrorKind::Digit)));
+                    return Err(ErrMode::Backtrack(E::from_error_kind(input, ErrorKind::Digit)));
                 }
 
                 let mut value: $t = 0;
@@ -846,7 +850,7 @@ macro_rules! ints {
                     match c.as_char().to_digit(10) {
                         None => {
                             if offset == 0 {
-                                return Err(Err::Error(E::from_error_kind(input, ErrorKind::Digit)));
+                                return Err(ErrMode::Backtrack(E::from_error_kind(input, ErrorKind::Digit)));
                             } else {
                                 return Ok((i.next_slice(offset).0, value));
                             }
@@ -858,7 +862,7 @@ macro_rules! ints {
                                v.checked_sub(d as $t)
                             }
                         }) {
-                            None => return Err(Err::Error(E::from_error_kind(input, ErrorKind::Digit))),
+                            None => return Err(ErrMode::Backtrack(E::from_error_kind(input, ErrorKind::Digit))),
                             Some(v) => value = v,
                         }
                    }
@@ -887,7 +891,7 @@ macro_rules! uints {
                 let i = input;
 
                 if i.input_len() == 0 {
-                    return Err(Err::Error(E::from_error_kind(i, ErrorKind::Digit)));
+                    return Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Digit)));
                 }
 
                 let mut value: $t = 0;
@@ -895,13 +899,13 @@ macro_rules! uints {
                     match c.as_char().to_digit(10) {
                         None => {
                             if offset == 0 {
-                                return Err(Err::Error(E::from_error_kind(i, ErrorKind::Digit)));
+                                return Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Digit)));
                             } else {
                                 return Ok((i.next_slice(offset).0, value));
                             }
                         },
                         Some(d) => match value.checked_mul(10).and_then(|v| v.checked_add(d as $t)) {
-                            None => return Err(Err::Error(E::from_error_kind(i, ErrorKind::Digit))),
+                            None => return Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Digit))),
                             Some(v) => value = v,
                         }
                     }
@@ -919,9 +923,9 @@ uints! { u8 u16 u32 u64 u128 }
 mod tests {
   use super::*;
   use crate::branch::alt;
+  use crate::error::ErrMode;
   use crate::error::Error;
   use crate::input::ParseTo;
-  use crate::Err;
   use proptest::prelude::*;
 
   macro_rules! assert_parse(
@@ -940,11 +944,11 @@ mod tests {
     let d: &[u8] = "azé12".as_bytes();
     let e: &[u8] = b" ";
     let f: &[u8] = b" ;";
-    //assert_eq!(alpha1::<_, Error<_>>(a), Err(Err::Incomplete(Needed::Size(1))));
+    //assert_eq!(alpha1::<_, Error<_>>(a), Err(ErrMode::Incomplete(Needed::Size(1))));
     assert_parse!(alpha1(a), Ok((empty, a)));
     assert_eq!(
       alpha1(b),
-      Err(Err::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: b,
         kind: ErrorKind::Alpha
       }))
@@ -953,7 +957,7 @@ mod tests {
     assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12".as_bytes(), &b"az"[..])));
     assert_eq!(
       digit1(a),
-      Err(Err::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: a,
         kind: ErrorKind::Digit
       }))
@@ -961,14 +965,14 @@ mod tests {
     assert_eq!(digit1::<_, Error<_>>(b), Ok((empty, b)));
     assert_eq!(
       digit1(c),
-      Err(Err::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: c,
         kind: ErrorKind::Digit
       }))
     );
     assert_eq!(
       digit1(d),
-      Err(Err::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: d,
         kind: ErrorKind::Digit
       }))
@@ -982,14 +986,14 @@ mod tests {
     );
     assert_eq!(
       hex_digit1(e),
-      Err(Err::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: e,
         kind: ErrorKind::HexDigit
       }))
     );
     assert_eq!(
       oct_digit1(a),
-      Err(Err::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: a,
         kind: ErrorKind::OctDigit
       }))
@@ -997,14 +1001,14 @@ mod tests {
     assert_eq!(oct_digit1::<_, Error<_>>(b), Ok((empty, b)));
     assert_eq!(
       oct_digit1(c),
-      Err(Err::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: c,
         kind: ErrorKind::OctDigit
       }))
     );
     assert_eq!(
       oct_digit1(d),
-      Err(Err::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: d,
         kind: ErrorKind::OctDigit
       }))
@@ -1032,7 +1036,7 @@ mod tests {
     assert_eq!(alpha1::<_, Error<_>>(a), Ok((empty, a)));
     assert_eq!(
       alpha1(b),
-      Err(Err::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: b,
         kind: ErrorKind::Alpha
       }))
@@ -1041,7 +1045,7 @@ mod tests {
     assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12", "az")));
     assert_eq!(
       digit1(a),
-      Err(Err::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: a,
         kind: ErrorKind::Digit
       }))
@@ -1049,14 +1053,14 @@ mod tests {
     assert_eq!(digit1::<_, Error<_>>(b), Ok((empty, b)));
     assert_eq!(
       digit1(c),
-      Err(Err::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: c,
         kind: ErrorKind::Digit
       }))
     );
     assert_eq!(
       digit1(d),
-      Err(Err::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: d,
         kind: ErrorKind::Digit
       }))
@@ -1067,14 +1071,14 @@ mod tests {
     assert_eq!(hex_digit1::<_, Error<_>>(d), Ok(("zé12", "a")));
     assert_eq!(
       hex_digit1(e),
-      Err(Err::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: e,
         kind: ErrorKind::HexDigit
       }))
     );
     assert_eq!(
       oct_digit1(a),
-      Err(Err::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: a,
         kind: ErrorKind::OctDigit
       }))
@@ -1082,14 +1086,14 @@ mod tests {
     assert_eq!(oct_digit1::<_, Error<_>>(b), Ok((empty, b)));
     assert_eq!(
       oct_digit1(c),
-      Err(Err::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: c,
         kind: ErrorKind::OctDigit
       }))
     );
     assert_eq!(
       oct_digit1(d),
-      Err(Err::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: d,
         kind: ErrorKind::OctDigit
       }))
@@ -1201,7 +1205,7 @@ mod tests {
     let f = "βèƒôřè\rÂßÇáƒƭèř";
     assert_eq!(
       not_line_ending(f),
-      Err(Err::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: f,
         kind: ErrorKind::Tag
       }))
@@ -1219,13 +1223,13 @@ mod tests {
     let i = &b"g"[..];
     assert_parse!(
       hex_digit1(i),
-      Err(Err::Error(error_position!(i, ErrorKind::HexDigit)))
+      Err(ErrMode::Backtrack(error_position!(i, ErrorKind::HexDigit)))
     );
 
     let i = &b"G"[..];
     assert_parse!(
       hex_digit1(i),
-      Err(Err::Error(error_position!(i, ErrorKind::HexDigit)))
+      Err(ErrMode::Backtrack(error_position!(i, ErrorKind::HexDigit)))
     );
 
     assert!(AsChar::is_hex_digit(b'0'));
@@ -1250,7 +1254,7 @@ mod tests {
     let i = &b"8"[..];
     assert_parse!(
       oct_digit1(i),
-      Err(Err::Error(error_position!(i, ErrorKind::OctDigit)))
+      Err(ErrMode::Backtrack(error_position!(i, ErrorKind::OctDigit)))
     );
 
     assert!(AsChar::is_oct_digit(b'0'));
@@ -1306,21 +1310,27 @@ mod tests {
     assert_parse!(crlf(&b"\r\na"[..]), Ok((&b"a"[..], &b"\r\n"[..])));
     assert_parse!(
       crlf(&b"\r"[..]),
-      Err(Err::Error(error_position!(&b"\r"[..], ErrorKind::CrLf)))
+      Err(ErrMode::Backtrack(error_position!(
+        &b"\r"[..],
+        ErrorKind::CrLf
+      )))
     );
     assert_parse!(
       crlf(&b"\ra"[..]),
-      Err(Err::Error(error_position!(&b"\ra"[..], ErrorKind::CrLf)))
+      Err(ErrMode::Backtrack(error_position!(
+        &b"\ra"[..],
+        ErrorKind::CrLf
+      )))
     );
 
     assert_parse!(crlf("\r\na"), Ok(("a", "\r\n")));
     assert_parse!(
       crlf("\r"),
-      Err(Err::Error(error_position!("\r", ErrorKind::CrLf)))
+      Err(ErrMode::Backtrack(error_position!("\r", ErrorKind::CrLf)))
     );
     assert_parse!(
       crlf("\ra"),
-      Err(Err::Error(error_position!("\ra", ErrorKind::CrLf)))
+      Err(ErrMode::Backtrack(error_position!("\ra", ErrorKind::CrLf)))
     );
   }
 
@@ -1330,22 +1340,28 @@ mod tests {
     assert_parse!(line_ending(&b"\r\na"[..]), Ok((&b"a"[..], &b"\r\n"[..])));
     assert_parse!(
       line_ending(&b"\r"[..]),
-      Err(Err::Error(error_position!(&b"\r"[..], ErrorKind::CrLf)))
+      Err(ErrMode::Backtrack(error_position!(
+        &b"\r"[..],
+        ErrorKind::CrLf
+      )))
     );
     assert_parse!(
       line_ending(&b"\ra"[..]),
-      Err(Err::Error(error_position!(&b"\ra"[..], ErrorKind::CrLf)))
+      Err(ErrMode::Backtrack(error_position!(
+        &b"\ra"[..],
+        ErrorKind::CrLf
+      )))
     );
 
     assert_parse!(line_ending("\na"), Ok(("a", "\n")));
     assert_parse!(line_ending("\r\na"), Ok(("a", "\r\n")));
     assert_parse!(
       line_ending("\r"),
-      Err(Err::Error(error_position!("\r", ErrorKind::CrLf)))
+      Err(ErrMode::Backtrack(error_position!("\r", ErrorKind::CrLf)))
     );
     assert_parse!(
       line_ending("\ra"),
-      Err(Err::Error(error_position!("\ra", ErrorKind::CrLf)))
+      Err(ErrMode::Backtrack(error_position!("\ra", ErrorKind::CrLf)))
     );
   }
 
@@ -1361,7 +1377,7 @@ mod tests {
     let (i, s) = match digit1::<_, crate::error::Error<_>>(i) {
       Ok((i, s)) => (i, s),
       Err(_) => {
-        return Err(Err::Error(crate::error::Error::from_error_kind(
+        return Err(ErrMode::Backtrack(crate::error::Error::from_error_kind(
           input,
           ErrorKind::Digit,
         )))
@@ -1376,7 +1392,7 @@ mod tests {
           Ok((i, -n))
         }
       }
-      None => Err(Err::Error(crate::error::Error::from_error_kind(
+      None => Err(ErrMode::Backtrack(crate::error::Error::from_error_kind(
         i,
         ErrorKind::Digit,
       ))),
@@ -1387,7 +1403,7 @@ mod tests {
     let (i, s) = digit1(i)?;
     match s.parse_to() {
       Some(n) => Ok((i, n)),
-      None => Err(Err::Error(crate::error::Error::from_error_kind(
+      None => Err(ErrMode::Backtrack(crate::error::Error::from_error_kind(
         i,
         ErrorKind::Digit,
       ))),

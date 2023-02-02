@@ -26,13 +26,13 @@ pub enum Endianness {
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_u8;
 ///
 /// let parser = |s| {
@@ -40,11 +40,11 @@ pub enum Endianness {
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(Err::Error(Error::new(&[][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_u8;
 ///
@@ -53,7 +53,7 @@ pub enum Endianness {
 /// };
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01abcd"[..])), Ok((Streaming(&b"\x01abcd"[..]), 0x00)));
-/// assert_eq!(parser(Streaming(&b""[..])), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn be_u8<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u8, E>
@@ -72,13 +72,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_u16;
 ///
 /// let parser = |s| {
@@ -86,11 +86,11 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_u16;
 ///
@@ -99,7 +99,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x0001)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn be_u16<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u16, E>
@@ -119,13 +119,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_u24;
 ///
 /// let parser = |s| {
@@ -133,11 +133,11 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_u24;
 ///
@@ -146,7 +146,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01\x02abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x000102)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
 pub fn be_u24<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u32, E>
@@ -166,13 +166,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_u32;
 ///
 /// let parser = |s| {
@@ -180,11 +180,11 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_u32;
 ///
@@ -193,7 +193,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x00010203)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(3))));
+/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
 pub fn be_u32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u32, E>
@@ -213,13 +213,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_u64;
 ///
 /// let parser = |s| {
@@ -227,11 +227,11 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_u64;
 ///
@@ -240,7 +240,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x0001020304050607)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(7))));
+/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
 pub fn be_u64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u64, E>
@@ -260,13 +260,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_u128;
 ///
 /// let parser = |s| {
@@ -274,11 +274,11 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_u128;
 ///
@@ -287,7 +287,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x00010203040506070809101112131415)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(15))));
+/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
 pub fn be_u128<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u128, E>
@@ -307,13 +307,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_i8;
 ///
 /// let parser = |s| {
@@ -321,18 +321,18 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(Err::Error(Error::new(&[][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_i8;
 ///
 /// let parser = be_i8::<_, Error<_>, true>;
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01abcd"[..])), Ok((Streaming(&b"\x01abcd"[..]), 0x00)));
-/// assert_eq!(parser(Streaming(&b""[..])), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn be_i8<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i8, E>
@@ -351,13 +351,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_i16;
 ///
 /// let parser = |s| {
@@ -365,18 +365,18 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_i16;
 ///
 /// let parser = be_i16::<_, Error<_>, true>;
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x0001)));
-/// assert_eq!(parser(Streaming(&b""[..])), Err(Err::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Streaming(&b""[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
 pub fn be_i16<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i16, E>
@@ -396,13 +396,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_i24;
 ///
 /// let parser = |s| {
@@ -410,18 +410,18 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_i24;
 ///
 /// let parser = be_i24::<_, Error<_>, true>;
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01\x02abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x000102)));
-/// assert_eq!(parser(Streaming(&b""[..])), Err(Err::Incomplete(Needed::new(3))));
+/// assert_eq!(parser(Streaming(&b""[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
 pub fn be_i24<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i32, E>
@@ -441,13 +441,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_i32;
 ///
 /// let parser = |s| {
@@ -455,18 +455,18 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_i32;
 ///
 /// let parser = be_i32::<_, Error<_>, true>;
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x00010203)));
-/// assert_eq!(parser(Streaming(&b""[..])), Err(Err::Incomplete(Needed::new(4))));
+/// assert_eq!(parser(Streaming(&b""[..])), Err(ErrMode::Incomplete(Needed::new(4))));
 /// ```
 #[inline(always)]
 pub fn be_i32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i32, E>
@@ -486,13 +486,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_i64;
 ///
 /// let parser = |s| {
@@ -500,18 +500,18 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_i64;
 ///
 /// let parser = be_i64::<_, Error<_>, true>;
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x0001020304050607)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(7))));
+/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
 pub fn be_i64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i64, E>
@@ -531,13 +531,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_i128;
 ///
 /// let parser = |s| {
@@ -545,18 +545,18 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_i128;
 ///
 /// let parser = be_i128::<_, Error<_>, true>;
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x00010203040506070809101112131415)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(15))));
+/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
 pub fn be_i128<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i128, E>
@@ -576,13 +576,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_u8;
 ///
 /// let parser = |s| {
@@ -590,18 +590,18 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(Err::Error(Error::new(&[][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_u8;
 ///
 /// let parser = le_u8::<_, Error<_>, true>;
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01abcd"[..])), Ok((Streaming(&b"\x01abcd"[..]), 0x00)));
-/// assert_eq!(parser(Streaming(&b""[..])), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn le_u8<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u8, E>
@@ -620,13 +620,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_u16;
 ///
 /// let parser = |s| {
@@ -634,11 +634,11 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_u16;
 ///
@@ -647,7 +647,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x0100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn le_u16<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u16, E>
@@ -667,13 +667,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_u24;
 ///
 /// let parser = |s| {
@@ -681,11 +681,11 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_u24;
 ///
@@ -694,7 +694,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01\x02abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x020100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
 pub fn le_u24<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u32, E>
@@ -714,13 +714,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_u32;
 ///
 /// let parser = |s| {
@@ -728,11 +728,11 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_u32;
 ///
@@ -741,7 +741,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x03020100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(3))));
+/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
 pub fn le_u32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u32, E>
@@ -761,13 +761,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_u64;
 ///
 /// let parser = |s| {
@@ -775,11 +775,11 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_u64;
 ///
@@ -788,7 +788,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x0706050403020100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(7))));
+/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
 pub fn le_u64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u64, E>
@@ -808,13 +808,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_u128;
 ///
 /// let parser = |s| {
@@ -822,11 +822,11 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_u128;
 ///
@@ -835,7 +835,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x15141312111009080706050403020100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(15))));
+/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
 pub fn le_u128<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u128, E>
@@ -855,13 +855,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_i8;
 ///
 /// let parser = |s| {
@@ -869,18 +869,18 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(Err::Error(Error::new(&[][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_i8;
 ///
 /// let parser = le_i8::<_, Error<_>, true>;
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01abcd"[..])), Ok((Streaming(&b"\x01abcd"[..]), 0x00)));
-/// assert_eq!(parser(Streaming(&b""[..])), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn le_i8<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i8, E>
@@ -899,13 +899,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_i16;
 ///
 /// let parser = |s| {
@@ -913,11 +913,11 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_i16;
 ///
@@ -926,7 +926,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x0100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn le_i16<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i16, E>
@@ -946,13 +946,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_i24;
 ///
 /// let parser = |s| {
@@ -960,11 +960,11 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_i24;
 ///
@@ -973,7 +973,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01\x02abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x020100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
 pub fn le_i24<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i32, E>
@@ -993,13 +993,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_i32;
 ///
 /// let parser = |s| {
@@ -1007,11 +1007,11 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_i32;
 ///
@@ -1020,7 +1020,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x03020100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(3))));
+/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
 pub fn le_i32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i32, E>
@@ -1040,13 +1040,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_i64;
 ///
 /// let parser = |s| {
@@ -1054,11 +1054,11 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_i64;
 ///
@@ -1067,7 +1067,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x0706050403020100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(7))));
+/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
 pub fn le_i64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i64, E>
@@ -1087,13 +1087,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_i128;
 ///
 /// let parser = |s| {
@@ -1101,11 +1101,11 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_i128;
 ///
@@ -1114,7 +1114,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x15141312111009080706050403020100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(15))));
+/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
 pub fn le_i128<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i128, E>
@@ -1136,13 +1136,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::u8;
 ///
 /// let parser = |s| {
@@ -1150,12 +1150,12 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(Err::Error(Error::new(&[][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::u8;
 ///
@@ -1164,7 +1164,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x03abcefg"[..])), Ok((Streaming(&b"\x03abcefg"[..]), 0x00)));
-/// assert_eq!(parser(Streaming(&b""[..])), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn u8<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u8, E>
@@ -1186,13 +1186,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::u16;
 ///
 /// let be_u16 = |s| {
@@ -1200,19 +1200,19 @@ where
 /// };
 ///
 /// assert_eq!(be_u16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
-/// assert_eq!(be_u16(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_u16(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u16 = |s| {
 ///   u16(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
-/// assert_eq!(le_u16(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_u16(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::u16;
 ///
@@ -1221,14 +1221,14 @@ where
 /// };
 ///
 /// assert_eq!(be_u16(Streaming(&b"\x00\x03abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0003)));
-/// assert_eq!(be_u16(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(be_u16(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// let le_u16 = |s| {
 ///   u16::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u16(Streaming(&b"\x00\x03abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0300)));
-/// assert_eq!(le_u16(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(le_u16(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn u16<I, E: ParseError<I>, const STREAMING: bool>(
@@ -1253,13 +1253,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::u24;
 ///
 /// let be_u24 = |s| {
@@ -1267,19 +1267,19 @@ where
 /// };
 ///
 /// assert_eq!(be_u24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
-/// assert_eq!(be_u24(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_u24(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u24 = |s| {
 ///   u24(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
-/// assert_eq!(le_u24(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_u24(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::u24;
 ///
@@ -1288,14 +1288,14 @@ where
 /// };
 ///
 /// assert_eq!(be_u24(Streaming(&b"\x00\x03\x05abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x000305)));
-/// assert_eq!(be_u24(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(2))));
+/// assert_eq!(be_u24(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 ///
 /// let le_u24 = |s| {
 ///   u24::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u24(Streaming(&b"\x00\x03\x05abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x050300)));
-/// assert_eq!(le_u24(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(2))));
+/// assert_eq!(le_u24(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
 pub fn u24<I, E: ParseError<I>, const STREAMING: bool>(
@@ -1320,13 +1320,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::u32;
 ///
 /// let be_u32 = |s| {
@@ -1334,19 +1334,19 @@ where
 /// };
 ///
 /// assert_eq!(be_u32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
-/// assert_eq!(be_u32(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_u32(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u32 = |s| {
 ///   u32(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
-/// assert_eq!(le_u32(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_u32(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::u32;
 ///
@@ -1355,14 +1355,14 @@ where
 /// };
 ///
 /// assert_eq!(be_u32(Streaming(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x00030507)));
-/// assert_eq!(be_u32(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(3))));
+/// assert_eq!(be_u32(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 ///
 /// let le_u32 = |s| {
 ///   u32::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u32(Streaming(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x07050300)));
-/// assert_eq!(le_u32(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(3))));
+/// assert_eq!(le_u32(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
 pub fn u32<I, E: ParseError<I>, const STREAMING: bool>(
@@ -1387,13 +1387,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::u64;
 ///
 /// let be_u64 = |s| {
@@ -1401,19 +1401,19 @@ where
 /// };
 ///
 /// assert_eq!(be_u64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
-/// assert_eq!(be_u64(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_u64(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u64 = |s| {
 ///   u64(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
-/// assert_eq!(le_u64(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_u64(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::u64;
 ///
@@ -1422,14 +1422,14 @@ where
 /// };
 ///
 /// assert_eq!(be_u64(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0001020304050607)));
-/// assert_eq!(be_u64(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(7))));
+/// assert_eq!(be_u64(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 ///
 /// let le_u64 = |s| {
 ///   u64::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u64(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0706050403020100)));
-/// assert_eq!(le_u64(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(7))));
+/// assert_eq!(le_u64(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
 pub fn u64<I, E: ParseError<I>, const STREAMING: bool>(
@@ -1454,13 +1454,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::u128;
 ///
 /// let be_u128 = |s| {
@@ -1468,19 +1468,19 @@ where
 /// };
 ///
 /// assert_eq!(be_u128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
-/// assert_eq!(be_u128(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_u128(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u128 = |s| {
 ///   u128(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
-/// assert_eq!(le_u128(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_u128(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::u128;
 ///
@@ -1489,14 +1489,14 @@ where
 /// };
 ///
 /// assert_eq!(be_u128(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x00010203040506070001020304050607)));
-/// assert_eq!(be_u128(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(15))));
+/// assert_eq!(be_u128(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 ///
 /// let le_u128 = |s| {
 ///   u128::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u128(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x07060504030201000706050403020100)));
-/// assert_eq!(le_u128(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(15))));
+/// assert_eq!(le_u128(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
 pub fn u128<I, E: ParseError<I>, const STREAMING: bool>(
@@ -1520,13 +1520,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::i8;
 ///
 /// let parser = |s| {
@@ -1534,12 +1534,12 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(Err::Error(Error::new(&[][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::i8;
 ///
@@ -1548,7 +1548,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&b"\x00\x03abcefg"[..])), Ok((Streaming(&b"\x03abcefg"[..]), 0x00)));
-/// assert_eq!(parser(Streaming(&b""[..])), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn i8<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i8, E>
@@ -1570,13 +1570,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::i16;
 ///
 /// let be_i16 = |s| {
@@ -1584,19 +1584,19 @@ where
 /// };
 ///
 /// assert_eq!(be_i16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
-/// assert_eq!(be_i16(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_i16(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i16 = |s| {
 ///   i16(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
-/// assert_eq!(le_i16(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_i16(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::i16;
 ///
@@ -1605,14 +1605,14 @@ where
 /// };
 ///
 /// assert_eq!(be_i16(Streaming(&b"\x00\x03abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0003)));
-/// assert_eq!(be_i16(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(be_i16(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// let le_i16 = |s| {
 ///   i16::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i16(Streaming(&b"\x00\x03abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0300)));
-/// assert_eq!(le_i16(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(le_i16(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn i16<I, E: ParseError<I>, const STREAMING: bool>(
@@ -1637,13 +1637,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::i24;
 ///
 /// let be_i24 = |s| {
@@ -1651,19 +1651,19 @@ where
 /// };
 ///
 /// assert_eq!(be_i24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
-/// assert_eq!(be_i24(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_i24(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i24 = |s| {
 ///   i24(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
-/// assert_eq!(le_i24(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_i24(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::i24;
 ///
@@ -1672,14 +1672,14 @@ where
 /// };
 ///
 /// assert_eq!(be_i24(Streaming(&b"\x00\x03\x05abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x000305)));
-/// assert_eq!(be_i24(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(2))));
+/// assert_eq!(be_i24(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 ///
 /// let le_i24 = |s| {
 ///   i24::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i24(Streaming(&b"\x00\x03\x05abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x050300)));
-/// assert_eq!(le_i24(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(2))));
+/// assert_eq!(le_i24(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
 pub fn i24<I, E: ParseError<I>, const STREAMING: bool>(
@@ -1704,13 +1704,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::i32;
 ///
 /// let be_i32 = |s| {
@@ -1718,19 +1718,19 @@ where
 /// };
 ///
 /// assert_eq!(be_i32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
-/// assert_eq!(be_i32(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_i32(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i32 = |s| {
 ///   i32(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
-/// assert_eq!(le_i32(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_i32(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::i32;
 ///
@@ -1739,14 +1739,14 @@ where
 /// };
 ///
 /// assert_eq!(be_i32(Streaming(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x00030507)));
-/// assert_eq!(be_i32(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(3))));
+/// assert_eq!(be_i32(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 ///
 /// let le_i32 = |s| {
 ///   i32::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i32(Streaming(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x07050300)));
-/// assert_eq!(le_i32(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(3))));
+/// assert_eq!(le_i32(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
 pub fn i32<I, E: ParseError<I>, const STREAMING: bool>(
@@ -1771,13 +1771,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::i64;
 ///
 /// let be_i64 = |s| {
@@ -1785,19 +1785,19 @@ where
 /// };
 ///
 /// assert_eq!(be_i64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
-/// assert_eq!(be_i64(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_i64(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i64 = |s| {
 ///   i64(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
-/// assert_eq!(le_i64(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_i64(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::i64;
 ///
@@ -1806,14 +1806,14 @@ where
 /// };
 ///
 /// assert_eq!(be_i64(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0001020304050607)));
-/// assert_eq!(be_i64(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(7))));
+/// assert_eq!(be_i64(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 ///
 /// let le_i64 = |s| {
 ///   i64::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i64(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0706050403020100)));
-/// assert_eq!(le_i64(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(7))));
+/// assert_eq!(le_i64(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
 pub fn i64<I, E: ParseError<I>, const STREAMING: bool>(
@@ -1838,13 +1838,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::i128;
 ///
 /// let be_i128 = |s| {
@@ -1852,19 +1852,19 @@ where
 /// };
 ///
 /// assert_eq!(be_i128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
-/// assert_eq!(be_i128(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_i128(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i128 = |s| {
 ///   i128(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
-/// assert_eq!(le_i128(&b"\x01"[..]), Err(Err::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_i128(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::i128;
 ///
@@ -1873,14 +1873,14 @@ where
 /// };
 ///
 /// assert_eq!(be_i128(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x00010203040506070001020304050607)));
-/// assert_eq!(be_i128(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(15))));
+/// assert_eq!(be_i128(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 ///
 /// let le_i128 = |s| {
 ///   i128::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i128(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x07060504030201000706050403020100)));
-/// assert_eq!(le_i128(Streaming(&b"\x01"[..])), Err(Err::Incomplete(Needed::new(15))));
+/// assert_eq!(le_i128(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
 pub fn i128<I, E: ParseError<I>, const STREAMING: bool>(
@@ -1902,13 +1902,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_f32;
 ///
 /// let parser = |s| {
@@ -1916,11 +1916,11 @@ where
 /// };
 ///
 /// assert_eq!(parser(&[0x41, 0x48, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(parser(&b"abc"[..]), Err(Err::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_f32;
 ///
@@ -1929,7 +1929,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&[0x40, 0x29, 0x00, 0x00][..])), Ok((Streaming(&b""[..]), 2.640625)));
-/// assert_eq!(parser(Streaming(&[0x01][..])), Err(Err::Incomplete(Needed::new(3))));
+/// assert_eq!(parser(Streaming(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
 pub fn be_f32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f32, E>
@@ -1949,13 +1949,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::be_f64;
 ///
 /// let parser = |s| {
@@ -1963,11 +1963,11 @@ where
 /// };
 ///
 /// assert_eq!(parser(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(parser(&b"abc"[..]), Err(Err::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::be_f64;
 ///
@@ -1976,7 +1976,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])), Ok((Streaming(&b""[..]), 12.5)));
-/// assert_eq!(parser(Streaming(&[0x01][..])), Err(Err::Incomplete(Needed::new(7))));
+/// assert_eq!(parser(Streaming(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
 pub fn be_f64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f64, E>
@@ -1996,13 +1996,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_f32;
 ///
 /// let parser = |s| {
@@ -2010,11 +2010,11 @@ where
 /// };
 ///
 /// assert_eq!(parser(&[0x00, 0x00, 0x48, 0x41][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(parser(&b"abc"[..]), Err(Err::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_f32;
 ///
@@ -2023,7 +2023,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&[0x00, 0x00, 0x48, 0x41][..])), Ok((Streaming(&b""[..]), 12.5)));
-/// assert_eq!(parser(Streaming(&[0x01][..])), Err(Err::Incomplete(Needed::new(3))));
+/// assert_eq!(parser(Streaming(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
 pub fn le_f32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f32, E>
@@ -2043,13 +2043,13 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::le_f64;
 ///
 /// let parser = |s| {
@@ -2057,11 +2057,11 @@ where
 /// };
 ///
 /// assert_eq!(parser(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29, 0x40][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(parser(&b"abc"[..]), Err(Err::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::le_f64;
 ///
@@ -2070,7 +2070,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x41][..])), Ok((Streaming(&b""[..]), 3145728.0)));
-/// assert_eq!(parser(Streaming(&[0x01][..])), Err(Err::Incomplete(Needed::new(7))));
+/// assert_eq!(parser(Streaming(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
 pub fn le_f64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f64, E>
@@ -2093,13 +2093,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::f32;
 ///
 /// let be_f32 = |s| {
@@ -2107,19 +2107,19 @@ where
 /// };
 ///
 /// assert_eq!(be_f32(&[0x41, 0x48, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(be_f32(&b"abc"[..]), Err(Err::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
+/// assert_eq!(be_f32(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Eof))));
 ///
 /// let le_f32 = |s| {
 ///   f32(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_f32(&[0x00, 0x00, 0x48, 0x41][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(le_f32(&b"abc"[..]), Err(Err::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
+/// assert_eq!(le_f32(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::f32;
 ///
@@ -2128,14 +2128,14 @@ where
 /// };
 ///
 /// assert_eq!(be_f32(Streaming(&[0x41, 0x48, 0x00, 0x00][..])), Ok((Streaming(&b""[..]), 12.5)));
-/// assert_eq!(be_f32(Streaming(&b"abc"[..])), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(be_f32(Streaming(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// let le_f32 = |s| {
 ///   f32::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_f32(Streaming(&[0x00, 0x00, 0x48, 0x41][..])), Ok((Streaming(&b""[..]), 12.5)));
-/// assert_eq!(le_f32(Streaming(&b"abc"[..])), Err(Err::Incomplete(Needed::new(1))));
+/// assert_eq!(le_f32(Streaming(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn f32<I, E: ParseError<I>, const STREAMING: bool>(
@@ -2160,13 +2160,13 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::f64;
 ///
 /// let be_f64 = |s| {
@@ -2174,19 +2174,19 @@ where
 /// };
 ///
 /// assert_eq!(be_f64(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(be_f64(&b"abc"[..]), Err(Err::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
+/// assert_eq!(be_f64(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Eof))));
 ///
 /// let le_f64 = |s| {
 ///   f64(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_f64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29, 0x40][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(le_f64(&b"abc"[..]), Err(Err::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
+/// assert_eq!(le_f64(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Eof))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
 /// use winnow::number::f64;
 ///
@@ -2195,14 +2195,14 @@ where
 /// };
 ///
 /// assert_eq!(be_f64(Streaming(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])), Ok((Streaming(&b""[..]), 12.5)));
-/// assert_eq!(be_f64(Streaming(&b"abc"[..])), Err(Err::Incomplete(Needed::new(5))));
+/// assert_eq!(be_f64(Streaming(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(5))));
 ///
 /// let le_f64 = |s| {
 ///   f64::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_f64(Streaming(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29, 0x40][..])), Ok((Streaming(&b""[..]), 12.5)));
-/// assert_eq!(le_f64(Streaming(&b"abc"[..])), Err(Err::Incomplete(Needed::new(5))));
+/// assert_eq!(le_f64(Streaming(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(5))));
 /// ```
 #[inline(always)]
 pub fn f64<I, E: ParseError<I>, const STREAMING: bool>(
@@ -2224,13 +2224,13 @@ where
 ///
 /// *Complete version*: Will parse until the end of input if it has less than 8 bytes.
 ///
-/// *Streaming version*: Will return `Err(winnow::Err::Incomplete(_))` if there is not enough data.
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
-/// # use winnow::Needed::Size;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::error::Needed::Size;
 /// use winnow::number::hex_u32;
 ///
 /// let parser = |s| {
@@ -2239,11 +2239,11 @@ where
 ///
 /// assert_eq!(parser(&b"01AE"[..]), Ok((&b""[..], 0x01AE)));
 /// assert_eq!(parser(&b"abc"[..]), Ok((&b""[..], 0x0ABC)));
-/// assert_eq!(parser(&b"ggg"[..]), Err(Err::Error(Error::new(&b"ggg"[..], ErrorKind::IsA))));
+/// assert_eq!(parser(&b"ggg"[..]), Err(ErrMode::Backtrack(Error::new(&b"ggg"[..], ErrorKind::IsA))));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{Err, error::ErrorKind, error::Error, Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::input::Streaming;
 /// use winnow::number::hex_u32;
 ///
@@ -2252,8 +2252,8 @@ where
 /// };
 ///
 /// assert_eq!(parser(Streaming(&b"01AE;"[..])), Ok((Streaming(&b";"[..]), 0x01AE)));
-/// assert_eq!(parser(Streaming(&b"abc"[..])), Err(Err::Incomplete(Needed::new(1))));
-/// assert_eq!(parser(Streaming(&b"ggg"[..])), Err(Err::Error(Error::new(Streaming(&b"ggg"[..]), ErrorKind::IsA))));
+/// assert_eq!(parser(Streaming(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming(&b"ggg"[..])), Err(ErrMode::Backtrack(Error::new(Streaming(&b"ggg"[..]), ErrorKind::IsA))));
 /// ```
 #[inline(always)]
 pub fn hex_u32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u32, E>
