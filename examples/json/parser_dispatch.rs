@@ -3,10 +3,13 @@ use std::str;
 
 use winnow::prelude::*;
 use winnow::{
-  branch::alt,
+  branch::{alt, dispatch},
   bytes::{any, none_of, tag, take, take_while},
   character::f64,
   combinator::cut_err,
+  combinator::fail,
+  combinator::peek,
+  combinator::success,
   error::{ContextError, ParseError},
   multi::{fold_many0, separated_list0},
   sequence::{delimited, preceded, separated_pair, terminated},
@@ -39,16 +42,21 @@ pub fn json<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>
 fn json_value<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
   input: Input<'i>,
 ) -> IResult<Input<'i>, JsonValue, E> {
-  // `alt` combines the each value parser. It returns the result of the first
-  // successful parser, or an error
-  alt((
-    null.value(JsonValue::Null),
-    boolean.map(JsonValue::Boolean),
-    string.map(JsonValue::Str),
-    f64.map(JsonValue::Num),
-    array.map(JsonValue::Array),
-    object.map(JsonValue::Object),
-  ))(input)
+  // `dispatch` gives you `match`-like behavior compared to `alt` successively trying different
+  // implementations.
+  dispatch!(peek(any);
+      'n' => null.value(JsonValue::Null),
+      't' => true_.map(JsonValue::Boolean),
+      'f' => false_.map(JsonValue::Boolean),
+      '"' => string.map(JsonValue::Str),
+      '+' => f64.map(JsonValue::Num),
+      '-' => f64.map(JsonValue::Num),
+      '0'..='9' => f64.map(JsonValue::Num),
+      '[' => array.map(JsonValue::Array),
+      '{' => object.map(JsonValue::Object),
+      _ => fail,
+  )
+  .parse_next(input)
 }
 
 /// `tag(string)` generates a parser that recognizes the argument string.
@@ -62,16 +70,18 @@ fn null<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>, &'
 
 /// We can combine `tag` with other functions, like `value` which returns a given constant value on
 /// success.
-fn boolean<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>, bool, E> {
+fn true_<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>, bool, E> {
   // This is a parser that returns `true` if it sees the string "true", and
   // an error otherwise
-  let parse_true = tag("true").value(true);
+  tag("true").value(true).parse_next(input)
+}
 
+/// We can combine `tag` with other functions, like `value` which returns a given constant value on
+/// success.
+fn false_<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>, bool, E> {
   // This is a parser that returns `false` if it sees the string "false", and
   // an error otherwise
-  let parse_false = tag("false").value(false);
-
-  alt((parse_true, parse_false))(input)
+  tag("false").value(false).parse_next(input)
 }
 
 /// This parser gathers all `char`s up into a `String`with a parse to recognize the double quote
@@ -104,20 +114,19 @@ fn string<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
 fn character<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>, char, E> {
   let (input, c) = none_of("\"")(input)?;
   if c == '\\' {
-    alt((
-      any.map_opt(|c| {
-        Some(match c {
-          '"' | '\\' | '/' => c,
-          'b' => '\x08',
-          'f' => '\x0C',
-          'n' => '\n',
-          'r' => '\r',
-          't' => '\t',
-          _ => return None,
-        })
-      }),
-      preceded('u', unicode_escape),
-    ))(input)
+    dispatch!(any;
+      '"' => success('"'),
+      '\\' => success('\\'),
+      '/'  => success('/'),
+      'b' => success('\x08'),
+      'f' => success('\x0C'),
+      'n' => success('\n'),
+      'r' => success('\r'),
+      't' => success('\t'),
+      'u' => unicode_escape,
+      _ => fail,
+    )
+    .parse_next(input)
   } else {
     Ok((input, c))
   }
