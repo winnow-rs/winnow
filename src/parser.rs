@@ -1,9 +1,7 @@
 //! Basic types to build the parsers
 
 use crate::combinator::*;
-#[cfg(feature = "std")]
-use crate::error::DbgErr;
-use crate::error::{Context, ContextError, IResult, ParseError};
+use crate::error::{ContextError, IResult, ParseError};
 use crate::input::{AsChar, Compare, Input, InputIsStreaming, Location};
 
 /// All nom parsers implement this trait
