@@ -45,7 +45,7 @@ fn streaming_one_of_test() {
   let b = &b"cde"[..];
   assert_eq!(
     f(Streaming(b)),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(b),
       ErrorKind::OneOf
     )))
@@ -68,7 +68,7 @@ fn char_byteslice() {
   let a = &b"abcd"[..];
   assert_eq!(
     f(Streaming(a)),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(a),
       ErrorKind::OneOf
     )))
@@ -87,7 +87,7 @@ fn char_str() {
   let a = "abcd";
   assert_eq!(
     f(Streaming(a)),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(a),
       ErrorKind::OneOf
     )))
@@ -106,7 +106,7 @@ fn streaming_none_of_test() {
   let a = &b"abcd"[..];
   assert_eq!(
     f(Streaming(a)),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(a),
       ErrorKind::NoneOf
     )))
@@ -131,7 +131,10 @@ fn streaming_is_a() {
   let c = Streaming(&b"cdef"[..]);
   assert_eq!(
     a_or_b(c),
-    Err(ErrMode::Error(error_position!(c, ErrorKind::TakeWhile1)))
+    Err(ErrMode::Backtrack(error_position!(
+      c,
+      ErrorKind::TakeWhile1
+    )))
   );
 
   let d = Streaming(&b"bacdef"[..]);
@@ -153,7 +156,7 @@ fn streaming_is_not() {
   let c = Streaming(&b"abab"[..]);
   assert_eq!(
     a_or_b(c),
-    Err(ErrMode::Error(error_position!(c, ErrorKind::TakeTill1)))
+    Err(ErrMode::Backtrack(error_position!(c, ErrorKind::TakeTill1)))
   );
 
   let d = Streaming(&b"cdefba"[..]);
@@ -284,7 +287,7 @@ fn streaming_take_while1() {
   assert_eq!(f(Streaming(c)), Ok((Streaming(&b"123"[..]), b)));
   assert_eq!(
     f(Streaming(d)),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(d),
       ErrorKind::TakeWhile1
     )))
@@ -310,7 +313,7 @@ fn streaming_take_while_m_n() {
   assert_eq!(x(Streaming(e)), Ok((Streaming(&b"e"[..]), &b"abcd"[..])));
   assert_eq!(
     x(Streaming(f)),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(f),
       ErrorKind::TakeWhileMN
     )))
@@ -346,7 +349,7 @@ fn streaming_take_till1() {
   assert_eq!(f(Streaming(a)), Err(ErrMode::Incomplete(Needed::new(1))));
   assert_eq!(
     f(Streaming(b)),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(b),
       ErrorKind::TakeTill1
     )))
@@ -535,14 +538,14 @@ fn streaming_case_insensitive() {
   );
   assert_eq!(
     test(Streaming(&b"Hello"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"Hello"[..]),
       ErrorKind::Tag
     )))
   );
   assert_eq!(
     test(Streaming(&b"Hel"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"Hel"[..]),
       ErrorKind::Tag
     )))
@@ -569,14 +572,14 @@ fn streaming_case_insensitive() {
   );
   assert_eq!(
     test2(Streaming("Hello")),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming("Hello"),
       ErrorKind::Tag
     )))
   );
   assert_eq!(
     test2(Streaming("Hel")),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming("Hel"),
       ErrorKind::Tag
     )))

@@ -60,7 +60,7 @@ fn separated_list0_test() {
   let i_err_pos = &i[3..];
   assert_eq!(
     empty_sep(Streaming(i)),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(i_err_pos),
       ErrorKind::SeparatedList
     )))
@@ -107,7 +107,7 @@ fn separated_list1_test() {
   assert_eq!(multi(Streaming(b)), Ok((Streaming(&b"ef"[..]), res2)));
   assert_eq!(
     multi(Streaming(c)),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(c),
       ErrorKind::Tag
     )))
@@ -165,7 +165,7 @@ fn many0_test() {
   );
   assert_eq!(
     multi_empty(Streaming(&b"abcdef"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"abcdef"[..]),
       ErrorKind::Many0
     )))
@@ -190,7 +190,7 @@ fn many1_test() {
   assert_eq!(multi(Streaming(b)), Ok((Streaming(&b"efgh"[..]), res2)));
   assert_eq!(
     multi(Streaming(c)),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(c),
       ErrorKind::Tag
     )))
@@ -219,7 +219,7 @@ fn many_till_test() {
   assert_eq!(multi(&b[..]), Ok((&b"abcd"[..], res_b)));
   assert_eq!(
     multi(&c[..]),
-    Err(ErrMode::Error(error_node_position!(
+    Err(ErrMode::Backtrack(error_node_position!(
       &c[..],
       ErrorKind::ManyTill,
       error_position!(&c[..], ErrorKind::Tag)
@@ -232,7 +232,7 @@ fn many_till_test() {
 fn infinite_many() {
   fn tst(input: &[u8]) -> IResult<&[u8], &[u8]> {
     println!("input: {:?}", input);
-    Err(ErrMode::Error(error_position!(input, ErrorKind::Tag)))
+    Err(ErrMode::Backtrack(error_position!(input, ErrorKind::Tag)))
   }
 
   // should not go into an infinite loop
@@ -248,7 +248,7 @@ fn infinite_many() {
   let a = &b"abcdef"[..];
   assert_eq!(
     multi1(a),
-    Err(ErrMode::Error(error_position!(a, ErrorKind::Tag)))
+    Err(ErrMode::Backtrack(error_position!(a, ErrorKind::Tag)))
   );
 }
 
@@ -267,7 +267,7 @@ fn many_m_n_test() {
 
   assert_eq!(
     multi(Streaming(a)),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"ef"[..]),
       ErrorKind::Tag
     )))
@@ -306,21 +306,21 @@ fn count_test() {
   );
   assert_eq!(
     cnt_2(Streaming(&b"xxx"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxx"[..]),
       ErrorKind::Tag
     )))
   );
   assert_eq!(
     cnt_2(Streaming(&b"xxxabcabcdef"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxxabcabcdef"[..]),
       ErrorKind::Tag
     )))
   );
   assert_eq!(
     cnt_2(Streaming(&b"abcxxxabcdef"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxxabcdef"[..]),
       ErrorKind::Tag
     )))
@@ -412,14 +412,14 @@ fn length_count_test() {
   );
   assert_eq!(
     cnt(Streaming(&b"xxx"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxx"[..]),
       ErrorKind::Digit
     )))
   );
   assert_eq!(
     cnt(Streaming(&b"2abcxxx"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxx"[..]),
       ErrorKind::Tag
     )))
@@ -449,7 +449,7 @@ fn length_data_test() {
   );
   assert_eq!(
     take(Streaming(&b"xxx"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxx"[..]),
       ErrorKind::Digit
     )))
@@ -472,14 +472,14 @@ fn length_value_test() {
   let i1 = [0, 5, 6];
   assert_eq!(
     length_value_1(Streaming(&i1)),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b""[..]),
       ErrorKind::Complete
     )))
   );
   assert_eq!(
     length_value_2(Streaming(&i1)),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b""[..]),
       ErrorKind::Complete
     )))
@@ -488,14 +488,14 @@ fn length_value_test() {
   let i2 = [1, 5, 6, 3];
   assert_eq!(
     length_value_1(Streaming(&i2)),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&i2[1..2]),
       ErrorKind::Complete
     )))
   );
   assert_eq!(
     length_value_2(Streaming(&i2)),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&i2[1..2]),
       ErrorKind::Complete
     )))
@@ -562,7 +562,7 @@ fn fold_many0_test() {
   );
   assert_eq!(
     multi_empty(Streaming(&b"abcdef"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"abcdef"[..]),
       ErrorKind::Many0
     )))
@@ -591,7 +591,7 @@ fn fold_many1_test() {
   assert_eq!(multi(Streaming(b)), Ok((Streaming(&b"efgh"[..]), res2)));
   assert_eq!(
     multi(Streaming(c)),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(c),
       ErrorKind::Many1
     )))
@@ -621,7 +621,7 @@ fn fold_many_m_n_test() {
 
   assert_eq!(
     multi(Streaming(a)),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"ef"[..]),
       ErrorKind::Tag
     )))
@@ -671,7 +671,7 @@ fn many1_count_test() {
 
   assert_eq!(
     count1_nums(&b"hello"[..]),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       &b"hello"[..],
       ErrorKind::Many1Count
     )))

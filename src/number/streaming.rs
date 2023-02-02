@@ -1523,7 +1523,7 @@ where
 ///
 /// assert_eq!(parser(&b"01AE;"[..]), Ok((&b";"[..], 0x01AE)));
 /// assert_eq!(parser(&b"abc"[..]), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(parser(&b"ggg"[..]), Err(ErrMode::Error(Error::new(&b"ggg"[..], ErrorKind::IsA))));
+/// assert_eq!(parser(&b"ggg"[..]), Err(ErrMode::Backtrack(Error::new(&b"ggg"[..], ErrorKind::IsA))));
 /// ```
 #[inline]
 ///
@@ -1558,7 +1558,10 @@ where
     }
   };
   if offset == 0 {
-    return Err(ErrMode::Error(E::from_error_kind(input, ErrorKind::IsA)));
+    return Err(ErrMode::Backtrack(E::from_error_kind(
+      input,
+      ErrorKind::IsA,
+    )));
   }
   let (remaining, parsed) = input.next_slice(offset);
 
@@ -1591,7 +1594,7 @@ where
 /// assert_eq!(parser("11e-1;"), Ok((";", "11e-1")));
 /// assert_eq!(parser("123E-02;"), Ok((";", "123E-02")));
 /// assert_eq!(parser("123K-01"), Ok(("K-01", "123")));
-/// assert_eq!(parser("abc"), Err(ErrMode::Error(Error::new("abc", ErrorKind::Char))));
+/// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Char))));
 /// ```
 #[rustfmt::skip]
 ///
@@ -1641,26 +1644,26 @@ where
   alt((
     |i: T| {
       recognize_float::<_, E>(i.clone()).map_err(|e| match e {
-        crate::error::ErrMode::Error(_) => {
-          crate::error::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float))
+        crate::error::ErrMode::Backtrack(_) => {
+          crate::error::ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Float))
         }
-        crate::error::ErrMode::Failure(_) => {
-          crate::error::ErrMode::Failure(E::from_error_kind(i, ErrorKind::Float))
+        crate::error::ErrMode::Cut(_) => {
+          crate::error::ErrMode::Cut(E::from_error_kind(i, ErrorKind::Float))
         }
         crate::error::ErrMode::Incomplete(needed) => crate::error::ErrMode::Incomplete(needed),
       })
     },
     |i: T| {
       crate::bytes::streaming::tag_no_case::<_, _, E>("nan")(i.clone())
-        .map_err(|_err| crate::error::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::error::ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Float)))
     },
     |i: T| {
       crate::bytes::streaming::tag_no_case::<_, _, E>("inf")(i.clone())
-        .map_err(|_err| crate::error::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::error::ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Float)))
     },
     |i: T| {
       crate::bytes::streaming::tag_no_case::<_, _, E>("infinity")(i.clone())
-        .map_err(|_err| crate::error::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::error::ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Float)))
     },
   ))(input)
 }
@@ -1725,7 +1728,10 @@ where
   };
 
   if integer.slice_len() == 0 && fraction.slice_len() == 0 {
-    return Err(ErrMode::Error(E::from_error_kind(input, ErrorKind::Float)));
+    return Err(ErrMode::Backtrack(E::from_error_kind(
+      input,
+      ErrorKind::Float,
+    )));
   }
 
   let i2 = i.clone();
@@ -1760,7 +1766,7 @@ where
 /// assert_eq!(parser("11e-1"), Ok(("", 1.1)));
 /// assert_eq!(parser("123E-02"), Ok(("", 1.23)));
 /// assert_eq!(parser("123K-01"), Ok(("K-01", 123.0)));
-/// assert_eq!(parser("abc"), Err(ErrMode::Error(Error::new("abc", ErrorKind::Float))));
+/// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Float))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::f32`][crate::character::f32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -1780,7 +1786,7 @@ where
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
     Some(f) => Ok((i, f)),
-    None => Err(crate::error::ErrMode::Error(E::from_error_kind(
+    None => Err(crate::error::ErrMode::Backtrack(E::from_error_kind(
       i,
       crate::error::ErrorKind::Float,
     ))),
@@ -1803,7 +1809,7 @@ where
 /// assert_eq!(parser("11e-1"), Ok(("", 1.1)));
 /// assert_eq!(parser("123E-02"), Ok(("", 1.23)));
 /// assert_eq!(parser("123K-01"), Ok(("K-01", 123.0)));
-/// assert_eq!(parser("abc"), Err(ErrMode::Error(Error::new("abc", ErrorKind::Float))));
+/// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Float))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::f64`][crate::character::f64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -1823,7 +1829,7 @@ where
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
     Some(f) => Ok((i, f)),
-    None => Err(crate::error::ErrMode::Error(E::from_error_kind(
+    None => Err(crate::error::ErrMode::Backtrack(E::from_error_kind(
       i,
       crate::error::ErrorKind::Float,
     ))),
@@ -2255,7 +2261,10 @@ mod tests {
   fn hex_u32_tests() {
     assert_parse!(
       hex_u32(&b";"[..]),
-      Err(ErrMode::Error(error_position!(&b";"[..], ErrorKind::IsA)))
+      Err(ErrMode::Backtrack(error_position!(
+        &b";"[..],
+        ErrorKind::IsA
+      )))
     );
     assert_parse!(hex_u32(&b"ff;"[..]), Ok((&b";"[..], 255)));
     assert_parse!(hex_u32(&b"1be2;"[..]), Ok((&b";"[..], 7138)));
@@ -2417,11 +2426,11 @@ mod tests {
       Err(e) => Err(e),
       Ok((i, s)) => {
         if s.is_empty() {
-          return Err(ErrMode::Error(()));
+          return Err(ErrMode::Backtrack(()));
         }
         match s.parse_to() {
           Some(n) => Ok((i, n)),
-          None => Err(ErrMode::Error(())),
+          None => Err(ErrMode::Backtrack(())),
         }
       }
     }

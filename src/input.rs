@@ -178,7 +178,7 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 /// input buffer can be full and need to be resized or refilled.
 /// - [`ErrMode::Incomplete`] will report how much more data is needed.
 /// - [`Parser::complete`][crate::Parser::complete] transform [`ErrMode::Incomplete`] to
-///   [`ErrMode::Error`]
+///   [`ErrMode::Backtrack`]
 ///
 /// See also [`InputIsStreaming`] to tell whether the input supports complete or streaming parsing.
 ///
@@ -206,7 +206,7 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 /// assert_eq!(take_streaming(Streaming(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// // but the complete parser will return an error
-/// assert_eq!(take_complete(&b"abc"[..]), Err(ErrMode::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
+/// assert_eq!(take_complete(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Eof))));
 ///
 /// // the alpha0 function recognizes 0 or more alphabetic characters
 /// fn alpha0_streaming(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
@@ -1763,8 +1763,8 @@ impl<'a> AsChar for &'a char {
 /// }
 ///
 /// assert_eq!(hex_digit1("21cZ"), Ok(("Z", "21c")));
-/// assert_eq!(hex_digit1("H2"), Err(ErrMode::Error(Error::new("H2", ErrorKind::TakeWhile1))));
-/// assert_eq!(hex_digit1(""), Err(ErrMode::Error(Error::new("", ErrorKind::TakeWhile1))));
+/// assert_eq!(hex_digit1("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::TakeWhile1))));
+/// assert_eq!(hex_digit1(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::TakeWhile1))));
 /// ```
 pub trait ContainsToken<T> {
   /// Returns true if self contains the token
@@ -2020,7 +2020,7 @@ where
     .offset_for(predicate)
     .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
   if offset == 0 {
-    Err(ErrMode::Error(E::from_error_kind(input.clone(), e)))
+    Err(ErrMode::Backtrack(E::from_error_kind(input.clone(), e)))
   } else {
     Ok(input.next_slice(offset))
   }
@@ -2061,7 +2061,7 @@ where
     .offset_for(predicate)
     .unwrap_or_else(|| input.input_len());
   if offset == 0 {
-    Err(ErrMode::Error(E::from_error_kind(input.clone(), e)))
+    Err(ErrMode::Backtrack(E::from_error_kind(input.clone(), e)))
   } else {
     Ok(input.next_slice(offset))
   }

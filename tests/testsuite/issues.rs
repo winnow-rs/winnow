@@ -175,7 +175,7 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
   }
   assert_eq!(
     parser(Streaming(&b""[..])),
-    Err(ErrMode::Failure(winnow::error::Error {
+    Err(ErrMode::Cut(winnow::error::Error {
       input: Streaming(&b""[..]),
       kind: ErrorKind::TooLarge
     }))
@@ -209,7 +209,7 @@ fn issue_1027_convert_error_panic_nonempty() {
 
   let result: IResult<_, _, VerboseError<&str>> = ('a', 'b').parse_next(input);
   let err = match result.unwrap_err() {
-    ErrMode::Error(e) => e,
+    ErrMode::Backtrack(e) => e,
     _ => unreachable!(),
   };
 
@@ -255,7 +255,7 @@ fn issue_x_looser_fill_bounds() {
   );
   assert_eq!(
     fill_pair(b"123,,"),
-    Err(ErrMode::Error(winnow::error::Error {
+    Err(ErrMode::Backtrack(winnow::error::Error {
       input: &b","[..],
       kind: ErrorKind::Digit
     }))
@@ -266,12 +266,12 @@ fn issue_1459_clamp_capacity() {
   // shouldn't panic
   use winnow::multi::many_m_n;
   let mut parser = many_m_n::<_, _, (), _>(usize::MAX, usize::MAX, 'a');
-  assert_eq!(parser("a"), Err(winnow::error::ErrMode::Error(())));
+  assert_eq!(parser("a"), Err(winnow::error::ErrMode::Backtrack(())));
 
   // shouldn't panic
   use winnow::multi::count;
   let mut parser = count::<_, _, (), _>('a', usize::MAX);
-  assert_eq!(parser("a"), Err(winnow::error::ErrMode::Error(())));
+  assert_eq!(parser("a"), Err(winnow::error::ErrMode::Backtrack(())));
 }
 
 #[test]

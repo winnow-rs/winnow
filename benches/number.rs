@@ -71,7 +71,7 @@ fn std_float(input: &[u8]) -> IResult<&[u8], f64, Error<&[u8]>> {
     Err(e) => Err(e),
     Ok((i, s)) => match s.parse_to() {
       Some(n) => Ok((i, n)),
-      None => Err(ErrMode::Error(Error {
+      None => Err(ErrMode::Backtrack(Error {
         input: i,
         kind: ErrorKind::Float,
       })),

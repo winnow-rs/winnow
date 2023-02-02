@@ -14,8 +14,8 @@
 //!
 //! pub enum ErrMode<E> {
 //!     Incomplete(Needed),
-//!     Error(E),
-//!     Failure(E),
+//!     Backtrack(E),
+//!     Cut(E),
 //! }
 //!
 //! #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -33,17 +33,17 @@
 //!   decide. This can be returned by parsers found in `streaming` submodules to indicate that we
 //!   should buffer more data from a file or socket. Parsers in the `complete` submodules assume that
 //!   they have the entire input data, so if it was not sufficient, they will instead return a
-//!   `ErrMode::Error`
-//! - [`Error`][ErrMode::Error] is a normal parser error. If a child parser of the
+//!   `ErrMode::Backtrack`
+//! - [`Error`][ErrMode::Backtrack] is a normal parser error. If a child parser of the
 //!   [`alt`][crate::branch::alt] combinator returns `Error`, it will try another child parser
-//! - [`Failure`][ErrMode::Failure] is an error from which we cannot recover: The
+//! - [`Failure`][ErrMode::Cut] is an error from which we cannot recover: The
 //!   [`alt`][crate::branch::alt] combinator will not try other branches if a child parser returns
 //!   `Failure`. If we know we were in the right branch (example: we found a correct prefix character
-//!   but input after that was wrong), we can transform a `ErrMode::Error` into a `ErrMode::Failure` with the
+//!   but input after that was wrong), we can transform a `ErrMode::Backtrack` into a `ErrMode::Cut` with the
 //!   [`cut()`][crate::combinator::cut] combinator
 //!
 //! If we are running a parser and know it will not return `ErrMode::Incomplete`, we can
-//! directly extract the error type from `ErrMode::Error` or `ErrMode::Failure` with the
+//! directly extract the error type from `ErrMode::Backtrack` or `ErrMode::Cut` with the
 //! [`finish()`][crate::FinishIResult::finish] method:
 //!
 //! ```rust,ignore
@@ -474,13 +474,13 @@ pub trait FinishIResult<I, O, E> {
   /// - "complete" parsers: It will not be an issue, `Incomplete` is never used
   /// - "streaming" parsers: `Incomplete` will be returned if there's not enough data
   /// for the parser to decide, and you should gather more data before parsing again.
-  /// Once the parser returns either `Ok(_)`, `Err(ErrMode::Error(_))` or `Err(ErrMode::Failure(_))`,
+  /// Once the parser returns either `Ok(_)`, `Err(ErrMode::Backtrack(_))` or `Err(ErrMode::Cut(_))`,
   /// you can get out of the parsing loop and call `finish_err()` on the parser's result
   fn finish(self) -> Result<O, E>;
 
   /// Converts the parser's [`IResult`] to a type that is more consumable by errors.
   ///
-  ///  It keeps the same `Ok` branch, and merges `ErrMode::Error` and `ErrMode::Failure` into the `Err`
+  ///  It keeps the same `Ok` branch, and merges `ErrMode::Backtrack` and `ErrMode::Cut` into the `Err`
   ///  side.
   ///
   /// # Panic
@@ -508,7 +508,7 @@ where
   fn finish_err(self) -> Result<(I, O), E> {
     match self {
       Ok(res) => Ok(res),
-      Err(ErrMode::Error(e)) | Err(ErrMode::Failure(e)) => Err(e),
+      Err(ErrMode::Backtrack(e)) | Err(ErrMode::Cut(e)) => Err(e),
       Err(ErrMode::Incomplete(_)) => {
         panic!("`InputIsStreaming<false>` conflicts with `Err(ErrMode::Incomplete(_))`")
       }
@@ -534,7 +534,7 @@ impl<I, O, E> Finish<I, O, E> for IResult<I, O, E> {
   fn finish(self) -> Result<(I, O), E> {
     match self {
       Ok(res) => Ok(res),
-      Err(ErrMode::Error(e)) | Err(ErrMode::Failure(e)) => Err(e),
+      Err(ErrMode::Backtrack(e)) | Err(ErrMode::Cut(e)) => Err(e),
       Err(ErrMode::Incomplete(_)) => {
         panic!("Cannot call `finish()` on `Err(ErrMode::Incomplete(_))`: this result means that the parser does not have enough data to decide, you should gather more data and try to reapply  the parser instead")
       }
@@ -604,11 +604,11 @@ pub enum ErrMode<E> {
   /// Convert this into an `Error` with [`Parser::complete`][Parser::complete]
   Incomplete(Needed),
   /// The parser had an error (recoverable)
-  Error(E),
+  Backtrack(E),
   /// The parser had an unrecoverable error: we got to the right
   /// branch and we know other branches won't work, so backtrack
   /// as fast as possible
-  Failure(E),
+  Cut(E),
 }
 
 impl<E> ErrMode<E> {
@@ -624,8 +624,8 @@ impl<E> ErrMode<E> {
   {
     match self {
       ErrMode::Incomplete(n) => ErrMode::Incomplete(n),
-      ErrMode::Failure(t) => ErrMode::Failure(f(t)),
-      ErrMode::Error(t) => ErrMode::Error(f(t)),
+      ErrMode::Cut(t) => ErrMode::Cut(f(t)),
+      ErrMode::Backtrack(t) => ErrMode::Backtrack(f(t)),
     }
   }
 
@@ -646,8 +646,8 @@ impl<T> ErrMode<(T, ErrorKind)> {
   {
     match self {
       ErrMode::Incomplete(n) => ErrMode::Incomplete(n),
-      ErrMode::Failure((input, k)) => ErrMode::Failure((f(input), k)),
-      ErrMode::Error((input, k)) => ErrMode::Error((f(input), k)),
+      ErrMode::Cut((input, k)) => ErrMode::Cut((f(input), k)),
+      ErrMode::Backtrack((input, k)) => ErrMode::Backtrack((f(input), k)),
     }
   }
 }
@@ -660,11 +660,11 @@ impl<T> ErrMode<Error<T>> {
   {
     match self {
       ErrMode::Incomplete(n) => ErrMode::Incomplete(n),
-      ErrMode::Failure(Error { input, kind }) => ErrMode::Failure(Error {
+      ErrMode::Cut(Error { input, kind }) => ErrMode::Cut(Error {
         input: f(input),
         kind,
       }),
-      ErrMode::Error(Error { input, kind }) => ErrMode::Error(Error {
+      ErrMode::Backtrack(Error { input, kind }) => ErrMode::Backtrack(Error {
         input: f(input),
         kind,
       }),
@@ -716,8 +716,8 @@ where
     match self {
       ErrMode::Incomplete(Needed::Size(u)) => write!(f, "Parsing requires {} bytes/chars", u),
       ErrMode::Incomplete(Needed::Unknown) => write!(f, "Parsing requires more data"),
-      ErrMode::Failure(c) => write!(f, "Parsing Failure: {:?}", c),
-      ErrMode::Error(c) => write!(f, "Parsing Error: {:?}", c),
+      ErrMode::Cut(c) => write!(f, "Parsing Failure: {:?}", c),
+      ErrMode::Backtrack(c) => write!(f, "Parsing Error: {:?}", c),
     }
   }
 }
@@ -984,8 +984,8 @@ where
   move |i: I| match f.parse_next(i.clone()) {
     Ok(o) => Ok(o),
     Err(ErrMode::Incomplete(i)) => Err(ErrMode::Incomplete(i)),
-    Err(ErrMode::Error(e)) => Err(ErrMode::Error(e.add_context(i, context))),
-    Err(ErrMode::Failure(e)) => Err(ErrMode::Failure(e.add_context(i, context))),
+    Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.add_context(i, context))),
+    Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.add_context(i, context))),
   }
 }
 
@@ -1018,8 +1018,8 @@ where
     match (self.f).parse_next(i.clone()) {
       Ok(o) => Ok(o),
       Err(ErrMode::Incomplete(i)) => Err(ErrMode::Incomplete(i)),
-      Err(ErrMode::Error(e)) => Err(ErrMode::Error(e.add_context(i, self.context.clone()))),
-      Err(ErrMode::Failure(e)) => Err(ErrMode::Failure(e.add_context(i, self.context.clone()))),
+      Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.add_context(i, self.context.clone()))),
+      Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.add_context(i, self.context.clone()))),
     }
   }
 }

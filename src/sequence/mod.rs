@@ -25,8 +25,8 @@ use crate::{IResult, Parser};
 ///
 /// assert_eq!(parser("abcefg"), Ok(("", ("abc", "efg"))));
 /// assert_eq!(parser("abcefghij"), Ok(("hij", ("abc", "efg"))));
-/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::Tag))));
-/// assert_eq!(parser("123"), Err(ErrMode::Error(Error::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
 /// ```
 #[deprecated(since = "8.0.0", note = "`Parser` is directly implemented for tuples")]
 pub fn pair<I, O1, O2, E: ParseError<I>, F, G>(
@@ -60,8 +60,8 @@ where
 ///
 /// assert_eq!(parser("abcefg"), Ok(("", "efg")));
 /// assert_eq!(parser("abcefghij"), Ok(("hij", "efg")));
-/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::Tag))));
-/// assert_eq!(parser("123"), Err(ErrMode::Error(Error::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
 /// ```
 pub fn preceded<I, O1, O2, E: ParseError<I>, F, G>(
   mut first: F,
@@ -94,8 +94,8 @@ where
 ///
 /// assert_eq!(parser("abcefg"), Ok(("", "abc")));
 /// assert_eq!(parser("abcefghij"), Ok(("hij", "abc")));
-/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::Tag))));
-/// assert_eq!(parser("123"), Err(ErrMode::Error(Error::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
 /// ```
 pub fn terminated<I, O1, O2, E: ParseError<I>, F, G>(
   mut first: F,
@@ -130,8 +130,8 @@ where
 ///
 /// assert_eq!(parser("abc|efg"), Ok(("", ("abc", "efg"))));
 /// assert_eq!(parser("abc|efghij"), Ok(("hij", ("abc", "efg"))));
-/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::Tag))));
-/// assert_eq!(parser("123"), Err(ErrMode::Error(Error::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
 /// ```
 pub fn separated_pair<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
   mut first: F,
@@ -169,8 +169,8 @@ where
 ///
 /// assert_eq!(parser("(abc)"), Ok(("", "abc")));
 /// assert_eq!(parser("(abc)def"), Ok(("def", "abc")));
-/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::Tag))));
-/// assert_eq!(parser("123"), Err(ErrMode::Error(Error::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
 /// ```
 pub fn delimited<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
   mut first: F,
@@ -299,7 +299,7 @@ impl<I, E: ParseError<I>> Tuple<I, (), E> for () {
 /// let mut parser = tuple((alpha1, digit1, alpha1));
 ///
 /// assert_eq!(parser("abc123def"), Ok(("", ("abc", "123", "def"))));
-/// assert_eq!(parser("123def"), Err(ErrMode::Error(Error::new("123def", ErrorKind::Alpha))));
+/// assert_eq!(parser("123def"), Err(ErrMode::Backtrack(Error::new("123def", ErrorKind::Alpha))));
 /// ```
 #[deprecated(since = "8.0.0", note = "`Parser` is directly implemented for tuples")]
 #[allow(deprecated)]

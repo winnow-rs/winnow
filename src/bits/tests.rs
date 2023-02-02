@@ -80,7 +80,7 @@ fn test_take_complete_eof() {
 
   assert_eq!(
     result,
-    Err(crate::error::ErrMode::Error(crate::error::Error {
+    Err(crate::error::ErrMode::Backtrack(crate::error::Error {
       input: (input, 8),
       kind: ErrorKind::Eof
     }))
@@ -134,7 +134,7 @@ fn test_tag_streaming_err() {
 
   assert_eq!(
     result,
-    Err(crate::error::ErrMode::Error(crate::error::Error {
+    Err(crate::error::ErrMode::Backtrack(crate::error::Error {
       input: (input, offset),
       kind: ErrorKind::TagBits
     }))
@@ -158,7 +158,7 @@ fn test_bool_eof_complete() {
 
   assert_eq!(
     result,
-    Err(crate::error::ErrMode::Error(crate::error::Error {
+    Err(crate::error::ErrMode::Backtrack(crate::error::Error {
       input: (input, 8),
       kind: ErrorKind::Eof
     }))

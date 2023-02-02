@@ -89,7 +89,7 @@ fn string<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
 ) -> IResult<Input<'i>, String, E> {
   preceded(
     '\"',
-    // `cut` transforms an `ErrMode::Error(e)` in `ErrMode::Failure(e)`, signaling to
+    // `cut` transforms an `ErrMode::Backtrack(e)` to `ErrMode::Cut(e)`, signaling to
     // combinators like  `alt` that they should not try other parsers. We were in the
     // right branch (since we found the `"` character) but encountered an error when
     // parsing the string

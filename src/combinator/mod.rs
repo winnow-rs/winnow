@@ -229,7 +229,7 @@ impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for ByRef<'p, P> {
 /// assert_eq!(parser.parse_next("123456"), Ok(("", 6)));
 ///
 /// // this will fail if digit1 fails
-/// assert_eq!(parser.parse_next("abc"), Err(ErrMode::Error(Error::new("abc", ErrorKind::Digit))));
+/// assert_eq!(parser.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::map")]
@@ -287,10 +287,10 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> O2> Parser<I, O2, E> for Ma
 /// assert_eq!(parse("123"), Ok(("", 123)));
 ///
 /// // this will fail if digit1 fails
-/// assert_eq!(parse("abc"), Err(ErrMode::Error(Error::new("abc", ErrorKind::Digit))));
+/// assert_eq!(parse("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
 ///
 /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
-/// assert_eq!(parse("123456"), Err(ErrMode::Error(Error::new("123456", ErrorKind::MapRes))));
+/// assert_eq!(parse("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::MapRes))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::map_res")]
@@ -307,7 +307,7 @@ where
     let (input, o1) = parser.parse_next(input)?;
     match f(o1) {
       Ok(o2) => Ok((input, o2)),
-      Err(e) => Err(ErrMode::Error(E::from_external_error(
+      Err(e) => Err(ErrMode::Backtrack(E::from_external_error(
         i,
         ErrorKind::MapRes,
         e,
@@ -346,7 +346,7 @@ where
     let (input, o1) = self.f.parse_next(input)?;
     match (self.g)(o1) {
       Ok(o2) => Ok((input, o2)),
-      Err(e) => Err(ErrMode::Error(E::from_external_error(
+      Err(e) => Err(ErrMode::Backtrack(E::from_external_error(
         i,
         ErrorKind::MapRes,
         e,
@@ -371,10 +371,10 @@ where
 /// assert_eq!(parse("123"), Ok(("", 123)));
 ///
 /// // this will fail if digit1 fails
-/// assert_eq!(parse("abc"), Err(ErrMode::Error(Error::new("abc", ErrorKind::Digit))));
+/// assert_eq!(parse("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
 ///
 /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
-/// assert_eq!(parse("123456"), Err(ErrMode::Error(Error::new("123456", ErrorKind::MapOpt))));
+/// assert_eq!(parse("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::MapOpt))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::map_res")]
@@ -391,7 +391,7 @@ where
     let (input, o1) = parser.parse_next(input)?;
     match f(o1) {
       Some(o2) => Ok((input, o2)),
-      None => Err(ErrMode::Error(E::from_error_kind(i, ErrorKind::MapOpt))),
+      None => Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::MapOpt))),
     }
   }
 }
@@ -426,7 +426,7 @@ where
     let (input, o1) = self.f.parse_next(input)?;
     match (self.g)(o1) {
       Some(o2) => Ok((input, o2)),
-      None => Err(ErrMode::Error(E::from_error_kind(i, ErrorKind::MapOpt))),
+      None => Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::MapOpt))),
     }
   }
 }
@@ -446,7 +446,7 @@ where
 ///
 /// assert_eq!(parse("12345"), Ok(("", "12345")));
 /// assert_eq!(parse("123ab"), Ok(("", "123")));
-/// assert_eq!(parse("123"), Err(ErrMode::Error(Error::new("123", ErrorKind::Eof))));
+/// assert_eq!(parse("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Eof))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::and_then")]
@@ -507,7 +507,7 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, E>
 /// let mut parse = flat_map(u8, take);
 ///
 /// assert_eq!(parse(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
-/// assert_eq!(parse(&[4, 0, 1, 2][..]), Err(ErrMode::Error(Error::new(&[0, 1, 2][..], ErrorKind::Eof))));
+/// assert_eq!(parse(&[4, 0, 1, 2][..]), Err(ErrMode::Backtrack(Error::new(&[0, 1, 2][..], ErrorKind::Eof))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::flat_map")]
@@ -553,7 +553,7 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> H, H: Parser<I, O2, E>> Par
   }
 }
 
-/// Optional parser, will return `None` on [`ErrMode::Error`].
+/// Optional parser, will return `None` on [`ErrMode::Backtrack`].
 ///
 /// To chain an error up, see [`cut`].
 ///
@@ -579,7 +579,7 @@ where
     let i = input.clone();
     match f.parse_next(input) {
       Ok((i, o)) => Ok((i, Some(o))),
-      Err(ErrMode::Error(_)) => Ok((i, None)),
+      Err(ErrMode::Backtrack(_)) => Ok((i, None)),
       Err(e) => Err(e),
     }
   }
@@ -624,8 +624,8 @@ impl<I: Clone, O, E: crate::error::ParseError<I>, F: Parser<I, O, E>, G: Parser<
 {
   fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
     match self.f.parse_next(i.clone()) {
-      Err(ErrMode::Error(e1)) => match self.g.parse_next(i) {
-        Err(ErrMode::Error(e2)) => Err(ErrMode::Error(e1.or(e2))),
+      Err(ErrMode::Backtrack(e1)) => match self.g.parse_next(i) {
+        Err(ErrMode::Backtrack(e2)) => Err(ErrMode::Backtrack(e1.or(e2))),
         res => res,
       },
       res => res,
@@ -647,7 +647,7 @@ impl<I: Clone, O, E: crate::error::ParseError<I>, F: Parser<I, O, E>, G: Parser<
 ///
 /// assert_eq!(parser(true, "abcd;"), Ok((";", Some("abcd"))));
 /// assert_eq!(parser(false, "abcd;"), Ok(("abcd;", None)));
-/// assert_eq!(parser(true, "123;"), Err(ErrMode::Error(Error::new("123;", ErrorKind::Alpha))));
+/// assert_eq!(parser(true, "123;"), Err(ErrMode::Backtrack(Error::new("123;", ErrorKind::Alpha))));
 /// assert_eq!(parser(false, "123;"), Ok(("123;", None)));
 /// # }
 /// ```
@@ -681,7 +681,7 @@ where
 /// let mut parser = peek(alpha1);
 ///
 /// assert_eq!(parser("abcd;"), Ok(("abcd;", "abcd")));
-/// assert_eq!(parser("123;"), Err(ErrMode::Error(Error::new("123;", ErrorKind::Alpha))));
+/// assert_eq!(parser("123;"), Err(ErrMode::Backtrack(Error::new("123;", ErrorKind::Alpha))));
 /// # }
 /// ```
 pub fn peek<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
@@ -709,7 +709,7 @@ where
 ///
 /// # fn main() {
 /// let parser = eof;
-/// assert_eq!(parser("abc"), Err(ErrMode::Error(Error::new("abc", ErrorKind::Eof))));
+/// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Eof))));
 /// assert_eq!(parser(""), Ok(("", "")));
 /// # }
 /// ```
@@ -720,7 +720,10 @@ where
   if input.input_len() == 0 {
     Ok(input.next_slice(0))
   } else {
-    Err(ErrMode::Error(E::from_error_kind(input, ErrorKind::Eof)))
+    Err(ErrMode::Backtrack(E::from_error_kind(
+      input,
+      ErrorKind::Eof,
+    )))
   }
 }
 
@@ -737,7 +740,7 @@ where
 /// let mut parser = complete(take(5u8));
 ///
 /// assert_eq!(parser(Streaming("abcdefg")), Ok((Streaming("fg"), "abcde")));
-/// assert_eq!(parser(Streaming("abcd")), Err(ErrMode::Error(Error::new(Streaming("abcd"), ErrorKind::Complete))));
+/// assert_eq!(parser(Streaming("abcd")), Err(ErrMode::Backtrack(Error::new(Streaming("abcd"), ErrorKind::Complete))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::complete")]
@@ -748,9 +751,10 @@ where
   move |input: I| {
     let i = input.clone();
     match f.parse_next(input) {
-      Err(ErrMode::Incomplete(_)) => {
-        Err(ErrMode::Error(E::from_error_kind(i, ErrorKind::Complete)))
-      }
+      Err(ErrMode::Incomplete(_)) => Err(ErrMode::Backtrack(E::from_error_kind(
+        i,
+        ErrorKind::Complete,
+      ))),
       rest => rest,
     }
   }
@@ -777,9 +781,10 @@ where
   fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
     let i = input.clone();
     match (self.f).parse_next(input) {
-      Err(ErrMode::Incomplete(_)) => {
-        Err(ErrMode::Error(E::from_error_kind(i, ErrorKind::Complete)))
-      }
+      Err(ErrMode::Incomplete(_)) => Err(ErrMode::Backtrack(E::from_error_kind(
+        i,
+        ErrorKind::Complete,
+      ))),
       rest => rest,
     }
   }
@@ -799,8 +804,8 @@ where
 /// let mut parser = all_consuming(alpha1);
 ///
 /// assert_eq!(parser("abcd"), Ok(("", "abcd")));
-/// assert_eq!(parser("abcd;"),Err(ErrMode::Error(Error::new(";", ErrorKind::Eof))));
-/// assert_eq!(parser("123abcd;"),Err(ErrMode::Error(Error::new("123abcd;", ErrorKind::Alpha))));
+/// assert_eq!(parser("abcd;"),Err(ErrMode::Backtrack(Error::new(";", ErrorKind::Eof))));
+/// assert_eq!(parser("123abcd;"),Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::Alpha))));
 /// # }
 /// ```
 #[deprecated(
@@ -817,7 +822,10 @@ where
     if input.input_len() == 0 {
       Ok((input, res))
     } else {
-      Err(ErrMode::Error(E::from_error_kind(input, ErrorKind::Eof)))
+      Err(ErrMode::Backtrack(E::from_error_kind(
+        input,
+        ErrorKind::Eof,
+      )))
     }
   }
 }
@@ -838,8 +846,8 @@ where
 /// let mut parser = verify(alpha1, |s: &str| s.len() == 4);
 ///
 /// assert_eq!(parser("abcd"), Ok(("", "abcd")));
-/// assert_eq!(parser("abcde"), Err(ErrMode::Error(Error::new("abcde", ErrorKind::Verify))));
-/// assert_eq!(parser("123abcd;"),Err(ErrMode::Error(Error::new("123abcd;", ErrorKind::Alpha))));
+/// assert_eq!(parser("abcde"), Err(ErrMode::Backtrack(Error::new("abcde", ErrorKind::Verify))));
+/// assert_eq!(parser("123abcd;"),Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::Alpha))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::verify")]
@@ -860,7 +868,7 @@ where
     if second(o.borrow()) {
       Ok((input, o))
     } else {
-      Err(ErrMode::Error(E::from_error_kind(i, ErrorKind::Verify)))
+      Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Verify)))
     }
   }
 }
@@ -899,7 +907,7 @@ where
     if (self.second)(o.borrow()) {
       Ok((input, o))
     } else {
-      Err(ErrMode::Error(E::from_error_kind(i, ErrorKind::Verify)))
+      Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Verify)))
     }
   }
 }
@@ -917,7 +925,7 @@ where
 /// let mut parser = value(1234, alpha1);
 ///
 /// assert_eq!(parser("abcd"), Ok(("", 1234)));
-/// assert_eq!(parser("123abcd;"), Err(ErrMode::Error(Error::new("123abcd;", ErrorKind::Alpha))));
+/// assert_eq!(parser("123abcd;"), Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::Alpha))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::value")]
@@ -992,7 +1000,7 @@ impl<I, O, E: ParseError<I>, F: Parser<I, O, E>> Parser<I, (), E> for Void<F, O>
 /// let mut parser = not(alpha1);
 ///
 /// assert_eq!(parser("123"), Ok(("123", ())));
-/// assert_eq!(parser("abcd"), Err(ErrMode::Error(Error::new("abcd", ErrorKind::Not))));
+/// assert_eq!(parser("abcd"), Err(ErrMode::Backtrack(Error::new("abcd", ErrorKind::Not))));
 /// # }
 /// ```
 pub fn not<I: Clone, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, (), E>
@@ -1002,8 +1010,8 @@ where
   move |input: I| {
     let i = input.clone();
     match parser.parse_next(input) {
-      Ok(_) => Err(ErrMode::Error(E::from_error_kind(i, ErrorKind::Not))),
-      Err(ErrMode::Error(_)) => Ok((i, ())),
+      Ok(_) => Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Not))),
+      Err(ErrMode::Backtrack(_)) => Ok((i, ())),
       Err(e) => Err(e),
     }
   }
@@ -1023,7 +1031,7 @@ where
 /// let mut parser = recognize(separated_pair(alpha1, ',', alpha1));
 ///
 /// assert_eq!(parser("abcd,efgh"), Ok(("", "abcd,efgh")));
-/// assert_eq!(parser("abcd;"),Err(ErrMode::Error(Error::new(";", ErrorKind::OneOf))));
+/// assert_eq!(parser("abcd;"),Err(ErrMode::Backtrack(Error::new(";", ErrorKind::OneOf))));
 /// # }
 /// ```
 #[deprecated(since = "8.0.0", note = "Replaced with `Parser::recognize")]
@@ -1108,7 +1116,7 @@ where
 /// let mut consumed_parser = consumed(value(true, separated_pair(alpha1, ',', alpha1)));
 ///
 /// assert_eq!(consumed_parser("abcd,efgh1"), Ok(("1", ("abcd,efgh", true))));
-/// assert_eq!(consumed_parser("abcd;"),Err(ErrMode::Error(Error::new(";", ErrorKind::OneOf))));
+/// assert_eq!(consumed_parser("abcd;"),Err(ErrMode::Backtrack(Error::new(";", ErrorKind::OneOf))));
 ///
 ///
 /// // the first output (representing the consumed input)
@@ -1245,7 +1253,7 @@ where
   }
 }
 
-/// Transforms an [`ErrMode::Error`] (recoverable) to [`ErrMode::Failure`] (unrecoverable)
+/// Transforms an [`ErrMode::Backtrack`] (recoverable) to [`ErrMode::Cut`] (unrecoverable)
 ///
 /// This commits the parse result, preventing alternative branch paths like with
 /// [`winnow::branch::alt`][crate::branch::alt].
@@ -1295,7 +1303,7 @@ where
 ///
 /// assert_eq!(parser("+10 ab"), Ok((" ab", "10")));
 /// assert_eq!(parser("ab"), Ok(("", "ab")));
-/// assert_eq!(parser("+"), Err(ErrMode::Failure(Error { input: "", kind: ErrorKind::Digit })));
+/// assert_eq!(parser("+"), Err(ErrMode::Cut(Error { input: "", kind: ErrorKind::Digit })));
 /// # }
 /// ```
 pub fn cut<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O, E>
@@ -1303,7 +1311,7 @@ where
   F: Parser<I, O, E>,
 {
   move |input: I| match parser.parse_next(input) {
-    Err(ErrMode::Error(e)) => Err(ErrMode::Failure(e)),
+    Err(ErrMode::Backtrack(e)) => Err(ErrMode::Cut(e)),
     rest => rest,
   }
 }
@@ -1347,8 +1355,8 @@ where
   //map(parser, Into::into)
   move |input: I| match parser.parse_next(input) {
     Ok((i, o)) => Ok((i, o.into())),
-    Err(ErrMode::Error(e)) => Err(ErrMode::Error(e.into())),
-    Err(ErrMode::Failure(e)) => Err(ErrMode::Failure(e.into())),
+    Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.into())),
+    Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.into())),
     Err(ErrMode::Incomplete(e)) => Err(ErrMode::Incomplete(e)),
   }
 }
@@ -1421,8 +1429,8 @@ where
   fn parse_next(&mut self, i: I) -> IResult<I, O, E2> {
     match self.f.parse_next(i) {
       Ok(ok) => Ok(ok),
-      Err(ErrMode::Error(e)) => Err(ErrMode::Error(e.into())),
-      Err(ErrMode::Failure(e)) => Err(ErrMode::Failure(e.into())),
+      Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.into())),
+      Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.into())),
       Err(ErrMode::Incomplete(e)) => Err(ErrMode::Incomplete(e)),
     }
   }
@@ -1433,7 +1441,7 @@ where
 /// Call the iterator's [`ParserIterator::finish`] method to get the remaining input if successful,
 /// or the error value if we encountered an error.
 ///
-/// On [`ErrMode::Error`], iteration will stop.  To instead chain an error up, see [`cut`].
+/// On [`ErrMode::Backtrack`], iteration will stop.  To instead chain an error up, see [`cut`].
 ///
 /// ```rust
 /// use winnow::{combinator::iterator, IResult, bytes::tag, character::alpha1, sequence::terminated};
@@ -1474,7 +1482,7 @@ impl<I: Clone, O, E, F> ParserIterator<I, O, E, F> {
   pub fn finish(mut self) -> IResult<I, (), E> {
     match self.state.take().unwrap() {
       State::Running | State::Done => Ok((self.input, ())),
-      State::Failure(e) => Err(ErrMode::Failure(e)),
+      State::Failure(e) => Err(ErrMode::Cut(e)),
       State::Incomplete(i) => Err(ErrMode::Incomplete(i)),
     }
   }
@@ -1497,11 +1505,11 @@ where
           self.state = Some(State::Running);
           Some(o)
         }
-        Err(ErrMode::Error(_)) => {
+        Err(ErrMode::Backtrack(_)) => {
           self.state = Some(State::Done);
           None
         }
-        Err(ErrMode::Failure(e)) => {
+        Err(ErrMode::Cut(e)) => {
           self.state = Some(State::Failure(e));
           None
         }
@@ -1554,8 +1562,8 @@ pub fn success<I, O: Clone, E: ParseError<I>>(val: O) -> impl Fn(I) -> IResult<I
 /// use winnow::combinator::fail;
 ///
 /// let s = "string";
-/// assert_eq!(fail::<_, &str, _>(s), Err(ErrMode::Error(Error::new(s, ErrorKind::Fail))));
+/// assert_eq!(fail::<_, &str, _>(s), Err(ErrMode::Backtrack(Error::new(s, ErrorKind::Fail))));
 /// ```
 pub fn fail<I, O, E: ParseError<I>>(i: I) -> IResult<I, O, E> {
-  Err(ErrMode::Error(E::from_error_kind(i, ErrorKind::Fail)))
+  Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Fail)))
 }

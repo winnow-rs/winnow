@@ -36,8 +36,8 @@ where
 /// }
 ///
 /// assert_eq!(parser("Hello, World!"), Ok((", World!", "Hello")));
-/// assert_eq!(parser("Something"), Err(ErrMode::Error(Error::new("Something", ErrorKind::Tag))));
-/// assert_eq!(parser("S"), Err(ErrMode::Error(Error::new("S", ErrorKind::Tag))));
+/// assert_eq!(parser("Something"), Err(ErrMode::Backtrack(Error::new("Something", ErrorKind::Tag))));
+/// assert_eq!(parser("S"), Err(ErrMode::Backtrack(Error::new("S", ErrorKind::Tag))));
 /// assert_eq!(parser("H"), Err(ErrMode::Incomplete(Needed::new(4))));
 /// ```
 ///
@@ -70,7 +70,7 @@ where
     CompareResult::Incomplete => Err(ErrMode::Incomplete(Needed::new(tag_len - i.input_len()))),
     CompareResult::Error => {
       let e: ErrorKind = ErrorKind::Tag;
-      Err(ErrMode::Error(Error::from_error_kind(i, e)))
+      Err(ErrMode::Backtrack(Error::from_error_kind(i, e)))
     }
   }
 }
@@ -91,7 +91,7 @@ where
 /// assert_eq!(parser("Hello, World!"), Ok((", World!", "Hello")));
 /// assert_eq!(parser("hello, World!"), Ok((", World!", "hello")));
 /// assert_eq!(parser("HeLlO, World!"), Ok((", World!", "HeLlO")));
-/// assert_eq!(parser("Something"), Err(ErrMode::Error(Error::new("Something", ErrorKind::Tag))));
+/// assert_eq!(parser("Something"), Err(ErrMode::Backtrack(Error::new("Something", ErrorKind::Tag))));
 /// assert_eq!(parser(""), Err(ErrMode::Incomplete(Needed::new(5))));
 /// ```
 ///
@@ -125,7 +125,7 @@ where
     CompareResult::Incomplete => Err(ErrMode::Incomplete(Needed::new(tag_len - i.input_len()))),
     CompareResult::Error => {
       let e: ErrorKind = ErrorKind::Tag;
-      Err(ErrMode::Error(Error::from_error_kind(i, e)))
+      Err(ErrMode::Backtrack(Error::from_error_kind(i, e)))
     }
   }
 }
@@ -145,7 +145,10 @@ where
   if list.contains_token(token) {
     Ok((new_input, token))
   } else {
-    Err(ErrMode::Error(E::from_error_kind(input, ErrorKind::OneOf)))
+    Err(ErrMode::Backtrack(E::from_error_kind(
+      input,
+      ErrorKind::OneOf,
+    )))
   }
 }
 
@@ -164,7 +167,10 @@ where
   if !list.contains_token(token) {
     Ok((new_input, token))
   } else {
-    Err(ErrMode::Error(E::from_error_kind(input, ErrorKind::NoneOf)))
+    Err(ErrMode::Backtrack(E::from_error_kind(
+      input,
+      ErrorKind::NoneOf,
+    )))
   }
 }
 
@@ -322,7 +328,7 @@ where
 /// The parser will return the longest slice that matches the given predicate *(a function that
 /// takes the input and returns a bool)*.
 ///
-/// It will return an `Err(ErrMode::Error((_, ErrorKind::TakeWhile1)))` if the pattern wasn't met.
+/// It will return an `Err(ErrMode::Backtrack((_, ErrorKind::TakeWhile1)))` if the pattern wasn't met.
 ///
 /// # Streaming Specific
 /// *Streaming version* will return a `ErrMode::Incomplete(Needed::new(1))` or if the pattern reaches the end of the input.
@@ -339,7 +345,7 @@ where
 ///
 /// assert_eq!(alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
 /// assert_eq!(alpha(b"latin"), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(alpha(b"12345"), Err(ErrMode::Error(Error::new(&b"12345"[..], ErrorKind::TakeWhile1))));
+/// assert_eq!(alpha(b"12345"), Err(ErrMode::Backtrack(Error::new(&b"12345"[..], ErrorKind::TakeWhile1))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while1`][crate::bytes::take_while1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -374,7 +380,7 @@ where
 /// The parser will return the longest slice that matches the given predicate *(a function that
 /// takes the input and returns a bool)*.
 ///
-/// It will return an `ErrMode::Error((_, ErrorKind::TakeWhileMN))` if the pattern wasn't met.
+/// It will return an `ErrMode::Backtrack((_, ErrorKind::TakeWhileMN))` if the pattern wasn't met.
 /// # Streaming Specific
 /// *Streaming version* will return a `ErrMode::Incomplete(Needed::new(1))`  if the pattern reaches the end of the input or is too short.
 ///
@@ -392,7 +398,7 @@ where
 /// assert_eq!(short_alpha(b"lengthy"), Ok((&b"y"[..], &b"length"[..])));
 /// assert_eq!(short_alpha(b"latin"), Err(ErrMode::Incomplete(Needed::new(1))));
 /// assert_eq!(short_alpha(b"ed"), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(short_alpha(b"12345"), Err(ErrMode::Error(Error::new(&b"12345"[..], ErrorKind::TakeWhileMN))));
+/// assert_eq!(short_alpha(b"12345"), Err(ErrMode::Backtrack(Error::new(&b"12345"[..], ErrorKind::TakeWhileMN))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while_m_n`][crate::bytes::take_while_m_n] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -431,7 +437,7 @@ where
           let res: IResult<_, _, Error> = if let Ok(index) = input.offset_at(idx) {
             Ok(input.next_slice(index))
           } else {
-            Err(ErrMode::Error(Error::from_error_kind(
+            Err(ErrMode::Backtrack(Error::from_error_kind(
               input,
               ErrorKind::TakeWhileMN,
             )))
@@ -441,7 +447,7 @@ where
           let res: IResult<_, _, Error> = if let Ok(index) = input.offset_at(n) {
             Ok(input.next_slice(index))
           } else {
-            Err(ErrMode::Error(Error::from_error_kind(
+            Err(ErrMode::Backtrack(Error::from_error_kind(
               input,
               ErrorKind::TakeWhileMN,
             )))
@@ -450,7 +456,7 @@ where
         }
       } else {
         let e = ErrorKind::TakeWhileMN;
-        Err(ErrMode::Error(Error::from_error_kind(input, e)))
+        Err(ErrMode::Backtrack(Error::from_error_kind(input, e)))
       }
     }
     None => {
@@ -458,7 +464,7 @@ where
       if len >= n {
         match input.offset_at(n) {
           Ok(index) => Ok(input.next_slice(index)),
-          Err(_needed) => Err(ErrMode::Error(Error::from_error_kind(
+          Err(_needed) => Err(ErrMode::Backtrack(Error::from_error_kind(
             input,
             ErrorKind::TakeWhileMN,
           ))),
@@ -540,7 +546,7 @@ where
 /// }
 ///
 /// assert_eq!(till_colon("latin:123"), Ok((":123", "latin")));
-/// assert_eq!(till_colon(":empty matched"), Err(ErrMode::Error(Error::new(":empty matched", ErrorKind::TakeTill1))));
+/// assert_eq!(till_colon(":empty matched"), Err(ErrMode::Backtrack(Error::new(":empty matched", ErrorKind::TakeTill1))));
 /// assert_eq!(till_colon("12345"), Err(ErrMode::Incomplete(Needed::new(1))));
 /// assert_eq!(till_colon(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
@@ -697,7 +703,7 @@ where
 /// assert_eq!(until_eof("hello, world"), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// assert_eq!(until_eof("hello, worldeo"), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
-/// assert_eq!(until_eof("eof"),  Err(ErrMode::Error(Error::new("eof", ErrorKind::TakeUntil))));
+/// assert_eq!(until_eof("eof"),  Err(ErrMode::Backtrack(Error::new("eof", ErrorKind::TakeUntil))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until1`][crate::bytes::take_until1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
@@ -725,7 +731,7 @@ where
 {
   match i.find_slice(t) {
     None => Err(ErrMode::Incomplete(Needed::Unknown)),
-    Some(0) => Err(ErrMode::Error(Error::from_error_kind(
+    Some(0) => Err(ErrMode::Backtrack(Error::from_error_kind(
       i,
       ErrorKind::TakeUntil,
     ))),
@@ -805,7 +811,7 @@ where
           i = i2;
         }
       }
-      Err(ErrMode::Error(_)) => {
+      Err(ErrMode::Backtrack(_)) => {
         if i.next_token().expect("input_len > 0").1.as_char() == control_char {
           let next = control_char.len_utf8();
           if next >= i.input_len() {
@@ -929,7 +935,7 @@ where
           offset = input.offset_to(&i2);
         }
       }
-      Err(ErrMode::Error(_)) => {
+      Err(ErrMode::Backtrack(_)) => {
         if remainder.next_token().expect("input_len > 0").1.as_char() == control_char {
           let next = offset + control_char.len_utf8();
           let input_len = input.input_len();
@@ -987,7 +993,7 @@ mod tests {
     let c = &b"cdef"[..];
     assert_eq!(
       a_or_b(c),
-      Err(ErrMode::Error(error_position!(c, ErrorKind::IsA)))
+      Err(ErrMode::Backtrack(error_position!(c, ErrorKind::IsA)))
     );
 
     let d = &b"bacdef"[..];
@@ -1011,7 +1017,7 @@ mod tests {
     let c = &b"abab"[..];
     assert_eq!(
       a_or_b(c),
-      Err(ErrMode::Error(error_position!(c, ErrorKind::IsNot)))
+      Err(ErrMode::Backtrack(error_position!(c, ErrorKind::IsNot)))
     );
 
     let d = &b"cdefba"[..];
@@ -1133,7 +1139,7 @@ mod tests {
     assert_eq!(f(&c[..]), Ok((&b"123"[..], &b[..])));
     assert_eq!(
       f(&d[..]),
-      Err(ErrMode::Error(error_position!(
+      Err(ErrMode::Backtrack(error_position!(
         &d[..],
         ErrorKind::TakeWhile1
       )))
@@ -1161,7 +1167,7 @@ mod tests {
     assert_eq!(x(&e[..]), Ok((&b"e"[..], &b"abcd"[..])));
     assert_eq!(
       x(&f[..]),
-      Err(ErrMode::Error(error_position!(
+      Err(ErrMode::Backtrack(error_position!(
         &f[..],
         ErrorKind::TakeWhileMN
       )))
@@ -1201,7 +1207,7 @@ mod tests {
     assert_eq!(f(&a[..]), Err(ErrMode::Incomplete(Needed::new(1))));
     assert_eq!(
       f(&b[..]),
-      Err(ErrMode::Error(error_position!(
+      Err(ErrMode::Backtrack(error_position!(
         &b[..],
         ErrorKind::TakeTill1
       )))
@@ -1377,14 +1383,17 @@ mod tests {
     assert_eq!(test(&b"ab"[..]), Err(ErrMode::Incomplete(Needed::new(2))));
     assert_eq!(
       test(&b"Hello"[..]),
-      Err(ErrMode::Error(error_position!(
+      Err(ErrMode::Backtrack(error_position!(
         &b"Hello"[..],
         ErrorKind::Tag
       )))
     );
     assert_eq!(
       test(&b"Hel"[..]),
-      Err(ErrMode::Error(error_position!(&b"Hel"[..], ErrorKind::Tag)))
+      Err(ErrMode::Backtrack(error_position!(
+        &b"Hel"[..],
+        ErrorKind::Tag
+      )))
     );
 
     fn test2(i: &str) -> IResult<&str, &str> {
@@ -1396,11 +1405,11 @@ mod tests {
     assert_eq!(test2("ab"), Err(ErrMode::Incomplete(Needed::new(2))));
     assert_eq!(
       test2("Hello"),
-      Err(ErrMode::Error(error_position!("Hello", ErrorKind::Tag)))
+      Err(ErrMode::Backtrack(error_position!("Hello", ErrorKind::Tag)))
     );
     assert_eq!(
       test2("Hel"),
-      Err(ErrMode::Error(error_position!("Hel", ErrorKind::Tag)))
+      Err(ErrMode::Backtrack(error_position!("Hel", ErrorKind::Tag)))
     );
   }
 

@@ -27,7 +27,7 @@ use crate::*;
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Error(Error::new(&[][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -53,7 +53,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -80,7 +80,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -107,7 +107,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -134,7 +134,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -161,7 +161,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -184,7 +184,7 @@ where
 {
   let offset = input
     .offset_at(bound)
-    .map_err(|_err| ErrMode::Error(make_error(input.clone(), ErrorKind::Eof)))?;
+    .map_err(|_err| ErrMode::Backtrack(make_error(input.clone(), ErrorKind::Eof)))?;
   let (input, number) = input.next_slice(offset);
   let number = number.as_bytes();
 
@@ -216,7 +216,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Error(Error::new(&[][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -242,7 +242,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -269,7 +269,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -305,7 +305,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -332,7 +332,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -359,7 +359,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -386,7 +386,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Error(Error::new(&[][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -412,7 +412,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -439,7 +439,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -466,7 +466,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -493,7 +493,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -520,7 +520,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -543,7 +543,7 @@ where
 {
   let offset = input
     .offset_at(bound)
-    .map_err(|_err| ErrMode::Error(make_error(input.clone(), ErrorKind::Eof)))?;
+    .map_err(|_err| ErrMode::Backtrack(make_error(input.clone(), ErrorKind::Eof)))?;
   let (input, number) = input.next_slice(offset);
   let number = number.as_bytes();
 
@@ -568,7 +568,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Error(Error::new(&[][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -594,7 +594,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -621,7 +621,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -657,7 +657,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -684,7 +684,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -711,7 +711,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -739,7 +739,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Error(Error::new(&[][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -751,7 +751,7 @@ where
 {
   input
     .next_token()
-    .ok_or_else(|| ErrMode::Error(make_error(input, ErrorKind::Eof)))
+    .ok_or_else(|| ErrMode::Backtrack(make_error(input, ErrorKind::Eof)))
 }
 
 /// Recognizes an unsigned 2 bytes integer
@@ -770,14 +770,14 @@ where
 /// };
 ///
 /// assert_eq!(be_u16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
-/// assert_eq!(be_u16(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_u16(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u16 = |s| {
 ///   u16(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
-/// assert_eq!(le_u16(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_u16(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -813,14 +813,14 @@ where
 /// };
 ///
 /// assert_eq!(be_u24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
-/// assert_eq!(be_u24(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_u24(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u24 = |s| {
 ///   u24(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
-/// assert_eq!(le_u24(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_u24(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -856,14 +856,14 @@ where
 /// };
 ///
 /// assert_eq!(be_u32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
-/// assert_eq!(be_u32(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_u32(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u32 = |s| {
 ///   u32(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
-/// assert_eq!(le_u32(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_u32(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -899,14 +899,14 @@ where
 /// };
 ///
 /// assert_eq!(be_u64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
-/// assert_eq!(be_u64(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_u64(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u64 = |s| {
 ///   u64(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
-/// assert_eq!(le_u64(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_u64(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -942,14 +942,14 @@ where
 /// };
 ///
 /// assert_eq!(be_u128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
-/// assert_eq!(be_u128(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_u128(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_u128 = |s| {
 ///   u128(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_u128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
-/// assert_eq!(le_u128(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_u128(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -984,7 +984,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Error(Error::new(&[][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -1012,14 +1012,14 @@ where
 /// };
 ///
 /// assert_eq!(be_i16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
-/// assert_eq!(be_i16(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_i16(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i16 = |s| {
 ///   i16(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
-/// assert_eq!(le_i16(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_i16(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -1055,14 +1055,14 @@ where
 /// };
 ///
 /// assert_eq!(be_i24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
-/// assert_eq!(be_i24(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_i24(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i24 = |s| {
 ///   i24(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
-/// assert_eq!(le_i24(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_i24(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -1098,14 +1098,14 @@ where
 /// };
 ///
 /// assert_eq!(be_i32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
-/// assert_eq!(be_i32(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_i32(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i32 = |s| {
 ///   i32(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
-/// assert_eq!(le_i32(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_i32(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -1141,14 +1141,14 @@ where
 /// };
 ///
 /// assert_eq!(be_i64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
-/// assert_eq!(be_i64(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_i64(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i64 = |s| {
 ///   i64(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
-/// assert_eq!(le_i64(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_i64(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -1184,14 +1184,14 @@ where
 /// };
 ///
 /// assert_eq!(be_i128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
-/// assert_eq!(be_i128(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(be_i128(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 ///
 /// let le_i128 = |s| {
 ///   i128(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_i128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
-/// assert_eq!(le_i128(&b"\x01"[..]), Err(ErrMode::Error(Error::new(&[0x01][..], ErrorKind::Eof))));
+/// assert_eq!(le_i128(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -1225,7 +1225,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&[0x41, 0x48, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(parser(&b"abc"[..]), Err(ErrMode::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -1255,7 +1255,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(parser(&b"abc"[..]), Err(ErrMode::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -1285,7 +1285,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&[0x00, 0x00, 0x48, 0x41][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(parser(&b"abc"[..]), Err(ErrMode::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -1315,7 +1315,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29, 0x40][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(parser(&b"abc"[..]), Err(ErrMode::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -1347,14 +1347,14 @@ where
 /// };
 ///
 /// assert_eq!(be_f32(&[0x41, 0x48, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(be_f32(&b"abc"[..]), Err(ErrMode::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
+/// assert_eq!(be_f32(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Eof))));
 ///
 /// let le_f32 = |s| {
 ///   f32(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_f32(&[0x00, 0x00, 0x48, 0x41][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(le_f32(&b"abc"[..]), Err(ErrMode::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
+/// assert_eq!(le_f32(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -1390,14 +1390,14 @@ where
 /// };
 ///
 /// assert_eq!(be_f64(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(be_f64(&b"abc"[..]), Err(ErrMode::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
+/// assert_eq!(be_f64(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Eof))));
 ///
 /// let le_f64 = |s| {
 ///   f64(winnow::number::Endianness::Little)(s)
 /// };
 ///
 /// assert_eq!(le_f64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29, 0x40][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(le_f64(&b"abc"[..]), Err(ErrMode::Error(Error::new(&b"abc"[..], ErrorKind::Eof))));
+/// assert_eq!(le_f64(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Eof))));
 /// ```
 #[inline]
 ///
@@ -1432,7 +1432,7 @@ where
 ///
 /// assert_eq!(parser(&b"01AE"[..]), Ok((&b""[..], 0x01AE)));
 /// assert_eq!(parser(&b"abc"[..]), Ok((&b""[..], 0x0ABC)));
-/// assert_eq!(parser(&b"ggg"[..]), Err(ErrMode::Error(Error::new(&b"ggg"[..], ErrorKind::IsA))));
+/// assert_eq!(parser(&b"ggg"[..]), Err(ErrMode::Backtrack(Error::new(&b"ggg"[..], ErrorKind::IsA))));
 /// ```
 #[inline]
 ///
@@ -1456,7 +1456,10 @@ where
     .unwrap_or_else(|_err| input.input_len());
   let offset = invalid_offset.min(max_offset);
   if offset == 0 {
-    return Err(ErrMode::Error(E::from_error_kind(input, ErrorKind::IsA)));
+    return Err(ErrMode::Backtrack(E::from_error_kind(
+      input,
+      ErrorKind::IsA,
+    )));
   }
   let (remaining, parsed) = input.next_slice(offset);
 
@@ -1490,7 +1493,7 @@ where
 /// assert_eq!(parser("11e-1"), Ok(("", "11e-1")));
 /// assert_eq!(parser("123E-02"), Ok(("", "123E-02")));
 /// assert_eq!(parser("123K-01"), Ok(("K-01", "123")));
-/// assert_eq!(parser("abc"), Err(ErrMode::Error(Error::new("abc", ErrorKind::Char))));
+/// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Char))));
 /// ```
 #[rustfmt::skip]
 ///
@@ -1540,26 +1543,26 @@ where
   alt((
     |i: T| {
       recognize_float::<_, E>(i.clone()).map_err(|e| match e {
-        crate::error::ErrMode::Error(_) => {
-          crate::error::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float))
+        crate::error::ErrMode::Backtrack(_) => {
+          crate::error::ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Float))
         }
-        crate::error::ErrMode::Failure(_) => {
-          crate::error::ErrMode::Failure(E::from_error_kind(i, ErrorKind::Float))
+        crate::error::ErrMode::Cut(_) => {
+          crate::error::ErrMode::Cut(E::from_error_kind(i, ErrorKind::Float))
         }
         crate::error::ErrMode::Incomplete(needed) => crate::error::ErrMode::Incomplete(needed),
       })
     },
     |i: T| {
       crate::bytes::complete::tag_no_case::<_, _, E>("nan")(i.clone())
-        .map_err(|_err| crate::error::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::error::ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Float)))
     },
     |i: T| {
       crate::bytes::complete::tag_no_case::<_, _, E>("inf")(i.clone())
-        .map_err(|_err| crate::error::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::error::ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Float)))
     },
     |i: T| {
       crate::bytes::complete::tag_no_case::<_, _, E>("infinity")(i.clone())
-        .map_err(|_err| crate::error::ErrMode::Error(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::error::ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Float)))
     },
   ))(input)
 }
@@ -1623,7 +1626,10 @@ where
   };
 
   if integer.slice_len() == 0 && fraction.slice_len() == 0 {
-    return Err(ErrMode::Error(E::from_error_kind(input, ErrorKind::Float)));
+    return Err(ErrMode::Backtrack(E::from_error_kind(
+      input,
+      ErrorKind::Float,
+    )));
   }
 
   let i2 = i.clone();
@@ -1659,7 +1665,7 @@ use crate::input::ParseTo;
 /// assert_eq!(parser("11e-1"), Ok(("", 1.1)));
 /// assert_eq!(parser("123E-02"), Ok(("", 1.23)));
 /// assert_eq!(parser("123K-01"), Ok(("K-01", 123.0)));
-/// assert_eq!(parser("abc"), Err(ErrMode::Error(Error::new("abc", ErrorKind::Float))));
+/// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Float))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::f32`][crate::character::f32]
@@ -1676,7 +1682,7 @@ where
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
     Some(f) => Ok((i, f)),
-    None => Err(crate::error::ErrMode::Error(E::from_error_kind(
+    None => Err(crate::error::ErrMode::Backtrack(E::from_error_kind(
       i,
       crate::error::ErrorKind::Float,
     ))),
@@ -1698,7 +1704,7 @@ where
 /// assert_eq!(parser("11e-1"), Ok(("", 1.1)));
 /// assert_eq!(parser("123E-02"), Ok(("", 1.23)));
 /// assert_eq!(parser("123K-01"), Ok(("K-01", 123.0)));
-/// assert_eq!(parser("abc"), Err(ErrMode::Error(Error::new("abc", ErrorKind::Float))));
+/// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Float))));
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::f64`][crate::character::f64]
@@ -1715,7 +1721,7 @@ where
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
     Some(f) => Ok((i, f)),
-    None => Err(crate::error::ErrMode::Error(E::from_error_kind(
+    None => Err(crate::error::ErrMode::Backtrack(E::from_error_kind(
       i,
       crate::error::ErrorKind::Float,
     ))),
@@ -2023,7 +2029,10 @@ mod tests {
   fn hex_u32_tests() {
     assert_parse!(
       hex_u32(&b";"[..]),
-      Err(ErrMode::Error(error_position!(&b";"[..], ErrorKind::IsA)))
+      Err(ErrMode::Backtrack(error_position!(
+        &b";"[..],
+        ErrorKind::IsA
+      )))
     );
     assert_parse!(hex_u32(&b"ff;"[..]), Ok((&b";"[..], 255)));
     assert_parse!(hex_u32(&b"1be2;"[..]), Ok((&b";"[..], 7138)));
@@ -2080,7 +2089,7 @@ mod tests {
     let remaining_exponent = "-1.234E-";
     assert_parse!(
       recognize_float(remaining_exponent),
-      Err(ErrMode::Failure(Error::new("", ErrorKind::Digit)))
+      Err(ErrMode::Cut(Error::new("", ErrorKind::Digit)))
     );
 
     let (_i, nan) = float::<_, ()>("NaN").unwrap();
@@ -2181,11 +2190,11 @@ mod tests {
       Err(e) => Err(e),
       Ok((i, s)) => {
         if s.is_empty() {
-          return Err(ErrMode::Error(()));
+          return Err(ErrMode::Backtrack(()));
         }
         match s.parse_to() {
           Some(n) => Ok((i, n)),
-          None => Err(ErrMode::Error(())),
+          None => Err(ErrMode::Backtrack(())),
         }
       }
     }

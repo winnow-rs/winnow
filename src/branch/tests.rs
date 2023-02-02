@@ -55,7 +55,7 @@ fn alt_test() {
 
   #[allow(unused_variables)]
   fn dont_work(input: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
-    Err(ErrMode::Error(ErrorStr("abcd".to_string())))
+    Err(ErrMode::Backtrack(ErrorStr("abcd".to_string())))
   }
 
   fn work2(input: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
@@ -78,7 +78,7 @@ fn alt_test() {
   let a = &b"abcd"[..];
   assert_eq!(
     alt1(a),
-    Err(ErrMode::Error(error_node_position!(
+    Err(ErrMode::Backtrack(error_node_position!(
       a,
       ErrorKind::Alt,
       ErrorStr("abcd".to_string())
@@ -110,7 +110,7 @@ fn alt_incomplete() {
   let a = &b"cde"[..];
   assert_eq!(
     alt1(Streaming(a)),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(a),
       ErrorKind::Tag
     )))
@@ -140,7 +140,7 @@ fn permutation_test() {
   let d = &b"efgxyzabcdefghi"[..];
   assert_eq!(
     perm(Streaming(d)),
-    Err(ErrMode::Error(error_node_position!(
+    Err(ErrMode::Backtrack(error_node_position!(
       Streaming(&b"efgxyzabcdefghi"[..]),
       ErrorKind::Permutation,
       error_position!(Streaming(&b"xyzabcdefghi"[..]), ErrorKind::Tag)

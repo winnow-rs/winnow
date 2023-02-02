@@ -36,7 +36,7 @@ mod complete {
     assert_parse!(alpha1(a), Ok((empty, a)));
     assert_eq!(
       alpha1(b),
-      Err(ErrMode::Error(Error::new(b, ErrorKind::Alpha)))
+      Err(ErrMode::Backtrack(Error::new(b, ErrorKind::Alpha)))
     );
     assert_eq!(alpha1::<_, Error<_>, false>(c), Ok((&c[1..], &b"a"[..])));
     assert_eq!(
@@ -45,16 +45,16 @@ mod complete {
     );
     assert_eq!(
       digit1(a),
-      Err(ErrMode::Error(Error::new(a, ErrorKind::Digit)))
+      Err(ErrMode::Backtrack(Error::new(a, ErrorKind::Digit)))
     );
     assert_eq!(digit1::<_, Error<_>, false>(b), Ok((empty, b)));
     assert_eq!(
       digit1(c),
-      Err(ErrMode::Error(Error::new(c, ErrorKind::Digit)))
+      Err(ErrMode::Backtrack(Error::new(c, ErrorKind::Digit)))
     );
     assert_eq!(
       digit1(d),
-      Err(ErrMode::Error(Error::new(d, ErrorKind::Digit)))
+      Err(ErrMode::Backtrack(Error::new(d, ErrorKind::Digit)))
     );
     assert_eq!(hex_digit1::<_, Error<_>, false>(a), Ok((empty, a)));
     assert_eq!(hex_digit1::<_, Error<_>, false>(b), Ok((empty, b)));
@@ -65,20 +65,20 @@ mod complete {
     );
     assert_eq!(
       hex_digit1(e),
-      Err(ErrMode::Error(Error::new(e, ErrorKind::HexDigit)))
+      Err(ErrMode::Backtrack(Error::new(e, ErrorKind::HexDigit)))
     );
     assert_eq!(
       oct_digit1(a),
-      Err(ErrMode::Error(Error::new(a, ErrorKind::OctDigit)))
+      Err(ErrMode::Backtrack(Error::new(a, ErrorKind::OctDigit)))
     );
     assert_eq!(oct_digit1::<_, Error<_>, false>(b), Ok((empty, b)));
     assert_eq!(
       oct_digit1(c),
-      Err(ErrMode::Error(Error::new(c, ErrorKind::OctDigit)))
+      Err(ErrMode::Backtrack(Error::new(c, ErrorKind::OctDigit)))
     );
     assert_eq!(
       oct_digit1(d),
-      Err(ErrMode::Error(Error::new(d, ErrorKind::OctDigit)))
+      Err(ErrMode::Backtrack(Error::new(d, ErrorKind::OctDigit)))
     );
     assert_eq!(alphanumeric1::<_, Error<_>, false>(a), Ok((empty, a)));
     //assert_eq!(fix_error!(b,(), alphanumeric), Ok((empty, b)));
@@ -103,22 +103,22 @@ mod complete {
     assert_eq!(alpha1::<_, Error<_>, false>(a), Ok((empty, a)));
     assert_eq!(
       alpha1(b),
-      Err(ErrMode::Error(Error::new(b, ErrorKind::Alpha)))
+      Err(ErrMode::Backtrack(Error::new(b, ErrorKind::Alpha)))
     );
     assert_eq!(alpha1::<_, Error<_>, false>(c), Ok((&c[1..], "a")));
     assert_eq!(alpha1::<_, Error<_>, false>(d), Ok(("é12", "az")));
     assert_eq!(
       digit1(a),
-      Err(ErrMode::Error(Error::new(a, ErrorKind::Digit)))
+      Err(ErrMode::Backtrack(Error::new(a, ErrorKind::Digit)))
     );
     assert_eq!(digit1::<_, Error<_>, false>(b), Ok((empty, b)));
     assert_eq!(
       digit1(c),
-      Err(ErrMode::Error(Error::new(c, ErrorKind::Digit)))
+      Err(ErrMode::Backtrack(Error::new(c, ErrorKind::Digit)))
     );
     assert_eq!(
       digit1(d),
-      Err(ErrMode::Error(Error::new(d, ErrorKind::Digit)))
+      Err(ErrMode::Backtrack(Error::new(d, ErrorKind::Digit)))
     );
     assert_eq!(hex_digit1::<_, Error<_>, false>(a), Ok((empty, a)));
     assert_eq!(hex_digit1::<_, Error<_>, false>(b), Ok((empty, b)));
@@ -126,20 +126,20 @@ mod complete {
     assert_eq!(hex_digit1::<_, Error<_>, false>(d), Ok(("zé12", "a")));
     assert_eq!(
       hex_digit1(e),
-      Err(ErrMode::Error(Error::new(e, ErrorKind::HexDigit)))
+      Err(ErrMode::Backtrack(Error::new(e, ErrorKind::HexDigit)))
     );
     assert_eq!(
       oct_digit1(a),
-      Err(ErrMode::Error(Error::new(a, ErrorKind::OctDigit)))
+      Err(ErrMode::Backtrack(Error::new(a, ErrorKind::OctDigit)))
     );
     assert_eq!(oct_digit1::<_, Error<_>, false>(b), Ok((empty, b)));
     assert_eq!(
       oct_digit1(c),
-      Err(ErrMode::Error(Error::new(c, ErrorKind::OctDigit)))
+      Err(ErrMode::Backtrack(Error::new(c, ErrorKind::OctDigit)))
     );
     assert_eq!(
       oct_digit1(d),
-      Err(ErrMode::Error(Error::new(d, ErrorKind::OctDigit)))
+      Err(ErrMode::Backtrack(Error::new(d, ErrorKind::OctDigit)))
     );
     assert_eq!(alphanumeric1::<_, Error<_>, false>(a), Ok((empty, a)));
     //assert_eq!(fix_error!(b,(), alphanumeric), Ok((empty, b)));
@@ -231,7 +231,7 @@ mod complete {
     let f = "βèƒôřè\rÂßÇáƒƭèř";
     assert_eq!(
       not_line_ending(f),
-      Err(ErrMode::Error(Error::new(f, ErrorKind::Tag)))
+      Err(ErrMode::Backtrack(Error::new(f, ErrorKind::Tag)))
     );
 
     let g2: &str = "ab12cd";
@@ -246,13 +246,13 @@ mod complete {
     let i = &b"g"[..];
     assert_parse!(
       hex_digit1(i),
-      Err(ErrMode::Error(error_position!(i, ErrorKind::HexDigit)))
+      Err(ErrMode::Backtrack(error_position!(i, ErrorKind::HexDigit)))
     );
 
     let i = &b"G"[..];
     assert_parse!(
       hex_digit1(i),
-      Err(ErrMode::Error(error_position!(i, ErrorKind::HexDigit)))
+      Err(ErrMode::Backtrack(error_position!(i, ErrorKind::HexDigit)))
     );
 
     assert!(AsChar::is_hex_digit(b'0'));
@@ -277,7 +277,7 @@ mod complete {
     let i = &b"8"[..];
     assert_parse!(
       oct_digit1(i),
-      Err(ErrMode::Error(error_position!(i, ErrorKind::OctDigit)))
+      Err(ErrMode::Backtrack(error_position!(i, ErrorKind::OctDigit)))
     );
 
     assert!(AsChar::is_oct_digit(b'0'));
@@ -333,11 +333,14 @@ mod complete {
     assert_parse!(crlf(&b"\r\na"[..]), Ok((&b"a"[..], &b"\r\n"[..])));
     assert_parse!(
       crlf(&b"\r"[..]),
-      Err(ErrMode::Error(error_position!(&b"\r"[..], ErrorKind::CrLf)))
+      Err(ErrMode::Backtrack(error_position!(
+        &b"\r"[..],
+        ErrorKind::CrLf
+      )))
     );
     assert_parse!(
       crlf(&b"\ra"[..]),
-      Err(ErrMode::Error(error_position!(
+      Err(ErrMode::Backtrack(error_position!(
         &b"\ra"[..],
         ErrorKind::CrLf
       )))
@@ -346,11 +349,11 @@ mod complete {
     assert_parse!(crlf("\r\na"), Ok(("a", "\r\n")));
     assert_parse!(
       crlf("\r"),
-      Err(ErrMode::Error(error_position!("\r", ErrorKind::CrLf)))
+      Err(ErrMode::Backtrack(error_position!("\r", ErrorKind::CrLf)))
     );
     assert_parse!(
       crlf("\ra"),
-      Err(ErrMode::Error(error_position!("\ra", ErrorKind::CrLf)))
+      Err(ErrMode::Backtrack(error_position!("\ra", ErrorKind::CrLf)))
     );
   }
 
@@ -360,11 +363,14 @@ mod complete {
     assert_parse!(line_ending(&b"\r\na"[..]), Ok((&b"a"[..], &b"\r\n"[..])));
     assert_parse!(
       line_ending(&b"\r"[..]),
-      Err(ErrMode::Error(error_position!(&b"\r"[..], ErrorKind::CrLf)))
+      Err(ErrMode::Backtrack(error_position!(
+        &b"\r"[..],
+        ErrorKind::CrLf
+      )))
     );
     assert_parse!(
       line_ending(&b"\ra"[..]),
-      Err(ErrMode::Error(error_position!(
+      Err(ErrMode::Backtrack(error_position!(
         &b"\ra"[..],
         ErrorKind::CrLf
       )))
@@ -374,11 +380,11 @@ mod complete {
     assert_parse!(line_ending("\r\na"), Ok(("a", "\r\n")));
     assert_parse!(
       line_ending("\r"),
-      Err(ErrMode::Error(error_position!("\r", ErrorKind::CrLf)))
+      Err(ErrMode::Backtrack(error_position!("\r", ErrorKind::CrLf)))
     );
     assert_parse!(
       line_ending("\ra"),
-      Err(ErrMode::Error(error_position!("\ra", ErrorKind::CrLf)))
+      Err(ErrMode::Backtrack(error_position!("\ra", ErrorKind::CrLf)))
     );
   }
 
@@ -394,7 +400,7 @@ mod complete {
     let (i, s) = match digit1::<_, crate::error::Error<_>, false>(i) {
       Ok((i, s)) => (i, s),
       Err(_) => {
-        return Err(ErrMode::Error(crate::error::Error::from_error_kind(
+        return Err(ErrMode::Backtrack(crate::error::Error::from_error_kind(
           input,
           ErrorKind::Digit,
         )))
@@ -409,7 +415,7 @@ mod complete {
           Ok((i, -n))
         }
       }
-      None => Err(ErrMode::Error(crate::error::Error::from_error_kind(
+      None => Err(ErrMode::Backtrack(crate::error::Error::from_error_kind(
         i,
         ErrorKind::Digit,
       ))),
@@ -420,7 +426,7 @@ mod complete {
     let (i, s) = digit1(i)?;
     match s.parse_to() {
       Some(n) => Ok((i, n)),
-      None => Err(ErrMode::Error(crate::error::Error::from_error_kind(
+      None => Err(ErrMode::Backtrack(crate::error::Error::from_error_kind(
         i,
         ErrorKind::Digit,
       ))),
@@ -485,7 +491,7 @@ mod complete {
     let remaining_exponent = "-1.234E-";
     assert_parse!(
       recognize_float(remaining_exponent),
-      Err(ErrMode::Failure(Error {
+      Err(ErrMode::Cut(Error {
         input: "",
         kind: ErrorKind::Digit
       }))
@@ -507,11 +513,11 @@ mod complete {
       Err(e) => Err(e),
       Ok((i, s)) => {
         if s.is_empty() {
-          return Err(ErrMode::Error(()));
+          return Err(ErrMode::Backtrack(()));
         }
         match s.parse_to() {
           Some(n) => Ok((i, n)),
-          None => Err(ErrMode::Error(())),
+          None => Err(ErrMode::Backtrack(())),
         }
       }
     }
@@ -577,14 +583,14 @@ mod complete {
     assert_eq!(esc(&b"ab\\\"12"[..]), Ok((&b"12"[..], &b"ab\\\""[..])));
     assert_eq!(
       esc(&b"AB\\"[..]),
-      Err(ErrMode::Error(error_position!(
+      Err(ErrMode::Backtrack(error_position!(
         &b"AB\\"[..],
         ErrorKind::Escaped
       )))
     );
     assert_eq!(
       esc(&b"AB\\A"[..]),
-      Err(ErrMode::Error(error_node_position!(
+      Err(ErrMode::Backtrack(error_node_position!(
         &b"AB\\A"[..],
         ErrorKind::Escaped,
         error_position!(&b"A"[..], ErrorKind::OneOf)
@@ -613,11 +619,14 @@ mod complete {
     assert_eq!(esc("ab\\\"12"), Ok(("12", "ab\\\"")));
     assert_eq!(
       esc("AB\\"),
-      Err(ErrMode::Error(error_position!("AB\\", ErrorKind::Escaped)))
+      Err(ErrMode::Backtrack(error_position!(
+        "AB\\",
+        ErrorKind::Escaped
+      )))
     );
     assert_eq!(
       esc("AB\\A"),
-      Err(ErrMode::Error(error_node_position!(
+      Err(ErrMode::Backtrack(error_node_position!(
         "AB\\A",
         ErrorKind::Escaped,
         error_position!("A", ErrorKind::OneOf)
@@ -644,7 +653,7 @@ mod complete {
 
     assert_eq!(
       esc("abcd"),
-      Err(ErrMode::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: "abcd",
         kind: ErrorKind::Escaped
       }))
@@ -691,14 +700,14 @@ mod complete {
     );
     assert_eq!(
       esc(&b"AB\\"[..]),
-      Err(ErrMode::Error(error_position!(
+      Err(ErrMode::Backtrack(error_position!(
         &b"\\"[..],
         ErrorKind::EscapedTransform
       )))
     );
     assert_eq!(
       esc(&b"AB\\A"[..]),
-      Err(ErrMode::Error(error_node_position!(
+      Err(ErrMode::Backtrack(error_node_position!(
         &b"AB\\A"[..],
         ErrorKind::EscapedTransform,
         error_position!(&b"A"[..], ErrorKind::Tag)
@@ -751,14 +760,14 @@ mod complete {
     assert_eq!(esc("ab\\\"12"), Ok(("12", String::from("ab\""))));
     assert_eq!(
       esc("AB\\"),
-      Err(ErrMode::Error(error_position!(
+      Err(ErrMode::Backtrack(error_position!(
         "\\",
         ErrorKind::EscapedTransform
       )))
     );
     assert_eq!(
       esc("AB\\A"),
-      Err(ErrMode::Error(error_node_position!(
+      Err(ErrMode::Backtrack(error_node_position!(
         "AB\\A",
         ErrorKind::EscapedTransform,
         error_position!("A", ErrorKind::Tag)
@@ -798,7 +807,7 @@ mod complete {
 
     assert_eq!(
       esc_trans("abcd"),
-      Err(ErrMode::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: "abcd",
         kind: ErrorKind::EscapedTransform
       }))
@@ -840,7 +849,10 @@ mod streaming {
     );
     assert_eq!(
       alpha1(Streaming(b)),
-      Err(ErrMode::Error(Error::new(Streaming(b), ErrorKind::Alpha)))
+      Err(ErrMode::Backtrack(Error::new(
+        Streaming(b),
+        ErrorKind::Alpha
+      )))
     );
     assert_eq!(
       alpha1::<_, Error<_>, true>(Streaming(c)),
@@ -852,7 +864,10 @@ mod streaming {
     );
     assert_eq!(
       digit1(Streaming(a)),
-      Err(ErrMode::Error(Error::new(Streaming(a), ErrorKind::Digit)))
+      Err(ErrMode::Backtrack(Error::new(
+        Streaming(a),
+        ErrorKind::Digit
+      )))
     );
     assert_eq!(
       digit1::<_, Error<_>, true>(Streaming(b)),
@@ -860,11 +875,17 @@ mod streaming {
     );
     assert_eq!(
       digit1(Streaming(c)),
-      Err(ErrMode::Error(Error::new(Streaming(c), ErrorKind::Digit)))
+      Err(ErrMode::Backtrack(Error::new(
+        Streaming(c),
+        ErrorKind::Digit
+      )))
     );
     assert_eq!(
       digit1(Streaming(d)),
-      Err(ErrMode::Error(Error::new(Streaming(d), ErrorKind::Digit)))
+      Err(ErrMode::Backtrack(Error::new(
+        Streaming(d),
+        ErrorKind::Digit
+      )))
     );
     assert_eq!(
       hex_digit1::<_, Error<_>, true>(Streaming(a)),
@@ -884,14 +905,14 @@ mod streaming {
     );
     assert_eq!(
       hex_digit1(Streaming(e)),
-      Err(ErrMode::Error(Error::new(
+      Err(ErrMode::Backtrack(Error::new(
         Streaming(e),
         ErrorKind::HexDigit
       )))
     );
     assert_eq!(
       oct_digit1(Streaming(a)),
-      Err(ErrMode::Error(Error::new(
+      Err(ErrMode::Backtrack(Error::new(
         Streaming(a),
         ErrorKind::OctDigit
       )))
@@ -902,14 +923,14 @@ mod streaming {
     );
     assert_eq!(
       oct_digit1(Streaming(c)),
-      Err(ErrMode::Error(Error::new(
+      Err(ErrMode::Backtrack(Error::new(
         Streaming(c),
         ErrorKind::OctDigit
       )))
     );
     assert_eq!(
       oct_digit1(Streaming(d)),
-      Err(ErrMode::Error(Error::new(
+      Err(ErrMode::Backtrack(Error::new(
         Streaming(d),
         ErrorKind::OctDigit
       )))
@@ -951,7 +972,10 @@ mod streaming {
     );
     assert_eq!(
       alpha1(Streaming(b)),
-      Err(ErrMode::Error(Error::new(Streaming(b), ErrorKind::Alpha)))
+      Err(ErrMode::Backtrack(Error::new(
+        Streaming(b),
+        ErrorKind::Alpha
+      )))
     );
     assert_eq!(
       alpha1::<_, Error<_>, true>(Streaming(c)),
@@ -963,7 +987,10 @@ mod streaming {
     );
     assert_eq!(
       digit1(Streaming(a)),
-      Err(ErrMode::Error(Error::new(Streaming(a), ErrorKind::Digit)))
+      Err(ErrMode::Backtrack(Error::new(
+        Streaming(a),
+        ErrorKind::Digit
+      )))
     );
     assert_eq!(
       digit1::<_, Error<_>, true>(Streaming(b)),
@@ -971,11 +998,17 @@ mod streaming {
     );
     assert_eq!(
       digit1(Streaming(c)),
-      Err(ErrMode::Error(Error::new(Streaming(c), ErrorKind::Digit)))
+      Err(ErrMode::Backtrack(Error::new(
+        Streaming(c),
+        ErrorKind::Digit
+      )))
     );
     assert_eq!(
       digit1(Streaming(d)),
-      Err(ErrMode::Error(Error::new(Streaming(d), ErrorKind::Digit)))
+      Err(ErrMode::Backtrack(Error::new(
+        Streaming(d),
+        ErrorKind::Digit
+      )))
     );
     assert_eq!(
       hex_digit1::<_, Error<_>, true>(Streaming(a)),
@@ -995,14 +1028,14 @@ mod streaming {
     );
     assert_eq!(
       hex_digit1(Streaming(e)),
-      Err(ErrMode::Error(Error::new(
+      Err(ErrMode::Backtrack(Error::new(
         Streaming(e),
         ErrorKind::HexDigit
       )))
     );
     assert_eq!(
       oct_digit1(Streaming(a)),
-      Err(ErrMode::Error(Error::new(
+      Err(ErrMode::Backtrack(Error::new(
         Streaming(a),
         ErrorKind::OctDigit
       )))
@@ -1013,14 +1046,14 @@ mod streaming {
     );
     assert_eq!(
       oct_digit1(Streaming(c)),
-      Err(ErrMode::Error(Error::new(
+      Err(ErrMode::Backtrack(Error::new(
         Streaming(c),
         ErrorKind::OctDigit
       )))
     );
     assert_eq!(
       oct_digit1(Streaming(d)),
-      Err(ErrMode::Error(Error::new(
+      Err(ErrMode::Backtrack(Error::new(
         Streaming(d),
         ErrorKind::OctDigit
       )))
@@ -1130,7 +1163,7 @@ mod streaming {
     let f = "βèƒôřè\rÂßÇáƒƭèř";
     assert_eq!(
       not_line_ending(Streaming(f)),
-      Err(ErrMode::Error(Error::new(Streaming(f), ErrorKind::Tag)))
+      Err(ErrMode::Backtrack(Error::new(Streaming(f), ErrorKind::Tag)))
     );
 
     let g2: &str = "ab12cd";
@@ -1151,7 +1184,7 @@ mod streaming {
     let i = &b"g"[..];
     assert_parse!(
       hex_digit1(Streaming(i)),
-      Err(ErrMode::Error(error_position!(
+      Err(ErrMode::Backtrack(error_position!(
         Streaming(i),
         ErrorKind::HexDigit
       )))
@@ -1160,7 +1193,7 @@ mod streaming {
     let i = &b"G"[..];
     assert_parse!(
       hex_digit1(Streaming(i)),
-      Err(ErrMode::Error(error_position!(
+      Err(ErrMode::Backtrack(error_position!(
         Streaming(i),
         ErrorKind::HexDigit
       )))
@@ -1191,7 +1224,7 @@ mod streaming {
     let i = &b"8"[..];
     assert_parse!(
       oct_digit1(Streaming(i)),
-      Err(ErrMode::Error(error_position!(
+      Err(ErrMode::Backtrack(error_position!(
         Streaming(i),
         ErrorKind::OctDigit
       )))
@@ -1260,7 +1293,7 @@ mod streaming {
     );
     assert_parse!(
       crlf(Streaming(&b"\ra"[..])),
-      Err(ErrMode::Error(error_position!(
+      Err(ErrMode::Backtrack(error_position!(
         Streaming(&b"\ra"[..]),
         ErrorKind::CrLf
       )))
@@ -1273,7 +1306,7 @@ mod streaming {
     );
     assert_parse!(
       crlf(Streaming("\ra")),
-      Err(ErrMode::Error(error_position!(
+      Err(ErrMode::Backtrack(error_position!(
         Streaming("\ra"),
         ErrorKind::CrLf
       )))
@@ -1296,7 +1329,7 @@ mod streaming {
     );
     assert_parse!(
       line_ending(Streaming(&b"\ra"[..])),
-      Err(ErrMode::Error(error_position!(
+      Err(ErrMode::Backtrack(error_position!(
         Streaming(&b"\ra"[..]),
         ErrorKind::CrLf
       )))
@@ -1313,7 +1346,7 @@ mod streaming {
     );
     assert_parse!(
       line_ending(Streaming("\ra")),
-      Err(ErrMode::Error(error_position!(
+      Err(ErrMode::Backtrack(error_position!(
         Streaming("\ra"),
         ErrorKind::CrLf
       )))
@@ -1335,7 +1368,7 @@ mod streaming {
       Ok((i, s)) => (i, s),
       Err(ErrMode::Incomplete(i)) => return Err(ErrMode::Incomplete(i)),
       Err(_) => {
-        return Err(ErrMode::Error(crate::error::Error::from_error_kind(
+        return Err(ErrMode::Backtrack(crate::error::Error::from_error_kind(
           input,
           ErrorKind::Digit,
         )))
@@ -1349,7 +1382,7 @@ mod streaming {
           Ok((i, -n))
         }
       }
-      None => Err(ErrMode::Error(crate::error::Error::from_error_kind(
+      None => Err(ErrMode::Backtrack(crate::error::Error::from_error_kind(
         i,
         ErrorKind::Digit,
       ))),
@@ -1360,7 +1393,7 @@ mod streaming {
     let (i, s) = digit1(i)?;
     match s.parse_to() {
       Some(n) => Ok((i, n)),
-      None => Err(ErrMode::Error(crate::error::Error::from_error_kind(
+      None => Err(ErrMode::Backtrack(crate::error::Error::from_error_kind(
         i,
         ErrorKind::Digit,
       ))),

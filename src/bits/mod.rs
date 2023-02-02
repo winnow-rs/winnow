@@ -55,8 +55,8 @@ where
       Ok((input, result))
     }
     Err(ErrMode::Incomplete(n)) => Err(ErrMode::Incomplete(n.map(|u| u.get() / 8 + 1))),
-    Err(ErrMode::Error(e)) => Err(ErrMode::Error(e.convert())),
-    Err(ErrMode::Failure(e)) => Err(ErrMode::Failure(e.convert())),
+    Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.convert())),
+    Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.convert())),
   }
 }
 
@@ -103,10 +103,10 @@ where
       Err(ErrMode::Incomplete(Needed::Unknown)) => Err(ErrMode::Incomplete(Needed::Unknown)),
       Err(ErrMode::Incomplete(Needed::Size(sz))) => Err(match sz.get().checked_mul(8) {
         Some(v) => ErrMode::Incomplete(Needed::new(v)),
-        None => ErrMode::Failure(E2::from_error_kind(i, ErrorKind::TooLarge)),
+        None => ErrMode::Cut(E2::from_error_kind(i, ErrorKind::TooLarge)),
       }),
-      Err(ErrMode::Error(e)) => Err(ErrMode::Error(e.convert())),
-      Err(ErrMode::Failure(e)) => Err(ErrMode::Failure(e.convert())),
+      Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.convert())),
+      Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.convert())),
     }
   }
 }
@@ -133,7 +133,7 @@ where
 /// assert_eq!(parser(([0b00010010].as_ref(), 4), 4), Ok((([].as_ref(), 0), 0b00000010)));
 ///
 /// // Tries to consume 12 bits but only 8 are available
-/// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(winnow::error::ErrMode::Error(Error{input: ([0b00010010].as_ref(), 0), kind: ErrorKind::Eof })));
+/// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(winnow::error::ErrMode::Backtrack(Error{input: ([0b00010010].as_ref(), 0), kind: ErrorKind::Eof })));
 /// ```
 #[inline(always)]
 pub fn take<I, O, C, E: ParseError<(I, usize)>, const STREAMING: bool>(
@@ -183,7 +183,7 @@ where
 /// // The lowest 2 bits of 0b11111111 and 0b00000001 are different.
 /// assert_eq!(
 ///     parser(0b000000_01, 2, ([0b111111_11].as_ref(), 0)),
-///     Err(winnow::error::ErrMode::Error(Error {
+///     Err(winnow::error::ErrMode::Backtrack(Error {
 ///         input: ([0b11111111].as_ref(), 0),
 ///         kind: ErrorKind::TagBits
 ///     }))
@@ -192,7 +192,7 @@ where
 /// // The lowest 8 bits of 0b11111111 and 0b11111110 are different.
 /// assert_eq!(
 ///     parser(0b11111110, 8, ([0b11111111].as_ref(), 0)),
-///     Err(winnow::error::ErrMode::Error(Error {
+///     Err(winnow::error::ErrMode::Backtrack(Error {
 ///         input: ([0b11111111].as_ref(), 0),
 ///         kind: ErrorKind::TagBits
 ///     }))

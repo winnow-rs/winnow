@@ -26,7 +26,10 @@ fn eof_on_slices() {
   let res_not_over = eof(not_over);
   assert_parse!(
     res_not_over,
-    Err(ErrMode::Error(error_position!(not_over, ErrorKind::Eof)))
+    Err(ErrMode::Backtrack(error_position!(
+      not_over,
+      ErrorKind::Eof
+    )))
   );
 
   let res_over = eof(is_over);
@@ -41,7 +44,10 @@ fn eof_on_strs() {
   let res_not_over = eof(not_over);
   assert_parse!(
     res_not_over,
-    Err(ErrMode::Error(error_position!(not_over, ErrorKind::Eof)))
+    Err(ErrMode::Backtrack(error_position!(
+      not_over,
+      ErrorKind::Eof
+    )))
   );
 
   let res_over = eof(is_over);
@@ -117,7 +123,7 @@ fn test_map_opt() {
   let input: &[u8] = &[50][..];
   assert_parse!(
     map_opt(u8, |u| if u < 20 { Some(u) } else { None })(input),
-    Err(ErrMode::Error(Error {
+    Err(ErrMode::Backtrack(Error {
       input: &[50][..],
       kind: ErrorKind::MapOpt
     }))
@@ -134,7 +140,7 @@ fn test_parser_map_opt() {
   assert_parse!(
     u8.map_opt(|u| if u < 20 { Some(u) } else { None })
       .parse_next(input),
-    Err(ErrMode::Error(Error {
+    Err(ErrMode::Backtrack(Error {
       input: &[50][..],
       kind: ErrorKind::MapOpt
     }))
@@ -171,7 +177,7 @@ fn test_all_consuming() {
   let input: &[u8] = &[100, 101, 102][..];
   assert_parse!(
     all_consuming(take(2usize))(input),
-    Err(ErrMode::Error(Error {
+    Err(ErrMode::Backtrack(Error {
       input: &[102][..],
       kind: ErrorKind::Eof
     }))
@@ -193,7 +199,7 @@ fn test_verify_ref() {
   assert_eq!(parser1(&b"abcd"[..]), Ok((&b"d"[..], &b"abc"[..])));
   assert_eq!(
     parser1(&b"defg"[..]),
-    Err(ErrMode::Error(Error {
+    Err(ErrMode::Backtrack(Error {
       input: &b"defg"[..],
       kind: ErrorKind::Verify
     }))
@@ -216,7 +222,7 @@ fn test_verify_alloc() {
   assert_eq!(parser1(&b"abcd"[..]), Ok((&b"d"[..], b"abc".to_vec())));
   assert_eq!(
     parser1(&b"defg"[..]),
-    Err(ErrMode::Error(Error {
+    Err(ErrMode::Backtrack(Error {
       input: &b"defg"[..],
       kind: ErrorKind::Verify
     }))
@@ -287,7 +293,7 @@ fn peek_test() {
   );
   assert_eq!(
     peek_tag(Streaming(&b"xxx"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxx"[..]),
       ErrorKind::Tag
     )))
@@ -302,7 +308,7 @@ fn not_test() {
 
   assert_eq!(
     not_aaa(Streaming(&b"aaa"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"aaa"[..]),
       ErrorKind::Not
     )))
@@ -331,7 +337,7 @@ fn verify_test() {
   );
   assert_eq!(
     test(Streaming(&b"bcdefg"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"bcdefg"[..]),
       ErrorKind::Verify
     )))
@@ -357,7 +363,7 @@ fn test_parser_verify() {
   );
   assert_eq!(
     test(Streaming(&b"bcdefg"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"bcdefg"[..]),
       ErrorKind::Verify
     )))
@@ -381,7 +387,7 @@ fn test_parser_verify_ref() {
   );
   assert_eq!(
     parser1.parse_next(&b"defg"[..]),
-    Err(ErrMode::Error(Error {
+    Err(ErrMode::Backtrack(Error {
       input: &b"defg"[..],
       kind: ErrorKind::Verify
     }))
@@ -408,7 +414,7 @@ fn test_parser_verify_alloc() {
   );
   assert_eq!(
     parser1.parse_next(&b"defg"[..]),
-    Err(ErrMode::Error(Error {
+    Err(ErrMode::Backtrack(Error {
       input: &b"defg"[..],
       kind: ErrorKind::Verify
     }))
@@ -422,14 +428,14 @@ fn fail_test() {
 
   assert_eq!(
     fail::<_, &str, _>(a),
-    Err(ErrMode::Error(Error {
+    Err(ErrMode::Backtrack(Error {
       input: a,
       kind: ErrorKind::Fail
     }))
   );
   assert_eq!(
     fail::<_, &str, _>(b),
-    Err(ErrMode::Error(Error {
+    Err(ErrMode::Backtrack(Error {
       input: b,
       kind: ErrorKind::Fail
     }))

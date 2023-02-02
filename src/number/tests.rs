@@ -299,7 +299,10 @@ mod complete {
   fn hex_u32_tests() {
     assert_parse!(
       hex_u32(&b";"[..]),
-      Err(ErrMode::Error(error_position!(&b";"[..], ErrorKind::IsA)))
+      Err(ErrMode::Backtrack(error_position!(
+        &b";"[..],
+        ErrorKind::IsA
+      )))
     );
     assert_parse!(hex_u32(&b"ff;"[..]), Ok((&b";"[..], 255)));
     assert_parse!(hex_u32(&b"1be2;"[..]), Ok((&b";"[..], 7138)));
@@ -967,7 +970,7 @@ mod streaming {
   fn hex_u32_tests() {
     assert_parse!(
       hex_u32(Streaming(&b";"[..])),
-      Err(ErrMode::Error(error_position!(
+      Err(ErrMode::Backtrack(error_position!(
         Streaming(&b";"[..]),
         ErrorKind::IsA
       )))

@@ -65,7 +65,7 @@ mod test {
 
     let res: IResult<_, _, error::Error<_>> = tag(TAG)(INPUT);
     match res {
-      Err(ErrMode::Error(_)) => (),
+      Err(ErrMode::Backtrack(_)) => (),
       other => {
         panic!(
           "Parser `tag` didn't fail when it should have. Got `{:?}`.`",
@@ -311,7 +311,7 @@ mod test {
     assert_eq!(f(Streaming(c)), Ok((Streaming("123"), b)));
     assert_eq!(
       f(Streaming(d)),
-      Err(ErrMode::Error(winnow::error::Error {
+      Err(ErrMode::Backtrack(winnow::error::Error {
         input: Streaming(d),
         kind: ErrorKind::TakeWhile1
       }))
@@ -396,7 +396,7 @@ mod test {
       take_while1(while1_s)(input)
     }
     match test(INPUT) {
-      Err(ErrMode::Error(_)) => (),
+      Err(ErrMode::Backtrack(_)) => (),
       other => panic!(
         "Parser `take_while1` didn't fail when it should have. \
          Got `{:?}`.",
@@ -413,7 +413,7 @@ mod test {
       take_while1(MATCH)(input)
     }
     match test(INPUT) {
-      Err(ErrMode::Error(_)) => (),
+      Err(ErrMode::Backtrack(_)) => (),
       other => panic!(
         "Parser `is_a` didn't fail when it should have. Got `{:?}`.",
         other
@@ -493,7 +493,7 @@ mod test {
       take_till1(AVOID)(input)
     }
     match test(INPUT) {
-      Err(ErrMode::Error(_)) => (),
+      Err(ErrMode::Backtrack(_)) => (),
       other => panic!(
         "Parser `is_not` didn't fail when it should have. Got `{:?}`.",
         other

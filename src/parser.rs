@@ -116,7 +116,7 @@ pub trait Parser<I, O, E> {
   /// let mut parser = alpha1.value(1234);
   ///
   /// assert_eq!(parser.parse_next("abcd"), Ok(("", 1234)));
-  /// assert_eq!(parser.parse_next("123abcd;"), Err(ErrMode::Error(Error::new("123abcd;", ErrorKind::Alpha))));
+  /// assert_eq!(parser.parse_next("123abcd;"), Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::Alpha))));
   /// # }
   /// ```
   fn value<O2>(self, val: O2) -> Value<Self, O, O2>
@@ -139,7 +139,7 @@ pub trait Parser<I, O, E> {
   /// let mut parser = alpha1.void();
   ///
   /// assert_eq!(parser.parse_next("abcd"), Ok(("", ())));
-  /// assert_eq!(parser.parse_next("123abcd;"), Err(ErrMode::Error(Error::new("123abcd;", ErrorKind::Alpha))));
+  /// assert_eq!(parser.parse_next("123abcd;"), Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::Alpha))));
   /// # }
   /// ```
   fn void(self) -> Void<Self, O>
@@ -191,7 +191,7 @@ pub trait Parser<I, O, E> {
   /// let mut parser = separated_pair(alpha1, ',', alpha1).recognize();
   ///
   /// assert_eq!(parser.parse_next("abcd,efgh"), Ok(("", "abcd,efgh")));
-  /// assert_eq!(parser.parse_next("abcd;"),Err(ErrMode::Error(Error::new(";", ErrorKind::OneOf))));
+  /// assert_eq!(parser.parse_next("abcd;"),Err(ErrMode::Backtrack(Error::new(";", ErrorKind::OneOf))));
   /// # }
   /// ```
   fn recognize(self) -> Recognize<Self, O>
@@ -228,7 +228,7 @@ pub trait Parser<I, O, E> {
   /// let mut consumed_parser = separated_pair(alpha1, ',', alpha1).value(true).with_recognized();
   ///
   /// assert_eq!(consumed_parser.parse_next("abcd,efgh1"), Ok(("1", (true, "abcd,efgh"))));
-  /// assert_eq!(consumed_parser.parse_next("abcd;"),Err(ErrMode::Error(Error::new(";", ErrorKind::OneOf))));
+  /// assert_eq!(consumed_parser.parse_next("abcd;"),Err(ErrMode::Backtrack(Error::new(";", ErrorKind::OneOf))));
   ///
   /// // the second output (representing the consumed input)
   /// // should be the same as that of the `recognize` parser.
@@ -260,7 +260,7 @@ pub trait Parser<I, O, E> {
   /// let mut parser = separated_pair(alpha1.span(), ',', alpha1.span());
   ///
   /// assert_eq!(parser.parse_next(Located::new("abcd,efgh")).finish(), Ok((0..4, 5..9)));
-  /// assert_eq!(parser.parse_next(Located::new("abcd;")),Err(ErrMode::Error(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::OneOf))));
+  /// assert_eq!(parser.parse_next(Located::new("abcd;")),Err(ErrMode::Backtrack(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::OneOf))));
   /// ```
   fn span(self) -> Span<Self, O>
   where
@@ -298,7 +298,7 @@ pub trait Parser<I, O, E> {
   /// let mut consumed_parser = separated_pair(alpha1.value(1).with_span(), ',', alpha1.value(2).with_span());
   ///
   /// assert_eq!(consumed_parser.parse_next(Located::new("abcd,efgh")).finish(), Ok(((1, 0..4), (2, 5..9))));
-  /// assert_eq!(consumed_parser.parse_next(Located::new("abcd;")),Err(ErrMode::Error(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::OneOf))));
+  /// assert_eq!(consumed_parser.parse_next(Located::new("abcd;")),Err(ErrMode::Backtrack(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::OneOf))));
   ///
   /// // the second output (representing the consumed input)
   /// // should be the same as that of the `span` parser.
@@ -332,7 +332,7 @@ pub trait Parser<I, O, E> {
   /// assert_eq!(parser.parse_next("123456"), Ok(("", 6)));
   ///
   /// // this will fail if digit1 fails
-  /// assert_eq!(parser.parse_next("abc"), Err(ErrMode::Error(Error::new("abc", ErrorKind::Digit))));
+  /// assert_eq!(parser.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
   /// # }
   /// ```
   fn map<G, O2>(self, g: G) -> Map<Self, G, O>
@@ -358,10 +358,10 @@ pub trait Parser<I, O, E> {
   /// assert_eq!(parse.parse_next("123"), Ok(("", 123)));
   ///
   /// // this will fail if digit1 fails
-  /// assert_eq!(parse.parse_next("abc"), Err(ErrMode::Error(Error::new("abc", ErrorKind::Digit))));
+  /// assert_eq!(parse.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
   ///
   /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
-  /// assert_eq!(parse.parse_next("123456"), Err(ErrMode::Error(Error::new("123456", ErrorKind::MapRes))));
+  /// assert_eq!(parse.parse_next("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::MapRes))));
   /// # }
   /// ```
   fn map_res<G, O2, E2>(self, g: G) -> MapRes<Self, G, O>
@@ -387,10 +387,10 @@ pub trait Parser<I, O, E> {
   /// assert_eq!(parse.parse_next("123"), Ok(("", 123)));
   ///
   /// // this will fail if digit1 fails
-  /// assert_eq!(parse.parse_next("abc"), Err(ErrMode::Error(Error::new("abc", ErrorKind::Digit))));
+  /// assert_eq!(parse.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
   ///
   /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
-  /// assert_eq!(parse.parse_next("123456"), Err(ErrMode::Error(Error::new("123456", ErrorKind::MapOpt))));
+  /// assert_eq!(parse.parse_next("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::MapOpt))));
   /// # }
   /// ```
   fn map_opt<G, O2>(self, g: G) -> MapOpt<Self, G, O>
@@ -414,7 +414,7 @@ pub trait Parser<I, O, E> {
   /// let mut length_data = u8.flat_map(take);
   ///
   /// assert_eq!(length_data.parse_next(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
-  /// assert_eq!(length_data.parse_next(&[4, 0, 1, 2][..]), Err(ErrMode::Error(Error::new(&[0, 1, 2][..], ErrorKind::Eof))));
+  /// assert_eq!(length_data.parse_next(&[4, 0, 1, 2][..]), Err(ErrMode::Backtrack(Error::new(&[0, 1, 2][..], ErrorKind::Eof))));
   /// # }
   /// ```
   fn flat_map<G, H, O2>(self, g: G) -> FlatMap<Self, G, O>
@@ -440,7 +440,7 @@ pub trait Parser<I, O, E> {
   ///
   /// assert_eq!(digits.parse_next("12345"), Ok(("", "12345")));
   /// assert_eq!(digits.parse_next("123ab"), Ok(("", "123")));
-  /// assert_eq!(digits.parse_next("123"), Err(ErrMode::Error(Error::new("123", ErrorKind::Eof))));
+  /// assert_eq!(digits.parse_next("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Eof))));
   /// # }
   /// ```
   fn and_then<G, O2>(self, g: G) -> AndThen<Self, G, O>
@@ -466,8 +466,8 @@ pub trait Parser<I, O, E> {
   /// let mut parser = alpha1.verify(|s: &str| s.len() == 4);
   ///
   /// assert_eq!(parser.parse_next("abcd"), Ok(("", "abcd")));
-  /// assert_eq!(parser.parse_next("abcde"), Err(ErrMode::Error(Error::new("abcde", ErrorKind::Verify))));
-  /// assert_eq!(parser.parse_next("123abcd;"),Err(ErrMode::Error(Error::new("123abcd;", ErrorKind::Alpha))));
+  /// assert_eq!(parser.parse_next("abcde"), Err(ErrMode::Backtrack(Error::new("abcde", ErrorKind::Verify))));
+  /// assert_eq!(parser.parse_next("123abcd;"),Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::Alpha))));
   /// # }
   /// ```
   fn verify<G, O2: ?Sized>(self, second: G) -> Verify<Self, G, O2>
@@ -491,7 +491,7 @@ pub trait Parser<I, O, E> {
     Context::new(self, context)
   }
 
-  /// Transforms [`Incomplete`][crate::error::ErrMode::Incomplete] into [`Error`][crate::error::ErrMode::Error]
+  /// Transforms [`Incomplete`][crate::error::ErrMode::Incomplete] into [`Error`][crate::error::ErrMode::Backtrack]
   ///
   /// # Example
   ///
@@ -503,7 +503,7 @@ pub trait Parser<I, O, E> {
   /// let mut parser = take(5u8).complete();
   ///
   /// assert_eq!(parser.parse_next(Streaming("abcdefg")), Ok((Streaming("fg"), "abcde")));
-  /// assert_eq!(parser.parse_next(Streaming("abcd")), Err(ErrMode::Error(Error::new(Streaming("abcd"), ErrorKind::Complete))));
+  /// assert_eq!(parser.parse_next(Streaming("abcd")), Err(ErrMode::Backtrack(Error::new(Streaming("abcd"), ErrorKind::Complete))));
   /// # }
   /// ```
   fn complete(self) -> Complete<Self>
@@ -600,9 +600,9 @@ where
 ///     b'a'.parse_next(i)
 /// }
 /// assert_eq!(parser(&b"abc"[..]), Ok((&b"bc"[..], b'a')));
-/// assert_eq!(parser(&b" abc"[..]), Err(ErrMode::Error(Error::new(&b" abc"[..], ErrorKind::OneOf))));
-/// assert_eq!(parser(&b"bc"[..]), Err(ErrMode::Error(Error::new(&b"bc"[..], ErrorKind::OneOf))));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Error(Error::new(&b""[..], ErrorKind::OneOf))));
+/// assert_eq!(parser(&b" abc"[..]), Err(ErrMode::Backtrack(Error::new(&b" abc"[..], ErrorKind::OneOf))));
+/// assert_eq!(parser(&b"bc"[..]), Err(ErrMode::Backtrack(Error::new(&b"bc"[..], ErrorKind::OneOf))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&b""[..], ErrorKind::OneOf))));
 /// ```
 impl<I, E> Parser<I, u8, E> for u8
 where
@@ -626,9 +626,9 @@ where
 ///     'a'.parse_next(i)
 /// }
 /// assert_eq!(parser("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser(" abc"), Err(ErrMode::Error(Error::new(" abc", ErrorKind::OneOf))));
-/// assert_eq!(parser("bc"), Err(ErrMode::Error(Error::new("bc", ErrorKind::OneOf))));
-/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::OneOf))));
+/// assert_eq!(parser(" abc"), Err(ErrMode::Backtrack(Error::new(" abc", ErrorKind::OneOf))));
+/// assert_eq!(parser("bc"), Err(ErrMode::Backtrack(Error::new("bc", ErrorKind::OneOf))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::OneOf))));
 /// ```
 impl<I, E> Parser<I, <I as Input>::Token, E> for char
 where
@@ -657,8 +657,8 @@ where
 ///
 /// assert_eq!(parser(&b"Hello, World!"[..]), Ok((&b", World!"[..], &b"Hello"[..])));
 /// assert_eq!(parser(&b"Something"[..]), Ok((&b"hing"[..], &b"Somet"[..])));
-/// assert_eq!(parser(&b"Some"[..]), Err(ErrMode::Error(Error::new(&b"Some"[..], ErrorKind::Eof))));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Error(Error::new(&b""[..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"Some"[..]), Err(ErrMode::Backtrack(Error::new(&b"Some"[..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&b""[..], ErrorKind::Eof))));
 /// ```
 impl<'s, I, E: ParseError<I>> Parser<I, <I as Input>::Slice, E> for &'s [u8]
 where
@@ -685,8 +685,8 @@ where
 ///
 /// assert_eq!(parser(&b"Hello, World!"[..]), Ok((&b", World!"[..], &b"Hello"[..])));
 /// assert_eq!(parser(&b"Something"[..]), Ok((&b"hing"[..], &b"Somet"[..])));
-/// assert_eq!(parser(&b"Some"[..]), Err(ErrMode::Error(Error::new(&b"Some"[..], ErrorKind::Eof))));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Error(Error::new(&b""[..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b"Some"[..]), Err(ErrMode::Backtrack(Error::new(&b"Some"[..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&b""[..], ErrorKind::Eof))));
 /// ```
 impl<'s, I, E: ParseError<I>, const N: usize> Parser<I, <I as Input>::Slice, E> for &'s [u8; N]
 where
@@ -713,8 +713,8 @@ where
 ///
 /// assert_eq!(parser("Hello, World!"), Ok((", World!", "Hello")));
 /// assert_eq!(parser("Something"), Ok(("hing", "Somet")));
-/// assert_eq!(parser("Some"), Err(ErrMode::Error(Error::new("Some", ErrorKind::Eof))));
-/// assert_eq!(parser(""), Err(ErrMode::Error(Error::new("", ErrorKind::Eof))));
+/// assert_eq!(parser("Some"), Err(ErrMode::Backtrack(Error::new("Some", ErrorKind::Eof))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
 /// ```
 impl<'s, I, E: ParseError<I>> Parser<I, <I as Input>::Slice, E> for &'s str
 where
@@ -828,8 +828,8 @@ mod tests {
 
   #[test]
   fn err_map_test() {
-    let e = ErrMode::Error(1);
-    assert_eq!(e.map(|v| v + 1), ErrMode::Error(2));
+    let e = ErrMode::Backtrack(1);
+    assert_eq!(e.map(|v| v + 1), ErrMode::Backtrack(2));
   }
 
   #[test]
@@ -841,7 +841,7 @@ mod tests {
     assert_eq!(parser.parse_next("abc123def"), Ok(("123def", ("abc",))));
     assert_eq!(
       parser.parse_next("123def"),
-      Err(ErrMode::Error(Error {
+      Err(ErrMode::Backtrack(Error {
         input: "123def",
         kind: ErrorKind::Alpha
       }))
@@ -869,7 +869,7 @@ mod tests {
     );
     assert_eq!(
       tuple_3(Streaming(&b"abcdejk"[..])),
-      Err(ErrMode::Error(error_position!(
+      Err(ErrMode::Backtrack(error_position!(
         Streaming(&b"jk"[..]),
         ErrorKind::Tag
       )))

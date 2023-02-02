@@ -15,7 +15,7 @@ fn single_element_tuples() {
   assert_eq!(parser("abc123def"), Ok(("123def", ("abc",))));
   assert_eq!(
     parser("123def"),
-    Err(ErrMode::Error(Error {
+    Err(ErrMode::Backtrack(Error {
       input: "123def",
       kind: ErrorKind::Alpha
     }))
@@ -46,7 +46,10 @@ fn complete() {
   let res_a = err_test(a);
   assert_eq!(
     res_a,
-    Err(ErrMode::Error(error_position!(&b"mn"[..], ErrorKind::Tag)))
+    Err(ErrMode::Backtrack(error_position!(
+      &b"mn"[..],
+      ErrorKind::Tag
+    )))
   );
 }
 
@@ -72,21 +75,21 @@ fn pair_test() {
   );
   assert_eq!(
     pair_abc_def(Streaming(&b"xxx"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxx"[..]),
       ErrorKind::Tag
     )))
   );
   assert_eq!(
     pair_abc_def(Streaming(&b"xxxdef"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxxdef"[..]),
       ErrorKind::Tag
     )))
   );
   assert_eq!(
     pair_abc_def(Streaming(&b"abcxxx"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxx"[..]),
       ErrorKind::Tag
     )))
@@ -114,21 +117,21 @@ fn separated_pair_test() {
   );
   assert_eq!(
     sep_pair_abc_def(Streaming(&b"xxx"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxx"[..]),
       ErrorKind::Tag
     )))
   );
   assert_eq!(
     sep_pair_abc_def(Streaming(&b"xxx,def"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxx,def"[..]),
       ErrorKind::Tag
     )))
   );
   assert_eq!(
     sep_pair_abc_def(Streaming(&b"abc,xxx"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxx"[..]),
       ErrorKind::Tag
     )))
@@ -155,21 +158,21 @@ fn preceded_test() {
   );
   assert_eq!(
     preceded_abcd_efgh(Streaming(&b"xxx"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxx"[..]),
       ErrorKind::Tag
     )))
   );
   assert_eq!(
     preceded_abcd_efgh(Streaming(&b"xxxxdef"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxxxdef"[..]),
       ErrorKind::Tag
     )))
   );
   assert_eq!(
     preceded_abcd_efgh(Streaming(&b"abcdxxx"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxx"[..]),
       ErrorKind::Tag
     )))
@@ -196,21 +199,21 @@ fn terminated_test() {
   );
   assert_eq!(
     terminated_abcd_efgh(Streaming(&b"xxx"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxx"[..]),
       ErrorKind::Tag
     )))
   );
   assert_eq!(
     terminated_abcd_efgh(Streaming(&b"xxxxdef"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxxxdef"[..]),
       ErrorKind::Tag
     )))
   );
   assert_eq!(
     terminated_abcd_efgh(Streaming(&b"abcdxxxx"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxxx"[..]),
       ErrorKind::Tag
     )))
@@ -241,28 +244,28 @@ fn delimited_test() {
   );
   assert_eq!(
     delimited_abc_def_ghi(Streaming(&b"xxx"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxx"[..]),
       ErrorKind::Tag
     )))
   );
   assert_eq!(
     delimited_abc_def_ghi(Streaming(&b"xxxdefghi"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxxdefghi"[..]),
       ErrorKind::Tag
     ),))
   );
   assert_eq!(
     delimited_abc_def_ghi(Streaming(&b"abcxxxghi"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxxghi"[..]),
       ErrorKind::Tag
     )))
   );
   assert_eq!(
     delimited_abc_def_ghi(Streaming(&b"abcdefxxx"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"xxx"[..]),
       ErrorKind::Tag
     )))
@@ -291,7 +294,7 @@ fn tuple_test() {
   );
   assert_eq!(
     tuple_3(Streaming(&b"abcdejk"[..])),
-    Err(ErrMode::Error(error_position!(
+    Err(ErrMode::Backtrack(error_position!(
       Streaming(&b"jk"[..]),
       ErrorKind::Tag
     )))

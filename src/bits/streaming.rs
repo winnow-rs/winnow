@@ -108,7 +108,7 @@ where
     if *pattern == o {
       Ok((i, o))
     } else {
-      Err(ErrMode::Error(error_position!(inp, ErrorKind::TagBits)))
+      Err(ErrMode::Backtrack(error_position!(inp, ErrorKind::TagBits)))
     }
   })
 }
@@ -179,7 +179,7 @@ mod test {
 
     assert_eq!(
       result,
-      Err(crate::error::ErrMode::Error(crate::error::Error {
+      Err(crate::error::ErrMode::Backtrack(crate::error::Error {
         input: (input, offset),
         kind: ErrorKind::TagBits
       }))
