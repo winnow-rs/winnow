@@ -90,6 +90,9 @@
 //!
 //! ## Error management and debugging
 //!
+//! - [`cut_err`]: Commit the parse result, disallowing alternative parsers from being attempted
+//! - [`backtrack_err`]: Attemmpts a parse, allowing alternative parsers to be attempted despite
+//!   use of `cut_err`
 //! - [`Parser::context`]: Add context to the error if the parser fails
 //! - [`Parser::dbg_err`]: Prints a message and the input if the parser fails
 //!
