@@ -26,6 +26,13 @@ Already have an idea?  It might be good to first [create an issue][new issue]
 to propose it so we can make sure we are aligned and lower the risk of having
 to re-work some of it and the discouragement that goes along with that.
 
+### Combinators
+
+Design guidelines
+- Generally grammar-level combinators are standalone and output/error
+  conversion are on `Parser`.  `Parser::verify` is an example of some nuance as
+  it is considered part of the `Parser` its being applied to.
+
 ### Process
 
 When you first post a PR, we request that the the commit history get cleaned
