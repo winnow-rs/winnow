@@ -414,7 +414,7 @@ doc_comment::doctest!("../README.md");
 /// Lib module to re-export everything needed from `std` or `core`/`alloc`. This is how `serde` does
 /// it, albeit there it is not public.
 #[doc(hidden)]
-pub mod lib {
+pub(crate) mod lib {
   /// `std` facade allowing `std`/`core` to be interchangeable. Reexports `alloc` crate optionally,
   /// as well as `core` or `std`
   #[cfg(not(feature = "std"))]
