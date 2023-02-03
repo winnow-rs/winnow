@@ -395,7 +395,7 @@ where
     let (input, o1) = parser.parse_next(input)?;
     match f(o1) {
       Some(o2) => Ok((input, o2)),
-      None => Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::MapOpt))),
+      None => Err(ErrMode::from_error_kind(i, ErrorKind::MapOpt)),
     }
   }
 }
@@ -430,7 +430,7 @@ where
     let (input, o1) = self.f.parse_next(input)?;
     match (self.g)(o1) {
       Some(o2) => Ok((input, o2)),
-      None => Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::MapOpt))),
+      None => Err(ErrMode::from_error_kind(i, ErrorKind::MapOpt)),
     }
   }
 }
@@ -724,10 +724,7 @@ where
   if input.input_len() == 0 {
     Ok(input.next_slice(0))
   } else {
-    Err(ErrMode::Backtrack(E::from_error_kind(
-      input,
-      ErrorKind::Eof,
-    )))
+    Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
   }
 }
 
@@ -755,10 +752,7 @@ where
   move |input: I| {
     let i = input.clone();
     match f.parse_next(input) {
-      Err(ErrMode::Incomplete(_)) => Err(ErrMode::Backtrack(E::from_error_kind(
-        i,
-        ErrorKind::Complete,
-      ))),
+      Err(ErrMode::Incomplete(_)) => Err(ErrMode::from_error_kind(i, ErrorKind::Complete)),
       rest => rest,
     }
   }
@@ -785,10 +779,7 @@ where
   fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
     let i = input.clone();
     match (self.f).parse_next(input) {
-      Err(ErrMode::Incomplete(_)) => Err(ErrMode::Backtrack(E::from_error_kind(
-        i,
-        ErrorKind::Complete,
-      ))),
+      Err(ErrMode::Incomplete(_)) => Err(ErrMode::from_error_kind(i, ErrorKind::Complete)),
       rest => rest,
     }
   }
@@ -826,10 +817,7 @@ where
     if input.input_len() == 0 {
       Ok((input, res))
     } else {
-      Err(ErrMode::Backtrack(E::from_error_kind(
-        input,
-        ErrorKind::Eof,
-      )))
+      Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
     }
   }
 }
@@ -872,7 +860,7 @@ where
     if second(o.borrow()) {
       Ok((input, o))
     } else {
-      Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Verify)))
+      Err(ErrMode::from_error_kind(i, ErrorKind::Verify))
     }
   }
 }
@@ -911,7 +899,7 @@ where
     if (self.second)(o.borrow()) {
       Ok((input, o))
     } else {
-      Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Verify)))
+      Err(ErrMode::from_error_kind(i, ErrorKind::Verify))
     }
   }
 }
@@ -1014,7 +1002,7 @@ where
   move |input: I| {
     let i = input.clone();
     match parser.parse_next(input) {
-      Ok(_) => Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Not))),
+      Ok(_) => Err(ErrMode::from_error_kind(i, ErrorKind::Not)),
       Err(ErrMode::Backtrack(_)) => Ok((i, ())),
       Err(e) => Err(e),
     }
@@ -1592,7 +1580,7 @@ pub fn success<I, O: Clone, E: ParseError<I>>(val: O) -> impl Fn(I) -> IResult<I
 /// assert_eq!(fail::<_, &str, _>(s), Err(ErrMode::Backtrack(Error::new(s, ErrorKind::Fail))));
 /// ```
 pub fn fail<I, O, E: ParseError<I>>(i: I) -> IResult<I, O, E> {
-  Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Fail)))
+  Err(ErrMode::from_error_kind(i, ErrorKind::Fail))
 }
 
 /// Implementation of [`Parser::context`]

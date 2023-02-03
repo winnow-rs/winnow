@@ -60,10 +60,10 @@ where
   } else {
     let cnt = (count + bit_offset).div(8);
     if input.input_len() * 8 < count + bit_offset {
-      Err(ErrMode::Backtrack(E::from_error_kind(
+      Err(ErrMode::from_error_kind(
         (input, bit_offset),
         ErrorKind::Eof,
-      )))
+      ))
     } else {
       let mut acc: O = 0_u8.into();
       let mut offset: usize = bit_offset;

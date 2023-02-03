@@ -18,7 +18,7 @@ where
 {
   input
     .next_token()
-    .ok_or_else(|| ErrMode::Backtrack(E::from_error_kind(input, ErrorKind::Eof)))
+    .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::Eof))
 }
 
 /// Recognizes a pattern
@@ -66,7 +66,7 @@ where
     CompareResult::Ok => Ok(i.next_slice(tag_len)),
     CompareResult::Incomplete | CompareResult::Error => {
       let e: ErrorKind = ErrorKind::Tag;
-      Err(ErrMode::Backtrack(Error::from_error_kind(i, e)))
+      Err(ErrMode::from_error_kind(i, e))
     }
   }
 }
@@ -119,7 +119,7 @@ where
     CompareResult::Ok => Ok(i.next_slice(tag_len)),
     CompareResult::Incomplete | CompareResult::Error => {
       let e: ErrorKind = ErrorKind::Tag;
-      Err(ErrMode::Backtrack(Error::from_error_kind(i, e)))
+      Err(ErrMode::from_error_kind(i, e))
     }
   }
 }
@@ -136,7 +136,7 @@ where
   input
     .next_token()
     .filter(|(_, t)| list.contains_token(*t))
-    .ok_or_else(|| ErrMode::Backtrack(E::from_error_kind(input, ErrorKind::OneOf)))
+    .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::OneOf))
 }
 
 pub(crate) fn none_of_internal<I, T, E: ParseError<I>>(
@@ -151,7 +151,7 @@ where
   input
     .next_token()
     .filter(|(_, t)| !list.contains_token(*t))
-    .ok_or_else(|| ErrMode::Backtrack(E::from_error_kind(input, ErrorKind::NoneOf)))
+    .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::NoneOf))
 }
 
 /// Parse till certain characters are met.
@@ -392,26 +392,20 @@ where
           let res: IResult<_, _, Error> = if let Ok(index) = input.offset_at(idx) {
             Ok(input.next_slice(index))
           } else {
-            Err(ErrMode::Backtrack(Error::from_error_kind(
-              input,
-              ErrorKind::TakeWhileMN,
-            )))
+            Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN))
           };
           res
         } else {
           let res: IResult<_, _, Error> = if let Ok(index) = input.offset_at(n) {
             Ok(input.next_slice(index))
           } else {
-            Err(ErrMode::Backtrack(Error::from_error_kind(
-              input,
-              ErrorKind::TakeWhileMN,
-            )))
+            Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN))
           };
           res
         }
       } else {
         let e = ErrorKind::TakeWhileMN;
-        Err(ErrMode::Backtrack(Error::from_error_kind(input, e)))
+        Err(ErrMode::from_error_kind(input, e))
       }
     }
     None => {
@@ -419,16 +413,13 @@ where
       if len >= n {
         match input.offset_at(n) {
           Ok(index) => Ok(input.next_slice(index)),
-          Err(_needed) => Err(ErrMode::Backtrack(Error::from_error_kind(
-            input,
-            ErrorKind::TakeWhileMN,
-          ))),
+          Err(_needed) => Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN)),
         }
       } else if len >= m && len <= n {
         Ok(input.next_slice(len))
       } else {
         let e = ErrorKind::TakeWhileMN;
-        Err(ErrMode::Backtrack(Error::from_error_kind(input, e)))
+        Err(ErrMode::from_error_kind(input, e))
       }
     }
   }
@@ -576,10 +567,7 @@ where
 {
   match i.offset_at(c) {
     Ok(offset) => Ok(i.next_slice(offset)),
-    Err(_needed) => Err(ErrMode::Backtrack(Error::from_error_kind(
-      i,
-      ErrorKind::Eof,
-    ))),
+    Err(_needed) => Err(ErrMode::from_error_kind(i, ErrorKind::Eof)),
   }
 }
 
@@ -624,10 +612,7 @@ where
 {
   match i.find_slice(t) {
     Some(offset) => Ok(i.next_slice(offset)),
-    None => Err(ErrMode::Backtrack(Error::from_error_kind(
-      i,
-      ErrorKind::TakeUntil,
-    ))),
+    None => Err(ErrMode::from_error_kind(i, ErrorKind::TakeUntil)),
   }
 }
 
@@ -672,10 +657,7 @@ where
   T: SliceLen,
 {
   match i.find_slice(t) {
-    None | Some(0) => Err(ErrMode::Backtrack(Error::from_error_kind(
-      i,
-      ErrorKind::TakeUntil,
-    ))),
+    None | Some(0) => Err(ErrMode::from_error_kind(i, ErrorKind::TakeUntil)),
     Some(offset) => Ok(i.next_slice(offset)),
   }
 }
@@ -755,10 +737,7 @@ where
         if i.next_token().expect("input_len > 0").1.as_char() == control_char {
           let next = control_char.len_utf8();
           if next >= i.input_len() {
-            return Err(ErrMode::Backtrack(Error::from_error_kind(
-              input,
-              ErrorKind::Escaped,
-            )));
+            return Err(ErrMode::from_error_kind(input, ErrorKind::Escaped));
           } else {
             match escapable.parse_next(i.next_slice(next).0) {
               Ok((i2, _)) => {
@@ -774,10 +753,7 @@ where
         } else {
           let offset = input.offset_to(&i);
           if offset == 0 {
-            return Err(ErrMode::Backtrack(Error::from_error_kind(
-              input,
-              ErrorKind::Escaped,
-            )));
+            return Err(ErrMode::from_error_kind(input, ErrorKind::Escaped));
           }
           return Ok(input.next_slice(offset));
         }
@@ -891,10 +867,10 @@ where
           let input_len = input.input_len();
 
           if next >= input_len {
-            return Err(ErrMode::Backtrack(Error::from_error_kind(
+            return Err(ErrMode::from_error_kind(
               remainder,
               ErrorKind::EscapedTransform,
-            )));
+            ));
           } else {
             match transform.parse_next(i.next_slice(next).0) {
               Ok((i2, o)) => {
@@ -910,10 +886,10 @@ where
           }
         } else {
           if offset == 0 {
-            return Err(ErrMode::Backtrack(Error::from_error_kind(
+            return Err(ErrMode::from_error_kind(
               remainder,
               ErrorKind::EscapedTransform,
-            )));
+            ));
           }
           return Ok((remainder, res));
         }

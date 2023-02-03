@@ -70,7 +70,7 @@ where
     CompareResult::Incomplete => Err(ErrMode::Incomplete(Needed::new(tag_len - i.input_len()))),
     CompareResult::Error => {
       let e: ErrorKind = ErrorKind::Tag;
-      Err(ErrMode::Backtrack(Error::from_error_kind(i, e)))
+      Err(ErrMode::from_error_kind(i, e))
     }
   }
 }
@@ -125,7 +125,7 @@ where
     CompareResult::Incomplete => Err(ErrMode::Incomplete(Needed::new(tag_len - i.input_len()))),
     CompareResult::Error => {
       let e: ErrorKind = ErrorKind::Tag;
-      Err(ErrMode::Backtrack(Error::from_error_kind(i, e)))
+      Err(ErrMode::from_error_kind(i, e))
     }
   }
 }
@@ -145,10 +145,7 @@ where
   if list.contains_token(token) {
     Ok((new_input, token))
   } else {
-    Err(ErrMode::Backtrack(E::from_error_kind(
-      input,
-      ErrorKind::OneOf,
-    )))
+    Err(ErrMode::from_error_kind(input, ErrorKind::OneOf))
   }
 }
 
@@ -167,10 +164,7 @@ where
   if !list.contains_token(token) {
     Ok((new_input, token))
   } else {
-    Err(ErrMode::Backtrack(E::from_error_kind(
-      input,
-      ErrorKind::NoneOf,
-    )))
+    Err(ErrMode::from_error_kind(input, ErrorKind::NoneOf))
   }
 }
 
@@ -437,26 +431,20 @@ where
           let res: IResult<_, _, Error> = if let Ok(index) = input.offset_at(idx) {
             Ok(input.next_slice(index))
           } else {
-            Err(ErrMode::Backtrack(Error::from_error_kind(
-              input,
-              ErrorKind::TakeWhileMN,
-            )))
+            Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN))
           };
           res
         } else {
           let res: IResult<_, _, Error> = if let Ok(index) = input.offset_at(n) {
             Ok(input.next_slice(index))
           } else {
-            Err(ErrMode::Backtrack(Error::from_error_kind(
-              input,
-              ErrorKind::TakeWhileMN,
-            )))
+            Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN))
           };
           res
         }
       } else {
         let e = ErrorKind::TakeWhileMN;
-        Err(ErrMode::Backtrack(Error::from_error_kind(input, e)))
+        Err(ErrMode::from_error_kind(input, e))
       }
     }
     None => {
@@ -464,10 +452,7 @@ where
       if len >= n {
         match input.offset_at(n) {
           Ok(index) => Ok(input.next_slice(index)),
-          Err(_needed) => Err(ErrMode::Backtrack(Error::from_error_kind(
-            input,
-            ErrorKind::TakeWhileMN,
-          ))),
+          Err(_needed) => Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN)),
         }
       } else {
         let needed = if m > len { m - len } else { 1 };
@@ -731,10 +716,7 @@ where
 {
   match i.find_slice(t) {
     None => Err(ErrMode::Incomplete(Needed::Unknown)),
-    Some(0) => Err(ErrMode::Backtrack(Error::from_error_kind(
-      i,
-      ErrorKind::TakeUntil,
-    ))),
+    Some(0) => Err(ErrMode::from_error_kind(i, ErrorKind::TakeUntil)),
     Some(offset) => Ok(i.next_slice(offset)),
   }
 }
