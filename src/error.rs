@@ -442,6 +442,8 @@
 //!
 //! You can go further with the [nom-trace crate](https://github.com/rust-bakery/nom-trace)
 
+#[cfg(feature = "alloc")]
+use crate::lib::std::borrow::ToOwned;
 use crate::lib::std::fmt;
 use core::num::NonZeroUsize;
 
@@ -708,7 +710,7 @@ impl<T> ErrMode<Error<T>> {
 impl ErrMode<Error<&[u8]>> {
   /// Deprecated, replaced with [`Error::into_owned`]
   #[deprecated(since = "0.3.0", note = "Replaced with `Error::into_owned`")]
-  pub fn to_owned(self) -> ErrMode<Error<Vec<u8>>> {
+  pub fn to_owned(self) -> ErrMode<Error<crate::lib::std::vec::Vec<u8>>> {
     self.map_input(ToOwned::to_owned)
   }
 }
@@ -717,7 +719,7 @@ impl ErrMode<Error<&[u8]>> {
 impl ErrMode<Error<&str>> {
   /// Deprecated, replaced with [`Error::into_owned`]
   #[deprecated(since = "0.3.0", note = "Replaced with `Error::into_owned`")]
-  pub fn to_owned(self) -> ErrMode<Error<String>> {
+  pub fn to_owned(self) -> ErrMode<Error<crate::lib::std::string::String>> {
     self.map_input(ToOwned::to_owned)
   }
 }
