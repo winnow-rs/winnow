@@ -429,6 +429,9 @@ where
 /// assert_eq!(parser("123123"), Ok(("123123", 0)));
 /// assert_eq!(parser(""), Ok(("", 0)));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`many0`]
+#[deprecated(since = "0.3.0", note = "Replaced with `many0`")]
 pub fn many0_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>
 where
   I: Input,
@@ -487,6 +490,9 @@ where
 /// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Many1Count))));
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Many1Count))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`many0`]
+#[deprecated(since = "0.3.0", note = "Replaced with `many0`")]
 pub fn many1_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>
 where
   I: Input,
