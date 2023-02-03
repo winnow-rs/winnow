@@ -42,7 +42,7 @@ where
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::tag`][crate::bytes::tag]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::tag`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::tag`")]
 pub fn tag<T, I, Error: ParseError<I>>(
   tag: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
@@ -94,7 +94,7 @@ where
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::tag_no_case`][crate::bytes::tag_no_case]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::tag_no_case`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::tag_no_case`")]
 pub fn tag_no_case<T, I, Error: ParseError<I>>(
   tag: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
@@ -177,7 +177,7 @@ where
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till1`][crate::bytes::take_till1]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_till1`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_till1`")]
 pub fn is_not<T, I, Error: ParseError<I>>(
   arr: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
@@ -223,7 +223,7 @@ where
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while1`][crate::bytes::take_while1`]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_while1`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_while1`")]
 pub fn is_a<T, I, Error: ParseError<I>>(
   arr: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
@@ -267,7 +267,7 @@ where
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while`][crate::bytes::take_while]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_while`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_while`")]
 pub fn take_while<T, I, Error: ParseError<I>>(
   list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
@@ -311,7 +311,7 @@ where
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while1`][crate::bytes::take_while1]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_while1`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_while1`")]
 pub fn take_while1<T, I, Error: ParseError<I>>(
   list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
@@ -360,7 +360,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while_m_n`][crate::bytes::take_while_m_n]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::bytes::take_while_m_n`"
 )]
 pub fn take_while_m_n<T, I, Error: ParseError<I>>(
@@ -445,7 +445,7 @@ where
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till`][crate::bytes::take_till]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_till`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_till`")]
 #[allow(clippy::redundant_closure)]
 pub fn take_till<T, I, Error: ParseError<I>>(
   list: T,
@@ -491,7 +491,7 @@ where
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till1`][crate::bytes::take_till1]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_till1`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_till1`")]
 #[allow(clippy::redundant_closure)]
 pub fn take_till1<T, I, Error: ParseError<I>>(
   list: T,
@@ -546,7 +546,7 @@ where
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take`][crate::bytes::take]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take`")]
 pub fn take<C, I, Error: ParseError<I>>(
   count: C,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
@@ -591,7 +591,7 @@ where
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until`][crate::bytes::take_until]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_until`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_until`")]
 pub fn take_until<T, I, Error: ParseError<I>>(
   tag: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
@@ -637,7 +637,7 @@ where
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until1`][crate::bytes::take_until1]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bytes::take_until1`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_until1`")]
 pub fn take_until1<T, I, Error: ParseError<I>>(
   tag: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
@@ -684,7 +684,7 @@ where
 ///
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::escaped`][crate::character::escaped]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::escaped`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::escaped`")]
 pub fn escaped<'a, I: 'a, Error, F, G, O1, O2>(
   mut normal: F,
   control_char: char,
@@ -802,7 +802,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::escaped_transform`][crate::character::escaped_transform]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::escaped_transform`"
 )]
 pub fn escaped_transform<I, Error, F, G, O1, O2, ExtendItem, Output>(

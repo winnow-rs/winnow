@@ -33,7 +33,7 @@ use crate::IResult;
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::bytes::one_of` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn char<I, Error: ParseError<I>>(c: char) -> impl Fn(I) -> IResult<I, char, Error>
@@ -78,7 +78,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::bytes::one_of` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn satisfy<F, I, Error: ParseError<I>>(cond: F) -> impl Fn(I) -> IResult<I, char, Error>
@@ -125,7 +125,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::bytes::one_of` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn one_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
@@ -152,7 +152,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::none_of`][crate::bytes::none_of] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::bytes::none_of` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn none_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
@@ -179,7 +179,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::crlf`][crate::character::crlf] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::crlf` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn crlf<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
@@ -215,7 +215,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::not_line_ending`][crate::character::not_line_ending] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::not_line_ending` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
@@ -267,7 +267,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::line_ending`][crate::character::line_ending] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::line_ending` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
@@ -303,7 +303,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::newline`][crate::character::newline] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::newline` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn newline<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
@@ -329,7 +329,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::tab`][crate::character::tab] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::tab` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn tab<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
@@ -354,7 +354,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::any`][crate::bytes::any] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::bytes::any` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn anychar<T, E: ParseError<T>>(input: T) -> IResult<T, char, E>
@@ -381,7 +381,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::alpha0`][crate::character::alpha0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::alpha0` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn alpha0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
@@ -408,7 +408,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::alpha1`][crate::character::alpha1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::alpha1` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn alpha1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
@@ -435,7 +435,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::digit0`][crate::character::digit0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::digit0` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
@@ -462,7 +462,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::digit1`][crate::character::digit1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::digit1` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
@@ -489,7 +489,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::hex_digit0`][crate::character::hex_digit0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::hex_digit0` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn hex_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
@@ -516,7 +516,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::hex_digit1`][crate::character::hex_digit1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::hex_digit1` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn hex_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
@@ -543,7 +543,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::oct_digit0`][crate::character::oct_digit0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::oct_digit0` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn oct_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
@@ -570,7 +570,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::oct_digit1`][crate::character::oct_digit1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::oct_digit1` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn oct_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
@@ -597,7 +597,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::alphanumeric0`][crate::character::alphanumeric0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::alphanumeric0` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn alphanumeric0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
@@ -624,7 +624,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::alphanumeric1`][crate::character::alphanumeric1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::alphanumeric1` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn alphanumeric1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
@@ -651,7 +651,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::space0`][crate::character::space0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::space0` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn space0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
@@ -680,7 +680,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::space1`][crate::character::space1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::space1` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn space1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
@@ -714,7 +714,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::multispace0`][crate::character::multispace0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::multispace0` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn multispace0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
@@ -744,7 +744,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::multispace1`][crate::character::multispace1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::multispace1` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn multispace1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>

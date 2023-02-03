@@ -32,7 +32,7 @@ use crate::*;
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_u8`][crate::number::be_u8]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::be_u8`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_u8`")]
 pub fn be_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
   I: Input<Token = u8>,
@@ -58,7 +58,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_u16`][crate::number::be_u16]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::be_u16`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_u16`")]
 pub fn be_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
 where
   I: Input<Token = u8>,
@@ -85,7 +85,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_u24`][crate::number::be_u24]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::be_u24`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_u24`")]
 pub fn be_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Input<Token = u8>,
@@ -112,7 +112,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_u32`][crate::number::be_u32]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::be_u32`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_u32`")]
 pub fn be_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Input<Token = u8>,
@@ -139,7 +139,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_u64`][crate::number::be_u64]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::be_u64`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_u64`")]
 pub fn be_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
 where
   I: Input<Token = u8>,
@@ -166,7 +166,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_u128`][crate::number::be_u128]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::be_u128`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_u128`")]
 pub fn be_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
 where
   I: Input<Token = u8>,
@@ -221,7 +221,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_i8`][crate::number::be_i8]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::be_i8`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_i8`")]
 pub fn be_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
 where
   I: Input<Token = u8>,
@@ -247,7 +247,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_i16`][crate::number::be_i16]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::be_i16`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_i16`")]
 pub fn be_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
 where
   I: Input<Token = u8>,
@@ -274,7 +274,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_i24`][crate::number::be_i24]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::be_i24`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_i24`")]
 pub fn be_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
   I: Input<Token = u8>,
@@ -310,7 +310,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_i32`][crate::number::be_i32]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::be_i32`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_i32`")]
 pub fn be_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
   I: Input<Token = u8>,
@@ -337,7 +337,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_i64`][crate::number::be_i64]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::be_i64`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_i64`")]
 pub fn be_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
 where
   I: Input<Token = u8>,
@@ -364,7 +364,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_i128`][crate::number::be_i128]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::be_i128`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_i128`")]
 pub fn be_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
 where
   I: Input<Token = u8>,
@@ -391,7 +391,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_u8`][crate::number::le_u8]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::le_u8`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_u8`")]
 pub fn le_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
   I: Input<Token = u8>,
@@ -417,7 +417,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_u16`][crate::number::le_u16]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::le_u16`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_u16`")]
 pub fn le_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
 where
   I: Input<Token = u8>,
@@ -444,7 +444,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_u24`][crate::number::le_u24]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::le_u24`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_u24`")]
 pub fn le_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Input<Token = u8>,
@@ -471,7 +471,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_u32`][crate::number::le_u32]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::le_u32`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_u32`")]
 pub fn le_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Input<Token = u8>,
@@ -498,7 +498,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_u64`][crate::number::le_u64]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::le_u64`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_u64`")]
 pub fn le_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
 where
   I: Input<Token = u8>,
@@ -525,7 +525,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_u128`][crate::number::le_u128]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::le_u128`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_u128`")]
 pub fn le_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
 where
   I: Input<Token = u8>,
@@ -573,7 +573,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_i8`][crate::number::le_i8]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::le_i8`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_i8`")]
 pub fn le_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
 where
   I: Input<Token = u8>,
@@ -599,7 +599,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_i16`][crate::number::le_i16]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::le_i16`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_i16`")]
 pub fn le_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
 where
   I: Input<Token = u8>,
@@ -626,7 +626,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_i24`][crate::number::le_i24]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::le_i24`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_i24`")]
 pub fn le_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
   I: Input<Token = u8>,
@@ -662,7 +662,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_i32`][crate::number::le_i32]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::le_i32`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_i32`")]
 pub fn le_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
   I: Input<Token = u8>,
@@ -689,7 +689,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_i64`][crate::number::le_i64]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::le_i64`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_i64`")]
 pub fn le_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
 where
   I: Input<Token = u8>,
@@ -716,7 +716,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_i128`][crate::number::le_i128]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::le_i128`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_i128`")]
 pub fn le_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
 where
   I: Input<Token = u8>,
@@ -744,7 +744,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::u8`][crate::number::u8]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::u8`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::u8`")]
 pub fn u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
   I: Input<Token = u8>,
@@ -782,7 +782,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::u16`][crate::number::u16]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::u16`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::u16`")]
 pub fn u16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u16, E>
 where
   I: Input<Token = u8>,
@@ -825,7 +825,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::u24`][crate::number::u24]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::u24`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::u24`")]
 pub fn u24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u32, E>
 where
   I: Input<Token = u8>,
@@ -868,7 +868,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::u32`][crate::number::u32]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::u32`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::u32`")]
 pub fn u32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u32, E>
 where
   I: Input<Token = u8>,
@@ -911,7 +911,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::u64`][crate::number::u64]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::u64`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::u64`")]
 pub fn u64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u64, E>
 where
   I: Input<Token = u8>,
@@ -954,7 +954,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::u128`][crate::number::u128]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::u128`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::u128`")]
 pub fn u128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u128, E>
 where
   I: Input<Token = u8>,
@@ -989,7 +989,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::i8`][crate::number::i8]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::i8`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::i8`")]
 pub fn i8<I, E: ParseError<I>>(i: I) -> IResult<I, i8, E>
 where
   I: Input<Token = u8>,
@@ -1024,7 +1024,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::i16`][crate::number::i16]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::i16`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::i16`")]
 pub fn i16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i16, E>
 where
   I: Input<Token = u8>,
@@ -1067,7 +1067,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::i24`][crate::number::i24]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::i24`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::i24`")]
 pub fn i24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i32, E>
 where
   I: Input<Token = u8>,
@@ -1110,7 +1110,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::i32`][crate::number::i32]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::i32`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::i32`")]
 pub fn i32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i32, E>
 where
   I: Input<Token = u8>,
@@ -1153,7 +1153,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::i64`][crate::number::i64]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::i64`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::i64`")]
 pub fn i64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i64, E>
 where
   I: Input<Token = u8>,
@@ -1196,7 +1196,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::i128`][crate::number::i128]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::i128`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::i128`")]
 pub fn i128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i128, E>
 where
   I: Input<Token = u8>,
@@ -1230,7 +1230,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_f32`][crate::number::be_f32]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::be_f32`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_f32`")]
 pub fn be_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>
 where
   I: Input<Token = u8>,
@@ -1260,7 +1260,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_f64`][crate::number::be_f64]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::be_f64`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_f64`")]
 pub fn be_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>
 where
   I: Input<Token = u8>,
@@ -1290,7 +1290,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_f32`][crate::number::le_f32]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::le_f32`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_f32`")]
 pub fn le_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>
 where
   I: Input<Token = u8>,
@@ -1320,7 +1320,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_f64`][crate::number::le_f64]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::le_f64`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_f64`")]
 pub fn le_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>
 where
   I: Input<Token = u8>,
@@ -1359,7 +1359,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::f32`][crate::number::f32]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::f32`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::f32`")]
 pub fn f32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, f32, E>
 where
   I: Input<Token = u8>,
@@ -1402,7 +1402,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::f64`][crate::number::f64]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::f64`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::f64`")]
 pub fn f64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, f64, E>
 where
   I: Input<Token = u8>,
@@ -1437,7 +1437,7 @@ where
 #[inline]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::hex_u32`][crate::number::hex_u32]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::number::hex_u32`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::hex_u32`")]
 pub fn hex_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Input,
@@ -1495,7 +1495,7 @@ where
 #[rustfmt::skip]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::recognize_float`][crate::character::recognize_float]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::recognize_float`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::recognize_float`")]
 pub fn recognize_float<T, E:ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
   T: Input,
@@ -1524,7 +1524,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::recognize_float_or_exceptions`][crate::character::recognize_float_or_exceptions]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::recognize_float_or_exceptions`"
 )]
 pub fn recognize_float_or_exceptions<T, E: ParseError<T>>(
@@ -1574,7 +1574,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::recognize_float_parts`][crate::character::recognize_float_parts]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::recognize_float_parts`"
 )]
 #[allow(clippy::type_complexity)]
@@ -1663,7 +1663,7 @@ use crate::input::ParseTo;
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::f32`][crate::character::f32]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::f32`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::f32`")]
 pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>
 where
   T: Input,
@@ -1702,7 +1702,7 @@ where
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::f64`][crate::character::f64]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::f64`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::f64`")]
 pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>
 where
   T: Input,

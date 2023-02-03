@@ -28,7 +28,7 @@ use crate::{IResult, Parser};
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
 /// ```
-#[deprecated(since = "8.0.0", note = "`Parser` is directly implemented for tuples")]
+#[deprecated(since = "0.1.0", note = "`Parser` is directly implemented for tuples")]
 pub fn pair<I, O1, O2, E: ParseError<I>, F, G>(
   mut first: F,
   mut second: G,
@@ -192,7 +192,7 @@ where
 /// Helper trait for the tuple combinator.
 ///
 /// This trait is implemented for tuples of parsers of up to 21 elements.
-#[deprecated(since = "8.0.0", note = "Replaced with `Parser`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `Parser`")]
 pub trait Tuple<I, O, E> {
   /// Parses the input and returns a tuple of results of each parser.
   fn parse(&mut self, input: I) -> IResult<I, O, E>;
@@ -301,7 +301,7 @@ impl<I, E: ParseError<I>> Tuple<I, (), E> for () {
 /// assert_eq!(parser("abc123def"), Ok(("", ("abc", "123", "def"))));
 /// assert_eq!(parser("123def"), Err(ErrMode::Backtrack(Error::new("123def", ErrorKind::Alpha))));
 /// ```
-#[deprecated(since = "8.0.0", note = "`Parser` is directly implemented for tuples")]
+#[deprecated(since = "0.1.0", note = "`Parser` is directly implemented for tuples")]
 #[allow(deprecated)]
 pub fn tuple<I, O, E: ParseError<I>, List: Tuple<I, O, E>>(
   mut l: List,

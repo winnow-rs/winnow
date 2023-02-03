@@ -34,7 +34,7 @@ use crate::IResult;
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bits::take`][crate::bits::take]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bits::take`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bits::take`")]
 pub fn take<I, O, C, E: ParseError<(I, usize)>>(
   count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
@@ -99,7 +99,7 @@ where
 /// Generates a parser taking `count` bits and comparing them to `pattern`
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bits::tag`][crate::bits::tag]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bits::tag`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bits::tag`")]
 pub fn tag<I, O, C, E: ParseError<(I, usize)>>(
   pattern: O,
   count: C,
@@ -149,7 +149,7 @@ where
 /// assert_eq!(parse(([0b10000000].as_ref(), 1)), Ok((([0b10000000].as_ref(), 2), false)));
 /// ```
 /// **WARNING:** Deprecated, replaced with [`winnow::bits::bool`][crate::bits::bool]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::bits::bool`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bits::bool`")]
 pub fn bool<I, E: ParseError<(I, usize)>>(input: (I, usize)) -> IResult<(I, usize), bool, E>
 where
   I: Input<Token = u8> + AsBytes,
