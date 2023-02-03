@@ -33,6 +33,10 @@ Design guidelines
   conversion are inherent functions on `Parser`.  `Parser::verify` is an
   example of some nuance as the logic is coupled to the `Parser` its applied
   to.
+- Combinators that directly process tokens must support complete vs streaming
+  parsing.
+- Combinators that process `0..` tokens have a `0` suffix, `1..` tokens have a
+  `1` suffix, and ranged parsers have a `_m_n` suffix.
 
 ### Process
 
