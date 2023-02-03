@@ -694,9 +694,6 @@ where
 
 /// This trait must be implemented by the error type of a nom parser.
 ///
-/// There are already implementations of it for `(Input, ErrorKind)`
-/// and `VerboseError<Input>`.
-///
 /// It provides methods to create an error from some combinators,
 /// and combine existing errors in combinators like `alt`.
 pub trait ParseError<I>: Sized {
