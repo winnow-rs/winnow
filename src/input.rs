@@ -65,6 +65,10 @@ use crate::lib::std::str::FromStr;
 use crate::IResult;
 
 #[cfg(feature = "alloc")]
+use crate::lib::std::collections::BTreeMap;
+#[cfg(feature = "std")]
+use crate::lib::std::collections::HashMap;
+#[cfg(feature = "alloc")]
 use crate::lib::std::string::String;
 #[cfg(feature = "alloc")]
 use crate::lib::std::vec::Vec;
@@ -1296,6 +1300,24 @@ pub trait Accumulate<T>: Sized {
   fn accumulate(&mut self, acc: T);
 }
 
+impl<T> Accumulate<T> for () {
+  #[inline(always)]
+  fn initial(_capacity: Option<usize>) -> Self {}
+  #[inline(always)]
+  fn accumulate(&mut self, _acc: T) {}
+}
+
+impl<T> Accumulate<T> for usize {
+  #[inline(always)]
+  fn initial(_capacity: Option<usize>) -> Self {
+    0
+  }
+  #[inline(always)]
+  fn accumulate(&mut self, _acc: T) {
+    *self += 1;
+  }
+}
+
 #[cfg(feature = "alloc")]
 impl<T> Accumulate<T> for Vec<T> {
   #[inline(always)]
@@ -1353,6 +1375,39 @@ impl<'i> Accumulate<&'i str> for String {
   #[inline(always)]
   fn accumulate(&mut self, acc: &'i str) {
     self.push_str(acc);
+  }
+}
+
+#[cfg(feature = "alloc")]
+impl<K, V> Accumulate<(K, V)> for BTreeMap<K, V>
+where
+  K: crate::lib::std::cmp::Ord,
+{
+  #[inline(always)]
+  fn initial(_capacity: Option<usize>) -> Self {
+    BTreeMap::new()
+  }
+  #[inline(always)]
+  fn accumulate(&mut self, (key, value): (K, V)) {
+    self.insert(key, value);
+  }
+}
+
+#[cfg(feature = "std")]
+impl<K, V> Accumulate<(K, V)> for HashMap<K, V>
+where
+  K: crate::lib::std::cmp::Eq + crate::lib::std::hash::Hash,
+{
+  #[inline(always)]
+  fn initial(capacity: Option<usize>) -> Self {
+    match capacity {
+      Some(capacity) => HashMap::with_capacity(clamp_capacity::<(K, V)>(capacity)),
+      None => HashMap::new(),
+    }
+  }
+  #[inline(always)]
+  fn accumulate(&mut self, (key, value): (K, V)) {
+    self.insert(key, value);
   }
 }
 
