@@ -646,11 +646,11 @@ impl<E> ErrMode<E> {
   }
 
   /// Automatically converts between errors if the underlying type supports it
-  pub fn convert<F>(e: ErrMode<F>) -> Self
+  pub fn convert<F>(self) -> ErrMode<F>
   where
-    F: Into<E>,
+    E: ErrorConvert<F>,
   {
-    e.map(crate::lib::std::convert::Into::into)
+    self.map(ErrorConvert::convert)
   }
 }
 
