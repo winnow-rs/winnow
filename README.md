@@ -15,7 +15,7 @@ error prone plumbing.
 
 - [Example](#example)
 - [Documentation](#documentation)
-- [Why use winno?](#why-use-winnow)
+- [Why use winnow?](#why-use-winnow)
     - [Binary format parsers](#binary-format-parsers)
     - [Text format parsers](#text-format-parsers)
     - [Programming language parsers](#programming-language-parsers)
