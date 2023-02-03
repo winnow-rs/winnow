@@ -625,6 +625,14 @@ impl<E> ErrMode<E> {
     }
   }
 
+  /// Enable backtracking support
+  pub fn backtrack(self) -> Self {
+    match self {
+      ErrMode::Cut(e) => ErrMode::Backtrack(e),
+      rest => rest,
+    }
+  }
+
   /// Applies the given function to the inner error
   pub fn map<E2, F>(self, f: F) -> ErrMode<E2>
   where

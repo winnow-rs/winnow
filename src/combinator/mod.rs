@@ -1322,10 +1322,7 @@ pub fn backtrack_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) 
 where
   F: Parser<I, O, E>,
 {
-  move |input: I| match parser.parse_next(input) {
-    Err(ErrMode::Cut(e)) => Err(ErrMode::Backtrack(e)),
-    rest => rest,
-  }
+  move |input: I| parser.parse_next(input).map_err(|e| e.backtrack())
 }
 
 /// automatically converts the child parser's result to another type
