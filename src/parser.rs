@@ -556,7 +556,7 @@ pub trait Parser<I, O, E> {
   /// Applies a second parser after the first one, return their results as a tuple
   ///
   /// **WARNING:** Deprecated, replaced with [`winnow::sequence::tuple`][crate::sequence::tuple]
-  #[deprecated(since = "8.0.0", note = "Replaced with `winnow::sequence::tuple")]
+  #[deprecated(since = "0.1.0", note = "Replaced with `winnow::sequence::tuple")]
   fn and<G, O2>(self, g: G) -> And<Self, G>
   where
     G: Parser<I, O2, E>,
@@ -568,7 +568,7 @@ pub trait Parser<I, O, E> {
   /// Applies a second parser over the input if the first one failed
   ///
   /// **WARNING:** Deprecated, replaced with [`winnow::branch::alt`][crate::branch::alt]
-  #[deprecated(since = "8.0.0", note = "Replaced with `winnow::branch::alt")]
+  #[deprecated(since = "0.1.0", note = "Replaced with `winnow::branch::alt")]
   fn or<G>(self, g: G) -> Or<Self, G>
   where
     G: Parser<I, O, E>,

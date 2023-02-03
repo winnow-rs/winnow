@@ -43,7 +43,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::tag`][crate::bytes::tag] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::bytes::tag` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn tag<T, I, Error: ParseError<I>>(
@@ -97,7 +97,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::tag_no_case`][crate::bytes::tag_no_case] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::bytes::tag_no_case` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn tag_no_case<T, I, Error: ParseError<I>>(
@@ -192,7 +192,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till1`][crate::bytes::take_till1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::bytes::take_till1` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn is_not<T, I, Error: ParseError<I>>(
@@ -243,7 +243,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while1`][crate::bytes::take_while1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::bytes::take_while1` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn is_a<T, I, Error: ParseError<I>>(
@@ -293,7 +293,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while`][crate::bytes::take_while] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::bytes::take_while` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn take_while<T, I, Error: ParseError<I>>(
@@ -344,7 +344,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while1`][crate::bytes::take_while1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::bytes::take_while1` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn take_while1<T, I, Error: ParseError<I>>(
@@ -397,7 +397,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while_m_n`][crate::bytes::take_while_m_n] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::bytes::take_while_m_n` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn take_while_m_n<T, I, Error: ParseError<I>>(
@@ -488,7 +488,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till`][crate::bytes::take_till] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::bytes::take_till` with input wrapped in `winnow::input::Streaming`"
 )]
 #[allow(clippy::redundant_closure)]
@@ -538,7 +538,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till1`][crate::bytes::take_till1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::bytes::take_till1` with input wrapped in `winnow::input::Streaming`"
 )]
 #[allow(clippy::redundant_closure)]
@@ -590,7 +590,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take`][crate::bytes::take] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::bytes::take` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn take<C, I, Error: ParseError<I>>(
@@ -641,7 +641,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until`][crate::bytes::take_until] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::bytes::take_until` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn take_until<T, I, Error: ParseError<I>>(
@@ -693,7 +693,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until1`][crate::bytes::take_until1] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::bytes::take_until1` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn take_until1<T, I, Error: ParseError<I>>(
@@ -744,7 +744,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::escaped`][crate::character::escaped] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::escaped` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn escaped<I, Error, F, G, O1, O2>(
@@ -858,7 +858,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::escaped_transform`][crate::character::escaped_transform] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::escaped_transform` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn escaped_transform<I, Error, F, G, O1, O2, ExtendItem, Output>(

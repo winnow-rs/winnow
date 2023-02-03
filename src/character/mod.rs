@@ -1293,35 +1293,35 @@ where
 
 #[inline]
 #[doc(hidden)]
-#[deprecated(since = "8.0.0", note = "Replaced with `AsChar::is_alpha`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_alpha`")]
 pub fn is_alphabetic(chr: u8) -> bool {
   matches!(chr, 0x41..=0x5A | 0x61..=0x7A)
 }
 
 #[inline]
 #[doc(hidden)]
-#[deprecated(since = "8.0.0", note = "Replaced with `AsChar::is_dec_digit`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_dec_digit`")]
 pub fn is_digit(chr: u8) -> bool {
   matches!(chr, 0x30..=0x39)
 }
 
 #[inline]
 #[doc(hidden)]
-#[deprecated(since = "8.0.0", note = "Replaced with `AsChar::is_hex_digit`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_hex_digit`")]
 pub fn is_hex_digit(chr: u8) -> bool {
   matches!(chr, 0x30..=0x39 | 0x41..=0x46 | 0x61..=0x66)
 }
 
 #[inline]
 #[doc(hidden)]
-#[deprecated(since = "8.0.0", note = "Replaced with `AsChar::is_oct_digit`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_oct_digit`")]
 pub fn is_oct_digit(chr: u8) -> bool {
   matches!(chr, 0x30..=0x37)
 }
 
 #[inline]
 #[doc(hidden)]
-#[deprecated(since = "8.0.0", note = "Replaced with `AsChar::is_alphanum`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_alphanum`")]
 pub fn is_alphanumeric(chr: u8) -> bool {
   #![allow(deprecated)]
   is_alphabetic(chr) || is_digit(chr)
@@ -1329,14 +1329,14 @@ pub fn is_alphanumeric(chr: u8) -> bool {
 
 #[inline]
 #[doc(hidden)]
-#[deprecated(since = "8.0.0", note = "Replaced with `AsChar::is_space`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_space`")]
 pub fn is_space(chr: u8) -> bool {
   chr == b' ' || chr == b'\t'
 }
 
 #[inline]
 #[doc(hidden)]
-#[deprecated(since = "8.0.0", note = "Replaced with `AsChar::is_newline`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_newline`")]
 pub fn is_newline(chr: u8) -> bool {
   chr == b'\n'
 }

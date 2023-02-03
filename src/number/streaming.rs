@@ -31,7 +31,7 @@ use crate::*;
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_u8`][crate::number::be_u8] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::be_u8` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
@@ -60,7 +60,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_u16`][crate::number::be_u16] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::be_u16` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
@@ -90,7 +90,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_u24`][crate::number::be_u24] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::be_u24` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
@@ -120,7 +120,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_u32`][crate::number::be_u32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::be_u32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
@@ -150,7 +150,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_u64`][crate::number::be_u64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::be_u64` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
@@ -179,7 +179,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_u128`][crate::number::be_u128] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::be_u128` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
@@ -232,7 +232,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_i8`][crate::number::be_i8] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::be_i8` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
@@ -258,7 +258,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_i16`][crate::number::be_i16] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::be_i16` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
@@ -285,7 +285,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_i24`][crate::number::be_i24] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::be_i24` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
@@ -321,7 +321,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_i32`][crate::number::be_i32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::be_i32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
@@ -349,7 +349,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_i64`][crate::number::be_i64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::be_i64` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
@@ -376,7 +376,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_i128`][crate::number::be_i128] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::be_i128` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
@@ -403,7 +403,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_u8`][crate::number::le_u8] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::le_u8` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
@@ -432,7 +432,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_u16`][crate::number::le_u16] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::le_u16` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
@@ -462,7 +462,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_u24`][crate::number::le_u24] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::le_u24` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
@@ -492,7 +492,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_u32`][crate::number::le_u32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::le_u32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
@@ -522,7 +522,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_u64`][crate::number::le_u64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::le_u64` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
@@ -552,7 +552,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_u128`][crate::number::le_u128] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::le_u128` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
@@ -598,7 +598,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_i8`][crate::number::le_i8] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::le_i8` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
@@ -627,7 +627,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_i16`][crate::number::le_i16] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::le_i16` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
@@ -657,7 +657,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_i24`][crate::number::le_i24] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::le_i24` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
@@ -696,7 +696,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_i32`][crate::number::le_i32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::le_i32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
@@ -726,7 +726,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_i64`][crate::number::le_i64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::le_i64` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
@@ -756,7 +756,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_i128`][crate::number::le_i128] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::le_i128` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
@@ -787,7 +787,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::u8`][crate::number::u8] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::u8` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
@@ -828,7 +828,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::u16`][crate::number::u16] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::u16` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn u16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u16, E>
@@ -874,7 +874,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::u24`][crate::number::u24] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::u24` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn u24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u32, E>
@@ -920,7 +920,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::u32`][crate::number::u32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::u32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn u32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u32, E>
@@ -966,7 +966,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::u64`][crate::number::u64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::u64` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn u64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u64, E>
@@ -1012,7 +1012,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::u128`][crate::number::u128] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::u128` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn u128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u128, E>
@@ -1050,7 +1050,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::i8`][crate::number::i8] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::i8` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn i8<I, E: ParseError<I>>(i: I) -> IResult<I, i8, E>
@@ -1088,7 +1088,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::i16`][crate::number::i16] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::i16` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn i16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i16, E>
@@ -1134,7 +1134,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::i24`][crate::number::i24] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::i24` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn i24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i32, E>
@@ -1180,7 +1180,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::i32`][crate::number::i32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::i32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn i32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i32, E>
@@ -1226,7 +1226,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::i64`][crate::number::i64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::i64` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn i64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i64, E>
@@ -1272,7 +1272,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::i128`][crate::number::i128] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::i128` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn i128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i128, E>
@@ -1308,7 +1308,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_f32`][crate::number::be_f32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::be_f32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>
@@ -1340,7 +1340,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_f64`][crate::number::be_f64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::be_f64` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>
@@ -1372,7 +1372,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_f32`][crate::number::le_f32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::le_f32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>
@@ -1404,7 +1404,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_f64`][crate::number::le_f64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::le_f64` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>
@@ -1446,7 +1446,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::f32`][crate::number::f32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::f32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn f32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, f32, E>
@@ -1492,7 +1492,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::f64`][crate::number::f64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::f64` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn f64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, f64, E>
@@ -1529,7 +1529,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::hex_u32`][crate::number::hex_u32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::number::hex_u32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn hex_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
@@ -1596,7 +1596,7 @@ where
 #[rustfmt::skip]
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::recognize_float`][crate::character::recognize_float] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
-#[deprecated(since = "8.0.0", note = "Replaced with `winnow::character::recognize_float` with input wrapped in `winnow::input::Streaming`")]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::recognize_float` with input wrapped in `winnow::input::Streaming`")]
 pub fn recognize_float<T, E:ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
   T: Input,
@@ -1625,7 +1625,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::recognize_float_or_exceptions`][character::number::recognize_float_or_exceptions] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::recognize_float_or_exceptions` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn recognize_float_or_exceptions<T, E: ParseError<T>>(
@@ -1675,7 +1675,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::recognize_float_parts`][crate::character::recognize_float_parts] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::recognize_float_parts` with input wrapped in `winnow::input::Streaming`"
 )]
 #[allow(clippy::type_complexity)]
@@ -1765,7 +1765,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::f32`][crate::character::f32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::f32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>
@@ -1808,7 +1808,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::f64`][crate::character::f64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `winnow::character::f64` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>

@@ -520,12 +520,12 @@ where
 
 #[doc(hidden)]
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `FinishIResult` which is available via `winnow::prelude`"
 )]
 pub trait Finish<I, O, E> {
   #[deprecated(
-    since = "8.0.0",
+    since = "0.1.0",
     note = "Replaced with `FinishIResult::finish_err` which is available via `winnow::prelude`"
   )]
   fn finish(self) -> Result<(I, O), E>;
@@ -754,7 +754,7 @@ pub trait ParseError<I>: Sized {
   fn append(self, input: I, kind: ErrorKind) -> Self;
 
   /// Creates an error from an input position and an expected character
-  #[deprecated(since = "8.0.0", note = "Replaced with `ContextError`")]
+  #[deprecated(since = "0.2.0", note = "Replaced with `ContextError`")]
   fn from_char(input: I, _: char) -> Self {
     Self::from_error_kind(input, ErrorKind::Char)
   }
@@ -884,7 +884,7 @@ impl ErrorConvert<()> for () {
 }
 
 /// Creates an error from the input position and an [`ErrorKind`]
-#[deprecated(since = "8.0.0", note = "Replaced with `ParseError::from_error_kind`")]
+#[deprecated(since = "0.2.0", note = "Replaced with `ParseError::from_error_kind`")]
 pub fn make_error<I, E: ParseError<I>>(input: I, kind: ErrorKind) -> E {
   E::from_error_kind(input, kind)
 }
@@ -892,7 +892,7 @@ pub fn make_error<I, E: ParseError<I>>(input: I, kind: ErrorKind) -> E {
 /// Combines an existing error with a new one created from the input
 /// position and an [`ErrorKind`]. This is useful when backtracking
 /// through a parse tree, accumulating error context on the way
-#[deprecated(since = "8.0.0", note = "Replaced with `ParseError::append`")]
+#[deprecated(since = "0.2.0", note = "Replaced with `ParseError::append`")]
 pub fn append_error<I, E: ParseError<I>>(input: I, kind: ErrorKind, other: E) -> E {
   other.append(input, kind)
 }
@@ -1004,7 +1004,7 @@ impl<I: fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::Error for
 /// to errors when backtracking through a parse tree
 ///
 /// **WARNING:** Deprecated, replaced with [`Parser::context`]
-#[deprecated(since = "8.0.0", note = "Replaced with `Parser::context")]
+#[deprecated(since = "0.1.0", note = "Replaced with `Parser::context")]
 pub fn context<I: Clone, E: ContextError<I, &'static str>, F, O>(
   context: &'static str,
   mut f: F,
@@ -1273,7 +1273,7 @@ macro_rules! error_node_position(
 /// // 00000000        65 66 67 68 69 6a 6b 6c         efghijkl
 /// f(a);
 /// ```
-#[deprecated(since = "8.0.0", note = "Replaced with `Parser::dbg_err")]
+#[deprecated(since = "0.1.0", note = "Replaced with `Parser::dbg_err")]
 #[cfg(feature = "std")]
 pub fn dbg_dmp<'a, F, O, E: std::fmt::Debug>(
   f: F,

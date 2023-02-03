@@ -236,7 +236,7 @@ impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for ByRef<'p, P> {
 /// assert_eq!(parser.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
 /// # }
 /// ```
-#[deprecated(since = "8.0.0", note = "Replaced with `Parser::map")]
+#[deprecated(since = "0.1.0", note = "Replaced with `Parser::map")]
 pub fn map<I, O1, O2, E, F, G>(mut parser: F, mut f: G) -> impl FnMut(I) -> IResult<I, O2, E>
 where
   F: Parser<I, O1, E>,
@@ -297,7 +297,7 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> O2> Parser<I, O2, E> for Ma
 /// assert_eq!(parse("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::MapRes))));
 /// # }
 /// ```
-#[deprecated(since = "8.0.0", note = "Replaced with `Parser::map_res")]
+#[deprecated(since = "0.1.0", note = "Replaced with `Parser::map_res")]
 pub fn map_res<I: Clone, O1, O2, E: FromExternalError<I, E2>, E2, F, G>(
   mut parser: F,
   mut f: G,
@@ -373,7 +373,7 @@ where
 /// assert_eq!(parse("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::MapOpt))));
 /// # }
 /// ```
-#[deprecated(since = "8.0.0", note = "Replaced with `Parser::map_res")]
+#[deprecated(since = "0.1.0", note = "Replaced with `Parser::map_res")]
 pub fn map_opt<I: Clone, O1, O2, E: ParseError<I>, F, G>(
   mut parser: F,
   mut f: G,
@@ -445,7 +445,7 @@ where
 /// assert_eq!(parse("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Eof))));
 /// # }
 /// ```
-#[deprecated(since = "8.0.0", note = "Replaced with `Parser::and_then")]
+#[deprecated(since = "0.1.0", note = "Replaced with `Parser::and_then")]
 pub fn map_parser<I, O1, O2, E: ParseError<I>, F, G>(
   mut parser: F,
   mut applied_parser: G,
@@ -506,7 +506,7 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, E>
 /// assert_eq!(parse(&[4, 0, 1, 2][..]), Err(ErrMode::Backtrack(Error::new(&[0, 1, 2][..], ErrorKind::Eof))));
 /// # }
 /// ```
-#[deprecated(since = "8.0.0", note = "Replaced with `Parser::flat_map")]
+#[deprecated(since = "0.1.0", note = "Replaced with `Parser::flat_map")]
 pub fn flat_map<I, O1, O2, E: ParseError<I>, F, G, H>(
   mut parser: F,
   mut applied_parser: G,
@@ -736,7 +736,7 @@ where
 /// assert_eq!(parser(Streaming("abcd")), Err(ErrMode::Backtrack(Error::new(Streaming("abcd"), ErrorKind::Complete))));
 /// # }
 /// ```
-#[deprecated(since = "8.0.0", note = "Replaced with `Parser::complete")]
+#[deprecated(since = "0.1.0", note = "Replaced with `Parser::complete")]
 pub fn complete<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
   F: Parser<I, O, E>,
@@ -796,7 +796,7 @@ where
 /// # }
 /// ```
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `eof` or `FinishIResult::finish`"
 )]
 pub fn all_consuming<I, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
@@ -834,7 +834,7 @@ where
 /// assert_eq!(parser("123abcd;"),Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::Alpha))));
 /// # }
 /// ```
-#[deprecated(since = "8.0.0", note = "Replaced with `Parser::verify")]
+#[deprecated(since = "0.1.0", note = "Replaced with `Parser::verify")]
 pub fn verify<I: Clone, O1, O2, E: ParseError<I>, F, G>(
   mut first: F,
   second: G,
@@ -912,7 +912,7 @@ where
 /// assert_eq!(parser("123abcd;"), Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::Alpha))));
 /// # }
 /// ```
-#[deprecated(since = "8.0.0", note = "Replaced with `Parser::value")]
+#[deprecated(since = "0.1.0", note = "Replaced with `Parser::value")]
 pub fn value<I, O1: Clone, O2, E: ParseError<I>, F>(
   val: O1,
   mut parser: F,
@@ -1018,7 +1018,7 @@ where
 /// assert_eq!(parser("abcd;"),Err(ErrMode::Backtrack(Error::new(";", ErrorKind::OneOf))));
 /// # }
 /// ```
-#[deprecated(since = "8.0.0", note = "Replaced with `Parser::recognize")]
+#[deprecated(since = "0.1.0", note = "Replaced with `Parser::recognize")]
 pub fn recognize<I, O, E: ParseError<I>, F>(
   mut parser: F,
 ) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, E>
@@ -1113,7 +1113,7 @@ where
 /// # }
 /// ```
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `Parser::with_recognized (output ordering is changed)"
 )]
 pub fn consumed<I, O, F, E>(
@@ -1342,7 +1342,7 @@ where
 /// # }
 /// ```
 #[deprecated(
-  since = "8.0.0",
+  since = "0.1.0",
   note = "Replaced with `Parser::output_into` and `Parser::err_into`"
 )]
 pub fn into<I, O1, O2, E1, E2, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O2, E2>
