@@ -5,13 +5,11 @@ mod complete {
   use crate::branch::alt;
   use crate::bytes::none_of;
   use crate::bytes::one_of;
-  use crate::bytes::tag;
   use crate::combinator::opt;
   use crate::error::ErrMode;
   use crate::error::Error;
   use crate::error::ErrorKind;
   use crate::input::ParseTo;
-  use crate::Parser;
   #[cfg(feature = "alloc")]
   use crate::{lib::std::string::String, lib::std::vec::Vec};
   use proptest::prelude::*;
@@ -652,6 +650,7 @@ mod complete {
   #[cfg(feature = "alloc")]
   #[test]
   fn complete_escape_transform() {
+    use crate::bytes::tag;
     use crate::character::alpha1 as alpha;
 
     #[cfg(feature = "alloc")]
@@ -728,6 +727,7 @@ mod complete {
   #[cfg(feature = "std")]
   #[test]
   fn complete_escape_transform_str() {
+    use crate::bytes::tag;
     use crate::character::alpha1 as alpha;
 
     fn esc(i: &str) -> IResult<&str, String> {
