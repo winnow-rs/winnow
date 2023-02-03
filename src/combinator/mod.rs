@@ -311,11 +311,7 @@ where
     let (input, o1) = parser.parse_next(input)?;
     match f(o1) {
       Ok(o2) => Ok((input, o2)),
-      Err(e) => Err(ErrMode::Backtrack(E::from_external_error(
-        i,
-        ErrorKind::MapRes,
-        e,
-      ))),
+      Err(e) => Err(ErrMode::from_external_error(i, ErrorKind::MapRes, e)),
     }
   }
 }
@@ -350,11 +346,7 @@ where
     let (input, o1) = self.f.parse_next(input)?;
     match (self.g)(o1) {
       Ok(o2) => Ok((input, o2)),
-      Err(e) => Err(ErrMode::Backtrack(E::from_external_error(
-        i,
-        ErrorKind::MapRes,
-        e,
-      ))),
+      Err(e) => Err(ErrMode::from_external_error(i, ErrorKind::MapRes, e)),
     }
   }
 }

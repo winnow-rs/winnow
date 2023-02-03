@@ -675,6 +675,15 @@ impl<I, E: ParseError<I>> ParseError<I> for ErrMode<E> {
   }
 }
 
+impl<I, EXT, E> FromExternalError<I, EXT> for ErrMode<E>
+where
+  E: FromExternalError<I, EXT>,
+{
+  fn from_external_error(input: I, kind: ErrorKind, e: EXT) -> Self {
+    ErrMode::Backtrack(E::from_external_error(input, kind, e))
+  }
+}
+
 impl<T> ErrMode<Error<T>> {
   /// Maps `ErrMode<Error<T>>` to `ErrMode<Error<U>>` with the given `F: T -> U`
   pub fn map_input<U, F>(self, f: F) -> ErrMode<Error<U>>
