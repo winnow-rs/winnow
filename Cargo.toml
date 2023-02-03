@@ -79,16 +79,16 @@ required-features = ["alloc"]
 [[example]]
 name = "ini"
 test = true
-required-features = ["alloc"]
+required-features = ["std"]
 
 [[example]]
 name = "json"
 test = true
-required-features = ["alloc"]
+required-features = ["std"]
 
 [[example]]
 name = "json_iterator"
-required-features = ["alloc"]
+required-features = ["std"]
 
 [[example]]
 name = "iterator"

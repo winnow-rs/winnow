@@ -1,5 +1,3 @@
-#![cfg(feature = "alloc")]
-
 mod json;
 mod parser;
 mod parser_dispatch;
