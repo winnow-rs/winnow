@@ -1,7 +1,6 @@
 #[cfg(test)]
 mod test {
   use winnow::input::Streaming;
-  use winnow::prelude::*;
   #[cfg(feature = "alloc")]
   use winnow::{branch::alt, bytes::tag_no_case, multi::many1};
   use winnow::{
@@ -504,6 +503,8 @@ mod test {
   #[test]
   #[cfg(feature = "alloc")]
   fn recognize_is_a_str() {
+    use winnow::prelude::*;
+
     let a = "aabbab";
     let b = "ababcd";
 

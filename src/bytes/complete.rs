@@ -903,7 +903,6 @@ where
 #[cfg(test)]
 mod tests {
   use super::*;
-  use crate::character::complete::{alpha1 as alpha, digit1 as digit};
   #[cfg(feature = "alloc")]
   use crate::{
     branch::alt,
@@ -963,6 +962,7 @@ mod tests {
   #[test]
   fn escaping() {
     use crate::character::complete::one_of;
+    use crate::character::complete::{alpha1 as alpha, digit1 as digit};
 
     fn esc(i: &[u8]) -> IResult<&[u8], &[u8]> {
       escaped(alpha, '\\', one_of("\"n\\"))(i)
@@ -998,6 +998,7 @@ mod tests {
   #[test]
   fn escaping_str() {
     use crate::character::complete::one_of;
+    use crate::character::complete::{alpha1 as alpha, digit1 as digit};
 
     fn esc(i: &str) -> IResult<&str, &str> {
       escaped(alpha, '\\', one_of("\"n\\"))(i)
@@ -1042,6 +1043,8 @@ mod tests {
   #[cfg(feature = "alloc")]
   #[test]
   fn escape_transform() {
+    use crate::character::complete::alpha1 as alpha;
+
     fn esc(i: &[u8]) -> IResult<&[u8], String> {
       map(
         escaped_transform(
@@ -1113,6 +1116,8 @@ mod tests {
   #[cfg(feature = "std")]
   #[test]
   fn escape_transform_str() {
+    use crate::character::complete::alpha1 as alpha;
+
     fn esc(i: &str) -> IResult<&str, String> {
       escaped_transform(
         alpha,

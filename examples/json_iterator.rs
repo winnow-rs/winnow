@@ -1,6 +1,5 @@
-#![cfg(feature = "alloc")]
-
 use std::collections::HashMap;
+
 use winnow::prelude::*;
 use winnow::{
   branch::alt,

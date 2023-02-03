@@ -1726,7 +1726,6 @@ where
 mod tests {
   use super::*;
   use crate::error::ErrMode;
-  use crate::error::Error;
   use crate::error::ErrorKind;
   use proptest::prelude::*;
 
@@ -2045,6 +2044,8 @@ mod tests {
   #[test]
   #[cfg(feature = "std")]
   fn float_test() {
+    use crate::error::Error;
+
     let mut test_cases = vec![
       "+3.14",
       "3.14",
