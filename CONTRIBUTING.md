@@ -29,9 +29,10 @@ to re-work some of it and the discouragement that goes along with that.
 ### Combinators
 
 Design guidelines
-- Generally grammar-level combinators are standalone and output/error
-  conversion are on `Parser`.  `Parser::verify` is an example of some nuance as
-  it is considered part of the `Parser` its being applied to.
+- Generally grammar-level combinators are free-functions and output/error
+  conversion are inherent functions on `Parser`.  `Parser::verify` is an
+  example of some nuance as the logic is coupled to the `Parser` its applied
+  to.
 
 ### Process
 
