@@ -2020,7 +2020,7 @@ where
     .offset_for(predicate)
     .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
   if offset == 0 {
-    Err(ErrMode::Backtrack(E::from_error_kind(input.clone(), e)))
+    Err(ErrMode::from_error_kind(input.clone(), e))
   } else {
     Ok(input.next_slice(offset))
   }
@@ -2061,7 +2061,7 @@ where
     .offset_for(predicate)
     .unwrap_or_else(|| input.input_len());
   if offset == 0 {
-    Err(ErrMode::Backtrack(E::from_error_kind(input.clone(), e)))
+    Err(ErrMode::from_error_kind(input.clone(), e))
   } else {
     Ok(input.next_slice(offset))
   }

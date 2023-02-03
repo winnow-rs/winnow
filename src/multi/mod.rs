@@ -65,7 +65,7 @@ where
         Ok((i1, o)) => {
           // infinite loop check: the parser must always consume
           if i1.input_len() == len {
-            return Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Many0)));
+            return Err(ErrMode::from_error_kind(i, ErrorKind::Many0));
           }
 
           i = i1;
@@ -110,8 +110,7 @@ where
   E: ParseError<I>,
 {
   move |mut i: I| match f.parse_next(i.clone()) {
-    Err(ErrMode::Backtrack(err)) => Err(ErrMode::Backtrack(err.append(i, ErrorKind::Many1))),
-    Err(e) => Err(e),
+    Err(e) => Err(e.append(i, ErrorKind::Many1)),
     Ok((i1, o)) => {
       let mut acc = crate::lib::std::vec::Vec::with_capacity(4);
       acc.push(o);
@@ -125,7 +124,7 @@ where
           Ok((i1, o)) => {
             // infinite loop check: the parser must always consume
             if i1.input_len() == len {
-              return Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Many1)));
+              return Err(ErrMode::from_error_kind(i, ErrorKind::Many1));
             }
 
             i = i1;
@@ -177,17 +176,11 @@ where
         Ok((i1, o)) => return Ok((i1, (res, o))),
         Err(ErrMode::Backtrack(_)) => {
           match f.parse_next(i.clone()) {
-            Err(ErrMode::Backtrack(err)) => {
-              return Err(ErrMode::Backtrack(err.append(i, ErrorKind::ManyTill)))
-            }
-            Err(e) => return Err(e),
+            Err(e) => return Err(e.append(i, ErrorKind::ManyTill)),
             Ok((i1, o)) => {
               // infinite loop check: the parser must always consume
               if i1.input_len() == len {
-                return Err(ErrMode::Backtrack(E::from_error_kind(
-                  i1,
-                  ErrorKind::ManyTill,
-                )));
+                return Err(ErrMode::from_error_kind(i1, ErrorKind::ManyTill));
               }
 
               res.push(o);
@@ -256,10 +249,7 @@ where
         Ok((i1, _)) => {
           // infinite loop check: the parser must always consume
           if i1.input_len() == len {
-            return Err(ErrMode::Backtrack(E::from_error_kind(
-              i1,
-              ErrorKind::SeparatedList,
-            )));
+            return Err(ErrMode::from_error_kind(i1, ErrorKind::SeparatedList));
           }
 
           match f.parse_next(i1.clone()) {
@@ -332,10 +322,7 @@ where
         Ok((i1, _)) => {
           // infinite loop check: the parser must always consume
           if i1.input_len() == len {
-            return Err(ErrMode::Backtrack(E::from_error_kind(
-              i1,
-              ErrorKind::SeparatedList,
-            )));
+            return Err(ErrMode::from_error_kind(i1, ErrorKind::SeparatedList));
           }
 
           match f.parse_next(i1.clone()) {
@@ -406,10 +393,7 @@ where
         Ok((tail, value)) => {
           // infinite loop check: the parser must always consume
           if tail.input_len() == len {
-            return Err(ErrMode::Backtrack(E::from_error_kind(
-              input,
-              ErrorKind::ManyMN,
-            )));
+            return Err(ErrMode::from_error_kind(input, ErrorKind::ManyMN));
           }
 
           res.push(value);
@@ -474,10 +458,7 @@ where
         Ok((i, _)) => {
           // infinite loop check: the parser must always consume
           if i.input_len() == len {
-            return Err(ErrMode::Backtrack(E::from_error_kind(
-              input,
-              ErrorKind::Many0Count,
-            )));
+            return Err(ErrMode::from_error_kind(input, ErrorKind::Many0Count));
           }
 
           input = i;
@@ -527,10 +508,7 @@ where
   move |i: I| {
     let i_ = i.clone();
     match f.parse_next(i_) {
-      Err(ErrMode::Backtrack(_)) => Err(ErrMode::Backtrack(E::from_error_kind(
-        i,
-        ErrorKind::Many1Count,
-      ))),
+      Err(ErrMode::Backtrack(_)) => Err(ErrMode::from_error_kind(i, ErrorKind::Many1Count)),
       Err(i) => Err(i),
       Ok((i1, _)) => {
         let mut count = 1;
@@ -545,10 +523,7 @@ where
             Ok((i, _)) => {
               // infinite loop check: the parser must always consume
               if i.input_len() == len {
-                return Err(ErrMode::Backtrack(E::from_error_kind(
-                  i,
-                  ErrorKind::Many1Count,
-                )));
+                return Err(ErrMode::from_error_kind(i, ErrorKind::Many1Count));
               }
 
               count += 1;
@@ -601,11 +576,8 @@ where
           res.push(o);
           input = i;
         }
-        Err(ErrMode::Backtrack(e)) => {
-          return Err(ErrMode::Backtrack(e.append(i, ErrorKind::Count)));
-        }
         Err(e) => {
-          return Err(e);
+          return Err(e.append(i, ErrorKind::Count));
         }
       }
     }
@@ -654,11 +626,8 @@ where
           *elem = o;
           input = i;
         }
-        Err(ErrMode::Backtrack(e)) => {
-          return Err(ErrMode::Backtrack(e.append(i, ErrorKind::Count)));
-        }
         Err(e) => {
-          return Err(e);
+          return Err(e.append(i, ErrorKind::Count));
         }
       }
     }
@@ -725,10 +694,7 @@ where
         Ok((i, o)) => {
           // infinite loop check: the parser must always consume
           if i.input_len() == len {
-            return Err(ErrMode::Backtrack(E::from_error_kind(
-              input,
-              ErrorKind::Many0,
-            )));
+            return Err(ErrMode::from_error_kind(input, ErrorKind::Many0));
           }
 
           res = g(res, o);
@@ -797,9 +763,7 @@ where
     let _i = i.clone();
     let init = init();
     match f.parse_next(_i) {
-      Err(ErrMode::Backtrack(_)) => {
-        Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Many1)))
-      }
+      Err(ErrMode::Backtrack(_)) => Err(ErrMode::from_error_kind(i, ErrorKind::Many1)),
       Err(e) => Err(e),
       Ok((i1, o1)) => {
         let mut acc = g(init, o1);
@@ -898,10 +862,7 @@ where
         Ok((tail, value)) => {
           // infinite loop check: the parser must always consume
           if tail.input_len() == len {
-            return Err(ErrMode::Backtrack(E::from_error_kind(
-              tail,
-              ErrorKind::ManyMN,
-            )));
+            return Err(ErrMode::from_error_kind(tail, ErrorKind::ManyMN));
           }
 
           acc = fold(acc, value);
@@ -1055,11 +1016,8 @@ where
           res.push(o);
           input = i;
         }
-        Err(ErrMode::Backtrack(e)) => {
-          return Err(ErrMode::Backtrack(e.append(i, ErrorKind::Count)));
-        }
         Err(e) => {
-          return Err(e);
+          return Err(e.append(i, ErrorKind::Count));
         }
       }
     }

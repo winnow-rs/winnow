@@ -1456,10 +1456,7 @@ where
     .unwrap_or_else(|_err| input.input_len());
   let offset = invalid_offset.min(max_offset);
   if offset == 0 {
-    return Err(ErrMode::Backtrack(E::from_error_kind(
-      input,
-      ErrorKind::IsA,
-    )));
+    return Err(ErrMode::from_error_kind(input, ErrorKind::IsA));
   }
   let (remaining, parsed) = input.next_slice(offset);
 
@@ -1544,7 +1541,7 @@ where
     |i: T| {
       recognize_float::<_, E>(i.clone()).map_err(|e| match e {
         crate::error::ErrMode::Backtrack(_) => {
-          crate::error::ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Float))
+          crate::error::ErrMode::from_error_kind(i, ErrorKind::Float)
         }
         crate::error::ErrMode::Cut(_) => {
           crate::error::ErrMode::Cut(E::from_error_kind(i, ErrorKind::Float))
@@ -1554,15 +1551,15 @@ where
     },
     |i: T| {
       crate::bytes::complete::tag_no_case::<_, _, E>("nan")(i.clone())
-        .map_err(|_err| crate::error::ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::error::ErrMode::from_error_kind(i, ErrorKind::Float))
     },
     |i: T| {
       crate::bytes::complete::tag_no_case::<_, _, E>("inf")(i.clone())
-        .map_err(|_err| crate::error::ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::error::ErrMode::from_error_kind(i, ErrorKind::Float))
     },
     |i: T| {
       crate::bytes::complete::tag_no_case::<_, _, E>("infinity")(i.clone())
-        .map_err(|_err| crate::error::ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Float)))
+        .map_err(|_err| crate::error::ErrMode::from_error_kind(i, ErrorKind::Float))
     },
   ))(input)
 }
@@ -1626,10 +1623,7 @@ where
   };
 
   if integer.slice_len() == 0 && fraction.slice_len() == 0 {
-    return Err(ErrMode::Backtrack(E::from_error_kind(
-      input,
-      ErrorKind::Float,
-    )));
+    return Err(ErrMode::from_error_kind(input, ErrorKind::Float));
   }
 
   let i2 = i.clone();
@@ -1682,10 +1676,10 @@ where
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
     Some(f) => Ok((i, f)),
-    None => Err(crate::error::ErrMode::Backtrack(E::from_error_kind(
+    None => Err(crate::error::ErrMode::from_error_kind(
       i,
       crate::error::ErrorKind::Float,
-    ))),
+    )),
   }
 }
 
@@ -1721,10 +1715,10 @@ where
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
     Some(f) => Ok((i, f)),
-    None => Err(crate::error::ErrMode::Backtrack(E::from_error_kind(
+    None => Err(crate::error::ErrMode::from_error_kind(
       i,
       crate::error::ErrorKind::Float,
-    ))),
+    )),
   }
 }
 

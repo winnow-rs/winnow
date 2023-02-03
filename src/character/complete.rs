@@ -91,7 +91,7 @@ where
   i.next_token()
     .map(|(i, t)| (i, t.as_char()))
     .filter(|(_, t)| cond(*t))
-    .ok_or_else(|| ErrMode::Backtrack(Error::from_error_kind(i, ErrorKind::Satisfy)))
+    .ok_or_else(|| ErrMode::from_error_kind(i, ErrorKind::Satisfy))
 }
 
 /// Recognizes one of the provided characters.
@@ -171,7 +171,7 @@ where
     CompareResult::Ok => Ok(input.next_slice(CRLF.len())),
     CompareResult::Incomplete | CompareResult::Error => {
       let e: ErrorKind = ErrorKind::CrLf;
-      Err(ErrMode::Backtrack(E::from_error_kind(input, e)))
+      Err(ErrMode::from_error_kind(input, e))
     }
   }
 }
@@ -224,7 +224,7 @@ where
           CompareResult::Ok => {}
           CompareResult::Incomplete | CompareResult::Error => {
             let e: ErrorKind = ErrorKind::Tag;
-            return Err(ErrMode::Backtrack(E::from_error_kind(input, e)));
+            return Err(ErrMode::from_error_kind(input, e));
           }
         }
       }
@@ -264,10 +264,7 @@ where
   const CRLF: &str = "\r\n";
   match input.compare(LF) {
     CompareResult::Ok => Ok(input.next_slice(LF.len())),
-    CompareResult::Incomplete => Err(ErrMode::Backtrack(E::from_error_kind(
-      input,
-      ErrorKind::CrLf,
-    ))),
+    CompareResult::Incomplete => Err(ErrMode::from_error_kind(input, ErrorKind::CrLf)),
     CompareResult::Error => match input.compare("\r\n") {
       CompareResult::Ok => Ok(input.next_slice(CRLF.len())),
       CompareResult::Incomplete | CompareResult::Error => Err(ErrMode::Backtrack(
@@ -842,7 +839,7 @@ macro_rules! ints {
                 let (i, sign) = sign(input.clone())?;
 
                 if i.input_len() == 0 {
-                    return Err(ErrMode::Backtrack(E::from_error_kind(input, ErrorKind::Digit)));
+                    return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
                 }
 
                 let mut value: $t = 0;
@@ -850,7 +847,7 @@ macro_rules! ints {
                     match c.as_char().to_digit(10) {
                         None => {
                             if offset == 0 {
-                                return Err(ErrMode::Backtrack(E::from_error_kind(input, ErrorKind::Digit)));
+                                return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
                             } else {
                                 return Ok((i.next_slice(offset).0, value));
                             }
@@ -862,7 +859,7 @@ macro_rules! ints {
                                v.checked_sub(d as $t)
                             }
                         }) {
-                            None => return Err(ErrMode::Backtrack(E::from_error_kind(input, ErrorKind::Digit))),
+                            None => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
                             Some(v) => value = v,
                         }
                    }
@@ -891,7 +888,7 @@ macro_rules! uints {
                 let i = input;
 
                 if i.input_len() == 0 {
-                    return Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Digit)));
+                    return Err(ErrMode::from_error_kind(i, ErrorKind::Digit));
                 }
 
                 let mut value: $t = 0;
@@ -899,13 +896,13 @@ macro_rules! uints {
                     match c.as_char().to_digit(10) {
                         None => {
                             if offset == 0 {
-                                return Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Digit)));
+                                return Err(ErrMode::from_error_kind(i, ErrorKind::Digit));
                             } else {
                                 return Ok((i.next_slice(offset).0, value));
                             }
                         },
                         Some(d) => match value.checked_mul(10).and_then(|v| v.checked_add(d as $t)) {
-                            None => return Err(ErrMode::Backtrack(E::from_error_kind(i, ErrorKind::Digit))),
+                            None => return Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
                             Some(v) => value = v,
                         }
                     }
@@ -1376,12 +1373,7 @@ mod tests {
 
     let (i, s) = match digit1::<_, crate::error::Error<_>>(i) {
       Ok((i, s)) => (i, s),
-      Err(_) => {
-        return Err(ErrMode::Backtrack(crate::error::Error::from_error_kind(
-          input,
-          ErrorKind::Digit,
-        )))
-      }
+      Err(_) => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
     };
 
     match s.parse_to() {
@@ -1392,10 +1384,7 @@ mod tests {
           Ok((i, -n))
         }
       }
-      None => Err(ErrMode::Backtrack(crate::error::Error::from_error_kind(
-        i,
-        ErrorKind::Digit,
-      ))),
+      None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
     }
   }
 
@@ -1403,10 +1392,7 @@ mod tests {
     let (i, s) = digit1(i)?;
     match s.parse_to() {
       Some(n) => Ok((i, n)),
-      None => Err(ErrMode::Backtrack(crate::error::Error::from_error_kind(
-        i,
-        ErrorKind::Digit,
-      ))),
+      None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
     }
   }
 

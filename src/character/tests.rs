@@ -399,12 +399,7 @@ mod complete {
 
     let (i, s) = match digit1::<_, crate::error::Error<_>, false>(i) {
       Ok((i, s)) => (i, s),
-      Err(_) => {
-        return Err(ErrMode::Backtrack(crate::error::Error::from_error_kind(
-          input,
-          ErrorKind::Digit,
-        )))
-      }
+      Err(_) => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
     };
 
     match s.parse_to() {
@@ -415,10 +410,7 @@ mod complete {
           Ok((i, -n))
         }
       }
-      None => Err(ErrMode::Backtrack(crate::error::Error::from_error_kind(
-        i,
-        ErrorKind::Digit,
-      ))),
+      None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
     }
   }
 
@@ -426,10 +418,7 @@ mod complete {
     let (i, s) = digit1(i)?;
     match s.parse_to() {
       Some(n) => Ok((i, n)),
-      None => Err(ErrMode::Backtrack(crate::error::Error::from_error_kind(
-        i,
-        ErrorKind::Digit,
-      ))),
+      None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
     }
   }
 
@@ -1367,12 +1356,7 @@ mod streaming {
     let (i, s) = match digit1::<_, crate::error::Error<_>, true>(i) {
       Ok((i, s)) => (i, s),
       Err(ErrMode::Incomplete(i)) => return Err(ErrMode::Incomplete(i)),
-      Err(_) => {
-        return Err(ErrMode::Backtrack(crate::error::Error::from_error_kind(
-          input,
-          ErrorKind::Digit,
-        )))
-      }
+      Err(_) => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
     };
     match s.parse_to() {
       Some(n) => {
@@ -1382,10 +1366,7 @@ mod streaming {
           Ok((i, -n))
         }
       }
-      None => Err(ErrMode::Backtrack(crate::error::Error::from_error_kind(
-        i,
-        ErrorKind::Digit,
-      ))),
+      None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
     }
   }
 
@@ -1393,10 +1374,7 @@ mod streaming {
     let (i, s) = digit1(i)?;
     match s.parse_to() {
       Some(n) => Ok((i, n)),
-      None => Err(ErrMode::Backtrack(crate::error::Error::from_error_kind(
-        i,
-        ErrorKind::Digit,
-      ))),
+      None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
     }
   }
 

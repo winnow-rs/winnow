@@ -638,6 +638,27 @@ impl<E> ErrMode<E> {
   }
 }
 
+impl<I, E: ParseError<I>> ParseError<I> for ErrMode<E> {
+  fn from_error_kind(input: I, kind: ErrorKind) -> Self {
+    ErrMode::Backtrack(E::from_error_kind(input, kind))
+  }
+
+  fn append(self, input: I, kind: ErrorKind) -> Self {
+    match self {
+      ErrMode::Backtrack(e) => ErrMode::Backtrack(e.append(input, kind)),
+      e => e,
+    }
+  }
+
+  fn or(self, other: Self) -> Self {
+    match (self, other) {
+      (ErrMode::Backtrack(e), ErrMode::Backtrack(o)) => ErrMode::Backtrack(e.or(o)),
+      (ErrMode::Incomplete(e), _) | (_, ErrMode::Incomplete(e)) => ErrMode::Incomplete(e),
+      (ErrMode::Cut(e), _) | (_, ErrMode::Cut(e)) => ErrMode::Cut(e),
+    }
+  }
+}
+
 impl<T> ErrMode<Error<T>> {
   /// Maps `ErrMode<Error<T>>` to `ErrMode<Error<U>>` with the given `F: T -> U`
   pub fn map_input<U, F>(self, f: F) -> ErrMode<Error<U>>
@@ -693,9 +714,6 @@ where
 }
 
 /// This trait must be implemented by the error type of a nom parser.
-///
-/// There are already implementations of it for `(Input, ErrorKind)`
-/// and `VerboseError<Input>`.
 ///
 /// It provides methods to create an error from some combinators,
 /// and combine existing errors in combinators like `alt`.
