@@ -617,6 +617,22 @@ impl<E> ErrMode<E> {
     matches!(self, ErrMode::Incomplete(_))
   }
 
+  /// Prevent backtracking, bubbling the error up to the top
+  pub fn cut(self) -> Self {
+    match self {
+      ErrMode::Backtrack(e) => ErrMode::Cut(e),
+      rest => rest,
+    }
+  }
+
+  /// Enable backtracking support
+  pub fn backtrack(self) -> Self {
+    match self {
+      ErrMode::Cut(e) => ErrMode::Backtrack(e),
+      rest => rest,
+    }
+  }
+
   /// Applies the given function to the inner error
   pub fn map<E2, F>(self, f: F) -> ErrMode<E2>
   where
@@ -630,11 +646,11 @@ impl<E> ErrMode<E> {
   }
 
   /// Automatically converts between errors if the underlying type supports it
-  pub fn convert<F>(e: ErrMode<F>) -> Self
+  pub fn convert<F>(self) -> ErrMode<F>
   where
-    F: Into<E>,
+    E: ErrorConvert<F>,
   {
-    e.map(crate::lib::std::convert::Into::into)
+    self.map(ErrorConvert::convert)
   }
 }
 
@@ -656,6 +672,15 @@ impl<I, E: ParseError<I>> ParseError<I> for ErrMode<E> {
       (ErrMode::Incomplete(e), _) | (_, ErrMode::Incomplete(e)) => ErrMode::Incomplete(e),
       (ErrMode::Cut(e), _) | (_, ErrMode::Cut(e)) => ErrMode::Cut(e),
     }
+  }
+}
+
+impl<I, EXT, E> FromExternalError<I, EXT> for ErrMode<E>
+where
+  E: FromExternalError<I, EXT>,
+{
+  fn from_external_error(input: I, kind: ErrorKind, e: EXT) -> Self {
+    ErrMode::Backtrack(E::from_external_error(input, kind, e))
   }
 }
 

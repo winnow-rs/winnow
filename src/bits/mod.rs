@@ -55,8 +55,7 @@ where
       Ok((input, result))
     }
     Err(ErrMode::Incomplete(n)) => Err(ErrMode::Incomplete(n.map(|u| u.get() / 8 + 1))),
-    Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.convert())),
-    Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.convert())),
+    Err(e) => Err(e.convert()),
   }
 }
 
@@ -105,8 +104,7 @@ where
         Some(v) => ErrMode::Incomplete(Needed::new(v)),
         None => ErrMode::Cut(E2::from_error_kind(i, ErrorKind::TooLarge)),
       }),
-      Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.convert())),
-      Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.convert())),
+      Err(e) => Err(e.convert()),
     }
   }
 }

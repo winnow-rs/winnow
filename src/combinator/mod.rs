@@ -311,11 +311,7 @@ where
     let (input, o1) = parser.parse_next(input)?;
     match f(o1) {
       Ok(o2) => Ok((input, o2)),
-      Err(e) => Err(ErrMode::Backtrack(E::from_external_error(
-        i,
-        ErrorKind::MapRes,
-        e,
-      ))),
+      Err(e) => Err(ErrMode::from_external_error(i, ErrorKind::MapRes, e)),
     }
   }
 }
@@ -350,11 +346,7 @@ where
     let (input, o1) = self.f.parse_next(input)?;
     match (self.g)(o1) {
       Ok(o2) => Ok((input, o2)),
-      Err(e) => Err(ErrMode::Backtrack(E::from_external_error(
-        i,
-        ErrorKind::MapRes,
-        e,
-      ))),
+      Err(e) => Err(ErrMode::from_external_error(i, ErrorKind::MapRes, e)),
     }
   }
 }
@@ -1302,10 +1294,7 @@ pub fn cut_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IRe
 where
   F: Parser<I, O, E>,
 {
-  move |input: I| match parser.parse_next(input) {
-    Err(ErrMode::Backtrack(e)) => Err(ErrMode::Cut(e)),
-    rest => rest,
-  }
+  move |input: I| parser.parse_next(input).map_err(|e| e.cut())
 }
 
 /// Deprecated, see [`cut_err`]
@@ -1325,10 +1314,7 @@ pub fn backtrack_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) 
 where
   F: Parser<I, O, E>,
 {
-  move |input: I| match parser.parse_next(input) {
-    Err(ErrMode::Cut(e)) => Err(ErrMode::Backtrack(e)),
-    rest => rest,
-  }
+  move |input: I| parser.parse_next(input).map_err(|e| e.backtrack())
 }
 
 /// automatically converts the child parser's result to another type
