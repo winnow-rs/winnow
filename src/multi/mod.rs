@@ -6,22 +6,12 @@ mod tests;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
+#[cfg(feature = "alloc")]
+use crate::input::clamp_capacity;
 use crate::input::{Input, InputIsStreaming, ToUsize, UpdateSlice};
 #[cfg(feature = "alloc")]
 use crate::lib::std::vec::Vec;
 use crate::{IResult, Parser};
-
-/// Don't pre-allocate more than 64KiB when calling `Vec::with_capacity`.
-///
-/// Pre-allocating memory is a nice optimization but count fields can't
-/// always be trusted. We should clamp initial capacities to some reasonable
-/// amount. This reduces the risk of a bogus count value triggering a panic
-/// due to an OOM error.
-///
-/// This does not affect correctness. Nom will always read the full number
-/// of elements regardless of the capacity cap.
-#[cfg(feature = "alloc")]
-const MAX_INITIAL_CAPACITY_BYTES: usize = 65536;
 
 /// Repeats the embedded parser, gathering the results in a `Vec`.
 ///
@@ -384,9 +374,7 @@ where
       return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::ManyMN)));
     }
 
-    let max_initial_capacity =
-      MAX_INITIAL_CAPACITY_BYTES / crate::lib::std::mem::size_of::<O>().max(1);
-    let mut res = crate::lib::std::vec::Vec::with_capacity(min.min(max_initial_capacity));
+    let mut res = crate::lib::std::vec::Vec::with_capacity(clamp_capacity::<O>(min));
     for count in 0..max {
       let len = input.input_len();
       match parse.parse_next(input.clone()) {
@@ -565,9 +553,7 @@ where
 {
   move |i: I| {
     let mut input = i.clone();
-    let max_initial_capacity =
-      MAX_INITIAL_CAPACITY_BYTES / crate::lib::std::mem::size_of::<O>().max(1);
-    let mut res = crate::lib::std::vec::Vec::with_capacity(count.min(max_initial_capacity));
+    let mut res = crate::lib::std::vec::Vec::with_capacity(clamp_capacity::<O>(count));
 
     for _ in 0..count {
       let input_ = input.clone();
@@ -1005,9 +991,7 @@ where
   move |i: I| {
     let (i, count) = f.parse_next(i)?;
     let mut input = i.clone();
-    let max_initial_capacity =
-      MAX_INITIAL_CAPACITY_BYTES / crate::lib::std::mem::size_of::<O>().max(1);
-    let mut res = Vec::with_capacity(count.to_usize().min(max_initial_capacity));
+    let mut res = Vec::with_capacity(clamp_capacity::<O>(count.to_usize()));
 
     for _ in 0..count.to_usize() {
       let input_ = input.clone();

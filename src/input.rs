@@ -37,7 +37,7 @@
 //! | [`InputIsStreaming`] | Marks the input as being the complete buffer or a partial buffer for streaming input |
 //! | [`AsBytes`] |Casts the input type to a byte slice|
 //! | [`Compare`] |Character comparison operations|
-//! | [`ExtendInto`] |Abstracts something which can extend an `Extend`|
+//! | [`Accumulate`] |Abstracts something which can extend an `Extend`|
 //! | [`FindSlice`] |Look for a substring in self|
 //! | [`Location`] |Calculate location within initial input|
 //! | [`Offset`] |Calculate the offset between slices|
@@ -1289,98 +1289,90 @@ where
 
 /// Abstracts something which can extend an `Extend`.
 /// Used to build modified input slices in `escaped_transform`
-pub trait ExtendInto {
-  /// The current input type is a sequence of that `Item` type.
-  ///
-  /// Example: `u8` for `&[u8]` or `char` for `&str`
-  type Item;
-
-  /// The type that will be produced
-  type Extender;
-
+pub trait Accumulate<T>: Sized {
   /// Create a new `Extend` of the correct type
-  fn new_builder(&self) -> Self::Extender;
+  fn initial(capacity: Option<usize>) -> Self;
   /// Accumulate the input into an accumulator
-  fn extend_into(&self, acc: &mut Self::Extender);
+  fn accumulate(&mut self, acc: T);
 }
 
 #[cfg(feature = "alloc")]
-impl ExtendInto for &[u8] {
-  type Item = u8;
-  type Extender = Vec<u8>;
-
-  #[inline]
-  fn new_builder(&self) -> Vec<u8> {
-    Vec::new()
+impl<T> Accumulate<T> for Vec<T> {
+  #[inline(always)]
+  fn initial(capacity: Option<usize>) -> Self {
+    match capacity {
+      Some(capacity) => Vec::with_capacity(clamp_capacity::<T>(capacity)),
+      None => Vec::new(),
+    }
   }
-  #[inline]
-  fn extend_into(&self, acc: &mut Vec<u8>) {
-    acc.extend_from_slice(self);
+  #[inline(always)]
+  fn accumulate(&mut self, acc: T) {
+    self.push(acc);
   }
 }
 
 #[cfg(feature = "alloc")]
-impl ExtendInto for &str {
-  type Item = char;
-  type Extender = String;
-
-  #[inline]
-  fn new_builder(&self) -> String {
-    String::new()
-  }
-  #[inline]
-  fn extend_into(&self, acc: &mut String) {
-    acc.push_str(self);
-  }
-}
-
-impl<I> ExtendInto for Located<I>
-where
-  I: ExtendInto,
-{
-  type Item = I::Item;
-  type Extender = I::Extender;
-
-  fn new_builder(&self) -> Self::Extender {
-    self.input.new_builder()
-  }
-
-  fn extend_into(&self, extender: &mut Self::Extender) {
-    self.input.extend_into(extender);
-  }
-}
-
-impl<I, S> ExtendInto for Stateful<I, S>
-where
-  I: ExtendInto,
-{
-  type Item = I::Item;
-  type Extender = I::Extender;
-
-  fn new_builder(&self) -> Self::Extender {
-    self.input.new_builder()
-  }
-
-  fn extend_into(&self, extender: &mut Self::Extender) {
-    self.input.extend_into(extender);
-  }
-}
-
-impl<I> ExtendInto for Streaming<I>
-where
-  I: ExtendInto,
-{
-  type Item = I::Item;
-  type Extender = I::Extender;
-
+impl<'i, T: Clone> Accumulate<&'i [T]> for Vec<T> {
   #[inline(always)]
-  fn new_builder(&self) -> Self::Extender {
-    self.0.new_builder()
+  fn initial(capacity: Option<usize>) -> Self {
+    match capacity {
+      Some(capacity) => Vec::with_capacity(clamp_capacity::<T>(capacity)),
+      None => Vec::new(),
+    }
   }
   #[inline(always)]
-  fn extend_into(&self, acc: &mut Self::Extender) {
-    self.0.extend_into(acc);
+  fn accumulate(&mut self, acc: &'i [T]) {
+    self.extend(acc.iter().cloned());
   }
+}
+
+#[cfg(feature = "alloc")]
+impl Accumulate<char> for String {
+  #[inline(always)]
+  fn initial(capacity: Option<usize>) -> Self {
+    match capacity {
+      Some(capacity) => String::with_capacity(clamp_capacity::<char>(capacity)),
+      None => String::new(),
+    }
+  }
+  #[inline(always)]
+  fn accumulate(&mut self, acc: char) {
+    self.push(acc);
+  }
+}
+
+#[cfg(feature = "alloc")]
+impl<'i> Accumulate<&'i str> for String {
+  #[inline(always)]
+  fn initial(capacity: Option<usize>) -> Self {
+    match capacity {
+      Some(capacity) => String::with_capacity(clamp_capacity::<char>(capacity)),
+      None => String::new(),
+    }
+  }
+  #[inline(always)]
+  fn accumulate(&mut self, acc: &'i str) {
+    self.push_str(acc);
+  }
+}
+
+#[cfg(feature = "alloc")]
+#[inline]
+pub(crate) fn clamp_capacity<T>(capacity: usize) -> usize {
+  /// Don't pre-allocate more than 64KiB when calling `Vec::with_capacity`.
+  ///
+  /// Pre-allocating memory is a nice optimization but count fields can't
+  /// always be trusted. We should clamp initial capacities to some reasonable
+  /// amount. This reduces the risk of a bogus count value triggering a panic
+  /// due to an OOM error.
+  ///
+  /// This does not affect correctness. Nom will always read the full number
+  /// of elements regardless of the capacity cap.
+  const MAX_INITIAL_CAPACITY_BYTES: usize = 65536;
+
+  let max_initial_capacity =
+    MAX_INITIAL_CAPACITY_BYTES / crate::lib::std::mem::size_of::<T>().max(1);
+  capacity.min(max_initial_capacity)
 }
 
 /// Helper trait to convert numbers to usize.

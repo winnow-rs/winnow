@@ -1256,7 +1256,7 @@ where
 /// ```
 #[cfg(feature = "alloc")]
 #[inline(always)]
-pub fn escaped_transform<I, Error, F, G, O1, O2, ExtendItem, Output, const STREAMING: bool>(
+pub fn escaped_transform<I, Error, F, G, Output, const STREAMING: bool>(
   mut normal: F,
   control_char: char,
   mut transform: G,
@@ -1265,11 +1265,9 @@ where
   I: InputIsStreaming<STREAMING>,
   I: Input + Offset,
   <I as Input>::Token: crate::input::AsChar,
-  I: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
-  O1: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
-  O2: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
-  F: Parser<I, O1, Error>,
-  G: Parser<I, O2, Error>,
+  Output: crate::input::Accumulate<<I as Input>::Slice>,
+  F: Parser<I, <I as Input>::Slice, Error>,
+  G: Parser<I, <I as Input>::Slice, Error>,
   Error: ParseError<I>,
 {
   move |input: I| {
