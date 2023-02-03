@@ -169,8 +169,8 @@
 //!   preceded(
 //!     alt(("0x", "0X")),
 //!     many1(
-//!       terminated(one_of("0123456789abcdefABCDEF"), many0('_'))
-//!     ).recognize()
+//!       terminated(one_of("0123456789abcdefABCDEF"), many0('_').map(|()| ()))
+//!     ).map(|()| ()).recognize()
 //!   )(input)
 //! }
 //! ```
@@ -191,8 +191,8 @@
 //!   preceded(
 //!     alt(("0x", "0X")),
 //!     many1(
-//!       terminated(one_of("0123456789abcdefABCDEF"), many0('_'))
-//!     ).recognize()
+//!       terminated(one_of("0123456789abcdefABCDEF"), many0('_').map(|()| ()))
+//!     ).map(|()| ()).recognize()
 //!   ).map_res(
 //!     |out: &str| i64::from_str_radix(&str::replace(&out, "_", ""), 16)
 //!   ).parse_next(input)
@@ -215,8 +215,8 @@
 //!   preceded(
 //!     alt(("0o", "0O")),
 //!     many1(
-//!       terminated(one_of("01234567"), many0('_'))
-//!     ).recognize()
+//!       terminated(one_of("01234567"), many0('_').map(|()| ()))
+//!     ).map(|()| ()).recognize()
 //!   )(input)
 //! }
 //! ```
@@ -237,8 +237,8 @@
 //!   preceded(
 //!     alt(("0b", "0B")),
 //!     many1(
-//!       terminated(one_of("01"), many0('_'))
-//!     ).recognize()
+//!       terminated(one_of("01"), many0('_').map(|()| ()))
+//!     ).map(|()| ()).recognize()
 //!   )(input)
 //! }
 //! ```
@@ -256,8 +256,8 @@
 //!
 //! fn decimal(input: &str) -> IResult<&str, &str> {
 //!   many1(
-//!     terminated(one_of("0123456789"), many0('_'))
-//!   )
+//!     terminated(one_of("0123456789"), many0('_').map(|()| ()))
+//!   ).map(|()| ())
 //!     .recognize()
 //!     .parse_next(input)
 //! }
@@ -311,8 +311,8 @@
 //!
 //! fn decimal(input: &str) -> IResult<&str, &str> {
 //!   many1(
-//!     terminated(one_of("0123456789"), many0('_'))
-//!   )
+//!     terminated(one_of("0123456789"), many0('_').map(|()| ()))
+//!   ).map(|()| ())
 //!     .recognize()
 //!     .parse_next(input)
 //! }

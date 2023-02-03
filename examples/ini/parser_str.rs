@@ -12,15 +12,7 @@ use winnow::{
 pub type Input<'i> = &'i str;
 
 pub fn categories(input: Input<'_>) -> IResult<Input<'_>, HashMap<&str, HashMap<&str, &str>>> {
-  match categories_aggregator(input) {
-    Ok((i, tuple_vec)) => Ok((i, tuple_vec.into_iter().collect())),
-    Err(e) => Err(e),
-  }
-}
-
-#[allow(clippy::type_complexity)]
-fn categories_aggregator(i: Input<'_>) -> IResult<Input<'_>, Vec<(&str, HashMap<&str, &str>)>> {
-  many0(category_and_keys)(i)
+  many0(category_and_keys)(input)
 }
 
 fn category_and_keys(i: Input<'_>) -> IResult<Input<'_>, (&str, HashMap<&str, &str>)> {
@@ -35,14 +27,7 @@ fn category(i: Input<'_>) -> IResult<Input<'_>, &str> {
 }
 
 fn keys_and_values(input: Input<'_>) -> IResult<Input<'_>, HashMap<&str, &str>> {
-  match keys_and_values_aggregator(input) {
-    Ok((i, tuple_vec)) => Ok((i, tuple_vec.into_iter().collect())),
-    Err(e) => Err(e),
-  }
-}
-
-fn keys_and_values_aggregator(i: Input<'_>) -> IResult<Input<'_>, Vec<(&str, &str)>> {
-  many0(key_value)(i)
+  many0(key_value)(input)
 }
 
 fn key_value(i: Input<'_>) -> IResult<Input<'_>, (&str, &str)> {

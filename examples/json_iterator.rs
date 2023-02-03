@@ -227,7 +227,7 @@ fn array(i: &str) -> IResult<&str, ()> {
   preceded(
     '[',
     cut_err(terminated(
-      separated_list0(preceded(sp, ','), value).map(|_| ()),
+      separated_list0(preceded(sp, ','), value),
       preceded(sp, ']'),
     )),
   )
@@ -243,7 +243,7 @@ fn hash(i: &str) -> IResult<&str, ()> {
   preceded(
     '{',
     cut_err(terminated(
-      separated_list0(preceded(sp, ','), key_value).map(|_| ()),
+      separated_list0(preceded(sp, ','), key_value),
       preceded(sp, '}'),
     )),
   )

@@ -195,9 +195,10 @@ fn issue_942() {
 }
 
 #[test]
+#[cfg(feature = "std")]
 fn issue_many_m_n_with_zeros() {
   use winnow::multi::many_m_n;
-  let mut parser = many_m_n::<_, _, (), _>(0, 0, 'a');
+  let mut parser = many_m_n::<_, _, Vec<_>, (), _>(0, 0, 'a');
   assert_eq!(parser("aaa"), Ok(("aaa", vec![])));
 }
 
@@ -262,15 +263,16 @@ fn issue_x_looser_fill_bounds() {
   );
 }
 
+#[cfg(feature = "std")]
 fn issue_1459_clamp_capacity() {
   // shouldn't panic
   use winnow::multi::many_m_n;
-  let mut parser = many_m_n::<_, _, (), _>(usize::MAX, usize::MAX, 'a');
+  let mut parser = many_m_n::<_, _, Vec<_>, (), _>(usize::MAX, usize::MAX, 'a');
   assert_eq!(parser("a"), Err(winnow::error::ErrMode::Backtrack(())));
 
   // shouldn't panic
   use winnow::multi::count;
-  let mut parser = count::<_, _, (), _>('a', usize::MAX);
+  let mut parser = count::<_, _, Vec<_>, (), _>('a', usize::MAX);
   assert_eq!(parser("a"), Err(winnow::error::ErrMode::Backtrack(())));
 }
 
