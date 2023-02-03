@@ -1,4 +1,4 @@
-use super::{length_data, length_value, many0_count, many1_count};
+use super::{length_data, length_value, many0, many1};
 use crate::input::Streaming;
 use crate::Parser;
 use crate::{
@@ -13,7 +13,7 @@ use crate::{
 use crate::{
   lib::std::vec::Vec,
   multi::{
-    count, fold_many0, fold_many1, fold_many_m_n, length_count, many0, many1, many_m_n, many_till,
+    count, fold_many0, fold_many1, fold_many_m_n, length_count, many_m_n, many_till,
     separated_list0, separated_list1,
   },
 };
@@ -641,7 +641,7 @@ fn fold_many_m_n_test() {
 #[test]
 fn many0_count_test() {
   fn count0_nums(i: &[u8]) -> IResult<&[u8], usize> {
-    many0_count((digit, tag(",")))(i)
+    many0((digit, tag(",")))(i)
   }
 
   assert_eq!(count0_nums(&b"123,junk"[..]), Ok((&b"junk"[..], 1)));
@@ -659,7 +659,7 @@ fn many0_count_test() {
 #[test]
 fn many1_count_test() {
   fn count1_nums(i: &[u8]) -> IResult<&[u8], usize> {
-    many1_count((digit, tag(",")))(i)
+    many1((digit, tag(",")))(i)
   }
 
   assert_eq!(count1_nums(&b"123,45,junk"[..]), Ok((&b"junk"[..], 2)));
@@ -673,7 +673,7 @@ fn many1_count_test() {
     count1_nums(&b"hello"[..]),
     Err(ErrMode::Backtrack(error_position!(
       &b"hello"[..],
-      ErrorKind::Many1Count
+      ErrorKind::Digit
     )))
   );
 }

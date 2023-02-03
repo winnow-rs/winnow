@@ -805,7 +805,7 @@ where
   since = "0.1.0",
   note = "Replaced with `winnow::character::escaped_transform`"
 )]
-pub fn escaped_transform<I, Error, F, G, O1, O2, ExtendItem, Output>(
+pub fn escaped_transform<I, Error, F, G, Output>(
   mut normal: F,
   control_char: char,
   mut transform: G,
@@ -813,18 +813,16 @@ pub fn escaped_transform<I, Error, F, G, O1, O2, ExtendItem, Output>(
 where
   I: Input + Offset,
   <I as Input>::Token: crate::input::AsChar,
-  I: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
-  O1: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
-  O2: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
-  F: Parser<I, O1, Error>,
-  G: Parser<I, O2, Error>,
+  Output: crate::input::Accumulate<<I as Input>::Slice>,
+  F: Parser<I, <I as Input>::Slice, Error>,
+  G: Parser<I, <I as Input>::Slice, Error>,
   Error: ParseError<I>,
 {
   move |input: I| escaped_transform_internal(input, &mut normal, control_char, &mut transform)
 }
 
 #[cfg(feature = "alloc")]
-pub(crate) fn escaped_transform_internal<I, Error, F, G, O1, O2, ExtendItem, Output>(
+pub(crate) fn escaped_transform_internal<I, Error, F, G, Output>(
   input: I,
   normal: &mut F,
   control_char: char,
@@ -833,17 +831,15 @@ pub(crate) fn escaped_transform_internal<I, Error, F, G, O1, O2, ExtendItem, Out
 where
   I: Input + Offset,
   <I as Input>::Token: crate::input::AsChar,
-  I: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
-  O1: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
-  O2: crate::input::ExtendInto<Item = ExtendItem, Extender = Output>,
-  F: Parser<I, O1, Error>,
-  G: Parser<I, O2, Error>,
+  Output: crate::input::Accumulate<<I as Input>::Slice>,
+  F: Parser<I, <I as Input>::Slice, Error>,
+  G: Parser<I, <I as Input>::Slice, Error>,
   Error: ParseError<I>,
 {
   use crate::input::AsChar;
 
   let mut offset = 0;
-  let mut res = input.new_builder();
+  let mut res = Output::initial(Some(input.input_len()));
 
   let i = input.clone();
 
@@ -852,7 +848,7 @@ where
     let (remainder, _) = i.next_slice(offset);
     match normal.parse_next(remainder.clone()) {
       Ok((i2, o)) => {
-        o.extend_into(&mut res);
+        res.accumulate(o);
         if i2.input_len() == 0 {
           return Ok((i.next_slice(i.input_len()).0, res));
         } else if i2.input_len() == current_len {
@@ -874,7 +870,7 @@ where
           } else {
             match transform.parse_next(i.next_slice(next).0) {
               Ok((i2, o)) => {
-                o.extend_into(&mut res);
+                res.accumulate(o);
                 if i2.input_len() == 0 {
                   return Ok((i.next_slice(i.input_len()).0, res));
                 } else {

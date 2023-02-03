@@ -16,9 +16,8 @@ pub fn categories(i: Input<'_>) -> IResult<Input<'_>, HashMap<&str, HashMap<&str
   many0(separated_pair(
     category,
     opt(multispace),
-    many0(terminated(key_value, opt(multispace))).map(|vec: Vec<_>| vec.into_iter().collect()),
+    many0(terminated(key_value, opt(multispace))),
   ))
-  .map(|vec: Vec<_>| vec.into_iter().collect())
   .parse_next(i)
 }
 

@@ -6,22 +6,9 @@ mod tests;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
+use crate::input::Accumulate;
 use crate::input::{Input, InputIsStreaming, ToUsize, UpdateSlice};
-#[cfg(feature = "alloc")]
-use crate::lib::std::vec::Vec;
 use crate::{IResult, Parser};
-
-/// Don't pre-allocate more than 64KiB when calling `Vec::with_capacity`.
-///
-/// Pre-allocating memory is a nice optimization but count fields can't
-/// always be trusted. We should clamp initial capacities to some reasonable
-/// amount. This reduces the risk of a bogus count value triggering a panic
-/// due to an OOM error.
-///
-/// This does not affect correctness. Nom will always read the full number
-/// of elements regardless of the capacity cap.
-#[cfg(feature = "alloc")]
-const MAX_INITIAL_CAPACITY_BYTES: usize = 65536;
 
 /// Repeats the embedded parser, gathering the results in a `Vec`.
 ///
@@ -34,7 +21,8 @@ const MAX_INITIAL_CAPACITY_BYTES: usize = 65536;
 /// *Note*: if the parser passed in accepts empty inputs (like `alpha0` or `digit0`), `many0` will
 /// return an error, to prevent going into an infinite loop
 ///
-/// ```rust
+#[cfg_attr(not(feature = "std"), doc = "```ignore")]
+#[cfg_attr(feature = "std", doc = "```")]
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// use winnow::multi::many0;
 /// use winnow::bytes::tag;
@@ -48,15 +36,15 @@ const MAX_INITIAL_CAPACITY_BYTES: usize = 65536;
 /// assert_eq!(parser("123123"), Ok(("123123", vec![])));
 /// assert_eq!(parser(""), Ok(("", vec![])));
 /// ```
-#[cfg(feature = "alloc")]
-pub fn many0<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
+pub fn many0<I, O, C, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, C, E>
 where
   I: Input,
+  C: Accumulate<O>,
   F: Parser<I, O, E>,
   E: ParseError<I>,
 {
   move |mut i: I| {
-    let mut acc = crate::lib::std::vec::Vec::with_capacity(4);
+    let mut acc = C::initial(None);
     loop {
       let len = i.input_len();
       match f.parse_next(i.clone()) {
@@ -69,7 +57,7 @@ where
           }
 
           i = i1;
-          acc.push(o);
+          acc.accumulate(o);
         }
       }
     }
@@ -88,7 +76,8 @@ where
 /// (like `alpha0` or `digit0`), `many1` will return an error,
 /// to prevent going into an infinite loop.
 ///
-/// ```rust
+#[cfg_attr(not(feature = "std"), doc = "```ignore")]
+#[cfg_attr(feature = "std", doc = "```")]
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::many1;
 /// use winnow::bytes::tag;
@@ -102,18 +91,18 @@ where
 /// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Tag))));
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// ```
-#[cfg(feature = "alloc")]
-pub fn many1<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
+pub fn many1<I, O, C, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, C, E>
 where
   I: Input,
+  C: Accumulate<O>,
   F: Parser<I, O, E>,
   E: ParseError<I>,
 {
   move |mut i: I| match f.parse_next(i.clone()) {
     Err(e) => Err(e.append(i, ErrorKind::Many1)),
     Ok((i1, o)) => {
-      let mut acc = crate::lib::std::vec::Vec::with_capacity(4);
-      acc.push(o);
+      let mut acc = C::initial(None);
+      acc.accumulate(o);
       i = i1;
 
       loop {
@@ -128,7 +117,7 @@ where
             }
 
             i = i1;
-            acc.push(o);
+            acc.accumulate(o);
           }
         }
       }
@@ -142,7 +131,8 @@ where
 ///
 /// `f` keeps going so long as `g` produces [`ErrMode::Backtrack`]. To instead chain an error up, see [`cut_err`][crate::combinator::cut_err].
 ///
-/// ```rust
+#[cfg_attr(not(feature = "std"), doc = "```ignore")]
+#[cfg_attr(feature = "std", doc = "```")]
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::many_till;
 /// use winnow::bytes::tag;
@@ -157,19 +147,16 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("abcendefg"), Ok(("efg", (vec!["abc"], "end"))));
 /// ```
-#[cfg(feature = "alloc")]
-pub fn many_till<I, O, P, E, F, G>(
-  mut f: F,
-  mut g: G,
-) -> impl FnMut(I) -> IResult<I, (Vec<O>, P), E>
+pub fn many_till<I, O, C, P, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IResult<I, (C, P), E>
 where
   I: Input,
+  C: Accumulate<O>,
   F: Parser<I, O, E>,
   G: Parser<I, P, E>,
   E: ParseError<I>,
 {
   move |mut i: I| {
-    let mut res = crate::lib::std::vec::Vec::new();
+    let mut res = C::initial(None);
     loop {
       let len = i.input_len();
       match g.parse_next(i.clone()) {
@@ -183,7 +170,7 @@ where
                 return Err(ErrMode::from_error_kind(i1, ErrorKind::ManyTill));
               }
 
-              res.push(o);
+              res.accumulate(o);
               i = i1;
             }
           }
@@ -203,7 +190,8 @@ where
 /// * `sep` Parses the separator between list elements.
 /// * `f` Parses the elements of the list.
 ///
-/// ```rust
+#[cfg_attr(not(feature = "std"), doc = "```ignore")]
+#[cfg_attr(feature = "std", doc = "```")]
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// use winnow::multi::separated_list0;
 /// use winnow::bytes::tag;
@@ -218,25 +206,25 @@ where
 /// assert_eq!(parser(""), Ok(("", vec![])));
 /// assert_eq!(parser("def|abc"), Ok(("def|abc", vec![])));
 /// ```
-#[cfg(feature = "alloc")]
-pub fn separated_list0<I, O, O2, E, F, G>(
+pub fn separated_list0<I, O, C, O2, E, F, G>(
   mut sep: G,
   mut f: F,
-) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
+) -> impl FnMut(I) -> IResult<I, C, E>
 where
   I: Input,
+  C: Accumulate<O>,
   F: Parser<I, O, E>,
   G: Parser<I, O2, E>,
   E: ParseError<I>,
 {
   move |mut i: I| {
-    let mut res = Vec::new();
+    let mut res = C::initial(None);
 
     match f.parse_next(i.clone()) {
       Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
       Err(e) => return Err(e),
       Ok((i1, o)) => {
-        res.push(o);
+        res.accumulate(o);
         i = i1;
       }
     }
@@ -256,7 +244,7 @@ where
             Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
             Err(e) => return Err(e),
             Ok((i2, o)) => {
-              res.push(o);
+              res.accumulate(o);
               i = i2;
             }
           }
@@ -276,7 +264,8 @@ where
 /// # Arguments
 /// * `sep` Parses the separator between list elements.
 /// * `f` Parses the elements of the list.
-/// ```rust
+#[cfg_attr(not(feature = "std"), doc = "```ignore")]
+#[cfg_attr(feature = "std", doc = "```")]
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::separated_list1;
 /// use winnow::bytes::tag;
@@ -291,25 +280,25 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(Error::new("def|abc", ErrorKind::Tag))));
 /// ```
-#[cfg(feature = "alloc")]
-pub fn separated_list1<I, O, O2, E, F, G>(
+pub fn separated_list1<I, O, C, O2, E, F, G>(
   mut sep: G,
   mut f: F,
-) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
+) -> impl FnMut(I) -> IResult<I, C, E>
 where
   I: Input,
+  C: Accumulate<O>,
   F: Parser<I, O, E>,
   G: Parser<I, O2, E>,
   E: ParseError<I>,
 {
   move |mut i: I| {
-    let mut res = Vec::new();
+    let mut res = C::initial(None);
 
     // Parse the first element
     match f.parse_next(i.clone()) {
       Err(e) => return Err(e),
       Ok((i1, o)) => {
-        res.push(o);
+        res.accumulate(o);
         i = i1;
       }
     }
@@ -329,7 +318,7 @@ where
             Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
             Err(e) => return Err(e),
             Ok((i2, o)) => {
-              res.push(o);
+              res.accumulate(o);
               i = i2;
             }
           }
@@ -353,7 +342,8 @@ where
 /// (like `alpha0` or `digit0`), `many1` will return an error,
 /// to prevent going into an infinite loop.
 ///
-/// ```rust
+#[cfg_attr(not(feature = "std"), doc = "```ignore")]
+#[cfg_attr(feature = "std", doc = "```")]
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// use winnow::multi::many_m_n;
 /// use winnow::bytes::tag;
@@ -368,14 +358,14 @@ where
 /// assert_eq!(parser(""), Ok(("", vec![])));
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
 /// ```
-#[cfg(feature = "alloc")]
-pub fn many_m_n<I, O, E, F>(
+pub fn many_m_n<I, O, C, E, F>(
   min: usize,
   max: usize,
   mut parse: F,
-) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
+) -> impl FnMut(I) -> IResult<I, C, E>
 where
   I: Input,
+  C: Accumulate<O>,
   F: Parser<I, O, E>,
   E: ParseError<I>,
 {
@@ -384,9 +374,7 @@ where
       return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::ManyMN)));
     }
 
-    let max_initial_capacity =
-      MAX_INITIAL_CAPACITY_BYTES / crate::lib::std::mem::size_of::<O>().max(1);
-    let mut res = crate::lib::std::vec::Vec::with_capacity(min.min(max_initial_capacity));
+    let mut res = C::initial(Some(min));
     for count in 0..max {
       let len = input.input_len();
       match parse.parse_next(input.clone()) {
@@ -396,7 +384,7 @@ where
             return Err(ErrMode::from_error_kind(input, ErrorKind::ManyMN));
           }
 
-          res.push(value);
+          res.accumulate(value);
           input = tail;
         }
         Err(ErrMode::Backtrack(e)) => {
@@ -441,6 +429,9 @@ where
 /// assert_eq!(parser("123123"), Ok(("123123", 0)));
 /// assert_eq!(parser(""), Ok(("", 0)));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`many0`]
+#[deprecated(since = "0.3.0", note = "Replaced with `many0`")]
 pub fn many0_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>
 where
   I: Input,
@@ -499,6 +490,9 @@ where
 /// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Many1Count))));
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Many1Count))));
 /// ```
+///
+/// **WARNING:** Deprecated, replaced with [`many0`]
+#[deprecated(since = "0.3.0", note = "Replaced with `many0`")]
 pub fn many1_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>
 where
   I: Input,
@@ -541,7 +535,8 @@ where
 /// # Arguments
 /// * `f` The parser to apply.
 /// * `count` How often to apply the parser.
-/// ```rust
+#[cfg_attr(not(feature = "std"), doc = "```ignore")]
+#[cfg_attr(feature = "std", doc = "```")]
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::count;
 /// use winnow::bytes::tag;
@@ -556,24 +551,22 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
 /// ```
-#[cfg(feature = "alloc")]
-pub fn count<I, O, E, F>(mut f: F, count: usize) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
+pub fn count<I, O, C, E, F>(mut f: F, count: usize) -> impl FnMut(I) -> IResult<I, C, E>
 where
   I: Clone + PartialEq,
+  C: Accumulate<O>,
   F: Parser<I, O, E>,
   E: ParseError<I>,
 {
   move |i: I| {
     let mut input = i.clone();
-    let max_initial_capacity =
-      MAX_INITIAL_CAPACITY_BYTES / crate::lib::std::mem::size_of::<O>().max(1);
-    let mut res = crate::lib::std::vec::Vec::with_capacity(count.min(max_initial_capacity));
+    let mut res = C::initial(Some(count));
 
     for _ in 0..count {
       let input_ = input.clone();
       match f.parse_next(input_) {
         Ok((i, o)) => {
-          res.push(o);
+          res.accumulate(o);
           input = i;
         }
         Err(e) => {
@@ -975,7 +968,8 @@ where
 /// # Arguments
 /// * `f` The parser to apply to obtain the count.
 /// * `g` The parser to apply repeatedly.
-/// ```rust
+#[cfg_attr(not(feature = "std"), doc = "```ignore")]
+#[cfg_attr(feature = "std", doc = "```")]
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::number::u8;
@@ -993,11 +987,11 @@ where
 /// assert_eq!(parser(&b"\x02abcabcabc"[..]), Ok(((&b"abc"[..], vec![&b"abc"[..], &b"abc"[..]]))));
 /// assert_eq!(parser(b"\x03123123123"), Err(ErrMode::Backtrack(Error::new(&b"123123123"[..], ErrorKind::Tag))));
 /// ```
-#[cfg(feature = "alloc")]
-pub fn length_count<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IResult<I, Vec<O>, E>
+pub fn length_count<I, O, C, N, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IResult<I, C, E>
 where
   I: Clone,
   N: ToUsize,
+  C: Accumulate<O>,
   F: Parser<I, N, E>,
   G: Parser<I, O, E>,
   E: ParseError<I>,
@@ -1005,15 +999,13 @@ where
   move |i: I| {
     let (i, count) = f.parse_next(i)?;
     let mut input = i.clone();
-    let max_initial_capacity =
-      MAX_INITIAL_CAPACITY_BYTES / crate::lib::std::mem::size_of::<O>().max(1);
-    let mut res = Vec::with_capacity(count.to_usize().min(max_initial_capacity));
+    let mut res = C::initial(Some(count.to_usize()));
 
     for _ in 0..count.to_usize() {
       let input_ = input.clone();
       match g.parse_next(input_) {
         Ok((i, o)) => {
-          res.push(o);
+          res.accumulate(o);
           input = i;
         }
         Err(e) => {

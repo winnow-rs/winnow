@@ -184,8 +184,7 @@ fn object<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
   preceded(
     (one_of('{'), ws),
     cut_err(terminated(
-      separated_list0((ws, one_of(','), ws), key_value)
-        .map(|tuple_vec| tuple_vec.into_iter().map(|(k, v)| (k, v)).collect()),
+      separated_list0((ws, one_of(','), ws), key_value),
       (ws, one_of('}')),
     )),
   )

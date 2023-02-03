@@ -1,16 +1,15 @@
 #![cfg(feature = "alloc")]
 
-use winnow::{
-  bytes::tag,
-  multi::{many0, many0_count},
-};
+use winnow::bytes::tag;
+use winnow::multi::many0;
 
 #[test]
+#[cfg(feature = "std")]
 fn parse() {
   let mut counter = 0;
 
   let res = {
-    let mut parser = many0::<_, _, (), _>(|i| {
+    let mut parser = many0::<_, _, Vec<_>, (), _>(|i| {
       counter += 1;
       tag("abc")(i)
     });
@@ -27,7 +26,7 @@ fn accumulate() {
   let mut v = Vec::new();
 
   let (_, count) = {
-    let mut parser = many0_count::<_, _, (), _>(|i| {
+    let mut parser = many0::<_, _, usize, (), _>(|i| {
       let (i, o) = tag("abc")(i)?;
       v.push(o);
       Ok((i, ()))
