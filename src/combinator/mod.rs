@@ -1302,10 +1302,7 @@ pub fn cut_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IRe
 where
   F: Parser<I, O, E>,
 {
-  move |input: I| match parser.parse_next(input) {
-    Err(ErrMode::Backtrack(e)) => Err(ErrMode::Cut(e)),
-    rest => rest,
-  }
+  move |input: I| parser.parse_next(input).map_err(|e| e.cut())
 }
 
 /// Deprecated, see [`cut_err`]

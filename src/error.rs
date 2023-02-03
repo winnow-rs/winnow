@@ -617,6 +617,14 @@ impl<E> ErrMode<E> {
     matches!(self, ErrMode::Incomplete(_))
   }
 
+  /// Prevent backtracking, bubbling the error up to the top
+  pub fn cut(self) -> Self {
+    match self {
+      ErrMode::Backtrack(e) => ErrMode::Cut(e),
+      rest => rest,
+    }
+  }
+
   /// Applies the given function to the inner error
   pub fn map<E2, F>(self, f: F) -> ErrMode<E2>
   where
