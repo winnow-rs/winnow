@@ -120,10 +120,10 @@ required-features = ["alloc"]
 name = "ini"
 path = "examples/ini/bench.rs"
 harness = false
-required-features = ["alloc"]
+required-features = ["std"]
 
 [[bench]]
 name = "json"
 path = "examples/json/bench.rs"
 harness = false
-required-features = ["alloc"]
+required-features = ["std"]
