@@ -424,14 +424,14 @@ mod complete {
     #[test]
     fn ints(s in "\\PC*") {
         let res1 = digit_to_i16(&s);
-        let res2 = i16(s.as_str());
+        let res2 = dec_int(s.as_str());
         assert_eq!(res1, res2);
     }
 
     #[test]
     fn uints(s in "\\PC*") {
         let res1 = digit_to_u32(&s);
-        let res2 = u32(s.as_str());
+        let res2 = dec_uint(s.as_str());
         assert_eq!(res1, res2);
     }
   }
@@ -1431,14 +1431,14 @@ mod streaming {
     #[test]
     fn ints(s in "\\PC*") {
         let res1 = digit_to_i16(Streaming(&s));
-        let res2 = i16(Streaming(s.as_str()));
+        let res2 = dec_int(Streaming(s.as_str()));
         assert_eq!(res1, res2);
     }
 
     #[test]
     fn uints(s in "\\PC*") {
         let res1 = digit_to_u32(Streaming(&s));
-        let res2 = u32(Streaming(s.as_str()));
+        let res2 = dec_uint(Streaming(s.as_str()));
         assert_eq!(res1, res2);
     }
   }

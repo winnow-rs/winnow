@@ -11,6 +11,7 @@ mod tests;
 
 use crate::lib::std::ops::{Add, Shl};
 
+use crate::combinator::opt;
 use crate::error::ParseError;
 use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::input::Compare;
@@ -888,61 +889,249 @@ where
   }
 }
 
-#[doc(hidden)]
-macro_rules! ints {
-    ($($t:tt)+) => {
-        $(
-        /// will parse a number in text form to a number
-        ///
-        /// *Complete version*: can parse until the end of input.
-        ///
-        /// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
-        #[inline(always)]
-        pub fn $t<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, $t, E>
-            where
-              I: InputIsStreaming<STREAMING>,
-              I: Input,
-              <I as Input>::Token: AsChar + Copy,
-            {
-                if STREAMING {
-                  streaming::$t(input)
-                } else {
-                  complete::$t(input)
-                }
-            }
-        )+
+/// Decode a decimal unsigned integer
+///
+/// *Complete version*: can parse until the end of input.
+///
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+pub fn dec_uint<I, O, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, O, E>
+where
+  I: InputIsStreaming<STREAMING>,
+  I: Input,
+  <I as Input>::Token: AsChar + Copy,
+  O: Uint,
+{
+  let i = input.clone();
+
+  if i.input_len() == 0 {
+    if STREAMING {
+      return Err(ErrMode::Incomplete(Needed::new(1)));
+    } else {
+      return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
     }
+  }
+
+  let mut value = O::default();
+  for (offset, c) in i.iter_offsets() {
+    match c.as_char().to_digit(10) {
+      Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
+        let d = d as u8;
+        v.checked_add(d, sealed::SealedMarker)
+      }) {
+        None => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
+        Some(v) => value = v,
+      },
+      None => {
+        if offset == 0 {
+          return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+        } else {
+          return Ok((i.next_slice(offset).0, value));
+        }
+      }
+    }
+  }
+
+  if STREAMING {
+    Err(ErrMode::Incomplete(Needed::new(1)))
+  } else {
+    Ok((i.next_slice(i.input_len()).0, value))
+  }
 }
 
-ints! { i8 i16 i32 i64 i128 }
-
-#[doc(hidden)]
-macro_rules! uints {
-    ($($t:tt)+) => {
-        $(
-        /// will parse a number in text form to a number
-        ///
-        /// *Complete version*: can parse until the end of input.
-        ///
-        /// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
-        #[inline(always)]
-        pub fn $t<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, $t, E>
-            where
-              I: InputIsStreaming<STREAMING>,
-              I: Input,
-              <I as Input>::Token: AsChar,
-            {
-                if STREAMING {
-                  streaming::$t(input)
-                } else {
-                  complete::$t(input)
-                }
-            }
-        )+
-    }
+/// Metadata for parsing unsigned integers
+pub trait Uint: Default {
+  #[doc(hidden)]
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self>;
+  #[doc(hidden)]
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self>;
 }
 
-uints! { u8 u16 u32 u64 u128 }
+impl Uint for u8 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+impl Uint for u16 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+impl Uint for u32 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+impl Uint for u64 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+impl Uint for u128 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+impl Uint for i8 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+impl Uint for i16 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+impl Uint for i32 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+impl Uint for i64 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+impl Uint for i128 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+/// Decode a decimal signed integer
+///
+/// *Complete version*: can parse until the end of input.
+///
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+pub fn dec_int<I, O, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, O, E>
+where
+  I: InputIsStreaming<STREAMING>,
+  I: Input,
+  <I as Input>::Token: AsChar + Copy,
+  O: Int,
+{
+  let i = input.clone();
+
+  fn sign(token: impl AsChar) -> bool {
+    let token = token.as_char();
+    token == '+' || token == '-'
+  }
+  let (i, sign) = opt(crate::bytes::one_of(sign).map(AsChar::as_char))
+    .map(|c| c != Some('-'))
+    .parse_next(i)?;
+
+  if i.input_len() == 0 {
+    if STREAMING {
+      return Err(ErrMode::Incomplete(Needed::new(1)));
+    } else {
+      return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+    }
+  }
+
+  let mut value = O::default();
+  for (offset, c) in i.iter_offsets() {
+    match c.as_char().to_digit(10) {
+      Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
+        let d = d as u8;
+        if sign {
+          v.checked_add(d, sealed::SealedMarker)
+        } else {
+          v.checked_sub(d, sealed::SealedMarker)
+        }
+      }) {
+        None => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
+        Some(v) => value = v,
+      },
+      None => {
+        if offset == 0 {
+          return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+        } else {
+          return Ok((i.next_slice(offset).0, value));
+        }
+      }
+    }
+  }
+
+  if STREAMING {
+    Err(ErrMode::Incomplete(Needed::new(1)))
+  } else {
+    Ok((i.next_slice(i.input_len()).0, value))
+  }
+}
+
+/// Metadata for parsing signed integers
+pub trait Int: Uint {
+  #[doc(hidden)]
+  fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self>;
+}
+
+impl Int for i8 {
+  fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_sub(by as Self)
+  }
+}
+
+impl Int for i16 {
+  fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_sub(by as Self)
+  }
+}
+
+impl Int for i32 {
+  fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_sub(by as Self)
+  }
+}
+
+impl Int for i64 {
+  fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_sub(by as Self)
+  }
+}
+
+impl Int for i128 {
+  fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_sub(by as Self)
+  }
+}
 
 /// Decode a variable-width hexadecimal integer.
 ///

@@ -492,7 +492,7 @@ pub mod _tutorial;
 ///
 /// fn parse_data(input: &str) -> IResult<&str, u64> {
 ///     // ...
-/// #   winnow::character::u64(input)
+/// #   winnow::character::dec_uint(input)
 /// }
 ///
 /// fn main() {

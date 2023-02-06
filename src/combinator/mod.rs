@@ -142,6 +142,8 @@
 //! - [`digit0`][crate::character::digit0]: Recognizes zero or more numerical characters: `[0-9]`. [`digit1`][crate::character::digit1] does the same but returns at least one character
 //! - [`float`][crate::character::float]: Parse a floating point number in a byte string
 //! - [`hex_digit0`][crate::character::hex_digit0]: Recognizes zero or more hexadecimal numerical characters: `[0-9A-Fa-f]`. [`hex_digit1`][crate::character::hex_digit1] does the same but returns at least one character
+//! - [`dec_int`][crate::character::dec_uint]: Decode a variable-width, decimal signed integer
+//! - [`dec_uint`][crate::character::dec_uint]: Decode a variable-width, decimal unsigned integer
 //! - [`hex_uint`][crate::character::hex_uint]: Decode a variable-width, hexadecimal integer
 //! - [`line_ending`][crate::character::line_ending]: Recognizes an end of line (both `\n` and `\r\n`)
 //! - [`multispace0`][crate::character::multispace0]: Recognizes zero or more spaces, tabs, carriage returns and line feeds. [`multispace1`][crate::character::multispace1] does the same but returns at least one character

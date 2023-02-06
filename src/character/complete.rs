@@ -831,6 +831,13 @@ macro_rules! ints {
         /// will parse a number in text form to a number
         ///
         /// *Complete version*: can parse until the end of input.
+        ///
+        /// **WARNING:** Deprecated, replaced with
+        /// [`winnow::character::dec_uint`][crate::character::dec_int]
+        #[deprecated(
+          since = "0.1.0",
+          note = "Replaced with `winnow::character::dec_int`"
+        )]
         pub fn $t<T, E: ParseError<T>>(input: T) -> IResult<T, $t, E>
             where
               T: Input,
@@ -880,6 +887,13 @@ macro_rules! uints {
         /// will parse a number in text form to a number
         ///
         /// *Complete version*: can parse until the end of input.
+        ///
+        /// **WARNING:** Deprecated, replaced with
+        /// [`winnow::character::dec_uint`][crate::character::dec_uint]
+        #[deprecated(
+          since = "0.1.0",
+          note = "Replaced with `winnow::character::dec_uint`"
+        )]
         pub fn $t<T, E: ParseError<T>>(input: T) -> IResult<T, $t, E>
             where
               T: Input,
