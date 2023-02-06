@@ -1436,8 +1436,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::number::hex_u32`][crate::number::hex_u32]
-#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::hex_u32`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::hex_uint`][crate::character::hex_uint]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::hex_uint`")]
 pub fn hex_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Input,
@@ -1474,29 +1474,9 @@ where
   Ok((remaining, res))
 }
 
-/// Recognizes floating point number in a byte string and returns the corresponding slice.
-///
-/// *Complete version*: Can parse until the end of input.
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::error::Needed::Size;
-/// use winnow::number::complete::recognize_float;
-///
-/// let parser = |s| {
-///   recognize_float(s)
-/// };
-///
-/// assert_eq!(parser("11e-1"), Ok(("", "11e-1")));
-/// assert_eq!(parser("123E-02"), Ok(("", "123E-02")));
-/// assert_eq!(parser("123K-01"), Ok(("K-01", "123")));
-/// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Char))));
-/// ```
-#[rustfmt::skip]
-///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::recognize_float`][crate::character::recognize_float]
-#[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::recognize_float`")]
-pub fn recognize_float<T, E:ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+/// **WARNING:** Deprecated, no longer supported
+#[deprecated(since = "0.3.0", note = "No longer supported")]
+pub fn recognize_float<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
   T: Input,
   T: Offset + Compare<&'static str>,
@@ -1504,29 +1484,24 @@ where
   <T as Input>::IterOffsets: Clone,
   T: AsBytes,
 {
-    tuple((
+  tuple((
+    opt(alt((char('+'), char('-')))),
+    alt((
+      map(tuple((digit1, opt(pair(char('.'), opt(digit1))))), |_| ()),
+      map(tuple((char('.'), digit1)), |_| ()),
+    )),
+    opt(tuple((
+      alt((char('e'), char('E'))),
       opt(alt((char('+'), char('-')))),
-      alt((
-        map(tuple((digit1, opt(pair(char('.'), opt(digit1))))), |_| ()),
-        map(tuple((char('.'), digit1)), |_| ())
-      )),
-      opt(tuple((
-        alt((char('e'), char('E'))),
-        opt(alt((char('+'), char('-')))),
-        cut_err(digit1)
-      )))
-    ))
-  .recognize().parse_next(input)
+      cut_err(digit1),
+    ))),
+  ))
+  .recognize()
+  .parse_next(input)
 }
 
-// workaround until issues with minimal-lexical are fixed
-#[doc(hidden)]
-///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::recognize_float_or_exceptions`][crate::character::recognize_float_or_exceptions]
-#[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::character::recognize_float_or_exceptions`"
-)]
+/// **WARNING:** Deprecated, no longer supported
+#[deprecated(since = "0.3.0", note = "No longer supported")]
 pub fn recognize_float_or_exceptions<T, E: ParseError<T>>(
   input: T,
 ) -> IResult<T, <T as Input>::Slice, E>
@@ -1564,20 +1539,9 @@ where
   ))(input)
 }
 
-/// Recognizes a floating point number in text format
-///
-/// It returns a tuple of (`sign`, `integer part`, `fraction part` and `exponent`) of the input
-/// data.
-///
-/// *Complete version*: Can parse until the end of input.
-///
-///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::recognize_float_parts`][crate::character::recognize_float_parts]
-#[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::character::recognize_float_parts`"
-)]
+/// **WARNING:** Deprecated, no longer supported
 #[allow(clippy::type_complexity)]
+#[deprecated(since = "0.3.0", note = "No longer supported")]
 pub fn recognize_float_parts<T, E: ParseError<T>>(
   input: T,
 ) -> IResult<T, (bool, <T as Input>::Slice, <T as Input>::Slice, i32), E>
@@ -1662,8 +1626,8 @@ use crate::input::ParseTo;
 /// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Float))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::f32`][crate::character::f32]
-#[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::f32`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::float`][crate::character::float]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::float`")]
 pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>
 where
   T: Input,
@@ -1701,8 +1665,8 @@ where
 /// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Float))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::f64`][crate::character::f64]
-#[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::f64`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::float`][crate::character::float]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::float`")]
 pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>
 where
   T: Input,

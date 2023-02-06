@@ -9,9 +9,13 @@ pub mod streaming;
 #[cfg(test)]
 mod tests;
 
+use crate::lib::std::ops::{Add, Shl};
+
+use crate::combinator::opt;
 use crate::error::ParseError;
+use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::input::Compare;
-use crate::input::{AsBytes, AsChar, Input, InputIsStreaming, Offset, ParseTo, SliceLen};
+use crate::input::{AsBytes, AsChar, Input, InputIsStreaming, Offset, ParseTo};
 use crate::IResult;
 use crate::Parser;
 
@@ -885,61 +889,382 @@ where
   }
 }
 
-#[doc(hidden)]
-macro_rules! ints {
-    ($($t:tt)+) => {
-        $(
-        /// will parse a number in text form to a number
-        ///
-        /// *Complete version*: can parse until the end of input.
-        ///
-        /// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
-        #[inline(always)]
-        pub fn $t<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, $t, E>
-            where
-              I: InputIsStreaming<STREAMING>,
-              I: Input,
-              <I as Input>::Token: AsChar + Copy,
-            {
-                if STREAMING {
-                  streaming::$t(input)
-                } else {
-                  complete::$t(input)
-                }
-            }
-        )+
+/// Decode a decimal unsigned integer
+///
+/// *Complete version*: can parse until the end of input.
+///
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+pub fn dec_uint<I, O, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, O, E>
+where
+  I: InputIsStreaming<STREAMING>,
+  I: Input,
+  <I as Input>::Token: AsChar + Copy,
+  O: Uint,
+{
+  let i = input.clone();
+
+  if i.input_len() == 0 {
+    if STREAMING {
+      return Err(ErrMode::Incomplete(Needed::new(1)));
+    } else {
+      return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
     }
+  }
+
+  let mut value = O::default();
+  for (offset, c) in i.iter_offsets() {
+    match c.as_char().to_digit(10) {
+      Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
+        let d = d as u8;
+        v.checked_add(d, sealed::SealedMarker)
+      }) {
+        None => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
+        Some(v) => value = v,
+      },
+      None => {
+        if offset == 0 {
+          return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+        } else {
+          return Ok((i.next_slice(offset).0, value));
+        }
+      }
+    }
+  }
+
+  if STREAMING {
+    Err(ErrMode::Incomplete(Needed::new(1)))
+  } else {
+    Ok((i.next_slice(i.input_len()).0, value))
+  }
 }
 
-ints! { i8 i16 i32 i64 i128 }
-
-#[doc(hidden)]
-macro_rules! uints {
-    ($($t:tt)+) => {
-        $(
-        /// will parse a number in text form to a number
-        ///
-        /// *Complete version*: can parse until the end of input.
-        ///
-        /// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
-        #[inline(always)]
-        pub fn $t<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, $t, E>
-            where
-              I: InputIsStreaming<STREAMING>,
-              I: Input,
-              <I as Input>::Token: AsChar,
-            {
-                if STREAMING {
-                  streaming::$t(input)
-                } else {
-                  complete::$t(input)
-                }
-            }
-        )+
-    }
+/// Metadata for parsing unsigned integers
+pub trait Uint: Default {
+  #[doc(hidden)]
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self>;
+  #[doc(hidden)]
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self>;
 }
 
-uints! { u8 u16 u32 u64 u128 }
+impl Uint for u8 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+impl Uint for u16 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+impl Uint for u32 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+impl Uint for u64 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+impl Uint for u128 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+impl Uint for i8 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+impl Uint for i16 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+impl Uint for i32 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+impl Uint for i64 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+impl Uint for i128 {
+  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_mul(by as Self)
+  }
+  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_add(by as Self)
+  }
+}
+
+/// Decode a decimal signed integer
+///
+/// *Complete version*: can parse until the end of input.
+///
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+pub fn dec_int<I, O, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, O, E>
+where
+  I: InputIsStreaming<STREAMING>,
+  I: Input,
+  <I as Input>::Token: AsChar + Copy,
+  O: Int,
+{
+  let i = input.clone();
+
+  fn sign(token: impl AsChar) -> bool {
+    let token = token.as_char();
+    token == '+' || token == '-'
+  }
+  let (i, sign) = opt(crate::bytes::one_of(sign).map(AsChar::as_char))
+    .map(|c| c != Some('-'))
+    .parse_next(i)?;
+
+  if i.input_len() == 0 {
+    if STREAMING {
+      return Err(ErrMode::Incomplete(Needed::new(1)));
+    } else {
+      return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+    }
+  }
+
+  let mut value = O::default();
+  for (offset, c) in i.iter_offsets() {
+    match c.as_char().to_digit(10) {
+      Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
+        let d = d as u8;
+        if sign {
+          v.checked_add(d, sealed::SealedMarker)
+        } else {
+          v.checked_sub(d, sealed::SealedMarker)
+        }
+      }) {
+        None => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
+        Some(v) => value = v,
+      },
+      None => {
+        if offset == 0 {
+          return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+        } else {
+          return Ok((i.next_slice(offset).0, value));
+        }
+      }
+    }
+  }
+
+  if STREAMING {
+    Err(ErrMode::Incomplete(Needed::new(1)))
+  } else {
+    Ok((i.next_slice(i.input_len()).0, value))
+  }
+}
+
+/// Metadata for parsing signed integers
+pub trait Int: Uint {
+  #[doc(hidden)]
+  fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self>;
+}
+
+impl Int for i8 {
+  fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_sub(by as Self)
+  }
+}
+
+impl Int for i16 {
+  fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_sub(by as Self)
+  }
+}
+
+impl Int for i32 {
+  fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_sub(by as Self)
+  }
+}
+
+impl Int for i64 {
+  fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_sub(by as Self)
+  }
+}
+
+impl Int for i128 {
+  fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+    self.checked_sub(by as Self)
+  }
+}
+
+/// Decode a variable-width hexadecimal integer.
+///
+/// *Complete version*: Will parse until the end of input if it has fewer characters than the type
+/// supports.
+///
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if end-of-input
+/// is hit before a hard boundary (non-hex character, more characters than supported).
+///
+/// # Example
+///
+/// ```rust
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
+/// use winnow::character::hex_uint;
+///
+/// fn parser(s: &[u8]) -> IResult<&[u8], u32> {
+///   hex_uint(s)
+/// }
+///
+/// assert_eq!(parser(&b"01AE"[..]), Ok((&b""[..], 0x01AE)));
+/// assert_eq!(parser(&b"abc"[..]), Ok((&b""[..], 0x0ABC)));
+/// assert_eq!(parser(&b"ggg"[..]), Err(ErrMode::Backtrack(Error::new(&b"ggg"[..], ErrorKind::IsA))));
+/// ```
+///
+/// ```rust
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::character::hex_uint;
+///
+/// fn parser(s: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, u32> {
+///   hex_uint(s)
+/// }
+///
+/// assert_eq!(parser(Streaming(&b"01AE;"[..])), Ok((Streaming(&b";"[..]), 0x01AE)));
+/// assert_eq!(parser(Streaming(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming(&b"ggg"[..])), Err(ErrMode::Backtrack(Error::new(Streaming(&b"ggg"[..]), ErrorKind::IsA))));
+/// ```
+#[inline]
+pub fn hex_uint<I, O, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, O, E>
+where
+  I: InputIsStreaming<STREAMING>,
+  I: Input,
+  O: HexUint,
+  <I as Input>::Token: AsChar,
+  <I as Input>::Slice: AsBytes,
+{
+  let invalid_offset = input
+    .offset_for(|c| {
+      let c = c.as_char();
+      !"0123456789abcdefABCDEF".contains(c)
+    })
+    .unwrap_or_else(|| input.input_len());
+  let max_nibbles = O::max_nibbles(sealed::SealedMarker);
+  let max_offset = input.offset_at(max_nibbles);
+  let offset = match max_offset {
+    Ok(max_offset) => {
+      if max_offset < invalid_offset {
+        // Overflow
+        return Err(ErrMode::from_error_kind(input, ErrorKind::IsA));
+      } else {
+        invalid_offset
+      }
+    }
+    Err(_) => {
+      if STREAMING && invalid_offset == input.input_len() {
+        // Only the next byte is guaranteed required
+        return Err(ErrMode::Incomplete(Needed::new(1)));
+      } else {
+        invalid_offset
+      }
+    }
+  };
+  if offset == 0 {
+    // Must be at least one digit
+    return Err(ErrMode::from_error_kind(input, ErrorKind::IsA));
+  }
+  let (remaining, parsed) = input.next_slice(offset);
+
+  let mut res = O::default();
+  for c in parsed.as_bytes() {
+    let nibble = *c as char;
+    let nibble = nibble.to_digit(16).unwrap_or(0) as u8;
+    let nibble = O::from(nibble);
+    res = (res << O::from(4)) + nibble;
+  }
+
+  Ok((remaining, res))
+}
+
+/// Metadata for parsing hex numbers
+pub trait HexUint:
+  Default + Shl<Self, Output = Self> + Add<Self, Output = Self> + From<u8>
+{
+  #[doc(hidden)]
+  fn max_nibbles(_: sealed::SealedMarker) -> usize;
+}
+
+impl HexUint for u8 {
+  #[inline(always)]
+  fn max_nibbles(_: sealed::SealedMarker) -> usize {
+    2
+  }
+}
+
+impl HexUint for u16 {
+  #[inline(always)]
+  fn max_nibbles(_: sealed::SealedMarker) -> usize {
+    4
+  }
+}
+
+impl HexUint for u32 {
+  #[inline(always)]
+  fn max_nibbles(_: sealed::SealedMarker) -> usize {
+    8
+  }
+}
+
+impl HexUint for u64 {
+  #[inline(always)]
+  fn max_nibbles(_: sealed::SealedMarker) -> usize {
+    16
+  }
+}
+
+impl HexUint for u128 {
+  #[inline(always)]
+  fn max_nibbles(_: sealed::SealedMarker) -> usize {
+    32
+  }
+}
 
 /// Recognizes floating point number in text format and returns a f32.
 ///
@@ -950,13 +1275,14 @@ uints! { u8 u16 u32 u64 u128 }
 /// # Example
 ///
 /// ```rust
+/// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// use winnow::character::f32;
+/// use winnow::character::float;
 ///
-/// let parser = |s| {
-///   f32(s)
-/// };
+/// fn parser(s: &str) -> IResult<&str, f64> {
+///   float(s)
+/// }
 ///
 /// assert_eq!(parser("11e-1"), Ok(("", 1.1)));
 /// assert_eq!(parser("123E-02"), Ok(("", 1.23)));
@@ -965,14 +1291,15 @@ uints! { u8 u16 u32 u64 u128 }
 /// ```
 ///
 /// ```rust
+/// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
-/// use winnow::character::f32;
+/// use winnow::character::float;
 ///
-/// let parser = |s| {
-///   f32(s)
-/// };
+/// fn parser(s: Streaming<&str>) -> IResult<Streaming<&str>, f64> {
+///   float(s)
+/// }
 ///
 /// assert_eq!(parser(Streaming("11e-1 ")), Ok((Streaming(" "), 1.1)));
 /// assert_eq!(parser(Streaming("11e-1")), Err(ErrMode::Incomplete(Needed::new(1))));
@@ -981,160 +1308,24 @@ uints! { u8 u16 u32 u64 u128 }
 /// assert_eq!(parser(Streaming("abc")), Err(ErrMode::Backtrack(Error::new(Streaming("abc"), ErrorKind::Float))));
 /// ```
 #[inline(always)]
-pub fn f32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f32, E>
+pub fn float<I, O, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, O, E>
 where
   I: InputIsStreaming<STREAMING>,
   I: Input,
   I: Offset + Compare<&'static str>,
-  <I as Input>::Slice: ParseTo<f32>,
+  <I as Input>::Slice: ParseTo<O>,
   <I as Input>::Token: AsChar + Copy,
   <I as Input>::IterOffsets: Clone,
   I: AsBytes,
 {
-  if STREAMING {
-    crate::number::streaming::float(input)
+  let (i, s) = if STREAMING {
+    crate::number::streaming::recognize_float_or_exceptions(input)?
   } else {
-    crate::number::complete::float(input)
-  }
-}
-
-/// Recognizes floating point number in text format and returns a f64.
-///
-/// *Complete version*: Can parse until the end of input.
-///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
-///
-/// # Example
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::error::Needed::Size;
-/// use winnow::character::f64;
-///
-/// let parser = |s| {
-///   f64(s)
-/// };
-///
-/// assert_eq!(parser("11e-1"), Ok(("", 1.1)));
-/// assert_eq!(parser("123E-02"), Ok(("", 1.23)));
-/// assert_eq!(parser("123K-01"), Ok(("K-01", 123.0)));
-/// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Float))));
-/// ```
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::error::Needed::Size;
-/// # use winnow::input::Streaming;
-/// use winnow::character::f64;
-///
-/// let parser = |s| {
-///   f64(s)
-/// };
-///
-/// assert_eq!(parser(Streaming("11e-1 ")), Ok((Streaming(" "), 1.1)));
-/// assert_eq!(parser(Streaming("11e-1")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(parser(Streaming("123E-02")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(parser(Streaming("123K-01")), Ok((Streaming("K-01"), 123.0)));
-/// assert_eq!(parser(Streaming("abc")), Err(ErrMode::Backtrack(Error::new(Streaming("abc"), ErrorKind::Float))));
-/// ```
-#[inline(always)]
-pub fn f64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f64, E>
-where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  I: Offset + Compare<&'static str>,
-  <I as Input>::Slice: ParseTo<f64>,
-  <I as Input>::Token: AsChar + Copy,
-  <I as Input>::IterOffsets: Clone,
-  I: AsBytes,
-{
-  if STREAMING {
-    crate::number::streaming::double(input)
-  } else {
-    crate::number::complete::double(input)
-  }
-}
-
-/// Recognizes floating point number in a byte string and returns the corresponding slice.
-///
-/// *Complete version*: Can parse until the end of input.
-///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
-///
-/// # Example
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::error::Needed::Size;
-/// use winnow::character::recognize_float;
-///
-/// let parser = |s| {
-///   recognize_float(s)
-/// };
-///
-/// assert_eq!(parser("11e-1"), Ok(("", "11e-1")));
-/// assert_eq!(parser("123E-02"), Ok(("", "123E-02")));
-/// assert_eq!(parser("123K-01"), Ok(("K-01", "123")));
-/// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Char))));
-/// ```
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
-/// use winnow::character::recognize_float;
-///
-/// let parser = |s| {
-///   recognize_float(s)
-/// };
-///
-/// assert_eq!(parser(Streaming("11e-1;")), Ok((Streaming(";"), "11e-1")));
-/// assert_eq!(parser(Streaming("123E-02;")), Ok((Streaming(";"), "123E-02")));
-/// assert_eq!(parser(Streaming("123K-01")), Ok((Streaming("K-01"), "123")));
-/// assert_eq!(parser(Streaming("abc")), Err(ErrMode::Backtrack(Error::new(Streaming("abc"), ErrorKind::Char))));
-/// ```
-#[inline(always)]
-pub fn recognize_float<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
-) -> IResult<I, <I as Input>::Slice, E>
-where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  I: Offset + Compare<&'static str>,
-  <I as Input>::Token: AsChar + Copy,
-  <I as Input>::IterOffsets: Clone,
-  I: AsBytes,
-{
-  if STREAMING {
-    crate::number::streaming::recognize_float(input)
-  } else {
-    crate::number::complete::recognize_float(input)
-  }
-}
-
-/// Recognizes a floating point number in text format
-///
-/// It returns a tuple of (`sign`, `integer part`, `fraction part` and `exponent`) of the input
-/// data.
-///
-/// *Complete version*: Can parse until the end of input.
-///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
-///
-#[inline(always)]
-#[allow(clippy::type_complexity)]
-pub fn recognize_float_parts<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
-) -> IResult<I, (bool, <I as Input>::Slice, <I as Input>::Slice, i32), E>
-where
-  I: InputIsStreaming<STREAMING>,
-  I: Input + Compare<&'static [u8]> + AsBytes,
-  <I as Input>::Token: AsChar + Copy,
-  <I as Input>::Slice: SliceLen,
-{
-  if STREAMING {
-    crate::number::streaming::recognize_float_parts(input)
-  } else {
-    crate::number::complete::recognize_float_parts(input)
+    crate::number::complete::recognize_float_or_exceptions(input)?
+  };
+  match s.parse_to() {
+    Some(f) => Ok((i, f)),
+    None => Err(ErrMode::from_error_kind(i, ErrorKind::Float)),
   }
 }
 
@@ -1337,4 +1528,8 @@ pub fn is_space(chr: u8) -> bool {
 #[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_newline`")]
 pub fn is_newline(chr: u8) -> bool {
   chr == b'\n'
+}
+
+mod sealed {
+  pub struct SealedMarker;
 }

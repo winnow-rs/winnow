@@ -1527,10 +1527,10 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::number::hex_u32`][crate::number::hex_u32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::hex_uint`][crate::character::hex_uint] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "0.1.0",
-  note = "Replaced with `winnow::number::hex_u32` with input wrapped in `winnow::input::Streaming`"
+  note = "Replaced with `winnow::character::hex_uint` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn hex_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
@@ -1576,28 +1576,9 @@ where
   Ok((remaining, res))
 }
 
-/// Recognizes a floating point number in text format and returns the corresponding part of the input.
-///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if it reaches the end of input.
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// use winnow::number::streaming::recognize_float;
-///
-/// let parser = |s| {
-///   recognize_float(s)
-/// };
-///
-/// assert_eq!(parser("11e-1;"), Ok((";", "11e-1")));
-/// assert_eq!(parser("123E-02;"), Ok((";", "123E-02")));
-/// assert_eq!(parser("123K-01"), Ok(("K-01", "123")));
-/// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Char))));
-/// ```
-#[rustfmt::skip]
-///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::recognize_float`][crate::character::recognize_float] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
-#[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::recognize_float` with input wrapped in `winnow::input::Streaming`")]
-pub fn recognize_float<T, E:ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+/// **WARNING:** Deprecated, no longer supported
+#[deprecated(since = "0.3.0", note = "No longer supported")]
+pub fn recognize_float<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
   T: Input,
   T: Offset + Compare<&'static str>,
@@ -1605,29 +1586,24 @@ where
   <T as Input>::IterOffsets: Clone,
   T: AsBytes,
 {
-    tuple((
+  tuple((
+    opt(alt((char('+'), char('-')))),
+    alt((
+      map(tuple((digit1, opt(pair(char('.'), opt(digit1))))), |_| ()),
+      map(tuple((char('.'), digit1)), |_| ()),
+    )),
+    opt(tuple((
+      alt((char('e'), char('E'))),
       opt(alt((char('+'), char('-')))),
-      alt((
-        map(tuple((digit1, opt(pair(char('.'), opt(digit1))))), |_| ()),
-        map(tuple((char('.'), digit1)), |_| ())
-      )),
-      opt(tuple((
-        alt((char('e'), char('E'))),
-        opt(alt((char('+'), char('-')))),
-        cut_err(digit1)
-      )))
-    ))
-  .recognize().parse_next(input)
+      cut_err(digit1),
+    ))),
+  ))
+  .recognize()
+  .parse_next(input)
 }
 
-// workaround until issues with minimal-lexical are fixed
-#[doc(hidden)]
-///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::recognize_float_or_exceptions`][character::number::recognize_float_or_exceptions] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
-#[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::character::recognize_float_or_exceptions` with input wrapped in `winnow::input::Streaming`"
-)]
+/// **WARNING:** Deprecated, no longer supported
+#[deprecated(since = "0.3.0", note = "No longer supported")]
 pub fn recognize_float_or_exceptions<T, E: ParseError<T>>(
   input: T,
 ) -> IResult<T, <T as Input>::Slice, E>
@@ -1665,20 +1641,9 @@ where
   ))(input)
 }
 
-/// Recognizes a floating point number in text format
-///
-/// It returns a tuple of (`sign`, `integer part`, `fraction part` and `exponent`) of the input
-/// data.
-///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
-///
-///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::recognize_float_parts`][crate::character::recognize_float_parts] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
-#[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::character::recognize_float_parts` with input wrapped in `winnow::input::Streaming`"
-)]
+/// **WARNING:** Deprecated, no longer supported
 #[allow(clippy::type_complexity)]
+#[deprecated(since = "0.3.0", note = "No longer supported")]
 pub fn recognize_float_parts<T, E: ParseError<T>>(
   input: T,
 ) -> IResult<T, (bool, <T as Input>::Slice, <T as Input>::Slice, i32), E>
@@ -1763,10 +1728,10 @@ where
 /// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Float))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::f32`][crate::character::f32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::float`][crate::character::float] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "0.1.0",
-  note = "Replaced with `winnow::character::f32` with input wrapped in `winnow::input::Streaming`"
+  note = "Replaced with `winnow::character::float` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>
 where
@@ -1806,10 +1771,10 @@ where
 /// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Float))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::f64`][crate::character::f64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::float`][crate::character::float] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "0.1.0",
-  note = "Replaced with `winnow::character::f64` with input wrapped in `winnow::input::Streaming`"
+  note = "Replaced with `winnow::character::float` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>
 where

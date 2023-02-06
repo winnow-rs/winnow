@@ -5,7 +5,7 @@ use winnow::{
   branch::alt,
   bytes::one_of,
   bytes::{tag, take_while},
-  character::{alphanumeric1 as alphanumeric, escaped, f64},
+  character::{alphanumeric1 as alphanumeric, escaped, float},
   combinator::cut_err,
   error::ParseError,
   multi::separated_list0,
@@ -62,7 +62,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
 
   pub fn number(&self) -> Option<f64> {
     println!("number()");
-    match f64::<_, (), false>(self.data()) {
+    match float::<_, _, (), false>(self.data()) {
       Ok((i, o)) => {
         self.offset(i);
         println!("-> {}", o);
@@ -258,7 +258,7 @@ fn value(i: &str) -> IResult<&str, ()> {
       hash,
       array,
       string.map(|_| ()),
-      f64.map(|_| ()),
+      float::<_, f64, _, false>.map(|_| ()),
       boolean.map(|_| ()),
     )),
   )(i)

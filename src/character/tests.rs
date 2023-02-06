@@ -424,16 +424,66 @@ mod complete {
     #[test]
     fn ints(s in "\\PC*") {
         let res1 = digit_to_i16(&s);
-        let res2 = i16(s.as_str());
+        let res2 = dec_int(s.as_str());
         assert_eq!(res1, res2);
     }
 
     #[test]
     fn uints(s in "\\PC*") {
         let res1 = digit_to_u32(&s);
-        let res2 = u32(s.as_str());
+        let res2 = dec_uint(s.as_str());
         assert_eq!(res1, res2);
     }
+  }
+
+  #[test]
+  fn hex_uint_tests() {
+    fn hex_u32(input: &[u8]) -> IResult<&[u8], u32> {
+      hex_uint(input)
+    }
+
+    assert_parse!(
+      hex_u32(&b";"[..]),
+      Err(ErrMode::Backtrack(error_position!(
+        &b";"[..],
+        ErrorKind::IsA
+      )))
+    );
+    assert_parse!(hex_u32(&b"ff;"[..]), Ok((&b";"[..], 255)));
+    assert_parse!(hex_u32(&b"1be2;"[..]), Ok((&b";"[..], 7138)));
+    assert_parse!(hex_u32(&b"c5a31be2;"[..]), Ok((&b";"[..], 3_315_801_058)));
+    assert_parse!(hex_u32(&b"C5A31be2;"[..]), Ok((&b";"[..], 3_315_801_058)));
+    assert_parse!(
+      hex_u32(&b"00c5a31be2;"[..]), // overflow
+      Err(ErrMode::Backtrack(error_position!(
+        &b"00c5a31be2;"[..],
+        ErrorKind::IsA
+      )))
+    );
+    assert_parse!(
+      hex_u32(&b"c5a31be201;"[..]), // overflow
+      Err(ErrMode::Backtrack(error_position!(
+        &b"c5a31be201;"[..],
+        ErrorKind::IsA
+      )))
+    );
+    assert_parse!(hex_u32(&b"ffffffff;"[..]), Ok((&b";"[..], 4_294_967_295)));
+    assert_parse!(
+      hex_u32(&b"ffffffffffffffff;"[..]), // overflow
+      Err(ErrMode::Backtrack(error_position!(
+        &b"ffffffffffffffff;"[..],
+        ErrorKind::IsA
+      )))
+    );
+    assert_parse!(
+      hex_u32(&b"ffffffffffffffff"[..]), // overflow
+      Err(ErrMode::Backtrack(error_position!(
+        &b"ffffffffffffffff"[..],
+        ErrorKind::IsA
+      )))
+    );
+    assert_parse!(hex_u32(&b"0x1be2;"[..]), Ok((&b"x1be2;"[..], 0)));
+    assert_parse!(hex_u32(&b"12af"[..]), Ok((&b""[..], 0x12af)));
   }
 
   #[test]
@@ -466,30 +516,29 @@ mod complete {
       println!("now parsing: {} -> {}", test, expected32);
 
       let larger = test.to_string();
-      assert_parse!(recognize_float(&larger[..]), Ok(("", test)));
 
-      assert_parse!(f32(larger.as_bytes()), Ok((&b""[..], expected32)));
-      assert_parse!(f32(&larger[..]), Ok(("", expected32)));
+      assert_parse!(float(larger.as_bytes()), Ok((&b""[..], expected32)));
+      assert_parse!(float(&larger[..]), Ok(("", expected32)));
 
-      assert_parse!(f64(larger.as_bytes()), Ok((&b""[..], expected64)));
-      assert_parse!(f64(&larger[..]), Ok(("", expected64)));
+      assert_parse!(float(larger.as_bytes()), Ok((&b""[..], expected64)));
+      assert_parse!(float(&larger[..]), Ok(("", expected64)));
     }
 
     let remaining_exponent = "-1.234E-";
     assert_parse!(
-      recognize_float(remaining_exponent),
+      float::<_, f64, _, false>(remaining_exponent),
       Err(ErrMode::Cut(Error {
-        input: "",
-        kind: ErrorKind::Digit
+        input: "-1.234E-",
+        kind: ErrorKind::Float
       }))
     );
 
-    let (_i, nan) = f32::<_, (), false>("NaN").unwrap();
+    let (_i, nan) = float::<_, f32, (), false>("NaN").unwrap();
     assert!(nan.is_nan());
 
-    let (_i, inf) = f32::<_, (), false>("inf").unwrap();
+    let (_i, inf) = float::<_, f32, (), false>("inf").unwrap();
     assert!(inf.is_infinite());
-    let (_i, inf) = f32::<_, (), false>("infinite").unwrap();
+    let (_i, inf) = float::<_, f32, (), false>("infinite").unwrap();
     assert!(inf.is_infinite());
   }
 
@@ -516,7 +565,7 @@ mod complete {
     fn floats(s in "\\PC*") {
         println!("testing {}", s);
         let res1 = parse_f64(&s);
-        let res2 = f64::<_, (), false>(s.as_str());
+        let res2 = float::<_, f64, (), false>(s.as_str());
         assert_eq!(res1, res2);
     }
   }
@@ -1382,15 +1431,86 @@ mod streaming {
     #[test]
     fn ints(s in "\\PC*") {
         let res1 = digit_to_i16(Streaming(&s));
-        let res2 = i16(Streaming(s.as_str()));
+        let res2 = dec_int(Streaming(s.as_str()));
         assert_eq!(res1, res2);
     }
 
     #[test]
     fn uints(s in "\\PC*") {
         let res1 = digit_to_u32(Streaming(&s));
-        let res2 = u32(Streaming(s.as_str()));
+        let res2 = dec_uint(Streaming(s.as_str()));
         assert_eq!(res1, res2);
     }
+  }
+
+  #[test]
+  fn hex_uint_tests() {
+    fn hex_u32(input: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, u32> {
+      hex_uint(input)
+    }
+
+    assert_parse!(
+      hex_u32(Streaming(&b";"[..])),
+      Err(ErrMode::Backtrack(error_position!(
+        Streaming(&b";"[..]),
+        ErrorKind::IsA
+      )))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"ff;"[..])),
+      Ok((Streaming(&b";"[..]), 255))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"1be2;"[..])),
+      Ok((Streaming(&b";"[..]), 7138))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"c5a31be2;"[..])),
+      Ok((Streaming(&b";"[..]), 3_315_801_058))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"C5A31be2;"[..])),
+      Ok((Streaming(&b";"[..]), 3_315_801_058))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"00c5a31be2;"[..])), // overflow
+      Err(ErrMode::Backtrack(error_position!(
+        Streaming(&b"00c5a31be2;"[..]),
+        ErrorKind::IsA
+      )))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"c5a31be201;"[..])), // overflow
+      Err(ErrMode::Backtrack(error_position!(
+        Streaming(&b"c5a31be201;"[..]),
+        ErrorKind::IsA
+      )))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"ffffffff;"[..])),
+      Ok((Streaming(&b";"[..]), 4_294_967_295))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"ffffffffffffffff;"[..])), // overflow
+      Err(ErrMode::Backtrack(error_position!(
+        Streaming(&b"ffffffffffffffff;"[..]),
+        ErrorKind::IsA
+      )))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"ffffffffffffffff"[..])), // overflow
+      Err(ErrMode::Backtrack(error_position!(
+        Streaming(&b"ffffffffffffffff"[..]),
+        ErrorKind::IsA
+      )))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"0x1be2;"[..])),
+      Ok((Streaming(&b"x1be2;"[..]), 0))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"12af"[..])),
+      Err(ErrMode::Incomplete(Needed::new(1)))
+    );
   }
 }

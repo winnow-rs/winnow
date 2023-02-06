@@ -135,23 +135,26 @@
 //!
 //! Alternatively there are ready to use functions:
 //!
-//! - [`alpha0`][crate::character::alpha0]: Recognizes zero or more lowercase and uppercase alphabetic characters: `[a-zA-Z]`. [`alpha1`][crate::character::alpha1] does the same but returns at least one character
-//! - [`alphanumeric0`][crate::character::alphanumeric0]: Recognizes zero or more numerical and alphabetic characters: `[0-9a-zA-Z]`. [`alphanumeric1`][crate::character::alphanumeric1] does the same but returns at least one character
 //! - [`any`][crate::bytes::any]: Matches one token
+//! - [`tab`][crate::character::tab]: Matches a tab character `\t`
 //! - [`crlf`][crate::character::crlf]: Recognizes the string `\r\n`
-//! - [`digit0`][crate::character::digit0]: Recognizes zero or more numerical characters: `[0-9]`. [`digit1`][crate::character::digit1] does the same but returns at least one character
-//! - [`f64`][crate::character::f64]: Recognizes floating point number in a byte string and returns a `f64`
-//! - [`f32`][crate::character::f32]: Recognizes floating point number in a byte string and returns a `f32`
-//! - [`hex_digit0`][crate::character::hex_digit0]: Recognizes zero or more hexadecimal numerical characters: `[0-9A-Fa-f]`. [`hex_digit1`][crate::character::hex_digit1] does the same but returns at least one character
-//! - [`hex_u32`][crate::number::hex_u32]: Recognizes a hex-encoded integer
 //! - [`line_ending`][crate::character::line_ending]: Recognizes an end of line (both `\n` and `\r\n`)
-//! - [`multispace0`][crate::character::multispace0]: Recognizes zero or more spaces, tabs, carriage returns and line feeds. [`multispace1`][crate::character::multispace1] does the same but returns at least one character
 //! - [`newline`][crate::character::newline]: Matches a newline character `\n`
 //! - [`not_line_ending`][crate::character::not_line_ending]: Recognizes a string of any char except `\r` or `\n`
-//! - [`oct_digit0`][crate::character::oct_digit0]: Recognizes zero or more octal characters: `[0-7]`. [`oct_digit1`][crate::character::oct_digit1] does the same but returns at least one character
 //! - [`rest`][rest]: Return the remaining input
+//!
+//! - [`alpha0`][crate::character::alpha0]: Recognizes zero or more lowercase and uppercase alphabetic characters: `[a-zA-Z]`. [`alpha1`][crate::character::alpha1] does the same but returns at least one character
+//! - [`alphanumeric0`][crate::character::alphanumeric0]: Recognizes zero or more numerical and alphabetic characters: `[0-9a-zA-Z]`. [`alphanumeric1`][crate::character::alphanumeric1] does the same but returns at least one character
 //! - [`space0`][crate::character::space0]: Recognizes zero or more spaces and tabs. [`space1`][crate::character::space1] does the same but returns at least one character
-//! - [`tab`][crate::character::tab]: Matches a tab character `\t`
+//! - [`multispace0`][crate::character::multispace0]: Recognizes zero or more spaces, tabs, carriage returns and line feeds. [`multispace1`][crate::character::multispace1] does the same but returns at least one character
+//! - [`digit0`][crate::character::digit0]: Recognizes zero or more numerical characters: `[0-9]`. [`digit1`][crate::character::digit1] does the same but returns at least one character
+//! - [`hex_digit0`][crate::character::hex_digit0]: Recognizes zero or more hexadecimal numerical characters: `[0-9A-Fa-f]`. [`hex_digit1`][crate::character::hex_digit1] does the same but returns at least one character
+//! - [`oct_digit0`][crate::character::oct_digit0]: Recognizes zero or more octal characters: `[0-7]`. [`oct_digit1`][crate::character::oct_digit1] does the same but returns at least one character
+//!
+//! - [`float`][crate::character::float]: Parse a floating point number in a byte string
+//! - [`dec_int`][crate::character::dec_uint]: Decode a variable-width, decimal signed integer
+//! - [`dec_uint`][crate::character::dec_uint]: Decode a variable-width, decimal unsigned integer
+//! - [`hex_uint`][crate::character::hex_uint]: Decode a variable-width, hexadecimal integer
 
 use crate::error::{ContextError, ErrMode, ErrorKind, FromExternalError, Needed, ParseError};
 use crate::input::Offset;
