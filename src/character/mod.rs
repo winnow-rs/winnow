@@ -1000,7 +1000,14 @@ where
   let max_nibbles = O::max_nibbles(sealed::SealedMarker);
   let max_offset = input.offset_at(max_nibbles);
   let offset = match max_offset {
-    Ok(max_offset) => invalid_offset.min(max_offset),
+    Ok(max_offset) => {
+      if max_offset < invalid_offset {
+        // Overflow
+        return Err(ErrMode::from_error_kind(input, ErrorKind::IsA));
+      } else {
+        invalid_offset
+      }
+    }
     Err(_) => {
       if STREAMING && invalid_offset == input.input_len() {
         // Only the next byte is guaranteed required

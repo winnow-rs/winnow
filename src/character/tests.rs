@@ -453,19 +453,34 @@ mod complete {
     assert_parse!(hex_u32(&b"1be2;"[..]), Ok((&b";"[..], 7138)));
     assert_parse!(hex_u32(&b"c5a31be2;"[..]), Ok((&b";"[..], 3_315_801_058)));
     assert_parse!(hex_u32(&b"C5A31be2;"[..]), Ok((&b";"[..], 3_315_801_058)));
-    assert_parse!(hex_u32(&b"00c5a31be2;"[..]), Ok((&b"e2;"[..], 12_952_347)));
     assert_parse!(
-      hex_u32(&b"c5a31be201;"[..]),
-      Ok((&b"01;"[..], 3_315_801_058))
+      hex_u32(&b"00c5a31be2;"[..]), // overflow
+      Err(ErrMode::Backtrack(error_position!(
+        &b"00c5a31be2;"[..],
+        ErrorKind::IsA
+      )))
+    );
+    assert_parse!(
+      hex_u32(&b"c5a31be201;"[..]), // overflow
+      Err(ErrMode::Backtrack(error_position!(
+        &b"c5a31be201;"[..],
+        ErrorKind::IsA
+      )))
     );
     assert_parse!(hex_u32(&b"ffffffff;"[..]), Ok((&b";"[..], 4_294_967_295)));
     assert_parse!(
-      hex_u32(&b"ffffffffffffffff;"[..]),
-      Ok((&b"ffffffff;"[..], 4_294_967_295))
+      hex_u32(&b"ffffffffffffffff;"[..]), // overflow
+      Err(ErrMode::Backtrack(error_position!(
+        &b"ffffffffffffffff;"[..],
+        ErrorKind::IsA
+      )))
     );
     assert_parse!(
-      hex_u32(&b"ffffffffffffffff"[..]),
-      Ok((&b"ffffffff"[..], 4_294_967_295))
+      hex_u32(&b"ffffffffffffffff"[..]), // overflow
+      Err(ErrMode::Backtrack(error_position!(
+        &b"ffffffffffffffff"[..],
+        ErrorKind::IsA
+      )))
     );
     assert_parse!(hex_u32(&b"0x1be2;"[..]), Ok((&b"x1be2;"[..], 0)));
     assert_parse!(hex_u32(&b"12af"[..]), Ok((&b""[..], 0x12af)));
@@ -1459,24 +1474,36 @@ mod streaming {
       Ok((Streaming(&b";"[..]), 3_315_801_058))
     );
     assert_parse!(
-      hex_u32(Streaming(&b"00c5a31be2;"[..])),
-      Ok((Streaming(&b"e2;"[..]), 12_952_347))
+      hex_u32(Streaming(&b"00c5a31be2;"[..])), // overflow
+      Err(ErrMode::Backtrack(error_position!(
+        Streaming(&b"00c5a31be2;"[..]),
+        ErrorKind::IsA
+      )))
     );
     assert_parse!(
-      hex_u32(Streaming(&b"c5a31be201;"[..])),
-      Ok((Streaming(&b"01;"[..]), 3_315_801_058))
+      hex_u32(Streaming(&b"c5a31be201;"[..])), // overflow
+      Err(ErrMode::Backtrack(error_position!(
+        Streaming(&b"c5a31be201;"[..]),
+        ErrorKind::IsA
+      )))
     );
     assert_parse!(
       hex_u32(Streaming(&b"ffffffff;"[..])),
       Ok((Streaming(&b";"[..]), 4_294_967_295))
     );
     assert_parse!(
-      hex_u32(Streaming(&b"ffffffffffffffff;"[..])),
-      Ok((Streaming(&b"ffffffff;"[..]), 4_294_967_295))
+      hex_u32(Streaming(&b"ffffffffffffffff;"[..])), // overflow
+      Err(ErrMode::Backtrack(error_position!(
+        Streaming(&b"ffffffffffffffff;"[..]),
+        ErrorKind::IsA
+      )))
     );
     assert_parse!(
-      hex_u32(Streaming(&b"ffffffffffffffff"[..])),
-      Ok((Streaming(&b"ffffffff"[..]), 4_294_967_295))
+      hex_u32(Streaming(&b"ffffffffffffffff"[..])), // overflow
+      Err(ErrMode::Backtrack(error_position!(
+        Streaming(&b"ffffffffffffffff"[..]),
+        ErrorKind::IsA
+      )))
     );
     assert_parse!(
       hex_u32(Streaming(&b"0x1be2;"[..])),
