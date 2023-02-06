@@ -14,19 +14,18 @@ use crate::Parser;
 
 #[test]
 fn complete_take_while_m_n_utf8_all_matching() {
-  let result: IResult<&str, &str> = super::take_while_m_n(1, 4, |c: char| c.is_alphabetic())("øn");
+  let result: IResult<&str, &str> = take_while_m_n(1, 4, |c: char| c.is_alphabetic())("øn");
   assert_eq!(result, Ok(("", "øn")));
 }
 
 #[test]
 fn complete_take_while_m_n_utf8_all_matching_substring() {
-  let result: IResult<&str, &str> = super::take_while_m_n(1, 1, |c: char| c.is_alphabetic())("øn");
+  let result: IResult<&str, &str> = take_while_m_n(1, 1, |c: char| c.is_alphabetic())("øn");
   assert_eq!(result, Ok(("n", "ø")));
 }
 
 #[test]
 fn streaming_any_str() {
-  use super::any;
   assert_eq!(
     any::<_, Error<Streaming<&str>>, true>(Streaming("Ә")),
     Ok((Streaming(""), 'Ә'))
@@ -433,7 +432,7 @@ fn streaming_take_utf8() {
 }
 
 #[test]
-fn streaming_take_while_m_n_utf8() {
+fn streaming_take_while_m_n_utf8_fixed() {
   fn parser(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
     take_while_m_n(1, 1, |c| c == 'A' || c == '😃')(i)
   }
@@ -442,11 +441,28 @@ fn streaming_take_while_m_n_utf8() {
 }
 
 #[test]
-fn streaming_take_while_m_n_utf8_full_match() {
+fn streaming_take_while_m_n_utf8_range() {
+  fn parser(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+    take_while_m_n(1, 2, |c| c == 'A' || c == '😃')(i)
+  }
+  assert_eq!(parser(Streaming("A!")), Ok((Streaming("!"), "A")));
+  assert_eq!(parser(Streaming("😃!")), Ok((Streaming(""), "😃!")));
+}
+
+#[test]
+fn streaming_take_while_m_n_utf8_full_match_fixed() {
   fn parser(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
     take_while_m_n(1, 1, |c: char| c.is_alphabetic())(i)
   }
   assert_eq!(parser(Streaming("øn")), Ok((Streaming("n"), "ø")));
+}
+
+#[test]
+fn streaming_take_while_m_n_utf8_full_match_range() {
+  fn parser(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+    take_while_m_n(1, 2, |c: char| c.is_alphabetic())(i)
+  }
+  assert_eq!(parser(Streaming("øn")), Ok((Streaming(""), "øn")));
 }
 
 #[test]
