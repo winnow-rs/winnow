@@ -14,7 +14,7 @@ use crate::lib::std::ops::{Add, Shl};
 use crate::error::ParseError;
 use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::input::Compare;
-use crate::input::{AsBytes, AsChar, Input, InputIsStreaming, Offset, ParseTo, SliceLen};
+use crate::input::{AsBytes, AsChar, Input, InputIsStreaming, Offset, ParseTo};
 use crate::IResult;
 use crate::Parser;
 
@@ -1137,89 +1137,6 @@ where
   match s.parse_to() {
     Some(f) => Ok((i, f)),
     None => Err(ErrMode::from_error_kind(i, ErrorKind::Float)),
-  }
-}
-
-/// Recognizes floating point number in a byte string and returns the corresponding slice.
-///
-/// *Complete version*: Can parse until the end of input.
-///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
-///
-/// # Example
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::error::Needed::Size;
-/// use winnow::character::recognize_float;
-///
-/// let parser = |s| {
-///   recognize_float(s)
-/// };
-///
-/// assert_eq!(parser("11e-1"), Ok(("", "11e-1")));
-/// assert_eq!(parser("123E-02"), Ok(("", "123E-02")));
-/// assert_eq!(parser("123K-01"), Ok(("K-01", "123")));
-/// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Char))));
-/// ```
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
-/// use winnow::character::recognize_float;
-///
-/// let parser = |s| {
-///   recognize_float(s)
-/// };
-///
-/// assert_eq!(parser(Streaming("11e-1;")), Ok((Streaming(";"), "11e-1")));
-/// assert_eq!(parser(Streaming("123E-02;")), Ok((Streaming(";"), "123E-02")));
-/// assert_eq!(parser(Streaming("123K-01")), Ok((Streaming("K-01"), "123")));
-/// assert_eq!(parser(Streaming("abc")), Err(ErrMode::Backtrack(Error::new(Streaming("abc"), ErrorKind::Char))));
-/// ```
-#[inline(always)]
-pub fn recognize_float<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
-) -> IResult<I, <I as Input>::Slice, E>
-where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  I: Offset + Compare<&'static str>,
-  <I as Input>::Token: AsChar + Copy,
-  <I as Input>::IterOffsets: Clone,
-  I: AsBytes,
-{
-  if STREAMING {
-    crate::number::streaming::recognize_float(input)
-  } else {
-    crate::number::complete::recognize_float(input)
-  }
-}
-
-/// Recognizes a floating point number in text format
-///
-/// It returns a tuple of (`sign`, `integer part`, `fraction part` and `exponent`) of the input
-/// data.
-///
-/// *Complete version*: Can parse until the end of input.
-///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
-///
-#[inline(always)]
-#[allow(clippy::type_complexity)]
-pub fn recognize_float_parts<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
-) -> IResult<I, (bool, <I as Input>::Slice, <I as Input>::Slice, i32), E>
-where
-  I: InputIsStreaming<STREAMING>,
-  I: Input + Compare<&'static [u8]> + AsBytes,
-  <I as Input>::Token: AsChar + Copy,
-  <I as Input>::Slice: SliceLen,
-{
-  if STREAMING {
-    crate::number::streaming::recognize_float_parts(input)
-  } else {
-    crate::number::complete::recognize_float_parts(input)
   }
 }
 

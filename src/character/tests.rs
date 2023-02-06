@@ -516,7 +516,6 @@ mod complete {
       println!("now parsing: {} -> {}", test, expected32);
 
       let larger = test.to_string();
-      assert_parse!(recognize_float(&larger[..]), Ok(("", test)));
 
       assert_parse!(float(larger.as_bytes()), Ok((&b""[..], expected32)));
       assert_parse!(float(&larger[..]), Ok(("", expected32)));
@@ -527,10 +526,10 @@ mod complete {
 
     let remaining_exponent = "-1.234E-";
     assert_parse!(
-      recognize_float(remaining_exponent),
+      float::<_, f64, _, false>(remaining_exponent),
       Err(ErrMode::Cut(Error {
-        input: "",
-        kind: ErrorKind::Digit
+        input: "-1.234E-",
+        kind: ErrorKind::Float
       }))
     );
 

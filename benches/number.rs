@@ -3,7 +3,7 @@ extern crate criterion;
 
 use criterion::Criterion;
 
-use winnow::character::{float, recognize_float};
+use winnow::character::float;
 use winnow::error::ErrMode;
 use winnow::error::Error;
 use winnow::error::ErrorKind;
@@ -23,26 +23,6 @@ fn number(c: &mut Criterion) {
   parser(&data[..]).expect("should parse correctly");
   c.bench_function("number", move |b| {
     b.iter(|| parser(&data[..]).unwrap());
-  });
-}
-
-fn recognize_float_bytes(c: &mut Criterion) {
-  println!(
-    "recognize_float_bytes result: {:?}",
-    recognize_float::<_, Error<_>, false>(&b"-1.234E-12"[..])
-  );
-  c.bench_function("recognize float bytes", |b| {
-    b.iter(|| recognize_float::<_, Error<_>, false>(&b"-1.234E-12"[..]));
-  });
-}
-
-fn recognize_float_str(c: &mut Criterion) {
-  println!(
-    "recognize_float_str result: {:?}",
-    recognize_float::<_, Error<_>, false>("-1.234E-12")
-  );
-  c.bench_function("recognize float str", |b| {
-    b.iter(|| recognize_float::<_, Error<_>, false>("-1.234E-12"));
   });
 }
 
@@ -67,15 +47,12 @@ fn float_str(c: &mut Criterion) {
 }
 
 fn std_float(input: &[u8]) -> IResult<&[u8], f64, Error<&[u8]>> {
-  match recognize_float(input) {
-    Err(e) => Err(e),
-    Ok((i, s)) => match s.parse_to() {
-      Some(n) => Ok((i, n)),
-      None => Err(ErrMode::Backtrack(Error {
-        input: i,
-        kind: ErrorKind::Float,
-      })),
-    },
+  match input.parse_to() {
+    Some(n) => Ok((&[], n)),
+    None => Err(ErrMode::Backtrack(Error {
+      input,
+      kind: ErrorKind::Float,
+    })),
   }
 }
 
@@ -89,13 +66,5 @@ fn std_float_bytes(c: &mut Criterion) {
   });
 }
 
-criterion_group!(
-  benches,
-  number,
-  recognize_float_bytes,
-  recognize_float_str,
-  float_bytes,
-  std_float_bytes,
-  float_str
-);
+criterion_group!(benches, number, float_bytes, std_float_bytes, float_str);
 criterion_main!(benches);
