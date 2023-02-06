@@ -1662,8 +1662,8 @@ use crate::input::ParseTo;
 /// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Float))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::f32`][crate::character::f32]
-#[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::f32`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::float`][crate::character::float]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::float`")]
 pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>
 where
   T: Input,
@@ -1701,8 +1701,8 @@ where
 /// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Float))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::f64`][crate::character::f64]
-#[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::f64`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::float`][crate::character::float]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::float`")]
 pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>
 where
   T: Input,

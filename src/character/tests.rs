@@ -518,11 +518,11 @@ mod complete {
       let larger = test.to_string();
       assert_parse!(recognize_float(&larger[..]), Ok(("", test)));
 
-      assert_parse!(f32(larger.as_bytes()), Ok((&b""[..], expected32)));
-      assert_parse!(f32(&larger[..]), Ok(("", expected32)));
+      assert_parse!(float(larger.as_bytes()), Ok((&b""[..], expected32)));
+      assert_parse!(float(&larger[..]), Ok(("", expected32)));
 
-      assert_parse!(f64(larger.as_bytes()), Ok((&b""[..], expected64)));
-      assert_parse!(f64(&larger[..]), Ok(("", expected64)));
+      assert_parse!(float(larger.as_bytes()), Ok((&b""[..], expected64)));
+      assert_parse!(float(&larger[..]), Ok(("", expected64)));
     }
 
     let remaining_exponent = "-1.234E-";
@@ -534,12 +534,12 @@ mod complete {
       }))
     );
 
-    let (_i, nan) = f32::<_, (), false>("NaN").unwrap();
+    let (_i, nan) = float::<_, f32, (), false>("NaN").unwrap();
     assert!(nan.is_nan());
 
-    let (_i, inf) = f32::<_, (), false>("inf").unwrap();
+    let (_i, inf) = float::<_, f32, (), false>("inf").unwrap();
     assert!(inf.is_infinite());
-    let (_i, inf) = f32::<_, (), false>("infinite").unwrap();
+    let (_i, inf) = float::<_, f32, (), false>("infinite").unwrap();
     assert!(inf.is_infinite());
   }
 
@@ -566,7 +566,7 @@ mod complete {
     fn floats(s in "\\PC*") {
         println!("testing {}", s);
         let res1 = parse_f64(&s);
-        let res2 = f64::<_, (), false>(s.as_str());
+        let res2 = float::<_, f64, (), false>(s.as_str());
         assert_eq!(res1, res2);
     }
   }

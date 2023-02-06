@@ -5,7 +5,7 @@ use winnow::prelude::*;
 use winnow::{
   branch::alt,
   bytes::{any, none_of, tag, take, take_while},
-  character::f64,
+  character::float,
   combinator::cut_err,
   error::{ContextError, ParseError},
   multi::{fold_many0, separated_list0},
@@ -45,7 +45,7 @@ fn json_value<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static st
     null.value(JsonValue::Null),
     boolean.map(JsonValue::Boolean),
     string.map(JsonValue::Str),
-    f64.map(JsonValue::Num),
+    float.map(JsonValue::Num),
     array.map(JsonValue::Array),
     object.map(JsonValue::Object),
   ))(input)

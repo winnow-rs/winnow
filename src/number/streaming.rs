@@ -1763,10 +1763,10 @@ where
 /// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Float))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::f32`][crate::character::f32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::float`][crate::character::float] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "0.1.0",
-  note = "Replaced with `winnow::character::f32` with input wrapped in `winnow::input::Streaming`"
+  note = "Replaced with `winnow::character::float` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>
 where
@@ -1806,10 +1806,10 @@ where
 /// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Float))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::f64`][crate::character::f64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::float`][crate::character::float] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "0.1.0",
-  note = "Replaced with `winnow::character::f64` with input wrapped in `winnow::input::Streaming`"
+  note = "Replaced with `winnow::character::float` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>
 where

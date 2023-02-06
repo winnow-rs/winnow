@@ -1077,10 +1077,6 @@ impl HexUint for u128 {
   }
 }
 
-mod sealed {
-  pub struct SealedMarker;
-}
-
 /// Recognizes floating point number in text format and returns a f32.
 ///
 /// *Complete version*: Can parse until the end of input.
@@ -1090,13 +1086,14 @@ mod sealed {
 /// # Example
 ///
 /// ```rust
+/// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// use winnow::character::f32;
+/// use winnow::character::float;
 ///
-/// let parser = |s| {
-///   f32(s)
-/// };
+/// fn parser(s: &str) -> IResult<&str, f64> {
+///   float(s)
+/// }
 ///
 /// assert_eq!(parser("11e-1"), Ok(("", 1.1)));
 /// assert_eq!(parser("123E-02"), Ok(("", 1.23)));
@@ -1105,14 +1102,15 @@ mod sealed {
 /// ```
 ///
 /// ```rust
+/// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
 /// # use winnow::input::Streaming;
-/// use winnow::character::f32;
+/// use winnow::character::float;
 ///
-/// let parser = |s| {
-///   f32(s)
-/// };
+/// fn parser(s: Streaming<&str>) -> IResult<Streaming<&str>, f64> {
+///   float(s)
+/// }
 ///
 /// assert_eq!(parser(Streaming("11e-1 ")), Ok((Streaming(" "), 1.1)));
 /// assert_eq!(parser(Streaming("11e-1")), Err(ErrMode::Incomplete(Needed::new(1))));
@@ -1121,77 +1119,24 @@ mod sealed {
 /// assert_eq!(parser(Streaming("abc")), Err(ErrMode::Backtrack(Error::new(Streaming("abc"), ErrorKind::Float))));
 /// ```
 #[inline(always)]
-pub fn f32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f32, E>
+pub fn float<I, O, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, O, E>
 where
   I: InputIsStreaming<STREAMING>,
   I: Input,
   I: Offset + Compare<&'static str>,
-  <I as Input>::Slice: ParseTo<f32>,
+  <I as Input>::Slice: ParseTo<O>,
   <I as Input>::Token: AsChar + Copy,
   <I as Input>::IterOffsets: Clone,
   I: AsBytes,
 {
-  if STREAMING {
-    crate::number::streaming::float(input)
+  let (i, s) = if STREAMING {
+    crate::number::streaming::recognize_float_or_exceptions(input)?
   } else {
-    crate::number::complete::float(input)
-  }
-}
-
-/// Recognizes floating point number in text format and returns a f64.
-///
-/// *Complete version*: Can parse until the end of input.
-///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
-///
-/// # Example
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::error::Needed::Size;
-/// use winnow::character::f64;
-///
-/// let parser = |s| {
-///   f64(s)
-/// };
-///
-/// assert_eq!(parser("11e-1"), Ok(("", 1.1)));
-/// assert_eq!(parser("123E-02"), Ok(("", 1.23)));
-/// assert_eq!(parser("123K-01"), Ok(("K-01", 123.0)));
-/// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Float))));
-/// ```
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::error::Needed::Size;
-/// # use winnow::input::Streaming;
-/// use winnow::character::f64;
-///
-/// let parser = |s| {
-///   f64(s)
-/// };
-///
-/// assert_eq!(parser(Streaming("11e-1 ")), Ok((Streaming(" "), 1.1)));
-/// assert_eq!(parser(Streaming("11e-1")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(parser(Streaming("123E-02")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(parser(Streaming("123K-01")), Ok((Streaming("K-01"), 123.0)));
-/// assert_eq!(parser(Streaming("abc")), Err(ErrMode::Backtrack(Error::new(Streaming("abc"), ErrorKind::Float))));
-/// ```
-#[inline(always)]
-pub fn f64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f64, E>
-where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  I: Offset + Compare<&'static str>,
-  <I as Input>::Slice: ParseTo<f64>,
-  <I as Input>::Token: AsChar + Copy,
-  <I as Input>::IterOffsets: Clone,
-  I: AsBytes,
-{
-  if STREAMING {
-    crate::number::streaming::double(input)
-  } else {
-    crate::number::complete::double(input)
+    crate::number::complete::recognize_float_or_exceptions(input)?
+  };
+  match s.parse_to() {
+    Some(f) => Ok((i, f)),
+    None => Err(ErrMode::from_error_kind(i, ErrorKind::Float)),
   }
 }
 
@@ -1477,4 +1422,8 @@ pub fn is_space(chr: u8) -> bool {
 #[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_newline`")]
 pub fn is_newline(chr: u8) -> bool {
   chr == b'\n'
+}
+
+mod sealed {
+  pub struct SealedMarker;
 }
