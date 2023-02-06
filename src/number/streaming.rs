@@ -1527,10 +1527,10 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::number::hex_u32`][crate::number::hex_u32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::hex_uint`][crate::character::hex_uint] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "0.1.0",
-  note = "Replaced with `winnow::number::hex_u32` with input wrapped in `winnow::input::Streaming`"
+  note = "Replaced with `winnow::character::hex_uint` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn hex_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where

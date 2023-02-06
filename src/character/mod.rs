@@ -9,7 +9,10 @@ pub mod streaming;
 #[cfg(test)]
 mod tests;
 
+use crate::lib::std::ops::{Add, Shl};
+
 use crate::error::ParseError;
+use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::input::Compare;
 use crate::input::{AsBytes, AsChar, Input, InputIsStreaming, Offset, ParseTo, SliceLen};
 use crate::IResult;
@@ -940,6 +943,136 @@ macro_rules! uints {
 }
 
 uints! { u8 u16 u32 u64 u128 }
+
+/// Decode a variable-width hexadecimal integer.
+///
+/// *Complete version*: Will parse until the end of input if it has fewer characters than the type
+/// supports.
+///
+/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if end-of-input
+/// is hit before a hard boundary (non-hex character, more characters than supported).
+///
+/// # Example
+///
+/// ```rust
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
+/// use winnow::character::hex_uint;
+///
+/// fn parser(s: &[u8]) -> IResult<&[u8], u32> {
+///   hex_uint(s)
+/// }
+///
+/// assert_eq!(parser(&b"01AE"[..]), Ok((&b""[..], 0x01AE)));
+/// assert_eq!(parser(&b"abc"[..]), Ok((&b""[..], 0x0ABC)));
+/// assert_eq!(parser(&b"ggg"[..]), Err(ErrMode::Backtrack(Error::new(&b"ggg"[..], ErrorKind::IsA))));
+/// ```
+///
+/// ```rust
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::input::Streaming;
+/// use winnow::character::hex_uint;
+///
+/// fn parser(s: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, u32> {
+///   hex_uint(s)
+/// }
+///
+/// assert_eq!(parser(Streaming(&b"01AE;"[..])), Ok((Streaming(&b";"[..]), 0x01AE)));
+/// assert_eq!(parser(Streaming(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Streaming(&b"ggg"[..])), Err(ErrMode::Backtrack(Error::new(Streaming(&b"ggg"[..]), ErrorKind::IsA))));
+/// ```
+#[inline]
+pub fn hex_uint<I, O, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, O, E>
+where
+  I: InputIsStreaming<STREAMING>,
+  I: Input,
+  O: HexUint,
+  <I as Input>::Token: AsChar,
+  <I as Input>::Slice: AsBytes,
+{
+  let invalid_offset = input
+    .offset_for(|c| {
+      let c = c.as_char();
+      !"0123456789abcdefABCDEF".contains(c)
+    })
+    .unwrap_or_else(|| input.input_len());
+  let max_nibbles = O::max_nibbles(sealed::SealedMarker);
+  let max_offset = input.offset_at(max_nibbles);
+  let offset = match max_offset {
+    Ok(max_offset) => invalid_offset.min(max_offset),
+    Err(_) => {
+      if STREAMING && invalid_offset == input.input_len() {
+        // Only the next byte is guaranteed required
+        return Err(ErrMode::Incomplete(Needed::new(1)));
+      } else {
+        invalid_offset
+      }
+    }
+  };
+  if offset == 0 {
+    // Must be at least one digit
+    return Err(ErrMode::from_error_kind(input, ErrorKind::IsA));
+  }
+  let (remaining, parsed) = input.next_slice(offset);
+
+  let mut res = O::default();
+  for c in parsed.as_bytes() {
+    let nibble = *c as char;
+    let nibble = nibble.to_digit(16).unwrap_or(0) as u8;
+    let nibble = O::from(nibble);
+    res = (res << O::from(4)) + nibble;
+  }
+
+  Ok((remaining, res))
+}
+
+/// Metadata for parsing hex numbers
+pub trait HexUint:
+  Default + Shl<Self, Output = Self> + Add<Self, Output = Self> + From<u8>
+{
+  #[doc(hidden)]
+  fn max_nibbles(_: sealed::SealedMarker) -> usize;
+}
+
+impl HexUint for u8 {
+  #[inline(always)]
+  fn max_nibbles(_: sealed::SealedMarker) -> usize {
+    2
+  }
+}
+
+impl HexUint for u16 {
+  #[inline(always)]
+  fn max_nibbles(_: sealed::SealedMarker) -> usize {
+    4
+  }
+}
+
+impl HexUint for u32 {
+  #[inline(always)]
+  fn max_nibbles(_: sealed::SealedMarker) -> usize {
+    8
+  }
+}
+
+impl HexUint for u64 {
+  #[inline(always)]
+  fn max_nibbles(_: sealed::SealedMarker) -> usize {
+    16
+  }
+}
+
+impl HexUint for u128 {
+  #[inline(always)]
+  fn max_nibbles(_: sealed::SealedMarker) -> usize {
+    32
+  }
+}
+
+mod sealed {
+  pub struct SealedMarker;
+}
 
 /// Recognizes floating point number in text format and returns a f32.
 ///

@@ -143,7 +143,7 @@
 //! - [`f64`][crate::character::f64]: Recognizes floating point number in a byte string and returns a `f64`
 //! - [`f32`][crate::character::f32]: Recognizes floating point number in a byte string and returns a `f32`
 //! - [`hex_digit0`][crate::character::hex_digit0]: Recognizes zero or more hexadecimal numerical characters: `[0-9A-Fa-f]`. [`hex_digit1`][crate::character::hex_digit1] does the same but returns at least one character
-//! - [`hex_u32`][crate::number::hex_u32]: Recognizes a hex-encoded integer
+//! - [`hex_uint`][crate::character::hex_uint]: Decode a variable-width, hexadecimal integer
 //! - [`line_ending`][crate::character::line_ending]: Recognizes an end of line (both `\n` and `\r\n`)
 //! - [`multispace0`][crate::character::multispace0]: Recognizes zero or more spaces, tabs, carriage returns and line feeds. [`multispace1`][crate::character::multispace1] does the same but returns at least one character
 //! - [`newline`][crate::character::newline]: Matches a newline character `\n`

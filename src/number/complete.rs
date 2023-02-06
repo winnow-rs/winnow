@@ -1436,8 +1436,8 @@ where
 /// ```
 #[inline]
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::number::hex_u32`][crate::number::hex_u32]
-#[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::hex_u32`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::hex_uint`][crate::character::hex_uint]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::hex_uint`")]
 pub fn hex_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Input,

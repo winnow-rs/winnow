@@ -8,7 +8,7 @@ pub mod streaming;
 mod tests;
 
 use crate::error::ParseError;
-use crate::input::{AsBytes, AsChar, Input, InputIsStreaming};
+use crate::input::{AsBytes, Input, InputIsStreaming};
 use crate::IResult;
 
 /// Configurable endianness
@@ -2217,55 +2217,5 @@ where
     streaming::f64(endian)
   } else {
     complete::f64(endian)
-  }
-}
-
-/// Recognizes a hex-encoded integer.
-///
-/// *Complete version*: Will parse until the end of input if it has less than 8 bytes.
-///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
-///
-/// # Example
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::error::Needed::Size;
-/// use winnow::number::hex_u32;
-///
-/// let parser = |s| {
-///   hex_u32(s)
-/// };
-///
-/// assert_eq!(parser(&b"01AE"[..]), Ok((&b""[..], 0x01AE)));
-/// assert_eq!(parser(&b"abc"[..]), Ok((&b""[..], 0x0ABC)));
-/// assert_eq!(parser(&b"ggg"[..]), Err(ErrMode::Backtrack(Error::new(&b"ggg"[..], ErrorKind::IsA))));
-/// ```
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
-/// use winnow::number::hex_u32;
-///
-/// let parser = |s| {
-///   hex_u32(s)
-/// };
-///
-/// assert_eq!(parser(Streaming(&b"01AE;"[..])), Ok((Streaming(&b";"[..]), 0x01AE)));
-/// assert_eq!(parser(Streaming(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(parser(Streaming(&b"ggg"[..])), Err(ErrMode::Backtrack(Error::new(Streaming(&b"ggg"[..]), ErrorKind::IsA))));
-/// ```
-#[inline(always)]
-pub fn hex_u32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u32, E>
-where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: AsChar,
-  <I as Input>::Slice: AsBytes,
-{
-  if STREAMING {
-    streaming::hex_u32(input)
-  } else {
-    complete::hex_u32(input)
   }
 }

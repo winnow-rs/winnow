@@ -437,6 +437,41 @@ mod complete {
   }
 
   #[test]
+  fn hex_uint_tests() {
+    fn hex_u32(input: &[u8]) -> IResult<&[u8], u32> {
+      hex_uint(input)
+    }
+
+    assert_parse!(
+      hex_u32(&b";"[..]),
+      Err(ErrMode::Backtrack(error_position!(
+        &b";"[..],
+        ErrorKind::IsA
+      )))
+    );
+    assert_parse!(hex_u32(&b"ff;"[..]), Ok((&b";"[..], 255)));
+    assert_parse!(hex_u32(&b"1be2;"[..]), Ok((&b";"[..], 7138)));
+    assert_parse!(hex_u32(&b"c5a31be2;"[..]), Ok((&b";"[..], 3_315_801_058)));
+    assert_parse!(hex_u32(&b"C5A31be2;"[..]), Ok((&b";"[..], 3_315_801_058)));
+    assert_parse!(hex_u32(&b"00c5a31be2;"[..]), Ok((&b"e2;"[..], 12_952_347)));
+    assert_parse!(
+      hex_u32(&b"c5a31be201;"[..]),
+      Ok((&b"01;"[..], 3_315_801_058))
+    );
+    assert_parse!(hex_u32(&b"ffffffff;"[..]), Ok((&b";"[..], 4_294_967_295)));
+    assert_parse!(
+      hex_u32(&b"ffffffffffffffff;"[..]),
+      Ok((&b"ffffffff;"[..], 4_294_967_295))
+    );
+    assert_parse!(
+      hex_u32(&b"ffffffffffffffff"[..]),
+      Ok((&b"ffffffff"[..], 4_294_967_295))
+    );
+    assert_parse!(hex_u32(&b"0x1be2;"[..]), Ok((&b"x1be2;"[..], 0)));
+    assert_parse!(hex_u32(&b"12af"[..]), Ok((&b""[..], 0x12af)));
+  }
+
+  #[test]
   #[cfg(feature = "std")]
   fn float_test() {
     let mut test_cases = vec![
@@ -1392,5 +1427,64 @@ mod streaming {
         let res2 = u32(Streaming(s.as_str()));
         assert_eq!(res1, res2);
     }
+  }
+
+  #[test]
+  fn hex_uint_tests() {
+    fn hex_u32(input: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, u32> {
+      hex_uint(input)
+    }
+
+    assert_parse!(
+      hex_u32(Streaming(&b";"[..])),
+      Err(ErrMode::Backtrack(error_position!(
+        Streaming(&b";"[..]),
+        ErrorKind::IsA
+      )))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"ff;"[..])),
+      Ok((Streaming(&b";"[..]), 255))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"1be2;"[..])),
+      Ok((Streaming(&b";"[..]), 7138))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"c5a31be2;"[..])),
+      Ok((Streaming(&b";"[..]), 3_315_801_058))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"C5A31be2;"[..])),
+      Ok((Streaming(&b";"[..]), 3_315_801_058))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"00c5a31be2;"[..])),
+      Ok((Streaming(&b"e2;"[..]), 12_952_347))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"c5a31be201;"[..])),
+      Ok((Streaming(&b"01;"[..]), 3_315_801_058))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"ffffffff;"[..])),
+      Ok((Streaming(&b";"[..]), 4_294_967_295))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"ffffffffffffffff;"[..])),
+      Ok((Streaming(&b"ffffffff;"[..]), 4_294_967_295))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"ffffffffffffffff"[..])),
+      Ok((Streaming(&b"ffffffff"[..]), 4_294_967_295))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"0x1be2;"[..])),
+      Ok((Streaming(&b"x1be2;"[..]), 0))
+    );
+    assert_parse!(
+      hex_u32(Streaming(&b"12af"[..])),
+      Err(ErrMode::Incomplete(Needed::new(1)))
+    );
   }
 }
