@@ -125,6 +125,19 @@ where
   }
 }
 
+/// **WARNING:** Deprecated, replaced with [`many_till0`]
+#[deprecated(since = "0.3.0", note = "Replaced with `many_till0`")]
+pub fn many_till<I, O, C, P, E, F, G>(f: F, g: G) -> impl FnMut(I) -> IResult<I, (C, P), E>
+where
+  I: Input,
+  C: Accumulate<O>,
+  F: Parser<I, O, E>,
+  G: Parser<I, P, E>,
+  E: ParseError<I>,
+{
+  many_till0(f, g)
+}
+
 /// Applies the parser `f` until the parser `g` produces a result.
 ///
 /// Returns a tuple of the results of `f` in a `Vec` and the result of `g`.
@@ -134,11 +147,11 @@ where
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 #[cfg_attr(feature = "std", doc = "```")]
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
-/// use winnow::multi::many_till;
+/// use winnow::multi::many_till0;
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, (Vec<&str>, &str)> {
-///   many_till(tag("abc"), tag("end"))(s)
+///   many_till0(tag("abc"), tag("end"))(s)
 /// };
 ///
 /// assert_eq!(parser("abcabcend"), Ok(("", (vec!["abc", "abc"], "end"))));
@@ -147,7 +160,7 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("abcendefg"), Ok(("efg", (vec!["abc"], "end"))));
 /// ```
-pub fn many_till<I, O, C, P, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IResult<I, (C, P), E>
+pub fn many_till0<I, O, C, P, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IResult<I, (C, P), E>
 where
   I: Input,
   C: Accumulate<O>,
