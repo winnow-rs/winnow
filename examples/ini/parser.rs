@@ -3,7 +3,7 @@ use std::str;
 
 use winnow::prelude::*;
 use winnow::{
-  bytes::take_while,
+  bytes::take_while0,
   character::{alphanumeric1 as alphanumeric, multispace0 as multispace, space0 as space},
   combinator::opt,
   multi::many0,
@@ -22,7 +22,7 @@ pub fn categories(i: Input<'_>) -> IResult<Input<'_>, HashMap<&str, HashMap<&str
 }
 
 fn category(i: Input<'_>) -> IResult<Input<'_>, &str> {
-  delimited('[', take_while(|c| c != b']'), ']')
+  delimited('[', take_while0(|c| c != b']'), ']')
     .map_res(str::from_utf8)
     .parse_next(i)
 }
@@ -30,10 +30,10 @@ fn category(i: Input<'_>) -> IResult<Input<'_>, &str> {
 pub fn key_value(i: Input<'_>) -> IResult<Input<'_>, (&str, &str)> {
   let (i, key) = alphanumeric.map_res(str::from_utf8).parse_next(i)?;
   let (i, _) = (opt(space), '=', opt(space)).parse_next(i)?;
-  let (i, val) = take_while(|c| c != b'\n' && c != b';')
+  let (i, val) = take_while0(|c| c != b'\n' && c != b';')
     .map_res(str::from_utf8)
     .parse_next(i)?;
-  let (i, _) = opt((';', take_while(|c| c != b'\n')))(i)?;
+  let (i, _) = opt((';', take_while0(|c| c != b'\n')))(i)?;
   Ok((i, (key, val)))
 }
 

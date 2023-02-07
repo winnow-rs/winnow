@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use winnow::prelude::*;
 use winnow::{
-  bytes::{take_till0, take_while, take_while1},
+  bytes::{take_till0, take_while0, take_while1},
   character::{alphanumeric1 as alphanumeric, space0 as space},
   combinator::opt,
   multi::many0,
@@ -21,7 +21,7 @@ fn category_and_keys(i: Input<'_>) -> IResult<Input<'_>, (&str, HashMap<&str, &s
 
 fn category(i: Input<'_>) -> IResult<Input<'_>, &str> {
   terminated(
-    delimited('[', take_while(|c| c != ']'), ']'),
+    delimited('[', take_while0(|c| c != ']'), ']'),
     opt(take_while1(" \r\n")),
   )(i)
 }
@@ -46,7 +46,7 @@ fn is_line_ending_or_comment(chr: char) -> bool {
 }
 
 fn not_line_ending(i: Input<'_>) -> IResult<Input<'_>, &str> {
-  take_while(|c| c != '\r' && c != '\n')(i)
+  take_while0(|c| c != '\r' && c != '\n')(i)
 }
 
 fn space_or_line_ending(i: Input<'_>) -> IResult<Input<'_>, &str> {

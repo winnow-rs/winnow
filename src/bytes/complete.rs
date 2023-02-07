@@ -266,8 +266,8 @@ where
 /// assert_eq!(alpha(b""), Ok((&b""[..], &b""[..])));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while`][crate::bytes::take_while]
-#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_while`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while0`][crate::bytes::take_while0]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_while0`")]
 pub fn take_while<T, I, Error: ParseError<I>>(
   list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>

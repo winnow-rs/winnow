@@ -207,10 +207,10 @@ mod test {
   fn take_while_str() {
     use winnow::error::Needed;
 
-    use winnow::bytes::take_while;
+    use winnow::bytes::take_while0;
 
     fn f(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
-      take_while(is_alphabetic)(i)
+      take_while0(is_alphabetic)(i)
     }
     let a = "";
     let b = "abcd";
@@ -225,7 +225,7 @@ mod test {
 
   #[test]
   fn take_while_succeed_none_str() {
-    use winnow::bytes::take_while;
+    use winnow::bytes::take_while0;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const CONSUMED: &str = "";
@@ -234,24 +234,24 @@ mod test {
       c == '9'
     }
     fn test(input: &str) -> IResult<&str, &str> {
-      take_while(while_s)(input)
+      take_while0(while_s)(input)
     }
     match test(INPUT) {
       Ok((extra, output)) => {
         assert!(
           extra == LEFTOVER,
-          "Parser `take_while` consumed leftover input."
+          "Parser `take_while0` consumed leftover input."
         );
         assert!(
           output == CONSUMED,
-          "Parser `take_while` doesn't return the string it consumed on success. \
+          "Parser `take_while0` doesn't return the string it consumed on success. \
            Expected `{}`, got `{}`.",
           CONSUMED,
           output
         );
       }
       other => panic!(
-        "Parser `take_while` didn't succeed when it should have. \
+        "Parser `take_while0` didn't succeed when it should have. \
          Got `{:?}`.",
         other
       ),
@@ -260,7 +260,7 @@ mod test {
 
   #[test]
   fn take_while_succeed_some_str() {
-    use winnow::bytes::take_while;
+    use winnow::bytes::take_while0;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const CONSUMED: &str = "βèƒôřèÂßÇ";
@@ -269,24 +269,24 @@ mod test {
       matches!(c, 'β' | 'è' | 'ƒ' | 'ô' | 'ř' | 'Â' | 'ß' | 'Ç')
     }
     fn test(input: &str) -> IResult<&str, &str> {
-      take_while(while_s)(input)
+      take_while0(while_s)(input)
     }
     match test(INPUT) {
       Ok((extra, output)) => {
         assert!(
           extra == LEFTOVER,
-          "Parser `take_while` consumed leftover input."
+          "Parser `take_while0` consumed leftover input."
         );
         assert!(
           output == CONSUMED,
-          "Parser `take_while` doesn't return the string it consumed on success. \
+          "Parser `take_while0` doesn't return the string it consumed on success. \
            Expected `{}`, got `{}`.",
           CONSUMED,
           output
         );
       }
       other => panic!(
-        "Parser `take_while` didn't succeed when it should have. \
+        "Parser `take_while0` didn't succeed when it should have. \
          Got `{:?}`.",
         other
       ),

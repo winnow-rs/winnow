@@ -291,10 +291,10 @@ where
 /// assert_eq!(alpha(b""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while`][crate::bytes::take_while] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while0`][crate::bytes::take_while0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "0.1.0",
-  note = "Replaced with `winnow::bytes::take_while` with input wrapped in `winnow::input::Streaming`"
+  note = "Replaced with `winnow::bytes::take_while0` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn take_while<T, I, Error: ParseError<I>>(
   list: T,

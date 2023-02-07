@@ -275,11 +275,11 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
-/// use winnow::bytes::take_while;
+/// use winnow::bytes::take_while0;
 /// use winnow::input::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
-///   take_while(AsChar::is_alpha)(s)
+///   take_while0(AsChar::is_alpha)(s)
 /// }
 ///
 /// assert_eq!(alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
@@ -291,11 +291,11 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// # use winnow::input::Streaming;
-/// use winnow::bytes::take_while;
+/// use winnow::bytes::take_while0;
 /// use winnow::input::AsChar;
 ///
 /// fn alpha(s: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
-///   take_while(AsChar::is_alpha)(s)
+///   take_while0(AsChar::is_alpha)(s)
 /// }
 ///
 /// assert_eq!(alpha(Streaming(b"latin123")), Ok((Streaming(&b"123"[..]), &b"latin"[..])));
@@ -304,7 +304,7 @@ where
 /// assert_eq!(alpha(Streaming(b"")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_while<T, I, Error: ParseError<I>, const STREAMING: bool>(
+pub fn take_while0<T, I, Error: ParseError<I>, const STREAMING: bool>(
   list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
