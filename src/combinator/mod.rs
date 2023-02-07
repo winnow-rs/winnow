@@ -96,6 +96,7 @@
 //!   use of `cut_err`
 //! - [`Parser::context`]: Add context to the error if the parser fails
 //! - [`Parser::dbg_err`]: Prints a message and the input if the parser fails
+//! - [`todo()`]: Placeholder parser
 //!
 //! ## Text parsing
 //!
@@ -1318,6 +1319,30 @@ where
   F: Parser<I, O, E>,
 {
   move |input: I| parser.parse_next(input).map_err(|e| e.backtrack())
+}
+
+/// A placeholder for a not-yet-implemented [`Parser`]
+///
+/// This is analogous to the [`todo!`] macro and helps with prototyping.
+///
+/// # Panic
+///
+/// This will panic when parsing
+///
+/// # Example
+///
+/// ```rust
+/// # use winnow::prelude::*;
+/// # use winnow::combinator::todo;
+///
+/// fn parser(input: &str) -> IResult<&str, u64> {
+///     todo(input)
+/// }
+/// ```
+#[track_caller]
+pub fn todo<I, O, E>(_input: I) -> IResult<I, O, E> {
+  #![allow(clippy::todo)]
+  todo!("unimplemented parse")
 }
 
 /// automatically converts the child parser's result to another type
