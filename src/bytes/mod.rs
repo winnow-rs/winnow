@@ -662,10 +662,10 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
-/// use winnow::bytes::take_until;
+/// use winnow::bytes::take_until0;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
-///   take_until("eof")(s)
+///   take_until0("eof")(s)
 /// }
 ///
 /// assert_eq!(until_eof("hello, worldeof"), Ok(("eof", "hello, world")));
@@ -677,10 +677,10 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// # use winnow::input::Streaming;
-/// use winnow::bytes::take_until;
+/// use winnow::bytes::take_until0;
 ///
 /// fn until_eof(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
-///   take_until("eof")(s)
+///   take_until0("eof")(s)
 /// }
 ///
 /// assert_eq!(until_eof(Streaming("hello, worldeof")), Ok((Streaming("eof"), "hello, world")));
@@ -689,7 +689,7 @@ where
 /// assert_eq!(until_eof(Streaming("1eof2eof")), Ok((Streaming("eof2eof"), "1")));
 /// ```
 #[inline(always)]
-pub fn take_until<T, I, Error: ParseError<I>, const STREAMING: bool>(
+pub fn take_until0<T, I, Error: ParseError<I>, const STREAMING: bool>(
   tag: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where

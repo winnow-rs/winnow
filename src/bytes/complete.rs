@@ -577,8 +577,8 @@ where
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until`][crate::bytes::take_until]
-#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_until`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until0`][crate::bytes::take_until0]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_until0`")]
 pub fn take_until<T, I, Error: ParseError<I>>(
   tag: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>

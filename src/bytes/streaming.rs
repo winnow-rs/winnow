@@ -631,10 +631,10 @@ where
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until`][crate::bytes::take_until] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until0`][crate::bytes::take_until0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "0.1.0",
-  note = "Replaced with `winnow::bytes::take_until` with input wrapped in `winnow::input::Streaming`"
+  note = "Replaced with `winnow::bytes::take_until0` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn take_until<T, I, Error: ParseError<I>>(
   tag: T,

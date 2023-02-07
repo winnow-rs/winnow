@@ -4,7 +4,7 @@ mod test {
   #[cfg(feature = "alloc")]
   use winnow::{branch::alt, bytes::tag_no_case, multi::many1};
   use winnow::{
-    bytes::{tag, take, take_till0, take_till1, take_until, take_while1},
+    bytes::{tag, take, take_till0, take_till1, take_until0, take_while1},
     error::ErrMode,
     error::{self, Error, ErrorKind},
     IResult,
@@ -138,25 +138,25 @@ mod test {
     const CONSUMED: &str = "βèƒôřè";
     const LEFTOVER: &str = "ÂßÇ∂áƒƭèř";
 
-    let res: IResult<_, _, Error<_>> = take_until(FIND)(INPUT);
+    let res: IResult<_, _, Error<_>> = take_until0(FIND)(INPUT);
     match res {
       Ok((extra, output)) => {
         assert!(
           extra == LEFTOVER,
-          "Parser `take_until`\
+          "Parser `take_until0`\
            consumed leftover input. Leftover `{}`.",
           extra
         );
         assert!(
           output == CONSUMED,
-          "Parser `take_until`\
+          "Parser `take_until0`\
            doesn't return the string it consumed on success. Expected `{}`, got `{}`.",
           CONSUMED,
           output
         );
       }
       other => panic!(
-        "Parser `take_until` didn't succeed when it should have. \
+        "Parser `take_until0` didn't succeed when it should have. \
          Got `{:?}`.",
         other
       ),
@@ -165,16 +165,16 @@ mod test {
 
   #[test]
   fn take_until_incomplete_str() {
-    use winnow::bytes::take_until;
+    use winnow::bytes::take_until0;
 
     const INPUT: &str = "βèƒôřè";
     const FIND: &str = "βèƒôřèÂßÇ";
 
-    let res: IResult<_, _, Error<_>> = take_until(FIND)(Streaming(INPUT));
+    let res: IResult<_, _, Error<_>> = take_until0(FIND)(Streaming(INPUT));
     match res {
       Err(ErrMode::Incomplete(_)) => (),
       other => panic!(
-        "Parser `take_until` didn't require more input when it should have. \
+        "Parser `take_until0` didn't require more input when it should have. \
          Got `{:?}`.",
         other
       ),
@@ -183,16 +183,16 @@ mod test {
 
   #[test]
   fn take_until_error_str() {
-    use winnow::bytes::take_until;
+    use winnow::bytes::take_until0;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const FIND: &str = "Ráñδô₥";
 
-    let res: IResult<_, _, Error<_>> = take_until(FIND)(Streaming(INPUT));
+    let res: IResult<_, _, Error<_>> = take_until0(FIND)(Streaming(INPUT));
     match res {
       Err(ErrMode::Incomplete(_)) => (),
       other => panic!(
-        "Parser `take_until` didn't fail when it should have. \
+        "Parser `take_until0` didn't fail when it should have. \
          Got `{:?}`.",
         other
       ),

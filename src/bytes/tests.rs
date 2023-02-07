@@ -206,7 +206,7 @@ fn streaming_is_not() {
 #[test]
 fn streaming_take_until_incomplete() {
   fn y(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
-    take_until("end")(i)
+    take_until0("end")(i)
   }
   assert_eq!(
     y(Streaming(&b"nd"[..])),
@@ -225,7 +225,7 @@ fn streaming_take_until_incomplete() {
 #[test]
 fn streaming_take_until_incomplete_s() {
   fn ys(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
-    take_until("end")(i)
+    take_until0("end")(i)
   }
   assert_eq!(
     ys(Streaming("123en")),
