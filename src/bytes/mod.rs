@@ -48,7 +48,7 @@ where
   }
 }
 
-/// Recognizes a pattern
+/// Recognizes a literal
 ///
 /// The input data will be compared to the tag combinator's argument and will return the part of
 /// the input that matches the argument
@@ -106,7 +106,7 @@ where
   }
 }
 
-/// Recognizes a case insensitive pattern.
+/// Recognizes a case insensitive literal.
 ///
 /// The input data will be compared to the tag combinator's argument and will return the part of
 /// the input that matches the argument with no regard to case.
@@ -650,7 +650,7 @@ where
   }
 }
 
-/// Returns the input slice up to the first occurrence of the pattern.
+/// Returns the input slice up to the first occurrence of the literal.
 ///
 /// It doesn't consume the pattern.
 ///
@@ -706,7 +706,7 @@ where
   }
 }
 
-/// Returns the non empty input slice up to the first occurrence of the pattern.
+/// Returns the non empty input slice up to the first occurrence of the literal.
 ///
 /// It doesn't consume the pattern.
 ///

@@ -38,7 +38,6 @@
 //! | [`AsBytes`] |Casts the input type to a byte slice|
 //! | [`AsBStr`] |Casts the input type to a slice of ASCII / UTF-8-like bytes|
 //! | [`Compare`] |Character comparison operations|
-//! | [`Accumulate`] |Abstracts something which can extend an `Extend`|
 //! | [`FindSlice`] |Look for a substring in self|
 //! | [`Location`] |Calculate location within initial input|
 //! | [`Offset`] |Calculate the offset between slices|
