@@ -37,7 +37,6 @@
 //! | [`InputIsStreaming`] | Marks the input as being the complete buffer or a partial buffer for streaming input |
 //! | [`AsBytes`] |Casts the input type to a byte slice|
 //! | [`Compare`] |Character comparison operations|
-//! | [`Accumulate`] |Abstracts something which can extend an `Extend`|
 //! | [`FindSlice`] |Look for a substring in self|
 //! | [`Location`] |Calculate location within initial input|
 //! | [`Offset`] |Calculate the offset between slices|
