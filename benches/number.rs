@@ -7,7 +7,7 @@ use winnow::character::float;
 use winnow::error::ErrMode;
 use winnow::error::Error;
 use winnow::error::ErrorKind;
-use winnow::input::ParseTo;
+use winnow::input::ParseSlice;
 use winnow::number::be_u64;
 use winnow::prelude::*;
 
@@ -47,7 +47,7 @@ fn float_str(c: &mut Criterion) {
 }
 
 fn std_float(input: &[u8]) -> IResult<&[u8], f64, Error<&[u8]>> {
-  match input.parse_to() {
+  match input.parse_slice() {
     Some(n) => Ok((&[], n)),
     None => Err(ErrMode::Backtrack(Error {
       input,

@@ -80,6 +80,7 @@
 //! - [`Parser::and_then`][crate::Parser::and_then]: Applies a second parser over the output of the first one
 //! - [`Parser::map_opt`][Parser::map_opt]: Maps a function returning an `Option` on the output of a parser
 //! - [`Parser::map_res`][Parser::map_res]: Maps a function returning a `Result` on the output of a parser
+//! - [`Parser::parse_to`][crate::Parser::parse_to]: Apply [`std::str::FromStr`] to the output of the parser
 //! - [`not`][not]: Returns a result only if the embedded parser returns `Error` or `Incomplete`. Does not consume the input
 //! - [`opt`][opt]: Make the underlying parser optional
 //! - [`peek`][peek]: Returns a result without consuming the input
@@ -493,6 +494,41 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, E>
   }
 }
 
+/// Implementation of [`Parser::parse_to`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct ParseTo<P, O1, O2> {
+  p: P,
+  o1: core::marker::PhantomData<O1>,
+  o2: core::marker::PhantomData<O2>,
+}
+
+impl<P, O1, O2> ParseTo<P, O1, O2> {
+  pub(crate) fn new(p: P) -> Self {
+    Self {
+      p,
+      o1: Default::default(),
+      o2: Default::default(),
+    }
+  }
+}
+
+impl<I, O1, O2, E, P> Parser<I, O2, E> for ParseTo<P, O1, O2>
+where
+  I: Input,
+  O1: crate::input::ParseSlice<O2>,
+  E: ParseError<I>,
+  P: Parser<I, O1, E>,
+{
+  fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
+    let input = i.clone();
+    let (i, o) = self.p.parse_next(i)?;
+
+    let o = o
+      .parse_slice()
+      .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::Verify))?;
+    Ok((i, o))
+  }
+}
 /// Creates a new parser from the output of the first parser, then apply that parser over the rest of the input.
 ///
 /// **WARNING:** Deprecated, replaced with [`Parser::flat_map`]

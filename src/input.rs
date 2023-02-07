@@ -33,7 +33,6 @@
 //! | trait | usage |
 //! |---|---|
 //! | [`Input`] |Core trait for driving parsing|
-//! | [`SliceLen`] |Calculate the input length|
 //! | [`InputIsStreaming`] | Marks the input as being the complete buffer or a partial buffer for streaming input |
 //! | [`AsBytes`] |Casts the input type to a byte slice|
 //! | [`AsBStr`] |Casts the input type to a slice of ASCII / UTF-8-like bytes|
@@ -41,7 +40,6 @@
 //! | [`FindSlice`] |Look for a substring in self|
 //! | [`Location`] |Calculate location within initial input|
 //! | [`Offset`] |Calculate the offset between slices|
-//! | [`ParseTo`] |Used to integrate `&str`'s `parse()` method|
 //! | [`HexDisplay`] |Debug dump of input|
 //!
 //! Here are the traits we have to implement for `MyItem`:
@@ -50,6 +48,11 @@
 //! |---|---|
 //! | [`AsChar`] |Transforms common types to a char for basic token parsing|
 //! | [`ContainsToken`] |Look for the token in the given set|
+//!
+//! And traits for slices of `MyItem`:
+//!
+//! | [`SliceLen`] |Calculate the input length|
+//! | [`ParseSlice`] |Used to integrate `&str`'s `parse()` method|
 
 use core::num::NonZeroUsize;
 
@@ -1228,51 +1231,21 @@ where
 }
 
 /// Used to integrate `str`'s `parse()` method
-pub trait ParseTo<R> {
+pub trait ParseSlice<R> {
   /// Succeeds if `parse()` succeeded. The byte slice implementation
   /// will first convert it to a `&str`, then apply the `parse()` function
-  fn parse_to(&self) -> Option<R>;
+  fn parse_slice(&self) -> Option<R>;
 }
 
-impl<'a, R: FromStr> ParseTo<R> for &'a [u8] {
-  fn parse_to(&self) -> Option<R> {
+impl<'a, R: FromStr> ParseSlice<R> for &'a [u8] {
+  fn parse_slice(&self) -> Option<R> {
     from_utf8(self).ok().and_then(|s| s.parse().ok())
   }
 }
 
-impl<'a, R: FromStr> ParseTo<R> for &'a str {
-  fn parse_to(&self) -> Option<R> {
+impl<'a, R: FromStr> ParseSlice<R> for &'a str {
+  fn parse_slice(&self) -> Option<R> {
     self.parse().ok()
-  }
-}
-
-impl<I, R> ParseTo<R> for Located<I>
-where
-  I: ParseTo<R>,
-{
-  #[inline(always)]
-  fn parse_to(&self) -> Option<R> {
-    self.input.parse_to()
-  }
-}
-
-impl<I, S, R> ParseTo<R> for Stateful<I, S>
-where
-  I: ParseTo<R>,
-{
-  #[inline(always)]
-  fn parse_to(&self) -> Option<R> {
-    self.input.parse_to()
-  }
-}
-
-impl<I, R> ParseTo<R> for Streaming<I>
-where
-  I: ParseTo<R>,
-{
-  #[inline(always)]
-  fn parse_to(&self) -> Option<R> {
-    self.0.parse_to()
   }
 }
 

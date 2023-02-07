@@ -15,7 +15,7 @@ use crate::combinator::opt;
 use crate::error::ParseError;
 use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::input::Compare;
-use crate::input::{AsBStr, AsChar, Input, InputIsStreaming, Offset, ParseTo};
+use crate::input::{AsBStr, AsChar, Input, InputIsStreaming, Offset, ParseSlice};
 use crate::IResult;
 use crate::Parser;
 
@@ -1313,7 +1313,7 @@ where
   I: InputIsStreaming<STREAMING>,
   I: Input,
   I: Offset + Compare<&'static str>,
-  <I as Input>::Slice: ParseTo<O>,
+  <I as Input>::Slice: ParseSlice<O>,
   <I as Input>::Token: AsChar + Copy,
   <I as Input>::IterOffsets: Clone,
   I: AsBStr,
@@ -1323,7 +1323,7 @@ where
   } else {
     crate::number::complete::recognize_float_or_exceptions(input)?
   };
-  match s.parse_to() {
+  match s.parse_slice() {
     Some(f) => Ok((i, f)),
     None => Err(ErrMode::from_error_kind(i, ErrorKind::Float)),
   }

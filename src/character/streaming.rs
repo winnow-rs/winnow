@@ -877,7 +877,7 @@ mod tests {
   use crate::error::Error;
   use crate::error::ErrorKind;
   use crate::error::{ErrMode, Needed};
-  use crate::input::ParseTo;
+  use crate::input::ParseSlice;
   use crate::sequence::pair;
   use crate::IResult;
   use proptest::prelude::*;
@@ -1326,7 +1326,7 @@ mod tests {
       Err(ErrMode::Incomplete(i)) => return Err(ErrMode::Incomplete(i)),
       Err(_) => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
     };
-    match s.parse_to() {
+    match s.parse_slice() {
       Some(n) => {
         if sign {
           Ok((i, n))
@@ -1340,7 +1340,7 @@ mod tests {
 
   fn digit_to_u32(i: &str) -> IResult<&str, u32> {
     let (i, s) = digit1(i)?;
-    match s.parse_to() {
+    match s.parse_slice() {
       Some(n) => Ok((i, n)),
       None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
     }
