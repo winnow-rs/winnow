@@ -33,7 +33,6 @@
 //! | trait | usage |
 //! |---|---|
 //! | [`Input`] |Core trait for driving parsing|
-//! | [`SliceLen`] |Calculate the input length|
 //! | [`InputIsStreaming`] | Marks the input as being the complete buffer or a partial buffer for streaming input |
 //! | [`AsBytes`] |Casts the input type to a byte slice|
 //! | [`AsBStr`] |Casts the input type to a slice of ASCII / UTF-8-like bytes|
@@ -41,7 +40,6 @@
 //! | [`FindSlice`] |Look for a substring in self|
 //! | [`Location`] |Calculate location within initial input|
 //! | [`Offset`] |Calculate the offset between slices|
-//! | [`ParseTo`] |Used to integrate `&str`'s `parse()` method|
 //! | [`HexDisplay`] |Debug dump of input|
 //!
 //! Here are the traits we have to implement for `MyItem`:
@@ -50,6 +48,11 @@
 //! |---|---|
 //! | [`AsChar`] |Transforms common types to a char for basic token parsing|
 //! | [`ContainsToken`] |Look for the token in the given set|
+//!
+//! And traits for slices of `MyItem`:
+//!
+//! | [`SliceLen`] |Calculate the input length|
+//! | [`ParseTo`] |Used to integrate `&str`'s `parse()` method|
 
 use core::num::NonZeroUsize;
 
