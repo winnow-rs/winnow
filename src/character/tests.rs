@@ -9,7 +9,7 @@ mod complete {
   use crate::error::ErrMode;
   use crate::error::Error;
   use crate::error::ErrorKind;
-  use crate::input::ParseTo;
+  use crate::input::ParseSlice;
   #[cfg(feature = "alloc")]
   use crate::{lib::std::string::String, lib::std::vec::Vec};
   use proptest::prelude::*;
@@ -400,7 +400,7 @@ mod complete {
       Err(_) => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
     };
 
-    match s.parse_to() {
+    match s.parse_slice() {
       Some(n) => {
         if sign {
           Ok((i, n))
@@ -414,7 +414,7 @@ mod complete {
 
   fn digit_to_u32(i: &str) -> IResult<&str, u32> {
     let (i, s) = digit1(i)?;
-    match s.parse_to() {
+    match s.parse_slice() {
       Some(n) => Ok((i, n)),
       None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
     }
@@ -551,7 +551,7 @@ mod complete {
         if s.is_empty() {
           return Err(ErrMode::Backtrack(()));
         }
-        match s.parse_to() {
+        match s.parse_slice() {
           Some(n) => Ok((i, n)),
           None => Err(ErrMode::Backtrack(())),
         }
@@ -859,7 +859,7 @@ mod streaming {
   use crate::error::Error;
   use crate::error::ErrorKind;
   use crate::error::{ErrMode, Needed};
-  use crate::input::ParseTo;
+  use crate::input::ParseSlice;
   use crate::input::Streaming;
   use crate::sequence::pair;
   use crate::IResult;
@@ -1407,7 +1407,7 @@ mod streaming {
       Err(ErrMode::Incomplete(i)) => return Err(ErrMode::Incomplete(i)),
       Err(_) => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
     };
-    match s.parse_to() {
+    match s.parse_slice() {
       Some(n) => {
         if sign {
           Ok((i, n))
@@ -1421,7 +1421,7 @@ mod streaming {
 
   fn digit_to_u32(i: Streaming<&str>) -> IResult<Streaming<&str>, u32> {
     let (i, s) = digit1(i)?;
-    match s.parse_to() {
+    match s.parse_slice() {
       Some(n) => Ok((i, n)),
       None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
     }

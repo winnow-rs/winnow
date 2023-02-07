@@ -52,7 +52,7 @@
 //! And traits for slices of `MyItem`:
 //!
 //! | [`SliceLen`] |Calculate the input length|
-//! | [`ParseTo`] |Used to integrate `&str`'s `parse()` method|
+//! | [`ParseSlice`] |Used to integrate `&str`'s `parse()` method|
 
 use core::num::NonZeroUsize;
 
@@ -1231,20 +1231,20 @@ where
 }
 
 /// Used to integrate `str`'s `parse()` method
-pub trait ParseTo<R> {
+pub trait ParseSlice<R> {
   /// Succeeds if `parse()` succeeded. The byte slice implementation
   /// will first convert it to a `&str`, then apply the `parse()` function
-  fn parse_to(&self) -> Option<R>;
+  fn parse_slice(&self) -> Option<R>;
 }
 
-impl<'a, R: FromStr> ParseTo<R> for &'a [u8] {
-  fn parse_to(&self) -> Option<R> {
+impl<'a, R: FromStr> ParseSlice<R> for &'a [u8] {
+  fn parse_slice(&self) -> Option<R> {
     from_utf8(self).ok().and_then(|s| s.parse().ok())
   }
 }
 
-impl<'a, R: FromStr> ParseTo<R> for &'a str {
-  fn parse_to(&self) -> Option<R> {
+impl<'a, R: FromStr> ParseSlice<R> for &'a str {
+  fn parse_slice(&self) -> Option<R> {
     self.parse().ok()
   }
 }

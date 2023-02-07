@@ -8,7 +8,7 @@ use crate::bytes::streaming::tag;
 use crate::character::streaming::{char, digit1, sign};
 use crate::combinator::{cut_err, map, opt};
 use crate::error::{ErrMode, ErrorKind, Needed, ParseError};
-use crate::input::{AsBStr, AsBytes, AsChar, Compare, Input, Offset, ParseTo, SliceLen};
+use crate::input::{AsBStr, AsBytes, AsChar, Compare, Input, Offset, ParseSlice, SliceLen};
 use crate::lib::std::ops::{Add, Shl};
 use crate::sequence::{pair, tuple};
 use crate::*;
@@ -1737,13 +1737,13 @@ pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>
 where
   T: Input,
   T: Offset + Compare<&'static str>,
-  <T as Input>::Slice: ParseTo<f32>,
+  <T as Input>::Slice: ParseSlice<f32>,
   <T as Input>::Token: AsChar + Copy,
   <T as Input>::IterOffsets: Clone,
   T: AsBStr,
 {
   let (i, s) = recognize_float_or_exceptions(input)?;
-  match s.parse_to() {
+  match s.parse_slice() {
     Some(f) => Ok((i, f)),
     None => Err(crate::error::ErrMode::from_error_kind(
       i,
@@ -1780,13 +1780,13 @@ pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>
 where
   T: Input,
   T: Offset + Compare<&'static str>,
-  <T as Input>::Slice: ParseTo<f64>,
+  <T as Input>::Slice: ParseSlice<f64>,
   <T as Input>::Token: AsChar + Copy,
   <T as Input>::IterOffsets: Clone,
   T: AsBStr,
 {
   let (i, s) = recognize_float_or_exceptions(input)?;
-  match s.parse_to() {
+  match s.parse_slice() {
     Some(f) => Ok((i, f)),
     None => Err(crate::error::ErrMode::from_error_kind(
       i,
@@ -2387,7 +2387,7 @@ mod tests {
         if s.is_empty() {
           return Err(ErrMode::Backtrack(()));
         }
-        match s.parse_to() {
+        match s.parse_slice() {
           Some(n) => Ok((i, n)),
           None => Err(ErrMode::Backtrack(())),
         }

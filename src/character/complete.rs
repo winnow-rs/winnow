@@ -936,7 +936,7 @@ mod tests {
   use crate::branch::alt;
   use crate::error::ErrMode;
   use crate::error::Error;
-  use crate::input::ParseTo;
+  use crate::input::ParseSlice;
   use proptest::prelude::*;
 
   macro_rules! assert_parse(
@@ -1390,7 +1390,7 @@ mod tests {
       Err(_) => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
     };
 
-    match s.parse_to() {
+    match s.parse_slice() {
       Some(n) => {
         if sign {
           Ok((i, n))
@@ -1404,7 +1404,7 @@ mod tests {
 
   fn digit_to_u32(i: &str) -> IResult<&str, u32> {
     let (i, s) = digit1(i)?;
-    match s.parse_to() {
+    match s.parse_slice() {
       Some(n) => Ok((i, n)),
       None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
     }
