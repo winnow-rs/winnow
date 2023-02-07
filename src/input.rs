@@ -1249,36 +1249,6 @@ impl<'a, R: FromStr> ParseTo<R> for &'a str {
   }
 }
 
-impl<I, R> ParseTo<R> for Located<I>
-where
-  I: ParseTo<R>,
-{
-  #[inline(always)]
-  fn parse_to(&self) -> Option<R> {
-    self.input.parse_to()
-  }
-}
-
-impl<I, S, R> ParseTo<R> for Stateful<I, S>
-where
-  I: ParseTo<R>,
-{
-  #[inline(always)]
-  fn parse_to(&self) -> Option<R> {
-    self.input.parse_to()
-  }
-}
-
-impl<I, R> ParseTo<R> for Streaming<I>
-where
-  I: ParseTo<R>,
-{
-  #[inline(always)]
-  fn parse_to(&self) -> Option<R> {
-    self.0.parse_to()
-  }
-}
-
 /// Convert an `Input` into an appropriate `Output` type
 pub trait UpdateSlice: Input {
   /// Convert an `Output` type to be used as `Input`
