@@ -10,7 +10,7 @@ use crate::error::ErrorKind;
 use crate::error::Needed;
 use crate::error::ParseError;
 use crate::input::{
-  split_at_offset1_streaming, split_at_offset_streaming, AsBytes, AsChar, ContainsToken, Input,
+  split_at_offset1_streaming, split_at_offset_streaming, AsBStr, AsChar, ContainsToken, Input,
 };
 use crate::input::{Compare, CompareResult};
 use crate::IResult;
@@ -220,7 +220,7 @@ where
 )]
 pub fn not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input + AsBytes,
+  T: Input + AsBStr,
   T: Compare<&'static str>,
   <T as Input>::Token: AsChar,
 {
@@ -231,7 +231,7 @@ where
     None => Err(ErrMode::Incomplete(Needed::Unknown)),
     Some(offset) => {
       let (new_input, res) = input.next_slice(offset);
-      let bytes = new_input.as_bytes();
+      let bytes = new_input.as_bstr();
       let nth = bytes[0];
       if nth == b'\r' {
         let comp = new_input.compare("\r\n");
@@ -900,7 +900,7 @@ mod tests {
     let a: &[u8] = b"abcd";
     let b: &[u8] = b"1234";
     let c: &[u8] = b"a123";
-    let d: &[u8] = "azé12".as_bytes();
+    let d: &[u8] = "azé12".as_bstr();
     let e: &[u8] = b" ";
     let f: &[u8] = b" ;";
     //assert_eq!(alpha1::<_, Error<_>>(a), Err(ErrMode::Incomplete(Needed::new(1))));
@@ -910,7 +910,7 @@ mod tests {
       Err(ErrMode::Backtrack(Error::new(b, ErrorKind::Alpha)))
     );
     assert_eq!(alpha1::<_, Error<_>>(c), Ok((&c[1..], &b"a"[..])));
-    assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12".as_bytes(), &b"az"[..])));
+    assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12".as_bstr(), &b"az"[..])));
     assert_eq!(
       digit1(a),
       Err(ErrMode::Backtrack(Error::new(a, ErrorKind::Digit)))
@@ -941,7 +941,7 @@ mod tests {
     );
     assert_eq!(
       hex_digit1::<_, Error<_>>(d),
-      Ok(("zé12".as_bytes(), &b"a"[..]))
+      Ok(("zé12".as_bstr(), &b"a"[..]))
     );
     assert_eq!(
       hex_digit1(e),
@@ -974,7 +974,7 @@ mod tests {
     );
     assert_eq!(
       alphanumeric1::<_, Error<_>>(d),
-      Ok(("é12".as_bytes(), &b"az"[..]))
+      Ok(("é12".as_bstr(), &b"az"[..]))
     );
     assert_eq!(
       space1::<_, Error<_>>(e),

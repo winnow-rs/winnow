@@ -15,7 +15,7 @@ use crate::combinator::opt;
 use crate::error::ParseError;
 use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::input::Compare;
-use crate::input::{AsBytes, AsChar, Input, InputIsStreaming, Offset, ParseTo};
+use crate::input::{AsBStr, AsChar, Input, InputIsStreaming, Offset, ParseTo};
 use crate::IResult;
 use crate::Parser;
 
@@ -102,7 +102,7 @@ pub fn not_line_ending<I, E: ParseError<I>, const STREAMING: bool>(
 ) -> IResult<I, <I as Input>::Slice, E>
 where
   I: InputIsStreaming<STREAMING>,
-  I: Input + AsBytes,
+  I: Input + AsBStr,
   I: Compare<&'static str>,
   <I as Input>::Token: AsChar,
 {
@@ -1178,7 +1178,7 @@ where
   I: Input,
   O: HexUint,
   <I as Input>::Token: AsChar,
-  <I as Input>::Slice: AsBytes,
+  <I as Input>::Slice: AsBStr,
 {
   let invalid_offset = input
     .offset_for(|c| {
@@ -1213,7 +1213,7 @@ where
   let (remaining, parsed) = input.next_slice(offset);
 
   let mut res = O::default();
-  for c in parsed.as_bytes() {
+  for c in parsed.as_bstr() {
     let nibble = *c as char;
     let nibble = nibble.to_digit(16).unwrap_or(0) as u8;
     let nibble = O::from(nibble);
@@ -1316,7 +1316,7 @@ where
   <I as Input>::Slice: ParseTo<O>,
   <I as Input>::Token: AsChar + Copy,
   <I as Input>::IterOffsets: Clone,
-  I: AsBytes,
+  I: AsBStr,
 {
   let (i, s) = if STREAMING {
     crate::number::streaming::recognize_float_or_exceptions(input)?

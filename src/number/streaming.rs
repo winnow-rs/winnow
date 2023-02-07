@@ -8,7 +8,7 @@ use crate::bytes::streaming::tag;
 use crate::character::streaming::{char, digit1, sign};
 use crate::combinator::{cut_err, map, opt};
 use crate::error::{ErrMode, ErrorKind, Needed, ParseError};
-use crate::input::{AsBytes, AsChar, Compare, Input, Offset, ParseTo, SliceLen};
+use crate::input::{AsBStr, AsBytes, AsChar, Compare, Input, Offset, ParseTo, SliceLen};
 use crate::lib::std::ops::{Add, Shl};
 use crate::sequence::{pair, tuple};
 use crate::*;
@@ -1536,7 +1536,7 @@ pub fn hex_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
   I: Input,
   <I as Input>::Token: AsChar,
-  <I as Input>::Slice: AsBytes,
+  <I as Input>::Slice: AsBStr,
 {
   let invalid_offset = input
     .offset_for(|c| {
@@ -1563,7 +1563,7 @@ where
   let (remaining, parsed) = input.next_slice(offset);
 
   let res = parsed
-    .as_bytes()
+    .as_bstr()
     .iter()
     .rev()
     .enumerate()
@@ -1584,7 +1584,7 @@ where
   T: Offset + Compare<&'static str>,
   <T as Input>::Token: AsChar + Copy,
   <T as Input>::IterOffsets: Clone,
-  T: AsBytes,
+  T: AsBStr,
 {
   tuple((
     opt(alt((char('+'), char('-')))),
@@ -1612,7 +1612,7 @@ where
   T: Offset + Compare<&'static str>,
   <T as Input>::Token: AsChar + Copy,
   <T as Input>::IterOffsets: Clone,
-  T: AsBytes,
+  T: AsBStr,
 {
   alt((
     |i: T| {
@@ -1648,7 +1648,7 @@ pub fn recognize_float_parts<T, E: ParseError<T>>(
   input: T,
 ) -> IResult<T, (bool, <T as Input>::Slice, <T as Input>::Slice, i32), E>
 where
-  T: Input + Compare<&'static [u8]> + AsBytes,
+  T: Input + Compare<&'static [u8]> + AsBStr,
   <T as Input>::Token: AsChar + Copy,
   <T as Input>::Slice: SliceLen,
 {
@@ -1666,7 +1666,7 @@ where
     // match number
     let mut zero_count = 0usize;
     let mut offset = None;
-    for (pos, c) in i.as_bytes().iter().enumerate() {
+    for (pos, c) in i.as_bstr().iter().enumerate() {
       if *c >= b'0' && *c <= b'9' {
         if *c == b'0' {
           zero_count += 1;
@@ -1740,7 +1740,7 @@ where
   <T as Input>::Slice: ParseTo<f32>,
   <T as Input>::Token: AsChar + Copy,
   <T as Input>::IterOffsets: Clone,
-  T: AsBytes,
+  T: AsBStr,
 {
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
@@ -1783,7 +1783,7 @@ where
   <T as Input>::Slice: ParseTo<f64>,
   <T as Input>::Token: AsChar + Copy,
   <T as Input>::IterOffsets: Clone,
-  T: AsBytes,
+  T: AsBStr,
 {
   let (i, s) = recognize_float_or_exceptions(input)?;
   match s.parse_to() {
