@@ -36,6 +36,7 @@
 //! | [`SliceLen`] |Calculate the input length|
 //! | [`InputIsStreaming`] | Marks the input as being the complete buffer or a partial buffer for streaming input |
 //! | [`AsBytes`] |Casts the input type to a byte slice|
+//! | [`AsBStr`] |Casts the input type to a slice of ASCII / UTF-8-like bytes|
 //! | [`Compare`] |Character comparison operations|
 //! | [`Accumulate`] |Abstracts something which can extend an `Extend`|
 //! | [`FindSlice`] |Look for a substring in self|
@@ -905,13 +906,6 @@ impl<'a> AsBytes for &'a [u8] {
   }
 }
 
-impl<'a> AsBytes for &'a str {
-  #[inline(always)]
-  fn as_bytes(&self) -> &[u8] {
-    (*self).as_bytes()
-  }
-}
-
 impl<I> AsBytes for Located<I>
 where
   I: AsBytes,
@@ -937,6 +931,54 @@ where
   #[inline(always)]
   fn as_bytes(&self) -> &[u8] {
     self.0.as_bytes()
+  }
+}
+
+/// Helper trait for types that can be viewed as a byte slice
+pub trait AsBStr {
+  /// Casts the input type to a byte slice
+  fn as_bstr(&self) -> &[u8];
+}
+
+impl<'a> AsBStr for &'a [u8] {
+  #[inline(always)]
+  fn as_bstr(&self) -> &[u8] {
+    self
+  }
+}
+
+impl<'a> AsBStr for &'a str {
+  #[inline(always)]
+  fn as_bstr(&self) -> &[u8] {
+    (*self).as_bytes()
+  }
+}
+
+impl<I> AsBStr for Located<I>
+where
+  I: AsBStr,
+{
+  fn as_bstr(&self) -> &[u8] {
+    self.input.as_bstr()
+  }
+}
+
+impl<I, S> AsBStr for Stateful<I, S>
+where
+  I: AsBStr,
+{
+  fn as_bstr(&self) -> &[u8] {
+    self.input.as_bstr()
+  }
+}
+
+impl<I> AsBStr for Streaming<I>
+where
+  I: AsBStr,
+{
+  #[inline(always)]
+  fn as_bstr(&self) -> &[u8] {
+    self.0.as_bstr()
   }
 }
 
@@ -1059,11 +1101,11 @@ impl<'a, 'b> Compare<&'b str> for &'a str {
 impl<'a, 'b> Compare<&'b [u8]> for &'a str {
   #[inline(always)]
   fn compare(&self, t: &'b [u8]) -> CompareResult {
-    AsBytes::as_bytes(self).compare(t)
+    AsBStr::as_bstr(self).compare(t)
   }
   #[inline(always)]
   fn compare_no_case(&self, t: &'b [u8]) -> CompareResult {
-    AsBytes::as_bytes(self).compare_no_case(t)
+    AsBStr::as_bstr(self).compare_no_case(t)
   }
 }
 
