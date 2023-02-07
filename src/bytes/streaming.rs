@@ -291,10 +291,10 @@ where
 /// assert_eq!(alpha(b""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while`][crate::bytes::take_while] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while0`][crate::bytes::take_while0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "0.1.0",
-  note = "Replaced with `winnow::bytes::take_while` with input wrapped in `winnow::input::Streaming`"
+  note = "Replaced with `winnow::bytes::take_while0` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn take_while<T, I, Error: ParseError<I>>(
   list: T,
@@ -478,10 +478,10 @@ where
 /// assert_eq!(till_colon(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till`][crate::bytes::take_till] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till0`][crate::bytes::take_till0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "0.1.0",
-  note = "Replaced with `winnow::bytes::take_till` with input wrapped in `winnow::input::Streaming`"
+  note = "Replaced with `winnow::bytes::take_till0` with input wrapped in `winnow::input::Streaming`"
 )]
 #[allow(clippy::redundant_closure)]
 pub fn take_till<T, I, Error: ParseError<I>>(
@@ -631,10 +631,10 @@ where
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until`][crate::bytes::take_until] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until0`][crate::bytes::take_until0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "0.1.0",
-  note = "Replaced with `winnow::bytes::take_until` with input wrapped in `winnow::input::Streaming`"
+  note = "Replaced with `winnow::bytes::take_until0` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn take_until<T, I, Error: ParseError<I>>(
   tag: T,

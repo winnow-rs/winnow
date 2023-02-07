@@ -4,7 +4,7 @@ use std::str;
 use winnow::prelude::*;
 use winnow::{
   branch::alt,
-  bytes::{any, none_of, tag, take, take_while},
+  bytes::{any, none_of, tag, take, take_while0},
   character::float,
   combinator::cut_err,
   error::{ContextError, ParseError},
@@ -193,9 +193,9 @@ fn key_value<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str
 /// first we write parsers for the smallest elements (here a space character),
 /// then we'll combine them in larger parsers
 fn ws<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>, &'i str, E> {
-  // nom combinators like `take_while` return a function. That function is the
+  // nom combinators like `take_while0` return a function. That function is the
   // parser,to which we can pass the input
-  take_while(WS)(input)
+  take_while0(WS)(input)
 }
 
 const WS: &str = " \t\r\n";

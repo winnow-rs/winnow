@@ -13,7 +13,7 @@ use crate::{
 use crate::{
   lib::std::vec::Vec,
   multi::{
-    count, fold_many0, fold_many1, fold_many_m_n, length_count, many_m_n, many_till,
+    count, fold_many0, fold_many1, fold_many_m_n, length_count, many_m_n, many_till0,
     separated_list0, separated_list1,
   },
 };
@@ -206,7 +206,7 @@ fn many1_test() {
 fn many_till_test() {
   #[allow(clippy::type_complexity)]
   fn multi(i: &[u8]) -> IResult<&[u8], (Vec<&[u8]>, &[u8])> {
-    many_till(tag("abcd"), tag("efgh"))(i)
+    many_till0(tag("abcd"), tag("efgh"))(i)
   }
 
   let a = b"abcdabcdefghabcd";

@@ -78,11 +78,11 @@ fn usize_length_bytes_issue() {
 }
 
 #[test]
-fn take_till_issue() {
-  use winnow::bytes::take_till;
+fn take_till0_issue() {
+  use winnow::bytes::take_till0;
 
   fn nothing(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
-    take_till(|_| true)(i)
+    take_till0(|_| true)(i)
   }
 
   assert_eq!(

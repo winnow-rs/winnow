@@ -4,7 +4,7 @@ mod test {
   #[cfg(feature = "alloc")]
   use winnow::{branch::alt, bytes::tag_no_case, multi::many1};
   use winnow::{
-    bytes::{tag, take, take_till, take_till1, take_until, take_while1},
+    bytes::{tag, take, take_till0, take_till1, take_until0, take_while1},
     error::ErrMode,
     error::{self, Error, ErrorKind},
     IResult,
@@ -138,25 +138,25 @@ mod test {
     const CONSUMED: &str = "βèƒôřè";
     const LEFTOVER: &str = "ÂßÇ∂áƒƭèř";
 
-    let res: IResult<_, _, Error<_>> = take_until(FIND)(INPUT);
+    let res: IResult<_, _, Error<_>> = take_until0(FIND)(INPUT);
     match res {
       Ok((extra, output)) => {
         assert!(
           extra == LEFTOVER,
-          "Parser `take_until`\
+          "Parser `take_until0`\
            consumed leftover input. Leftover `{}`.",
           extra
         );
         assert!(
           output == CONSUMED,
-          "Parser `take_until`\
+          "Parser `take_until0`\
            doesn't return the string it consumed on success. Expected `{}`, got `{}`.",
           CONSUMED,
           output
         );
       }
       other => panic!(
-        "Parser `take_until` didn't succeed when it should have. \
+        "Parser `take_until0` didn't succeed when it should have. \
          Got `{:?}`.",
         other
       ),
@@ -165,16 +165,16 @@ mod test {
 
   #[test]
   fn take_until_incomplete_str() {
-    use winnow::bytes::take_until;
+    use winnow::bytes::take_until0;
 
     const INPUT: &str = "βèƒôřè";
     const FIND: &str = "βèƒôřèÂßÇ";
 
-    let res: IResult<_, _, Error<_>> = take_until(FIND)(Streaming(INPUT));
+    let res: IResult<_, _, Error<_>> = take_until0(FIND)(Streaming(INPUT));
     match res {
       Err(ErrMode::Incomplete(_)) => (),
       other => panic!(
-        "Parser `take_until` didn't require more input when it should have. \
+        "Parser `take_until0` didn't require more input when it should have. \
          Got `{:?}`.",
         other
       ),
@@ -183,16 +183,16 @@ mod test {
 
   #[test]
   fn take_until_error_str() {
-    use winnow::bytes::take_until;
+    use winnow::bytes::take_until0;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const FIND: &str = "Ráñδô₥";
 
-    let res: IResult<_, _, Error<_>> = take_until(FIND)(Streaming(INPUT));
+    let res: IResult<_, _, Error<_>> = take_until0(FIND)(Streaming(INPUT));
     match res {
       Err(ErrMode::Incomplete(_)) => (),
       other => panic!(
-        "Parser `take_until` didn't fail when it should have. \
+        "Parser `take_until0` didn't fail when it should have. \
          Got `{:?}`.",
         other
       ),
@@ -207,10 +207,10 @@ mod test {
   fn take_while_str() {
     use winnow::error::Needed;
 
-    use winnow::bytes::take_while;
+    use winnow::bytes::take_while0;
 
     fn f(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
-      take_while(is_alphabetic)(i)
+      take_while0(is_alphabetic)(i)
     }
     let a = "";
     let b = "abcd";
@@ -225,7 +225,7 @@ mod test {
 
   #[test]
   fn take_while_succeed_none_str() {
-    use winnow::bytes::take_while;
+    use winnow::bytes::take_while0;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const CONSUMED: &str = "";
@@ -234,24 +234,24 @@ mod test {
       c == '9'
     }
     fn test(input: &str) -> IResult<&str, &str> {
-      take_while(while_s)(input)
+      take_while0(while_s)(input)
     }
     match test(INPUT) {
       Ok((extra, output)) => {
         assert!(
           extra == LEFTOVER,
-          "Parser `take_while` consumed leftover input."
+          "Parser `take_while0` consumed leftover input."
         );
         assert!(
           output == CONSUMED,
-          "Parser `take_while` doesn't return the string it consumed on success. \
+          "Parser `take_while0` doesn't return the string it consumed on success. \
            Expected `{}`, got `{}`.",
           CONSUMED,
           output
         );
       }
       other => panic!(
-        "Parser `take_while` didn't succeed when it should have. \
+        "Parser `take_while0` didn't succeed when it should have. \
          Got `{:?}`.",
         other
       ),
@@ -260,7 +260,7 @@ mod test {
 
   #[test]
   fn take_while_succeed_some_str() {
-    use winnow::bytes::take_while;
+    use winnow::bytes::take_while0;
 
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const CONSUMED: &str = "βèƒôřèÂßÇ";
@@ -269,24 +269,24 @@ mod test {
       matches!(c, 'β' | 'è' | 'ƒ' | 'ô' | 'ř' | 'Â' | 'ß' | 'Ç')
     }
     fn test(input: &str) -> IResult<&str, &str> {
-      take_while(while_s)(input)
+      take_while0(while_s)(input)
     }
     match test(INPUT) {
       Ok((extra, output)) => {
         assert!(
           extra == LEFTOVER,
-          "Parser `take_while` consumed leftover input."
+          "Parser `take_while0` consumed leftover input."
         );
         assert!(
           output == CONSUMED,
-          "Parser `take_while` doesn't return the string it consumed on success. \
+          "Parser `take_while0` doesn't return the string it consumed on success. \
            Expected `{}`, got `{}`.",
           CONSUMED,
           output
         );
       }
       other => panic!(
-        "Parser `take_while` didn't succeed when it should have. \
+        "Parser `take_while0` didn't succeed when it should have. \
          Got `{:?}`.",
         other
       ),
@@ -421,7 +421,7 @@ mod test {
   }
 
   #[test]
-  fn take_till_succeed_str() {
+  fn take_till0_succeed_str() {
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const CONSUMED: &str = "βèƒôřèÂßÇ";
     const LEFTOVER: &str = "áƒƭèř";
@@ -429,24 +429,24 @@ mod test {
       c == 'á'
     }
     fn test(input: &str) -> IResult<&str, &str> {
-      take_till(till_s)(input)
+      take_till0(till_s)(input)
     }
     match test(INPUT) {
       Ok((extra, output)) => {
         assert!(
           extra == LEFTOVER,
-          "Parser `take_till` consumed leftover input."
+          "Parser `take_till0` consumed leftover input."
         );
         assert!(
           output == CONSUMED,
-          "Parser `take_till` doesn't return the string it consumed on success. \
+          "Parser `take_till0` doesn't return the string it consumed on success. \
            Expected `{}`, got `{}`.",
           CONSUMED,
           output
         );
       }
       other => panic!(
-        "Parser `take_till` didn't succeed when it should have. \
+        "Parser `take_till0` didn't succeed when it should have. \
          Got `{:?}`.",
         other
       ),

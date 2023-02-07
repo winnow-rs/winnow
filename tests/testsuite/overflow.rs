@@ -78,15 +78,15 @@ fn overflow_incomplete_many1() {
 
 #[test]
 #[cfg(feature = "alloc")]
-fn overflow_incomplete_many_till() {
-  use winnow::{bytes::tag, multi::many_till};
+fn overflow_incomplete_many_till0() {
+  use winnow::{bytes::tag, multi::many_till0};
 
   #[allow(clippy::type_complexity)]
   fn multi(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (Vec<&[u8]>, &[u8])> {
-    many_till(length_data(be_u64), tag("abc"))(i)
+    many_till0(length_data(be_u64), tag("abc"))(i)
   }
 
-  // Trigger an overflow in many_till
+  // Trigger an overflow in many_till0
   assert_eq!(
     multi(Streaming(
       &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xef"[..]

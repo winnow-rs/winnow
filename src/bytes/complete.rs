@@ -266,8 +266,8 @@ where
 /// assert_eq!(alpha(b""), Ok((&b""[..], &b""[..])));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while`][crate::bytes::take_while]
-#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_while`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while0`][crate::bytes::take_while0]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_while0`")]
 pub fn take_while<T, I, Error: ParseError<I>>(
   list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
@@ -431,8 +431,8 @@ where
 /// assert_eq!(till_colon(""), Ok(("", "")));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till`][crate::bytes::take_till]
-#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_till`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till0`][crate::bytes::take_till0]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_till0`")]
 #[allow(clippy::redundant_closure)]
 pub fn take_till<T, I, Error: ParseError<I>>(
   list: T,
@@ -577,8 +577,8 @@ where
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until`][crate::bytes::take_until]
-#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_until`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until0`][crate::bytes::take_until0]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_until0`")]
 pub fn take_until<T, I, Error: ParseError<I>>(
   tag: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
