@@ -449,6 +449,33 @@ pub trait Parser<I, O, E> {
     AndThen::new(self, g)
   }
 
+  /// Apply [`std::str::FromStr`] to the output of the parser
+  ///
+  /// # Example
+  ///
+  /// ```rust
+  /// # use winnow::prelude::*;
+  /// use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult,Parser};
+  /// use winnow::character::digit1;
+  ///
+  /// fn parser(input: &str) -> IResult<&str, u64> {
+  ///     digit1.parse_to().parse_next(input)
+  /// }
+  ///
+  /// // the parser will count how many characters were returned by digit1
+  /// assert_eq!(parser.parse_next("123456"), Ok(("", 123456)));
+  ///
+  /// // this will fail if digit1 fails
+  /// assert_eq!(parser.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
+  /// ```
+  fn parse_to<O2>(self) -> ParseTo<Self, O, O2>
+  where
+    Self: core::marker::Sized,
+    O: crate::input::ParseSlice<O2>,
+  {
+    ParseTo::new(self)
+  }
+
   /// Returns the result of the child parser if it satisfies a verification function.
   ///
   /// The verification function takes as argument a reference to the output of the
