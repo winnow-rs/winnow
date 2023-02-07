@@ -1,5 +1,8 @@
 use super::*;
 
+#[cfg(feature = "std")]
+use proptest::prelude::*;
+
 use crate::bytes::tag;
 use crate::error::ErrMode;
 use crate::error::Error;
@@ -14,14 +17,48 @@ use crate::Parser;
 
 #[test]
 fn complete_take_while_m_n_utf8_all_matching() {
-  let result: IResult<&str, &str> = super::take_while_m_n(1, 4, |c: char| c.is_alphabetic())("øn");
+  let result: IResult<&str, &str> = take_while_m_n(1, 4, |c: char| c.is_alphabetic())("øn");
   assert_eq!(result, Ok(("", "øn")));
 }
 
 #[test]
 fn complete_take_while_m_n_utf8_all_matching_substring() {
-  let result: IResult<&str, &str> = super::take_while_m_n(1, 1, |c: char| c.is_alphabetic())("øn");
+  let result: IResult<&str, &str> = take_while_m_n(1, 1, |c: char| c.is_alphabetic())("øn");
   assert_eq!(result, Ok(("n", "ø")));
+}
+
+#[cfg(feature = "std")]
+fn model_complete_take_while_m_n(
+  m: usize,
+  n: usize,
+  valid: usize,
+  input: &str,
+) -> IResult<&str, &str> {
+  if n < m {
+    Err(crate::error::ErrMode::from_error_kind(
+      input,
+      crate::error::ErrorKind::TakeWhileMN,
+    ))
+  } else if m <= valid {
+    let offset = n.min(valid);
+    Ok((&input[offset..], &input[0..offset]))
+  } else {
+    Err(crate::error::ErrMode::from_error_kind(
+      input,
+      crate::error::ErrorKind::TakeWhileMN,
+    ))
+  }
+}
+
+#[cfg(feature = "std")]
+proptest! {
+  #[test]
+  fn complete_take_while_m_n_bounds(m in 0..20usize, n in 0..20usize, valid in 0..20usize, invalid in 0..20usize) {
+      let input = format!("{:a<valid$}{:b<invalid$}", "", "", valid=valid, invalid=invalid);
+      let expected = model_complete_take_while_m_n(m, n, valid, &input);
+      let actual = take_while_m_n(m, n, |c: char| c == 'a')(input.as_str());
+      assert_eq!(expected, actual);
+  }
 }
 
 #[test]
@@ -433,7 +470,7 @@ fn streaming_take_utf8() {
 }
 
 #[test]
-fn streaming_take_while_m_n_utf8() {
+fn streaming_take_while_m_n_utf8_fixed() {
   fn parser(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
     take_while_m_n(1, 1, |c| c == 'A' || c == '😃')(i)
   }
@@ -442,11 +479,28 @@ fn streaming_take_while_m_n_utf8() {
 }
 
 #[test]
-fn streaming_take_while_m_n_utf8_full_match() {
+fn streaming_take_while_m_n_utf8_range() {
+  fn parser(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+    take_while_m_n(1, 2, |c| c == 'A' || c == '😃')(i)
+  }
+  assert_eq!(parser(Streaming("A!")), Ok((Streaming("!"), "A")));
+  assert_eq!(parser(Streaming("😃!")), Ok((Streaming("!"), "😃")));
+}
+
+#[test]
+fn streaming_take_while_m_n_utf8_full_match_fixed() {
   fn parser(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
     take_while_m_n(1, 1, |c: char| c.is_alphabetic())(i)
   }
   assert_eq!(parser(Streaming("øn")), Ok((Streaming("n"), "ø")));
+}
+
+#[test]
+fn streaming_take_while_m_n_utf8_full_match_range() {
+  fn parser(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+    take_while_m_n(1, 2, |c: char| c.is_alphabetic())(i)
+  }
+  assert_eq!(parser(Streaming("øn")), Ok((Streaming(""), "øn")));
 }
 
 #[test]

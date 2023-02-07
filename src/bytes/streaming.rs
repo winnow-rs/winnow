@@ -413,7 +413,7 @@ where
 }
 
 pub(crate) fn take_while_m_n_internal<T, I, Error: ParseError<I>>(
-  i: I,
+  input: I,
   m: usize,
   n: usize,
   list: &T,
@@ -422,43 +422,35 @@ where
   I: Input,
   T: ContainsToken<<I as Input>::Token>,
 {
-  let input = i;
+  if n < m {
+    return Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN));
+  }
 
-  match input.offset_for(|c| !list.contains_token(c)) {
-    Some(idx) => {
-      if idx >= m {
-        if idx <= n {
-          let res: IResult<_, _, Error> = if let Ok(index) = input.offset_at(idx) {
-            Ok(input.next_slice(index))
-          } else {
-            Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN))
-          };
-          res
-        } else {
-          let res: IResult<_, _, Error> = if let Ok(index) = input.offset_at(n) {
-            Ok(input.next_slice(index))
-          } else {
-            Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN))
-          };
-          res
-        }
+  let mut final_count = 0;
+  for (processed, (offset, token)) in input.iter_offsets().enumerate() {
+    if !list.contains_token(token) {
+      if processed < m {
+        return Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN));
       } else {
-        let e = ErrorKind::TakeWhileMN;
-        Err(ErrMode::from_error_kind(input, e))
+        return Ok(input.next_slice(offset));
       }
-    }
-    None => {
-      let len = input.input_len();
-      if len >= n {
-        match input.offset_at(n) {
-          Ok(index) => Ok(input.next_slice(index)),
-          Err(_needed) => Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN)),
-        }
-      } else {
-        let needed = if m > len { m - len } else { 1 };
-        Err(ErrMode::Incomplete(Needed::new(needed)))
+    } else {
+      if processed == n {
+        return Ok(input.next_slice(offset));
       }
+      final_count = processed + 1;
     }
+  }
+
+  if final_count == n {
+    Ok(input.next_slice(input.input_len()))
+  } else {
+    let needed = if m > input.input_len() {
+      m - input.input_len()
+    } else {
+      1
+    };
+    Err(ErrMode::Incomplete(Needed::new(needed)))
   }
 }
 
