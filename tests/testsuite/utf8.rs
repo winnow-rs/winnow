@@ -4,7 +4,7 @@ mod test {
   #[cfg(feature = "alloc")]
   use winnow::{branch::alt, bytes::tag_no_case, multi::many1};
   use winnow::{
-    bytes::{tag, take, take_till, take_till1, take_until, take_while1},
+    bytes::{tag, take, take_till0, take_till1, take_until, take_while1},
     error::ErrMode,
     error::{self, Error, ErrorKind},
     IResult,
@@ -421,7 +421,7 @@ mod test {
   }
 
   #[test]
-  fn take_till_succeed_str() {
+  fn take_till0_succeed_str() {
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const CONSUMED: &str = "βèƒôřèÂßÇ";
     const LEFTOVER: &str = "áƒƭèř";
@@ -429,24 +429,24 @@ mod test {
       c == 'á'
     }
     fn test(input: &str) -> IResult<&str, &str> {
-      take_till(till_s)(input)
+      take_till0(till_s)(input)
     }
     match test(INPUT) {
       Ok((extra, output)) => {
         assert!(
           extra == LEFTOVER,
-          "Parser `take_till` consumed leftover input."
+          "Parser `take_till0` consumed leftover input."
         );
         assert!(
           output == CONSUMED,
-          "Parser `take_till` doesn't return the string it consumed on success. \
+          "Parser `take_till0` doesn't return the string it consumed on success. \
            Expected `{}`, got `{}`.",
           CONSUMED,
           output
         );
       }
       other => panic!(
-        "Parser `take_till` didn't succeed when it should have. \
+        "Parser `take_till0` didn't succeed when it should have. \
          Got `{:?}`.",
         other
       ),

@@ -431,8 +431,8 @@ where
 /// assert_eq!(till_colon(""), Ok(("", "")));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till`][crate::bytes::take_till]
-#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_till`")]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till0`][crate::bytes::take_till0]
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::take_till0`")]
 #[allow(clippy::redundant_closure)]
 pub fn take_till<T, I, Error: ParseError<I>>(
   list: T,

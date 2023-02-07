@@ -478,10 +478,10 @@ where
 /// assert_eq!(till_colon(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till`][crate::bytes::take_till] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till0`][crate::bytes::take_till0] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
   since = "0.1.0",
-  note = "Replaced with `winnow::bytes::take_till` with input wrapped in `winnow::input::Streaming`"
+  note = "Replaced with `winnow::bytes::take_till0` with input wrapped in `winnow::input::Streaming`"
 )]
 #[allow(clippy::redundant_closure)]
 pub fn take_till<T, I, Error: ParseError<I>>(

@@ -462,10 +462,10 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
-/// use winnow::bytes::take_till;
+/// use winnow::bytes::take_till0;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
-///   take_till(|c| c == ':')(s)
+///   take_till0(|c| c == ':')(s)
 /// }
 ///
 /// assert_eq!(till_colon("latin:123"), Ok((":123", "latin")));
@@ -477,10 +477,10 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// # use winnow::input::Streaming;
-/// use winnow::bytes::take_till;
+/// use winnow::bytes::take_till0;
 ///
 /// fn till_colon(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
-///   take_till(|c| c == ':')(s)
+///   take_till0(|c| c == ':')(s)
 /// }
 ///
 /// assert_eq!(till_colon(Streaming("latin:123")), Ok((Streaming(":123"), "latin")));
@@ -489,7 +489,7 @@ where
 /// assert_eq!(till_colon(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_till<T, I, Error: ParseError<I>, const STREAMING: bool>(
+pub fn take_till0<T, I, Error: ParseError<I>, const STREAMING: bool>(
   list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where

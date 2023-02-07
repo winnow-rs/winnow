@@ -358,9 +358,9 @@ fn streaming_take_while_m_n() {
 }
 
 #[test]
-fn streaming_take_till() {
+fn streaming_take_till0() {
   fn f(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
-    take_till(AsChar::is_alpha)(i)
+    take_till0(AsChar::is_alpha)(i)
   }
   let a = &b""[..];
   let b = &b"abcd"[..];
@@ -419,9 +419,9 @@ fn streaming_take_while_utf8() {
 }
 
 #[test]
-fn streaming_take_till_utf8() {
+fn streaming_take_till0_utf8() {
   fn f(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
-    take_till(|c| c == '點')(i)
+    take_till0(|c| c == '點')(i)
   }
 
   assert_eq!(f(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
@@ -433,7 +433,7 @@ fn streaming_take_till_utf8() {
   assert_eq!(f(Streaming("abcd點a")), Ok((Streaming("點a"), "abcd")));
 
   fn g(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
-    take_till(|c| c != '點')(i)
+    take_till0(|c| c != '點')(i)
   }
 
   assert_eq!(g(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
