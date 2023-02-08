@@ -431,6 +431,54 @@ where
     }
 }
 
+/// Alternates between two parsers, merging the results (right associative)
+///
+/// This stops when either parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
+/// [`cut_err`][crate::combinator::cut_err].
+///
+/// ```
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// use winnow::multi::separated_foldr1;
+/// use winnow::character::dec_uint;
+///
+/// fn parser(s: &str) -> IResult<&str, u32> {
+///   separated_foldr1(dec_uint, "^", |l: u32, _, r: u32| l.pow(r))(s)
+/// }
+///
+/// assert_eq!(parser("2^3^2"), Ok(("", 512)));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Digit))));
+/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(Error::new("def|abc", ErrorKind::Digit))));
+/// ```
+#[cfg(feature = "alloc")]
+pub fn separated_foldr1<I, O, O2, E, P, S, Op>(
+    mut parser: P,
+    mut sep: S,
+    op: Op,
+) -> impl FnMut(I) -> IResult<I, O, E>
+where
+    I: Input,
+    P: Parser<I, O, E>,
+    S: Parser<I, O2, E>,
+    E: ParseError<I>,
+    Op: Fn(O, O2, O) -> O,
+{
+    move |i: I| {
+        let (i, ol) = parser.parse_next(i)?;
+        let (i, all): (_, crate::lib::std::vec::Vec<(O2, O)>) =
+            many0((sep.by_ref(), parser.by_ref())).parse_next(i)?;
+        let (s, or) = all
+            .into_iter()
+            .rev()
+            .reduce(|(sr, or), (sl, ol)| (sl, op(ol, sr, or)))
+            .ok_or_else(|| {
+                // More of an assert but avoiding the panic overhead
+                ErrMode::from_error_kind(i.clone(), ErrorKind::SeparatedList)
+            })?;
+        let merged = op(ol, s, or);
+        Ok((i, merged))
+    }
+}
+
 /// Repeats the embedded parser `m..=n` times
 ///
 /// This stops before `n` when the parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
