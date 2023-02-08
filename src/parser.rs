@@ -830,8 +830,8 @@ mod tests {
     use crate::error::Error;
     use crate::error::ErrorKind;
     use crate::error::Needed;
-    use crate::input::Streaming;
     use crate::number::be_u16;
+    use crate::Streaming;
 
     #[doc(hidden)]
     #[macro_export]

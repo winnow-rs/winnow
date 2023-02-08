@@ -860,9 +860,9 @@ mod streaming {
     use crate::error::ErrorKind;
     use crate::error::{ErrMode, Needed};
     use crate::input::ParseSlice;
-    use crate::input::Streaming;
     use crate::sequence::pair;
     use crate::IResult;
+    use crate::Streaming;
     use proptest::prelude::*;
 
     macro_rules! assert_parse(

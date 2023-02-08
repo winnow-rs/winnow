@@ -1,6 +1,6 @@
 use super::{length_data, length_value, many0, many1};
-use crate::input::Streaming;
 use crate::Parser;
+use crate::Streaming;
 use crate::{
     bytes::tag,
     character::digit1 as digit,

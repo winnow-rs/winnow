@@ -3,12 +3,12 @@
 
 use winnow::bytes::take;
 use winnow::error::{ErrMode, Needed};
-use winnow::input::Streaming;
 #[cfg(feature = "alloc")]
 use winnow::multi::{length_data, many0};
 #[cfg(feature = "alloc")]
 use winnow::number::be_u64;
 use winnow::prelude::*;
+use winnow::Streaming;
 
 // Parser definition
 

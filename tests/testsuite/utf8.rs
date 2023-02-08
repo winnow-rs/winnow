@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use winnow::input::Streaming;
+    use winnow::Streaming;
     #[cfg(feature = "alloc")]
     use winnow::{branch::alt, bytes::tag_no_case, multi::many1};
     use winnow::{

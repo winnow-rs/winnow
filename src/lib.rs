@@ -4,7 +4,7 @@
 //!
 //! nom is a parser combinator library, supporting:
 //! - String (`&str`), byte (`&[u8]`), and [custom input types][crate::input]
-//! - [Streaming parsing][crate::input::Streaming]
+//! - [Streaming parsing][crate::Streaming]
 //! - Zero copy parsing
 //!
 //! ## Example
@@ -509,4 +509,7 @@ pub mod prelude {
 
 pub use error::FinishIResult;
 pub use error::IResult;
+pub use input::Located;
+pub use input::Stateful;
+pub use input::Streaming;
 pub use parser::*;

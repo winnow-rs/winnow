@@ -3,8 +3,8 @@ use crate::bytes::tag;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::Needed;
-use crate::input::Streaming;
 use crate::IResult;
+use crate::Streaming;
 #[cfg(feature = "alloc")]
 use crate::{
     error::ParseError,

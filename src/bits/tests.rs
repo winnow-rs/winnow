@@ -1,6 +1,6 @@
 use super::*;
 use crate::error::Error;
-use crate::input::Streaming;
+use crate::Streaming;
 
 #[test]
 /// Take the `bits` function and assert that remaining bytes are correctly returned, if the

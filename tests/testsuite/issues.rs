@@ -2,8 +2,8 @@
 #![allow(dead_code)]
 #![allow(clippy::redundant_closure)]
 
-use winnow::input::Streaming;
 use winnow::prelude::*;
+use winnow::Streaming;
 use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 
 #[allow(dead_code)]
@@ -24,8 +24,8 @@ pub fn take_char(input: &[u8]) -> IResult<&[u8], char> {
 mod parse_int {
     use std::str;
     use winnow::input::HexDisplay;
-    use winnow::input::Streaming;
     use winnow::prelude::*;
+    use winnow::Streaming;
     use winnow::{
         character::{digit1 as digit, space1 as space},
         combinator::opt,
@@ -138,7 +138,7 @@ mod issue_647 {
     use winnow::multi::separated_list0;
     use winnow::prelude::*;
     use winnow::{error::ErrMode, error::Error, number::be_f64, IResult};
-    pub type Input<'a> = winnow::input::Streaming<&'a [u8]>;
+    pub type Input<'a> = winnow::Streaming<&'a [u8]>;
 
     #[derive(PartialEq, Debug, Clone)]
     struct Data {

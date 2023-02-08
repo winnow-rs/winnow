@@ -45,7 +45,7 @@ pub enum Endianness {
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::be_u8;
 ///
 /// let parser = |s| {
@@ -91,7 +91,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::be_u16;
 ///
 /// let parser = |s| {
@@ -138,7 +138,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::be_u24;
 ///
 /// let parser = |s| {
@@ -185,7 +185,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::be_u32;
 ///
 /// let parser = |s| {
@@ -232,7 +232,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::be_u64;
 ///
 /// let parser = |s| {
@@ -279,7 +279,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::be_u128;
 ///
 /// let parser = |s| {
@@ -326,7 +326,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::be_i8;
 ///
 /// let parser = be_i8::<_, Error<_>, true>;
@@ -370,7 +370,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::be_i16;
 ///
 /// let parser = be_i16::<_, Error<_>, true>;
@@ -415,7 +415,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::be_i24;
 ///
 /// let parser = be_i24::<_, Error<_>, true>;
@@ -460,7 +460,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::be_i32;
 ///
 /// let parser = be_i32::<_, Error<_>, true>;
@@ -505,7 +505,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::be_i64;
 ///
 /// let parser = be_i64::<_, Error<_>, true>;
@@ -550,7 +550,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::be_i128;
 ///
 /// let parser = be_i128::<_, Error<_>, true>;
@@ -595,7 +595,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::le_u8;
 ///
 /// let parser = le_u8::<_, Error<_>, true>;
@@ -639,7 +639,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::le_u16;
 ///
 /// let parser = |s| {
@@ -686,7 +686,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::le_u24;
 ///
 /// let parser = |s| {
@@ -733,7 +733,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::le_u32;
 ///
 /// let parser = |s| {
@@ -780,7 +780,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::le_u64;
 ///
 /// let parser = |s| {
@@ -827,7 +827,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::le_u128;
 ///
 /// let parser = |s| {
@@ -874,7 +874,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::le_i8;
 ///
 /// let parser = le_i8::<_, Error<_>, true>;
@@ -918,7 +918,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::le_i16;
 ///
 /// let parser = |s| {
@@ -965,7 +965,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::le_i24;
 ///
 /// let parser = |s| {
@@ -1012,7 +1012,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::le_i32;
 ///
 /// let parser = |s| {
@@ -1059,7 +1059,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::le_i64;
 ///
 /// let parser = |s| {
@@ -1106,7 +1106,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::le_i128;
 ///
 /// let parser = |s| {
@@ -1156,7 +1156,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::u8;
 ///
 /// let parser = |s| {
@@ -1213,7 +1213,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::u16;
 ///
 /// let be_u16 = |s| {
@@ -1280,7 +1280,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::u24;
 ///
 /// let be_u24 = |s| {
@@ -1347,7 +1347,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::u32;
 ///
 /// let be_u32 = |s| {
@@ -1414,7 +1414,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::u64;
 ///
 /// let be_u64 = |s| {
@@ -1481,7 +1481,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::u128;
 ///
 /// let be_u128 = |s| {
@@ -1540,7 +1540,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::i8;
 ///
 /// let parser = |s| {
@@ -1597,7 +1597,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::i16;
 ///
 /// let be_i16 = |s| {
@@ -1664,7 +1664,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::i24;
 ///
 /// let be_i24 = |s| {
@@ -1731,7 +1731,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::i32;
 ///
 /// let be_i32 = |s| {
@@ -1798,7 +1798,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::i64;
 ///
 /// let be_i64 = |s| {
@@ -1865,7 +1865,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::i128;
 ///
 /// let be_i128 = |s| {
@@ -1921,7 +1921,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::be_f32;
 ///
 /// let parser = |s| {
@@ -1968,7 +1968,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::be_f64;
 ///
 /// let parser = |s| {
@@ -2015,7 +2015,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::le_f32;
 ///
 /// let parser = |s| {
@@ -2062,7 +2062,7 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::le_f64;
 ///
 /// let parser = |s| {
@@ -2120,7 +2120,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::f32;
 ///
 /// let be_f32 = |s| {
@@ -2187,7 +2187,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::number::f64;
 ///
 /// let be_f64 = |s| {

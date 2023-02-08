@@ -1,4 +1,4 @@
-use winnow::input::Streaming;
+use winnow::Streaming;
 
 mod json;
 mod parser;
