@@ -9,7 +9,7 @@ use winnow::{
     combinator::{cut_err, rest},
     error::{ContextError, ParseError},
     input::Streaming,
-    multi::{fold_many0, separated_list0},
+    multi::{fold_many0, separated0},
     sequence::{delimited, preceded, separated_pair, terminated},
 };
 
@@ -160,7 +160,7 @@ fn u16_hex<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>,
         .parse_next(input)
 }
 
-/// Some combinators, like `separated_list0` or `many0`, will call a parser repeatedly,
+/// Some combinators, like `separated0` or `many0`, will call a parser repeatedly,
 /// accumulating results in a `Vec`, until it encounters an error.
 /// If you want more control on the parser application, check out the `iterator`
 /// combinator (cf `examples/iterator.rs`)
@@ -170,7 +170,7 @@ fn array<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
     preceded(
         (one_of('['), ws),
         cut_err(terminated(
-            separated_list0((ws, one_of(','), ws), json_value),
+            separated0(json_value, (ws, one_of(','), ws)),
             (ws, one_of(']')),
         )),
     )
@@ -184,7 +184,7 @@ fn object<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
     preceded(
         (one_of('{'), ws),
         cut_err(terminated(
-            separated_list0((ws, one_of(','), ws), key_value),
+            separated0(key_value, (ws, one_of(','), ws)),
             (ws, one_of('}')),
         )),
     )

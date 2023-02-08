@@ -8,7 +8,7 @@ use winnow::{
     character::{alphanumeric1 as alphanumeric, escaped, float},
     combinator::cut_err,
     error::ParseError,
-    multi::separated_list0,
+    multi::separated0,
     sequence::{preceded, separated_pair, terminated},
     IResult,
 };
@@ -227,7 +227,7 @@ fn array(i: &str) -> IResult<&str, ()> {
     preceded(
         '[',
         cut_err(terminated(
-            separated_list0(preceded(sp, ','), value),
+            separated0(value, preceded(sp, ',')),
             preceded(sp, ']'),
         )),
     )
@@ -243,7 +243,7 @@ fn hash(i: &str) -> IResult<&str, ()> {
     preceded(
         '{',
         cut_err(terminated(
-            separated_list0(preceded(sp, ','), key_value),
+            separated0(key_value, preceded(sp, ',')),
             preceded(sp, '}'),
         )),
     )

@@ -8,7 +8,7 @@ use winnow::{
     character::float,
     combinator::cut_err,
     error::{ContextError, ParseError},
-    multi::{fold_many0, separated_list0},
+    multi::{fold_many0, separated0},
     sequence::{delimited, preceded, separated_pair, terminated},
 };
 
@@ -151,7 +151,7 @@ fn u16_hex<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>,
         .parse_next(input)
 }
 
-/// Some combinators, like `separated_list0` or `many0`, will call a parser repeatedly,
+/// Some combinators, like `separated0` or `many0`, will call a parser repeatedly,
 /// accumulating results in a `Vec`, until it encounters an error.
 /// If you want more control on the parser application, check out the `iterator`
 /// combinator (cf `examples/iterator.rs`)
@@ -160,10 +160,7 @@ fn array<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
 ) -> IResult<Input<'i>, Vec<JsonValue>, E> {
     preceded(
         ('[', ws),
-        cut_err(terminated(
-            separated_list0((ws, ',', ws), json_value),
-            (ws, ']'),
-        )),
+        cut_err(terminated(separated0(json_value, (ws, ',', ws)), (ws, ']'))),
     )
     .context("array")
     .parse_next(input)
@@ -174,10 +171,7 @@ fn object<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
 ) -> IResult<Input<'i>, HashMap<String, JsonValue>, E> {
     preceded(
         ('{', ws),
-        cut_err(terminated(
-            separated_list0((ws, ',', ws), key_value),
-            (ws, '}'),
-        )),
+        cut_err(terminated(separated0(key_value, (ws, ',', ws)), (ws, '}'))),
     )
     .context("object")
     .parse_next(input)
