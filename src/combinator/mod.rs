@@ -181,9 +181,9 @@ mod tests;
 #[inline]
 pub fn rest<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: Input,
+    I: Input,
 {
-  Ok(input.next_slice(input.input_len()))
+    Ok(input.next_slice(input.input_len()))
 }
 
 /// Return the length of the remaining input.
@@ -198,28 +198,28 @@ where
 #[inline]
 pub fn rest_len<I, E: ParseError<I>>(input: I) -> IResult<I, usize, E>
 where
-  I: Input,
+    I: Input,
 {
-  let len = input.input_len();
-  Ok((input, len))
+    let len = input.input_len();
+    Ok((input, len))
 }
 
 /// Implementation of [`Parser::by_ref`][Parser::by_ref]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct ByRef<'p, P> {
-  p: &'p mut P,
+    p: &'p mut P,
 }
 
 impl<'p, P> ByRef<'p, P> {
-  pub(crate) fn new(p: &'p mut P) -> Self {
-    Self { p }
-  }
+    pub(crate) fn new(p: &'p mut P) -> Self {
+        Self { p }
+    }
 }
 
 impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for ByRef<'p, P> {
-  fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
-    self.p.parse_next(i)
-  }
+    fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
+        self.p.parse_next(i)
+    }
 }
 
 /// Maps a function on the result of a parser.
@@ -244,40 +244,40 @@ impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for ByRef<'p, P> {
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::map")]
 pub fn map<I, O1, O2, E, F, G>(mut parser: F, mut f: G) -> impl FnMut(I) -> IResult<I, O2, E>
 where
-  F: Parser<I, O1, E>,
-  G: FnMut(O1) -> O2,
+    F: Parser<I, O1, E>,
+    G: FnMut(O1) -> O2,
 {
-  move |input: I| {
-    let (input, o1) = parser.parse_next(input)?;
-    Ok((input, f(o1)))
-  }
+    move |input: I| {
+        let (input, o1) = parser.parse_next(input)?;
+        Ok((input, f(o1)))
+    }
 }
 
 /// Implementation of [`Parser::map`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Map<F, G, O1> {
-  f: F,
-  g: G,
-  phantom: core::marker::PhantomData<O1>,
+    f: F,
+    g: G,
+    phantom: core::marker::PhantomData<O1>,
 }
 
 impl<F, G, O1> Map<F, G, O1> {
-  pub(crate) fn new(f: F, g: G) -> Self {
-    Self {
-      f,
-      g,
-      phantom: Default::default(),
+    pub(crate) fn new(f: F, g: G) -> Self {
+        Self {
+            f,
+            g,
+            phantom: Default::default(),
+        }
     }
-  }
 }
 
 impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> O2> Parser<I, O2, E> for Map<F, G, O1> {
-  fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
-    match self.f.parse_next(i) {
-      Err(e) => Err(e),
-      Ok((i, o)) => Ok((i, (self.g)(o))),
+    fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
+        match self.f.parse_next(i) {
+            Err(e) => Err(e),
+            Ok((i, o)) => Ok((i, (self.g)(o))),
+        }
     }
-  }
 }
 
 /// Applies a function returning a `Result` over the result of a parser.
@@ -304,56 +304,56 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> O2> Parser<I, O2, E> for Ma
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::map_res")]
 pub fn map_res<I: Clone, O1, O2, E: FromExternalError<I, E2>, E2, F, G>(
-  mut parser: F,
-  mut f: G,
+    mut parser: F,
+    mut f: G,
 ) -> impl FnMut(I) -> IResult<I, O2, E>
 where
-  F: Parser<I, O1, E>,
-  G: FnMut(O1) -> Result<O2, E2>,
+    F: Parser<I, O1, E>,
+    G: FnMut(O1) -> Result<O2, E2>,
 {
-  move |input: I| {
-    let i = input.clone();
-    let (input, o1) = parser.parse_next(input)?;
-    match f(o1) {
-      Ok(o2) => Ok((input, o2)),
-      Err(e) => Err(ErrMode::from_external_error(i, ErrorKind::MapRes, e)),
+    move |input: I| {
+        let i = input.clone();
+        let (input, o1) = parser.parse_next(input)?;
+        match f(o1) {
+            Ok(o2) => Ok((input, o2)),
+            Err(e) => Err(ErrMode::from_external_error(i, ErrorKind::MapRes, e)),
+        }
     }
-  }
 }
 
 /// Implementation of [`Parser::map_res`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct MapRes<F, G, O1> {
-  f: F,
-  g: G,
-  phantom: core::marker::PhantomData<O1>,
+    f: F,
+    g: G,
+    phantom: core::marker::PhantomData<O1>,
 }
 
 impl<F, G, O1> MapRes<F, G, O1> {
-  pub(crate) fn new(f: F, g: G) -> Self {
-    Self {
-      f,
-      g,
-      phantom: Default::default(),
+    pub(crate) fn new(f: F, g: G) -> Self {
+        Self {
+            f,
+            g,
+            phantom: Default::default(),
+        }
     }
-  }
 }
 
 impl<I, O1, O2, E, E2, F, G> Parser<I, O2, E> for MapRes<F, G, O1>
 where
-  I: Clone,
-  F: Parser<I, O1, E>,
-  G: FnMut(O1) -> Result<O2, E2>,
-  E: FromExternalError<I, E2>,
+    I: Clone,
+    F: Parser<I, O1, E>,
+    G: FnMut(O1) -> Result<O2, E2>,
+    E: FromExternalError<I, E2>,
 {
-  fn parse_next(&mut self, input: I) -> IResult<I, O2, E> {
-    let i = input.clone();
-    let (input, o1) = self.f.parse_next(input)?;
-    match (self.g)(o1) {
-      Ok(o2) => Ok((input, o2)),
-      Err(e) => Err(ErrMode::from_external_error(i, ErrorKind::MapRes, e)),
+    fn parse_next(&mut self, input: I) -> IResult<I, O2, E> {
+        let i = input.clone();
+        let (input, o1) = self.f.parse_next(input)?;
+        match (self.g)(o1) {
+            Ok(o2) => Ok((input, o2)),
+            Err(e) => Err(ErrMode::from_external_error(i, ErrorKind::MapRes, e)),
+        }
     }
-  }
 }
 
 /// Applies a function returning an `Option` over the result of a parser.
@@ -380,56 +380,56 @@ where
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::map_res")]
 pub fn map_opt<I: Clone, O1, O2, E: ParseError<I>, F, G>(
-  mut parser: F,
-  mut f: G,
+    mut parser: F,
+    mut f: G,
 ) -> impl FnMut(I) -> IResult<I, O2, E>
 where
-  F: Parser<I, O1, E>,
-  G: FnMut(O1) -> Option<O2>,
+    F: Parser<I, O1, E>,
+    G: FnMut(O1) -> Option<O2>,
 {
-  move |input: I| {
-    let i = input.clone();
-    let (input, o1) = parser.parse_next(input)?;
-    match f(o1) {
-      Some(o2) => Ok((input, o2)),
-      None => Err(ErrMode::from_error_kind(i, ErrorKind::MapOpt)),
+    move |input: I| {
+        let i = input.clone();
+        let (input, o1) = parser.parse_next(input)?;
+        match f(o1) {
+            Some(o2) => Ok((input, o2)),
+            None => Err(ErrMode::from_error_kind(i, ErrorKind::MapOpt)),
+        }
     }
-  }
 }
 
 /// Implementation of [`Parser::map_opt`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct MapOpt<F, G, O1> {
-  f: F,
-  g: G,
-  phantom: core::marker::PhantomData<O1>,
+    f: F,
+    g: G,
+    phantom: core::marker::PhantomData<O1>,
 }
 
 impl<F, G, O1> MapOpt<F, G, O1> {
-  pub(crate) fn new(f: F, g: G) -> Self {
-    Self {
-      f,
-      g,
-      phantom: Default::default(),
+    pub(crate) fn new(f: F, g: G) -> Self {
+        Self {
+            f,
+            g,
+            phantom: Default::default(),
+        }
     }
-  }
 }
 
 impl<I, O1, O2, E, F, G> Parser<I, O2, E> for MapOpt<F, G, O1>
 where
-  I: Clone,
-  F: Parser<I, O1, E>,
-  G: FnMut(O1) -> Option<O2>,
-  E: ParseError<I>,
+    I: Clone,
+    F: Parser<I, O1, E>,
+    G: FnMut(O1) -> Option<O2>,
+    E: ParseError<I>,
 {
-  fn parse_next(&mut self, input: I) -> IResult<I, O2, E> {
-    let i = input.clone();
-    let (input, o1) = self.f.parse_next(input)?;
-    match (self.g)(o1) {
-      Some(o2) => Ok((input, o2)),
-      None => Err(ErrMode::from_error_kind(i, ErrorKind::MapOpt)),
+    fn parse_next(&mut self, input: I) -> IResult<I, O2, E> {
+        let i = input.clone();
+        let (input, o1) = self.f.parse_next(input)?;
+        match (self.g)(o1) {
+            Some(o2) => Ok((input, o2)),
+            None => Err(ErrMode::from_error_kind(i, ErrorKind::MapOpt)),
+        }
     }
-  }
 }
 
 /// Applies a parser over the result of another one.
@@ -452,82 +452,82 @@ where
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::and_then")]
 pub fn map_parser<I, O1, O2, E: ParseError<I>, F, G>(
-  mut parser: F,
-  mut applied_parser: G,
+    mut parser: F,
+    mut applied_parser: G,
 ) -> impl FnMut(I) -> IResult<I, O2, E>
 where
-  F: Parser<I, O1, E>,
-  G: Parser<O1, O2, E>,
+    F: Parser<I, O1, E>,
+    G: Parser<O1, O2, E>,
 {
-  move |input: I| {
-    let (input, o1) = parser.parse_next(input)?;
-    let (_, o2) = applied_parser.parse_next(o1)?;
-    Ok((input, o2))
-  }
+    move |input: I| {
+        let (input, o1) = parser.parse_next(input)?;
+        let (_, o2) = applied_parser.parse_next(o1)?;
+        Ok((input, o2))
+    }
 }
 
 /// Implementation of [`Parser::and_then`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct AndThen<F, G, O1> {
-  f: F,
-  g: G,
-  phantom: core::marker::PhantomData<O1>,
+    f: F,
+    g: G,
+    phantom: core::marker::PhantomData<O1>,
 }
 
 impl<F, G, O1> AndThen<F, G, O1> {
-  pub(crate) fn new(f: F, g: G) -> Self {
-    Self {
-      f,
-      g,
-      phantom: Default::default(),
+    pub(crate) fn new(f: F, g: G) -> Self {
+        Self {
+            f,
+            g,
+            phantom: Default::default(),
+        }
     }
-  }
 }
 
 impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, E>
-  for AndThen<F, G, O1>
+    for AndThen<F, G, O1>
 {
-  fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
-    let (i, o1) = self.f.parse_next(i)?;
-    let (_, o2) = self.g.parse_next(o1)?;
-    Ok((i, o2))
-  }
+    fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
+        let (i, o1) = self.f.parse_next(i)?;
+        let (_, o2) = self.g.parse_next(o1)?;
+        Ok((i, o2))
+    }
 }
 
 /// Implementation of [`Parser::parse_to`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct ParseTo<P, O1, O2> {
-  p: P,
-  o1: core::marker::PhantomData<O1>,
-  o2: core::marker::PhantomData<O2>,
+    p: P,
+    o1: core::marker::PhantomData<O1>,
+    o2: core::marker::PhantomData<O2>,
 }
 
 impl<P, O1, O2> ParseTo<P, O1, O2> {
-  pub(crate) fn new(p: P) -> Self {
-    Self {
-      p,
-      o1: Default::default(),
-      o2: Default::default(),
+    pub(crate) fn new(p: P) -> Self {
+        Self {
+            p,
+            o1: Default::default(),
+            o2: Default::default(),
+        }
     }
-  }
 }
 
 impl<I, O1, O2, E, P> Parser<I, O2, E> for ParseTo<P, O1, O2>
 where
-  I: Input,
-  O1: crate::input::ParseSlice<O2>,
-  E: ParseError<I>,
-  P: Parser<I, O1, E>,
+    I: Input,
+    O1: crate::input::ParseSlice<O2>,
+    E: ParseError<I>,
+    P: Parser<I, O1, E>,
 {
-  fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
-    let input = i.clone();
-    let (i, o) = self.p.parse_next(i)?;
+    fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
+        let input = i.clone();
+        let (i, o) = self.p.parse_next(i)?;
 
-    let o = o
-      .parse_slice()
-      .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::Verify))?;
-    Ok((i, o))
-  }
+        let o = o
+            .parse_slice()
+            .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::Verify))?;
+        Ok((i, o))
+    }
 }
 /// Creates a new parser from the output of the first parser, then apply that parser over the rest of the input.
 ///
@@ -548,45 +548,45 @@ where
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::flat_map")]
 pub fn flat_map<I, O1, O2, E: ParseError<I>, F, G, H>(
-  mut parser: F,
-  mut applied_parser: G,
+    mut parser: F,
+    mut applied_parser: G,
 ) -> impl FnMut(I) -> IResult<I, O2, E>
 where
-  F: Parser<I, O1, E>,
-  G: FnMut(O1) -> H,
-  H: Parser<I, O2, E>,
+    F: Parser<I, O1, E>,
+    G: FnMut(O1) -> H,
+    H: Parser<I, O2, E>,
 {
-  move |input: I| {
-    let (input, o1) = parser.parse_next(input)?;
-    applied_parser(o1).parse_next(input)
-  }
+    move |input: I| {
+        let (input, o1) = parser.parse_next(input)?;
+        applied_parser(o1).parse_next(input)
+    }
 }
 
 /// Implementation of [`Parser::flat_map`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct FlatMap<F, G, O1> {
-  f: F,
-  g: G,
-  phantom: core::marker::PhantomData<O1>,
+    f: F,
+    g: G,
+    phantom: core::marker::PhantomData<O1>,
 }
 
 impl<F, G, O1> FlatMap<F, G, O1> {
-  pub(crate) fn new(f: F, g: G) -> Self {
-    Self {
-      f,
-      g,
-      phantom: Default::default(),
+    pub(crate) fn new(f: F, g: G) -> Self {
+        Self {
+            f,
+            g,
+            phantom: Default::default(),
+        }
     }
-  }
 }
 
 impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> H, H: Parser<I, O2, E>> Parser<I, O2, E>
-  for FlatMap<F, G, O1>
+    for FlatMap<F, G, O1>
 {
-  fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
-    let (i, o1) = self.f.parse_next(i)?;
-    (self.g)(o1).parse_next(i)
-  }
+    fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
+        let (i, o1) = self.f.parse_next(i)?;
+        (self.g)(o1).parse_next(i)
+    }
 }
 
 /// Optional parser, will return `None` on [`ErrMode::Backtrack`].
@@ -609,64 +609,64 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> H, H: Parser<I, O2, E>> Par
 /// ```
 pub fn opt<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, Option<O>, E>
 where
-  F: Parser<I, O, E>,
+    F: Parser<I, O, E>,
 {
-  move |input: I| {
-    let i = input.clone();
-    match f.parse_next(input) {
-      Ok((i, o)) => Ok((i, Some(o))),
-      Err(ErrMode::Backtrack(_)) => Ok((i, None)),
-      Err(e) => Err(e),
+    move |input: I| {
+        let i = input.clone();
+        match f.parse_next(input) {
+            Ok((i, o)) => Ok((i, Some(o))),
+            Err(ErrMode::Backtrack(_)) => Ok((i, None)),
+            Err(e) => Err(e),
+        }
     }
-  }
 }
 
 /// Implementation of [`Parser::and`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct And<F, G> {
-  f: F,
-  g: G,
+    f: F,
+    g: G,
 }
 
 impl<F, G> And<F, G> {
-  pub(crate) fn new(f: F, g: G) -> Self {
-    Self { f, g }
-  }
+    pub(crate) fn new(f: F, g: G) -> Self {
+        Self { f, g }
+    }
 }
 
 impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<I, O2, E>> Parser<I, (O1, O2), E> for And<F, G> {
-  fn parse_next(&mut self, i: I) -> IResult<I, (O1, O2), E> {
-    let (i, o1) = self.f.parse_next(i)?;
-    let (i, o2) = self.g.parse_next(i)?;
-    Ok((i, (o1, o2)))
-  }
+    fn parse_next(&mut self, i: I) -> IResult<I, (O1, O2), E> {
+        let (i, o1) = self.f.parse_next(i)?;
+        let (i, o2) = self.g.parse_next(i)?;
+        Ok((i, (o1, o2)))
+    }
 }
 
 /// Implementation of [`Parser::or`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Or<F, G> {
-  f: F,
-  g: G,
+    f: F,
+    g: G,
 }
 
 impl<F, G> Or<F, G> {
-  pub(crate) fn new(f: F, g: G) -> Self {
-    Self { f, g }
-  }
+    pub(crate) fn new(f: F, g: G) -> Self {
+        Self { f, g }
+    }
 }
 
 impl<I: Clone, O, E: crate::error::ParseError<I>, F: Parser<I, O, E>, G: Parser<I, O, E>>
-  Parser<I, O, E> for Or<F, G>
+    Parser<I, O, E> for Or<F, G>
 {
-  fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
-    match self.f.parse_next(i.clone()) {
-      Err(ErrMode::Backtrack(e1)) => match self.g.parse_next(i) {
-        Err(ErrMode::Backtrack(e2)) => Err(ErrMode::Backtrack(e1.or(e2))),
-        res => res,
-      },
-      res => res,
+    fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
+        match self.f.parse_next(i.clone()) {
+            Err(ErrMode::Backtrack(e1)) => match self.g.parse_next(i) {
+                Err(ErrMode::Backtrack(e2)) => Err(ErrMode::Backtrack(e1.or(e2))),
+                res => res,
+            },
+            res => res,
+        }
     }
-  }
 }
 
 /// Calls the parser if the condition is met.
@@ -688,22 +688,22 @@ impl<I: Clone, O, E: crate::error::ParseError<I>, F: Parser<I, O, E>, G: Parser<
 /// # }
 /// ```
 pub fn cond<I, O, E: ParseError<I>, F>(
-  b: bool,
-  mut f: F,
+    b: bool,
+    mut f: F,
 ) -> impl FnMut(I) -> IResult<I, Option<O>, E>
 where
-  F: Parser<I, O, E>,
+    F: Parser<I, O, E>,
 {
-  move |input: I| {
-    if b {
-      match f.parse_next(input) {
-        Ok((i, o)) => Ok((i, Some(o))),
-        Err(e) => Err(e),
-      }
-    } else {
-      Ok((input, None))
+    move |input: I| {
+        if b {
+            match f.parse_next(input) {
+                Ok((i, o)) => Ok((i, Some(o))),
+                Err(e) => Err(e),
+            }
+        } else {
+            Ok((input, None))
+        }
     }
-  }
 }
 
 /// Tries to apply its parser without consuming the input.
@@ -722,15 +722,15 @@ where
 /// ```
 pub fn peek<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
-  F: Parser<I, O, E>,
+    F: Parser<I, O, E>,
 {
-  move |input: I| {
-    let i = input.clone();
-    match f.parse_next(input) {
-      Ok((_, o)) => Ok((i, o)),
-      Err(e) => Err(e),
+    move |input: I| {
+        let i = input.clone();
+        match f.parse_next(input) {
+            Ok((_, o)) => Ok((i, o)),
+            Err(e) => Err(e),
+        }
     }
-  }
 }
 
 /// returns its input if it is at the end of input data
@@ -751,13 +751,13 @@ where
 /// ```
 pub fn eof<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: Input,
+    I: Input,
 {
-  if input.input_len() == 0 {
-    Ok(input.next_slice(0))
-  } else {
-    Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
-  }
+    if input.input_len() == 0 {
+        Ok(input.next_slice(0))
+    } else {
+        Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
+    }
 }
 
 /// Transforms Incomplete into `Error`.
@@ -779,42 +779,42 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::complete")]
 pub fn complete<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
-  F: Parser<I, O, E>,
+    F: Parser<I, O, E>,
 {
-  move |input: I| {
-    let i = input.clone();
-    match f.parse_next(input) {
-      Err(ErrMode::Incomplete(_)) => Err(ErrMode::from_error_kind(i, ErrorKind::Complete)),
-      rest => rest,
+    move |input: I| {
+        let i = input.clone();
+        match f.parse_next(input) {
+            Err(ErrMode::Incomplete(_)) => Err(ErrMode::from_error_kind(i, ErrorKind::Complete)),
+            rest => rest,
+        }
     }
-  }
 }
 
 /// Implementation of [`Parser::complete`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Complete<F> {
-  f: F,
+    f: F,
 }
 
 impl<F> Complete<F> {
-  pub(crate) fn new(f: F) -> Self {
-    Self { f }
-  }
+    pub(crate) fn new(f: F) -> Self {
+        Self { f }
+    }
 }
 
 impl<F, I, O, E> Parser<I, O, E> for Complete<F>
 where
-  I: Clone,
-  F: Parser<I, O, E>,
-  E: ParseError<I>,
+    I: Clone,
+    F: Parser<I, O, E>,
+    E: ParseError<I>,
 {
-  fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
-    let i = input.clone();
-    match (self.f).parse_next(input) {
-      Err(ErrMode::Incomplete(_)) => Err(ErrMode::from_error_kind(i, ErrorKind::Complete)),
-      rest => rest,
+    fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
+        let i = input.clone();
+        match (self.f).parse_next(input) {
+            Err(ErrMode::Incomplete(_)) => Err(ErrMode::from_error_kind(i, ErrorKind::Complete)),
+            rest => rest,
+        }
     }
-  }
 }
 
 /// Succeeds if all the input has been consumed by its child parser.
@@ -836,22 +836,22 @@ where
 /// # }
 /// ```
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `eof` or `FinishIResult::finish`"
+    since = "0.1.0",
+    note = "Replaced with `eof` or `FinishIResult::finish`"
 )]
 pub fn all_consuming<I, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
-  I: Input,
-  F: Parser<I, O, E>,
+    I: Input,
+    F: Parser<I, O, E>,
 {
-  move |input: I| {
-    let (input, res) = f.parse_next(input)?;
-    if input.input_len() == 0 {
-      Ok((input, res))
-    } else {
-      Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
+    move |input: I| {
+        let (input, res) = f.parse_next(input)?;
+        if input.input_len() == 0 {
+            Ok((input, res))
+        } else {
+            Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
+        }
     }
-  }
 }
 
 /// Returns the result of the child parser if it satisfies a verification function.
@@ -876,64 +876,64 @@ where
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::verify")]
 pub fn verify<I: Clone, O1, O2, E: ParseError<I>, F, G>(
-  mut first: F,
-  second: G,
+    mut first: F,
+    second: G,
 ) -> impl FnMut(I) -> IResult<I, O1, E>
 where
-  F: Parser<I, O1, E>,
-  G: Fn(&O2) -> bool,
-  O1: Borrow<O2>,
-  O2: ?Sized,
+    F: Parser<I, O1, E>,
+    G: Fn(&O2) -> bool,
+    O1: Borrow<O2>,
+    O2: ?Sized,
 {
-  move |input: I| {
-    let i = input.clone();
-    let (input, o) = first.parse_next(input)?;
+    move |input: I| {
+        let i = input.clone();
+        let (input, o) = first.parse_next(input)?;
 
-    if second(o.borrow()) {
-      Ok((input, o))
-    } else {
-      Err(ErrMode::from_error_kind(i, ErrorKind::Verify))
+        if second(o.borrow()) {
+            Ok((input, o))
+        } else {
+            Err(ErrMode::from_error_kind(i, ErrorKind::Verify))
+        }
     }
-  }
 }
 
 /// Implementation of [`Parser::verify`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Verify<F, G, O2: ?Sized> {
-  first: F,
-  second: G,
-  phantom: core::marker::PhantomData<O2>,
+    first: F,
+    second: G,
+    phantom: core::marker::PhantomData<O2>,
 }
 
 impl<F, G, O2: ?Sized> Verify<F, G, O2> {
-  pub(crate) fn new(first: F, second: G) -> Self {
-    Self {
-      first,
-      second,
-      phantom: Default::default(),
+    pub(crate) fn new(first: F, second: G) -> Self {
+        Self {
+            first,
+            second,
+            phantom: Default::default(),
+        }
     }
-  }
 }
 
 impl<I, O1, O2, E, F, G> Parser<I, O1, E> for Verify<F, G, O2>
 where
-  I: Clone,
-  E: ParseError<I>,
-  F: Parser<I, O1, E>,
-  G: Fn(&O2) -> bool,
-  O1: Borrow<O2>,
-  O2: ?Sized,
+    I: Clone,
+    E: ParseError<I>,
+    F: Parser<I, O1, E>,
+    G: Fn(&O2) -> bool,
+    O1: Borrow<O2>,
+    O2: ?Sized,
 {
-  fn parse_next(&mut self, input: I) -> IResult<I, O1, E> {
-    let i = input.clone();
-    let (input, o) = (self.first).parse_next(input)?;
+    fn parse_next(&mut self, input: I) -> IResult<I, O1, E> {
+        let i = input.clone();
+        let (input, o) = (self.first).parse_next(input)?;
 
-    if (self.second)(o.borrow()) {
-      Ok((input, o))
-    } else {
-      Err(ErrMode::from_error_kind(i, ErrorKind::Verify))
+        if (self.second)(o.borrow()) {
+            Ok((input, o))
+        } else {
+            Err(ErrMode::from_error_kind(i, ErrorKind::Verify))
+        }
     }
-  }
 }
 
 /// Returns the provided value if the child parser succeeds.
@@ -954,63 +954,63 @@ where
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::value")]
 pub fn value<I, O1: Clone, O2, E: ParseError<I>, F>(
-  val: O1,
-  mut parser: F,
+    val: O1,
+    mut parser: F,
 ) -> impl FnMut(I) -> IResult<I, O1, E>
 where
-  F: Parser<I, O2, E>,
+    F: Parser<I, O2, E>,
 {
-  move |input: I| parser.parse_next(input).map(|(i, _)| (i, val.clone()))
+    move |input: I| parser.parse_next(input).map(|(i, _)| (i, val.clone()))
 }
 
 /// Implementation of [`Parser::value`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Value<F, O1, O2> {
-  parser: F,
-  val: O2,
-  phantom: core::marker::PhantomData<O1>,
+    parser: F,
+    val: O2,
+    phantom: core::marker::PhantomData<O1>,
 }
 
 impl<F, O1, O2> Value<F, O1, O2> {
-  pub(crate) fn new(parser: F, val: O2) -> Self {
-    Self {
-      parser,
-      val,
-      phantom: Default::default(),
+    pub(crate) fn new(parser: F, val: O2) -> Self {
+        Self {
+            parser,
+            val,
+            phantom: Default::default(),
+        }
     }
-  }
 }
 
 impl<I, O1, O2: Clone, E: ParseError<I>, F: Parser<I, O1, E>> Parser<I, O2, E>
-  for Value<F, O1, O2>
+    for Value<F, O1, O2>
 {
-  fn parse_next(&mut self, input: I) -> IResult<I, O2, E> {
-    (self.parser)
-      .parse_next(input)
-      .map(|(i, _)| (i, self.val.clone()))
-  }
+    fn parse_next(&mut self, input: I) -> IResult<I, O2, E> {
+        (self.parser)
+            .parse_next(input)
+            .map(|(i, _)| (i, self.val.clone()))
+    }
 }
 
 /// Implementation of [`Parser::void`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Void<F, O> {
-  parser: F,
-  phantom: core::marker::PhantomData<O>,
+    parser: F,
+    phantom: core::marker::PhantomData<O>,
 }
 
 impl<F, O> Void<F, O> {
-  pub(crate) fn new(parser: F) -> Self {
-    Self {
-      parser,
-      phantom: Default::default(),
+    pub(crate) fn new(parser: F) -> Self {
+        Self {
+            parser,
+            phantom: Default::default(),
+        }
     }
-  }
 }
 
 impl<I, O, E: ParseError<I>, F: Parser<I, O, E>> Parser<I, (), E> for Void<F, O> {
-  fn parse_next(&mut self, input: I) -> IResult<I, (), E> {
-    (self.parser).parse_next(input).map(|(i, _)| (i, ()))
-  }
+    fn parse_next(&mut self, input: I) -> IResult<I, (), E> {
+        (self.parser).parse_next(input).map(|(i, _)| (i, ()))
+    }
 }
 
 /// Succeeds if the child parser returns an error.
@@ -1029,16 +1029,16 @@ impl<I, O, E: ParseError<I>, F: Parser<I, O, E>> Parser<I, (), E> for Void<F, O>
 /// ```
 pub fn not<I: Clone, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, (), E>
 where
-  F: Parser<I, O, E>,
+    F: Parser<I, O, E>,
 {
-  move |input: I| {
-    let i = input.clone();
-    match parser.parse_next(input) {
-      Ok(_) => Err(ErrMode::from_error_kind(i, ErrorKind::Not)),
-      Err(ErrMode::Backtrack(_)) => Ok((i, ())),
-      Err(e) => Err(e),
+    move |input: I| {
+        let i = input.clone();
+        match parser.parse_next(input) {
+            Ok(_) => Err(ErrMode::from_error_kind(i, ErrorKind::Not)),
+            Err(ErrMode::Backtrack(_)) => Ok((i, ())),
+            Err(e) => Err(e),
+        }
     }
-  }
 }
 
 /// If the child parser was successful, return the consumed input as produced value.
@@ -1060,56 +1060,56 @@ where
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::recognize")]
 pub fn recognize<I, O, E: ParseError<I>, F>(
-  mut parser: F,
+    mut parser: F,
 ) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: Input + Offset,
-  F: Parser<I, O, E>,
+    I: Input + Offset,
+    F: Parser<I, O, E>,
 {
-  move |input: I| {
-    let i = input.clone();
-    match parser.parse_next(i) {
-      Ok((i, _)) => {
-        let offset = input.offset_to(&i);
-        Ok(input.next_slice(offset))
-      }
-      Err(e) => Err(e),
+    move |input: I| {
+        let i = input.clone();
+        match parser.parse_next(i) {
+            Ok((i, _)) => {
+                let offset = input.offset_to(&i);
+                Ok(input.next_slice(offset))
+            }
+            Err(e) => Err(e),
+        }
     }
-  }
 }
 
 /// Implementation of [`Parser::recognize`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Recognize<F, O> {
-  parser: F,
-  o: core::marker::PhantomData<O>,
+    parser: F,
+    o: core::marker::PhantomData<O>,
 }
 
 impl<F, O> Recognize<F, O> {
-  pub(crate) fn new(parser: F) -> Self {
-    Self {
-      parser,
-      o: Default::default(),
+    pub(crate) fn new(parser: F) -> Self {
+        Self {
+            parser,
+            o: Default::default(),
+        }
     }
-  }
 }
 
 impl<I, O, E, F> Parser<I, <I as Input>::Slice, E> for Recognize<F, O>
 where
-  I: Input + Offset,
-  E: ParseError<I>,
-  F: Parser<I, O, E>,
+    I: Input + Offset,
+    E: ParseError<I>,
+    F: Parser<I, O, E>,
 {
-  fn parse_next(&mut self, input: I) -> IResult<I, <I as Input>::Slice, E> {
-    let i = input.clone();
-    match (self.parser).parse_next(i) {
-      Ok((i, _)) => {
-        let offset = input.offset_to(&i);
-        Ok(input.next_slice(offset))
-      }
-      Err(e) => Err(e),
+    fn parse_next(&mut self, input: I) -> IResult<I, <I as Input>::Slice, E> {
+        let i = input.clone();
+        match (self.parser).parse_next(i) {
+            Ok((i, _)) => {
+                let offset = input.offset_to(&i);
+                Ok(input.next_slice(offset))
+            }
+            Err(e) => Err(e),
+        }
     }
-  }
 }
 
 /// if the child parser was successful, return the consumed input with the output
@@ -1153,128 +1153,127 @@ where
 /// # }
 /// ```
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `Parser::with_recognized (output ordering is changed)"
+    since = "0.1.0",
+    note = "Replaced with `Parser::with_recognized (output ordering is changed)"
 )]
 pub fn consumed<I, O, F, E>(
-  mut parser: F,
+    mut parser: F,
 ) -> impl FnMut(I) -> IResult<I, (<I as Input>::Slice, O), E>
 where
-  I: Input + Offset,
-  E: ParseError<I>,
-  F: Parser<I, O, E>,
+    I: Input + Offset,
+    E: ParseError<I>,
+    F: Parser<I, O, E>,
 {
-  move |input: I| {
-    let i = input.clone();
-    match parser.parse_next(i) {
-      Ok((remaining, result)) => {
-        let offset = input.offset_to(&remaining);
-        let (remaining, recognized) = input.next_slice(offset);
-        Ok((remaining, (recognized, result)))
-      }
-      Err(e) => Err(e),
+    move |input: I| {
+        let i = input.clone();
+        match parser.parse_next(i) {
+            Ok((remaining, result)) => {
+                let offset = input.offset_to(&remaining);
+                let (remaining, recognized) = input.next_slice(offset);
+                Ok((remaining, (recognized, result)))
+            }
+            Err(e) => Err(e),
+        }
     }
-  }
 }
 
 /// Implementation of [`Parser::with_recognized`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct WithRecognized<F, O> {
-  parser: F,
-  o: core::marker::PhantomData<O>,
+    parser: F,
+    o: core::marker::PhantomData<O>,
 }
 
 impl<F, O> WithRecognized<F, O> {
-  pub(crate) fn new(parser: F) -> Self {
-    Self {
-      parser,
-      o: Default::default(),
+    pub(crate) fn new(parser: F) -> Self {
+        Self {
+            parser,
+            o: Default::default(),
+        }
     }
-  }
 }
 
 impl<I, O, E, F> Parser<I, (O, <I as Input>::Slice), E> for WithRecognized<F, O>
 where
-  I: Input + Offset,
-  E: ParseError<I>,
-  F: Parser<I, O, E>,
+    I: Input + Offset,
+    E: ParseError<I>,
+    F: Parser<I, O, E>,
 {
-  fn parse_next(&mut self, input: I) -> IResult<I, (O, <I as Input>::Slice), E> {
-    let i = input.clone();
-    match (self.parser).parse_next(i) {
-      Ok((remaining, result)) => {
-        let offset = input.offset_to(&remaining);
-        let (remaining, recognized) = input.next_slice(offset);
-        Ok((remaining, (result, recognized)))
-      }
-      Err(e) => Err(e),
+    fn parse_next(&mut self, input: I) -> IResult<I, (O, <I as Input>::Slice), E> {
+        let i = input.clone();
+        match (self.parser).parse_next(i) {
+            Ok((remaining, result)) => {
+                let offset = input.offset_to(&remaining);
+                let (remaining, recognized) = input.next_slice(offset);
+                Ok((remaining, (result, recognized)))
+            }
+            Err(e) => Err(e),
+        }
     }
-  }
 }
 
 /// Implementation of [`Parser::span`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Span<F, O> {
-  parser: F,
-  o: core::marker::PhantomData<O>,
+    parser: F,
+    o: core::marker::PhantomData<O>,
 }
 
 impl<F, O> Span<F, O> {
-  pub(crate) fn new(parser: F) -> Self {
-    Self {
-      parser,
-      o: Default::default(),
+    pub(crate) fn new(parser: F) -> Self {
+        Self {
+            parser,
+            o: Default::default(),
+        }
     }
-  }
 }
 
 impl<I, O, E, F> Parser<I, Range<usize>, E> for Span<F, O>
 where
-  I: Clone + Location,
-  E: ParseError<I>,
-  F: Parser<I, O, E>,
+    I: Clone + Location,
+    E: ParseError<I>,
+    F: Parser<I, O, E>,
 {
-  fn parse_next(&mut self, input: I) -> IResult<I, Range<usize>, E> {
-    let start = input.location();
-    self.parser.parse_next(input).map(move |(remaining, _)| {
-      let end = remaining.location();
-      (remaining, (start..end))
-    })
-  }
+    fn parse_next(&mut self, input: I) -> IResult<I, Range<usize>, E> {
+        let start = input.location();
+        self.parser.parse_next(input).map(move |(remaining, _)| {
+            let end = remaining.location();
+            (remaining, (start..end))
+        })
+    }
 }
 
 /// Implementation of [`Parser::with_span`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct WithSpan<F, O> {
-  parser: F,
-  o: core::marker::PhantomData<O>,
+    parser: F,
+    o: core::marker::PhantomData<O>,
 }
 
 impl<F, O> WithSpan<F, O> {
-  pub(crate) fn new(parser: F) -> Self {
-    Self {
-      parser,
-      o: Default::default(),
+    pub(crate) fn new(parser: F) -> Self {
+        Self {
+            parser,
+            o: Default::default(),
+        }
     }
-  }
 }
 
 impl<I, O, E, F> Parser<I, (O, Range<usize>), E> for WithSpan<F, O>
 where
-  I: Clone + Location,
-  E: ParseError<I>,
-  F: Parser<I, O, E>,
+    I: Clone + Location,
+    E: ParseError<I>,
+    F: Parser<I, O, E>,
 {
-  fn parse_next(&mut self, input: I) -> IResult<I, (O, Range<usize>), E> {
-    let start = input.location();
-    self
-      .parser
-      .parse_next(input)
-      .map(move |(remaining, output)| {
-        let end = remaining.location();
-        (remaining, (output, (start..end)))
-      })
-  }
+    fn parse_next(&mut self, input: I) -> IResult<I, (O, Range<usize>), E> {
+        let start = input.location();
+        self.parser
+            .parse_next(input)
+            .map(move |(remaining, output)| {
+                let end = remaining.location();
+                (remaining, (output, (start..end)))
+            })
+    }
 }
 
 /// Transforms an [`ErrMode::Backtrack`] (recoverable) to [`ErrMode::Cut`] (unrecoverable)
@@ -1332,18 +1331,18 @@ where
 /// ```
 pub fn cut_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
-  F: Parser<I, O, E>,
+    F: Parser<I, O, E>,
 {
-  move |input: I| parser.parse_next(input).map_err(|e| e.cut())
+    move |input: I| parser.parse_next(input).map_err(|e| e.cut())
 }
 
 /// Deprecated, see [`cut_err`]
 #[deprecated(since = "0.3.0", note = "Replaced with `cut_err`")]
 pub fn cut<I, O, E: ParseError<I>, F>(parser: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
-  F: Parser<I, O, E>,
+    F: Parser<I, O, E>,
 {
-  cut_err(parser)
+    cut_err(parser)
 }
 
 /// Transforms an [`ErrMode::Cut`] (unrecoverable) to [`ErrMode::Backtrack`] (recoverable)
@@ -1352,9 +1351,9 @@ where
 /// [`winnow::branch::alt`][crate::branch::alt].
 pub fn backtrack_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
-  F: Parser<I, O, E>,
+    F: Parser<I, O, E>,
 {
-  move |input: I| parser.parse_next(input).map_err(|e| e.backtrack())
+    move |input: I| parser.parse_next(input).map_err(|e| e.backtrack())
 }
 
 /// A placeholder for a not-yet-implemented [`Parser`]
@@ -1377,8 +1376,8 @@ where
 /// ```
 #[track_caller]
 pub fn todo<I, O, E>(_input: I) -> IResult<I, O, E> {
-  #![allow(clippy::todo)]
-  todo!("unimplemented parse")
+    #![allow(clippy::todo)]
+    todo!("unimplemented parse")
 }
 
 /// automatically converts the child parser's result to another type
@@ -1406,99 +1405,99 @@ pub fn todo<I, O, E>(_input: I) -> IResult<I, O, E> {
 /// # }
 /// ```
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `Parser::output_into` and `Parser::err_into`"
+    since = "0.1.0",
+    note = "Replaced with `Parser::output_into` and `Parser::err_into`"
 )]
 pub fn into<I, O1, O2, E1, E2, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O2, E2>
 where
-  O1: convert::Into<O2>,
-  E1: convert::Into<E2>,
-  E1: ParseError<I>,
-  E2: ParseError<I>,
-  F: Parser<I, O1, E1>,
+    O1: convert::Into<O2>,
+    E1: convert::Into<E2>,
+    E1: ParseError<I>,
+    E2: ParseError<I>,
+    F: Parser<I, O1, E1>,
 {
-  //map(parser, Into::into)
-  move |input: I| match parser.parse_next(input) {
-    Ok((i, o)) => Ok((i, o.into())),
-    Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.into())),
-    Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.into())),
-    Err(ErrMode::Incomplete(e)) => Err(ErrMode::Incomplete(e)),
-  }
+    //map(parser, Into::into)
+    move |input: I| match parser.parse_next(input) {
+        Ok((i, o)) => Ok((i, o.into())),
+        Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.into())),
+        Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.into())),
+        Err(ErrMode::Incomplete(e)) => Err(ErrMode::Incomplete(e)),
+    }
 }
 
 /// Implementation of [`Parser::output_into`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct OutputInto<F, O1, O2>
 where
-  O1: Into<O2>,
+    O1: Into<O2>,
 {
-  f: F,
-  phantom_out1: core::marker::PhantomData<O1>,
-  phantom_out2: core::marker::PhantomData<O2>,
+    f: F,
+    phantom_out1: core::marker::PhantomData<O1>,
+    phantom_out2: core::marker::PhantomData<O2>,
 }
 
 impl<F, O1, O2> OutputInto<F, O1, O2>
 where
-  O1: Into<O2>,
+    O1: Into<O2>,
 {
-  pub(crate) fn new(f: F) -> Self {
-    Self {
-      f,
-      phantom_out1: Default::default(),
-      phantom_out2: Default::default(),
+    pub(crate) fn new(f: F) -> Self {
+        Self {
+            f,
+            phantom_out1: Default::default(),
+            phantom_out2: Default::default(),
+        }
     }
-  }
 }
 
 impl<I: Clone, O1, O2, E, F: Parser<I, O1, E>> Parser<I, O2, E> for OutputInto<F, O1, O2>
 where
-  O1: Into<O2>,
+    O1: Into<O2>,
 {
-  fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
-    match self.f.parse_next(i) {
-      Ok((i, o)) => Ok((i, o.into())),
-      Err(err) => Err(err),
+    fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
+        match self.f.parse_next(i) {
+            Ok((i, o)) => Ok((i, o.into())),
+            Err(err) => Err(err),
+        }
     }
-  }
 }
 
 /// Implementation of [`Parser::err_into`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct ErrInto<F, E1, E2>
 where
-  E1: Into<E2>,
+    E1: Into<E2>,
 {
-  f: F,
-  phantom_err1: core::marker::PhantomData<E1>,
-  phantom_err2: core::marker::PhantomData<E2>,
+    f: F,
+    phantom_err1: core::marker::PhantomData<E1>,
+    phantom_err2: core::marker::PhantomData<E2>,
 }
 
 impl<F, E1, E2> ErrInto<F, E1, E2>
 where
-  E1: Into<E2>,
+    E1: Into<E2>,
 {
-  pub(crate) fn new(f: F) -> Self {
-    Self {
-      f,
-      phantom_err1: Default::default(),
-      phantom_err2: Default::default(),
+    pub(crate) fn new(f: F) -> Self {
+        Self {
+            f,
+            phantom_err1: Default::default(),
+            phantom_err2: Default::default(),
+        }
     }
-  }
 }
 
 impl<I: Clone, O, E1, E2: crate::error::ParseError<I>, F: Parser<I, O, E1>> Parser<I, O, E2>
-  for ErrInto<F, E1, E2>
+    for ErrInto<F, E1, E2>
 where
-  E1: Into<E2>,
+    E1: Into<E2>,
 {
-  fn parse_next(&mut self, i: I) -> IResult<I, O, E2> {
-    match self.f.parse_next(i) {
-      Ok(ok) => Ok(ok),
-      Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.into())),
-      Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.into())),
-      Err(ErrMode::Incomplete(e)) => Err(ErrMode::Incomplete(e)),
+    fn parse_next(&mut self, i: I) -> IResult<I, O, E2> {
+        match self.f.parse_next(i) {
+            Ok(ok) => Ok(ok),
+            Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.into())),
+            Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.into())),
+            Err(ErrMode::Incomplete(e)) => Err(ErrMode::Incomplete(e)),
+        }
     }
-  }
 }
 
 /// Creates an iterator from input data and a parser.
@@ -1523,77 +1522,77 @@ where
 /// ```
 pub fn iterator<I, Output, Error, F>(input: I, f: F) -> ParserIterator<I, Output, Error, F>
 where
-  F: Parser<I, Output, Error>,
-  Error: ParseError<I>,
+    F: Parser<I, Output, Error>,
+    Error: ParseError<I>,
 {
-  ParserIterator {
-    iterator: f,
-    input,
-    output: Default::default(),
-    state: Some(State::Running),
-  }
+    ParserIterator {
+        iterator: f,
+        input,
+        output: Default::default(),
+        state: Some(State::Running),
+    }
 }
 
 /// Main structure associated to the [iterator] function.
 pub struct ParserIterator<I, O, E, F> {
-  iterator: F,
-  input: I,
-  output: core::marker::PhantomData<O>,
-  state: Option<State<E>>,
+    iterator: F,
+    input: I,
+    output: core::marker::PhantomData<O>,
+    state: Option<State<E>>,
 }
 
 impl<I: Clone, O, E, F> ParserIterator<I, O, E, F> {
-  /// Returns the remaining input if parsing was successful, or the error if we encountered an error.
-  pub fn finish(mut self) -> IResult<I, (), E> {
-    match self.state.take().unwrap() {
-      State::Running | State::Done => Ok((self.input, ())),
-      State::Failure(e) => Err(ErrMode::Cut(e)),
-      State::Incomplete(i) => Err(ErrMode::Incomplete(i)),
+    /// Returns the remaining input if parsing was successful, or the error if we encountered an error.
+    pub fn finish(mut self) -> IResult<I, (), E> {
+        match self.state.take().unwrap() {
+            State::Running | State::Done => Ok((self.input, ())),
+            State::Failure(e) => Err(ErrMode::Cut(e)),
+            State::Incomplete(i) => Err(ErrMode::Incomplete(i)),
+        }
     }
-  }
 }
 
 impl<'a, I, O, E, F> core::iter::Iterator for &'a mut ParserIterator<I, O, E, F>
 where
-  F: Parser<I, O, E>,
-  I: Clone,
+    F: Parser<I, O, E>,
+    I: Clone,
 {
-  type Item = O;
+    type Item = O;
 
-  fn next(&mut self) -> Option<Self::Item> {
-    if let State::Running = self.state.take().unwrap() {
-      let input = self.input.clone();
+    fn next(&mut self) -> Option<Self::Item> {
+        if let State::Running = self.state.take().unwrap() {
+            let input = self.input.clone();
 
-      match self.iterator.parse_next(input) {
-        Ok((i, o)) => {
-          self.input = i;
-          self.state = Some(State::Running);
-          Some(o)
+            match self.iterator.parse_next(input) {
+                Ok((i, o)) => {
+                    self.input = i;
+                    self.state = Some(State::Running);
+                    Some(o)
+                }
+                Err(ErrMode::Backtrack(_)) => {
+                    self.state = Some(State::Done);
+                    None
+                }
+                Err(ErrMode::Cut(e)) => {
+                    self.state = Some(State::Failure(e));
+                    None
+                }
+                Err(ErrMode::Incomplete(i)) => {
+                    self.state = Some(State::Incomplete(i));
+                    None
+                }
+            }
+        } else {
+            None
         }
-        Err(ErrMode::Backtrack(_)) => {
-          self.state = Some(State::Done);
-          None
-        }
-        Err(ErrMode::Cut(e)) => {
-          self.state = Some(State::Failure(e));
-          None
-        }
-        Err(ErrMode::Incomplete(i)) => {
-          self.state = Some(State::Incomplete(i));
-          None
-        }
-      }
-    } else {
-      None
     }
-  }
 }
 
 enum State<E> {
-  Running,
-  Done,
-  Failure(E),
-  Incomplete(Needed),
+    Running,
+    Done,
+    Failure(E),
+    Incomplete(Needed),
 }
 
 /// a parser which always succeeds with given value without consuming any input.
@@ -1617,7 +1616,7 @@ enum State<E> {
 /// # }
 /// ```
 pub fn success<I, O: Clone, E: ParseError<I>>(val: O) -> impl Fn(I) -> IResult<I, O, E> {
-  move |input: I| Ok((input, val.clone()))
+    move |input: I| Ok((input, val.clone()))
 }
 
 /// A parser which always fails.
@@ -1630,80 +1629,80 @@ pub fn success<I, O: Clone, E: ParseError<I>>(val: O) -> impl Fn(I) -> IResult<I
 /// assert_eq!(fail::<_, &str, _>(s), Err(ErrMode::Backtrack(Error::new(s, ErrorKind::Fail))));
 /// ```
 pub fn fail<I, O, E: ParseError<I>>(i: I) -> IResult<I, O, E> {
-  Err(ErrMode::from_error_kind(i, ErrorKind::Fail))
+    Err(ErrMode::from_error_kind(i, ErrorKind::Fail))
 }
 
 /// Implementation of [`Parser::context`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Context<F, O, C: Clone> {
-  f: F,
-  context: C,
-  phantom: core::marker::PhantomData<O>,
+    f: F,
+    context: C,
+    phantom: core::marker::PhantomData<O>,
 }
 
 impl<F, O, C: Clone> Context<F, O, C> {
-  pub(crate) fn new(f: F, context: C) -> Self {
-    Self {
-      f,
-      context,
-      phantom: Default::default(),
+    pub(crate) fn new(f: F, context: C) -> Self {
+        Self {
+            f,
+            context,
+            phantom: Default::default(),
+        }
     }
-  }
 }
 
 impl<I, O, E, F, C> Parser<I, O, E> for Context<F, O, C>
 where
-  I: Clone,
-  C: Clone,
-  E: ContextError<I, C>,
-  F: Parser<I, O, E>,
+    I: Clone,
+    C: Clone,
+    E: ContextError<I, C>,
+    F: Parser<I, O, E>,
 {
-  fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
-    (self.f)
-      .parse_next(i.clone())
-      .map_err(|err| err.map(|err| err.add_context(i, self.context.clone())))
-  }
+    fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
+        (self.f)
+            .parse_next(i.clone())
+            .map_err(|err| err.map(|err| err.add_context(i, self.context.clone())))
+    }
 }
 
 /// Implementation of [`Parser::dbg_err`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 #[cfg(feature = "std")]
 pub struct DbgErr<F, O, C> {
-  f: F,
-  context: C,
-  phantom: core::marker::PhantomData<O>,
+    f: F,
+    context: C,
+    phantom: core::marker::PhantomData<O>,
 }
 
 #[cfg(feature = "std")]
 impl<F, O, C> DbgErr<F, O, C> {
-  pub(crate) fn new(f: F, context: C) -> Self {
-    Self {
-      f,
-      context,
-      phantom: Default::default(),
+    pub(crate) fn new(f: F, context: C) -> Self {
+        Self {
+            f,
+            context,
+            phantom: Default::default(),
+        }
     }
-  }
 }
 
 #[cfg(feature = "std")]
 impl<I, O, E, F, C> Parser<I, O, E> for DbgErr<F, O, C>
 where
-  I: crate::input::AsBytes,
-  I: Clone,
-  E: std::fmt::Debug,
-  F: Parser<I, O, E>,
-  C: std::fmt::Display,
+    I: crate::input::AsBytes,
+    I: Clone,
+    E: std::fmt::Debug,
+    F: Parser<I, O, E>,
+    C: std::fmt::Display,
 {
-  fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
-    use crate::input::HexDisplay;
-    let i = input.clone();
-    match self.f.parse_next(i) {
-      Err(e) => {
-        let input = input.as_bytes();
-        eprintln!("{}: Error({:?}) at:\n{}", self.context, e, input.to_hex(8));
-        Err(e)
-      }
-      a => a,
+    fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
+        use crate::input::HexDisplay;
+        let i = input.clone();
+        match self.f.parse_next(i) {
+            Err(e) => {
+                let input = input.as_bytes();
+                eprintln!("{}: Error({:?}) at:\n{}", self.context, e, input.to_hex(8));
+                Err(e)
+            }
+            a => a,
+        }
     }
-  }
 }

@@ -40,23 +40,23 @@ use crate::{IResult, Parser};
 /// ```
 pub fn bits<I, O, E1, E2, P>(mut parser: P) -> impl FnMut(I) -> IResult<I, O, E2>
 where
-  E1: ParseError<(I, usize)> + ErrorConvert<E2>,
-  E2: ParseError<I>,
-  I: Input,
-  P: Parser<(I, usize), O, E1>,
+    E1: ParseError<(I, usize)> + ErrorConvert<E2>,
+    E2: ParseError<I>,
+    I: Input,
+    P: Parser<(I, usize), O, E1>,
 {
-  move |input: I| match parser.parse_next((input, 0)) {
-    Ok(((rest, offset), result)) => {
-      // If the next byte has been partially read, it will be sliced away as well.
-      // The parser functions might already slice away all fully read bytes.
-      // That's why `offset / 8` isn't necessarily needed at all times.
-      let remaining_bytes_index = offset / 8 + if offset % 8 == 0 { 0 } else { 1 };
-      let (input, _) = rest.next_slice(remaining_bytes_index);
-      Ok((input, result))
+    move |input: I| match parser.parse_next((input, 0)) {
+        Ok(((rest, offset), result)) => {
+            // If the next byte has been partially read, it will be sliced away as well.
+            // The parser functions might already slice away all fully read bytes.
+            // That's why `offset / 8` isn't necessarily needed at all times.
+            let remaining_bytes_index = offset / 8 + if offset % 8 == 0 { 0 } else { 1 };
+            let (input, _) = rest.next_slice(remaining_bytes_index);
+            Ok((input, result))
+        }
+        Err(ErrMode::Incomplete(n)) => Err(ErrMode::Incomplete(n.map(|u| u.get() / 8 + 1))),
+        Err(e) => Err(e.convert()),
     }
-    Err(ErrMode::Incomplete(n)) => Err(ErrMode::Incomplete(n.map(|u| u.get() / 8 + 1))),
-    Err(e) => Err(e.convert()),
-  }
 }
 
 /// Counterpart to `bits`, `bytes` transforms its bit stream input into a byte slice for the underlying
@@ -85,28 +85,28 @@ where
 /// ```
 pub fn bytes<I, O, E1, E2, P>(mut parser: P) -> impl FnMut((I, usize)) -> IResult<(I, usize), O, E2>
 where
-  E1: ParseError<I> + ErrorConvert<E2>,
-  E2: ParseError<(I, usize)>,
-  I: Input,
-  P: Parser<I, O, E1>,
+    E1: ParseError<I> + ErrorConvert<E2>,
+    E2: ParseError<(I, usize)>,
+    I: Input,
+    P: Parser<I, O, E1>,
 {
-  move |(input, offset): (I, usize)| {
-    let (inner, _) = if offset % 8 != 0 {
-      input.next_slice(1 + offset / 8)
-    } else {
-      input.next_slice(offset / 8)
-    };
-    let i = (input, offset);
-    match parser.parse_next(inner) {
-      Ok((rest, res)) => Ok(((rest, 0), res)),
-      Err(ErrMode::Incomplete(Needed::Unknown)) => Err(ErrMode::Incomplete(Needed::Unknown)),
-      Err(ErrMode::Incomplete(Needed::Size(sz))) => Err(match sz.get().checked_mul(8) {
-        Some(v) => ErrMode::Incomplete(Needed::new(v)),
-        None => ErrMode::Cut(E2::from_error_kind(i, ErrorKind::TooLarge)),
-      }),
-      Err(e) => Err(e.convert()),
+    move |(input, offset): (I, usize)| {
+        let (inner, _) = if offset % 8 != 0 {
+            input.next_slice(1 + offset / 8)
+        } else {
+            input.next_slice(offset / 8)
+        };
+        let i = (input, offset);
+        match parser.parse_next(inner) {
+            Ok((rest, res)) => Ok(((rest, 0), res)),
+            Err(ErrMode::Incomplete(Needed::Unknown)) => Err(ErrMode::Incomplete(Needed::Unknown)),
+            Err(ErrMode::Incomplete(Needed::Size(sz))) => Err(match sz.get().checked_mul(8) {
+                Some(v) => ErrMode::Incomplete(Needed::new(v)),
+                None => ErrMode::Cut(E2::from_error_kind(i, ErrorKind::TooLarge)),
+            }),
+            Err(e) => Err(e.convert()),
+        }
     }
-  }
 }
 
 /// Generates a parser taking `count` bits
@@ -135,21 +135,21 @@ where
 /// ```
 #[inline(always)]
 pub fn take<I, O, C, E: ParseError<(I, usize)>, const STREAMING: bool>(
-  count: C,
+    count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-  I: Input<Token = u8> + AsBytes + InputIsStreaming<STREAMING>,
-  C: ToUsize,
-  O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
+    I: Input<Token = u8> + AsBytes + InputIsStreaming<STREAMING>,
+    C: ToUsize,
+    O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
-  let count = count.to_usize();
-  move |input: (I, usize)| {
-    if STREAMING {
-      streaming::take_internal(input, count)
-    } else {
-      complete::take_internal(input, count)
+    let count = count.to_usize();
+    move |input: (I, usize)| {
+        if STREAMING {
+            streaming::take_internal(input, count)
+        } else {
+            complete::take_internal(input, count)
+        }
     }
-  }
 }
 
 /// Generates a parser taking `count` bits and comparing them to `pattern`
@@ -198,22 +198,22 @@ where
 /// ```
 #[inline(always)]
 pub fn tag<I, O, C, E: ParseError<(I, usize)>, const STREAMING: bool>(
-  pattern: O,
-  count: C,
+    pattern: O,
+    count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-  I: Input<Token = u8> + AsBytes + InputIsStreaming<STREAMING>,
-  C: ToUsize,
-  O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
+    I: Input<Token = u8> + AsBytes + InputIsStreaming<STREAMING>,
+    C: ToUsize,
+    O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
-  let count = count.to_usize();
-  move |input: (I, usize)| {
-    if STREAMING {
-      streaming::tag_internal(input, &pattern, count)
-    } else {
-      complete::tag_internal(input, &pattern, count)
+    let count = count.to_usize();
+    move |input: (I, usize)| {
+        if STREAMING {
+            streaming::tag_internal(input, &pattern, count)
+        } else {
+            complete::tag_internal(input, &pattern, count)
+        }
     }
-  }
 }
 
 /// Parses one specific bit as a bool.
@@ -233,15 +233,15 @@ where
 /// assert_eq!(parse(([0b10000000].as_ref(), 1)), Ok((([0b10000000].as_ref(), 2), false)));
 /// ```
 pub fn bool<I, E: ParseError<(I, usize)>, const STREAMING: bool>(
-  input: (I, usize),
+    input: (I, usize),
 ) -> IResult<(I, usize), bool, E>
 where
-  I: Input<Token = u8> + AsBytes + InputIsStreaming<STREAMING>,
+    I: Input<Token = u8> + AsBytes + InputIsStreaming<STREAMING>,
 {
-  #![allow(deprecated)]
-  if STREAMING {
-    streaming::bool(input)
-  } else {
-    complete::bool(input)
-  }
+    #![allow(deprecated)]
+    if STREAMING {
+        streaming::bool(input)
+    } else {
+        complete::bool(input)
+    }
 }

@@ -30,17 +30,17 @@ use crate::{IResult, Parser};
 /// ```
 #[deprecated(since = "0.1.0", note = "`Parser` is directly implemented for tuples")]
 pub fn pair<I, O1, O2, E: ParseError<I>, F, G>(
-  mut first: F,
-  mut second: G,
+    mut first: F,
+    mut second: G,
 ) -> impl FnMut(I) -> IResult<I, (O1, O2), E>
 where
-  F: Parser<I, O1, E>,
-  G: Parser<I, O2, E>,
+    F: Parser<I, O1, E>,
+    G: Parser<I, O2, E>,
 {
-  move |input: I| {
-    let (input, o1) = first.parse_next(input)?;
-    second.parse_next(input).map(|(i, o2)| (i, (o1, o2)))
-  }
+    move |input: I| {
+        let (input, o1) = first.parse_next(input)?;
+        second.parse_next(input).map(|(i, o2)| (i, (o1, o2)))
+    }
 }
 
 /// Matches an object from the first parser and discards it,
@@ -64,17 +64,17 @@ where
 /// assert_eq!(parser("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
 /// ```
 pub fn preceded<I, O1, O2, E: ParseError<I>, F, G>(
-  mut first: F,
-  mut second: G,
+    mut first: F,
+    mut second: G,
 ) -> impl FnMut(I) -> IResult<I, O2, E>
 where
-  F: Parser<I, O1, E>,
-  G: Parser<I, O2, E>,
+    F: Parser<I, O1, E>,
+    G: Parser<I, O2, E>,
 {
-  move |input: I| {
-    let (input, _) = first.parse_next(input)?;
-    second.parse_next(input)
-  }
+    move |input: I| {
+        let (input, _) = first.parse_next(input)?;
+        second.parse_next(input)
+    }
 }
 
 /// Gets an object from the first parser,
@@ -98,17 +98,17 @@ where
 /// assert_eq!(parser("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
 /// ```
 pub fn terminated<I, O1, O2, E: ParseError<I>, F, G>(
-  mut first: F,
-  mut second: G,
+    mut first: F,
+    mut second: G,
 ) -> impl FnMut(I) -> IResult<I, O1, E>
 where
-  F: Parser<I, O1, E>,
-  G: Parser<I, O2, E>,
+    F: Parser<I, O1, E>,
+    G: Parser<I, O2, E>,
 {
-  move |input: I| {
-    let (input, o1) = first.parse_next(input)?;
-    second.parse_next(input).map(|(i, _)| (i, o1))
-  }
+    move |input: I| {
+        let (input, o1) = first.parse_next(input)?;
+        second.parse_next(input).map(|(i, _)| (i, o1))
+    }
 }
 
 /// Gets an object from the first parser,
@@ -134,20 +134,20 @@ where
 /// assert_eq!(parser("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
 /// ```
 pub fn separated_pair<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
-  mut first: F,
-  mut sep: G,
-  mut second: H,
+    mut first: F,
+    mut sep: G,
+    mut second: H,
 ) -> impl FnMut(I) -> IResult<I, (O1, O3), E>
 where
-  F: Parser<I, O1, E>,
-  G: Parser<I, O2, E>,
-  H: Parser<I, O3, E>,
+    F: Parser<I, O1, E>,
+    G: Parser<I, O2, E>,
+    H: Parser<I, O3, E>,
 {
-  move |input: I| {
-    let (input, o1) = first.parse_next(input)?;
-    let (input, _) = sep.parse_next(input)?;
-    second.parse_next(input).map(|(i, o2)| (i, (o1, o2)))
-  }
+    move |input: I| {
+        let (input, o1) = first.parse_next(input)?;
+        let (input, _) = sep.parse_next(input)?;
+        second.parse_next(input).map(|(i, o2)| (i, (o1, o2)))
+    }
 }
 
 /// Matches an object from the first parser and discards it,
@@ -173,20 +173,20 @@ where
 /// assert_eq!(parser("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
 /// ```
 pub fn delimited<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
-  mut first: F,
-  mut second: G,
-  mut third: H,
+    mut first: F,
+    mut second: G,
+    mut third: H,
 ) -> impl FnMut(I) -> IResult<I, O2, E>
 where
-  F: Parser<I, O1, E>,
-  G: Parser<I, O2, E>,
-  H: Parser<I, O3, E>,
+    F: Parser<I, O1, E>,
+    G: Parser<I, O2, E>,
+    H: Parser<I, O3, E>,
 {
-  move |input: I| {
-    let (input, _) = first.parse_next(input)?;
-    let (input, o2) = second.parse_next(input)?;
-    third.parse_next(input).map(|(i, _)| (i, o2))
-  }
+    move |input: I| {
+        let (input, _) = first.parse_next(input)?;
+        let (input, o2) = second.parse_next(input)?;
+        third.parse_next(input).map(|(i, _)| (i, o2))
+    }
 }
 
 /// Helper trait for the tuple combinator.
@@ -194,15 +194,15 @@ where
 /// This trait is implemented for tuples of parsers of up to 21 elements.
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser`")]
 pub trait Tuple<I, O, E> {
-  /// Parses the input and returns a tuple of results of each parser.
-  fn parse(&mut self, input: I) -> IResult<I, O, E>;
+    /// Parses the input and returns a tuple of results of each parser.
+    fn parse(&mut self, input: I) -> IResult<I, O, E>;
 }
 
 #[allow(deprecated)]
 impl<I, O, E: ParseError<I>, F: Parser<I, O, E>> Tuple<I, (O,), E> for (F,) {
-  fn parse(&mut self, input: I) -> IResult<I, (O,), E> {
-    self.0.parse_next(input).map(|(i, o)| (i, (o,)))
-  }
+    fn parse(&mut self, input: I) -> IResult<I, (O,), E> {
+        self.0.parse_next(input).map(|(i, o)| (i, (o,)))
+    }
 }
 
 macro_rules! tuple_trait(
@@ -282,9 +282,9 @@ tuple_trait!(
 // Literally, `()` is an empty tuple, so it should simply parse nothing.
 #[allow(deprecated)]
 impl<I, E: ParseError<I>> Tuple<I, (), E> for () {
-  fn parse(&mut self, input: I) -> IResult<I, (), E> {
-    Ok((input, ()))
-  }
+    fn parse(&mut self, input: I) -> IResult<I, (), E> {
+        Ok((input, ()))
+    }
 }
 
 ///Applies a tuple of parsers one by one and returns their results as a tuple.
@@ -304,7 +304,7 @@ impl<I, E: ParseError<I>> Tuple<I, (), E> for () {
 #[deprecated(since = "0.1.0", note = "`Parser` is directly implemented for tuples")]
 #[allow(deprecated)]
 pub fn tuple<I, O, E: ParseError<I>, List: Tuple<I, O, E>>(
-  mut l: List,
+    mut l: List,
 ) -> impl FnMut(I) -> IResult<I, O, E> {
-  move |i: I| l.parse(i)
+    move |i: I| l.parse(i)
 }
