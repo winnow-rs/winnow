@@ -547,7 +547,7 @@ impl<I, O, E> Finish<I, O, E> for IResult<I, O, E> {
 /// Contains information on needed data if a parser returned `Incomplete`
 ///
 /// **Note:** This is only possible for `Input` types that implement [`InputIsStreaming<true>`],
-/// like [`Streaming`][crate::input::Streaming].
+/// like [`Streaming`][crate::Streaming].
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub enum Needed {
@@ -601,7 +601,7 @@ pub enum ErrMode<E> {
     /// There was not enough data
     ///
     /// This must only be set when the `Input` is [`InputIsStreaming<true>`], like with
-    /// [`Streaming`][crate::input::Streaming]
+    /// [`Streaming`][crate::Streaming]
     ///
     /// Convert this into an `Error` with [`Parser::complete`][Parser::complete]
     Incomplete(Needed),

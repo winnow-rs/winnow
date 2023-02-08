@@ -41,7 +41,7 @@ use crate::Parser;
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// # use winnow::character::crlf;
 /// assert_eq!(crlf::<_, Error<_>, true>(Streaming("\r\nc")), Ok((Streaming("c"), "\r\n")));
 /// assert_eq!(crlf::<_, Error<_>, true>(Streaming("ab\r\nc")), Err(ErrMode::Backtrack(Error::new(Streaming("ab\r\nc"), ErrorKind::CrLf))));
@@ -88,7 +88,7 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// # use winnow::character::not_line_ending;
 /// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("ab\r\nc")), Ok((Streaming("\r\nc"), "ab")));
 /// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("abc")), Err(ErrMode::Incomplete(Needed::Unknown)));
@@ -135,7 +135,7 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// # use winnow::character::line_ending;
 /// assert_eq!(line_ending::<_, Error<_>, true>(Streaming("\r\nc")), Ok((Streaming("c"), "\r\n")));
 /// assert_eq!(line_ending::<_, Error<_>, true>(Streaming("ab\r\nc")), Err(ErrMode::Backtrack(Error::new(Streaming("ab\r\nc"), ErrorKind::CrLf))));
@@ -179,7 +179,7 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// # use winnow::character::newline;
 /// assert_eq!(newline::<_, Error<_>, true>(Streaming("\nc")), Ok((Streaming("c"), '\n')));
 /// assert_eq!(newline::<_, Error<_>, true>(Streaming("\r\nc")), Err(ErrMode::Backtrack(Error::new(Streaming("\r\nc"), ErrorKind::Char))));
@@ -221,7 +221,7 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// # use winnow::character::tab;
 /// assert_eq!(tab::<_, Error<_>, true>(Streaming("\tc")), Ok((Streaming("c"), '\t')));
 /// assert_eq!(tab::<_, Error<_>, true>(Streaming("\r\nc")), Err(ErrMode::Backtrack(Error::new(Streaming("\r\nc"), ErrorKind::Char))));
@@ -265,7 +265,7 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// # use winnow::character::alpha0;
 /// assert_eq!(alpha0::<_, Error<_>, true>(Streaming("ab1c")), Ok((Streaming("1c"), "ab")));
 /// assert_eq!(alpha0::<_, Error<_>, true>(Streaming("1c")), Ok((Streaming("1c"), "")));
@@ -311,7 +311,7 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// # use winnow::character::alpha1;
 /// assert_eq!(alpha1::<_, Error<_>, true>(Streaming("aB1c")), Ok((Streaming("1c"), "aB")));
 /// assert_eq!(alpha1::<_, Error<_>, true>(Streaming("1c")), Err(ErrMode::Backtrack(Error::new(Streaming("1c"), ErrorKind::Alpha))));
@@ -358,7 +358,7 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// # use winnow::character::digit0;
 /// assert_eq!(digit0::<_, Error<_>, true>(Streaming("21c")), Ok((Streaming("c"), "21")));
 /// assert_eq!(digit0::<_, Error<_>, true>(Streaming("a21c")), Ok((Streaming("a21c"), "")));
@@ -404,7 +404,7 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// # use winnow::character::digit1;
 /// assert_eq!(digit1::<_, Error<_>, true>(Streaming("21c")), Ok((Streaming("c"), "21")));
 /// assert_eq!(digit1::<_, Error<_>, true>(Streaming("c1")), Err(ErrMode::Backtrack(Error::new(Streaming("c1"), ErrorKind::Digit))));
@@ -465,7 +465,7 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// # use winnow::character::hex_digit0;
 /// assert_eq!(hex_digit0::<_, Error<_>, true>(Streaming("21cZ")), Ok((Streaming("Z"), "21c")));
 /// assert_eq!(hex_digit0::<_, Error<_>, true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
@@ -511,7 +511,7 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// # use winnow::character::hex_digit1;
 /// assert_eq!(hex_digit1::<_, Error<_>, true>(Streaming("21cZ")), Ok((Streaming("Z"), "21c")));
 /// assert_eq!(hex_digit1::<_, Error<_>, true>(Streaming("H2")), Err(ErrMode::Backtrack(Error::new(Streaming("H2"), ErrorKind::HexDigit))));
@@ -557,7 +557,7 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// # use winnow::character::oct_digit0;
 /// assert_eq!(oct_digit0::<_, Error<_>, true>(Streaming("21cZ")), Ok((Streaming("cZ"), "21")));
 /// assert_eq!(oct_digit0::<_, Error<_>, true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
@@ -603,7 +603,7 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// # use winnow::character::oct_digit1;
 /// assert_eq!(oct_digit1::<_, Error<_>, true>(Streaming("21cZ")), Ok((Streaming("cZ"), "21")));
 /// assert_eq!(oct_digit1::<_, Error<_>, true>(Streaming("H2")), Err(ErrMode::Backtrack(Error::new(Streaming("H2"), ErrorKind::OctDigit))));
@@ -649,7 +649,7 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// # use winnow::character::alphanumeric0;
 /// assert_eq!(alphanumeric0::<_, Error<_>, true>(Streaming("21cZ%1")), Ok((Streaming("%1"), "21cZ")));
 /// assert_eq!(alphanumeric0::<_, Error<_>, true>(Streaming("&Z21c")), Ok((Streaming("&Z21c"), "")));
@@ -695,7 +695,7 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// # use winnow::character::alphanumeric1;
 /// assert_eq!(alphanumeric1::<_, Error<_>, true>(Streaming("21cZ%1")), Ok((Streaming("%1"), "21cZ")));
 /// assert_eq!(alphanumeric1::<_, Error<_>, true>(Streaming("&H2")), Err(ErrMode::Backtrack(Error::new(Streaming("&H2"), ErrorKind::AlphaNumeric))));
@@ -729,7 +729,7 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// # use winnow::character::space0;
 /// assert_eq!(space0::<_, Error<_>, true>(Streaming(" \t21c")), Ok((Streaming("21c"), " \t")));
 /// assert_eq!(space0::<_, Error<_>, true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
@@ -775,7 +775,7 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// # use winnow::character::space1;
 /// assert_eq!(space1::<_, Error<_>, true>(Streaming(" \t21c")), Ok((Streaming("21c"), " \t")));
 /// assert_eq!(space1::<_, Error<_>, true>(Streaming("H2")), Err(ErrMode::Backtrack(Error::new(Streaming("H2"), ErrorKind::Space))));
@@ -821,7 +821,7 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// # use winnow::character::multispace0;
 /// assert_eq!(multispace0::<_, Error<_>, true>(Streaming(" \t\n\r21c")), Ok((Streaming("21c"), " \t\n\r")));
 /// assert_eq!(multispace0::<_, Error<_>, true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
@@ -867,7 +867,7 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// # use winnow::character::multispace1;
 /// assert_eq!(multispace1::<_, Error<_>, true>(Streaming(" \t\n\r21c")), Ok((Streaming("21c"), " \t\n\r")));
 /// assert_eq!(multispace1::<_, Error<_>, true>(Streaming("H2")), Err(ErrMode::Backtrack(Error::new(Streaming("H2"), ErrorKind::MultiSpace))));
@@ -1160,7 +1160,7 @@ impl Int for i128 {
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::character::hex_uint;
 ///
 /// fn parser(s: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, u32> {
@@ -1294,7 +1294,7 @@ impl HexUint for u128 {
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::character::float;
 ///
 /// fn parser(s: Streaming<&str>) -> IResult<Streaming<&str>, f64> {
@@ -1352,7 +1352,7 @@ where
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// # use winnow::character::digit1;
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::character::escaped;
 /// use winnow::bytes::one_of;
 ///
@@ -1434,7 +1434,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use std::str::from_utf8;
-/// # use winnow::input::Streaming;
+/// # use winnow::Streaming;
 /// use winnow::bytes::tag;
 /// use winnow::character::escaped_transform;
 /// use winnow::character::alpha1;

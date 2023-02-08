@@ -3,12 +3,12 @@
 use winnow::bytes::tag;
 use winnow::character::digit1 as digit;
 use winnow::error::{ErrorKind, ParseError};
-use winnow::input::Streaming;
 #[cfg(feature = "alloc")]
 use winnow::multi::count;
 use winnow::prelude::*;
 use winnow::sequence::terminated;
 use winnow::IResult;
+use winnow::Streaming;
 
 #[derive(Debug)]
 pub struct CustomError(String);

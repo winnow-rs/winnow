@@ -382,7 +382,7 @@ mod streaming {
     use crate::error::ErrMode;
     use crate::error::Error;
     use crate::error::Needed;
-    use crate::input::Streaming;
+    use crate::Streaming;
 
     macro_rules! assert_parse(
     ($left: expr, $right: expr) => {

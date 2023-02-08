@@ -9,11 +9,11 @@ use crate::error::Error;
 use crate::error::ErrorKind;
 use crate::error::Needed;
 use crate::input::AsChar;
-use crate::input::Streaming;
 use crate::multi::length_data;
 use crate::sequence::delimited;
 use crate::IResult;
 use crate::Parser;
+use crate::Streaming;
 
 #[test]
 fn complete_take_while_m_n_utf8_all_matching() {
