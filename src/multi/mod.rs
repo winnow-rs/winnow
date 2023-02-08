@@ -200,17 +200,17 @@ where
 /// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
+/// * `parser` Parses the elements of the list.
 /// * `sep` Parses the separator between list elements.
-/// * `f` Parses the elements of the list.
 ///
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 #[cfg_attr(feature = "std", doc = "```")]
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
-/// use winnow::multi::separated_list0;
+/// use winnow::multi::separated0;
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   separated_list0(tag("|"), tag("abc"))(s)
+///   separated0(tag("abc"), tag("|"))(s)
 /// }
 ///
 /// assert_eq!(parser("abc|abc|abc"), Ok(("", vec!["abc", "abc", "abc"])));
@@ -219,21 +219,21 @@ where
 /// assert_eq!(parser(""), Ok(("", vec![])));
 /// assert_eq!(parser("def|abc"), Ok(("def|abc", vec![])));
 /// ```
-pub fn separated_list0<I, O, C, O2, E, F, G>(
-    mut sep: G,
-    mut f: F,
+pub fn separated0<I, O, C, O2, E, P, S>(
+    mut parser: P,
+    mut sep: S,
 ) -> impl FnMut(I) -> IResult<I, C, E>
 where
     I: Input,
     C: Accumulate<O>,
-    F: Parser<I, O, E>,
-    G: Parser<I, O2, E>,
+    P: Parser<I, O, E>,
+    S: Parser<I, O2, E>,
     E: ParseError<I>,
 {
     move |mut i: I| {
         let mut res = C::initial(None);
 
-        match f.parse_next(i.clone()) {
+        match parser.parse_next(i.clone()) {
             Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
             Err(e) => return Err(e),
             Ok((i1, o)) => {
@@ -253,7 +253,7 @@ where
                         return Err(ErrMode::from_error_kind(i1, ErrorKind::SeparatedList));
                     }
 
-                    match f.parse_next(i1.clone()) {
+                    match parser.parse_next(i1.clone()) {
                         Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
                         Err(e) => return Err(e),
                         Ok((i2, o)) => {
@@ -265,6 +265,22 @@ where
             }
         }
     }
+}
+
+/// **WARNING:** Deprecated, replaced with [`separated0`] (note the parameter swap)
+#[deprecated(
+    since = "0.3.0",
+    note = "Replaced with `separated0` (note the parameter swap)"
+)]
+pub fn separated_list0<I, O, C, O2, E, F, G>(sep: G, f: F) -> impl FnMut(I) -> IResult<I, C, E>
+where
+    I: Input,
+    C: Accumulate<O>,
+    F: Parser<I, O, E>,
+    G: Parser<I, O2, E>,
+    E: ParseError<I>,
+{
+    separated0(f, sep)
 }
 
 /// Alternates between two parsers to produce a list of elements until [`ErrMode::Backtrack`].
@@ -280,11 +296,11 @@ where
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 #[cfg_attr(feature = "std", doc = "```")]
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
-/// use winnow::multi::separated_list1;
+/// use winnow::multi::separated1;
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   separated_list1(tag("|"), tag("abc"))(s)
+///   separated1(tag("abc"), tag("|"))(s)
 /// }
 ///
 /// assert_eq!(parser("abc|abc|abc"), Ok(("", vec!["abc", "abc", "abc"])));
@@ -293,22 +309,22 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(Error::new("def|abc", ErrorKind::Tag))));
 /// ```
-pub fn separated_list1<I, O, C, O2, E, F, G>(
-    mut sep: G,
-    mut f: F,
+pub fn separated1<I, O, C, O2, E, P, S>(
+    mut parser: P,
+    mut sep: S,
 ) -> impl FnMut(I) -> IResult<I, C, E>
 where
     I: Input,
     C: Accumulate<O>,
-    F: Parser<I, O, E>,
-    G: Parser<I, O2, E>,
+    P: Parser<I, O, E>,
+    S: Parser<I, O2, E>,
     E: ParseError<I>,
 {
     move |mut i: I| {
         let mut res = C::initial(None);
 
         // Parse the first element
-        match f.parse_next(i.clone()) {
+        match parser.parse_next(i.clone()) {
             Err(e) => return Err(e),
             Ok((i1, o)) => {
                 res.accumulate(o);
@@ -327,7 +343,7 @@ where
                         return Err(ErrMode::from_error_kind(i1, ErrorKind::SeparatedList));
                     }
 
-                    match f.parse_next(i1.clone()) {
+                    match parser.parse_next(i1.clone()) {
                         Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
                         Err(e) => return Err(e),
                         Ok((i2, o)) => {
@@ -339,6 +355,22 @@ where
             }
         }
     }
+}
+
+/// **WARNING:** Deprecated, replaced with [`separated1`] (note the parameter swap)
+#[deprecated(
+    since = "0.3.0",
+    note = "Replaced with `separated1` (note the parameter swap)"
+)]
+pub fn separated_list1<I, O, C, O2, E, F, G>(sep: G, f: F) -> impl FnMut(I) -> IResult<I, C, E>
+where
+    I: Input,
+    C: Accumulate<O>,
+    F: Parser<I, O, E>,
+    G: Parser<I, O2, E>,
+    E: ParseError<I>,
+{
+    separated1(f, sep)
 }
 
 /// Repeats the embedded parser `m..=n` times

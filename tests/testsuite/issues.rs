@@ -128,14 +128,14 @@ fn issue_655() {
 #[cfg(feature = "alloc")]
 fn issue_717(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
     use winnow::bytes::{tag, take_till1};
-    use winnow::multi::separated_list0;
+    use winnow::multi::separated0;
 
-    separated_list0(tag([0x0]), take_till1([0x0u8]))(i)
+    separated0(take_till1([0x0u8]), tag([0x0]))(i)
 }
 
 mod issue_647 {
     use winnow::bytes::tag;
-    use winnow::multi::separated_list0;
+    use winnow::multi::separated0;
     use winnow::prelude::*;
     use winnow::{error::ErrMode, error::Error, number::be_f64, IResult};
     pub type Input<'a> = winnow::Streaming<&'a [u8]>;
@@ -151,7 +151,7 @@ mod issue_647 {
         input: Input<'a>,
         _cs: &f64,
     ) -> Result<(Input<'a>, Vec<f64>), ErrMode<Error<Input<'a>>>> {
-        separated_list0(tag(",").complete(), be_f64.complete())(input)
+        separated0(be_f64.complete(), tag(",").complete())(input)
     }
 
     fn data(input: Input<'_>) -> IResult<Input<'_>, Data> {

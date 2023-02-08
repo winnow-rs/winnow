@@ -14,24 +14,24 @@ use crate::{
     lib::std::vec::Vec,
     multi::{
         count, fold_many0, fold_many1, fold_many_m_n, length_count, many_m_n, many_till0,
-        separated_list0, separated_list1,
+        separated0, separated1,
     },
 };
 
 #[test]
 #[cfg(feature = "alloc")]
-fn separated_list0_test() {
+fn separated0_test() {
     fn multi(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, Vec<&[u8]>> {
-        separated_list0(tag(","), tag("abcd"))(i)
+        separated0(tag("abcd"), tag(","))(i)
     }
     fn multi_empty(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, Vec<&[u8]>> {
-        separated_list0(tag(","), tag(""))(i)
+        separated0(tag(""), tag(","))(i)
     }
     fn empty_sep(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, Vec<&[u8]>> {
-        separated_list0(tag(""), tag("abc"))(i)
+        separated0(tag("abc"), tag(""))(i)
     }
     fn multi_longsep(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, Vec<&[u8]>> {
-        separated_list0(tag(".."), tag("abcd"))(i)
+        separated0(tag("abcd"), tag(".."))(i)
     }
 
     let a = &b"abcdef"[..];
@@ -84,12 +84,12 @@ fn separated_list0_test() {
 
 #[test]
 #[cfg(feature = "alloc")]
-fn separated_list1_test() {
+fn separated1_test() {
     fn multi(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, Vec<&[u8]>> {
-        separated_list1(tag(","), tag("abcd"))(i)
+        separated1(tag("abcd"), tag(","))(i)
     }
     fn multi_longsep(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, Vec<&[u8]>> {
-        separated_list1(tag(".."), tag("abcd"))(i)
+        separated1(tag("abcd"), tag(".."))(i)
     }
 
     let a = &b"abcdef"[..];
