@@ -34,11 +34,11 @@
 //!   should buffer more data from a file or socket. Parsers in the `complete` submodules assume that
 //!   they have the entire input data, so if it was not sufficient, they will instead return a
 //!   `ErrMode::Backtrack`
-//! - [`Error`][ErrMode::Backtrack] is a normal parser error. If a child parser of the
-//!   [`alt`][crate::branch::alt] combinator returns `Error`, it will try another child parser
-//! - [`Failure`][ErrMode::Cut] is an error from which we cannot recover: The
+//! - [`Backtrack`][ErrMode::Backtrack] is a normal parser error. If a child parser of the
+//!   [`alt`][crate::branch::alt] combinator returns `Backtrack`, it will try another child parser
+//! - [`Cut`][ErrMode::Cut] is an error from which we cannot recover: The
 //!   [`alt`][crate::branch::alt] combinator will not try other branches if a child parser returns
-//!   `Failure`. If we know we were in the right branch (example: we found a correct prefix character
+//!   `Cut`. If we know we were in the right branch (example: we found a correct prefix character
 //!   but input after that was wrong), we can transform a `ErrMode::Backtrack` into a `ErrMode::Cut` with the
 //!   [`cut_err()`][crate::combinator::cut_err] combinator
 //!
@@ -588,10 +588,10 @@ impl Needed {
 /// * `Incomplete` indicates that more data is needed to decide. The [`Needed`] enum
 /// can contain how many additional bytes are necessary. If you are sure your parser
 /// is working on full data, you can wrap your parser with the `complete` combinator
-/// to transform that case in `Error`
-/// * `Error` means some parser did not succeed, but another one might (as an example,
+/// to transform that case in `Backtrack`
+/// * `Backtrack` means some parser did not succeed, but another one might (as an example,
 /// when testing different branches of an `alt` combinator)
-/// * `Failure` indicates an unrecoverable error. As an example, if you recognize a prefix
+/// * `FCut` indicates an unrecoverable error. As an example, if you recognize a prefix
 /// to decide on the next parser to apply, and that parser fails, you know there's no need
 /// to try other parsers, you were already in the right branch, so the data is invalid
 ///
@@ -603,7 +603,7 @@ pub enum ErrMode<E> {
     /// This must only be set when the `Input` is [`InputIsStreaming<true>`], like with
     /// [`Streaming`][crate::Streaming]
     ///
-    /// Convert this into an `Error` with [`Parser::complete`][Parser::complete]
+    /// Convert this into an `Backtrack` with [`Parser::complete`][Parser::complete]
     Incomplete(Needed),
     /// The parser had an error (recoverable)
     Backtrack(E),
@@ -1256,7 +1256,7 @@ macro_rules! error_node_position(
 
 /// Prints a message and the input if the parser fails.
 ///
-/// The message prints the `Error` or `Incomplete`
+/// The message prints the `Backtrack` or `Incomplete`
 /// and the parser's calling kind.
 ///
 /// It also displays the input in hexdump format

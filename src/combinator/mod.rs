@@ -69,7 +69,7 @@
 //! ## Streaming related
 //!
 //! - [`eof`][eof]: Returns its input if it is at the end of input data
-//! - [`Parser::complete`][Parser::complete()]: Replaces an `Incomplete` returned by the child parser with an `Error`
+//! - [`Parser::complete`][Parser::complete()]: Replaces an `Incomplete` returned by the child parser with an `Backtrack`
 //!
 //! ## Modifiers
 //!
@@ -81,7 +81,7 @@
 //! - [`Parser::map_opt`][Parser::map_opt]: Maps a function returning an `Option` on the output of a parser
 //! - [`Parser::map_res`][Parser::map_res]: Maps a function returning a `Result` on the output of a parser
 //! - [`Parser::parse_to`][crate::Parser::parse_to]: Apply [`std::str::FromStr`] to the output of the parser
-//! - [`not`][not]: Returns a result only if the embedded parser returns `Error` or `Incomplete`. Does not consume the input
+//! - [`not`][not]: Returns a result only if the embedded parser returns `Backtrack` or `Incomplete`. Does not consume the input
 //! - [`opt`][opt]: Make the underlying parser optional
 //! - [`peek`][peek]: Returns a result without consuming the input
 //! - [`Parser::recognize`][Parser::recognize]: If the child parser was successful, return the consumed input as the produced value
@@ -760,7 +760,7 @@ where
     }
 }
 
-/// Transforms Incomplete into `Error`.
+/// Transforms `Incomplete` into `Backtrack`.
 ///
 /// **WARNING:** Deprecated, replaced with [`Parser::complete`]
 ///
