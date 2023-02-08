@@ -101,6 +101,7 @@ where
 }
 
 impl<I> AsRef<I> for Located<I> {
+    #[inline(always)]
     fn as_ref(&self) -> &I {
         &self.input
     }
@@ -162,6 +163,7 @@ pub struct Stateful<I, S> {
 }
 
 impl<I, S> AsRef<I> for Stateful<I, S> {
+    #[inline(always)]
     fn as_ref(&self) -> &I {
         &self.input
     }
@@ -170,6 +172,7 @@ impl<I, S> AsRef<I> for Stateful<I, S> {
 impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
     type Target = I;
 
+    #[inline(always)]
     fn deref(&self) -> &Self::Target {
         self.as_ref()
     }
@@ -267,6 +270,7 @@ impl<I> SliceLen for Located<I>
 where
     I: SliceLen,
 {
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.input.slice_len()
     }
@@ -276,6 +280,7 @@ impl<I, S> SliceLen for Stateful<I, S>
 where
     I: SliceLen,
 {
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.input.slice_len()
     }
@@ -624,6 +629,7 @@ impl<I> Location for Located<I>
 where
     I: Clone + Offset,
 {
+    #[inline(always)]
     fn location(&self) -> usize {
         self.location()
     }
@@ -633,6 +639,7 @@ impl<I, S> Location for Stateful<I, S>
 where
     I: Location,
 {
+    #[inline(always)]
     fn location(&self) -> usize {
         self.input.location()
     }
@@ -642,6 +649,7 @@ impl<I> Location for Streaming<I>
 where
     I: Location,
 {
+    #[inline(always)]
     fn location(&self) -> usize {
         self.0.location()
     }
@@ -814,6 +822,7 @@ pub trait Offset {
 }
 
 impl<'a, T> Offset for &'a [T] {
+    #[inline]
     fn offset_to(&self, second: &Self) -> usize {
         let fst = self.as_ptr();
         let snd = second.as_ptr();
@@ -828,6 +837,7 @@ impl<'a, T> Offset for &'a [T] {
 
 /// Convenience implementation to accept `&[T]` instead of `&&[T]` as above
 impl<T> Offset for [T] {
+    #[inline]
     fn offset_to(&self, second: &Self) -> usize {
         let fst = self.as_ptr();
         let snd = second.as_ptr();
@@ -841,6 +851,7 @@ impl<T> Offset for [T] {
 }
 
 impl<'a> Offset for &'a str {
+    #[inline]
     fn offset_to(&self, second: &Self) -> usize {
         let fst = self.as_ptr();
         let snd = second.as_ptr();
@@ -855,6 +866,7 @@ impl<'a> Offset for &'a str {
 
 /// Convenience implementation to accept `&str` instead of `&&str` as above
 impl Offset for str {
+    #[inline]
     fn offset_to(&self, second: &Self) -> usize {
         let fst = self.as_ptr();
         let snd = second.as_ptr();
@@ -871,6 +883,7 @@ impl<I> Offset for Located<I>
 where
     I: Offset,
 {
+    #[inline(always)]
     fn offset_to(&self, other: &Self) -> usize {
         self.input.offset_to(&other.input)
     }
@@ -880,6 +893,7 @@ impl<I, S> Offset for Stateful<I, S>
 where
     I: Offset,
 {
+    #[inline(always)]
     fn offset_to(&self, other: &Self) -> usize {
         self.input.offset_to(&other.input)
     }
@@ -912,6 +926,7 @@ impl<I> AsBytes for Located<I>
 where
     I: AsBytes,
 {
+    #[inline(always)]
     fn as_bytes(&self) -> &[u8] {
         self.input.as_bytes()
     }
@@ -921,6 +936,7 @@ impl<I, S> AsBytes for Stateful<I, S>
 where
     I: AsBytes,
 {
+    #[inline(always)]
     fn as_bytes(&self) -> &[u8] {
         self.input.as_bytes()
     }
@@ -960,6 +976,7 @@ impl<I> AsBStr for Located<I>
 where
     I: AsBStr,
 {
+    #[inline(always)]
     fn as_bstr(&self) -> &[u8] {
         self.input.as_bstr()
     }
@@ -969,6 +986,7 @@ impl<I, S> AsBStr for Stateful<I, S>
 where
     I: AsBStr,
 {
+    #[inline(always)]
     fn as_bstr(&self) -> &[u8] {
         self.input.as_bstr()
     }
@@ -1018,7 +1036,7 @@ fn lowercase_byte(c: u8) -> u8 {
 }
 
 impl<'a, 'b> Compare<&'b [u8]> for &'a [u8] {
-    #[inline(always)]
+    #[inline]
     fn compare(&self, t: &'b [u8]) -> CompareResult {
         let pos = self.iter().zip(t.iter()).position(|(a, b)| a != b);
 
@@ -1034,7 +1052,7 @@ impl<'a, 'b> Compare<&'b [u8]> for &'a [u8] {
         }
     }
 
-    #[inline(always)]
+    #[inline]
     fn compare_no_case(&self, t: &'b [u8]) -> CompareResult {
         if self
             .iter()
@@ -1080,7 +1098,7 @@ impl<'a, 'b> Compare<&'b str> for &'a str {
     }
 
     //FIXME: this version is too simple and does not use the current locale
-    #[inline(always)]
+    #[inline]
     fn compare_no_case(&self, t: &'b str) -> CompareResult {
         let pos = self
             .chars()
@@ -1127,10 +1145,12 @@ impl<I, U> Compare<U> for Located<I>
 where
     I: Compare<U>,
 {
+    #[inline(always)]
     fn compare(&self, other: U) -> CompareResult {
         self.input.compare(other)
     }
 
+    #[inline(always)]
     fn compare_no_case(&self, other: U) -> CompareResult {
         self.input.compare_no_case(other)
     }
@@ -1140,10 +1160,12 @@ impl<I, S, U> Compare<U> for Stateful<I, S>
 where
     I: Compare<U>,
 {
+    #[inline(always)]
     fn compare(&self, other: U) -> CompareResult {
         self.input.compare(other)
     }
 
+    #[inline(always)]
     fn compare_no_case(&self, other: U) -> CompareResult {
         self.input.compare_no_case(other)
     }
@@ -1171,30 +1193,35 @@ pub trait FindSlice<T> {
 }
 
 impl<'i, 's> FindSlice<&'s [u8]> for &'i [u8] {
+    #[inline(always)]
     fn find_slice(&self, substr: &'s [u8]) -> Option<usize> {
         memchr::memmem::find(self, substr)
     }
 }
 
 impl<'i> FindSlice<u8> for &'i [u8] {
+    #[inline(always)]
     fn find_slice(&self, substr: u8) -> Option<usize> {
         memchr::memchr(substr, self)
     }
 }
 
 impl<'i, 's> FindSlice<&'s str> for &'i [u8] {
+    #[inline(always)]
     fn find_slice(&self, substr: &'s str) -> Option<usize> {
         self.find_slice(substr.as_bytes())
     }
 }
 
 impl<'i, 's> FindSlice<&'s str> for &'i str {
+    #[inline(always)]
     fn find_slice(&self, substr: &'s str) -> Option<usize> {
         self.find(substr)
     }
 }
 
 impl<'i> FindSlice<char> for &'i str {
+    #[inline(always)]
     fn find_slice(&self, substr: char) -> Option<usize> {
         self.find(substr)
     }
@@ -1238,12 +1265,14 @@ pub trait ParseSlice<R> {
 }
 
 impl<'a, R: FromStr> ParseSlice<R> for &'a [u8] {
+    #[inline(always)]
     fn parse_slice(&self) -> Option<R> {
         from_utf8(self).ok().and_then(|s| s.parse().ok())
     }
 }
 
 impl<'a, R: FromStr> ParseSlice<R> for &'a str {
+    #[inline(always)]
     fn parse_slice(&self) -> Option<R> {
         self.parse().ok()
     }
@@ -1259,14 +1288,14 @@ impl<'a, T> UpdateSlice for &'a [T]
 where
     T: Clone,
 {
-    #[inline]
+    #[inline(always)]
     fn update_slice(self, inner: Self::Slice) -> Self {
         inner
     }
 }
 
 impl<'a> UpdateSlice for &'a str {
-    #[inline]
+    #[inline(always)]
     fn update_slice(self, inner: Self::Slice) -> Self {
         inner
     }
@@ -1276,7 +1305,7 @@ impl<I> UpdateSlice for Located<I>
 where
     I: UpdateSlice,
 {
-    #[inline]
+    #[inline(always)]
     fn update_slice(mut self, inner: Self::Slice) -> Self {
         self.input = I::update_slice(self.input, inner);
         self
@@ -1288,7 +1317,7 @@ where
     I: UpdateSlice,
     S: Clone,
 {
-    #[inline]
+    #[inline(always)]
     fn update_slice(mut self, inner: Self::Slice) -> Self {
         self.input = I::update_slice(self.input, inner);
         self
@@ -1299,7 +1328,7 @@ impl<I> UpdateSlice for Streaming<I>
 where
     I: UpdateSlice,
 {
-    #[inline]
+    #[inline(always)]
     fn update_slice(self, inner: Self::Slice) -> Self {
         Streaming(I::update_slice(self.0, inner))
     }
@@ -1456,21 +1485,21 @@ pub trait ToUsize {
 }
 
 impl ToUsize for u8 {
-    #[inline]
+    #[inline(always)]
     fn to_usize(&self) -> usize {
         *self as usize
     }
 }
 
 impl ToUsize for u16 {
-    #[inline]
+    #[inline(always)]
     fn to_usize(&self) -> usize {
         *self as usize
     }
 }
 
 impl ToUsize for usize {
-    #[inline]
+    #[inline(always)]
     fn to_usize(&self) -> usize {
         *self
     }
@@ -1478,7 +1507,7 @@ impl ToUsize for usize {
 
 #[cfg(any(target_pointer_width = "32", target_pointer_width = "64"))]
 impl ToUsize for u32 {
-    #[inline]
+    #[inline(always)]
     fn to_usize(&self) -> usize {
         *self as usize
     }
@@ -1486,7 +1515,7 @@ impl ToUsize for u32 {
 
 #[cfg(target_pointer_width = "64")]
 impl ToUsize for u64 {
-    #[inline]
+    #[inline(always)]
     fn to_usize(&self) -> usize {
         *self as usize
     }
@@ -1833,42 +1862,49 @@ pub trait ContainsToken<T> {
 }
 
 impl ContainsToken<u8> for u8 {
+    #[inline]
     fn contains_token(&self, token: u8) -> bool {
         *self == token
     }
 }
 
 impl<'a> ContainsToken<&'a u8> for u8 {
+    #[inline(always)]
     fn contains_token(&self, token: &u8) -> bool {
         self.contains_token(*token)
     }
 }
 
 impl ContainsToken<char> for u8 {
+    #[inline]
     fn contains_token(&self, token: char) -> bool {
         self.as_char() == token
     }
 }
 
 impl<'a> ContainsToken<&'a char> for u8 {
+    #[inline(always)]
     fn contains_token(&self, token: &char) -> bool {
         self.contains_token(*token)
     }
 }
 
 impl<C: AsChar> ContainsToken<C> for char {
+    #[inline]
     fn contains_token(&self, token: C) -> bool {
         *self == token.as_char()
     }
 }
 
 impl<C: AsChar, F: Fn(C) -> bool> ContainsToken<C> for F {
+    #[inline]
     fn contains_token(&self, token: C) -> bool {
         self(token)
     }
 }
 
 impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for Range<C2> {
+    #[inline]
     fn contains_token(&self, token: C1) -> bool {
         let start = self.start.clone().as_char();
         let end = self.end.clone().as_char();
@@ -1877,6 +1913,7 @@ impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for Range<C2> {
 }
 
 impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeInclusive<C2> {
+    #[inline]
     fn contains_token(&self, token: C1) -> bool {
         let start = self.start().clone().as_char();
         let end = self.end().clone().as_char();
@@ -1885,6 +1922,7 @@ impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeInclusive<C2> {
 }
 
 impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeFrom<C2> {
+    #[inline]
     fn contains_token(&self, token: C1) -> bool {
         let start = self.start.clone().as_char();
         (start..).contains(&token.as_char())
@@ -1892,6 +1930,7 @@ impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeFrom<C2> {
 }
 
 impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeTo<C2> {
+    #[inline]
     fn contains_token(&self, token: C1) -> bool {
         let end = self.end.clone().as_char();
         (..end).contains(&token.as_char())
@@ -1899,6 +1938,7 @@ impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeTo<C2> {
 }
 
 impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeToInclusive<C2> {
+    #[inline]
     fn contains_token(&self, token: C1) -> bool {
         let end = self.end.clone().as_char();
         (..=end).contains(&token.as_char())
@@ -1906,108 +1946,126 @@ impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeToInclusive<C2> 
 }
 
 impl<C1: AsChar> ContainsToken<C1> for RangeFull {
+    #[inline(always)]
     fn contains_token(&self, _token: C1) -> bool {
         true
     }
 }
 
 impl<'a> ContainsToken<u8> for &'a [u8] {
+    #[inline]
     fn contains_token(&self, token: u8) -> bool {
         memchr::memchr(token, self).is_some()
     }
 }
 
 impl<'a, 'b> ContainsToken<&'a u8> for &'b [u8] {
+    #[inline(always)]
     fn contains_token(&self, token: &u8) -> bool {
         self.contains_token(*token)
     }
 }
 
 impl<'a> ContainsToken<char> for &'a [u8] {
+    #[inline]
     fn contains_token(&self, token: char) -> bool {
         self.iter().any(|i| i.as_char() == token)
     }
 }
 
 impl<'a, 'b> ContainsToken<&'a char> for &'b [u8] {
+    #[inline(always)]
     fn contains_token(&self, token: &char) -> bool {
         self.contains_token(*token)
     }
 }
 
 impl<const LEN: usize> ContainsToken<u8> for [u8; LEN] {
+    #[inline]
     fn contains_token(&self, token: u8) -> bool {
         memchr::memchr(token, &self[..]).is_some()
     }
 }
 
 impl<'a, const LEN: usize> ContainsToken<&'a u8> for [u8; LEN] {
+    #[inline(always)]
     fn contains_token(&self, token: &u8) -> bool {
         self.contains_token(*token)
     }
 }
 
 impl<const LEN: usize> ContainsToken<char> for [u8; LEN] {
+    #[inline]
     fn contains_token(&self, token: char) -> bool {
         self.iter().any(|i| i.as_char() == token)
     }
 }
 
 impl<'a, const LEN: usize> ContainsToken<&'a char> for [u8; LEN] {
+    #[inline(always)]
     fn contains_token(&self, token: &char) -> bool {
         self.contains_token(*token)
     }
 }
 
 impl<'a> ContainsToken<u8> for &'a str {
+    #[inline(always)]
     fn contains_token(&self, token: u8) -> bool {
         self.as_bytes().contains_token(token)
     }
 }
 
 impl<'a, 'b> ContainsToken<&'a u8> for &'b str {
+    #[inline(always)]
     fn contains_token(&self, token: &u8) -> bool {
         self.as_bytes().contains_token(token)
     }
 }
 
 impl<'a> ContainsToken<char> for &'a str {
+    #[inline]
     fn contains_token(&self, token: char) -> bool {
         self.chars().any(|i| i == token)
     }
 }
 
 impl<'a, 'b> ContainsToken<&'a char> for &'b str {
+    #[inline(always)]
     fn contains_token(&self, token: &char) -> bool {
         self.contains_token(*token)
     }
 }
 
 impl<'a> ContainsToken<u8> for &'a [char] {
+    #[inline]
     fn contains_token(&self, token: u8) -> bool {
         self.iter().any(|i| *i == token.as_char())
     }
 }
 
 impl<'a, 'b> ContainsToken<&'a u8> for &'b [char] {
+    #[inline(always)]
     fn contains_token(&self, token: &u8) -> bool {
         self.contains_token(*token)
     }
 }
 
 impl<'a> ContainsToken<char> for &'a [char] {
+    #[inline]
     fn contains_token(&self, token: char) -> bool {
         self.iter().any(|i| *i == token)
     }
 }
 
 impl<'a, 'b> ContainsToken<&'a char> for &'b [char] {
+    #[inline(always)]
     fn contains_token(&self, token: &char) -> bool {
         self.contains_token(*token)
     }
 }
 
 impl<T> ContainsToken<T> for () {
+    #[inline(always)]
     fn contains_token(&self, _token: T) -> bool {
         false
     }
@@ -2021,6 +2079,7 @@ macro_rules! impl_contains_token_for_tuple {
     T: Clone,
       $($haystack: ContainsToken<T>),+
     {
+    #[inline]
       fn contains_token(&self, token: T) -> bool {
         let ($(ref $haystack),+,) = *self;
         $($haystack.contains_token(token.clone()) || )+ false
