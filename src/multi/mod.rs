@@ -373,6 +373,64 @@ where
     separated1(f, sep)
 }
 
+/// Alternates between two parsers, merging the results (left associative)
+///
+/// This stops when either parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
+/// [`cut_err`][crate::combinator::cut_err].
+///
+/// ```
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// use winnow::multi::separated_foldl1;
+/// use winnow::character::dec_int;
+///
+/// fn parser(s: &str) -> IResult<&str, i32> {
+///   separated_foldl1(dec_int, "-", |l, _, r| l - r)(s)
+/// }
+///
+/// assert_eq!(parser("9-3-5"), Ok(("", 1)));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Digit))));
+/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(Error::new("def|abc", ErrorKind::Digit))));
+/// ```
+pub fn separated_foldl1<I, O, O2, E, P, S, Op>(
+    mut parser: P,
+    mut sep: S,
+    op: Op,
+) -> impl FnMut(I) -> IResult<I, O, E>
+where
+    I: Input,
+    P: Parser<I, O, E>,
+    S: Parser<I, O2, E>,
+    E: ParseError<I>,
+    Op: Fn(O, O2, O) -> O,
+{
+    move |i: I| {
+        let (mut i, mut ol) = parser.parse_next(i)?;
+
+        loop {
+            let len = i.input_len();
+            match sep.parse_next(i.clone()) {
+                Err(ErrMode::Backtrack(_)) => return Ok((i, ol)),
+                Err(e) => return Err(e),
+                Ok((i1, s)) => {
+                    // infinite loop check: the parser must always consume
+                    if i1.input_len() == len {
+                        return Err(ErrMode::from_error_kind(i1, ErrorKind::SeparatedList));
+                    }
+
+                    match parser.parse_next(i1.clone()) {
+                        Err(ErrMode::Backtrack(_)) => return Ok((i, ol)),
+                        Err(e) => return Err(e),
+                        Ok((i2, or)) => {
+                            ol = op(ol, s, or);
+                            i = i2;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 /// Repeats the embedded parser `m..=n` times
 ///
 /// This stops before `n` when the parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
