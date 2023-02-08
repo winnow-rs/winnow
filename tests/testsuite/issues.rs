@@ -138,7 +138,7 @@ mod issue_647 {
     use winnow::multi::separated0;
     use winnow::prelude::*;
     use winnow::{error::ErrMode, error::Error, number::be_f64, IResult};
-    pub type Input<'a> = winnow::Partial<&'a [u8]>;
+    pub type Stream<'a> = winnow::Partial<&'a [u8]>;
 
     #[derive(PartialEq, Debug, Clone)]
     struct Data {
@@ -148,13 +148,13 @@ mod issue_647 {
 
     #[allow(clippy::type_complexity)]
     fn list<'a>(
-        input: Input<'a>,
+        input: Stream<'a>,
         _cs: &f64,
-    ) -> Result<(Input<'a>, Vec<f64>), ErrMode<Error<Input<'a>>>> {
+    ) -> Result<(Stream<'a>, Vec<f64>), ErrMode<Error<Stream<'a>>>> {
         separated0(be_f64.complete(), tag(",").complete())(input)
     }
 
-    fn data(input: Input<'_>) -> IResult<Input<'_>, Data> {
+    fn data(input: Stream<'_>) -> IResult<Stream<'_>, Data> {
         let (i, c) = be_f64(input)?;
         let (i, _) = tag("\n")(i)?;
         let (i, v) = list(i, &c)?;

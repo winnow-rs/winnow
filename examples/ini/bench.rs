@@ -31,7 +31,7 @@ port=143
 file=payroll.dat
 \0";
 
-    fn acc(i: parser::Input<'_>) -> IResult<parser::Input<'_>, Vec<(&str, &str)>> {
+    fn acc(i: parser::Stream<'_>) -> IResult<parser::Stream<'_>, Vec<(&str, &str)>> {
         many0(parser::key_value)(i)
     }
 

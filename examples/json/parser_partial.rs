@@ -23,12 +23,12 @@ pub enum JsonValue {
     Object(HashMap<String, JsonValue>),
 }
 
-pub type Input<'i> = Partial<&'i str>;
+pub type Stream<'i> = Partial<&'i str>;
 
 /// The root element of a JSON parser is any value
 ///
 /// A nom parser has the following signature:
-/// `Input -> IResult<Input, Output, Error>`, with `IResult` defined as:
+/// `Stream -> IResult<Stream, Output, Error>`, with `IResult` defined as:
 /// `type IResult<I, O, E = (I, ErrorKind)> = Result<(I, O), Err<E>>;`
 ///
 /// most of the times you can ignore the error type and use the default (but this
@@ -37,17 +37,17 @@ pub type Input<'i> = Partial<&'i str>;
 /// Here we use `&str` as input type, but nom parsers can be generic over
 /// the input type, work directly with `&[u8]`, or any other type that
 /// implements the required traits.
-pub fn json<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
-    input: Input<'i>,
-) -> IResult<Input<'i>, JsonValue, E> {
+pub fn json<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
+    input: Stream<'i>,
+) -> IResult<Stream<'i>, JsonValue, E> {
     delimited(ws, json_value, ws_or_eof)(input)
 }
 
 /// `alt` is a combinator that tries multiple parsers one by one, until
 /// one of them succeeds
-fn json_value<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
-    input: Input<'i>,
-) -> IResult<Input<'i>, JsonValue, E> {
+fn json_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
+    input: Stream<'i>,
+) -> IResult<Stream<'i>, JsonValue, E> {
     // `alt` combines the each value parser. It returns the result of the first
     // successful parser, or an error
     alt((
@@ -63,7 +63,7 @@ fn json_value<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static st
 /// `tag(string)` generates a parser that recognizes the argument string.
 ///
 /// This also shows returning a sub-slice of the original input
-fn null<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>, &'i str, E> {
+fn null<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, &'i str, E> {
     // This is a parser that returns `"null"` if it sees the string "null", and
     // an error otherwise
     tag("null").parse_next(input)
@@ -71,7 +71,7 @@ fn null<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>, &'
 
 /// We can combine `tag` with other functions, like `value` which returns a given constant value on
 /// success.
-fn boolean<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>, bool, E> {
+fn boolean<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, bool, E> {
     // This is a parser that returns `true` if it sees the string "true", and
     // an error otherwise
     let parse_true = tag("true").value(true);
@@ -85,9 +85,9 @@ fn boolean<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>,
 
 /// This parser gathers all `char`s up into a `String`with a parse to recognize the double quote
 /// character, before the string (using `preceded`) and after the string (using `terminated`).
-fn string<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
-    input: Input<'i>,
-) -> IResult<Input<'i>, String, E> {
+fn string<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
+    input: Stream<'i>,
+) -> IResult<Stream<'i>, String, E> {
     preceded(
         one_of('\"'),
         // `cut_err` transforms an `ErrMode::Backtrack(e)` to `ErrMode::Cut(e)`, signaling to
@@ -110,7 +110,7 @@ fn string<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
 
 /// You can mix the above declarative parsing with an imperative style to handle more unique cases,
 /// like escaping
-fn character<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>, char, E> {
+fn character<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, char, E> {
     let (input, c) = none_of("\"")(input)?;
     if c == '\\' {
         alt((
@@ -132,7 +132,9 @@ fn character<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i
     }
 }
 
-fn unicode_escape<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>, char, E> {
+fn unicode_escape<'i, E: ParseError<Stream<'i>>>(
+    input: Stream<'i>,
+) -> IResult<Stream<'i>, char, E> {
     alt((
         // Not a surrogate
         u16_hex
@@ -154,7 +156,7 @@ fn unicode_escape<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Inp
     .parse_next(input)
 }
 
-fn u16_hex<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>, u16, E> {
+fn u16_hex<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, u16, E> {
     take(4usize)
         .map_opt(|s| u16::from_str_radix(s, 16).ok())
         .parse_next(input)
@@ -164,9 +166,9 @@ fn u16_hex<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>,
 /// accumulating results in a `Vec`, until it encounters an error.
 /// If you want more control on the parser application, check out the `iterator`
 /// combinator (cf `examples/iterator.rs`)
-fn array<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
-    input: Input<'i>,
-) -> IResult<Input<'i>, Vec<JsonValue>, E> {
+fn array<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
+    input: Stream<'i>,
+) -> IResult<Stream<'i>, Vec<JsonValue>, E> {
     preceded(
         (one_of('['), ws),
         cut_err(terminated(
@@ -178,9 +180,9 @@ fn array<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
     .parse_next(input)
 }
 
-fn object<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
-    input: Input<'i>,
-) -> IResult<Input<'i>, HashMap<String, JsonValue>, E> {
+fn object<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
+    input: Stream<'i>,
+) -> IResult<Stream<'i>, HashMap<String, JsonValue>, E> {
     preceded(
         (one_of('{'), ws),
         cut_err(terminated(
@@ -192,22 +194,22 @@ fn object<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
     .parse_next(input)
 }
 
-fn key_value<'i, E: ParseError<Input<'i>> + ContextError<Input<'i>, &'static str>>(
-    input: Input<'i>,
-) -> IResult<Input<'i>, (String, JsonValue), E> {
+fn key_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
+    input: Stream<'i>,
+) -> IResult<Stream<'i>, (String, JsonValue), E> {
     separated_pair(string, cut_err((ws, one_of(':'), ws)), json_value)(input)
 }
 
 /// Parser combinators are constructed from the bottom up:
 /// first we write parsers for the smallest elements (here a space character),
 /// then we'll combine them in larger parsers
-fn ws<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>, &'i str, E> {
+fn ws<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, &'i str, E> {
     // nom combinators like `take_while0` return a function. That function is the
     // parser,to which we can pass the input
     take_while0(WS)(input)
 }
 
-fn ws_or_eof<'i, E: ParseError<Input<'i>>>(input: Input<'i>) -> IResult<Input<'i>, &'i str, E> {
+fn ws_or_eof<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, &'i str, E> {
     rest.verify(|s: &str| s.chars().all(|c| WS.contains(c)))
         .parse_next(input)
 }

@@ -1,6 +1,6 @@
-//! Input capability for nom combinators to parse
+//! Stream capability for nom combinators to parse
 //!
-//! Input types include:
+//! Stream types include:
 //! - `&str` and `&[u8]` are the standard input types
 //! - [`Located`] can track the location within the original buffer to report
 //!   [spans][crate::Parser::with_span]
@@ -19,16 +19,16 @@
 //!
 //! ## Implementing a custom type
 //!
-//! Let's assume we have an input type we'll call `MyInput`. `MyInput` is a sequence of `MyItem` type.
-//! The goal is to define nom parsers with this signature: `MyInput -> IResult<MyInput, Output>`.
+//! Let's assume we have an input type we'll call `MyStream`. `MyStream` is a sequence of `MyItem` type.
+//! The goal is to define nom parsers with this signature: `MyStream -> IResult<MyStream, Output>`.
 //!
 //! ```rust,ignore
-//! fn parser(i: MyInput) -> IResult<MyInput, Output> {
+//! fn parser(i: MyStream) -> IResult<MyStream, Output> {
 //!     tag("test")(i)
 //! }
 //! ```
 //!
-//! Here are the traits we have to implement for `MyInput`:
+//! Here are the traits we have to implement for `MyStream`:
 //!
 //! | trait | usage |
 //! |---|---|
@@ -89,7 +89,7 @@ impl<I> Located<I>
 where
     I: Clone + Offset,
 {
-    /// Wrap another Input with span tracking
+    /// Wrap another Stream with span tracking
     pub fn new(input: I) -> Self {
         let initial = input.clone();
         Self { initial, input }
@@ -141,16 +141,16 @@ impl<I> crate::lib::std::ops::Deref for Located<I> {
 ///     }
 /// }
 ///
-/// type Input<'is> = Stateful<&'is str, State<'is>>;
+/// type Stream<'is> = Stateful<&'is str, State<'is>>;
 ///
-/// fn word(i: Input<'_>) -> IResult<Input<'_>, &str> {
+/// fn word(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
 ///   i.state.count();
 ///   alpha1(i)
 /// }
 ///
 /// let data = "Hello";
 /// let state = Cell::new(0);
-/// let input = Input { input: data, state: State(&state) };
+/// let input = Stream { input: data, state: State(&state) };
 /// let output = word.parse_next(input).finish().unwrap();
 /// assert_eq!(state.get(), 1);
 /// ```
@@ -368,7 +368,7 @@ pub trait Input: Clone {
     /// This will panic if
     ///
     /// * Indexes must be within bounds of the original input;
-    /// * Indexes must uphold invariants of the Input, like for `str` they must lie on UTF-8
+    /// * Indexes must uphold invariants of the stream, like for `str` they must lie on UTF-8
     ///   sequence boundaries.
     ///
     fn next_slice(&self, offset: usize) -> (Self, Self::Slice);

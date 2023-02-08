@@ -16,7 +16,7 @@ fn json_bench(c: &mut criterion::Criterion) {
             criterion::BenchmarkId::new("complete", name),
             &len,
             |b, _| {
-                type Error<'i> = winnow::error::Error<parser::Input<'i>>;
+                type Error<'i> = winnow::error::Error<parser::Stream<'i>>;
 
                 b.iter(|| parser::json::<Error>(sample).unwrap());
             },
@@ -25,7 +25,7 @@ fn json_bench(c: &mut criterion::Criterion) {
             criterion::BenchmarkId::new("dispatch", name),
             &len,
             |b, _| {
-                type Error<'i> = winnow::error::Error<parser::Input<'i>>;
+                type Error<'i> = winnow::error::Error<parser::Stream<'i>>;
 
                 b.iter(|| parser_dispatch::json::<Error>(sample).unwrap());
             },
@@ -34,7 +34,7 @@ fn json_bench(c: &mut criterion::Criterion) {
             criterion::BenchmarkId::new("streaming", name),
             &len,
             |b, _| {
-                type Error<'i> = winnow::error::Error<parser_partial::Input<'i>>;
+                type Error<'i> = winnow::error::Error<parser_partial::Stream<'i>>;
 
                 b.iter(|| parser_partial::json::<Error>(Partial(sample)).unwrap());
             },

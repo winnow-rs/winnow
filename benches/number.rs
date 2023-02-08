@@ -11,9 +11,9 @@ use winnow::number::be_u64;
 use winnow::prelude::*;
 use winnow::stream::ParseSlice;
 
-type Input<'i> = &'i [u8];
+type Stream<'i> = &'i [u8];
 
-fn parser(i: Input<'_>) -> IResult<Input<'_>, u64> {
+fn parser(i: Stream<'_>) -> IResult<Stream<'_>, u64> {
     be_u64(i)
 }
 

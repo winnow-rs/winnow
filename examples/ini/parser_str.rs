@@ -9,28 +9,28 @@ use winnow::{
     sequence::{delimited, terminated},
 };
 
-pub type Input<'i> = &'i str;
+pub type Stream<'i> = &'i str;
 
-pub fn categories(input: Input<'_>) -> IResult<Input<'_>, HashMap<&str, HashMap<&str, &str>>> {
+pub fn categories(input: Stream<'_>) -> IResult<Stream<'_>, HashMap<&str, HashMap<&str, &str>>> {
     many0(category_and_keys)(input)
 }
 
-fn category_and_keys(i: Input<'_>) -> IResult<Input<'_>, (&str, HashMap<&str, &str>)> {
+fn category_and_keys(i: Stream<'_>) -> IResult<Stream<'_>, (&str, HashMap<&str, &str>)> {
     (category, keys_and_values).parse_next(i)
 }
 
-fn category(i: Input<'_>) -> IResult<Input<'_>, &str> {
+fn category(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
     terminated(
         delimited('[', take_while0(|c| c != ']'), ']'),
         opt(take_while1(" \r\n")),
     )(i)
 }
 
-fn keys_and_values(input: Input<'_>) -> IResult<Input<'_>, HashMap<&str, &str>> {
+fn keys_and_values(input: Stream<'_>) -> IResult<Stream<'_>, HashMap<&str, &str>> {
     many0(key_value)(input)
 }
 
-fn key_value(i: Input<'_>) -> IResult<Input<'_>, (&str, &str)> {
+fn key_value(i: Stream<'_>) -> IResult<Stream<'_>, (&str, &str)> {
     let (i, key) = alphanumeric(i)?;
     let (i, _) = (opt(space), "=", opt(space)).parse_next(i)?;
     let (i, val) = take_till0(is_line_ending_or_comment)(i)?;
@@ -45,11 +45,11 @@ fn is_line_ending_or_comment(chr: char) -> bool {
     chr == ';' || chr == '\n'
 }
 
-fn not_line_ending(i: Input<'_>) -> IResult<Input<'_>, &str> {
+fn not_line_ending(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
     take_while0(|c| c != '\r' && c != '\n')(i)
 }
 
-fn space_or_line_ending(i: Input<'_>) -> IResult<Input<'_>, &str> {
+fn space_or_line_ending(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
     take_while1(" \r\n")(i)
 }
 
