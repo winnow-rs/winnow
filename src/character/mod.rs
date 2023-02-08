@@ -15,7 +15,7 @@ use crate::combinator::opt;
 use crate::error::ParseError;
 use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::stream::Compare;
-use crate::stream::{AsBStr, AsChar, Input, Offset, ParseSlice, StreamIsPartial};
+use crate::stream::{AsBStr, AsChar, Stream, Offset, ParseSlice, StreamIsPartial};
 use crate::IResult;
 use crate::Parser;
 
@@ -50,10 +50,10 @@ use crate::Parser;
 #[inline(always)]
 pub fn crlf<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
+    I: Stream,
     I: Compare<&'static str>,
 {
     if PARTIAL {
@@ -99,12 +99,12 @@ where
 #[inline(always)]
 pub fn not_line_ending<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input + AsBStr,
+    I: Stream + AsBStr,
     I: Compare<&'static str>,
-    <I as Input>::Token: AsChar,
+    <I as Stream>::Token: AsChar,
 {
     if PARTIAL {
         streaming::not_line_ending(input)
@@ -144,10 +144,10 @@ where
 #[inline(always)]
 pub fn line_ending<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
+    I: Stream,
     I: Compare<&'static str>,
 {
     if PARTIAL {
@@ -189,8 +189,8 @@ where
 pub fn newline<I, Error: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, char, Error>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     if PARTIAL {
         streaming::newline(input)
@@ -231,8 +231,8 @@ where
 pub fn tab<I, Error: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, char, Error>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     if PARTIAL {
         streaming::tab(input)
@@ -274,11 +274,11 @@ where
 #[inline(always)]
 pub fn alpha0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     if PARTIAL {
         streaming::alpha0(input)
@@ -320,11 +320,11 @@ where
 #[inline(always)]
 pub fn alpha1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     if PARTIAL {
         streaming::alpha1(input)
@@ -367,11 +367,11 @@ where
 #[inline(always)]
 pub fn digit0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     if PARTIAL {
         streaming::digit0(input)
@@ -429,11 +429,11 @@ where
 #[inline(always)]
 pub fn digit1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     if PARTIAL {
         streaming::digit1(input)
@@ -474,11 +474,11 @@ where
 #[inline(always)]
 pub fn hex_digit0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     if PARTIAL {
         streaming::hex_digit0(input)
@@ -520,11 +520,11 @@ where
 #[inline(always)]
 pub fn hex_digit1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     if PARTIAL {
         streaming::hex_digit1(input)
@@ -566,11 +566,11 @@ where
 #[inline(always)]
 pub fn oct_digit0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     if PARTIAL {
         streaming::oct_digit0(input)
@@ -612,11 +612,11 @@ where
 #[inline(always)]
 pub fn oct_digit1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     if PARTIAL {
         streaming::oct_digit1(input)
@@ -658,11 +658,11 @@ where
 #[inline(always)]
 pub fn alphanumeric0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     if PARTIAL {
         streaming::alphanumeric0(input)
@@ -704,11 +704,11 @@ where
 #[inline(always)]
 pub fn alphanumeric1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     if PARTIAL {
         streaming::alphanumeric1(input)
@@ -738,11 +738,11 @@ where
 #[inline(always)]
 pub fn space0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     if PARTIAL {
         streaming::space0(input)
@@ -784,11 +784,11 @@ where
 #[inline(always)]
 pub fn space1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     if PARTIAL {
         streaming::space1(input)
@@ -830,11 +830,11 @@ where
 #[inline(always)]
 pub fn multispace0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     if PARTIAL {
         streaming::multispace0(input)
@@ -876,11 +876,11 @@ where
 #[inline(always)]
 pub fn multispace1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     if PARTIAL {
         streaming::multispace1(input)
@@ -897,8 +897,8 @@ where
 pub fn dec_uint<I, O, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, O, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: AsChar + Copy,
+    I: Stream,
+    <I as Stream>::Token: AsChar + Copy,
     O: Uint,
 {
     let i = input.clone();
@@ -1044,8 +1044,8 @@ impl Uint for i128 {
 pub fn dec_int<I, O, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, O, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: AsChar + Copy,
+    I: Stream,
+    <I as Stream>::Token: AsChar + Copy,
     O: Int,
 {
     let i = input.clone();
@@ -1175,10 +1175,10 @@ impl Int for i128 {
 pub fn hex_uint<I, O, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, O, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
+    I: Stream,
     O: HexUint,
-    <I as Input>::Token: AsChar,
-    <I as Input>::Slice: AsBStr,
+    <I as Stream>::Token: AsChar,
+    <I as Stream>::Slice: AsBStr,
 {
     let invalid_offset = input
         .offset_for(|c| {
@@ -1311,11 +1311,11 @@ impl HexUint for u128 {
 pub fn float<I, O, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, O, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
+    I: Stream,
     I: Offset + Compare<&'static str>,
-    <I as Input>::Slice: ParseSlice<O>,
-    <I as Input>::Token: AsChar + Copy,
-    <I as Input>::IterOffsets: Clone,
+    <I as Stream>::Slice: ParseSlice<O>,
+    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
     let (i, s) = if PARTIAL {
@@ -1368,11 +1368,11 @@ pub fn escaped<'a, I: 'a, Error, F, G, O1, O2, const PARTIAL: bool>(
     mut normal: F,
     control_char: char,
     mut escapable: G,
-) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input + Offset,
-    <I as Input>::Token: crate::stream::AsChar,
+    I: Stream + Offset,
+    <I as Stream>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParseError<I>,
@@ -1464,11 +1464,11 @@ pub fn escaped_transform<I, Error, F, G, Output, const PARTIAL: bool>(
 ) -> impl FnMut(I) -> IResult<I, Output, Error>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input + Offset,
-    <I as Input>::Token: crate::stream::AsChar,
-    Output: crate::stream::Accumulate<<I as Input>::Slice>,
-    F: Parser<I, <I as Input>::Slice, Error>,
-    G: Parser<I, <I as Input>::Slice, Error>,
+    I: Stream + Offset,
+    <I as Stream>::Token: crate::stream::AsChar,
+    Output: crate::stream::Accumulate<<I as Stream>::Slice>,
+    F: Parser<I, <I as Stream>::Slice, Error>,
+    G: Parser<I, <I as Stream>::Slice, Error>,
     Error: ParseError<I>,
 {
     move |input: I| {

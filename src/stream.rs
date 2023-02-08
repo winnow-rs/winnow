@@ -32,7 +32,7 @@
 //!
 //! | trait | usage |
 //! |---|---|
-//! | [`Input`] |Core trait for driving parsing|
+//! | [`Stream`] |Core trait for driving parsing|
 //! | [`StreamIsPartial`] | Marks the input as being the complete buffer or a partial buffer for streaming input |
 //! | [`AsBytes`] |Casts the input type to a byte slice|
 //! | [`AsBStr`] |Casts the input type to a slice of ASCII / UTF-8-like bytes|
@@ -325,7 +325,7 @@ impl<'a> SliceLen for &'a str {
 }
 
 /// Core definition for parser input state
-pub trait Input: Clone {
+pub trait Stream: Clone {
     /// The smallest unit being parsed
     ///
     /// Example: `u8` for `&[u8]` or `char` for `&str`
@@ -358,10 +358,10 @@ pub trait Input: Clone {
     ///
     /// **NOTE:** For inputs with variable width tokens, like `&str`'s `char`, `offset` might not correspond
     /// with the number of tokens.  To get a valid offset, use:
-    /// - [`Input::eof_offset`]
-    /// - [`Input::iter_offsets`]
-    /// - [`Input::offset_for`]
-    /// - [`Input::offset_at`]
+    /// - [`Stream::eof_offset`]
+    /// - [`Stream::iter_offsets`]
+    /// - [`Stream::offset_for`]
+    /// - [`Stream::offset_at`]
     ///
     /// # Panic
     ///
@@ -374,7 +374,7 @@ pub trait Input: Clone {
     fn next_slice(&self, offset: usize) -> (Self, Self::Slice);
 }
 
-impl<'i, T> Input for &'i [T]
+impl<'i, T> Stream for &'i [T]
 where
     T: Clone,
 {
@@ -422,7 +422,7 @@ where
     }
 }
 
-impl<'i> Input for &'i str {
+impl<'i> Stream for &'i str {
     type Token = char;
     type Slice = &'i str;
 
@@ -478,11 +478,11 @@ impl<'i> Input for &'i str {
     }
 }
 
-impl<I: Input> Input for Located<I> {
-    type Token = <I as Input>::Token;
-    type Slice = <I as Input>::Slice;
+impl<I: Stream> Stream for Located<I> {
+    type Token = <I as Stream>::Token;
+    type Slice = <I as Stream>::Slice;
 
-    type IterOffsets = <I as Input>::IterOffsets;
+    type IterOffsets = <I as Stream>::IterOffsets;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
@@ -529,11 +529,11 @@ impl<I: Input> Input for Located<I> {
     }
 }
 
-impl<I: Input, S: Clone> Input for Stateful<I, S> {
-    type Token = <I as Input>::Token;
-    type Slice = <I as Input>::Slice;
+impl<I: Stream, S: Clone> Stream for Stateful<I, S> {
+    type Token = <I as Stream>::Token;
+    type Slice = <I as Stream>::Slice;
 
-    type IterOffsets = <I as Input>::IterOffsets;
+    type IterOffsets = <I as Stream>::IterOffsets;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
@@ -580,11 +580,11 @@ impl<I: Input, S: Clone> Input for Stateful<I, S> {
     }
 }
 
-impl<I: Input> Input for Partial<I> {
-    type Token = <I as Input>::Token;
-    type Slice = <I as Input>::Slice;
+impl<I: Stream> Stream for Partial<I> {
+    type Token = <I as Stream>::Token;
+    type Slice = <I as Stream>::Slice;
 
-    type IterOffsets = <I as Input>::IterOffsets;
+    type IterOffsets = <I as Stream>::IterOffsets;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
@@ -1278,9 +1278,9 @@ impl<'a, R: FromStr> ParseSlice<R> for &'a str {
     }
 }
 
-/// Convert an `Input` into an appropriate `Output` type
-pub trait UpdateSlice: Input {
-    /// Convert an `Output` type to be used as `Input`
+/// Convert a `Stream` into an appropriate `Output` type
+pub trait UpdateSlice: Stream {
+    /// Convert an `Output` type to be used as `Stream`
     fn update_slice(self, inner: Self::Slice) -> Self;
 }
 
@@ -2109,10 +2109,10 @@ impl_contains_token_for_tuples!(
 /// and returns the input up to this position.
 ///
 /// *Partial version*: If no element is found matching the condition, this will return `Incomplete`
-pub(crate) fn split_at_offset_partial<P, I: Input, E: ParseError<I>>(
+pub(crate) fn split_at_offset_partial<P, I: Stream, E: ParseError<I>>(
     input: &I,
     predicate: P,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     P: Fn(I::Token) -> bool,
 {
@@ -2128,11 +2128,11 @@ where
 /// Fails if the produced slice is empty.
 ///
 /// *Partial version*: If no element is found matching the condition, this will return `Incomplete`
-pub(crate) fn split_at_offset1_partial<P, I: Input, E: ParseError<I>>(
+pub(crate) fn split_at_offset1_partial<P, I: Stream, E: ParseError<I>>(
     input: &I,
     predicate: P,
     e: ErrorKind,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     P: Fn(I::Token) -> bool,
 {
@@ -2150,10 +2150,10 @@ where
 /// and returns the input up to this position.
 ///
 /// *Complete version*: If no element is found matching the condition, this will return the whole input
-pub(crate) fn split_at_offset_complete<P, I: Input, E: ParseError<I>>(
+pub(crate) fn split_at_offset_complete<P, I: Stream, E: ParseError<I>>(
     input: &I,
     predicate: P,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     P: Fn(I::Token) -> bool,
 {
@@ -2169,11 +2169,11 @@ where
 /// Fails if the produced slice is empty.
 ///
 /// *Complete version*: If no element is found matching the condition, this will return the whole input
-pub(crate) fn split_at_offset1_complete<P, I: Input, E: ParseError<I>>(
+pub(crate) fn split_at_offset1_complete<P, I: Stream, E: ParseError<I>>(
     input: &I,
     predicate: P,
     e: ErrorKind,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     P: Fn(I::Token) -> bool,
 {

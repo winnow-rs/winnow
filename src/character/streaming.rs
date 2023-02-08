@@ -10,7 +10,7 @@ use crate::error::ErrorKind;
 use crate::error::Needed;
 use crate::error::ParseError;
 use crate::stream::{
-    split_at_offset1_partial, split_at_offset_partial, AsBStr, AsChar, ContainsToken, Input,
+    split_at_offset1_partial, split_at_offset_partial, AsBStr, AsChar, ContainsToken, Stream,
 };
 use crate::stream::{Compare, CompareResult};
 use crate::IResult;
@@ -38,16 +38,16 @@ use crate::IResult;
 )]
 pub fn char<I, Error: ParseError<I>>(c: char) -> impl Fn(I) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     move |i: I| char_internal(i, c)
 }
 
 pub(crate) fn char_internal<I, Error: ParseError<I>>(i: I, c: char) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     let (input, token) = i
         .next_token()
@@ -83,8 +83,8 @@ where
 )]
 pub fn satisfy<F, I, Error: ParseError<I>>(cond: F) -> impl Fn(I) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
     F: Fn(char) -> bool,
 {
     move |i: I| satisfy_internal(i, &cond)
@@ -95,8 +95,8 @@ pub(crate) fn satisfy_internal<F, I, Error: ParseError<I>>(
     cond: &F,
 ) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
     F: Fn(char) -> bool,
 {
     let (input, token) = i
@@ -130,9 +130,9 @@ where
 )]
 pub fn one_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: Copy + AsChar,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    <I as Stream>::Token: Copy + AsChar,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| crate::bytes::streaming::one_of_internal(i, &list).map(|(i, c)| (i, c.as_char()))
 }
@@ -157,9 +157,9 @@ where
 )]
 pub fn none_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: Copy + AsChar,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    <I as Stream>::Token: Copy + AsChar,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| crate::bytes::streaming::none_of_internal(i, &list).map(|(i, c)| (i, c.as_char()))
 }
@@ -182,9 +182,9 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::crlf` with input wrapped in `winnow::Partial`"
 )]
-pub fn crlf<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn crlf<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
+    T: Stream,
     T: Compare<&'static str>,
 {
     const CRLF: &str = "\r\n";
@@ -218,11 +218,11 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::not_line_ending` with input wrapped in `winnow::Partial`"
 )]
-pub fn not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input + AsBStr,
+    T: Stream + AsBStr,
     T: Compare<&'static str>,
-    <T as Input>::Token: AsChar,
+    <T as Stream>::Token: AsChar,
 {
     match input.offset_for(|item| {
         let c = item.as_char();
@@ -270,9 +270,9 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::line_ending` with input wrapped in `winnow::Partial`"
 )]
-pub fn line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
+    T: Stream,
     T: Compare<&'static str>,
 {
     const LF: &str = "\n";
@@ -308,8 +308,8 @@ where
 )]
 pub fn newline<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     char('\n')(input)
 }
@@ -334,8 +334,8 @@ where
 )]
 pub fn tab<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     char('\t')(input)
 }
@@ -359,8 +359,8 @@ where
 )]
 pub fn anychar<T, E: ParseError<T>>(input: T) -> IResult<T, char, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     crate::bytes::streaming::any(input).map(|(i, c)| (i, c.as_char()))
 }
@@ -384,10 +384,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::alpha0` with input wrapped in `winnow::Partial`"
 )]
-pub fn alpha0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn alpha0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset_partial(&input, |item| !item.is_alpha())
 }
@@ -411,10 +411,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::alpha1` with input wrapped in `winnow::Partial`"
 )]
-pub fn alpha1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn alpha1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset1_partial(&input, |item| !item.is_alpha(), ErrorKind::Alpha)
 }
@@ -438,10 +438,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::digit0` with input wrapped in `winnow::Partial`"
 )]
-pub fn digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset_partial(&input, |item| !item.is_dec_digit())
 }
@@ -465,10 +465,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::digit1` with input wrapped in `winnow::Partial`"
 )]
-pub fn digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset1_partial(&input, |item| !item.is_dec_digit(), ErrorKind::Digit)
 }
@@ -492,10 +492,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::hex_digit0` with input wrapped in `winnow::Partial`"
 )]
-pub fn hex_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn hex_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset_partial(&input, |item| !item.is_hex_digit())
 }
@@ -519,10 +519,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::hex_digit1` with input wrapped in `winnow::Partial`"
 )]
-pub fn hex_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn hex_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset1_partial(&input, |item| !item.is_hex_digit(), ErrorKind::HexDigit)
 }
@@ -546,10 +546,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::oct_digit0` with input wrapped in `winnow::Partial`"
 )]
-pub fn oct_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn oct_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset_partial(&input, |item| !item.is_oct_digit())
 }
@@ -573,10 +573,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::oct_digit1` with input wrapped in `winnow::Partial`"
 )]
-pub fn oct_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn oct_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset1_partial(&input, |item| !item.is_oct_digit(), ErrorKind::OctDigit)
 }
@@ -600,10 +600,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::alphanumeric0` with input wrapped in `winnow::Partial`"
 )]
-pub fn alphanumeric0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn alphanumeric0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset_partial(&input, |item| !item.is_alphanum())
 }
@@ -627,10 +627,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::alphanumeric1` with input wrapped in `winnow::Partial`"
 )]
-pub fn alphanumeric1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn alphanumeric1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset1_partial(&input, |item| !item.is_alphanum(), ErrorKind::AlphaNumeric)
 }
@@ -654,10 +654,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::space0` with input wrapped in `winnow::Partial`"
 )]
-pub fn space0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn space0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset_partial(&input, |item| {
         let c = item.as_char();
@@ -683,10 +683,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::space1` with input wrapped in `winnow::Partial`"
 )]
-pub fn space1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn space1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset1_partial(
         &input,
@@ -717,10 +717,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::multispace0` with input wrapped in `winnow::Partial`"
 )]
-pub fn multispace0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn multispace0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset_partial(&input, |item| {
         let c = item.as_char();
@@ -747,10 +747,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::multispace1` with input wrapped in `winnow::Partial`"
 )]
-pub fn multispace1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn multispace1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset1_partial(
         &input,
@@ -764,8 +764,8 @@ where
 
 pub(crate) fn sign<T, E: ParseError<T>>(input: T) -> IResult<T, bool, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar + Copy,
+    T: Stream,
+    <T as Stream>::Token: AsChar + Copy,
 {
     fn sign(token: impl AsChar) -> bool {
         let token = token.as_char();
@@ -787,8 +787,8 @@ macro_rules! ints {
         /// *Complete version*: can parse until the end of input.
         pub fn $t<T, E: ParseError<T>>(input: T) -> IResult<T, $t, E>
             where
-              T: Input,
-              <T as Input>::Token: AsChar + Copy,
+              T: Stream,
+              <T as Stream>::Token: AsChar + Copy,
             {
               let (i, sign) = sign(input.clone())?;
 
@@ -836,8 +836,8 @@ macro_rules! uints {
         /// *Complete version*: can parse until the end of input.
         pub fn $t<T, E: ParseError<T>>(input: T) -> IResult<T, $t, E>
             where
-              T: Input,
-              <T as Input>::Token: AsChar,
+              T: Stream,
+              <T as Stream>::Token: AsChar,
             {
                 let i = input;
 

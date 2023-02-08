@@ -5,7 +5,7 @@
 
 use crate::error::{ErrMode, ErrorKind, ParseError};
 use crate::lib::std::ops::{AddAssign, Div, Shl, Shr};
-use crate::stream::{AsBytes, Input, ToUsize};
+use crate::stream::{AsBytes, Stream, ToUsize};
 use crate::IResult;
 
 /// Generates a parser taking `count` bits
@@ -15,7 +15,7 @@ use crate::IResult;
 /// # use winnow::bits::complete::take;
 /// # use winnow::IResult;
 /// # use winnow::error::{Error, ErrorKind};
-/// // Input is a tuple of (input: I, bit_offset: usize)
+/// // Stream is a tuple of (input: I, bit_offset: usize)
 /// fn parser(input: (&[u8], usize), count: usize)-> IResult<(&[u8], usize), u8> {
 ///  take(count)(input)
 /// }
@@ -39,7 +39,7 @@ pub fn take<I, O, C, E: ParseError<(I, usize)>>(
     count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-    I: Input<Token = u8> + AsBytes,
+    I: Stream<Token = u8> + AsBytes,
     C: ToUsize,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
@@ -52,7 +52,7 @@ pub(crate) fn take_internal<I, O, E: ParseError<(I, usize)>>(
     count: usize,
 ) -> IResult<(I, usize), O, E>
 where
-    I: Input<Token = u8> + AsBytes,
+    I: Stream<Token = u8> + AsBytes,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
     if count == 0 {
@@ -105,7 +105,7 @@ pub fn tag<I, O, C, E: ParseError<(I, usize)>>(
     count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-    I: Input<Token = u8> + AsBytes,
+    I: Stream<Token = u8> + AsBytes,
     C: ToUsize,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
@@ -119,7 +119,7 @@ pub(crate) fn tag_internal<I, O, E: ParseError<(I, usize)>>(
     count: usize,
 ) -> IResult<(I, usize), O, E>
 where
-    I: Input<Token = u8> + AsBytes,
+    I: Stream<Token = u8> + AsBytes,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
     let inp = input.clone();
@@ -152,7 +152,7 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::bits::bool`")]
 pub fn bool<I, E: ParseError<(I, usize)>>(input: (I, usize)) -> IResult<(I, usize), bool, E>
 where
-    I: Input<Token = u8> + AsBytes,
+    I: Stream<Token = u8> + AsBytes,
 {
     let (res, bit): (_, u32) = take(1usize)(input)?;
     Ok((res, bit != 0))

@@ -8,7 +8,7 @@ mod tests;
 
 use crate::error::{ErrMode, ErrorConvert, ErrorKind, Needed, ParseError};
 use crate::lib::std::ops::{AddAssign, Shl, Shr};
-use crate::stream::{AsBytes, Input, StreamIsPartial, ToUsize};
+use crate::stream::{AsBytes, Stream, StreamIsPartial, ToUsize};
 use crate::{IResult, Parser};
 
 /// Converts a byte-level input to a bit-level input, for consumption by a parser that uses bits.
@@ -42,7 +42,7 @@ pub fn bits<I, O, E1, E2, P>(mut parser: P) -> impl FnMut(I) -> IResult<I, O, E2
 where
     E1: ParseError<(I, usize)> + ErrorConvert<E2>,
     E2: ParseError<I>,
-    I: Input,
+    I: Stream,
     P: Parser<(I, usize), O, E1>,
 {
     move |input: I| match parser.parse_next((input, 0)) {
@@ -87,7 +87,7 @@ pub fn bytes<I, O, E1, E2, P>(mut parser: P) -> impl FnMut((I, usize)) -> IResul
 where
     E1: ParseError<I> + ErrorConvert<E2>,
     E2: ParseError<(I, usize)>,
-    I: Input,
+    I: Stream,
     P: Parser<I, O, E1>,
 {
     move |(input, offset): (I, usize)| {
@@ -116,7 +116,7 @@ where
 /// # use winnow::bits::take;
 /// # use winnow::IResult;
 /// # use winnow::error::{Error, ErrorKind};
-/// // Input is a tuple of (input: I, bit_offset: usize)
+/// // `input` is a tuple of (input: I, bit_offset: usize)
 /// fn parser(input: (&[u8], usize), count: usize)-> IResult<(&[u8], usize), u8> {
 ///  take(count)(input)
 /// }
@@ -138,7 +138,7 @@ pub fn take<I, O, C, E: ParseError<(I, usize)>, const PARTIAL: bool>(
     count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-    I: Input<Token = u8> + AsBytes + StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8> + AsBytes + StreamIsPartial<PARTIAL>,
     C: ToUsize,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
@@ -202,7 +202,7 @@ pub fn tag<I, O, C, E: ParseError<(I, usize)>, const PARTIAL: bool>(
     count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-    I: Input<Token = u8> + AsBytes + StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8> + AsBytes + StreamIsPartial<PARTIAL>,
     C: ToUsize,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
@@ -236,7 +236,7 @@ pub fn bool<I, E: ParseError<(I, usize)>, const PARTIAL: bool>(
     input: (I, usize),
 ) -> IResult<(I, usize), bool, E>
 where
-    I: Input<Token = u8> + AsBytes + StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8> + AsBytes + StreamIsPartial<PARTIAL>,
 {
     #![allow(deprecated)]
     if PARTIAL {

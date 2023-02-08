@@ -9,13 +9,13 @@ use crate::error::ParseError;
 use crate::lib::std::result::Result::Ok;
 use crate::stream::{
     split_at_offset1_partial, split_at_offset_partial, Compare, CompareResult, ContainsToken,
-    FindSlice, Input, Offset, SliceLen, ToUsize,
+    FindSlice, Stream, Offset, SliceLen, ToUsize,
 };
 use crate::{IResult, Parser};
 
-pub(crate) fn any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Input>::Token, E>
+pub(crate) fn any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Token, E>
 where
-    I: Input,
+    I: Stream,
 {
     input
         .next_token()
@@ -48,9 +48,9 @@ where
 )]
 pub fn tag<T, I, Error: ParseError<I>>(
     tag: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + Compare<T>,
+    I: Stream + Compare<T>,
     T: SliceLen + Clone,
 {
     move |i: I| tag_internal(i, tag.clone())
@@ -59,9 +59,9 @@ where
 pub(crate) fn tag_internal<T, I, Error: ParseError<I>>(
     i: I,
     t: T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + Compare<T>,
+    I: Stream + Compare<T>,
     T: SliceLen,
 {
     let tag_len = t.slice_len();
@@ -104,9 +104,9 @@ where
 )]
 pub fn tag_no_case<T, I, Error: ParseError<I>>(
     tag: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + Compare<T>,
+    I: Stream + Compare<T>,
     T: SliceLen + Clone,
 {
     move |i: I| tag_no_case_internal(i, tag.clone())
@@ -115,9 +115,9 @@ where
 pub(crate) fn tag_no_case_internal<T, I, Error: ParseError<I>>(
     i: I,
     t: T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + Compare<T>,
+    I: Stream + Compare<T>,
     T: SliceLen,
 {
     let tag_len = t.slice_len();
@@ -137,11 +137,11 @@ where
 pub(crate) fn one_of_internal<I, T, E: ParseError<I>>(
     input: I,
     list: &T,
-) -> IResult<I, <I as Input>::Token, E>
+) -> IResult<I, <I as Stream>::Token, E>
 where
-    I: Input,
-    <I as Input>::Token: Copy,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    <I as Stream>::Token: Copy,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     let (new_input, token) = input
         .next_token()
@@ -156,11 +156,11 @@ where
 pub(crate) fn none_of_internal<I, T, E: ParseError<I>>(
     input: I,
     list: &T,
-) -> IResult<I, <I as Input>::Token, E>
+) -> IResult<I, <I as Stream>::Token, E>
 where
-    I: Input,
-    <I as Input>::Token: Copy,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    <I as Stream>::Token: Copy,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     let (new_input, token) = input
         .next_token()
@@ -201,10 +201,10 @@ where
 )]
 pub fn is_not<T, I, Error: ParseError<I>>(
     arr: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| is_not_internal(i, &arr)
 }
@@ -212,10 +212,10 @@ where
 pub(crate) fn is_not_internal<T, I, Error: ParseError<I>>(
     i: I,
     arr: &T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     let e: ErrorKind = ErrorKind::IsNot;
     split_at_offset1_partial(&i, |c| arr.contains_token(c), e)
@@ -252,10 +252,10 @@ where
 )]
 pub fn is_a<T, I, Error: ParseError<I>>(
     arr: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| is_a_internal(i, &arr)
 }
@@ -263,10 +263,10 @@ where
 pub(crate) fn is_a_internal<T, I, Error: ParseError<I>>(
     i: I,
     arr: &T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     let e: ErrorKind = ErrorKind::IsA;
     split_at_offset1_partial(&i, |c| !arr.contains_token(c), e)
@@ -302,10 +302,10 @@ where
 )]
 pub fn take_while<T, I, Error: ParseError<I>>(
     list: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| take_while_internal(i, &list)
 }
@@ -313,10 +313,10 @@ where
 pub(crate) fn take_while_internal<T, I, Error: ParseError<I>>(
     i: I,
     list: &T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     split_at_offset_partial(&i, |c| !list.contains_token(c))
 }
@@ -353,10 +353,10 @@ where
 )]
 pub fn take_while1<T, I, Error: ParseError<I>>(
     list: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| take_while1_internal(i, &list)
 }
@@ -364,10 +364,10 @@ where
 pub(crate) fn take_while1_internal<T, I, Error: ParseError<I>>(
     i: I,
     list: &T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     let e: ErrorKind = ErrorKind::TakeWhile1;
     split_at_offset1_partial(&i, |c| !list.contains_token(c), e)
@@ -408,10 +408,10 @@ pub fn take_while_m_n<T, I, Error: ParseError<I>>(
     m: usize,
     n: usize,
     list: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| take_while_m_n_internal(i, m, n, &list)
 }
@@ -421,10 +421,10 @@ pub(crate) fn take_while_m_n_internal<T, I, Error: ParseError<I>>(
     m: usize,
     n: usize,
     list: &T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     if n < m {
         return Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN));
@@ -490,10 +490,10 @@ where
 #[allow(clippy::redundant_closure)]
 pub fn take_till<T, I, Error: ParseError<I>>(
     list: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| take_till_internal(i, &list)
 }
@@ -501,10 +501,10 @@ where
 pub(crate) fn take_till_internal<T, I, Error: ParseError<I>>(
     i: I,
     list: &T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     split_at_offset_partial(&i, |c| list.contains_token(c))
 }
@@ -540,10 +540,10 @@ where
 #[allow(clippy::redundant_closure)]
 pub fn take_till1<T, I, Error: ParseError<I>>(
     list: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| take_till1_internal(i, &list)
 }
@@ -551,10 +551,10 @@ where
 pub(crate) fn take_till1_internal<T, I, Error: ParseError<I>>(
     i: I,
     list: &T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     let e: ErrorKind = ErrorKind::TakeTill1;
     split_at_offset1_partial(&i, |c| list.contains_token(c), e)
@@ -591,9 +591,9 @@ where
 )]
 pub fn take<C, I, Error: ParseError<I>>(
     count: C,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
+    I: Stream,
     C: ToUsize,
 {
     let c = count.to_usize();
@@ -603,9 +603,9 @@ where
 pub(crate) fn take_internal<I, Error: ParseError<I>>(
     i: I,
     c: usize,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
+    I: Stream,
 {
     match i.offset_at(c) {
         Ok(offset) => Ok(i.next_slice(offset)),
@@ -642,9 +642,9 @@ where
 )]
 pub fn take_until<T, I, Error: ParseError<I>>(
     tag: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + FindSlice<T>,
+    I: Stream + FindSlice<T>,
     T: SliceLen + Clone,
 {
     move |i: I| take_until_internal(i, tag.clone())
@@ -653,9 +653,9 @@ where
 pub(crate) fn take_until_internal<T, I, Error: ParseError<I>>(
     i: I,
     t: T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + FindSlice<T>,
+    I: Stream + FindSlice<T>,
     T: SliceLen,
 {
     match i.find_slice(t) {
@@ -694,9 +694,9 @@ where
 )]
 pub fn take_until1<T, I, Error: ParseError<I>>(
     tag: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + FindSlice<T>,
+    I: Stream + FindSlice<T>,
     T: SliceLen + Clone,
 {
     move |i: I| take_until1_internal(i, tag.clone())
@@ -705,9 +705,9 @@ where
 pub(crate) fn take_until1_internal<T, I, Error: ParseError<I>>(
     i: I,
     t: T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + FindSlice<T>,
+    I: Stream + FindSlice<T>,
     T: SliceLen,
 {
     match i.find_slice(t) {
@@ -747,10 +747,10 @@ pub fn escaped<I, Error, F, G, O1, O2>(
     mut normal: F,
     control_char: char,
     mut escapable: G,
-) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + Offset,
-    <I as Input>::Token: crate::stream::AsChar,
+    I: Stream + Offset,
+    <I as Stream>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParseError<I>,
@@ -763,10 +763,10 @@ pub(crate) fn escaped_internal<I, Error, F, G, O1, O2>(
     normal: &mut F,
     control_char: char,
     escapable: &mut G,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + Offset,
-    <I as Input>::Token: crate::stream::AsChar,
+    I: Stream + Offset,
+    <I as Stream>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParseError<I>,
@@ -863,11 +863,11 @@ pub fn escaped_transform<I, Error, F, G, Output>(
     mut transform: G,
 ) -> impl FnMut(I) -> IResult<I, Output, Error>
 where
-    I: Input + Offset,
-    <I as Input>::Token: crate::stream::AsChar,
-    Output: crate::stream::Accumulate<<I as Input>::Slice>,
-    F: Parser<I, <I as Input>::Slice, Error>,
-    G: Parser<I, <I as Input>::Slice, Error>,
+    I: Stream + Offset,
+    <I as Stream>::Token: crate::stream::AsChar,
+    Output: crate::stream::Accumulate<<I as Stream>::Slice>,
+    F: Parser<I, <I as Stream>::Slice, Error>,
+    G: Parser<I, <I as Stream>::Slice, Error>,
     Error: ParseError<I>,
 {
     move |input: I| escaped_transform_internal(input, &mut normal, control_char, &mut transform)
@@ -881,11 +881,11 @@ pub(crate) fn escaped_transform_internal<I, Error, F, G, Output>(
     transform: &mut G,
 ) -> IResult<I, Output, Error>
 where
-    I: Input + Offset,
-    <I as Input>::Token: crate::stream::AsChar,
-    Output: crate::stream::Accumulate<<I as Input>::Slice>,
-    F: Parser<I, <I as Input>::Slice, Error>,
-    G: Parser<I, <I as Input>::Slice, Error>,
+    I: Stream + Offset,
+    <I as Stream>::Token: crate::stream::AsChar,
+    Output: crate::stream::Accumulate<<I as Stream>::Slice>,
+    F: Parser<I, <I as Stream>::Slice, Error>,
+    G: Parser<I, <I as Stream>::Slice, Error>,
     Error: ParseError<I>,
 {
     use crate::stream::AsChar;

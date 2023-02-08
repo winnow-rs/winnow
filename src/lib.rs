@@ -170,7 +170,7 @@
 //! ## Making new parsers with function combinators
 //!
 //! nom is based on functions that generate parsers, with a signature like
-//! this: `(arguments) -> impl Fn(Input) -> IResult<Input, Output, Error>`.
+//! this: `(arguments) -> impl Fn(Stream) -> IResult<Stream, Output, Error>`.
 //! The arguments of a combinator can be direct values (like `take` which uses
 //! a number of bytes or character as argument) or even other parsers (like
 //! `delimited` which takes as argument 3 parsers, and returns the result of

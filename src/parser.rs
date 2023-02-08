@@ -2,7 +2,7 @@
 
 use crate::combinator::*;
 use crate::error::{ContextError, IResult, ParseError};
-use crate::stream::{AsChar, Compare, Input, Location, StreamIsPartial};
+use crate::stream::{AsChar, Compare, Stream, Location, StreamIsPartial};
 
 /// All nom parsers implement this trait
 ///
@@ -250,7 +250,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::prelude::*;
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, stream::Input};
+    /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, stream::Stream};
     /// use winnow::stream::Located;
     /// use winnow::character::alpha1;
     /// use winnow::sequence::separated_pair;
@@ -281,7 +281,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::prelude::*;
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, stream::Input};
+    /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, stream::Stream};
     /// use winnow::stream::Located;
     /// use winnow::character::alpha1;
     /// use winnow::bytes::tag;
@@ -632,7 +632,7 @@ where
 impl<I, E> Parser<I, u8, E> for u8
 where
     I: StreamIsPartial<false>,
-    I: Input<Token = u8>,
+    I: Stream<Token = u8>,
     E: ParseError<I>,
 {
     fn parse_next(&mut self, i: I) -> IResult<I, u8, E> {
@@ -655,14 +655,14 @@ where
 /// assert_eq!(parser("bc"), Err(ErrMode::Backtrack(Error::new("bc", ErrorKind::OneOf))));
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::OneOf))));
 /// ```
-impl<I, E> Parser<I, <I as Input>::Token, E> for char
+impl<I, E> Parser<I, <I as Stream>::Token, E> for char
 where
     I: StreamIsPartial<false>,
-    I: Input,
-    <I as Input>::Token: AsChar + Copy,
+    I: Stream,
+    <I as Stream>::Token: AsChar + Copy,
     E: ParseError<I>,
 {
-    fn parse_next(&mut self, i: I) -> IResult<I, <I as Input>::Token, E> {
+    fn parse_next(&mut self, i: I) -> IResult<I, <I as Stream>::Token, E> {
         crate::bytes::one_of(*self).parse_next(i)
     }
 }
@@ -685,12 +685,12 @@ where
 /// assert_eq!(parser(&b"Some"[..]), Err(ErrMode::Backtrack(Error::new(&b"Some"[..], ErrorKind::Eof))));
 /// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&b""[..], ErrorKind::Eof))));
 /// ```
-impl<'s, I, E: ParseError<I>> Parser<I, <I as Input>::Slice, E> for &'s [u8]
+impl<'s, I, E: ParseError<I>> Parser<I, <I as Stream>::Slice, E> for &'s [u8]
 where
     I: Compare<&'s [u8]> + StreamIsPartial<false>,
-    I: Input,
+    I: Stream,
 {
-    fn parse_next(&mut self, i: I) -> IResult<I, <I as Input>::Slice, E> {
+    fn parse_next(&mut self, i: I) -> IResult<I, <I as Stream>::Slice, E> {
         crate::bytes::tag(*self).parse_next(i)
     }
 }
@@ -713,12 +713,12 @@ where
 /// assert_eq!(parser(&b"Some"[..]), Err(ErrMode::Backtrack(Error::new(&b"Some"[..], ErrorKind::Eof))));
 /// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&b""[..], ErrorKind::Eof))));
 /// ```
-impl<'s, I, E: ParseError<I>, const N: usize> Parser<I, <I as Input>::Slice, E> for &'s [u8; N]
+impl<'s, I, E: ParseError<I>, const N: usize> Parser<I, <I as Stream>::Slice, E> for &'s [u8; N]
 where
     I: Compare<&'s [u8; N]> + StreamIsPartial<false>,
-    I: Input,
+    I: Stream,
 {
-    fn parse_next(&mut self, i: I) -> IResult<I, <I as Input>::Slice, E> {
+    fn parse_next(&mut self, i: I) -> IResult<I, <I as Stream>::Slice, E> {
         crate::bytes::tag(*self).parse_next(i)
     }
 }
@@ -741,12 +741,12 @@ where
 /// assert_eq!(parser("Some"), Err(ErrMode::Backtrack(Error::new("Some", ErrorKind::Eof))));
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
 /// ```
-impl<'s, I, E: ParseError<I>> Parser<I, <I as Input>::Slice, E> for &'s str
+impl<'s, I, E: ParseError<I>> Parser<I, <I as Stream>::Slice, E> for &'s str
 where
     I: Compare<&'s str> + StreamIsPartial<false>,
-    I: Input,
+    I: Stream,
 {
-    fn parse_next(&mut self, i: I) -> IResult<I, <I as Input>::Slice, E> {
+    fn parse_next(&mut self, i: I) -> IResult<I, <I as Stream>::Slice, E> {
         crate::bytes::tag(*self).parse_next(i)
     }
 }

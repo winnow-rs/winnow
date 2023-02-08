@@ -6,7 +6,7 @@ pub mod streaming;
 mod tests;
 
 use crate::error::ParseError;
-use crate::stream::{Compare, ContainsToken, FindSlice, Input, SliceLen, StreamIsPartial, ToUsize};
+use crate::stream::{Compare, ContainsToken, FindSlice, Stream, SliceLen, StreamIsPartial, ToUsize};
 use crate::IResult;
 
 /// Matches one token
@@ -34,10 +34,10 @@ use crate::IResult;
 /// assert_eq!(any::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn any<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, <I as Input>::Token, E>
+pub fn any<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, <I as Stream>::Token, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
+    I: Stream,
 {
     if PARTIAL {
         streaming::any(input)
@@ -88,10 +88,10 @@ where
 #[inline(always)]
 pub fn tag<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     tag: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input + Compare<T>,
+    I: Stream + Compare<T>,
     T: SliceLen + Clone,
 {
     move |i: I| {
@@ -144,10 +144,10 @@ where
 #[inline(always)]
 pub fn tag_no_case<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     tag: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input + Compare<T>,
+    I: Stream + Compare<T>,
     T: SliceLen + Clone,
 {
     move |i: I| {
@@ -208,12 +208,12 @@ where
 #[inline(always)]
 pub fn one_of<I, T, Error: ParseError<I>, const PARTIAL: bool>(
     list: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Token, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Token, Error>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: Copy,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    <I as Stream>::Token: Copy,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| {
         if PARTIAL {
@@ -251,12 +251,12 @@ where
 #[inline(always)]
 pub fn none_of<I, T, Error: ParseError<I>, const PARTIAL: bool>(
     list: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Token, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Token, Error>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    <I as Input>::Token: Copy,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    <I as Stream>::Token: Copy,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| {
         if PARTIAL {
@@ -304,11 +304,11 @@ where
 #[inline(always)]
 pub fn take_while0<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     list: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| {
         if PARTIAL {
@@ -377,11 +377,11 @@ where
 #[inline(always)]
 pub fn take_while1<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     list: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| {
         if PARTIAL {
@@ -437,11 +437,11 @@ pub fn take_while_m_n<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     m: usize,
     n: usize,
     list: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| {
         if PARTIAL {
@@ -489,11 +489,11 @@ where
 #[inline(always)]
 pub fn take_till0<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     list: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| {
         if PARTIAL {
@@ -562,11 +562,11 @@ where
 #[inline(always)]
 pub fn take_till1<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     list: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| {
         if PARTIAL {
@@ -632,10 +632,10 @@ where
 #[inline(always)]
 pub fn take<C, I, Error: ParseError<I>, const PARTIAL: bool>(
     count: C,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
+    I: Stream,
     C: ToUsize,
 {
     let c = count.to_usize();
@@ -689,10 +689,10 @@ where
 #[inline(always)]
 pub fn take_until0<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     tag: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input + FindSlice<T>,
+    I: Stream + FindSlice<T>,
     T: SliceLen + Clone,
 {
     move |i: I| {
@@ -748,10 +748,10 @@ where
 #[inline(always)]
 pub fn take_until1<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     tag: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input + FindSlice<T>,
+    I: Stream + FindSlice<T>,
     T: SliceLen + Clone,
 {
     move |i: I| {

@@ -161,7 +161,7 @@ use crate::lib::std::borrow::Borrow;
 use crate::lib::std::convert;
 use crate::lib::std::ops::Range;
 use crate::stream::Offset;
-use crate::stream::{Input, Location};
+use crate::stream::{Stream, Location};
 use crate::*;
 
 #[cfg(test)]
@@ -177,9 +177,9 @@ mod tests;
 /// assert_eq!(rest::<_,Error<_>>(""), Ok(("", "")));
 /// ```
 #[inline]
-pub fn rest<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Input>::Slice, E>
+pub fn rest<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: Input,
+    I: Stream,
 {
     Ok(input.next_slice(input.eof_offset()))
 }
@@ -196,7 +196,7 @@ where
 #[inline]
 pub fn rest_len<I, E: ParseError<I>>(input: I) -> IResult<I, usize, E>
 where
-    I: Input,
+    I: Stream,
 {
     let len = input.eof_offset();
     Ok((input, len))
@@ -512,7 +512,7 @@ impl<P, O1, O2> ParseTo<P, O1, O2> {
 
 impl<I, O1, O2, E, P> Parser<I, O2, E> for ParseTo<P, O1, O2>
 where
-    I: Input,
+    I: Stream,
     O1: crate::stream::ParseSlice<O2>,
     E: ParseError<I>,
     P: Parser<I, O1, E>,
@@ -747,9 +747,9 @@ where
 /// assert_eq!(parser(""), Ok(("", "")));
 /// # }
 /// ```
-pub fn eof<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Input>::Slice, E>
+pub fn eof<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: Input,
+    I: Stream,
 {
     if input.eof_offset() == 0 {
         Ok(input.next_slice(0))
@@ -839,7 +839,7 @@ where
 )]
 pub fn all_consuming<I, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
-    I: Input,
+    I: Stream,
     F: Parser<I, O, E>,
 {
     move |input: I| {
@@ -1059,9 +1059,9 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::recognize")]
 pub fn recognize<I, O, E: ParseError<I>, F>(
     mut parser: F,
-) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, E>
+) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: Input + Offset,
+    I: Stream + Offset,
     F: Parser<I, O, E>,
 {
     move |input: I| {
@@ -1092,13 +1092,13 @@ impl<F, O> Recognize<F, O> {
     }
 }
 
-impl<I, O, E, F> Parser<I, <I as Input>::Slice, E> for Recognize<F, O>
+impl<I, O, E, F> Parser<I, <I as Stream>::Slice, E> for Recognize<F, O>
 where
-    I: Input + Offset,
+    I: Stream + Offset,
     E: ParseError<I>,
     F: Parser<I, O, E>,
 {
-    fn parse_next(&mut self, input: I) -> IResult<I, <I as Input>::Slice, E> {
+    fn parse_next(&mut self, input: I) -> IResult<I, <I as Stream>::Slice, E> {
         let i = input.clone();
         match (self.parser).parse_next(i) {
             Ok((i, _)) => {
@@ -1156,9 +1156,9 @@ where
 )]
 pub fn consumed<I, O, F, E>(
     mut parser: F,
-) -> impl FnMut(I) -> IResult<I, (<I as Input>::Slice, O), E>
+) -> impl FnMut(I) -> IResult<I, (<I as Stream>::Slice, O), E>
 where
-    I: Input + Offset,
+    I: Stream + Offset,
     E: ParseError<I>,
     F: Parser<I, O, E>,
 {
@@ -1191,13 +1191,13 @@ impl<F, O> WithRecognized<F, O> {
     }
 }
 
-impl<I, O, E, F> Parser<I, (O, <I as Input>::Slice), E> for WithRecognized<F, O>
+impl<I, O, E, F> Parser<I, (O, <I as Stream>::Slice), E> for WithRecognized<F, O>
 where
-    I: Input + Offset,
+    I: Stream + Offset,
     E: ParseError<I>,
     F: Parser<I, O, E>,
 {
-    fn parse_next(&mut self, input: I) -> IResult<I, (O, <I as Input>::Slice), E> {
+    fn parse_next(&mut self, input: I) -> IResult<I, (O, <I as Stream>::Slice), E> {
         let i = input.clone();
         match (self.parser).parse_next(i) {
             Ok((remaining, result)) => {

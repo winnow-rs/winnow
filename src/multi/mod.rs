@@ -7,7 +7,7 @@ use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::stream::Accumulate;
-use crate::stream::{Input, StreamIsPartial, ToUsize, UpdateSlice};
+use crate::stream::{Stream, StreamIsPartial, ToUsize, UpdateSlice};
 use crate::{IResult, Parser};
 
 /// Repeats the embedded parser, gathering the results in a `Vec`.
@@ -38,7 +38,7 @@ use crate::{IResult, Parser};
 /// ```
 pub fn many0<I, O, C, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, C, E>
 where
-    I: Input,
+    I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     E: ParseError<I>,
@@ -93,7 +93,7 @@ where
 /// ```
 pub fn many1<I, O, C, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, C, E>
 where
-    I: Input,
+    I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     E: ParseError<I>,
@@ -129,7 +129,7 @@ where
 #[deprecated(since = "0.3.0", note = "Replaced with `many_till0`")]
 pub fn many_till<I, O, C, P, E, F, G>(f: F, g: G) -> impl FnMut(I) -> IResult<I, (C, P), E>
 where
-    I: Input,
+    I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     G: Parser<I, P, E>,
@@ -162,7 +162,7 @@ where
 /// ```
 pub fn many_till0<I, O, C, P, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IResult<I, (C, P), E>
 where
-    I: Input,
+    I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     G: Parser<I, P, E>,
@@ -224,7 +224,7 @@ pub fn separated0<I, O, C, O2, E, P, S>(
     mut sep: S,
 ) -> impl FnMut(I) -> IResult<I, C, E>
 where
-    I: Input,
+    I: Stream,
     C: Accumulate<O>,
     P: Parser<I, O, E>,
     S: Parser<I, O2, E>,
@@ -274,7 +274,7 @@ where
 )]
 pub fn separated_list0<I, O, C, O2, E, F, G>(sep: G, f: F) -> impl FnMut(I) -> IResult<I, C, E>
 where
-    I: Input,
+    I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     G: Parser<I, O2, E>,
@@ -314,7 +314,7 @@ pub fn separated1<I, O, C, O2, E, P, S>(
     mut sep: S,
 ) -> impl FnMut(I) -> IResult<I, C, E>
 where
-    I: Input,
+    I: Stream,
     C: Accumulate<O>,
     P: Parser<I, O, E>,
     S: Parser<I, O2, E>,
@@ -364,7 +364,7 @@ where
 )]
 pub fn separated_list1<I, O, C, O2, E, F, G>(sep: G, f: F) -> impl FnMut(I) -> IResult<I, C, E>
 where
-    I: Input,
+    I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     G: Parser<I, O2, E>,
@@ -397,7 +397,7 @@ pub fn separated_foldl1<I, O, O2, E, P, S, Op>(
     op: Op,
 ) -> impl FnMut(I) -> IResult<I, O, E>
 where
-    I: Input,
+    I: Stream,
     P: Parser<I, O, E>,
     S: Parser<I, O2, E>,
     E: ParseError<I>,
@@ -456,7 +456,7 @@ pub fn separated_foldr1<I, O, O2, E, P, S, Op>(
     op: Op,
 ) -> impl FnMut(I) -> IResult<I, O, E>
 where
-    I: Input,
+    I: Stream,
     P: Parser<I, O, E>,
     S: Parser<I, O2, E>,
     E: ParseError<I>,
@@ -515,7 +515,7 @@ pub fn many_m_n<I, O, C, E, F>(
     mut parse: F,
 ) -> impl FnMut(I) -> IResult<I, C, E>
 where
-    I: Input,
+    I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     E: ParseError<I>,
@@ -585,7 +585,7 @@ where
 #[deprecated(since = "0.3.0", note = "Replaced with `many0`")]
 pub fn many0_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>
 where
-    I: Input,
+    I: Stream,
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
@@ -646,7 +646,7 @@ where
 #[deprecated(since = "0.3.0", note = "Replaced with `many0`")]
 pub fn many1_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>
 where
-    I: Input,
+    I: Stream,
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
@@ -821,7 +821,7 @@ pub fn fold_many0<I, O, E, F, G, H, R>(
     mut g: G,
 ) -> impl FnMut(I) -> IResult<I, R, E>
 where
-    I: Input,
+    I: Stream,
     F: Parser<I, O, E>,
     G: FnMut(R, O) -> R,
     H: FnMut() -> R,
@@ -897,7 +897,7 @@ pub fn fold_many1<I, O, E, F, G, H, R>(
     mut g: G,
 ) -> impl FnMut(I) -> IResult<I, R, E>
 where
-    I: Input,
+    I: Stream,
     F: Parser<I, O, E>,
     G: FnMut(R, O) -> R,
     H: FnMut() -> R,
@@ -988,7 +988,7 @@ pub fn fold_many_m_n<I, O, E, F, G, H, R>(
     mut fold: G,
 ) -> impl FnMut(I) -> IResult<I, R, E>
 where
-    I: Input,
+    I: Stream,
     F: Parser<I, O, E>,
     G: FnMut(R, O) -> R,
     H: FnMut() -> R,
@@ -1052,10 +1052,10 @@ where
 /// ```
 pub fn length_data<I, N, E, F, const PARTIAL: bool>(
     mut f: F,
-) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, E>
+) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input,
+    I: Stream,
     N: ToUsize,
     F: Parser<I, N, E>,
     E: ParseError<I>,
@@ -1100,7 +1100,7 @@ pub fn length_value<I, O, N, E, F, G, const PARTIAL: bool>(
 ) -> impl FnMut(I) -> IResult<I, O, E>
 where
     I: StreamIsPartial<PARTIAL>,
-    I: Input + UpdateSlice,
+    I: Stream + UpdateSlice,
     N: ToUsize,
     F: Parser<I, N, E>,
     G: Parser<I, O, E>,

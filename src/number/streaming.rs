@@ -10,7 +10,7 @@ use crate::combinator::{cut_err, map, opt};
 use crate::error::{ErrMode, ErrorKind, Needed, ParseError};
 use crate::lib::std::ops::{Add, Shl};
 use crate::sequence::{pair, tuple};
-use crate::stream::{AsBStr, AsBytes, AsChar, Compare, Input, Offset, ParseSlice, SliceLen};
+use crate::stream::{AsBStr, AsBytes, AsChar, Compare, Stream, Offset, ParseSlice, SliceLen};
 use crate::*;
 
 /// Recognizes an unsigned 1 byte integer.
@@ -36,7 +36,7 @@ use crate::*;
 )]
 pub fn be_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
-    I: Input<Token = u8>,
+    I: Stream<Token = u8>,
 {
     u8(input)
 }
@@ -65,8 +65,8 @@ where
 )]
 pub fn be_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     be_uint(input, 2)
 }
@@ -95,8 +95,8 @@ where
 )]
 pub fn be_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     be_uint(input, 3)
 }
@@ -125,8 +125,8 @@ where
 )]
 pub fn be_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     be_uint(input, 4)
 }
@@ -155,8 +155,8 @@ where
 )]
 pub fn be_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     be_uint(input, 8)
 }
@@ -184,8 +184,8 @@ where
 )]
 pub fn be_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     be_uint(input, 16)
 }
@@ -193,8 +193,8 @@ where
 #[inline]
 fn be_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
     Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
 {
     let offset = input.offset_at(bound).map_err(ErrMode::Incomplete)?;
@@ -237,7 +237,7 @@ where
 )]
 pub fn be_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
 where
-    I: Input<Token = u8>,
+    I: Stream<Token = u8>,
 {
     be_u8.map(|x| x as i8).parse_next(input)
 }
@@ -263,8 +263,8 @@ where
 )]
 pub fn be_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     be_u16.map(|x| x as i16).parse_next(input)
 }
@@ -290,8 +290,8 @@ where
 )]
 pub fn be_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     // Same as the unsigned version but we need to sign-extend manually here
     be_u24
@@ -326,8 +326,8 @@ where
 )]
 pub fn be_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     be_u32.map(|x| x as i32).parse_next(input)
 }
@@ -354,8 +354,8 @@ where
 )]
 pub fn be_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     be_u64.map(|x| x as i64).parse_next(input)
 }
@@ -381,8 +381,8 @@ where
 )]
 pub fn be_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     be_u128.map(|x| x as i128).parse_next(input)
 }
@@ -408,7 +408,7 @@ where
 )]
 pub fn le_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
-    I: Input<Token = u8>,
+    I: Stream<Token = u8>,
 {
     u8(input)
 }
@@ -437,8 +437,8 @@ where
 )]
 pub fn le_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     le_uint(input, 2)
 }
@@ -467,8 +467,8 @@ where
 )]
 pub fn le_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     le_uint(input, 3)
 }
@@ -497,8 +497,8 @@ where
 )]
 pub fn le_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     le_uint(input, 4)
 }
@@ -527,8 +527,8 @@ where
 )]
 pub fn le_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     le_uint(input, 8)
 }
@@ -557,8 +557,8 @@ where
 )]
 pub fn le_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     le_uint(input, 16)
 }
@@ -566,8 +566,8 @@ where
 #[inline]
 fn le_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
     Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
 {
     let offset = input.offset_at(bound).map_err(ErrMode::Incomplete)?;
@@ -603,7 +603,7 @@ where
 )]
 pub fn le_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
 where
-    I: Input<Token = u8>,
+    I: Stream<Token = u8>,
 {
     le_u8.map(|x| x as i8).parse_next(input)
 }
@@ -632,8 +632,8 @@ where
 )]
 pub fn le_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     le_u16.map(|x| x as i16).parse_next(input)
 }
@@ -662,8 +662,8 @@ where
 )]
 pub fn le_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     // Same as the unsigned version but we need to sign-extend manually here
     le_u24
@@ -701,8 +701,8 @@ where
 )]
 pub fn le_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     le_u32.map(|x| x as i32).parse_next(input)
 }
@@ -731,8 +731,8 @@ where
 )]
 pub fn le_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     le_u64.map(|x| x as i64).parse_next(input)
 }
@@ -761,8 +761,8 @@ where
 )]
 pub fn le_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     le_u128.map(|x| x as i128).parse_next(input)
 }
@@ -792,7 +792,7 @@ where
 )]
 pub fn u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
-    I: Input<Token = u8>,
+    I: Stream<Token = u8>,
 {
     input
         .next_token()
@@ -833,8 +833,8 @@ where
 )]
 pub fn u16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u16, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_u16,
@@ -879,8 +879,8 @@ where
 )]
 pub fn u24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_u24,
@@ -925,8 +925,8 @@ where
 )]
 pub fn u32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_u32,
@@ -971,8 +971,8 @@ where
 )]
 pub fn u64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u64, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_u64,
@@ -1017,8 +1017,8 @@ where
 )]
 pub fn u128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u128, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_u128,
@@ -1055,7 +1055,7 @@ where
 )]
 pub fn i8<I, E: ParseError<I>>(i: I) -> IResult<I, i8, E>
 where
-    I: Input<Token = u8>,
+    I: Stream<Token = u8>,
 {
     u8.map(|x| x as i8).parse_next(i)
 }
@@ -1093,8 +1093,8 @@ where
 )]
 pub fn i16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i16, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_i16,
@@ -1139,8 +1139,8 @@ where
 )]
 pub fn i24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_i24,
@@ -1185,8 +1185,8 @@ where
 )]
 pub fn i32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_i32,
@@ -1231,8 +1231,8 @@ where
 )]
 pub fn i64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i64, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_i64,
@@ -1277,8 +1277,8 @@ where
 )]
 pub fn i128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i128, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_i128,
@@ -1313,8 +1313,8 @@ where
 )]
 pub fn be_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match be_u32(input) {
         Err(e) => Err(e),
@@ -1345,8 +1345,8 @@ where
 )]
 pub fn be_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match be_u64(input) {
         Err(e) => Err(e),
@@ -1377,8 +1377,8 @@ where
 )]
 pub fn le_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match le_u32(input) {
         Err(e) => Err(e),
@@ -1409,8 +1409,8 @@ where
 )]
 pub fn le_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match le_u64(input) {
         Err(e) => Err(e),
@@ -1451,8 +1451,8 @@ where
 )]
 pub fn f32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, f32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_f32,
@@ -1497,8 +1497,8 @@ where
 )]
 pub fn f64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, f64, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_f64,
@@ -1534,9 +1534,9 @@ where
 )]
 pub fn hex_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
-    <I as Input>::Slice: AsBStr,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
+    <I as Stream>::Slice: AsBStr,
 {
     let invalid_offset = input
         .offset_for(|c| {
@@ -1578,12 +1578,12 @@ where
 
 /// **WARNING:** Deprecated, no longer supported
 #[deprecated(since = "0.3.0", note = "No longer supported")]
-pub fn recognize_float<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn recognize_float<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
+    T: Stream,
     T: Offset + Compare<&'static str>,
-    <T as Input>::Token: AsChar + Copy,
-    <T as Input>::IterOffsets: Clone,
+    <T as Stream>::Token: AsChar + Copy,
+    <T as Stream>::IterOffsets: Clone,
     T: AsBStr,
 {
     tuple((
@@ -1606,12 +1606,12 @@ where
 #[deprecated(since = "0.3.0", note = "No longer supported")]
 pub fn recognize_float_or_exceptions<T, E: ParseError<T>>(
     input: T,
-) -> IResult<T, <T as Input>::Slice, E>
+) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
+    T: Stream,
     T: Offset + Compare<&'static str>,
-    <T as Input>::Token: AsChar + Copy,
-    <T as Input>::IterOffsets: Clone,
+    <T as Stream>::Token: AsChar + Copy,
+    <T as Stream>::IterOffsets: Clone,
     T: AsBStr,
 {
     alt((
@@ -1648,11 +1648,11 @@ where
 #[deprecated(since = "0.3.0", note = "No longer supported")]
 pub fn recognize_float_parts<T, E: ParseError<T>>(
     input: T,
-) -> IResult<T, (bool, <T as Input>::Slice, <T as Input>::Slice, i32), E>
+) -> IResult<T, (bool, <T as Stream>::Slice, <T as Stream>::Slice, i32), E>
 where
-    T: Input + Compare<&'static [u8]> + AsBStr,
-    <T as Input>::Token: AsChar + Copy,
-    <T as Input>::Slice: SliceLen,
+    T: Stream + Compare<&'static [u8]> + AsBStr,
+    <T as Stream>::Token: AsChar + Copy,
+    <T as Stream>::Slice: SliceLen,
 {
     let (i, sign) = sign(input.clone())?;
 
@@ -1737,11 +1737,11 @@ where
 )]
 pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>
 where
-    T: Input,
+    T: Stream,
     T: Offset + Compare<&'static str>,
-    <T as Input>::Slice: ParseSlice<f32>,
-    <T as Input>::Token: AsChar + Copy,
-    <T as Input>::IterOffsets: Clone,
+    <T as Stream>::Slice: ParseSlice<f32>,
+    <T as Stream>::Token: AsChar + Copy,
+    <T as Stream>::IterOffsets: Clone,
     T: AsBStr,
 {
     let (i, s) = recognize_float_or_exceptions(input)?;
@@ -1780,11 +1780,11 @@ where
 )]
 pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>
 where
-    T: Input,
+    T: Stream,
     T: Offset + Compare<&'static str>,
-    <T as Input>::Slice: ParseSlice<f64>,
-    <T as Input>::Token: AsChar + Copy,
-    <T as Input>::IterOffsets: Clone,
+    <T as Stream>::Slice: ParseSlice<f64>,
+    <T as Stream>::Token: AsChar + Copy,
+    <T as Stream>::IterOffsets: Clone,
     T: AsBStr,
 {
     let (i, s) = recognize_float_or_exceptions(input)?;

@@ -447,7 +447,7 @@ use crate::lib::std::borrow::ToOwned;
 use crate::lib::std::fmt;
 use core::num::NonZeroUsize;
 
-use crate::stream::Input;
+use crate::stream::Stream;
 use crate::stream::StreamIsPartial;
 use crate::Parser;
 
@@ -495,7 +495,7 @@ pub trait FinishIResult<I, O, E> {
 
 impl<I, O, E> FinishIResult<I, O, E> for IResult<I, O, E>
 where
-    I: Input,
+    I: Stream,
     // Force users to deal with `Incomplete` when `StreamIsPartial<true>`
     I: StreamIsPartial<false>,
     I: Clone,
@@ -546,7 +546,7 @@ impl<I, O, E> Finish<I, O, E> for IResult<I, O, E> {
 
 /// Contains information on needed data if a parser returned `Incomplete`
 ///
-/// **Note:** This is only possible for `Input` types that implement [`StreamIsPartial<true>`],
+/// **Note:** This is only possible for `Stream` types that implement [`StreamIsPartial<true>`],
 /// like [`Partial`][crate::Partial].
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
@@ -600,7 +600,7 @@ impl Needed {
 pub enum ErrMode<E> {
     /// There was not enough data
     ///
-    /// This must only be set when the `Input` is [`StreamIsPartial<true>`], like with
+    /// This must only be set when the `Stream` is [`StreamIsPartial<true>`], like with
     /// [`Partial`][crate::Partial]
     ///
     /// Convert this into an `Backtrack` with [`Parser::complete`][Parser::complete]
