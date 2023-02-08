@@ -516,7 +516,7 @@ pub trait Parser<I, O, E> {
         Context::new(self, context)
     }
 
-    /// Transforms [`Incomplete`][crate::error::ErrMode::Incomplete] into [`Error`][crate::error::ErrMode::Backtrack]
+    /// Transforms [`Incomplete`][crate::error::ErrMode::Incomplete] into [`Backtrack`][crate::error::ErrMode::Backtrack]
     ///
     /// # Example
     ///
@@ -549,7 +549,7 @@ pub trait Parser<I, O, E> {
 
     /// Prints a message and the input if the parser fails.
     ///
-    /// The message prints the `Error` or `Incomplete`
+    /// The message prints the `Backtrack` or `Incomplete`
     /// and the parser's calling kind.
     ///
     /// It also displays the input in hexdump format

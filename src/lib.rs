@@ -162,7 +162,7 @@
 //! - A correct result `Ok((I,O))` with the first element being the remaining of the input (not parsed yet), and the second the output value;
 //! - An error `Err(ErrMode::Backtrack(c))` with `c` an error that can be built from the input position and a parser specific error
 //! - An error `Err(ErrMode::Incomplete(Needed))` indicating that more input is necessary. `Needed` can indicate how much data is needed
-//! - An error `Err(ErrMode::Cut(c))`. It works like the `Error` case, except it indicates an unrecoverable error: We cannot backtrack and test another parser
+//! - An error `Err(ErrMode::Cut(c))`. It works like the `Backtrack` case, except it indicates an unrecoverable error: We cannot backtrack and test another parser
 //!
 //! Please refer to the ["choose a combinator" guide][combinator] for an exhaustive list of parsers.
 //! See also the rest of the documentation [here](https://github.com/Geal/nom/blob/main/doc).
