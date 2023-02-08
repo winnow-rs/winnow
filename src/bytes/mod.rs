@@ -35,17 +35,17 @@ use crate::IResult;
 /// ```
 #[inline(always)]
 pub fn any<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
+    input: I,
 ) -> IResult<I, <I as Input>::Token, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
 {
-  if STREAMING {
-    streaming::any(input)
-  } else {
-    complete::any(input)
-  }
+    if STREAMING {
+        streaming::any(input)
+    } else {
+        complete::any(input)
+    }
 }
 
 /// Recognizes a literal
@@ -89,21 +89,21 @@ where
 /// ```
 #[inline(always)]
 pub fn tag<T, I, Error: ParseError<I>, const STREAMING: bool>(
-  tag: T,
+    tag: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input + Compare<T>,
-  T: SliceLen + Clone,
+    I: InputIsStreaming<STREAMING>,
+    I: Input + Compare<T>,
+    T: SliceLen + Clone,
 {
-  move |i: I| {
-    let t = tag.clone();
-    if STREAMING {
-      streaming::tag_internal(i, t)
-    } else {
-      complete::tag_internal(i, t)
+    move |i: I| {
+        let t = tag.clone();
+        if STREAMING {
+            streaming::tag_internal(i, t)
+        } else {
+            complete::tag_internal(i, t)
+        }
     }
-  }
 }
 
 /// Recognizes a case insensitive literal.
@@ -145,21 +145,21 @@ where
 /// ```
 #[inline(always)]
 pub fn tag_no_case<T, I, Error: ParseError<I>, const STREAMING: bool>(
-  tag: T,
+    tag: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input + Compare<T>,
-  T: SliceLen + Clone,
+    I: InputIsStreaming<STREAMING>,
+    I: Input + Compare<T>,
+    T: SliceLen + Clone,
 {
-  move |i: I| {
-    let t = tag.clone();
-    if STREAMING {
-      streaming::tag_no_case_internal(i, t)
-    } else {
-      complete::tag_no_case_internal(i, t)
+    move |i: I| {
+        let t = tag.clone();
+        if STREAMING {
+            streaming::tag_no_case_internal(i, t)
+        } else {
+            complete::tag_no_case_internal(i, t)
+        }
     }
-  }
 }
 
 /// Returns a token that matches the [pattern][ContainsToken]
@@ -209,21 +209,21 @@ where
 /// ```
 #[inline(always)]
 pub fn one_of<I, T, Error: ParseError<I>, const STREAMING: bool>(
-  list: T,
+    list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Token, Error>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: Copy,
-  T: ContainsToken<<I as Input>::Token>,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: Copy,
+    T: ContainsToken<<I as Input>::Token>,
 {
-  move |i: I| {
-    if STREAMING {
-      streaming::one_of_internal(i, &list)
-    } else {
-      complete::one_of_internal(i, &list)
+    move |i: I| {
+        if STREAMING {
+            streaming::one_of_internal(i, &list)
+        } else {
+            complete::one_of_internal(i, &list)
+        }
     }
-  }
 }
 
 /// Returns a token that does not match the [pattern][ContainsToken]
@@ -252,21 +252,21 @@ where
 /// ```
 #[inline(always)]
 pub fn none_of<I, T, Error: ParseError<I>, const STREAMING: bool>(
-  list: T,
+    list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Token, Error>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: Copy,
-  T: ContainsToken<<I as Input>::Token>,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: Copy,
+    T: ContainsToken<<I as Input>::Token>,
 {
-  move |i: I| {
-    if STREAMING {
-      streaming::none_of_internal(i, &list)
-    } else {
-      complete::none_of_internal(i, &list)
+    move |i: I| {
+        if STREAMING {
+            streaming::none_of_internal(i, &list)
+        } else {
+            complete::none_of_internal(i, &list)
+        }
     }
-  }
 }
 
 /// Returns the longest input slice (if any) that matches the [pattern][ContainsToken]
@@ -305,20 +305,20 @@ where
 /// ```
 #[inline(always)]
 pub fn take_while0<T, I, Error: ParseError<I>, const STREAMING: bool>(
-  list: T,
+    list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  T: ContainsToken<<I as Input>::Token>,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    T: ContainsToken<<I as Input>::Token>,
 {
-  move |i: I| {
-    if STREAMING {
-      streaming::take_while_internal(i, &list)
-    } else {
-      complete::take_while_internal(i, &list)
+    move |i: I| {
+        if STREAMING {
+            streaming::take_while_internal(i, &list)
+        } else {
+            complete::take_while_internal(i, &list)
+        }
     }
-  }
 }
 
 /// Returns the longest (at least 1) input slice that matches the [pattern][ContainsToken]
@@ -378,20 +378,20 @@ where
 /// ```
 #[inline(always)]
 pub fn take_while1<T, I, Error: ParseError<I>, const STREAMING: bool>(
-  list: T,
+    list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  T: ContainsToken<<I as Input>::Token>,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    T: ContainsToken<<I as Input>::Token>,
 {
-  move |i: I| {
-    if STREAMING {
-      streaming::take_while1_internal(i, &list)
-    } else {
-      complete::take_while1_internal(i, &list)
+    move |i: I| {
+        if STREAMING {
+            streaming::take_while1_internal(i, &list)
+        } else {
+            complete::take_while1_internal(i, &list)
+        }
     }
-  }
 }
 
 /// Returns the longest (m <= len <= n) input slice that matches the [pattern][ContainsToken]
@@ -436,22 +436,22 @@ where
 /// ```
 #[inline(always)]
 pub fn take_while_m_n<T, I, Error: ParseError<I>, const STREAMING: bool>(
-  m: usize,
-  n: usize,
-  list: T,
+    m: usize,
+    n: usize,
+    list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  T: ContainsToken<<I as Input>::Token>,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    T: ContainsToken<<I as Input>::Token>,
 {
-  move |i: I| {
-    if STREAMING {
-      streaming::take_while_m_n_internal(i, m, n, &list)
-    } else {
-      complete::take_while_m_n_internal(i, m, n, &list)
+    move |i: I| {
+        if STREAMING {
+            streaming::take_while_m_n_internal(i, m, n, &list)
+        } else {
+            complete::take_while_m_n_internal(i, m, n, &list)
+        }
     }
-  }
 }
 
 /// Returns the longest input slice (if any) till a [pattern][ContainsToken] is met.
@@ -490,20 +490,20 @@ where
 /// ```
 #[inline(always)]
 pub fn take_till0<T, I, Error: ParseError<I>, const STREAMING: bool>(
-  list: T,
+    list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  T: ContainsToken<<I as Input>::Token>,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    T: ContainsToken<<I as Input>::Token>,
 {
-  move |i: I| {
-    if STREAMING {
-      streaming::take_till_internal(i, &list)
-    } else {
-      complete::take_till_internal(i, &list)
+    move |i: I| {
+        if STREAMING {
+            streaming::take_till_internal(i, &list)
+        } else {
+            complete::take_till_internal(i, &list)
+        }
     }
-  }
 }
 
 /// Returns the longest (at least 1) input slice till a [pattern][ContainsToken] is met.
@@ -563,20 +563,20 @@ where
 /// ```
 #[inline(always)]
 pub fn take_till1<T, I, Error: ParseError<I>, const STREAMING: bool>(
-  list: T,
+    list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  T: ContainsToken<<I as Input>::Token>,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    T: ContainsToken<<I as Input>::Token>,
 {
-  move |i: I| {
-    if STREAMING {
-      streaming::take_till1_internal(i, &list)
-    } else {
-      complete::take_till1_internal(i, &list)
+    move |i: I| {
+        if STREAMING {
+            streaming::take_till1_internal(i, &list)
+        } else {
+            complete::take_till1_internal(i, &list)
+        }
     }
-  }
 }
 
 /// Returns an input slice containing the first N input elements (I[..N]).
@@ -633,21 +633,21 @@ where
 /// ```
 #[inline(always)]
 pub fn take<C, I, Error: ParseError<I>, const STREAMING: bool>(
-  count: C,
+    count: C,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  C: ToUsize,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    C: ToUsize,
 {
-  let c = count.to_usize();
-  move |i: I| {
-    if STREAMING {
-      streaming::take_internal(i, c)
-    } else {
-      complete::take_internal(i, c)
+    let c = count.to_usize();
+    move |i: I| {
+        if STREAMING {
+            streaming::take_internal(i, c)
+        } else {
+            complete::take_internal(i, c)
+        }
     }
-  }
 }
 
 /// Returns the input slice up to the first occurrence of the literal.
@@ -690,20 +690,20 @@ where
 /// ```
 #[inline(always)]
 pub fn take_until0<T, I, Error: ParseError<I>, const STREAMING: bool>(
-  tag: T,
+    tag: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input + FindSlice<T>,
-  T: SliceLen + Clone,
+    I: InputIsStreaming<STREAMING>,
+    I: Input + FindSlice<T>,
+    T: SliceLen + Clone,
 {
-  move |i: I| {
-    if STREAMING {
-      streaming::take_until_internal(i, tag.clone())
-    } else {
-      complete::take_until_internal(i, tag.clone())
+    move |i: I| {
+        if STREAMING {
+            streaming::take_until_internal(i, tag.clone())
+        } else {
+            complete::take_until_internal(i, tag.clone())
+        }
     }
-  }
 }
 
 /// Returns the non empty input slice up to the first occurrence of the literal.
@@ -749,18 +749,18 @@ where
 /// ```
 #[inline(always)]
 pub fn take_until1<T, I, Error: ParseError<I>, const STREAMING: bool>(
-  tag: T,
+    tag: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input + FindSlice<T>,
-  T: SliceLen + Clone,
+    I: InputIsStreaming<STREAMING>,
+    I: Input + FindSlice<T>,
+    T: SliceLen + Clone,
 {
-  move |i: I| {
-    if STREAMING {
-      streaming::take_until1_internal(i, tag.clone())
-    } else {
-      complete::take_until1_internal(i, tag.clone())
+    move |i: I| {
+        if STREAMING {
+            streaming::take_until1_internal(i, tag.clone())
+        } else {
+            complete::take_until1_internal(i, tag.clone())
+        }
     }
-  }
 }

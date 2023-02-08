@@ -31,14 +31,14 @@ use crate::*;
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_u8`][crate::number::be_u8] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::be_u8` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::be_u8` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
-  I: Input<Token = u8>,
+    I: Input<Token = u8>,
 {
-  u8(input)
+    u8(input)
 }
 
 /// Recognizes a big endian unsigned 2 bytes integer.
@@ -60,15 +60,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_u16`][crate::number::be_u16] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::be_u16` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::be_u16` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  be_uint(input, 2)
+    be_uint(input, 2)
 }
 
 /// Recognizes a big endian unsigned 3 byte integer.
@@ -90,15 +90,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_u24`][crate::number::be_u24] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::be_u24` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::be_u24` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  be_uint(input, 3)
+    be_uint(input, 3)
 }
 
 /// Recognizes a big endian unsigned 4 bytes integer.
@@ -120,15 +120,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_u32`][crate::number::be_u32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::be_u32` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::be_u32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  be_uint(input, 4)
+    be_uint(input, 4)
 }
 
 /// Recognizes a big endian unsigned 8 bytes integer.
@@ -150,15 +150,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_u64`][crate::number::be_u64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::be_u64` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::be_u64` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  be_uint(input, 8)
+    be_uint(input, 8)
 }
 
 /// Recognizes a big endian unsigned 16 bytes integer.
@@ -179,41 +179,41 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_u128`][crate::number::be_u128] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::be_u128` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::be_u128` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  be_uint(input, 16)
+    be_uint(input, 16)
 }
 
 #[inline]
 fn be_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
-  Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
+    Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
 {
-  let offset = input.offset_at(bound).map_err(ErrMode::Incomplete)?;
-  let (input, number) = input.next_slice(offset);
-  let number = number.as_bytes();
+    let offset = input.offset_at(bound).map_err(ErrMode::Incomplete)?;
+    let (input, number) = input.next_slice(offset);
+    let number = number.as_bytes();
 
-  let mut res = Uint::default();
-  // special case to avoid shift a byte with overflow
-  if bound > 1 {
-    for byte in number.iter().copied().take(bound) {
-      res = (res << 8) + byte.into();
+    let mut res = Uint::default();
+    // special case to avoid shift a byte with overflow
+    if bound > 1 {
+        for byte in number.iter().copied().take(bound) {
+            res = (res << 8) + byte.into();
+        }
+    } else {
+        for byte in number.iter().copied().take(bound) {
+            res = byte.into();
+        }
     }
-  } else {
-    for byte in number.iter().copied().take(bound) {
-      res = byte.into();
-    }
-  }
 
-  Ok((input, res))
+    Ok((input, res))
 }
 
 /// Recognizes a signed 1 byte integer.
@@ -232,14 +232,14 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_i8`][crate::number::be_i8] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::be_i8` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::be_i8` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
 where
-  I: Input<Token = u8>,
+    I: Input<Token = u8>,
 {
-  be_u8.map(|x| x as i8).parse_next(input)
+    be_u8.map(|x| x as i8).parse_next(input)
 }
 
 /// Recognizes a big endian signed 2 bytes integer.
@@ -258,15 +258,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_i16`][crate::number::be_i16] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::be_i16` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::be_i16` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  be_u16.map(|x| x as i16).parse_next(input)
+    be_u16.map(|x| x as i16).parse_next(input)
 }
 
 /// Recognizes a big endian signed 3 bytes integer.
@@ -285,24 +285,24 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_i24`][crate::number::be_i24] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::be_i24` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::be_i24` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  // Same as the unsigned version but we need to sign-extend manually here
-  be_u24
-    .map(|x| {
-      if x & 0x80_00_00 != 0 {
-        (x | 0xff_00_00_00) as i32
-      } else {
-        x as i32
-      }
-    })
-    .parse_next(input)
+    // Same as the unsigned version but we need to sign-extend manually here
+    be_u24
+        .map(|x| {
+            if x & 0x80_00_00 != 0 {
+                (x | 0xff_00_00_00) as i32
+            } else {
+                x as i32
+            }
+        })
+        .parse_next(input)
 }
 
 /// Recognizes a big endian signed 4 bytes integer.
@@ -321,15 +321,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_i32`][crate::number::be_i32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::be_i32` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::be_i32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  be_u32.map(|x| x as i32).parse_next(input)
+    be_u32.map(|x| x as i32).parse_next(input)
 }
 
 /// Recognizes a big endian signed 8 bytes integer.
@@ -349,15 +349,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_i64`][crate::number::be_i64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::be_i64` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::be_i64` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  be_u64.map(|x| x as i64).parse_next(input)
+    be_u64.map(|x| x as i64).parse_next(input)
 }
 
 /// Recognizes a big endian signed 16 bytes integer.
@@ -376,15 +376,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_i128`][crate::number::be_i128] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::be_i128` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::be_i128` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  be_u128.map(|x| x as i128).parse_next(input)
+    be_u128.map(|x| x as i128).parse_next(input)
 }
 
 /// Recognizes an unsigned 1 byte integer.
@@ -403,14 +403,14 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_u8`][crate::number::le_u8] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::le_u8` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::le_u8` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
-  I: Input<Token = u8>,
+    I: Input<Token = u8>,
 {
-  u8(input)
+    u8(input)
 }
 
 /// Recognizes a little endian unsigned 2 bytes integer.
@@ -432,15 +432,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_u16`][crate::number::le_u16] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::le_u16` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::le_u16` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  le_uint(input, 2)
+    le_uint(input, 2)
 }
 
 /// Recognizes a little endian unsigned 3 bytes integer.
@@ -462,15 +462,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_u24`][crate::number::le_u24] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::le_u24` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::le_u24` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  le_uint(input, 3)
+    le_uint(input, 3)
 }
 
 /// Recognizes a little endian unsigned 4 bytes integer.
@@ -492,15 +492,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_u32`][crate::number::le_u32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::le_u32` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::le_u32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  le_uint(input, 4)
+    le_uint(input, 4)
 }
 
 /// Recognizes a little endian unsigned 8 bytes integer.
@@ -522,15 +522,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_u64`][crate::number::le_u64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::le_u64` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::le_u64` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  le_uint(input, 8)
+    le_uint(input, 8)
 }
 
 /// Recognizes a little endian unsigned 16 bytes integer.
@@ -552,34 +552,34 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_u128`][crate::number::le_u128] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::le_u128` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::le_u128` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  le_uint(input, 16)
+    le_uint(input, 16)
 }
 
 #[inline]
 fn le_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
-  Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
+    Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
 {
-  let offset = input.offset_at(bound).map_err(ErrMode::Incomplete)?;
-  let (input, number) = input.next_slice(offset);
-  let number = number.as_bytes();
+    let offset = input.offset_at(bound).map_err(ErrMode::Incomplete)?;
+    let (input, number) = input.next_slice(offset);
+    let number = number.as_bytes();
 
-  let mut res = Uint::default();
-  for (index, byte) in number.iter_offsets().take(bound) {
-    res = res + (Uint::from(byte) << (8 * index as u8));
-  }
+    let mut res = Uint::default();
+    for (index, byte) in number.iter_offsets().take(bound) {
+        res = res + (Uint::from(byte) << (8 * index as u8));
+    }
 
-  Ok((input, res))
+    Ok((input, res))
 }
 
 /// Recognizes a signed 1 byte integer.
@@ -598,14 +598,14 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_i8`][crate::number::le_i8] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::le_i8` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::le_i8` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
 where
-  I: Input<Token = u8>,
+    I: Input<Token = u8>,
 {
-  le_u8.map(|x| x as i8).parse_next(input)
+    le_u8.map(|x| x as i8).parse_next(input)
 }
 
 /// Recognizes a little endian signed 2 bytes integer.
@@ -627,15 +627,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_i16`][crate::number::le_i16] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::le_i16` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::le_i16` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  le_u16.map(|x| x as i16).parse_next(input)
+    le_u16.map(|x| x as i16).parse_next(input)
 }
 
 /// Recognizes a little endian signed 3 bytes integer.
@@ -657,24 +657,24 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_i24`][crate::number::le_i24] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::le_i24` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::le_i24` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  // Same as the unsigned version but we need to sign-extend manually here
-  le_u24
-    .map(|x| {
-      if x & 0x80_00_00 != 0 {
-        (x | 0xff_00_00_00) as i32
-      } else {
-        x as i32
-      }
-    })
-    .parse_next(input)
+    // Same as the unsigned version but we need to sign-extend manually here
+    le_u24
+        .map(|x| {
+            if x & 0x80_00_00 != 0 {
+                (x | 0xff_00_00_00) as i32
+            } else {
+                x as i32
+            }
+        })
+        .parse_next(input)
 }
 
 /// Recognizes a little endian signed 4 bytes integer.
@@ -696,15 +696,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_i32`][crate::number::le_i32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::le_i32` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::le_i32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  le_u32.map(|x| x as i32).parse_next(input)
+    le_u32.map(|x| x as i32).parse_next(input)
 }
 
 /// Recognizes a little endian signed 8 bytes integer.
@@ -726,15 +726,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_i64`][crate::number::le_i64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::le_i64` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::le_i64` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  le_u64.map(|x| x as i64).parse_next(input)
+    le_u64.map(|x| x as i64).parse_next(input)
 }
 
 /// Recognizes a little endian signed 16 bytes integer.
@@ -756,15 +756,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_i128`][crate::number::le_i128] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::le_i128` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::le_i128` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  le_u128.map(|x| x as i128).parse_next(input)
+    le_u128.map(|x| x as i128).parse_next(input)
 }
 
 /// Recognizes an unsigned 1 byte integer
@@ -787,16 +787,16 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::u8`][crate::number::u8] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::u8` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::u8` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
-  I: Input<Token = u8>,
+    I: Input<Token = u8>,
 {
-  input
-    .next_token()
-    .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))
+    input
+        .next_token()
+        .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))
 }
 
 /// Recognizes an unsigned 2 bytes integer
@@ -828,22 +828,22 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::u16`][crate::number::u16] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::u16` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::u16` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn u16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u16, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  match endian {
-    crate::number::Endianness::Big => be_u16,
-    crate::number::Endianness::Little => le_u16,
-    #[cfg(target_endian = "big")]
-    crate::number::Endianness::Native => be_u16,
-    #[cfg(target_endian = "little")]
-    crate::number::Endianness::Native => le_u16,
-  }
+    match endian {
+        crate::number::Endianness::Big => be_u16,
+        crate::number::Endianness::Little => le_u16,
+        #[cfg(target_endian = "big")]
+        crate::number::Endianness::Native => be_u16,
+        #[cfg(target_endian = "little")]
+        crate::number::Endianness::Native => le_u16,
+    }
 }
 
 /// Recognizes an unsigned 3 byte integer
@@ -874,22 +874,22 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::u24`][crate::number::u24] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::u24` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::u24` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn u24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u32, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  match endian {
-    crate::number::Endianness::Big => be_u24,
-    crate::number::Endianness::Little => le_u24,
-    #[cfg(target_endian = "big")]
-    crate::number::Endianness::Native => be_u24,
-    #[cfg(target_endian = "little")]
-    crate::number::Endianness::Native => le_u24,
-  }
+    match endian {
+        crate::number::Endianness::Big => be_u24,
+        crate::number::Endianness::Little => le_u24,
+        #[cfg(target_endian = "big")]
+        crate::number::Endianness::Native => be_u24,
+        #[cfg(target_endian = "little")]
+        crate::number::Endianness::Native => le_u24,
+    }
 }
 
 /// Recognizes an unsigned 4 byte integer
@@ -920,22 +920,22 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::u32`][crate::number::u32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::u32` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::u32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn u32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u32, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  match endian {
-    crate::number::Endianness::Big => be_u32,
-    crate::number::Endianness::Little => le_u32,
-    #[cfg(target_endian = "big")]
-    crate::number::Endianness::Native => be_u32,
-    #[cfg(target_endian = "little")]
-    crate::number::Endianness::Native => le_u32,
-  }
+    match endian {
+        crate::number::Endianness::Big => be_u32,
+        crate::number::Endianness::Little => le_u32,
+        #[cfg(target_endian = "big")]
+        crate::number::Endianness::Native => be_u32,
+        #[cfg(target_endian = "little")]
+        crate::number::Endianness::Native => le_u32,
+    }
 }
 
 /// Recognizes an unsigned 8 byte integer
@@ -966,22 +966,22 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::u64`][crate::number::u64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::u64` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::u64` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn u64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u64, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  match endian {
-    crate::number::Endianness::Big => be_u64,
-    crate::number::Endianness::Little => le_u64,
-    #[cfg(target_endian = "big")]
-    crate::number::Endianness::Native => be_u64,
-    #[cfg(target_endian = "little")]
-    crate::number::Endianness::Native => le_u64,
-  }
+    match endian {
+        crate::number::Endianness::Big => be_u64,
+        crate::number::Endianness::Little => le_u64,
+        #[cfg(target_endian = "big")]
+        crate::number::Endianness::Native => be_u64,
+        #[cfg(target_endian = "little")]
+        crate::number::Endianness::Native => le_u64,
+    }
 }
 
 /// Recognizes an unsigned 16 byte integer
@@ -1012,22 +1012,22 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::u128`][crate::number::u128] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::u128` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::u128` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn u128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u128, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  match endian {
-    crate::number::Endianness::Big => be_u128,
-    crate::number::Endianness::Little => le_u128,
-    #[cfg(target_endian = "big")]
-    crate::number::Endianness::Native => be_u128,
-    #[cfg(target_endian = "little")]
-    crate::number::Endianness::Native => le_u128,
-  }
+    match endian {
+        crate::number::Endianness::Big => be_u128,
+        crate::number::Endianness::Little => le_u128,
+        #[cfg(target_endian = "big")]
+        crate::number::Endianness::Native => be_u128,
+        #[cfg(target_endian = "little")]
+        crate::number::Endianness::Native => le_u128,
+    }
 }
 
 /// Recognizes a signed 1 byte integer
@@ -1050,14 +1050,14 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::i8`][crate::number::i8] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::i8` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::i8` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn i8<I, E: ParseError<I>>(i: I) -> IResult<I, i8, E>
 where
-  I: Input<Token = u8>,
+    I: Input<Token = u8>,
 {
-  u8.map(|x| x as i8).parse_next(i)
+    u8.map(|x| x as i8).parse_next(i)
 }
 
 /// Recognizes a signed 2 byte integer
@@ -1088,22 +1088,22 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::i16`][crate::number::i16] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::i16` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::i16` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn i16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i16, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  match endian {
-    crate::number::Endianness::Big => be_i16,
-    crate::number::Endianness::Little => le_i16,
-    #[cfg(target_endian = "big")]
-    crate::number::Endianness::Native => be_i16,
-    #[cfg(target_endian = "little")]
-    crate::number::Endianness::Native => le_i16,
-  }
+    match endian {
+        crate::number::Endianness::Big => be_i16,
+        crate::number::Endianness::Little => le_i16,
+        #[cfg(target_endian = "big")]
+        crate::number::Endianness::Native => be_i16,
+        #[cfg(target_endian = "little")]
+        crate::number::Endianness::Native => le_i16,
+    }
 }
 
 /// Recognizes a signed 3 byte integer
@@ -1134,22 +1134,22 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::i24`][crate::number::i24] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::i24` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::i24` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn i24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i32, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  match endian {
-    crate::number::Endianness::Big => be_i24,
-    crate::number::Endianness::Little => le_i24,
-    #[cfg(target_endian = "big")]
-    crate::number::Endianness::Native => be_i24,
-    #[cfg(target_endian = "little")]
-    crate::number::Endianness::Native => le_i24,
-  }
+    match endian {
+        crate::number::Endianness::Big => be_i24,
+        crate::number::Endianness::Little => le_i24,
+        #[cfg(target_endian = "big")]
+        crate::number::Endianness::Native => be_i24,
+        #[cfg(target_endian = "little")]
+        crate::number::Endianness::Native => le_i24,
+    }
 }
 
 /// Recognizes a signed 4 byte integer
@@ -1180,22 +1180,22 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::i32`][crate::number::i32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::i32` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::i32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn i32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i32, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  match endian {
-    crate::number::Endianness::Big => be_i32,
-    crate::number::Endianness::Little => le_i32,
-    #[cfg(target_endian = "big")]
-    crate::number::Endianness::Native => be_i32,
-    #[cfg(target_endian = "little")]
-    crate::number::Endianness::Native => le_i32,
-  }
+    match endian {
+        crate::number::Endianness::Big => be_i32,
+        crate::number::Endianness::Little => le_i32,
+        #[cfg(target_endian = "big")]
+        crate::number::Endianness::Native => be_i32,
+        #[cfg(target_endian = "little")]
+        crate::number::Endianness::Native => le_i32,
+    }
 }
 
 /// Recognizes a signed 8 byte integer
@@ -1226,22 +1226,22 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::i64`][crate::number::i64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::i64` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::i64` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn i64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i64, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  match endian {
-    crate::number::Endianness::Big => be_i64,
-    crate::number::Endianness::Little => le_i64,
-    #[cfg(target_endian = "big")]
-    crate::number::Endianness::Native => be_i64,
-    #[cfg(target_endian = "little")]
-    crate::number::Endianness::Native => le_i64,
-  }
+    match endian {
+        crate::number::Endianness::Big => be_i64,
+        crate::number::Endianness::Little => le_i64,
+        #[cfg(target_endian = "big")]
+        crate::number::Endianness::Native => be_i64,
+        #[cfg(target_endian = "little")]
+        crate::number::Endianness::Native => le_i64,
+    }
 }
 
 /// Recognizes a signed 16 byte integer
@@ -1272,22 +1272,22 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::i128`][crate::number::i128] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::i128` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::i128` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn i128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i128, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  match endian {
-    crate::number::Endianness::Big => be_i128,
-    crate::number::Endianness::Little => le_i128,
-    #[cfg(target_endian = "big")]
-    crate::number::Endianness::Native => be_i128,
-    #[cfg(target_endian = "little")]
-    crate::number::Endianness::Native => le_i128,
-  }
+    match endian {
+        crate::number::Endianness::Big => be_i128,
+        crate::number::Endianness::Little => le_i128,
+        #[cfg(target_endian = "big")]
+        crate::number::Endianness::Native => be_i128,
+        #[cfg(target_endian = "little")]
+        crate::number::Endianness::Native => le_i128,
+    }
 }
 
 /// Recognizes a big endian 4 bytes floating point number.
@@ -1308,18 +1308,18 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_f32`][crate::number::be_f32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::be_f32` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::be_f32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  match be_u32(input) {
-    Err(e) => Err(e),
-    Ok((i, o)) => Ok((i, f32::from_bits(o))),
-  }
+    match be_u32(input) {
+        Err(e) => Err(e),
+        Ok((i, o)) => Ok((i, f32::from_bits(o))),
+    }
 }
 
 /// Recognizes a big endian 8 bytes floating point number.
@@ -1340,18 +1340,18 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::be_f64`][crate::number::be_f64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::be_f64` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::be_f64` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn be_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  match be_u64(input) {
-    Err(e) => Err(e),
-    Ok((i, o)) => Ok((i, f64::from_bits(o))),
-  }
+    match be_u64(input) {
+        Err(e) => Err(e),
+        Ok((i, o)) => Ok((i, f64::from_bits(o))),
+    }
 }
 
 /// Recognizes a little endian 4 bytes floating point number.
@@ -1372,18 +1372,18 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_f32`][crate::number::le_f32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::le_f32` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::le_f32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  match le_u32(input) {
-    Err(e) => Err(e),
-    Ok((i, o)) => Ok((i, f32::from_bits(o))),
-  }
+    match le_u32(input) {
+        Err(e) => Err(e),
+        Ok((i, o)) => Ok((i, f32::from_bits(o))),
+    }
 }
 
 /// Recognizes a little endian 8 bytes floating point number.
@@ -1404,18 +1404,18 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::le_f64`][crate::number::le_f64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::le_f64` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::le_f64` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn le_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  match le_u64(input) {
-    Err(e) => Err(e),
-    Ok((i, o)) => Ok((i, f64::from_bits(o))),
-  }
+    match le_u64(input) {
+        Err(e) => Err(e),
+        Ok((i, o)) => Ok((i, f64::from_bits(o))),
+    }
 }
 
 /// Recognizes a 4 byte floating point number
@@ -1446,22 +1446,22 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::f32`][crate::number::f32] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::f32` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::f32` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn f32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, f32, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  match endian {
-    crate::number::Endianness::Big => be_f32,
-    crate::number::Endianness::Little => le_f32,
-    #[cfg(target_endian = "big")]
-    crate::number::Endianness::Native => be_f32,
-    #[cfg(target_endian = "little")]
-    crate::number::Endianness::Native => le_f32,
-  }
+    match endian {
+        crate::number::Endianness::Big => be_f32,
+        crate::number::Endianness::Little => le_f32,
+        #[cfg(target_endian = "big")]
+        crate::number::Endianness::Native => be_f32,
+        #[cfg(target_endian = "little")]
+        crate::number::Endianness::Native => le_f32,
+    }
 }
 
 /// Recognizes an 8 byte floating point number
@@ -1492,22 +1492,22 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::number::f64`][crate::number::f64] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::number::f64` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::number::f64` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn f64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, f64, E>
 where
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  match endian {
-    crate::number::Endianness::Big => be_f64,
-    crate::number::Endianness::Little => le_f64,
-    #[cfg(target_endian = "big")]
-    crate::number::Endianness::Native => be_f64,
-    #[cfg(target_endian = "little")]
-    crate::number::Endianness::Native => le_f64,
-  }
+    match endian {
+        crate::number::Endianness::Big => be_f64,
+        crate::number::Endianness::Little => le_f64,
+        #[cfg(target_endian = "big")]
+        crate::number::Endianness::Native => be_f64,
+        #[cfg(target_endian = "little")]
+        crate::number::Endianness::Native => le_f64,
+    }
 }
 
 /// Recognizes a hex-encoded integer.
@@ -1529,184 +1529,186 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::hex_uint`][crate::character::hex_uint] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::character::hex_uint` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::character::hex_uint` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn hex_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
-  I: Input,
-  <I as Input>::Token: AsChar,
-  <I as Input>::Slice: AsBStr,
+    I: Input,
+    <I as Input>::Token: AsChar,
+    <I as Input>::Slice: AsBStr,
 {
-  let invalid_offset = input
-    .offset_for(|c| {
-      let c = c.as_char();
-      !"0123456789abcdefABCDEF".contains(c)
-    })
-    .unwrap_or_else(|| input.input_len());
-  const MAX_DIGITS: usize = 8;
-  let max_offset = input.offset_at(MAX_DIGITS);
-  let offset = match max_offset {
-    Ok(max_offset) => invalid_offset.min(max_offset),
-    Err(_) => {
-      if invalid_offset == input.input_len() {
-        // Only the next byte is guaranteed required
-        return Err(ErrMode::Incomplete(Needed::new(1)));
-      } else {
-        invalid_offset
-      }
+    let invalid_offset = input
+        .offset_for(|c| {
+            let c = c.as_char();
+            !"0123456789abcdefABCDEF".contains(c)
+        })
+        .unwrap_or_else(|| input.input_len());
+    const MAX_DIGITS: usize = 8;
+    let max_offset = input.offset_at(MAX_DIGITS);
+    let offset = match max_offset {
+        Ok(max_offset) => invalid_offset.min(max_offset),
+        Err(_) => {
+            if invalid_offset == input.input_len() {
+                // Only the next byte is guaranteed required
+                return Err(ErrMode::Incomplete(Needed::new(1)));
+            } else {
+                invalid_offset
+            }
+        }
+    };
+    if offset == 0 {
+        return Err(ErrMode::from_error_kind(input, ErrorKind::IsA));
     }
-  };
-  if offset == 0 {
-    return Err(ErrMode::from_error_kind(input, ErrorKind::IsA));
-  }
-  let (remaining, parsed) = input.next_slice(offset);
+    let (remaining, parsed) = input.next_slice(offset);
 
-  let res = parsed
-    .as_bstr()
-    .iter()
-    .rev()
-    .enumerate()
-    .map(|(k, &v)| {
-      let digit = v as char;
-      digit.to_digit(16).unwrap_or(0) << (k * 4)
-    })
-    .sum();
+    let res = parsed
+        .as_bstr()
+        .iter()
+        .rev()
+        .enumerate()
+        .map(|(k, &v)| {
+            let digit = v as char;
+            digit.to_digit(16).unwrap_or(0) << (k * 4)
+        })
+        .sum();
 
-  Ok((remaining, res))
+    Ok((remaining, res))
 }
 
 /// **WARNING:** Deprecated, no longer supported
 #[deprecated(since = "0.3.0", note = "No longer supported")]
 pub fn recognize_float<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input,
-  T: Offset + Compare<&'static str>,
-  <T as Input>::Token: AsChar + Copy,
-  <T as Input>::IterOffsets: Clone,
-  T: AsBStr,
+    T: Input,
+    T: Offset + Compare<&'static str>,
+    <T as Input>::Token: AsChar + Copy,
+    <T as Input>::IterOffsets: Clone,
+    T: AsBStr,
 {
-  tuple((
-    opt(alt((char('+'), char('-')))),
-    alt((
-      map(tuple((digit1, opt(pair(char('.'), opt(digit1))))), |_| ()),
-      map(tuple((char('.'), digit1)), |_| ()),
-    )),
-    opt(tuple((
-      alt((char('e'), char('E'))),
-      opt(alt((char('+'), char('-')))),
-      cut_err(digit1),
-    ))),
-  ))
-  .recognize()
-  .parse_next(input)
+    tuple((
+        opt(alt((char('+'), char('-')))),
+        alt((
+            map(tuple((digit1, opt(pair(char('.'), opt(digit1))))), |_| ()),
+            map(tuple((char('.'), digit1)), |_| ()),
+        )),
+        opt(tuple((
+            alt((char('e'), char('E'))),
+            opt(alt((char('+'), char('-')))),
+            cut_err(digit1),
+        ))),
+    ))
+    .recognize()
+    .parse_next(input)
 }
 
 /// **WARNING:** Deprecated, no longer supported
 #[deprecated(since = "0.3.0", note = "No longer supported")]
 pub fn recognize_float_or_exceptions<T, E: ParseError<T>>(
-  input: T,
+    input: T,
 ) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input,
-  T: Offset + Compare<&'static str>,
-  <T as Input>::Token: AsChar + Copy,
-  <T as Input>::IterOffsets: Clone,
-  T: AsBStr,
+    T: Input,
+    T: Offset + Compare<&'static str>,
+    <T as Input>::Token: AsChar + Copy,
+    <T as Input>::IterOffsets: Clone,
+    T: AsBStr,
 {
-  alt((
-    |i: T| {
-      recognize_float::<_, E>(i.clone()).map_err(|e| match e {
-        crate::error::ErrMode::Backtrack(_) => {
-          crate::error::ErrMode::from_error_kind(i, ErrorKind::Float)
-        }
-        crate::error::ErrMode::Cut(_) => {
-          crate::error::ErrMode::Cut(E::from_error_kind(i, ErrorKind::Float))
-        }
-        crate::error::ErrMode::Incomplete(needed) => crate::error::ErrMode::Incomplete(needed),
-      })
-    },
-    |i: T| {
-      crate::bytes::streaming::tag_no_case::<_, _, E>("nan")(i.clone())
-        .map_err(|_err| crate::error::ErrMode::from_error_kind(i, ErrorKind::Float))
-    },
-    |i: T| {
-      crate::bytes::streaming::tag_no_case::<_, _, E>("inf")(i.clone())
-        .map_err(|_err| crate::error::ErrMode::from_error_kind(i, ErrorKind::Float))
-    },
-    |i: T| {
-      crate::bytes::streaming::tag_no_case::<_, _, E>("infinity")(i.clone())
-        .map_err(|_err| crate::error::ErrMode::from_error_kind(i, ErrorKind::Float))
-    },
-  ))(input)
+    alt((
+        |i: T| {
+            recognize_float::<_, E>(i.clone()).map_err(|e| match e {
+                crate::error::ErrMode::Backtrack(_) => {
+                    crate::error::ErrMode::from_error_kind(i, ErrorKind::Float)
+                }
+                crate::error::ErrMode::Cut(_) => {
+                    crate::error::ErrMode::Cut(E::from_error_kind(i, ErrorKind::Float))
+                }
+                crate::error::ErrMode::Incomplete(needed) => {
+                    crate::error::ErrMode::Incomplete(needed)
+                }
+            })
+        },
+        |i: T| {
+            crate::bytes::streaming::tag_no_case::<_, _, E>("nan")(i.clone())
+                .map_err(|_err| crate::error::ErrMode::from_error_kind(i, ErrorKind::Float))
+        },
+        |i: T| {
+            crate::bytes::streaming::tag_no_case::<_, _, E>("inf")(i.clone())
+                .map_err(|_err| crate::error::ErrMode::from_error_kind(i, ErrorKind::Float))
+        },
+        |i: T| {
+            crate::bytes::streaming::tag_no_case::<_, _, E>("infinity")(i.clone())
+                .map_err(|_err| crate::error::ErrMode::from_error_kind(i, ErrorKind::Float))
+        },
+    ))(input)
 }
 
 /// **WARNING:** Deprecated, no longer supported
 #[allow(clippy::type_complexity)]
 #[deprecated(since = "0.3.0", note = "No longer supported")]
 pub fn recognize_float_parts<T, E: ParseError<T>>(
-  input: T,
+    input: T,
 ) -> IResult<T, (bool, <T as Input>::Slice, <T as Input>::Slice, i32), E>
 where
-  T: Input + Compare<&'static [u8]> + AsBStr,
-  <T as Input>::Token: AsChar + Copy,
-  <T as Input>::Slice: SliceLen,
+    T: Input + Compare<&'static [u8]> + AsBStr,
+    <T as Input>::Token: AsChar + Copy,
+    <T as Input>::Slice: SliceLen,
 {
-  let (i, sign) = sign(input.clone())?;
+    let (i, sign) = sign(input.clone())?;
 
-  let (i, integer) = match i.offset_for(|c| !c.is_dec_digit()) {
-    Some(offset) => i.next_slice(offset),
-    None => i.next_slice(i.input_len()),
-  };
+    let (i, integer) = match i.offset_for(|c| !c.is_dec_digit()) {
+        Some(offset) => i.next_slice(offset),
+        None => i.next_slice(i.input_len()),
+    };
 
-  let (i, opt_dot) = opt(tag(&b"."[..]))(i)?;
-  let (i, fraction) = if opt_dot.is_none() {
-    i.next_slice(0)
-  } else {
-    // match number
-    let mut zero_count = 0usize;
-    let mut offset = None;
-    for (pos, c) in i.as_bstr().iter().enumerate() {
-      if *c >= b'0' && *c <= b'9' {
-        if *c == b'0' {
-          zero_count += 1;
-        } else {
-          zero_count = 0;
+    let (i, opt_dot) = opt(tag(&b"."[..]))(i)?;
+    let (i, fraction) = if opt_dot.is_none() {
+        i.next_slice(0)
+    } else {
+        // match number
+        let mut zero_count = 0usize;
+        let mut offset = None;
+        for (pos, c) in i.as_bstr().iter().enumerate() {
+            if *c >= b'0' && *c <= b'9' {
+                if *c == b'0' {
+                    zero_count += 1;
+                } else {
+                    zero_count = 0;
+                }
+            } else {
+                offset = Some(pos);
+                break;
+            }
         }
-      } else {
-        offset = Some(pos);
-        break;
-      }
+
+        let offset = offset.ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
+
+        // trim right zeroes
+        let trimmed_offset = (offset - zero_count).max(1);
+
+        let (_, frac) = i.next_slice(trimmed_offset);
+        let (i, _) = i.next_slice(offset);
+        (i, frac)
+    };
+
+    if integer.slice_len() == 0 && fraction.slice_len() == 0 {
+        return Err(ErrMode::from_error_kind(input, ErrorKind::Float));
     }
 
-    let offset = offset.ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
+    let i2 = i.clone();
+    let (i, e) = i
+        .next_token()
+        .filter(|(_, t)| t.as_char() == 'e' || t.as_char() == 'E')
+        .map(|(i, _)| (i, true))
+        .unwrap_or((i, false));
 
-    // trim right zeroes
-    let trimmed_offset = (offset - zero_count).max(1);
+    let (i, exp) = if e {
+        cut_err(crate::character::streaming::i32)(i)?
+    } else {
+        (i2, 0)
+    };
 
-    let (_, frac) = i.next_slice(trimmed_offset);
-    let (i, _) = i.next_slice(offset);
-    (i, frac)
-  };
-
-  if integer.slice_len() == 0 && fraction.slice_len() == 0 {
-    return Err(ErrMode::from_error_kind(input, ErrorKind::Float));
-  }
-
-  let i2 = i.clone();
-  let (i, e) = i
-    .next_token()
-    .filter(|(_, t)| t.as_char() == 'e' || t.as_char() == 'E')
-    .map(|(i, _)| (i, true))
-    .unwrap_or((i, false));
-
-  let (i, exp) = if e {
-    cut_err(crate::character::streaming::i32)(i)?
-  } else {
-    (i2, 0)
-  };
-
-  Ok((i, (sign, integer, fraction, exp)))
+    Ok((i, (sign, integer, fraction, exp)))
 }
 
 /// Recognizes floating point number in text format and returns a f32.
@@ -1730,26 +1732,26 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::float`][crate::character::float] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::character::float` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::character::float` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>
 where
-  T: Input,
-  T: Offset + Compare<&'static str>,
-  <T as Input>::Slice: ParseSlice<f32>,
-  <T as Input>::Token: AsChar + Copy,
-  <T as Input>::IterOffsets: Clone,
-  T: AsBStr,
+    T: Input,
+    T: Offset + Compare<&'static str>,
+    <T as Input>::Slice: ParseSlice<f32>,
+    <T as Input>::Token: AsChar + Copy,
+    <T as Input>::IterOffsets: Clone,
+    T: AsBStr,
 {
-  let (i, s) = recognize_float_or_exceptions(input)?;
-  match s.parse_slice() {
-    Some(f) => Ok((i, f)),
-    None => Err(crate::error::ErrMode::from_error_kind(
-      i,
-      crate::error::ErrorKind::Float,
-    )),
-  }
+    let (i, s) = recognize_float_or_exceptions(input)?;
+    match s.parse_slice() {
+        Some(f) => Ok((i, f)),
+        None => Err(crate::error::ErrMode::from_error_kind(
+            i,
+            crate::error::ErrorKind::Float,
+        )),
+    }
 }
 
 /// Recognizes floating point number in text format and returns a f64.
@@ -1773,636 +1775,643 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::float`][crate::character::float] with input wrapped in [`winnow::input::Streaming`][crate::input::Streaming]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::character::float` with input wrapped in `winnow::input::Streaming`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::character::float` with input wrapped in `winnow::input::Streaming`"
 )]
 pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>
 where
-  T: Input,
-  T: Offset + Compare<&'static str>,
-  <T as Input>::Slice: ParseSlice<f64>,
-  <T as Input>::Token: AsChar + Copy,
-  <T as Input>::IterOffsets: Clone,
-  T: AsBStr,
+    T: Input,
+    T: Offset + Compare<&'static str>,
+    <T as Input>::Slice: ParseSlice<f64>,
+    <T as Input>::Token: AsChar + Copy,
+    <T as Input>::IterOffsets: Clone,
+    T: AsBStr,
 {
-  let (i, s) = recognize_float_or_exceptions(input)?;
-  match s.parse_slice() {
-    Some(f) => Ok((i, f)),
-    None => Err(crate::error::ErrMode::from_error_kind(
-      i,
-      crate::error::ErrorKind::Float,
-    )),
-  }
+    let (i, s) = recognize_float_or_exceptions(input)?;
+    match s.parse_slice() {
+        Some(f) => Ok((i, f)),
+        None => Err(crate::error::ErrMode::from_error_kind(
+            i,
+            crate::error::ErrorKind::Float,
+        )),
+    }
 }
 
 #[cfg(test)]
 mod tests {
-  use super::*;
-  use crate::error::Error;
-  use crate::error::ErrorKind;
-  use crate::error::{ErrMode, Needed};
-  use proptest::prelude::*;
+    use super::*;
+    use crate::error::Error;
+    use crate::error::ErrorKind;
+    use crate::error::{ErrMode, Needed};
+    use proptest::prelude::*;
 
-  macro_rules! assert_parse(
+    macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
       let res: $crate::IResult<_, _, Error<_>> = $left;
       assert_eq!(res, $right);
     };
   );
 
-  #[test]
-  fn i8_tests() {
-    assert_parse!(be_i8(&[0x00][..]), Ok((&b""[..], 0)));
-    assert_parse!(be_i8(&[0x7f][..]), Ok((&b""[..], 127)));
-    assert_parse!(be_i8(&[0xff][..]), Ok((&b""[..], -1)));
-    assert_parse!(be_i8(&[0x80][..]), Ok((&b""[..], -128)));
-    assert_parse!(be_i8(&[][..]), Err(ErrMode::Incomplete(Needed::new(1))));
-  }
-
-  #[test]
-  fn i16_tests() {
-    assert_parse!(be_i16(&[0x00, 0x00][..]), Ok((&b""[..], 0)));
-    assert_parse!(be_i16(&[0x7f, 0xff][..]), Ok((&b""[..], 32_767_i16)));
-    assert_parse!(be_i16(&[0xff, 0xff][..]), Ok((&b""[..], -1)));
-    assert_parse!(be_i16(&[0x80, 0x00][..]), Ok((&b""[..], -32_768_i16)));
-    assert_parse!(be_i16(&[][..]), Err(ErrMode::Incomplete(Needed::new(2))));
-    assert_parse!(
-      be_i16(&[0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(1)))
-    );
-  }
-
-  #[test]
-  fn u24_tests() {
-    assert_parse!(be_u24(&[0x00, 0x00, 0x00][..]), Ok((&b""[..], 0)));
-    assert_parse!(be_u24(&[0x00, 0xFF, 0xFF][..]), Ok((&b""[..], 65_535_u32)));
-    assert_parse!(
-      be_u24(&[0x12, 0x34, 0x56][..]),
-      Ok((&b""[..], 1_193_046_u32))
-    );
-    assert_parse!(be_u24(&[][..]), Err(ErrMode::Incomplete(Needed::new(3))));
-    assert_parse!(
-      be_u24(&[0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(2)))
-    );
-    assert_parse!(
-      be_u24(&[0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(1)))
-    );
-  }
-
-  #[test]
-  fn i24_tests() {
-    assert_parse!(be_i24(&[0xFF, 0xFF, 0xFF][..]), Ok((&b""[..], -1_i32)));
-    assert_parse!(be_i24(&[0xFF, 0x00, 0x00][..]), Ok((&b""[..], -65_536_i32)));
-    assert_parse!(
-      be_i24(&[0xED, 0xCB, 0xAA][..]),
-      Ok((&b""[..], -1_193_046_i32))
-    );
-    assert_parse!(be_i24(&[][..]), Err(ErrMode::Incomplete(Needed::new(3))));
-    assert_parse!(
-      be_i24(&[0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(2)))
-    );
-    assert_parse!(
-      be_i24(&[0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(1)))
-    );
-  }
-
-  #[test]
-  fn i32_tests() {
-    assert_parse!(be_i32(&[0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 0)));
-    assert_parse!(
-      be_i32(&[0x7f, 0xff, 0xff, 0xff][..]),
-      Ok((&b""[..], 2_147_483_647_i32))
-    );
-    assert_parse!(be_i32(&[0xff, 0xff, 0xff, 0xff][..]), Ok((&b""[..], -1)));
-    assert_parse!(
-      be_i32(&[0x80, 0x00, 0x00, 0x00][..]),
-      Ok((&b""[..], -2_147_483_648_i32))
-    );
-    assert_parse!(be_i32(&[][..]), Err(ErrMode::Incomplete(Needed::new(4))));
-    assert_parse!(
-      be_i32(&[0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(3)))
-    );
-    assert_parse!(
-      be_i32(&[0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(2)))
-    );
-    assert_parse!(
-      be_i32(&[0x00, 0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(1)))
-    );
-  }
-
-  #[test]
-  fn i64_tests() {
-    assert_parse!(
-      be_i64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
-      Ok((&b""[..], 0))
-    );
-    assert_parse!(
-      be_i64(&[0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff][..]),
-      Ok((&b""[..], 9_223_372_036_854_775_807_i64))
-    );
-    assert_parse!(
-      be_i64(&[0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff][..]),
-      Ok((&b""[..], -1))
-    );
-    assert_parse!(
-      be_i64(&[0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
-      Ok((&b""[..], -9_223_372_036_854_775_808_i64))
-    );
-    assert_parse!(be_i64(&[][..]), Err(ErrMode::Incomplete(Needed::new(8))));
-    assert_parse!(
-      be_i64(&[0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(7)))
-    );
-    assert_parse!(
-      be_i64(&[0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(6)))
-    );
-    assert_parse!(
-      be_i64(&[0x00, 0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(5)))
-    );
-    assert_parse!(
-      be_i64(&[0x00, 0x00, 0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(4)))
-    );
-    assert_parse!(
-      be_i64(&[0x00, 0x00, 0x00, 0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(3)))
-    );
-    assert_parse!(
-      be_i64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(2)))
-    );
-    assert_parse!(
-      be_i64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(1)))
-    );
-  }
-
-  #[test]
-  fn i128_tests() {
-    assert_parse!(
-      be_i128(
-        &[
-          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-          0x00
-        ][..]
-      ),
-      Ok((&b""[..], 0))
-    );
-    assert_parse!(
-      be_i128(
-        &[
-          0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-          0xff
-        ][..]
-      ),
-      Ok((
-        &b""[..],
-        170_141_183_460_469_231_731_687_303_715_884_105_727_i128
-      ))
-    );
-    assert_parse!(
-      be_i128(
-        &[
-          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-          0xff
-        ][..]
-      ),
-      Ok((&b""[..], -1))
-    );
-    assert_parse!(
-      be_i128(
-        &[
-          0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-          0x00
-        ][..]
-      ),
-      Ok((
-        &b""[..],
-        -170_141_183_460_469_231_731_687_303_715_884_105_728_i128
-      ))
-    );
-    assert_parse!(be_i128(&[][..]), Err(ErrMode::Incomplete(Needed::new(16))));
-    assert_parse!(
-      be_i128(&[0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(15)))
-    );
-    assert_parse!(
-      be_i128(&[0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(14)))
-    );
-    assert_parse!(
-      be_i128(&[0x00, 0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(13)))
-    );
-    assert_parse!(
-      be_i128(&[0x00, 0x00, 0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(12)))
-    );
-    assert_parse!(
-      be_i128(&[0x00, 0x00, 0x00, 0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(11)))
-    );
-    assert_parse!(
-      be_i128(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(10)))
-    );
-    assert_parse!(
-      be_i128(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(9)))
-    );
-    assert_parse!(
-      be_i128(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(8)))
-    );
-    assert_parse!(
-      be_i128(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(7)))
-    );
-    assert_parse!(
-      be_i128(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(6)))
-    );
-    assert_parse!(
-      be_i128(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(5)))
-    );
-    assert_parse!(
-      be_i128(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(4)))
-    );
-    assert_parse!(
-      be_i128(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
-      Err(ErrMode::Incomplete(Needed::new(3)))
-    );
-    assert_parse!(
-      be_i128(
-        &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
-      ),
-      Err(ErrMode::Incomplete(Needed::new(2)))
-    );
-    assert_parse!(
-      be_i128(
-        &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-          [..]
-      ),
-      Err(ErrMode::Incomplete(Needed::new(1)))
-    );
-  }
-
-  #[test]
-  fn le_i8_tests() {
-    assert_parse!(le_i8(&[0x00][..]), Ok((&b""[..], 0)));
-    assert_parse!(le_i8(&[0x7f][..]), Ok((&b""[..], 127)));
-    assert_parse!(le_i8(&[0xff][..]), Ok((&b""[..], -1)));
-    assert_parse!(le_i8(&[0x80][..]), Ok((&b""[..], -128)));
-  }
-
-  #[test]
-  fn le_i16_tests() {
-    assert_parse!(le_i16(&[0x00, 0x00][..]), Ok((&b""[..], 0)));
-    assert_parse!(le_i16(&[0xff, 0x7f][..]), Ok((&b""[..], 32_767_i16)));
-    assert_parse!(le_i16(&[0xff, 0xff][..]), Ok((&b""[..], -1)));
-    assert_parse!(le_i16(&[0x00, 0x80][..]), Ok((&b""[..], -32_768_i16)));
-  }
-
-  #[test]
-  fn le_u24_tests() {
-    assert_parse!(le_u24(&[0x00, 0x00, 0x00][..]), Ok((&b""[..], 0)));
-    assert_parse!(le_u24(&[0xFF, 0xFF, 0x00][..]), Ok((&b""[..], 65_535_u32)));
-    assert_parse!(
-      le_u24(&[0x56, 0x34, 0x12][..]),
-      Ok((&b""[..], 1_193_046_u32))
-    );
-  }
-
-  #[test]
-  fn le_i24_tests() {
-    assert_parse!(le_i24(&[0xFF, 0xFF, 0xFF][..]), Ok((&b""[..], -1_i32)));
-    assert_parse!(le_i24(&[0x00, 0x00, 0xFF][..]), Ok((&b""[..], -65_536_i32)));
-    assert_parse!(
-      le_i24(&[0xAA, 0xCB, 0xED][..]),
-      Ok((&b""[..], -1_193_046_i32))
-    );
-  }
-
-  #[test]
-  fn le_i32_tests() {
-    assert_parse!(le_i32(&[0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 0)));
-    assert_parse!(
-      le_i32(&[0xff, 0xff, 0xff, 0x7f][..]),
-      Ok((&b""[..], 2_147_483_647_i32))
-    );
-    assert_parse!(le_i32(&[0xff, 0xff, 0xff, 0xff][..]), Ok((&b""[..], -1)));
-    assert_parse!(
-      le_i32(&[0x00, 0x00, 0x00, 0x80][..]),
-      Ok((&b""[..], -2_147_483_648_i32))
-    );
-  }
-
-  #[test]
-  fn le_i64_tests() {
-    assert_parse!(
-      le_i64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
-      Ok((&b""[..], 0))
-    );
-    assert_parse!(
-      le_i64(&[0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7f][..]),
-      Ok((&b""[..], 9_223_372_036_854_775_807_i64))
-    );
-    assert_parse!(
-      le_i64(&[0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff][..]),
-      Ok((&b""[..], -1))
-    );
-    assert_parse!(
-      le_i64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80][..]),
-      Ok((&b""[..], -9_223_372_036_854_775_808_i64))
-    );
-  }
-
-  #[test]
-  fn le_i128_tests() {
-    assert_parse!(
-      le_i128(
-        &[
-          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-          0x00
-        ][..]
-      ),
-      Ok((&b""[..], 0))
-    );
-    assert_parse!(
-      le_i128(
-        &[
-          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-          0x7f
-        ][..]
-      ),
-      Ok((
-        &b""[..],
-        170_141_183_460_469_231_731_687_303_715_884_105_727_i128
-      ))
-    );
-    assert_parse!(
-      le_i128(
-        &[
-          0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-          0xff
-        ][..]
-      ),
-      Ok((&b""[..], -1))
-    );
-    assert_parse!(
-      le_i128(
-        &[
-          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-          0x80
-        ][..]
-      ),
-      Ok((
-        &b""[..],
-        -170_141_183_460_469_231_731_687_303_715_884_105_728_i128
-      ))
-    );
-  }
-
-  #[test]
-  fn be_f32_tests() {
-    assert_parse!(be_f32(&[0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 0_f32)));
-    assert_parse!(
-      be_f32(&[0x4d, 0x31, 0x1f, 0xd8][..]),
-      Ok((&b""[..], 185_728_380_f32))
-    );
-  }
-
-  #[test]
-  fn be_f64_tests() {
-    assert_parse!(
-      be_f64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
-      Ok((&b""[..], 0_f64))
-    );
-    assert_parse!(
-      be_f64(&[0x41, 0xa6, 0x23, 0xfb, 0x10, 0x00, 0x00, 0x00][..]),
-      Ok((&b""[..], 185_728_392_f64))
-    );
-  }
-
-  #[test]
-  fn le_f32_tests() {
-    assert_parse!(le_f32(&[0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 0_f32)));
-    assert_parse!(
-      le_f32(&[0xd8, 0x1f, 0x31, 0x4d][..]),
-      Ok((&b""[..], 185_728_380_f32))
-    );
-  }
-
-  #[test]
-  fn le_f64_tests() {
-    assert_parse!(
-      le_f64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
-      Ok((&b""[..], 0_f64))
-    );
-    assert_parse!(
-      le_f64(&[0x00, 0x00, 0x00, 0x10, 0xfb, 0x23, 0xa6, 0x41][..]),
-      Ok((&b""[..], 185_728_392_f64))
-    );
-  }
-
-  #[test]
-  fn hex_u32_tests() {
-    assert_parse!(
-      hex_u32(&b";"[..]),
-      Err(ErrMode::Backtrack(error_position!(
-        &b";"[..],
-        ErrorKind::IsA
-      )))
-    );
-    assert_parse!(hex_u32(&b"ff;"[..]), Ok((&b";"[..], 255)));
-    assert_parse!(hex_u32(&b"1be2;"[..]), Ok((&b";"[..], 7138)));
-    assert_parse!(hex_u32(&b"c5a31be2;"[..]), Ok((&b";"[..], 3_315_801_058)));
-    assert_parse!(hex_u32(&b"C5A31be2;"[..]), Ok((&b";"[..], 3_315_801_058)));
-    assert_parse!(hex_u32(&b"00c5a31be2;"[..]), Ok((&b"e2;"[..], 12_952_347)));
-    assert_parse!(
-      hex_u32(&b"c5a31be201;"[..]),
-      Ok((&b"01;"[..], 3_315_801_058))
-    );
-    assert_parse!(hex_u32(&b"ffffffff;"[..]), Ok((&b";"[..], 4_294_967_295)));
-    assert_parse!(hex_u32(&b"0x1be2;"[..]), Ok((&b"x1be2;"[..], 0)));
-    assert_parse!(
-      hex_u32(&b"12af"[..]),
-      Err(ErrMode::Incomplete(Needed::new(1)))
-    );
-  }
-
-  #[test]
-  #[cfg(feature = "std")]
-  fn float_test() {
-    let mut test_cases = vec![
-      "+3.14",
-      "3.14",
-      "-3.14",
-      "0",
-      "0.0",
-      "1.",
-      ".789",
-      "-.5",
-      "1e7",
-      "-1E-7",
-      ".3e-2",
-      "1.e4",
-      "1.2e4",
-      "12.34",
-      "-1.234E-12",
-      "-1.234e-12",
-      "0.00000000000000000087",
-    ];
-
-    for test in test_cases.drain(..) {
-      let expected32 = str::parse::<f32>(test).unwrap();
-      let expected64 = str::parse::<f64>(test).unwrap();
-
-      println!("now parsing: {} -> {}", test, expected32);
-
-      let larger = format!("{};", test);
-      assert_parse!(recognize_float(&larger[..]), Ok((";", test)));
-
-      assert_parse!(float(larger.as_bytes()), Ok((&b";"[..], expected32)));
-      assert_parse!(float(&larger[..]), Ok((";", expected32)));
-
-      assert_parse!(double(larger.as_bytes()), Ok((&b";"[..], expected64)));
-      assert_parse!(double(&larger[..]), Ok((";", expected64)));
+    #[test]
+    fn i8_tests() {
+        assert_parse!(be_i8(&[0x00][..]), Ok((&b""[..], 0)));
+        assert_parse!(be_i8(&[0x7f][..]), Ok((&b""[..], 127)));
+        assert_parse!(be_i8(&[0xff][..]), Ok((&b""[..], -1)));
+        assert_parse!(be_i8(&[0x80][..]), Ok((&b""[..], -128)));
+        assert_parse!(be_i8(&[][..]), Err(ErrMode::Incomplete(Needed::new(1))));
     }
 
-    let remaining_exponent = "-1.234E-";
-    assert_parse!(
-      recognize_float(remaining_exponent),
-      Err(ErrMode::Incomplete(Needed::new(1)))
-    );
+    #[test]
+    fn i16_tests() {
+        assert_parse!(be_i16(&[0x00, 0x00][..]), Ok((&b""[..], 0)));
+        assert_parse!(be_i16(&[0x7f, 0xff][..]), Ok((&b""[..], 32_767_i16)));
+        assert_parse!(be_i16(&[0xff, 0xff][..]), Ok((&b""[..], -1)));
+        assert_parse!(be_i16(&[0x80, 0x00][..]), Ok((&b""[..], -32_768_i16)));
+        assert_parse!(be_i16(&[][..]), Err(ErrMode::Incomplete(Needed::new(2))));
+        assert_parse!(
+            be_i16(&[0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+    }
 
-    let (_i, nan) = float::<_, ()>("NaN").unwrap();
-    assert!(nan.is_nan());
+    #[test]
+    fn u24_tests() {
+        assert_parse!(be_u24(&[0x00, 0x00, 0x00][..]), Ok((&b""[..], 0)));
+        assert_parse!(be_u24(&[0x00, 0xFF, 0xFF][..]), Ok((&b""[..], 65_535_u32)));
+        assert_parse!(
+            be_u24(&[0x12, 0x34, 0x56][..]),
+            Ok((&b""[..], 1_193_046_u32))
+        );
+        assert_parse!(be_u24(&[][..]), Err(ErrMode::Incomplete(Needed::new(3))));
+        assert_parse!(
+            be_u24(&[0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(2)))
+        );
+        assert_parse!(
+            be_u24(&[0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+    }
 
-    let (_i, inf) = float::<_, ()>("inf").unwrap();
-    assert!(inf.is_infinite());
-    let (_i, inf) = float::<_, ()>("infinite").unwrap();
-    assert!(inf.is_infinite());
-  }
+    #[test]
+    fn i24_tests() {
+        assert_parse!(be_i24(&[0xFF, 0xFF, 0xFF][..]), Ok((&b""[..], -1_i32)));
+        assert_parse!(be_i24(&[0xFF, 0x00, 0x00][..]), Ok((&b""[..], -65_536_i32)));
+        assert_parse!(
+            be_i24(&[0xED, 0xCB, 0xAA][..]),
+            Ok((&b""[..], -1_193_046_i32))
+        );
+        assert_parse!(be_i24(&[][..]), Err(ErrMode::Incomplete(Needed::new(3))));
+        assert_parse!(
+            be_i24(&[0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(2)))
+        );
+        assert_parse!(
+            be_i24(&[0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+    }
 
-  #[test]
-  fn configurable_endianness() {
-    use crate::number::Endianness;
+    #[test]
+    fn i32_tests() {
+        assert_parse!(be_i32(&[0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 0)));
+        assert_parse!(
+            be_i32(&[0x7f, 0xff, 0xff, 0xff][..]),
+            Ok((&b""[..], 2_147_483_647_i32))
+        );
+        assert_parse!(be_i32(&[0xff, 0xff, 0xff, 0xff][..]), Ok((&b""[..], -1)));
+        assert_parse!(
+            be_i32(&[0x80, 0x00, 0x00, 0x00][..]),
+            Ok((&b""[..], -2_147_483_648_i32))
+        );
+        assert_parse!(be_i32(&[][..]), Err(ErrMode::Incomplete(Needed::new(4))));
+        assert_parse!(
+            be_i32(&[0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(3)))
+        );
+        assert_parse!(
+            be_i32(&[0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(2)))
+        );
+        assert_parse!(
+            be_i32(&[0x00, 0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+    }
 
-    fn be_tst16(i: &[u8]) -> IResult<&[u8], u16> {
-      u16(Endianness::Big)(i)
+    #[test]
+    fn i64_tests() {
+        assert_parse!(
+            be_i64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
+            Ok((&b""[..], 0))
+        );
+        assert_parse!(
+            be_i64(&[0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff][..]),
+            Ok((&b""[..], 9_223_372_036_854_775_807_i64))
+        );
+        assert_parse!(
+            be_i64(&[0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff][..]),
+            Ok((&b""[..], -1))
+        );
+        assert_parse!(
+            be_i64(&[0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
+            Ok((&b""[..], -9_223_372_036_854_775_808_i64))
+        );
+        assert_parse!(be_i64(&[][..]), Err(ErrMode::Incomplete(Needed::new(8))));
+        assert_parse!(
+            be_i64(&[0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(7)))
+        );
+        assert_parse!(
+            be_i64(&[0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(6)))
+        );
+        assert_parse!(
+            be_i64(&[0x00, 0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(5)))
+        );
+        assert_parse!(
+            be_i64(&[0x00, 0x00, 0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(4)))
+        );
+        assert_parse!(
+            be_i64(&[0x00, 0x00, 0x00, 0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(3)))
+        );
+        assert_parse!(
+            be_i64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(2)))
+        );
+        assert_parse!(
+            be_i64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
     }
-    fn le_tst16(i: &[u8]) -> IResult<&[u8], u16> {
-      u16(Endianness::Little)(i)
-    }
-    assert_eq!(be_tst16(&[0x80, 0x00]), Ok((&b""[..], 32_768_u16)));
-    assert_eq!(le_tst16(&[0x80, 0x00]), Ok((&b""[..], 128_u16)));
 
-    fn be_tst32(i: &[u8]) -> IResult<&[u8], u32> {
-      u32(Endianness::Big)(i)
+    #[test]
+    fn i128_tests() {
+        assert_parse!(
+            be_i128(
+                &[
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00
+                ][..]
+            ),
+            Ok((&b""[..], 0))
+        );
+        assert_parse!(
+            be_i128(
+                &[
+                    0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                    0xff, 0xff, 0xff
+                ][..]
+            ),
+            Ok((
+                &b""[..],
+                170_141_183_460_469_231_731_687_303_715_884_105_727_i128
+            ))
+        );
+        assert_parse!(
+            be_i128(
+                &[
+                    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                    0xff, 0xff, 0xff
+                ][..]
+            ),
+            Ok((&b""[..], -1))
+        );
+        assert_parse!(
+            be_i128(
+                &[
+                    0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00
+                ][..]
+            ),
+            Ok((
+                &b""[..],
+                -170_141_183_460_469_231_731_687_303_715_884_105_728_i128
+            ))
+        );
+        assert_parse!(be_i128(&[][..]), Err(ErrMode::Incomplete(Needed::new(16))));
+        assert_parse!(
+            be_i128(&[0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(15)))
+        );
+        assert_parse!(
+            be_i128(&[0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(14)))
+        );
+        assert_parse!(
+            be_i128(&[0x00, 0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(13)))
+        );
+        assert_parse!(
+            be_i128(&[0x00, 0x00, 0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(12)))
+        );
+        assert_parse!(
+            be_i128(&[0x00, 0x00, 0x00, 0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(11)))
+        );
+        assert_parse!(
+            be_i128(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(10)))
+        );
+        assert_parse!(
+            be_i128(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(9)))
+        );
+        assert_parse!(
+            be_i128(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(8)))
+        );
+        assert_parse!(
+            be_i128(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(7)))
+        );
+        assert_parse!(
+            be_i128(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(6)))
+        );
+        assert_parse!(
+            be_i128(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(5)))
+        );
+        assert_parse!(
+            be_i128(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
+            Err(ErrMode::Incomplete(Needed::new(4)))
+        );
+        assert_parse!(
+            be_i128(
+                &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
+            ),
+            Err(ErrMode::Incomplete(Needed::new(3)))
+        );
+        assert_parse!(
+            be_i128(
+                &[
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00
+                ][..]
+            ),
+            Err(ErrMode::Incomplete(Needed::new(2)))
+        );
+        assert_parse!(
+            be_i128(
+                &[
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00
+                ][..]
+            ),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
     }
-    fn le_tst32(i: &[u8]) -> IResult<&[u8], u32> {
-      u32(Endianness::Little)(i)
-    }
-    assert_eq!(
-      be_tst32(&[0x12, 0x00, 0x60, 0x00]),
-      Ok((&b""[..], 302_014_464_u32))
-    );
-    assert_eq!(
-      le_tst32(&[0x12, 0x00, 0x60, 0x00]),
-      Ok((&b""[..], 6_291_474_u32))
-    );
 
-    fn be_tst64(i: &[u8]) -> IResult<&[u8], u64> {
-      u64(Endianness::Big)(i)
+    #[test]
+    fn le_i8_tests() {
+        assert_parse!(le_i8(&[0x00][..]), Ok((&b""[..], 0)));
+        assert_parse!(le_i8(&[0x7f][..]), Ok((&b""[..], 127)));
+        assert_parse!(le_i8(&[0xff][..]), Ok((&b""[..], -1)));
+        assert_parse!(le_i8(&[0x80][..]), Ok((&b""[..], -128)));
     }
-    fn le_tst64(i: &[u8]) -> IResult<&[u8], u64> {
-      u64(Endianness::Little)(i)
-    }
-    assert_eq!(
-      be_tst64(&[0x12, 0x00, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
-      Ok((&b""[..], 1_297_142_246_100_992_000_u64))
-    );
-    assert_eq!(
-      le_tst64(&[0x12, 0x00, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
-      Ok((&b""[..], 36_028_874_334_666_770_u64))
-    );
 
-    fn be_tsti16(i: &[u8]) -> IResult<&[u8], i16> {
-      i16(Endianness::Big)(i)
+    #[test]
+    fn le_i16_tests() {
+        assert_parse!(le_i16(&[0x00, 0x00][..]), Ok((&b""[..], 0)));
+        assert_parse!(le_i16(&[0xff, 0x7f][..]), Ok((&b""[..], 32_767_i16)));
+        assert_parse!(le_i16(&[0xff, 0xff][..]), Ok((&b""[..], -1)));
+        assert_parse!(le_i16(&[0x00, 0x80][..]), Ok((&b""[..], -32_768_i16)));
     }
-    fn le_tsti16(i: &[u8]) -> IResult<&[u8], i16> {
-      i16(Endianness::Little)(i)
-    }
-    assert_eq!(be_tsti16(&[0x00, 0x80]), Ok((&b""[..], 128_i16)));
-    assert_eq!(le_tsti16(&[0x00, 0x80]), Ok((&b""[..], -32_768_i16)));
 
-    fn be_tsti32(i: &[u8]) -> IResult<&[u8], i32> {
-      i32(Endianness::Big)(i)
+    #[test]
+    fn le_u24_tests() {
+        assert_parse!(le_u24(&[0x00, 0x00, 0x00][..]), Ok((&b""[..], 0)));
+        assert_parse!(le_u24(&[0xFF, 0xFF, 0x00][..]), Ok((&b""[..], 65_535_u32)));
+        assert_parse!(
+            le_u24(&[0x56, 0x34, 0x12][..]),
+            Ok((&b""[..], 1_193_046_u32))
+        );
     }
-    fn le_tsti32(i: &[u8]) -> IResult<&[u8], i32> {
-      i32(Endianness::Little)(i)
-    }
-    assert_eq!(
-      be_tsti32(&[0x00, 0x12, 0x60, 0x00]),
-      Ok((&b""[..], 1_204_224_i32))
-    );
-    assert_eq!(
-      le_tsti32(&[0x00, 0x12, 0x60, 0x00]),
-      Ok((&b""[..], 6_296_064_i32))
-    );
 
-    fn be_tsti64(i: &[u8]) -> IResult<&[u8], i64> {
-      i64(Endianness::Big)(i)
+    #[test]
+    fn le_i24_tests() {
+        assert_parse!(le_i24(&[0xFF, 0xFF, 0xFF][..]), Ok((&b""[..], -1_i32)));
+        assert_parse!(le_i24(&[0x00, 0x00, 0xFF][..]), Ok((&b""[..], -65_536_i32)));
+        assert_parse!(
+            le_i24(&[0xAA, 0xCB, 0xED][..]),
+            Ok((&b""[..], -1_193_046_i32))
+        );
     }
-    fn le_tsti64(i: &[u8]) -> IResult<&[u8], i64> {
-      i64(Endianness::Little)(i)
-    }
-    assert_eq!(
-      be_tsti64(&[0x00, 0xFF, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
-      Ok((&b""[..], 71_881_672_479_506_432_i64))
-    );
-    assert_eq!(
-      le_tsti64(&[0x00, 0xFF, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
-      Ok((&b""[..], 36_028_874_334_732_032_i64))
-    );
-  }
 
-  #[cfg(feature = "std")]
-  fn parse_f64(i: &str) -> IResult<&str, f64, ()> {
-    match recognize_float_or_exceptions(i) {
-      Err(e) => Err(e),
-      Ok((i, s)) => {
-        if s.is_empty() {
-          return Err(ErrMode::Backtrack(()));
-        }
-        match s.parse_slice() {
-          Some(n) => Ok((i, n)),
-          None => Err(ErrMode::Backtrack(())),
-        }
-      }
+    #[test]
+    fn le_i32_tests() {
+        assert_parse!(le_i32(&[0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 0)));
+        assert_parse!(
+            le_i32(&[0xff, 0xff, 0xff, 0x7f][..]),
+            Ok((&b""[..], 2_147_483_647_i32))
+        );
+        assert_parse!(le_i32(&[0xff, 0xff, 0xff, 0xff][..]), Ok((&b""[..], -1)));
+        assert_parse!(
+            le_i32(&[0x00, 0x00, 0x00, 0x80][..]),
+            Ok((&b""[..], -2_147_483_648_i32))
+        );
     }
-  }
 
-  proptest! {
+    #[test]
+    fn le_i64_tests() {
+        assert_parse!(
+            le_i64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
+            Ok((&b""[..], 0))
+        );
+        assert_parse!(
+            le_i64(&[0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7f][..]),
+            Ok((&b""[..], 9_223_372_036_854_775_807_i64))
+        );
+        assert_parse!(
+            le_i64(&[0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff][..]),
+            Ok((&b""[..], -1))
+        );
+        assert_parse!(
+            le_i64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80][..]),
+            Ok((&b""[..], -9_223_372_036_854_775_808_i64))
+        );
+    }
+
+    #[test]
+    fn le_i128_tests() {
+        assert_parse!(
+            le_i128(
+                &[
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00
+                ][..]
+            ),
+            Ok((&b""[..], 0))
+        );
+        assert_parse!(
+            le_i128(
+                &[
+                    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                    0xff, 0xff, 0x7f
+                ][..]
+            ),
+            Ok((
+                &b""[..],
+                170_141_183_460_469_231_731_687_303_715_884_105_727_i128
+            ))
+        );
+        assert_parse!(
+            le_i128(
+                &[
+                    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                    0xff, 0xff, 0xff
+                ][..]
+            ),
+            Ok((&b""[..], -1))
+        );
+        assert_parse!(
+            le_i128(
+                &[
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x80
+                ][..]
+            ),
+            Ok((
+                &b""[..],
+                -170_141_183_460_469_231_731_687_303_715_884_105_728_i128
+            ))
+        );
+    }
+
+    #[test]
+    fn be_f32_tests() {
+        assert_parse!(be_f32(&[0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 0_f32)));
+        assert_parse!(
+            be_f32(&[0x4d, 0x31, 0x1f, 0xd8][..]),
+            Ok((&b""[..], 185_728_380_f32))
+        );
+    }
+
+    #[test]
+    fn be_f64_tests() {
+        assert_parse!(
+            be_f64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
+            Ok((&b""[..], 0_f64))
+        );
+        assert_parse!(
+            be_f64(&[0x41, 0xa6, 0x23, 0xfb, 0x10, 0x00, 0x00, 0x00][..]),
+            Ok((&b""[..], 185_728_392_f64))
+        );
+    }
+
+    #[test]
+    fn le_f32_tests() {
+        assert_parse!(le_f32(&[0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 0_f32)));
+        assert_parse!(
+            le_f32(&[0xd8, 0x1f, 0x31, 0x4d][..]),
+            Ok((&b""[..], 185_728_380_f32))
+        );
+    }
+
+    #[test]
+    fn le_f64_tests() {
+        assert_parse!(
+            le_f64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
+            Ok((&b""[..], 0_f64))
+        );
+        assert_parse!(
+            le_f64(&[0x00, 0x00, 0x00, 0x10, 0xfb, 0x23, 0xa6, 0x41][..]),
+            Ok((&b""[..], 185_728_392_f64))
+        );
+    }
+
+    #[test]
+    fn hex_u32_tests() {
+        assert_parse!(
+            hex_u32(&b";"[..]),
+            Err(ErrMode::Backtrack(error_position!(
+                &b";"[..],
+                ErrorKind::IsA
+            )))
+        );
+        assert_parse!(hex_u32(&b"ff;"[..]), Ok((&b";"[..], 255)));
+        assert_parse!(hex_u32(&b"1be2;"[..]), Ok((&b";"[..], 7138)));
+        assert_parse!(hex_u32(&b"c5a31be2;"[..]), Ok((&b";"[..], 3_315_801_058)));
+        assert_parse!(hex_u32(&b"C5A31be2;"[..]), Ok((&b";"[..], 3_315_801_058)));
+        assert_parse!(hex_u32(&b"00c5a31be2;"[..]), Ok((&b"e2;"[..], 12_952_347)));
+        assert_parse!(
+            hex_u32(&b"c5a31be201;"[..]),
+            Ok((&b"01;"[..], 3_315_801_058))
+        );
+        assert_parse!(hex_u32(&b"ffffffff;"[..]), Ok((&b";"[..], 4_294_967_295)));
+        assert_parse!(hex_u32(&b"0x1be2;"[..]), Ok((&b"x1be2;"[..], 0)));
+        assert_parse!(
+            hex_u32(&b"12af"[..]),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+    }
+
     #[test]
     #[cfg(feature = "std")]
-    fn floats(s in "\\PC*") {
-        println!("testing {}", s);
-        let res1 = parse_f64(&s);
-        let res2 = double::<_, ()>(s.as_str());
-        assert_eq!(res1, res2);
+    fn float_test() {
+        let mut test_cases = vec![
+            "+3.14",
+            "3.14",
+            "-3.14",
+            "0",
+            "0.0",
+            "1.",
+            ".789",
+            "-.5",
+            "1e7",
+            "-1E-7",
+            ".3e-2",
+            "1.e4",
+            "1.2e4",
+            "12.34",
+            "-1.234E-12",
+            "-1.234e-12",
+            "0.00000000000000000087",
+        ];
+
+        for test in test_cases.drain(..) {
+            let expected32 = str::parse::<f32>(test).unwrap();
+            let expected64 = str::parse::<f64>(test).unwrap();
+
+            println!("now parsing: {} -> {}", test, expected32);
+
+            let larger = format!("{};", test);
+            assert_parse!(recognize_float(&larger[..]), Ok((";", test)));
+
+            assert_parse!(float(larger.as_bytes()), Ok((&b";"[..], expected32)));
+            assert_parse!(float(&larger[..]), Ok((";", expected32)));
+
+            assert_parse!(double(larger.as_bytes()), Ok((&b";"[..], expected64)));
+            assert_parse!(double(&larger[..]), Ok((";", expected64)));
+        }
+
+        let remaining_exponent = "-1.234E-";
+        assert_parse!(
+            recognize_float(remaining_exponent),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+
+        let (_i, nan) = float::<_, ()>("NaN").unwrap();
+        assert!(nan.is_nan());
+
+        let (_i, inf) = float::<_, ()>("inf").unwrap();
+        assert!(inf.is_infinite());
+        let (_i, inf) = float::<_, ()>("infinite").unwrap();
+        assert!(inf.is_infinite());
     }
-  }
+
+    #[test]
+    fn configurable_endianness() {
+        use crate::number::Endianness;
+
+        fn be_tst16(i: &[u8]) -> IResult<&[u8], u16> {
+            u16(Endianness::Big)(i)
+        }
+        fn le_tst16(i: &[u8]) -> IResult<&[u8], u16> {
+            u16(Endianness::Little)(i)
+        }
+        assert_eq!(be_tst16(&[0x80, 0x00]), Ok((&b""[..], 32_768_u16)));
+        assert_eq!(le_tst16(&[0x80, 0x00]), Ok((&b""[..], 128_u16)));
+
+        fn be_tst32(i: &[u8]) -> IResult<&[u8], u32> {
+            u32(Endianness::Big)(i)
+        }
+        fn le_tst32(i: &[u8]) -> IResult<&[u8], u32> {
+            u32(Endianness::Little)(i)
+        }
+        assert_eq!(
+            be_tst32(&[0x12, 0x00, 0x60, 0x00]),
+            Ok((&b""[..], 302_014_464_u32))
+        );
+        assert_eq!(
+            le_tst32(&[0x12, 0x00, 0x60, 0x00]),
+            Ok((&b""[..], 6_291_474_u32))
+        );
+
+        fn be_tst64(i: &[u8]) -> IResult<&[u8], u64> {
+            u64(Endianness::Big)(i)
+        }
+        fn le_tst64(i: &[u8]) -> IResult<&[u8], u64> {
+            u64(Endianness::Little)(i)
+        }
+        assert_eq!(
+            be_tst64(&[0x12, 0x00, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
+            Ok((&b""[..], 1_297_142_246_100_992_000_u64))
+        );
+        assert_eq!(
+            le_tst64(&[0x12, 0x00, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
+            Ok((&b""[..], 36_028_874_334_666_770_u64))
+        );
+
+        fn be_tsti16(i: &[u8]) -> IResult<&[u8], i16> {
+            i16(Endianness::Big)(i)
+        }
+        fn le_tsti16(i: &[u8]) -> IResult<&[u8], i16> {
+            i16(Endianness::Little)(i)
+        }
+        assert_eq!(be_tsti16(&[0x00, 0x80]), Ok((&b""[..], 128_i16)));
+        assert_eq!(le_tsti16(&[0x00, 0x80]), Ok((&b""[..], -32_768_i16)));
+
+        fn be_tsti32(i: &[u8]) -> IResult<&[u8], i32> {
+            i32(Endianness::Big)(i)
+        }
+        fn le_tsti32(i: &[u8]) -> IResult<&[u8], i32> {
+            i32(Endianness::Little)(i)
+        }
+        assert_eq!(
+            be_tsti32(&[0x00, 0x12, 0x60, 0x00]),
+            Ok((&b""[..], 1_204_224_i32))
+        );
+        assert_eq!(
+            le_tsti32(&[0x00, 0x12, 0x60, 0x00]),
+            Ok((&b""[..], 6_296_064_i32))
+        );
+
+        fn be_tsti64(i: &[u8]) -> IResult<&[u8], i64> {
+            i64(Endianness::Big)(i)
+        }
+        fn le_tsti64(i: &[u8]) -> IResult<&[u8], i64> {
+            i64(Endianness::Little)(i)
+        }
+        assert_eq!(
+            be_tsti64(&[0x00, 0xFF, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
+            Ok((&b""[..], 71_881_672_479_506_432_i64))
+        );
+        assert_eq!(
+            le_tsti64(&[0x00, 0xFF, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
+            Ok((&b""[..], 36_028_874_334_732_032_i64))
+        );
+    }
+
+    #[cfg(feature = "std")]
+    fn parse_f64(i: &str) -> IResult<&str, f64, ()> {
+        match recognize_float_or_exceptions(i) {
+            Err(e) => Err(e),
+            Ok((i, s)) => {
+                if s.is_empty() {
+                    return Err(ErrMode::Backtrack(()));
+                }
+                match s.parse_slice() {
+                    Some(n) => Ok((i, n)),
+                    None => Err(ErrMode::Backtrack(())),
+                }
+            }
+        }
+    }
+
+    proptest! {
+      #[test]
+      #[cfg(feature = "std")]
+      fn floats(s in "\\PC*") {
+          println!("testing {}", s);
+          let res1 = parse_f64(&s);
+          let res2 = double::<_, ()>(s.as_str());
+          assert_eq!(res1, res2);
+      }
+    }
 }

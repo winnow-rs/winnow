@@ -9,7 +9,7 @@ use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::{
-  split_at_offset1_complete, split_at_offset_complete, AsBStr, AsChar, ContainsToken, Input,
+    split_at_offset1_complete, split_at_offset_complete, AsBStr, AsChar, ContainsToken, Input,
 };
 use crate::input::{Compare, CompareResult};
 use crate::IResult;
@@ -35,21 +35,21 @@ use crate::IResult;
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::one_of`")]
 pub fn char<I, Error: ParseError<I>>(c: char) -> impl Fn(I) -> IResult<I, char, Error>
 where
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  move |i: I| char_internal(i, c)
+    move |i: I| char_internal(i, c)
 }
 
 pub(crate) fn char_internal<I, Error: ParseError<I>>(i: I, c: char) -> IResult<I, char, Error>
 where
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  i.next_token()
-    .map(|(i, t)| (i, t.as_char()))
-    .filter(|(_, t)| *t == c)
-    .ok_or_else(|| ErrMode::Backtrack(Error::from_char(i, c)))
+    i.next_token()
+        .map(|(i, t)| (i, t.as_char()))
+        .filter(|(_, t)| *t == c)
+        .ok_or_else(|| ErrMode::Backtrack(Error::from_char(i, c)))
 }
 
 /// Recognizes one character and checks that it satisfies a predicate
@@ -72,26 +72,26 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::one_of`")]
 pub fn satisfy<F, I, Error: ParseError<I>>(cond: F) -> impl Fn(I) -> IResult<I, char, Error>
 where
-  I: Input,
-  <I as Input>::Token: AsChar,
-  F: Fn(char) -> bool,
+    I: Input,
+    <I as Input>::Token: AsChar,
+    F: Fn(char) -> bool,
 {
-  move |i: I| satisfy_internal(i, &cond)
+    move |i: I| satisfy_internal(i, &cond)
 }
 
 pub(crate) fn satisfy_internal<F, I, Error: ParseError<I>>(
-  i: I,
-  cond: &F,
+    i: I,
+    cond: &F,
 ) -> IResult<I, char, Error>
 where
-  I: Input,
-  <I as Input>::Token: AsChar,
-  F: Fn(char) -> bool,
+    I: Input,
+    <I as Input>::Token: AsChar,
+    F: Fn(char) -> bool,
 {
-  i.next_token()
-    .map(|(i, t)| (i, t.as_char()))
-    .filter(|(_, t)| cond(*t))
-    .ok_or_else(|| ErrMode::from_error_kind(i, ErrorKind::Satisfy))
+    i.next_token()
+        .map(|(i, t)| (i, t.as_char()))
+        .filter(|(_, t)| cond(*t))
+        .ok_or_else(|| ErrMode::from_error_kind(i, ErrorKind::Satisfy))
 }
 
 /// Recognizes one of the provided characters.
@@ -111,11 +111,11 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::one_of`")]
 pub fn one_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
-  I: Input,
-  <I as Input>::Token: AsChar + Copy,
-  T: ContainsToken<<I as Input>::Token>,
+    I: Input,
+    <I as Input>::Token: AsChar + Copy,
+    T: ContainsToken<<I as Input>::Token>,
 {
-  move |i: I| crate::bytes::complete::one_of_internal(i, &list).map(|(i, c)| (i, c.as_char()))
+    move |i: I| crate::bytes::complete::one_of_internal(i, &list).map(|(i, c)| (i, c.as_char()))
 }
 
 /// Recognizes a character that is not in the provided characters.
@@ -135,11 +135,11 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::none_of`")]
 pub fn none_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
-  I: Input,
-  <I as Input>::Token: AsChar + Copy,
-  T: ContainsToken<<I as Input>::Token>,
+    I: Input,
+    <I as Input>::Token: AsChar + Copy,
+    T: ContainsToken<<I as Input>::Token>,
 {
-  move |i: I| crate::bytes::complete::none_of_internal(i, &list).map(|(i, c)| (i, c.as_char()))
+    move |i: I| crate::bytes::complete::none_of_internal(i, &list).map(|(i, c)| (i, c.as_char()))
 }
 
 /// Recognizes the string "\r\n".
@@ -163,17 +163,17 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::crlf`")]
 pub fn crlf<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input,
-  T: Compare<&'static str>,
+    T: Input,
+    T: Compare<&'static str>,
 {
-  const CRLF: &str = "\r\n";
-  match input.compare(CRLF) {
-    CompareResult::Ok => Ok(input.next_slice(CRLF.len())),
-    CompareResult::Incomplete | CompareResult::Error => {
-      let e: ErrorKind = ErrorKind::CrLf;
-      Err(ErrMode::from_error_kind(input, e))
+    const CRLF: &str = "\r\n";
+    match input.compare(CRLF) {
+        CompareResult::Ok => Ok(input.next_slice(CRLF.len())),
+        CompareResult::Incomplete | CompareResult::Error => {
+            let e: ErrorKind = ErrorKind::CrLf;
+            Err(ErrMode::from_error_kind(input, e))
+        }
     }
-  }
 }
 
 //FIXME: there's still an incomplete
@@ -199,38 +199,38 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::not_line_ending`][crate::character::not_line_ending]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::character::not_line_ending`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::character::not_line_ending`"
 )]
 pub fn not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input + AsBStr,
-  T: Compare<&'static str>,
-  <T as Input>::Token: AsChar,
+    T: Input + AsBStr,
+    T: Compare<&'static str>,
+    <T as Input>::Token: AsChar,
 {
-  match input.offset_for(|item| {
-    let c = item.as_char();
-    c == '\r' || c == '\n'
-  }) {
-    None => Ok(input.next_slice(input.input_len())),
-    Some(offset) => {
-      let (new_input, res) = input.next_slice(offset);
-      let bytes = new_input.as_bstr();
-      let nth = bytes[0];
-      if nth == b'\r' {
-        let comp = new_input.compare("\r\n");
-        match comp {
-          //FIXME: calculate the right index
-          CompareResult::Ok => {}
-          CompareResult::Incomplete | CompareResult::Error => {
-            let e: ErrorKind = ErrorKind::Tag;
-            return Err(ErrMode::from_error_kind(input, e));
-          }
+    match input.offset_for(|item| {
+        let c = item.as_char();
+        c == '\r' || c == '\n'
+    }) {
+        None => Ok(input.next_slice(input.input_len())),
+        Some(offset) => {
+            let (new_input, res) = input.next_slice(offset);
+            let bytes = new_input.as_bstr();
+            let nth = bytes[0];
+            if nth == b'\r' {
+                let comp = new_input.compare("\r\n");
+                match comp {
+                    //FIXME: calculate the right index
+                    CompareResult::Ok => {}
+                    CompareResult::Incomplete | CompareResult::Error => {
+                        let e: ErrorKind = ErrorKind::Tag;
+                        return Err(ErrMode::from_error_kind(input, e));
+                    }
+                }
+            }
+            Ok((new_input, res))
         }
-      }
-      Ok((new_input, res))
     }
-  }
 }
 
 /// Recognizes an end of line (both '\n' and '\r\n').
@@ -252,26 +252,26 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::line_ending`][crate::character::line_ending]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::character::line_ending`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::character::line_ending`"
 )]
 pub fn line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input,
-  T: Compare<&'static str>,
+    T: Input,
+    T: Compare<&'static str>,
 {
-  const LF: &str = "\n";
-  const CRLF: &str = "\r\n";
-  match input.compare(LF) {
-    CompareResult::Ok => Ok(input.next_slice(LF.len())),
-    CompareResult::Incomplete => Err(ErrMode::from_error_kind(input, ErrorKind::CrLf)),
-    CompareResult::Error => match input.compare("\r\n") {
-      CompareResult::Ok => Ok(input.next_slice(CRLF.len())),
-      CompareResult::Incomplete | CompareResult::Error => Err(ErrMode::Backtrack(
-        E::from_error_kind(input, ErrorKind::CrLf),
-      )),
-    },
-  }
+    const LF: &str = "\n";
+    const CRLF: &str = "\r\n";
+    match input.compare(LF) {
+        CompareResult::Ok => Ok(input.next_slice(LF.len())),
+        CompareResult::Incomplete => Err(ErrMode::from_error_kind(input, ErrorKind::CrLf)),
+        CompareResult::Error => match input.compare("\r\n") {
+            CompareResult::Ok => Ok(input.next_slice(CRLF.len())),
+            CompareResult::Incomplete | CompareResult::Error => Err(ErrMode::Backtrack(
+                E::from_error_kind(input, ErrorKind::CrLf),
+            )),
+        },
+    }
 }
 
 /// Matches a newline character '\n'.
@@ -295,10 +295,10 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::newline`")]
 pub fn newline<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
 where
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  char('\n')(input)
+    char('\n')(input)
 }
 
 /// Matches a tab character '\t'.
@@ -322,10 +322,10 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::tab`")]
 pub fn tab<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
 where
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  char('\t')(input)
+    char('\t')(input)
 }
 
 /// Matches one byte as a character. Note that the input type will
@@ -348,10 +348,10 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::any`")]
 pub fn anychar<T, E: ParseError<T>>(input: T) -> IResult<T, char, E>
 where
-  T: Input,
-  <T as Input>::Token: AsChar,
+    T: Input,
+    <T as Input>::Token: AsChar,
 {
-  crate::bytes::complete::any(input).map(|(i, c)| (i, c.as_char()))
+    crate::bytes::complete::any(input).map(|(i, c)| (i, c.as_char()))
 }
 
 /// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
@@ -376,10 +376,10 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::alpha0`")]
 pub fn alpha0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input,
-  <T as Input>::Token: AsChar,
+    T: Input,
+    <T as Input>::Token: AsChar,
 {
-  split_at_offset_complete(&input, |item| !item.is_alpha())
+    split_at_offset_complete(&input, |item| !item.is_alpha())
 }
 
 /// Recognizes one or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
@@ -404,10 +404,10 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::alpha1`")]
 pub fn alpha1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input,
-  <T as Input>::Token: AsChar,
+    T: Input,
+    <T as Input>::Token: AsChar,
 {
-  split_at_offset1_complete(&input, |item| !item.is_alpha(), ErrorKind::Alpha)
+    split_at_offset1_complete(&input, |item| !item.is_alpha(), ErrorKind::Alpha)
 }
 
 /// Recognizes zero or more ASCII numerical characters: 0-9
@@ -433,10 +433,10 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::digit0`")]
 pub fn digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input,
-  <T as Input>::Token: AsChar,
+    T: Input,
+    <T as Input>::Token: AsChar,
 {
-  split_at_offset_complete(&input, |item| !item.is_dec_digit())
+    split_at_offset_complete(&input, |item| !item.is_dec_digit())
 }
 
 /// Recognizes one or more ASCII numerical characters: 0-9
@@ -479,10 +479,10 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::digit1`")]
 pub fn digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input,
-  <T as Input>::Token: AsChar,
+    T: Input,
+    <T as Input>::Token: AsChar,
 {
-  split_at_offset1_complete(&input, |item| !item.is_dec_digit(), ErrorKind::Digit)
+    split_at_offset1_complete(&input, |item| !item.is_dec_digit(), ErrorKind::Digit)
 }
 
 /// Recognizes zero or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
@@ -504,15 +504,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::hex_digit0`][crate::character::hex_digit0]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::character::hex_digit0`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::character::hex_digit0`"
 )]
 pub fn hex_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input,
-  <T as Input>::Token: AsChar,
+    T: Input,
+    <T as Input>::Token: AsChar,
 {
-  split_at_offset_complete(&input, |item| !item.is_hex_digit())
+    split_at_offset_complete(&input, |item| !item.is_hex_digit())
 }
 
 /// Recognizes one or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
@@ -535,15 +535,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::hex_digit1`][crate::character::hex_digit1]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::character::hex_digit1`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::character::hex_digit1`"
 )]
 pub fn hex_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input,
-  <T as Input>::Token: AsChar,
+    T: Input,
+    <T as Input>::Token: AsChar,
 {
-  split_at_offset1_complete(&input, |item| !item.is_hex_digit(), ErrorKind::HexDigit)
+    split_at_offset1_complete(&input, |item| !item.is_hex_digit(), ErrorKind::HexDigit)
 }
 
 /// Recognizes zero or more octal characters: 0-7
@@ -566,15 +566,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::oct_digit0`][crate::character::oct_digit0]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::character::oct_digit0`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::character::oct_digit0`"
 )]
 pub fn oct_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input,
-  <T as Input>::Token: AsChar,
+    T: Input,
+    <T as Input>::Token: AsChar,
 {
-  split_at_offset_complete(&input, |item| !item.is_oct_digit())
+    split_at_offset_complete(&input, |item| !item.is_oct_digit())
 }
 
 /// Recognizes one or more octal characters: 0-7
@@ -597,15 +597,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::oct_digit1`][crate::character::oct_digit1]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::character::oct_digit1`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::character::oct_digit1`"
 )]
 pub fn oct_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input,
-  <T as Input>::Token: AsChar,
+    T: Input,
+    <T as Input>::Token: AsChar,
 {
-  split_at_offset1_complete(&input, |item| !item.is_oct_digit(), ErrorKind::OctDigit)
+    split_at_offset1_complete(&input, |item| !item.is_oct_digit(), ErrorKind::OctDigit)
 }
 
 /// Recognizes zero or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
@@ -628,15 +628,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::alphanumeric0`][crate::character::alphanumeric0]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::character::alphanumeric0`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::character::alphanumeric0`"
 )]
 pub fn alphanumeric0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input,
-  <T as Input>::Token: AsChar,
+    T: Input,
+    <T as Input>::Token: AsChar,
 {
-  split_at_offset_complete(&input, |item| !item.is_alphanum())
+    split_at_offset_complete(&input, |item| !item.is_alphanum())
 }
 
 /// Recognizes one or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
@@ -659,15 +659,15 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::alphanumeric1`][crate::character::alphanumeric1]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::character::alphanumeric1`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::character::alphanumeric1`"
 )]
 pub fn alphanumeric1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input,
-  <T as Input>::Token: AsChar,
+    T: Input,
+    <T as Input>::Token: AsChar,
 {
-  split_at_offset1_complete(&input, |item| !item.is_alphanum(), ErrorKind::AlphaNumeric)
+    split_at_offset1_complete(&input, |item| !item.is_alphanum(), ErrorKind::AlphaNumeric)
 }
 
 /// Recognizes zero or more spaces and tabs.
@@ -692,13 +692,13 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::space0`")]
 pub fn space0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input,
-  <T as Input>::Token: AsChar,
+    T: Input,
+    <T as Input>::Token: AsChar,
 {
-  split_at_offset_complete(&input, |item| {
-    let c = item.as_char();
-    !(c == ' ' || c == '\t')
-  })
+    split_at_offset_complete(&input, |item| {
+        let c = item.as_char();
+        !(c == ' ' || c == '\t')
+    })
 }
 
 /// Recognizes one or more spaces and tabs.
@@ -723,17 +723,17 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::space1`")]
 pub fn space1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input,
-  <T as Input>::Token: AsChar,
+    T: Input,
+    <T as Input>::Token: AsChar,
 {
-  split_at_offset1_complete(
-    &input,
-    |item| {
-      let c = item.as_char();
-      !(c == ' ' || c == '\t')
-    },
-    ErrorKind::Space,
-  )
+    split_at_offset1_complete(
+        &input,
+        |item| {
+            let c = item.as_char();
+            !(c == ' ' || c == '\t')
+        },
+        ErrorKind::Space,
+    )
 }
 
 /// Recognizes zero or more spaces, tabs, carriage returns and line feeds.
@@ -756,18 +756,18 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::multispace0`][crate::character::multispace0]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::character::multispace0`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::character::multispace0`"
 )]
 pub fn multispace0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input,
-  <T as Input>::Token: AsChar,
+    T: Input,
+    <T as Input>::Token: AsChar,
 {
-  split_at_offset_complete(&input, |item| {
-    let c = item.as_char();
-    !(c == ' ' || c == '\t' || c == '\r' || c == '\n')
-  })
+    split_at_offset_complete(&input, |item| {
+        let c = item.as_char();
+        !(c == ' ' || c == '\t' || c == '\r' || c == '\n')
+    })
 }
 
 /// Recognizes one or more spaces, tabs, carriage returns and line feeds.
@@ -790,38 +790,38 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::multispace1`][crate::character::multispace1]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `winnow::character::multispace1`"
+    since = "0.1.0",
+    note = "Replaced with `winnow::character::multispace1`"
 )]
 pub fn multispace1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
 where
-  T: Input,
-  <T as Input>::Token: AsChar,
+    T: Input,
+    <T as Input>::Token: AsChar,
 {
-  split_at_offset1_complete(
-    &input,
-    |item| {
-      let c = item.as_char();
-      !(c == ' ' || c == '\t' || c == '\r' || c == '\n')
-    },
-    ErrorKind::MultiSpace,
-  )
+    split_at_offset1_complete(
+        &input,
+        |item| {
+            let c = item.as_char();
+            !(c == ' ' || c == '\t' || c == '\r' || c == '\n')
+        },
+        ErrorKind::MultiSpace,
+    )
 }
 
 pub(crate) fn sign<T, E: ParseError<T>>(input: T) -> IResult<T, bool, E>
 where
-  T: Input,
-  <T as Input>::Token: AsChar + Copy,
+    T: Input,
+    <T as Input>::Token: AsChar + Copy,
 {
-  fn sign(token: impl AsChar) -> bool {
-    let token = token.as_char();
-    token == '+' || token == '-'
-  }
+    fn sign(token: impl AsChar) -> bool {
+        let token = token.as_char();
+        token == '+' || token == '-'
+    }
 
-  let (i, sign) = opt(|input| crate::bytes::complete::one_of_internal(input, &sign))(input)?;
-  let sign = sign.map(AsChar::as_char) != Some('-');
+    let (i, sign) = opt(|input| crate::bytes::complete::one_of_internal(input, &sign))(input)?;
+    let sign = sign.map(AsChar::as_char) != Some('-');
 
-  Ok((i, sign))
+    Ok((i, sign))
 }
 
 #[doc(hidden)]
@@ -932,497 +932,497 @@ uints! { u8 u16 u32 u64 u128 }
 
 #[cfg(test)]
 mod tests {
-  use super::*;
-  use crate::branch::alt;
-  use crate::error::ErrMode;
-  use crate::error::Error;
-  use crate::input::ParseSlice;
-  use proptest::prelude::*;
+    use super::*;
+    use crate::branch::alt;
+    use crate::error::ErrMode;
+    use crate::error::Error;
+    use crate::input::ParseSlice;
+    use proptest::prelude::*;
 
-  macro_rules! assert_parse(
+    macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
       let res: $crate::IResult<_, _> = $left;
       assert_eq!(res, $right);
     };
   );
 
-  #[test]
-  fn character() {
-    let empty: &[u8] = b"";
-    let a: &[u8] = b"abcd";
-    let b: &[u8] = b"1234";
-    let c: &[u8] = b"a123";
-    let d: &[u8] = "azé12".as_bstr();
-    let e: &[u8] = b" ";
-    let f: &[u8] = b" ;";
-    //assert_eq!(alpha1::<_, Error<_>>(a), Err(ErrMode::Incomplete(Needed::Size(1))));
-    assert_parse!(alpha1(a), Ok((empty, a)));
-    assert_eq!(
-      alpha1(b),
-      Err(ErrMode::Backtrack(Error {
-        input: b,
-        kind: ErrorKind::Alpha
-      }))
-    );
-    assert_eq!(alpha1::<_, Error<_>>(c), Ok((&c[1..], &b"a"[..])));
-    assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12".as_bstr(), &b"az"[..])));
-    assert_eq!(
-      digit1(a),
-      Err(ErrMode::Backtrack(Error {
-        input: a,
-        kind: ErrorKind::Digit
-      }))
-    );
-    assert_eq!(digit1::<_, Error<_>>(b), Ok((empty, b)));
-    assert_eq!(
-      digit1(c),
-      Err(ErrMode::Backtrack(Error {
-        input: c,
-        kind: ErrorKind::Digit
-      }))
-    );
-    assert_eq!(
-      digit1(d),
-      Err(ErrMode::Backtrack(Error {
-        input: d,
-        kind: ErrorKind::Digit
-      }))
-    );
-    assert_eq!(hex_digit1::<_, Error<_>>(a), Ok((empty, a)));
-    assert_eq!(hex_digit1::<_, Error<_>>(b), Ok((empty, b)));
-    assert_eq!(hex_digit1::<_, Error<_>>(c), Ok((empty, c)));
-    assert_eq!(
-      hex_digit1::<_, Error<_>>(d),
-      Ok(("zé12".as_bstr(), &b"a"[..]))
-    );
-    assert_eq!(
-      hex_digit1(e),
-      Err(ErrMode::Backtrack(Error {
-        input: e,
-        kind: ErrorKind::HexDigit
-      }))
-    );
-    assert_eq!(
-      oct_digit1(a),
-      Err(ErrMode::Backtrack(Error {
-        input: a,
-        kind: ErrorKind::OctDigit
-      }))
-    );
-    assert_eq!(oct_digit1::<_, Error<_>>(b), Ok((empty, b)));
-    assert_eq!(
-      oct_digit1(c),
-      Err(ErrMode::Backtrack(Error {
-        input: c,
-        kind: ErrorKind::OctDigit
-      }))
-    );
-    assert_eq!(
-      oct_digit1(d),
-      Err(ErrMode::Backtrack(Error {
-        input: d,
-        kind: ErrorKind::OctDigit
-      }))
-    );
-    assert_eq!(alphanumeric1::<_, Error<_>>(a), Ok((empty, a)));
-    //assert_eq!(fix_error!(b,(), alphanumeric), Ok((empty, b)));
-    assert_eq!(alphanumeric1::<_, Error<_>>(c), Ok((empty, c)));
-    assert_eq!(
-      alphanumeric1::<_, Error<_>>(d),
-      Ok(("é12".as_bstr(), &b"az"[..]))
-    );
-    assert_eq!(space1::<_, Error<_>>(e), Ok((empty, e)));
-    assert_eq!(space1::<_, Error<_>>(f), Ok((&b";"[..], &b" "[..])));
-  }
-
-  #[cfg(feature = "alloc")]
-  #[test]
-  fn character_s() {
-    let empty = "";
-    let a = "abcd";
-    let b = "1234";
-    let c = "a123";
-    let d = "azé12";
-    let e = " ";
-    assert_eq!(alpha1::<_, Error<_>>(a), Ok((empty, a)));
-    assert_eq!(
-      alpha1(b),
-      Err(ErrMode::Backtrack(Error {
-        input: b,
-        kind: ErrorKind::Alpha
-      }))
-    );
-    assert_eq!(alpha1::<_, Error<_>>(c), Ok((&c[1..], "a")));
-    assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12", "az")));
-    assert_eq!(
-      digit1(a),
-      Err(ErrMode::Backtrack(Error {
-        input: a,
-        kind: ErrorKind::Digit
-      }))
-    );
-    assert_eq!(digit1::<_, Error<_>>(b), Ok((empty, b)));
-    assert_eq!(
-      digit1(c),
-      Err(ErrMode::Backtrack(Error {
-        input: c,
-        kind: ErrorKind::Digit
-      }))
-    );
-    assert_eq!(
-      digit1(d),
-      Err(ErrMode::Backtrack(Error {
-        input: d,
-        kind: ErrorKind::Digit
-      }))
-    );
-    assert_eq!(hex_digit1::<_, Error<_>>(a), Ok((empty, a)));
-    assert_eq!(hex_digit1::<_, Error<_>>(b), Ok((empty, b)));
-    assert_eq!(hex_digit1::<_, Error<_>>(c), Ok((empty, c)));
-    assert_eq!(hex_digit1::<_, Error<_>>(d), Ok(("zé12", "a")));
-    assert_eq!(
-      hex_digit1(e),
-      Err(ErrMode::Backtrack(Error {
-        input: e,
-        kind: ErrorKind::HexDigit
-      }))
-    );
-    assert_eq!(
-      oct_digit1(a),
-      Err(ErrMode::Backtrack(Error {
-        input: a,
-        kind: ErrorKind::OctDigit
-      }))
-    );
-    assert_eq!(oct_digit1::<_, Error<_>>(b), Ok((empty, b)));
-    assert_eq!(
-      oct_digit1(c),
-      Err(ErrMode::Backtrack(Error {
-        input: c,
-        kind: ErrorKind::OctDigit
-      }))
-    );
-    assert_eq!(
-      oct_digit1(d),
-      Err(ErrMode::Backtrack(Error {
-        input: d,
-        kind: ErrorKind::OctDigit
-      }))
-    );
-    assert_eq!(alphanumeric1::<_, Error<_>>(a), Ok((empty, a)));
-    //assert_eq!(fix_error!(b,(), alphanumeric), Ok((empty, b)));
-    assert_eq!(alphanumeric1::<_, Error<_>>(c), Ok((empty, c)));
-    assert_eq!(alphanumeric1::<_, Error<_>>(d), Ok(("é12", "az")));
-    assert_eq!(space1::<_, Error<_>>(e), Ok((empty, e)));
-  }
-
-  use crate::input::Offset;
-  #[test]
-  fn offset() {
-    let a = &b"abcd;"[..];
-    let b = &b"1234;"[..];
-    let c = &b"a123;"[..];
-    let d = &b" \t;"[..];
-    let e = &b" \t\r\n;"[..];
-    let f = &b"123abcDEF;"[..];
-
-    match alpha1::<_, Error<_>>(a) {
-      Ok((i, _)) => {
-        assert_eq!(a.offset_to(i) + i.len(), a.len());
-      }
-      _ => panic!("wrong return type in offset test for alpha"),
+    #[test]
+    fn character() {
+        let empty: &[u8] = b"";
+        let a: &[u8] = b"abcd";
+        let b: &[u8] = b"1234";
+        let c: &[u8] = b"a123";
+        let d: &[u8] = "azé12".as_bstr();
+        let e: &[u8] = b" ";
+        let f: &[u8] = b" ;";
+        //assert_eq!(alpha1::<_, Error<_>>(a), Err(ErrMode::Incomplete(Needed::Size(1))));
+        assert_parse!(alpha1(a), Ok((empty, a)));
+        assert_eq!(
+            alpha1(b),
+            Err(ErrMode::Backtrack(Error {
+                input: b,
+                kind: ErrorKind::Alpha
+            }))
+        );
+        assert_eq!(alpha1::<_, Error<_>>(c), Ok((&c[1..], &b"a"[..])));
+        assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12".as_bstr(), &b"az"[..])));
+        assert_eq!(
+            digit1(a),
+            Err(ErrMode::Backtrack(Error {
+                input: a,
+                kind: ErrorKind::Digit
+            }))
+        );
+        assert_eq!(digit1::<_, Error<_>>(b), Ok((empty, b)));
+        assert_eq!(
+            digit1(c),
+            Err(ErrMode::Backtrack(Error {
+                input: c,
+                kind: ErrorKind::Digit
+            }))
+        );
+        assert_eq!(
+            digit1(d),
+            Err(ErrMode::Backtrack(Error {
+                input: d,
+                kind: ErrorKind::Digit
+            }))
+        );
+        assert_eq!(hex_digit1::<_, Error<_>>(a), Ok((empty, a)));
+        assert_eq!(hex_digit1::<_, Error<_>>(b), Ok((empty, b)));
+        assert_eq!(hex_digit1::<_, Error<_>>(c), Ok((empty, c)));
+        assert_eq!(
+            hex_digit1::<_, Error<_>>(d),
+            Ok(("zé12".as_bstr(), &b"a"[..]))
+        );
+        assert_eq!(
+            hex_digit1(e),
+            Err(ErrMode::Backtrack(Error {
+                input: e,
+                kind: ErrorKind::HexDigit
+            }))
+        );
+        assert_eq!(
+            oct_digit1(a),
+            Err(ErrMode::Backtrack(Error {
+                input: a,
+                kind: ErrorKind::OctDigit
+            }))
+        );
+        assert_eq!(oct_digit1::<_, Error<_>>(b), Ok((empty, b)));
+        assert_eq!(
+            oct_digit1(c),
+            Err(ErrMode::Backtrack(Error {
+                input: c,
+                kind: ErrorKind::OctDigit
+            }))
+        );
+        assert_eq!(
+            oct_digit1(d),
+            Err(ErrMode::Backtrack(Error {
+                input: d,
+                kind: ErrorKind::OctDigit
+            }))
+        );
+        assert_eq!(alphanumeric1::<_, Error<_>>(a), Ok((empty, a)));
+        //assert_eq!(fix_error!(b,(), alphanumeric), Ok((empty, b)));
+        assert_eq!(alphanumeric1::<_, Error<_>>(c), Ok((empty, c)));
+        assert_eq!(
+            alphanumeric1::<_, Error<_>>(d),
+            Ok(("é12".as_bstr(), &b"az"[..]))
+        );
+        assert_eq!(space1::<_, Error<_>>(e), Ok((empty, e)));
+        assert_eq!(space1::<_, Error<_>>(f), Ok((&b";"[..], &b" "[..])));
     }
-    match digit1::<_, Error<_>>(b) {
-      Ok((i, _)) => {
-        assert_eq!(b.offset_to(i) + i.len(), b.len());
-      }
-      _ => panic!("wrong return type in offset test for digit"),
+
+    #[cfg(feature = "alloc")]
+    #[test]
+    fn character_s() {
+        let empty = "";
+        let a = "abcd";
+        let b = "1234";
+        let c = "a123";
+        let d = "azé12";
+        let e = " ";
+        assert_eq!(alpha1::<_, Error<_>>(a), Ok((empty, a)));
+        assert_eq!(
+            alpha1(b),
+            Err(ErrMode::Backtrack(Error {
+                input: b,
+                kind: ErrorKind::Alpha
+            }))
+        );
+        assert_eq!(alpha1::<_, Error<_>>(c), Ok((&c[1..], "a")));
+        assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12", "az")));
+        assert_eq!(
+            digit1(a),
+            Err(ErrMode::Backtrack(Error {
+                input: a,
+                kind: ErrorKind::Digit
+            }))
+        );
+        assert_eq!(digit1::<_, Error<_>>(b), Ok((empty, b)));
+        assert_eq!(
+            digit1(c),
+            Err(ErrMode::Backtrack(Error {
+                input: c,
+                kind: ErrorKind::Digit
+            }))
+        );
+        assert_eq!(
+            digit1(d),
+            Err(ErrMode::Backtrack(Error {
+                input: d,
+                kind: ErrorKind::Digit
+            }))
+        );
+        assert_eq!(hex_digit1::<_, Error<_>>(a), Ok((empty, a)));
+        assert_eq!(hex_digit1::<_, Error<_>>(b), Ok((empty, b)));
+        assert_eq!(hex_digit1::<_, Error<_>>(c), Ok((empty, c)));
+        assert_eq!(hex_digit1::<_, Error<_>>(d), Ok(("zé12", "a")));
+        assert_eq!(
+            hex_digit1(e),
+            Err(ErrMode::Backtrack(Error {
+                input: e,
+                kind: ErrorKind::HexDigit
+            }))
+        );
+        assert_eq!(
+            oct_digit1(a),
+            Err(ErrMode::Backtrack(Error {
+                input: a,
+                kind: ErrorKind::OctDigit
+            }))
+        );
+        assert_eq!(oct_digit1::<_, Error<_>>(b), Ok((empty, b)));
+        assert_eq!(
+            oct_digit1(c),
+            Err(ErrMode::Backtrack(Error {
+                input: c,
+                kind: ErrorKind::OctDigit
+            }))
+        );
+        assert_eq!(
+            oct_digit1(d),
+            Err(ErrMode::Backtrack(Error {
+                input: d,
+                kind: ErrorKind::OctDigit
+            }))
+        );
+        assert_eq!(alphanumeric1::<_, Error<_>>(a), Ok((empty, a)));
+        //assert_eq!(fix_error!(b,(), alphanumeric), Ok((empty, b)));
+        assert_eq!(alphanumeric1::<_, Error<_>>(c), Ok((empty, c)));
+        assert_eq!(alphanumeric1::<_, Error<_>>(d), Ok(("é12", "az")));
+        assert_eq!(space1::<_, Error<_>>(e), Ok((empty, e)));
     }
-    match alphanumeric1::<_, Error<_>>(c) {
-      Ok((i, _)) => {
-        assert_eq!(c.offset_to(i) + i.len(), c.len());
-      }
-      _ => panic!("wrong return type in offset test for alphanumeric"),
-    }
-    match space1::<_, Error<_>>(d) {
-      Ok((i, _)) => {
-        assert_eq!(d.offset_to(i) + i.len(), d.len());
-      }
-      _ => panic!("wrong return type in offset test for space"),
-    }
-    match multispace1::<_, Error<_>>(e) {
-      Ok((i, _)) => {
-        assert_eq!(e.offset_to(i) + i.len(), e.len());
-      }
-      _ => panic!("wrong return type in offset test for multispace"),
-    }
-    match hex_digit1::<_, Error<_>>(f) {
-      Ok((i, _)) => {
-        assert_eq!(f.offset_to(i) + i.len(), f.len());
-      }
-      _ => panic!("wrong return type in offset test for hex_digit"),
-    }
-    match oct_digit1::<_, Error<_>>(f) {
-      Ok((i, _)) => {
-        assert_eq!(f.offset_to(i) + i.len(), f.len());
-      }
-      _ => panic!("wrong return type in offset test for oct_digit"),
-    }
-  }
 
-  #[test]
-  fn is_not_line_ending_bytes() {
-    let a: &[u8] = b"ab12cd\nefgh";
-    assert_eq!(
-      not_line_ending::<_, Error<_>>(a),
-      Ok((&b"\nefgh"[..], &b"ab12cd"[..]))
-    );
+    use crate::input::Offset;
+    #[test]
+    fn offset() {
+        let a = &b"abcd;"[..];
+        let b = &b"1234;"[..];
+        let c = &b"a123;"[..];
+        let d = &b" \t;"[..];
+        let e = &b" \t\r\n;"[..];
+        let f = &b"123abcDEF;"[..];
 
-    let b: &[u8] = b"ab12cd\nefgh\nijkl";
-    assert_eq!(
-      not_line_ending::<_, Error<_>>(b),
-      Ok((&b"\nefgh\nijkl"[..], &b"ab12cd"[..]))
-    );
-
-    let c: &[u8] = b"ab12cd\r\nefgh\nijkl";
-    assert_eq!(
-      not_line_ending::<_, Error<_>>(c),
-      Ok((&b"\r\nefgh\nijkl"[..], &b"ab12cd"[..]))
-    );
-
-    let d: &[u8] = b"ab12cd";
-    assert_eq!(not_line_ending::<_, Error<_>>(d), Ok((&[][..], d)));
-  }
-
-  #[test]
-  fn is_not_line_ending_str() {
-    /*
-    let a: &str = "ab12cd\nefgh";
-    assert_eq!(not_line_ending(a), Ok((&"\nefgh"[..], &"ab12cd"[..])));
-
-    let b: &str = "ab12cd\nefgh\nijkl";
-    assert_eq!(not_line_ending(b), Ok((&"\nefgh\nijkl"[..], &"ab12cd"[..])));
-
-    let c: &str = "ab12cd\r\nefgh\nijkl";
-    assert_eq!(not_line_ending(c), Ok((&"\r\nefgh\nijkl"[..], &"ab12cd"[..])));
-
-    let d = "βèƒôřè\nÂßÇáƒƭèř";
-    assert_eq!(not_line_ending(d), Ok((&"\nÂßÇáƒƭèř"[..], &"βèƒôřè"[..])));
-
-    let e = "βèƒôřè\r\nÂßÇáƒƭèř";
-    assert_eq!(not_line_ending(e), Ok((&"\r\nÂßÇáƒƭèř"[..], &"βèƒôřè"[..])));
-    */
-
-    let f = "βèƒôřè\rÂßÇáƒƭèř";
-    assert_eq!(
-      not_line_ending(f),
-      Err(ErrMode::Backtrack(Error {
-        input: f,
-        kind: ErrorKind::Tag
-      }))
-    );
-
-    let g2: &str = "ab12cd";
-    assert_eq!(not_line_ending::<_, Error<_>>(g2), Ok(("", g2)));
-  }
-
-  #[test]
-  fn hex_digit_test() {
-    let i = &b"0123456789abcdefABCDEF;"[..];
-    assert_parse!(hex_digit1(i), Ok((&b";"[..], &i[..i.len() - 1])));
-
-    let i = &b"g"[..];
-    assert_parse!(
-      hex_digit1(i),
-      Err(ErrMode::Backtrack(error_position!(i, ErrorKind::HexDigit)))
-    );
-
-    let i = &b"G"[..];
-    assert_parse!(
-      hex_digit1(i),
-      Err(ErrMode::Backtrack(error_position!(i, ErrorKind::HexDigit)))
-    );
-
-    assert!(AsChar::is_hex_digit(b'0'));
-    assert!(AsChar::is_hex_digit(b'9'));
-    assert!(AsChar::is_hex_digit(b'a'));
-    assert!(AsChar::is_hex_digit(b'f'));
-    assert!(AsChar::is_hex_digit(b'A'));
-    assert!(AsChar::is_hex_digit(b'F'));
-    assert!(!AsChar::is_hex_digit(b'g'));
-    assert!(!AsChar::is_hex_digit(b'G'));
-    assert!(!AsChar::is_hex_digit(b'/'));
-    assert!(!AsChar::is_hex_digit(b':'));
-    assert!(!AsChar::is_hex_digit(b'@'));
-    assert!(!AsChar::is_hex_digit(b'\x60'));
-  }
-
-  #[test]
-  fn oct_digit_test() {
-    let i = &b"01234567;"[..];
-    assert_parse!(oct_digit1(i), Ok((&b";"[..], &i[..i.len() - 1])));
-
-    let i = &b"8"[..];
-    assert_parse!(
-      oct_digit1(i),
-      Err(ErrMode::Backtrack(error_position!(i, ErrorKind::OctDigit)))
-    );
-
-    assert!(AsChar::is_oct_digit(b'0'));
-    assert!(AsChar::is_oct_digit(b'7'));
-    assert!(!AsChar::is_oct_digit(b'8'));
-    assert!(!AsChar::is_oct_digit(b'9'));
-    assert!(!AsChar::is_oct_digit(b'a'));
-    assert!(!AsChar::is_oct_digit(b'A'));
-    assert!(!AsChar::is_oct_digit(b'/'));
-    assert!(!AsChar::is_oct_digit(b':'));
-    assert!(!AsChar::is_oct_digit(b'@'));
-    assert!(!AsChar::is_oct_digit(b'\x60'));
-  }
-
-  #[test]
-  fn full_line_windows() {
-    use crate::sequence::pair;
-    fn take_full_line(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8])> {
-      pair(not_line_ending, line_ending)(i)
-    }
-    let input = b"abc\r\n";
-    let output = take_full_line(input);
-    assert_eq!(output, Ok((&b""[..], (&b"abc"[..], &b"\r\n"[..]))));
-  }
-
-  #[test]
-  fn full_line_unix() {
-    use crate::sequence::pair;
-    fn take_full_line(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8])> {
-      pair(not_line_ending, line_ending)(i)
-    }
-    let input = b"abc\n";
-    let output = take_full_line(input);
-    assert_eq!(output, Ok((&b""[..], (&b"abc"[..], &b"\n"[..]))));
-  }
-
-  #[test]
-  fn check_windows_lineending() {
-    let input = b"\r\n";
-    let output = line_ending(&input[..]);
-    assert_parse!(output, Ok((&b""[..], &b"\r\n"[..])));
-  }
-
-  #[test]
-  fn check_unix_lineending() {
-    let input = b"\n";
-    let output = line_ending(&input[..]);
-    assert_parse!(output, Ok((&b""[..], &b"\n"[..])));
-  }
-
-  #[test]
-  fn cr_lf() {
-    assert_parse!(crlf(&b"\r\na"[..]), Ok((&b"a"[..], &b"\r\n"[..])));
-    assert_parse!(
-      crlf(&b"\r"[..]),
-      Err(ErrMode::Backtrack(error_position!(
-        &b"\r"[..],
-        ErrorKind::CrLf
-      )))
-    );
-    assert_parse!(
-      crlf(&b"\ra"[..]),
-      Err(ErrMode::Backtrack(error_position!(
-        &b"\ra"[..],
-        ErrorKind::CrLf
-      )))
-    );
-
-    assert_parse!(crlf("\r\na"), Ok(("a", "\r\n")));
-    assert_parse!(
-      crlf("\r"),
-      Err(ErrMode::Backtrack(error_position!("\r", ErrorKind::CrLf)))
-    );
-    assert_parse!(
-      crlf("\ra"),
-      Err(ErrMode::Backtrack(error_position!("\ra", ErrorKind::CrLf)))
-    );
-  }
-
-  #[test]
-  fn end_of_line() {
-    assert_parse!(line_ending(&b"\na"[..]), Ok((&b"a"[..], &b"\n"[..])));
-    assert_parse!(line_ending(&b"\r\na"[..]), Ok((&b"a"[..], &b"\r\n"[..])));
-    assert_parse!(
-      line_ending(&b"\r"[..]),
-      Err(ErrMode::Backtrack(error_position!(
-        &b"\r"[..],
-        ErrorKind::CrLf
-      )))
-    );
-    assert_parse!(
-      line_ending(&b"\ra"[..]),
-      Err(ErrMode::Backtrack(error_position!(
-        &b"\ra"[..],
-        ErrorKind::CrLf
-      )))
-    );
-
-    assert_parse!(line_ending("\na"), Ok(("a", "\n")));
-    assert_parse!(line_ending("\r\na"), Ok(("a", "\r\n")));
-    assert_parse!(
-      line_ending("\r"),
-      Err(ErrMode::Backtrack(error_position!("\r", ErrorKind::CrLf)))
-    );
-    assert_parse!(
-      line_ending("\ra"),
-      Err(ErrMode::Backtrack(error_position!("\ra", ErrorKind::CrLf)))
-    );
-  }
-
-  fn digit_to_i16(input: &str) -> IResult<&str, i16> {
-    let i = input;
-    let (i, opt_sign) = opt(alt((char('+'), char('-'))))(i)?;
-    let sign = match opt_sign {
-      Some('+') | None => true,
-      Some('-') => false,
-      _ => unreachable!(),
-    };
-
-    let (i, s) = match digit1::<_, crate::error::Error<_>>(i) {
-      Ok((i, s)) => (i, s),
-      Err(_) => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
-    };
-
-    match s.parse_slice() {
-      Some(n) => {
-        if sign {
-          Ok((i, n))
-        } else {
-          Ok((i, -n))
+        match alpha1::<_, Error<_>>(a) {
+            Ok((i, _)) => {
+                assert_eq!(a.offset_to(i) + i.len(), a.len());
+            }
+            _ => panic!("wrong return type in offset test for alpha"),
         }
+        match digit1::<_, Error<_>>(b) {
+            Ok((i, _)) => {
+                assert_eq!(b.offset_to(i) + i.len(), b.len());
+            }
+            _ => panic!("wrong return type in offset test for digit"),
+        }
+        match alphanumeric1::<_, Error<_>>(c) {
+            Ok((i, _)) => {
+                assert_eq!(c.offset_to(i) + i.len(), c.len());
+            }
+            _ => panic!("wrong return type in offset test for alphanumeric"),
+        }
+        match space1::<_, Error<_>>(d) {
+            Ok((i, _)) => {
+                assert_eq!(d.offset_to(i) + i.len(), d.len());
+            }
+            _ => panic!("wrong return type in offset test for space"),
+        }
+        match multispace1::<_, Error<_>>(e) {
+            Ok((i, _)) => {
+                assert_eq!(e.offset_to(i) + i.len(), e.len());
+            }
+            _ => panic!("wrong return type in offset test for multispace"),
+        }
+        match hex_digit1::<_, Error<_>>(f) {
+            Ok((i, _)) => {
+                assert_eq!(f.offset_to(i) + i.len(), f.len());
+            }
+            _ => panic!("wrong return type in offset test for hex_digit"),
+        }
+        match oct_digit1::<_, Error<_>>(f) {
+            Ok((i, _)) => {
+                assert_eq!(f.offset_to(i) + i.len(), f.len());
+            }
+            _ => panic!("wrong return type in offset test for oct_digit"),
+        }
+    }
+
+    #[test]
+    fn is_not_line_ending_bytes() {
+        let a: &[u8] = b"ab12cd\nefgh";
+        assert_eq!(
+            not_line_ending::<_, Error<_>>(a),
+            Ok((&b"\nefgh"[..], &b"ab12cd"[..]))
+        );
+
+        let b: &[u8] = b"ab12cd\nefgh\nijkl";
+        assert_eq!(
+            not_line_ending::<_, Error<_>>(b),
+            Ok((&b"\nefgh\nijkl"[..], &b"ab12cd"[..]))
+        );
+
+        let c: &[u8] = b"ab12cd\r\nefgh\nijkl";
+        assert_eq!(
+            not_line_ending::<_, Error<_>>(c),
+            Ok((&b"\r\nefgh\nijkl"[..], &b"ab12cd"[..]))
+        );
+
+        let d: &[u8] = b"ab12cd";
+        assert_eq!(not_line_ending::<_, Error<_>>(d), Ok((&[][..], d)));
+    }
+
+    #[test]
+    fn is_not_line_ending_str() {
+        /*
+        let a: &str = "ab12cd\nefgh";
+        assert_eq!(not_line_ending(a), Ok((&"\nefgh"[..], &"ab12cd"[..])));
+
+        let b: &str = "ab12cd\nefgh\nijkl";
+        assert_eq!(not_line_ending(b), Ok((&"\nefgh\nijkl"[..], &"ab12cd"[..])));
+
+        let c: &str = "ab12cd\r\nefgh\nijkl";
+        assert_eq!(not_line_ending(c), Ok((&"\r\nefgh\nijkl"[..], &"ab12cd"[..])));
+
+        let d = "βèƒôřè\nÂßÇáƒƭèř";
+        assert_eq!(not_line_ending(d), Ok((&"\nÂßÇáƒƭèř"[..], &"βèƒôřè"[..])));
+
+        let e = "βèƒôřè\r\nÂßÇáƒƭèř";
+        assert_eq!(not_line_ending(e), Ok((&"\r\nÂßÇáƒƭèř"[..], &"βèƒôřè"[..])));
+        */
+
+        let f = "βèƒôřè\rÂßÇáƒƭèř";
+        assert_eq!(
+            not_line_ending(f),
+            Err(ErrMode::Backtrack(Error {
+                input: f,
+                kind: ErrorKind::Tag
+            }))
+        );
+
+        let g2: &str = "ab12cd";
+        assert_eq!(not_line_ending::<_, Error<_>>(g2), Ok(("", g2)));
+    }
+
+    #[test]
+    fn hex_digit_test() {
+        let i = &b"0123456789abcdefABCDEF;"[..];
+        assert_parse!(hex_digit1(i), Ok((&b";"[..], &i[..i.len() - 1])));
+
+        let i = &b"g"[..];
+        assert_parse!(
+            hex_digit1(i),
+            Err(ErrMode::Backtrack(error_position!(i, ErrorKind::HexDigit)))
+        );
+
+        let i = &b"G"[..];
+        assert_parse!(
+            hex_digit1(i),
+            Err(ErrMode::Backtrack(error_position!(i, ErrorKind::HexDigit)))
+        );
+
+        assert!(AsChar::is_hex_digit(b'0'));
+        assert!(AsChar::is_hex_digit(b'9'));
+        assert!(AsChar::is_hex_digit(b'a'));
+        assert!(AsChar::is_hex_digit(b'f'));
+        assert!(AsChar::is_hex_digit(b'A'));
+        assert!(AsChar::is_hex_digit(b'F'));
+        assert!(!AsChar::is_hex_digit(b'g'));
+        assert!(!AsChar::is_hex_digit(b'G'));
+        assert!(!AsChar::is_hex_digit(b'/'));
+        assert!(!AsChar::is_hex_digit(b':'));
+        assert!(!AsChar::is_hex_digit(b'@'));
+        assert!(!AsChar::is_hex_digit(b'\x60'));
+    }
+
+    #[test]
+    fn oct_digit_test() {
+        let i = &b"01234567;"[..];
+        assert_parse!(oct_digit1(i), Ok((&b";"[..], &i[..i.len() - 1])));
+
+        let i = &b"8"[..];
+        assert_parse!(
+            oct_digit1(i),
+            Err(ErrMode::Backtrack(error_position!(i, ErrorKind::OctDigit)))
+        );
+
+        assert!(AsChar::is_oct_digit(b'0'));
+        assert!(AsChar::is_oct_digit(b'7'));
+        assert!(!AsChar::is_oct_digit(b'8'));
+        assert!(!AsChar::is_oct_digit(b'9'));
+        assert!(!AsChar::is_oct_digit(b'a'));
+        assert!(!AsChar::is_oct_digit(b'A'));
+        assert!(!AsChar::is_oct_digit(b'/'));
+        assert!(!AsChar::is_oct_digit(b':'));
+        assert!(!AsChar::is_oct_digit(b'@'));
+        assert!(!AsChar::is_oct_digit(b'\x60'));
+    }
+
+    #[test]
+    fn full_line_windows() {
+        use crate::sequence::pair;
+        fn take_full_line(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8])> {
+            pair(not_line_ending, line_ending)(i)
+        }
+        let input = b"abc\r\n";
+        let output = take_full_line(input);
+        assert_eq!(output, Ok((&b""[..], (&b"abc"[..], &b"\r\n"[..]))));
+    }
+
+    #[test]
+    fn full_line_unix() {
+        use crate::sequence::pair;
+        fn take_full_line(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8])> {
+            pair(not_line_ending, line_ending)(i)
+        }
+        let input = b"abc\n";
+        let output = take_full_line(input);
+        assert_eq!(output, Ok((&b""[..], (&b"abc"[..], &b"\n"[..]))));
+    }
+
+    #[test]
+    fn check_windows_lineending() {
+        let input = b"\r\n";
+        let output = line_ending(&input[..]);
+        assert_parse!(output, Ok((&b""[..], &b"\r\n"[..])));
+    }
+
+    #[test]
+    fn check_unix_lineending() {
+        let input = b"\n";
+        let output = line_ending(&input[..]);
+        assert_parse!(output, Ok((&b""[..], &b"\n"[..])));
+    }
+
+    #[test]
+    fn cr_lf() {
+        assert_parse!(crlf(&b"\r\na"[..]), Ok((&b"a"[..], &b"\r\n"[..])));
+        assert_parse!(
+            crlf(&b"\r"[..]),
+            Err(ErrMode::Backtrack(error_position!(
+                &b"\r"[..],
+                ErrorKind::CrLf
+            )))
+        );
+        assert_parse!(
+            crlf(&b"\ra"[..]),
+            Err(ErrMode::Backtrack(error_position!(
+                &b"\ra"[..],
+                ErrorKind::CrLf
+            )))
+        );
+
+        assert_parse!(crlf("\r\na"), Ok(("a", "\r\n")));
+        assert_parse!(
+            crlf("\r"),
+            Err(ErrMode::Backtrack(error_position!("\r", ErrorKind::CrLf)))
+        );
+        assert_parse!(
+            crlf("\ra"),
+            Err(ErrMode::Backtrack(error_position!("\ra", ErrorKind::CrLf)))
+        );
+    }
+
+    #[test]
+    fn end_of_line() {
+        assert_parse!(line_ending(&b"\na"[..]), Ok((&b"a"[..], &b"\n"[..])));
+        assert_parse!(line_ending(&b"\r\na"[..]), Ok((&b"a"[..], &b"\r\n"[..])));
+        assert_parse!(
+            line_ending(&b"\r"[..]),
+            Err(ErrMode::Backtrack(error_position!(
+                &b"\r"[..],
+                ErrorKind::CrLf
+            )))
+        );
+        assert_parse!(
+            line_ending(&b"\ra"[..]),
+            Err(ErrMode::Backtrack(error_position!(
+                &b"\ra"[..],
+                ErrorKind::CrLf
+            )))
+        );
+
+        assert_parse!(line_ending("\na"), Ok(("a", "\n")));
+        assert_parse!(line_ending("\r\na"), Ok(("a", "\r\n")));
+        assert_parse!(
+            line_ending("\r"),
+            Err(ErrMode::Backtrack(error_position!("\r", ErrorKind::CrLf)))
+        );
+        assert_parse!(
+            line_ending("\ra"),
+            Err(ErrMode::Backtrack(error_position!("\ra", ErrorKind::CrLf)))
+        );
+    }
+
+    fn digit_to_i16(input: &str) -> IResult<&str, i16> {
+        let i = input;
+        let (i, opt_sign) = opt(alt((char('+'), char('-'))))(i)?;
+        let sign = match opt_sign {
+            Some('+') | None => true,
+            Some('-') => false,
+            _ => unreachable!(),
+        };
+
+        let (i, s) = match digit1::<_, crate::error::Error<_>>(i) {
+            Ok((i, s)) => (i, s),
+            Err(_) => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
+        };
+
+        match s.parse_slice() {
+            Some(n) => {
+                if sign {
+                    Ok((i, n))
+                } else {
+                    Ok((i, -n))
+                }
+            }
+            None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
+        }
+    }
+
+    fn digit_to_u32(i: &str) -> IResult<&str, u32> {
+        let (i, s) = digit1(i)?;
+        match s.parse_slice() {
+            Some(n) => Ok((i, n)),
+            None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
+        }
+    }
+
+    proptest! {
+      #[test]
+      fn ints(s in "\\PC*") {
+          let res1 = digit_to_i16(&s);
+          let res2 = i16(s.as_str());
+          assert_eq!(res1, res2);
       }
-      None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
-    }
-  }
 
-  fn digit_to_u32(i: &str) -> IResult<&str, u32> {
-    let (i, s) = digit1(i)?;
-    match s.parse_slice() {
-      Some(n) => Ok((i, n)),
-      None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
+      #[test]
+      fn uints(s in "\\PC*") {
+          let res1 = digit_to_u32(&s);
+          let res2 = u32(s.as_str());
+          assert_eq!(res1, res2);
+      }
     }
-  }
-
-  proptest! {
-    #[test]
-    fn ints(s in "\\PC*") {
-        let res1 = digit_to_i16(&s);
-        let res2 = i16(s.as_str());
-        assert_eq!(res1, res2);
-    }
-
-    #[test]
-    fn uints(s in "\\PC*") {
-        let res1 = digit_to_u32(&s);
-        let res2 = u32(s.as_str());
-        assert_eq!(res1, res2);
-    }
-  }
 }

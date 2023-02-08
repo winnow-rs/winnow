@@ -49,18 +49,18 @@ use crate::Parser;
 /// ```
 #[inline(always)]
 pub fn crlf<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
+    input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  I: Compare<&'static str>,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    I: Compare<&'static str>,
 {
-  if STREAMING {
-    streaming::crlf(input)
-  } else {
-    complete::crlf(input)
-  }
+    if STREAMING {
+        streaming::crlf(input)
+    } else {
+        complete::crlf(input)
+    }
 }
 
 /// Recognizes a string of any char except '\r\n' or '\n'.
@@ -98,19 +98,19 @@ where
 /// ```
 #[inline(always)]
 pub fn not_line_ending<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
+    input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input + AsBStr,
-  I: Compare<&'static str>,
-  <I as Input>::Token: AsChar,
+    I: InputIsStreaming<STREAMING>,
+    I: Input + AsBStr,
+    I: Compare<&'static str>,
+    <I as Input>::Token: AsChar,
 {
-  if STREAMING {
-    streaming::not_line_ending(input)
-  } else {
-    complete::not_line_ending(input)
-  }
+    if STREAMING {
+        streaming::not_line_ending(input)
+    } else {
+        complete::not_line_ending(input)
+    }
 }
 
 /// Recognizes an end of line (both '\n' and '\r\n').
@@ -143,18 +143,18 @@ where
 /// ```
 #[inline(always)]
 pub fn line_ending<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
+    input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  I: Compare<&'static str>,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    I: Compare<&'static str>,
 {
-  if STREAMING {
-    streaming::line_ending(input)
-  } else {
-    complete::line_ending(input)
-  }
+    if STREAMING {
+        streaming::line_ending(input)
+    } else {
+        complete::line_ending(input)
+    }
 }
 
 /// Matches a newline character '\n'.
@@ -188,15 +188,15 @@ where
 #[inline(always)]
 pub fn newline<I, Error: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, char, Error>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  if STREAMING {
-    streaming::newline(input)
-  } else {
-    complete::newline(input)
-  }
+    if STREAMING {
+        streaming::newline(input)
+    } else {
+        complete::newline(input)
+    }
 }
 
 /// Matches a tab character '\t'.
@@ -230,15 +230,15 @@ where
 #[inline(always)]
 pub fn tab<I, Error: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, char, Error>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  if STREAMING {
-    streaming::tab(input)
-  } else {
-    complete::tab(input)
-  }
+    if STREAMING {
+        streaming::tab(input)
+    } else {
+        complete::tab(input)
+    }
 }
 
 /// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
@@ -273,18 +273,18 @@ where
 /// ```
 #[inline(always)]
 pub fn alpha0<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
+    input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  if STREAMING {
-    streaming::alpha0(input)
-  } else {
-    complete::alpha0(input)
-  }
+    if STREAMING {
+        streaming::alpha0(input)
+    } else {
+        complete::alpha0(input)
+    }
 }
 
 /// Recognizes one or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
@@ -319,18 +319,18 @@ where
 /// ```
 #[inline(always)]
 pub fn alpha1<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
+    input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  if STREAMING {
-    streaming::alpha1(input)
-  } else {
-    complete::alpha1(input)
-  }
+    if STREAMING {
+        streaming::alpha1(input)
+    } else {
+        complete::alpha1(input)
+    }
 }
 
 /// Recognizes zero or more ASCII numerical characters: 0-9
@@ -366,18 +366,18 @@ where
 /// ```
 #[inline(always)]
 pub fn digit0<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
+    input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  if STREAMING {
-    streaming::digit0(input)
-  } else {
-    complete::digit0(input)
-  }
+    if STREAMING {
+        streaming::digit0(input)
+    } else {
+        complete::digit0(input)
+    }
 }
 
 /// Recognizes one or more ASCII numerical characters: 0-9
@@ -428,18 +428,18 @@ where
 /// ```
 #[inline(always)]
 pub fn digit1<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
+    input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  if STREAMING {
-    streaming::digit1(input)
-  } else {
-    complete::digit1(input)
-  }
+    if STREAMING {
+        streaming::digit1(input)
+    } else {
+        complete::digit1(input)
+    }
 }
 
 /// Recognizes zero or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
@@ -473,18 +473,18 @@ where
 /// ```
 #[inline(always)]
 pub fn hex_digit0<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
+    input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  if STREAMING {
-    streaming::hex_digit0(input)
-  } else {
-    complete::hex_digit0(input)
-  }
+    if STREAMING {
+        streaming::hex_digit0(input)
+    } else {
+        complete::hex_digit0(input)
+    }
 }
 
 /// Recognizes one or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
@@ -519,18 +519,18 @@ where
 /// ```
 #[inline(always)]
 pub fn hex_digit1<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
+    input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  if STREAMING {
-    streaming::hex_digit1(input)
-  } else {
-    complete::hex_digit1(input)
-  }
+    if STREAMING {
+        streaming::hex_digit1(input)
+    } else {
+        complete::hex_digit1(input)
+    }
 }
 
 /// Recognizes zero or more octal characters: 0-7
@@ -565,18 +565,18 @@ where
 /// ```
 #[inline(always)]
 pub fn oct_digit0<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
+    input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  if STREAMING {
-    streaming::oct_digit0(input)
-  } else {
-    complete::oct_digit0(input)
-  }
+    if STREAMING {
+        streaming::oct_digit0(input)
+    } else {
+        complete::oct_digit0(input)
+    }
 }
 
 /// Recognizes one or more octal characters: 0-7
@@ -611,18 +611,18 @@ where
 /// ```
 #[inline(always)]
 pub fn oct_digit1<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
+    input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  if STREAMING {
-    streaming::oct_digit1(input)
-  } else {
-    complete::oct_digit1(input)
-  }
+    if STREAMING {
+        streaming::oct_digit1(input)
+    } else {
+        complete::oct_digit1(input)
+    }
 }
 
 /// Recognizes zero or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
@@ -657,18 +657,18 @@ where
 /// ```
 #[inline(always)]
 pub fn alphanumeric0<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
+    input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  if STREAMING {
-    streaming::alphanumeric0(input)
-  } else {
-    complete::alphanumeric0(input)
-  }
+    if STREAMING {
+        streaming::alphanumeric0(input)
+    } else {
+        complete::alphanumeric0(input)
+    }
 }
 
 /// Recognizes one or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
@@ -703,18 +703,18 @@ where
 /// ```
 #[inline(always)]
 pub fn alphanumeric1<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
+    input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  if STREAMING {
-    streaming::alphanumeric1(input)
-  } else {
-    complete::alphanumeric1(input)
-  }
+    if STREAMING {
+        streaming::alphanumeric1(input)
+    } else {
+        complete::alphanumeric1(input)
+    }
 }
 
 /// Recognizes zero or more spaces and tabs.
@@ -737,18 +737,18 @@ where
 /// ```
 #[inline(always)]
 pub fn space0<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
+    input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  if STREAMING {
-    streaming::space0(input)
-  } else {
-    complete::space0(input)
-  }
+    if STREAMING {
+        streaming::space0(input)
+    } else {
+        complete::space0(input)
+    }
 }
 
 /// Recognizes one or more spaces and tabs.
@@ -783,18 +783,18 @@ where
 /// ```
 #[inline(always)]
 pub fn space1<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
+    input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  if STREAMING {
-    streaming::space1(input)
-  } else {
-    complete::space1(input)
-  }
+    if STREAMING {
+        streaming::space1(input)
+    } else {
+        complete::space1(input)
+    }
 }
 
 /// Recognizes zero or more spaces, tabs, carriage returns and line feeds.
@@ -829,18 +829,18 @@ where
 /// ```
 #[inline(always)]
 pub fn multispace0<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
+    input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  if STREAMING {
-    streaming::multispace0(input)
-  } else {
-    complete::multispace0(input)
-  }
+    if STREAMING {
+        streaming::multispace0(input)
+    } else {
+        complete::multispace0(input)
+    }
 }
 
 /// Recognizes one or more spaces, tabs, carriage returns and line feeds.
@@ -875,18 +875,18 @@ where
 /// ```
 #[inline(always)]
 pub fn multispace1<I, E: ParseError<I>, const STREAMING: bool>(
-  input: I,
+    input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: AsChar,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: AsChar,
 {
-  if STREAMING {
-    streaming::multispace1(input)
-  } else {
-    complete::multispace1(input)
-  }
+    if STREAMING {
+        streaming::multispace1(input)
+    } else {
+        complete::multispace1(input)
+    }
 }
 
 /// Decode a decimal unsigned integer
@@ -896,144 +896,144 @@ where
 /// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 pub fn dec_uint<I, O, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, O, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: AsChar + Copy,
-  O: Uint,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: AsChar + Copy,
+    O: Uint,
 {
-  let i = input.clone();
+    let i = input.clone();
 
-  if i.input_len() == 0 {
-    if STREAMING {
-      return Err(ErrMode::Incomplete(Needed::new(1)));
-    } else {
-      return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
-    }
-  }
-
-  let mut value = O::default();
-  for (offset, c) in i.iter_offsets() {
-    match c.as_char().to_digit(10) {
-      Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
-        let d = d as u8;
-        v.checked_add(d, sealed::SealedMarker)
-      }) {
-        None => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
-        Some(v) => value = v,
-      },
-      None => {
-        if offset == 0 {
-          return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+    if i.input_len() == 0 {
+        if STREAMING {
+            return Err(ErrMode::Incomplete(Needed::new(1)));
         } else {
-          return Ok((i.next_slice(offset).0, value));
+            return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
         }
-      }
     }
-  }
 
-  if STREAMING {
-    Err(ErrMode::Incomplete(Needed::new(1)))
-  } else {
-    Ok((i.next_slice(i.input_len()).0, value))
-  }
+    let mut value = O::default();
+    for (offset, c) in i.iter_offsets() {
+        match c.as_char().to_digit(10) {
+            Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
+                let d = d as u8;
+                v.checked_add(d, sealed::SealedMarker)
+            }) {
+                None => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
+                Some(v) => value = v,
+            },
+            None => {
+                if offset == 0 {
+                    return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+                } else {
+                    return Ok((i.next_slice(offset).0, value));
+                }
+            }
+        }
+    }
+
+    if STREAMING {
+        Err(ErrMode::Incomplete(Needed::new(1)))
+    } else {
+        Ok((i.next_slice(i.input_len()).0, value))
+    }
 }
 
 /// Metadata for parsing unsigned integers
 pub trait Uint: Default {
-  #[doc(hidden)]
-  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self>;
-  #[doc(hidden)]
-  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self>;
+    #[doc(hidden)]
+    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self>;
+    #[doc(hidden)]
+    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self>;
 }
 
 impl Uint for u8 {
-  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_mul(by as Self)
-  }
-  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_add(by as Self)
-  }
+    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_mul(by as Self)
+    }
+    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_add(by as Self)
+    }
 }
 
 impl Uint for u16 {
-  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_mul(by as Self)
-  }
-  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_add(by as Self)
-  }
+    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_mul(by as Self)
+    }
+    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_add(by as Self)
+    }
 }
 
 impl Uint for u32 {
-  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_mul(by as Self)
-  }
-  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_add(by as Self)
-  }
+    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_mul(by as Self)
+    }
+    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_add(by as Self)
+    }
 }
 
 impl Uint for u64 {
-  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_mul(by as Self)
-  }
-  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_add(by as Self)
-  }
+    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_mul(by as Self)
+    }
+    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_add(by as Self)
+    }
 }
 
 impl Uint for u128 {
-  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_mul(by as Self)
-  }
-  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_add(by as Self)
-  }
+    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_mul(by as Self)
+    }
+    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_add(by as Self)
+    }
 }
 
 impl Uint for i8 {
-  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_mul(by as Self)
-  }
-  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_add(by as Self)
-  }
+    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_mul(by as Self)
+    }
+    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_add(by as Self)
+    }
 }
 
 impl Uint for i16 {
-  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_mul(by as Self)
-  }
-  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_add(by as Self)
-  }
+    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_mul(by as Self)
+    }
+    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_add(by as Self)
+    }
 }
 
 impl Uint for i32 {
-  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_mul(by as Self)
-  }
-  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_add(by as Self)
-  }
+    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_mul(by as Self)
+    }
+    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_add(by as Self)
+    }
 }
 
 impl Uint for i64 {
-  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_mul(by as Self)
-  }
-  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_add(by as Self)
-  }
+    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_mul(by as Self)
+    }
+    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_add(by as Self)
+    }
 }
 
 impl Uint for i128 {
-  fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_mul(by as Self)
-  }
-  fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_add(by as Self)
-  }
+    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_mul(by as Self)
+    }
+    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_add(by as Self)
+    }
 }
 
 /// Decode a decimal signed integer
@@ -1043,94 +1043,94 @@ impl Uint for i128 {
 /// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 pub fn dec_int<I, O, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, O, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  <I as Input>::Token: AsChar + Copy,
-  O: Int,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    <I as Input>::Token: AsChar + Copy,
+    O: Int,
 {
-  let i = input.clone();
+    let i = input.clone();
 
-  fn sign(token: impl AsChar) -> bool {
-    let token = token.as_char();
-    token == '+' || token == '-'
-  }
-  let (i, sign) = opt(crate::bytes::one_of(sign).map(AsChar::as_char))
-    .map(|c| c != Some('-'))
-    .parse_next(i)?;
+    fn sign(token: impl AsChar) -> bool {
+        let token = token.as_char();
+        token == '+' || token == '-'
+    }
+    let (i, sign) = opt(crate::bytes::one_of(sign).map(AsChar::as_char))
+        .map(|c| c != Some('-'))
+        .parse_next(i)?;
 
-  if i.input_len() == 0 {
+    if i.input_len() == 0 {
+        if STREAMING {
+            return Err(ErrMode::Incomplete(Needed::new(1)));
+        } else {
+            return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+        }
+    }
+
+    let mut value = O::default();
+    for (offset, c) in i.iter_offsets() {
+        match c.as_char().to_digit(10) {
+            Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
+                let d = d as u8;
+                if sign {
+                    v.checked_add(d, sealed::SealedMarker)
+                } else {
+                    v.checked_sub(d, sealed::SealedMarker)
+                }
+            }) {
+                None => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
+                Some(v) => value = v,
+            },
+            None => {
+                if offset == 0 {
+                    return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+                } else {
+                    return Ok((i.next_slice(offset).0, value));
+                }
+            }
+        }
+    }
+
     if STREAMING {
-      return Err(ErrMode::Incomplete(Needed::new(1)));
+        Err(ErrMode::Incomplete(Needed::new(1)))
     } else {
-      return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+        Ok((i.next_slice(i.input_len()).0, value))
     }
-  }
-
-  let mut value = O::default();
-  for (offset, c) in i.iter_offsets() {
-    match c.as_char().to_digit(10) {
-      Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
-        let d = d as u8;
-        if sign {
-          v.checked_add(d, sealed::SealedMarker)
-        } else {
-          v.checked_sub(d, sealed::SealedMarker)
-        }
-      }) {
-        None => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
-        Some(v) => value = v,
-      },
-      None => {
-        if offset == 0 {
-          return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
-        } else {
-          return Ok((i.next_slice(offset).0, value));
-        }
-      }
-    }
-  }
-
-  if STREAMING {
-    Err(ErrMode::Incomplete(Needed::new(1)))
-  } else {
-    Ok((i.next_slice(i.input_len()).0, value))
-  }
 }
 
 /// Metadata for parsing signed integers
 pub trait Int: Uint {
-  #[doc(hidden)]
-  fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self>;
+    #[doc(hidden)]
+    fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self>;
 }
 
 impl Int for i8 {
-  fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_sub(by as Self)
-  }
+    fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_sub(by as Self)
+    }
 }
 
 impl Int for i16 {
-  fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_sub(by as Self)
-  }
+    fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_sub(by as Self)
+    }
 }
 
 impl Int for i32 {
-  fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_sub(by as Self)
-  }
+    fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_sub(by as Self)
+    }
 }
 
 impl Int for i64 {
-  fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_sub(by as Self)
-  }
+    fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_sub(by as Self)
+    }
 }
 
 impl Int for i128 {
-  fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-    self.checked_sub(by as Self)
-  }
+    fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
+        self.checked_sub(by as Self)
+    }
 }
 
 /// Decode a variable-width hexadecimal integer.
@@ -1174,96 +1174,96 @@ impl Int for i128 {
 #[inline]
 pub fn hex_uint<I, O, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, O, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  O: HexUint,
-  <I as Input>::Token: AsChar,
-  <I as Input>::Slice: AsBStr,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    O: HexUint,
+    <I as Input>::Token: AsChar,
+    <I as Input>::Slice: AsBStr,
 {
-  let invalid_offset = input
-    .offset_for(|c| {
-      let c = c.as_char();
-      !"0123456789abcdefABCDEF".contains(c)
-    })
-    .unwrap_or_else(|| input.input_len());
-  let max_nibbles = O::max_nibbles(sealed::SealedMarker);
-  let max_offset = input.offset_at(max_nibbles);
-  let offset = match max_offset {
-    Ok(max_offset) => {
-      if max_offset < invalid_offset {
-        // Overflow
+    let invalid_offset = input
+        .offset_for(|c| {
+            let c = c.as_char();
+            !"0123456789abcdefABCDEF".contains(c)
+        })
+        .unwrap_or_else(|| input.input_len());
+    let max_nibbles = O::max_nibbles(sealed::SealedMarker);
+    let max_offset = input.offset_at(max_nibbles);
+    let offset = match max_offset {
+        Ok(max_offset) => {
+            if max_offset < invalid_offset {
+                // Overflow
+                return Err(ErrMode::from_error_kind(input, ErrorKind::IsA));
+            } else {
+                invalid_offset
+            }
+        }
+        Err(_) => {
+            if STREAMING && invalid_offset == input.input_len() {
+                // Only the next byte is guaranteed required
+                return Err(ErrMode::Incomplete(Needed::new(1)));
+            } else {
+                invalid_offset
+            }
+        }
+    };
+    if offset == 0 {
+        // Must be at least one digit
         return Err(ErrMode::from_error_kind(input, ErrorKind::IsA));
-      } else {
-        invalid_offset
-      }
     }
-    Err(_) => {
-      if STREAMING && invalid_offset == input.input_len() {
-        // Only the next byte is guaranteed required
-        return Err(ErrMode::Incomplete(Needed::new(1)));
-      } else {
-        invalid_offset
-      }
+    let (remaining, parsed) = input.next_slice(offset);
+
+    let mut res = O::default();
+    for c in parsed.as_bstr() {
+        let nibble = *c as char;
+        let nibble = nibble.to_digit(16).unwrap_or(0) as u8;
+        let nibble = O::from(nibble);
+        res = (res << O::from(4)) + nibble;
     }
-  };
-  if offset == 0 {
-    // Must be at least one digit
-    return Err(ErrMode::from_error_kind(input, ErrorKind::IsA));
-  }
-  let (remaining, parsed) = input.next_slice(offset);
 
-  let mut res = O::default();
-  for c in parsed.as_bstr() {
-    let nibble = *c as char;
-    let nibble = nibble.to_digit(16).unwrap_or(0) as u8;
-    let nibble = O::from(nibble);
-    res = (res << O::from(4)) + nibble;
-  }
-
-  Ok((remaining, res))
+    Ok((remaining, res))
 }
 
 /// Metadata for parsing hex numbers
 pub trait HexUint:
-  Default + Shl<Self, Output = Self> + Add<Self, Output = Self> + From<u8>
+    Default + Shl<Self, Output = Self> + Add<Self, Output = Self> + From<u8>
 {
-  #[doc(hidden)]
-  fn max_nibbles(_: sealed::SealedMarker) -> usize;
+    #[doc(hidden)]
+    fn max_nibbles(_: sealed::SealedMarker) -> usize;
 }
 
 impl HexUint for u8 {
-  #[inline(always)]
-  fn max_nibbles(_: sealed::SealedMarker) -> usize {
-    2
-  }
+    #[inline(always)]
+    fn max_nibbles(_: sealed::SealedMarker) -> usize {
+        2
+    }
 }
 
 impl HexUint for u16 {
-  #[inline(always)]
-  fn max_nibbles(_: sealed::SealedMarker) -> usize {
-    4
-  }
+    #[inline(always)]
+    fn max_nibbles(_: sealed::SealedMarker) -> usize {
+        4
+    }
 }
 
 impl HexUint for u32 {
-  #[inline(always)]
-  fn max_nibbles(_: sealed::SealedMarker) -> usize {
-    8
-  }
+    #[inline(always)]
+    fn max_nibbles(_: sealed::SealedMarker) -> usize {
+        8
+    }
 }
 
 impl HexUint for u64 {
-  #[inline(always)]
-  fn max_nibbles(_: sealed::SealedMarker) -> usize {
-    16
-  }
+    #[inline(always)]
+    fn max_nibbles(_: sealed::SealedMarker) -> usize {
+        16
+    }
 }
 
 impl HexUint for u128 {
-  #[inline(always)]
-  fn max_nibbles(_: sealed::SealedMarker) -> usize {
-    32
-  }
+    #[inline(always)]
+    fn max_nibbles(_: sealed::SealedMarker) -> usize {
+        32
+    }
 }
 
 /// Recognizes floating point number in text format and returns a f32.
@@ -1310,23 +1310,23 @@ impl HexUint for u128 {
 #[inline(always)]
 pub fn float<I, O, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, O, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input,
-  I: Offset + Compare<&'static str>,
-  <I as Input>::Slice: ParseSlice<O>,
-  <I as Input>::Token: AsChar + Copy,
-  <I as Input>::IterOffsets: Clone,
-  I: AsBStr,
+    I: InputIsStreaming<STREAMING>,
+    I: Input,
+    I: Offset + Compare<&'static str>,
+    <I as Input>::Slice: ParseSlice<O>,
+    <I as Input>::Token: AsChar + Copy,
+    <I as Input>::IterOffsets: Clone,
+    I: AsBStr,
 {
-  let (i, s) = if STREAMING {
-    crate::number::streaming::recognize_float_or_exceptions(input)?
-  } else {
-    crate::number::complete::recognize_float_or_exceptions(input)?
-  };
-  match s.parse_slice() {
-    Some(f) => Ok((i, f)),
-    None => Err(ErrMode::from_error_kind(i, ErrorKind::Float)),
-  }
+    let (i, s) = if STREAMING {
+        crate::number::streaming::recognize_float_or_exceptions(input)?
+    } else {
+        crate::number::complete::recognize_float_or_exceptions(input)?
+    };
+    match s.parse_slice() {
+        Some(f) => Ok((i, f)),
+        None => Err(ErrMode::from_error_kind(i, ErrorKind::Float)),
+    }
 }
 
 /// Matches a byte string with escaped characters.
@@ -1365,25 +1365,35 @@ where
 /// ```
 #[inline(always)]
 pub fn escaped<'a, I: 'a, Error, F, G, O1, O2, const STREAMING: bool>(
-  mut normal: F,
-  control_char: char,
-  mut escapable: G,
+    mut normal: F,
+    control_char: char,
+    mut escapable: G,
 ) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input + Offset,
-  <I as Input>::Token: crate::input::AsChar,
-  F: Parser<I, O1, Error>,
-  G: Parser<I, O2, Error>,
-  Error: ParseError<I>,
+    I: InputIsStreaming<STREAMING>,
+    I: Input + Offset,
+    <I as Input>::Token: crate::input::AsChar,
+    F: Parser<I, O1, Error>,
+    G: Parser<I, O2, Error>,
+    Error: ParseError<I>,
 {
-  move |input: I| {
-    if STREAMING {
-      crate::bytes::streaming::escaped_internal(input, &mut normal, control_char, &mut escapable)
-    } else {
-      crate::bytes::complete::escaped_internal(input, &mut normal, control_char, &mut escapable)
+    move |input: I| {
+        if STREAMING {
+            crate::bytes::streaming::escaped_internal(
+                input,
+                &mut normal,
+                control_char,
+                &mut escapable,
+            )
+        } else {
+            crate::bytes::complete::escaped_internal(
+                input,
+                &mut normal,
+                control_char,
+                &mut escapable,
+            )
+        }
     }
-  }
 }
 
 /// Matches a byte string with escaped characters.
@@ -1448,88 +1458,88 @@ where
 #[cfg(feature = "alloc")]
 #[inline(always)]
 pub fn escaped_transform<I, Error, F, G, Output, const STREAMING: bool>(
-  mut normal: F,
-  control_char: char,
-  mut transform: G,
+    mut normal: F,
+    control_char: char,
+    mut transform: G,
 ) -> impl FnMut(I) -> IResult<I, Output, Error>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input + Offset,
-  <I as Input>::Token: crate::input::AsChar,
-  Output: crate::input::Accumulate<<I as Input>::Slice>,
-  F: Parser<I, <I as Input>::Slice, Error>,
-  G: Parser<I, <I as Input>::Slice, Error>,
-  Error: ParseError<I>,
+    I: InputIsStreaming<STREAMING>,
+    I: Input + Offset,
+    <I as Input>::Token: crate::input::AsChar,
+    Output: crate::input::Accumulate<<I as Input>::Slice>,
+    F: Parser<I, <I as Input>::Slice, Error>,
+    G: Parser<I, <I as Input>::Slice, Error>,
+    Error: ParseError<I>,
 {
-  move |input: I| {
-    if STREAMING {
-      crate::bytes::streaming::escaped_transform_internal(
-        input,
-        &mut normal,
-        control_char,
-        &mut transform,
-      )
-    } else {
-      crate::bytes::complete::escaped_transform_internal(
-        input,
-        &mut normal,
-        control_char,
-        &mut transform,
-      )
+    move |input: I| {
+        if STREAMING {
+            crate::bytes::streaming::escaped_transform_internal(
+                input,
+                &mut normal,
+                control_char,
+                &mut transform,
+            )
+        } else {
+            crate::bytes::complete::escaped_transform_internal(
+                input,
+                &mut normal,
+                control_char,
+                &mut transform,
+            )
+        }
     }
-  }
 }
 
 #[inline]
 #[doc(hidden)]
 #[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_alpha`")]
 pub fn is_alphabetic(chr: u8) -> bool {
-  matches!(chr, 0x41..=0x5A | 0x61..=0x7A)
+    matches!(chr, 0x41..=0x5A | 0x61..=0x7A)
 }
 
 #[inline]
 #[doc(hidden)]
 #[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_dec_digit`")]
 pub fn is_digit(chr: u8) -> bool {
-  matches!(chr, 0x30..=0x39)
+    matches!(chr, 0x30..=0x39)
 }
 
 #[inline]
 #[doc(hidden)]
 #[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_hex_digit`")]
 pub fn is_hex_digit(chr: u8) -> bool {
-  matches!(chr, 0x30..=0x39 | 0x41..=0x46 | 0x61..=0x66)
+    matches!(chr, 0x30..=0x39 | 0x41..=0x46 | 0x61..=0x66)
 }
 
 #[inline]
 #[doc(hidden)]
 #[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_oct_digit`")]
 pub fn is_oct_digit(chr: u8) -> bool {
-  matches!(chr, 0x30..=0x37)
+    matches!(chr, 0x30..=0x37)
 }
 
 #[inline]
 #[doc(hidden)]
 #[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_alphanum`")]
 pub fn is_alphanumeric(chr: u8) -> bool {
-  #![allow(deprecated)]
-  is_alphabetic(chr) || is_digit(chr)
+    #![allow(deprecated)]
+    is_alphabetic(chr) || is_digit(chr)
 }
 
 #[inline]
 #[doc(hidden)]
 #[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_space`")]
 pub fn is_space(chr: u8) -> bool {
-  chr == b' ' || chr == b'\t'
+    chr == b' ' || chr == b'\t'
 }
 
 #[inline]
 #[doc(hidden)]
 #[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_newline`")]
 pub fn is_newline(chr: u8) -> bool {
-  chr == b'\n'
+    chr == b'\n'
 }
 
 mod sealed {
-  pub struct SealedMarker;
+    pub struct SealedMarker;
 }

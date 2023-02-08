@@ -465,83 +465,83 @@ pub type IResult<I, O, E = Error<I>> = Result<(I, O), ErrMode<E>>;
 
 /// Extension trait to convert a parser's [`IResult`] to a more manageable type
 pub trait FinishIResult<I, O, E> {
-  /// Converts the parser's [`IResult`] to a type that is more consumable by callers.
-  ///
-  /// Errors if the parser is not at the [end of input][crate::combinator::eof].  See
-  /// [`FinishIResult::finish_err`] if the remaining input is needed.
-  ///
-  /// # Panic
-  ///
-  /// If the result is `Err(ErrMode::Incomplete(_))`, this method will panic.
-  /// - "complete" parsers: It will not be an issue, `Incomplete` is never used
-  /// - "streaming" parsers: `Incomplete` will be returned if there's not enough data
-  /// for the parser to decide, and you should gather more data before parsing again.
-  /// Once the parser returns either `Ok(_)`, `Err(ErrMode::Backtrack(_))` or `Err(ErrMode::Cut(_))`,
-  /// you can get out of the parsing loop and call `finish_err()` on the parser's result
-  fn finish(self) -> Result<O, E>;
+    /// Converts the parser's [`IResult`] to a type that is more consumable by callers.
+    ///
+    /// Errors if the parser is not at the [end of input][crate::combinator::eof].  See
+    /// [`FinishIResult::finish_err`] if the remaining input is needed.
+    ///
+    /// # Panic
+    ///
+    /// If the result is `Err(ErrMode::Incomplete(_))`, this method will panic.
+    /// - "complete" parsers: It will not be an issue, `Incomplete` is never used
+    /// - "streaming" parsers: `Incomplete` will be returned if there's not enough data
+    /// for the parser to decide, and you should gather more data before parsing again.
+    /// Once the parser returns either `Ok(_)`, `Err(ErrMode::Backtrack(_))` or `Err(ErrMode::Cut(_))`,
+    /// you can get out of the parsing loop and call `finish_err()` on the parser's result
+    fn finish(self) -> Result<O, E>;
 
-  /// Converts the parser's [`IResult`] to a type that is more consumable by errors.
-  ///
-  ///  It keeps the same `Ok` branch, and merges `ErrMode::Backtrack` and `ErrMode::Cut` into the `Err`
-  ///  side.
-  ///
-  /// # Panic
-  ///
-  /// If the result is `Err(ErrMode::Incomplete(_))`, this method will panic as [`ErrMode::Incomplete`]
-  /// should only be set when the input is [`InputIsStreaming<false>`] which this isn't implemented
-  /// for.
-  fn finish_err(self) -> Result<(I, O), E>;
+    /// Converts the parser's [`IResult`] to a type that is more consumable by errors.
+    ///
+    ///  It keeps the same `Ok` branch, and merges `ErrMode::Backtrack` and `ErrMode::Cut` into the `Err`
+    ///  side.
+    ///
+    /// # Panic
+    ///
+    /// If the result is `Err(ErrMode::Incomplete(_))`, this method will panic as [`ErrMode::Incomplete`]
+    /// should only be set when the input is [`InputIsStreaming<false>`] which this isn't implemented
+    /// for.
+    fn finish_err(self) -> Result<(I, O), E>;
 }
 
 impl<I, O, E> FinishIResult<I, O, E> for IResult<I, O, E>
 where
-  I: Input,
-  // Force users to deal with `Incomplete` when `InputIsStreaming<true>`
-  I: InputIsStreaming<false>,
-  I: Clone,
-  E: ParseError<I>,
+    I: Input,
+    // Force users to deal with `Incomplete` when `InputIsStreaming<true>`
+    I: InputIsStreaming<false>,
+    I: Clone,
+    E: ParseError<I>,
 {
-  fn finish(self) -> Result<O, E> {
-    let (i, o) = self.finish_err()?;
-    crate::combinator::eof(i).finish_err()?;
-    Ok(o)
-  }
-
-  fn finish_err(self) -> Result<(I, O), E> {
-    match self {
-      Ok(res) => Ok(res),
-      Err(ErrMode::Backtrack(e)) | Err(ErrMode::Cut(e)) => Err(e),
-      Err(ErrMode::Incomplete(_)) => {
-        panic!("`InputIsStreaming<false>` conflicts with `Err(ErrMode::Incomplete(_))`")
-      }
+    fn finish(self) -> Result<O, E> {
+        let (i, o) = self.finish_err()?;
+        crate::combinator::eof(i).finish_err()?;
+        Ok(o)
     }
-  }
+
+    fn finish_err(self) -> Result<(I, O), E> {
+        match self {
+            Ok(res) => Ok(res),
+            Err(ErrMode::Backtrack(e)) | Err(ErrMode::Cut(e)) => Err(e),
+            Err(ErrMode::Incomplete(_)) => {
+                panic!("`InputIsStreaming<false>` conflicts with `Err(ErrMode::Incomplete(_))`")
+            }
+        }
+    }
 }
 
 #[doc(hidden)]
 #[deprecated(
-  since = "0.1.0",
-  note = "Replaced with `FinishIResult` which is available via `winnow::prelude`"
+    since = "0.1.0",
+    note = "Replaced with `FinishIResult` which is available via `winnow::prelude`"
 )]
 pub trait Finish<I, O, E> {
-  #[deprecated(
-    since = "0.1.0",
-    note = "Replaced with `FinishIResult::finish_err` which is available via `winnow::prelude`"
-  )]
-  fn finish(self) -> Result<(I, O), E>;
+    #[deprecated(
+        since = "0.1.0",
+        note = "Replaced with `FinishIResult::finish_err` which is available via `winnow::prelude`"
+    )]
+    fn finish(self) -> Result<(I, O), E>;
 }
 
 #[allow(deprecated)]
 impl<I, O, E> Finish<I, O, E> for IResult<I, O, E> {
-  fn finish(self) -> Result<(I, O), E> {
-    match self {
-      Ok(res) => Ok(res),
-      Err(ErrMode::Backtrack(e)) | Err(ErrMode::Cut(e)) => Err(e),
-      Err(ErrMode::Incomplete(_)) => {
-        panic!("Cannot call `finish()` on `Err(ErrMode::Incomplete(_))`: this result means that the parser does not have enough data to decide, you should gather more data and try to reapply  the parser instead")
-      }
+    fn finish(self) -> Result<(I, O), E> {
+        match self {
+            Ok(res) => Ok(res),
+            Err(ErrMode::Backtrack(e)) | Err(ErrMode::Cut(e)) => Err(e),
+            Err(ErrMode::Incomplete(_)) => {
+                panic!("Cannot call `finish()` on `Err(ErrMode::Incomplete(_))`: this result means that the parser does not have enough data to decide, you should gather more data and try to reapply  the parser instead")
+            }
+        }
     }
-  }
 }
 
 /// Contains information on needed data if a parser returned `Incomplete`
@@ -551,34 +551,34 @@ impl<I, O, E> Finish<I, O, E> for IResult<I, O, E> {
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub enum Needed {
-  /// Needs more data, but we do not know how much
-  Unknown,
-  /// Contains the required data size in bytes
-  Size(NonZeroUsize),
+    /// Needs more data, but we do not know how much
+    Unknown,
+    /// Contains the required data size in bytes
+    Size(NonZeroUsize),
 }
 
 impl Needed {
-  /// Creates `Needed` instance, returns `Needed::Unknown` if the argument is zero
-  pub fn new(s: usize) -> Self {
-    match NonZeroUsize::new(s) {
-      Some(sz) => Needed::Size(sz),
-      None => Needed::Unknown,
+    /// Creates `Needed` instance, returns `Needed::Unknown` if the argument is zero
+    pub fn new(s: usize) -> Self {
+        match NonZeroUsize::new(s) {
+            Some(sz) => Needed::Size(sz),
+            None => Needed::Unknown,
+        }
     }
-  }
 
-  /// Indicates if we know how many bytes we need
-  pub fn is_known(&self) -> bool {
-    *self != Needed::Unknown
-  }
-
-  /// Maps a `Needed` to `Needed` by applying a function to a contained `Size` value.
-  #[inline]
-  pub fn map<F: Fn(NonZeroUsize) -> usize>(self, f: F) -> Needed {
-    match self {
-      Needed::Unknown => Needed::Unknown,
-      Needed::Size(n) => Needed::new(f(n)),
+    /// Indicates if we know how many bytes we need
+    pub fn is_known(&self) -> bool {
+        *self != Needed::Unknown
     }
-  }
+
+    /// Maps a `Needed` to `Needed` by applying a function to a contained `Size` value.
+    #[inline]
+    pub fn map<F: Fn(NonZeroUsize) -> usize>(self, f: F) -> Needed {
+        match self {
+            Needed::Unknown => Needed::Unknown,
+            Needed::Size(n) => Needed::new(f(n)),
+        }
+    }
 }
 
 /// The `Err` enum indicates the parser was not successful
@@ -598,146 +598,146 @@ impl Needed {
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub enum ErrMode<E> {
-  /// There was not enough data
-  ///
-  /// This must only be set when the `Input` is [`InputIsStreaming<true>`], like with
-  /// [`Streaming`][crate::input::Streaming]
-  ///
-  /// Convert this into an `Error` with [`Parser::complete`][Parser::complete]
-  Incomplete(Needed),
-  /// The parser had an error (recoverable)
-  Backtrack(E),
-  /// The parser had an unrecoverable error: we got to the right
-  /// branch and we know other branches won't work, so backtrack
-  /// as fast as possible
-  Cut(E),
+    /// There was not enough data
+    ///
+    /// This must only be set when the `Input` is [`InputIsStreaming<true>`], like with
+    /// [`Streaming`][crate::input::Streaming]
+    ///
+    /// Convert this into an `Error` with [`Parser::complete`][Parser::complete]
+    Incomplete(Needed),
+    /// The parser had an error (recoverable)
+    Backtrack(E),
+    /// The parser had an unrecoverable error: we got to the right
+    /// branch and we know other branches won't work, so backtrack
+    /// as fast as possible
+    Cut(E),
 }
 
 impl<E> ErrMode<E> {
-  /// Tests if the result is Incomplete
-  pub fn is_incomplete(&self) -> bool {
-    matches!(self, ErrMode::Incomplete(_))
-  }
-
-  /// Prevent backtracking, bubbling the error up to the top
-  pub fn cut(self) -> Self {
-    match self {
-      ErrMode::Backtrack(e) => ErrMode::Cut(e),
-      rest => rest,
+    /// Tests if the result is Incomplete
+    pub fn is_incomplete(&self) -> bool {
+        matches!(self, ErrMode::Incomplete(_))
     }
-  }
 
-  /// Enable backtracking support
-  pub fn backtrack(self) -> Self {
-    match self {
-      ErrMode::Cut(e) => ErrMode::Backtrack(e),
-      rest => rest,
+    /// Prevent backtracking, bubbling the error up to the top
+    pub fn cut(self) -> Self {
+        match self {
+            ErrMode::Backtrack(e) => ErrMode::Cut(e),
+            rest => rest,
+        }
     }
-  }
 
-  /// Applies the given function to the inner error
-  pub fn map<E2, F>(self, f: F) -> ErrMode<E2>
-  where
-    F: FnOnce(E) -> E2,
-  {
-    match self {
-      ErrMode::Incomplete(n) => ErrMode::Incomplete(n),
-      ErrMode::Cut(t) => ErrMode::Cut(f(t)),
-      ErrMode::Backtrack(t) => ErrMode::Backtrack(f(t)),
+    /// Enable backtracking support
+    pub fn backtrack(self) -> Self {
+        match self {
+            ErrMode::Cut(e) => ErrMode::Backtrack(e),
+            rest => rest,
+        }
     }
-  }
 
-  /// Automatically converts between errors if the underlying type supports it
-  pub fn convert<F>(self) -> ErrMode<F>
-  where
-    E: ErrorConvert<F>,
-  {
-    self.map(ErrorConvert::convert)
-  }
+    /// Applies the given function to the inner error
+    pub fn map<E2, F>(self, f: F) -> ErrMode<E2>
+    where
+        F: FnOnce(E) -> E2,
+    {
+        match self {
+            ErrMode::Incomplete(n) => ErrMode::Incomplete(n),
+            ErrMode::Cut(t) => ErrMode::Cut(f(t)),
+            ErrMode::Backtrack(t) => ErrMode::Backtrack(f(t)),
+        }
+    }
+
+    /// Automatically converts between errors if the underlying type supports it
+    pub fn convert<F>(self) -> ErrMode<F>
+    where
+        E: ErrorConvert<F>,
+    {
+        self.map(ErrorConvert::convert)
+    }
 }
 
 impl<I, E: ParseError<I>> ParseError<I> for ErrMode<E> {
-  fn from_error_kind(input: I, kind: ErrorKind) -> Self {
-    ErrMode::Backtrack(E::from_error_kind(input, kind))
-  }
-
-  fn append(self, input: I, kind: ErrorKind) -> Self {
-    match self {
-      ErrMode::Backtrack(e) => ErrMode::Backtrack(e.append(input, kind)),
-      e => e,
+    fn from_error_kind(input: I, kind: ErrorKind) -> Self {
+        ErrMode::Backtrack(E::from_error_kind(input, kind))
     }
-  }
 
-  fn or(self, other: Self) -> Self {
-    match (self, other) {
-      (ErrMode::Backtrack(e), ErrMode::Backtrack(o)) => ErrMode::Backtrack(e.or(o)),
-      (ErrMode::Incomplete(e), _) | (_, ErrMode::Incomplete(e)) => ErrMode::Incomplete(e),
-      (ErrMode::Cut(e), _) | (_, ErrMode::Cut(e)) => ErrMode::Cut(e),
+    fn append(self, input: I, kind: ErrorKind) -> Self {
+        match self {
+            ErrMode::Backtrack(e) => ErrMode::Backtrack(e.append(input, kind)),
+            e => e,
+        }
     }
-  }
+
+    fn or(self, other: Self) -> Self {
+        match (self, other) {
+            (ErrMode::Backtrack(e), ErrMode::Backtrack(o)) => ErrMode::Backtrack(e.or(o)),
+            (ErrMode::Incomplete(e), _) | (_, ErrMode::Incomplete(e)) => ErrMode::Incomplete(e),
+            (ErrMode::Cut(e), _) | (_, ErrMode::Cut(e)) => ErrMode::Cut(e),
+        }
+    }
 }
 
 impl<I, EXT, E> FromExternalError<I, EXT> for ErrMode<E>
 where
-  E: FromExternalError<I, EXT>,
+    E: FromExternalError<I, EXT>,
 {
-  fn from_external_error(input: I, kind: ErrorKind, e: EXT) -> Self {
-    ErrMode::Backtrack(E::from_external_error(input, kind, e))
-  }
+    fn from_external_error(input: I, kind: ErrorKind, e: EXT) -> Self {
+        ErrMode::Backtrack(E::from_external_error(input, kind, e))
+    }
 }
 
 impl<T> ErrMode<Error<T>> {
-  /// Maps `ErrMode<Error<T>>` to `ErrMode<Error<U>>` with the given `F: T -> U`
-  pub fn map_input<U, F>(self, f: F) -> ErrMode<Error<U>>
-  where
-    F: FnOnce(T) -> U,
-  {
-    match self {
-      ErrMode::Incomplete(n) => ErrMode::Incomplete(n),
-      ErrMode::Cut(Error { input, kind }) => ErrMode::Cut(Error {
-        input: f(input),
-        kind,
-      }),
-      ErrMode::Backtrack(Error { input, kind }) => ErrMode::Backtrack(Error {
-        input: f(input),
-        kind,
-      }),
+    /// Maps `ErrMode<Error<T>>` to `ErrMode<Error<U>>` with the given `F: T -> U`
+    pub fn map_input<U, F>(self, f: F) -> ErrMode<Error<U>>
+    where
+        F: FnOnce(T) -> U,
+    {
+        match self {
+            ErrMode::Incomplete(n) => ErrMode::Incomplete(n),
+            ErrMode::Cut(Error { input, kind }) => ErrMode::Cut(Error {
+                input: f(input),
+                kind,
+            }),
+            ErrMode::Backtrack(Error { input, kind }) => ErrMode::Backtrack(Error {
+                input: f(input),
+                kind,
+            }),
+        }
     }
-  }
 }
 
 #[cfg(feature = "alloc")]
 impl ErrMode<Error<&[u8]>> {
-  /// Deprecated, replaced with [`Error::into_owned`]
-  #[deprecated(since = "0.3.0", note = "Replaced with `Error::into_owned`")]
-  pub fn to_owned(self) -> ErrMode<Error<crate::lib::std::vec::Vec<u8>>> {
-    self.map_input(ToOwned::to_owned)
-  }
+    /// Deprecated, replaced with [`Error::into_owned`]
+    #[deprecated(since = "0.3.0", note = "Replaced with `Error::into_owned`")]
+    pub fn to_owned(self) -> ErrMode<Error<crate::lib::std::vec::Vec<u8>>> {
+        self.map_input(ToOwned::to_owned)
+    }
 }
 
 #[cfg(feature = "alloc")]
 impl ErrMode<Error<&str>> {
-  /// Deprecated, replaced with [`Error::into_owned`]
-  #[deprecated(since = "0.3.0", note = "Replaced with `Error::into_owned`")]
-  pub fn to_owned(self) -> ErrMode<Error<crate::lib::std::string::String>> {
-    self.map_input(ToOwned::to_owned)
-  }
+    /// Deprecated, replaced with [`Error::into_owned`]
+    #[deprecated(since = "0.3.0", note = "Replaced with `Error::into_owned`")]
+    pub fn to_owned(self) -> ErrMode<Error<crate::lib::std::string::String>> {
+        self.map_input(ToOwned::to_owned)
+    }
 }
 
 impl<E: Eq> Eq for ErrMode<E> {}
 
 impl<E> fmt::Display for ErrMode<E>
 where
-  E: fmt::Debug,
+    E: fmt::Debug,
 {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    match self {
-      ErrMode::Incomplete(Needed::Size(u)) => write!(f, "Parsing requires {} bytes/chars", u),
-      ErrMode::Incomplete(Needed::Unknown) => write!(f, "Parsing requires more data"),
-      ErrMode::Cut(c) => write!(f, "Parsing Failure: {:?}", c),
-      ErrMode::Backtrack(c) => write!(f, "Parsing Error: {:?}", c),
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ErrMode::Incomplete(Needed::Size(u)) => write!(f, "Parsing requires {} bytes/chars", u),
+            ErrMode::Incomplete(Needed::Unknown) => write!(f, "Parsing requires more data"),
+            ErrMode::Cut(c) => write!(f, "Parsing Failure: {:?}", c),
+            ErrMode::Backtrack(c) => write!(f, "Parsing Error: {:?}", c),
+        }
     }
-  }
 }
 
 /// This trait must be implemented by the error type of a nom parser.
@@ -745,148 +745,148 @@ where
 /// It provides methods to create an error from some combinators,
 /// and combine existing errors in combinators like `alt`.
 pub trait ParseError<I>: Sized {
-  /// Creates an error from the input position and an [`ErrorKind`]
-  fn from_error_kind(input: I, kind: ErrorKind) -> Self;
+    /// Creates an error from the input position and an [`ErrorKind`]
+    fn from_error_kind(input: I, kind: ErrorKind) -> Self;
 
-  /// Combines an existing error with a new one created from the input
-  /// position and an [`ErrorKind`]. This is useful when backtracking
-  /// through a parse tree, accumulating error context on the way
-  fn append(self, input: I, kind: ErrorKind) -> Self;
+    /// Combines an existing error with a new one created from the input
+    /// position and an [`ErrorKind`]. This is useful when backtracking
+    /// through a parse tree, accumulating error context on the way
+    fn append(self, input: I, kind: ErrorKind) -> Self;
 
-  /// Creates an error from an input position and an expected character
-  #[deprecated(since = "0.2.0", note = "Replaced with `ContextError`")]
-  fn from_char(input: I, _: char) -> Self {
-    Self::from_error_kind(input, ErrorKind::Char)
-  }
+    /// Creates an error from an input position and an expected character
+    #[deprecated(since = "0.2.0", note = "Replaced with `ContextError`")]
+    fn from_char(input: I, _: char) -> Self {
+        Self::from_error_kind(input, ErrorKind::Char)
+    }
 
-  /// Combines two existing errors. This function is used to compare errors
-  /// generated in various branches of `alt`.
-  fn or(self, other: Self) -> Self {
-    other
-  }
+    /// Combines two existing errors. This function is used to compare errors
+    /// generated in various branches of `alt`.
+    fn or(self, other: Self) -> Self {
+        other
+    }
 }
 
 /// Used by the [`context`] to add custom data to errors
 ///
 /// May be implemented multiple times for different kinds of context.
 pub trait ContextError<I, C>: Sized {
-  /// Creates a new error from an input position, a data, and an existing error.
-  ///
-  /// This is used mainly in the [`context`] combinator, to add user friendly information
-  /// to errors when backtracking through a parse tree
-  fn add_context(self, _input: I, _ctx: C) -> Self {
-    self
-  }
+    /// Creates a new error from an input position, a data, and an existing error.
+    ///
+    /// This is used mainly in the [`context`] combinator, to add user friendly information
+    /// to errors when backtracking through a parse tree
+    fn add_context(self, _input: I, _ctx: C) -> Self {
+        self
+    }
 }
 
 /// This trait is required by the `map_res` combinator to integrate
 /// error types from external functions, like [`std::str::FromStr`]
 pub trait FromExternalError<I, E> {
-  /// Creates a new error from an input position, an [`ErrorKind`] indicating the
-  /// wrapping parser, and an external error
-  fn from_external_error(input: I, kind: ErrorKind, e: E) -> Self;
+    /// Creates a new error from an input position, an [`ErrorKind`] indicating the
+    /// wrapping parser, and an external error
+    fn from_external_error(input: I, kind: ErrorKind, e: E) -> Self;
 }
 
 /// Equivalent From implementation to avoid orphan rules in bits parsers
 pub trait ErrorConvert<E> {
-  /// Transform to another error type
-  fn convert(self) -> E;
+    /// Transform to another error type
+    fn convert(self) -> E;
 }
 
 /// default error type, only contains the error' location and kind
 #[derive(Debug, Eq, PartialEq)]
 pub struct Error<I> {
-  /// position of the error in the input data
-  pub input: I,
-  /// nom error kind
-  pub kind: ErrorKind,
+    /// position of the error in the input data
+    pub input: I,
+    /// nom error kind
+    pub kind: ErrorKind,
 }
 
 impl<I> Error<I> {
-  /// creates a new basic error
-  pub fn new(input: I, kind: ErrorKind) -> Error<I> {
-    Error { input, kind }
-  }
+    /// creates a new basic error
+    pub fn new(input: I, kind: ErrorKind) -> Error<I> {
+        Error { input, kind }
+    }
 }
 
 #[cfg(feature = "alloc")]
 impl<I: ToOwned> Error<I> {
-  /// Obtaining ownership
-  pub fn into_owned(self) -> Error<<I as ToOwned>::Owned> {
-    Error {
-      input: self.input.to_owned(),
-      kind: self.kind,
+    /// Obtaining ownership
+    pub fn into_owned(self) -> Error<<I as ToOwned>::Owned> {
+        Error {
+            input: self.input.to_owned(),
+            kind: self.kind,
+        }
     }
-  }
 }
 
 impl<I> ParseError<I> for Error<I> {
-  fn from_error_kind(input: I, kind: ErrorKind) -> Self {
-    Error { input, kind }
-  }
+    fn from_error_kind(input: I, kind: ErrorKind) -> Self {
+        Error { input, kind }
+    }
 
-  fn append(self, _: I, _: ErrorKind) -> Self {
-    self
-  }
+    fn append(self, _: I, _: ErrorKind) -> Self {
+        self
+    }
 }
 
 impl<I, C> ContextError<I, C> for Error<I> {}
 
 impl<I, E> FromExternalError<I, E> for Error<I> {
-  /// Create a new error from an input position and an external error
-  fn from_external_error(input: I, kind: ErrorKind, _e: E) -> Self {
-    Error { input, kind }
-  }
+    /// Create a new error from an input position and an external error
+    fn from_external_error(input: I, kind: ErrorKind, _e: E) -> Self {
+        Error { input, kind }
+    }
 }
 
 impl<I> ErrorConvert<Error<(I, usize)>> for Error<I> {
-  fn convert(self) -> Error<(I, usize)> {
-    Error {
-      input: (self.input, 0),
-      kind: self.kind,
+    fn convert(self) -> Error<(I, usize)> {
+        Error {
+            input: (self.input, 0),
+            kind: self.kind,
+        }
     }
-  }
 }
 
 impl<I> ErrorConvert<Error<I>> for Error<(I, usize)> {
-  fn convert(self) -> Error<I> {
-    Error {
-      input: self.input.0,
-      kind: self.kind,
+    fn convert(self) -> Error<I> {
+        Error {
+            input: self.input.0,
+            kind: self.kind,
+        }
     }
-  }
 }
 
 /// The Display implementation allows the `std::error::Error` implementation
 impl<I: fmt::Display> fmt::Display for Error<I> {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    write!(f, "error {:?} at: {}", self.kind, self.input)
-  }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "error {:?} at: {}", self.kind, self.input)
+    }
 }
 
 #[cfg(feature = "std")]
 impl<I: fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::Error for Error<I> {}
 
 impl<I> ParseError<I> for () {
-  fn from_error_kind(_: I, _: ErrorKind) -> Self {}
+    fn from_error_kind(_: I, _: ErrorKind) -> Self {}
 
-  fn append(self, _: I, _: ErrorKind) -> Self {}
+    fn append(self, _: I, _: ErrorKind) -> Self {}
 }
 
 impl<I, C> ContextError<I, C> for () {}
 
 impl<I, E> FromExternalError<I, E> for () {
-  fn from_external_error(_input: I, _kind: ErrorKind, _e: E) -> Self {}
+    fn from_external_error(_input: I, _kind: ErrorKind, _e: E) -> Self {}
 }
 
 impl ErrorConvert<()> for () {
-  fn convert(self) {}
+    fn convert(self) {}
 }
 
 /// Creates an error from the input position and an [`ErrorKind`]
 #[deprecated(since = "0.2.0", note = "Replaced with `ParseError::from_error_kind`")]
 pub fn make_error<I, E: ParseError<I>>(input: I, kind: ErrorKind) -> E {
-  E::from_error_kind(input, kind)
+    E::from_error_kind(input, kind)
 }
 
 /// Combines an existing error with a new one created from the input
@@ -894,7 +894,7 @@ pub fn make_error<I, E: ParseError<I>>(input: I, kind: ErrorKind) -> E {
 /// through a parse tree, accumulating error context on the way
 #[deprecated(since = "0.2.0", note = "Replaced with `ParseError::append`")]
 pub fn append_error<I, E: ParseError<I>>(input: I, kind: ErrorKind, other: E) -> E {
-  other.append(input, kind)
+    other.append(input, kind)
 }
 
 /// This error type accumulates errors and their position when backtracking
@@ -903,97 +903,97 @@ pub fn append_error<I, E: ParseError<I>>(input: I, kind: ErrorKind, other: E) ->
 #[cfg(feature = "alloc")]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct VerboseError<I> {
-  /// List of errors accumulated by `VerboseError`, containing the affected
-  /// part of input data, and some context
-  pub errors: crate::lib::std::vec::Vec<(I, VerboseErrorKind)>,
+    /// List of errors accumulated by `VerboseError`, containing the affected
+    /// part of input data, and some context
+    pub errors: crate::lib::std::vec::Vec<(I, VerboseErrorKind)>,
 }
 
 #[cfg(feature = "alloc")]
 impl<I: ToOwned> VerboseError<I> {
-  /// Obtaining ownership
-  pub fn into_owned(self) -> VerboseError<<I as ToOwned>::Owned> {
-    #[allow(clippy::redundant_clone)] // false positive
-    VerboseError {
-      errors: self
-        .errors
-        .into_iter()
-        .map(|(i, k)| (i.to_owned(), k))
-        .collect(),
+    /// Obtaining ownership
+    pub fn into_owned(self) -> VerboseError<<I as ToOwned>::Owned> {
+        #[allow(clippy::redundant_clone)] // false positive
+        VerboseError {
+            errors: self
+                .errors
+                .into_iter()
+                .map(|(i, k)| (i.to_owned(), k))
+                .collect(),
+        }
     }
-  }
 }
 
 #[cfg(feature = "alloc")]
 #[derive(Clone, Debug, Eq, PartialEq)]
 /// Error context for `VerboseError`
 pub enum VerboseErrorKind {
-  /// Static string added by the `context` function
-  Context(&'static str),
-  /// Error kind given by various nom parsers
-  Nom(ErrorKind),
+    /// Static string added by the `context` function
+    Context(&'static str),
+    /// Error kind given by various nom parsers
+    Nom(ErrorKind),
 }
 
 #[cfg(feature = "alloc")]
 impl<I> ParseError<I> for VerboseError<I> {
-  fn from_error_kind(input: I, kind: ErrorKind) -> Self {
-    VerboseError {
-      errors: vec![(input, VerboseErrorKind::Nom(kind))],
+    fn from_error_kind(input: I, kind: ErrorKind) -> Self {
+        VerboseError {
+            errors: vec![(input, VerboseErrorKind::Nom(kind))],
+        }
     }
-  }
 
-  fn append(mut self, input: I, kind: ErrorKind) -> Self {
-    self.errors.push((input, VerboseErrorKind::Nom(kind)));
-    self
-  }
+    fn append(mut self, input: I, kind: ErrorKind) -> Self {
+        self.errors.push((input, VerboseErrorKind::Nom(kind)));
+        self
+    }
 }
 
 #[cfg(feature = "alloc")]
 impl<I> ContextError<I, &'static str> for VerboseError<I> {
-  fn add_context(mut self, input: I, ctx: &'static str) -> Self {
-    self.errors.push((input, VerboseErrorKind::Context(ctx)));
-    self
-  }
+    fn add_context(mut self, input: I, ctx: &'static str) -> Self {
+        self.errors.push((input, VerboseErrorKind::Context(ctx)));
+        self
+    }
 }
 
 #[cfg(feature = "alloc")]
 impl<I, E> FromExternalError<I, E> for VerboseError<I> {
-  /// Create a new error from an input position and an external error
-  fn from_external_error(input: I, kind: ErrorKind, _e: E) -> Self {
-    Self::from_error_kind(input, kind)
-  }
+    /// Create a new error from an input position and an external error
+    fn from_external_error(input: I, kind: ErrorKind, _e: E) -> Self {
+        Self::from_error_kind(input, kind)
+    }
 }
 
 #[cfg(feature = "alloc")]
 impl<I> ErrorConvert<VerboseError<I>> for VerboseError<(I, usize)> {
-  fn convert(self) -> VerboseError<I> {
-    VerboseError {
-      errors: self.errors.into_iter().map(|(i, e)| (i.0, e)).collect(),
+    fn convert(self) -> VerboseError<I> {
+        VerboseError {
+            errors: self.errors.into_iter().map(|(i, e)| (i.0, e)).collect(),
+        }
     }
-  }
 }
 
 #[cfg(feature = "alloc")]
 impl<I> ErrorConvert<VerboseError<(I, usize)>> for VerboseError<I> {
-  fn convert(self) -> VerboseError<(I, usize)> {
-    VerboseError {
-      errors: self.errors.into_iter().map(|(i, e)| ((i, 0), e)).collect(),
+    fn convert(self) -> VerboseError<(I, usize)> {
+        VerboseError {
+            errors: self.errors.into_iter().map(|(i, e)| ((i, 0), e)).collect(),
+        }
     }
-  }
 }
 
 #[cfg(feature = "alloc")]
 impl<I: fmt::Display> fmt::Display for VerboseError<I> {
-  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    writeln!(f, "Parse error:")?;
-    for (input, error) in &self.errors {
-      match error {
-        VerboseErrorKind::Nom(e) => writeln!(f, "{:?} at: {}", e, input)?,
-        VerboseErrorKind::Context(s) => writeln!(f, "in section '{}', at: {}", s, input)?,
-      }
-    }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Parse error:")?;
+        for (input, error) in &self.errors {
+            match error {
+                VerboseErrorKind::Nom(e) => writeln!(f, "{:?} at: {}", e, input)?,
+                VerboseErrorKind::Context(s) => writeln!(f, "in section '{}', at: {}", s, input)?,
+            }
+        }
 
-    Ok(())
-  }
+        Ok(())
+    }
 }
 
 #[cfg(feature = "std")]
@@ -1006,96 +1006,100 @@ impl<I: fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::Error for
 /// **WARNING:** Deprecated, replaced with [`Parser::context`]
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::context")]
 pub fn context<I: Clone, E: ContextError<I, &'static str>, F, O>(
-  context: &'static str,
-  mut f: F,
+    context: &'static str,
+    mut f: F,
 ) -> impl FnMut(I) -> IResult<I, O, E>
 where
-  F: Parser<I, O, E>,
+    F: Parser<I, O, E>,
 {
-  move |i: I| match f.parse_next(i.clone()) {
-    Ok(o) => Ok(o),
-    Err(ErrMode::Incomplete(i)) => Err(ErrMode::Incomplete(i)),
-    Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.add_context(i, context))),
-    Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.add_context(i, context))),
-  }
+    move |i: I| match f.parse_next(i.clone()) {
+        Ok(o) => Ok(o),
+        Err(ErrMode::Incomplete(i)) => Err(ErrMode::Incomplete(i)),
+        Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.add_context(i, context))),
+        Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.add_context(i, context))),
+    }
 }
 
 /// Transforms a `VerboseError` into a trace with input position information
 #[cfg(feature = "alloc")]
 pub fn convert_error<I: core::ops::Deref<Target = str>>(
-  input: I,
-  e: VerboseError<I>,
+    input: I,
+    e: VerboseError<I>,
 ) -> crate::lib::std::string::String {
-  use crate::input::Offset;
-  use crate::lib::std::fmt::Write;
+    use crate::input::Offset;
+    use crate::lib::std::fmt::Write;
 
-  let mut result = crate::lib::std::string::String::new();
+    let mut result = crate::lib::std::string::String::new();
 
-  for (i, (substring, kind)) in e.errors.iter().enumerate() {
-    let offset = input.offset_to(substring);
+    for (i, (substring, kind)) in e.errors.iter().enumerate() {
+        let offset = input.offset_to(substring);
 
-    if input.is_empty() {
-      match kind {
-        VerboseErrorKind::Context(s) => write!(&mut result, "{}: in {}, got empty input\n\n", i, s),
-        VerboseErrorKind::Nom(e) => write!(&mut result, "{}: in {:?}, got empty input\n\n", i, e),
-      }
-    } else {
-      let prefix = &input.as_bytes()[..offset];
+        if input.is_empty() {
+            match kind {
+                VerboseErrorKind::Context(s) => {
+                    write!(&mut result, "{}: in {}, got empty input\n\n", i, s)
+                }
+                VerboseErrorKind::Nom(e) => {
+                    write!(&mut result, "{}: in {:?}, got empty input\n\n", i, e)
+                }
+            }
+        } else {
+            let prefix = &input.as_bytes()[..offset];
 
-      // Count the number of newlines in the first `offset` bytes of input
-      let line_number = prefix.iter().filter(|&&b| b == b'\n').count() + 1;
+            // Count the number of newlines in the first `offset` bytes of input
+            let line_number = prefix.iter().filter(|&&b| b == b'\n').count() + 1;
 
-      // Find the line that includes the subslice:
-      // Find the *last* newline before the substring starts
-      let line_begin = prefix
-        .iter()
-        .rev()
-        .position(|&b| b == b'\n')
-        .map(|pos| offset - pos)
-        .unwrap_or(0);
+            // Find the line that includes the subslice:
+            // Find the *last* newline before the substring starts
+            let line_begin = prefix
+                .iter()
+                .rev()
+                .position(|&b| b == b'\n')
+                .map(|pos| offset - pos)
+                .unwrap_or(0);
 
-      // Find the full line after that newline
-      let line = input[line_begin..]
-        .lines()
-        .next()
-        .unwrap_or(&input[line_begin..])
-        .trim_end();
+            // Find the full line after that newline
+            let line = input[line_begin..]
+                .lines()
+                .next()
+                .unwrap_or(&input[line_begin..])
+                .trim_end();
 
-      // The (1-indexed) column number is the offset of our substring into that line
-      let column_number = line.offset_to(substring) + 1;
+            // The (1-indexed) column number is the offset of our substring into that line
+            let column_number = line.offset_to(substring) + 1;
 
-      match kind {
-        VerboseErrorKind::Context(s) => write!(
-          &mut result,
-          "{i}: at line {line_number}, in {context}:\n\
+            match kind {
+                VerboseErrorKind::Context(s) => write!(
+                    &mut result,
+                    "{i}: at line {line_number}, in {context}:\n\
              {line}\n\
              {caret:>column$}\n\n",
-          i = i,
-          line_number = line_number,
-          context = s,
-          line = line,
-          caret = '^',
-          column = column_number,
-        ),
-        VerboseErrorKind::Nom(e) => write!(
-          &mut result,
-          "{i}: at line {line_number}, in {nom_err:?}:\n\
+                    i = i,
+                    line_number = line_number,
+                    context = s,
+                    line = line,
+                    caret = '^',
+                    column = column_number,
+                ),
+                VerboseErrorKind::Nom(e) => write!(
+                    &mut result,
+                    "{i}: at line {line_number}, in {nom_err:?}:\n\
              {line}\n\
              {caret:>column$}\n\n",
-          i = i,
-          line_number = line_number,
-          nom_err = e,
-          line = line,
-          caret = '^',
-          column = column_number,
-        ),
-      }
+                    i = i,
+                    line_number = line_number,
+                    nom_err = e,
+                    line = line,
+                    caret = '^',
+                    column = column_number,
+                ),
+            }
+        }
+        // Because `write!` to a `String` is infallible, this `unwrap` is fine.
+        .unwrap();
     }
-    // Because `write!` to a `String` is infallible, this `unwrap` is fine.
-    .unwrap();
-  }
 
-  result
+    result
 }
 
 /// Indicates which parser returned an error
@@ -1159,10 +1163,10 @@ pub enum ErrorKind {
 }
 
 impl ErrorKind {
-  #[rustfmt::skip]
+    #[rustfmt::skip]
   #[allow(deprecated)]
-  /// Converts an `ErrorKind` to a text description
-  pub fn description(&self) -> &str {
+    /// Converts an `ErrorKind` to a text description
+    pub fn description(&self) -> &str {
     match *self {
       ErrorKind::Tag                       => "Tag",
       ErrorKind::MapRes                    => "Map on Result",
@@ -1226,8 +1230,8 @@ impl ErrorKind {
 #[allow(unused_variables)]
 #[macro_export(local_inner_macros)]
 #[cfg_attr(
-  not(test),
-  deprecated(since = "0.3.0", note = "Replaced with `E::from_error_kind`")
+    not(test),
+    deprecated(since = "0.3.0", note = "Replaced with `E::from_error_kind`")
 )]
 macro_rules! error_position(
   ($input:expr, $code:expr) => ({
@@ -1241,8 +1245,8 @@ macro_rules! error_position(
 #[allow(unused_variables)]
 #[macro_export(local_inner_macros)]
 #[cfg_attr(
-  not(test),
-  deprecated(since = "0.3.0", note = "Replaced with `E::append`")
+    not(test),
+    deprecated(since = "0.3.0", note = "Replaced with `E::append`")
 )]
 macro_rules! error_node_position(
   ($input:expr, $code:expr, $next:expr) => ({
@@ -1276,32 +1280,32 @@ macro_rules! error_node_position(
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::dbg_err")]
 #[cfg(feature = "std")]
 pub fn dbg_dmp<'a, F, O, E: std::fmt::Debug>(
-  f: F,
-  context: &'static str,
+    f: F,
+    context: &'static str,
 ) -> impl Fn(&'a [u8]) -> IResult<&'a [u8], O, E>
 where
-  F: Fn(&'a [u8]) -> IResult<&'a [u8], O, E>,
+    F: Fn(&'a [u8]) -> IResult<&'a [u8], O, E>,
 {
-  use crate::input::HexDisplay;
-  move |i: &'a [u8]| match f(i) {
-    Err(e) => {
-      println!("{}: Error({:?}) at:\n{}", context, e, i.to_hex(8));
-      Err(e)
+    use crate::input::HexDisplay;
+    move |i: &'a [u8]| match f(i) {
+        Err(e) => {
+            println!("{}: Error({:?}) at:\n{}", context, e, i.to_hex(8));
+            Err(e)
+        }
+        a => a,
     }
-    a => a,
-  }
 }
 
 #[cfg(test)]
 #[cfg(feature = "alloc")]
 mod tests {
-  use super::*;
-  use crate::bytes::one_of;
+    use super::*;
+    use crate::bytes::one_of;
 
-  #[test]
-  fn convert_error_panic() {
-    let input = "";
+    #[test]
+    fn convert_error_panic() {
+        let input = "";
 
-    let _result: IResult<_, _, VerboseError<&str>> = one_of('x')(input);
-  }
+        let _result: IResult<_, _, VerboseError<&str>> = one_of('x')(input);
+    }
 }

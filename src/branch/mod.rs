@@ -15,8 +15,8 @@ pub use crate::dispatch;
 ///
 /// This trait is implemented for tuples of up to 21 elements
 pub trait Alt<I, O, E> {
-  /// Tests each parser in the tuple and returns the result of the first one that succeeds
-  fn choice(&mut self, input: I) -> IResult<I, O, E>;
+    /// Tests each parser in the tuple and returns the result of the first one that succeeds
+    fn choice(&mut self, input: I) -> IResult<I, O, E>;
 }
 
 /// Tests a list of parsers one by one until one succeeds.
@@ -54,17 +54,17 @@ pub trait Alt<I, O, E> {
 /// # }
 /// ```
 pub fn alt<I: Clone, O, E: ParseError<I>, List: Alt<I, O, E>>(
-  mut l: List,
+    mut l: List,
 ) -> impl FnMut(I) -> IResult<I, O, E> {
-  move |i: I| l.choice(i)
+    move |i: I| l.choice(i)
 }
 
 /// Helper trait for the [permutation()] combinator.
 ///
 /// This trait is implemented for tuples of up to 21 elements
 pub trait Permutation<I, O, E> {
-  /// Tries to apply all parsers in the tuple in various orders until all of them succeed
-  fn permutation(&mut self, input: I) -> IResult<I, O, E>;
+    /// Tries to apply all parsers in the tuple in various orders until all of them succeed
+    fn permutation(&mut self, input: I) -> IResult<I, O, E>;
 }
 
 /// Applies a list of parsers in any order.
@@ -113,9 +113,9 @@ pub trait Permutation<I, O, E> {
 /// ```
 ///
 pub fn permutation<I: Clone, O, E: ParseError<I>, List: Permutation<I, O, E>>(
-  mut l: List,
+    mut l: List,
 ) -> impl FnMut(I) -> IResult<I, O, E> {
-  move |i: I| l.permutation(i)
+    move |i: I| l.permutation(i)
 }
 
 macro_rules! alt_trait(
@@ -169,9 +169,9 @@ alt_trait!(Alt2 Alt3 Alt4 Alt5 Alt6 Alt7 Alt8 Alt9 Alt10 Alt11 Alt12 Alt13 Alt14
 
 // Manually implement Alt for (A,), the 1-tuple type
 impl<I, O, E: ParseError<I>, A: Parser<I, O, E>> Alt<I, O, E> for (A,) {
-  fn choice(&mut self, input: I) -> IResult<I, O, E> {
-    self.0.parse_next(input)
-  }
+    fn choice(&mut self, input: I) -> IResult<I, O, E> {
+        self.0.parse_next(input)
+    }
 }
 
 macro_rules! permutation_trait(

@@ -14,12 +14,12 @@ use crate::IResult;
 /// Configurable endianness
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Endianness {
-  /// Big endian
-  Big,
-  /// Little endian
-  Little,
-  /// Will match the host's endianness
-  Native,
+    /// Big endian
+    Big,
+    /// Little endian
+    Little,
+    /// Will match the host's endianness
+    Native,
 }
 
 /// Recognizes an unsigned 1 byte integer.
@@ -58,14 +58,14 @@ pub enum Endianness {
 #[inline(always)]
 pub fn be_u8<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u8, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
 {
-  if STREAMING {
-    streaming::be_u8(input)
-  } else {
-    complete::be_u8(input)
-  }
+    if STREAMING {
+        streaming::be_u8(input)
+    } else {
+        complete::be_u8(input)
+    }
 }
 
 /// Recognizes a big endian unsigned 2 bytes integer.
@@ -104,15 +104,15 @@ where
 #[inline(always)]
 pub fn be_u16<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u16, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::be_u16(input)
-  } else {
-    complete::be_u16(input)
-  }
+    if STREAMING {
+        streaming::be_u16(input)
+    } else {
+        complete::be_u16(input)
+    }
 }
 
 /// Recognizes a big endian unsigned 3 byte integer.
@@ -151,15 +151,15 @@ where
 #[inline(always)]
 pub fn be_u24<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u32, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::be_u24(input)
-  } else {
-    complete::be_u24(input)
-  }
+    if STREAMING {
+        streaming::be_u24(input)
+    } else {
+        complete::be_u24(input)
+    }
 }
 
 /// Recognizes a big endian unsigned 4 bytes integer.
@@ -198,15 +198,15 @@ where
 #[inline(always)]
 pub fn be_u32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u32, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::be_u32(input)
-  } else {
-    complete::be_u32(input)
-  }
+    if STREAMING {
+        streaming::be_u32(input)
+    } else {
+        complete::be_u32(input)
+    }
 }
 
 /// Recognizes a big endian unsigned 8 bytes integer.
@@ -245,15 +245,15 @@ where
 #[inline(always)]
 pub fn be_u64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u64, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::be_u64(input)
-  } else {
-    complete::be_u64(input)
-  }
+    if STREAMING {
+        streaming::be_u64(input)
+    } else {
+        complete::be_u64(input)
+    }
 }
 
 /// Recognizes a big endian unsigned 16 bytes integer.
@@ -292,15 +292,15 @@ where
 #[inline(always)]
 pub fn be_u128<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u128, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::be_u128(input)
-  } else {
-    complete::be_u128(input)
-  }
+    if STREAMING {
+        streaming::be_u128(input)
+    } else {
+        complete::be_u128(input)
+    }
 }
 
 /// Recognizes a signed 1 byte integer.
@@ -337,14 +337,14 @@ where
 #[inline(always)]
 pub fn be_i8<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i8, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
 {
-  if STREAMING {
-    streaming::be_i8(input)
-  } else {
-    complete::be_i8(input)
-  }
+    if STREAMING {
+        streaming::be_i8(input)
+    } else {
+        complete::be_i8(input)
+    }
 }
 
 /// Recognizes a big endian signed 2 bytes integer.
@@ -381,15 +381,15 @@ where
 #[inline(always)]
 pub fn be_i16<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i16, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::be_i16(input)
-  } else {
-    complete::be_i16(input)
-  }
+    if STREAMING {
+        streaming::be_i16(input)
+    } else {
+        complete::be_i16(input)
+    }
 }
 
 /// Recognizes a big endian signed 3 bytes integer.
@@ -426,15 +426,15 @@ where
 #[inline(always)]
 pub fn be_i24<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i32, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::be_i24(input)
-  } else {
-    complete::be_i24(input)
-  }
+    if STREAMING {
+        streaming::be_i24(input)
+    } else {
+        complete::be_i24(input)
+    }
 }
 
 /// Recognizes a big endian signed 4 bytes integer.
@@ -471,15 +471,15 @@ where
 #[inline(always)]
 pub fn be_i32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i32, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::be_i32(input)
-  } else {
-    complete::be_i32(input)
-  }
+    if STREAMING {
+        streaming::be_i32(input)
+    } else {
+        complete::be_i32(input)
+    }
 }
 
 /// Recognizes a big endian signed 8 bytes integer.
@@ -516,15 +516,15 @@ where
 #[inline(always)]
 pub fn be_i64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i64, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::be_i64(input)
-  } else {
-    complete::be_i64(input)
-  }
+    if STREAMING {
+        streaming::be_i64(input)
+    } else {
+        complete::be_i64(input)
+    }
 }
 
 /// Recognizes a big endian signed 16 bytes integer.
@@ -561,15 +561,15 @@ where
 #[inline(always)]
 pub fn be_i128<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i128, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::be_i128(input)
-  } else {
-    complete::be_i128(input)
-  }
+    if STREAMING {
+        streaming::be_i128(input)
+    } else {
+        complete::be_i128(input)
+    }
 }
 
 /// Recognizes an unsigned 1 byte integer.
@@ -606,14 +606,14 @@ where
 #[inline(always)]
 pub fn le_u8<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u8, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
 {
-  if STREAMING {
-    streaming::le_u8(input)
-  } else {
-    complete::le_u8(input)
-  }
+    if STREAMING {
+        streaming::le_u8(input)
+    } else {
+        complete::le_u8(input)
+    }
 }
 
 /// Recognizes a little endian unsigned 2 bytes integer.
@@ -652,15 +652,15 @@ where
 #[inline(always)]
 pub fn le_u16<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u16, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::le_u16(input)
-  } else {
-    complete::le_u16(input)
-  }
+    if STREAMING {
+        streaming::le_u16(input)
+    } else {
+        complete::le_u16(input)
+    }
 }
 
 /// Recognizes a little endian unsigned 3 byte integer.
@@ -699,15 +699,15 @@ where
 #[inline(always)]
 pub fn le_u24<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u32, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::le_u24(input)
-  } else {
-    complete::le_u24(input)
-  }
+    if STREAMING {
+        streaming::le_u24(input)
+    } else {
+        complete::le_u24(input)
+    }
 }
 
 /// Recognizes a little endian unsigned 4 bytes integer.
@@ -746,15 +746,15 @@ where
 #[inline(always)]
 pub fn le_u32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u32, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::le_u32(input)
-  } else {
-    complete::le_u32(input)
-  }
+    if STREAMING {
+        streaming::le_u32(input)
+    } else {
+        complete::le_u32(input)
+    }
 }
 
 /// Recognizes a little endian unsigned 8 bytes integer.
@@ -793,15 +793,15 @@ where
 #[inline(always)]
 pub fn le_u64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u64, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::le_u64(input)
-  } else {
-    complete::le_u64(input)
-  }
+    if STREAMING {
+        streaming::le_u64(input)
+    } else {
+        complete::le_u64(input)
+    }
 }
 
 /// Recognizes a little endian unsigned 16 bytes integer.
@@ -840,15 +840,15 @@ where
 #[inline(always)]
 pub fn le_u128<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u128, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::le_u128(input)
-  } else {
-    complete::le_u128(input)
-  }
+    if STREAMING {
+        streaming::le_u128(input)
+    } else {
+        complete::le_u128(input)
+    }
 }
 
 /// Recognizes a signed 1 byte integer.
@@ -885,14 +885,14 @@ where
 #[inline(always)]
 pub fn le_i8<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i8, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
 {
-  if STREAMING {
-    streaming::le_i8(input)
-  } else {
-    complete::le_i8(input)
-  }
+    if STREAMING {
+        streaming::le_i8(input)
+    } else {
+        complete::le_i8(input)
+    }
 }
 
 /// Recognizes a little endian signed 2 bytes integer.
@@ -931,15 +931,15 @@ where
 #[inline(always)]
 pub fn le_i16<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i16, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::le_i16(input)
-  } else {
-    complete::le_i16(input)
-  }
+    if STREAMING {
+        streaming::le_i16(input)
+    } else {
+        complete::le_i16(input)
+    }
 }
 
 /// Recognizes a little endian signed 3 bytes integer.
@@ -978,15 +978,15 @@ where
 #[inline(always)]
 pub fn le_i24<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i32, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::le_i24(input)
-  } else {
-    complete::le_i24(input)
-  }
+    if STREAMING {
+        streaming::le_i24(input)
+    } else {
+        complete::le_i24(input)
+    }
 }
 
 /// Recognizes a little endian signed 4 bytes integer.
@@ -1025,15 +1025,15 @@ where
 #[inline(always)]
 pub fn le_i32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i32, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::le_i32(input)
-  } else {
-    complete::le_i32(input)
-  }
+    if STREAMING {
+        streaming::le_i32(input)
+    } else {
+        complete::le_i32(input)
+    }
 }
 
 /// Recognizes a little endian signed 8 bytes integer.
@@ -1072,15 +1072,15 @@ where
 #[inline(always)]
 pub fn le_i64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i64, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::le_i64(input)
-  } else {
-    complete::le_i64(input)
-  }
+    if STREAMING {
+        streaming::le_i64(input)
+    } else {
+        complete::le_i64(input)
+    }
 }
 
 /// Recognizes a little endian signed 16 bytes integer.
@@ -1119,15 +1119,15 @@ where
 #[inline(always)]
 pub fn le_i128<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i128, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::le_i128(input)
-  } else {
-    complete::le_i128(input)
-  }
+    if STREAMING {
+        streaming::le_i128(input)
+    } else {
+        complete::le_i128(input)
+    }
 }
 
 /// Recognizes an unsigned 1 byte integer
@@ -1169,14 +1169,14 @@ where
 #[inline(always)]
 pub fn u8<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u8, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
 {
-  if STREAMING {
-    streaming::u8(input)
-  } else {
-    complete::u8(input)
-  }
+    if STREAMING {
+        streaming::u8(input)
+    } else {
+        complete::u8(input)
+    }
 }
 
 /// Recognizes an unsigned 2 bytes integer
@@ -1232,18 +1232,18 @@ where
 /// ```
 #[inline(always)]
 pub fn u16<I, E: ParseError<I>, const STREAMING: bool>(
-  endian: crate::number::Endianness,
+    endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, u16, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::u16(endian)
-  } else {
-    complete::u16(endian)
-  }
+    if STREAMING {
+        streaming::u16(endian)
+    } else {
+        complete::u16(endian)
+    }
 }
 
 /// Recognizes an unsigned 3 byte integer
@@ -1299,18 +1299,18 @@ where
 /// ```
 #[inline(always)]
 pub fn u24<I, E: ParseError<I>, const STREAMING: bool>(
-  endian: crate::number::Endianness,
+    endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, u32, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::u24(endian)
-  } else {
-    complete::u24(endian)
-  }
+    if STREAMING {
+        streaming::u24(endian)
+    } else {
+        complete::u24(endian)
+    }
 }
 
 /// Recognizes an unsigned 4 byte integer
@@ -1366,18 +1366,18 @@ where
 /// ```
 #[inline(always)]
 pub fn u32<I, E: ParseError<I>, const STREAMING: bool>(
-  endian: crate::number::Endianness,
+    endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, u32, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::u32(endian)
-  } else {
-    complete::u32(endian)
-  }
+    if STREAMING {
+        streaming::u32(endian)
+    } else {
+        complete::u32(endian)
+    }
 }
 
 /// Recognizes an unsigned 8 byte integer
@@ -1433,18 +1433,18 @@ where
 /// ```
 #[inline(always)]
 pub fn u64<I, E: ParseError<I>, const STREAMING: bool>(
-  endian: crate::number::Endianness,
+    endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, u64, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::u64(endian)
-  } else {
-    complete::u64(endian)
-  }
+    if STREAMING {
+        streaming::u64(endian)
+    } else {
+        complete::u64(endian)
+    }
 }
 
 /// Recognizes an unsigned 16 byte integer
@@ -1500,18 +1500,18 @@ where
 /// ```
 #[inline(always)]
 pub fn u128<I, E: ParseError<I>, const STREAMING: bool>(
-  endian: crate::number::Endianness,
+    endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, u128, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::u128(endian)
-  } else {
-    complete::u128(endian)
-  }
+    if STREAMING {
+        streaming::u128(endian)
+    } else {
+        complete::u128(endian)
+    }
 }
 
 /// Recognizes a signed 1 byte integer
@@ -1553,14 +1553,14 @@ where
 #[inline(always)]
 pub fn i8<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i8, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
 {
-  if STREAMING {
-    streaming::i8(input)
-  } else {
-    complete::i8(input)
-  }
+    if STREAMING {
+        streaming::i8(input)
+    } else {
+        complete::i8(input)
+    }
 }
 
 /// Recognizes a signed 2 byte integer
@@ -1616,18 +1616,18 @@ where
 /// ```
 #[inline(always)]
 pub fn i16<I, E: ParseError<I>, const STREAMING: bool>(
-  endian: crate::number::Endianness,
+    endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, i16, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::i16(endian)
-  } else {
-    complete::i16(endian)
-  }
+    if STREAMING {
+        streaming::i16(endian)
+    } else {
+        complete::i16(endian)
+    }
 }
 
 /// Recognizes a signed 3 byte integer
@@ -1683,18 +1683,18 @@ where
 /// ```
 #[inline(always)]
 pub fn i24<I, E: ParseError<I>, const STREAMING: bool>(
-  endian: crate::number::Endianness,
+    endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, i32, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::i24(endian)
-  } else {
-    complete::i24(endian)
-  }
+    if STREAMING {
+        streaming::i24(endian)
+    } else {
+        complete::i24(endian)
+    }
 }
 
 /// Recognizes a signed 4 byte integer
@@ -1750,18 +1750,18 @@ where
 /// ```
 #[inline(always)]
 pub fn i32<I, E: ParseError<I>, const STREAMING: bool>(
-  endian: crate::number::Endianness,
+    endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, i32, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::i32(endian)
-  } else {
-    complete::i32(endian)
-  }
+    if STREAMING {
+        streaming::i32(endian)
+    } else {
+        complete::i32(endian)
+    }
 }
 
 /// Recognizes a signed 8 byte integer
@@ -1817,18 +1817,18 @@ where
 /// ```
 #[inline(always)]
 pub fn i64<I, E: ParseError<I>, const STREAMING: bool>(
-  endian: crate::number::Endianness,
+    endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, i64, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::i64(endian)
-  } else {
-    complete::i64(endian)
-  }
+    if STREAMING {
+        streaming::i64(endian)
+    } else {
+        complete::i64(endian)
+    }
 }
 
 /// Recognizes a signed 16 byte integer
@@ -1884,18 +1884,18 @@ where
 /// ```
 #[inline(always)]
 pub fn i128<I, E: ParseError<I>, const STREAMING: bool>(
-  endian: crate::number::Endianness,
+    endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, i128, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::i128(endian)
-  } else {
-    complete::i128(endian)
-  }
+    if STREAMING {
+        streaming::i128(endian)
+    } else {
+        complete::i128(endian)
+    }
 }
 
 /// Recognizes a big endian 4 bytes floating point number.
@@ -1934,15 +1934,15 @@ where
 #[inline(always)]
 pub fn be_f32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f32, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::be_f32(input)
-  } else {
-    complete::be_f32(input)
-  }
+    if STREAMING {
+        streaming::be_f32(input)
+    } else {
+        complete::be_f32(input)
+    }
 }
 
 /// Recognizes a big endian 8 bytes floating point number.
@@ -1981,15 +1981,15 @@ where
 #[inline(always)]
 pub fn be_f64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f64, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::be_f64(input)
-  } else {
-    complete::be_f64(input)
-  }
+    if STREAMING {
+        streaming::be_f64(input)
+    } else {
+        complete::be_f64(input)
+    }
 }
 
 /// Recognizes a little endian 4 bytes floating point number.
@@ -2028,15 +2028,15 @@ where
 #[inline(always)]
 pub fn le_f32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f32, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::le_f32(input)
-  } else {
-    complete::le_f32(input)
-  }
+    if STREAMING {
+        streaming::le_f32(input)
+    } else {
+        complete::le_f32(input)
+    }
 }
 
 /// Recognizes a little endian 8 bytes floating point number.
@@ -2075,15 +2075,15 @@ where
 #[inline(always)]
 pub fn le_f64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f64, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::le_f64(input)
-  } else {
-    complete::le_f64(input)
-  }
+    if STREAMING {
+        streaming::le_f64(input)
+    } else {
+        complete::le_f64(input)
+    }
 }
 
 /// Recognizes a 4 byte floating point number
@@ -2139,18 +2139,18 @@ where
 /// ```
 #[inline(always)]
 pub fn f32<I, E: ParseError<I>, const STREAMING: bool>(
-  endian: crate::number::Endianness,
+    endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, f32, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::f32(endian)
-  } else {
-    complete::f32(endian)
-  }
+    if STREAMING {
+        streaming::f32(endian)
+    } else {
+        complete::f32(endian)
+    }
 }
 
 /// Recognizes an 8 byte floating point number
@@ -2206,16 +2206,16 @@ where
 /// ```
 #[inline(always)]
 pub fn f64<I, E: ParseError<I>, const STREAMING: bool>(
-  endian: crate::number::Endianness,
+    endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, f64, E>
 where
-  I: InputIsStreaming<STREAMING>,
-  I: Input<Token = u8>,
-  <I as Input>::Slice: AsBytes,
+    I: InputIsStreaming<STREAMING>,
+    I: Input<Token = u8>,
+    <I as Input>::Slice: AsBytes,
 {
-  if STREAMING {
-    streaming::f64(endian)
-  } else {
-    complete::f64(endian)
-  }
+    if STREAMING {
+        streaming::f64(endian)
+    } else {
+        complete::f64(endian)
+    }
 }

@@ -415,44 +415,44 @@ doc_comment::doctest!("../README.md");
 /// it, albeit there it is not public.
 #[doc(hidden)]
 pub(crate) mod lib {
-  /// `std` facade allowing `std`/`core` to be interchangeable. Reexports `alloc` crate optionally,
-  /// as well as `core` or `std`
-  #[cfg(not(feature = "std"))]
-  /// internal std exports for no_std compatibility
-  pub mod std {
-    #[doc(hidden)]
-    #[cfg(not(feature = "alloc"))]
-    pub use core::borrow;
+    /// `std` facade allowing `std`/`core` to be interchangeable. Reexports `alloc` crate optionally,
+    /// as well as `core` or `std`
+    #[cfg(not(feature = "std"))]
+    /// internal std exports for no_std compatibility
+    pub mod std {
+        #[doc(hidden)]
+        #[cfg(not(feature = "alloc"))]
+        pub use core::borrow;
 
-    #[cfg(feature = "alloc")]
-    #[doc(hidden)]
-    pub use alloc::{borrow, boxed, collections, string, vec};
+        #[cfg(feature = "alloc")]
+        #[doc(hidden)]
+        pub use alloc::{borrow, boxed, collections, string, vec};
 
-    #[doc(hidden)]
-    pub use core::{cmp, convert, fmt, hash, iter, mem, ops, option, result, slice, str};
+        #[doc(hidden)]
+        pub use core::{cmp, convert, fmt, hash, iter, mem, ops, option, result, slice, str};
 
-    /// internal reproduction of std prelude
-    #[doc(hidden)]
-    pub mod prelude {
-      pub use core::prelude as v1;
+        /// internal reproduction of std prelude
+        #[doc(hidden)]
+        pub mod prelude {
+            pub use core::prelude as v1;
+        }
     }
-  }
 
-  #[cfg(feature = "std")]
-  /// internal std exports for `no_std` compatibility
-  pub mod std {
-    #[doc(hidden)]
-    pub use std::{
-      alloc, borrow, boxed, cmp, collections, convert, fmt, hash, iter, mem, ops, option, result,
-      slice, str, string, vec,
-    };
+    #[cfg(feature = "std")]
+    /// internal std exports for `no_std` compatibility
+    pub mod std {
+        #[doc(hidden)]
+        pub use std::{
+            alloc, borrow, boxed, cmp, collections, convert, fmt, hash, iter, mem, ops, option,
+            result, slice, str, string, vec,
+        };
 
-    /// internal reproduction of std prelude
-    #[doc(hidden)]
-    pub mod prelude {
-      pub use std::prelude as v1;
+        /// internal reproduction of std prelude
+        #[doc(hidden)]
+        pub mod prelude {
+            pub use std::prelude as v1;
+        }
     }
-  }
 }
 
 #[macro_use]
@@ -501,10 +501,10 @@ pub mod _tutorial;
 /// }
 /// ```
 pub mod prelude {
-  pub use crate::input::InputIsStreaming as _;
-  pub use crate::FinishIResult as _;
-  pub use crate::IResult;
-  pub use crate::Parser as _;
+    pub use crate::input::InputIsStreaming as _;
+    pub use crate::FinishIResult as _;
+    pub use crate::IResult;
+    pub use crate::Parser as _;
 }
 
 pub use error::FinishIResult;
