@@ -2,7 +2,7 @@
 
 use crate::combinator::*;
 use crate::error::{ContextError, IResult, ParseError};
-use crate::input::{AsChar, Compare, Input, InputIsStreaming, Location};
+use crate::input::{AsChar, Compare, Input, InputIsPartial, Location};
 
 /// All nom parsers implement this trait
 ///
@@ -521,14 +521,14 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, input::Streaming, Parser};
+    /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, input::Partial, Parser};
     /// # use winnow::bytes::take;
     /// # fn main() {
     ///
     /// let mut parser = take(5u8).complete();
     ///
-    /// assert_eq!(parser.parse_next(Streaming("abcdefg")), Ok((Streaming("fg"), "abcde")));
-    /// assert_eq!(parser.parse_next(Streaming("abcd")), Err(ErrMode::Backtrack(Error::new(Streaming("abcd"), ErrorKind::Complete))));
+    /// assert_eq!(parser.parse_next(Partial("abcdefg")), Ok((Partial("fg"), "abcde")));
+    /// assert_eq!(parser.parse_next(Partial("abcd")), Err(ErrMode::Backtrack(Error::new(Partial("abcd"), ErrorKind::Complete))));
     /// # }
     /// ```
     fn complete(self) -> Complete<Self>
@@ -631,7 +631,7 @@ where
 /// ```
 impl<I, E> Parser<I, u8, E> for u8
 where
-    I: InputIsStreaming<false>,
+    I: InputIsPartial<false>,
     I: Input<Token = u8>,
     E: ParseError<I>,
 {
@@ -657,7 +657,7 @@ where
 /// ```
 impl<I, E> Parser<I, <I as Input>::Token, E> for char
 where
-    I: InputIsStreaming<false>,
+    I: InputIsPartial<false>,
     I: Input,
     <I as Input>::Token: AsChar + Copy,
     E: ParseError<I>,
@@ -687,7 +687,7 @@ where
 /// ```
 impl<'s, I, E: ParseError<I>> Parser<I, <I as Input>::Slice, E> for &'s [u8]
 where
-    I: Compare<&'s [u8]> + InputIsStreaming<false>,
+    I: Compare<&'s [u8]> + InputIsPartial<false>,
     I: Input,
 {
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Input>::Slice, E> {
@@ -715,7 +715,7 @@ where
 /// ```
 impl<'s, I, E: ParseError<I>, const N: usize> Parser<I, <I as Input>::Slice, E> for &'s [u8; N]
 where
-    I: Compare<&'s [u8; N]> + InputIsStreaming<false>,
+    I: Compare<&'s [u8; N]> + InputIsPartial<false>,
     I: Input,
 {
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Input>::Slice, E> {
@@ -743,7 +743,7 @@ where
 /// ```
 impl<'s, I, E: ParseError<I>> Parser<I, <I as Input>::Slice, E> for &'s str
 where
-    I: Compare<&'s str> + InputIsStreaming<false>,
+    I: Compare<&'s str> + InputIsPartial<false>,
     I: Input,
 {
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Input>::Slice, E> {
@@ -831,7 +831,7 @@ mod tests {
     use crate::error::ErrorKind;
     use crate::error::Needed;
     use crate::number::be_u16;
-    use crate::Streaming;
+    use crate::Partial;
 
     #[doc(hidden)]
     #[macro_export]
@@ -876,26 +876,26 @@ mod tests {
     #[test]
     fn tuple_test() {
         #[allow(clippy::type_complexity)]
-        fn tuple_3(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (u16, &[u8], &[u8])> {
+        fn tuple_3(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (u16, &[u8], &[u8])> {
             (be_u16, take(3u8), tag("fg")).parse_next(i)
         }
 
         assert_eq!(
-            tuple_3(Streaming(&b"abcdefgh"[..])),
-            Ok((Streaming(&b"h"[..]), (0x6162u16, &b"cde"[..], &b"fg"[..])))
+            tuple_3(Partial(&b"abcdefgh"[..])),
+            Ok((Partial(&b"h"[..]), (0x6162u16, &b"cde"[..], &b"fg"[..])))
         );
         assert_eq!(
-            tuple_3(Streaming(&b"abcd"[..])),
+            tuple_3(Partial(&b"abcd"[..])),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            tuple_3(Streaming(&b"abcde"[..])),
+            tuple_3(Partial(&b"abcde"[..])),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
         assert_eq!(
-            tuple_3(Streaming(&b"abcdejk"[..])),
+            tuple_3(Partial(&b"abcdejk"[..])),
             Err(ErrMode::Backtrack(error_position!(
-                Streaming(&b"jk"[..]),
+                Partial(&b"jk"[..]),
                 ErrorKind::Tag
             )))
         );

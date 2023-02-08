@@ -7,7 +7,7 @@ use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::input::Accumulate;
-use crate::input::{Input, InputIsStreaming, ToUsize, UpdateSlice};
+use crate::input::{Input, InputIsPartial, ToUsize, UpdateSlice};
 use crate::{IResult, Parser};
 
 /// Repeats the embedded parser, gathering the results in a `Vec`.
@@ -1033,28 +1033,28 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Arguments
 /// * `f` The parser to apply.
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult, input::Streaming};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult, input::Partial};
 /// use winnow::number::be_u16;
 /// use winnow::multi::length_data;
 /// use winnow::bytes::tag;
 ///
-/// fn parser(s: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+/// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
 ///   length_data(be_u16)(s)
 /// }
 ///
-/// assert_eq!(parser(Streaming(b"\x00\x03abcefg")), Ok((Streaming(&b"efg"[..]), &b"abc"[..])));
-/// assert_eq!(parser(Streaming(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Partial(b"\x00\x03abcefg")), Ok((Partial(&b"efg"[..]), &b"abc"[..])));
+/// assert_eq!(parser(Partial(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
-pub fn length_data<I, N, E, F, const STREAMING: bool>(
+pub fn length_data<I, N, E, F, const PARTIAL: bool>(
     mut f: F,
 ) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     N: ToUsize,
     F: Parser<I, N, E>,
@@ -1075,31 +1075,31 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Arguments
 /// * `f` The parser to apply.
 /// * `g` The parser to apply on the subslice.
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult, input::Streaming};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult, input::Partial};
 /// use winnow::number::be_u16;
 /// use winnow::multi::length_value;
 /// use winnow::bytes::tag;
 ///
-/// fn parser(s: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+/// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
 ///   length_value(be_u16, tag("abc"))(s)
 /// }
 ///
-/// assert_eq!(parser(Streaming(b"\x00\x03abcefg")), Ok((Streaming(&b"efg"[..]), &b"abc"[..])));
-/// assert_eq!(parser(Streaming(b"\x00\x03123123")), Err(ErrMode::Backtrack(Error::new(Streaming(&b"123"[..]), ErrorKind::Tag))));
-/// assert_eq!(parser(Streaming(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Partial(b"\x00\x03abcefg")), Ok((Partial(&b"efg"[..]), &b"abc"[..])));
+/// assert_eq!(parser(Partial(b"\x00\x03123123")), Err(ErrMode::Backtrack(Error::new(Partial(&b"123"[..]), ErrorKind::Tag))));
+/// assert_eq!(parser(Partial(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
-pub fn length_value<I, O, N, E, F, G, const STREAMING: bool>(
+pub fn length_value<I, O, N, E, F, G, const PARTIAL: bool>(
     mut f: F,
     mut g: G,
 ) -> impl FnMut(I) -> IResult<I, O, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input + UpdateSlice,
     N: ToUsize,
     F: Parser<I, N, E>,

@@ -4,7 +4,7 @@
 //!
 //! nom is a parser combinator library, supporting:
 //! - String (`&str`), byte (`&[u8]`), and [custom input types][crate::input]
-//! - [Streaming parsing][crate::Streaming]
+//! - [Partial parsing][crate::Partial]
 //! - Zero copy parsing
 //!
 //! ## Example
@@ -124,8 +124,8 @@
 //! With functions, you would write it like this:
 //!
 //! ```rust
-//! use winnow::{IResult, bytes::take, input::Streaming};
-//! fn take4(input: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+//! use winnow::{IResult, bytes::take, input::Partial};
+//! fn take4(input: Partial<&str>) -> IResult<Partial<&str>, &str> {
 //!   take(4u8)(input)
 //! }
 //! ```
@@ -262,21 +262,21 @@
 //!     error::ErrorKind, error::Error, error::Needed,
 //!     number::be_u16,
 //!     bytes::{tag, take},
-//!     input::Streaming,
+//!     input::Partial,
 //! };
 //!
 //! let mut tpl = (be_u16, take(3u8), tag("fg"));
 //!
 //! assert_eq!(
-//!   tpl.parse_next(Streaming(&b"abcdefgh"[..])),
+//!   tpl.parse_next(Partial(&b"abcdefgh"[..])),
 //!   Ok((
-//!     Streaming(&b"h"[..]),
+//!     Partial(&b"h"[..]),
 //!     (0x6162u16, &b"cde"[..], &b"fg"[..])
 //!   ))
 //! );
-//! assert_eq!(tpl.parse_next(Streaming(&b"abcde"[..])), Err(winnow::error::ErrMode::Incomplete(Needed::new(2))));
+//! assert_eq!(tpl.parse_next(Partial(&b"abcde"[..])), Err(winnow::error::ErrMode::Incomplete(Needed::new(2))));
 //! let input = &b"abcdejk"[..];
-//! assert_eq!(tpl.parse_next(Streaming(input)), Err(winnow::error::ErrMode::Backtrack(Error::new(Streaming(&input[5..]), ErrorKind::Tag))));
+//! assert_eq!(tpl.parse_next(Partial(input)), Err(winnow::error::ErrMode::Backtrack(Error::new(Partial(&input[5..]), ErrorKind::Tag))));
 //! # }
 //! ```
 //!
@@ -501,7 +501,7 @@ pub mod _tutorial;
 /// }
 /// ```
 pub mod prelude {
-    pub use crate::input::InputIsStreaming as _;
+    pub use crate::input::InputIsPartial as _;
     pub use crate::FinishIResult as _;
     pub use crate::IResult;
     pub use crate::Parser as _;
@@ -510,6 +510,6 @@ pub mod prelude {
 pub use error::FinishIResult;
 pub use error::IResult;
 pub use input::Located;
+pub use input::Partial;
 pub use input::Stateful;
-pub use input::Streaming;
 pub use parser::*;

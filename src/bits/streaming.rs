@@ -10,10 +10,10 @@ use crate::IResult;
 
 /// Generates a parser taking `count` bits
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bits::take`][crate::bits::take] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bits::take`][crate::bits::take] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bits::take` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bits::take` with input wrapped in `winnow::Partial`"
 )]
 pub fn take<I, O, C, E: ParseError<(I, usize)>>(
     count: C,
@@ -75,10 +75,10 @@ where
 
 /// Generates a parser taking `count` bits and comparing them to `pattern`
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bits::tag`][crate::bits::tag] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bits::tag`][crate::bits::tag] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bits::tag` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bits::tag` with input wrapped in `winnow::Partial`"
 )]
 pub fn tag<I, O, C, E: ParseError<(I, usize)>>(
     pattern: O,

@@ -30,7 +30,7 @@
 //! [`winnow::ErrMode<E>`][Err] is an enum because combinators can have different behaviours
 //! depending on the value.  The [`ErrMode<E>`] enum expresses 3 conditions for a parser error:
 //! - [`Incomplete`][ErrMode::Incomplete] indicates that a parser did not have enough data to
-//!   decide. This can be returned by parsers found in `streaming` submodules to indicate that we
+//!   decide. This can be returned by parsers using [`Partial`][crate::Partial] input to indicate that we
 //!   should buffer more data from a file or socket. Parsers in the `complete` submodules assume that
 //!   they have the entire input data, so if it was not sufficient, they will instead return a
 //!   `ErrMode::Backtrack`
@@ -448,7 +448,7 @@ use crate::lib::std::fmt;
 use core::num::NonZeroUsize;
 
 use crate::input::Input;
-use crate::input::InputIsStreaming;
+use crate::input::InputIsPartial;
 use crate::Parser;
 
 /// Holds the result of parsing functions
@@ -473,8 +473,8 @@ pub trait FinishIResult<I, O, E> {
     /// # Panic
     ///
     /// If the result is `Err(ErrMode::Incomplete(_))`, this method will panic.
-    /// - "complete" parsers: It will not be an issue, `Incomplete` is never used
-    /// - "streaming" parsers: `Incomplete` will be returned if there's not enough data
+    /// - **Complete parsers:** It will not be an issue, `Incomplete` is never used
+    /// - **Partial parsers:** `Incomplete` will be returned if there's not enough data
     /// for the parser to decide, and you should gather more data before parsing again.
     /// Once the parser returns either `Ok(_)`, `Err(ErrMode::Backtrack(_))` or `Err(ErrMode::Cut(_))`,
     /// you can get out of the parsing loop and call `finish_err()` on the parser's result
@@ -488,7 +488,7 @@ pub trait FinishIResult<I, O, E> {
     /// # Panic
     ///
     /// If the result is `Err(ErrMode::Incomplete(_))`, this method will panic as [`ErrMode::Incomplete`]
-    /// should only be set when the input is [`InputIsStreaming<false>`] which this isn't implemented
+    /// should only be set when the input is [`InputIsPartial<false>`] which this isn't implemented
     /// for.
     fn finish_err(self) -> Result<(I, O), E>;
 }
@@ -496,8 +496,8 @@ pub trait FinishIResult<I, O, E> {
 impl<I, O, E> FinishIResult<I, O, E> for IResult<I, O, E>
 where
     I: Input,
-    // Force users to deal with `Incomplete` when `InputIsStreaming<true>`
-    I: InputIsStreaming<false>,
+    // Force users to deal with `Incomplete` when `InputIsPartial<true>`
+    I: InputIsPartial<false>,
     I: Clone,
     E: ParseError<I>,
 {
@@ -512,7 +512,7 @@ where
             Ok(res) => Ok(res),
             Err(ErrMode::Backtrack(e)) | Err(ErrMode::Cut(e)) => Err(e),
             Err(ErrMode::Incomplete(_)) => {
-                panic!("`InputIsStreaming<false>` conflicts with `Err(ErrMode::Incomplete(_))`")
+                panic!("`InputIsPartial<false>` conflicts with `Err(ErrMode::Incomplete(_))`")
             }
         }
     }
@@ -546,8 +546,8 @@ impl<I, O, E> Finish<I, O, E> for IResult<I, O, E> {
 
 /// Contains information on needed data if a parser returned `Incomplete`
 ///
-/// **Note:** This is only possible for `Input` types that implement [`InputIsStreaming<true>`],
-/// like [`Streaming`][crate::Streaming].
+/// **Note:** This is only possible for `Input` types that implement [`InputIsPartial<true>`],
+/// like [`Partial`][crate::Partial].
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub enum Needed {
@@ -600,8 +600,8 @@ impl Needed {
 pub enum ErrMode<E> {
     /// There was not enough data
     ///
-    /// This must only be set when the `Input` is [`InputIsStreaming<true>`], like with
-    /// [`Streaming`][crate::Streaming]
+    /// This must only be set when the `Input` is [`InputIsPartial<true>`], like with
+    /// [`Partial`][crate::Partial]
     ///
     /// Convert this into an `Backtrack` with [`Parser::complete`][Parser::complete]
     Incomplete(Needed),

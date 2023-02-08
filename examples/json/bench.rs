@@ -1,9 +1,9 @@
-use winnow::Streaming;
+use winnow::Partial;
 
 mod json;
 mod parser;
 mod parser_dispatch;
-mod parser_streaming;
+mod parser_partial;
 
 fn json_bench(c: &mut criterion::Criterion) {
     let data = [("small", SMALL), ("canada", CANADA)];
@@ -34,9 +34,9 @@ fn json_bench(c: &mut criterion::Criterion) {
             criterion::BenchmarkId::new("streaming", name),
             &len,
             |b, _| {
-                type Error<'i> = winnow::error::Error<parser_streaming::Input<'i>>;
+                type Error<'i> = winnow::error::Error<parser_partial::Input<'i>>;
 
-                b.iter(|| parser_streaming::json::<Error>(Streaming(sample)).unwrap());
+                b.iter(|| parser_partial::json::<Error>(Partial(sample)).unwrap());
             },
         );
     }

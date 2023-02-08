@@ -6,14 +6,14 @@ pub mod streaming;
 mod tests;
 
 use crate::error::ParseError;
-use crate::input::{Compare, ContainsToken, FindSlice, Input, InputIsStreaming, SliceLen, ToUsize};
+use crate::input::{Compare, ContainsToken, FindSlice, Input, InputIsPartial, SliceLen, ToUsize};
 use crate::IResult;
 
 /// Matches one token
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
@@ -29,19 +29,17 @@ use crate::IResult;
 ///
 /// ```
 /// # use winnow::{bytes::any, error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::Streaming;
-/// assert_eq!(any::<_, Error<_>, true>(Streaming("abc")), Ok((Streaming("bc"),'a')));
-/// assert_eq!(any::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// # use winnow::Partial;
+/// assert_eq!(any::<_, Error<_>, true>(Partial("abc")), Ok((Partial("bc"),'a')));
+/// assert_eq!(any::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn any<I, E: ParseError<I>, const STREAMING: bool>(
-    input: I,
-) -> IResult<I, <I as Input>::Token, E>
+pub fn any<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, <I as Input>::Token, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::any(input)
     } else {
         complete::any(input)
@@ -75,30 +73,30 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::bytes::tag;
 ///
-/// fn parser(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+/// fn parser(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   tag("Hello")(s)
 /// }
 ///
-/// assert_eq!(parser(Streaming("Hello, World!")), Ok((Streaming(", World!"), "Hello")));
-/// assert_eq!(parser(Streaming("Something")), Err(ErrMode::Backtrack(Error::new(Streaming("Something"), ErrorKind::Tag))));
-/// assert_eq!(parser(Streaming("S")), Err(ErrMode::Backtrack(Error::new(Streaming("S"), ErrorKind::Tag))));
-/// assert_eq!(parser(Streaming("H")), Err(ErrMode::Incomplete(Needed::new(4))));
+/// assert_eq!(parser(Partial("Hello, World!")), Ok((Partial(", World!"), "Hello")));
+/// assert_eq!(parser(Partial("Something")), Err(ErrMode::Backtrack(Error::new(Partial("Something"), ErrorKind::Tag))));
+/// assert_eq!(parser(Partial("S")), Err(ErrMode::Backtrack(Error::new(Partial("S"), ErrorKind::Tag))));
+/// assert_eq!(parser(Partial("H")), Err(ErrMode::Incomplete(Needed::new(4))));
 /// ```
 #[inline(always)]
-pub fn tag<T, I, Error: ParseError<I>, const STREAMING: bool>(
+pub fn tag<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     tag: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input + Compare<T>,
     T: SliceLen + Clone,
 {
     move |i: I| {
         let t = tag.clone();
-        if STREAMING {
+        if PARTIAL {
             streaming::tag_internal(i, t)
         } else {
             complete::tag_internal(i, t)
@@ -130,31 +128,31 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::bytes::tag_no_case;
 ///
-/// fn parser(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+/// fn parser(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   tag_no_case("hello")(s)
 /// }
 ///
-/// assert_eq!(parser(Streaming("Hello, World!")), Ok((Streaming(", World!"), "Hello")));
-/// assert_eq!(parser(Streaming("hello, World!")), Ok((Streaming(", World!"), "hello")));
-/// assert_eq!(parser(Streaming("HeLlO, World!")), Ok((Streaming(", World!"), "HeLlO")));
-/// assert_eq!(parser(Streaming("Something")), Err(ErrMode::Backtrack(Error::new(Streaming("Something"), ErrorKind::Tag))));
-/// assert_eq!(parser(Streaming("")), Err(ErrMode::Incomplete(Needed::new(5))));
+/// assert_eq!(parser(Partial("Hello, World!")), Ok((Partial(", World!"), "Hello")));
+/// assert_eq!(parser(Partial("hello, World!")), Ok((Partial(", World!"), "hello")));
+/// assert_eq!(parser(Partial("HeLlO, World!")), Ok((Partial(", World!"), "HeLlO")));
+/// assert_eq!(parser(Partial("Something")), Err(ErrMode::Backtrack(Error::new(Partial("Something"), ErrorKind::Tag))));
+/// assert_eq!(parser(Partial("")), Err(ErrMode::Incomplete(Needed::new(5))));
 /// ```
 #[inline(always)]
-pub fn tag_no_case<T, I, Error: ParseError<I>, const STREAMING: bool>(
+pub fn tag_no_case<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     tag: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input + Compare<T>,
     T: SliceLen + Clone,
 {
     move |i: I| {
         let t = tag.clone();
-        if STREAMING {
+        if PARTIAL {
             streaming::tag_no_case_internal(i, t)
         } else {
             complete::tag_no_case_internal(i, t)
@@ -171,7 +169,7 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
@@ -194,31 +192,31 @@ where
 /// ```
 /// # use winnow::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::bytes::one_of;
-/// assert_eq!(one_of::<_, _, Error<_>, true>("abc")(Streaming("b")), Ok((Streaming(""), 'b')));
-/// assert_eq!(one_of::<_, _, Error<_>, true>("a")(Streaming("bc")), Err(ErrMode::Backtrack(Error::new(Streaming("bc"), ErrorKind::OneOf))));
-/// assert_eq!(one_of::<_, _, Error<_>, true>("a")(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(one_of::<_, _, Error<_>, true>("abc")(Partial("b")), Ok((Partial(""), 'b')));
+/// assert_eq!(one_of::<_, _, Error<_>, true>("a")(Partial("bc")), Err(ErrMode::Backtrack(Error::new(Partial("bc"), ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, Error<_>, true>("a")(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
-/// fn parser_fn(i: Streaming<&str>) -> IResult<Streaming<&str>, char> {
+/// fn parser_fn(i: Partial<&str>) -> IResult<Partial<&str>, char> {
 ///     one_of(|c| c == 'a' || c == 'b')(i)
 /// }
-/// assert_eq!(parser_fn(Streaming("abc")), Ok((Streaming("bc"), 'a')));
-/// assert_eq!(parser_fn(Streaming("cd")), Err(ErrMode::Backtrack(Error::new(Streaming("cd"), ErrorKind::OneOf))));
-/// assert_eq!(parser_fn(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser_fn(Partial("abc")), Ok((Partial("bc"), 'a')));
+/// assert_eq!(parser_fn(Partial("cd")), Err(ErrMode::Backtrack(Error::new(Partial("cd"), ErrorKind::OneOf))));
+/// assert_eq!(parser_fn(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn one_of<I, T, Error: ParseError<I>, const STREAMING: bool>(
+pub fn one_of<I, T, Error: ParseError<I>, const PARTIAL: bool>(
     list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Token, Error>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: Copy,
     T: ContainsToken<<I as Input>::Token>,
 {
     move |i: I| {
-        if STREAMING {
+        if PARTIAL {
             streaming::one_of_internal(i, &list)
         } else {
             complete::one_of_internal(i, &list)
@@ -230,7 +228,7 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
@@ -244,24 +242,24 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::bytes::none_of;
-/// assert_eq!(none_of::<_, _, Error<_>, true>("abc")(Streaming("z")), Ok((Streaming(""), 'z')));
-/// assert_eq!(none_of::<_, _, Error<_>, true>("ab")(Streaming("a")), Err(ErrMode::Backtrack(Error::new(Streaming("a"), ErrorKind::NoneOf))));
-/// assert_eq!(none_of::<_, _, Error<_>, true>("a")(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(none_of::<_, _, Error<_>, true>("abc")(Partial("z")), Ok((Partial(""), 'z')));
+/// assert_eq!(none_of::<_, _, Error<_>, true>("ab")(Partial("a")), Err(ErrMode::Backtrack(Error::new(Partial("a"), ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, Error<_>, true>("a")(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn none_of<I, T, Error: ParseError<I>, const STREAMING: bool>(
+pub fn none_of<I, T, Error: ParseError<I>, const PARTIAL: bool>(
     list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Token, Error>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: Copy,
     T: ContainsToken<<I as Input>::Token>,
 {
     move |i: I| {
-        if STREAMING {
+        if PARTIAL {
             streaming::none_of_internal(i, &list)
         } else {
             complete::none_of_internal(i, &list)
@@ -271,7 +269,7 @@ where
 
 /// Returns the longest input slice (if any) that matches the [pattern][ContainsToken]
 ///
-/// *Streaming version*: will return a `ErrMode::Incomplete(Needed::new(1))` if the pattern reaches the end of the input.
+/// *Partial version*: will return a `ErrMode::Incomplete(Needed::new(1))` if the pattern reaches the end of the input.
 /// # Example
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
@@ -290,30 +288,30 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::bytes::take_while0;
 /// use winnow::input::AsChar;
 ///
-/// fn alpha(s: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+/// fn alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
 ///   take_while0(AsChar::is_alpha)(s)
 /// }
 ///
-/// assert_eq!(alpha(Streaming(b"latin123")), Ok((Streaming(&b"123"[..]), &b"latin"[..])));
-/// assert_eq!(alpha(Streaming(b"12345")), Ok((Streaming(&b"12345"[..]), &b""[..])));
-/// assert_eq!(alpha(Streaming(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(alpha(Streaming(b"")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha(Partial(b"latin123")), Ok((Partial(&b"123"[..]), &b"latin"[..])));
+/// assert_eq!(alpha(Partial(b"12345")), Ok((Partial(&b"12345"[..]), &b""[..])));
+/// assert_eq!(alpha(Partial(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha(Partial(b"")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_while0<T, I, Error: ParseError<I>, const STREAMING: bool>(
+pub fn take_while0<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     T: ContainsToken<<I as Input>::Token>,
 {
     move |i: I| {
-        if STREAMING {
+        if PARTIAL {
             streaming::take_while_internal(i, &list)
         } else {
             complete::take_while_internal(i, &list)
@@ -325,7 +323,7 @@ where
 ///
 /// It will return an `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::TakeWhile1)))` if the pattern wasn't met.
 ///
-/// *Streaming version* will return a `ErrMode::Incomplete(Needed::new(1))` or if the pattern reaches the end of the input.
+/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` or if the pattern reaches the end of the input.
 ///
 /// # Example
 /// ```rust
@@ -354,39 +352,39 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::bytes::take_while1;
 /// use winnow::input::AsChar;
 ///
-/// fn alpha(s: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+/// fn alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
 ///   take_while1(AsChar::is_alpha)(s)
 /// }
 ///
-/// assert_eq!(alpha(Streaming(b"latin123")), Ok((Streaming(&b"123"[..]), &b"latin"[..])));
-/// assert_eq!(alpha(Streaming(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(alpha(Streaming(b"12345")), Err(ErrMode::Backtrack(Error::new(Streaming(&b"12345"[..]), ErrorKind::TakeWhile1))));
+/// assert_eq!(alpha(Partial(b"latin123")), Ok((Partial(&b"123"[..]), &b"latin"[..])));
+/// assert_eq!(alpha(Partial(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha(Partial(b"12345")), Err(ErrMode::Backtrack(Error::new(Partial(&b"12345"[..]), ErrorKind::TakeWhile1))));
 ///
-/// fn hex(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+/// fn hex(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   take_while1("1234567890ABCDEF")(s)
 /// }
 ///
-/// assert_eq!(hex(Streaming("123 and voila")), Ok((Streaming(" and voila"), "123")));
-/// assert_eq!(hex(Streaming("DEADBEEF and others")), Ok((Streaming(" and others"), "DEADBEEF")));
-/// assert_eq!(hex(Streaming("BADBABEsomething")), Ok((Streaming("something"), "BADBABE")));
-/// assert_eq!(hex(Streaming("D15EA5E")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(hex(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(hex(Partial("123 and voila")), Ok((Partial(" and voila"), "123")));
+/// assert_eq!(hex(Partial("DEADBEEF and others")), Ok((Partial(" and others"), "DEADBEEF")));
+/// assert_eq!(hex(Partial("BADBABEsomething")), Ok((Partial("something"), "BADBABE")));
+/// assert_eq!(hex(Partial("D15EA5E")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(hex(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_while1<T, I, Error: ParseError<I>, const STREAMING: bool>(
+pub fn take_while1<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     T: ContainsToken<<I as Input>::Token>,
 {
     move |i: I| {
-        if STREAMING {
+        if PARTIAL {
             streaming::take_while1_internal(i, &list)
         } else {
             complete::take_while1_internal(i, &list)
@@ -399,7 +397,7 @@ where
 /// It will return an `ErrMode::Backtrack(Error::new(_, ErrorKind::TakeWhileMN))` if the pattern wasn't met or is out
 /// of range (m <= len <= n).
 ///
-/// *Streaming version* will return a `ErrMode::Incomplete(Needed::new(1))`  if the pattern reaches the end of the input or is too short.
+/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))`  if the pattern reaches the end of the input or is too short.
 ///
 /// # Example
 /// ```rust
@@ -420,33 +418,33 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::bytes::take_while_m_n;
 /// use winnow::input::AsChar;
 ///
-/// fn short_alpha(s: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+/// fn short_alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
 ///   take_while_m_n(3, 6, AsChar::is_alpha)(s)
 /// }
 ///
-/// assert_eq!(short_alpha(Streaming(b"latin123")), Ok((Streaming(&b"123"[..]), &b"latin"[..])));
-/// assert_eq!(short_alpha(Streaming(b"lengthy")), Ok((Streaming(&b"y"[..]), &b"length"[..])));
-/// assert_eq!(short_alpha(Streaming(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(short_alpha(Streaming(b"ed")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(short_alpha(Streaming(b"12345")), Err(ErrMode::Backtrack(Error::new(Streaming(&b"12345"[..]), ErrorKind::TakeWhileMN))));
+/// assert_eq!(short_alpha(Partial(b"latin123")), Ok((Partial(&b"123"[..]), &b"latin"[..])));
+/// assert_eq!(short_alpha(Partial(b"lengthy")), Ok((Partial(&b"y"[..]), &b"length"[..])));
+/// assert_eq!(short_alpha(Partial(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(short_alpha(Partial(b"ed")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(short_alpha(Partial(b"12345")), Err(ErrMode::Backtrack(Error::new(Partial(&b"12345"[..]), ErrorKind::TakeWhileMN))));
 /// ```
 #[inline(always)]
-pub fn take_while_m_n<T, I, Error: ParseError<I>, const STREAMING: bool>(
+pub fn take_while_m_n<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     m: usize,
     n: usize,
     list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     T: ContainsToken<<I as Input>::Token>,
 {
     move |i: I| {
-        if STREAMING {
+        if PARTIAL {
             streaming::take_while_m_n_internal(i, m, n, &list)
         } else {
             complete::take_while_m_n_internal(i, m, n, &list)
@@ -456,7 +454,7 @@ where
 
 /// Returns the longest input slice (if any) till a [pattern][ContainsToken] is met.
 ///
-/// *Streaming version* will return a `ErrMode::Incomplete(Needed::new(1))` if the match reaches the
+/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if the match reaches the
 /// end of input or if there was not match.
 ///
 /// # Example
@@ -476,29 +474,29 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::bytes::take_till0;
 ///
-/// fn till_colon(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+/// fn till_colon(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   take_till0(|c| c == ':')(s)
 /// }
 ///
-/// assert_eq!(till_colon(Streaming("latin:123")), Ok((Streaming(":123"), "latin")));
-/// assert_eq!(till_colon(Streaming(":empty matched")), Ok((Streaming(":empty matched"), ""))); //allowed
-/// assert_eq!(till_colon(Streaming("12345")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(till_colon(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(till_colon(Partial("latin:123")), Ok((Partial(":123"), "latin")));
+/// assert_eq!(till_colon(Partial(":empty matched")), Ok((Partial(":empty matched"), ""))); //allowed
+/// assert_eq!(till_colon(Partial("12345")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(till_colon(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_till0<T, I, Error: ParseError<I>, const STREAMING: bool>(
+pub fn take_till0<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     T: ContainsToken<<I as Input>::Token>,
 {
     move |i: I| {
-        if STREAMING {
+        if PARTIAL {
             streaming::take_till_internal(i, &list)
         } else {
             complete::take_till_internal(i, &list)
@@ -511,7 +509,7 @@ where
 /// It will return `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::TakeTill1)))` if the input is empty or the
 /// predicate matches the first input.
 ///
-/// *Streaming version* will return a `ErrMode::Incomplete(Needed::new(1))` if the match reaches the
+/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if the match reaches the
 /// end of input or if there was not match.
 ///
 /// # Example
@@ -540,38 +538,38 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::bytes::take_till1;
 ///
-/// fn till_colon(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+/// fn till_colon(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   take_till1(|c| c == ':')(s)
 /// }
 ///
-/// assert_eq!(till_colon(Streaming("latin:123")), Ok((Streaming(":123"), "latin")));
-/// assert_eq!(till_colon(Streaming(":empty matched")), Err(ErrMode::Backtrack(Error::new(Streaming(":empty matched"), ErrorKind::TakeTill1))));
-/// assert_eq!(till_colon(Streaming("12345")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(till_colon(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(till_colon(Partial("latin:123")), Ok((Partial(":123"), "latin")));
+/// assert_eq!(till_colon(Partial(":empty matched")), Err(ErrMode::Backtrack(Error::new(Partial(":empty matched"), ErrorKind::TakeTill1))));
+/// assert_eq!(till_colon(Partial("12345")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(till_colon(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
-/// fn not_space(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+/// fn not_space(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   take_till1(" \t\r\n")(s)
 /// }
 ///
-/// assert_eq!(not_space(Streaming("Hello, World!")), Ok((Streaming(" World!"), "Hello,")));
-/// assert_eq!(not_space(Streaming("Sometimes\t")), Ok((Streaming("\t"), "Sometimes")));
-/// assert_eq!(not_space(Streaming("Nospace")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(not_space(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(not_space(Partial("Hello, World!")), Ok((Partial(" World!"), "Hello,")));
+/// assert_eq!(not_space(Partial("Sometimes\t")), Ok((Partial("\t"), "Sometimes")));
+/// assert_eq!(not_space(Partial("Nospace")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(not_space(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_till1<T, I, Error: ParseError<I>, const STREAMING: bool>(
+pub fn take_till1<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     T: ContainsToken<<I as Input>::Token>,
 {
     move |i: I| {
-        if STREAMING {
+        if PARTIAL {
             streaming::take_till1_internal(i, &list)
         } else {
             complete::take_till1_internal(i, &list)
@@ -583,7 +581,7 @@ where
 ///
 /// *Complete version*: It will return `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::Eof)))` if the input is shorter than the argument.
 ///
-/// *Streaming version*: if the input has less than N elements, `take` will
+/// *Partial version*: if the input has less than N elements, `take` will
 /// return a `ErrMode::Incomplete(Needed::new(M))` where M is the number of
 /// additional bytes the parser would need to succeed.
 /// It is well defined for `&[u8]` as the number of elements is the byte size,
@@ -619,30 +617,30 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::bytes::take;
 ///
-/// fn take6(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+/// fn take6(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   take(6usize)(s)
 /// }
 ///
-/// assert_eq!(take6(Streaming("1234567")), Ok((Streaming("7"), "123456")));
-/// assert_eq!(take6(Streaming("things")), Ok((Streaming(""), "things")));
+/// assert_eq!(take6(Partial("1234567")), Ok((Partial("7"), "123456")));
+/// assert_eq!(take6(Partial("things")), Ok((Partial(""), "things")));
 /// // `Unknown` as we don't know the number of bytes that `count` corresponds to
-/// assert_eq!(take6(Streaming("short")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(take6(Partial("short")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// ```
 #[inline(always)]
-pub fn take<C, I, Error: ParseError<I>, const STREAMING: bool>(
+pub fn take<C, I, Error: ParseError<I>, const PARTIAL: bool>(
     count: C,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     C: ToUsize,
 {
     let c = count.to_usize();
     move |i: I| {
-        if STREAMING {
+        if PARTIAL {
             streaming::take_internal(i, c)
         } else {
             complete::take_internal(i, c)
@@ -657,7 +655,7 @@ where
 /// *Complete version*: It will return `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::TakeUntil)))`
 /// if the pattern wasn't met.
 ///
-/// *Streaming version*: will return a `ErrMode::Incomplete(Needed::new(N))` if the input doesn't
+/// *Partial version*: will return a `ErrMode::Incomplete(Needed::new(N))` if the input doesn't
 /// contain the pattern or if the input is smaller than the pattern.
 /// # Example
 /// ```rust
@@ -676,29 +674,29 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::bytes::take_until0;
 ///
-/// fn until_eof(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+/// fn until_eof(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   take_until0("eof")(s)
 /// }
 ///
-/// assert_eq!(until_eof(Streaming("hello, worldeof")), Ok((Streaming("eof"), "hello, world")));
-/// assert_eq!(until_eof(Streaming("hello, world")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(until_eof(Streaming("hello, worldeo")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(until_eof(Streaming("1eof2eof")), Ok((Streaming("eof2eof"), "1")));
+/// assert_eq!(until_eof(Partial("hello, worldeof")), Ok((Partial("eof"), "hello, world")));
+/// assert_eq!(until_eof(Partial("hello, world")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(until_eof(Partial("hello, worldeo")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(until_eof(Partial("1eof2eof")), Ok((Partial("eof2eof"), "1")));
 /// ```
 #[inline(always)]
-pub fn take_until0<T, I, Error: ParseError<I>, const STREAMING: bool>(
+pub fn take_until0<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     tag: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input + FindSlice<T>,
     T: SliceLen + Clone,
 {
     move |i: I| {
-        if STREAMING {
+        if PARTIAL {
             streaming::take_until_internal(i, tag.clone())
         } else {
             complete::take_until_internal(i, tag.clone())
@@ -713,7 +711,7 @@ where
 /// *Complete version*: It will return `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::TakeUntil)))`
 /// if the pattern wasn't met.
 ///
-/// *Streaming version*: will return a `ErrMode::Incomplete(Needed::new(N))` if the input doesn't
+/// *Partial version*: will return a `ErrMode::Incomplete(Needed::new(N))` if the input doesn't
 /// contain the pattern or if the input is smaller than the pattern.
 ///
 /// # Example
@@ -734,30 +732,30 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::bytes::take_until1;
 ///
-/// fn until_eof(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+/// fn until_eof(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   take_until1("eof")(s)
 /// }
 ///
-/// assert_eq!(until_eof(Streaming("hello, worldeof")), Ok((Streaming("eof"), "hello, world")));
-/// assert_eq!(until_eof(Streaming("hello, world")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(until_eof(Streaming("hello, worldeo")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(until_eof(Streaming("1eof2eof")), Ok((Streaming("eof2eof"), "1")));
-/// assert_eq!(until_eof(Streaming("eof")),  Err(ErrMode::Backtrack(Error::new(Streaming("eof"), ErrorKind::TakeUntil))));
+/// assert_eq!(until_eof(Partial("hello, worldeof")), Ok((Partial("eof"), "hello, world")));
+/// assert_eq!(until_eof(Partial("hello, world")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(until_eof(Partial("hello, worldeo")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(until_eof(Partial("1eof2eof")), Ok((Partial("eof2eof"), "1")));
+/// assert_eq!(until_eof(Partial("eof")),  Err(ErrMode::Backtrack(Error::new(Partial("eof"), ErrorKind::TakeUntil))));
 /// ```
 #[inline(always)]
-pub fn take_until1<T, I, Error: ParseError<I>, const STREAMING: bool>(
+pub fn take_until1<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     tag: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input + FindSlice<T>,
     T: SliceLen + Clone,
 {
     move |i: I| {
-        if STREAMING {
+        if PARTIAL {
             streaming::take_until1_internal(i, tag.clone())
         } else {
             complete::take_until1_internal(i, tag.clone())

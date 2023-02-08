@@ -15,7 +15,7 @@ use crate::combinator::opt;
 use crate::error::ParseError;
 use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::input::Compare;
-use crate::input::{AsBStr, AsChar, Input, InputIsStreaming, Offset, ParseSlice};
+use crate::input::{AsBStr, AsChar, Input, InputIsPartial, Offset, ParseSlice};
 use crate::IResult;
 use crate::Parser;
 
@@ -23,7 +23,7 @@ use crate::Parser;
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
@@ -41,22 +41,22 @@ use crate::Parser;
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::character::crlf;
-/// assert_eq!(crlf::<_, Error<_>, true>(Streaming("\r\nc")), Ok((Streaming("c"), "\r\n")));
-/// assert_eq!(crlf::<_, Error<_>, true>(Streaming("ab\r\nc")), Err(ErrMode::Backtrack(Error::new(Streaming("ab\r\nc"), ErrorKind::CrLf))));
-/// assert_eq!(crlf::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(crlf::<_, Error<_>, true>(Partial("\r\nc")), Ok((Partial("c"), "\r\n")));
+/// assert_eq!(crlf::<_, Error<_>, true>(Partial("ab\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial("ab\r\nc"), ErrorKind::CrLf))));
+/// assert_eq!(crlf::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn crlf<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn crlf<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     I: Compare<&'static str>,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::crlf(input)
     } else {
         complete::crlf(input)
@@ -67,7 +67,7 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
@@ -88,25 +88,25 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::character::not_line_ending;
-/// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("ab\r\nc")), Ok((Streaming("\r\nc"), "ab")));
-/// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("abc")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("a\rb\nc")), Err(ErrMode::Backtrack(Error::new(Streaming("a\rb\nc"), ErrorKind::Tag ))));
-/// assert_eq!(not_line_ending::<_, Error<_>, true>(Streaming("a\rbc")), Err(ErrMode::Backtrack(Error::new(Streaming("a\rbc"), ErrorKind::Tag ))));
+/// assert_eq!(not_line_ending::<_, Error<_>, true>(Partial("ab\r\nc")), Ok((Partial("\r\nc"), "ab")));
+/// assert_eq!(not_line_ending::<_, Error<_>, true>(Partial("abc")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(not_line_ending::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(not_line_ending::<_, Error<_>, true>(Partial("a\rb\nc")), Err(ErrMode::Backtrack(Error::new(Partial("a\rb\nc"), ErrorKind::Tag ))));
+/// assert_eq!(not_line_ending::<_, Error<_>, true>(Partial("a\rbc")), Err(ErrMode::Backtrack(Error::new(Partial("a\rbc"), ErrorKind::Tag ))));
 /// ```
 #[inline(always)]
-pub fn not_line_ending<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn not_line_ending<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input + AsBStr,
     I: Compare<&'static str>,
     <I as Input>::Token: AsChar,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::not_line_ending(input)
     } else {
         complete::not_line_ending(input)
@@ -117,7 +117,7 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
@@ -135,22 +135,22 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::character::line_ending;
-/// assert_eq!(line_ending::<_, Error<_>, true>(Streaming("\r\nc")), Ok((Streaming("c"), "\r\n")));
-/// assert_eq!(line_ending::<_, Error<_>, true>(Streaming("ab\r\nc")), Err(ErrMode::Backtrack(Error::new(Streaming("ab\r\nc"), ErrorKind::CrLf))));
-/// assert_eq!(line_ending::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(line_ending::<_, Error<_>, true>(Partial("\r\nc")), Ok((Partial("c"), "\r\n")));
+/// assert_eq!(line_ending::<_, Error<_>, true>(Partial("ab\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial("ab\r\nc"), ErrorKind::CrLf))));
+/// assert_eq!(line_ending::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn line_ending<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn line_ending<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     I: Compare<&'static str>,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::line_ending(input)
     } else {
         complete::line_ending(input)
@@ -161,7 +161,7 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
@@ -179,20 +179,20 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::character::newline;
-/// assert_eq!(newline::<_, Error<_>, true>(Streaming("\nc")), Ok((Streaming("c"), '\n')));
-/// assert_eq!(newline::<_, Error<_>, true>(Streaming("\r\nc")), Err(ErrMode::Backtrack(Error::new(Streaming("\r\nc"), ErrorKind::Char))));
-/// assert_eq!(newline::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(newline::<_, Error<_>, true>(Partial("\nc")), Ok((Partial("c"), '\n')));
+/// assert_eq!(newline::<_, Error<_>, true>(Partial("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial("\r\nc"), ErrorKind::Char))));
+/// assert_eq!(newline::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn newline<I, Error: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, char, Error>
+pub fn newline<I, Error: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, char, Error>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::newline(input)
     } else {
         complete::newline(input)
@@ -203,7 +203,7 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Example
 ///
@@ -221,20 +221,20 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::character::tab;
-/// assert_eq!(tab::<_, Error<_>, true>(Streaming("\tc")), Ok((Streaming("c"), '\t')));
-/// assert_eq!(tab::<_, Error<_>, true>(Streaming("\r\nc")), Err(ErrMode::Backtrack(Error::new(Streaming("\r\nc"), ErrorKind::Char))));
-/// assert_eq!(tab::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(tab::<_, Error<_>, true>(Partial("\tc")), Ok((Partial("c"), '\t')));
+/// assert_eq!(tab::<_, Error<_>, true>(Partial("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial("\r\nc"), ErrorKind::Char))));
+/// assert_eq!(tab::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn tab<I, Error: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, char, Error>
+pub fn tab<I, Error: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, char, Error>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::tab(input)
     } else {
         complete::tab(input)
@@ -246,7 +246,7 @@ where
 /// *Complete version*: Will return the whole input if no terminating token is found (a non
 /// alphabetic character).
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphabetic character).
 ///
 /// # Example
@@ -265,22 +265,22 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::character::alpha0;
-/// assert_eq!(alpha0::<_, Error<_>, true>(Streaming("ab1c")), Ok((Streaming("1c"), "ab")));
-/// assert_eq!(alpha0::<_, Error<_>, true>(Streaming("1c")), Ok((Streaming("1c"), "")));
-/// assert_eq!(alpha0::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha0::<_, Error<_>, true>(Partial("ab1c")), Ok((Partial("1c"), "ab")));
+/// assert_eq!(alpha0::<_, Error<_>, true>(Partial("1c")), Ok((Partial("1c"), "")));
+/// assert_eq!(alpha0::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alpha0<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn alpha0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::alpha0(input)
     } else {
         complete::alpha0(input)
@@ -292,7 +292,7 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found  (a non alphabetic character).
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphabetic character).
 ///
 /// # Example
@@ -311,22 +311,22 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::character::alpha1;
-/// assert_eq!(alpha1::<_, Error<_>, true>(Streaming("aB1c")), Ok((Streaming("1c"), "aB")));
-/// assert_eq!(alpha1::<_, Error<_>, true>(Streaming("1c")), Err(ErrMode::Backtrack(Error::new(Streaming("1c"), ErrorKind::Alpha))));
-/// assert_eq!(alpha1::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha1::<_, Error<_>, true>(Partial("aB1c")), Ok((Partial("1c"), "aB")));
+/// assert_eq!(alpha1::<_, Error<_>, true>(Partial("1c")), Err(ErrMode::Backtrack(Error::new(Partial("1c"), ErrorKind::Alpha))));
+/// assert_eq!(alpha1::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alpha1<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn alpha1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::alpha1(input)
     } else {
         complete::alpha1(input)
@@ -338,7 +338,7 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non digit character).
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non digit character).
 ///
 /// # Example
@@ -358,22 +358,22 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::character::digit0;
-/// assert_eq!(digit0::<_, Error<_>, true>(Streaming("21c")), Ok((Streaming("c"), "21")));
-/// assert_eq!(digit0::<_, Error<_>, true>(Streaming("a21c")), Ok((Streaming("a21c"), "")));
-/// assert_eq!(digit0::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(digit0::<_, Error<_>, true>(Partial("21c")), Ok((Partial("c"), "21")));
+/// assert_eq!(digit0::<_, Error<_>, true>(Partial("a21c")), Ok((Partial("a21c"), "")));
+/// assert_eq!(digit0::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn digit0<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn digit0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::digit0(input)
     } else {
         complete::digit0(input)
@@ -385,7 +385,7 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non digit character).
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non digit character).
 ///
 /// # Example
@@ -404,11 +404,11 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::character::digit1;
-/// assert_eq!(digit1::<_, Error<_>, true>(Streaming("21c")), Ok((Streaming("c"), "21")));
-/// assert_eq!(digit1::<_, Error<_>, true>(Streaming("c1")), Err(ErrMode::Backtrack(Error::new(Streaming("c1"), ErrorKind::Digit))));
-/// assert_eq!(digit1::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(digit1::<_, Error<_>, true>(Partial("21c")), Ok((Partial("c"), "21")));
+/// assert_eq!(digit1::<_, Error<_>, true>(Partial("c1")), Err(ErrMode::Backtrack(Error::new(Partial("c1"), ErrorKind::Digit))));
+/// assert_eq!(digit1::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// ## Parsing an integer
@@ -427,15 +427,15 @@ where
 /// assert!(parser("b").is_err());
 /// ```
 #[inline(always)]
-pub fn digit1<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn digit1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::digit1(input)
     } else {
         complete::digit1(input)
@@ -446,7 +446,7 @@ where
 ///
 /// *Complete version*: Will return the whole input if no terminating token is found (a non hexadecimal digit character).
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non hexadecimal digit character).
 ///
 /// # Example
@@ -465,22 +465,22 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::character::hex_digit0;
-/// assert_eq!(hex_digit0::<_, Error<_>, true>(Streaming("21cZ")), Ok((Streaming("Z"), "21c")));
-/// assert_eq!(hex_digit0::<_, Error<_>, true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
-/// assert_eq!(hex_digit0::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(hex_digit0::<_, Error<_>, true>(Partial("21cZ")), Ok((Partial("Z"), "21c")));
+/// assert_eq!(hex_digit0::<_, Error<_>, true>(Partial("Z21c")), Ok((Partial("Z21c"), "")));
+/// assert_eq!(hex_digit0::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn hex_digit0<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn hex_digit0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::hex_digit0(input)
     } else {
         complete::hex_digit0(input)
@@ -492,7 +492,7 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non hexadecimal digit character).
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non hexadecimal digit character).
 ///
 /// # Example
@@ -511,22 +511,22 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::character::hex_digit1;
-/// assert_eq!(hex_digit1::<_, Error<_>, true>(Streaming("21cZ")), Ok((Streaming("Z"), "21c")));
-/// assert_eq!(hex_digit1::<_, Error<_>, true>(Streaming("H2")), Err(ErrMode::Backtrack(Error::new(Streaming("H2"), ErrorKind::HexDigit))));
-/// assert_eq!(hex_digit1::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(hex_digit1::<_, Error<_>, true>(Partial("21cZ")), Ok((Partial("Z"), "21c")));
+/// assert_eq!(hex_digit1::<_, Error<_>, true>(Partial("H2")), Err(ErrMode::Backtrack(Error::new(Partial("H2"), ErrorKind::HexDigit))));
+/// assert_eq!(hex_digit1::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn hex_digit1<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn hex_digit1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::hex_digit1(input)
     } else {
         complete::hex_digit1(input)
@@ -538,7 +538,7 @@ where
 /// *Complete version*: Will return the whole input if no terminating token is found (a non octal
 /// digit character).
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non octal digit character).
 ///
 /// # Example
@@ -557,22 +557,22 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::character::oct_digit0;
-/// assert_eq!(oct_digit0::<_, Error<_>, true>(Streaming("21cZ")), Ok((Streaming("cZ"), "21")));
-/// assert_eq!(oct_digit0::<_, Error<_>, true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
-/// assert_eq!(oct_digit0::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(oct_digit0::<_, Error<_>, true>(Partial("21cZ")), Ok((Partial("cZ"), "21")));
+/// assert_eq!(oct_digit0::<_, Error<_>, true>(Partial("Z21c")), Ok((Partial("Z21c"), "")));
+/// assert_eq!(oct_digit0::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn oct_digit0<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn oct_digit0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::oct_digit0(input)
     } else {
         complete::oct_digit0(input)
@@ -584,7 +584,7 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non octal digit character).
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non octal digit character).
 ///
 /// # Example
@@ -603,22 +603,22 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::character::oct_digit1;
-/// assert_eq!(oct_digit1::<_, Error<_>, true>(Streaming("21cZ")), Ok((Streaming("cZ"), "21")));
-/// assert_eq!(oct_digit1::<_, Error<_>, true>(Streaming("H2")), Err(ErrMode::Backtrack(Error::new(Streaming("H2"), ErrorKind::OctDigit))));
-/// assert_eq!(oct_digit1::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(oct_digit1::<_, Error<_>, true>(Partial("21cZ")), Ok((Partial("cZ"), "21")));
+/// assert_eq!(oct_digit1::<_, Error<_>, true>(Partial("H2")), Err(ErrMode::Backtrack(Error::new(Partial("H2"), ErrorKind::OctDigit))));
+/// assert_eq!(oct_digit1::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn oct_digit1<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn oct_digit1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::oct_digit1(input)
     } else {
         complete::oct_digit1(input)
@@ -630,7 +630,7 @@ where
 /// *Complete version*: Will return the whole input if no terminating token is found (a non
 /// alphanumerical character).
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphanumerical character).
 ///
 /// # Example
@@ -649,22 +649,22 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::character::alphanumeric0;
-/// assert_eq!(alphanumeric0::<_, Error<_>, true>(Streaming("21cZ%1")), Ok((Streaming("%1"), "21cZ")));
-/// assert_eq!(alphanumeric0::<_, Error<_>, true>(Streaming("&Z21c")), Ok((Streaming("&Z21c"), "")));
-/// assert_eq!(alphanumeric0::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alphanumeric0::<_, Error<_>, true>(Partial("21cZ%1")), Ok((Partial("%1"), "21cZ")));
+/// assert_eq!(alphanumeric0::<_, Error<_>, true>(Partial("&Z21c")), Ok((Partial("&Z21c"), "")));
+/// assert_eq!(alphanumeric0::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alphanumeric0<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn alphanumeric0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::alphanumeric0(input)
     } else {
         complete::alphanumeric0(input)
@@ -676,7 +676,7 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non alphanumerical character).
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphanumerical character).
 ///
 /// # Example
@@ -695,22 +695,22 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::character::alphanumeric1;
-/// assert_eq!(alphanumeric1::<_, Error<_>, true>(Streaming("21cZ%1")), Ok((Streaming("%1"), "21cZ")));
-/// assert_eq!(alphanumeric1::<_, Error<_>, true>(Streaming("&H2")), Err(ErrMode::Backtrack(Error::new(Streaming("&H2"), ErrorKind::AlphaNumeric))));
-/// assert_eq!(alphanumeric1::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alphanumeric1::<_, Error<_>, true>(Partial("21cZ%1")), Ok((Partial("%1"), "21cZ")));
+/// assert_eq!(alphanumeric1::<_, Error<_>, true>(Partial("&H2")), Err(ErrMode::Backtrack(Error::new(Partial("&H2"), ErrorKind::AlphaNumeric))));
+/// assert_eq!(alphanumeric1::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alphanumeric1<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn alphanumeric1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::alphanumeric1(input)
     } else {
         complete::alphanumeric1(input)
@@ -722,29 +722,29 @@ where
 /// *Complete version*: Will return the whole input if no terminating token is found (a non space
 /// character).
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 ///
 /// # Example
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::character::space0;
-/// assert_eq!(space0::<_, Error<_>, true>(Streaming(" \t21c")), Ok((Streaming("21c"), " \t")));
-/// assert_eq!(space0::<_, Error<_>, true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
-/// assert_eq!(space0::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(space0::<_, Error<_>, true>(Partial(" \t21c")), Ok((Partial("21c"), " \t")));
+/// assert_eq!(space0::<_, Error<_>, true>(Partial("Z21c")), Ok((Partial("Z21c"), "")));
+/// assert_eq!(space0::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn space0<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn space0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::space0(input)
     } else {
         complete::space0(input)
@@ -756,7 +756,7 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non space character).
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 ///
 /// # Example
@@ -775,22 +775,22 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::character::space1;
-/// assert_eq!(space1::<_, Error<_>, true>(Streaming(" \t21c")), Ok((Streaming("21c"), " \t")));
-/// assert_eq!(space1::<_, Error<_>, true>(Streaming("H2")), Err(ErrMode::Backtrack(Error::new(Streaming("H2"), ErrorKind::Space))));
-/// assert_eq!(space1::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(space1::<_, Error<_>, true>(Partial(" \t21c")), Ok((Partial("21c"), " \t")));
+/// assert_eq!(space1::<_, Error<_>, true>(Partial("H2")), Err(ErrMode::Backtrack(Error::new(Partial("H2"), ErrorKind::Space))));
+/// assert_eq!(space1::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn space1<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn space1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::space1(input)
     } else {
         complete::space1(input)
@@ -802,7 +802,7 @@ where
 /// *Complete version*: will return the whole input if no terminating token is found (a non space
 /// character).
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 ///
 /// # Example
@@ -821,22 +821,22 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::character::multispace0;
-/// assert_eq!(multispace0::<_, Error<_>, true>(Streaming(" \t\n\r21c")), Ok((Streaming("21c"), " \t\n\r")));
-/// assert_eq!(multispace0::<_, Error<_>, true>(Streaming("Z21c")), Ok((Streaming("Z21c"), "")));
-/// assert_eq!(multispace0::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(multispace0::<_, Error<_>, true>(Partial(" \t\n\r21c")), Ok((Partial("21c"), " \t\n\r")));
+/// assert_eq!(multispace0::<_, Error<_>, true>(Partial("Z21c")), Ok((Partial("Z21c"), "")));
+/// assert_eq!(multispace0::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn multispace0<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn multispace0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::multispace0(input)
     } else {
         complete::multispace0(input)
@@ -848,7 +848,7 @@ where
 /// *Complete version*: will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non space character).
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 ///
 /// # Example
@@ -867,22 +867,22 @@ where
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// # use winnow::character::multispace1;
-/// assert_eq!(multispace1::<_, Error<_>, true>(Streaming(" \t\n\r21c")), Ok((Streaming("21c"), " \t\n\r")));
-/// assert_eq!(multispace1::<_, Error<_>, true>(Streaming("H2")), Err(ErrMode::Backtrack(Error::new(Streaming("H2"), ErrorKind::MultiSpace))));
-/// assert_eq!(multispace1::<_, Error<_>, true>(Streaming("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(multispace1::<_, Error<_>, true>(Partial(" \t\n\r21c")), Ok((Partial("21c"), " \t\n\r")));
+/// assert_eq!(multispace1::<_, Error<_>, true>(Partial("H2")), Err(ErrMode::Backtrack(Error::new(Partial("H2"), ErrorKind::MultiSpace))));
+/// assert_eq!(multispace1::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn multispace1<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn multispace1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::multispace1(input)
     } else {
         complete::multispace1(input)
@@ -893,10 +893,10 @@ where
 ///
 /// *Complete version*: can parse until the end of input.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
-pub fn dec_uint<I, O, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, O, E>
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+pub fn dec_uint<I, O, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, O, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar + Copy,
     O: Uint,
@@ -904,7 +904,7 @@ where
     let i = input.clone();
 
     if i.input_len() == 0 {
-        if STREAMING {
+        if PARTIAL {
             return Err(ErrMode::Incomplete(Needed::new(1)));
         } else {
             return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
@@ -931,7 +931,7 @@ where
         }
     }
 
-    if STREAMING {
+    if PARTIAL {
         Err(ErrMode::Incomplete(Needed::new(1)))
     } else {
         Ok((i.next_slice(i.input_len()).0, value))
@@ -1040,10 +1040,10 @@ impl Uint for i128 {
 ///
 /// *Complete version*: can parse until the end of input.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
-pub fn dec_int<I, O, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, O, E>
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+pub fn dec_int<I, O, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, O, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar + Copy,
     O: Int,
@@ -1059,7 +1059,7 @@ where
         .parse_next(i)?;
 
     if i.input_len() == 0 {
-        if STREAMING {
+        if PARTIAL {
             return Err(ErrMode::Incomplete(Needed::new(1)));
         } else {
             return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
@@ -1090,7 +1090,7 @@ where
         }
     }
 
-    if STREAMING {
+    if PARTIAL {
         Err(ErrMode::Incomplete(Needed::new(1)))
     } else {
         Ok((i.next_slice(i.input_len()).0, value))
@@ -1138,7 +1138,7 @@ impl Int for i128 {
 /// *Complete version*: Will parse until the end of input if it has fewer characters than the type
 /// supports.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if end-of-input
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if end-of-input
 /// is hit before a hard boundary (non-hex character, more characters than supported).
 ///
 /// # Example
@@ -1160,21 +1160,21 @@ impl Int for i128 {
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::character::hex_uint;
 ///
-/// fn parser(s: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, u32> {
+/// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
 ///   hex_uint(s)
 /// }
 ///
-/// assert_eq!(parser(Streaming(&b"01AE;"[..])), Ok((Streaming(&b";"[..]), 0x01AE)));
-/// assert_eq!(parser(Streaming(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(parser(Streaming(&b"ggg"[..])), Err(ErrMode::Backtrack(Error::new(Streaming(&b"ggg"[..]), ErrorKind::IsA))));
+/// assert_eq!(parser(Partial(&b"01AE;"[..])), Ok((Partial(&b";"[..]), 0x01AE)));
+/// assert_eq!(parser(Partial(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial(&b"ggg"[..])), Err(ErrMode::Backtrack(Error::new(Partial(&b"ggg"[..]), ErrorKind::IsA))));
 /// ```
 #[inline]
-pub fn hex_uint<I, O, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, O, E>
+pub fn hex_uint<I, O, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, O, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     O: HexUint,
     <I as Input>::Token: AsChar,
@@ -1198,7 +1198,7 @@ where
             }
         }
         Err(_) => {
-            if STREAMING && invalid_offset == input.input_len() {
+            if PARTIAL && invalid_offset == input.input_len() {
                 // Only the next byte is guaranteed required
                 return Err(ErrMode::Incomplete(Needed::new(1)));
             } else {
@@ -1270,7 +1270,7 @@ impl HexUint for u128 {
 ///
 /// *Complete version*: Can parse until the end of input.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -1294,23 +1294,23 @@ impl HexUint for u128 {
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::character::float;
 ///
-/// fn parser(s: Streaming<&str>) -> IResult<Streaming<&str>, f64> {
+/// fn parser(s: Partial<&str>) -> IResult<Partial<&str>, f64> {
 ///   float(s)
 /// }
 ///
-/// assert_eq!(parser(Streaming("11e-1 ")), Ok((Streaming(" "), 1.1)));
-/// assert_eq!(parser(Streaming("11e-1")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(parser(Streaming("123E-02")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(parser(Streaming("123K-01")), Ok((Streaming("K-01"), 123.0)));
-/// assert_eq!(parser(Streaming("abc")), Err(ErrMode::Backtrack(Error::new(Streaming("abc"), ErrorKind::Float))));
+/// assert_eq!(parser(Partial("11e-1 ")), Ok((Partial(" "), 1.1)));
+/// assert_eq!(parser(Partial("11e-1")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial("123E-02")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial("123K-01")), Ok((Partial("K-01"), 123.0)));
+/// assert_eq!(parser(Partial("abc")), Err(ErrMode::Backtrack(Error::new(Partial("abc"), ErrorKind::Float))));
 /// ```
 #[inline(always)]
-pub fn float<I, O, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, O, E>
+pub fn float<I, O, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, O, E>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input,
     I: Offset + Compare<&'static str>,
     <I as Input>::Slice: ParseSlice<O>,
@@ -1318,7 +1318,7 @@ where
     <I as Input>::IterOffsets: Clone,
     I: AsBStr,
 {
-    let (i, s) = if STREAMING {
+    let (i, s) = if PARTIAL {
         crate::number::streaming::recognize_float_or_exceptions(input)?
     } else {
         crate::number::complete::recognize_float_or_exceptions(input)?
@@ -1352,25 +1352,25 @@ where
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// # use winnow::character::digit1;
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::character::escaped;
 /// use winnow::bytes::one_of;
 ///
-/// fn esc(s: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+/// fn esc(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   escaped(digit1, '\\', one_of("\"n\\"))(s)
 /// }
 ///
-/// assert_eq!(esc(Streaming("123;")), Ok((Streaming(";"), "123")));
-/// assert_eq!(esc(Streaming("12\\\"34;")), Ok((Streaming(";"), "12\\\"34")));
+/// assert_eq!(esc(Partial("123;")), Ok((Partial(";"), "123")));
+/// assert_eq!(esc(Partial("12\\\"34;")), Ok((Partial(";"), "12\\\"34")));
 /// ```
 #[inline(always)]
-pub fn escaped<'a, I: 'a, Error, F, G, O1, O2, const STREAMING: bool>(
+pub fn escaped<'a, I: 'a, Error, F, G, O1, O2, const PARTIAL: bool>(
     mut normal: F,
     control_char: char,
     mut escapable: G,
 ) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input + Offset,
     <I as Input>::Token: crate::input::AsChar,
     F: Parser<I, O1, Error>,
@@ -1378,7 +1378,7 @@ where
     Error: ParseError<I>,
 {
     move |input: I| {
-        if STREAMING {
+        if PARTIAL {
             crate::bytes::streaming::escaped_internal(
                 input,
                 &mut normal,
@@ -1434,14 +1434,14 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use std::str::from_utf8;
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::bytes::tag;
 /// use winnow::character::escaped_transform;
 /// use winnow::character::alpha1;
 /// use winnow::branch::alt;
 /// use winnow::combinator::value;
 ///
-/// fn parser(input: Streaming<&str>) -> IResult<Streaming<&str>, String> {
+/// fn parser(input: Partial<&str>) -> IResult<Partial<&str>, String> {
 ///   escaped_transform(
 ///     alpha1,
 ///     '\\',
@@ -1453,17 +1453,17 @@ where
 ///   )(input)
 /// }
 ///
-/// assert_eq!(parser(Streaming("ab\\\"cd\"")), Ok((Streaming("\""), String::from("ab\"cd"))));
+/// assert_eq!(parser(Partial("ab\\\"cd\"")), Ok((Partial("\""), String::from("ab\"cd"))));
 /// ```
 #[cfg(feature = "alloc")]
 #[inline(always)]
-pub fn escaped_transform<I, Error, F, G, Output, const STREAMING: bool>(
+pub fn escaped_transform<I, Error, F, G, Output, const PARTIAL: bool>(
     mut normal: F,
     control_char: char,
     mut transform: G,
 ) -> impl FnMut(I) -> IResult<I, Output, Error>
 where
-    I: InputIsStreaming<STREAMING>,
+    I: InputIsPartial<PARTIAL>,
     I: Input + Offset,
     <I as Input>::Token: crate::input::AsChar,
     Output: crate::input::Accumulate<<I as Input>::Slice>,
@@ -1472,7 +1472,7 @@ where
     Error: ParseError<I>,
 {
     move |input: I| {
-        if STREAMING {
+        if PARTIAL {
             crate::bytes::streaming::escaped_transform_internal(
                 input,
                 &mut normal,

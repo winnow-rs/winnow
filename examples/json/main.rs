@@ -2,7 +2,7 @@ mod json;
 mod parser;
 mod parser_dispatch;
 #[allow(dead_code)]
-mod parser_streaming;
+mod parser_partial;
 
 use winnow::error::convert_error;
 use winnow::error::Error;

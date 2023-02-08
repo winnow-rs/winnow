@@ -1,12 +1,12 @@
 use winnow::{
     bytes::{one_of, tag, take_while1},
     character::line_ending,
-    input::Streaming,
+    input::Partial,
     multi::many1,
     IResult,
 };
 
-pub type Input<'i> = Streaming<&'i [u8]>;
+pub type Input<'i> = Partial<&'i [u8]>;
 
 #[rustfmt::skip]
 #[derive(Debug)]
@@ -25,7 +25,7 @@ pub struct Header<'a> {
 }
 
 pub fn parse(data: &[u8]) -> Option<Vec<(Request<'_>, Vec<Header<'_>>)>> {
-    let mut buf = Streaming(data);
+    let mut buf = Partial(data);
     let mut v = Vec::new();
     loop {
         match request(buf) {

@@ -9,7 +9,7 @@ use crate::error::ParseError;
 use crate::number::u8;
 use crate::IResult;
 use crate::Parser;
-use crate::Streaming;
+use crate::Partial;
 
 macro_rules! assert_parse(
   ($left: expr, $right: expr) => {
@@ -256,7 +256,7 @@ fn test_parser_into() {
 
 #[test]
 fn opt_test() {
-    fn opt_abcd(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, Option<&[u8]>> {
+    fn opt_abcd(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Option<&[u8]>> {
         opt(tag("abcd"))(i)
     }
 
@@ -264,37 +264,34 @@ fn opt_test() {
     let b = &b"bcdefg"[..];
     let c = &b"ab"[..];
     assert_eq!(
-        opt_abcd(Streaming(a)),
-        Ok((Streaming(&b"ef"[..]), Some(&b"abcd"[..])))
+        opt_abcd(Partial(a)),
+        Ok((Partial(&b"ef"[..]), Some(&b"abcd"[..])))
     );
+    assert_eq!(opt_abcd(Partial(b)), Ok((Partial(&b"bcdefg"[..]), None)));
     assert_eq!(
-        opt_abcd(Streaming(b)),
-        Ok((Streaming(&b"bcdefg"[..]), None))
-    );
-    assert_eq!(
-        opt_abcd(Streaming(c)),
+        opt_abcd(Partial(c)),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
 }
 
 #[test]
 fn peek_test() {
-    fn peek_tag(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+    fn peek_tag(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         peek(tag("abcd"))(i)
     }
 
     assert_eq!(
-        peek_tag(Streaming(&b"abcdef"[..])),
-        Ok((Streaming(&b"abcdef"[..]), &b"abcd"[..]))
+        peek_tag(Partial(&b"abcdef"[..])),
+        Ok((Partial(&b"abcdef"[..]), &b"abcd"[..]))
     );
     assert_eq!(
-        peek_tag(Streaming(&b"ab"[..])),
+        peek_tag(Partial(&b"ab"[..])),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_eq!(
-        peek_tag(Streaming(&b"xxx"[..])),
+        peek_tag(Partial(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Streaming(&b"xxx"[..]),
+            Partial(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
@@ -302,24 +299,24 @@ fn peek_test() {
 
 #[test]
 fn not_test() {
-    fn not_aaa(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, ()> {
+    fn not_aaa(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, ()> {
         not(tag("aaa"))(i)
     }
 
     assert_eq!(
-        not_aaa(Streaming(&b"aaa"[..])),
+        not_aaa(Partial(&b"aaa"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Streaming(&b"aaa"[..]),
+            Partial(&b"aaa"[..]),
             ErrorKind::Not
         )))
     );
     assert_eq!(
-        not_aaa(Streaming(&b"aa"[..])),
+        not_aaa(Partial(&b"aa"[..])),
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-        not_aaa(Streaming(&b"abcd"[..])),
-        Ok((Streaming(&b"abcd"[..]), ()))
+        not_aaa(Partial(&b"abcd"[..])),
+        Ok((Partial(&b"abcd"[..]), ()))
     );
 }
 
@@ -328,23 +325,23 @@ fn verify_test() {
     #![allow(deprecated)]
     use crate::bytes::take;
 
-    fn test(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+    fn test(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         verify(take(5u8), |slice: &[u8]| slice[0] == b'a')(i)
     }
     assert_eq!(
-        test(Streaming(&b"bcd"[..])),
+        test(Partial(&b"bcd"[..])),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_eq!(
-        test(Streaming(&b"bcdefg"[..])),
+        test(Partial(&b"bcdefg"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Streaming(&b"bcdefg"[..]),
+            Partial(&b"bcdefg"[..]),
             ErrorKind::Verify
         )))
     );
     assert_eq!(
-        test(Streaming(&b"abcdefg"[..])),
-        Ok((Streaming(&b"fg"[..]), &b"abcde"[..]))
+        test(Partial(&b"abcdefg"[..])),
+        Ok((Partial(&b"fg"[..]), &b"abcde"[..]))
     );
 }
 
@@ -352,25 +349,25 @@ fn verify_test() {
 fn test_parser_verify() {
     use crate::bytes::take;
 
-    fn test(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+    fn test(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         take(5u8)
             .verify(|slice: &[u8]| slice[0] == b'a')
             .parse_next(i)
     }
     assert_eq!(
-        test(Streaming(&b"bcd"[..])),
+        test(Partial(&b"bcd"[..])),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_eq!(
-        test(Streaming(&b"bcdefg"[..])),
+        test(Partial(&b"bcdefg"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Streaming(&b"bcdefg"[..]),
+            Partial(&b"bcdefg"[..]),
             ErrorKind::Verify
         )))
     );
     assert_eq!(
-        test(Streaming(&b"abcdefg"[..])),
-        Ok((Streaming(&b"fg"[..]), &b"abcde"[..]))
+        test(Partial(&b"abcdefg"[..])),
+        Ok((Partial(&b"fg"[..]), &b"abcde"[..]))
     );
 }
 

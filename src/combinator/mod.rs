@@ -64,7 +64,7 @@
 //!   - [`le_i8`][crate::number::le_i8], [`le_i16`][crate::number::le_i16], [`le_i24`][crate::number::le_i24], [`le_i32`][crate::number::le_i32], [`le_i64`][crate::number::le_i64], [`le_i128`][crate::number::le_i128]: Little endian signed integers
 //!   - [`le_u8`][crate::number::le_u8], [`le_u16`][crate::number::le_u16], [`le_u24`][crate::number::le_u24], [`le_u32`][crate::number::le_u32], [`le_u64`][crate::number::le_u64], [`le_u128`][crate::number::le_u128]: Little endian unsigned integers
 //!
-//! ## Streaming related
+//! ## Partial related
 //!
 //! - [`eof`][eof]: Returns its input if it is at the end of input data
 //! - [`Parser::complete`][Parser::complete()]: Replaces an `Incomplete` returned by the child parser with an `Backtrack`
@@ -763,15 +763,15 @@ where
 /// **WARNING:** Deprecated, replaced with [`Parser::complete`]
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, input::Streaming};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, input::Partial};
 /// use winnow::bytes::take;
 /// use winnow::combinator::complete;
 /// # fn main() {
 ///
 /// let mut parser = complete(take(5u8));
 ///
-/// assert_eq!(parser(Streaming("abcdefg")), Ok((Streaming("fg"), "abcde")));
-/// assert_eq!(parser(Streaming("abcd")), Err(ErrMode::Backtrack(Error::new(Streaming("abcd"), ErrorKind::Complete))));
+/// assert_eq!(parser(Partial("abcdefg")), Ok((Partial("fg"), "abcde")));
+/// assert_eq!(parser(Partial("abcd")), Err(ErrMode::Backtrack(Error::new(Partial("abcd"), ErrorKind::Complete))));
 /// # }
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::complete")]

@@ -1,6 +1,6 @@
 use super::*;
 use crate::error::Error;
-use crate::Streaming;
+use crate::Partial;
 
 #[test]
 /// Take the `bits` function and assert that remaining bytes are correctly returned, if the
@@ -51,7 +51,7 @@ fn test_partial_byte_consumption_bits() {
 #[cfg(feature = "std")]
 /// Ensure that in Incomplete error is thrown, if too few bytes are passed for a given parser.
 fn test_incomplete_bits() {
-    let input = Streaming(&[0x12][..]);
+    let input = Partial(&[0x12][..]);
 
     // Take bit slices with sizes [4, 8].
     let result: IResult<_, (u8, u8)> =
@@ -102,8 +102,8 @@ fn test_take_complete_span_over_multiple_bytes() {
 }
 
 #[test]
-fn test_take_streaming_0() {
-    let input = Streaming(&[][..]);
+fn test_take_partial_0() {
+    let input = Partial(&[][..]);
     let count = 0usize;
     assert_eq!(count, 0usize);
     let offset = 0usize;
@@ -114,8 +114,8 @@ fn test_take_streaming_0() {
 }
 
 #[test]
-fn test_tag_streaming_ok() {
-    let input = Streaming(&[0b00011111][..]);
+fn test_tag_partial_ok() {
+    let input = Partial(&[0b00011111][..]);
     let offset = 0usize;
     let bits_to_take = 4usize;
     let value_to_tag = 0b0001;
@@ -127,8 +127,8 @@ fn test_tag_streaming_ok() {
 }
 
 #[test]
-fn test_tag_streaming_err() {
-    let input = Streaming(&[0b00011111][..]);
+fn test_tag_partial_err() {
+    let input = Partial(&[0b00011111][..]);
     let offset = 0usize;
     let bits_to_take = 4usize;
     let value_to_tag = 0b1111;
@@ -170,19 +170,19 @@ fn test_bool_eof_complete() {
 }
 
 #[test]
-fn test_bool_0_streaming() {
-    let input = Streaming([0b10000000].as_ref());
+fn test_bool_0_partial() {
+    let input = Partial([0b10000000].as_ref());
 
-    let result: crate::IResult<(Streaming<&[u8]>, usize), bool> = bool((input, 0));
+    let result: crate::IResult<(Partial<&[u8]>, usize), bool> = bool((input, 0));
 
     assert_eq!(result, Ok(((input, 1), true)));
 }
 
 #[test]
-fn test_bool_eof_streaming() {
-    let input = Streaming([0b10000000].as_ref());
+fn test_bool_eof_partial() {
+    let input = Partial([0b10000000].as_ref());
 
-    let result: crate::IResult<(Streaming<&[u8]>, usize), bool> = bool((input, 8));
+    let result: crate::IResult<(Partial<&[u8]>, usize), bool> = bool((input, 8));
 
     assert_eq!(
         result,

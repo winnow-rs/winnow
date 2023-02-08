@@ -8,7 +8,7 @@ use winnow::{
     character::float,
     combinator::{cut_err, rest},
     error::{ContextError, ParseError},
-    input::Streaming,
+    input::Partial,
     multi::{fold_many0, separated0},
     sequence::{delimited, preceded, separated_pair, terminated},
 };
@@ -23,7 +23,7 @@ pub enum JsonValue {
     Object(HashMap<String, JsonValue>),
 }
 
-pub type Input<'i> = Streaming<&'i str>;
+pub type Input<'i> = Partial<&'i str>;
 
 /// The root element of a JSON parser is any value
 ///
@@ -222,36 +222,36 @@ mod test {
 
     #[allow(clippy::useless_attribute)]
     #[allow(dead_code)] // its dead for benches
-    type Error<'i> = winnow::error::Error<Streaming<&'i str>>;
+    type Error<'i> = winnow::error::Error<Partial<&'i str>>;
 
     #[test]
     fn json_string() {
         assert_eq!(
-            string::<Error<'_>>(Streaming("\"\"")),
-            Ok((Streaming(""), "".to_string()))
+            string::<Error<'_>>(Partial("\"\"")),
+            Ok((Partial(""), "".to_string()))
         );
         assert_eq!(
-            string::<Error<'_>>(Streaming("\"abc\"")),
-            Ok((Streaming(""), "abc".to_string()))
+            string::<Error<'_>>(Partial("\"abc\"")),
+            Ok((Partial(""), "abc".to_string()))
         );
         assert_eq!(
-            string::<Error<'_>>(Streaming(
+            string::<Error<'_>>(Partial(
                 "\"abc\\\"\\\\\\/\\b\\f\\n\\r\\t\\u0001\\u2014\u{2014}def\""
             )),
-            Ok((Streaming(""), "abc\"\\/\x08\x0C\n\r\t\x01——def".to_string())),
+            Ok((Partial(""), "abc\"\\/\x08\x0C\n\r\t\x01——def".to_string())),
         );
         assert_eq!(
-            string::<Error<'_>>(Streaming("\"\\uD83D\\uDE10\"")),
-            Ok((Streaming(""), "😐".to_string()))
+            string::<Error<'_>>(Partial("\"\\uD83D\\uDE10\"")),
+            Ok((Partial(""), "😐".to_string()))
         );
 
-        assert!(string::<Error<'_>>(Streaming("\"")).is_err());
-        assert!(string::<Error<'_>>(Streaming("\"abc")).is_err());
-        assert!(string::<Error<'_>>(Streaming("\"\\\"")).is_err());
-        assert!(string::<Error<'_>>(Streaming("\"\\u123\"")).is_err());
-        assert!(string::<Error<'_>>(Streaming("\"\\uD800\"")).is_err());
-        assert!(string::<Error<'_>>(Streaming("\"\\uD800\\uD800\"")).is_err());
-        assert!(string::<Error<'_>>(Streaming("\"\\uDC00\"")).is_err());
+        assert!(string::<Error<'_>>(Partial("\"")).is_err());
+        assert!(string::<Error<'_>>(Partial("\"abc")).is_err());
+        assert!(string::<Error<'_>>(Partial("\"\\\"")).is_err());
+        assert!(string::<Error<'_>>(Partial("\"\\u123\"")).is_err());
+        assert!(string::<Error<'_>>(Partial("\"\\uD800\"")).is_err());
+        assert!(string::<Error<'_>>(Partial("\"\\uD800\\uD800\"")).is_err());
+        assert!(string::<Error<'_>>(Partial("\"\\uDC00\"")).is_err());
     }
 
     #[test]
@@ -270,8 +270,8 @@ mod test {
         );
 
         assert_eq!(
-            json::<Error<'_>>(Streaming(input)),
-            Ok((Streaming(""), expected))
+            json::<Error<'_>>(Partial(input)),
+            Ok((Partial(""), expected))
         );
     }
 
@@ -284,8 +284,8 @@ mod test {
         let expected = Array(vec![Num(42.0), Str("x".to_string())]);
 
         assert_eq!(
-            json::<Error<'_>>(Streaming(input)),
-            Ok((Streaming(""), expected))
+            json::<Error<'_>>(Partial(input)),
+            Ok((Partial(""), expected))
         );
     }
 
@@ -308,9 +308,9 @@ mod test {
   "#;
 
         assert_eq!(
-            json::<Error<'_>>(Streaming(input)),
+            json::<Error<'_>>(Partial(input)),
             Ok((
-                Streaming(""),
+                Partial(""),
                 Object(
                     vec![
                         ("null".to_string(), Null),

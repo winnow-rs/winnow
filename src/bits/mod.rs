@@ -7,7 +7,7 @@ pub mod streaming;
 mod tests;
 
 use crate::error::{ErrMode, ErrorConvert, ErrorKind, Needed, ParseError};
-use crate::input::{AsBytes, Input, InputIsStreaming, ToUsize};
+use crate::input::{AsBytes, Input, InputIsPartial, ToUsize};
 use crate::lib::std::ops::{AddAssign, Shl, Shr};
 use crate::{IResult, Parser};
 
@@ -134,17 +134,17 @@ where
 /// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(winnow::error::ErrMode::Backtrack(Error{input: ([0b00010010].as_ref(), 0), kind: ErrorKind::Eof })));
 /// ```
 #[inline(always)]
-pub fn take<I, O, C, E: ParseError<(I, usize)>, const STREAMING: bool>(
+pub fn take<I, O, C, E: ParseError<(I, usize)>, const PARTIAL: bool>(
     count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-    I: Input<Token = u8> + AsBytes + InputIsStreaming<STREAMING>,
+    I: Input<Token = u8> + AsBytes + InputIsPartial<PARTIAL>,
     C: ToUsize,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
     let count = count.to_usize();
     move |input: (I, usize)| {
-        if STREAMING {
+        if PARTIAL {
             streaming::take_internal(input, count)
         } else {
             complete::take_internal(input, count)
@@ -197,18 +197,18 @@ where
 /// );
 /// ```
 #[inline(always)]
-pub fn tag<I, O, C, E: ParseError<(I, usize)>, const STREAMING: bool>(
+pub fn tag<I, O, C, E: ParseError<(I, usize)>, const PARTIAL: bool>(
     pattern: O,
     count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-    I: Input<Token = u8> + AsBytes + InputIsStreaming<STREAMING>,
+    I: Input<Token = u8> + AsBytes + InputIsPartial<PARTIAL>,
     C: ToUsize,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
     let count = count.to_usize();
     move |input: (I, usize)| {
-        if STREAMING {
+        if PARTIAL {
             streaming::tag_internal(input, &pattern, count)
         } else {
             complete::tag_internal(input, &pattern, count)
@@ -232,14 +232,14 @@ where
 /// assert_eq!(parse(([0b10000000].as_ref(), 0)), Ok((([0b10000000].as_ref(), 1), true)));
 /// assert_eq!(parse(([0b10000000].as_ref(), 1)), Ok((([0b10000000].as_ref(), 2), false)));
 /// ```
-pub fn bool<I, E: ParseError<(I, usize)>, const STREAMING: bool>(
+pub fn bool<I, E: ParseError<(I, usize)>, const PARTIAL: bool>(
     input: (I, usize),
 ) -> IResult<(I, usize), bool, E>
 where
-    I: Input<Token = u8> + AsBytes + InputIsStreaming<STREAMING>,
+    I: Input<Token = u8> + AsBytes + InputIsPartial<PARTIAL>,
 {
     #![allow(deprecated)]
-    if STREAMING {
+    if PARTIAL {
         streaming::bool(input)
     } else {
         complete::bool(input)
