@@ -792,7 +792,7 @@ macro_rules! ints {
             {
               let (i, sign) = sign(input.clone())?;
 
-                if i.input_len() == 0 {
+                if i.eof_offset() == 0 {
                     return Err(ErrMode::Incomplete(Needed::new(1)));
                 }
 
@@ -841,7 +841,7 @@ macro_rules! uints {
             {
                 let i = input;
 
-                if i.input_len() == 0 {
+                if i.eof_offset() == 0 {
                     return Err(ErrMode::Incomplete(Needed::new(1)));
                 }
 

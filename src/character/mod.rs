@@ -903,7 +903,7 @@ where
 {
     let i = input.clone();
 
-    if i.input_len() == 0 {
+    if i.eof_offset() == 0 {
         if PARTIAL {
             return Err(ErrMode::Incomplete(Needed::new(1)));
         } else {
@@ -934,7 +934,7 @@ where
     if PARTIAL {
         Err(ErrMode::Incomplete(Needed::new(1)))
     } else {
-        Ok((i.next_slice(i.input_len()).0, value))
+        Ok((i.next_slice(i.eof_offset()).0, value))
     }
 }
 
@@ -1058,7 +1058,7 @@ where
         .map(|c| c != Some('-'))
         .parse_next(i)?;
 
-    if i.input_len() == 0 {
+    if i.eof_offset() == 0 {
         if PARTIAL {
             return Err(ErrMode::Incomplete(Needed::new(1)));
         } else {
@@ -1093,7 +1093,7 @@ where
     if PARTIAL {
         Err(ErrMode::Incomplete(Needed::new(1)))
     } else {
-        Ok((i.next_slice(i.input_len()).0, value))
+        Ok((i.next_slice(i.eof_offset()).0, value))
     }
 }
 
@@ -1185,7 +1185,7 @@ where
             let c = c.as_char();
             !"0123456789abcdefABCDEF".contains(c)
         })
-        .unwrap_or_else(|| input.input_len());
+        .unwrap_or_else(|| input.eof_offset());
     let max_nibbles = O::max_nibbles(sealed::SealedMarker);
     let max_offset = input.offset_at(max_nibbles);
     let offset = match max_offset {
@@ -1198,7 +1198,7 @@ where
             }
         }
         Err(_) => {
-            if PARTIAL && invalid_offset == input.input_len() {
+            if PARTIAL && invalid_offset == input.eof_offset() {
                 // Only the next byte is guaranteed required
                 return Err(ErrMode::Incomplete(Needed::new(1)));
             } else {

@@ -59,7 +59,7 @@ where
         Ok(((input, bit_offset), 0u8.into()))
     } else {
         let cnt = (count + bit_offset).div(8);
-        if input.input_len() * 8 < count + bit_offset {
+        if input.eof_offset() * 8 < count + bit_offset {
             Err(ErrMode::from_error_kind(
                 (input, bit_offset),
                 ErrorKind::Eof,

@@ -1449,11 +1449,11 @@ where
             let c = c.as_char();
             !"0123456789abcdefABCDEF".contains(c)
         })
-        .unwrap_or_else(|| input.input_len());
+        .unwrap_or_else(|| input.eof_offset());
     const MAX_DIGITS: usize = 8;
     let max_offset = input
         .offset_at(MAX_DIGITS)
-        .unwrap_or_else(|_err| input.input_len());
+        .unwrap_or_else(|_err| input.eof_offset());
     let offset = invalid_offset.min(max_offset);
     if offset == 0 {
         return Err(ErrMode::from_error_kind(input, ErrorKind::IsA));
@@ -1556,7 +1556,7 @@ where
 
     let (i, integer) = match i.offset_for(|c| !c.is_dec_digit()) {
         Some(offset) => i.next_slice(offset),
-        None => i.next_slice(i.input_len()),
+        None => i.next_slice(i.eof_offset()),
     };
 
     let (i, opt_dot) = opt(tag(&b"."[..]))(i)?;
@@ -1578,7 +1578,7 @@ where
                 break;
             }
         }
-        let offset = offset.unwrap_or_else(|| i.input_len());
+        let offset = offset.unwrap_or_else(|| i.eof_offset());
 
         // trim right zeroes
         let trimmed_offset = (offset - zero_count).max(1);

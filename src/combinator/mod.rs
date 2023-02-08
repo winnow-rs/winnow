@@ -181,7 +181,7 @@ pub fn rest<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Input>::Slice, E>
 where
     I: Input,
 {
-    Ok(input.next_slice(input.input_len()))
+    Ok(input.next_slice(input.eof_offset()))
 }
 
 /// Return the length of the remaining input.
@@ -198,7 +198,7 @@ pub fn rest_len<I, E: ParseError<I>>(input: I) -> IResult<I, usize, E>
 where
     I: Input,
 {
-    let len = input.input_len();
+    let len = input.eof_offset();
     Ok((input, len))
 }
 
@@ -751,7 +751,7 @@ pub fn eof<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Input>::Slice, E>
 where
     I: Input,
 {
-    if input.input_len() == 0 {
+    if input.eof_offset() == 0 {
         Ok(input.next_slice(0))
     } else {
         Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
@@ -844,7 +844,7 @@ where
 {
     move |input: I| {
         let (input, res) = f.parse_next(input)?;
-        if input.input_len() == 0 {
+        if input.eof_offset() == 0 {
             Ok((input, res))
         } else {
             Err(ErrMode::from_error_kind(input, ErrorKind::Eof))

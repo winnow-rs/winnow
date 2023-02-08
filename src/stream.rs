@@ -341,7 +341,7 @@ pub trait Input: Clone {
     /// Iterate with the offset from the current location
     fn iter_offsets(&self) -> Self::IterOffsets;
     /// Returns the offaet to the end of the input
-    fn input_len(&self) -> usize;
+    fn eof_offset(&self) -> usize;
 
     /// Split off the next token from the input
     fn next_token(&self) -> Option<(Self, Self::Token)>;
@@ -358,7 +358,7 @@ pub trait Input: Clone {
     ///
     /// **NOTE:** For inputs with variable width tokens, like `&str`'s `char`, `offset` might not correspond
     /// with the number of tokens.  To get a valid offset, use:
-    /// - [`Input::input_len`]
+    /// - [`Input::eof_offset`]
     /// - [`Input::iter_offsets`]
     /// - [`Input::offset_for`]
     /// - [`Input::offset_at`]
@@ -388,7 +388,7 @@ where
         self.iter().cloned().enumerate()
     }
     #[inline(always)]
-    fn input_len(&self) -> usize {
+    fn eof_offset(&self) -> usize {
         self.len()
     }
 
@@ -433,7 +433,7 @@ impl<'i> Input for &'i str {
         self.char_indices()
     }
     #[inline(always)]
-    fn input_len(&self) -> usize {
+    fn eof_offset(&self) -> usize {
         self.len()
     }
 
@@ -467,7 +467,7 @@ impl<'i> Input for &'i str {
         }
 
         if cnt == tokens {
-            Ok(self.input_len())
+            Ok(self.eof_offset())
         } else {
             Err(Needed::Unknown)
         }
@@ -489,8 +489,8 @@ impl<I: Input> Input for Located<I> {
         self.input.iter_offsets()
     }
     #[inline(always)]
-    fn input_len(&self) -> usize {
-        self.input.input_len()
+    fn eof_offset(&self) -> usize {
+        self.input.eof_offset()
     }
 
     #[inline(always)]
@@ -540,8 +540,8 @@ impl<I: Input, S: Clone> Input for Stateful<I, S> {
         self.input.iter_offsets()
     }
     #[inline(always)]
-    fn input_len(&self) -> usize {
-        self.input.input_len()
+    fn eof_offset(&self) -> usize {
+        self.input.eof_offset()
     }
 
     #[inline(always)]
@@ -591,8 +591,8 @@ impl<I: Input> Input for Partial<I> {
         self.0.iter_offsets()
     }
     #[inline(always)]
-    fn input_len(&self) -> usize {
-        self.0.input_len()
+    fn eof_offset(&self) -> usize {
+        self.0.eof_offset()
     }
 
     #[inline(always)]
@@ -2159,7 +2159,7 @@ where
 {
     let offset = input
         .offset_for(predicate)
-        .unwrap_or_else(|| input.input_len());
+        .unwrap_or_else(|| input.eof_offset());
     Ok(input.next_slice(offset))
 }
 
@@ -2179,7 +2179,7 @@ where
 {
     let offset = input
         .offset_for(predicate)
-        .unwrap_or_else(|| input.input_len());
+        .unwrap_or_else(|| input.eof_offset());
     if offset == 0 {
         Err(ErrMode::from_error_kind(input.clone(), e))
     } else {

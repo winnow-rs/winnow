@@ -1543,13 +1543,13 @@ where
             let c = c.as_char();
             !"0123456789abcdefABCDEF".contains(c)
         })
-        .unwrap_or_else(|| input.input_len());
+        .unwrap_or_else(|| input.eof_offset());
     const MAX_DIGITS: usize = 8;
     let max_offset = input.offset_at(MAX_DIGITS);
     let offset = match max_offset {
         Ok(max_offset) => invalid_offset.min(max_offset),
         Err(_) => {
-            if invalid_offset == input.input_len() {
+            if invalid_offset == input.eof_offset() {
                 // Only the next byte is guaranteed required
                 return Err(ErrMode::Incomplete(Needed::new(1)));
             } else {
@@ -1658,7 +1658,7 @@ where
 
     let (i, integer) = match i.offset_for(|c| !c.is_dec_digit()) {
         Some(offset) => i.next_slice(offset),
-        None => i.next_slice(i.input_len()),
+        None => i.next_slice(i.eof_offset()),
     };
 
     let (i, opt_dot) = opt(tag(&b"."[..]))(i)?;

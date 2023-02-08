@@ -212,7 +212,7 @@ where
         let c = item.as_char();
         c == '\r' || c == '\n'
     }) {
-        None => Ok(input.next_slice(input.input_len())),
+        None => Ok(input.next_slice(input.eof_offset())),
         Some(offset) => {
             let (new_input, res) = input.next_slice(offset);
             let bytes = new_input.as_bstr();
@@ -845,7 +845,7 @@ macro_rules! ints {
             {
                 let (i, sign) = sign(input.clone())?;
 
-                if i.input_len() == 0 {
+                if i.eof_offset() == 0 {
                     return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
                 }
 
@@ -872,7 +872,7 @@ macro_rules! ints {
                    }
                 }
 
-                Ok((i.next_slice(i.input_len()).0, value))
+                Ok((i.next_slice(i.eof_offset()).0, value))
             }
         )+
     }
@@ -901,7 +901,7 @@ macro_rules! uints {
             {
                 let i = input;
 
-                if i.input_len() == 0 {
+                if i.eof_offset() == 0 {
                     return Err(ErrMode::from_error_kind(i, ErrorKind::Digit));
                 }
 
@@ -922,7 +922,7 @@ macro_rules! uints {
                     }
                 }
 
-                Ok((i.next_slice(i.input_len()).0, value))
+                Ok((i.next_slice(i.eof_offset()).0, value))
             }
         )+
     }
