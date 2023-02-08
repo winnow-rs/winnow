@@ -2,8 +2,6 @@
 //!
 //! **Note**: this list is meant to provide a nicer way to find a nom parser than reading through the documentation on docs.rs. Function combinators are organized in module so they are a bit easier to find.
 //!
-//! Links present in this document will nearly always point to `complete` version of the parser. Most of the parsers also have a `streaming` version.
-//!
 //! ## Basic elements
 //!
 //! Those are used to recognize the lowest level elements of your grammar, like, "here is a dot", or "here is an big endian integer".
