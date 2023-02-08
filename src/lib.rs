@@ -501,7 +501,7 @@ pub mod _tutorial;
 /// }
 /// ```
 pub mod prelude {
-    pub use crate::stream::InputIsPartial as _;
+    pub use crate::stream::StreamIsPartial as _;
     pub use crate::FinishIResult as _;
     pub use crate::IResult;
     pub use crate::Parser as _;

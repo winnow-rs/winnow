@@ -7,7 +7,7 @@ use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::stream::Accumulate;
-use crate::stream::{Input, InputIsPartial, ToUsize, UpdateSlice};
+use crate::stream::{Input, StreamIsPartial, ToUsize, UpdateSlice};
 use crate::{IResult, Parser};
 
 /// Repeats the embedded parser, gathering the results in a `Vec`.
@@ -1054,7 +1054,7 @@ pub fn length_data<I, N, E, F, const PARTIAL: bool>(
     mut f: F,
 ) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     N: ToUsize,
     F: Parser<I, N, E>,
@@ -1099,7 +1099,7 @@ pub fn length_value<I, O, N, E, F, G, const PARTIAL: bool>(
     mut g: G,
 ) -> impl FnMut(I) -> IResult<I, O, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input + UpdateSlice,
     N: ToUsize,
     F: Parser<I, N, E>,

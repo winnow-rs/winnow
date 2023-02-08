@@ -15,7 +15,7 @@ use crate::combinator::opt;
 use crate::error::ParseError;
 use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::stream::Compare;
-use crate::stream::{AsBStr, AsChar, Input, InputIsPartial, Offset, ParseSlice};
+use crate::stream::{AsBStr, AsChar, Input, Offset, ParseSlice, StreamIsPartial};
 use crate::IResult;
 use crate::Parser;
 
@@ -52,7 +52,7 @@ pub fn crlf<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     I: Compare<&'static str>,
 {
@@ -101,7 +101,7 @@ pub fn not_line_ending<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input + AsBStr,
     I: Compare<&'static str>,
     <I as Input>::Token: AsChar,
@@ -146,7 +146,7 @@ pub fn line_ending<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     I: Compare<&'static str>,
 {
@@ -188,7 +188,7 @@ where
 #[inline(always)]
 pub fn newline<I, Error: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, char, Error>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
@@ -230,7 +230,7 @@ where
 #[inline(always)]
 pub fn tab<I, Error: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, char, Error>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
@@ -276,7 +276,7 @@ pub fn alpha0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
@@ -322,7 +322,7 @@ pub fn alpha1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
@@ -369,7 +369,7 @@ pub fn digit0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
@@ -431,7 +431,7 @@ pub fn digit1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
@@ -476,7 +476,7 @@ pub fn hex_digit0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
@@ -522,7 +522,7 @@ pub fn hex_digit1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
@@ -568,7 +568,7 @@ pub fn oct_digit0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
@@ -614,7 +614,7 @@ pub fn oct_digit1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
@@ -660,7 +660,7 @@ pub fn alphanumeric0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
@@ -706,7 +706,7 @@ pub fn alphanumeric1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
@@ -740,7 +740,7 @@ pub fn space0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
@@ -786,7 +786,7 @@ pub fn space1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
@@ -832,7 +832,7 @@ pub fn multispace0<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
@@ -878,7 +878,7 @@ pub fn multispace1<I, E: ParseError<I>, const PARTIAL: bool>(
     input: I,
 ) -> IResult<I, <I as Input>::Slice, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar,
 {
@@ -896,7 +896,7 @@ where
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 pub fn dec_uint<I, O, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, O, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar + Copy,
     O: Uint,
@@ -1043,7 +1043,7 @@ impl Uint for i128 {
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 pub fn dec_int<I, O, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, O, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: AsChar + Copy,
     O: Int,
@@ -1174,7 +1174,7 @@ impl Int for i128 {
 #[inline]
 pub fn hex_uint<I, O, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, O, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     O: HexUint,
     <I as Input>::Token: AsChar,
@@ -1310,7 +1310,7 @@ impl HexUint for u128 {
 #[inline(always)]
 pub fn float<I, O, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, O, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     I: Offset + Compare<&'static str>,
     <I as Input>::Slice: ParseSlice<O>,
@@ -1370,7 +1370,7 @@ pub fn escaped<'a, I: 'a, Error, F, G, O1, O2, const PARTIAL: bool>(
     mut escapable: G,
 ) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input + Offset,
     <I as Input>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
@@ -1463,7 +1463,7 @@ pub fn escaped_transform<I, Error, F, G, Output, const PARTIAL: bool>(
     mut transform: G,
 ) -> impl FnMut(I) -> IResult<I, Output, Error>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input + Offset,
     <I as Input>::Token: crate::stream::AsChar,
     Output: crate::stream::Accumulate<<I as Input>::Slice>,

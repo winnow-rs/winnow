@@ -8,7 +8,7 @@ pub mod streaming;
 mod tests;
 
 use crate::error::ParseError;
-use crate::stream::{AsBytes, Input, InputIsPartial};
+use crate::stream::{AsBytes, Input, StreamIsPartial};
 use crate::IResult;
 
 /// Configurable endianness
@@ -58,7 +58,7 @@ pub enum Endianness {
 #[inline(always)]
 pub fn be_u8<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u8, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
 {
     if PARTIAL {
@@ -104,7 +104,7 @@ where
 #[inline(always)]
 pub fn be_u16<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u16, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -151,7 +151,7 @@ where
 #[inline(always)]
 pub fn be_u24<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u32, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -198,7 +198,7 @@ where
 #[inline(always)]
 pub fn be_u32<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u32, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -245,7 +245,7 @@ where
 #[inline(always)]
 pub fn be_u64<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u64, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -292,7 +292,7 @@ where
 #[inline(always)]
 pub fn be_u128<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u128, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -337,7 +337,7 @@ where
 #[inline(always)]
 pub fn be_i8<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i8, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
 {
     if PARTIAL {
@@ -381,7 +381,7 @@ where
 #[inline(always)]
 pub fn be_i16<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i16, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -426,7 +426,7 @@ where
 #[inline(always)]
 pub fn be_i24<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i32, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -471,7 +471,7 @@ where
 #[inline(always)]
 pub fn be_i32<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i32, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -516,7 +516,7 @@ where
 #[inline(always)]
 pub fn be_i64<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i64, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -561,7 +561,7 @@ where
 #[inline(always)]
 pub fn be_i128<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i128, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -606,7 +606,7 @@ where
 #[inline(always)]
 pub fn le_u8<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u8, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
 {
     if PARTIAL {
@@ -652,7 +652,7 @@ where
 #[inline(always)]
 pub fn le_u16<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u16, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -699,7 +699,7 @@ where
 #[inline(always)]
 pub fn le_u24<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u32, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -746,7 +746,7 @@ where
 #[inline(always)]
 pub fn le_u32<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u32, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -793,7 +793,7 @@ where
 #[inline(always)]
 pub fn le_u64<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u64, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -840,7 +840,7 @@ where
 #[inline(always)]
 pub fn le_u128<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u128, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -885,7 +885,7 @@ where
 #[inline(always)]
 pub fn le_i8<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i8, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
 {
     if PARTIAL {
@@ -931,7 +931,7 @@ where
 #[inline(always)]
 pub fn le_i16<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i16, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -978,7 +978,7 @@ where
 #[inline(always)]
 pub fn le_i24<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i32, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -1025,7 +1025,7 @@ where
 #[inline(always)]
 pub fn le_i32<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i32, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -1072,7 +1072,7 @@ where
 #[inline(always)]
 pub fn le_i64<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i64, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -1119,7 +1119,7 @@ where
 #[inline(always)]
 pub fn le_i128<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i128, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -1169,7 +1169,7 @@ where
 #[inline(always)]
 pub fn u8<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u8, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
 {
     if PARTIAL {
@@ -1235,7 +1235,7 @@ pub fn u16<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, u16, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -1302,7 +1302,7 @@ pub fn u24<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, u32, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -1369,7 +1369,7 @@ pub fn u32<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, u32, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -1436,7 +1436,7 @@ pub fn u64<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, u64, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -1503,7 +1503,7 @@ pub fn u128<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, u128, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -1553,7 +1553,7 @@ where
 #[inline(always)]
 pub fn i8<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i8, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
 {
     if PARTIAL {
@@ -1619,7 +1619,7 @@ pub fn i16<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, i16, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -1686,7 +1686,7 @@ pub fn i24<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, i32, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -1753,7 +1753,7 @@ pub fn i32<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, i32, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -1820,7 +1820,7 @@ pub fn i64<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, i64, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -1887,7 +1887,7 @@ pub fn i128<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, i128, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -1934,7 +1934,7 @@ where
 #[inline(always)]
 pub fn be_f32<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, f32, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -1981,7 +1981,7 @@ where
 #[inline(always)]
 pub fn be_f64<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, f64, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -2028,7 +2028,7 @@ where
 #[inline(always)]
 pub fn le_f32<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, f32, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -2075,7 +2075,7 @@ where
 #[inline(always)]
 pub fn le_f64<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, f64, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -2142,7 +2142,7 @@ pub fn f32<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, f32, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {
@@ -2209,7 +2209,7 @@ pub fn f64<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, f64, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input<Token = u8>,
     <I as Input>::Slice: AsBytes,
 {

@@ -2,7 +2,7 @@
 
 use crate::combinator::*;
 use crate::error::{ContextError, IResult, ParseError};
-use crate::stream::{AsChar, Compare, Input, InputIsPartial, Location};
+use crate::stream::{AsChar, Compare, Input, Location, StreamIsPartial};
 
 /// All nom parsers implement this trait
 ///
@@ -631,7 +631,7 @@ where
 /// ```
 impl<I, E> Parser<I, u8, E> for u8
 where
-    I: InputIsPartial<false>,
+    I: StreamIsPartial<false>,
     I: Input<Token = u8>,
     E: ParseError<I>,
 {
@@ -657,7 +657,7 @@ where
 /// ```
 impl<I, E> Parser<I, <I as Input>::Token, E> for char
 where
-    I: InputIsPartial<false>,
+    I: StreamIsPartial<false>,
     I: Input,
     <I as Input>::Token: AsChar + Copy,
     E: ParseError<I>,
@@ -687,7 +687,7 @@ where
 /// ```
 impl<'s, I, E: ParseError<I>> Parser<I, <I as Input>::Slice, E> for &'s [u8]
 where
-    I: Compare<&'s [u8]> + InputIsPartial<false>,
+    I: Compare<&'s [u8]> + StreamIsPartial<false>,
     I: Input,
 {
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Input>::Slice, E> {
@@ -715,7 +715,7 @@ where
 /// ```
 impl<'s, I, E: ParseError<I>, const N: usize> Parser<I, <I as Input>::Slice, E> for &'s [u8; N]
 where
-    I: Compare<&'s [u8; N]> + InputIsPartial<false>,
+    I: Compare<&'s [u8; N]> + StreamIsPartial<false>,
     I: Input,
 {
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Input>::Slice, E> {
@@ -743,7 +743,7 @@ where
 /// ```
 impl<'s, I, E: ParseError<I>> Parser<I, <I as Input>::Slice, E> for &'s str
 where
-    I: Compare<&'s str> + InputIsPartial<false>,
+    I: Compare<&'s str> + StreamIsPartial<false>,
     I: Input,
 {
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Input>::Slice, E> {

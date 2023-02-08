@@ -448,7 +448,7 @@ use crate::lib::std::fmt;
 use core::num::NonZeroUsize;
 
 use crate::stream::Input;
-use crate::stream::InputIsPartial;
+use crate::stream::StreamIsPartial;
 use crate::Parser;
 
 /// Holds the result of parsing functions
@@ -488,7 +488,7 @@ pub trait FinishIResult<I, O, E> {
     /// # Panic
     ///
     /// If the result is `Err(ErrMode::Incomplete(_))`, this method will panic as [`ErrMode::Incomplete`]
-    /// should only be set when the input is [`InputIsPartial<false>`] which this isn't implemented
+    /// should only be set when the input is [`StreamIsPartial<false>`] which this isn't implemented
     /// for.
     fn finish_err(self) -> Result<(I, O), E>;
 }
@@ -496,8 +496,8 @@ pub trait FinishIResult<I, O, E> {
 impl<I, O, E> FinishIResult<I, O, E> for IResult<I, O, E>
 where
     I: Input,
-    // Force users to deal with `Incomplete` when `InputIsPartial<true>`
-    I: InputIsPartial<false>,
+    // Force users to deal with `Incomplete` when `StreamIsPartial<true>`
+    I: StreamIsPartial<false>,
     I: Clone,
     E: ParseError<I>,
 {
@@ -512,7 +512,7 @@ where
             Ok(res) => Ok(res),
             Err(ErrMode::Backtrack(e)) | Err(ErrMode::Cut(e)) => Err(e),
             Err(ErrMode::Incomplete(_)) => {
-                panic!("`InputIsPartial<false>` conflicts with `Err(ErrMode::Incomplete(_))`")
+                panic!("`StreamIsPartial<false>` conflicts with `Err(ErrMode::Incomplete(_))`")
             }
         }
     }
@@ -546,7 +546,7 @@ impl<I, O, E> Finish<I, O, E> for IResult<I, O, E> {
 
 /// Contains information on needed data if a parser returned `Incomplete`
 ///
-/// **Note:** This is only possible for `Input` types that implement [`InputIsPartial<true>`],
+/// **Note:** This is only possible for `Input` types that implement [`StreamIsPartial<true>`],
 /// like [`Partial`][crate::Partial].
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
@@ -600,7 +600,7 @@ impl Needed {
 pub enum ErrMode<E> {
     /// There was not enough data
     ///
-    /// This must only be set when the `Input` is [`InputIsPartial<true>`], like with
+    /// This must only be set when the `Input` is [`StreamIsPartial<true>`], like with
     /// [`Partial`][crate::Partial]
     ///
     /// Convert this into an `Backtrack` with [`Parser::complete`][Parser::complete]

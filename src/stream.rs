@@ -33,7 +33,7 @@
 //! | trait | usage |
 //! |---|---|
 //! | [`Input`] |Core trait for driving parsing|
-//! | [`InputIsPartial`] | Marks the input as being the complete buffer or a partial buffer for streaming input |
+//! | [`StreamIsPartial`] | Marks the input as being the complete buffer or a partial buffer for streaming input |
 //! | [`AsBytes`] |Casts the input type to a byte slice|
 //! | [`AsBStr`] |Casts the input type to a slice of ASCII / UTF-8-like bytes|
 //! | [`Compare`] |Character comparison operations|
@@ -190,7 +190,7 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 /// - [`Parser::complete`][crate::Parser::complete] transform [`ErrMode::Incomplete`] to
 ///   [`ErrMode::Backtrack`]
 ///
-/// See also [`InputIsPartial`] to tell whether the input supports complete or partial parsing.
+/// See also [`StreamIsPartial`] to tell whether the input supports complete or partial parsing.
 ///
 /// # Example
 ///
@@ -658,17 +658,17 @@ where
 /// Marks the input as being the complete buffer or a partial buffer for streaming input
 ///
 /// See [Partial] for marking a presumed complete buffer type as a streaming buffer.
-pub trait InputIsPartial<const YES: bool>: Sized {
+pub trait StreamIsPartial<const YES: bool>: Sized {
     /// Complete counterpart
     ///
     /// - Set to `Self` if this is a complete buffer.
     /// - Set to [`std::convert::Infallible`] if there isn't an associated complete buffer type
-    type Complete: InputIsPartial<false>;
+    type Complete: StreamIsPartial<false>;
     /// Partial counterpart
     ///
     /// - Set to `Self` if this is a streaming buffer.
     /// - Set to [`std::convert::Infallible`] if there isn't an associated streaming buffer type
-    type Partial: InputIsPartial<true>;
+    type Partial: StreamIsPartial<true>;
 
     /// Convert to complete counterpart
     fn into_complete(self) -> Self::Complete;
@@ -676,7 +676,7 @@ pub trait InputIsPartial<const YES: bool>: Sized {
     fn into_partial(self) -> Self::Partial;
 }
 
-impl<'a, T> InputIsPartial<false> for &'a [T] {
+impl<'a, T> StreamIsPartial<false> for &'a [T] {
     type Complete = Self;
     type Partial = Partial<Self>;
 
@@ -690,7 +690,7 @@ impl<'a, T> InputIsPartial<false> for &'a [T] {
     }
 }
 
-impl<'a> InputIsPartial<false> for &'a str {
+impl<'a> StreamIsPartial<false> for &'a str {
     type Complete = Self;
     type Partial = Partial<Self>;
 
@@ -704,7 +704,7 @@ impl<'a> InputIsPartial<false> for &'a str {
     }
 }
 
-impl<const YES: bool> InputIsPartial<YES> for crate::lib::std::convert::Infallible {
+impl<const YES: bool> StreamIsPartial<YES> for crate::lib::std::convert::Infallible {
     type Complete = Self;
     type Partial = Self;
 
@@ -718,11 +718,11 @@ impl<const YES: bool> InputIsPartial<YES> for crate::lib::std::convert::Infallib
     }
 }
 
-impl<I> InputIsPartial<true> for Located<I>
+impl<I> StreamIsPartial<true> for Located<I>
 where
-    I: InputIsPartial<true>,
+    I: StreamIsPartial<true>,
 {
-    type Complete = Located<<I as InputIsPartial<true>>::Complete>;
+    type Complete = Located<<I as StreamIsPartial<true>>::Complete>;
     type Partial = Self;
 
     #[inline(always)]
@@ -738,12 +738,12 @@ where
     }
 }
 
-impl<I> InputIsPartial<false> for Located<I>
+impl<I> StreamIsPartial<false> for Located<I>
 where
-    I: InputIsPartial<false>,
+    I: StreamIsPartial<false>,
 {
     type Complete = Self;
-    type Partial = Located<<I as InputIsPartial<false>>::Partial>;
+    type Partial = Located<<I as StreamIsPartial<false>>::Partial>;
 
     #[inline(always)]
     fn into_complete(self) -> Self::Complete {
@@ -758,11 +758,11 @@ where
     }
 }
 
-impl<I, S> InputIsPartial<true> for Stateful<I, S>
+impl<I, S> StreamIsPartial<true> for Stateful<I, S>
 where
-    I: InputIsPartial<true>,
+    I: StreamIsPartial<true>,
 {
-    type Complete = Stateful<<I as InputIsPartial<true>>::Complete, S>;
+    type Complete = Stateful<<I as StreamIsPartial<true>>::Complete, S>;
     type Partial = Self;
 
     #[inline(always)]
@@ -778,12 +778,12 @@ where
     }
 }
 
-impl<I, S> InputIsPartial<false> for Stateful<I, S>
+impl<I, S> StreamIsPartial<false> for Stateful<I, S>
 where
-    I: InputIsPartial<false>,
+    I: StreamIsPartial<false>,
 {
     type Complete = Self;
-    type Partial = Stateful<<I as InputIsPartial<false>>::Partial, S>;
+    type Partial = Stateful<<I as StreamIsPartial<false>>::Partial, S>;
 
     #[inline(always)]
     fn into_complete(self) -> Self::Complete {
@@ -798,9 +798,9 @@ where
     }
 }
 
-impl<I> InputIsPartial<true> for Partial<I>
+impl<I> StreamIsPartial<true> for Partial<I>
 where
-    I: InputIsPartial<false>,
+    I: StreamIsPartial<false>,
 {
     type Complete = I;
     type Partial = Self;

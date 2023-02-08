@@ -6,7 +6,7 @@ pub mod streaming;
 mod tests;
 
 use crate::error::ParseError;
-use crate::stream::{Compare, ContainsToken, FindSlice, Input, InputIsPartial, SliceLen, ToUsize};
+use crate::stream::{Compare, ContainsToken, FindSlice, Input, SliceLen, StreamIsPartial, ToUsize};
 use crate::IResult;
 
 /// Matches one token
@@ -36,7 +36,7 @@ use crate::IResult;
 #[inline(always)]
 pub fn any<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, <I as Input>::Token, E>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
 {
     if PARTIAL {
@@ -90,7 +90,7 @@ pub fn tag<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     tag: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input + Compare<T>,
     T: SliceLen + Clone,
 {
@@ -146,7 +146,7 @@ pub fn tag_no_case<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     tag: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input + Compare<T>,
     T: SliceLen + Clone,
 {
@@ -210,7 +210,7 @@ pub fn one_of<I, T, Error: ParseError<I>, const PARTIAL: bool>(
     list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Token, Error>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: Copy,
     T: ContainsToken<<I as Input>::Token>,
@@ -253,7 +253,7 @@ pub fn none_of<I, T, Error: ParseError<I>, const PARTIAL: bool>(
     list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Token, Error>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     <I as Input>::Token: Copy,
     T: ContainsToken<<I as Input>::Token>,
@@ -306,7 +306,7 @@ pub fn take_while0<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     T: ContainsToken<<I as Input>::Token>,
 {
@@ -379,7 +379,7 @@ pub fn take_while1<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     T: ContainsToken<<I as Input>::Token>,
 {
@@ -439,7 +439,7 @@ pub fn take_while_m_n<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     T: ContainsToken<<I as Input>::Token>,
 {
@@ -491,7 +491,7 @@ pub fn take_till0<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     T: ContainsToken<<I as Input>::Token>,
 {
@@ -564,7 +564,7 @@ pub fn take_till1<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     list: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     T: ContainsToken<<I as Input>::Token>,
 {
@@ -634,7 +634,7 @@ pub fn take<C, I, Error: ParseError<I>, const PARTIAL: bool>(
     count: C,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input,
     C: ToUsize,
 {
@@ -691,7 +691,7 @@ pub fn take_until0<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     tag: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input + FindSlice<T>,
     T: SliceLen + Clone,
 {
@@ -750,7 +750,7 @@ pub fn take_until1<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     tag: T,
 ) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
 where
-    I: InputIsPartial<PARTIAL>,
+    I: StreamIsPartial<PARTIAL>,
     I: Input + FindSlice<T>,
     T: SliceLen + Clone,
 {

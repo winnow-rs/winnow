@@ -8,7 +8,7 @@ mod tests;
 
 use crate::error::{ErrMode, ErrorConvert, ErrorKind, Needed, ParseError};
 use crate::lib::std::ops::{AddAssign, Shl, Shr};
-use crate::stream::{AsBytes, Input, InputIsPartial, ToUsize};
+use crate::stream::{AsBytes, Input, StreamIsPartial, ToUsize};
 use crate::{IResult, Parser};
 
 /// Converts a byte-level input to a bit-level input, for consumption by a parser that uses bits.
@@ -138,7 +138,7 @@ pub fn take<I, O, C, E: ParseError<(I, usize)>, const PARTIAL: bool>(
     count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-    I: Input<Token = u8> + AsBytes + InputIsPartial<PARTIAL>,
+    I: Input<Token = u8> + AsBytes + StreamIsPartial<PARTIAL>,
     C: ToUsize,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
@@ -202,7 +202,7 @@ pub fn tag<I, O, C, E: ParseError<(I, usize)>, const PARTIAL: bool>(
     count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-    I: Input<Token = u8> + AsBytes + InputIsPartial<PARTIAL>,
+    I: Input<Token = u8> + AsBytes + StreamIsPartial<PARTIAL>,
     C: ToUsize,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
@@ -236,7 +236,7 @@ pub fn bool<I, E: ParseError<(I, usize)>, const PARTIAL: bool>(
     input: (I, usize),
 ) -> IResult<(I, usize), bool, E>
 where
-    I: Input<Token = u8> + AsBytes + InputIsPartial<PARTIAL>,
+    I: Input<Token = u8> + AsBytes + StreamIsPartial<PARTIAL>,
 {
     #![allow(deprecated)]
     if PARTIAL {
