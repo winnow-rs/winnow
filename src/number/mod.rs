@@ -8,7 +8,7 @@ pub mod streaming;
 mod tests;
 
 use crate::error::ParseError;
-use crate::input::{AsBytes, Input, InputIsPartial};
+use crate::stream::{AsBytes, Input, InputIsPartial};
 use crate::IResult;
 
 /// Configurable endianness

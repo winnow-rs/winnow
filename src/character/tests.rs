@@ -9,7 +9,7 @@ mod complete {
     use crate::error::ErrMode;
     use crate::error::Error;
     use crate::error::ErrorKind;
-    use crate::input::ParseSlice;
+    use crate::stream::ParseSlice;
     #[cfg(feature = "alloc")]
     use crate::{lib::std::string::String, lib::std::vec::Vec};
     use proptest::prelude::*;
@@ -146,7 +146,7 @@ mod complete {
         assert_eq!(space1::<_, Error<_>, false>(e), Ok((empty, e)));
     }
 
-    use crate::input::Offset;
+    use crate::stream::Offset;
     #[test]
     fn offset() {
         let a = &b"abcd;"[..];
@@ -859,8 +859,8 @@ mod partial {
     use crate::error::Error;
     use crate::error::ErrorKind;
     use crate::error::{ErrMode, Needed};
-    use crate::input::ParseSlice;
     use crate::sequence::pair;
+    use crate::stream::ParseSlice;
     use crate::IResult;
     use crate::Partial;
     use proptest::prelude::*;
@@ -1088,7 +1088,7 @@ mod partial {
         );
     }
 
-    use crate::input::Offset;
+    use crate::stream::Offset;
     #[test]
     fn offset() {
         let a = &b"abcd;"[..];

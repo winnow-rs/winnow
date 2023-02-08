@@ -23,8 +23,8 @@ pub fn take_char(input: &[u8]) -> IResult<&[u8], char> {
 #[cfg(feature = "std")]
 mod parse_int {
     use std::str;
-    use winnow::input::HexDisplay;
     use winnow::prelude::*;
+    use winnow::stream::HexDisplay;
     use winnow::Partial;
     use winnow::{
         character::{digit1 as digit, space1 as space},

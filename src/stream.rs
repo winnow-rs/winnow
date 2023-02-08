@@ -128,7 +128,7 @@ impl<I> crate::lib::std::ops::Deref for Located<I> {
 /// ```
 /// # use std::cell::Cell;
 /// # use winnow::prelude::*;
-/// # use winnow::input::Stateful;
+/// # use winnow::stream::Stateful;
 /// # use winnow::character::alpha1;
 /// # type Error = ();
 ///
@@ -197,7 +197,7 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 /// Here is how it works in practice:
 ///
 /// ```rust
-/// use winnow::{IResult, error::ErrMode, error::Needed, error::{Error, ErrorKind}, bytes, character, input::Partial};
+/// use winnow::{IResult, error::ErrMode, error::Needed, error::{Error, ErrorKind}, bytes, character, stream::Partial};
 ///
 /// fn take_partial(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
 ///   bytes::take(4u8)(i)
@@ -1652,7 +1652,7 @@ pub trait AsChar {
     /// Makes a char from self
     ///
     /// ```
-    /// use winnow::input::AsChar as _;
+    /// use winnow::stream::AsChar as _;
     ///
     /// assert_eq!('a'.as_char(), 'a');
     /// assert_eq!(u8::MAX.as_char(), std::char::from_u32(u8::MAX as u32).unwrap());

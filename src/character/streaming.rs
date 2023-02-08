@@ -9,10 +9,10 @@ use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::Needed;
 use crate::error::ParseError;
-use crate::input::{
+use crate::stream::{
     split_at_offset1_partial, split_at_offset_partial, AsBStr, AsChar, ContainsToken, Input,
 };
-use crate::input::{Compare, CompareResult};
+use crate::stream::{Compare, CompareResult};
 use crate::IResult;
 
 /// Recognizes one character.
@@ -877,8 +877,8 @@ mod tests {
     use crate::error::Error;
     use crate::error::ErrorKind;
     use crate::error::{ErrMode, Needed};
-    use crate::input::ParseSlice;
     use crate::sequence::pair;
+    use crate::stream::ParseSlice;
     use crate::IResult;
     use proptest::prelude::*;
 
@@ -1066,7 +1066,7 @@ mod tests {
         );
     }
 
-    use crate::input::Offset;
+    use crate::stream::Offset;
     #[test]
     fn offset() {
         let a = &b"abcd;"[..];

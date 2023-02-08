@@ -8,9 +8,9 @@ use winnow::{
     character::float,
     combinator::{cut_err, rest},
     error::{ContextError, ParseError},
-    input::Partial,
     multi::{fold_many0, separated0},
     sequence::{delimited, preceded, separated_pair, terminated},
+    stream::Partial,
 };
 
 #[derive(Debug, PartialEq, Clone)]

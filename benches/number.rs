@@ -7,9 +7,9 @@ use winnow::character::float;
 use winnow::error::ErrMode;
 use winnow::error::Error;
 use winnow::error::ErrorKind;
-use winnow::input::ParseSlice;
 use winnow::number::be_u64;
 use winnow::prelude::*;
+use winnow::stream::ParseSlice;
 
 type Input<'i> = &'i [u8];
 

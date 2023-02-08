@@ -4,8 +4,8 @@
 #![allow(deprecated)]
 
 use crate::error::{ErrMode, ErrorKind, ParseError};
-use crate::input::{AsBytes, Input, ToUsize};
 use crate::lib::std::ops::{AddAssign, Div, Shl, Shr};
+use crate::stream::{AsBytes, Input, ToUsize};
 use crate::IResult;
 
 /// Generates a parser taking `count` bits

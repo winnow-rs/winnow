@@ -447,8 +447,8 @@ use crate::lib::std::borrow::ToOwned;
 use crate::lib::std::fmt;
 use core::num::NonZeroUsize;
 
-use crate::input::Input;
-use crate::input::InputIsPartial;
+use crate::stream::Input;
+use crate::stream::InputIsPartial;
 use crate::Parser;
 
 /// Holds the result of parsing functions
@@ -1026,8 +1026,8 @@ pub fn convert_error<I: core::ops::Deref<Target = str>>(
     input: I,
     e: VerboseError<I>,
 ) -> crate::lib::std::string::String {
-    use crate::input::Offset;
     use crate::lib::std::fmt::Write;
+    use crate::stream::Offset;
 
     let mut result = crate::lib::std::string::String::new();
 
@@ -1286,7 +1286,7 @@ pub fn dbg_dmp<'a, F, O, E: std::fmt::Debug>(
 where
     F: Fn(&'a [u8]) -> IResult<&'a [u8], O, E>,
 {
-    use crate::input::HexDisplay;
+    use crate::stream::HexDisplay;
     move |i: &'a [u8]| match f(i) {
         Err(e) => {
             println!("{}: Error({:?}) at:\n{}", context, e, i.to_hex(8));

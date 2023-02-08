@@ -2,7 +2,7 @@
 
 use crate::combinator::*;
 use crate::error::{ContextError, IResult, ParseError};
-use crate::input::{AsChar, Compare, Input, InputIsPartial, Location};
+use crate::stream::{AsChar, Compare, Input, InputIsPartial, Location};
 
 /// All nom parsers implement this trait
 ///
@@ -250,8 +250,8 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::prelude::*;
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, input::Input};
-    /// use winnow::input::Located;
+    /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, stream::Input};
+    /// use winnow::stream::Located;
     /// use winnow::character::alpha1;
     /// use winnow::sequence::separated_pair;
     ///
@@ -281,8 +281,8 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::prelude::*;
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, input::Input};
-    /// use winnow::input::Located;
+    /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, stream::Input};
+    /// use winnow::stream::Located;
     /// use winnow::character::alpha1;
     /// use winnow::bytes::tag;
     /// use winnow::sequence::separated_pair;
@@ -471,7 +471,7 @@ pub trait Parser<I, O, E> {
     fn parse_to<O2>(self) -> ParseTo<Self, O, O2>
     where
         Self: core::marker::Sized,
-        O: crate::input::ParseSlice<O2>,
+        O: crate::stream::ParseSlice<O2>,
     {
         ParseTo::new(self)
     }
@@ -521,7 +521,7 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, input::Partial, Parser};
+    /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, stream::Partial, Parser};
     /// # use winnow::bytes::take;
     /// # fn main() {
     ///

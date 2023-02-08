@@ -14,8 +14,8 @@ use crate::lib::std::ops::{Add, Shl};
 use crate::combinator::opt;
 use crate::error::ParseError;
 use crate::error::{ErrMode, ErrorKind, Needed};
-use crate::input::Compare;
-use crate::input::{AsBStr, AsChar, Input, InputIsPartial, Offset, ParseSlice};
+use crate::stream::Compare;
+use crate::stream::{AsBStr, AsChar, Input, InputIsPartial, Offset, ParseSlice};
 use crate::IResult;
 use crate::Parser;
 
@@ -1372,7 +1372,7 @@ pub fn escaped<'a, I: 'a, Error, F, G, O1, O2, const PARTIAL: bool>(
 where
     I: InputIsPartial<PARTIAL>,
     I: Input + Offset,
-    <I as Input>::Token: crate::input::AsChar,
+    <I as Input>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParseError<I>,
@@ -1465,8 +1465,8 @@ pub fn escaped_transform<I, Error, F, G, Output, const PARTIAL: bool>(
 where
     I: InputIsPartial<PARTIAL>,
     I: Input + Offset,
-    <I as Input>::Token: crate::input::AsChar,
-    Output: crate::input::Accumulate<<I as Input>::Slice>,
+    <I as Input>::Token: crate::stream::AsChar,
+    Output: crate::stream::Accumulate<<I as Input>::Slice>,
     F: Parser<I, <I as Input>::Slice, Error>,
     G: Parser<I, <I as Input>::Slice, Error>,
     Error: ParseError<I>,

@@ -8,9 +8,9 @@ use crate::bytes::streaming::tag;
 use crate::character::streaming::{char, digit1, sign};
 use crate::combinator::{cut_err, map, opt};
 use crate::error::{ErrMode, ErrorKind, Needed, ParseError};
-use crate::input::{AsBStr, AsBytes, AsChar, Compare, Input, Offset, ParseSlice, SliceLen};
 use crate::lib::std::ops::{Add, Shl};
 use crate::sequence::{pair, tuple};
+use crate::stream::{AsBStr, AsBytes, AsChar, Compare, Input, Offset, ParseSlice, SliceLen};
 use crate::*;
 
 /// Recognizes an unsigned 1 byte integer.

@@ -6,7 +6,7 @@ pub mod streaming;
 mod tests;
 
 use crate::error::ParseError;
-use crate::input::{Compare, ContainsToken, FindSlice, Input, InputIsPartial, SliceLen, ToUsize};
+use crate::stream::{Compare, ContainsToken, FindSlice, Input, InputIsPartial, SliceLen, ToUsize};
 use crate::IResult;
 
 /// Matches one token
@@ -274,7 +274,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// use winnow::bytes::take_while0;
-/// use winnow::input::AsChar;
+/// use winnow::stream::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while0(AsChar::is_alpha)(s)
@@ -290,7 +290,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// # use winnow::Partial;
 /// use winnow::bytes::take_while0;
-/// use winnow::input::AsChar;
+/// use winnow::stream::AsChar;
 ///
 /// fn alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
 ///   take_while0(AsChar::is_alpha)(s)
@@ -329,7 +329,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::take_while1;
-/// use winnow::input::AsChar;
+/// use winnow::stream::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while1(AsChar::is_alpha)(s)
@@ -354,7 +354,7 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// # use winnow::Partial;
 /// use winnow::bytes::take_while1;
-/// use winnow::input::AsChar;
+/// use winnow::stream::AsChar;
 ///
 /// fn alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
 ///   take_while1(AsChar::is_alpha)(s)
@@ -403,7 +403,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::take_while_m_n;
-/// use winnow::input::AsChar;
+/// use winnow::stream::AsChar;
 ///
 /// fn short_alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while_m_n(3, 6, AsChar::is_alpha)(s)
@@ -420,7 +420,7 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// # use winnow::Partial;
 /// use winnow::bytes::take_while_m_n;
-/// use winnow::input::AsChar;
+/// use winnow::stream::AsChar;
 ///
 /// fn short_alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
 ///   take_while_m_n(3, 6, AsChar::is_alpha)(s)

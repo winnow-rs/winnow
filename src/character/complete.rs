@@ -8,10 +8,10 @@ use crate::combinator::opt;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
-use crate::input::{
+use crate::stream::{
     split_at_offset1_complete, split_at_offset_complete, AsBStr, AsChar, ContainsToken, Input,
 };
-use crate::input::{Compare, CompareResult};
+use crate::stream::{Compare, CompareResult};
 use crate::IResult;
 
 /// Recognizes one character.
@@ -936,7 +936,7 @@ mod tests {
     use crate::branch::alt;
     use crate::error::ErrMode;
     use crate::error::Error;
-    use crate::input::ParseSlice;
+    use crate::stream::ParseSlice;
     use proptest::prelude::*;
 
     macro_rules! assert_parse(
@@ -1116,7 +1116,7 @@ mod tests {
         assert_eq!(space1::<_, Error<_>>(e), Ok((empty, e)));
     }
 
-    use crate::input::Offset;
+    use crate::stream::Offset;
     #[test]
     fn offset() {
         let a = &b"abcd;"[..];

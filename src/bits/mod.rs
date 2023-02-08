@@ -7,8 +7,8 @@ pub mod streaming;
 mod tests;
 
 use crate::error::{ErrMode, ErrorConvert, ErrorKind, Needed, ParseError};
-use crate::input::{AsBytes, Input, InputIsPartial, ToUsize};
 use crate::lib::std::ops::{AddAssign, Shl, Shr};
+use crate::stream::{AsBytes, Input, InputIsPartial, ToUsize};
 use crate::{IResult, Parser};
 
 /// Converts a byte-level input to a bit-level input, for consumption by a parser that uses bits.

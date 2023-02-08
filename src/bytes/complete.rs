@@ -5,11 +5,11 @@
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
-use crate::input::{
+use crate::lib::std::result::Result::Ok;
+use crate::stream::{
     split_at_offset1_complete, split_at_offset_complete, Compare, CompareResult, ContainsToken,
     FindSlice, Input, Offset, SliceLen, ToUsize,
 };
-use crate::lib::std::result::Result::Ok;
 use crate::{IResult, Parser};
 
 pub(crate) fn any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Input>::Token, E>
@@ -254,7 +254,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// use winnow::bytes::complete::take_while;
-/// use winnow::input::AsChar;
+/// use winnow::stream::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while(AsChar::is_alpha)(s)
@@ -299,7 +299,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::complete::take_while1;
-/// use winnow::input::AsChar;
+/// use winnow::stream::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while1(AsChar::is_alpha)(s)
@@ -345,7 +345,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::complete::take_while_m_n;
-/// use winnow::input::AsChar;
+/// use winnow::stream::AsChar;
 ///
 /// fn short_alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while_m_n(3, 6, AsChar::is_alpha)(s)
@@ -679,7 +679,7 @@ pub fn escaped<'a, I: 'a, Error, F, G, O1, O2>(
 ) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, Error>
 where
     I: Input + Offset,
-    <I as Input>::Token: crate::input::AsChar,
+    <I as Input>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParseError<I>,
@@ -695,12 +695,12 @@ pub(crate) fn escaped_internal<'a, I: 'a, Error, F, G, O1, O2>(
 ) -> IResult<I, <I as Input>::Slice, Error>
 where
     I: Input + Offset,
-    <I as Input>::Token: crate::input::AsChar,
+    <I as Input>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParseError<I>,
 {
-    use crate::input::AsChar;
+    use crate::stream::AsChar;
 
     let mut i = input.clone();
 
@@ -799,8 +799,8 @@ pub fn escaped_transform<I, Error, F, G, Output>(
 ) -> impl FnMut(I) -> IResult<I, Output, Error>
 where
     I: Input + Offset,
-    <I as Input>::Token: crate::input::AsChar,
-    Output: crate::input::Accumulate<<I as Input>::Slice>,
+    <I as Input>::Token: crate::stream::AsChar,
+    Output: crate::stream::Accumulate<<I as Input>::Slice>,
     F: Parser<I, <I as Input>::Slice, Error>,
     G: Parser<I, <I as Input>::Slice, Error>,
     Error: ParseError<I>,
@@ -817,13 +817,13 @@ pub(crate) fn escaped_transform_internal<I, Error, F, G, Output>(
 ) -> IResult<I, Output, Error>
 where
     I: Input + Offset,
-    <I as Input>::Token: crate::input::AsChar,
-    Output: crate::input::Accumulate<<I as Input>::Slice>,
+    <I as Input>::Token: crate::stream::AsChar,
+    Output: crate::stream::Accumulate<<I as Input>::Slice>,
     F: Parser<I, <I as Input>::Slice, Error>,
     G: Parser<I, <I as Input>::Slice, Error>,
     Error: ParseError<I>,
 {
-    use crate::input::AsChar;
+    use crate::stream::AsChar;
 
     let mut offset = 0;
     let mut res = Output::initial(Some(input.input_len()));

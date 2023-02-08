@@ -9,9 +9,9 @@ use crate::character::complete::{char, digit1, sign};
 use crate::combinator::{cut_err, map, opt};
 use crate::error::ParseError;
 use crate::error::{make_error, ErrMode, ErrorKind};
-use crate::input::{AsBStr, AsBytes, AsChar, Compare, Input, Offset, SliceLen};
 use crate::lib::std::ops::{Add, Shl};
 use crate::sequence::{pair, tuple};
+use crate::stream::{AsBStr, AsBytes, AsChar, Compare, Input, Offset, SliceLen};
 use crate::*;
 
 /// Recognizes an unsigned 1 byte integer.
@@ -1608,7 +1608,7 @@ where
     Ok((i, (sign, integer, fraction, exp)))
 }
 
-use crate::input::ParseSlice;
+use crate::stream::ParseSlice;
 
 /// Recognizes floating point number in text format and returns a f32.
 ///

@@ -6,8 +6,8 @@ mod tests;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
-use crate::input::Accumulate;
-use crate::input::{Input, InputIsPartial, ToUsize, UpdateSlice};
+use crate::stream::Accumulate;
+use crate::stream::{Input, InputIsPartial, ToUsize, UpdateSlice};
 use crate::{IResult, Parser};
 
 /// Repeats the embedded parser, gathering the results in a `Vec`.
@@ -1038,7 +1038,7 @@ where
 /// # Arguments
 /// * `f` The parser to apply.
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult, input::Partial};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult, stream::Partial};
 /// use winnow::number::be_u16;
 /// use winnow::multi::length_data;
 /// use winnow::bytes::tag;
@@ -1081,7 +1081,7 @@ where
 /// * `f` The parser to apply.
 /// * `g` The parser to apply on the subslice.
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult, input::Partial};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult, stream::Partial};
 /// use winnow::number::be_u16;
 /// use winnow::multi::length_value;
 /// use winnow::bytes::tag;

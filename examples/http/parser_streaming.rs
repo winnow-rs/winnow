@@ -1,8 +1,8 @@
 use winnow::{
     bytes::{one_of, tag, take_while1},
     character::line_ending,
-    input::Partial,
     multi::many1,
+    stream::Partial,
     IResult,
 };
 

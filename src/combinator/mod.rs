@@ -125,13 +125,13 @@
 //!
 //! Use these functions with a combinator like `take_while0`:
 //!
-//! - [`AsChar::is_alpha`][crate::input::AsChar::is_alpha]: Tests if byte is ASCII alphabetic: `[A-Za-z]`
-//! - [`AsChar::is_alphanum`][crate::input::AsChar::is_alphanum]: Tests if byte is ASCII alphanumeric: `[A-Za-z0-9]`
-//! - [`AsChar::is_dec_digit`][crate::input::AsChar::is_dec_digit]: Tests if byte is ASCII digit: `[0-9]`
-//! - [`AsChar::is_hex_digit`][crate::input::AsChar::is_hex_digit]: Tests if byte is ASCII hex digit: `[0-9A-Fa-f]`
-//! - [`AsChar::is_oct_digit`][crate::input::AsChar::is_oct_digit]: Tests if byte is ASCII octal digit: `[0-7]`
-//! - [`AsChar::is_space`][crate::input::AsChar::is_space]: Tests if byte is ASCII space or tab: `[ \t]`
-//! - [`AsChar::is_newline`][crate::input::AsChar::is_newline]: Tests if byte is ASCII newline: `[\n]`
+//! - [`AsChar::is_alpha`][crate::stream::AsChar::is_alpha]: Tests if byte is ASCII alphabetic: `[A-Za-z]`
+//! - [`AsChar::is_alphanum`][crate::stream::AsChar::is_alphanum]: Tests if byte is ASCII alphanumeric: `[A-Za-z0-9]`
+//! - [`AsChar::is_dec_digit`][crate::stream::AsChar::is_dec_digit]: Tests if byte is ASCII digit: `[0-9]`
+//! - [`AsChar::is_hex_digit`][crate::stream::AsChar::is_hex_digit]: Tests if byte is ASCII hex digit: `[0-9A-Fa-f]`
+//! - [`AsChar::is_oct_digit`][crate::stream::AsChar::is_oct_digit]: Tests if byte is ASCII octal digit: `[0-7]`
+//! - [`AsChar::is_space`][crate::stream::AsChar::is_space]: Tests if byte is ASCII space or tab: `[ \t]`
+//! - [`AsChar::is_newline`][crate::stream::AsChar::is_newline]: Tests if byte is ASCII newline: `[\n]`
 //!
 //! Alternatively there are ready to use functions:
 //!
@@ -157,11 +157,11 @@
 //! - [`hex_uint`][crate::character::hex_uint]: Decode a variable-width, hexadecimal integer
 
 use crate::error::{ContextError, ErrMode, ErrorKind, FromExternalError, Needed, ParseError};
-use crate::input::Offset;
-use crate::input::{Input, Location};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::convert;
 use crate::lib::std::ops::Range;
+use crate::stream::Offset;
+use crate::stream::{Input, Location};
 use crate::*;
 
 #[cfg(test)]
@@ -513,7 +513,7 @@ impl<P, O1, O2> ParseTo<P, O1, O2> {
 impl<I, O1, O2, E, P> Parser<I, O2, E> for ParseTo<P, O1, O2>
 where
     I: Input,
-    O1: crate::input::ParseSlice<O2>,
+    O1: crate::stream::ParseSlice<O2>,
     E: ParseError<I>,
     P: Parser<I, O1, E>,
 {
@@ -763,7 +763,7 @@ where
 /// **WARNING:** Deprecated, replaced with [`Parser::complete`]
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, input::Partial};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, stream::Partial};
 /// use winnow::bytes::take;
 /// use winnow::combinator::complete;
 /// # fn main() {
@@ -1685,14 +1685,14 @@ impl<F, O, C> DbgErr<F, O, C> {
 #[cfg(feature = "std")]
 impl<I, O, E, F, C> Parser<I, O, E> for DbgErr<F, O, C>
 where
-    I: crate::input::AsBytes,
+    I: crate::stream::AsBytes,
     I: Clone,
     E: std::fmt::Debug,
     F: Parser<I, O, E>,
     C: std::fmt::Display,
 {
     fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
-        use crate::input::HexDisplay;
+        use crate::stream::HexDisplay;
         let i = input.clone();
         match self.f.parse_next(i) {
             Err(e) => {
