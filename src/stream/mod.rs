@@ -393,7 +393,7 @@ where
 }
 
 /// Core definition for parser input state
-pub trait Stream: Clone {
+pub trait Stream: Clone + crate::lib::std::fmt::Debug {
     /// The smallest unit being parsed
     ///
     /// Example: `u8` for `&[u8]` or `char` for `&str`
@@ -444,7 +444,7 @@ pub trait Stream: Clone {
 
 impl<'i, T> Stream for &'i [T]
 where
-    T: Clone,
+    T: Clone + crate::lib::std::fmt::Debug,
 {
     type Token = T;
     type Slice = &'i [T];
@@ -687,7 +687,7 @@ impl<I: Stream> Stream for Located<I> {
     }
 }
 
-impl<I: Stream, S: Clone> Stream for Stateful<I, S> {
+impl<I: Stream, S: Clone + crate::lib::std::fmt::Debug> Stream for Stateful<I, S> {
     type Token = <I as Stream>::Token;
     type Slice = <I as Stream>::Slice;
 
@@ -1600,7 +1600,7 @@ pub trait UpdateSlice: Stream {
 
 impl<'a, T> UpdateSlice for &'a [T]
 where
-    T: Clone,
+    T: Clone + crate::lib::std::fmt::Debug,
 {
     #[inline(always)]
     fn update_slice(self, inner: Self::Slice) -> Self {
@@ -1643,7 +1643,7 @@ where
 impl<I, S> UpdateSlice for Stateful<I, S>
 where
     I: UpdateSlice,
-    S: Clone,
+    S: Clone + crate::lib::std::fmt::Debug,
 {
     #[inline(always)]
     fn update_slice(mut self, inner: Self::Slice) -> Self {
