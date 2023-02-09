@@ -1109,7 +1109,6 @@ pub fn convert_error<I: core::ops::Deref<Target = str>>(
 pub enum ErrorKind {
   Tag,
   MapRes,
-  MapOpt,
   Alt,
   IsNot,
   IsA,
@@ -1170,7 +1169,6 @@ impl ErrorKind {
     match *self {
       ErrorKind::Tag                       => "Tag",
       ErrorKind::MapRes                    => "Map on Result",
-      ErrorKind::MapOpt                    => "Map on Option",
       ErrorKind::Alt                       => "Alternative",
       ErrorKind::IsNot                     => "IsNot",
       ErrorKind::IsA                       => "IsA",

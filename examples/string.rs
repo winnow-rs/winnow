@@ -50,11 +50,11 @@ where
     // convert them to a u32.
     let parse_u32 = parse_delimited_hex.map_res(move |hex| u32::from_str_radix(hex, 16));
 
-    // map_opt is like map_res, but it takes an Option instead of a Result. If
-    // the function returns None, map_opt returns an error. In this case, because
+    // verify_map is like map_res, but it takes an Option instead of a Result. If
+    // the function returns None, verify_map returns an error. In this case, because
     // not all u32 values are valid unicode code points, we have to fallibly
     // convert to char with from_u32.
-    parse_u32.map_opt(std::char::from_u32).parse_next(input)
+    parse_u32.verify_map(std::char::from_u32).parse_next(input)
 }
 
 /// Parse an escaped character: \n, \t, \r, \u{00AC}, etc.

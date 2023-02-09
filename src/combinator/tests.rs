@@ -125,7 +125,7 @@ fn test_map_opt() {
         map_opt(u8, |u| if u < 20 { Some(u) } else { None })(input),
         Err(ErrMode::Backtrack(Error {
             input: &[50][..],
-            kind: ErrorKind::MapOpt
+            kind: ErrorKind::Verify
         }))
     );
     assert_parse!(
@@ -135,18 +135,18 @@ fn test_map_opt() {
 }
 
 #[test]
-fn test_parser_map_opt() {
+fn test_parser_verify_map() {
     let input: &[u8] = &[50][..];
     assert_parse!(
-        u8.map_opt(|u| if u < 20 { Some(u) } else { None })
+        u8.verify_map(|u| if u < 20 { Some(u) } else { None })
             .parse_next(input),
         Err(ErrMode::Backtrack(Error {
             input: &[50][..],
-            kind: ErrorKind::MapOpt
+            kind: ErrorKind::Verify
         }))
     );
     assert_parse!(
-        u8.map_opt(|u| if u > 20 { Some(u) } else { None })
+        u8.verify_map(|u| if u > 20 { Some(u) } else { None })
             .parse_next(input),
         Ok((&[][..], 50))
     );
