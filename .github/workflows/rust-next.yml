@@ -38,6 +38,28 @@ jobs:
       run: cargo test --workspace --all-features
     - name: No-default features
       run: cargo test --workspace --no-default-features
+  miri:
+    name: Miri
+    runs-on: ubuntu-latest
+    env:
+      MIRIFLAGS: -Zmiri-tag-raw-pointers
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        profile: minimal
+        override: true
+        components: miri
+    - uses: Swatinem/rust-cache@v2
+    - name: Default features
+      run: cargo test --workspace
+    - name: All features
+      run: cargo test --workspace --all-features
+    - name: No-default features
+      run: cargo test --workspace --no-default-features
   rustfmt:
     name: rustfmt
     strategy:
