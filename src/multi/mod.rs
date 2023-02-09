@@ -1039,16 +1039,23 @@ where
 /// * `f` The parser to apply.
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult, stream::Partial};
+/// use winnow::Bytes;
 /// use winnow::number::be_u16;
 /// use winnow::multi::length_data;
 /// use winnow::bytes::tag;
 ///
-/// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
+/// type Stream<'i> = Partial<&'i Bytes>;
+///
+/// fn stream(b: &[u8]) -> Stream<'_> {
+///     Partial(Bytes::new(b))
+/// }
+///
+/// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &Bytes> {
 ///   length_data(be_u16)(s)
 /// }
 ///
-/// assert_eq!(parser(Partial(b"\x00\x03abcefg")), Ok((Partial(&b"efg"[..]), &b"abc"[..])));
-/// assert_eq!(parser(Partial(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), Bytes::new(&b"abc"[..]))));
+/// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 pub fn length_data<I, N, E, F, const PARTIAL: bool>(
     mut f: F,
@@ -1082,17 +1089,24 @@ where
 /// * `g` The parser to apply on the subslice.
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult, stream::Partial};
+/// use winnow::Bytes;
 /// use winnow::number::be_u16;
 /// use winnow::multi::length_value;
 /// use winnow::bytes::tag;
 ///
-/// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
+/// type Stream<'i> = Partial<&'i Bytes>;
+///
+/// fn stream(b: &[u8]) -> Stream<'_> {
+///     Partial(Bytes::new(b))
+/// }
+///
+/// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &Bytes> {
 ///   length_value(be_u16, tag("abc"))(s)
 /// }
 ///
-/// assert_eq!(parser(Partial(b"\x00\x03abcefg")), Ok((Partial(&b"efg"[..]), &b"abc"[..])));
-/// assert_eq!(parser(Partial(b"\x00\x03123123")), Err(ErrMode::Backtrack(Error::new(Partial(&b"123"[..]), ErrorKind::Tag))));
-/// assert_eq!(parser(Partial(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), Bytes::new(&b"abc"[..]))));
+/// assert_eq!(parser(stream(b"\x00\x03123123")), Err(ErrMode::Backtrack(Error::new(stream(&b"123"[..]), ErrorKind::Tag))));
+/// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 pub fn length_value<I, O, N, E, F, G, const PARTIAL: bool>(
     mut f: F,
@@ -1123,20 +1137,26 @@ where
 #[cfg_attr(feature = "std", doc = "```")]
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// use winnow::Bytes;
 /// use winnow::number::u8;
 /// use winnow::multi::length_count;
 /// use winnow::bytes::tag;
-/// use winnow::combinator::map;
 ///
-/// fn parser(s: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
+/// type Stream<'i> = &'i Bytes;
+///
+/// fn stream(b: &[u8]) -> Stream<'_> {
+///     Bytes::new(b)
+/// }
+///
+/// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, Vec<&Bytes>> {
 ///   length_count(u8.map(|i| {
 ///      println!("got number: {}", i);
 ///      i
 ///   }), tag("abc"))(s)
 /// }
 ///
-/// assert_eq!(parser(&b"\x02abcabcabc"[..]), Ok(((&b"abc"[..], vec![&b"abc"[..], &b"abc"[..]]))));
-/// assert_eq!(parser(b"\x03123123123"), Err(ErrMode::Backtrack(Error::new(&b"123123123"[..], ErrorKind::Tag))));
+/// assert_eq!(parser(stream(b"\x02abcabcabc")), Ok((stream(b"abc"), vec![Bytes::new(b"abc"), Bytes::new(b"abc")])));
+/// assert_eq!(parser(stream(b"\x03123123123")), Err(ErrMode::Backtrack(Error::new(stream(b"123123123"), ErrorKind::Tag))));
 /// ```
 pub fn length_count<I, O, C, N, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IResult<I, C, E>
 where
