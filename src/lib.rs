@@ -510,6 +510,7 @@ pub mod prelude {
 pub use error::FinishIResult;
 pub use error::IResult;
 pub use parser::*;
+pub use stream::BStr;
 pub use stream::Bytes;
 pub use stream::Located;
 pub use stream::Partial;
