@@ -1,7 +1,8 @@
 //! Stream capability for nom combinators to parse
 //!
 //! Stream types include:
-//! - `&str` and `&[u8]` are the standard input types
+//! - `&[u8]` and [`Bytes`] for binary data
+//! - `&str` (aliased as [`Str`]) and [`BStr`] for UTF-8 data
 //! - [`Located`] can track the location within the original buffer to report
 //!   [spans][crate::Parser::with_span]
 //! - [`Stateful`] to thread global state through your parsers
@@ -75,6 +76,59 @@ use crate::lib::std::collections::HashMap;
 use crate::lib::std::string::String;
 #[cfg(feature = "alloc")]
 use crate::lib::std::vec::Vec;
+
+mod impls;
+
+/// UTF-8 Stream
+pub type Str<'i> = &'i str;
+
+/// Improved `Debug` experience for `&[u8]` byte streams
+#[allow(clippy::derive_hash_xor_eq)]
+#[derive(Hash)]
+#[repr(transparent)]
+pub struct Bytes([u8]);
+
+impl Bytes {
+    /// Make a stream out of a byte slice-like.
+    #[inline]
+    pub fn new<B: ?Sized + AsRef<[u8]>>(bytes: &B) -> &Self {
+        Self::from_bytes(bytes.as_ref())
+    }
+
+    #[inline]
+    fn from_bytes(slice: &[u8]) -> &Self {
+        unsafe { crate::lib::std::mem::transmute(slice) }
+    }
+
+    #[inline]
+    fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
+}
+
+/// Improved `Debug` experience for `&[u8]` UTF-8-ish streams
+#[allow(clippy::derive_hash_xor_eq)]
+#[derive(Hash)]
+#[repr(transparent)]
+pub struct BStr([u8]);
+
+impl BStr {
+    /// Make a stream out of a byte slice-like.
+    #[inline]
+    pub fn new<B: ?Sized + AsRef<[u8]>>(bytes: &B) -> &Self {
+        Self::from_bytes(bytes.as_ref())
+    }
+
+    #[inline]
+    fn from_bytes(slice: &[u8]) -> &Self {
+        unsafe { crate::lib::std::mem::transmute(slice) }
+    }
+
+    #[inline]
+    fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
+}
 
 /// Allow collecting the span of a parsed token
 ///
@@ -266,6 +320,48 @@ pub trait SliceLen {
     fn slice_len(&self) -> usize;
 }
 
+impl<'a, T> SliceLen for &'a [T] {
+    #[inline]
+    fn slice_len(&self) -> usize {
+        self.len()
+    }
+}
+
+impl<T, const LEN: usize> SliceLen for [T; LEN] {
+    #[inline]
+    fn slice_len(&self) -> usize {
+        self.len()
+    }
+}
+
+impl<'a, T, const LEN: usize> SliceLen for &'a [T; LEN] {
+    #[inline]
+    fn slice_len(&self) -> usize {
+        self.len()
+    }
+}
+
+impl<'a> SliceLen for &'a str {
+    #[inline]
+    fn slice_len(&self) -> usize {
+        self.len()
+    }
+}
+
+impl<'a> SliceLen for &'a Bytes {
+    #[inline]
+    fn slice_len(&self) -> usize {
+        self.len()
+    }
+}
+
+impl<'a> SliceLen for &'a BStr {
+    #[inline]
+    fn slice_len(&self) -> usize {
+        self.len()
+    }
+}
+
 impl<I> SliceLen for Located<I>
 where
     I: SliceLen,
@@ -293,34 +389,6 @@ where
     #[inline(always)]
     fn slice_len(&self) -> usize {
         self.0.slice_len()
-    }
-}
-
-impl<'a, T> SliceLen for &'a [T] {
-    #[inline]
-    fn slice_len(&self) -> usize {
-        self.len()
-    }
-}
-
-impl<T, const LEN: usize> SliceLen for [T; LEN] {
-    #[inline]
-    fn slice_len(&self) -> usize {
-        self.len()
-    }
-}
-
-impl<'a, T, const LEN: usize> SliceLen for &'a [T; LEN] {
-    #[inline]
-    fn slice_len(&self) -> usize {
-        self.len()
-    }
-}
-
-impl<'a> SliceLen for &'a str {
-    #[inline]
-    fn slice_len(&self) -> usize {
-        self.len()
     }
 }
 
@@ -475,6 +543,96 @@ impl<'i> Stream for &'i str {
     #[inline(always)]
     fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
         (&self[offset..], &self[0..offset])
+    }
+}
+
+impl<'i> Stream for &'i Bytes {
+    type Token = u8;
+    type Slice = &'i Bytes;
+
+    type IterOffsets = Enumerate<Cloned<Iter<'i, u8>>>;
+
+    #[inline(always)]
+    fn iter_offsets(&self) -> Self::IterOffsets {
+        self.iter().cloned().enumerate()
+    }
+    #[inline(always)]
+    fn eof_offset(&self) -> usize {
+        self.len()
+    }
+
+    #[inline(always)]
+    fn next_token(&self) -> Option<(Self, Self::Token)> {
+        if self.is_empty() {
+            None
+        } else {
+            Some((Bytes::from_bytes(&self[1..]), self[0]))
+        }
+    }
+
+    #[inline(always)]
+    fn offset_for<P>(&self, predicate: P) -> Option<usize>
+    where
+        P: Fn(Self::Token) -> bool,
+    {
+        self.iter().position(|b| predicate(*b))
+    }
+    #[inline(always)]
+    fn offset_at(&self, tokens: usize) -> Result<usize, Needed> {
+        if let Some(needed) = tokens.checked_sub(self.len()).and_then(NonZeroUsize::new) {
+            Err(Needed::Size(needed))
+        } else {
+            Ok(tokens)
+        }
+    }
+    #[inline(always)]
+    fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
+        (Bytes::from_bytes(&self[offset..]), &self[0..offset])
+    }
+}
+
+impl<'i> Stream for &'i BStr {
+    type Token = u8;
+    type Slice = &'i BStr;
+
+    type IterOffsets = Enumerate<Cloned<Iter<'i, u8>>>;
+
+    #[inline(always)]
+    fn iter_offsets(&self) -> Self::IterOffsets {
+        self.iter().cloned().enumerate()
+    }
+    #[inline(always)]
+    fn eof_offset(&self) -> usize {
+        self.len()
+    }
+
+    #[inline(always)]
+    fn next_token(&self) -> Option<(Self, Self::Token)> {
+        if self.is_empty() {
+            None
+        } else {
+            Some((BStr::from_bytes(&self[1..]), self[0]))
+        }
+    }
+
+    #[inline(always)]
+    fn offset_for<P>(&self, predicate: P) -> Option<usize>
+    where
+        P: Fn(Self::Token) -> bool,
+    {
+        self.iter().position(|b| predicate(*b))
+    }
+    #[inline(always)]
+    fn offset_at(&self, tokens: usize) -> Result<usize, Needed> {
+        if let Some(needed) = tokens.checked_sub(self.len()).and_then(NonZeroUsize::new) {
+            Err(Needed::Size(needed))
+        } else {
+            Ok(tokens)
+        }
+    }
+    #[inline(always)]
+    fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
+        (BStr::from_bytes(&self[offset..]), &self[0..offset])
     }
 }
 
@@ -704,6 +862,34 @@ impl<'a> StreamIsPartial<false> for &'a str {
     }
 }
 
+impl<'a> StreamIsPartial<false> for &'a Bytes {
+    type Complete = Self;
+    type Partial = Partial<Self>;
+
+    #[inline(always)]
+    fn into_complete(self) -> Self::Complete {
+        self
+    }
+    #[inline(always)]
+    fn into_partial(self) -> Self::Partial {
+        Partial(self)
+    }
+}
+
+impl<'a> StreamIsPartial<false> for &'a BStr {
+    type Complete = Self;
+    type Partial = Partial<Self>;
+
+    #[inline(always)]
+    fn into_complete(self) -> Self::Complete {
+        self
+    }
+    #[inline(always)]
+    fn into_partial(self) -> Self::Partial {
+        Partial(self)
+    }
+}
+
 impl<const YES: bool> StreamIsPartial<YES> for crate::lib::std::convert::Infallible {
     type Complete = Self;
     type Partial = Self;
@@ -879,6 +1065,62 @@ impl Offset for str {
     }
 }
 
+impl Offset for Bytes {
+    #[inline]
+    fn offset_to(&self, second: &Self) -> usize {
+        let fst = self.as_ptr();
+        let snd = second.as_ptr();
+
+        debug_assert!(
+            fst <= snd,
+            "`Offset::offset_to` only accepts slices of `self`"
+        );
+        snd as usize - fst as usize
+    }
+}
+
+impl<'a> Offset for &'a Bytes {
+    #[inline]
+    fn offset_to(&self, second: &Self) -> usize {
+        let fst = self.as_ptr();
+        let snd = second.as_ptr();
+
+        debug_assert!(
+            fst <= snd,
+            "`Offset::offset_to` only accepts slices of `self`"
+        );
+        snd as usize - fst as usize
+    }
+}
+
+impl Offset for BStr {
+    #[inline]
+    fn offset_to(&self, second: &Self) -> usize {
+        let fst = self.as_ptr();
+        let snd = second.as_ptr();
+
+        debug_assert!(
+            fst <= snd,
+            "`Offset::offset_to` only accepts slices of `self`"
+        );
+        snd as usize - fst as usize
+    }
+}
+
+impl<'a> Offset for &'a BStr {
+    #[inline]
+    fn offset_to(&self, second: &Self) -> usize {
+        let fst = self.as_ptr();
+        let snd = second.as_ptr();
+
+        debug_assert!(
+            fst <= snd,
+            "`Offset::offset_to` only accepts slices of `self`"
+        );
+        snd as usize - fst as usize
+    }
+}
+
 impl<I> Offset for Located<I>
 where
     I: Offset,
@@ -922,6 +1164,13 @@ impl<'a> AsBytes for &'a [u8] {
     }
 }
 
+impl<'a> AsBytes for &'a Bytes {
+    #[inline(always)]
+    fn as_bytes(&self) -> &[u8] {
+        (*self).as_bytes()
+    }
+}
+
 impl<I> AsBytes for Located<I>
 where
     I: AsBytes,
@@ -962,6 +1211,13 @@ impl<'a> AsBStr for &'a [u8] {
     #[inline(always)]
     fn as_bstr(&self) -> &[u8] {
         self
+    }
+}
+
+impl<'a> AsBStr for &'a Bytes {
+    #[inline(always)]
+    fn as_bstr(&self) -> &[u8] {
+        (*self).as_bytes()
     }
 }
 
@@ -1068,6 +1324,18 @@ impl<'a, 'b> Compare<&'b [u8]> for &'a [u8] {
     }
 }
 
+impl<'a, const LEN: usize> Compare<[u8; LEN]> for &'a [u8] {
+    #[inline(always)]
+    fn compare(&self, t: [u8; LEN]) -> CompareResult {
+        self.compare(&t[..])
+    }
+
+    #[inline(always)]
+    fn compare_no_case(&self, t: [u8; LEN]) -> CompareResult {
+        self.compare_no_case(&t[..])
+    }
+}
+
 impl<'a, 'b, const LEN: usize> Compare<&'b [u8; LEN]> for &'a [u8] {
     #[inline(always)]
     fn compare(&self, t: &'b [u8; LEN]) -> CompareResult {
@@ -1129,15 +1397,37 @@ impl<'a, 'b> Compare<&'b [u8]> for &'a str {
     }
 }
 
-impl<'a, const LEN: usize> Compare<[u8; LEN]> for &'a [u8] {
+impl<'a, T> Compare<T> for &'a Bytes
+where
+    &'a [u8]: Compare<T>,
+{
     #[inline(always)]
-    fn compare(&self, t: [u8; LEN]) -> CompareResult {
-        self.compare(&t[..])
+    fn compare(&self, t: T) -> CompareResult {
+        let bytes = (*self).as_bytes();
+        bytes.compare(t)
     }
 
     #[inline(always)]
-    fn compare_no_case(&self, t: [u8; LEN]) -> CompareResult {
-        self.compare_no_case(&t[..])
+    fn compare_no_case(&self, t: T) -> CompareResult {
+        let bytes = (*self).as_bytes();
+        bytes.compare_no_case(t)
+    }
+}
+
+impl<'a, T> Compare<T> for &'a BStr
+where
+    &'a [u8]: Compare<T>,
+{
+    #[inline(always)]
+    fn compare(&self, t: T) -> CompareResult {
+        let bytes = (*self).as_bytes();
+        bytes.compare(t)
+    }
+
+    #[inline(always)]
+    fn compare_no_case(&self, t: T) -> CompareResult {
+        let bytes = (*self).as_bytes();
+        bytes.compare_no_case(t)
     }
 }
 
@@ -1227,6 +1517,30 @@ impl<'i> FindSlice<char> for &'i str {
     }
 }
 
+impl<'i, S> FindSlice<S> for &'i Bytes
+where
+    &'i [u8]: FindSlice<S>,
+{
+    #[inline(always)]
+    fn find_slice(&self, substr: S) -> Option<usize> {
+        let bytes = (*self).as_bytes();
+        let offset = bytes.find_slice(substr);
+        offset
+    }
+}
+
+impl<'i, S> FindSlice<S> for &'i BStr
+where
+    &'i [u8]: FindSlice<S>,
+{
+    #[inline(always)]
+    fn find_slice(&self, substr: S) -> Option<usize> {
+        let bytes = (*self).as_bytes();
+        let offset = bytes.find_slice(substr);
+        offset
+    }
+}
+
 impl<I, T> FindSlice<T> for Located<I>
 where
     I: FindSlice<T>,
@@ -1295,6 +1609,20 @@ where
 }
 
 impl<'a> UpdateSlice for &'a str {
+    #[inline(always)]
+    fn update_slice(self, inner: Self::Slice) -> Self {
+        inner
+    }
+}
+
+impl<'a> UpdateSlice for &'a Bytes {
+    #[inline(always)]
+    fn update_slice(self, inner: Self::Slice) -> Self {
+        inner
+    }
+}
+
+impl<'a> UpdateSlice for &'a BStr {
     #[inline(always)]
     fn update_slice(self, inner: Self::Slice) -> Self {
         inner
