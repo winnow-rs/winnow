@@ -53,7 +53,7 @@ where
                 Ok((i1, o)) => {
                     // infinite loop check: the parser must always consume
                     if i1.eof_offset() == len {
-                        return Err(ErrMode::from_error_kind(i, ErrorKind::Many0));
+                        return Err(ErrMode::assert(i, "many parsers must always consume"));
                     }
 
                     i = i1;
@@ -113,7 +113,7 @@ where
                     Ok((i1, o)) => {
                         // infinite loop check: the parser must always consume
                         if i1.eof_offset() == len {
-                            return Err(ErrMode::from_error_kind(i, ErrorKind::Many1));
+                            return Err(ErrMode::assert(i, "many parsers must always consume"));
                         }
 
                         i = i1;
@@ -180,7 +180,7 @@ where
                         Ok((i1, o)) => {
                             // infinite loop check: the parser must always consume
                             if i1.eof_offset() == len {
-                                return Err(ErrMode::from_error_kind(i1, ErrorKind::ManyTill));
+                                return Err(ErrMode::assert(i, "many parsers must always consume"));
                             }
 
                             res.accumulate(o);
@@ -250,7 +250,7 @@ where
                 Ok((i1, _)) => {
                     // infinite loop check: the parser must always consume
                     if i1.eof_offset() == len {
-                        return Err(ErrMode::from_error_kind(i1, ErrorKind::SeparatedList));
+                        return Err(ErrMode::assert(i, "many parsers must always consume"));
                     }
 
                     match parser.parse_next(i1.clone()) {
@@ -446,6 +446,7 @@ where
 /// }
 ///
 /// assert_eq!(parser("2^3^2"), Ok(("", 512)));
+/// assert_eq!(parser("2"), Ok(("", 2)));
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Digit))));
 /// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(Error::new("def|abc", ErrorKind::Digit))));
 /// ```
@@ -466,16 +467,16 @@ where
         let (i, ol) = parser.parse_next(i)?;
         let (i, all): (_, crate::lib::std::vec::Vec<(O2, O)>) =
             many0((sep.by_ref(), parser.by_ref())).parse_next(i)?;
-        let (s, or) = all
+        if let Some((s, or)) = all
             .into_iter()
             .rev()
             .reduce(|(sr, or), (sl, ol)| (sl, op(ol, sr, or)))
-            .ok_or_else(|| {
-                // More of an assert but avoiding the panic overhead
-                ErrMode::from_error_kind(i.clone(), ErrorKind::SeparatedList)
-            })?;
-        let merged = op(ol, s, or);
-        Ok((i, merged))
+        {
+            let merged = op(ol, s, or);
+            Ok((i, merged))
+        } else {
+            Ok((i, ol))
+        }
     }
 }
 

@@ -661,6 +661,14 @@ impl<I, E: ParseError<I>> ParseError<I> for ErrMode<E> {
         ErrMode::Backtrack(E::from_error_kind(input, kind))
     }
 
+    #[cfg_attr(debug_assertions, track_caller)]
+    fn assert(input: I, message: &'static str) -> Self
+    where
+        I: crate::lib::std::fmt::Debug,
+    {
+        ErrMode::Backtrack(E::assert(input, message))
+    }
+
     fn append(self, input: I, kind: ErrorKind) -> Self {
         match self {
             ErrMode::Backtrack(e) => ErrMode::Backtrack(e.append(input, kind)),
@@ -747,6 +755,18 @@ where
 pub trait ParseError<I>: Sized {
     /// Creates an error from the input position and an [`ErrorKind`]
     fn from_error_kind(input: I, kind: ErrorKind) -> Self;
+
+    /// Process a parser assertion
+    #[cfg_attr(debug_assertions, track_caller)]
+    fn assert(input: I, _message: &'static str) -> Self
+    where
+        I: crate::lib::std::fmt::Debug,
+    {
+        #[cfg(debug_assertions)]
+        panic!("assert `{}` failed at {:#?}", _message, input);
+        #[cfg(not(debug_assertions))]
+        Self::from_error_kind(input, ErrorKind::Assert)
+    }
 
     /// Combines an existing error with a new one created from the input
     /// position and an [`ErrorKind`]. This is useful when backtracking
@@ -1107,6 +1127,7 @@ pub fn convert_error<I: core::ops::Deref<Target = str>>(
 #[derive(Debug,PartialEq,Eq,Hash,Clone,Copy)]
 #[allow(deprecated,missing_docs)]
 pub enum ErrorKind {
+  Assert,
   Tag,
   MapRes,
   Alt,
@@ -1167,6 +1188,7 @@ impl ErrorKind {
     /// Converts an `ErrorKind` to a text description
     pub fn description(&self) -> &str {
     match *self {
+      ErrorKind::Assert                    => "Assert",
       ErrorKind::Tag                       => "Tag",
       ErrorKind::MapRes                    => "Map on Result",
       ErrorKind::Alt                       => "Alternative",
