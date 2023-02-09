@@ -2,7 +2,7 @@
 
 use crate::combinator::*;
 use crate::error::{ContextError, IResult, ParseError};
-use crate::stream::{AsChar, Compare, Stream, Location, StreamIsPartial};
+use crate::stream::{AsChar, Compare, Location, Stream, StreamIsPartial};
 
 /// All nom parsers implement this trait
 ///

@@ -161,7 +161,7 @@ use crate::lib::std::borrow::Borrow;
 use crate::lib::std::convert;
 use crate::lib::std::ops::Range;
 use crate::stream::Offset;
-use crate::stream::{Stream, Location};
+use crate::stream::{Location, Stream};
 use crate::*;
 
 #[cfg(test)]

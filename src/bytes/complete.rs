@@ -8,7 +8,7 @@ use crate::error::ParseError;
 use crate::lib::std::result::Result::Ok;
 use crate::stream::{
     split_at_offset1_complete, split_at_offset_complete, Compare, CompareResult, ContainsToken,
-    FindSlice, Stream, Offset, SliceLen, ToUsize,
+    FindSlice, Offset, SliceLen, Stream, ToUsize,
 };
 use crate::{IResult, Parser};
 

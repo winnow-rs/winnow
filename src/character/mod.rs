@@ -15,7 +15,7 @@ use crate::combinator::opt;
 use crate::error::ParseError;
 use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::stream::Compare;
-use crate::stream::{AsBStr, AsChar, Stream, Offset, ParseSlice, StreamIsPartial};
+use crate::stream::{AsBStr, AsChar, Offset, ParseSlice, Stream, StreamIsPartial};
 use crate::IResult;
 use crate::Parser;
 

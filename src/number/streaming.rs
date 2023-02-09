@@ -10,7 +10,7 @@ use crate::combinator::{cut_err, map, opt};
 use crate::error::{ErrMode, ErrorKind, Needed, ParseError};
 use crate::lib::std::ops::{Add, Shl};
 use crate::sequence::{pair, tuple};
-use crate::stream::{AsBStr, AsBytes, AsChar, Compare, Stream, Offset, ParseSlice, SliceLen};
+use crate::stream::{AsBStr, AsBytes, AsChar, Compare, Offset, ParseSlice, SliceLen, Stream};
 use crate::*;
 
 /// Recognizes an unsigned 1 byte integer.

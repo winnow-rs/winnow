@@ -11,7 +11,7 @@ use crate::error::ParseError;
 use crate::error::{make_error, ErrMode, ErrorKind};
 use crate::lib::std::ops::{Add, Shl};
 use crate::sequence::{pair, tuple};
-use crate::stream::{AsBStr, AsBytes, AsChar, Compare, Stream, Offset, SliceLen};
+use crate::stream::{AsBStr, AsBytes, AsChar, Compare, Offset, SliceLen, Stream};
 use crate::*;
 
 /// Recognizes an unsigned 1 byte integer.

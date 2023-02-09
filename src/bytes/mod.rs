@@ -6,7 +6,9 @@ pub mod streaming;
 mod tests;
 
 use crate::error::ParseError;
-use crate::stream::{Compare, ContainsToken, FindSlice, Stream, SliceLen, StreamIsPartial, ToUsize};
+use crate::stream::{
+    Compare, ContainsToken, FindSlice, SliceLen, Stream, StreamIsPartial, ToUsize,
+};
 use crate::IResult;
 
 /// Matches one token
@@ -34,7 +36,9 @@ use crate::IResult;
 /// assert_eq!(any::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn any<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, <I as Stream>::Token, E>
+pub fn any<I, E: ParseError<I>, const PARTIAL: bool>(
+    input: I,
+) -> IResult<I, <I as Stream>::Token, E>
 where
     I: StreamIsPartial<PARTIAL>,
     I: Stream,
