@@ -316,12 +316,16 @@ mod bstr {
     impl fmt::Debug for BStr {
         #[inline]
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            write!(f, "\"")?;
+            if !f.alternate() {
+                write!(f, "\"")?;
+            }
             for byte in self.as_bytes() {
                 let c = *byte as char;
                 write!(f, "{}", c.escape_debug())?;
             }
-            write!(f, "\"")?;
+            if !f.alternate() {
+                write!(f, "\"")?;
+            }
             Ok(())
         }
     }
@@ -523,6 +527,11 @@ mod bstr {
                     BStr::new(b"\0\0\0 ftypisom\0\0\x02\0isomiso2avc1mp")
                 ),
             );
+        }
+
+        #[test]
+        fn test_pretty_debug() {
+            assert_eq!(&format!("{:#?}", BStr::new(b"abc")), "abc");
         }
     }
 }
