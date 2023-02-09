@@ -7,8 +7,8 @@ pub mod streaming;
 mod tests;
 
 use crate::error::{ErrMode, ErrorConvert, ErrorKind, Needed, ParseError};
-use crate::input::{AsBytes, Input, InputIsStreaming, ToUsize};
 use crate::lib::std::ops::{AddAssign, Shl, Shr};
+use crate::stream::{AsBytes, Stream, StreamIsPartial, ToUsize};
 use crate::{IResult, Parser};
 
 /// Converts a byte-level input to a bit-level input, for consumption by a parser that uses bits.
@@ -42,7 +42,7 @@ pub fn bits<I, O, E1, E2, P>(mut parser: P) -> impl FnMut(I) -> IResult<I, O, E2
 where
     E1: ParseError<(I, usize)> + ErrorConvert<E2>,
     E2: ParseError<I>,
-    I: Input,
+    I: Stream,
     P: Parser<(I, usize), O, E1>,
 {
     move |input: I| match parser.parse_next((input, 0)) {
@@ -87,7 +87,7 @@ pub fn bytes<I, O, E1, E2, P>(mut parser: P) -> impl FnMut((I, usize)) -> IResul
 where
     E1: ParseError<I> + ErrorConvert<E2>,
     E2: ParseError<(I, usize)>,
-    I: Input,
+    I: Stream,
     P: Parser<I, O, E1>,
 {
     move |(input, offset): (I, usize)| {
@@ -116,7 +116,7 @@ where
 /// # use winnow::bits::take;
 /// # use winnow::IResult;
 /// # use winnow::error::{Error, ErrorKind};
-/// // Input is a tuple of (input: I, bit_offset: usize)
+/// // `input` is a tuple of (input: I, bit_offset: usize)
 /// fn parser(input: (&[u8], usize), count: usize)-> IResult<(&[u8], usize), u8> {
 ///  take(count)(input)
 /// }
@@ -134,17 +134,17 @@ where
 /// assert_eq!(parser(([0b00010010].as_ref(), 0), 12), Err(winnow::error::ErrMode::Backtrack(Error{input: ([0b00010010].as_ref(), 0), kind: ErrorKind::Eof })));
 /// ```
 #[inline(always)]
-pub fn take<I, O, C, E: ParseError<(I, usize)>, const STREAMING: bool>(
+pub fn take<I, O, C, E: ParseError<(I, usize)>, const PARTIAL: bool>(
     count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-    I: Input<Token = u8> + AsBytes + InputIsStreaming<STREAMING>,
+    I: Stream<Token = u8> + AsBytes + StreamIsPartial<PARTIAL>,
     C: ToUsize,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
     let count = count.to_usize();
     move |input: (I, usize)| {
-        if STREAMING {
+        if PARTIAL {
             streaming::take_internal(input, count)
         } else {
             complete::take_internal(input, count)
@@ -197,18 +197,18 @@ where
 /// );
 /// ```
 #[inline(always)]
-pub fn tag<I, O, C, E: ParseError<(I, usize)>, const STREAMING: bool>(
+pub fn tag<I, O, C, E: ParseError<(I, usize)>, const PARTIAL: bool>(
     pattern: O,
     count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-    I: Input<Token = u8> + AsBytes + InputIsStreaming<STREAMING>,
+    I: Stream<Token = u8> + AsBytes + StreamIsPartial<PARTIAL>,
     C: ToUsize,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
     let count = count.to_usize();
     move |input: (I, usize)| {
-        if STREAMING {
+        if PARTIAL {
             streaming::tag_internal(input, &pattern, count)
         } else {
             complete::tag_internal(input, &pattern, count)
@@ -232,14 +232,14 @@ where
 /// assert_eq!(parse(([0b10000000].as_ref(), 0)), Ok((([0b10000000].as_ref(), 1), true)));
 /// assert_eq!(parse(([0b10000000].as_ref(), 1)), Ok((([0b10000000].as_ref(), 2), false)));
 /// ```
-pub fn bool<I, E: ParseError<(I, usize)>, const STREAMING: bool>(
+pub fn bool<I, E: ParseError<(I, usize)>, const PARTIAL: bool>(
     input: (I, usize),
 ) -> IResult<(I, usize), bool, E>
 where
-    I: Input<Token = u8> + AsBytes + InputIsStreaming<STREAMING>,
+    I: Stream<Token = u8> + AsBytes + StreamIsPartial<PARTIAL>,
 {
     #![allow(deprecated)]
-    if STREAMING {
+    if PARTIAL {
         streaming::bool(input)
     } else {
         complete::bool(input)

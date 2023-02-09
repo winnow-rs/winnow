@@ -4,22 +4,22 @@
 #![allow(deprecated)]
 
 use crate::error::{ErrMode, ErrorKind, Needed, ParseError};
-use crate::input::{AsBytes, Input, ToUsize};
 use crate::lib::std::ops::{AddAssign, Div, Shl, Shr};
+use crate::stream::{AsBytes, Stream, ToUsize};
 use crate::IResult;
 
 /// Generates a parser taking `count` bits
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bits::take`][crate::bits::take] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bits::take`][crate::bits::take] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bits::take` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bits::take` with input wrapped in `winnow::Partial`"
 )]
 pub fn take<I, O, C, E: ParseError<(I, usize)>>(
     count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-    I: Input<Token = u8> + AsBytes,
+    I: Stream<Token = u8> + AsBytes,
     C: ToUsize,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
@@ -32,14 +32,14 @@ pub(crate) fn take_internal<I, O, E: ParseError<(I, usize)>>(
     count: usize,
 ) -> IResult<(I, usize), O, E>
 where
-    I: Input<Token = u8> + AsBytes,
+    I: Stream<Token = u8> + AsBytes,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
     if count == 0 {
         Ok(((input, bit_offset), 0u8.into()))
     } else {
         let cnt = (count + bit_offset).div(8);
-        if input.input_len() * 8 < count + bit_offset {
+        if input.eof_offset() * 8 < count + bit_offset {
             Err(ErrMode::Incomplete(Needed::new(count)))
         } else {
             let mut acc: O = 0_u8.into();
@@ -75,17 +75,17 @@ where
 
 /// Generates a parser taking `count` bits and comparing them to `pattern`
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bits::tag`][crate::bits::tag] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bits::tag`][crate::bits::tag] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bits::tag` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bits::tag` with input wrapped in `winnow::Partial`"
 )]
 pub fn tag<I, O, C, E: ParseError<(I, usize)>>(
     pattern: O,
     count: C,
 ) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
 where
-    I: Input<Token = u8> + AsBytes,
+    I: Stream<Token = u8> + AsBytes,
     C: ToUsize,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
@@ -99,7 +99,7 @@ pub(crate) fn tag_internal<I, O, E: ParseError<(I, usize)>>(
     count: usize,
 ) -> IResult<(I, usize), O, E>
 where
-    I: Input<Token = u8> + AsBytes,
+    I: Stream<Token = u8> + AsBytes,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
     let inp = input.clone();
@@ -132,7 +132,7 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::bits::bool`")]
 pub fn bool<I, E: ParseError<(I, usize)>>(input: (I, usize)) -> IResult<(I, usize), bool, E>
 where
-    I: Input<Token = u8> + AsBytes,
+    I: Stream<Token = u8> + AsBytes,
 {
     let (res, bit): (_, u32) = take(1usize)(input)?;
     Ok((res, bit != 0))

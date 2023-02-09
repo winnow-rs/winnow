@@ -1,12 +1,12 @@
 use winnow::{
     bytes::{one_of, tag, take_while1},
     character::line_ending,
-    input::Streaming,
     multi::many1,
+    stream::Partial,
     IResult,
 };
 
-pub type Input<'i> = Streaming<&'i [u8]>;
+pub type Stream<'i> = Partial<&'i [u8]>;
 
 #[rustfmt::skip]
 #[derive(Debug)]
@@ -25,7 +25,7 @@ pub struct Header<'a> {
 }
 
 pub fn parse(data: &[u8]) -> Option<Vec<(Request<'_>, Vec<Header<'_>>)>> {
-    let mut buf = Streaming(data);
+    let mut buf = Partial(data);
     let mut v = Vec::new();
     loop {
         match request(buf) {
@@ -48,7 +48,7 @@ pub fn parse(data: &[u8]) -> Option<Vec<(Request<'_>, Vec<Header<'_>>)>> {
     Some(v)
 }
 
-fn request(input: Input<'_>) -> IResult<Input<'_>, (Request<'_>, Vec<Header<'_>>)> {
+fn request(input: Stream<'_>) -> IResult<Stream<'_>, (Request<'_>, Vec<Header<'_>>)> {
     let (input, req) = request_line(input)?;
     let (input, h) = many1(message_header)(input)?;
     let (input, _) = line_ending(input)?;
@@ -56,7 +56,7 @@ fn request(input: Input<'_>) -> IResult<Input<'_>, (Request<'_>, Vec<Header<'_>>
     Ok((input, (req, h)))
 }
 
-fn request_line(input: Input<'_>) -> IResult<Input<'_>, Request<'_>> {
+fn request_line(input: Stream<'_>) -> IResult<Stream<'_>, Request<'_>> {
     let (input, method) = take_while1(is_token)(input)?;
     let (input, _) = take_while1(is_space)(input)?;
     let (input, uri) = take_while1(is_not_space)(input)?;
@@ -74,14 +74,14 @@ fn request_line(input: Input<'_>) -> IResult<Input<'_>, Request<'_>> {
     ))
 }
 
-fn http_version(input: Input<'_>) -> IResult<Input<'_>, &[u8]> {
+fn http_version(input: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
     let (input, _) = tag("HTTP/")(input)?;
     let (input, version) = take_while1(is_version)(input)?;
 
     Ok((input, version))
 }
 
-fn message_header_value(input: Input<'_>) -> IResult<Input<'_>, &[u8]> {
+fn message_header_value(input: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
     let (input, _) = take_while1(is_horizontal_space)(input)?;
     let (input, data) = take_while1(not_line_ending)(input)?;
     let (input, _) = line_ending(input)?;
@@ -89,7 +89,7 @@ fn message_header_value(input: Input<'_>) -> IResult<Input<'_>, &[u8]> {
     Ok((input, data))
 }
 
-fn message_header(input: Input<'_>) -> IResult<Input<'_>, Header<'_>> {
+fn message_header(input: Stream<'_>) -> IResult<Stream<'_>, Header<'_>> {
     let (input, name) = take_while1(is_token)(input)?;
     let (input, _) = one_of(':')(input)?;
     let (input, value) = many1(message_header_value)(input)?;

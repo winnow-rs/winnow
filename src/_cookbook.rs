@@ -108,7 +108,7 @@
 //! ```rust
 //! use winnow::prelude::*;
 //! use winnow::{
-//!   input::AsChar,
+//!   stream::AsChar,
 //!   bytes::take_while0,
 //!   bytes::one_of,
 //! };

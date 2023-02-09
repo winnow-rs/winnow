@@ -10,9 +10,9 @@ use winnow::{
     sequence::{delimited, separated_pair, terminated},
 };
 
-pub type Input<'i> = &'i [u8];
+pub type Stream<'i> = &'i [u8];
 
-pub fn categories(i: Input<'_>) -> IResult<Input<'_>, HashMap<&str, HashMap<&str, &str>>> {
+pub fn categories(i: Stream<'_>) -> IResult<Stream<'_>, HashMap<&str, HashMap<&str, &str>>> {
     many0(separated_pair(
         category,
         opt(multispace),
@@ -21,13 +21,13 @@ pub fn categories(i: Input<'_>) -> IResult<Input<'_>, HashMap<&str, HashMap<&str
     .parse_next(i)
 }
 
-fn category(i: Input<'_>) -> IResult<Input<'_>, &str> {
+fn category(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
     delimited('[', take_while0(|c| c != b']'), ']')
         .map_res(str::from_utf8)
         .parse_next(i)
 }
 
-pub fn key_value(i: Input<'_>) -> IResult<Input<'_>, (&str, &str)> {
+pub fn key_value(i: Stream<'_>) -> IResult<Stream<'_>, (&str, &str)> {
     let (i, key) = alphanumeric.map_res(str::from_utf8).parse_next(i)?;
     let (i, _) = (opt(space), '=', opt(space)).parse_next(i)?;
     let (i, val) = take_while0(|c| c != b'\n' && c != b';')

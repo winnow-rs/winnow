@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test {
-    use winnow::Streaming;
+    use winnow::Partial;
     #[cfg(feature = "alloc")]
     use winnow::{branch::alt, bytes::tag_no_case, multi::many1};
     use winnow::{
@@ -44,7 +44,7 @@ mod test {
         const INPUT: &str = "Hello";
         const TAG: &str = "Hello World!";
 
-        let res: IResult<_, _, error::Error<_>> = tag(TAG)(Streaming(INPUT));
+        let res: IResult<_, _, error::Error<_>> = tag(TAG)(Partial(INPUT));
         match res {
             Err(ErrMode::Incomplete(_)) => (),
             other => {
@@ -120,7 +120,7 @@ mod test {
 
         const INPUT: &str = "βèƒôřèÂßÇá";
 
-        let res: IResult<_, _, Error<_>> = take(13_usize)(Streaming(INPUT));
+        let res: IResult<_, _, Error<_>> = take(13_usize)(Partial(INPUT));
         match res {
             Err(ErrMode::Incomplete(_)) => (),
             other => panic!(
@@ -170,7 +170,7 @@ mod test {
         const INPUT: &str = "βèƒôřè";
         const FIND: &str = "βèƒôřèÂßÇ";
 
-        let res: IResult<_, _, Error<_>> = take_until0(FIND)(Streaming(INPUT));
+        let res: IResult<_, _, Error<_>> = take_until0(FIND)(Partial(INPUT));
         match res {
             Err(ErrMode::Incomplete(_)) => (),
             other => panic!(
@@ -188,7 +188,7 @@ mod test {
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
         const FIND: &str = "Ráñδô₥";
 
-        let res: IResult<_, _, Error<_>> = take_until0(FIND)(Streaming(INPUT));
+        let res: IResult<_, _, Error<_>> = take_until0(FIND)(Partial(INPUT));
         match res {
             Err(ErrMode::Incomplete(_)) => (),
             other => panic!(
@@ -209,7 +209,7 @@ mod test {
 
         use winnow::bytes::take_while0;
 
-        fn f(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+        fn f(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
             take_while0(is_alphabetic)(i)
         }
         let a = "";
@@ -217,10 +217,10 @@ mod test {
         let c = "abcd123";
         let d = "123";
 
-        assert_eq!(f(Streaming(a)), Err(ErrMode::Incomplete(Needed::new(1))));
-        assert_eq!(f(Streaming(b)), Err(ErrMode::Incomplete(Needed::new(1))));
-        assert_eq!(f(Streaming(c)), Ok((Streaming(d), b)));
-        assert_eq!(f(Streaming(d)), Ok((Streaming(d), a)));
+        assert_eq!(f(Partial(a)), Err(ErrMode::Incomplete(Needed::new(1))));
+        assert_eq!(f(Partial(b)), Err(ErrMode::Incomplete(Needed::new(1))));
+        assert_eq!(f(Partial(c)), Ok((Partial(d), b)));
+        assert_eq!(f(Partial(d)), Ok((Partial(d), a)));
     }
 
     #[test]
@@ -297,7 +297,7 @@ mod test {
     fn test_take_while1_str() {
         use winnow::error::Needed;
 
-        fn f(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+        fn f(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
             take_while1(is_alphabetic)(i)
         }
         let a = "";
@@ -305,13 +305,13 @@ mod test {
         let c = "abcd123";
         let d = "123";
 
-        assert_eq!(f(Streaming(a)), Err(ErrMode::Incomplete(Needed::new(1))));
-        assert_eq!(f(Streaming(b)), Err(ErrMode::Incomplete(Needed::new(1))));
-        assert_eq!(f(Streaming(c)), Ok((Streaming("123"), b)));
+        assert_eq!(f(Partial(a)), Err(ErrMode::Incomplete(Needed::new(1))));
+        assert_eq!(f(Partial(b)), Err(ErrMode::Incomplete(Needed::new(1))));
+        assert_eq!(f(Partial(c)), Ok((Partial("123"), b)));
         assert_eq!(
-            f(Streaming(d)),
+            f(Partial(d)),
             Err(ErrMode::Backtrack(winnow::error::Error {
-                input: Streaming(d),
+                input: Partial(d),
                 kind: ErrorKind::TakeWhile1
             }))
         );

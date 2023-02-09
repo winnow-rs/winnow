@@ -9,9 +9,9 @@ use crate::character::complete::{char, digit1, sign};
 use crate::combinator::{cut_err, map, opt};
 use crate::error::ParseError;
 use crate::error::{make_error, ErrMode, ErrorKind};
-use crate::input::{AsBStr, AsBytes, AsChar, Compare, Input, Offset, SliceLen};
 use crate::lib::std::ops::{Add, Shl};
 use crate::sequence::{pair, tuple};
+use crate::stream::{AsBStr, AsBytes, AsChar, Compare, Offset, SliceLen, Stream};
 use crate::*;
 
 /// Recognizes an unsigned 1 byte integer.
@@ -35,7 +35,7 @@ use crate::*;
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_u8`")]
 pub fn be_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
-    I: Input<Token = u8>,
+    I: Stream<Token = u8>,
 {
     u8(input)
 }
@@ -61,8 +61,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_u16`")]
 pub fn be_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     be_uint(input, 2)
 }
@@ -88,8 +88,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_u24`")]
 pub fn be_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     be_uint(input, 3)
 }
@@ -115,8 +115,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_u32`")]
 pub fn be_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     be_uint(input, 4)
 }
@@ -142,8 +142,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_u64`")]
 pub fn be_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     be_uint(input, 8)
 }
@@ -169,8 +169,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_u128`")]
 pub fn be_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     be_uint(input, 16)
 }
@@ -178,8 +178,8 @@ where
 #[inline]
 fn be_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
     Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
 {
     let offset = input
@@ -224,7 +224,7 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_i8`")]
 pub fn be_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
 where
-    I: Input<Token = u8>,
+    I: Stream<Token = u8>,
 {
     be_u8.map(|x| x as i8).parse_next(input)
 }
@@ -250,8 +250,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_i16`")]
 pub fn be_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     be_u16.map(|x| x as i16).parse_next(input)
 }
@@ -277,8 +277,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_i24`")]
 pub fn be_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     // Same as the unsigned version but we need to sign-extend manually here
     be_u24
@@ -313,8 +313,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_i32`")]
 pub fn be_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     be_u32.map(|x| x as i32).parse_next(input)
 }
@@ -340,8 +340,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_i64`")]
 pub fn be_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     be_u64.map(|x| x as i64).parse_next(input)
 }
@@ -367,8 +367,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_i128`")]
 pub fn be_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     be_u128.map(|x| x as i128).parse_next(input)
 }
@@ -394,7 +394,7 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_u8`")]
 pub fn le_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
-    I: Input<Token = u8>,
+    I: Stream<Token = u8>,
 {
     u8(input)
 }
@@ -420,8 +420,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_u16`")]
 pub fn le_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     le_uint(input, 2)
 }
@@ -447,8 +447,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_u24`")]
 pub fn le_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     le_uint(input, 3)
 }
@@ -474,8 +474,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_u32`")]
 pub fn le_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     le_uint(input, 4)
 }
@@ -501,8 +501,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_u64`")]
 pub fn le_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     le_uint(input, 8)
 }
@@ -528,8 +528,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_u128`")]
 pub fn le_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     le_uint(input, 16)
 }
@@ -537,8 +537,8 @@ where
 #[inline]
 fn le_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
     Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
 {
     let offset = input
@@ -576,7 +576,7 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_i8`")]
 pub fn le_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
 where
-    I: Input<Token = u8>,
+    I: Stream<Token = u8>,
 {
     be_u8.map(|x| x as i8).parse_next(input)
 }
@@ -602,8 +602,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_i16`")]
 pub fn le_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     le_u16.map(|x| x as i16).parse_next(input)
 }
@@ -629,8 +629,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_i24`")]
 pub fn le_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     // Same as the unsigned version but we need to sign-extend manually here
     le_u24
@@ -665,8 +665,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_i32`")]
 pub fn le_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     le_u32.map(|x| x as i32).parse_next(input)
 }
@@ -692,8 +692,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_i64`")]
 pub fn le_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     le_u64.map(|x| x as i64).parse_next(input)
 }
@@ -719,8 +719,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_i128`")]
 pub fn le_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     le_u128.map(|x| x as i128).parse_next(input)
 }
@@ -747,7 +747,7 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::u8`")]
 pub fn u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
-    I: Input<Token = u8>,
+    I: Stream<Token = u8>,
 {
     input
         .next_token()
@@ -785,8 +785,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::u16`")]
 pub fn u16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u16, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_u16,
@@ -828,8 +828,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::u24`")]
 pub fn u24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_u24,
@@ -871,8 +871,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::u32`")]
 pub fn u32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_u32,
@@ -914,8 +914,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::u64`")]
 pub fn u64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u64, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_u64,
@@ -957,8 +957,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::u128`")]
 pub fn u128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, u128, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_u128,
@@ -992,7 +992,7 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::i8`")]
 pub fn i8<I, E: ParseError<I>>(i: I) -> IResult<I, i8, E>
 where
-    I: Input<Token = u8>,
+    I: Stream<Token = u8>,
 {
     u8.map(|x| x as i8).parse_next(i)
 }
@@ -1027,8 +1027,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::i16`")]
 pub fn i16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i16, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_i16,
@@ -1070,8 +1070,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::i24`")]
 pub fn i24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_i24,
@@ -1113,8 +1113,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::i32`")]
 pub fn i32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_i32,
@@ -1156,8 +1156,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::i64`")]
 pub fn i64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i64, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_i64,
@@ -1199,8 +1199,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::i128`")]
 pub fn i128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, i128, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_i128,
@@ -1233,8 +1233,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_f32`")]
 pub fn be_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match be_u32(input) {
         Err(e) => Err(e),
@@ -1263,8 +1263,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::be_f64`")]
 pub fn be_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match be_u64(input) {
         Err(e) => Err(e),
@@ -1293,8 +1293,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_f32`")]
 pub fn le_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match le_u32(input) {
         Err(e) => Err(e),
@@ -1323,8 +1323,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::le_f64`")]
 pub fn le_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match le_u64(input) {
         Err(e) => Err(e),
@@ -1362,8 +1362,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::f32`")]
 pub fn f32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, f32, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_f32,
@@ -1405,8 +1405,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::number::f64`")]
 pub fn f64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> fn(I) -> IResult<I, f64, E>
 where
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
     match endian {
         crate::number::Endianness::Big => be_f64,
@@ -1440,20 +1440,20 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::hex_uint`")]
 pub fn hex_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
-    <I as Input>::Slice: AsBStr,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
+    <I as Stream>::Slice: AsBStr,
 {
     let invalid_offset = input
         .offset_for(|c| {
             let c = c.as_char();
             !"0123456789abcdefABCDEF".contains(c)
         })
-        .unwrap_or_else(|| input.input_len());
+        .unwrap_or_else(|| input.eof_offset());
     const MAX_DIGITS: usize = 8;
     let max_offset = input
         .offset_at(MAX_DIGITS)
-        .unwrap_or_else(|_err| input.input_len());
+        .unwrap_or_else(|_err| input.eof_offset());
     let offset = invalid_offset.min(max_offset);
     if offset == 0 {
         return Err(ErrMode::from_error_kind(input, ErrorKind::IsA));
@@ -1476,12 +1476,12 @@ where
 
 /// **WARNING:** Deprecated, no longer supported
 #[deprecated(since = "0.3.0", note = "No longer supported")]
-pub fn recognize_float<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn recognize_float<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
+    T: Stream,
     T: Offset + Compare<&'static str>,
-    <T as Input>::Token: AsChar + Copy,
-    <T as Input>::IterOffsets: Clone,
+    <T as Stream>::Token: AsChar + Copy,
+    <T as Stream>::IterOffsets: Clone,
     T: AsBStr,
 {
     tuple((
@@ -1504,12 +1504,12 @@ where
 #[deprecated(since = "0.3.0", note = "No longer supported")]
 pub fn recognize_float_or_exceptions<T, E: ParseError<T>>(
     input: T,
-) -> IResult<T, <T as Input>::Slice, E>
+) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
+    T: Stream,
     T: Offset + Compare<&'static str>,
-    <T as Input>::Token: AsChar + Copy,
-    <T as Input>::IterOffsets: Clone,
+    <T as Stream>::Token: AsChar + Copy,
+    <T as Stream>::IterOffsets: Clone,
     T: AsBStr,
 {
     alt((
@@ -1546,17 +1546,17 @@ where
 #[deprecated(since = "0.3.0", note = "No longer supported")]
 pub fn recognize_float_parts<T, E: ParseError<T>>(
     input: T,
-) -> IResult<T, (bool, <T as Input>::Slice, <T as Input>::Slice, i32), E>
+) -> IResult<T, (bool, <T as Stream>::Slice, <T as Stream>::Slice, i32), E>
 where
-    T: Input + Compare<&'static [u8]> + AsBStr,
-    <T as Input>::Token: AsChar + Copy,
-    <T as Input>::Slice: SliceLen,
+    T: Stream + Compare<&'static [u8]> + AsBStr,
+    <T as Stream>::Token: AsChar + Copy,
+    <T as Stream>::Slice: SliceLen,
 {
     let (i, sign) = sign(input.clone())?;
 
     let (i, integer) = match i.offset_for(|c| !c.is_dec_digit()) {
         Some(offset) => i.next_slice(offset),
-        None => i.next_slice(i.input_len()),
+        None => i.next_slice(i.eof_offset()),
     };
 
     let (i, opt_dot) = opt(tag(&b"."[..]))(i)?;
@@ -1578,7 +1578,7 @@ where
                 break;
             }
         }
-        let offset = offset.unwrap_or_else(|| i.input_len());
+        let offset = offset.unwrap_or_else(|| i.eof_offset());
 
         // trim right zeroes
         let trimmed_offset = (offset - zero_count).max(1);
@@ -1608,7 +1608,7 @@ where
     Ok((i, (sign, integer, fraction, exp)))
 }
 
-use crate::input::ParseSlice;
+use crate::stream::ParseSlice;
 
 /// Recognizes floating point number in text format and returns a f32.
 ///
@@ -1632,11 +1632,11 @@ use crate::input::ParseSlice;
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::float`")]
 pub fn float<T, E: ParseError<T>>(input: T) -> IResult<T, f32, E>
 where
-    T: Input,
+    T: Stream,
     T: Offset + Compare<&'static str>,
-    <T as Input>::Slice: ParseSlice<f32>,
-    <T as Input>::Token: AsChar + Copy,
-    <T as Input>::IterOffsets: Clone,
+    <T as Stream>::Slice: ParseSlice<f32>,
+    <T as Stream>::Token: AsChar + Copy,
+    <T as Stream>::IterOffsets: Clone,
     T: AsBStr,
 {
     let (i, s) = recognize_float_or_exceptions(input)?;
@@ -1671,11 +1671,11 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::float`")]
 pub fn double<T, E: ParseError<T>>(input: T) -> IResult<T, f64, E>
 where
-    T: Input,
+    T: Stream,
     T: Offset + Compare<&'static str>,
-    <T as Input>::Slice: ParseSlice<f64>,
-    <T as Input>::Token: AsChar + Copy,
-    <T as Input>::IterOffsets: Clone,
+    <T as Stream>::Slice: ParseSlice<f64>,
+    <T as Stream>::Token: AsChar + Copy,
+    <T as Stream>::IterOffsets: Clone,
     T: AsBStr,
 {
     let (i, s) = recognize_float_or_exceptions(input)?;

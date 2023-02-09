@@ -4,7 +4,7 @@ use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::Needed;
 use crate::IResult;
-use crate::Streaming;
+use crate::Partial;
 #[cfg(feature = "alloc")]
 use crate::{
     error::ParseError,
@@ -97,56 +97,56 @@ fn alt_test() {
 
 #[test]
 fn alt_incomplete() {
-    fn alt1(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+    fn alt1(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         alt((tag("a"), tag("bc"), tag("def")))(i)
     }
 
     let a = &b""[..];
-    assert_eq!(alt1(Streaming(a)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(alt1(Partial(a)), Err(ErrMode::Incomplete(Needed::new(1))));
     let a = &b"b"[..];
-    assert_eq!(alt1(Streaming(a)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(alt1(Partial(a)), Err(ErrMode::Incomplete(Needed::new(1))));
     let a = &b"bcd"[..];
-    assert_eq!(alt1(Streaming(a)), Ok((Streaming(&b"d"[..]), &b"bc"[..])));
+    assert_eq!(alt1(Partial(a)), Ok((Partial(&b"d"[..]), &b"bc"[..])));
     let a = &b"cde"[..];
     assert_eq!(
-        alt1(Streaming(a)),
+        alt1(Partial(a)),
         Err(ErrMode::Backtrack(error_position!(
-            Streaming(a),
+            Partial(a),
             ErrorKind::Tag
         )))
     );
     let a = &b"de"[..];
-    assert_eq!(alt1(Streaming(a)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(alt1(Partial(a)), Err(ErrMode::Incomplete(Needed::new(1))));
     let a = &b"defg"[..];
-    assert_eq!(alt1(Streaming(a)), Ok((Streaming(&b"g"[..]), &b"def"[..])));
+    assert_eq!(alt1(Partial(a)), Ok((Partial(&b"g"[..]), &b"def"[..])));
 }
 
 #[test]
 fn permutation_test() {
     #[allow(clippy::type_complexity)]
-    fn perm(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (&[u8], &[u8], &[u8])> {
+    fn perm(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (&[u8], &[u8], &[u8])> {
         permutation((tag("abcd"), tag("efg"), tag("hi")))(i)
     }
 
     let expected = (&b"abcd"[..], &b"efg"[..], &b"hi"[..]);
 
     let a = &b"abcdefghijk"[..];
-    assert_eq!(perm(Streaming(a)), Ok((Streaming(&b"jk"[..]), expected)));
+    assert_eq!(perm(Partial(a)), Ok((Partial(&b"jk"[..]), expected)));
     let b = &b"efgabcdhijk"[..];
-    assert_eq!(perm(Streaming(b)), Ok((Streaming(&b"jk"[..]), expected)));
+    assert_eq!(perm(Partial(b)), Ok((Partial(&b"jk"[..]), expected)));
     let c = &b"hiefgabcdjk"[..];
-    assert_eq!(perm(Streaming(c)), Ok((Streaming(&b"jk"[..]), expected)));
+    assert_eq!(perm(Partial(c)), Ok((Partial(&b"jk"[..]), expected)));
 
     let d = &b"efgxyzabcdefghi"[..];
     assert_eq!(
-        perm(Streaming(d)),
+        perm(Partial(d)),
         Err(ErrMode::Backtrack(error_node_position!(
-            Streaming(&b"efgxyzabcdefghi"[..]),
+            Partial(&b"efgxyzabcdefghi"[..]),
             ErrorKind::Permutation,
-            error_position!(Streaming(&b"xyzabcdefghi"[..]), ErrorKind::Tag)
+            error_position!(Partial(&b"xyzabcdefghi"[..]), ErrorKind::Tag)
         )))
     );
 
     let e = &b"efgabc"[..];
-    assert_eq!(perm(Streaming(e)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(perm(Partial(e)), Err(ErrMode::Incomplete(Needed::new(1))));
 }

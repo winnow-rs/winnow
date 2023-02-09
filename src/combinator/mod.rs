@@ -64,7 +64,7 @@
 //!   - [`le_i8`][crate::number::le_i8], [`le_i16`][crate::number::le_i16], [`le_i24`][crate::number::le_i24], [`le_i32`][crate::number::le_i32], [`le_i64`][crate::number::le_i64], [`le_i128`][crate::number::le_i128]: Little endian signed integers
 //!   - [`le_u8`][crate::number::le_u8], [`le_u16`][crate::number::le_u16], [`le_u24`][crate::number::le_u24], [`le_u32`][crate::number::le_u32], [`le_u64`][crate::number::le_u64], [`le_u128`][crate::number::le_u128]: Little endian unsigned integers
 //!
-//! ## Streaming related
+//! ## Partial related
 //!
 //! - [`eof`][eof]: Returns its input if it is at the end of input data
 //! - [`Parser::complete`][Parser::complete()]: Replaces an `Incomplete` returned by the child parser with an `Backtrack`
@@ -125,13 +125,13 @@
 //!
 //! Use these functions with a combinator like `take_while0`:
 //!
-//! - [`AsChar::is_alpha`][crate::input::AsChar::is_alpha]: Tests if byte is ASCII alphabetic: `[A-Za-z]`
-//! - [`AsChar::is_alphanum`][crate::input::AsChar::is_alphanum]: Tests if byte is ASCII alphanumeric: `[A-Za-z0-9]`
-//! - [`AsChar::is_dec_digit`][crate::input::AsChar::is_dec_digit]: Tests if byte is ASCII digit: `[0-9]`
-//! - [`AsChar::is_hex_digit`][crate::input::AsChar::is_hex_digit]: Tests if byte is ASCII hex digit: `[0-9A-Fa-f]`
-//! - [`AsChar::is_oct_digit`][crate::input::AsChar::is_oct_digit]: Tests if byte is ASCII octal digit: `[0-7]`
-//! - [`AsChar::is_space`][crate::input::AsChar::is_space]: Tests if byte is ASCII space or tab: `[ \t]`
-//! - [`AsChar::is_newline`][crate::input::AsChar::is_newline]: Tests if byte is ASCII newline: `[\n]`
+//! - [`AsChar::is_alpha`][crate::stream::AsChar::is_alpha]: Tests if byte is ASCII alphabetic: `[A-Za-z]`
+//! - [`AsChar::is_alphanum`][crate::stream::AsChar::is_alphanum]: Tests if byte is ASCII alphanumeric: `[A-Za-z0-9]`
+//! - [`AsChar::is_dec_digit`][crate::stream::AsChar::is_dec_digit]: Tests if byte is ASCII digit: `[0-9]`
+//! - [`AsChar::is_hex_digit`][crate::stream::AsChar::is_hex_digit]: Tests if byte is ASCII hex digit: `[0-9A-Fa-f]`
+//! - [`AsChar::is_oct_digit`][crate::stream::AsChar::is_oct_digit]: Tests if byte is ASCII octal digit: `[0-7]`
+//! - [`AsChar::is_space`][crate::stream::AsChar::is_space]: Tests if byte is ASCII space or tab: `[ \t]`
+//! - [`AsChar::is_newline`][crate::stream::AsChar::is_newline]: Tests if byte is ASCII newline: `[\n]`
 //!
 //! Alternatively there are ready to use functions:
 //!
@@ -157,11 +157,11 @@
 //! - [`hex_uint`][crate::character::hex_uint]: Decode a variable-width, hexadecimal integer
 
 use crate::error::{ContextError, ErrMode, ErrorKind, FromExternalError, Needed, ParseError};
-use crate::input::Offset;
-use crate::input::{Input, Location};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::convert;
 use crate::lib::std::ops::Range;
+use crate::stream::Offset;
+use crate::stream::{Location, Stream};
 use crate::*;
 
 #[cfg(test)]
@@ -177,11 +177,11 @@ mod tests;
 /// assert_eq!(rest::<_,Error<_>>(""), Ok(("", "")));
 /// ```
 #[inline]
-pub fn rest<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Input>::Slice, E>
+pub fn rest<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: Input,
+    I: Stream,
 {
-    Ok(input.next_slice(input.input_len()))
+    Ok(input.next_slice(input.eof_offset()))
 }
 
 /// Return the length of the remaining input.
@@ -196,9 +196,9 @@ where
 #[inline]
 pub fn rest_len<I, E: ParseError<I>>(input: I) -> IResult<I, usize, E>
 where
-    I: Input,
+    I: Stream,
 {
-    let len = input.input_len();
+    let len = input.eof_offset();
     Ok((input, len))
 }
 
@@ -512,8 +512,8 @@ impl<P, O1, O2> ParseTo<P, O1, O2> {
 
 impl<I, O1, O2, E, P> Parser<I, O2, E> for ParseTo<P, O1, O2>
 where
-    I: Input,
-    O1: crate::input::ParseSlice<O2>,
+    I: Stream,
+    O1: crate::stream::ParseSlice<O2>,
     E: ParseError<I>,
     P: Parser<I, O1, E>,
 {
@@ -747,11 +747,11 @@ where
 /// assert_eq!(parser(""), Ok(("", "")));
 /// # }
 /// ```
-pub fn eof<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Input>::Slice, E>
+pub fn eof<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: Input,
+    I: Stream,
 {
-    if input.input_len() == 0 {
+    if input.eof_offset() == 0 {
         Ok(input.next_slice(0))
     } else {
         Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
@@ -763,15 +763,15 @@ where
 /// **WARNING:** Deprecated, replaced with [`Parser::complete`]
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, input::Streaming};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, stream::Partial};
 /// use winnow::bytes::take;
 /// use winnow::combinator::complete;
 /// # fn main() {
 ///
 /// let mut parser = complete(take(5u8));
 ///
-/// assert_eq!(parser(Streaming("abcdefg")), Ok((Streaming("fg"), "abcde")));
-/// assert_eq!(parser(Streaming("abcd")), Err(ErrMode::Backtrack(Error::new(Streaming("abcd"), ErrorKind::Complete))));
+/// assert_eq!(parser(Partial("abcdefg")), Ok((Partial("fg"), "abcde")));
+/// assert_eq!(parser(Partial("abcd")), Err(ErrMode::Backtrack(Error::new(Partial("abcd"), ErrorKind::Complete))));
 /// # }
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::complete")]
@@ -839,12 +839,12 @@ where
 )]
 pub fn all_consuming<I, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
-    I: Input,
+    I: Stream,
     F: Parser<I, O, E>,
 {
     move |input: I| {
         let (input, res) = f.parse_next(input)?;
-        if input.input_len() == 0 {
+        if input.eof_offset() == 0 {
             Ok((input, res))
         } else {
             Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
@@ -1059,9 +1059,9 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::recognize")]
 pub fn recognize<I, O, E: ParseError<I>, F>(
     mut parser: F,
-) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, E>
+) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: Input + Offset,
+    I: Stream + Offset,
     F: Parser<I, O, E>,
 {
     move |input: I| {
@@ -1092,13 +1092,13 @@ impl<F, O> Recognize<F, O> {
     }
 }
 
-impl<I, O, E, F> Parser<I, <I as Input>::Slice, E> for Recognize<F, O>
+impl<I, O, E, F> Parser<I, <I as Stream>::Slice, E> for Recognize<F, O>
 where
-    I: Input + Offset,
+    I: Stream + Offset,
     E: ParseError<I>,
     F: Parser<I, O, E>,
 {
-    fn parse_next(&mut self, input: I) -> IResult<I, <I as Input>::Slice, E> {
+    fn parse_next(&mut self, input: I) -> IResult<I, <I as Stream>::Slice, E> {
         let i = input.clone();
         match (self.parser).parse_next(i) {
             Ok((i, _)) => {
@@ -1156,9 +1156,9 @@ where
 )]
 pub fn consumed<I, O, F, E>(
     mut parser: F,
-) -> impl FnMut(I) -> IResult<I, (<I as Input>::Slice, O), E>
+) -> impl FnMut(I) -> IResult<I, (<I as Stream>::Slice, O), E>
 where
-    I: Input + Offset,
+    I: Stream + Offset,
     E: ParseError<I>,
     F: Parser<I, O, E>,
 {
@@ -1191,13 +1191,13 @@ impl<F, O> WithRecognized<F, O> {
     }
 }
 
-impl<I, O, E, F> Parser<I, (O, <I as Input>::Slice), E> for WithRecognized<F, O>
+impl<I, O, E, F> Parser<I, (O, <I as Stream>::Slice), E> for WithRecognized<F, O>
 where
-    I: Input + Offset,
+    I: Stream + Offset,
     E: ParseError<I>,
     F: Parser<I, O, E>,
 {
-    fn parse_next(&mut self, input: I) -> IResult<I, (O, <I as Input>::Slice), E> {
+    fn parse_next(&mut self, input: I) -> IResult<I, (O, <I as Stream>::Slice), E> {
         let i = input.clone();
         match (self.parser).parse_next(i) {
             Ok((remaining, result)) => {
@@ -1685,14 +1685,14 @@ impl<F, O, C> DbgErr<F, O, C> {
 #[cfg(feature = "std")]
 impl<I, O, E, F, C> Parser<I, O, E> for DbgErr<F, O, C>
 where
-    I: crate::input::AsBytes,
+    I: crate::stream::AsBytes,
     I: Clone,
     E: std::fmt::Debug,
     F: Parser<I, O, E>,
     C: std::fmt::Display,
 {
     fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
-        use crate::input::HexDisplay;
+        use crate::stream::HexDisplay;
         let i = input.clone();
         match self.f.parse_next(i) {
             Err(e) => {

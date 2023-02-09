@@ -8,7 +8,7 @@ pub mod streaming;
 mod tests;
 
 use crate::error::ParseError;
-use crate::input::{AsBytes, Input, InputIsStreaming};
+use crate::stream::{AsBytes, Stream, StreamIsPartial};
 use crate::IResult;
 
 /// Configurable endianness
@@ -26,7 +26,7 @@ pub enum Endianness {
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -45,23 +45,23 @@ pub enum Endianness {
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::be_u8;
 ///
 /// let parser = |s| {
 ///   be_u8::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01abcd"[..])), Ok((Streaming(&b"\x01abcd"[..]), 0x00)));
-/// assert_eq!(parser(Streaming(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial(&b"\x00\x01abcd"[..])), Ok((Partial(&b"\x01abcd"[..]), 0x00)));
+/// assert_eq!(parser(Partial(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn be_u8<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u8, E>
+pub fn be_u8<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u8, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::be_u8(input)
     } else {
         complete::be_u8(input)
@@ -72,7 +72,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -91,24 +91,24 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::be_u16;
 ///
 /// let parser = |s| {
 ///   be_u16::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x0001)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial(&b"\x00\x01abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x0001)));
+/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn be_u16<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u16, E>
+pub fn be_u16<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u16, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::be_u16(input)
     } else {
         complete::be_u16(input)
@@ -119,7 +119,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -138,24 +138,24 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::be_u24;
 ///
 /// let parser = |s| {
 ///   be_u24::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01\x02abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x000102)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Partial(&b"\x00\x01\x02abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x000102)));
+/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn be_u24<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u32, E>
+pub fn be_u24<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u32, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::be_u24(input)
     } else {
         complete::be_u24(input)
@@ -166,7 +166,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -185,24 +185,24 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::be_u32;
 ///
 /// let parser = |s| {
 ///   be_u32::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x00010203)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x00010203)));
+/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn be_u32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u32, E>
+pub fn be_u32<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u32, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::be_u32(input)
     } else {
         complete::be_u32(input)
@@ -213,7 +213,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -232,24 +232,24 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::be_u64;
 ///
 /// let parser = |s| {
 ///   be_u64::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x0001020304050607)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x0001020304050607)));
+/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn be_u64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u64, E>
+pub fn be_u64<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u64, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::be_u64(input)
     } else {
         complete::be_u64(input)
@@ -260,7 +260,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -279,24 +279,24 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::be_u128;
 ///
 /// let parser = |s| {
 ///   be_u128::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x00010203040506070809101112131415)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
+/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x00010203040506070809101112131415)));
+/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn be_u128<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u128, E>
+pub fn be_u128<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u128, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::be_u128(input)
     } else {
         complete::be_u128(input)
@@ -307,7 +307,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -326,21 +326,21 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::be_i8;
 ///
 /// let parser = be_i8::<_, Error<_>, true>;
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01abcd"[..])), Ok((Streaming(&b"\x01abcd"[..]), 0x00)));
-/// assert_eq!(parser(Streaming(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial(&b"\x00\x01abcd"[..])), Ok((Partial(&b"\x01abcd"[..]), 0x00)));
+/// assert_eq!(parser(Partial(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn be_i8<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i8, E>
+pub fn be_i8<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i8, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::be_i8(input)
     } else {
         complete::be_i8(input)
@@ -351,7 +351,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -370,22 +370,22 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::be_i16;
 ///
 /// let parser = be_i16::<_, Error<_>, true>;
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x0001)));
-/// assert_eq!(parser(Streaming(&b""[..])), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Partial(&b"\x00\x01abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x0001)));
+/// assert_eq!(parser(Partial(&b""[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn be_i16<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i16, E>
+pub fn be_i16<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i16, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::be_i16(input)
     } else {
         complete::be_i16(input)
@@ -396,7 +396,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -415,22 +415,22 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::be_i24;
 ///
 /// let parser = be_i24::<_, Error<_>, true>;
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01\x02abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x000102)));
-/// assert_eq!(parser(Streaming(&b""[..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(parser(Partial(&b"\x00\x01\x02abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x000102)));
+/// assert_eq!(parser(Partial(&b""[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn be_i24<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i32, E>
+pub fn be_i24<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i32, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::be_i24(input)
     } else {
         complete::be_i24(input)
@@ -441,7 +441,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -460,22 +460,22 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::be_i32;
 ///
 /// let parser = be_i32::<_, Error<_>, true>;
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x00010203)));
-/// assert_eq!(parser(Streaming(&b""[..])), Err(ErrMode::Incomplete(Needed::new(4))));
+/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x00010203)));
+/// assert_eq!(parser(Partial(&b""[..])), Err(ErrMode::Incomplete(Needed::new(4))));
 /// ```
 #[inline(always)]
-pub fn be_i32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i32, E>
+pub fn be_i32<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i32, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::be_i32(input)
     } else {
         complete::be_i32(input)
@@ -486,7 +486,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -505,22 +505,22 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::be_i64;
 ///
 /// let parser = be_i64::<_, Error<_>, true>;
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x0001020304050607)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x0001020304050607)));
+/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn be_i64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i64, E>
+pub fn be_i64<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i64, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::be_i64(input)
     } else {
         complete::be_i64(input)
@@ -531,7 +531,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -550,22 +550,22 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::be_i128;
 ///
 /// let parser = be_i128::<_, Error<_>, true>;
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x00010203040506070809101112131415)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
+/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x00010203040506070809101112131415)));
+/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn be_i128<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i128, E>
+pub fn be_i128<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i128, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::be_i128(input)
     } else {
         complete::be_i128(input)
@@ -576,7 +576,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -595,21 +595,21 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::le_u8;
 ///
 /// let parser = le_u8::<_, Error<_>, true>;
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01abcd"[..])), Ok((Streaming(&b"\x01abcd"[..]), 0x00)));
-/// assert_eq!(parser(Streaming(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial(&b"\x00\x01abcd"[..])), Ok((Partial(&b"\x01abcd"[..]), 0x00)));
+/// assert_eq!(parser(Partial(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn le_u8<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u8, E>
+pub fn le_u8<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u8, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::le_u8(input)
     } else {
         complete::le_u8(input)
@@ -620,7 +620,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -639,24 +639,24 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::le_u16;
 ///
 /// let parser = |s| {
 ///   le_u16::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x0100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial(&b"\x00\x01abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x0100)));
+/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn le_u16<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u16, E>
+pub fn le_u16<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u16, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::le_u16(input)
     } else {
         complete::le_u16(input)
@@ -667,7 +667,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -686,24 +686,24 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::le_u24;
 ///
 /// let parser = |s| {
 ///   le_u24::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01\x02abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x020100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Partial(&b"\x00\x01\x02abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x020100)));
+/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn le_u24<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u32, E>
+pub fn le_u24<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u32, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::le_u24(input)
     } else {
         complete::le_u24(input)
@@ -714,7 +714,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -733,24 +733,24 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::le_u32;
 ///
 /// let parser = |s| {
 ///   le_u32::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x03020100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x03020100)));
+/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn le_u32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u32, E>
+pub fn le_u32<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u32, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::le_u32(input)
     } else {
         complete::le_u32(input)
@@ -761,7 +761,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -780,24 +780,24 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::le_u64;
 ///
 /// let parser = |s| {
 ///   le_u64::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x0706050403020100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x0706050403020100)));
+/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn le_u64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u64, E>
+pub fn le_u64<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u64, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::le_u64(input)
     } else {
         complete::le_u64(input)
@@ -808,7 +808,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -827,24 +827,24 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::le_u128;
 ///
 /// let parser = |s| {
 ///   le_u128::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x15141312111009080706050403020100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
+/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x15141312111009080706050403020100)));
+/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn le_u128<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u128, E>
+pub fn le_u128<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u128, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::le_u128(input)
     } else {
         complete::le_u128(input)
@@ -855,7 +855,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -874,21 +874,21 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::le_i8;
 ///
 /// let parser = le_i8::<_, Error<_>, true>;
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01abcd"[..])), Ok((Streaming(&b"\x01abcd"[..]), 0x00)));
-/// assert_eq!(parser(Streaming(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial(&b"\x00\x01abcd"[..])), Ok((Partial(&b"\x01abcd"[..]), 0x00)));
+/// assert_eq!(parser(Partial(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn le_i8<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i8, E>
+pub fn le_i8<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i8, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::le_i8(input)
     } else {
         complete::le_i8(input)
@@ -899,7 +899,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -918,24 +918,24 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::le_i16;
 ///
 /// let parser = |s| {
 ///   le_i16::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x0100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial(&b"\x00\x01abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x0100)));
+/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn le_i16<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i16, E>
+pub fn le_i16<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i16, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::le_i16(input)
     } else {
         complete::le_i16(input)
@@ -946,7 +946,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -965,24 +965,24 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::le_i24;
 ///
 /// let parser = |s| {
 ///   le_i24::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01\x02abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x020100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Partial(&b"\x00\x01\x02abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x020100)));
+/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn le_i24<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i32, E>
+pub fn le_i24<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i32, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::le_i24(input)
     } else {
         complete::le_i24(input)
@@ -993,7 +993,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -1012,24 +1012,24 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::le_i32;
 ///
 /// let parser = |s| {
 ///   le_i32::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x03020100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x03020100)));
+/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn le_i32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i32, E>
+pub fn le_i32<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i32, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::le_i32(input)
     } else {
         complete::le_i32(input)
@@ -1040,7 +1040,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -1059,24 +1059,24 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::le_i64;
 ///
 /// let parser = |s| {
 ///   le_i64::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x0706050403020100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x0706050403020100)));
+/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn le_i64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i64, E>
+pub fn le_i64<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i64, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::le_i64(input)
     } else {
         complete::le_i64(input)
@@ -1087,7 +1087,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -1106,24 +1106,24 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::le_i128;
 ///
 /// let parser = |s| {
 ///   le_i128::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Streaming(&b"abcd"[..]), 0x15141312111009080706050403020100)));
-/// assert_eq!(parser(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
+/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x15141312111009080706050403020100)));
+/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn le_i128<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i128, E>
+pub fn le_i128<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i128, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::le_i128(input)
     } else {
         complete::le_i128(input)
@@ -1136,7 +1136,7 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -1156,23 +1156,23 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::u8;
 ///
 /// let parser = |s| {
 ///   u8::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x03abcefg"[..])), Ok((Streaming(&b"\x03abcefg"[..]), 0x00)));
-/// assert_eq!(parser(Streaming(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial(&b"\x00\x03abcefg"[..])), Ok((Partial(&b"\x03abcefg"[..]), 0x00)));
+/// assert_eq!(parser(Partial(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn u8<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, u8, E>
+pub fn u8<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u8, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::u8(input)
     } else {
         complete::u8(input)
@@ -1186,7 +1186,7 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -1213,33 +1213,33 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::u16;
 ///
 /// let be_u16 = |s| {
 ///   u16::<_, Error<_>, true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_u16(Streaming(&b"\x00\x03abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0003)));
-/// assert_eq!(be_u16(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(be_u16(Partial(&b"\x00\x03abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x0003)));
+/// assert_eq!(be_u16(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// let le_u16 = |s| {
 ///   u16::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_u16(Streaming(&b"\x00\x03abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0300)));
-/// assert_eq!(le_u16(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(le_u16(Partial(&b"\x00\x03abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x0300)));
+/// assert_eq!(le_u16(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn u16<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn u16<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, u16, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::u16(endian)
     } else {
         complete::u16(endian)
@@ -1253,7 +1253,7 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -1280,33 +1280,33 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::u24;
 ///
 /// let be_u24 = |s| {
 ///   u24::<_,Error<_>, true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_u24(Streaming(&b"\x00\x03\x05abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x000305)));
-/// assert_eq!(be_u24(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(be_u24(Partial(&b"\x00\x03\x05abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x000305)));
+/// assert_eq!(be_u24(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 ///
 /// let le_u24 = |s| {
 ///   u24::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_u24(Streaming(&b"\x00\x03\x05abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x050300)));
-/// assert_eq!(le_u24(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(le_u24(Partial(&b"\x00\x03\x05abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x050300)));
+/// assert_eq!(le_u24(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn u24<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn u24<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, u32, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::u24(endian)
     } else {
         complete::u24(endian)
@@ -1320,7 +1320,7 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -1347,33 +1347,33 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::u32;
 ///
 /// let be_u32 = |s| {
 ///   u32::<_, Error<_>, true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_u32(Streaming(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x00030507)));
-/// assert_eq!(be_u32(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(be_u32(Partial(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x00030507)));
+/// assert_eq!(be_u32(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 ///
 /// let le_u32 = |s| {
 ///   u32::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_u32(Streaming(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x07050300)));
-/// assert_eq!(le_u32(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(le_u32(Partial(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x07050300)));
+/// assert_eq!(le_u32(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn u32<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn u32<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, u32, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::u32(endian)
     } else {
         complete::u32(endian)
@@ -1387,7 +1387,7 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -1414,33 +1414,33 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::u64;
 ///
 /// let be_u64 = |s| {
 ///   u64::<_, Error<_>, true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_u64(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0001020304050607)));
-/// assert_eq!(be_u64(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(be_u64(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x0001020304050607)));
+/// assert_eq!(be_u64(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 ///
 /// let le_u64 = |s| {
 ///   u64::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_u64(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0706050403020100)));
-/// assert_eq!(le_u64(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(le_u64(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x0706050403020100)));
+/// assert_eq!(le_u64(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn u64<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn u64<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, u64, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::u64(endian)
     } else {
         complete::u64(endian)
@@ -1454,7 +1454,7 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -1481,33 +1481,33 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::u128;
 ///
 /// let be_u128 = |s| {
 ///   u128::<_, Error<_>, true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_u128(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x00010203040506070001020304050607)));
-/// assert_eq!(be_u128(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
+/// assert_eq!(be_u128(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x00010203040506070001020304050607)));
+/// assert_eq!(be_u128(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 ///
 /// let le_u128 = |s| {
 ///   u128::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_u128(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x07060504030201000706050403020100)));
-/// assert_eq!(le_u128(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
+/// assert_eq!(le_u128(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x07060504030201000706050403020100)));
+/// assert_eq!(le_u128(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn u128<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn u128<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, u128, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::u128(endian)
     } else {
         complete::u128(endian)
@@ -1520,7 +1520,7 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -1540,23 +1540,23 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::i8;
 ///
 /// let parser = |s| {
 ///   i8::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&b"\x00\x03abcefg"[..])), Ok((Streaming(&b"\x03abcefg"[..]), 0x00)));
-/// assert_eq!(parser(Streaming(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial(&b"\x00\x03abcefg"[..])), Ok((Partial(&b"\x03abcefg"[..]), 0x00)));
+/// assert_eq!(parser(Partial(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn i8<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, i8, E>
+pub fn i8<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, i8, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::i8(input)
     } else {
         complete::i8(input)
@@ -1570,7 +1570,7 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -1597,33 +1597,33 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::i16;
 ///
 /// let be_i16 = |s| {
 ///   i16::<_, Error<_>, true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_i16(Streaming(&b"\x00\x03abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0003)));
-/// assert_eq!(be_i16(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(be_i16(Partial(&b"\x00\x03abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x0003)));
+/// assert_eq!(be_i16(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// let le_i16 = |s| {
 ///   i16::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_i16(Streaming(&b"\x00\x03abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0300)));
-/// assert_eq!(le_i16(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(le_i16(Partial(&b"\x00\x03abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x0300)));
+/// assert_eq!(le_i16(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn i16<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn i16<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, i16, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::i16(endian)
     } else {
         complete::i16(endian)
@@ -1637,7 +1637,7 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -1664,33 +1664,33 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::i24;
 ///
 /// let be_i24 = |s| {
 ///   i24::<_, Error<_>, true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_i24(Streaming(&b"\x00\x03\x05abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x000305)));
-/// assert_eq!(be_i24(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(be_i24(Partial(&b"\x00\x03\x05abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x000305)));
+/// assert_eq!(be_i24(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 ///
 /// let le_i24 = |s| {
 ///   i24::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_i24(Streaming(&b"\x00\x03\x05abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x050300)));
-/// assert_eq!(le_i24(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(le_i24(Partial(&b"\x00\x03\x05abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x050300)));
+/// assert_eq!(le_i24(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn i24<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn i24<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, i32, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::i24(endian)
     } else {
         complete::i24(endian)
@@ -1704,7 +1704,7 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -1731,33 +1731,33 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::i32;
 ///
 /// let be_i32 = |s| {
 ///   i32::<_, Error<_>, true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_i32(Streaming(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x00030507)));
-/// assert_eq!(be_i32(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(be_i32(Partial(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x00030507)));
+/// assert_eq!(be_i32(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 ///
 /// let le_i32 = |s| {
 ///   i32::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_i32(Streaming(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x07050300)));
-/// assert_eq!(le_i32(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(le_i32(Partial(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x07050300)));
+/// assert_eq!(le_i32(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn i32<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn i32<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, i32, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::i32(endian)
     } else {
         complete::i32(endian)
@@ -1771,7 +1771,7 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -1798,33 +1798,33 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::i64;
 ///
 /// let be_i64 = |s| {
 ///   i64::<_, Error<_>, true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_i64(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0001020304050607)));
-/// assert_eq!(be_i64(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(be_i64(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x0001020304050607)));
+/// assert_eq!(be_i64(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 ///
 /// let le_i64 = |s| {
 ///   i64::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_i64(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x0706050403020100)));
-/// assert_eq!(le_i64(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(le_i64(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x0706050403020100)));
+/// assert_eq!(le_i64(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn i64<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn i64<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, i64, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::i64(endian)
     } else {
         complete::i64(endian)
@@ -1838,7 +1838,7 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -1865,33 +1865,33 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::i128;
 ///
 /// let be_i128 = |s| {
 ///   i128::<_, Error<_>, true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_i128(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x00010203040506070001020304050607)));
-/// assert_eq!(be_i128(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
+/// assert_eq!(be_i128(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x00010203040506070001020304050607)));
+/// assert_eq!(be_i128(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 ///
 /// let le_i128 = |s| {
 ///   i128::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_i128(Streaming(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Streaming(&b"abcefg"[..]), 0x07060504030201000706050403020100)));
-/// assert_eq!(le_i128(Streaming(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
+/// assert_eq!(le_i128(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x07060504030201000706050403020100)));
+/// assert_eq!(le_i128(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn i128<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn i128<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, i128, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::i128(endian)
     } else {
         complete::i128(endian)
@@ -1902,7 +1902,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -1921,24 +1921,24 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::be_f32;
 ///
 /// let parser = |s| {
 ///   be_f32::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&[0x40, 0x29, 0x00, 0x00][..])), Ok((Streaming(&b""[..]), 2.640625)));
-/// assert_eq!(parser(Streaming(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(parser(Partial(&[0x40, 0x29, 0x00, 0x00][..])), Ok((Partial(&b""[..]), 2.640625)));
+/// assert_eq!(parser(Partial(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn be_f32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f32, E>
+pub fn be_f32<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, f32, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::be_f32(input)
     } else {
         complete::be_f32(input)
@@ -1949,7 +1949,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -1968,24 +1968,24 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::be_f64;
 ///
 /// let parser = |s| {
 ///   be_f64::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])), Ok((Streaming(&b""[..]), 12.5)));
-/// assert_eq!(parser(Streaming(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(parser(Partial(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])), Ok((Partial(&b""[..]), 12.5)));
+/// assert_eq!(parser(Partial(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn be_f64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f64, E>
+pub fn be_f64<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, f64, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::be_f64(input)
     } else {
         complete::be_f64(input)
@@ -1996,7 +1996,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -2015,24 +2015,24 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::le_f32;
 ///
 /// let parser = |s| {
 ///   le_f32::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&[0x00, 0x00, 0x48, 0x41][..])), Ok((Streaming(&b""[..]), 12.5)));
-/// assert_eq!(parser(Streaming(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(parser(Partial(&[0x00, 0x00, 0x48, 0x41][..])), Ok((Partial(&b""[..]), 12.5)));
+/// assert_eq!(parser(Partial(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn le_f32<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f32, E>
+pub fn le_f32<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, f32, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::le_f32(input)
     } else {
         complete::le_f32(input)
@@ -2043,7 +2043,7 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -2062,24 +2062,24 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::le_f64;
 ///
 /// let parser = |s| {
 ///   le_f64::<_, Error<_>, true>(s)
 /// };
 ///
-/// assert_eq!(parser(Streaming(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x41][..])), Ok((Streaming(&b""[..]), 3145728.0)));
-/// assert_eq!(parser(Streaming(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(parser(Partial(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x41][..])), Ok((Partial(&b""[..]), 3145728.0)));
+/// assert_eq!(parser(Partial(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn le_f64<I, E: ParseError<I>, const STREAMING: bool>(input: I) -> IResult<I, f64, E>
+pub fn le_f64<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, f64, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::le_f64(input)
     } else {
         complete::le_f64(input)
@@ -2093,7 +2093,7 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -2120,33 +2120,33 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::f32;
 ///
 /// let be_f32 = |s| {
 ///   f32::<_, Error<_>, true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_f32(Streaming(&[0x41, 0x48, 0x00, 0x00][..])), Ok((Streaming(&b""[..]), 12.5)));
-/// assert_eq!(be_f32(Streaming(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(be_f32(Partial(&[0x41, 0x48, 0x00, 0x00][..])), Ok((Partial(&b""[..]), 12.5)));
+/// assert_eq!(be_f32(Partial(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// let le_f32 = |s| {
 ///   f32::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_f32(Streaming(&[0x00, 0x00, 0x48, 0x41][..])), Ok((Streaming(&b""[..]), 12.5)));
-/// assert_eq!(le_f32(Streaming(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(le_f32(Partial(&[0x00, 0x00, 0x48, 0x41][..])), Ok((Partial(&b""[..]), 12.5)));
+/// assert_eq!(le_f32(Partial(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn f32<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn f32<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, f32, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::f32(endian)
     } else {
         complete::f32(endian)
@@ -2160,7 +2160,7 @@ where
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Example
 ///
@@ -2187,33 +2187,33 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
-/// # use winnow::Streaming;
+/// # use winnow::Partial;
 /// use winnow::number::f64;
 ///
 /// let be_f64 = |s| {
 ///   f64::<_, Error<_>, true>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_f64(Streaming(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])), Ok((Streaming(&b""[..]), 12.5)));
-/// assert_eq!(be_f64(Streaming(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(5))));
+/// assert_eq!(be_f64(Partial(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])), Ok((Partial(&b""[..]), 12.5)));
+/// assert_eq!(be_f64(Partial(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(5))));
 ///
 /// let le_f64 = |s| {
 ///   f64::<_, Error<_>, true>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_f64(Streaming(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29, 0x40][..])), Ok((Streaming(&b""[..]), 12.5)));
-/// assert_eq!(le_f64(Streaming(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(5))));
+/// assert_eq!(le_f64(Partial(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29, 0x40][..])), Ok((Partial(&b""[..]), 12.5)));
+/// assert_eq!(le_f64(Partial(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(5))));
 /// ```
 #[inline(always)]
-pub fn f64<I, E: ParseError<I>, const STREAMING: bool>(
+pub fn f64<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
 ) -> fn(I) -> IResult<I, f64, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input<Token = u8>,
-    <I as Input>::Slice: AsBytes,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
 {
-    if STREAMING {
+    if PARTIAL {
         streaming::f64(endian)
     } else {
         complete::f64(endian)

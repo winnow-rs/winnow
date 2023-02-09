@@ -9,7 +9,7 @@ mod complete {
     use crate::error::ErrMode;
     use crate::error::Error;
     use crate::error::ErrorKind;
-    use crate::input::ParseSlice;
+    use crate::stream::ParseSlice;
     #[cfg(feature = "alloc")]
     use crate::{lib::std::string::String, lib::std::vec::Vec};
     use proptest::prelude::*;
@@ -146,7 +146,7 @@ mod complete {
         assert_eq!(space1::<_, Error<_>, false>(e), Ok((empty, e)));
     }
 
-    use crate::input::Offset;
+    use crate::stream::Offset;
     #[test]
     fn offset() {
         let a = &b"abcd;"[..];
@@ -853,16 +853,16 @@ mod complete {
     }
 }
 
-mod streaming {
+mod partial {
     use super::*;
     use crate::combinator::opt;
     use crate::error::Error;
     use crate::error::ErrorKind;
     use crate::error::{ErrMode, Needed};
-    use crate::input::ParseSlice;
     use crate::sequence::pair;
+    use crate::stream::ParseSlice;
     use crate::IResult;
-    use crate::Streaming;
+    use crate::Partial;
     use proptest::prelude::*;
 
     macro_rules! assert_parse(
@@ -881,118 +881,103 @@ mod streaming {
         let e: &[u8] = b" ";
         let f: &[u8] = b" ;";
         //assert_eq!(alpha1::<_, Error<_>, true>(a), Err(ErrMode::Incomplete(Needed::new(1))));
-        assert_parse!(
-            alpha1(Streaming(a)),
+        assert_parse!(alpha1(Partial(a)), Err(ErrMode::Incomplete(Needed::new(1))));
+        assert_eq!(
+            alpha1(Partial(b)),
+            Err(ErrMode::Backtrack(Error::new(Partial(b), ErrorKind::Alpha)))
+        );
+        assert_eq!(
+            alpha1::<_, Error<_>, true>(Partial(c)),
+            Ok((Partial(&c[1..]), &b"a"[..]))
+        );
+        assert_eq!(
+            alpha1::<_, Error<_>, true>(Partial(d)),
+            Ok((Partial("é12".as_bytes()), &b"az"[..]))
+        );
+        assert_eq!(
+            digit1(Partial(a)),
+            Err(ErrMode::Backtrack(Error::new(Partial(a), ErrorKind::Digit)))
+        );
+        assert_eq!(
+            digit1::<_, Error<_>, true>(Partial(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            alpha1(Streaming(b)),
-            Err(ErrMode::Backtrack(Error::new(
-                Streaming(b),
-                ErrorKind::Alpha
-            )))
+            digit1(Partial(c)),
+            Err(ErrMode::Backtrack(Error::new(Partial(c), ErrorKind::Digit)))
         );
         assert_eq!(
-            alpha1::<_, Error<_>, true>(Streaming(c)),
-            Ok((Streaming(&c[1..]), &b"a"[..]))
+            digit1(Partial(d)),
+            Err(ErrMode::Backtrack(Error::new(Partial(d), ErrorKind::Digit)))
         );
         assert_eq!(
-            alpha1::<_, Error<_>, true>(Streaming(d)),
-            Ok((Streaming("é12".as_bytes()), &b"az"[..]))
-        );
-        assert_eq!(
-            digit1(Streaming(a)),
-            Err(ErrMode::Backtrack(Error::new(
-                Streaming(a),
-                ErrorKind::Digit
-            )))
-        );
-        assert_eq!(
-            digit1::<_, Error<_>, true>(Streaming(b)),
+            hex_digit1::<_, Error<_>, true>(Partial(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            digit1(Streaming(c)),
-            Err(ErrMode::Backtrack(Error::new(
-                Streaming(c),
-                ErrorKind::Digit
-            )))
-        );
-        assert_eq!(
-            digit1(Streaming(d)),
-            Err(ErrMode::Backtrack(Error::new(
-                Streaming(d),
-                ErrorKind::Digit
-            )))
-        );
-        assert_eq!(
-            hex_digit1::<_, Error<_>, true>(Streaming(a)),
+            hex_digit1::<_, Error<_>, true>(Partial(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>, true>(Streaming(b)),
+            hex_digit1::<_, Error<_>, true>(Partial(c)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>, true>(Streaming(c)),
-            Err(ErrMode::Incomplete(Needed::new(1)))
+            hex_digit1::<_, Error<_>, true>(Partial(d)),
+            Ok((Partial("zé12".as_bytes()), &b"a"[..]))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>, true>(Streaming(d)),
-            Ok((Streaming("zé12".as_bytes()), &b"a"[..]))
-        );
-        assert_eq!(
-            hex_digit1(Streaming(e)),
+            hex_digit1(Partial(e)),
             Err(ErrMode::Backtrack(Error::new(
-                Streaming(e),
+                Partial(e),
                 ErrorKind::HexDigit
             )))
         );
         assert_eq!(
-            oct_digit1(Streaming(a)),
+            oct_digit1(Partial(a)),
             Err(ErrMode::Backtrack(Error::new(
-                Streaming(a),
+                Partial(a),
                 ErrorKind::OctDigit
             )))
         );
         assert_eq!(
-            oct_digit1::<_, Error<_>, true>(Streaming(b)),
+            oct_digit1::<_, Error<_>, true>(Partial(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            oct_digit1(Streaming(c)),
+            oct_digit1(Partial(c)),
             Err(ErrMode::Backtrack(Error::new(
-                Streaming(c),
+                Partial(c),
                 ErrorKind::OctDigit
             )))
         );
         assert_eq!(
-            oct_digit1(Streaming(d)),
+            oct_digit1(Partial(d)),
             Err(ErrMode::Backtrack(Error::new(
-                Streaming(d),
+                Partial(d),
                 ErrorKind::OctDigit
             )))
         );
         assert_eq!(
-            alphanumeric1::<_, Error<_>, true>(Streaming(a)),
+            alphanumeric1::<_, Error<_>, true>(Partial(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         //assert_eq!(fix_error!(b,(), alphanumeric1), Ok((empty, b)));
         assert_eq!(
-            alphanumeric1::<_, Error<_>, true>(Streaming(c)),
+            alphanumeric1::<_, Error<_>, true>(Partial(c)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            alphanumeric1::<_, Error<_>, true>(Streaming(d)),
-            Ok((Streaming("é12".as_bytes()), &b"az"[..]))
+            alphanumeric1::<_, Error<_>, true>(Partial(d)),
+            Ok((Partial("é12".as_bytes()), &b"az"[..]))
         );
         assert_eq!(
-            space1::<_, Error<_>, true>(Streaming(e)),
+            space1::<_, Error<_>, true>(Partial(e)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            space1::<_, Error<_>, true>(Streaming(f)),
-            Ok((Streaming(&b";"[..]), &b" "[..]))
+            space1::<_, Error<_>, true>(Partial(f)),
+            Ok((Partial(&b";"[..]), &b" "[..]))
         );
     }
 
@@ -1005,117 +990,105 @@ mod streaming {
         let d = "azé12";
         let e = " ";
         assert_eq!(
-            alpha1::<_, Error<_>, true>(Streaming(a)),
+            alpha1::<_, Error<_>, true>(Partial(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            alpha1(Streaming(b)),
-            Err(ErrMode::Backtrack(Error::new(
-                Streaming(b),
-                ErrorKind::Alpha
-            )))
+            alpha1(Partial(b)),
+            Err(ErrMode::Backtrack(Error::new(Partial(b), ErrorKind::Alpha)))
         );
         assert_eq!(
-            alpha1::<_, Error<_>, true>(Streaming(c)),
-            Ok((Streaming(&c[1..]), "a"))
+            alpha1::<_, Error<_>, true>(Partial(c)),
+            Ok((Partial(&c[1..]), "a"))
         );
         assert_eq!(
-            alpha1::<_, Error<_>, true>(Streaming(d)),
-            Ok((Streaming("é12"), "az"))
+            alpha1::<_, Error<_>, true>(Partial(d)),
+            Ok((Partial("é12"), "az"))
         );
         assert_eq!(
-            digit1(Streaming(a)),
-            Err(ErrMode::Backtrack(Error::new(
-                Streaming(a),
-                ErrorKind::Digit
-            )))
+            digit1(Partial(a)),
+            Err(ErrMode::Backtrack(Error::new(Partial(a), ErrorKind::Digit)))
         );
         assert_eq!(
-            digit1::<_, Error<_>, true>(Streaming(b)),
+            digit1::<_, Error<_>, true>(Partial(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            digit1(Streaming(c)),
-            Err(ErrMode::Backtrack(Error::new(
-                Streaming(c),
-                ErrorKind::Digit
-            )))
+            digit1(Partial(c)),
+            Err(ErrMode::Backtrack(Error::new(Partial(c), ErrorKind::Digit)))
         );
         assert_eq!(
-            digit1(Streaming(d)),
-            Err(ErrMode::Backtrack(Error::new(
-                Streaming(d),
-                ErrorKind::Digit
-            )))
+            digit1(Partial(d)),
+            Err(ErrMode::Backtrack(Error::new(Partial(d), ErrorKind::Digit)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>, true>(Streaming(a)),
+            hex_digit1::<_, Error<_>, true>(Partial(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>, true>(Streaming(b)),
+            hex_digit1::<_, Error<_>, true>(Partial(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>, true>(Streaming(c)),
+            hex_digit1::<_, Error<_>, true>(Partial(c)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>, true>(Streaming(d)),
-            Ok((Streaming("zé12"), "a"))
+            hex_digit1::<_, Error<_>, true>(Partial(d)),
+            Ok((Partial("zé12"), "a"))
         );
         assert_eq!(
-            hex_digit1(Streaming(e)),
+            hex_digit1(Partial(e)),
             Err(ErrMode::Backtrack(Error::new(
-                Streaming(e),
+                Partial(e),
                 ErrorKind::HexDigit
             )))
         );
         assert_eq!(
-            oct_digit1(Streaming(a)),
+            oct_digit1(Partial(a)),
             Err(ErrMode::Backtrack(Error::new(
-                Streaming(a),
+                Partial(a),
                 ErrorKind::OctDigit
             )))
         );
         assert_eq!(
-            oct_digit1::<_, Error<_>, true>(Streaming(b)),
+            oct_digit1::<_, Error<_>, true>(Partial(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            oct_digit1(Streaming(c)),
+            oct_digit1(Partial(c)),
             Err(ErrMode::Backtrack(Error::new(
-                Streaming(c),
+                Partial(c),
                 ErrorKind::OctDigit
             )))
         );
         assert_eq!(
-            oct_digit1(Streaming(d)),
+            oct_digit1(Partial(d)),
             Err(ErrMode::Backtrack(Error::new(
-                Streaming(d),
+                Partial(d),
                 ErrorKind::OctDigit
             )))
         );
         assert_eq!(
-            alphanumeric1::<_, Error<_>, true>(Streaming(a)),
+            alphanumeric1::<_, Error<_>, true>(Partial(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         //assert_eq!(fix_error!(b,(), alphanumeric1), Ok((empty, b)));
         assert_eq!(
-            alphanumeric1::<_, Error<_>, true>(Streaming(c)),
+            alphanumeric1::<_, Error<_>, true>(Partial(c)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            alphanumeric1::<_, Error<_>, true>(Streaming(d)),
-            Ok((Streaming("é12"), "az"))
+            alphanumeric1::<_, Error<_>, true>(Partial(d)),
+            Ok((Partial("é12"), "az"))
         );
         assert_eq!(
-            space1::<_, Error<_>, true>(Streaming(e)),
+            space1::<_, Error<_>, true>(Partial(e)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
     }
 
-    use crate::input::Offset;
+    use crate::stream::Offset;
     #[test]
     fn offset() {
         let a = &b"abcd;"[..];
@@ -1125,44 +1098,44 @@ mod streaming {
         let e = &b" \t\r\n;"[..];
         let f = &b"123abcDEF;"[..];
 
-        match alpha1::<_, Error<_>, true>(Streaming(a)) {
-            Ok((Streaming(i), _)) => {
+        match alpha1::<_, Error<_>, true>(Partial(a)) {
+            Ok((Partial(i), _)) => {
                 assert_eq!(a.offset_to(i) + i.len(), a.len());
             }
             _ => panic!("wrong return type in offset test for alpha"),
         }
-        match digit1::<_, Error<_>, true>(Streaming(b)) {
-            Ok((Streaming(i), _)) => {
+        match digit1::<_, Error<_>, true>(Partial(b)) {
+            Ok((Partial(i), _)) => {
                 assert_eq!(b.offset_to(i) + i.len(), b.len());
             }
             _ => panic!("wrong return type in offset test for digit"),
         }
-        match alphanumeric1::<_, Error<_>, true>(Streaming(c)) {
-            Ok((Streaming(i), _)) => {
+        match alphanumeric1::<_, Error<_>, true>(Partial(c)) {
+            Ok((Partial(i), _)) => {
                 assert_eq!(c.offset_to(i) + i.len(), c.len());
             }
             _ => panic!("wrong return type in offset test for alphanumeric"),
         }
-        match space1::<_, Error<_>, true>(Streaming(d)) {
-            Ok((Streaming(i), _)) => {
+        match space1::<_, Error<_>, true>(Partial(d)) {
+            Ok((Partial(i), _)) => {
                 assert_eq!(d.offset_to(i) + i.len(), d.len());
             }
             _ => panic!("wrong return type in offset test for space"),
         }
-        match multispace1::<_, Error<_>, true>(Streaming(e)) {
-            Ok((Streaming(i), _)) => {
+        match multispace1::<_, Error<_>, true>(Partial(e)) {
+            Ok((Partial(i), _)) => {
                 assert_eq!(e.offset_to(i) + i.len(), e.len());
             }
             _ => panic!("wrong return type in offset test for multispace"),
         }
-        match hex_digit1::<_, Error<_>, true>(Streaming(f)) {
-            Ok((Streaming(i), _)) => {
+        match hex_digit1::<_, Error<_>, true>(Partial(f)) {
+            Ok((Partial(i), _)) => {
                 assert_eq!(f.offset_to(i) + i.len(), f.len());
             }
             _ => panic!("wrong return type in offset test for hex_digit"),
         }
-        match oct_digit1::<_, Error<_>, true>(Streaming(f)) {
-            Ok((Streaming(i), _)) => {
+        match oct_digit1::<_, Error<_>, true>(Partial(f)) {
+            Ok((Partial(i), _)) => {
                 assert_eq!(f.offset_to(i) + i.len(), f.len());
             }
             _ => panic!("wrong return type in offset test for oct_digit"),
@@ -1173,25 +1146,25 @@ mod streaming {
     fn is_not_line_ending_bytes() {
         let a: &[u8] = b"ab12cd\nefgh";
         assert_eq!(
-            not_line_ending::<_, Error<_>, true>(Streaming(a)),
-            Ok((Streaming(&b"\nefgh"[..]), &b"ab12cd"[..]))
+            not_line_ending::<_, Error<_>, true>(Partial(a)),
+            Ok((Partial(&b"\nefgh"[..]), &b"ab12cd"[..]))
         );
 
         let b: &[u8] = b"ab12cd\nefgh\nijkl";
         assert_eq!(
-            not_line_ending::<_, Error<_>, true>(Streaming(b)),
-            Ok((Streaming(&b"\nefgh\nijkl"[..]), &b"ab12cd"[..]))
+            not_line_ending::<_, Error<_>, true>(Partial(b)),
+            Ok((Partial(&b"\nefgh\nijkl"[..]), &b"ab12cd"[..]))
         );
 
         let c: &[u8] = b"ab12cd\r\nefgh\nijkl";
         assert_eq!(
-            not_line_ending::<_, Error<_>, true>(Streaming(c)),
-            Ok((Streaming(&b"\r\nefgh\nijkl"[..]), &b"ab12cd"[..]))
+            not_line_ending::<_, Error<_>, true>(Partial(c)),
+            Ok((Partial(&b"\r\nefgh\nijkl"[..]), &b"ab12cd"[..]))
         );
 
         let d: &[u8] = b"ab12cd";
         assert_eq!(
-            not_line_ending::<_, Error<_>, true>(Streaming(d)),
+            not_line_ending::<_, Error<_>, true>(Partial(d)),
             Err(ErrMode::Incomplete(Needed::Unknown))
         );
     }
@@ -1200,13 +1173,13 @@ mod streaming {
     fn is_not_line_ending_str() {
         let f = "βèƒôřè\rÂßÇáƒƭèř";
         assert_eq!(
-            not_line_ending(Streaming(f)),
-            Err(ErrMode::Backtrack(Error::new(Streaming(f), ErrorKind::Tag)))
+            not_line_ending(Partial(f)),
+            Err(ErrMode::Backtrack(Error::new(Partial(f), ErrorKind::Tag)))
         );
 
         let g2: &str = "ab12cd";
         assert_eq!(
-            not_line_ending::<_, Error<_>, true>(Streaming(g2)),
+            not_line_ending::<_, Error<_>, true>(Partial(g2)),
             Err(ErrMode::Incomplete(Needed::Unknown))
         );
     }
@@ -1215,24 +1188,24 @@ mod streaming {
     fn hex_digit_test() {
         let i = &b"0123456789abcdefABCDEF;"[..];
         assert_parse!(
-            hex_digit1(Streaming(i)),
-            Ok((Streaming(&b";"[..]), &i[..i.len() - 1]))
+            hex_digit1(Partial(i)),
+            Ok((Partial(&b";"[..]), &i[..i.len() - 1]))
         );
 
         let i = &b"g"[..];
         assert_parse!(
-            hex_digit1(Streaming(i)),
+            hex_digit1(Partial(i)),
             Err(ErrMode::Backtrack(error_position!(
-                Streaming(i),
+                Partial(i),
                 ErrorKind::HexDigit
             )))
         );
 
         let i = &b"G"[..];
         assert_parse!(
-            hex_digit1(Streaming(i)),
+            hex_digit1(Partial(i)),
             Err(ErrMode::Backtrack(error_position!(
-                Streaming(i),
+                Partial(i),
                 ErrorKind::HexDigit
             )))
         );
@@ -1255,15 +1228,15 @@ mod streaming {
     fn oct_digit_test() {
         let i = &b"01234567;"[..];
         assert_parse!(
-            oct_digit1(Streaming(i)),
-            Ok((Streaming(&b";"[..]), &i[..i.len() - 1]))
+            oct_digit1(Partial(i)),
+            Ok((Partial(&b";"[..]), &i[..i.len() - 1]))
         );
 
         let i = &b"8"[..];
         assert_parse!(
-            oct_digit1(Streaming(i)),
+            oct_digit1(Partial(i)),
             Err(ErrMode::Backtrack(error_position!(
-                Streaming(i),
+                Partial(i),
                 ErrorKind::OctDigit
             )))
         );
@@ -1283,69 +1256,66 @@ mod streaming {
     #[test]
     fn full_line_windows() {
         #[allow(clippy::type_complexity)]
-        fn take_full_line(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (&[u8], &[u8])> {
+        fn take_full_line(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (&[u8], &[u8])> {
             pair(not_line_ending, line_ending)(i)
         }
         let input = b"abc\r\n";
-        let output = take_full_line(Streaming(input));
-        assert_eq!(
-            output,
-            Ok((Streaming(&b""[..]), (&b"abc"[..], &b"\r\n"[..])))
-        );
+        let output = take_full_line(Partial(input));
+        assert_eq!(output, Ok((Partial(&b""[..]), (&b"abc"[..], &b"\r\n"[..]))));
     }
 
     #[test]
     fn full_line_unix() {
         #[allow(clippy::type_complexity)]
-        fn take_full_line(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, (&[u8], &[u8])> {
+        fn take_full_line(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (&[u8], &[u8])> {
             pair(not_line_ending, line_ending)(i)
         }
         let input = b"abc\n";
-        let output = take_full_line(Streaming(input));
-        assert_eq!(output, Ok((Streaming(&b""[..]), (&b"abc"[..], &b"\n"[..]))));
+        let output = take_full_line(Partial(input));
+        assert_eq!(output, Ok((Partial(&b""[..]), (&b"abc"[..], &b"\n"[..]))));
     }
 
     #[test]
     fn check_windows_lineending() {
         let input = b"\r\n";
-        let output = line_ending(Streaming(&input[..]));
-        assert_parse!(output, Ok((Streaming(&b""[..]), &b"\r\n"[..])));
+        let output = line_ending(Partial(&input[..]));
+        assert_parse!(output, Ok((Partial(&b""[..]), &b"\r\n"[..])));
     }
 
     #[test]
     fn check_unix_lineending() {
         let input = b"\n";
-        let output = line_ending(Streaming(&input[..]));
-        assert_parse!(output, Ok((Streaming(&b""[..]), &b"\n"[..])));
+        let output = line_ending(Partial(&input[..]));
+        assert_parse!(output, Ok((Partial(&b""[..]), &b"\n"[..])));
     }
 
     #[test]
     fn cr_lf() {
         assert_parse!(
-            crlf(Streaming(&b"\r\na"[..])),
-            Ok((Streaming(&b"a"[..]), &b"\r\n"[..]))
+            crlf(Partial(&b"\r\na"[..])),
+            Ok((Partial(&b"a"[..]), &b"\r\n"[..]))
         );
         assert_parse!(
-            crlf(Streaming(&b"\r"[..])),
+            crlf(Partial(&b"\r"[..])),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
         assert_parse!(
-            crlf(Streaming(&b"\ra"[..])),
+            crlf(Partial(&b"\ra"[..])),
             Err(ErrMode::Backtrack(error_position!(
-                Streaming(&b"\ra"[..]),
+                Partial(&b"\ra"[..]),
                 ErrorKind::CrLf
             )))
         );
 
-        assert_parse!(crlf(Streaming("\r\na")), Ok((Streaming("a"), "\r\n")));
+        assert_parse!(crlf(Partial("\r\na")), Ok((Partial("a"), "\r\n")));
         assert_parse!(
-            crlf(Streaming("\r")),
+            crlf(Partial("\r")),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
         assert_parse!(
-            crlf(Streaming("\ra")),
+            crlf(Partial("\ra")),
             Err(ErrMode::Backtrack(error_position!(
-                Streaming("\ra"),
+                Partial("\ra"),
                 ErrorKind::CrLf
             )))
         );
@@ -1354,44 +1324,41 @@ mod streaming {
     #[test]
     fn end_of_line() {
         assert_parse!(
-            line_ending(Streaming(&b"\na"[..])),
-            Ok((Streaming(&b"a"[..]), &b"\n"[..]))
+            line_ending(Partial(&b"\na"[..])),
+            Ok((Partial(&b"a"[..]), &b"\n"[..]))
         );
         assert_parse!(
-            line_ending(Streaming(&b"\r\na"[..])),
-            Ok((Streaming(&b"a"[..]), &b"\r\n"[..]))
+            line_ending(Partial(&b"\r\na"[..])),
+            Ok((Partial(&b"a"[..]), &b"\r\n"[..]))
         );
         assert_parse!(
-            line_ending(Streaming(&b"\r"[..])),
+            line_ending(Partial(&b"\r"[..])),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
         assert_parse!(
-            line_ending(Streaming(&b"\ra"[..])),
+            line_ending(Partial(&b"\ra"[..])),
             Err(ErrMode::Backtrack(error_position!(
-                Streaming(&b"\ra"[..]),
+                Partial(&b"\ra"[..]),
                 ErrorKind::CrLf
             )))
         );
 
-        assert_parse!(line_ending(Streaming("\na")), Ok((Streaming("a"), "\n")));
+        assert_parse!(line_ending(Partial("\na")), Ok((Partial("a"), "\n")));
+        assert_parse!(line_ending(Partial("\r\na")), Ok((Partial("a"), "\r\n")));
         assert_parse!(
-            line_ending(Streaming("\r\na")),
-            Ok((Streaming("a"), "\r\n"))
-        );
-        assert_parse!(
-            line_ending(Streaming("\r")),
+            line_ending(Partial("\r")),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
         assert_parse!(
-            line_ending(Streaming("\ra")),
+            line_ending(Partial("\ra")),
             Err(ErrMode::Backtrack(error_position!(
-                Streaming("\ra"),
+                Partial("\ra"),
                 ErrorKind::CrLf
             )))
         );
     }
 
-    fn digit_to_i16(input: Streaming<&str>) -> IResult<Streaming<&str>, i16> {
+    fn digit_to_i16(input: Partial<&str>) -> IResult<Partial<&str>, i16> {
         use crate::bytes::one_of;
 
         let i = input;
@@ -1419,7 +1386,7 @@ mod streaming {
         }
     }
 
-    fn digit_to_u32(i: Streaming<&str>) -> IResult<Streaming<&str>, u32> {
+    fn digit_to_u32(i: Partial<&str>) -> IResult<Partial<&str>, u32> {
         let (i, s) = digit1(i)?;
         match s.parse_slice() {
             Some(n) => Ok((i, n)),
@@ -1430,86 +1397,83 @@ mod streaming {
     proptest! {
       #[test]
       fn ints(s in "\\PC*") {
-          let res1 = digit_to_i16(Streaming(&s));
-          let res2 = dec_int(Streaming(s.as_str()));
+          let res1 = digit_to_i16(Partial(&s));
+          let res2 = dec_int(Partial(s.as_str()));
           assert_eq!(res1, res2);
       }
 
       #[test]
       fn uints(s in "\\PC*") {
-          let res1 = digit_to_u32(Streaming(&s));
-          let res2 = dec_uint(Streaming(s.as_str()));
+          let res1 = digit_to_u32(Partial(&s));
+          let res2 = dec_uint(Partial(s.as_str()));
           assert_eq!(res1, res2);
       }
     }
 
     #[test]
     fn hex_uint_tests() {
-        fn hex_u32(input: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, u32> {
+        fn hex_u32(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
             hex_uint(input)
         }
 
         assert_parse!(
-            hex_u32(Streaming(&b";"[..])),
+            hex_u32(Partial(&b";"[..])),
             Err(ErrMode::Backtrack(error_position!(
-                Streaming(&b";"[..]),
+                Partial(&b";"[..]),
+                ErrorKind::IsA
+            )))
+        );
+        assert_parse!(hex_u32(Partial(&b"ff;"[..])), Ok((Partial(&b";"[..]), 255)));
+        assert_parse!(
+            hex_u32(Partial(&b"1be2;"[..])),
+            Ok((Partial(&b";"[..]), 7138))
+        );
+        assert_parse!(
+            hex_u32(Partial(&b"c5a31be2;"[..])),
+            Ok((Partial(&b";"[..]), 3_315_801_058))
+        );
+        assert_parse!(
+            hex_u32(Partial(&b"C5A31be2;"[..])),
+            Ok((Partial(&b";"[..]), 3_315_801_058))
+        );
+        assert_parse!(
+            hex_u32(Partial(&b"00c5a31be2;"[..])), // overflow
+            Err(ErrMode::Backtrack(error_position!(
+                Partial(&b"00c5a31be2;"[..]),
                 ErrorKind::IsA
             )))
         );
         assert_parse!(
-            hex_u32(Streaming(&b"ff;"[..])),
-            Ok((Streaming(&b";"[..]), 255))
-        );
-        assert_parse!(
-            hex_u32(Streaming(&b"1be2;"[..])),
-            Ok((Streaming(&b";"[..]), 7138))
-        );
-        assert_parse!(
-            hex_u32(Streaming(&b"c5a31be2;"[..])),
-            Ok((Streaming(&b";"[..]), 3_315_801_058))
-        );
-        assert_parse!(
-            hex_u32(Streaming(&b"C5A31be2;"[..])),
-            Ok((Streaming(&b";"[..]), 3_315_801_058))
-        );
-        assert_parse!(
-            hex_u32(Streaming(&b"00c5a31be2;"[..])), // overflow
+            hex_u32(Partial(&b"c5a31be201;"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
-                Streaming(&b"00c5a31be2;"[..]),
+                Partial(&b"c5a31be201;"[..]),
                 ErrorKind::IsA
             )))
         );
         assert_parse!(
-            hex_u32(Streaming(&b"c5a31be201;"[..])), // overflow
+            hex_u32(Partial(&b"ffffffff;"[..])),
+            Ok((Partial(&b";"[..]), 4_294_967_295))
+        );
+        assert_parse!(
+            hex_u32(Partial(&b"ffffffffffffffff;"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
-                Streaming(&b"c5a31be201;"[..]),
+                Partial(&b"ffffffffffffffff;"[..]),
                 ErrorKind::IsA
             )))
         );
         assert_parse!(
-            hex_u32(Streaming(&b"ffffffff;"[..])),
-            Ok((Streaming(&b";"[..]), 4_294_967_295))
-        );
-        assert_parse!(
-            hex_u32(Streaming(&b"ffffffffffffffff;"[..])), // overflow
+            hex_u32(Partial(&b"ffffffffffffffff"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
-                Streaming(&b"ffffffffffffffff;"[..]),
+                Partial(&b"ffffffffffffffff"[..]),
                 ErrorKind::IsA
             )))
         );
         assert_parse!(
-            hex_u32(Streaming(&b"ffffffffffffffff"[..])), // overflow
-            Err(ErrMode::Backtrack(error_position!(
-                Streaming(&b"ffffffffffffffff"[..]),
-                ErrorKind::IsA
-            )))
+            hex_u32(Partial(&b"0x1be2;"[..])),
+            Ok((Partial(&b"x1be2;"[..]), 0))
         );
         assert_parse!(
-            hex_u32(Streaming(&b"0x1be2;"[..])),
-            Ok((Streaming(&b"x1be2;"[..]), 0))
-        );
-        assert_parse!(
-            hex_u32(Streaming(&b"12af"[..])),
+            hex_u32(Partial(&b"12af"[..])),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
     }

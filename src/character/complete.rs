@@ -8,10 +8,10 @@ use crate::combinator::opt;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
-use crate::input::{
-    split_at_offset1_complete, split_at_offset_complete, AsBStr, AsChar, ContainsToken, Input,
+use crate::stream::{
+    split_at_offset1_complete, split_at_offset_complete, AsBStr, AsChar, ContainsToken, Stream,
 };
-use crate::input::{Compare, CompareResult};
+use crate::stream::{Compare, CompareResult};
 use crate::IResult;
 
 /// Recognizes one character.
@@ -35,16 +35,16 @@ use crate::IResult;
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::one_of`")]
 pub fn char<I, Error: ParseError<I>>(c: char) -> impl Fn(I) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     move |i: I| char_internal(i, c)
 }
 
 pub(crate) fn char_internal<I, Error: ParseError<I>>(i: I, c: char) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     i.next_token()
         .map(|(i, t)| (i, t.as_char()))
@@ -72,8 +72,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::one_of`")]
 pub fn satisfy<F, I, Error: ParseError<I>>(cond: F) -> impl Fn(I) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
     F: Fn(char) -> bool,
 {
     move |i: I| satisfy_internal(i, &cond)
@@ -84,8 +84,8 @@ pub(crate) fn satisfy_internal<F, I, Error: ParseError<I>>(
     cond: &F,
 ) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
     F: Fn(char) -> bool,
 {
     i.next_token()
@@ -111,9 +111,9 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::one_of`")]
 pub fn one_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar + Copy,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    <I as Stream>::Token: AsChar + Copy,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| crate::bytes::complete::one_of_internal(i, &list).map(|(i, c)| (i, c.as_char()))
 }
@@ -135,9 +135,9 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::none_of`")]
 pub fn none_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar + Copy,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    <I as Stream>::Token: AsChar + Copy,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| crate::bytes::complete::none_of_internal(i, &list).map(|(i, c)| (i, c.as_char()))
 }
@@ -161,9 +161,9 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::crlf`][crate::character::crlf]
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::crlf`")]
-pub fn crlf<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn crlf<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
+    T: Stream,
     T: Compare<&'static str>,
 {
     const CRLF: &str = "\r\n";
@@ -202,17 +202,17 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::not_line_ending`"
 )]
-pub fn not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input + AsBStr,
+    T: Stream + AsBStr,
     T: Compare<&'static str>,
-    <T as Input>::Token: AsChar,
+    <T as Stream>::Token: AsChar,
 {
     match input.offset_for(|item| {
         let c = item.as_char();
         c == '\r' || c == '\n'
     }) {
-        None => Ok(input.next_slice(input.input_len())),
+        None => Ok(input.next_slice(input.eof_offset())),
         Some(offset) => {
             let (new_input, res) = input.next_slice(offset);
             let bytes = new_input.as_bstr();
@@ -255,9 +255,9 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::line_ending`"
 )]
-pub fn line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
+    T: Stream,
     T: Compare<&'static str>,
 {
     const LF: &str = "\n";
@@ -295,8 +295,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::newline`")]
 pub fn newline<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     char('\n')(input)
 }
@@ -322,8 +322,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::tab`")]
 pub fn tab<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     char('\t')(input)
 }
@@ -348,8 +348,8 @@ where
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::bytes::any`")]
 pub fn anychar<T, E: ParseError<T>>(input: T) -> IResult<T, char, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     crate::bytes::complete::any(input).map(|(i, c)| (i, c.as_char()))
 }
@@ -374,10 +374,10 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::alpha0`][crate::character::alpha0]
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::alpha0`")]
-pub fn alpha0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn alpha0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset_complete(&input, |item| !item.is_alpha())
 }
@@ -402,10 +402,10 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::alpha1`][crate::character::alpha1]
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::alpha1`")]
-pub fn alpha1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn alpha1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset1_complete(&input, |item| !item.is_alpha(), ErrorKind::Alpha)
 }
@@ -431,10 +431,10 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::digit0`][crate::character::digit0]
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::digit0`")]
-pub fn digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset_complete(&input, |item| !item.is_dec_digit())
 }
@@ -477,10 +477,10 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::digit1`][crate::character::digit1]
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::digit1`")]
-pub fn digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset1_complete(&input, |item| !item.is_dec_digit(), ErrorKind::Digit)
 }
@@ -507,10 +507,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::hex_digit0`"
 )]
-pub fn hex_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn hex_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset_complete(&input, |item| !item.is_hex_digit())
 }
@@ -538,10 +538,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::hex_digit1`"
 )]
-pub fn hex_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn hex_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset1_complete(&input, |item| !item.is_hex_digit(), ErrorKind::HexDigit)
 }
@@ -569,10 +569,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::oct_digit0`"
 )]
-pub fn oct_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn oct_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset_complete(&input, |item| !item.is_oct_digit())
 }
@@ -600,10 +600,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::oct_digit1`"
 )]
-pub fn oct_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn oct_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset1_complete(&input, |item| !item.is_oct_digit(), ErrorKind::OctDigit)
 }
@@ -631,10 +631,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::alphanumeric0`"
 )]
-pub fn alphanumeric0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn alphanumeric0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset_complete(&input, |item| !item.is_alphanum())
 }
@@ -662,10 +662,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::alphanumeric1`"
 )]
-pub fn alphanumeric1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn alphanumeric1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset1_complete(&input, |item| !item.is_alphanum(), ErrorKind::AlphaNumeric)
 }
@@ -690,10 +690,10 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::space0`][crate::character::space0]
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::space0`")]
-pub fn space0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn space0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset_complete(&input, |item| {
         let c = item.as_char();
@@ -721,10 +721,10 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`winnow::character::space1`][crate::character::space1]
 #[deprecated(since = "0.1.0", note = "Replaced with `winnow::character::space1`")]
-pub fn space1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn space1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset1_complete(
         &input,
@@ -759,10 +759,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::multispace0`"
 )]
-pub fn multispace0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn multispace0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset_complete(&input, |item| {
         let c = item.as_char();
@@ -793,10 +793,10 @@ where
     since = "0.1.0",
     note = "Replaced with `winnow::character::multispace1`"
 )]
-pub fn multispace1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn multispace1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     split_at_offset1_complete(
         &input,
@@ -810,8 +810,8 @@ where
 
 pub(crate) fn sign<T, E: ParseError<T>>(input: T) -> IResult<T, bool, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar + Copy,
+    T: Stream,
+    <T as Stream>::Token: AsChar + Copy,
 {
     fn sign(token: impl AsChar) -> bool {
         let token = token.as_char();
@@ -840,12 +840,12 @@ macro_rules! ints {
         )]
         pub fn $t<T, E: ParseError<T>>(input: T) -> IResult<T, $t, E>
             where
-              T: Input,
-              <T as Input>::Token: AsChar + Copy,
+              T: Stream,
+              <T as Stream>::Token: AsChar + Copy,
             {
                 let (i, sign) = sign(input.clone())?;
 
-                if i.input_len() == 0 {
+                if i.eof_offset() == 0 {
                     return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
                 }
 
@@ -872,7 +872,7 @@ macro_rules! ints {
                    }
                 }
 
-                Ok((i.next_slice(i.input_len()).0, value))
+                Ok((i.next_slice(i.eof_offset()).0, value))
             }
         )+
     }
@@ -896,12 +896,12 @@ macro_rules! uints {
         )]
         pub fn $t<T, E: ParseError<T>>(input: T) -> IResult<T, $t, E>
             where
-              T: Input,
-              <T as Input>::Token: AsChar,
+              T: Stream,
+              <T as Stream>::Token: AsChar,
             {
                 let i = input;
 
-                if i.input_len() == 0 {
+                if i.eof_offset() == 0 {
                     return Err(ErrMode::from_error_kind(i, ErrorKind::Digit));
                 }
 
@@ -922,7 +922,7 @@ macro_rules! uints {
                     }
                 }
 
-                Ok((i.next_slice(i.input_len()).0, value))
+                Ok((i.next_slice(i.eof_offset()).0, value))
             }
         )+
     }
@@ -936,7 +936,7 @@ mod tests {
     use crate::branch::alt;
     use crate::error::ErrMode;
     use crate::error::Error;
-    use crate::input::ParseSlice;
+    use crate::stream::ParseSlice;
     use proptest::prelude::*;
 
     macro_rules! assert_parse(
@@ -1116,7 +1116,7 @@ mod tests {
         assert_eq!(space1::<_, Error<_>>(e), Ok((empty, e)));
     }
 
-    use crate::input::Offset;
+    use crate::stream::Offset;
     #[test]
     fn offset() {
         let a = &b"abcd;"[..];

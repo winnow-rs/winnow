@@ -3,7 +3,7 @@
 #![allow(clippy::redundant_closure)]
 
 use winnow::prelude::*;
-use winnow::Streaming;
+use winnow::Partial;
 use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 
 #[allow(dead_code)]
@@ -23,9 +23,9 @@ pub fn take_char(input: &[u8]) -> IResult<&[u8], char> {
 #[cfg(feature = "std")]
 mod parse_int {
     use std::str;
-    use winnow::input::HexDisplay;
     use winnow::prelude::*;
-    use winnow::Streaming;
+    use winnow::stream::HexDisplay;
+    use winnow::Partial;
     use winnow::{
         character::{digit1 as digit, space1 as space},
         combinator::opt,
@@ -33,11 +33,11 @@ mod parse_int {
         IResult,
     };
 
-    fn parse_ints(input: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, Vec<i32>> {
+    fn parse_ints(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<i32>> {
         many0(spaces_or_int)(input)
     }
 
-    fn spaces_or_int(input: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, i32> {
+    fn spaces_or_int(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i32> {
         println!("{}", input.to_hex(8));
         let (i, _) = opt(space.complete())(input)?;
         let (i, res) = digit
@@ -59,12 +59,12 @@ mod parse_int {
 
     #[test]
     fn issue_142() {
-        let subject = parse_ints(Streaming(&b"12 34 5689a"[..]));
-        let expected = Ok((Streaming(&b"a"[..]), vec![12, 34, 5689]));
+        let subject = parse_ints(Partial(&b"12 34 5689a"[..]));
+        let expected = Ok((Partial(&b"a"[..]), vec![12, 34, 5689]));
         assert_eq!(subject, expected);
 
-        let subject = parse_ints(Streaming(&b"12 34 5689 "[..]));
-        let expected = Ok((Streaming(&b" "[..]), vec![12, 34, 5689]));
+        let subject = parse_ints(Partial(&b"12 34 5689 "[..]));
+        let expected = Ok((Partial(&b" "[..]), vec![12, 34, 5689]));
         assert_eq!(subject, expected);
     }
 }
@@ -74,31 +74,31 @@ fn usize_length_bytes_issue() {
     use winnow::multi::length_data;
     use winnow::number::be_u16;
     #[allow(clippy::type_complexity)]
-    let _: IResult<Streaming<&[u8]>, &[u8]> = length_data(be_u16)(Streaming(b"012346"));
+    let _: IResult<Partial<&[u8]>, &[u8]> = length_data(be_u16)(Partial(b"012346"));
 }
 
 #[test]
 fn take_till0_issue() {
     use winnow::bytes::take_till0;
 
-    fn nothing(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+    fn nothing(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         take_till0(|_| true)(i)
     }
 
     assert_eq!(
-        nothing(Streaming(b"")),
+        nothing(Partial(b"")),
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-        nothing(Streaming(b"abc")),
-        Ok((Streaming(&b"abc"[..]), &b""[..]))
+        nothing(Partial(b"abc")),
+        Ok((Partial(&b"abc"[..]), &b""[..]))
     );
 }
 
 #[test]
 fn issue_655() {
     use winnow::character::{line_ending, not_line_ending};
-    fn twolines(i: Streaming<&str>) -> IResult<Streaming<&str>, (&str, &str)> {
+    fn twolines(i: Partial<&str>) -> IResult<Partial<&str>, (&str, &str)> {
         let (i, l1) = not_line_ending(i)?;
         let (i, _) = line_ending(i)?;
         let (i, l2) = not_line_ending(i)?;
@@ -108,20 +108,20 @@ fn issue_655() {
     }
 
     assert_eq!(
-        twolines(Streaming("foo\nbar\n")),
-        Ok((Streaming(""), ("foo", "bar")))
+        twolines(Partial("foo\nbar\n")),
+        Ok((Partial(""), ("foo", "bar")))
     );
     assert_eq!(
-        twolines(Streaming("féo\nbar\n")),
-        Ok((Streaming(""), ("féo", "bar")))
+        twolines(Partial("féo\nbar\n")),
+        Ok((Partial(""), ("féo", "bar")))
     );
     assert_eq!(
-        twolines(Streaming("foé\nbar\n")),
-        Ok((Streaming(""), ("foé", "bar")))
+        twolines(Partial("foé\nbar\n")),
+        Ok((Partial(""), ("foé", "bar")))
     );
     assert_eq!(
-        twolines(Streaming("foé\r\nbar\n")),
-        Ok((Streaming(""), ("foé", "bar")))
+        twolines(Partial("foé\r\nbar\n")),
+        Ok((Partial(""), ("foé", "bar")))
     );
 }
 
@@ -138,7 +138,7 @@ mod issue_647 {
     use winnow::multi::separated0;
     use winnow::prelude::*;
     use winnow::{error::ErrMode, error::Error, number::be_f64, IResult};
-    pub type Input<'a> = winnow::Streaming<&'a [u8]>;
+    pub type Stream<'a> = winnow::Partial<&'a [u8]>;
 
     #[derive(PartialEq, Debug, Clone)]
     struct Data {
@@ -148,13 +148,13 @@ mod issue_647 {
 
     #[allow(clippy::type_complexity)]
     fn list<'a>(
-        input: Input<'a>,
+        input: Stream<'a>,
         _cs: &f64,
-    ) -> Result<(Input<'a>, Vec<f64>), ErrMode<Error<Input<'a>>>> {
+    ) -> Result<(Stream<'a>, Vec<f64>), ErrMode<Error<Stream<'a>>>> {
         separated0(be_f64.complete(), tag(",").complete())(input)
     }
 
-    fn data(input: Input<'_>) -> IResult<Input<'_>, Data> {
+    fn data(input: Stream<'_>) -> IResult<Stream<'_>, Data> {
         let (i, c) = be_f64(input)?;
         let (i, _) = tag("\n")(i)?;
         let (i, v) = list(i, &c)?;
@@ -164,19 +164,19 @@ mod issue_647 {
 
 #[test]
 fn issue_848_overflow_incomplete_bits_to_bytes() {
-    fn take(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+    fn take(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         use winnow::bytes::take;
         take(0x2000000000000000_usize)(i)
     }
-    fn parser(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+    fn parser(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         use winnow::bits::{bits, bytes};
 
         bits(bytes(take))(i)
     }
     assert_eq!(
-        parser(Streaming(&b""[..])),
+        parser(Partial(&b""[..])),
         Err(ErrMode::Cut(winnow::error::Error {
-            input: Streaming(&b""[..]),
+            input: Partial(&b""[..]),
             kind: ErrorKind::TooLarge
         }))
     );

@@ -6,16 +6,16 @@ use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::Needed;
 use crate::error::ParseError;
-use crate::input::{
-    split_at_offset1_streaming, split_at_offset_streaming, Compare, CompareResult, ContainsToken,
-    FindSlice, Input, Offset, SliceLen, ToUsize,
-};
 use crate::lib::std::result::Result::Ok;
+use crate::stream::{
+    split_at_offset1_partial, split_at_offset_partial, Compare, CompareResult, ContainsToken,
+    FindSlice, Offset, SliceLen, Stream, ToUsize,
+};
 use crate::{IResult, Parser};
 
-pub(crate) fn any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Input>::Token, E>
+pub(crate) fn any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Token, E>
 where
-    I: Input,
+    I: Stream,
 {
     input
         .next_token()
@@ -41,16 +41,16 @@ where
 /// assert_eq!(parser("H"), Err(ErrMode::Incomplete(Needed::new(4))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::tag`][crate::bytes::tag] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::tag`][crate::bytes::tag] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bytes::tag` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bytes::tag` with input wrapped in `winnow::Partial`"
 )]
 pub fn tag<T, I, Error: ParseError<I>>(
     tag: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + Compare<T>,
+    I: Stream + Compare<T>,
     T: SliceLen + Clone,
 {
     move |i: I| tag_internal(i, tag.clone())
@@ -59,15 +59,17 @@ where
 pub(crate) fn tag_internal<T, I, Error: ParseError<I>>(
     i: I,
     t: T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + Compare<T>,
+    I: Stream + Compare<T>,
     T: SliceLen,
 {
     let tag_len = t.slice_len();
     match i.compare(t) {
         CompareResult::Ok => Ok(i.next_slice(tag_len)),
-        CompareResult::Incomplete => Err(ErrMode::Incomplete(Needed::new(tag_len - i.input_len()))),
+        CompareResult::Incomplete => {
+            Err(ErrMode::Incomplete(Needed::new(tag_len - i.eof_offset())))
+        }
         CompareResult::Error => {
             let e: ErrorKind = ErrorKind::Tag;
             Err(ErrMode::from_error_kind(i, e))
@@ -95,16 +97,16 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Incomplete(Needed::new(5))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::tag_no_case`][crate::bytes::tag_no_case] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::tag_no_case`][crate::bytes::tag_no_case] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bytes::tag_no_case` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bytes::tag_no_case` with input wrapped in `winnow::Partial`"
 )]
 pub fn tag_no_case<T, I, Error: ParseError<I>>(
     tag: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + Compare<T>,
+    I: Stream + Compare<T>,
     T: SliceLen + Clone,
 {
     move |i: I| tag_no_case_internal(i, tag.clone())
@@ -113,16 +115,18 @@ where
 pub(crate) fn tag_no_case_internal<T, I, Error: ParseError<I>>(
     i: I,
     t: T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + Compare<T>,
+    I: Stream + Compare<T>,
     T: SliceLen,
 {
     let tag_len = t.slice_len();
 
     match (i).compare_no_case(t) {
         CompareResult::Ok => Ok(i.next_slice(tag_len)),
-        CompareResult::Incomplete => Err(ErrMode::Incomplete(Needed::new(tag_len - i.input_len()))),
+        CompareResult::Incomplete => {
+            Err(ErrMode::Incomplete(Needed::new(tag_len - i.eof_offset())))
+        }
         CompareResult::Error => {
             let e: ErrorKind = ErrorKind::Tag;
             Err(ErrMode::from_error_kind(i, e))
@@ -133,11 +137,11 @@ where
 pub(crate) fn one_of_internal<I, T, E: ParseError<I>>(
     input: I,
     list: &T,
-) -> IResult<I, <I as Input>::Token, E>
+) -> IResult<I, <I as Stream>::Token, E>
 where
-    I: Input,
-    <I as Input>::Token: Copy,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    <I as Stream>::Token: Copy,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     let (new_input, token) = input
         .next_token()
@@ -152,11 +156,11 @@ where
 pub(crate) fn none_of_internal<I, T, E: ParseError<I>>(
     input: I,
     list: &T,
-) -> IResult<I, <I as Input>::Token, E>
+) -> IResult<I, <I as Stream>::Token, E>
 where
-    I: Input,
-    <I as Input>::Token: Copy,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    <I as Stream>::Token: Copy,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     let (new_input, token) = input
         .next_token()
@@ -190,17 +194,17 @@ where
 /// assert_eq!(not_space(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till1`][crate::bytes::take_till1] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till1`][crate::bytes::take_till1] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bytes::take_till1` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bytes::take_till1` with input wrapped in `winnow::Partial`"
 )]
 pub fn is_not<T, I, Error: ParseError<I>>(
     arr: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| is_not_internal(i, &arr)
 }
@@ -208,13 +212,13 @@ where
 pub(crate) fn is_not_internal<T, I, Error: ParseError<I>>(
     i: I,
     arr: &T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     let e: ErrorKind = ErrorKind::IsNot;
-    split_at_offset1_streaming(&i, |c| arr.contains_token(c), e)
+    split_at_offset1_partial(&i, |c| arr.contains_token(c), e)
 }
 
 /// Returns the longest slice of the matches the pattern.
@@ -222,8 +226,8 @@ where
 /// The parser will return the longest slice consisting of the characters in provided in the
 /// combinator's argument.
 ///
-/// # Streaming specific
-/// *Streaming version* will return a `ErrMode::Incomplete(Needed::new(1))` if the pattern wasn't met
+/// # Partial specific
+/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if the pattern wasn't met
 /// or if the pattern reaches the end of the input.
 /// # Example
 /// ```rust
@@ -241,17 +245,17 @@ where
 /// assert_eq!(hex(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while1`][crate::bytes::take_while1] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while1`][crate::bytes::take_while1] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bytes::take_while1` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bytes::take_while1` with input wrapped in `winnow::Partial`"
 )]
 pub fn is_a<T, I, Error: ParseError<I>>(
     arr: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| is_a_internal(i, &arr)
 }
@@ -259,13 +263,13 @@ where
 pub(crate) fn is_a_internal<T, I, Error: ParseError<I>>(
     i: I,
     arr: &T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     let e: ErrorKind = ErrorKind::IsA;
-    split_at_offset1_streaming(&i, |c| !arr.contains_token(c), e)
+    split_at_offset1_partial(&i, |c| !arr.contains_token(c), e)
 }
 
 /// Returns the longest input slice (if any) that matches the predicate.
@@ -273,13 +277,13 @@ where
 /// The parser will return the longest slice that matches the given predicate *(a function that
 /// takes the input and returns a bool)*.
 ///
-/// # Streaming Specific
-/// *Streaming version* will return a `ErrMode::Incomplete(Needed::new(1))` if the pattern reaches the end of the input.
+/// # Partial Specific
+/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if the pattern reaches the end of the input.
 /// # Example
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
 /// use winnow::bytes::streaming::take_while;
-/// use winnow::input::AsChar;
+/// use winnow::stream::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while(AsChar::is_alpha)(s)
@@ -291,17 +295,17 @@ where
 /// assert_eq!(alpha(b""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while0`][crate::bytes::take_while0] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while0`][crate::bytes::take_while0] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bytes::take_while0` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bytes::take_while0` with input wrapped in `winnow::Partial`"
 )]
 pub fn take_while<T, I, Error: ParseError<I>>(
     list: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| take_while_internal(i, &list)
 }
@@ -309,12 +313,12 @@ where
 pub(crate) fn take_while_internal<T, I, Error: ParseError<I>>(
     i: I,
     list: &T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
-    split_at_offset_streaming(&i, |c| !list.contains_token(c))
+    split_at_offset_partial(&i, |c| !list.contains_token(c))
 }
 
 /// Returns the longest (at least 1) input slice that matches the predicate.
@@ -324,14 +328,14 @@ where
 ///
 /// It will return an `Err(ErrMode::Backtrack((_, ErrorKind::TakeWhile1)))` if the pattern wasn't met.
 ///
-/// # Streaming Specific
-/// *Streaming version* will return a `ErrMode::Incomplete(Needed::new(1))` or if the pattern reaches the end of the input.
+/// # Partial Specific
+/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` or if the pattern reaches the end of the input.
 ///
 /// # Example
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::streaming::take_while1;
-/// use winnow::input::AsChar;
+/// use winnow::stream::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while1(AsChar::is_alpha)(s)
@@ -342,17 +346,17 @@ where
 /// assert_eq!(alpha(b"12345"), Err(ErrMode::Backtrack(Error::new(&b"12345"[..], ErrorKind::TakeWhile1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while1`][crate::bytes::take_while1] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while1`][crate::bytes::take_while1] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bytes::take_while1` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bytes::take_while1` with input wrapped in `winnow::Partial`"
 )]
 pub fn take_while1<T, I, Error: ParseError<I>>(
     list: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| take_while1_internal(i, &list)
 }
@@ -360,13 +364,13 @@ where
 pub(crate) fn take_while1_internal<T, I, Error: ParseError<I>>(
     i: I,
     list: &T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     let e: ErrorKind = ErrorKind::TakeWhile1;
-    split_at_offset1_streaming(&i, |c| !list.contains_token(c), e)
+    split_at_offset1_partial(&i, |c| !list.contains_token(c), e)
 }
 
 /// Returns the longest (m <= len <= n) input slice  that matches the predicate.
@@ -375,14 +379,14 @@ where
 /// takes the input and returns a bool)*.
 ///
 /// It will return an `ErrMode::Backtrack((_, ErrorKind::TakeWhileMN))` if the pattern wasn't met.
-/// # Streaming Specific
-/// *Streaming version* will return a `ErrMode::Incomplete(Needed::new(1))`  if the pattern reaches the end of the input or is too short.
+/// # Partial Specific
+/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))`  if the pattern reaches the end of the input or is too short.
 ///
 /// # Example
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::streaming::take_while_m_n;
-/// use winnow::input::AsChar;
+/// use winnow::stream::AsChar;
 ///
 /// fn short_alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   take_while_m_n(3, 6, AsChar::is_alpha)(s)
@@ -395,19 +399,19 @@ where
 /// assert_eq!(short_alpha(b"12345"), Err(ErrMode::Backtrack(Error::new(&b"12345"[..], ErrorKind::TakeWhileMN))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while_m_n`][crate::bytes::take_while_m_n] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_while_m_n`][crate::bytes::take_while_m_n] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bytes::take_while_m_n` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bytes::take_while_m_n` with input wrapped in `winnow::Partial`"
 )]
 pub fn take_while_m_n<T, I, Error: ParseError<I>>(
     m: usize,
     n: usize,
     list: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| take_while_m_n_internal(i, m, n, &list)
 }
@@ -417,10 +421,10 @@ pub(crate) fn take_while_m_n_internal<T, I, Error: ParseError<I>>(
     m: usize,
     n: usize,
     list: &T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     if n < m {
         return Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN));
@@ -443,10 +447,10 @@ where
     }
 
     if final_count == n {
-        Ok(input.next_slice(input.input_len()))
+        Ok(input.next_slice(input.eof_offset()))
     } else {
-        let needed = if m > input.input_len() {
-            m - input.input_len()
+        let needed = if m > input.eof_offset() {
+            m - input.eof_offset()
         } else {
             1
         };
@@ -459,8 +463,8 @@ where
 /// The parser will return the longest slice till the given predicate *(a function that
 /// takes the input and returns a bool)*.
 ///
-/// # Streaming Specific
-/// *Streaming version* will return a `ErrMode::Incomplete(Needed::new(1))` if the match reaches the
+/// # Partial Specific
+/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if the match reaches the
 /// end of input or if there was not match.
 ///
 /// # Example
@@ -478,18 +482,18 @@ where
 /// assert_eq!(till_colon(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till0`][crate::bytes::take_till0] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till0`][crate::bytes::take_till0] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bytes::take_till0` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bytes::take_till0` with input wrapped in `winnow::Partial`"
 )]
 #[allow(clippy::redundant_closure)]
 pub fn take_till<T, I, Error: ParseError<I>>(
     list: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| take_till_internal(i, &list)
 }
@@ -497,12 +501,12 @@ where
 pub(crate) fn take_till_internal<T, I, Error: ParseError<I>>(
     i: I,
     list: &T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
-    split_at_offset_streaming(&i, |c| list.contains_token(c))
+    split_at_offset_partial(&i, |c| list.contains_token(c))
 }
 
 /// Returns the longest (at least 1) input slice till a predicate is met.
@@ -510,8 +514,8 @@ where
 /// The parser will return the longest slice till the given predicate *(a function that
 /// takes the input and returns a bool)*.
 ///
-/// # Streaming Specific
-/// *Streaming version* will return a `ErrMode::Incomplete(Needed::new(1))` if the match reaches the
+/// # Partial Specific
+/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if the match reaches the
 /// end of input or if there was not match.
 /// # Example
 /// ```rust
@@ -528,18 +532,18 @@ where
 /// assert_eq!(till_colon(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till1`][crate::bytes::take_till1] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_till1`][crate::bytes::take_till1] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bytes::take_till1` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bytes::take_till1` with input wrapped in `winnow::Partial`"
 )]
 #[allow(clippy::redundant_closure)]
 pub fn take_till1<T, I, Error: ParseError<I>>(
     list: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| take_till1_internal(i, &list)
 }
@@ -547,19 +551,19 @@ where
 pub(crate) fn take_till1_internal<T, I, Error: ParseError<I>>(
     i: I,
     list: &T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     let e: ErrorKind = ErrorKind::TakeTill1;
-    split_at_offset1_streaming(&i, |c| list.contains_token(c), e)
+    split_at_offset1_partial(&i, |c| list.contains_token(c), e)
 }
 
 /// Returns an input slice containing the first N input elements (I[..N]).
 ///
-/// # Streaming Specific
-/// *Streaming version* if the input has less than N elements, `take` will
+/// # Partial Specific
+/// *Partial version* if the input has less than N elements, `take` will
 /// return a `ErrMode::Incomplete(Needed::new(M))` where M is the number of
 /// additional bytes the parser would need to succeed.
 /// It is well defined for `&[u8]` as the number of elements is the byte size,
@@ -580,16 +584,16 @@ where
 /// assert_eq!(take6("short"), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take`][crate::bytes::take] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take`][crate::bytes::take] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bytes::take` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bytes::take` with input wrapped in `winnow::Partial`"
 )]
 pub fn take<C, I, Error: ParseError<I>>(
     count: C,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
+    I: Stream,
     C: ToUsize,
 {
     let c = count.to_usize();
@@ -599,9 +603,9 @@ where
 pub(crate) fn take_internal<I, Error: ParseError<I>>(
     i: I,
     c: usize,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input,
+    I: Stream,
 {
     match i.offset_at(c) {
         Ok(offset) => Ok(i.next_slice(offset)),
@@ -613,8 +617,8 @@ where
 ///
 /// It doesn't consume the pattern.
 ///
-/// # Streaming Specific
-/// *Streaming version* will return a `ErrMode::Incomplete(Needed::new(N))` if the input doesn't
+/// # Partial Specific
+/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(N))` if the input doesn't
 /// contain the pattern or if the input is smaller than the pattern.
 /// # Example
 /// ```rust
@@ -631,16 +635,16 @@ where
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until0`][crate::bytes::take_until0] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until0`][crate::bytes::take_until0] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bytes::take_until0` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bytes::take_until0` with input wrapped in `winnow::Partial`"
 )]
 pub fn take_until<T, I, Error: ParseError<I>>(
     tag: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + FindSlice<T>,
+    I: Stream + FindSlice<T>,
     T: SliceLen + Clone,
 {
     move |i: I| take_until_internal(i, tag.clone())
@@ -649,9 +653,9 @@ where
 pub(crate) fn take_until_internal<T, I, Error: ParseError<I>>(
     i: I,
     t: T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + FindSlice<T>,
+    I: Stream + FindSlice<T>,
     T: SliceLen,
 {
     match i.find_slice(t) {
@@ -664,8 +668,8 @@ where
 ///
 /// It doesn't consume the pattern.
 ///
-/// # Streaming Specific
-/// *Streaming version* will return a `ErrMode::Incomplete(Needed::new(N))` if the input doesn't
+/// # Partial Specific
+/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(N))` if the input doesn't
 /// contain the pattern or if the input is smaller than the pattern.
 /// # Example
 /// ```rust
@@ -683,16 +687,16 @@ where
 /// assert_eq!(until_eof("eof"),  Err(ErrMode::Backtrack(Error::new("eof", ErrorKind::TakeUntil))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until1`][crate::bytes::take_until1] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::take_until1`][crate::bytes::take_until1] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bytes::take_until1` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bytes::take_until1` with input wrapped in `winnow::Partial`"
 )]
 pub fn take_until1<T, I, Error: ParseError<I>>(
     tag: T,
-) -> impl Fn(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl Fn(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + FindSlice<T>,
+    I: Stream + FindSlice<T>,
     T: SliceLen + Clone,
 {
     move |i: I| take_until1_internal(i, tag.clone())
@@ -701,9 +705,9 @@ where
 pub(crate) fn take_until1_internal<T, I, Error: ParseError<I>>(
     i: I,
     t: T,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + FindSlice<T>,
+    I: Stream + FindSlice<T>,
     T: SliceLen,
 {
     match i.find_slice(t) {
@@ -734,19 +738,19 @@ where
 /// ```
 ///
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::escaped`][crate::character::escaped] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::escaped`][crate::character::escaped] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::escaped` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::escaped` with input wrapped in `winnow::Partial`"
 )]
 pub fn escaped<I, Error, F, G, O1, O2>(
     mut normal: F,
     control_char: char,
     mut escapable: G,
-) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, Error>
+) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + Offset,
-    <I as Input>::Token: crate::input::AsChar,
+    I: Stream + Offset,
+    <I as Stream>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParseError<I>,
@@ -759,26 +763,26 @@ pub(crate) fn escaped_internal<I, Error, F, G, O1, O2>(
     normal: &mut F,
     control_char: char,
     escapable: &mut G,
-) -> IResult<I, <I as Input>::Slice, Error>
+) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: Input + Offset,
-    <I as Input>::Token: crate::input::AsChar,
+    I: Stream + Offset,
+    <I as Stream>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParseError<I>,
 {
-    use crate::input::AsChar;
+    use crate::stream::AsChar;
 
     let mut i = input.clone();
 
-    while i.input_len() > 0 {
-        let current_len = i.input_len();
+    while i.eof_offset() > 0 {
+        let current_len = i.eof_offset();
 
         match normal.parse_next(i.clone()) {
             Ok((i2, _)) => {
-                if i2.input_len() == 0 {
+                if i2.eof_offset() == 0 {
                     return Err(ErrMode::Incomplete(Needed::Unknown));
-                } else if i2.input_len() == current_len {
+                } else if i2.eof_offset() == current_len {
                     let offset = input.offset_to(&i2);
                     return Ok(input.next_slice(offset));
                 } else {
@@ -786,14 +790,14 @@ where
                 }
             }
             Err(ErrMode::Backtrack(_)) => {
-                if i.next_token().expect("input_len > 0").1.as_char() == control_char {
+                if i.next_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = control_char.len_utf8();
-                    if next >= i.input_len() {
+                    if next >= i.eof_offset() {
                         return Err(ErrMode::Incomplete(Needed::new(1)));
                     } else {
                         match escapable.parse_next(i.next_slice(next).0) {
                             Ok((i2, _)) => {
-                                if i2.input_len() == 0 {
+                                if i2.eof_offset() == 0 {
                                     return Err(ErrMode::Incomplete(Needed::Unknown));
                                 } else {
                                     i = i2;
@@ -848,10 +852,10 @@ where
 /// ```
 #[cfg(feature = "alloc")]
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::escaped_transform`][crate::character::escaped_transform] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::escaped_transform`][crate::character::escaped_transform] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::escaped_transform` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::escaped_transform` with input wrapped in `winnow::Partial`"
 )]
 pub fn escaped_transform<I, Error, F, G, Output>(
     mut normal: F,
@@ -859,11 +863,11 @@ pub fn escaped_transform<I, Error, F, G, Output>(
     mut transform: G,
 ) -> impl FnMut(I) -> IResult<I, Output, Error>
 where
-    I: Input + Offset,
-    <I as Input>::Token: crate::input::AsChar,
-    Output: crate::input::Accumulate<<I as Input>::Slice>,
-    F: Parser<I, <I as Input>::Slice, Error>,
-    G: Parser<I, <I as Input>::Slice, Error>,
+    I: Stream + Offset,
+    <I as Stream>::Token: crate::stream::AsChar,
+    Output: crate::stream::Accumulate<<I as Stream>::Slice>,
+    F: Parser<I, <I as Stream>::Slice, Error>,
+    G: Parser<I, <I as Stream>::Slice, Error>,
     Error: ParseError<I>,
 {
     move |input: I| escaped_transform_internal(input, &mut normal, control_char, &mut transform)
@@ -877,46 +881,46 @@ pub(crate) fn escaped_transform_internal<I, Error, F, G, Output>(
     transform: &mut G,
 ) -> IResult<I, Output, Error>
 where
-    I: Input + Offset,
-    <I as Input>::Token: crate::input::AsChar,
-    Output: crate::input::Accumulate<<I as Input>::Slice>,
-    F: Parser<I, <I as Input>::Slice, Error>,
-    G: Parser<I, <I as Input>::Slice, Error>,
+    I: Stream + Offset,
+    <I as Stream>::Token: crate::stream::AsChar,
+    Output: crate::stream::Accumulate<<I as Stream>::Slice>,
+    F: Parser<I, <I as Stream>::Slice, Error>,
+    G: Parser<I, <I as Stream>::Slice, Error>,
     Error: ParseError<I>,
 {
-    use crate::input::AsChar;
+    use crate::stream::AsChar;
 
     let mut offset = 0;
-    let mut res = Output::initial(Some(input.input_len()));
+    let mut res = Output::initial(Some(input.eof_offset()));
 
     let i = input.clone();
 
-    while offset < i.input_len() {
-        let current_len = i.input_len();
+    while offset < i.eof_offset() {
+        let current_len = i.eof_offset();
         let remainder = i.next_slice(offset).0;
         match normal.parse_next(remainder.clone()) {
             Ok((i2, o)) => {
                 res.accumulate(o);
-                if i2.input_len() == 0 {
+                if i2.eof_offset() == 0 {
                     return Err(ErrMode::Incomplete(Needed::Unknown));
-                } else if i2.input_len() == current_len {
+                } else if i2.eof_offset() == current_len {
                     return Ok((remainder, res));
                 } else {
                     offset = input.offset_to(&i2);
                 }
             }
             Err(ErrMode::Backtrack(_)) => {
-                if remainder.next_token().expect("input_len > 0").1.as_char() == control_char {
+                if remainder.next_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = offset + control_char.len_utf8();
-                    let input_len = input.input_len();
+                    let eof_offset = input.eof_offset();
 
-                    if next >= input_len {
+                    if next >= eof_offset {
                         return Err(ErrMode::Incomplete(Needed::Unknown));
                     } else {
                         match transform.parse_next(i.next_slice(next).0) {
                             Ok((i2, o)) => {
                                 res.accumulate(o);
-                                if i2.input_len() == 0 {
+                                if i2.eof_offset() == 0 {
                                     return Err(ErrMode::Incomplete(Needed::Unknown));
                                 } else {
                                     offset = input.offset_to(&i2);
@@ -943,7 +947,7 @@ mod tests {
     };
     use crate::error::ErrorKind;
     use crate::error::{ErrMode, Needed};
-    use crate::input::AsChar;
+    use crate::stream::AsChar;
     use crate::IResult;
 
     #[test]
@@ -1294,47 +1298,44 @@ mod tests {
 
     #[test]
     fn length_bytes() {
-        use crate::Streaming;
+        use crate::Partial;
         use crate::{bytes::streaming::tag, multi::length_data, number::streaming::le_u8};
 
-        fn x(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+        fn x(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
             length_data(le_u8)(i)
         }
         assert_eq!(
-            x(Streaming(b"\x02..>>")),
-            Ok((Streaming(&b">>"[..]), &b".."[..]))
+            x(Partial(b"\x02..>>")),
+            Ok((Partial(&b">>"[..]), &b".."[..]))
         );
+        assert_eq!(x(Partial(b"\x02..")), Ok((Partial(&[][..]), &b".."[..])));
         assert_eq!(
-            x(Streaming(b"\x02..")),
-            Ok((Streaming(&[][..]), &b".."[..]))
-        );
-        assert_eq!(
-            x(Streaming(b"\x02.")),
+            x(Partial(b"\x02.")),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            x(Streaming(b"\x02")),
+            x(Partial(b"\x02")),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
 
-        fn y(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+        fn y(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
             let (i, _) = tag("magic")(i)?;
             length_data(le_u8)(i)
         }
         assert_eq!(
-            y(Streaming(b"magic\x02..>>")),
-            Ok((Streaming(&b">>"[..]), &b".."[..]))
+            y(Partial(b"magic\x02..>>")),
+            Ok((Partial(&b">>"[..]), &b".."[..]))
         );
         assert_eq!(
-            y(Streaming(b"magic\x02..")),
-            Ok((Streaming(&[][..]), &b".."[..]))
+            y(Partial(b"magic\x02..")),
+            Ok((Partial(&[][..]), &b".."[..]))
         );
         assert_eq!(
-            y(Streaming(b"magic\x02.")),
+            y(Partial(b"magic\x02.")),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            y(Streaming(b"magic\x02")),
+            y(Partial(b"magic\x02")),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
     }

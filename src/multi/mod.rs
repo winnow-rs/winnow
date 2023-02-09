@@ -6,8 +6,8 @@ mod tests;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
-use crate::input::Accumulate;
-use crate::input::{Input, InputIsStreaming, ToUsize, UpdateSlice};
+use crate::stream::Accumulate;
+use crate::stream::{Stream, StreamIsPartial, ToUsize, UpdateSlice};
 use crate::{IResult, Parser};
 
 /// Repeats the embedded parser, gathering the results in a `Vec`.
@@ -38,7 +38,7 @@ use crate::{IResult, Parser};
 /// ```
 pub fn many0<I, O, C, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, C, E>
 where
-    I: Input,
+    I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     E: ParseError<I>,
@@ -46,13 +46,13 @@ where
     move |mut i: I| {
         let mut acc = C::initial(None);
         loop {
-            let len = i.input_len();
+            let len = i.eof_offset();
             match f.parse_next(i.clone()) {
                 Err(ErrMode::Backtrack(_)) => return Ok((i, acc)),
                 Err(e) => return Err(e),
                 Ok((i1, o)) => {
                     // infinite loop check: the parser must always consume
-                    if i1.input_len() == len {
+                    if i1.eof_offset() == len {
                         return Err(ErrMode::from_error_kind(i, ErrorKind::Many0));
                     }
 
@@ -93,7 +93,7 @@ where
 /// ```
 pub fn many1<I, O, C, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, C, E>
 where
-    I: Input,
+    I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     E: ParseError<I>,
@@ -106,13 +106,13 @@ where
             i = i1;
 
             loop {
-                let len = i.input_len();
+                let len = i.eof_offset();
                 match f.parse_next(i.clone()) {
                     Err(ErrMode::Backtrack(_)) => return Ok((i, acc)),
                     Err(e) => return Err(e),
                     Ok((i1, o)) => {
                         // infinite loop check: the parser must always consume
-                        if i1.input_len() == len {
+                        if i1.eof_offset() == len {
                             return Err(ErrMode::from_error_kind(i, ErrorKind::Many1));
                         }
 
@@ -129,7 +129,7 @@ where
 #[deprecated(since = "0.3.0", note = "Replaced with `many_till0`")]
 pub fn many_till<I, O, C, P, E, F, G>(f: F, g: G) -> impl FnMut(I) -> IResult<I, (C, P), E>
 where
-    I: Input,
+    I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     G: Parser<I, P, E>,
@@ -162,7 +162,7 @@ where
 /// ```
 pub fn many_till0<I, O, C, P, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IResult<I, (C, P), E>
 where
-    I: Input,
+    I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     G: Parser<I, P, E>,
@@ -171,7 +171,7 @@ where
     move |mut i: I| {
         let mut res = C::initial(None);
         loop {
-            let len = i.input_len();
+            let len = i.eof_offset();
             match g.parse_next(i.clone()) {
                 Ok((i1, o)) => return Ok((i1, (res, o))),
                 Err(ErrMode::Backtrack(_)) => {
@@ -179,7 +179,7 @@ where
                         Err(e) => return Err(e.append(i, ErrorKind::ManyTill)),
                         Ok((i1, o)) => {
                             // infinite loop check: the parser must always consume
-                            if i1.input_len() == len {
+                            if i1.eof_offset() == len {
                                 return Err(ErrMode::from_error_kind(i1, ErrorKind::ManyTill));
                             }
 
@@ -224,7 +224,7 @@ pub fn separated0<I, O, C, O2, E, P, S>(
     mut sep: S,
 ) -> impl FnMut(I) -> IResult<I, C, E>
 where
-    I: Input,
+    I: Stream,
     C: Accumulate<O>,
     P: Parser<I, O, E>,
     S: Parser<I, O2, E>,
@@ -243,13 +243,13 @@ where
         }
 
         loop {
-            let len = i.input_len();
+            let len = i.eof_offset();
             match sep.parse_next(i.clone()) {
                 Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
                 Err(e) => return Err(e),
                 Ok((i1, _)) => {
                     // infinite loop check: the parser must always consume
-                    if i1.input_len() == len {
+                    if i1.eof_offset() == len {
                         return Err(ErrMode::from_error_kind(i1, ErrorKind::SeparatedList));
                     }
 
@@ -274,7 +274,7 @@ where
 )]
 pub fn separated_list0<I, O, C, O2, E, F, G>(sep: G, f: F) -> impl FnMut(I) -> IResult<I, C, E>
 where
-    I: Input,
+    I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     G: Parser<I, O2, E>,
@@ -314,7 +314,7 @@ pub fn separated1<I, O, C, O2, E, P, S>(
     mut sep: S,
 ) -> impl FnMut(I) -> IResult<I, C, E>
 where
-    I: Input,
+    I: Stream,
     C: Accumulate<O>,
     P: Parser<I, O, E>,
     S: Parser<I, O2, E>,
@@ -333,13 +333,13 @@ where
         }
 
         loop {
-            let len = i.input_len();
+            let len = i.eof_offset();
             match sep.parse_next(i.clone()) {
                 Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
                 Err(e) => return Err(e),
                 Ok((i1, _)) => {
                     // infinite loop check: the parser must always consume
-                    if i1.input_len() == len {
+                    if i1.eof_offset() == len {
                         return Err(ErrMode::from_error_kind(i1, ErrorKind::SeparatedList));
                     }
 
@@ -364,7 +364,7 @@ where
 )]
 pub fn separated_list1<I, O, C, O2, E, F, G>(sep: G, f: F) -> impl FnMut(I) -> IResult<I, C, E>
 where
-    I: Input,
+    I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     G: Parser<I, O2, E>,
@@ -397,7 +397,7 @@ pub fn separated_foldl1<I, O, O2, E, P, S, Op>(
     op: Op,
 ) -> impl FnMut(I) -> IResult<I, O, E>
 where
-    I: Input,
+    I: Stream,
     P: Parser<I, O, E>,
     S: Parser<I, O2, E>,
     E: ParseError<I>,
@@ -407,13 +407,13 @@ where
         let (mut i, mut ol) = parser.parse_next(i)?;
 
         loop {
-            let len = i.input_len();
+            let len = i.eof_offset();
             match sep.parse_next(i.clone()) {
                 Err(ErrMode::Backtrack(_)) => return Ok((i, ol)),
                 Err(e) => return Err(e),
                 Ok((i1, s)) => {
                     // infinite loop check: the parser must always consume
-                    if i1.input_len() == len {
+                    if i1.eof_offset() == len {
                         return Err(ErrMode::from_error_kind(i1, ErrorKind::SeparatedList));
                     }
 
@@ -456,7 +456,7 @@ pub fn separated_foldr1<I, O, O2, E, P, S, Op>(
     op: Op,
 ) -> impl FnMut(I) -> IResult<I, O, E>
 where
-    I: Input,
+    I: Stream,
     P: Parser<I, O, E>,
     S: Parser<I, O2, E>,
     E: ParseError<I>,
@@ -515,7 +515,7 @@ pub fn many_m_n<I, O, C, E, F>(
     mut parse: F,
 ) -> impl FnMut(I) -> IResult<I, C, E>
 where
-    I: Input,
+    I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     E: ParseError<I>,
@@ -527,11 +527,11 @@ where
 
         let mut res = C::initial(Some(min));
         for count in 0..max {
-            let len = input.input_len();
+            let len = input.eof_offset();
             match parse.parse_next(input.clone()) {
                 Ok((tail, value)) => {
                     // infinite loop check: the parser must always consume
-                    if tail.input_len() == len {
+                    if tail.eof_offset() == len {
                         return Err(ErrMode::from_error_kind(input, ErrorKind::ManyMN));
                     }
 
@@ -585,7 +585,7 @@ where
 #[deprecated(since = "0.3.0", note = "Replaced with `many0`")]
 pub fn many0_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>
 where
-    I: Input,
+    I: Stream,
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
@@ -595,11 +595,11 @@ where
 
         loop {
             let input_ = input.clone();
-            let len = input.input_len();
+            let len = input.eof_offset();
             match f.parse_next(input_) {
                 Ok((i, _)) => {
                     // infinite loop check: the parser must always consume
-                    if i.input_len() == len {
+                    if i.eof_offset() == len {
                         return Err(ErrMode::from_error_kind(input, ErrorKind::Many0Count));
                     }
 
@@ -646,7 +646,7 @@ where
 #[deprecated(since = "0.3.0", note = "Replaced with `many0`")]
 pub fn many1_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>
 where
-    I: Input,
+    I: Stream,
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
@@ -660,14 +660,14 @@ where
                 let mut input = i1;
 
                 loop {
-                    let len = input.input_len();
+                    let len = input.eof_offset();
                     let input_ = input.clone();
                     match f.parse_next(input_) {
                         Err(ErrMode::Backtrack(_)) => return Ok((input, count)),
                         Err(e) => return Err(e),
                         Ok((i, _)) => {
                             // infinite loop check: the parser must always consume
-                            if i.input_len() == len {
+                            if i.eof_offset() == len {
                                 return Err(ErrMode::from_error_kind(i, ErrorKind::Many1Count));
                             }
 
@@ -821,7 +821,7 @@ pub fn fold_many0<I, O, E, F, G, H, R>(
     mut g: G,
 ) -> impl FnMut(I) -> IResult<I, R, E>
 where
-    I: Input,
+    I: Stream,
     F: Parser<I, O, E>,
     G: FnMut(R, O) -> R,
     H: FnMut() -> R,
@@ -833,11 +833,11 @@ where
 
         loop {
             let i_ = input.clone();
-            let len = input.input_len();
+            let len = input.eof_offset();
             match f.parse_next(i_) {
                 Ok((i, o)) => {
                     // infinite loop check: the parser must always consume
-                    if i.input_len() == len {
+                    if i.eof_offset() == len {
                         return Err(ErrMode::from_error_kind(input, ErrorKind::Many0));
                     }
 
@@ -897,7 +897,7 @@ pub fn fold_many1<I, O, E, F, G, H, R>(
     mut g: G,
 ) -> impl FnMut(I) -> IResult<I, R, E>
 where
-    I: Input,
+    I: Stream,
     F: Parser<I, O, E>,
     G: FnMut(R, O) -> R,
     H: FnMut() -> R,
@@ -915,7 +915,7 @@ where
 
                 loop {
                     let _input = input.clone();
-                    let len = input.input_len();
+                    let len = input.eof_offset();
                     match f.parse_next(_input) {
                         Err(ErrMode::Backtrack(_)) => {
                             break;
@@ -923,7 +923,7 @@ where
                         Err(e) => return Err(e),
                         Ok((i, o)) => {
                             // infinite loop check: the parser must always consume
-                            if i.input_len() == len {
+                            if i.eof_offset() == len {
                                 return Err(ErrMode::Cut(E::from_error_kind(i, ErrorKind::Many1)));
                             }
 
@@ -988,7 +988,7 @@ pub fn fold_many_m_n<I, O, E, F, G, H, R>(
     mut fold: G,
 ) -> impl FnMut(I) -> IResult<I, R, E>
 where
-    I: Input,
+    I: Stream,
     F: Parser<I, O, E>,
     G: FnMut(R, O) -> R,
     H: FnMut() -> R,
@@ -1001,11 +1001,11 @@ where
 
         let mut acc = init();
         for count in 0..max {
-            let len = input.input_len();
+            let len = input.eof_offset();
             match parse.parse_next(input.clone()) {
                 Ok((tail, value)) => {
                     // infinite loop check: the parser must always consume
-                    if tail.input_len() == len {
+                    if tail.eof_offset() == len {
                         return Err(ErrMode::from_error_kind(tail, ErrorKind::ManyMN));
                     }
 
@@ -1033,29 +1033,29 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Arguments
 /// * `f` The parser to apply.
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult, input::Streaming};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult, stream::Partial};
 /// use winnow::number::be_u16;
 /// use winnow::multi::length_data;
 /// use winnow::bytes::tag;
 ///
-/// fn parser(s: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+/// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
 ///   length_data(be_u16)(s)
 /// }
 ///
-/// assert_eq!(parser(Streaming(b"\x00\x03abcefg")), Ok((Streaming(&b"efg"[..]), &b"abc"[..])));
-/// assert_eq!(parser(Streaming(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Partial(b"\x00\x03abcefg")), Ok((Partial(&b"efg"[..]), &b"abc"[..])));
+/// assert_eq!(parser(Partial(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
-pub fn length_data<I, N, E, F, const STREAMING: bool>(
+pub fn length_data<I, N, E, F, const PARTIAL: bool>(
     mut f: F,
-) -> impl FnMut(I) -> IResult<I, <I as Input>::Slice, E>
+) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream,
     N: ToUsize,
     F: Parser<I, N, E>,
     E: ParseError<I>,
@@ -1075,32 +1075,32 @@ where
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Arguments
 /// * `f` The parser to apply.
 /// * `g` The parser to apply on the subslice.
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult, input::Streaming};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult, stream::Partial};
 /// use winnow::number::be_u16;
 /// use winnow::multi::length_value;
 /// use winnow::bytes::tag;
 ///
-/// fn parser(s: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+/// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
 ///   length_value(be_u16, tag("abc"))(s)
 /// }
 ///
-/// assert_eq!(parser(Streaming(b"\x00\x03abcefg")), Ok((Streaming(&b"efg"[..]), &b"abc"[..])));
-/// assert_eq!(parser(Streaming(b"\x00\x03123123")), Err(ErrMode::Backtrack(Error::new(Streaming(&b"123"[..]), ErrorKind::Tag))));
-/// assert_eq!(parser(Streaming(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Partial(b"\x00\x03abcefg")), Ok((Partial(&b"efg"[..]), &b"abc"[..])));
+/// assert_eq!(parser(Partial(b"\x00\x03123123")), Err(ErrMode::Backtrack(Error::new(Partial(&b"123"[..]), ErrorKind::Tag))));
+/// assert_eq!(parser(Partial(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
-pub fn length_value<I, O, N, E, F, G, const STREAMING: bool>(
+pub fn length_value<I, O, N, E, F, G, const PARTIAL: bool>(
     mut f: F,
     mut g: G,
 ) -> impl FnMut(I) -> IResult<I, O, E>
 where
-    I: InputIsStreaming<STREAMING>,
-    I: Input + UpdateSlice,
+    I: StreamIsPartial<PARTIAL>,
+    I: Stream + UpdateSlice,
     N: ToUsize,
     F: Parser<I, N, E>,
     G: Parser<I, O, E>,

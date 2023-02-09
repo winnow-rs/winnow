@@ -9,15 +9,15 @@ use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::Needed;
 use crate::error::ParseError;
-use crate::input::{
-    split_at_offset1_streaming, split_at_offset_streaming, AsBStr, AsChar, ContainsToken, Input,
+use crate::stream::{
+    split_at_offset1_partial, split_at_offset_partial, AsBStr, AsChar, ContainsToken, Stream,
 };
-use crate::input::{Compare, CompareResult};
+use crate::stream::{Compare, CompareResult};
 use crate::IResult;
 
 /// Recognizes one character.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
@@ -31,23 +31,23 @@ use crate::IResult;
 /// assert_eq!(parser(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bytes::one_of` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bytes::one_of` with input wrapped in `winnow::Partial`"
 )]
 pub fn char<I, Error: ParseError<I>>(c: char) -> impl Fn(I) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     move |i: I| char_internal(i, c)
 }
 
 pub(crate) fn char_internal<I, Error: ParseError<I>>(i: I, c: char) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     let (input, token) = i
         .next_token()
@@ -62,7 +62,7 @@ where
 
 /// Recognizes one character and checks that it satisfies a predicate
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
@@ -76,15 +76,15 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bytes::one_of` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bytes::one_of` with input wrapped in `winnow::Partial`"
 )]
 pub fn satisfy<F, I, Error: ParseError<I>>(cond: F) -> impl Fn(I) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
     F: Fn(char) -> bool,
 {
     move |i: I| satisfy_internal(i, &cond)
@@ -95,8 +95,8 @@ pub(crate) fn satisfy_internal<F, I, Error: ParseError<I>>(
     cond: &F,
 ) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
     F: Fn(char) -> bool,
 {
     let (input, token) = i
@@ -112,7 +112,7 @@ where
 
 /// Recognizes one of the provided characters.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
@@ -123,23 +123,23 @@ where
 /// assert_eq!(one_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::one_of`][crate::bytes::one_of] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bytes::one_of` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bytes::one_of` with input wrapped in `winnow::Partial`"
 )]
 pub fn one_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: Copy + AsChar,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    <I as Stream>::Token: Copy + AsChar,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| crate::bytes::streaming::one_of_internal(i, &list).map(|(i, c)| (i, c.as_char()))
 }
 
 /// Recognizes a character that is not in the provided characters.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
@@ -150,23 +150,23 @@ where
 /// assert_eq!(none_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::none_of`][crate::bytes::none_of] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::none_of`][crate::bytes::none_of] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bytes::none_of` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bytes::none_of` with input wrapped in `winnow::Partial`"
 )]
 pub fn none_of<I, T, Error: ParseError<I>>(list: T) -> impl Fn(I) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: Copy + AsChar,
-    T: ContainsToken<<I as Input>::Token>,
+    I: Stream,
+    <I as Stream>::Token: Copy + AsChar,
+    T: ContainsToken<<I as Stream>::Token>,
 {
     move |i: I| crate::bytes::streaming::none_of_internal(i, &list).map(|(i, c)| (i, c.as_char()))
 }
 
 /// Recognizes the string "\r\n".
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
@@ -177,14 +177,14 @@ where
 /// assert_eq!(crlf::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::crlf`][crate::character::crlf] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::crlf`][crate::character::crlf] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::crlf` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::crlf` with input wrapped in `winnow::Partial`"
 )]
-pub fn crlf<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn crlf<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
+    T: Stream,
     T: Compare<&'static str>,
 {
     const CRLF: &str = "\r\n";
@@ -200,7 +200,7 @@ where
 
 /// Recognizes a string of any char except '\r\n' or '\n'.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
@@ -213,16 +213,16 @@ where
 /// assert_eq!(not_line_ending::<_, Error<_>>("a\rbc"), Err(ErrMode::Backtrack(Error::new("a\rbc", ErrorKind::Tag ))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::not_line_ending`][crate::character::not_line_ending] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::not_line_ending`][crate::character::not_line_ending] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::not_line_ending` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::not_line_ending` with input wrapped in `winnow::Partial`"
 )]
-pub fn not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input + AsBStr,
+    T: Stream + AsBStr,
     T: Compare<&'static str>,
-    <T as Input>::Token: AsChar,
+    <T as Stream>::Token: AsChar,
 {
     match input.offset_for(|item| {
         let c = item.as_char();
@@ -254,7 +254,7 @@ where
 
 /// Recognizes an end of line (both '\n' and '\r\n').
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
@@ -265,14 +265,14 @@ where
 /// assert_eq!(line_ending::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::line_ending`][crate::character::line_ending] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::line_ending`][crate::character::line_ending] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::line_ending` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::line_ending` with input wrapped in `winnow::Partial`"
 )]
-pub fn line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
+    T: Stream,
     T: Compare<&'static str>,
 {
     const LF: &str = "\n";
@@ -290,7 +290,7 @@ where
 
 /// Matches a newline character '\\n'.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
@@ -301,22 +301,22 @@ where
 /// assert_eq!(newline::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::newline`][crate::character::newline] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::newline`][crate::character::newline] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::newline` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::newline` with input wrapped in `winnow::Partial`"
 )]
 pub fn newline<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     char('\n')(input)
 }
 
 /// Matches a tab character '\t'.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
@@ -327,15 +327,15 @@ where
 /// assert_eq!(tab::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::tab`][crate::character::tab] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::tab`][crate::character::tab] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::tab` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::tab` with input wrapped in `winnow::Partial`"
 )]
 pub fn tab<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
 where
-    I: Input,
-    <I as Input>::Token: AsChar,
+    I: Stream,
+    <I as Stream>::Token: AsChar,
 {
     char('\t')(input)
 }
@@ -343,7 +343,7 @@ where
 /// Matches one byte as a character. Note that the input type will
 /// accept a `str`, but not a `&[u8]`, unlike many other nom parsers.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example
 ///
 /// ```
@@ -352,22 +352,22 @@ where
 /// assert_eq!(anychar::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::bytes::any`][crate::bytes::any] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::bytes::any`][crate::bytes::any] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::bytes::any` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::bytes::any` with input wrapped in `winnow::Partial`"
 )]
 pub fn anychar<T, E: ParseError<T>>(input: T) -> IResult<T, char, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
     crate::bytes::streaming::any(input).map(|(i, c)| (i, c.as_char()))
 }
 
 /// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphabetic character).
 /// # Example
 ///
@@ -379,22 +379,22 @@ where
 /// assert_eq!(alpha0::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::alpha0`][crate::character::alpha0] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::alpha0`][crate::character::alpha0] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::alpha0` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::alpha0` with input wrapped in `winnow::Partial`"
 )]
-pub fn alpha0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn alpha0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
-    split_at_offset_streaming(&input, |item| !item.is_alpha())
+    split_at_offset_partial(&input, |item| !item.is_alpha())
 }
 
 /// Recognizes one or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphabetic character).
 /// # Example
 ///
@@ -406,22 +406,22 @@ where
 /// assert_eq!(alpha1::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::alpha1`][crate::character::alpha1] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::alpha1`][crate::character::alpha1] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::alpha1` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::alpha1` with input wrapped in `winnow::Partial`"
 )]
-pub fn alpha1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn alpha1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
-    split_at_offset1_streaming(&input, |item| !item.is_alpha(), ErrorKind::Alpha)
+    split_at_offset1_partial(&input, |item| !item.is_alpha(), ErrorKind::Alpha)
 }
 
 /// Recognizes zero or more ASCII numerical characters: 0-9
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non digit character).
 /// # Example
 ///
@@ -433,22 +433,22 @@ where
 /// assert_eq!(digit0::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::digit0`][crate::character::digit0] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::digit0`][crate::character::digit0] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::digit0` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::digit0` with input wrapped in `winnow::Partial`"
 )]
-pub fn digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
-    split_at_offset_streaming(&input, |item| !item.is_dec_digit())
+    split_at_offset_partial(&input, |item| !item.is_dec_digit())
 }
 
 /// Recognizes one or more ASCII numerical characters: 0-9
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non digit character).
 /// # Example
 ///
@@ -460,22 +460,22 @@ where
 /// assert_eq!(digit1::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::digit1`][crate::character::digit1] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::digit1`][crate::character::digit1] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::digit1` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::digit1` with input wrapped in `winnow::Partial`"
 )]
-pub fn digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
-    split_at_offset1_streaming(&input, |item| !item.is_dec_digit(), ErrorKind::Digit)
+    split_at_offset1_partial(&input, |item| !item.is_dec_digit(), ErrorKind::Digit)
 }
 
 /// Recognizes zero or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non hexadecimal digit character).
 /// # Example
 ///
@@ -487,22 +487,22 @@ where
 /// assert_eq!(hex_digit0::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::hex_digit0`][crate::character::hex_digit0] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::hex_digit0`][crate::character::hex_digit0] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::hex_digit0` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::hex_digit0` with input wrapped in `winnow::Partial`"
 )]
-pub fn hex_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn hex_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
-    split_at_offset_streaming(&input, |item| !item.is_hex_digit())
+    split_at_offset_partial(&input, |item| !item.is_hex_digit())
 }
 
 /// Recognizes one or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non hexadecimal digit character).
 /// # Example
 ///
@@ -514,22 +514,22 @@ where
 /// assert_eq!(hex_digit1::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::hex_digit1`][crate::character::hex_digit1] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::hex_digit1`][crate::character::hex_digit1] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::hex_digit1` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::hex_digit1` with input wrapped in `winnow::Partial`"
 )]
-pub fn hex_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn hex_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
-    split_at_offset1_streaming(&input, |item| !item.is_hex_digit(), ErrorKind::HexDigit)
+    split_at_offset1_partial(&input, |item| !item.is_hex_digit(), ErrorKind::HexDigit)
 }
 
 /// Recognizes zero or more octal characters: 0-7
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non octal digit character).
 /// # Example
 ///
@@ -541,22 +541,22 @@ where
 /// assert_eq!(oct_digit0::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::oct_digit0`][crate::character::oct_digit0] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::oct_digit0`][crate::character::oct_digit0] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::oct_digit0` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::oct_digit0` with input wrapped in `winnow::Partial`"
 )]
-pub fn oct_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn oct_digit0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
-    split_at_offset_streaming(&input, |item| !item.is_oct_digit())
+    split_at_offset_partial(&input, |item| !item.is_oct_digit())
 }
 
 /// Recognizes one or more octal characters: 0-7
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non octal digit character).
 /// # Example
 ///
@@ -568,22 +568,22 @@ where
 /// assert_eq!(oct_digit1::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::oct_digit1`][crate::character::oct_digit1] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::oct_digit1`][crate::character::oct_digit1] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::oct_digit1` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::oct_digit1` with input wrapped in `winnow::Partial`"
 )]
-pub fn oct_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn oct_digit1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
-    split_at_offset1_streaming(&input, |item| !item.is_oct_digit(), ErrorKind::OctDigit)
+    split_at_offset1_partial(&input, |item| !item.is_oct_digit(), ErrorKind::OctDigit)
 }
 
 /// Recognizes zero or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphanumerical character).
 /// # Example
 ///
@@ -595,22 +595,22 @@ where
 /// assert_eq!(alphanumeric0::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::alphanumeric0`][crate::character::alphanumeric0] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::alphanumeric0`][crate::character::alphanumeric0] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::alphanumeric0` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::alphanumeric0` with input wrapped in `winnow::Partial`"
 )]
-pub fn alphanumeric0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn alphanumeric0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
-    split_at_offset_streaming(&input, |item| !item.is_alphanum())
+    split_at_offset_partial(&input, |item| !item.is_alphanum())
 }
 
 /// Recognizes one or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphanumerical character).
 /// # Example
 ///
@@ -622,22 +622,22 @@ where
 /// assert_eq!(alphanumeric1::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::alphanumeric1`][crate::character::alphanumeric1] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::alphanumeric1`][crate::character::alphanumeric1] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::alphanumeric1` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::alphanumeric1` with input wrapped in `winnow::Partial`"
 )]
-pub fn alphanumeric1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn alphanumeric1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
-    split_at_offset1_streaming(&input, |item| !item.is_alphanum(), ErrorKind::AlphaNumeric)
+    split_at_offset1_partial(&input, |item| !item.is_alphanum(), ErrorKind::AlphaNumeric)
 }
 
 /// Recognizes zero or more spaces and tabs.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 /// # Example
 ///
@@ -649,24 +649,24 @@ where
 /// assert_eq!(space0::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::space0`][crate::character::space0] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::space0`][crate::character::space0] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::space0` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::space0` with input wrapped in `winnow::Partial`"
 )]
-pub fn space0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn space0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
-    split_at_offset_streaming(&input, |item| {
+    split_at_offset_partial(&input, |item| {
         let c = item.as_char();
         !(c == ' ' || c == '\t')
     })
 }
 /// Recognizes one or more spaces and tabs.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 /// # Example
 ///
@@ -678,17 +678,17 @@ where
 /// assert_eq!(space1::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::space1`][crate::character::space1] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::space1`][crate::character::space1] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::space1` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::space1` with input wrapped in `winnow::Partial`"
 )]
-pub fn space1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn space1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
-    split_at_offset1_streaming(
+    split_at_offset1_partial(
         &input,
         |item| {
             let c = item.as_char();
@@ -700,7 +700,7 @@ where
 
 /// Recognizes zero or more spaces, tabs, carriage returns and line feeds.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 /// # Example
 ///
@@ -712,17 +712,17 @@ where
 /// assert_eq!(multispace0::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::multispace0`][crate::character::multispace0] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::multispace0`][crate::character::multispace0] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::multispace0` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::multispace0` with input wrapped in `winnow::Partial`"
 )]
-pub fn multispace0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn multispace0<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
-    split_at_offset_streaming(&input, |item| {
+    split_at_offset_partial(&input, |item| {
         let c = item.as_char();
         !(c == ' ' || c == '\t' || c == '\r' || c == '\n')
     })
@@ -730,7 +730,7 @@ where
 
 /// Recognizes one or more spaces, tabs, carriage returns and line feeds.
 ///
-/// *Streaming version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 /// # Example
 ///
@@ -742,17 +742,17 @@ where
 /// assert_eq!(multispace1::<_, Error<_>>(""), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
-/// **WARNING:** Deprecated, replaced with [`winnow::character::multispace1`][crate::character::multispace1] with input wrapped in [`winnow::Streaming`][crate::Streaming]
+/// **WARNING:** Deprecated, replaced with [`winnow::character::multispace1`][crate::character::multispace1] with input wrapped in [`winnow::Partial`][crate::Partial]
 #[deprecated(
     since = "0.1.0",
-    note = "Replaced with `winnow::character::multispace1` with input wrapped in `winnow::Streaming`"
+    note = "Replaced with `winnow::character::multispace1` with input wrapped in `winnow::Partial`"
 )]
-pub fn multispace1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Input>::Slice, E>
+pub fn multispace1<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar,
+    T: Stream,
+    <T as Stream>::Token: AsChar,
 {
-    split_at_offset1_streaming(
+    split_at_offset1_partial(
         &input,
         |item| {
             let c = item.as_char();
@@ -764,8 +764,8 @@ where
 
 pub(crate) fn sign<T, E: ParseError<T>>(input: T) -> IResult<T, bool, E>
 where
-    T: Input,
-    <T as Input>::Token: AsChar + Copy,
+    T: Stream,
+    <T as Stream>::Token: AsChar + Copy,
 {
     fn sign(token: impl AsChar) -> bool {
         let token = token.as_char();
@@ -787,12 +787,12 @@ macro_rules! ints {
         /// *Complete version*: can parse until the end of input.
         pub fn $t<T, E: ParseError<T>>(input: T) -> IResult<T, $t, E>
             where
-              T: Input,
-              <T as Input>::Token: AsChar + Copy,
+              T: Stream,
+              <T as Stream>::Token: AsChar + Copy,
             {
               let (i, sign) = sign(input.clone())?;
 
-                if i.input_len() == 0 {
+                if i.eof_offset() == 0 {
                     return Err(ErrMode::Incomplete(Needed::new(1)));
                 }
 
@@ -836,12 +836,12 @@ macro_rules! uints {
         /// *Complete version*: can parse until the end of input.
         pub fn $t<T, E: ParseError<T>>(input: T) -> IResult<T, $t, E>
             where
-              T: Input,
-              <T as Input>::Token: AsChar,
+              T: Stream,
+              <T as Stream>::Token: AsChar,
             {
                 let i = input;
 
-                if i.input_len() == 0 {
+                if i.eof_offset() == 0 {
                     return Err(ErrMode::Incomplete(Needed::new(1)));
                 }
 
@@ -877,8 +877,8 @@ mod tests {
     use crate::error::Error;
     use crate::error::ErrorKind;
     use crate::error::{ErrMode, Needed};
-    use crate::input::ParseSlice;
     use crate::sequence::pair;
+    use crate::stream::ParseSlice;
     use crate::IResult;
     use proptest::prelude::*;
 
@@ -1066,7 +1066,7 @@ mod tests {
         );
     }
 
-    use crate::input::Offset;
+    use crate::stream::Offset;
     #[test]
     fn offset() {
         let a = &b"abcd;"[..];

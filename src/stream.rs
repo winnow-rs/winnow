@@ -1,11 +1,11 @@
-//! Input capability for nom combinators to parse
+//! Stream capability for nom combinators to parse
 //!
-//! Input types include:
+//! Stream types include:
 //! - `&str` and `&[u8]` are the standard input types
 //! - [`Located`] can track the location within the original buffer to report
 //!   [spans][crate::Parser::with_span]
 //! - [`Stateful`] to thread global state through your parsers
-//! - [`Streaming`] can mark an input as partial buffer that is being streamed into
+//! - [`Partial`] can mark an input as partial buffer that is being streamed into
 //!
 //! # How do a parse a custom input type?
 //!
@@ -19,21 +19,21 @@
 //!
 //! ## Implementing a custom type
 //!
-//! Let's assume we have an input type we'll call `MyInput`. `MyInput` is a sequence of `MyItem` type.
-//! The goal is to define nom parsers with this signature: `MyInput -> IResult<MyInput, Output>`.
+//! Let's assume we have an input type we'll call `MyStream`. `MyStream` is a sequence of `MyItem` type.
+//! The goal is to define nom parsers with this signature: `MyStream -> IResult<MyStream, Output>`.
 //!
 //! ```rust,ignore
-//! fn parser(i: MyInput) -> IResult<MyInput, Output> {
+//! fn parser(i: MyStream) -> IResult<MyStream, Output> {
 //!     tag("test")(i)
 //! }
 //! ```
 //!
-//! Here are the traits we have to implement for `MyInput`:
+//! Here are the traits we have to implement for `MyStream`:
 //!
 //! | trait | usage |
 //! |---|---|
-//! | [`Input`] |Core trait for driving parsing|
-//! | [`InputIsStreaming`] | Marks the input as being the complete buffer or a partial buffer for streaming input |
+//! | [`Stream`] |Core trait for driving parsing|
+//! | [`StreamIsPartial`] | Marks the input as being the complete buffer or a partial buffer for streaming input |
 //! | [`AsBytes`] |Casts the input type to a byte slice|
 //! | [`AsBStr`] |Casts the input type to a slice of ASCII / UTF-8-like bytes|
 //! | [`Compare`] |Character comparison operations|
@@ -89,7 +89,7 @@ impl<I> Located<I>
 where
     I: Clone + Offset,
 {
-    /// Wrap another Input with span tracking
+    /// Wrap another Stream with span tracking
     pub fn new(input: I) -> Self {
         let initial = input.clone();
         Self { initial, input }
@@ -128,7 +128,7 @@ impl<I> crate::lib::std::ops::Deref for Located<I> {
 /// ```
 /// # use std::cell::Cell;
 /// # use winnow::prelude::*;
-/// # use winnow::input::Stateful;
+/// # use winnow::stream::Stateful;
 /// # use winnow::character::alpha1;
 /// # type Error = ();
 ///
@@ -141,16 +141,16 @@ impl<I> crate::lib::std::ops::Deref for Located<I> {
 ///     }
 /// }
 ///
-/// type Input<'is> = Stateful<&'is str, State<'is>>;
+/// type Stream<'is> = Stateful<&'is str, State<'is>>;
 ///
-/// fn word(i: Input<'_>) -> IResult<Input<'_>, &str> {
+/// fn word(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
 ///   i.state.count();
 ///   alpha1(i)
 /// }
 ///
 /// let data = "Hello";
 /// let state = Cell::new(0);
-/// let input = Input { input: data, state: State(&state) };
+/// let input = Stream { input: data, state: State(&state) };
 /// let output = word.parse_next(input).finish().unwrap();
 /// assert_eq!(state.get(), 1);
 /// ```
@@ -190,16 +190,16 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 /// - [`Parser::complete`][crate::Parser::complete] transform [`ErrMode::Incomplete`] to
 ///   [`ErrMode::Backtrack`]
 ///
-/// See also [`InputIsStreaming`] to tell whether the input supports complete or streaming parsing.
+/// See also [`StreamIsPartial`] to tell whether the input supports complete or partial parsing.
 ///
 /// # Example
 ///
 /// Here is how it works in practice:
 ///
 /// ```rust
-/// use winnow::{IResult, error::ErrMode, error::Needed, error::{Error, ErrorKind}, bytes, character, input::Streaming};
+/// use winnow::{IResult, error::ErrMode, error::Needed, error::{Error, ErrorKind}, bytes, character, stream::Partial};
 ///
-/// fn take_streaming(i: Streaming<&[u8]>) -> IResult<Streaming<&[u8]>, &[u8]> {
+/// fn take_partial(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
 ///   bytes::take(4u8)(i)
 /// }
 ///
@@ -208,18 +208,18 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 /// }
 ///
 /// // both parsers will take 4 bytes as expected
-/// assert_eq!(take_streaming(Streaming(&b"abcde"[..])), Ok((Streaming(&b"e"[..]), &b"abcd"[..])));
+/// assert_eq!(take_partial(Partial(&b"abcde"[..])), Ok((Partial(&b"e"[..]), &b"abcd"[..])));
 /// assert_eq!(take_complete(&b"abcde"[..]), Ok((&b"e"[..], &b"abcd"[..])));
 ///
-/// // if the input is smaller than 4 bytes, the streaming parser
+/// // if the input is smaller than 4 bytes, the partial parser
 /// // will return `Incomplete` to indicate that we need more data
-/// assert_eq!(take_streaming(Streaming(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(take_partial(Partial(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// // but the complete parser will return an error
 /// assert_eq!(take_complete(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Eof))));
 ///
 /// // the alpha0 function recognizes 0 or more alphabetic characters
-/// fn alpha0_streaming(i: Streaming<&str>) -> IResult<Streaming<&str>, &str> {
+/// fn alpha0_partial(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   character::alpha0(i)
 /// }
 ///
@@ -228,21 +228,21 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 /// }
 ///
 /// // if there's a clear limit to the recognized characters, both parsers work the same way
-/// assert_eq!(alpha0_streaming(Streaming("abcd;")), Ok((Streaming(";"), "abcd")));
+/// assert_eq!(alpha0_partial(Partial("abcd;")), Ok((Partial(";"), "abcd")));
 /// assert_eq!(alpha0_complete("abcd;"), Ok((";", "abcd")));
 ///
-/// // but when there's no limit, the streaming version returns `Incomplete`, because it cannot
+/// // but when there's no limit, the partial version returns `Incomplete`, because it cannot
 /// // know if more input data should be recognized. The whole input could be "abcd;", or
 /// // "abcde;"
-/// assert_eq!(alpha0_streaming(Streaming("abcd")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha0_partial(Partial("abcd")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// // while the complete version knows that all of the data is there
 /// assert_eq!(alpha0_complete("abcd"), Ok(("", "abcd")));
 /// ```
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Streaming<I>(pub I);
+pub struct Partial<I>(pub I);
 
-impl<I> Streaming<I> {
+impl<I> Partial<I> {
     /// Convert to complete counterpart
     #[inline(always)]
     pub fn into_complete(self) -> I {
@@ -250,7 +250,7 @@ impl<I> Streaming<I> {
     }
 }
 
-impl<I> crate::lib::std::ops::Deref for Streaming<I> {
+impl<I> crate::lib::std::ops::Deref for Partial<I> {
     type Target = I;
 
     #[inline(always)]
@@ -286,7 +286,7 @@ where
     }
 }
 
-impl<I> SliceLen for Streaming<I>
+impl<I> SliceLen for Partial<I>
 where
     I: SliceLen,
 {
@@ -325,7 +325,7 @@ impl<'a> SliceLen for &'a str {
 }
 
 /// Core definition for parser input state
-pub trait Input: Clone {
+pub trait Stream: Clone {
     /// The smallest unit being parsed
     ///
     /// Example: `u8` for `&[u8]` or `char` for `&str`
@@ -341,7 +341,7 @@ pub trait Input: Clone {
     /// Iterate with the offset from the current location
     fn iter_offsets(&self) -> Self::IterOffsets;
     /// Returns the offaet to the end of the input
-    fn input_len(&self) -> usize;
+    fn eof_offset(&self) -> usize;
 
     /// Split off the next token from the input
     fn next_token(&self) -> Option<(Self, Self::Token)>;
@@ -358,23 +358,23 @@ pub trait Input: Clone {
     ///
     /// **NOTE:** For inputs with variable width tokens, like `&str`'s `char`, `offset` might not correspond
     /// with the number of tokens.  To get a valid offset, use:
-    /// - [`Input::input_len`]
-    /// - [`Input::iter_offsets`]
-    /// - [`Input::offset_for`]
-    /// - [`Input::offset_at`]
+    /// - [`Stream::eof_offset`]
+    /// - [`Stream::iter_offsets`]
+    /// - [`Stream::offset_for`]
+    /// - [`Stream::offset_at`]
     ///
     /// # Panic
     ///
     /// This will panic if
     ///
     /// * Indexes must be within bounds of the original input;
-    /// * Indexes must uphold invariants of the Input, like for `str` they must lie on UTF-8
+    /// * Indexes must uphold invariants of the stream, like for `str` they must lie on UTF-8
     ///   sequence boundaries.
     ///
     fn next_slice(&self, offset: usize) -> (Self, Self::Slice);
 }
 
-impl<'i, T> Input for &'i [T]
+impl<'i, T> Stream for &'i [T]
 where
     T: Clone,
 {
@@ -388,7 +388,7 @@ where
         self.iter().cloned().enumerate()
     }
     #[inline(always)]
-    fn input_len(&self) -> usize {
+    fn eof_offset(&self) -> usize {
         self.len()
     }
 
@@ -422,7 +422,7 @@ where
     }
 }
 
-impl<'i> Input for &'i str {
+impl<'i> Stream for &'i str {
     type Token = char;
     type Slice = &'i str;
 
@@ -433,7 +433,7 @@ impl<'i> Input for &'i str {
         self.char_indices()
     }
     #[inline(always)]
-    fn input_len(&self) -> usize {
+    fn eof_offset(&self) -> usize {
         self.len()
     }
 
@@ -467,7 +467,7 @@ impl<'i> Input for &'i str {
         }
 
         if cnt == tokens {
-            Ok(self.input_len())
+            Ok(self.eof_offset())
         } else {
             Err(Needed::Unknown)
         }
@@ -478,19 +478,19 @@ impl<'i> Input for &'i str {
     }
 }
 
-impl<I: Input> Input for Located<I> {
-    type Token = <I as Input>::Token;
-    type Slice = <I as Input>::Slice;
+impl<I: Stream> Stream for Located<I> {
+    type Token = <I as Stream>::Token;
+    type Slice = <I as Stream>::Slice;
 
-    type IterOffsets = <I as Input>::IterOffsets;
+    type IterOffsets = <I as Stream>::IterOffsets;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
         self.input.iter_offsets()
     }
     #[inline(always)]
-    fn input_len(&self) -> usize {
-        self.input.input_len()
+    fn eof_offset(&self) -> usize {
+        self.input.eof_offset()
     }
 
     #[inline(always)]
@@ -529,19 +529,19 @@ impl<I: Input> Input for Located<I> {
     }
 }
 
-impl<I: Input, S: Clone> Input for Stateful<I, S> {
-    type Token = <I as Input>::Token;
-    type Slice = <I as Input>::Slice;
+impl<I: Stream, S: Clone> Stream for Stateful<I, S> {
+    type Token = <I as Stream>::Token;
+    type Slice = <I as Stream>::Slice;
 
-    type IterOffsets = <I as Input>::IterOffsets;
+    type IterOffsets = <I as Stream>::IterOffsets;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
         self.input.iter_offsets()
     }
     #[inline(always)]
-    fn input_len(&self) -> usize {
-        self.input.input_len()
+    fn eof_offset(&self) -> usize {
+        self.input.eof_offset()
     }
 
     #[inline(always)]
@@ -580,25 +580,25 @@ impl<I: Input, S: Clone> Input for Stateful<I, S> {
     }
 }
 
-impl<I: Input> Input for Streaming<I> {
-    type Token = <I as Input>::Token;
-    type Slice = <I as Input>::Slice;
+impl<I: Stream> Stream for Partial<I> {
+    type Token = <I as Stream>::Token;
+    type Slice = <I as Stream>::Slice;
 
-    type IterOffsets = <I as Input>::IterOffsets;
+    type IterOffsets = <I as Stream>::IterOffsets;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
         self.0.iter_offsets()
     }
     #[inline(always)]
-    fn input_len(&self) -> usize {
-        self.0.input_len()
+    fn eof_offset(&self) -> usize {
+        self.0.eof_offset()
     }
 
     #[inline(always)]
     fn next_token(&self) -> Option<(Self, Self::Token)> {
         let (next, token) = self.0.next_token()?;
-        Some((Streaming(next), token))
+        Some((Partial(next), token))
     }
 
     #[inline(always)]
@@ -615,7 +615,7 @@ impl<I: Input> Input for Streaming<I> {
     #[inline(always)]
     fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
         let (next, slice) = self.0.next_slice(offset);
-        (Streaming(next), slice)
+        (Partial(next), slice)
     }
 }
 
@@ -645,7 +645,7 @@ where
     }
 }
 
-impl<I> Location for Streaming<I>
+impl<I> Location for Partial<I>
 where
     I: Location,
 {
@@ -657,73 +657,73 @@ where
 
 /// Marks the input as being the complete buffer or a partial buffer for streaming input
 ///
-/// See [Streaming] for marking a presumed complete buffer type as a streaming buffer.
-pub trait InputIsStreaming<const YES: bool>: Sized {
+/// See [Partial] for marking a presumed complete buffer type as a streaming buffer.
+pub trait StreamIsPartial<const YES: bool>: Sized {
     /// Complete counterpart
     ///
     /// - Set to `Self` if this is a complete buffer.
     /// - Set to [`std::convert::Infallible`] if there isn't an associated complete buffer type
-    type Complete: InputIsStreaming<false>;
-    /// Streaming counterpart
+    type Complete: StreamIsPartial<false>;
+    /// Partial counterpart
     ///
     /// - Set to `Self` if this is a streaming buffer.
     /// - Set to [`std::convert::Infallible`] if there isn't an associated streaming buffer type
-    type Streaming: InputIsStreaming<true>;
+    type Partial: StreamIsPartial<true>;
 
     /// Convert to complete counterpart
     fn into_complete(self) -> Self::Complete;
-    /// Convert to streaming counterpart
-    fn into_streaming(self) -> Self::Streaming;
+    /// Convert to partial counterpart
+    fn into_partial(self) -> Self::Partial;
 }
 
-impl<'a, T> InputIsStreaming<false> for &'a [T] {
+impl<'a, T> StreamIsPartial<false> for &'a [T] {
     type Complete = Self;
-    type Streaming = Streaming<Self>;
+    type Partial = Partial<Self>;
 
     #[inline(always)]
     fn into_complete(self) -> Self::Complete {
         self
     }
     #[inline(always)]
-    fn into_streaming(self) -> Self::Streaming {
-        Streaming(self)
+    fn into_partial(self) -> Self::Partial {
+        Partial(self)
     }
 }
 
-impl<'a> InputIsStreaming<false> for &'a str {
+impl<'a> StreamIsPartial<false> for &'a str {
     type Complete = Self;
-    type Streaming = Streaming<Self>;
+    type Partial = Partial<Self>;
 
     #[inline(always)]
     fn into_complete(self) -> Self::Complete {
         self
     }
     #[inline(always)]
-    fn into_streaming(self) -> Self::Streaming {
-        Streaming(self)
+    fn into_partial(self) -> Self::Partial {
+        Partial(self)
     }
 }
 
-impl<const YES: bool> InputIsStreaming<YES> for crate::lib::std::convert::Infallible {
+impl<const YES: bool> StreamIsPartial<YES> for crate::lib::std::convert::Infallible {
     type Complete = Self;
-    type Streaming = Self;
+    type Partial = Self;
 
     #[inline(always)]
     fn into_complete(self) -> Self::Complete {
         self
     }
     #[inline(always)]
-    fn into_streaming(self) -> Self::Streaming {
+    fn into_partial(self) -> Self::Partial {
         self
     }
 }
 
-impl<I> InputIsStreaming<true> for Located<I>
+impl<I> StreamIsPartial<true> for Located<I>
 where
-    I: InputIsStreaming<true>,
+    I: StreamIsPartial<true>,
 {
-    type Complete = Located<<I as InputIsStreaming<true>>::Complete>;
-    type Streaming = Self;
+    type Complete = Located<<I as StreamIsPartial<true>>::Complete>;
+    type Partial = Self;
 
     #[inline(always)]
     fn into_complete(self) -> Self::Complete {
@@ -733,37 +733,37 @@ where
         }
     }
     #[inline(always)]
-    fn into_streaming(self) -> Self::Streaming {
+    fn into_partial(self) -> Self::Partial {
         self
     }
 }
 
-impl<I> InputIsStreaming<false> for Located<I>
+impl<I> StreamIsPartial<false> for Located<I>
 where
-    I: InputIsStreaming<false>,
+    I: StreamIsPartial<false>,
 {
     type Complete = Self;
-    type Streaming = Located<<I as InputIsStreaming<false>>::Streaming>;
+    type Partial = Located<<I as StreamIsPartial<false>>::Partial>;
 
     #[inline(always)]
     fn into_complete(self) -> Self::Complete {
         self
     }
     #[inline(always)]
-    fn into_streaming(self) -> Self::Streaming {
+    fn into_partial(self) -> Self::Partial {
         Located {
-            initial: self.initial.into_streaming(),
-            input: self.input.into_streaming(),
+            initial: self.initial.into_partial(),
+            input: self.input.into_partial(),
         }
     }
 }
 
-impl<I, S> InputIsStreaming<true> for Stateful<I, S>
+impl<I, S> StreamIsPartial<true> for Stateful<I, S>
 where
-    I: InputIsStreaming<true>,
+    I: StreamIsPartial<true>,
 {
-    type Complete = Stateful<<I as InputIsStreaming<true>>::Complete, S>;
-    type Streaming = Self;
+    type Complete = Stateful<<I as StreamIsPartial<true>>::Complete, S>;
+    type Partial = Self;
 
     #[inline(always)]
     fn into_complete(self) -> Self::Complete {
@@ -773,44 +773,44 @@ where
         }
     }
     #[inline(always)]
-    fn into_streaming(self) -> Self::Streaming {
+    fn into_partial(self) -> Self::Partial {
         self
     }
 }
 
-impl<I, S> InputIsStreaming<false> for Stateful<I, S>
+impl<I, S> StreamIsPartial<false> for Stateful<I, S>
 where
-    I: InputIsStreaming<false>,
+    I: StreamIsPartial<false>,
 {
     type Complete = Self;
-    type Streaming = Stateful<<I as InputIsStreaming<false>>::Streaming, S>;
+    type Partial = Stateful<<I as StreamIsPartial<false>>::Partial, S>;
 
     #[inline(always)]
     fn into_complete(self) -> Self::Complete {
         self
     }
     #[inline(always)]
-    fn into_streaming(self) -> Self::Streaming {
+    fn into_partial(self) -> Self::Partial {
         Stateful {
-            input: self.input.into_streaming(),
+            input: self.input.into_partial(),
             state: self.state,
         }
     }
 }
 
-impl<I> InputIsStreaming<true> for Streaming<I>
+impl<I> StreamIsPartial<true> for Partial<I>
 where
-    I: InputIsStreaming<false>,
+    I: StreamIsPartial<false>,
 {
     type Complete = I;
-    type Streaming = Self;
+    type Partial = Self;
 
     #[inline(always)]
     fn into_complete(self) -> Self::Complete {
         self.0
     }
     #[inline(always)]
-    fn into_streaming(self) -> Self::Streaming {
+    fn into_partial(self) -> Self::Partial {
         self
     }
 }
@@ -899,7 +899,7 @@ where
     }
 }
 
-impl<I> Offset for Streaming<I>
+impl<I> Offset for Partial<I>
 where
     I: Offset,
 {
@@ -942,7 +942,7 @@ where
     }
 }
 
-impl<I> AsBytes for Streaming<I>
+impl<I> AsBytes for Partial<I>
 where
     I: AsBytes,
 {
@@ -992,7 +992,7 @@ where
     }
 }
 
-impl<I> AsBStr for Streaming<I>
+impl<I> AsBStr for Partial<I>
 where
     I: AsBStr,
 {
@@ -1171,7 +1171,7 @@ where
     }
 }
 
-impl<I, T> Compare<T> for Streaming<I>
+impl<I, T> Compare<T> for Partial<I>
 where
     I: Compare<T>,
 {
@@ -1247,7 +1247,7 @@ where
     }
 }
 
-impl<I, T> FindSlice<T> for Streaming<I>
+impl<I, T> FindSlice<T> for Partial<I>
 where
     I: FindSlice<T>,
 {
@@ -1278,9 +1278,9 @@ impl<'a, R: FromStr> ParseSlice<R> for &'a str {
     }
 }
 
-/// Convert an `Input` into an appropriate `Output` type
-pub trait UpdateSlice: Input {
-    /// Convert an `Output` type to be used as `Input`
+/// Convert a `Stream` into an appropriate `Output` type
+pub trait UpdateSlice: Stream {
+    /// Convert an `Output` type to be used as `Stream`
     fn update_slice(self, inner: Self::Slice) -> Self;
 }
 
@@ -1324,13 +1324,13 @@ where
     }
 }
 
-impl<I> UpdateSlice for Streaming<I>
+impl<I> UpdateSlice for Partial<I>
 where
     I: UpdateSlice,
 {
     #[inline(always)]
     fn update_slice(self, inner: Self::Slice) -> Self {
-        Streaming(I::update_slice(self.0, inner))
+        Partial(I::update_slice(self.0, inner))
     }
 }
 
@@ -1630,7 +1630,7 @@ where
 }
 
 #[cfg(feature = "std")]
-impl<I> HexDisplay for Streaming<I>
+impl<I> HexDisplay for Partial<I>
 where
     I: HexDisplay,
 {
@@ -1652,7 +1652,7 @@ pub trait AsChar {
     /// Makes a char from self
     ///
     /// ```
-    /// use winnow::input::AsChar as _;
+    /// use winnow::stream::AsChar as _;
     ///
     /// assert_eq!('a'.as_char(), 'a');
     /// assert_eq!(u8::MAX.as_char(), std::char::from_u32(u8::MAX as u32).unwrap());
@@ -2108,11 +2108,11 @@ impl_contains_token_for_tuples!(
 /// Looks for the first element of the input type for which the condition returns true,
 /// and returns the input up to this position.
 ///
-/// *streaming version*: If no element is found matching the condition, this will return `Incomplete`
-pub(crate) fn split_at_offset_streaming<P, I: Input, E: ParseError<I>>(
+/// *Partial version*: If no element is found matching the condition, this will return `Incomplete`
+pub(crate) fn split_at_offset_partial<P, I: Stream, E: ParseError<I>>(
     input: &I,
     predicate: P,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     P: Fn(I::Token) -> bool,
 {
@@ -2127,12 +2127,12 @@ where
 ///
 /// Fails if the produced slice is empty.
 ///
-/// *streaming version*: If no element is found matching the condition, this will return `Incomplete`
-pub(crate) fn split_at_offset1_streaming<P, I: Input, E: ParseError<I>>(
+/// *Partial version*: If no element is found matching the condition, this will return `Incomplete`
+pub(crate) fn split_at_offset1_partial<P, I: Stream, E: ParseError<I>>(
     input: &I,
     predicate: P,
     e: ErrorKind,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     P: Fn(I::Token) -> bool,
 {
@@ -2149,17 +2149,17 @@ where
 /// Looks for the first element of the input type for which the condition returns true,
 /// and returns the input up to this position.
 ///
-/// *complete version*: If no element is found matching the condition, this will return the whole input
-pub(crate) fn split_at_offset_complete<P, I: Input, E: ParseError<I>>(
+/// *Complete version*: If no element is found matching the condition, this will return the whole input
+pub(crate) fn split_at_offset_complete<P, I: Stream, E: ParseError<I>>(
     input: &I,
     predicate: P,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     P: Fn(I::Token) -> bool,
 {
     let offset = input
         .offset_for(predicate)
-        .unwrap_or_else(|| input.input_len());
+        .unwrap_or_else(|| input.eof_offset());
     Ok(input.next_slice(offset))
 }
 
@@ -2168,18 +2168,18 @@ where
 ///
 /// Fails if the produced slice is empty.
 ///
-/// *complete version*: If no element is found matching the condition, this will return the whole input
-pub(crate) fn split_at_offset1_complete<P, I: Input, E: ParseError<I>>(
+/// *Complete version*: If no element is found matching the condition, this will return the whole input
+pub(crate) fn split_at_offset1_complete<P, I: Stream, E: ParseError<I>>(
     input: &I,
     predicate: P,
     e: ErrorKind,
-) -> IResult<I, <I as Input>::Slice, E>
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     P: Fn(I::Token) -> bool,
 {
     let offset = input
         .offset_for(predicate)
-        .unwrap_or_else(|| input.input_len());
+        .unwrap_or_else(|| input.eof_offset());
     if offset == 0 {
         Err(ErrMode::from_error_kind(input.clone(), e))
     } else {
