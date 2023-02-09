@@ -27,9 +27,6 @@ fn separated0_test() {
     fn multi_empty(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
         separated0(tag(""), tag(","))(i)
     }
-    fn empty_sep(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated0(tag("abc"), tag(""))(i)
-    }
     fn multi_longsep(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
         separated0(tag("abcd"), tag(".."))(i)
     }
@@ -42,7 +39,6 @@ fn separated0_test() {
     let f = &b"abc"[..];
     let g = &b"abcd."[..];
     let h = &b"abcd,abc"[..];
-    let i = &b"abcabc"[..];
 
     let res1 = vec![&b"abcd"[..]];
     assert_eq!(multi(Partial(a)), Ok((Partial(&b"ef"[..]), res1)));
@@ -51,14 +47,6 @@ fn separated0_test() {
     assert_eq!(multi(Partial(c)), Ok((Partial(&b"azerty"[..]), Vec::new())));
     let res3 = vec![&b""[..], &b""[..], &b""[..]];
     assert_eq!(multi_empty(Partial(d)), Ok((Partial(&b"abc"[..]), res3)));
-    let i_err_pos = &i[3..];
-    assert_eq!(
-        empty_sep(Partial(i)),
-        Err(ErrMode::Backtrack(error_position!(
-            Partial(i_err_pos),
-            ErrorKind::SeparatedList
-        )))
-    );
     let res4 = vec![&b"abcd"[..], &b"abcd"[..]];
     assert_eq!(multi(Partial(e)), Ok((Partial(&b",ef"[..]), res4)));
 
@@ -68,6 +56,26 @@ fn separated0_test() {
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(multi(Partial(h)), Err(ErrMode::Incomplete(Needed::new(1))));
+}
+
+#[test]
+#[cfg(feature = "alloc")]
+#[cfg_attr(debug_assertions, should_panic)]
+fn separated0_empty_sep_test() {
+    fn empty_sep(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
+        separated0(tag("abc"), tag(""))(i)
+    }
+
+    let i = &b"abcabc"[..];
+
+    let i_err_pos = &i[3..];
+    assert_eq!(
+        empty_sep(Partial(i)),
+        Err(ErrMode::Backtrack(error_position!(
+            Partial(i_err_pos),
+            ErrorKind::Assert
+        )))
+    );
 }
 
 #[test]
@@ -117,9 +125,6 @@ fn many0_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
         many0(tag("abcd"))(i)
     }
-    fn multi_empty(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        many0(tag(""))(i)
-    }
 
     assert_eq!(
         multi(Partial(&b"abcdef"[..])),
@@ -145,11 +150,21 @@ fn many0_test() {
         multi(Partial(&b""[..])),
         Err(ErrMode::Incomplete(Needed::new(4)))
     );
+}
+
+#[test]
+#[cfg(feature = "alloc")]
+#[cfg_attr(debug_assertions, should_panic)]
+fn many0_empty_test() {
+    fn multi_empty(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
+        many0(tag(""))(i)
+    }
+
     assert_eq!(
         multi_empty(Partial(&b"abcdef"[..])),
         Err(ErrMode::Backtrack(error_position!(
             Partial(&b"abcdef"[..]),
-            ErrorKind::Many0
+            ErrorKind::Assert
         )))
     );
 }
