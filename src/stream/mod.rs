@@ -270,6 +270,34 @@ pub trait SliceLen {
     fn slice_len(&self) -> usize;
 }
 
+impl<'a, T> SliceLen for &'a [T] {
+    #[inline]
+    fn slice_len(&self) -> usize {
+        self.len()
+    }
+}
+
+impl<T, const LEN: usize> SliceLen for [T; LEN] {
+    #[inline]
+    fn slice_len(&self) -> usize {
+        self.len()
+    }
+}
+
+impl<'a, T, const LEN: usize> SliceLen for &'a [T; LEN] {
+    #[inline]
+    fn slice_len(&self) -> usize {
+        self.len()
+    }
+}
+
+impl<'a> SliceLen for &'a str {
+    #[inline]
+    fn slice_len(&self) -> usize {
+        self.len()
+    }
+}
+
 impl<I> SliceLen for Located<I>
 where
     I: SliceLen,
@@ -297,34 +325,6 @@ where
     #[inline(always)]
     fn slice_len(&self) -> usize {
         self.0.slice_len()
-    }
-}
-
-impl<'a, T> SliceLen for &'a [T] {
-    #[inline]
-    fn slice_len(&self) -> usize {
-        self.len()
-    }
-}
-
-impl<T, const LEN: usize> SliceLen for [T; LEN] {
-    #[inline]
-    fn slice_len(&self) -> usize {
-        self.len()
-    }
-}
-
-impl<'a, T, const LEN: usize> SliceLen for &'a [T; LEN] {
-    #[inline]
-    fn slice_len(&self) -> usize {
-        self.len()
-    }
-}
-
-impl<'a> SliceLen for &'a str {
-    #[inline]
-    fn slice_len(&self) -> usize {
-        self.len()
     }
 }
 
@@ -1072,6 +1072,18 @@ impl<'a, 'b> Compare<&'b [u8]> for &'a [u8] {
     }
 }
 
+impl<'a, const LEN: usize> Compare<[u8; LEN]> for &'a [u8] {
+    #[inline(always)]
+    fn compare(&self, t: [u8; LEN]) -> CompareResult {
+        self.compare(&t[..])
+    }
+
+    #[inline(always)]
+    fn compare_no_case(&self, t: [u8; LEN]) -> CompareResult {
+        self.compare_no_case(&t[..])
+    }
+}
+
 impl<'a, 'b, const LEN: usize> Compare<&'b [u8; LEN]> for &'a [u8] {
     #[inline(always)]
     fn compare(&self, t: &'b [u8; LEN]) -> CompareResult {
@@ -1130,18 +1142,6 @@ impl<'a, 'b> Compare<&'b [u8]> for &'a str {
     #[inline(always)]
     fn compare_no_case(&self, t: &'b [u8]) -> CompareResult {
         AsBStr::as_bstr(self).compare_no_case(t)
-    }
-}
-
-impl<'a, const LEN: usize> Compare<[u8; LEN]> for &'a [u8] {
-    #[inline(always)]
-    fn compare(&self, t: [u8; LEN]) -> CompareResult {
-        self.compare(&t[..])
-    }
-
-    #[inline(always)]
-    fn compare_no_case(&self, t: [u8; LEN]) -> CompareResult {
-        self.compare_no_case(&t[..])
     }
 }
 
