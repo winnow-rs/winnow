@@ -513,3 +513,4 @@ pub use parser::*;
 pub use stream::Located;
 pub use stream::Partial;
 pub use stream::Stateful;
+pub use stream::Str;

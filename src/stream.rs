@@ -1,7 +1,8 @@
 //! Stream capability for nom combinators to parse
 //!
 //! Stream types include:
-//! - `&str` and `&[u8]` are the standard input types
+//! - `&[u8]` for binary data
+//! - `&str` for UTF-8 data (aliased as [`Str`] to raise visibility)
 //! - [`Located`] can track the location within the original buffer to report
 //!   [spans][crate::Parser::with_span]
 //! - [`Stateful`] to thread global state through your parsers
@@ -75,6 +76,9 @@ use crate::lib::std::collections::HashMap;
 use crate::lib::std::string::String;
 #[cfg(feature = "alloc")]
 use crate::lib::std::vec::Vec;
+
+/// UTF-8 Stream
+pub type Str<'i> = &'i str;
 
 /// Allow collecting the span of a parsed token
 ///
