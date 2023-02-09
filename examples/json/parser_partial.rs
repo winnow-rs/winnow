@@ -114,7 +114,7 @@ fn character<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream
     let (input, c) = none_of("\"")(input)?;
     if c == '\\' {
         alt((
-            any.map_opt(|c| {
+            any.verify_map(|c| {
                 Some(match c {
                     '"' | '\\' | '/' => c,
                     'b' => '\x08',
@@ -149,7 +149,7 @@ fn unicode_escape<'i, E: ParseError<Stream<'i>>>(
                 (high_ten << 10) + low_ten + 0x10000
             }),
     ))
-    .map_opt(
+    .verify_map(
         // Could be probably replaced with .unwrap() or _unchecked due to the verify checks
         std::char::from_u32,
     )
@@ -158,7 +158,7 @@ fn unicode_escape<'i, E: ParseError<Stream<'i>>>(
 
 fn u16_hex<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, u16, E> {
     take(4usize)
-        .map_opt(|s| u16::from_str_radix(s, 16).ok())
+        .verify_map(|s| u16::from_str_radix(s, 16).ok())
         .parse_next(input)
 }
 

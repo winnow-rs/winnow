@@ -76,7 +76,7 @@
 //! - [`Parser::value`][crate::Parser::value]: method to replace the result of a parser
 //! - [`Parser::map`][crate::Parser::map]: method to map a function on the result of a parser
 //! - [`Parser::and_then`][crate::Parser::and_then]: Applies a second parser over the output of the first one
-//! - [`Parser::map_opt`][Parser::map_opt]: Maps a function returning an `Option` on the output of a parser
+//! - [`Parser::verify_map`][Parser::verify_map]: Maps a function returning an `Option` on the output of a parser
 //! - [`Parser::map_res`][Parser::map_res]: Maps a function returning a `Result` on the output of a parser
 //! - [`Parser::parse_to`][crate::Parser::parse_to]: Apply [`std::str::FromStr`] to the output of the parser
 //! - [`not`][not]: Returns a result only if the embedded parser returns `Backtrack` or `Incomplete`. Does not consume the input
@@ -356,7 +356,7 @@ where
 
 /// Applies a function returning an `Option` over the result of a parser.
 ///
-/// **WARNING:** Deprecated, replaced with [`Parser::map_opt`]
+/// **WARNING:** Deprecated, replaced with [`Parser::verify_map`]
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
@@ -376,7 +376,7 @@ where
 /// assert_eq!(parse("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::MapOpt))));
 /// # }
 /// ```
-#[deprecated(since = "0.1.0", note = "Replaced with `Parser::map_res")]
+#[deprecated(since = "0.1.0", note = "Replaced with `Parser::verify_map")]
 pub fn map_opt<I: Clone, O1, O2, E: ParseError<I>, F, G>(
     mut parser: F,
     mut f: G,
@@ -395,15 +395,15 @@ where
     }
 }
 
-/// Implementation of [`Parser::map_opt`]
+/// Implementation of [`Parser::verify_map`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct MapOpt<F, G, O1> {
+pub struct VerifyMap<F, G, O1> {
     f: F,
     g: G,
     phantom: core::marker::PhantomData<O1>,
 }
 
-impl<F, G, O1> MapOpt<F, G, O1> {
+impl<F, G, O1> VerifyMap<F, G, O1> {
     pub(crate) fn new(f: F, g: G) -> Self {
         Self {
             f,
@@ -413,7 +413,7 @@ impl<F, G, O1> MapOpt<F, G, O1> {
     }
 }
 
-impl<I, O1, O2, E, F, G> Parser<I, O2, E> for MapOpt<F, G, O1>
+impl<I, O1, O2, E, F, G> Parser<I, O2, E> for VerifyMap<F, G, O1>
 where
     I: Clone,
     F: Parser<I, O1, E>,
