@@ -373,7 +373,7 @@ where
 /// assert_eq!(parse("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
 ///
 /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
-/// assert_eq!(parse("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::MapOpt))));
+/// assert_eq!(parse("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::Verify))));
 /// # }
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::verify_map")]
@@ -390,7 +390,7 @@ where
         let (input, o1) = parser.parse_next(input)?;
         match f(o1) {
             Some(o2) => Ok((input, o2)),
-            None => Err(ErrMode::from_error_kind(i, ErrorKind::MapOpt)),
+            None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
         }
     }
 }
@@ -425,7 +425,7 @@ where
         let (input, o1) = self.f.parse_next(input)?;
         match (self.g)(o1) {
             Some(o2) => Ok((input, o2)),
-            None => Err(ErrMode::from_error_kind(i, ErrorKind::MapOpt)),
+            None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
         }
     }
 }

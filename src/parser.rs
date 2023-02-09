@@ -388,7 +388,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parse.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
     ///
     /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
-    /// assert_eq!(parse.parse_next("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::MapOpt))));
+    /// assert_eq!(parse.parse_next("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::Verify))));
     /// # }
     /// ```
     fn verify_map<G, O2>(self, g: G) -> VerifyMap<Self, G, O>
