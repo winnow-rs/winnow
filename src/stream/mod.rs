@@ -1165,7 +1165,7 @@ impl<'a> AsBStr for &'a [u8] {
     }
 }
 
-impl<'a> AsBStr for &'a Bytes {
+impl<'a> AsBStr for &'a BStr {
     #[inline(always)]
     fn as_bstr(&self) -> &[u8] {
         (*self).as_bytes()
