@@ -1008,16 +1008,9 @@ pub trait Offset {
 }
 
 impl<'a, T> Offset for &'a [T] {
-    #[inline]
+    #[inline(always)]
     fn offset_to(&self, second: &Self) -> usize {
-        let fst = self.as_ptr();
-        let snd = second.as_ptr();
-
-        debug_assert!(
-            fst <= snd,
-            "`Offset::offset_to` only accepts slices of `self`"
-        );
-        snd as usize - fst as usize
+        (*self).offset_to(*second)
     }
 }
 
@@ -1037,87 +1030,45 @@ impl<T> Offset for [T] {
 }
 
 impl<'a> Offset for &'a str {
-    #[inline]
+    #[inline(always)]
     fn offset_to(&self, second: &Self) -> usize {
-        let fst = self.as_ptr();
-        let snd = second.as_ptr();
-
-        debug_assert!(
-            fst <= snd,
-            "`Offset::offset_to` only accepts slices of `self`"
-        );
-        snd as usize - fst as usize
+        self.as_bytes().offset_to(second.as_bytes())
     }
 }
 
 /// Convenience implementation to accept `&str` instead of `&&str` as above
 impl Offset for str {
-    #[inline]
+    #[inline(always)]
     fn offset_to(&self, second: &Self) -> usize {
-        let fst = self.as_ptr();
-        let snd = second.as_ptr();
-
-        debug_assert!(
-            fst <= snd,
-            "`Offset::offset_to` only accepts slices of `self`"
-        );
-        snd as usize - fst as usize
+        self.as_bytes().offset_to(second.as_bytes())
     }
 }
 
 impl Offset for Bytes {
-    #[inline]
+    #[inline(always)]
     fn offset_to(&self, second: &Self) -> usize {
-        let fst = self.as_ptr();
-        let snd = second.as_ptr();
-
-        debug_assert!(
-            fst <= snd,
-            "`Offset::offset_to` only accepts slices of `self`"
-        );
-        snd as usize - fst as usize
+        self.as_bytes().offset_to(second.as_bytes())
     }
 }
 
 impl<'a> Offset for &'a Bytes {
-    #[inline]
+    #[inline(always)]
     fn offset_to(&self, second: &Self) -> usize {
-        let fst = self.as_ptr();
-        let snd = second.as_ptr();
-
-        debug_assert!(
-            fst <= snd,
-            "`Offset::offset_to` only accepts slices of `self`"
-        );
-        snd as usize - fst as usize
+        self.as_bytes().offset_to(second.as_bytes())
     }
 }
 
 impl Offset for BStr {
-    #[inline]
+    #[inline(always)]
     fn offset_to(&self, second: &Self) -> usize {
-        let fst = self.as_ptr();
-        let snd = second.as_ptr();
-
-        debug_assert!(
-            fst <= snd,
-            "`Offset::offset_to` only accepts slices of `self`"
-        );
-        snd as usize - fst as usize
+        self.as_bytes().offset_to(second.as_bytes())
     }
 }
 
 impl<'a> Offset for &'a BStr {
-    #[inline]
+    #[inline(always)]
     fn offset_to(&self, second: &Self) -> usize {
-        let fst = self.as_ptr();
-        let snd = second.as_ptr();
-
-        debug_assert!(
-            fst <= snd,
-            "`Offset::offset_to` only accepts slices of `self`"
-        );
-        snd as usize - fst as usize
+        self.as_bytes().offset_to(second.as_bytes())
     }
 }
 
@@ -2309,9 +2260,10 @@ impl<'a, 'b> ContainsToken<&'a char> for &'b [u8] {
 }
 
 impl<const LEN: usize> ContainsToken<u8> for [u8; LEN] {
-    #[inline]
+    #[inline(always)]
     fn contains_token(&self, token: u8) -> bool {
-        memchr::memchr(token, &self[..]).is_some()
+        let slice = &self[..];
+        slice.contains_token(token)
     }
 }
 
