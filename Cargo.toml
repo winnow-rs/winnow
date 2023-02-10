@@ -46,7 +46,7 @@ memchr = { version = "2.3", default-features = false }
 [dev-dependencies]
 doc-comment = "0.3"
 proptest = "1.0.0"
-criterion = "0.3.5"
+criterion = "0.4.0"
 lexopt = "0.3.0"
 
 [profile.bench]
