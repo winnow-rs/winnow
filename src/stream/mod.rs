@@ -78,6 +78,8 @@ use crate::lib::std::string::String;
 use crate::lib::std::vec::Vec;
 
 mod impls;
+#[cfg(test)]
+mod tests;
 
 /// UTF-8 Stream
 pub type Str<'i> = &'i str;
@@ -2464,33 +2466,5 @@ where
         Err(ErrMode::from_error_kind(input.clone(), e))
     } else {
         Ok(input.next_slice(offset))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_offset_u8() {
-        let s = b"abcd123";
-        let a = &s[..];
-        let b = &a[2..];
-        let c = &a[..4];
-        let d = &a[3..5];
-        assert_eq!(a.offset_to(b), 2);
-        assert_eq!(a.offset_to(c), 0);
-        assert_eq!(a.offset_to(d), 3);
-    }
-
-    #[test]
-    fn test_offset_str() {
-        let a = "abcřèÂßÇd123";
-        let b = &a[7..];
-        let c = &a[..5];
-        let d = &a[5..9];
-        assert_eq!(a.offset_to(b), 7);
-        assert_eq!(a.offset_to(c), 0);
-        assert_eq!(a.offset_to(d), 5);
     }
 }
