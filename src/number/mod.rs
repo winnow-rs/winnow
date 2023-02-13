@@ -9,6 +9,7 @@ mod tests;
 
 use crate::error::ParseError;
 use crate::stream::{AsBytes, Stream, StreamIsPartial};
+use crate::trace::trace;
 use crate::IResult;
 
 /// Configurable endianness
@@ -61,11 +62,13 @@ where
     I: StreamIsPartial<PARTIAL>,
     I: Stream<Token = u8>,
 {
-    if PARTIAL {
-        streaming::be_u8(input)
-    } else {
-        complete::be_u8(input)
-    }
+    trace("be_u8", move |input| {
+        if PARTIAL {
+            streaming::be_u8(input)
+        } else {
+            complete::be_u8(input)
+        }
+    })(input)
 }
 
 /// Recognizes a big endian unsigned 2 bytes integer.

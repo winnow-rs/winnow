@@ -8,6 +8,7 @@ use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::stream::Accumulate;
 use crate::stream::{Stream, StreamIsPartial, ToUsize, UpdateSlice};
+use crate::trace::trace;
 use crate::{IResult, Parser};
 
 /// Repeats the embedded parser, gathering the results in a `Vec`.
@@ -43,7 +44,7 @@ where
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    move |mut i: I| {
+    trace("many0", move |mut i: I| {
         let mut acc = C::initial(None);
         loop {
             let len = i.eof_offset();
@@ -61,7 +62,7 @@ where
                 }
             }
         }
-    }
+    })
 }
 
 /// Runs the embedded parser, gathering the results in a `Vec`.
@@ -98,7 +99,7 @@ where
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    move |mut i: I| match f.parse_next(i.clone()) {
+    trace("many1", move |mut i: I| match f.parse_next(i.clone()) {
         Err(e) => Err(e.append(i, ErrorKind::Many1)),
         Ok((i1, o)) => {
             let mut acc = C::initial(None);
@@ -122,7 +123,7 @@ where
                 }
             }
         }
-    }
+    })
 }
 
 /// **WARNING:** Deprecated, replaced with [`many_till0`]
@@ -168,7 +169,7 @@ where
     G: Parser<I, P, E>,
     E: ParseError<I>,
 {
-    move |mut i: I| {
+    trace("many_till0", move |mut i: I| {
         let mut res = C::initial(None);
         loop {
             let len = i.eof_offset();
@@ -191,7 +192,7 @@ where
                 Err(e) => return Err(e),
             }
         }
-    }
+    })
 }
 
 /// Alternates between two parsers to produce a list of elements.
@@ -230,7 +231,7 @@ where
     S: Parser<I, O2, E>,
     E: ParseError<I>,
 {
-    move |mut i: I| {
+    trace("separated0", move |mut i: I| {
         let mut res = C::initial(None);
 
         match parser.parse_next(i.clone()) {
@@ -264,7 +265,7 @@ where
                 }
             }
         }
-    }
+    })
 }
 
 /// **WARNING:** Deprecated, replaced with [`separated0`] (note the parameter swap)
@@ -320,7 +321,7 @@ where
     S: Parser<I, O2, E>,
     E: ParseError<I>,
 {
-    move |mut i: I| {
+    trace("separated1", move |mut i: I| {
         let mut res = C::initial(None);
 
         // Parse the first element
@@ -354,7 +355,7 @@ where
                 }
             }
         }
-    }
+    })
 }
 
 /// **WARNING:** Deprecated, replaced with [`separated1`] (note the parameter swap)
@@ -403,7 +404,7 @@ where
     E: ParseError<I>,
     Op: Fn(O, O2, O) -> O,
 {
-    move |i: I| {
+    trace("separated_foldl1", move |i: I| {
         let (mut i, mut ol) = parser.parse_next(i)?;
 
         loop {
@@ -428,7 +429,7 @@ where
                 }
             }
         }
-    }
+    })
 }
 
 /// Alternates between two parsers, merging the results (right associative)
@@ -463,7 +464,7 @@ where
     E: ParseError<I>,
     Op: Fn(O, O2, O) -> O,
 {
-    move |i: I| {
+    trace("separated_foldr1", move |i: I| {
         let (i, ol) = parser.parse_next(i)?;
         let (i, all): (_, crate::lib::std::vec::Vec<(O2, O)>) =
             many0((sep.by_ref(), parser.by_ref())).parse_next(i)?;
@@ -477,7 +478,7 @@ where
         } else {
             Ok((i, ol))
         }
-    }
+    })
 }
 
 /// Repeats the embedded parser `m..=n` times
@@ -521,7 +522,7 @@ where
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    move |mut input: I| {
+    trace("many_m_n", move |mut input: I| {
         if min > max {
             return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::ManyMN)));
         }
@@ -553,7 +554,7 @@ where
         }
 
         Ok((input, res))
-    }
+    })
 }
 
 /// Repeats the embedded parser, counting the results
@@ -705,12 +706,12 @@ where
 /// ```
 pub fn count<I, O, C, E, F>(mut f: F, count: usize) -> impl FnMut(I) -> IResult<I, C, E>
 where
-    I: Clone + PartialEq,
+    I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    move |i: I| {
+    trace("count", move |i: I| {
         let mut input = i.clone();
         let mut res = C::initial(Some(count));
 
@@ -728,7 +729,7 @@ where
         }
 
         Ok((input, res))
-    }
+    })
 }
 
 /// Runs the embedded parser repeatedly, filling the given slice with results.
@@ -757,11 +758,11 @@ where
 /// ```
 pub fn fill<'a, I, O, E, F>(mut f: F, buf: &'a mut [O]) -> impl FnMut(I) -> IResult<I, (), E> + 'a
 where
-    I: Clone + PartialEq,
+    I: Stream + 'a,
     F: Parser<I, O, E> + 'a,
-    E: ParseError<I>,
+    E: ParseError<I> + 'a,
 {
-    move |i: I| {
+    trace("fill", move |i: I| {
         let mut input = i.clone();
 
         for elem in buf.iter_mut() {
@@ -778,7 +779,7 @@ where
         }
 
         Ok((input, ()))
-    }
+    })
 }
 
 /// Repeats the embedded parser, calling `g` to gather the results.
@@ -828,7 +829,7 @@ where
     H: FnMut() -> R,
     E: ParseError<I>,
 {
-    move |i: I| {
+    trace("fold_many0", move |i: I| {
         let mut res = init();
         let mut input = i;
 
@@ -853,7 +854,7 @@ where
                 }
             }
         }
-    }
+    })
 }
 
 /// Repeats the embedded parser, calling `g` to gather the results.
@@ -904,7 +905,7 @@ where
     H: FnMut() -> R,
     E: ParseError<I>,
 {
-    move |i: I| {
+    trace("fold_many1", move |i: I| {
         let _i = i.clone();
         let init = init();
         match f.parse_next(_i) {
@@ -937,7 +938,7 @@ where
                 Ok((input, acc))
             }
         }
-    }
+    })
 }
 
 /// Repeats the embedded parser `m..=n` times, calling `g` to gather the results
@@ -995,7 +996,7 @@ where
     H: FnMut() -> R,
     E: ParseError<I>,
 {
-    move |mut input: I| {
+    trace("fold_many_m_n", move |mut input: I| {
         if min > max {
             return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::ManyMN)));
         }
@@ -1026,7 +1027,7 @@ where
         }
 
         Ok((input, acc))
-    }
+    })
 }
 
 /// Gets a number from the parser and returns a
@@ -1068,11 +1069,11 @@ where
     F: Parser<I, N, E>,
     E: ParseError<I>,
 {
-    move |i: I| {
+    trace("length_data", move |i: I| {
         let (i, length) = f.parse_next(i)?;
 
         crate::bytes::take(length).parse_next(i)
-    }
+    })
 }
 
 /// Gets a number from the first parser,
@@ -1121,12 +1122,12 @@ where
     G: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    move |i: I| {
+    trace("length_value", move |i: I| {
         let (i, data) = length_data(f.by_ref()).parse_next(i)?;
         let data = I::update_slice(i.clone(), data);
         let (_, o) = g.by_ref().complete().parse_next(data)?;
         Ok((i, o))
-    }
+    })
 }
 
 /// Gets a number from the first parser,
@@ -1161,14 +1162,14 @@ where
 /// ```
 pub fn length_count<I, O, C, N, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IResult<I, C, E>
 where
-    I: Clone,
+    I: Stream,
     N: ToUsize,
     C: Accumulate<O>,
     F: Parser<I, N, E>,
     G: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    move |i: I| {
+    trace("length_count", move |i: I| {
         let (i, count) = f.parse_next(i)?;
         let mut input = i.clone();
         let mut res = C::initial(Some(count.to_usize()));
@@ -1187,5 +1188,5 @@ where
         }
 
         Ok((input, res))
-    }
+    })
 }

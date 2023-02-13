@@ -6,6 +6,8 @@ mod tests;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
+use crate::stream::Stream;
+use crate::trace::trace;
 use crate::{IResult, Parser};
 
 #[doc(inline)]
@@ -53,10 +55,10 @@ pub trait Alt<I, O, E> {
 /// assert_eq!(parser(" "), Err(ErrMode::Backtrack(error_position!(" ", ErrorKind::Digit))));
 /// # }
 /// ```
-pub fn alt<I: Clone, O, E: ParseError<I>, List: Alt<I, O, E>>(
+pub fn alt<I: Stream, O, E: ParseError<I>, List: Alt<I, O, E>>(
     mut l: List,
 ) -> impl FnMut(I) -> IResult<I, O, E> {
-    move |i: I| l.choice(i)
+    trace("alt", move |i: I| l.choice(i))
 }
 
 /// Helper trait for the [permutation()] combinator.
@@ -112,10 +114,10 @@ pub trait Permutation<I, O, E> {
 /// assert_eq!(parser("ab"), Err(ErrMode::Backtrack(Error::new("b", ErrorKind::OneOf))));
 /// ```
 ///
-pub fn permutation<I: Clone, O, E: ParseError<I>, List: Permutation<I, O, E>>(
+pub fn permutation<I: Stream, O, E: ParseError<I>, List: Permutation<I, O, E>>(
     mut l: List,
 ) -> impl FnMut(I) -> IResult<I, O, E> {
-    move |i: I| l.permutation(i)
+    trace("permutation", move |i: I| l.permutation(i))
 }
 
 macro_rules! alt_trait(

@@ -9,6 +9,7 @@ use crate::error::ParseError;
 use crate::stream::{
     Compare, ContainsToken, FindSlice, SliceLen, Stream, StreamIsPartial, ToUsize,
 };
+use crate::trace::trace;
 use crate::IResult;
 
 /// Matches one token
@@ -43,11 +44,13 @@ where
     I: StreamIsPartial<PARTIAL>,
     I: Stream,
 {
-    if PARTIAL {
-        streaming::any(input)
-    } else {
-        complete::any(input)
-    }
+    trace("any", move |input| {
+        if PARTIAL {
+            streaming::any(input)
+        } else {
+            complete::any(input)
+        }
+    })(input)
 }
 
 /// Recognizes a literal
@@ -98,14 +101,14 @@ where
     I: Stream + Compare<T>,
     T: SliceLen + Clone,
 {
-    move |i: I| {
+    trace("tag", move |i: I| {
         let t = tag.clone();
         if PARTIAL {
             streaming::tag_internal(i, t)
         } else {
             complete::tag_internal(i, t)
         }
-    }
+    })
 }
 
 /// Recognizes a case insensitive literal.
@@ -154,14 +157,14 @@ where
     I: Stream + Compare<T>,
     T: SliceLen + Clone,
 {
-    move |i: I| {
+    trace("tag_no_case", move |i: I| {
         let t = tag.clone();
         if PARTIAL {
             streaming::tag_no_case_internal(i, t)
         } else {
             complete::tag_no_case_internal(i, t)
         }
-    }
+    })
 }
 
 /// Returns a token that matches the [pattern][ContainsToken]
@@ -219,13 +222,13 @@ where
     <I as Stream>::Token: Copy,
     T: ContainsToken<<I as Stream>::Token>,
 {
-    move |i: I| {
+    trace("one_of", move |i: I| {
         if PARTIAL {
             streaming::one_of_internal(i, &list)
         } else {
             complete::one_of_internal(i, &list)
         }
-    }
+    })
 }
 
 /// Returns a token that does not match the [pattern][ContainsToken]
@@ -262,13 +265,13 @@ where
     <I as Stream>::Token: Copy,
     T: ContainsToken<<I as Stream>::Token>,
 {
-    move |i: I| {
+    trace("none_of", move |i: I| {
         if PARTIAL {
             streaming::none_of_internal(i, &list)
         } else {
             complete::none_of_internal(i, &list)
         }
-    }
+    })
 }
 
 /// Returns the longest input slice (if any) that matches the [pattern][ContainsToken]
@@ -314,13 +317,13 @@ where
     I: Stream,
     T: ContainsToken<<I as Stream>::Token>,
 {
-    move |i: I| {
+    trace("take_while0", move |i: I| {
         if PARTIAL {
             streaming::take_while_internal(i, &list)
         } else {
             complete::take_while_internal(i, &list)
         }
-    }
+    })
 }
 
 /// Returns the longest (at least 1) input slice that matches the [pattern][ContainsToken]
@@ -387,13 +390,13 @@ where
     I: Stream,
     T: ContainsToken<<I as Stream>::Token>,
 {
-    move |i: I| {
+    trace("take_while1", move |i: I| {
         if PARTIAL {
             streaming::take_while1_internal(i, &list)
         } else {
             complete::take_while1_internal(i, &list)
         }
-    }
+    })
 }
 
 /// Returns the longest (m <= len <= n) input slice that matches the [pattern][ContainsToken]
@@ -447,13 +450,13 @@ where
     I: Stream,
     T: ContainsToken<<I as Stream>::Token>,
 {
-    move |i: I| {
+    trace("take_while_m_n", move |i: I| {
         if PARTIAL {
             streaming::take_while_m_n_internal(i, m, n, &list)
         } else {
             complete::take_while_m_n_internal(i, m, n, &list)
         }
-    }
+    })
 }
 
 /// Returns the longest input slice (if any) till a [pattern][ContainsToken] is met.
@@ -499,13 +502,13 @@ where
     I: Stream,
     T: ContainsToken<<I as Stream>::Token>,
 {
-    move |i: I| {
+    trace("take_till0", move |i: I| {
         if PARTIAL {
             streaming::take_till_internal(i, &list)
         } else {
             complete::take_till_internal(i, &list)
         }
-    }
+    })
 }
 
 /// Returns the longest (at least 1) input slice till a [pattern][ContainsToken] is met.
@@ -572,13 +575,13 @@ where
     I: Stream,
     T: ContainsToken<<I as Stream>::Token>,
 {
-    move |i: I| {
+    trace("take_till1", move |i: I| {
         if PARTIAL {
             streaming::take_till1_internal(i, &list)
         } else {
             complete::take_till1_internal(i, &list)
         }
-    }
+    })
 }
 
 /// Returns an input slice containing the first N input elements (I[..N]).
@@ -643,13 +646,13 @@ where
     C: ToUsize,
 {
     let c = count.to_usize();
-    move |i: I| {
+    trace("take", move |i: I| {
         if PARTIAL {
             streaming::take_internal(i, c)
         } else {
             complete::take_internal(i, c)
         }
-    }
+    })
 }
 
 /// Returns the input slice up to the first occurrence of the literal.
@@ -699,13 +702,13 @@ where
     I: Stream + FindSlice<T>,
     T: SliceLen + Clone,
 {
-    move |i: I| {
+    trace("take_until0", move |i: I| {
         if PARTIAL {
             streaming::take_until_internal(i, tag.clone())
         } else {
             complete::take_until_internal(i, tag.clone())
         }
-    }
+    })
 }
 
 /// Returns the non empty input slice up to the first occurrence of the literal.
@@ -758,11 +761,11 @@ where
     I: Stream + FindSlice<T>,
     T: SliceLen + Clone,
 {
-    move |i: I| {
+    trace("take_until1", move |i: I| {
         if PARTIAL {
             streaming::take_until1_internal(i, tag.clone())
         } else {
             complete::take_until1_internal(i, tag.clone())
         }
-    }
+    })
 }

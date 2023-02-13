@@ -16,6 +16,7 @@ use crate::error::ParseError;
 use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::stream::Compare;
 use crate::stream::{AsBStr, AsChar, Offset, ParseSlice, Stream, StreamIsPartial};
+use crate::trace::trace;
 use crate::IResult;
 use crate::Parser;
 
@@ -56,11 +57,13 @@ where
     I: Stream,
     I: Compare<&'static str>,
 {
-    if PARTIAL {
-        streaming::crlf(input)
-    } else {
-        complete::crlf(input)
-    }
+    trace("crlf", move |input| {
+        if PARTIAL {
+            streaming::crlf(input)
+        } else {
+            complete::crlf(input)
+        }
+    })(input)
 }
 
 /// Recognizes a string of any char except '\r\n' or '\n'.
@@ -106,11 +109,13 @@ where
     I: Compare<&'static str>,
     <I as Stream>::Token: AsChar,
 {
-    if PARTIAL {
-        streaming::not_line_ending(input)
-    } else {
-        complete::not_line_ending(input)
-    }
+    trace("not_line_ending", move |input| {
+        if PARTIAL {
+            streaming::not_line_ending(input)
+        } else {
+            complete::not_line_ending(input)
+        }
+    })(input)
 }
 
 /// Recognizes an end of line (both '\n' and '\r\n').
@@ -150,11 +155,13 @@ where
     I: Stream,
     I: Compare<&'static str>,
 {
-    if PARTIAL {
-        streaming::line_ending(input)
-    } else {
-        complete::line_ending(input)
-    }
+    trace("line_ending", move |input| {
+        if PARTIAL {
+            streaming::line_ending(input)
+        } else {
+            complete::line_ending(input)
+        }
+    })(input)
 }
 
 /// Matches a newline character '\n'.
@@ -192,11 +199,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    if PARTIAL {
-        streaming::newline(input)
-    } else {
-        complete::newline(input)
-    }
+    trace("newline", move |input| {
+        if PARTIAL {
+            streaming::newline(input)
+        } else {
+            complete::newline(input)
+        }
+    })(input)
 }
 
 /// Matches a tab character '\t'.
@@ -234,11 +243,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    if PARTIAL {
-        streaming::tab(input)
-    } else {
-        complete::tab(input)
-    }
+    trace("tag", move |input| {
+        if PARTIAL {
+            streaming::tab(input)
+        } else {
+            complete::tab(input)
+        }
+    })(input)
 }
 
 /// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
@@ -280,11 +291,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    if PARTIAL {
-        streaming::alpha0(input)
-    } else {
-        complete::alpha0(input)
-    }
+    trace("alpha0", move |input| {
+        if PARTIAL {
+            streaming::alpha0(input)
+        } else {
+            complete::alpha0(input)
+        }
+    })(input)
 }
 
 /// Recognizes one or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
@@ -326,11 +339,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    if PARTIAL {
-        streaming::alpha1(input)
-    } else {
-        complete::alpha1(input)
-    }
+    trace("alpha1", move |input| {
+        if PARTIAL {
+            streaming::alpha1(input)
+        } else {
+            complete::alpha1(input)
+        }
+    })(input)
 }
 
 /// Recognizes zero or more ASCII numerical characters: 0-9
@@ -373,11 +388,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    if PARTIAL {
-        streaming::digit0(input)
-    } else {
-        complete::digit0(input)
-    }
+    trace("digit0", move |input| {
+        if PARTIAL {
+            streaming::digit0(input)
+        } else {
+            complete::digit0(input)
+        }
+    })(input)
 }
 
 /// Recognizes one or more ASCII numerical characters: 0-9
@@ -435,11 +452,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    if PARTIAL {
-        streaming::digit1(input)
-    } else {
-        complete::digit1(input)
-    }
+    trace("digit1", move |input| {
+        if PARTIAL {
+            streaming::digit1(input)
+        } else {
+            complete::digit1(input)
+        }
+    })(input)
 }
 
 /// Recognizes zero or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
@@ -480,11 +499,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    if PARTIAL {
-        streaming::hex_digit0(input)
-    } else {
-        complete::hex_digit0(input)
-    }
+    trace("hex_digit0", move |input| {
+        if PARTIAL {
+            streaming::hex_digit0(input)
+        } else {
+            complete::hex_digit0(input)
+        }
+    })(input)
 }
 
 /// Recognizes one or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
@@ -526,11 +547,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    if PARTIAL {
-        streaming::hex_digit1(input)
-    } else {
-        complete::hex_digit1(input)
-    }
+    trace("hex_digit1", move |input| {
+        if PARTIAL {
+            streaming::hex_digit1(input)
+        } else {
+            complete::hex_digit1(input)
+        }
+    })(input)
 }
 
 /// Recognizes zero or more octal characters: 0-7
@@ -572,11 +595,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    if PARTIAL {
-        streaming::oct_digit0(input)
-    } else {
-        complete::oct_digit0(input)
-    }
+    trace("oct_digit0", move |input| {
+        if PARTIAL {
+            streaming::oct_digit0(input)
+        } else {
+            complete::oct_digit0(input)
+        }
+    })(input)
 }
 
 /// Recognizes one or more octal characters: 0-7
@@ -618,11 +643,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    if PARTIAL {
-        streaming::oct_digit1(input)
-    } else {
-        complete::oct_digit1(input)
-    }
+    trace("oct_digit0", move |input| {
+        if PARTIAL {
+            streaming::oct_digit1(input)
+        } else {
+            complete::oct_digit1(input)
+        }
+    })(input)
 }
 
 /// Recognizes zero or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
@@ -664,11 +691,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    if PARTIAL {
-        streaming::alphanumeric0(input)
-    } else {
-        complete::alphanumeric0(input)
-    }
+    trace("alphanumeric0", move |input| {
+        if PARTIAL {
+            streaming::alphanumeric0(input)
+        } else {
+            complete::alphanumeric0(input)
+        }
+    })(input)
 }
 
 /// Recognizes one or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
@@ -710,11 +739,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    if PARTIAL {
-        streaming::alphanumeric1(input)
-    } else {
-        complete::alphanumeric1(input)
-    }
+    trace("alphanumeric1", move |input| {
+        if PARTIAL {
+            streaming::alphanumeric1(input)
+        } else {
+            complete::alphanumeric1(input)
+        }
+    })(input)
 }
 
 /// Recognizes zero or more spaces and tabs.
@@ -744,11 +775,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    if PARTIAL {
-        streaming::space0(input)
-    } else {
-        complete::space0(input)
-    }
+    trace("space0", move |input| {
+        if PARTIAL {
+            streaming::space0(input)
+        } else {
+            complete::space0(input)
+        }
+    })(input)
 }
 
 /// Recognizes one or more spaces and tabs.
@@ -790,11 +823,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    if PARTIAL {
-        streaming::space1(input)
-    } else {
-        complete::space1(input)
-    }
+    trace("space1", move |input| {
+        if PARTIAL {
+            streaming::space1(input)
+        } else {
+            complete::space1(input)
+        }
+    })(input)
 }
 
 /// Recognizes zero or more spaces, tabs, carriage returns and line feeds.
@@ -836,11 +871,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    if PARTIAL {
-        streaming::multispace0(input)
-    } else {
-        complete::multispace0(input)
-    }
+    trace("multispace0", move |input| {
+        if PARTIAL {
+            streaming::multispace0(input)
+        } else {
+            complete::multispace0(input)
+        }
+    })(input)
 }
 
 /// Recognizes one or more spaces, tabs, carriage returns and line feeds.
@@ -882,11 +919,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    if PARTIAL {
-        streaming::multispace1(input)
-    } else {
-        complete::multispace1(input)
-    }
+    trace("multispace1", move |input| {
+        if PARTIAL {
+            streaming::multispace1(input)
+        } else {
+            complete::multispace1(input)
+        }
+    })(input)
 }
 
 /// Decode a decimal unsigned integer
@@ -901,41 +940,43 @@ where
     <I as Stream>::Token: AsChar + Copy,
     O: Uint,
 {
-    let i = input.clone();
+    trace("dec_uint", move |input: I| {
+        let i = input.clone();
 
-    if i.eof_offset() == 0 {
-        if PARTIAL {
-            return Err(ErrMode::Incomplete(Needed::new(1)));
-        } else {
-            return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+        if i.eof_offset() == 0 {
+            if PARTIAL {
+                return Err(ErrMode::Incomplete(Needed::new(1)));
+            } else {
+                return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+            }
         }
-    }
 
-    let mut value = O::default();
-    for (offset, c) in i.iter_offsets() {
-        match c.as_char().to_digit(10) {
-            Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
-                let d = d as u8;
-                v.checked_add(d, sealed::SealedMarker)
-            }) {
-                None => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
-                Some(v) => value = v,
-            },
-            None => {
-                if offset == 0 {
-                    return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
-                } else {
-                    return Ok((i.next_slice(offset).0, value));
+        let mut value = O::default();
+        for (offset, c) in i.iter_offsets() {
+            match c.as_char().to_digit(10) {
+                Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
+                    let d = d as u8;
+                    v.checked_add(d, sealed::SealedMarker)
+                }) {
+                    None => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
+                    Some(v) => value = v,
+                },
+                None => {
+                    if offset == 0 {
+                        return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+                    } else {
+                        return Ok((i.next_slice(offset).0, value));
+                    }
                 }
             }
         }
-    }
 
-    if PARTIAL {
-        Err(ErrMode::Incomplete(Needed::new(1)))
-    } else {
-        Ok((i.next_slice(i.eof_offset()).0, value))
-    }
+        if PARTIAL {
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        } else {
+            Ok((i.next_slice(i.eof_offset()).0, value))
+        }
+    })(input)
 }
 
 /// Metadata for parsing unsigned integers
@@ -1048,53 +1089,55 @@ where
     <I as Stream>::Token: AsChar + Copy,
     O: Int,
 {
-    let i = input.clone();
+    trace("dec_int", move |input: I| {
+        let i = input.clone();
 
-    fn sign(token: impl AsChar) -> bool {
-        let token = token.as_char();
-        token == '+' || token == '-'
-    }
-    let (i, sign) = opt(crate::bytes::one_of(sign).map(AsChar::as_char))
-        .map(|c| c != Some('-'))
-        .parse_next(i)?;
-
-    if i.eof_offset() == 0 {
-        if PARTIAL {
-            return Err(ErrMode::Incomplete(Needed::new(1)));
-        } else {
-            return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+        fn sign(token: impl AsChar) -> bool {
+            let token = token.as_char();
+            token == '+' || token == '-'
         }
-    }
+        let (i, sign) = opt(crate::bytes::one_of(sign).map(AsChar::as_char))
+            .map(|c| c != Some('-'))
+            .parse_next(i)?;
 
-    let mut value = O::default();
-    for (offset, c) in i.iter_offsets() {
-        match c.as_char().to_digit(10) {
-            Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
-                let d = d as u8;
-                if sign {
-                    v.checked_add(d, sealed::SealedMarker)
-                } else {
-                    v.checked_sub(d, sealed::SealedMarker)
-                }
-            }) {
-                None => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
-                Some(v) => value = v,
-            },
-            None => {
-                if offset == 0 {
-                    return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
-                } else {
-                    return Ok((i.next_slice(offset).0, value));
+        if i.eof_offset() == 0 {
+            if PARTIAL {
+                return Err(ErrMode::Incomplete(Needed::new(1)));
+            } else {
+                return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+            }
+        }
+
+        let mut value = O::default();
+        for (offset, c) in i.iter_offsets() {
+            match c.as_char().to_digit(10) {
+                Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
+                    let d = d as u8;
+                    if sign {
+                        v.checked_add(d, sealed::SealedMarker)
+                    } else {
+                        v.checked_sub(d, sealed::SealedMarker)
+                    }
+                }) {
+                    None => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
+                    Some(v) => value = v,
+                },
+                None => {
+                    if offset == 0 {
+                        return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+                    } else {
+                        return Ok((i.next_slice(offset).0, value));
+                    }
                 }
             }
         }
-    }
 
-    if PARTIAL {
-        Err(ErrMode::Incomplete(Needed::new(1)))
-    } else {
-        Ok((i.next_slice(i.eof_offset()).0, value))
-    }
+        if PARTIAL {
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        } else {
+            Ok((i.next_slice(i.eof_offset()).0, value))
+        }
+    })(input)
 }
 
 /// Metadata for parsing signed integers
@@ -1180,47 +1223,49 @@ where
     <I as Stream>::Token: AsChar,
     <I as Stream>::Slice: AsBStr,
 {
-    let invalid_offset = input
-        .offset_for(|c| {
-            let c = c.as_char();
-            !"0123456789abcdefABCDEF".contains(c)
-        })
-        .unwrap_or_else(|| input.eof_offset());
-    let max_nibbles = O::max_nibbles(sealed::SealedMarker);
-    let max_offset = input.offset_at(max_nibbles);
-    let offset = match max_offset {
-        Ok(max_offset) => {
-            if max_offset < invalid_offset {
-                // Overflow
-                return Err(ErrMode::from_error_kind(input, ErrorKind::IsA));
-            } else {
-                invalid_offset
+    trace("hex_uint", move |input: I| {
+        let invalid_offset = input
+            .offset_for(|c| {
+                let c = c.as_char();
+                !"0123456789abcdefABCDEF".contains(c)
+            })
+            .unwrap_or_else(|| input.eof_offset());
+        let max_nibbles = O::max_nibbles(sealed::SealedMarker);
+        let max_offset = input.offset_at(max_nibbles);
+        let offset = match max_offset {
+            Ok(max_offset) => {
+                if max_offset < invalid_offset {
+                    // Overflow
+                    return Err(ErrMode::from_error_kind(input, ErrorKind::IsA));
+                } else {
+                    invalid_offset
+                }
             }
-        }
-        Err(_) => {
-            if PARTIAL && invalid_offset == input.eof_offset() {
-                // Only the next byte is guaranteed required
-                return Err(ErrMode::Incomplete(Needed::new(1)));
-            } else {
-                invalid_offset
+            Err(_) => {
+                if PARTIAL && invalid_offset == input.eof_offset() {
+                    // Only the next byte is guaranteed required
+                    return Err(ErrMode::Incomplete(Needed::new(1)));
+                } else {
+                    invalid_offset
+                }
             }
+        };
+        if offset == 0 {
+            // Must be at least one digit
+            return Err(ErrMode::from_error_kind(input, ErrorKind::IsA));
         }
-    };
-    if offset == 0 {
-        // Must be at least one digit
-        return Err(ErrMode::from_error_kind(input, ErrorKind::IsA));
-    }
-    let (remaining, parsed) = input.next_slice(offset);
+        let (remaining, parsed) = input.next_slice(offset);
 
-    let mut res = O::default();
-    for c in parsed.as_bstr() {
-        let nibble = *c as char;
-        let nibble = nibble.to_digit(16).unwrap_or(0) as u8;
-        let nibble = O::from(nibble);
-        res = (res << O::from(4)) + nibble;
-    }
+        let mut res = O::default();
+        for c in parsed.as_bstr() {
+            let nibble = *c as char;
+            let nibble = nibble.to_digit(16).unwrap_or(0) as u8;
+            let nibble = O::from(nibble);
+            res = (res << O::from(4)) + nibble;
+        }
 
-    Ok((remaining, res))
+        Ok((remaining, res))
+    })(input)
 }
 
 /// Metadata for parsing hex numbers
@@ -1318,15 +1363,17 @@ where
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
-    let (i, s) = if PARTIAL {
-        crate::number::streaming::recognize_float_or_exceptions(input)?
-    } else {
-        crate::number::complete::recognize_float_or_exceptions(input)?
-    };
-    match s.parse_slice() {
-        Some(f) => Ok((i, f)),
-        None => Err(ErrMode::from_error_kind(i, ErrorKind::Float)),
-    }
+    trace("float", move |input: I| {
+        let (i, s) = if PARTIAL {
+            crate::number::streaming::recognize_float_or_exceptions(input)?
+        } else {
+            crate::number::complete::recognize_float_or_exceptions(input)?
+        };
+        match s.parse_slice() {
+            Some(f) => Ok((i, f)),
+            None => Err(ErrMode::from_error_kind(i, ErrorKind::Float)),
+        }
+    })(input)
 }
 
 /// Matches a byte string with escaped characters.
@@ -1377,7 +1424,7 @@ where
     G: Parser<I, O2, Error>,
     Error: ParseError<I>,
 {
-    move |input: I| {
+    trace("escaped", move |input: I| {
         if PARTIAL {
             crate::bytes::streaming::escaped_internal(
                 input,
@@ -1393,7 +1440,7 @@ where
                 &mut escapable,
             )
         }
-    }
+    })
 }
 
 /// Matches a byte string with escaped characters.
@@ -1471,7 +1518,7 @@ where
     G: Parser<I, <I as Stream>::Slice, Error>,
     Error: ParseError<I>,
 {
-    move |input: I| {
+    trace("escaped_transform", move |input: I| {
         if PARTIAL {
             crate::bytes::streaming::escaped_transform_internal(
                 input,
@@ -1487,7 +1534,7 @@ where
                 &mut transform,
             )
         }
-    }
+    })
 }
 
 #[inline]
