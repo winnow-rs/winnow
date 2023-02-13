@@ -115,7 +115,7 @@
 //! fn request_line(i: &[u8]) -> IResult<&[u8], Request> {
 //!   // first implement the basic parsers
 //!   let method = take_while1(AsChar::is_alpha);
-//!   let space = take_while1(|c| c == b' ');
+//!   let space = |i| take_while1(|c| c == b' ')(i);
 //!   let url = take_while1(|c| c != b' ');
 //!   let is_version = |c| c >= b'0' && c <= b'9' || c == b'.';
 //!   let version = take_while1(is_version);
@@ -128,7 +128,7 @@
 //!
 //!   // A tuple of parsers will evaluate each parser sequentally and return a tuple of the results
 //!   let (input, (method, _, url, _, version, _)) =
-//!     (method, &space, url, &space, http_version, line_ending).parse_next(i)?;
+//!     (method, space, url, space, http_version, line_ending).parse_next(i)?;
 //!
 //!   Ok((input, Request { method, url, version }))
 //! }

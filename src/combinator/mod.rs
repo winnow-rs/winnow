@@ -1613,7 +1613,7 @@ enum State<E> {
 /// assert_eq!(sign("10"), Ok(("10", 1)));
 /// # }
 /// ```
-pub fn success<I, O: Clone, E: ParseError<I>>(val: O) -> impl Fn(I) -> IResult<I, O, E> {
+pub fn success<I, O: Clone, E: ParseError<I>>(val: O) -> impl FnMut(I) -> IResult<I, O, E> {
     move |input: I| Ok((input, val.clone()))
 }
 

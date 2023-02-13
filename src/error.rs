@@ -1300,14 +1300,14 @@ macro_rules! error_node_position(
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::dbg_err")]
 #[cfg(feature = "std")]
 pub fn dbg_dmp<'a, F, O, E: std::fmt::Debug>(
-    f: F,
+    mut f: F,
     context: &'static str,
-) -> impl Fn(&'a [u8]) -> IResult<&'a [u8], O, E>
+) -> impl FnMut(&'a [u8]) -> IResult<&'a [u8], O, E>
 where
-    F: Fn(&'a [u8]) -> IResult<&'a [u8], O, E>,
+    F: Parser<&'a [u8], O, E>,
 {
     use crate::stream::HexDisplay;
-    move |i: &'a [u8]| match f(i) {
+    move |i: &'a [u8]| match f.parse_next(i) {
         Err(e) => {
             println!("{}: Error({:?}) at:\n{}", context, e, i.to_hex(8));
             Err(e)

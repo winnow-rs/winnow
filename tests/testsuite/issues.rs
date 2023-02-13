@@ -232,7 +232,7 @@ fn issue_1231_bits_expect_fn_closure() {
 fn issue_1282_findtoken_char() {
     use winnow::bytes::one_of;
     use winnow::error::Error;
-    let parser = one_of::<_, _, Error<_>, false>(&['a', 'b', 'c'][..]);
+    let mut parser = one_of::<_, _, Error<_>, false>(&['a', 'b', 'c'][..]);
     assert_eq!(parser("aaa"), Ok(("aa", 'a')));
 }
 
