@@ -4,6 +4,8 @@
 mod tests;
 
 use crate::error::ParseError;
+use crate::stream::Stream;
+use crate::trace::trace;
 use crate::{IResult, Parser};
 
 /// Gets an object from the first parser,
@@ -68,13 +70,14 @@ pub fn preceded<I, O1, O2, E: ParseError<I>, F, G>(
     mut second: G,
 ) -> impl FnMut(I) -> IResult<I, O2, E>
 where
+    I: Stream,
     F: Parser<I, O1, E>,
     G: Parser<I, O2, E>,
 {
-    move |input: I| {
+    trace("preceded", move |input: I| {
         let (input, _) = first.parse_next(input)?;
         second.parse_next(input)
-    }
+    })
 }
 
 /// Gets an object from the first parser,
@@ -102,13 +105,14 @@ pub fn terminated<I, O1, O2, E: ParseError<I>, F, G>(
     mut second: G,
 ) -> impl FnMut(I) -> IResult<I, O1, E>
 where
+    I: Stream,
     F: Parser<I, O1, E>,
     G: Parser<I, O2, E>,
 {
-    move |input: I| {
+    trace("terminated", move |input: I| {
         let (input, o1) = first.parse_next(input)?;
         second.parse_next(input).map(|(i, _)| (i, o1))
-    }
+    })
 }
 
 /// Gets an object from the first parser,
@@ -139,15 +143,16 @@ pub fn separated_pair<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
     mut second: H,
 ) -> impl FnMut(I) -> IResult<I, (O1, O3), E>
 where
+    I: Stream,
     F: Parser<I, O1, E>,
     G: Parser<I, O2, E>,
     H: Parser<I, O3, E>,
 {
-    move |input: I| {
+    trace("separated_pair", move |input: I| {
         let (input, o1) = first.parse_next(input)?;
         let (input, _) = sep.parse_next(input)?;
         second.parse_next(input).map(|(i, o2)| (i, (o1, o2)))
-    }
+    })
 }
 
 /// Matches an object from the first parser and discards it,
@@ -178,15 +183,16 @@ pub fn delimited<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
     mut third: H,
 ) -> impl FnMut(I) -> IResult<I, O2, E>
 where
+    I: Stream,
     F: Parser<I, O1, E>,
     G: Parser<I, O2, E>,
     H: Parser<I, O3, E>,
 {
-    move |input: I| {
+    trace("delimited", move |input: I| {
         let (input, _) = first.parse_next(input)?;
         let (input, o2) = second.parse_next(input)?;
         third.parse_next(input).map(|(i, _)| (i, o2))
-    }
+    })
 }
 
 /// Helper trait for the tuple combinator.
@@ -223,12 +229,12 @@ macro_rules! tuple_trait_impl(
   ($($name:ident $ty: ident),+) => (
     #[allow(deprecated)]
     impl<
-      I: Clone, $($ty),+ , Error: ParseError<I>,
+      I: Stream, $($ty),+ , Error: ParseError<I>,
       $($name: Parser<I, $ty, Error>),+
     > Tuple<I, ( $($ty),+ ), Error> for ( $($name),+ ) {
 
       fn parse(&mut self, input: I) -> IResult<I, ( $($ty),+ ), Error> {
-        tuple_trait_inner!(0, self, input, (), $($name)+)
+        trace("tuple", move |input: I| tuple_trait_inner!(0, self, input, (), $($name)+))(input)
 
       }
     }

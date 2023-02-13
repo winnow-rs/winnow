@@ -162,6 +162,7 @@ use crate::lib::std::convert;
 use crate::lib::std::ops::Range;
 use crate::stream::Offset;
 use crate::stream::{Location, Stream};
+use crate::trace::trace;
 use crate::*;
 
 #[cfg(test)]
@@ -181,7 +182,9 @@ pub fn rest<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E
 where
     I: Stream,
 {
-    Ok(input.next_slice(input.eof_offset()))
+    trace("rest", move |input: I| {
+        Ok(input.next_slice(input.eof_offset()))
+    })(input)
 }
 
 /// Return the length of the remaining input.
@@ -198,8 +201,10 @@ pub fn rest_len<I, E: ParseError<I>>(input: I) -> IResult<I, usize, E>
 where
     I: Stream,
 {
-    let len = input.eof_offset();
-    Ok((input, len))
+    trace("rest_len", move |input: I| {
+        let len = input.eof_offset();
+        Ok((input, len))
+    })(input)
 }
 
 /// Implementation of [`Parser::by_ref`][Parser::by_ref]
@@ -605,18 +610,18 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> H, H: Parser<I, O2, E>> Par
 /// assert_eq!(parser("123;"), Ok(("123;", None)));
 /// # }
 /// ```
-pub fn opt<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, Option<O>, E>
+pub fn opt<I: Stream, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, Option<O>, E>
 where
     F: Parser<I, O, E>,
 {
-    move |input: I| {
+    trace("opt", move |input: I| {
         let i = input.clone();
         match f.parse_next(input) {
             Ok((i, o)) => Ok((i, Some(o))),
             Err(ErrMode::Backtrack(_)) => Ok((i, None)),
             Err(e) => Err(e),
         }
-    }
+    })
 }
 
 /// Implementation of [`Parser::and`]
@@ -690,9 +695,10 @@ pub fn cond<I, O, E: ParseError<I>, F>(
     mut f: F,
 ) -> impl FnMut(I) -> IResult<I, Option<O>, E>
 where
+    I: Stream,
     F: Parser<I, O, E>,
 {
-    move |input: I| {
+    trace("cond", move |input: I| {
         if b {
             match f.parse_next(input) {
                 Ok((i, o)) => Ok((i, Some(o))),
@@ -701,7 +707,7 @@ where
         } else {
             Ok((input, None))
         }
-    }
+    })
 }
 
 /// Tries to apply its parser without consuming the input.
@@ -718,17 +724,17 @@ where
 /// assert_eq!(parser("123;"), Err(ErrMode::Backtrack(Error::new("123;", ErrorKind::Alpha))));
 /// # }
 /// ```
-pub fn peek<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
+pub fn peek<I: Stream, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
     F: Parser<I, O, E>,
 {
-    move |input: I| {
+    trace("peek", move |input: I| {
         let i = input.clone();
         match f.parse_next(input) {
             Ok((_, o)) => Ok((i, o)),
             Err(e) => Err(e),
         }
-    }
+    })
 }
 
 /// returns its input if it is at the end of input data
@@ -751,11 +757,13 @@ pub fn eof<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: Stream,
 {
-    if input.eof_offset() == 0 {
-        Ok(input.next_slice(0))
-    } else {
-        Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
-    }
+    trace("eof", move |input: I| {
+        if input.eof_offset() == 0 {
+            Ok(input.next_slice(0))
+        } else {
+            Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
+        }
+    })(input)
 }
 
 /// Transforms `Incomplete` into `Backtrack`.
@@ -802,16 +810,20 @@ impl<F> Complete<F> {
 
 impl<F, I, O, E> Parser<I, O, E> for Complete<F>
 where
-    I: Clone,
+    I: Stream,
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
     fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
-        let i = input.clone();
-        match (self.f).parse_next(input) {
-            Err(ErrMode::Incomplete(_)) => Err(ErrMode::from_error_kind(i, ErrorKind::Complete)),
-            rest => rest,
-        }
+        trace("complete", |input: I| {
+            let i = input.clone();
+            match (self.f).parse_next(input) {
+                Err(ErrMode::Incomplete(_)) => {
+                    Err(ErrMode::from_error_kind(i, ErrorKind::Complete))
+                }
+                rest => rest,
+            }
+        })(input)
     }
 }
 
@@ -1025,18 +1037,18 @@ impl<I, O, E: ParseError<I>, F: Parser<I, O, E>> Parser<I, (), E> for Void<F, O>
 /// assert_eq!(parser("abcd"), Err(ErrMode::Backtrack(Error::new("abcd", ErrorKind::Not))));
 /// # }
 /// ```
-pub fn not<I: Clone, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, (), E>
+pub fn not<I: Stream, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, (), E>
 where
     F: Parser<I, O, E>,
 {
-    move |input: I| {
+    trace("not", move |input: I| {
         let i = input.clone();
         match parser.parse_next(input) {
             Ok(_) => Err(ErrMode::from_error_kind(i, ErrorKind::Not)),
             Err(ErrMode::Backtrack(_)) => Ok((i, ())),
             Err(e) => Err(e),
         }
-    }
+    })
 }
 
 /// If the child parser was successful, return the consumed input as produced value.
@@ -1329,15 +1341,19 @@ where
 /// ```
 pub fn cut_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
+    I: Stream,
     F: Parser<I, O, E>,
 {
-    move |input: I| parser.parse_next(input).map_err(|e| e.cut())
+    trace("cut_err", move |input: I| {
+        parser.parse_next(input).map_err(|e| e.cut())
+    })
 }
 
 /// Deprecated, see [`cut_err`]
 #[deprecated(since = "0.3.0", note = "Replaced with `cut_err`")]
 pub fn cut<I, O, E: ParseError<I>, F>(parser: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
+    I: Stream,
     F: Parser<I, O, E>,
 {
     cut_err(parser)
@@ -1349,9 +1365,12 @@ where
 /// [`winnow::branch::alt`][crate::branch::alt].
 pub fn backtrack_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
+    I: Stream,
     F: Parser<I, O, E>,
 {
-    move |input: I| parser.parse_next(input).map_err(|e| e.backtrack())
+    trace("backtrack_err", move |input: I| {
+        parser.parse_next(input).map_err(|e| e.backtrack())
+    })
 }
 
 /// A placeholder for a not-yet-implemented [`Parser`]
@@ -1373,9 +1392,12 @@ where
 /// }
 /// ```
 #[track_caller]
-pub fn todo<I, O, E>(_input: I) -> IResult<I, O, E> {
+pub fn todo<I, O, E>(input: I) -> IResult<I, O, E>
+where
+    I: Stream,
+{
     #![allow(clippy::todo)]
-    todo!("unimplemented parse")
+    trace("todo", move |_input: I| todo!("unimplemented parse"))(input)
 }
 
 /// automatically converts the child parser's result to another type
@@ -1613,8 +1635,8 @@ enum State<E> {
 /// assert_eq!(sign("10"), Ok(("10", 1)));
 /// # }
 /// ```
-pub fn success<I, O: Clone, E: ParseError<I>>(val: O) -> impl FnMut(I) -> IResult<I, O, E> {
-    move |input: I| Ok((input, val.clone()))
+pub fn success<I: Stream, O: Clone, E: ParseError<I>>(val: O) -> impl FnMut(I) -> IResult<I, O, E> {
+    trace("success", move |input: I| Ok((input, val.clone())))
 }
 
 /// A parser which always fails.
@@ -1626,8 +1648,10 @@ pub fn success<I, O: Clone, E: ParseError<I>>(val: O) -> impl FnMut(I) -> IResul
 /// let s = "string";
 /// assert_eq!(fail::<_, &str, _>(s), Err(ErrMode::Backtrack(Error::new(s, ErrorKind::Fail))));
 /// ```
-pub fn fail<I, O, E: ParseError<I>>(i: I) -> IResult<I, O, E> {
-    Err(ErrMode::from_error_kind(i, ErrorKind::Fail))
+pub fn fail<I: Stream, O, E: ParseError<I>>(i: I) -> IResult<I, O, E> {
+    trace("fail", |i| {
+        Err(ErrMode::from_error_kind(i, ErrorKind::Fail))
+    })(i)
 }
 
 /// Implementation of [`Parser::context`]
@@ -1650,15 +1674,21 @@ impl<F, O, C: Clone + crate::lib::std::fmt::Debug> Context<F, O, C> {
 
 impl<I, O, E, F, C> Parser<I, O, E> for Context<F, O, C>
 where
-    I: Clone,
+    I: Stream,
     C: Clone + crate::lib::std::fmt::Debug,
     E: ContextError<I, C>,
     F: Parser<I, O, E>,
 {
     fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
-        (self.f)
-            .parse_next(i.clone())
-            .map_err(|err| err.map(|err| err.add_context(i, self.context.clone())))
+        #[cfg(feature = "debug")]
+        let name = format!("context={:?}", self.context);
+        #[cfg(not(feature = "debug"))]
+        let name = "context";
+        trace(name, move |i: I| {
+            (self.f)
+                .parse_next(i.clone())
+                .map_err(|err| err.map(|err| err.add_context(i, self.context.clone())))
+        })(i)
     }
 }
 

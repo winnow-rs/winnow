@@ -9,6 +9,7 @@ mod tests;
 use crate::error::{ErrMode, ErrorConvert, ErrorKind, Needed, ParseError};
 use crate::lib::std::ops::{AddAssign, Shl, Shr};
 use crate::stream::{AsBytes, Stream, StreamIsPartial, ToUsize};
+use crate::trace::trace;
 use crate::{IResult, Parser};
 
 /// Converts a byte-level input to a bit-level input, for consumption by a parser that uses bits.
@@ -52,18 +53,20 @@ where
     I: Stream,
     P: Parser<(I, usize), O, E1>,
 {
-    move |input: I| match parser.parse_next((input, 0)) {
-        Ok(((rest, offset), result)) => {
-            // If the next byte has been partially read, it will be sliced away as well.
-            // The parser functions might already slice away all fully read bytes.
-            // That's why `offset / 8` isn't necessarily needed at all times.
-            let remaining_bytes_index = offset / 8 + if offset % 8 == 0 { 0 } else { 1 };
-            let (input, _) = rest.next_slice(remaining_bytes_index);
-            Ok((input, result))
+    trace("bits", move |input: I| {
+        match parser.parse_next((input, 0)) {
+            Ok(((rest, offset), result)) => {
+                // If the next byte has been partially read, it will be sliced away as well.
+                // The parser functions might already slice away all fully read bytes.
+                // That's why `offset / 8` isn't necessarily needed at all times.
+                let remaining_bytes_index = offset / 8 + if offset % 8 == 0 { 0 } else { 1 };
+                let (input, _) = rest.next_slice(remaining_bytes_index);
+                Ok((input, result))
+            }
+            Err(ErrMode::Incomplete(n)) => Err(ErrMode::Incomplete(n.map(|u| u.get() / 8 + 1))),
+            Err(e) => Err(e.convert()),
         }
-        Err(ErrMode::Incomplete(n)) => Err(ErrMode::Incomplete(n.map(|u| u.get() / 8 + 1))),
-        Err(e) => Err(e.convert()),
-    }
+    })
 }
 
 /// Counterpart to `bits`, `bytes` transforms its bit stream input into a byte slice for the underlying
@@ -101,10 +104,10 @@ pub fn bytes<I, O, E1, E2, P>(mut parser: P) -> impl FnMut((I, usize)) -> IResul
 where
     E1: ParseError<I> + ErrorConvert<E2>,
     E2: ParseError<(I, usize)>,
-    I: Stream,
+    I: Stream<Token = u8>,
     P: Parser<I, O, E1>,
 {
-    move |(input, offset): (I, usize)| {
+    trace("bytes", move |(input, offset): (I, usize)| {
         let (inner, _) = if offset % 8 != 0 {
             input.next_slice(1 + offset / 8)
         } else {
@@ -120,7 +123,7 @@ where
             }),
             Err(e) => Err(e.convert()),
         }
-    }
+    })
 }
 
 /// Generates a parser taking `count` bits
@@ -164,13 +167,13 @@ where
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
     let count = count.to_usize();
-    move |input: (I, usize)| {
+    trace("take", move |input: (I, usize)| {
         if PARTIAL {
             streaming::take_internal(input, count)
         } else {
             complete::take_internal(input, count)
         }
-    }
+    })
 }
 
 /// Generates a parser taking `count` bits and comparing them to `pattern`
@@ -237,13 +240,13 @@ where
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
     let count = count.to_usize();
-    move |input: (I, usize)| {
+    trace("tag", move |input: (I, usize)| {
         if PARTIAL {
             streaming::tag_internal(input, &pattern, count)
         } else {
             complete::tag_internal(input, &pattern, count)
         }
-    }
+    })
 }
 
 /// Parses one specific bit as a bool.
@@ -276,9 +279,11 @@ where
     I: Stream<Token = u8> + AsBytes + StreamIsPartial<PARTIAL>,
 {
     #![allow(deprecated)]
-    if PARTIAL {
-        streaming::bool(input)
-    } else {
-        complete::bool(input)
-    }
+    trace("bool", |input| {
+        if PARTIAL {
+            streaming::bool(input)
+        } else {
+            complete::bool(input)
+        }
+    })(input)
 }
