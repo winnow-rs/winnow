@@ -510,7 +510,7 @@ pub trait Parser<I, O, E> {
     fn context<C>(self, context: C) -> Context<Self, O, C>
     where
         Self: core::marker::Sized,
-        C: Clone,
+        C: Clone + crate::lib::std::fmt::Debug,
         E: ContextError<I, C>,
     {
         Context::new(self, context)

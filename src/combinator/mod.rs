@@ -1632,13 +1632,13 @@ pub fn fail<I, O, E: ParseError<I>>(i: I) -> IResult<I, O, E> {
 
 /// Implementation of [`Parser::context`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct Context<F, O, C: Clone> {
+pub struct Context<F, O, C: Clone + crate::lib::std::fmt::Debug> {
     f: F,
     context: C,
     phantom: core::marker::PhantomData<O>,
 }
 
-impl<F, O, C: Clone> Context<F, O, C> {
+impl<F, O, C: Clone + crate::lib::std::fmt::Debug> Context<F, O, C> {
     pub(crate) fn new(f: F, context: C) -> Self {
         Self {
             f,
@@ -1651,7 +1651,7 @@ impl<F, O, C: Clone> Context<F, O, C> {
 impl<I, O, E, F, C> Parser<I, O, E> for Context<F, O, C>
 where
     I: Clone,
-    C: Clone,
+    C: Clone + crate::lib::std::fmt::Debug,
     E: ContextError<I, C>,
     F: Parser<I, O, E>,
 {
