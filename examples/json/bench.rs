@@ -12,11 +12,16 @@ fn json_bench(c: &mut criterion::Criterion) {
         let len = sample.len();
         group.throughput(criterion::Throughput::Bytes(len as u64));
 
+        group.bench_with_input(criterion::BenchmarkId::new("basic", name), &len, |b, _| {
+            type Error<'i> = winnow::error::Error<parser::Stream<'i>>;
+
+            b.iter(|| parser::json::<Error>(sample).unwrap());
+        });
         group.bench_with_input(
-            criterion::BenchmarkId::new("complete", name),
+            criterion::BenchmarkId::new("verbose", name),
             &len,
             |b, _| {
-                type Error<'i> = winnow::error::Error<parser::Stream<'i>>;
+                type Error<'i> = winnow::error::VerboseError<parser::Stream<'i>>;
 
                 b.iter(|| parser::json::<Error>(sample).unwrap());
             },
