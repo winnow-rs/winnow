@@ -409,11 +409,11 @@ pub trait Stream: Offset + Clone + crate::lib::std::fmt::Debug {
     /// The smallest unit being parsed
     ///
     /// Example: `u8` for `&[u8]` or `char` for `&str`
-    type Token;
+    type Token: crate::lib::std::fmt::Debug;
     /// Sequence of `Token`s
     ///
     /// Example: `&[u8]` for `Located<&[u8]>` or `&str` for `Located<&str>`
-    type Slice;
+    type Slice: crate::lib::std::fmt::Debug;
 
     /// Iterate with the offset from the current location
     type IterOffsets: Iterator<Item = (usize, Self::Token)>;
