@@ -63,6 +63,7 @@ fn test_bit_offset_empty() {
 #[cfg(feature = "std")]
 proptest! {
   #[test]
+  #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
   fn bit_stream(byte_len in 0..20usize, start in 0..160usize) {
         bit_stream_inner(byte_len, start);
   }

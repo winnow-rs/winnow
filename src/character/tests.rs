@@ -422,6 +422,7 @@ mod complete {
 
     proptest! {
       #[test]
+      #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
       fn ints(s in "\\PC*") {
           let res1 = digit_to_i16(&s);
           let res2 = dec_int(s.as_str());
@@ -429,6 +430,7 @@ mod complete {
       }
 
       #[test]
+      #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
       fn uints(s in "\\PC*") {
           let res1 = digit_to_u32(&s);
           let res2 = dec_uint(s.as_str());
@@ -562,6 +564,7 @@ mod complete {
     proptest! {
       #[test]
       #[cfg(feature = "std")]
+      #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
       fn floats(s in "\\PC*") {
           println!("testing {}", s);
           let res1 = parse_f64(&s);
@@ -1396,6 +1399,7 @@ mod partial {
 
     proptest! {
       #[test]
+      #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
       fn ints(s in "\\PC*") {
           let res1 = digit_to_i16(Partial(&s));
           let res2 = dec_int(Partial(s.as_str()));
@@ -1403,6 +1407,7 @@ mod partial {
       }
 
       #[test]
+      #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
       fn uints(s in "\\PC*") {
           let res1 = digit_to_u32(Partial(&s));
           let res2 = dec_uint(Partial(s.as_str()));

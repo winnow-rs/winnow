@@ -65,11 +65,11 @@ jobs:
         components: miri
     - uses: Swatinem/rust-cache@v2
     - name: Default features
-      run: cargo test --workspace
+      run: cargo miri test --workspace
     - name: All features
-      run: cargo test --workspace --all-features
+      run: cargo miri test --workspace --all-features
     - name: No-default features
-      run: cargo test --workspace --no-default-features
+      run: cargo miri test --workspace --no-default-features
   msrv:
     name: "Check MSRV: 1.60.0"
     runs-on: ubuntu-latest
