@@ -53,6 +53,7 @@ fn model_complete_take_while_m_n(
 #[cfg(feature = "std")]
 proptest! {
   #[test]
+  #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
   fn complete_take_while_m_n_bounds(m in 0..20usize, n in 0..20usize, valid in 0..20usize, invalid in 0..20usize) {
       let input = format!("{:a<valid$}{:b<invalid$}", "", "", valid=valid, invalid=invalid);
       let expected = model_complete_take_while_m_n(m, n, valid, &input);

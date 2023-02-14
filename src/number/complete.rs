@@ -2162,13 +2162,14 @@ mod tests {
     }
 
     proptest! {
-      #[test]
-      #[cfg(feature = "std")]
-      fn floats(s in "\\PC*") {
-          println!("testing {}", s);
-          let res1 = parse_f64(&s);
-          let res2 = double::<_, ()>(s.as_str());
-          assert_eq!(res1, res2);
+        #[test]
+        #[cfg(feature = "std")]
+    #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
+        fn floats(s in "\\PC*") {
+            println!("testing {}", s);
+            let res1 = parse_f64(&s);
+            let res2 = double::<_, ()>(s.as_str());
+            assert_eq!(res1, res2);
+        }
       }
-    }
 }

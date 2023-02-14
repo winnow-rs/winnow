@@ -1411,18 +1411,20 @@ mod tests {
     }
 
     proptest! {
-      #[test]
-      fn ints(s in "\\PC*") {
-          let res1 = digit_to_i16(&s);
-          let res2 = i16(s.as_str());
-          assert_eq!(res1, res2);
-      }
+        #[test]
+    #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
+        fn ints(s in "\\PC*") {
+            let res1 = digit_to_i16(&s);
+            let res2 = i16(s.as_str());
+            assert_eq!(res1, res2);
+        }
 
-      #[test]
-      fn uints(s in "\\PC*") {
-          let res1 = digit_to_u32(&s);
-          let res2 = u32(s.as_str());
-          assert_eq!(res1, res2);
+        #[test]
+    #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
+        fn uints(s in "\\PC*") {
+            let res1 = digit_to_u32(&s);
+            let res2 = u32(s.as_str());
+            assert_eq!(res1, res2);
+        }
       }
-    }
 }
