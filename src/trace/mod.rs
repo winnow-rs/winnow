@@ -3,6 +3,7 @@
 #[cfg(feature = "debug")]
 mod internals;
 
+use crate::error::ErrMode;
 use crate::stream::Stream;
 use crate::IResult;
 use crate::Parser;
@@ -27,7 +28,7 @@ pub fn trace<I: Stream, O, E>(
             let res = parser.parse_next(i);
 
             let consumed = res.as_ref().ok().map(|(i, _)| original.offset_to(i));
-            let severity = internals::Severity::with_iresult(&res);
+            let severity = internals::Severity::with_result(&res);
             internals::end(*depth, &name, call_count, consumed, severity);
             call_count += 1;
 
@@ -37,5 +38,18 @@ pub fn trace<I: Stream, O, E>(
     #[cfg(not(feature = "debug"))]
     {
         move |i| parser.parse_next(i)
+    }
+}
+
+#[cfg_attr(not(feature = "debug"), allow(unused_variables))]
+pub(crate) fn trace_result<T, E>(
+    name: impl crate::lib::std::fmt::Display,
+    res: &Result<T, ErrMode<E>>,
+) {
+    #[cfg(feature = "debug")]
+    {
+        let depth = internals::Depth::existing();
+        let severity = internals::Severity::with_result(res);
+        internals::result(*depth, &name, severity);
     }
 }

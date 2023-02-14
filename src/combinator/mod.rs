@@ -163,6 +163,7 @@ use crate::lib::std::ops::Range;
 use crate::stream::Offset;
 use crate::stream::{Location, Stream};
 use crate::trace::trace;
+use crate::trace::trace_result;
 use crate::*;
 
 #[cfg(test)]
@@ -352,10 +353,12 @@ where
     fn parse_next(&mut self, input: I) -> IResult<I, O2, E> {
         let i = input.clone();
         let (input, o1) = self.f.parse_next(input)?;
-        match (self.g)(o1) {
+        let res = match (self.g)(o1) {
             Ok(o2) => Ok((input, o2)),
             Err(e) => Err(ErrMode::from_external_error(i, ErrorKind::MapRes, e)),
-        }
+        };
+        trace_result("verify", &res);
+        res
     }
 }
 
@@ -428,10 +431,12 @@ where
     fn parse_next(&mut self, input: I) -> IResult<I, O2, E> {
         let i = input.clone();
         let (input, o1) = self.f.parse_next(input)?;
-        match (self.g)(o1) {
+        let res = match (self.g)(o1) {
             Some(o2) => Ok((input, o2)),
             None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
-        }
+        };
+        trace_result("verify", &res);
+        res
     }
 }
 
@@ -526,10 +531,11 @@ where
         let input = i.clone();
         let (i, o) = self.p.parse_next(i)?;
 
-        let o = o
+        let res = o
             .parse_slice()
-            .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::Verify))?;
-        Ok((i, o))
+            .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::Verify));
+        trace_result("verify", &res);
+        Ok((i, res?))
     }
 }
 /// Creates a new parser from the output of the first parser, then apply that parser over the rest of the input.
@@ -938,11 +944,13 @@ where
         let i = input.clone();
         let (input, o) = (self.first).parse_next(input)?;
 
-        if (self.second)(o.borrow()) {
+        let res = if (self.second)(o.borrow()) {
             Ok((input, o))
         } else {
             Err(ErrMode::from_error_kind(i, ErrorKind::Verify))
-        }
+        };
+        trace_result("verify", &res);
+        res
     }
 }
 
