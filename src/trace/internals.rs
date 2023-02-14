@@ -4,27 +4,38 @@ use std::io::Write;
 
 use crate::error::ErrMode;
 use crate::stream::Stream;
-use crate::IResult;
 
-pub struct Depth(usize);
+pub struct Depth {
+    depth: usize,
+    inc: bool,
+}
 
 impl Depth {
     pub fn new() -> Self {
         let depth = DEPTH.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-        Self(depth)
+        let inc = true;
+        Self { depth, inc }
+    }
+
+    pub fn existing() -> Self {
+        let depth = DEPTH.load(std::sync::atomic::Ordering::SeqCst);
+        let inc = false;
+        Self { depth, inc }
     }
 }
 
 impl Drop for Depth {
     fn drop(&mut self) {
-        let _ = DEPTH.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+        if self.inc {
+            let _ = DEPTH.fetch_sub(1, std::sync::atomic::Ordering::SeqCst);
+        }
     }
 }
 
 impl AsRef<usize> for Depth {
     #[inline(always)]
     fn as_ref(&self) -> &usize {
-        &self.0
+        &self.depth
     }
 }
 
@@ -33,7 +44,7 @@ impl crate::lib::std::ops::Deref for Depth {
 
     #[inline(always)]
     fn deref(&self) -> &Self::Target {
-        &self.0
+        &self.depth
     }
 }
 
@@ -47,7 +58,7 @@ pub enum Severity {
 }
 
 impl Severity {
-    pub fn with_iresult<I, O, E>(result: &IResult<I, O, E>) -> Self {
+    pub fn with_result<T, E>(result: &Result<T, ErrMode<E>>) -> Self {
         match result {
             Ok(_) => Self::Success,
             Err(ErrMode::Backtrack(_)) => Self::Backtrack,
@@ -180,6 +191,59 @@ pub fn end(
                 .fg_color(Some(anstyle::AnsiColor::Red.into()))
                 .render(),
             "incomplete".to_owned(),
+        ),
+    };
+
+    let writer = std::io::stderr();
+    let mut writer = writer.lock();
+    let _ = writeln!(
+        writer,
+        "{status_style}{call_column:call_width$}{reset} {gutter_style}|{reset} {status_style}{status}{reset}"
+    );
+}
+
+pub fn result(depth: usize, name: &dyn crate::lib::std::fmt::Display, severity: Severity) {
+    let ansi_color = ansi_color();
+    let reset = if ansi_color {
+        anstyle::Reset.render().to_string()
+    } else {
+        "".to_owned()
+    };
+    let gutter_style = if ansi_color {
+        anstyle::Style::new().bold()
+    } else {
+        anstyle::Style::new()
+    }
+    .render();
+
+    let (call_width, _) = column_widths();
+
+    let call_column = format!("{:depth$}| {name}", "");
+
+    let (status_style, status) = match severity {
+        Severity::Success => (
+            anstyle::Style::new()
+                .fg_color(Some(anstyle::AnsiColor::Green.into()))
+                .render(),
+            "",
+        ),
+        Severity::Backtrack => (
+            anstyle::Style::new()
+                .fg_color(Some(anstyle::AnsiColor::Yellow.into()))
+                .render(),
+            "backtrack",
+        ),
+        Severity::Cut => (
+            anstyle::Style::new()
+                .fg_color(Some(anstyle::AnsiColor::Red.into()))
+                .render(),
+            "cut",
+        ),
+        Severity::Incomplete => (
+            anstyle::Style::new()
+                .fg_color(Some(anstyle::AnsiColor::Red.into()))
+                .render(),
+            "incomplete",
         ),
     };
 
