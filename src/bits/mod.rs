@@ -157,7 +157,7 @@ where
 #[inline(always)]
 pub fn take<I, O, C, E: ParseError<(I, usize)>, const PARTIAL: bool>(
     count: C,
-) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
+) -> impl FnMut((I, usize)) -> IResult<(I, usize), O, E>
 where
     I: Stream<Token = u8> + AsBytes + StreamIsPartial<PARTIAL>,
     C: ToUsize,
@@ -230,7 +230,7 @@ where
 pub fn tag<I, O, C, E: ParseError<(I, usize)>, const PARTIAL: bool>(
     pattern: O,
     count: C,
-) -> impl Fn((I, usize)) -> IResult<(I, usize), O, E>
+) -> impl FnMut((I, usize)) -> IResult<(I, usize), O, E>
 where
     I: Stream<Token = u8> + AsBytes + StreamIsPartial<PARTIAL>,
     C: ToUsize,
