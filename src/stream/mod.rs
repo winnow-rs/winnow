@@ -78,6 +78,8 @@ use crate::lib::std::string::String;
 use crate::lib::std::vec::Vec;
 
 mod impls;
+#[cfg(test)]
+mod tests;
 
 /// UTF-8 Stream
 pub type Str<'i> = &'i str;
@@ -362,6 +364,16 @@ impl<'a> SliceLen for &'a BStr {
     }
 }
 
+impl<I> SliceLen for (I, usize, usize)
+where
+    I: SliceLen,
+{
+    #[inline(always)]
+    fn slice_len(&self) -> usize {
+        self.0.slice_len() * 8 + self.2 - self.1
+    }
+}
+
 impl<I> SliceLen for Located<I>
 where
     I: SliceLen,
@@ -633,6 +645,107 @@ impl<'i> Stream for &'i BStr {
     #[inline(always)]
     fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
         (BStr::from_bytes(&self[offset..]), &self[0..offset])
+    }
+}
+
+impl<I> Stream for (I, usize)
+where
+    I: Stream<Token = u8>,
+{
+    type Token = bool;
+    type Slice = (I::Slice, usize, usize);
+
+    type IterOffsets = BitOffsets<I>;
+
+    #[inline(always)]
+    fn iter_offsets(&self) -> Self::IterOffsets {
+        BitOffsets {
+            i: self.clone(),
+            o: 0,
+        }
+    }
+    #[inline(always)]
+    fn eof_offset(&self) -> usize {
+        let offset = self.0.eof_offset() * 8;
+        if offset == 0 {
+            0
+        } else {
+            offset - self.1
+        }
+    }
+
+    #[inline(always)]
+    fn next_token(&self) -> Option<(Self, Self::Token)> {
+        next_bit(self)
+    }
+
+    #[inline(always)]
+    fn offset_for<P>(&self, predicate: P) -> Option<usize>
+    where
+        P: Fn(Self::Token) -> bool,
+    {
+        self.iter_offsets()
+            .find_map(|(o, b)| predicate(b).then(|| o))
+    }
+    #[inline(always)]
+    fn offset_at(&self, tokens: usize) -> Result<usize, Needed> {
+        if let Some(needed) = tokens
+            .checked_sub(self.eof_offset())
+            .and_then(NonZeroUsize::new)
+        {
+            Err(Needed::Size(needed))
+        } else {
+            Ok(tokens)
+        }
+    }
+    #[inline(always)]
+    fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
+        let byte_offset = (offset + self.1) / 8;
+        let end_offset = (offset + self.1) % 8;
+        let (i, s) = self.0.next_slice(byte_offset);
+        ((i, end_offset), (s, self.1, end_offset))
+    }
+}
+
+/// Iterator for [bit][crate::bits] stream (`(I, usize)`)
+pub struct BitOffsets<I> {
+    i: (I, usize),
+    o: usize,
+}
+
+impl<I> Iterator for BitOffsets<I>
+where
+    I: Stream<Token = u8>,
+{
+    type Item = (usize, bool);
+    fn next(&mut self) -> Option<Self::Item> {
+        let (next, b) = next_bit(&self.i)?;
+        let o = self.o;
+
+        self.i = next;
+        self.o += 1;
+
+        Some((o, b))
+    }
+}
+
+fn next_bit<I>(i: &(I, usize)) -> Option<((I, usize), bool)>
+where
+    I: Stream<Token = u8>,
+{
+    if i.eof_offset() == 0 {
+        return None;
+    }
+
+    let i = i.clone();
+    let (next_i, byte) = i.0.next_token()?;
+    let bit = (byte >> i.1) & 0x1 == 0x1;
+
+    let next_offset = i.1 + 1;
+    if next_offset == 8 {
+        Some(((next_i, 0), bit))
+    } else {
+        Some(((i.0, next_offset), bit))
     }
 }
 
@@ -1069,6 +1182,16 @@ impl<'a> Offset for &'a BStr {
     #[inline(always)]
     fn offset_to(&self, second: &Self) -> usize {
         self.as_bytes().offset_to(second.as_bytes())
+    }
+}
+
+impl<I> Offset for (I, usize)
+where
+    I: Offset,
+{
+    #[inline(always)]
+    fn offset_to(&self, other: &Self) -> usize {
+        self.0.offset_to(&other.0) * 8 + other.1 - self.1
     }
 }
 
@@ -2464,33 +2587,5 @@ where
         Err(ErrMode::from_error_kind(input.clone(), e))
     } else {
         Ok(input.next_slice(offset))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_offset_u8() {
-        let s = b"abcd123";
-        let a = &s[..];
-        let b = &a[2..];
-        let c = &a[..4];
-        let d = &a[3..5];
-        assert_eq!(a.offset_to(b), 2);
-        assert_eq!(a.offset_to(c), 0);
-        assert_eq!(a.offset_to(d), 3);
-    }
-
-    #[test]
-    fn test_offset_str() {
-        let a = "abcřèÂßÇd123";
-        let b = &a[7..];
-        let c = &a[..5];
-        let d = &a[5..9];
-        assert_eq!(a.offset_to(b), 7);
-        assert_eq!(a.offset_to(c), 0);
-        assert_eq!(a.offset_to(d), 5);
     }
 }
