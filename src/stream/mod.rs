@@ -405,7 +405,7 @@ where
 }
 
 /// Core definition for parser input state
-pub trait Stream: Clone + crate::lib::std::fmt::Debug {
+pub trait Stream: Offset + Clone + crate::lib::std::fmt::Debug {
     /// The smallest unit being parsed
     ///
     /// Example: `u8` for `&[u8]` or `char` for `&str`
