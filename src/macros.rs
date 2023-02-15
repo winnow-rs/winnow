@@ -40,7 +40,7 @@
 #[macro_export]
 macro_rules! dispatch {
     ($match_parser: expr; $( $pat:pat $(if $pred:expr)? => $expr: expr ),+ $(,)? ) => {
-        move |i|
+        $crate::trace::trace("dispatch", move |i|
         {
             use $crate::Parser;
             let (i, initial) = $match_parser.parse_next(i)?;
@@ -49,7 +49,7 @@ macro_rules! dispatch {
                     $pat $(if $pred)? => $expr.parse_next(i),
                 )*
             }
-        }
+        })
     }
 }
 
