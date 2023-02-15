@@ -1236,7 +1236,7 @@ where
 #[inline(always)]
 pub fn u16<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
-) -> fn(I) -> IResult<I, u16, E>
+) -> impl FnMut(I) -> IResult<I, u16, E>
 where
     I: StreamIsPartial<PARTIAL>,
     I: Stream<Token = u8>,
@@ -1303,7 +1303,7 @@ where
 #[inline(always)]
 pub fn u24<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
-) -> fn(I) -> IResult<I, u32, E>
+) -> impl FnMut(I) -> IResult<I, u32, E>
 where
     I: StreamIsPartial<PARTIAL>,
     I: Stream<Token = u8>,
@@ -1370,7 +1370,7 @@ where
 #[inline(always)]
 pub fn u32<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
-) -> fn(I) -> IResult<I, u32, E>
+) -> impl FnMut(I) -> IResult<I, u32, E>
 where
     I: StreamIsPartial<PARTIAL>,
     I: Stream<Token = u8>,
@@ -1437,7 +1437,7 @@ where
 #[inline(always)]
 pub fn u64<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
-) -> fn(I) -> IResult<I, u64, E>
+) -> impl FnMut(I) -> IResult<I, u64, E>
 where
     I: StreamIsPartial<PARTIAL>,
     I: Stream<Token = u8>,
@@ -1504,7 +1504,7 @@ where
 #[inline(always)]
 pub fn u128<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
-) -> fn(I) -> IResult<I, u128, E>
+) -> impl FnMut(I) -> IResult<I, u128, E>
 where
     I: StreamIsPartial<PARTIAL>,
     I: Stream<Token = u8>,
@@ -1620,7 +1620,7 @@ where
 #[inline(always)]
 pub fn i16<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
-) -> fn(I) -> IResult<I, i16, E>
+) -> impl FnMut(I) -> IResult<I, i16, E>
 where
     I: StreamIsPartial<PARTIAL>,
     I: Stream<Token = u8>,
@@ -1687,7 +1687,7 @@ where
 #[inline(always)]
 pub fn i24<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
-) -> fn(I) -> IResult<I, i32, E>
+) -> impl FnMut(I) -> IResult<I, i32, E>
 where
     I: StreamIsPartial<PARTIAL>,
     I: Stream<Token = u8>,
@@ -1754,7 +1754,7 @@ where
 #[inline(always)]
 pub fn i32<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
-) -> fn(I) -> IResult<I, i32, E>
+) -> impl FnMut(I) -> IResult<I, i32, E>
 where
     I: StreamIsPartial<PARTIAL>,
     I: Stream<Token = u8>,
@@ -1821,7 +1821,7 @@ where
 #[inline(always)]
 pub fn i64<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
-) -> fn(I) -> IResult<I, i64, E>
+) -> impl FnMut(I) -> IResult<I, i64, E>
 where
     I: StreamIsPartial<PARTIAL>,
     I: Stream<Token = u8>,
@@ -1888,7 +1888,7 @@ where
 #[inline(always)]
 pub fn i128<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
-) -> fn(I) -> IResult<I, i128, E>
+) -> impl FnMut(I) -> IResult<I, i128, E>
 where
     I: StreamIsPartial<PARTIAL>,
     I: Stream<Token = u8>,
@@ -2143,7 +2143,7 @@ where
 #[inline(always)]
 pub fn f32<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
-) -> fn(I) -> IResult<I, f32, E>
+) -> impl FnMut(I) -> IResult<I, f32, E>
 where
     I: StreamIsPartial<PARTIAL>,
     I: Stream<Token = u8>,
@@ -2210,7 +2210,7 @@ where
 #[inline(always)]
 pub fn f64<I, E: ParseError<I>, const PARTIAL: bool>(
     endian: crate::number::Endianness,
-) -> fn(I) -> IResult<I, f64, E>
+) -> impl FnMut(I) -> IResult<I, f64, E>
 where
     I: StreamIsPartial<PARTIAL>,
     I: Stream<Token = u8>,
