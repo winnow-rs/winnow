@@ -941,17 +941,11 @@ impl<'a> StreamIsPartial<false> for &'a BStr {}
 
 impl<const YES: bool> StreamIsPartial<YES> for crate::lib::std::convert::Infallible {}
 
-impl<I> StreamIsPartial<true> for (I, usize) where I: StreamIsPartial<true> {}
+impl<I, const YES: bool> StreamIsPartial<YES> for (I, usize) where I: StreamIsPartial<YES> {}
 
-impl<I> StreamIsPartial<false> for (I, usize) where I: StreamIsPartial<false> {}
+impl<I, const YES: bool> StreamIsPartial<YES> for Located<I> where I: StreamIsPartial<YES> {}
 
-impl<I> StreamIsPartial<true> for Located<I> where I: StreamIsPartial<true> {}
-
-impl<I> StreamIsPartial<false> for Located<I> where I: StreamIsPartial<false> {}
-
-impl<I, S> StreamIsPartial<true> for Stateful<I, S> where I: StreamIsPartial<true> {}
-
-impl<I, S> StreamIsPartial<false> for Stateful<I, S> where I: StreamIsPartial<false> {}
+impl<I, S, const YES: bool> StreamIsPartial<YES> for Stateful<I, S> where I: StreamIsPartial<YES> {}
 
 impl<I> StreamIsPartial<true> for Partial<I> where I: StreamIsPartial<false> {}
 
