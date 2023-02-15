@@ -62,8 +62,8 @@ where
     I: StreamIsPartial<PARTIAL>,
     I: Stream<Token = u8>,
 {
-    trace("be_u8", move |input| {
-        if PARTIAL {
+    trace("be_u8", move |input: I| {
+        if input.is_partial() {
             streaming::be_u8(input)
         } else {
             complete::be_u8(input)
@@ -111,8 +111,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_u16", move |input| {
-        if PARTIAL {
+    trace("be_u16", move |input: I| {
+        if input.is_partial() {
             streaming::be_u16(input)
         } else {
             complete::be_u16(input)
@@ -160,8 +160,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_u23", move |input| {
-        if PARTIAL {
+    trace("be_u23", move |input: I| {
+        if input.is_partial() {
             streaming::be_u24(input)
         } else {
             complete::be_u24(input)
@@ -209,8 +209,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_u32", move |input| {
-        if PARTIAL {
+    trace("be_u32", move |input: I| {
+        if input.is_partial() {
             streaming::be_u32(input)
         } else {
             complete::be_u32(input)
@@ -258,8 +258,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_u64", move |input| {
-        if PARTIAL {
+    trace("be_u64", move |input: I| {
+        if input.is_partial() {
             streaming::be_u64(input)
         } else {
             complete::be_u64(input)
@@ -307,8 +307,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_u128", move |input| {
-        if PARTIAL {
+    trace("be_u128", move |input: I| {
+        if input.is_partial() {
             streaming::be_u128(input)
         } else {
             complete::be_u128(input)
@@ -353,8 +353,8 @@ where
     I: StreamIsPartial<PARTIAL>,
     I: Stream<Token = u8>,
 {
-    trace("be_i8", move |input| {
-        if PARTIAL {
+    trace("be_i8", move |input: I| {
+        if input.is_partial() {
             streaming::be_i8(input)
         } else {
             complete::be_i8(input)
@@ -400,8 +400,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_i16", move |input| {
-        if PARTIAL {
+    trace("be_i16", move |input: I| {
+        if input.is_partial() {
             streaming::be_i16(input)
         } else {
             complete::be_i16(input)
@@ -447,8 +447,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_i24", move |input| {
-        if PARTIAL {
+    trace("be_i24", move |input: I| {
+        if input.is_partial() {
             streaming::be_i24(input)
         } else {
             complete::be_i24(input)
@@ -494,8 +494,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_i32", move |input| {
-        if PARTIAL {
+    trace("be_i32", move |input: I| {
+        if input.is_partial() {
             streaming::be_i32(input)
         } else {
             complete::be_i32(input)
@@ -541,8 +541,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_i64", move |input| {
-        if PARTIAL {
+    trace("be_i64", move |input: I| {
+        if input.is_partial() {
             streaming::be_i64(input)
         } else {
             complete::be_i64(input)
@@ -588,8 +588,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_i128", move |input| {
-        if PARTIAL {
+    trace("be_i128", move |input: I| {
+        if input.is_partial() {
             streaming::be_i128(input)
         } else {
             complete::be_i128(input)
@@ -634,8 +634,8 @@ where
     I: StreamIsPartial<PARTIAL>,
     I: Stream<Token = u8>,
 {
-    trace("le_u8", move |input| {
-        if PARTIAL {
+    trace("le_u8", move |input: I| {
+        if input.is_partial() {
             streaming::le_u8(input)
         } else {
             complete::le_u8(input)
@@ -683,8 +683,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_u16", move |input| {
-        if PARTIAL {
+    trace("le_u16", move |input: I| {
+        if input.is_partial() {
             streaming::le_u16(input)
         } else {
             complete::le_u16(input)
@@ -732,8 +732,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_u24", move |input| {
-        if PARTIAL {
+    trace("le_u24", move |input: I| {
+        if input.is_partial() {
             streaming::le_u24(input)
         } else {
             complete::le_u24(input)
@@ -781,8 +781,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_u32", move |input| {
-        if PARTIAL {
+    trace("le_u32", move |input: I| {
+        if input.is_partial() {
             streaming::le_u32(input)
         } else {
             complete::le_u32(input)
@@ -830,8 +830,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_u64", move |input| {
-        if PARTIAL {
+    trace("le_u64", move |input: I| {
+        if input.is_partial() {
             streaming::le_u64(input)
         } else {
             complete::le_u64(input)
@@ -879,8 +879,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_u128", move |input| {
-        if PARTIAL {
+    trace("le_u128", move |input: I| {
+        if input.is_partial() {
             streaming::le_u128(input)
         } else {
             complete::le_u128(input)
@@ -925,8 +925,8 @@ where
     I: StreamIsPartial<PARTIAL>,
     I: Stream<Token = u8>,
 {
-    trace("le_i8", move |input| {
-        if PARTIAL {
+    trace("le_i8", move |input: I| {
+        if input.is_partial() {
             streaming::le_i8(input)
         } else {
             complete::le_i8(input)
@@ -974,8 +974,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_i16", move |input| {
-        if PARTIAL {
+    trace("le_i16", move |input: I| {
+        if input.is_partial() {
             streaming::le_i16(input)
         } else {
             complete::le_i16(input)
@@ -1023,8 +1023,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_i24", move |input| {
-        if PARTIAL {
+    trace("le_i24", move |input: I| {
+        if input.is_partial() {
             streaming::le_i24(input)
         } else {
             complete::le_i24(input)
@@ -1072,8 +1072,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_i32", move |input| {
-        if PARTIAL {
+    trace("le_i32", move |input: I| {
+        if input.is_partial() {
             streaming::le_i32(input)
         } else {
             complete::le_i32(input)
@@ -1121,8 +1121,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_i64", move |input| {
-        if PARTIAL {
+    trace("le_i64", move |input: I| {
+        if input.is_partial() {
             streaming::le_i64(input)
         } else {
             complete::le_i64(input)
@@ -1170,8 +1170,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_i128", move |input| {
-        if PARTIAL {
+    trace("le_i128", move |input: I| {
+        if input.is_partial() {
             streaming::le_i128(input)
         } else {
             complete::le_i128(input)
@@ -1221,8 +1221,8 @@ where
     I: StreamIsPartial<PARTIAL>,
     I: Stream<Token = u8>,
 {
-    trace("u8", move |input| {
-        if PARTIAL {
+    trace("u8", move |input: I| {
+        if input.is_partial() {
             streaming::u8(input)
         } else {
             complete::u8(input)
@@ -1290,13 +1290,13 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("u16", {
-        if PARTIAL {
+    trace("u16", move |input: I| {
+        if input.is_partial() {
             streaming::u16(endian)
         } else {
             complete::u16(endian)
         }
-    })
+    }(input))
 }
 
 /// Recognizes an unsigned 3 byte integer
@@ -1359,13 +1359,13 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("u23", {
-        if PARTIAL {
+    trace("u23", move |input: I| {
+        if input.is_partial() {
             streaming::u24(endian)
         } else {
             complete::u24(endian)
         }
-    })
+    }(input))
 }
 
 /// Recognizes an unsigned 4 byte integer
@@ -1428,13 +1428,13 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("u32", {
-        if PARTIAL {
+    trace("u32", move |input: I| {
+        if input.is_partial() {
             streaming::u32(endian)
         } else {
             complete::u32(endian)
         }
-    })
+    }(input))
 }
 
 /// Recognizes an unsigned 8 byte integer
@@ -1497,13 +1497,13 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("u64", {
-        if PARTIAL {
+    trace("u64", move |input: I| {
+        if input.is_partial() {
             streaming::u64(endian)
         } else {
             complete::u64(endian)
         }
-    })
+    }(input))
 }
 
 /// Recognizes an unsigned 16 byte integer
@@ -1566,13 +1566,13 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("u128", {
-        if PARTIAL {
+    trace("u128", move |input: I| {
+        if input.is_partial() {
             streaming::u128(endian)
         } else {
             complete::u128(endian)
         }
-    })
+    }(input))
 }
 
 /// Recognizes a signed 1 byte integer
@@ -1617,8 +1617,8 @@ where
     I: StreamIsPartial<PARTIAL>,
     I: Stream<Token = u8>,
 {
-    trace("i8", move |input| {
-        if PARTIAL {
+    trace("i8", move |input: I| {
+        if input.is_partial() {
             streaming::i8(input)
         } else {
             complete::i8(input)
@@ -1686,13 +1686,13 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("i16", {
-        if PARTIAL {
+    trace("i16", move |input: I| {
+        if input.is_partial() {
             streaming::i16(endian)
         } else {
             complete::i16(endian)
         }
-    })
+    }(input))
 }
 
 /// Recognizes a signed 3 byte integer
@@ -1755,13 +1755,13 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("i24", {
-        if PARTIAL {
+    trace("i24", move |input: I| {
+        if input.is_partial() {
             streaming::i24(endian)
         } else {
             complete::i24(endian)
         }
-    })
+    }(input))
 }
 
 /// Recognizes a signed 4 byte integer
@@ -1824,13 +1824,13 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("i32", {
-        if PARTIAL {
+    trace("i32", move |input: I| {
+        if input.is_partial() {
             streaming::i32(endian)
         } else {
             complete::i32(endian)
         }
-    })
+    }(input))
 }
 
 /// Recognizes a signed 8 byte integer
@@ -1893,13 +1893,13 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("i64", {
-        if PARTIAL {
+    trace("i64", move |input: I| {
+        if input.is_partial() {
             streaming::i64(endian)
         } else {
             complete::i64(endian)
         }
-    })
+    }(input))
 }
 
 /// Recognizes a signed 16 byte integer
@@ -1962,13 +1962,13 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("i128", {
-        if PARTIAL {
+    trace("i128", move |input: I| {
+        if input.is_partial() {
             streaming::i128(endian)
         } else {
             complete::i128(endian)
         }
-    })
+    }(input))
 }
 
 /// Recognizes a big endian 4 bytes floating point number.
@@ -2011,8 +2011,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_f32", move |input| {
-        if PARTIAL {
+    trace("be_f32", move |input: I| {
+        if input.is_partial() {
             streaming::be_f32(input)
         } else {
             complete::be_f32(input)
@@ -2060,8 +2060,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_f64", move |input| {
-        if PARTIAL {
+    trace("be_f64", move |input: I| {
+        if input.is_partial() {
             streaming::be_f64(input)
         } else {
             complete::be_f64(input)
@@ -2109,8 +2109,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_f32", move |input| {
-        if PARTIAL {
+    trace("le_f32", move |input: I| {
+        if input.is_partial() {
             streaming::le_f32(input)
         } else {
             complete::le_f32(input)
@@ -2158,8 +2158,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_f64", move |input| {
-        if PARTIAL {
+    trace("le_f64", move |input: I| {
+        if input.is_partial() {
             streaming::le_f64(input)
         } else {
             complete::le_f64(input)
@@ -2227,13 +2227,13 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("f32", {
-        if PARTIAL {
+    trace("f32", move |input: I| {
+        if input.is_partial() {
             streaming::f32(endian)
         } else {
             complete::f32(endian)
         }
-    })
+    }(input))
 }
 
 /// Recognizes an 8 byte floating point number
@@ -2296,11 +2296,11 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("f64", {
-        if PARTIAL {
+    trace("f64", move |input: I|{
+        if input.is_partial() {
             streaming::f64(endian)
         } else {
             complete::f64(endian)
         }
-    })
+    }(input))
 }

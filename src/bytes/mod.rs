@@ -44,8 +44,8 @@ where
     I: StreamIsPartial<PARTIAL>,
     I: Stream,
 {
-    trace("any", move |input| {
-        if PARTIAL {
+    trace("any", move |input: I| {
+        if input.is_partial() {
             streaming::any(input)
         } else {
             complete::any(input)
@@ -103,7 +103,7 @@ where
 {
     trace("tag", move |i: I| {
         let t = tag.clone();
-        if PARTIAL {
+        if i.is_partial() {
             streaming::tag_internal(i, t)
         } else {
             complete::tag_internal(i, t)
@@ -159,7 +159,7 @@ where
 {
     trace("tag_no_case", move |i: I| {
         let t = tag.clone();
-        if PARTIAL {
+        if i.is_partial() {
             streaming::tag_no_case_internal(i, t)
         } else {
             complete::tag_no_case_internal(i, t)
@@ -223,7 +223,7 @@ where
     T: ContainsToken<<I as Stream>::Token>,
 {
     trace("one_of", move |i: I| {
-        if PARTIAL {
+        if i.is_partial() {
             streaming::one_of_internal(i, &list)
         } else {
             complete::one_of_internal(i, &list)
@@ -266,7 +266,7 @@ where
     T: ContainsToken<<I as Stream>::Token>,
 {
     trace("none_of", move |i: I| {
-        if PARTIAL {
+        if i.is_partial() {
             streaming::none_of_internal(i, &list)
         } else {
             complete::none_of_internal(i, &list)
@@ -318,7 +318,7 @@ where
     T: ContainsToken<<I as Stream>::Token>,
 {
     trace("take_while0", move |i: I| {
-        if PARTIAL {
+        if i.is_partial() {
             streaming::take_while_internal(i, &list)
         } else {
             complete::take_while_internal(i, &list)
@@ -391,7 +391,7 @@ where
     T: ContainsToken<<I as Stream>::Token>,
 {
     trace("take_while1", move |i: I| {
-        if PARTIAL {
+        if i.is_partial() {
             streaming::take_while1_internal(i, &list)
         } else {
             complete::take_while1_internal(i, &list)
@@ -451,7 +451,7 @@ where
     T: ContainsToken<<I as Stream>::Token>,
 {
     trace("take_while_m_n", move |i: I| {
-        if PARTIAL {
+        if i.is_partial() {
             streaming::take_while_m_n_internal(i, m, n, &list)
         } else {
             complete::take_while_m_n_internal(i, m, n, &list)
@@ -503,7 +503,7 @@ where
     T: ContainsToken<<I as Stream>::Token>,
 {
     trace("take_till0", move |i: I| {
-        if PARTIAL {
+        if i.is_partial() {
             streaming::take_till_internal(i, &list)
         } else {
             complete::take_till_internal(i, &list)
@@ -576,7 +576,7 @@ where
     T: ContainsToken<<I as Stream>::Token>,
 {
     trace("take_till1", move |i: I| {
-        if PARTIAL {
+        if i.is_partial() {
             streaming::take_till1_internal(i, &list)
         } else {
             complete::take_till1_internal(i, &list)
@@ -647,7 +647,7 @@ where
 {
     let c = count.to_usize();
     trace("take", move |i: I| {
-        if PARTIAL {
+        if i.is_partial() {
             streaming::take_internal(i, c)
         } else {
             complete::take_internal(i, c)
@@ -703,7 +703,7 @@ where
     T: SliceLen + Clone,
 {
     trace("take_until0", move |i: I| {
-        if PARTIAL {
+        if i.is_partial() {
             streaming::take_until_internal(i, tag.clone())
         } else {
             complete::take_until_internal(i, tag.clone())
@@ -762,7 +762,7 @@ where
     T: SliceLen + Clone,
 {
     trace("take_until1", move |i: I| {
-        if PARTIAL {
+        if i.is_partial() {
             streaming::take_until1_internal(i, tag.clone())
         } else {
             complete::take_until1_internal(i, tag.clone())

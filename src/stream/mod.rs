@@ -929,7 +929,13 @@ where
 /// Marks the input as being the complete buffer or a partial buffer for streaming input
 ///
 /// See [Partial] for marking a presumed complete buffer type as a streaming buffer.
-pub trait StreamIsPartial<const YES: bool>: Sized {}
+pub trait StreamIsPartial<const YES: bool>: Sized {
+    /// Report whether the [`Stream`] is currently incomplete
+    #[inline(always)]
+    fn is_partial(&self) -> bool {
+        YES
+    }
+}
 
 impl<'a, T> StreamIsPartial<false> for &'a [T] {}
 

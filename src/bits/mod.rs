@@ -168,7 +168,7 @@ where
 {
     let count = count.to_usize();
     trace("take", move |input: (I, usize)| {
-        if PARTIAL {
+        if input.is_partial() {
             streaming::take_internal(input, count)
         } else {
             complete::take_internal(input, count)
@@ -241,7 +241,7 @@ where
 {
     let count = count.to_usize();
     trace("tag", move |input: (I, usize)| {
-        if PARTIAL {
+        if input.is_partial() {
             streaming::tag_internal(input, &pattern, count)
         } else {
             complete::tag_internal(input, &pattern, count)
@@ -279,8 +279,8 @@ where
     I: Stream<Token = u8> + AsBytes + StreamIsPartial<PARTIAL>,
 {
     #![allow(deprecated)]
-    trace("bool", |input| {
-        if PARTIAL {
+    trace("bool", |input: (I, usize)| {
+        if input.is_partial() {
             streaming::bool(input)
         } else {
             complete::bool(input)

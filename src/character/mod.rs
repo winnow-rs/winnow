@@ -57,8 +57,8 @@ where
     I: Stream,
     I: Compare<&'static str>,
 {
-    trace("crlf", move |input| {
-        if PARTIAL {
+    trace("crlf", move |input: I| {
+        if input.is_partial() {
             streaming::crlf(input)
         } else {
             complete::crlf(input)
@@ -109,8 +109,8 @@ where
     I: Compare<&'static str>,
     <I as Stream>::Token: AsChar,
 {
-    trace("not_line_ending", move |input| {
-        if PARTIAL {
+    trace("not_line_ending", move |input: I| {
+        if input.is_partial() {
             streaming::not_line_ending(input)
         } else {
             complete::not_line_ending(input)
@@ -155,8 +155,8 @@ where
     I: Stream,
     I: Compare<&'static str>,
 {
-    trace("line_ending", move |input| {
-        if PARTIAL {
+    trace("line_ending", move |input: I| {
+        if input.is_partial() {
             streaming::line_ending(input)
         } else {
             complete::line_ending(input)
@@ -199,8 +199,8 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("newline", move |input| {
-        if PARTIAL {
+    trace("newline", move |input: I| {
+        if input.is_partial() {
             streaming::newline(input)
         } else {
             complete::newline(input)
@@ -243,8 +243,8 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("tag", move |input| {
-        if PARTIAL {
+    trace("tag", move |input: I| {
+        if input.is_partial() {
             streaming::tab(input)
         } else {
             complete::tab(input)
@@ -291,8 +291,8 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("alpha0", move |input| {
-        if PARTIAL {
+    trace("alpha0", move |input: I| {
+        if input.is_partial() {
             streaming::alpha0(input)
         } else {
             complete::alpha0(input)
@@ -339,8 +339,8 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("alpha1", move |input| {
-        if PARTIAL {
+    trace("alpha1", move |input: I| {
+        if input.is_partial() {
             streaming::alpha1(input)
         } else {
             complete::alpha1(input)
@@ -388,8 +388,8 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("digit0", move |input| {
-        if PARTIAL {
+    trace("digit0", move |input: I| {
+        if input.is_partial() {
             streaming::digit0(input)
         } else {
             complete::digit0(input)
@@ -452,8 +452,8 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("digit1", move |input| {
-        if PARTIAL {
+    trace("digit1", move |input: I| {
+        if input.is_partial() {
             streaming::digit1(input)
         } else {
             complete::digit1(input)
@@ -499,8 +499,8 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("hex_digit0", move |input| {
-        if PARTIAL {
+    trace("hex_digit0", move |input: I| {
+        if input.is_partial() {
             streaming::hex_digit0(input)
         } else {
             complete::hex_digit0(input)
@@ -547,8 +547,8 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("hex_digit1", move |input| {
-        if PARTIAL {
+    trace("hex_digit1", move |input: I| {
+        if input.is_partial() {
             streaming::hex_digit1(input)
         } else {
             complete::hex_digit1(input)
@@ -595,8 +595,8 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("oct_digit0", move |input| {
-        if PARTIAL {
+    trace("oct_digit0", move |input: I| {
+        if input.is_partial() {
             streaming::oct_digit0(input)
         } else {
             complete::oct_digit0(input)
@@ -643,8 +643,8 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("oct_digit0", move |input| {
-        if PARTIAL {
+    trace("oct_digit0", move |input: I| {
+        if input.is_partial() {
             streaming::oct_digit1(input)
         } else {
             complete::oct_digit1(input)
@@ -691,8 +691,8 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("alphanumeric0", move |input| {
-        if PARTIAL {
+    trace("alphanumeric0", move |input: I| {
+        if input.is_partial() {
             streaming::alphanumeric0(input)
         } else {
             complete::alphanumeric0(input)
@@ -739,8 +739,8 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("alphanumeric1", move |input| {
-        if PARTIAL {
+    trace("alphanumeric1", move |input: I| {
+        if input.is_partial() {
             streaming::alphanumeric1(input)
         } else {
             complete::alphanumeric1(input)
@@ -775,8 +775,8 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("space0", move |input| {
-        if PARTIAL {
+    trace("space0", move |input: I| {
+        if input.is_partial() {
             streaming::space0(input)
         } else {
             complete::space0(input)
@@ -823,8 +823,8 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("space1", move |input| {
-        if PARTIAL {
+    trace("space1", move |input: I| {
+        if input.is_partial() {
             streaming::space1(input)
         } else {
             complete::space1(input)
@@ -871,8 +871,8 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("multispace0", move |input| {
-        if PARTIAL {
+    trace("multispace0", move |input: I| {
+        if input.is_partial() {
             streaming::multispace0(input)
         } else {
             complete::multispace0(input)
@@ -919,8 +919,8 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("multispace1", move |input| {
-        if PARTIAL {
+    trace("multispace1", move |input: I| {
+        if input.is_partial() {
             streaming::multispace1(input)
         } else {
             complete::multispace1(input)
@@ -944,7 +944,7 @@ where
         let i = input.clone();
 
         if i.eof_offset() == 0 {
-            if PARTIAL {
+            if input.is_partial() {
                 return Err(ErrMode::Incomplete(Needed::new(1)));
             } else {
                 return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
@@ -971,7 +971,7 @@ where
             }
         }
 
-        if PARTIAL {
+        if input.is_partial() {
             Err(ErrMode::Incomplete(Needed::new(1)))
         } else {
             Ok((i.next_slice(i.eof_offset()).0, value))
@@ -1101,7 +1101,7 @@ where
             .parse_next(i)?;
 
         if i.eof_offset() == 0 {
-            if PARTIAL {
+            if input.is_partial() {
                 return Err(ErrMode::Incomplete(Needed::new(1)));
             } else {
                 return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
@@ -1132,7 +1132,7 @@ where
             }
         }
 
-        if PARTIAL {
+        if input.is_partial() {
             Err(ErrMode::Incomplete(Needed::new(1)))
         } else {
             Ok((i.next_slice(i.eof_offset()).0, value))
@@ -1242,7 +1242,7 @@ where
                 }
             }
             Err(_) => {
-                if PARTIAL && invalid_offset == input.eof_offset() {
+                if input.is_partial() && invalid_offset == input.eof_offset() {
                     // Only the next byte is guaranteed required
                     return Err(ErrMode::Incomplete(Needed::new(1)));
                 } else {
@@ -1364,7 +1364,7 @@ where
     I: AsBStr,
 {
     trace("float", move |input: I| {
-        let (i, s) = if PARTIAL {
+        let (i, s) = if input.is_partial() {
             crate::number::streaming::recognize_float_or_exceptions(input)?
         } else {
             crate::number::complete::recognize_float_or_exceptions(input)?
@@ -1425,7 +1425,7 @@ where
     Error: ParseError<I>,
 {
     trace("escaped", move |input: I| {
-        if PARTIAL {
+        if input.is_partial() {
             crate::bytes::streaming::escaped_internal(
                 input,
                 &mut normal,
@@ -1519,7 +1519,7 @@ where
     Error: ParseError<I>,
 {
     trace("escaped_transform", move |input: I| {
-        if PARTIAL {
+        if input.is_partial() {
             crate::bytes::streaming::escaped_transform_internal(
                 input,
                 &mut normal,
