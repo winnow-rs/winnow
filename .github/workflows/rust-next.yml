@@ -54,12 +54,10 @@ jobs:
         override: true
         components: miri
     - uses: Swatinem/rust-cache@v2
+    # no-default features is a subset, not needed
+    # all-features is `debug` which is extremely slow
     - name: Default features
       run: cargo miri test --workspace
-    - name: All features
-      run: cargo miri test --workspace --all-features
-    - name: No-default features
-      run: cargo miri test --workspace --no-default-features
   rustfmt:
     name: rustfmt
     strategy:
