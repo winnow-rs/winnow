@@ -58,7 +58,7 @@ pub trait Parser<I, O, E> {
     ///
     /// Because parsers are `FnMut`, they can be called multiple times.  This prevents moving `f`
     /// into [`length_data`][crate::multi::length_data] and `g` into
-    /// [`complete`][Parser::complete]:
+    /// [`Parser::complete_err`]:
     /// ```rust,compile_fail
     /// # use winnow::prelude::*;
     /// # use winnow::IResult;
@@ -90,7 +90,7 @@ pub trait Parser<I, O, E> {
     /// ) -> impl FnMut(&'i [u8]) -> IResult<&'i [u8], O, E> {
     ///   move |i: &'i [u8]| {
     ///     let (i, data) = length_data(f.by_ref()).parse_next(i)?;
-    ///     let (_, o) = g.by_ref().complete().parse_next(data)?;
+    ///     let (_, o) = g.by_ref().complete_err().parse_next(data)?;
     ///     Ok((i, o))
     ///   }
     /// }
@@ -525,17 +525,17 @@ pub trait Parser<I, O, E> {
     /// # use winnow::bytes::take;
     /// # fn main() {
     ///
-    /// let mut parser = take(5u8).complete();
+    /// let mut parser = take(5u8).complete_err();
     ///
     /// assert_eq!(parser.parse_next(Partial("abcdefg")), Ok((Partial("fg"), "abcde")));
     /// assert_eq!(parser.parse_next(Partial("abcd")), Err(ErrMode::Backtrack(Error::new(Partial("abcd"), ErrorKind::Complete))));
     /// # }
     /// ```
-    fn complete(self) -> Complete<Self>
+    fn complete_err(self) -> CompleteErr<Self>
     where
         Self: core::marker::Sized,
     {
-        Complete::new(self)
+        CompleteErr::new(self)
     }
 
     /// Convert the parser's error to another type using [`std::convert::From`]

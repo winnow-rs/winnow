@@ -603,7 +603,7 @@ pub enum ErrMode<E> {
     /// This must only be set when the `Stream` is [`StreamIsPartial<true>`], like with
     /// [`Partial`][crate::Partial]
     ///
-    /// Convert this into an `Backtrack` with [`Parser::complete`][Parser::complete]
+    /// Convert this into an `Backtrack` with [`Parser::complete_err`]
     Incomplete(Needed),
     /// The parser had an error (recoverable)
     Backtrack(E),
