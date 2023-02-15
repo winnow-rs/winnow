@@ -1125,7 +1125,7 @@ where
     trace("length_value", move |i: I| {
         let (i, data) = length_data(f.by_ref()).parse_next(i)?;
         let data = I::update_slice(i.clone(), data);
-        let (_, o) = g.by_ref().complete().parse_next(data)?;
+        let (_, o) = g.by_ref().complete_err().parse_next(data)?;
         Ok((i, o))
     })
 }

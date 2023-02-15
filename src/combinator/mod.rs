@@ -1,4 +1,4 @@
-//! # List of parsers and combinators
+//! # List of parsers and combinators]
 //!
 //! **Note**: this list is meant to provide a nicer way to find a nom parser than reading through the documentation on docs.rs. Function combinators are organized in module so they are a bit easier to find.
 //!
@@ -67,7 +67,7 @@
 //! ## Partial related
 //!
 //! - [`eof`][eof]: Returns its input if it is at the end of input data
-//! - [`Parser::complete`][Parser::complete()]: Replaces an `Incomplete` returned by the child parser with an `Backtrack`
+//! - [`Parser::complete_err`]: Replaces an `Incomplete` returned by the child parser with an `Backtrack`
 //!
 //! ## Modifiers
 //!
@@ -774,7 +774,7 @@ where
 
 /// Transforms `Incomplete` into `Backtrack`.
 ///
-/// **WARNING:** Deprecated, replaced with [`Parser::complete`]
+/// **WARNING:** Deprecated, replaced with [`Parser::complete_err`]
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, stream::Partial};
@@ -788,7 +788,7 @@ where
 /// assert_eq!(parser(Partial("abcd")), Err(ErrMode::Backtrack(Error::new(Partial("abcd"), ErrorKind::Complete))));
 /// # }
 /// ```
-#[deprecated(since = "0.1.0", note = "Replaced with `Parser::complete")]
+#[deprecated(since = "0.1.0", note = "Replaced with `Parser::complete_err")]
 pub fn complete<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
     F: Parser<I, O, E>,
@@ -802,26 +802,26 @@ where
     }
 }
 
-/// Implementation of [`Parser::complete`]
+/// Implementation of [`Parser::complete_err`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct Complete<F> {
+pub struct CompleteErr<F> {
     f: F,
 }
 
-impl<F> Complete<F> {
+impl<F> CompleteErr<F> {
     pub(crate) fn new(f: F) -> Self {
         Self { f }
     }
 }
 
-impl<F, I, O, E> Parser<I, O, E> for Complete<F>
+impl<F, I, O, E> Parser<I, O, E> for CompleteErr<F>
 where
     I: Stream,
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
     fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
-        trace("complete", |input: I| {
+        trace("complete_err", |input: I| {
             let i = input.clone();
             match (self.f).parse_next(input) {
                 Err(ErrMode::Incomplete(_)) => {

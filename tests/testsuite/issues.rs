@@ -39,9 +39,9 @@ mod parse_int {
 
     fn spaces_or_int(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i32> {
         println!("{}", input.to_hex(8));
-        let (i, _) = opt(space.complete())(input)?;
+        let (i, _) = opt(space.complete_err())(input)?;
         let (i, res) = digit
-            .complete()
+            .complete_err()
             .map(|x| {
                 println!("x: {:?}", x);
                 let result = str::from_utf8(x).unwrap();
@@ -151,7 +151,7 @@ mod issue_647 {
         input: Stream<'a>,
         _cs: &f64,
     ) -> Result<(Stream<'a>, Vec<f64>), ErrMode<Error<Stream<'a>>>> {
-        separated0(be_f64.complete(), tag(",").complete())(input)
+        separated0(be_f64.complete_err(), tag(",").complete_err())(input)
     }
 
     fn data(input: Stream<'_>) -> IResult<Stream<'_>, Data> {

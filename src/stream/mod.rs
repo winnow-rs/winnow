@@ -243,7 +243,7 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 /// This can happen with some network protocol or large file parsers, where the
 /// input buffer can be full and need to be resized or refilled.
 /// - [`ErrMode::Incomplete`] will report how much more data is needed.
-/// - [`Parser::complete`][crate::Parser::complete] transform [`ErrMode::Incomplete`] to
+/// - [`Parser::complete_err`][crate::Parser::complete_err] transform [`ErrMode::Incomplete`] to
 ///   [`ErrMode::Backtrack`]
 ///
 /// See also [`StreamIsPartial`] to tell whether the input supports complete or partial parsing.
