@@ -929,190 +929,27 @@ where
 /// Marks the input as being the complete buffer or a partial buffer for streaming input
 ///
 /// See [Partial] for marking a presumed complete buffer type as a streaming buffer.
-pub trait StreamIsPartial<const YES: bool>: Sized {
-    /// Complete counterpart
-    ///
-    /// - Set to `Self` if this is a complete buffer.
-    /// - Set to [`std::convert::Infallible`] if there isn't an associated complete buffer type
-    type Complete: StreamIsPartial<false>;
-    /// Partial counterpart
-    ///
-    /// - Set to `Self` if this is a streaming buffer.
-    /// - Set to [`std::convert::Infallible`] if there isn't an associated streaming buffer type
-    type Partial: StreamIsPartial<true>;
+pub trait StreamIsPartial<const YES: bool>: Sized {}
 
-    /// Convert to complete counterpart
-    fn into_complete(self) -> Self::Complete;
-    /// Convert to partial counterpart
-    fn into_partial(self) -> Self::Partial;
-}
+impl<'a, T> StreamIsPartial<false> for &'a [T] {}
 
-impl<'a, T> StreamIsPartial<false> for &'a [T] {
-    type Complete = Self;
-    type Partial = Partial<Self>;
+impl<'a> StreamIsPartial<false> for &'a str {}
 
-    #[inline(always)]
-    fn into_complete(self) -> Self::Complete {
-        self
-    }
-    #[inline(always)]
-    fn into_partial(self) -> Self::Partial {
-        Partial(self)
-    }
-}
+impl<'a> StreamIsPartial<false> for &'a Bytes {}
 
-impl<'a> StreamIsPartial<false> for &'a str {
-    type Complete = Self;
-    type Partial = Partial<Self>;
+impl<'a> StreamIsPartial<false> for &'a BStr {}
 
-    #[inline(always)]
-    fn into_complete(self) -> Self::Complete {
-        self
-    }
-    #[inline(always)]
-    fn into_partial(self) -> Self::Partial {
-        Partial(self)
-    }
-}
+impl<const YES: bool> StreamIsPartial<YES> for crate::lib::std::convert::Infallible {}
 
-impl<'a> StreamIsPartial<false> for &'a Bytes {
-    type Complete = Self;
-    type Partial = Partial<Self>;
+impl<I> StreamIsPartial<true> for Located<I> where I: StreamIsPartial<true> {}
 
-    #[inline(always)]
-    fn into_complete(self) -> Self::Complete {
-        self
-    }
-    #[inline(always)]
-    fn into_partial(self) -> Self::Partial {
-        Partial(self)
-    }
-}
+impl<I> StreamIsPartial<false> for Located<I> where I: StreamIsPartial<false> {}
 
-impl<'a> StreamIsPartial<false> for &'a BStr {
-    type Complete = Self;
-    type Partial = Partial<Self>;
+impl<I, S> StreamIsPartial<true> for Stateful<I, S> where I: StreamIsPartial<true> {}
 
-    #[inline(always)]
-    fn into_complete(self) -> Self::Complete {
-        self
-    }
-    #[inline(always)]
-    fn into_partial(self) -> Self::Partial {
-        Partial(self)
-    }
-}
+impl<I, S> StreamIsPartial<false> for Stateful<I, S> where I: StreamIsPartial<false> {}
 
-impl<const YES: bool> StreamIsPartial<YES> for crate::lib::std::convert::Infallible {
-    type Complete = Self;
-    type Partial = Self;
-
-    #[inline(always)]
-    fn into_complete(self) -> Self::Complete {
-        self
-    }
-    #[inline(always)]
-    fn into_partial(self) -> Self::Partial {
-        self
-    }
-}
-
-impl<I> StreamIsPartial<true> for Located<I>
-where
-    I: StreamIsPartial<true>,
-{
-    type Complete = Located<<I as StreamIsPartial<true>>::Complete>;
-    type Partial = Self;
-
-    #[inline(always)]
-    fn into_complete(self) -> Self::Complete {
-        Located {
-            initial: self.initial.into_complete(),
-            input: self.input.into_complete(),
-        }
-    }
-    #[inline(always)]
-    fn into_partial(self) -> Self::Partial {
-        self
-    }
-}
-
-impl<I> StreamIsPartial<false> for Located<I>
-where
-    I: StreamIsPartial<false>,
-{
-    type Complete = Self;
-    type Partial = Located<<I as StreamIsPartial<false>>::Partial>;
-
-    #[inline(always)]
-    fn into_complete(self) -> Self::Complete {
-        self
-    }
-    #[inline(always)]
-    fn into_partial(self) -> Self::Partial {
-        Located {
-            initial: self.initial.into_partial(),
-            input: self.input.into_partial(),
-        }
-    }
-}
-
-impl<I, S> StreamIsPartial<true> for Stateful<I, S>
-where
-    I: StreamIsPartial<true>,
-{
-    type Complete = Stateful<<I as StreamIsPartial<true>>::Complete, S>;
-    type Partial = Self;
-
-    #[inline(always)]
-    fn into_complete(self) -> Self::Complete {
-        Stateful {
-            input: self.input.into_complete(),
-            state: self.state,
-        }
-    }
-    #[inline(always)]
-    fn into_partial(self) -> Self::Partial {
-        self
-    }
-}
-
-impl<I, S> StreamIsPartial<false> for Stateful<I, S>
-where
-    I: StreamIsPartial<false>,
-{
-    type Complete = Self;
-    type Partial = Stateful<<I as StreamIsPartial<false>>::Partial, S>;
-
-    #[inline(always)]
-    fn into_complete(self) -> Self::Complete {
-        self
-    }
-    #[inline(always)]
-    fn into_partial(self) -> Self::Partial {
-        Stateful {
-            input: self.input.into_partial(),
-            state: self.state,
-        }
-    }
-}
-
-impl<I> StreamIsPartial<true> for Partial<I>
-where
-    I: StreamIsPartial<false>,
-{
-    type Complete = I;
-    type Partial = Self;
-
-    #[inline(always)]
-    fn into_complete(self) -> Self::Complete {
-        self.0
-    }
-    #[inline(always)]
-    fn into_partial(self) -> Self::Partial {
-        self
-    }
-}
+impl<I> StreamIsPartial<true> for Partial<I> where I: StreamIsPartial<false> {}
 
 /// Useful functions to calculate the offset between slices and show a hexdump of a slice
 pub trait Offset {
