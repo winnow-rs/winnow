@@ -37,8 +37,7 @@ pre-release-replacements = [
 default = ["std"]
 alloc = []
 std = ["alloc", "memchr/std"]
-# debug = ["dep:anstyle", "dep:is-terminal", "dep:terminal_size", "dep:concolor"]  # Requires MSRV 1.60
-debug = ["anstyle", "is-terminal", "terminal_size", "concolor"]
+debug = ["dep:anstyle", "dep:is-terminal", "dep:terminal_size", "dep:concolor"]
 
 unstable-doc = ["alloc", "std"]
 
