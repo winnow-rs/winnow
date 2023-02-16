@@ -236,7 +236,7 @@ fn test_into() {
     use crate::bytes::take;
     use crate::error::Error;
 
-    let mut parser = into(take::<_, _, Error<_>, false>(3u8));
+    let mut parser = into(take::<_, _, Error<_>>(3u8));
     let result: IResult<&[u8], Vec<u8>> = parser(&b"abcdefg"[..]);
 
     assert_eq!(result, Ok((&b"defg"[..], vec![97, 98, 99])));
@@ -248,7 +248,7 @@ fn test_parser_into() {
     use crate::bytes::take;
     use crate::error::Error;
 
-    let mut parser = take::<_, _, Error<_>, false>(3u8).output_into();
+    let mut parser = take::<_, _, Error<_>>(3u8).output_into();
     let result: IResult<&[u8], Vec<u8>> = parser.parse_next(&b"abcdefg"[..]);
 
     assert_eq!(result, Ok((&b"defg"[..], vec![97, 98, 99])));

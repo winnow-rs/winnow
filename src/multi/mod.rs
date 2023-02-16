@@ -1059,11 +1059,9 @@ where
 /// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), Bytes::new(&b"abc"[..]))));
 /// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
-pub fn length_data<I, N, E, F, const PARTIAL: bool>(
-    mut f: F,
-) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn length_data<I, N, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     N: ToUsize,
     F: Parser<I, N, E>,
@@ -1110,12 +1108,9 @@ where
 /// assert_eq!(parser(stream(b"\x00\x03123123")), Err(ErrMode::Backtrack(Error::new(stream(&b"123"[..]), ErrorKind::Tag))));
 /// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
-pub fn length_value<I, O, N, E, F, G, const PARTIAL: bool>(
-    mut f: F,
-    mut g: G,
-) -> impl FnMut(I) -> IResult<I, O, E>
+pub fn length_value<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IResult<I, O, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream + UpdateSlice,
     N: ToUsize,
     F: Parser<I, N, E>,

@@ -497,22 +497,32 @@ impl<I, O, E> FinishIResult<I, O, E> for IResult<I, O, E>
 where
     I: Stream,
     // Force users to deal with `Incomplete` when `StreamIsPartial<true>`
-    I: StreamIsPartial<false>,
+    I: StreamIsPartial,
     I: Clone,
     E: ParseError<I>,
 {
     fn finish(self) -> Result<O, E> {
+        debug_assert!(
+            !I::is_partial_supported(),
+            "partial streams need to handle `ErrMode::Incomplete`"
+        );
+
         let (i, o) = self.finish_err()?;
         crate::combinator::eof(i).finish_err()?;
         Ok(o)
     }
 
     fn finish_err(self) -> Result<(I, O), E> {
+        debug_assert!(
+            !I::is_partial_supported(),
+            "partial streams need to handle `ErrMode::Incomplete`"
+        );
+
         match self {
             Ok(res) => Ok(res),
             Err(ErrMode::Backtrack(e)) | Err(ErrMode::Cut(e)) => Err(e),
             Err(ErrMode::Incomplete(_)) => {
-                panic!("`StreamIsPartial<false>` conflicts with `Err(ErrMode::Incomplete(_))`")
+                panic!("complete parsers should not report `Err(ErrMode::Incomplete(_))`")
             }
         }
     }

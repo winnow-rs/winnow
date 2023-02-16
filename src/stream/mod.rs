@@ -929,55 +929,99 @@ where
 /// Marks the input as being the complete buffer or a partial buffer for streaming input
 ///
 /// See [Partial] for marking a presumed complete buffer type as a streaming buffer.
-pub trait StreamIsPartial<const YES: bool>: Sized {
+pub trait StreamIsPartial: Sized {
+    /// Report whether the [`Stream`] is can ever be incomplete
+    fn is_partial_supported() -> bool;
+
     /// Report whether the [`Stream`] is currently incomplete
     #[inline(always)]
     fn is_partial(&self) -> bool {
-        YES
+        Self::is_partial_supported()
     }
 }
 
-impl<'a, T> StreamIsPartial<false> for &'a [T] {}
+impl<'a, T> StreamIsPartial for &'a [T] {
+    #[inline(always)]
+    fn is_partial_supported() -> bool {
+        false
+    }
+}
 
-impl<'a> StreamIsPartial<false> for &'a str {}
+impl<'a> StreamIsPartial for &'a str {
+    #[inline(always)]
+    fn is_partial_supported() -> bool {
+        false
+    }
+}
 
-impl<'a> StreamIsPartial<false> for &'a Bytes {}
+impl<'a> StreamIsPartial for &'a Bytes {
+    #[inline(always)]
+    fn is_partial_supported() -> bool {
+        false
+    }
+}
 
-impl<'a> StreamIsPartial<false> for &'a BStr {}
+impl<'a> StreamIsPartial for &'a BStr {
+    #[inline(always)]
+    fn is_partial_supported() -> bool {
+        false
+    }
+}
 
-impl<const YES: bool> StreamIsPartial<YES> for crate::lib::std::convert::Infallible {}
-
-impl<I, const YES: bool> StreamIsPartial<YES> for (I, usize)
+impl<I> StreamIsPartial for (I, usize)
 where
-    I: StreamIsPartial<YES>,
+    I: StreamIsPartial,
 {
+    #[inline(always)]
+    fn is_partial_supported() -> bool {
+        I::is_partial_supported()
+    }
+
     #[inline(always)]
     fn is_partial(&self) -> bool {
         self.0.is_partial()
     }
 }
 
-impl<I, const YES: bool> StreamIsPartial<YES> for Located<I>
+impl<I> StreamIsPartial for Located<I>
 where
-    I: StreamIsPartial<YES>,
+    I: StreamIsPartial,
 {
+    #[inline(always)]
+    fn is_partial_supported() -> bool {
+        I::is_partial_supported()
+    }
+
     #[inline(always)]
     fn is_partial(&self) -> bool {
         self.input.is_partial()
     }
 }
 
-impl<I, S, const YES: bool> StreamIsPartial<YES> for Stateful<I, S>
+impl<I, S> StreamIsPartial for Stateful<I, S>
 where
-    I: StreamIsPartial<YES>,
+    I: StreamIsPartial,
 {
+    #[inline(always)]
+    fn is_partial_supported() -> bool {
+        I::is_partial_supported()
+    }
+
     #[inline(always)]
     fn is_partial(&self) -> bool {
         self.input.is_partial()
     }
 }
 
-impl<I> StreamIsPartial<true> for Partial<I> where I: StreamIsPartial<false> {}
+impl<I> StreamIsPartial for Partial<I>
+where
+    I: StreamIsPartial,
+{
+    #[inline(always)]
+    fn is_partial_supported() -> bool {
+        true
+    }
+}
 
 /// Useful functions to calculate the offset between slices and show a hexdump of a slice
 pub trait Offset {

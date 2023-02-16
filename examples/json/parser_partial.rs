@@ -4,7 +4,7 @@ use std::str;
 use winnow::prelude::*;
 use winnow::{
     branch::alt,
-    bytes::{any, none_of, one_of, tag, take, take_while0},
+    bytes::{any, none_of, tag, take, take_while0},
     character::float,
     combinator::{cut_err, rest},
     error::{ContextError, ParseError},
@@ -13,15 +13,7 @@ use winnow::{
     stream::Partial,
 };
 
-#[derive(Debug, PartialEq, Clone)]
-pub enum JsonValue {
-    Null,
-    Boolean(bool),
-    Str(String),
-    Num(f64),
-    Array(Vec<JsonValue>),
-    Object(HashMap<String, JsonValue>),
-}
+use crate::json::JsonValue;
 
 pub type Stream<'i> = Partial<&'i str>;
 
@@ -89,7 +81,7 @@ fn string<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>
     input: Stream<'i>,
 ) -> IResult<Stream<'i>, String, E> {
     preceded(
-        one_of('\"'),
+        '\"',
         // `cut_err` transforms an `ErrMode::Backtrack(e)` to `ErrMode::Cut(e)`, signaling to
         // combinators like  `alt` that they should not try other parsers. We were in the
         // right branch (since we found the `"` character) but encountered an error when
@@ -99,7 +91,7 @@ fn string<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>
                 string.push(c);
                 string
             }),
-            one_of('\"'),
+            '\"',
         )),
     )
     // `context` lets you add a static string to errors to provide more information in the
@@ -125,7 +117,7 @@ fn character<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream
                     _ => return None,
                 })
             }),
-            preceded(one_of('u'), unicode_escape),
+            preceded('u', unicode_escape),
         ))(input)
     } else {
         Ok((input, c))
@@ -141,7 +133,7 @@ fn unicode_escape<'i, E: ParseError<Stream<'i>>>(
             .verify(|cp| !(0xD800..0xE000).contains(cp))
             .map(|cp| cp as u32),
         // See https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF for details
-        separated_pair(u16_hex, tag("\\u"), u16_hex)
+        separated_pair(u16_hex, "\\u", u16_hex)
             .verify(|(high, low)| (0xD800..0xDC00).contains(high) && (0xDC00..0xE000).contains(low))
             .map(|(high, low)| {
                 let high_ten = (high as u32) - 0xD800;
@@ -170,11 +162,8 @@ fn array<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>
     input: Stream<'i>,
 ) -> IResult<Stream<'i>, Vec<JsonValue>, E> {
     preceded(
-        (one_of('['), ws),
-        cut_err(terminated(
-            separated0(json_value, (ws, one_of(','), ws)),
-            (ws, one_of(']')),
-        )),
+        ('[', ws),
+        cut_err(terminated(separated0(json_value, (ws, ',', ws)), (ws, ']'))),
     )
     .context("array")
     .parse_next(input)
@@ -184,11 +173,8 @@ fn object<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>
     input: Stream<'i>,
 ) -> IResult<Stream<'i>, HashMap<String, JsonValue>, E> {
     preceded(
-        (one_of('{'), ws),
-        cut_err(terminated(
-            separated0(key_value, (ws, one_of(','), ws)),
-            (ws, one_of('}')),
-        )),
+        ('{', ws),
+        cut_err(terminated(separated0(key_value, (ws, ',', ws)), (ws, '}'))),
     )
     .context("object")
     .parse_next(input)
@@ -197,7 +183,7 @@ fn object<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>
 fn key_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
     input: Stream<'i>,
 ) -> IResult<Stream<'i>, (String, JsonValue), E> {
-    separated_pair(string, cut_err((ws, one_of(':'), ws)), json_value)(input)
+    separated_pair(string, cut_err((ws, ':', ws)), json_value)(input)
 }
 
 /// Parser combinators are constructed from the bottom up:

@@ -29,20 +29,20 @@ fn number(c: &mut Criterion) {
 fn float_bytes(c: &mut Criterion) {
     println!(
         "float_bytes result: {:?}",
-        float::<_, f64, Error<_>, false>(&b"-1.234E-12"[..])
+        float::<_, f64, Error<_>>(&b"-1.234E-12"[..])
     );
     c.bench_function("float bytes", |b| {
-        b.iter(|| float::<_, f64, Error<_>, false>(&b"-1.234E-12"[..]));
+        b.iter(|| float::<_, f64, Error<_>>(&b"-1.234E-12"[..]));
     });
 }
 
 fn float_str(c: &mut Criterion) {
     println!(
         "float_str result: {:?}",
-        float::<_, f64, Error<_>, false>("-1.234E-12")
+        float::<_, f64, Error<_>>("-1.234E-12")
     );
     c.bench_function("float str", |b| {
-        b.iter(|| float::<_, f64, Error<_>, false>("-1.234E-12"));
+        b.iter(|| float::<_, f64, Error<_>>("-1.234E-12"));
     });
 }
 

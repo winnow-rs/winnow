@@ -158,11 +158,11 @@ where
 /// assert_eq!(parser((stream(&[0b00010010]), 0), 12), Err(winnow::error::ErrMode::Backtrack(Error{input: (stream(&[0b00010010]), 0), kind: ErrorKind::Eof })));
 /// ```
 #[inline(always)]
-pub fn take<I, O, C, E: ParseError<(I, usize)>, const PARTIAL: bool>(
+pub fn take<I, O, C, E: ParseError<(I, usize)>>(
     count: C,
 ) -> impl FnMut((I, usize)) -> IResult<(I, usize), O, E>
 where
-    I: Stream<Token = u8> + AsBytes + StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8> + AsBytes + StreamIsPartial,
     C: ToUsize,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
@@ -230,12 +230,12 @@ where
 /// );
 /// ```
 #[inline(always)]
-pub fn tag<I, O, C, E: ParseError<(I, usize)>, const PARTIAL: bool>(
+pub fn tag<I, O, C, E: ParseError<(I, usize)>>(
     pattern: O,
     count: C,
 ) -> impl FnMut((I, usize)) -> IResult<(I, usize), O, E>
 where
-    I: Stream<Token = u8> + AsBytes + StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8> + AsBytes + StreamIsPartial,
     C: ToUsize,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
@@ -272,11 +272,9 @@ where
 /// assert_eq!(parse((stream(&[0b10000000]), 0)), Ok(((stream(&[0b10000000]), 1), true)));
 /// assert_eq!(parse((stream(&[0b10000000]), 1)), Ok(((stream(&[0b10000000]), 2), false)));
 /// ```
-pub fn bool<I, E: ParseError<(I, usize)>, const PARTIAL: bool>(
-    input: (I, usize),
-) -> IResult<(I, usize), bool, E>
+pub fn bool<I, E: ParseError<(I, usize)>>(input: (I, usize)) -> IResult<(I, usize), bool, E>
 where
-    I: Stream<Token = u8> + AsBytes + StreamIsPartial<PARTIAL>,
+    I: Stream<Token = u8> + AsBytes + StreamIsPartial,
 {
     #![allow(deprecated)]
     trace("bool", |input: (I, usize)| {

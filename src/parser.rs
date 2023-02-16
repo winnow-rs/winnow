@@ -631,7 +631,7 @@ where
 /// ```
 impl<I, E> Parser<I, u8, E> for u8
 where
-    I: StreamIsPartial<false>,
+    I: StreamIsPartial,
     I: Stream<Token = u8>,
     E: ParseError<I>,
 {
@@ -657,7 +657,7 @@ where
 /// ```
 impl<I, E> Parser<I, <I as Stream>::Token, E> for char
 where
-    I: StreamIsPartial<false>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar + Copy,
     E: ParseError<I>,
@@ -687,7 +687,7 @@ where
 /// ```
 impl<'s, I, E: ParseError<I>> Parser<I, <I as Stream>::Slice, E> for &'s [u8]
 where
-    I: Compare<&'s [u8]> + StreamIsPartial<false>,
+    I: Compare<&'s [u8]> + StreamIsPartial,
     I: Stream,
 {
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Stream>::Slice, E> {
@@ -715,7 +715,7 @@ where
 /// ```
 impl<'s, I, E: ParseError<I>, const N: usize> Parser<I, <I as Stream>::Slice, E> for &'s [u8; N]
 where
-    I: Compare<&'s [u8; N]> + StreamIsPartial<false>,
+    I: Compare<&'s [u8; N]> + StreamIsPartial,
     I: Stream,
 {
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Stream>::Slice, E> {
@@ -743,7 +743,7 @@ where
 /// ```
 impl<'s, I, E: ParseError<I>> Parser<I, <I as Stream>::Slice, E> for &'s str
 where
-    I: Compare<&'s str> + StreamIsPartial<false>,
+    I: Compare<&'s str> + StreamIsPartial,
     I: Stream,
 {
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Stream>::Slice, E> {
