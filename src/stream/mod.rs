@@ -7,52 +7,7 @@
 //!   [spans][crate::Parser::with_span]
 //! - [`Stateful`] to thread global state through your parsers
 //! - [`Partial`] can mark an input as partial buffer that is being streamed into
-//!
-//! # How do a parse a custom input type?
-//!
-//! While historically, nom has worked mainly on `&[u8]` and `&str`, it can actually
-//! use any type as input, as long as they follow a specific set of traits.
-//! Those traits were developed first to abstract away the differences between
-//! `&[u8]` and `&str`, but were then employed for more interesting types,
-//! like [`Located`], a wrapper type
-//! that can carry line and column information, or to parse
-//! [a list of tokens](https://github.com/Rydgel/monkey-rust/blob/master/lib/parser/mod.rs).
-//!
-//! ## Implementing a custom type
-//!
-//! Let's assume we have an input type we'll call `MyStream`. `MyStream` is a sequence of `MyItem` type.
-//! The goal is to define nom parsers with this signature: `MyStream -> IResult<MyStream, Output>`.
-//!
-//! ```rust,ignore
-//! fn parser(i: MyStream) -> IResult<MyStream, Output> {
-//!     tag("test")(i)
-//! }
-//! ```
-//!
-//! Here are the traits we have to implement for `MyStream`:
-//!
-//! | trait | usage |
-//! |---|---|
-//! | [`Stream`] |Core trait for driving parsing|
-//! | [`StreamIsPartial`] | Marks the input as being the complete buffer or a partial buffer for streaming input |
-//! | [`AsBytes`] |Casts the input type to a byte slice|
-//! | [`AsBStr`] |Casts the input type to a slice of ASCII / UTF-8-like bytes|
-//! | [`Compare`] |Character comparison operations|
-//! | [`FindSlice`] |Look for a substring in self|
-//! | [`Location`] |Calculate location within initial input|
-//! | [`Offset`] |Calculate the offset between slices|
-//!
-//! Here are the traits we have to implement for `MyItem`:
-//!
-//! | trait | usage |
-//! |---|---|
-//! | [`AsChar`] |Transforms common types to a char for basic token parsing|
-//! | [`ContainsToken`] |Look for the token in the given set|
-//!
-//! And traits for slices of `MyItem`:
-//!
-//! | [`SliceLen`] |Calculate the input length|
-//! | [`ParseSlice`] |Used to integrate `&str`'s `parse()` method|
+//! - [Custom stream types][crate::_cookbook::stream]
 
 #![allow(deprecated)]
 
