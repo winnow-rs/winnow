@@ -102,23 +102,38 @@ fn alt_incomplete() {
     }
 
     let a = &b""[..];
-    assert_eq!(alt1(Partial(a)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(
+        alt1(Partial::new(a)),
+        Err(ErrMode::Incomplete(Needed::new(1)))
+    );
     let a = &b"b"[..];
-    assert_eq!(alt1(Partial(a)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(
+        alt1(Partial::new(a)),
+        Err(ErrMode::Incomplete(Needed::new(1)))
+    );
     let a = &b"bcd"[..];
-    assert_eq!(alt1(Partial(a)), Ok((Partial(&b"d"[..]), &b"bc"[..])));
+    assert_eq!(
+        alt1(Partial::new(a)),
+        Ok((Partial::new(&b"d"[..]), &b"bc"[..]))
+    );
     let a = &b"cde"[..];
     assert_eq!(
-        alt1(Partial(a)),
+        alt1(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(a),
+            Partial::new(a),
             ErrorKind::Tag
         )))
     );
     let a = &b"de"[..];
-    assert_eq!(alt1(Partial(a)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(
+        alt1(Partial::new(a)),
+        Err(ErrMode::Incomplete(Needed::new(1)))
+    );
     let a = &b"defg"[..];
-    assert_eq!(alt1(Partial(a)), Ok((Partial(&b"g"[..]), &b"def"[..])));
+    assert_eq!(
+        alt1(Partial::new(a)),
+        Ok((Partial::new(&b"g"[..]), &b"def"[..]))
+    );
 }
 
 #[test]
@@ -131,22 +146,34 @@ fn permutation_test() {
     let expected = (&b"abcd"[..], &b"efg"[..], &b"hi"[..]);
 
     let a = &b"abcdefghijk"[..];
-    assert_eq!(perm(Partial(a)), Ok((Partial(&b"jk"[..]), expected)));
+    assert_eq!(
+        perm(Partial::new(a)),
+        Ok((Partial::new(&b"jk"[..]), expected))
+    );
     let b = &b"efgabcdhijk"[..];
-    assert_eq!(perm(Partial(b)), Ok((Partial(&b"jk"[..]), expected)));
+    assert_eq!(
+        perm(Partial::new(b)),
+        Ok((Partial::new(&b"jk"[..]), expected))
+    );
     let c = &b"hiefgabcdjk"[..];
-    assert_eq!(perm(Partial(c)), Ok((Partial(&b"jk"[..]), expected)));
+    assert_eq!(
+        perm(Partial::new(c)),
+        Ok((Partial::new(&b"jk"[..]), expected))
+    );
 
     let d = &b"efgxyzabcdefghi"[..];
     assert_eq!(
-        perm(Partial(d)),
+        perm(Partial::new(d)),
         Err(ErrMode::Backtrack(error_node_position!(
-            Partial(&b"efgxyzabcdefghi"[..]),
+            Partial::new(&b"efgxyzabcdefghi"[..]),
             ErrorKind::Permutation,
-            error_position!(Partial(&b"xyzabcdefghi"[..]), ErrorKind::Tag)
+            error_position!(Partial::new(&b"xyzabcdefghi"[..]), ErrorKind::Tag)
         )))
     );
 
     let e = &b"efgabc"[..];
-    assert_eq!(perm(Partial(e)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(
+        perm(Partial::new(e)),
+        Err(ErrMode::Incomplete(Needed::new(1)))
+    );
 }

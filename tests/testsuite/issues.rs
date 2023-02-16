@@ -59,12 +59,12 @@ mod parse_int {
 
     #[test]
     fn issue_142() {
-        let subject = parse_ints(Partial(&b"12 34 5689a"[..]));
-        let expected = Ok((Partial(&b"a"[..]), vec![12, 34, 5689]));
+        let subject = parse_ints(Partial::new(&b"12 34 5689a"[..]));
+        let expected = Ok((Partial::new(&b"a"[..]), vec![12, 34, 5689]));
         assert_eq!(subject, expected);
 
-        let subject = parse_ints(Partial(&b"12 34 5689 "[..]));
-        let expected = Ok((Partial(&b" "[..]), vec![12, 34, 5689]));
+        let subject = parse_ints(Partial::new(&b"12 34 5689 "[..]));
+        let expected = Ok((Partial::new(&b" "[..]), vec![12, 34, 5689]));
         assert_eq!(subject, expected);
     }
 }
@@ -74,7 +74,7 @@ fn usize_length_bytes_issue() {
     use winnow::multi::length_data;
     use winnow::number::be_u16;
     #[allow(clippy::type_complexity)]
-    let _: IResult<Partial<&[u8]>, &[u8]> = length_data(be_u16)(Partial(b"012346"));
+    let _: IResult<Partial<&[u8]>, &[u8]> = length_data(be_u16)(Partial::new(b"012346"));
 }
 
 #[test]
@@ -86,12 +86,12 @@ fn take_till0_issue() {
     }
 
     assert_eq!(
-        nothing(Partial(b"")),
+        nothing(Partial::new(b"")),
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-        nothing(Partial(b"abc")),
-        Ok((Partial(&b"abc"[..]), &b""[..]))
+        nothing(Partial::new(b"abc")),
+        Ok((Partial::new(&b"abc"[..]), &b""[..]))
     );
 }
 
@@ -108,20 +108,20 @@ fn issue_655() {
     }
 
     assert_eq!(
-        twolines(Partial("foo\nbar\n")),
-        Ok((Partial(""), ("foo", "bar")))
+        twolines(Partial::new("foo\nbar\n")),
+        Ok((Partial::new(""), ("foo", "bar")))
     );
     assert_eq!(
-        twolines(Partial("féo\nbar\n")),
-        Ok((Partial(""), ("féo", "bar")))
+        twolines(Partial::new("féo\nbar\n")),
+        Ok((Partial::new(""), ("féo", "bar")))
     );
     assert_eq!(
-        twolines(Partial("foé\nbar\n")),
-        Ok((Partial(""), ("foé", "bar")))
+        twolines(Partial::new("foé\nbar\n")),
+        Ok((Partial::new(""), ("foé", "bar")))
     );
     assert_eq!(
-        twolines(Partial("foé\r\nbar\n")),
-        Ok((Partial(""), ("foé", "bar")))
+        twolines(Partial::new("foé\r\nbar\n")),
+        Ok((Partial::new(""), ("foé", "bar")))
     );
 }
 
@@ -174,9 +174,9 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
         bits(bytes(take))(i)
     }
     assert_eq!(
-        parser(Partial(&b""[..])),
+        parser(Partial::new(&b""[..])),
         Err(ErrMode::Cut(winnow::error::Error {
-            input: Partial(&b""[..]),
+            input: Partial::new(&b""[..]),
             kind: ErrorKind::TooLarge
         }))
     );

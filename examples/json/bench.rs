@@ -41,7 +41,7 @@ fn json_bench(c: &mut criterion::Criterion) {
             |b, _| {
                 type Error<'i> = winnow::error::Error<parser_partial::Stream<'i>>;
 
-                b.iter(|| parser_partial::json::<Error>(Partial(sample)).unwrap());
+                b.iter(|| parser_partial::json::<Error>(Partial::new(sample)).unwrap());
             },
         );
     }

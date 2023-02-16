@@ -62,35 +62,35 @@ fn pair_test() {
     }
 
     assert_eq!(
-        pair_abc_def(Partial(&b"abcdefghijkl"[..])),
-        Ok((Partial(&b"ghijkl"[..]), (&b"abc"[..], &b"def"[..])))
+        pair_abc_def(Partial::new(&b"abcdefghijkl"[..])),
+        Ok((Partial::new(&b"ghijkl"[..]), (&b"abc"[..], &b"def"[..])))
     );
     assert_eq!(
-        pair_abc_def(Partial(&b"ab"[..])),
+        pair_abc_def(Partial::new(&b"ab"[..])),
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-        pair_abc_def(Partial(&b"abcd"[..])),
+        pair_abc_def(Partial::new(&b"abcd"[..])),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_eq!(
-        pair_abc_def(Partial(&b"xxx"[..])),
+        pair_abc_def(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxx"[..]),
+            Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
-        pair_abc_def(Partial(&b"xxxdef"[..])),
+        pair_abc_def(Partial::new(&b"xxxdef"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxxdef"[..]),
+            Partial::new(&b"xxxdef"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
-        pair_abc_def(Partial(&b"abcxxx"[..])),
+        pair_abc_def(Partial::new(&b"abcxxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxx"[..]),
+            Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
@@ -104,35 +104,35 @@ fn separated_pair_test() {
     }
 
     assert_eq!(
-        sep_pair_abc_def(Partial(&b"abc,defghijkl"[..])),
-        Ok((Partial(&b"ghijkl"[..]), (&b"abc"[..], &b"def"[..])))
+        sep_pair_abc_def(Partial::new(&b"abc,defghijkl"[..])),
+        Ok((Partial::new(&b"ghijkl"[..]), (&b"abc"[..], &b"def"[..])))
     );
     assert_eq!(
-        sep_pair_abc_def(Partial(&b"ab"[..])),
+        sep_pair_abc_def(Partial::new(&b"ab"[..])),
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-        sep_pair_abc_def(Partial(&b"abc,d"[..])),
+        sep_pair_abc_def(Partial::new(&b"abc,d"[..])),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_eq!(
-        sep_pair_abc_def(Partial(&b"xxx"[..])),
+        sep_pair_abc_def(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxx"[..]),
+            Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
-        sep_pair_abc_def(Partial(&b"xxx,def"[..])),
+        sep_pair_abc_def(Partial::new(&b"xxx,def"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxx,def"[..]),
+            Partial::new(&b"xxx,def"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
-        sep_pair_abc_def(Partial(&b"abc,xxx"[..])),
+        sep_pair_abc_def(Partial::new(&b"abc,xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxx"[..]),
+            Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
@@ -145,35 +145,35 @@ fn preceded_test() {
     }
 
     assert_eq!(
-        preceded_abcd_efgh(Partial(&b"abcdefghijkl"[..])),
-        Ok((Partial(&b"ijkl"[..]), &b"efgh"[..]))
+        preceded_abcd_efgh(Partial::new(&b"abcdefghijkl"[..])),
+        Ok((Partial::new(&b"ijkl"[..]), &b"efgh"[..]))
     );
     assert_eq!(
-        preceded_abcd_efgh(Partial(&b"ab"[..])),
+        preceded_abcd_efgh(Partial::new(&b"ab"[..])),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_eq!(
-        preceded_abcd_efgh(Partial(&b"abcde"[..])),
+        preceded_abcd_efgh(Partial::new(&b"abcde"[..])),
         Err(ErrMode::Incomplete(Needed::new(3)))
     );
     assert_eq!(
-        preceded_abcd_efgh(Partial(&b"xxx"[..])),
+        preceded_abcd_efgh(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxx"[..]),
+            Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
-        preceded_abcd_efgh(Partial(&b"xxxxdef"[..])),
+        preceded_abcd_efgh(Partial::new(&b"xxxxdef"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxxxdef"[..]),
+            Partial::new(&b"xxxxdef"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
-        preceded_abcd_efgh(Partial(&b"abcdxxx"[..])),
+        preceded_abcd_efgh(Partial::new(&b"abcdxxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxx"[..]),
+            Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
@@ -186,35 +186,35 @@ fn terminated_test() {
     }
 
     assert_eq!(
-        terminated_abcd_efgh(Partial(&b"abcdefghijkl"[..])),
-        Ok((Partial(&b"ijkl"[..]), &b"abcd"[..]))
+        terminated_abcd_efgh(Partial::new(&b"abcdefghijkl"[..])),
+        Ok((Partial::new(&b"ijkl"[..]), &b"abcd"[..]))
     );
     assert_eq!(
-        terminated_abcd_efgh(Partial(&b"ab"[..])),
+        terminated_abcd_efgh(Partial::new(&b"ab"[..])),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_eq!(
-        terminated_abcd_efgh(Partial(&b"abcde"[..])),
+        terminated_abcd_efgh(Partial::new(&b"abcde"[..])),
         Err(ErrMode::Incomplete(Needed::new(3)))
     );
     assert_eq!(
-        terminated_abcd_efgh(Partial(&b"xxx"[..])),
+        terminated_abcd_efgh(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxx"[..]),
+            Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
-        terminated_abcd_efgh(Partial(&b"xxxxdef"[..])),
+        terminated_abcd_efgh(Partial::new(&b"xxxxdef"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxxxdef"[..]),
+            Partial::new(&b"xxxxdef"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
-        terminated_abcd_efgh(Partial(&b"abcdxxxx"[..])),
+        terminated_abcd_efgh(Partial::new(&b"abcdxxxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxxx"[..]),
+            Partial::new(&b"xxxx"[..]),
             ErrorKind::Tag
         )))
     );
@@ -227,46 +227,46 @@ fn delimited_test() {
     }
 
     assert_eq!(
-        delimited_abc_def_ghi(Partial(&b"abcdefghijkl"[..])),
-        Ok((Partial(&b"jkl"[..]), &b"def"[..]))
+        delimited_abc_def_ghi(Partial::new(&b"abcdefghijkl"[..])),
+        Ok((Partial::new(&b"jkl"[..]), &b"def"[..]))
     );
     assert_eq!(
-        delimited_abc_def_ghi(Partial(&b"ab"[..])),
+        delimited_abc_def_ghi(Partial::new(&b"ab"[..])),
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-        delimited_abc_def_ghi(Partial(&b"abcde"[..])),
+        delimited_abc_def_ghi(Partial::new(&b"abcde"[..])),
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-        delimited_abc_def_ghi(Partial(&b"abcdefgh"[..])),
+        delimited_abc_def_ghi(Partial::new(&b"abcdefgh"[..])),
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-        delimited_abc_def_ghi(Partial(&b"xxx"[..])),
+        delimited_abc_def_ghi(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxx"[..]),
+            Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
-        delimited_abc_def_ghi(Partial(&b"xxxdefghi"[..])),
+        delimited_abc_def_ghi(Partial::new(&b"xxxdefghi"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxxdefghi"[..]),
+            Partial::new(&b"xxxdefghi"[..]),
             ErrorKind::Tag
         ),))
     );
     assert_eq!(
-        delimited_abc_def_ghi(Partial(&b"abcxxxghi"[..])),
+        delimited_abc_def_ghi(Partial::new(&b"abcxxxghi"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxxghi"[..]),
+            Partial::new(&b"xxxghi"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
-        delimited_abc_def_ghi(Partial(&b"abcdefxxx"[..])),
+        delimited_abc_def_ghi(Partial::new(&b"abcdefxxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxx"[..]),
+            Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
@@ -281,21 +281,24 @@ fn tuple_test() {
     }
 
     assert_eq!(
-        tuple_3(Partial(&b"abcdefgh"[..])),
-        Ok((Partial(&b"h"[..]), (0x6162u16, &b"cde"[..], &b"fg"[..])))
+        tuple_3(Partial::new(&b"abcdefgh"[..])),
+        Ok((
+            Partial::new(&b"h"[..]),
+            (0x6162u16, &b"cde"[..], &b"fg"[..])
+        ))
     );
     assert_eq!(
-        tuple_3(Partial(&b"abcd"[..])),
+        tuple_3(Partial::new(&b"abcd"[..])),
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-        tuple_3(Partial(&b"abcde"[..])),
+        tuple_3(Partial::new(&b"abcde"[..])),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_eq!(
-        tuple_3(Partial(&b"abcdejk"[..])),
+        tuple_3(Partial::new(&b"abcdejk"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"jk"[..]),
+            Partial::new(&b"jk"[..]),
             ErrorKind::Tag
         )))
     );

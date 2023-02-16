@@ -393,12 +393,24 @@ mod partial {
 
     #[test]
     fn i8_tests() {
-        assert_parse!(be_i8(Partial(&[0x00][..])), Ok((Partial(&b""[..]), 0)));
-        assert_parse!(be_i8(Partial(&[0x7f][..])), Ok((Partial(&b""[..]), 127)));
-        assert_parse!(be_i8(Partial(&[0xff][..])), Ok((Partial(&b""[..]), -1)));
-        assert_parse!(be_i8(Partial(&[0x80][..])), Ok((Partial(&b""[..]), -128)));
         assert_parse!(
-            be_i8(Partial(&[][..])),
+            be_i8(Partial::new(&[0x00][..])),
+            Ok((Partial::new(&b""[..]), 0))
+        );
+        assert_parse!(
+            be_i8(Partial::new(&[0x7f][..])),
+            Ok((Partial::new(&b""[..]), 127))
+        );
+        assert_parse!(
+            be_i8(Partial::new(&[0xff][..])),
+            Ok((Partial::new(&b""[..]), -1))
+        );
+        assert_parse!(
+            be_i8(Partial::new(&[0x80][..])),
+            Ok((Partial::new(&b""[..]), -128))
+        );
+        assert_parse!(
+            be_i8(Partial::new(&[][..])),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
     }
@@ -406,27 +418,27 @@ mod partial {
     #[test]
     fn i16_tests() {
         assert_parse!(
-            be_i16(Partial(&[0x00, 0x00][..])),
-            Ok((Partial(&b""[..]), 0))
+            be_i16(Partial::new(&[0x00, 0x00][..])),
+            Ok((Partial::new(&b""[..]), 0))
         );
         assert_parse!(
-            be_i16(Partial(&[0x7f, 0xff][..])),
-            Ok((Partial(&b""[..]), 32_767_i16))
+            be_i16(Partial::new(&[0x7f, 0xff][..])),
+            Ok((Partial::new(&b""[..]), 32_767_i16))
         );
         assert_parse!(
-            be_i16(Partial(&[0xff, 0xff][..])),
-            Ok((Partial(&b""[..]), -1))
+            be_i16(Partial::new(&[0xff, 0xff][..])),
+            Ok((Partial::new(&b""[..]), -1))
         );
         assert_parse!(
-            be_i16(Partial(&[0x80, 0x00][..])),
-            Ok((Partial(&b""[..]), -32_768_i16))
+            be_i16(Partial::new(&[0x80, 0x00][..])),
+            Ok((Partial::new(&b""[..]), -32_768_i16))
         );
         assert_parse!(
-            be_i16(Partial(&[][..])),
+            be_i16(Partial::new(&[][..])),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
         assert_parse!(
-            be_i16(Partial(&[0x00][..])),
+            be_i16(Partial::new(&[0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
     }
@@ -434,27 +446,27 @@ mod partial {
     #[test]
     fn u24_tests() {
         assert_parse!(
-            be_u24(Partial(&[0x00, 0x00, 0x00][..])),
-            Ok((Partial(&b""[..]), 0))
+            be_u24(Partial::new(&[0x00, 0x00, 0x00][..])),
+            Ok((Partial::new(&b""[..]), 0))
         );
         assert_parse!(
-            be_u24(Partial(&[0x00, 0xFF, 0xFF][..])),
-            Ok((Partial(&b""[..]), 65_535_u32))
+            be_u24(Partial::new(&[0x00, 0xFF, 0xFF][..])),
+            Ok((Partial::new(&b""[..]), 65_535_u32))
         );
         assert_parse!(
-            be_u24(Partial(&[0x12, 0x34, 0x56][..])),
-            Ok((Partial(&b""[..]), 1_193_046_u32))
+            be_u24(Partial::new(&[0x12, 0x34, 0x56][..])),
+            Ok((Partial::new(&b""[..]), 1_193_046_u32))
         );
         assert_parse!(
-            be_u24(Partial(&[][..])),
+            be_u24(Partial::new(&[][..])),
             Err(ErrMode::Incomplete(Needed::new(3)))
         );
         assert_parse!(
-            be_u24(Partial(&[0x00][..])),
+            be_u24(Partial::new(&[0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
         assert_parse!(
-            be_u24(Partial(&[0x00, 0x00][..])),
+            be_u24(Partial::new(&[0x00, 0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
     }
@@ -462,27 +474,27 @@ mod partial {
     #[test]
     fn i24_tests() {
         assert_parse!(
-            be_i24(Partial(&[0xFF, 0xFF, 0xFF][..])),
-            Ok((Partial(&b""[..]), -1_i32))
+            be_i24(Partial::new(&[0xFF, 0xFF, 0xFF][..])),
+            Ok((Partial::new(&b""[..]), -1_i32))
         );
         assert_parse!(
-            be_i24(Partial(&[0xFF, 0x00, 0x00][..])),
-            Ok((Partial(&b""[..]), -65_536_i32))
+            be_i24(Partial::new(&[0xFF, 0x00, 0x00][..])),
+            Ok((Partial::new(&b""[..]), -65_536_i32))
         );
         assert_parse!(
-            be_i24(Partial(&[0xED, 0xCB, 0xAA][..])),
-            Ok((Partial(&b""[..]), -1_193_046_i32))
+            be_i24(Partial::new(&[0xED, 0xCB, 0xAA][..])),
+            Ok((Partial::new(&b""[..]), -1_193_046_i32))
         );
         assert_parse!(
-            be_i24(Partial(&[][..])),
+            be_i24(Partial::new(&[][..])),
             Err(ErrMode::Incomplete(Needed::new(3)))
         );
         assert_parse!(
-            be_i24(Partial(&[0x00][..])),
+            be_i24(Partial::new(&[0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
         assert_parse!(
-            be_i24(Partial(&[0x00, 0x00][..])),
+            be_i24(Partial::new(&[0x00, 0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
     }
@@ -490,35 +502,35 @@ mod partial {
     #[test]
     fn i32_tests() {
         assert_parse!(
-            be_i32(Partial(&[0x00, 0x00, 0x00, 0x00][..])),
-            Ok((Partial(&b""[..]), 0))
+            be_i32(Partial::new(&[0x00, 0x00, 0x00, 0x00][..])),
+            Ok((Partial::new(&b""[..]), 0))
         );
         assert_parse!(
-            be_i32(Partial(&[0x7f, 0xff, 0xff, 0xff][..])),
-            Ok((Partial(&b""[..]), 2_147_483_647_i32))
+            be_i32(Partial::new(&[0x7f, 0xff, 0xff, 0xff][..])),
+            Ok((Partial::new(&b""[..]), 2_147_483_647_i32))
         );
         assert_parse!(
-            be_i32(Partial(&[0xff, 0xff, 0xff, 0xff][..])),
-            Ok((Partial(&b""[..]), -1))
+            be_i32(Partial::new(&[0xff, 0xff, 0xff, 0xff][..])),
+            Ok((Partial::new(&b""[..]), -1))
         );
         assert_parse!(
-            be_i32(Partial(&[0x80, 0x00, 0x00, 0x00][..])),
-            Ok((Partial(&b""[..]), -2_147_483_648_i32))
+            be_i32(Partial::new(&[0x80, 0x00, 0x00, 0x00][..])),
+            Ok((Partial::new(&b""[..]), -2_147_483_648_i32))
         );
         assert_parse!(
-            be_i32(Partial(&[][..])),
+            be_i32(Partial::new(&[][..])),
             Err(ErrMode::Incomplete(Needed::new(4)))
         );
         assert_parse!(
-            be_i32(Partial(&[0x00][..])),
+            be_i32(Partial::new(&[0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(3)))
         );
         assert_parse!(
-            be_i32(Partial(&[0x00, 0x00][..])),
+            be_i32(Partial::new(&[0x00, 0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
         assert_parse!(
-            be_i32(Partial(&[0x00, 0x00, 0x00][..])),
+            be_i32(Partial::new(&[0x00, 0x00, 0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
     }
@@ -526,59 +538,61 @@ mod partial {
     #[test]
     fn i64_tests() {
         assert_parse!(
-            be_i64(Partial(
+            be_i64(Partial::new(
                 &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
             )),
-            Ok((Partial(&b""[..]), 0))
+            Ok((Partial::new(&b""[..]), 0))
         );
         assert_parse!(
-            be_i64(Partial(
+            be_i64(Partial::new(
                 &[0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff][..]
             )),
-            Ok((Partial(&b""[..]), 9_223_372_036_854_775_807_i64))
+            Ok((Partial::new(&b""[..]), 9_223_372_036_854_775_807_i64))
         );
         assert_parse!(
-            be_i64(Partial(
+            be_i64(Partial::new(
                 &[0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff][..]
             )),
-            Ok((Partial(&b""[..]), -1))
+            Ok((Partial::new(&b""[..]), -1))
         );
         assert_parse!(
-            be_i64(Partial(
+            be_i64(Partial::new(
                 &[0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
             )),
-            Ok((Partial(&b""[..]), -9_223_372_036_854_775_808_i64))
+            Ok((Partial::new(&b""[..]), -9_223_372_036_854_775_808_i64))
         );
         assert_parse!(
-            be_i64(Partial(&[][..])),
+            be_i64(Partial::new(&[][..])),
             Err(ErrMode::Incomplete(Needed::new(8)))
         );
         assert_parse!(
-            be_i64(Partial(&[0x00][..])),
+            be_i64(Partial::new(&[0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(7)))
         );
         assert_parse!(
-            be_i64(Partial(&[0x00, 0x00][..])),
+            be_i64(Partial::new(&[0x00, 0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(6)))
         );
         assert_parse!(
-            be_i64(Partial(&[0x00, 0x00, 0x00][..])),
+            be_i64(Partial::new(&[0x00, 0x00, 0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(5)))
         );
         assert_parse!(
-            be_i64(Partial(&[0x00, 0x00, 0x00, 0x00][..])),
+            be_i64(Partial::new(&[0x00, 0x00, 0x00, 0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(4)))
         );
         assert_parse!(
-            be_i64(Partial(&[0x00, 0x00, 0x00, 0x00, 0x00][..])),
+            be_i64(Partial::new(&[0x00, 0x00, 0x00, 0x00, 0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(3)))
         );
         assert_parse!(
-            be_i64(Partial(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])),
+            be_i64(Partial::new(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
         assert_parse!(
-            be_i64(Partial(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])),
+            be_i64(Partial::new(
+                &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
+            )),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
     }
@@ -586,117 +600,119 @@ mod partial {
     #[test]
     fn i128_tests() {
         assert_parse!(
-            be_i128(Partial(
+            be_i128(Partial::new(
                 &[
                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                     0x00, 0x00, 0x00
                 ][..]
             )),
-            Ok((Partial(&b""[..]), 0))
+            Ok((Partial::new(&b""[..]), 0))
         );
         assert_parse!(
-            be_i128(Partial(
+            be_i128(Partial::new(
                 &[
                     0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
                     0xff, 0xff, 0xff
                 ][..]
             )),
             Ok((
-                Partial(&b""[..]),
+                Partial::new(&b""[..]),
                 170_141_183_460_469_231_731_687_303_715_884_105_727_i128
             ))
         );
         assert_parse!(
-            be_i128(Partial(
+            be_i128(Partial::new(
                 &[
                     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
                     0xff, 0xff, 0xff
                 ][..]
             )),
-            Ok((Partial(&b""[..]), -1))
+            Ok((Partial::new(&b""[..]), -1))
         );
         assert_parse!(
-            be_i128(Partial(
+            be_i128(Partial::new(
                 &[
                     0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                     0x00, 0x00, 0x00
                 ][..]
             )),
             Ok((
-                Partial(&b""[..]),
+                Partial::new(&b""[..]),
                 -170_141_183_460_469_231_731_687_303_715_884_105_728_i128
             ))
         );
         assert_parse!(
-            be_i128(Partial(&[][..])),
+            be_i128(Partial::new(&[][..])),
             Err(ErrMode::Incomplete(Needed::new(16)))
         );
         assert_parse!(
-            be_i128(Partial(&[0x00][..])),
+            be_i128(Partial::new(&[0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(15)))
         );
         assert_parse!(
-            be_i128(Partial(&[0x00, 0x00][..])),
+            be_i128(Partial::new(&[0x00, 0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(14)))
         );
         assert_parse!(
-            be_i128(Partial(&[0x00, 0x00, 0x00][..])),
+            be_i128(Partial::new(&[0x00, 0x00, 0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(13)))
         );
         assert_parse!(
-            be_i128(Partial(&[0x00, 0x00, 0x00, 0x00][..])),
+            be_i128(Partial::new(&[0x00, 0x00, 0x00, 0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(12)))
         );
         assert_parse!(
-            be_i128(Partial(&[0x00, 0x00, 0x00, 0x00, 0x00][..])),
+            be_i128(Partial::new(&[0x00, 0x00, 0x00, 0x00, 0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(11)))
         );
         assert_parse!(
-            be_i128(Partial(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])),
+            be_i128(Partial::new(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])),
             Err(ErrMode::Incomplete(Needed::new(10)))
         );
         assert_parse!(
-            be_i128(Partial(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])),
+            be_i128(Partial::new(
+                &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
+            )),
             Err(ErrMode::Incomplete(Needed::new(9)))
         );
         assert_parse!(
-            be_i128(Partial(
+            be_i128(Partial::new(
                 &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
             )),
             Err(ErrMode::Incomplete(Needed::new(8)))
         );
         assert_parse!(
-            be_i128(Partial(
+            be_i128(Partial::new(
                 &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
             )),
             Err(ErrMode::Incomplete(Needed::new(7)))
         );
         assert_parse!(
-            be_i128(Partial(
+            be_i128(Partial::new(
                 &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
             )),
             Err(ErrMode::Incomplete(Needed::new(6)))
         );
         assert_parse!(
-            be_i128(Partial(
+            be_i128(Partial::new(
                 &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
             )),
             Err(ErrMode::Incomplete(Needed::new(5)))
         );
         assert_parse!(
-            be_i128(Partial(
+            be_i128(Partial::new(
                 &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
             )),
             Err(ErrMode::Incomplete(Needed::new(4)))
         );
         assert_parse!(
-            be_i128(Partial(
+            be_i128(Partial::new(
                 &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
             )),
             Err(ErrMode::Incomplete(Needed::new(3)))
         );
         assert_parse!(
-            be_i128(Partial(
+            be_i128(Partial::new(
                 &[
                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                     0x00
@@ -705,7 +721,7 @@ mod partial {
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
         assert_parse!(
-            be_i128(Partial(
+            be_i128(Partial::new(
                 &[
                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                     0x00, 0x00
@@ -717,153 +733,165 @@ mod partial {
 
     #[test]
     fn le_i8_tests() {
-        assert_parse!(le_i8(Partial(&[0x00][..])), Ok((Partial(&b""[..]), 0)));
-        assert_parse!(le_i8(Partial(&[0x7f][..])), Ok((Partial(&b""[..]), 127)));
-        assert_parse!(le_i8(Partial(&[0xff][..])), Ok((Partial(&b""[..]), -1)));
-        assert_parse!(le_i8(Partial(&[0x80][..])), Ok((Partial(&b""[..]), -128)));
+        assert_parse!(
+            le_i8(Partial::new(&[0x00][..])),
+            Ok((Partial::new(&b""[..]), 0))
+        );
+        assert_parse!(
+            le_i8(Partial::new(&[0x7f][..])),
+            Ok((Partial::new(&b""[..]), 127))
+        );
+        assert_parse!(
+            le_i8(Partial::new(&[0xff][..])),
+            Ok((Partial::new(&b""[..]), -1))
+        );
+        assert_parse!(
+            le_i8(Partial::new(&[0x80][..])),
+            Ok((Partial::new(&b""[..]), -128))
+        );
     }
 
     #[test]
     fn le_i16_tests() {
         assert_parse!(
-            le_i16(Partial(&[0x00, 0x00][..])),
-            Ok((Partial(&b""[..]), 0))
+            le_i16(Partial::new(&[0x00, 0x00][..])),
+            Ok((Partial::new(&b""[..]), 0))
         );
         assert_parse!(
-            le_i16(Partial(&[0xff, 0x7f][..])),
-            Ok((Partial(&b""[..]), 32_767_i16))
+            le_i16(Partial::new(&[0xff, 0x7f][..])),
+            Ok((Partial::new(&b""[..]), 32_767_i16))
         );
         assert_parse!(
-            le_i16(Partial(&[0xff, 0xff][..])),
-            Ok((Partial(&b""[..]), -1))
+            le_i16(Partial::new(&[0xff, 0xff][..])),
+            Ok((Partial::new(&b""[..]), -1))
         );
         assert_parse!(
-            le_i16(Partial(&[0x00, 0x80][..])),
-            Ok((Partial(&b""[..]), -32_768_i16))
+            le_i16(Partial::new(&[0x00, 0x80][..])),
+            Ok((Partial::new(&b""[..]), -32_768_i16))
         );
     }
 
     #[test]
     fn le_u24_tests() {
         assert_parse!(
-            le_u24(Partial(&[0x00, 0x00, 0x00][..])),
-            Ok((Partial(&b""[..]), 0))
+            le_u24(Partial::new(&[0x00, 0x00, 0x00][..])),
+            Ok((Partial::new(&b""[..]), 0))
         );
         assert_parse!(
-            le_u24(Partial(&[0xFF, 0xFF, 0x00][..])),
-            Ok((Partial(&b""[..]), 65_535_u32))
+            le_u24(Partial::new(&[0xFF, 0xFF, 0x00][..])),
+            Ok((Partial::new(&b""[..]), 65_535_u32))
         );
         assert_parse!(
-            le_u24(Partial(&[0x56, 0x34, 0x12][..])),
-            Ok((Partial(&b""[..]), 1_193_046_u32))
+            le_u24(Partial::new(&[0x56, 0x34, 0x12][..])),
+            Ok((Partial::new(&b""[..]), 1_193_046_u32))
         );
     }
 
     #[test]
     fn le_i24_tests() {
         assert_parse!(
-            le_i24(Partial(&[0xFF, 0xFF, 0xFF][..])),
-            Ok((Partial(&b""[..]), -1_i32))
+            le_i24(Partial::new(&[0xFF, 0xFF, 0xFF][..])),
+            Ok((Partial::new(&b""[..]), -1_i32))
         );
         assert_parse!(
-            le_i24(Partial(&[0x00, 0x00, 0xFF][..])),
-            Ok((Partial(&b""[..]), -65_536_i32))
+            le_i24(Partial::new(&[0x00, 0x00, 0xFF][..])),
+            Ok((Partial::new(&b""[..]), -65_536_i32))
         );
         assert_parse!(
-            le_i24(Partial(&[0xAA, 0xCB, 0xED][..])),
-            Ok((Partial(&b""[..]), -1_193_046_i32))
+            le_i24(Partial::new(&[0xAA, 0xCB, 0xED][..])),
+            Ok((Partial::new(&b""[..]), -1_193_046_i32))
         );
     }
 
     #[test]
     fn le_i32_tests() {
         assert_parse!(
-            le_i32(Partial(&[0x00, 0x00, 0x00, 0x00][..])),
-            Ok((Partial(&b""[..]), 0))
+            le_i32(Partial::new(&[0x00, 0x00, 0x00, 0x00][..])),
+            Ok((Partial::new(&b""[..]), 0))
         );
         assert_parse!(
-            le_i32(Partial(&[0xff, 0xff, 0xff, 0x7f][..])),
-            Ok((Partial(&b""[..]), 2_147_483_647_i32))
+            le_i32(Partial::new(&[0xff, 0xff, 0xff, 0x7f][..])),
+            Ok((Partial::new(&b""[..]), 2_147_483_647_i32))
         );
         assert_parse!(
-            le_i32(Partial(&[0xff, 0xff, 0xff, 0xff][..])),
-            Ok((Partial(&b""[..]), -1))
+            le_i32(Partial::new(&[0xff, 0xff, 0xff, 0xff][..])),
+            Ok((Partial::new(&b""[..]), -1))
         );
         assert_parse!(
-            le_i32(Partial(&[0x00, 0x00, 0x00, 0x80][..])),
-            Ok((Partial(&b""[..]), -2_147_483_648_i32))
+            le_i32(Partial::new(&[0x00, 0x00, 0x00, 0x80][..])),
+            Ok((Partial::new(&b""[..]), -2_147_483_648_i32))
         );
     }
 
     #[test]
     fn le_i64_tests() {
         assert_parse!(
-            le_i64(Partial(
+            le_i64(Partial::new(
                 &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
             )),
-            Ok((Partial(&b""[..]), 0))
+            Ok((Partial::new(&b""[..]), 0))
         );
         assert_parse!(
-            le_i64(Partial(
+            le_i64(Partial::new(
                 &[0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7f][..]
             )),
-            Ok((Partial(&b""[..]), 9_223_372_036_854_775_807_i64))
+            Ok((Partial::new(&b""[..]), 9_223_372_036_854_775_807_i64))
         );
         assert_parse!(
-            le_i64(Partial(
+            le_i64(Partial::new(
                 &[0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff][..]
             )),
-            Ok((Partial(&b""[..]), -1))
+            Ok((Partial::new(&b""[..]), -1))
         );
         assert_parse!(
-            le_i64(Partial(
+            le_i64(Partial::new(
                 &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80][..]
             )),
-            Ok((Partial(&b""[..]), -9_223_372_036_854_775_808_i64))
+            Ok((Partial::new(&b""[..]), -9_223_372_036_854_775_808_i64))
         );
     }
 
     #[test]
     fn le_i128_tests() {
         assert_parse!(
-            le_i128(Partial(
+            le_i128(Partial::new(
                 &[
                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                     0x00, 0x00, 0x00
                 ][..]
             )),
-            Ok((Partial(&b""[..]), 0))
+            Ok((Partial::new(&b""[..]), 0))
         );
         assert_parse!(
-            le_i128(Partial(
+            le_i128(Partial::new(
                 &[
                     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
                     0xff, 0xff, 0x7f
                 ][..]
             )),
             Ok((
-                Partial(&b""[..]),
+                Partial::new(&b""[..]),
                 170_141_183_460_469_231_731_687_303_715_884_105_727_i128
             ))
         );
         assert_parse!(
-            le_i128(Partial(
+            le_i128(Partial::new(
                 &[
                     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
                     0xff, 0xff, 0xff
                 ][..]
             )),
-            Ok((Partial(&b""[..]), -1))
+            Ok((Partial::new(&b""[..]), -1))
         );
         assert_parse!(
-            le_i128(Partial(
+            le_i128(Partial::new(
                 &[
                     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                     0x00, 0x00, 0x80
                 ][..]
             )),
             Ok((
-                Partial(&b""[..]),
+                Partial::new(&b""[..]),
                 -170_141_183_460_469_231_731_687_303_715_884_105_728_i128
             ))
         );
@@ -872,56 +900,56 @@ mod partial {
     #[test]
     fn be_f32_tests() {
         assert_parse!(
-            be_f32(Partial(&[0x00, 0x00, 0x00, 0x00][..])),
-            Ok((Partial(&b""[..]), 0_f32))
+            be_f32(Partial::new(&[0x00, 0x00, 0x00, 0x00][..])),
+            Ok((Partial::new(&b""[..]), 0_f32))
         );
         assert_parse!(
-            be_f32(Partial(&[0x4d, 0x31, 0x1f, 0xd8][..])),
-            Ok((Partial(&b""[..]), 185_728_380_f32))
+            be_f32(Partial::new(&[0x4d, 0x31, 0x1f, 0xd8][..])),
+            Ok((Partial::new(&b""[..]), 185_728_380_f32))
         );
     }
 
     #[test]
     fn be_f64_tests() {
         assert_parse!(
-            be_f64(Partial(
+            be_f64(Partial::new(
                 &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
             )),
-            Ok((Partial(&b""[..]), 0_f64))
+            Ok((Partial::new(&b""[..]), 0_f64))
         );
         assert_parse!(
-            be_f64(Partial(
+            be_f64(Partial::new(
                 &[0x41, 0xa6, 0x23, 0xfb, 0x10, 0x00, 0x00, 0x00][..]
             )),
-            Ok((Partial(&b""[..]), 185_728_392_f64))
+            Ok((Partial::new(&b""[..]), 185_728_392_f64))
         );
     }
 
     #[test]
     fn le_f32_tests() {
         assert_parse!(
-            le_f32(Partial(&[0x00, 0x00, 0x00, 0x00][..])),
-            Ok((Partial(&b""[..]), 0_f32))
+            le_f32(Partial::new(&[0x00, 0x00, 0x00, 0x00][..])),
+            Ok((Partial::new(&b""[..]), 0_f32))
         );
         assert_parse!(
-            le_f32(Partial(&[0xd8, 0x1f, 0x31, 0x4d][..])),
-            Ok((Partial(&b""[..]), 185_728_380_f32))
+            le_f32(Partial::new(&[0xd8, 0x1f, 0x31, 0x4d][..])),
+            Ok((Partial::new(&b""[..]), 185_728_380_f32))
         );
     }
 
     #[test]
     fn le_f64_tests() {
         assert_parse!(
-            le_f64(Partial(
+            le_f64(Partial::new(
                 &[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]
             )),
-            Ok((Partial(&b""[..]), 0_f64))
+            Ok((Partial::new(&b""[..]), 0_f64))
         );
         assert_parse!(
-            le_f64(Partial(
+            le_f64(Partial::new(
                 &[0x00, 0x00, 0x00, 0x10, 0xfb, 0x23, 0xa6, 0x41][..]
             )),
-            Ok((Partial(&b""[..]), 185_728_392_f64))
+            Ok((Partial::new(&b""[..]), 185_728_392_f64))
         );
     }
 
@@ -936,12 +964,12 @@ mod partial {
             u16(Endianness::Little)(i)
         }
         assert_eq!(
-            be_tst16(Partial(&[0x80, 0x00])),
-            Ok((Partial(&b""[..]), 32_768_u16))
+            be_tst16(Partial::new(&[0x80, 0x00])),
+            Ok((Partial::new(&b""[..]), 32_768_u16))
         );
         assert_eq!(
-            le_tst16(Partial(&[0x80, 0x00])),
-            Ok((Partial(&b""[..]), 128_u16))
+            le_tst16(Partial::new(&[0x80, 0x00])),
+            Ok((Partial::new(&b""[..]), 128_u16))
         );
 
         fn be_tst32(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
@@ -951,12 +979,12 @@ mod partial {
             u32(Endianness::Little)(i)
         }
         assert_eq!(
-            be_tst32(Partial(&[0x12, 0x00, 0x60, 0x00])),
-            Ok((Partial(&b""[..]), 302_014_464_u32))
+            be_tst32(Partial::new(&[0x12, 0x00, 0x60, 0x00])),
+            Ok((Partial::new(&b""[..]), 302_014_464_u32))
         );
         assert_eq!(
-            le_tst32(Partial(&[0x12, 0x00, 0x60, 0x00])),
-            Ok((Partial(&b""[..]), 6_291_474_u32))
+            le_tst32(Partial::new(&[0x12, 0x00, 0x60, 0x00])),
+            Ok((Partial::new(&b""[..]), 6_291_474_u32))
         );
 
         fn be_tst64(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u64> {
@@ -966,12 +994,16 @@ mod partial {
             u64(Endianness::Little)(i)
         }
         assert_eq!(
-            be_tst64(Partial(&[0x12, 0x00, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00])),
-            Ok((Partial(&b""[..]), 1_297_142_246_100_992_000_u64))
+            be_tst64(Partial::new(&[
+                0x12, 0x00, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00
+            ])),
+            Ok((Partial::new(&b""[..]), 1_297_142_246_100_992_000_u64))
         );
         assert_eq!(
-            le_tst64(Partial(&[0x12, 0x00, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00])),
-            Ok((Partial(&b""[..]), 36_028_874_334_666_770_u64))
+            le_tst64(Partial::new(&[
+                0x12, 0x00, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00
+            ])),
+            Ok((Partial::new(&b""[..]), 36_028_874_334_666_770_u64))
         );
 
         fn be_tsti16(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i16> {
@@ -981,12 +1013,12 @@ mod partial {
             i16(Endianness::Little)(i)
         }
         assert_eq!(
-            be_tsti16(Partial(&[0x00, 0x80])),
-            Ok((Partial(&b""[..]), 128_i16))
+            be_tsti16(Partial::new(&[0x00, 0x80])),
+            Ok((Partial::new(&b""[..]), 128_i16))
         );
         assert_eq!(
-            le_tsti16(Partial(&[0x00, 0x80])),
-            Ok((Partial(&b""[..]), -32_768_i16))
+            le_tsti16(Partial::new(&[0x00, 0x80])),
+            Ok((Partial::new(&b""[..]), -32_768_i16))
         );
 
         fn be_tsti32(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i32> {
@@ -996,12 +1028,12 @@ mod partial {
             i32(Endianness::Little)(i)
         }
         assert_eq!(
-            be_tsti32(Partial(&[0x00, 0x12, 0x60, 0x00])),
-            Ok((Partial(&b""[..]), 1_204_224_i32))
+            be_tsti32(Partial::new(&[0x00, 0x12, 0x60, 0x00])),
+            Ok((Partial::new(&b""[..]), 1_204_224_i32))
         );
         assert_eq!(
-            le_tsti32(Partial(&[0x00, 0x12, 0x60, 0x00])),
-            Ok((Partial(&b""[..]), 6_296_064_i32))
+            le_tsti32(Partial::new(&[0x00, 0x12, 0x60, 0x00])),
+            Ok((Partial::new(&b""[..]), 6_296_064_i32))
         );
 
         fn be_tsti64(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i64> {
@@ -1011,12 +1043,16 @@ mod partial {
             i64(Endianness::Little)(i)
         }
         assert_eq!(
-            be_tsti64(Partial(&[0x00, 0xFF, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00])),
-            Ok((Partial(&b""[..]), 71_881_672_479_506_432_i64))
+            be_tsti64(Partial::new(&[
+                0x00, 0xFF, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00
+            ])),
+            Ok((Partial::new(&b""[..]), 71_881_672_479_506_432_i64))
         );
         assert_eq!(
-            le_tsti64(Partial(&[0x00, 0xFF, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00])),
-            Ok((Partial(&b""[..]), 36_028_874_334_732_032_i64))
+            le_tsti64(Partial::new(&[
+                0x00, 0xFF, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00
+            ])),
+            Ok((Partial::new(&b""[..]), 36_028_874_334_732_032_i64))
         );
     }
 }

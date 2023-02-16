@@ -264,12 +264,12 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 /// }
 ///
 /// // both parsers will take 4 bytes as expected
-/// assert_eq!(take_partial(Partial(&b"abcde"[..])), Ok((Partial(&b"e"[..]), &b"abcd"[..])));
+/// assert_eq!(take_partial(Partial::new(&b"abcde"[..])), Ok((Partial::new(&b"e"[..]), &b"abcd"[..])));
 /// assert_eq!(take_complete(&b"abcde"[..]), Ok((&b"e"[..], &b"abcd"[..])));
 ///
 /// // if the input is smaller than 4 bytes, the partial parser
 /// // will return `Incomplete` to indicate that we need more data
-/// assert_eq!(take_partial(Partial(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(take_partial(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// // but the complete parser will return an error
 /// assert_eq!(take_complete(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Eof))));
@@ -284,25 +284,50 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 /// }
 ///
 /// // if there's a clear limit to the recognized characters, both parsers work the same way
-/// assert_eq!(alpha0_partial(Partial("abcd;")), Ok((Partial(";"), "abcd")));
+/// assert_eq!(alpha0_partial(Partial::new("abcd;")), Ok((Partial::new(";"), "abcd")));
 /// assert_eq!(alpha0_complete("abcd;"), Ok((";", "abcd")));
 ///
 /// // but when there's no limit, the partial version returns `Incomplete`, because it cannot
 /// // know if more input data should be recognized. The whole input could be "abcd;", or
 /// // "abcde;"
-/// assert_eq!(alpha0_partial(Partial("abcd")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha0_partial(Partial::new("abcd")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// // while the complete version knows that all of the data is there
 /// assert_eq!(alpha0_complete("abcd"), Ok(("", "abcd")));
 /// ```
-#[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Partial<I>(pub I);
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Partial<I> {
+    input: I,
+    partial: bool,
+}
 
-impl<I> Partial<I> {
-    /// Convert to complete counterpart
+impl<I> Partial<I>
+where
+    I: StreamIsPartial,
+{
+    /// Create a partial input
+    pub fn new(input: I) -> Self {
+        debug_assert!(
+            !I::is_partial_supported(),
+            "`Partial` can only wrap complete sources"
+        );
+        let partial = true;
+        Self { input, partial }
+    }
+
+    /// Extract the original [`Stream`]
     #[inline(always)]
-    pub fn into_complete(self) -> I {
-        self.0
+    pub fn into_inner(self) -> I {
+        self.input
+    }
+}
+
+impl<I> Default for Partial<I>
+where
+    I: Default + StreamIsPartial,
+{
+    fn default() -> Self {
+        Self::new(I::default())
     }
 }
 
@@ -311,7 +336,7 @@ impl<I> crate::lib::std::ops::Deref for Partial<I> {
 
     #[inline(always)]
     fn deref(&self) -> &Self::Target {
-        &self.0
+        &self.input
     }
 }
 
@@ -400,7 +425,7 @@ where
 {
     #[inline(always)]
     fn slice_len(&self) -> usize {
-        self.0.slice_len()
+        self.input.slice_len()
     }
 }
 
@@ -859,17 +884,23 @@ impl<I: Stream> Stream for Partial<I> {
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
-        self.0.iter_offsets()
+        self.input.iter_offsets()
     }
     #[inline(always)]
     fn eof_offset(&self) -> usize {
-        self.0.eof_offset()
+        self.input.eof_offset()
     }
 
     #[inline(always)]
     fn next_token(&self) -> Option<(Self, Self::Token)> {
-        let (next, token) = self.0.next_token()?;
-        Some((Partial(next), token))
+        let (next, token) = self.input.next_token()?;
+        Some((
+            Partial {
+                input: next,
+                partial: self.partial,
+            },
+            token,
+        ))
     }
 
     #[inline(always)]
@@ -877,16 +908,22 @@ impl<I: Stream> Stream for Partial<I> {
     where
         P: Fn(Self::Token) -> bool,
     {
-        self.0.offset_for(predicate)
+        self.input.offset_for(predicate)
     }
     #[inline(always)]
     fn offset_at(&self, tokens: usize) -> Result<usize, Needed> {
-        self.0.offset_at(tokens)
+        self.input.offset_at(tokens)
     }
     #[inline(always)]
     fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
-        let (next, slice) = self.0.next_slice(offset);
-        (Partial(next), slice)
+        let (next, slice) = self.input.next_slice(offset);
+        (
+            Partial {
+                input: next,
+                partial: self.partial,
+            },
+            slice,
+        )
     }
 }
 
@@ -922,7 +959,7 @@ where
 {
     #[inline(always)]
     fn location(&self) -> usize {
-        self.0.location()
+        self.input.location()
     }
 }
 
@@ -930,6 +967,16 @@ where
 ///
 /// See [Partial] for marking a presumed complete buffer type as a streaming buffer.
 pub trait StreamIsPartial: Sized {
+    /// Whether the stream is currently partial or complete
+    type PartialState;
+
+    /// Mark the stream is complete
+    #[must_use]
+    fn complete(&mut self) -> Self::PartialState;
+
+    /// Restore the stream back to its previous state
+    fn restore_partial(&mut self, state: Self::PartialState);
+
     /// Report whether the [`Stream`] is can ever be incomplete
     fn is_partial_supported() -> bool;
 
@@ -941,6 +988,12 @@ pub trait StreamIsPartial: Sized {
 }
 
 impl<'a, T> StreamIsPartial for &'a [T] {
+    type PartialState = ();
+
+    fn complete(&mut self) -> Self::PartialState {}
+
+    fn restore_partial(&mut self, _state: Self::PartialState) {}
+
     #[inline(always)]
     fn is_partial_supported() -> bool {
         false
@@ -948,6 +1001,14 @@ impl<'a, T> StreamIsPartial for &'a [T] {
 }
 
 impl<'a> StreamIsPartial for &'a str {
+    type PartialState = ();
+
+    fn complete(&mut self) -> Self::PartialState {
+        // Already complete
+    }
+
+    fn restore_partial(&mut self, _state: Self::PartialState) {}
+
     #[inline(always)]
     fn is_partial_supported() -> bool {
         false
@@ -955,6 +1016,14 @@ impl<'a> StreamIsPartial for &'a str {
 }
 
 impl<'a> StreamIsPartial for &'a Bytes {
+    type PartialState = ();
+
+    fn complete(&mut self) -> Self::PartialState {
+        // Already complete
+    }
+
+    fn restore_partial(&mut self, _state: Self::PartialState) {}
+
     #[inline(always)]
     fn is_partial_supported() -> bool {
         false
@@ -962,6 +1031,14 @@ impl<'a> StreamIsPartial for &'a Bytes {
 }
 
 impl<'a> StreamIsPartial for &'a BStr {
+    type PartialState = ();
+
+    fn complete(&mut self) -> Self::PartialState {
+        // Already complete
+    }
+
+    fn restore_partial(&mut self, _state: Self::PartialState) {}
+
     #[inline(always)]
     fn is_partial_supported() -> bool {
         false
@@ -972,6 +1049,16 @@ impl<I> StreamIsPartial for (I, usize)
 where
     I: StreamIsPartial,
 {
+    type PartialState = I::PartialState;
+
+    fn complete(&mut self) -> Self::PartialState {
+        self.0.complete()
+    }
+
+    fn restore_partial(&mut self, state: Self::PartialState) {
+        self.0.restore_partial(state);
+    }
+
     #[inline(always)]
     fn is_partial_supported() -> bool {
         I::is_partial_supported()
@@ -987,6 +1074,16 @@ impl<I> StreamIsPartial for Located<I>
 where
     I: StreamIsPartial,
 {
+    type PartialState = I::PartialState;
+
+    fn complete(&mut self) -> Self::PartialState {
+        self.input.complete()
+    }
+
+    fn restore_partial(&mut self, state: Self::PartialState) {
+        self.input.restore_partial(state);
+    }
+
     #[inline(always)]
     fn is_partial_supported() -> bool {
         I::is_partial_supported()
@@ -1002,6 +1099,16 @@ impl<I, S> StreamIsPartial for Stateful<I, S>
 where
     I: StreamIsPartial,
 {
+    type PartialState = I::PartialState;
+
+    fn complete(&mut self) -> Self::PartialState {
+        self.input.complete()
+    }
+
+    fn restore_partial(&mut self, state: Self::PartialState) {
+        self.input.restore_partial(state);
+    }
+
     #[inline(always)]
     fn is_partial_supported() -> bool {
         I::is_partial_supported()
@@ -1017,9 +1124,24 @@ impl<I> StreamIsPartial for Partial<I>
 where
     I: StreamIsPartial,
 {
+    type PartialState = bool;
+
+    fn complete(&mut self) -> Self::PartialState {
+        self.partial
+    }
+
+    fn restore_partial(&mut self, state: Self::PartialState) {
+        self.partial = state;
+    }
+
     #[inline(always)]
     fn is_partial_supported() -> bool {
         true
+    }
+
+    #[inline(always)]
+    fn is_partial(&self) -> bool {
+        self.partial
     }
 }
 
@@ -1130,7 +1252,7 @@ where
 {
     #[inline(always)]
     fn offset_to(&self, second: &Self) -> usize {
-        self.0.offset_to(&second.0)
+        self.input.offset_to(&second.input)
     }
 }
 
@@ -1180,7 +1302,7 @@ where
 {
     #[inline(always)]
     fn as_bytes(&self) -> &[u8] {
-        self.0.as_bytes()
+        self.input.as_bytes()
     }
 }
 
@@ -1237,7 +1359,7 @@ where
 {
     #[inline(always)]
     fn as_bstr(&self) -> &[u8] {
-        self.0.as_bstr()
+        self.input.as_bstr()
     }
 }
 
@@ -1450,12 +1572,12 @@ where
 {
     #[inline(always)]
     fn compare(&self, t: T) -> CompareResult {
-        self.0.compare(t)
+        self.input.compare(t)
     }
 
     #[inline(always)]
     fn compare_no_case(&self, t: T) -> CompareResult {
-        self.0.compare_no_case(t)
+        self.input.compare_no_case(t)
     }
 }
 
@@ -1550,7 +1672,7 @@ where
 {
     #[inline(always)]
     fn find_slice(&self, substr: T) -> Option<usize> {
-        self.0.find_slice(substr)
+        self.input.find_slice(substr)
     }
 }
 
@@ -1641,7 +1763,10 @@ where
 {
     #[inline(always)]
     fn update_slice(self, inner: Self::Slice) -> Self {
-        Partial(I::update_slice(self.0, inner))
+        Partial {
+            input: I::update_slice(self.input, inner),
+            partial: self.partial,
+        }
     }
 }
 
@@ -1947,12 +2072,12 @@ where
 {
     #[inline(always)]
     fn to_hex(&self, chunk_size: usize) -> String {
-        self.0.to_hex(chunk_size)
+        self.input.to_hex(chunk_size)
     }
 
     #[inline(always)]
     fn to_hex_from(&self, chunk_size: usize, from: usize) -> String {
-        self.0.to_hex_from(chunk_size, from)
+        self.input.to_hex_from(chunk_size, from)
     }
 }
 

@@ -268,15 +268,15 @@
 //! let mut tpl = (be_u16, take(3u8), tag("fg"));
 //!
 //! assert_eq!(
-//!   tpl.parse_next(Partial(&b"abcdefgh"[..])),
+//!   tpl.parse_next(Partial::new(&b"abcdefgh"[..])),
 //!   Ok((
-//!     Partial(&b"h"[..]),
+//!     Partial::new(&b"h"[..]),
 //!     (0x6162u16, &b"cde"[..], &b"fg"[..])
 //!   ))
 //! );
-//! assert_eq!(tpl.parse_next(Partial(&b"abcde"[..])), Err(winnow::error::ErrMode::Incomplete(Needed::new(2))));
+//! assert_eq!(tpl.parse_next(Partial::new(&b"abcde"[..])), Err(winnow::error::ErrMode::Incomplete(Needed::new(2))));
 //! let input = &b"abcdejk"[..];
-//! assert_eq!(tpl.parse_next(Partial(input)), Err(winnow::error::ErrMode::Backtrack(Error::new(Partial(&input[5..]), ErrorKind::Tag))));
+//! assert_eq!(tpl.parse_next(Partial::new(input)), Err(winnow::error::ErrMode::Backtrack(Error::new(Partial::new(&input[5..]), ErrorKind::Tag))));
 //! # }
 //! ```
 //!

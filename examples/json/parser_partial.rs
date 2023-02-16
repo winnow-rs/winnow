@@ -215,31 +215,34 @@ mod test {
     #[test]
     fn json_string() {
         assert_eq!(
-            string::<Error<'_>>(Partial("\"\"")),
-            Ok((Partial(""), "".to_string()))
+            string::<Error<'_>>(Partial::new("\"\"")),
+            Ok((Partial::new(""), "".to_string()))
         );
         assert_eq!(
-            string::<Error<'_>>(Partial("\"abc\"")),
-            Ok((Partial(""), "abc".to_string()))
+            string::<Error<'_>>(Partial::new("\"abc\"")),
+            Ok((Partial::new(""), "abc".to_string()))
         );
         assert_eq!(
-            string::<Error<'_>>(Partial(
+            string::<Error<'_>>(Partial::new(
                 "\"abc\\\"\\\\\\/\\b\\f\\n\\r\\t\\u0001\\u2014\u{2014}def\""
             )),
-            Ok((Partial(""), "abc\"\\/\x08\x0C\n\r\t\x01——def".to_string())),
+            Ok((
+                Partial::new(""),
+                "abc\"\\/\x08\x0C\n\r\t\x01——def".to_string()
+            )),
         );
         assert_eq!(
-            string::<Error<'_>>(Partial("\"\\uD83D\\uDE10\"")),
-            Ok((Partial(""), "😐".to_string()))
+            string::<Error<'_>>(Partial::new("\"\\uD83D\\uDE10\"")),
+            Ok((Partial::new(""), "😐".to_string()))
         );
 
-        assert!(string::<Error<'_>>(Partial("\"")).is_err());
-        assert!(string::<Error<'_>>(Partial("\"abc")).is_err());
-        assert!(string::<Error<'_>>(Partial("\"\\\"")).is_err());
-        assert!(string::<Error<'_>>(Partial("\"\\u123\"")).is_err());
-        assert!(string::<Error<'_>>(Partial("\"\\uD800\"")).is_err());
-        assert!(string::<Error<'_>>(Partial("\"\\uD800\\uD800\"")).is_err());
-        assert!(string::<Error<'_>>(Partial("\"\\uDC00\"")).is_err());
+        assert!(string::<Error<'_>>(Partial::new("\"")).is_err());
+        assert!(string::<Error<'_>>(Partial::new("\"abc")).is_err());
+        assert!(string::<Error<'_>>(Partial::new("\"\\\"")).is_err());
+        assert!(string::<Error<'_>>(Partial::new("\"\\u123\"")).is_err());
+        assert!(string::<Error<'_>>(Partial::new("\"\\uD800\"")).is_err());
+        assert!(string::<Error<'_>>(Partial::new("\"\\uD800\\uD800\"")).is_err());
+        assert!(string::<Error<'_>>(Partial::new("\"\\uDC00\"")).is_err());
     }
 
     #[test]
@@ -258,8 +261,8 @@ mod test {
         );
 
         assert_eq!(
-            json::<Error<'_>>(Partial(input)),
-            Ok((Partial(""), expected))
+            json::<Error<'_>>(Partial::new(input)),
+            Ok((Partial::new(""), expected))
         );
     }
 
@@ -272,8 +275,8 @@ mod test {
         let expected = Array(vec![Num(42.0), Str("x".to_string())]);
 
         assert_eq!(
-            json::<Error<'_>>(Partial(input)),
-            Ok((Partial(""), expected))
+            json::<Error<'_>>(Partial::new(input)),
+            Ok((Partial::new(""), expected))
         );
     }
 
@@ -296,9 +299,9 @@ mod test {
   "#;
 
         assert_eq!(
-            json::<Error<'_>>(Partial(input)),
+            json::<Error<'_>>(Partial::new(input)),
             Ok((
-                Partial(""),
+                Partial::new(""),
                 Object(
                     vec![
                         ("null".to_string(), Null),

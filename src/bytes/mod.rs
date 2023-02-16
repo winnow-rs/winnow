@@ -33,8 +33,8 @@ use crate::IResult;
 /// ```
 /// # use winnow::{bytes::any, error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
-/// assert_eq!(any::<_, Error<_>>(Partial("abc")), Ok((Partial("bc"),'a')));
-/// assert_eq!(any::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(any::<_, Error<_>>(Partial::new("abc")), Ok((Partial::new("bc"),'a')));
+/// assert_eq!(any::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Token, E>
@@ -85,10 +85,10 @@ where
 ///   tag("Hello")(s)
 /// }
 ///
-/// assert_eq!(parser(Partial("Hello, World!")), Ok((Partial(", World!"), "Hello")));
-/// assert_eq!(parser(Partial("Something")), Err(ErrMode::Backtrack(Error::new(Partial("Something"), ErrorKind::Tag))));
-/// assert_eq!(parser(Partial("S")), Err(ErrMode::Backtrack(Error::new(Partial("S"), ErrorKind::Tag))));
-/// assert_eq!(parser(Partial("H")), Err(ErrMode::Incomplete(Needed::new(4))));
+/// assert_eq!(parser(Partial::new("Hello, World!")), Ok((Partial::new(", World!"), "Hello")));
+/// assert_eq!(parser(Partial::new("Something")), Err(ErrMode::Backtrack(Error::new(Partial::new("Something"), ErrorKind::Tag))));
+/// assert_eq!(parser(Partial::new("S")), Err(ErrMode::Backtrack(Error::new(Partial::new("S"), ErrorKind::Tag))));
+/// assert_eq!(parser(Partial::new("H")), Err(ErrMode::Incomplete(Needed::new(4))));
 /// ```
 #[inline(always)]
 pub fn tag<T, I, Error: ParseError<I>>(
@@ -140,11 +140,11 @@ where
 ///   tag_no_case("hello")(s)
 /// }
 ///
-/// assert_eq!(parser(Partial("Hello, World!")), Ok((Partial(", World!"), "Hello")));
-/// assert_eq!(parser(Partial("hello, World!")), Ok((Partial(", World!"), "hello")));
-/// assert_eq!(parser(Partial("HeLlO, World!")), Ok((Partial(", World!"), "HeLlO")));
-/// assert_eq!(parser(Partial("Something")), Err(ErrMode::Backtrack(Error::new(Partial("Something"), ErrorKind::Tag))));
-/// assert_eq!(parser(Partial("")), Err(ErrMode::Incomplete(Needed::new(5))));
+/// assert_eq!(parser(Partial::new("Hello, World!")), Ok((Partial::new(", World!"), "Hello")));
+/// assert_eq!(parser(Partial::new("hello, World!")), Ok((Partial::new(", World!"), "hello")));
+/// assert_eq!(parser(Partial::new("HeLlO, World!")), Ok((Partial::new(", World!"), "HeLlO")));
+/// assert_eq!(parser(Partial::new("Something")), Err(ErrMode::Backtrack(Error::new(Partial::new("Something"), ErrorKind::Tag))));
+/// assert_eq!(parser(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(5))));
 /// ```
 #[inline(always)]
 pub fn tag_no_case<T, I, Error: ParseError<I>>(
@@ -199,16 +199,16 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::bytes::one_of;
-/// assert_eq!(one_of::<_, _, Error<_>>("abc")(Partial("b")), Ok((Partial(""), 'b')));
-/// assert_eq!(one_of::<_, _, Error<_>>("a")(Partial("bc")), Err(ErrMode::Backtrack(Error::new(Partial("bc"), ErrorKind::OneOf))));
-/// assert_eq!(one_of::<_, _, Error<_>>("a")(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(one_of::<_, _, Error<_>>("abc")(Partial::new("b")), Ok((Partial::new(""), 'b')));
+/// assert_eq!(one_of::<_, _, Error<_>>("a")(Partial::new("bc")), Err(ErrMode::Backtrack(Error::new(Partial::new("bc"), ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, Error<_>>("a")(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// fn parser_fn(i: Partial<&str>) -> IResult<Partial<&str>, char> {
 ///     one_of(|c| c == 'a' || c == 'b')(i)
 /// }
-/// assert_eq!(parser_fn(Partial("abc")), Ok((Partial("bc"), 'a')));
-/// assert_eq!(parser_fn(Partial("cd")), Err(ErrMode::Backtrack(Error::new(Partial("cd"), ErrorKind::OneOf))));
-/// assert_eq!(parser_fn(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser_fn(Partial::new("abc")), Ok((Partial::new("bc"), 'a')));
+/// assert_eq!(parser_fn(Partial::new("cd")), Err(ErrMode::Backtrack(Error::new(Partial::new("cd"), ErrorKind::OneOf))));
+/// assert_eq!(parser_fn(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn one_of<I, T, Error: ParseError<I>>(
@@ -249,9 +249,9 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::bytes::none_of;
-/// assert_eq!(none_of::<_, _, Error<_>>("abc")(Partial("z")), Ok((Partial(""), 'z')));
-/// assert_eq!(none_of::<_, _, Error<_>>("ab")(Partial("a")), Err(ErrMode::Backtrack(Error::new(Partial("a"), ErrorKind::NoneOf))));
-/// assert_eq!(none_of::<_, _, Error<_>>("a")(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(none_of::<_, _, Error<_>>("abc")(Partial::new("z")), Ok((Partial::new(""), 'z')));
+/// assert_eq!(none_of::<_, _, Error<_>>("ab")(Partial::new("a")), Err(ErrMode::Backtrack(Error::new(Partial::new("a"), ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, Error<_>>("a")(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn none_of<I, T, Error: ParseError<I>>(
@@ -301,10 +301,10 @@ where
 ///   take_while0(AsChar::is_alpha)(s)
 /// }
 ///
-/// assert_eq!(alpha(Partial(b"latin123")), Ok((Partial(&b"123"[..]), &b"latin"[..])));
-/// assert_eq!(alpha(Partial(b"12345")), Ok((Partial(&b"12345"[..]), &b""[..])));
-/// assert_eq!(alpha(Partial(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(alpha(Partial(b"")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
+/// assert_eq!(alpha(Partial::new(b"12345")), Ok((Partial::new(&b"12345"[..]), &b""[..])));
+/// assert_eq!(alpha(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha(Partial::new(b"")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn take_while0<T, I, Error: ParseError<I>>(
@@ -365,19 +365,19 @@ where
 ///   take_while1(AsChar::is_alpha)(s)
 /// }
 ///
-/// assert_eq!(alpha(Partial(b"latin123")), Ok((Partial(&b"123"[..]), &b"latin"[..])));
-/// assert_eq!(alpha(Partial(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(alpha(Partial(b"12345")), Err(ErrMode::Backtrack(Error::new(Partial(&b"12345"[..]), ErrorKind::TakeWhile1))));
+/// assert_eq!(alpha(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
+/// assert_eq!(alpha(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha(Partial::new(b"12345")), Err(ErrMode::Backtrack(Error::new(Partial::new(&b"12345"[..]), ErrorKind::TakeWhile1))));
 ///
 /// fn hex(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   take_while1("1234567890ABCDEF")(s)
 /// }
 ///
-/// assert_eq!(hex(Partial("123 and voila")), Ok((Partial(" and voila"), "123")));
-/// assert_eq!(hex(Partial("DEADBEEF and others")), Ok((Partial(" and others"), "DEADBEEF")));
-/// assert_eq!(hex(Partial("BADBABEsomething")), Ok((Partial("something"), "BADBABE")));
-/// assert_eq!(hex(Partial("D15EA5E")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(hex(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(hex(Partial::new("123 and voila")), Ok((Partial::new(" and voila"), "123")));
+/// assert_eq!(hex(Partial::new("DEADBEEF and others")), Ok((Partial::new(" and others"), "DEADBEEF")));
+/// assert_eq!(hex(Partial::new("BADBABEsomething")), Ok((Partial::new("something"), "BADBABE")));
+/// assert_eq!(hex(Partial::new("D15EA5E")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(hex(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn take_while1<T, I, Error: ParseError<I>>(
@@ -431,11 +431,11 @@ where
 ///   take_while_m_n(3, 6, AsChar::is_alpha)(s)
 /// }
 ///
-/// assert_eq!(short_alpha(Partial(b"latin123")), Ok((Partial(&b"123"[..]), &b"latin"[..])));
-/// assert_eq!(short_alpha(Partial(b"lengthy")), Ok((Partial(&b"y"[..]), &b"length"[..])));
-/// assert_eq!(short_alpha(Partial(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(short_alpha(Partial(b"ed")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(short_alpha(Partial(b"12345")), Err(ErrMode::Backtrack(Error::new(Partial(&b"12345"[..]), ErrorKind::TakeWhileMN))));
+/// assert_eq!(short_alpha(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
+/// assert_eq!(short_alpha(Partial::new(b"lengthy")), Ok((Partial::new(&b"y"[..]), &b"length"[..])));
+/// assert_eq!(short_alpha(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(short_alpha(Partial::new(b"ed")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(short_alpha(Partial::new(b"12345")), Err(ErrMode::Backtrack(Error::new(Partial::new(&b"12345"[..]), ErrorKind::TakeWhileMN))));
 /// ```
 #[inline(always)]
 pub fn take_while_m_n<T, I, Error: ParseError<I>>(
@@ -486,10 +486,10 @@ where
 ///   take_till0(|c| c == ':')(s)
 /// }
 ///
-/// assert_eq!(till_colon(Partial("latin:123")), Ok((Partial(":123"), "latin")));
-/// assert_eq!(till_colon(Partial(":empty matched")), Ok((Partial(":empty matched"), ""))); //allowed
-/// assert_eq!(till_colon(Partial("12345")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(till_colon(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(till_colon(Partial::new("latin:123")), Ok((Partial::new(":123"), "latin")));
+/// assert_eq!(till_colon(Partial::new(":empty matched")), Ok((Partial::new(":empty matched"), ""))); //allowed
+/// assert_eq!(till_colon(Partial::new("12345")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(till_colon(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn take_till0<T, I, Error: ParseError<I>>(
@@ -550,19 +550,19 @@ where
 ///   take_till1(|c| c == ':')(s)
 /// }
 ///
-/// assert_eq!(till_colon(Partial("latin:123")), Ok((Partial(":123"), "latin")));
-/// assert_eq!(till_colon(Partial(":empty matched")), Err(ErrMode::Backtrack(Error::new(Partial(":empty matched"), ErrorKind::TakeTill1))));
-/// assert_eq!(till_colon(Partial("12345")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(till_colon(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(till_colon(Partial::new("latin:123")), Ok((Partial::new(":123"), "latin")));
+/// assert_eq!(till_colon(Partial::new(":empty matched")), Err(ErrMode::Backtrack(Error::new(Partial::new(":empty matched"), ErrorKind::TakeTill1))));
+/// assert_eq!(till_colon(Partial::new("12345")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(till_colon(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// fn not_space(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   take_till1(" \t\r\n")(s)
 /// }
 ///
-/// assert_eq!(not_space(Partial("Hello, World!")), Ok((Partial(" World!"), "Hello,")));
-/// assert_eq!(not_space(Partial("Sometimes\t")), Ok((Partial("\t"), "Sometimes")));
-/// assert_eq!(not_space(Partial("Nospace")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(not_space(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(not_space(Partial::new("Hello, World!")), Ok((Partial::new(" World!"), "Hello,")));
+/// assert_eq!(not_space(Partial::new("Sometimes\t")), Ok((Partial::new("\t"), "Sometimes")));
+/// assert_eq!(not_space(Partial::new("Nospace")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(not_space(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn take_till1<T, I, Error: ParseError<I>>(
@@ -629,10 +629,10 @@ where
 ///   take(6usize)(s)
 /// }
 ///
-/// assert_eq!(take6(Partial("1234567")), Ok((Partial("7"), "123456")));
-/// assert_eq!(take6(Partial("things")), Ok((Partial(""), "things")));
+/// assert_eq!(take6(Partial::new("1234567")), Ok((Partial::new("7"), "123456")));
+/// assert_eq!(take6(Partial::new("things")), Ok((Partial::new(""), "things")));
 /// // `Unknown` as we don't know the number of bytes that `count` corresponds to
-/// assert_eq!(take6(Partial("short")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(take6(Partial::new("short")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// ```
 #[inline(always)]
 pub fn take<C, I, Error: ParseError<I>>(
@@ -686,10 +686,10 @@ where
 ///   take_until0("eof")(s)
 /// }
 ///
-/// assert_eq!(until_eof(Partial("hello, worldeof")), Ok((Partial("eof"), "hello, world")));
-/// assert_eq!(until_eof(Partial("hello, world")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(until_eof(Partial("hello, worldeo")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(until_eof(Partial("1eof2eof")), Ok((Partial("eof2eof"), "1")));
+/// assert_eq!(until_eof(Partial::new("hello, worldeof")), Ok((Partial::new("eof"), "hello, world")));
+/// assert_eq!(until_eof(Partial::new("hello, world")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(until_eof(Partial::new("hello, worldeo")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(until_eof(Partial::new("1eof2eof")), Ok((Partial::new("eof2eof"), "1")));
 /// ```
 #[inline(always)]
 pub fn take_until0<T, I, Error: ParseError<I>>(
@@ -744,11 +744,11 @@ where
 ///   take_until1("eof")(s)
 /// }
 ///
-/// assert_eq!(until_eof(Partial("hello, worldeof")), Ok((Partial("eof"), "hello, world")));
-/// assert_eq!(until_eof(Partial("hello, world")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(until_eof(Partial("hello, worldeo")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(until_eof(Partial("1eof2eof")), Ok((Partial("eof2eof"), "1")));
-/// assert_eq!(until_eof(Partial("eof")),  Err(ErrMode::Backtrack(Error::new(Partial("eof"), ErrorKind::TakeUntil))));
+/// assert_eq!(until_eof(Partial::new("hello, worldeof")), Ok((Partial::new("eof"), "hello, world")));
+/// assert_eq!(until_eof(Partial::new("hello, world")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(until_eof(Partial::new("hello, worldeo")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(until_eof(Partial::new("1eof2eof")), Ok((Partial::new("eof2eof"), "1")));
+/// assert_eq!(until_eof(Partial::new("eof")),  Err(ErrMode::Backtrack(Error::new(Partial::new("eof"), ErrorKind::TakeUntil))));
 /// ```
 #[inline(always)]
 pub fn take_until1<T, I, Error: ParseError<I>>(

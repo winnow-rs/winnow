@@ -1049,7 +1049,7 @@ where
 /// type Stream<'i> = Partial<&'i Bytes>;
 ///
 /// fn stream(b: &[u8]) -> Stream<'_> {
-///     Partial(Bytes::new(b))
+///     Partial::new(Bytes::new(b))
 /// }
 ///
 /// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &Bytes> {
@@ -1097,7 +1097,7 @@ where
 /// type Stream<'i> = Partial<&'i Bytes>;
 ///
 /// fn stream(b: &[u8]) -> Stream<'_> {
-///     Partial(Bytes::new(b))
+///     Partial::new(Bytes::new(b))
 /// }
 ///
 /// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &Bytes> {
@@ -1119,7 +1119,8 @@ where
 {
     trace("length_value", move |i: I| {
         let (i, data) = length_data(f.by_ref()).parse_next(i)?;
-        let data = I::update_slice(i.clone(), data);
+        let mut data = I::update_slice(i.clone(), data);
+        let _ = data.complete();
         let (_, o) = g.by_ref().complete_err().parse_next(data)?;
         Ok((i, o))
     })

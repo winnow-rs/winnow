@@ -881,103 +881,118 @@ mod partial {
         let e: &[u8] = b" ";
         let f: &[u8] = b" ;";
         //assert_eq!(alpha1::<_, Error<_>>(a), Err(ErrMode::Incomplete(Needed::new(1))));
-        assert_parse!(alpha1(Partial(a)), Err(ErrMode::Incomplete(Needed::new(1))));
-        assert_eq!(
-            alpha1(Partial(b)),
-            Err(ErrMode::Backtrack(Error::new(Partial(b), ErrorKind::Alpha)))
-        );
-        assert_eq!(
-            alpha1::<_, Error<_>>(Partial(c)),
-            Ok((Partial(&c[1..]), &b"a"[..]))
-        );
-        assert_eq!(
-            alpha1::<_, Error<_>>(Partial(d)),
-            Ok((Partial("é12".as_bytes()), &b"az"[..]))
-        );
-        assert_eq!(
-            digit1(Partial(a)),
-            Err(ErrMode::Backtrack(Error::new(Partial(a), ErrorKind::Digit)))
-        );
-        assert_eq!(
-            digit1::<_, Error<_>>(Partial(b)),
+        assert_parse!(
+            alpha1(Partial::new(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            digit1(Partial(c)),
-            Err(ErrMode::Backtrack(Error::new(Partial(c), ErrorKind::Digit)))
-        );
-        assert_eq!(
-            digit1(Partial(d)),
-            Err(ErrMode::Backtrack(Error::new(Partial(d), ErrorKind::Digit)))
-        );
-        assert_eq!(
-            hex_digit1::<_, Error<_>>(Partial(a)),
-            Err(ErrMode::Incomplete(Needed::new(1)))
-        );
-        assert_eq!(
-            hex_digit1::<_, Error<_>>(Partial(b)),
-            Err(ErrMode::Incomplete(Needed::new(1)))
-        );
-        assert_eq!(
-            hex_digit1::<_, Error<_>>(Partial(c)),
-            Err(ErrMode::Incomplete(Needed::new(1)))
-        );
-        assert_eq!(
-            hex_digit1::<_, Error<_>>(Partial(d)),
-            Ok((Partial("zé12".as_bytes()), &b"a"[..]))
-        );
-        assert_eq!(
-            hex_digit1(Partial(e)),
+            alpha1(Partial::new(b)),
             Err(ErrMode::Backtrack(Error::new(
-                Partial(e),
+                Partial::new(b),
+                ErrorKind::Alpha
+            )))
+        );
+        assert_eq!(
+            alpha1::<_, Error<_>>(Partial::new(c)),
+            Ok((Partial::new(&c[1..]), &b"a"[..]))
+        );
+        assert_eq!(
+            alpha1::<_, Error<_>>(Partial::new(d)),
+            Ok((Partial::new("é12".as_bytes()), &b"az"[..]))
+        );
+        assert_eq!(
+            digit1(Partial::new(a)),
+            Err(ErrMode::Backtrack(Error::new(
+                Partial::new(a),
+                ErrorKind::Digit
+            )))
+        );
+        assert_eq!(
+            digit1::<_, Error<_>>(Partial::new(b)),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+        assert_eq!(
+            digit1(Partial::new(c)),
+            Err(ErrMode::Backtrack(Error::new(
+                Partial::new(c),
+                ErrorKind::Digit
+            )))
+        );
+        assert_eq!(
+            digit1(Partial::new(d)),
+            Err(ErrMode::Backtrack(Error::new(
+                Partial::new(d),
+                ErrorKind::Digit
+            )))
+        );
+        assert_eq!(
+            hex_digit1::<_, Error<_>>(Partial::new(a)),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+        assert_eq!(
+            hex_digit1::<_, Error<_>>(Partial::new(b)),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+        assert_eq!(
+            hex_digit1::<_, Error<_>>(Partial::new(c)),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+        assert_eq!(
+            hex_digit1::<_, Error<_>>(Partial::new(d)),
+            Ok((Partial::new("zé12".as_bytes()), &b"a"[..]))
+        );
+        assert_eq!(
+            hex_digit1(Partial::new(e)),
+            Err(ErrMode::Backtrack(Error::new(
+                Partial::new(e),
                 ErrorKind::HexDigit
             )))
         );
         assert_eq!(
-            oct_digit1(Partial(a)),
+            oct_digit1(Partial::new(a)),
             Err(ErrMode::Backtrack(Error::new(
-                Partial(a),
+                Partial::new(a),
                 ErrorKind::OctDigit
             )))
         );
         assert_eq!(
-            oct_digit1::<_, Error<_>>(Partial(b)),
+            oct_digit1::<_, Error<_>>(Partial::new(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            oct_digit1(Partial(c)),
+            oct_digit1(Partial::new(c)),
             Err(ErrMode::Backtrack(Error::new(
-                Partial(c),
+                Partial::new(c),
                 ErrorKind::OctDigit
             )))
         );
         assert_eq!(
-            oct_digit1(Partial(d)),
+            oct_digit1(Partial::new(d)),
             Err(ErrMode::Backtrack(Error::new(
-                Partial(d),
+                Partial::new(d),
                 ErrorKind::OctDigit
             )))
         );
         assert_eq!(
-            alphanumeric1::<_, Error<_>>(Partial(a)),
+            alphanumeric1::<_, Error<_>>(Partial::new(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         //assert_eq!(fix_error!(b,(), alphanumeric1), Ok((empty, b)));
         assert_eq!(
-            alphanumeric1::<_, Error<_>>(Partial(c)),
+            alphanumeric1::<_, Error<_>>(Partial::new(c)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            alphanumeric1::<_, Error<_>>(Partial(d)),
-            Ok((Partial("é12".as_bytes()), &b"az"[..]))
+            alphanumeric1::<_, Error<_>>(Partial::new(d)),
+            Ok((Partial::new("é12".as_bytes()), &b"az"[..]))
         );
         assert_eq!(
-            space1::<_, Error<_>>(Partial(e)),
+            space1::<_, Error<_>>(Partial::new(e)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            space1::<_, Error<_>>(Partial(f)),
-            Ok((Partial(&b";"[..]), &b" "[..]))
+            space1::<_, Error<_>>(Partial::new(f)),
+            Ok((Partial::new(&b";"[..]), &b" "[..]))
         );
     }
 
@@ -990,100 +1005,112 @@ mod partial {
         let d = "azé12";
         let e = " ";
         assert_eq!(
-            alpha1::<_, Error<_>>(Partial(a)),
+            alpha1::<_, Error<_>>(Partial::new(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            alpha1(Partial(b)),
-            Err(ErrMode::Backtrack(Error::new(Partial(b), ErrorKind::Alpha)))
-        );
-        assert_eq!(
-            alpha1::<_, Error<_>>(Partial(c)),
-            Ok((Partial(&c[1..]), "a"))
-        );
-        assert_eq!(
-            alpha1::<_, Error<_>>(Partial(d)),
-            Ok((Partial("é12"), "az"))
-        );
-        assert_eq!(
-            digit1(Partial(a)),
-            Err(ErrMode::Backtrack(Error::new(Partial(a), ErrorKind::Digit)))
-        );
-        assert_eq!(
-            digit1::<_, Error<_>>(Partial(b)),
-            Err(ErrMode::Incomplete(Needed::new(1)))
-        );
-        assert_eq!(
-            digit1(Partial(c)),
-            Err(ErrMode::Backtrack(Error::new(Partial(c), ErrorKind::Digit)))
-        );
-        assert_eq!(
-            digit1(Partial(d)),
-            Err(ErrMode::Backtrack(Error::new(Partial(d), ErrorKind::Digit)))
-        );
-        assert_eq!(
-            hex_digit1::<_, Error<_>>(Partial(a)),
-            Err(ErrMode::Incomplete(Needed::new(1)))
-        );
-        assert_eq!(
-            hex_digit1::<_, Error<_>>(Partial(b)),
-            Err(ErrMode::Incomplete(Needed::new(1)))
-        );
-        assert_eq!(
-            hex_digit1::<_, Error<_>>(Partial(c)),
-            Err(ErrMode::Incomplete(Needed::new(1)))
-        );
-        assert_eq!(
-            hex_digit1::<_, Error<_>>(Partial(d)),
-            Ok((Partial("zé12"), "a"))
-        );
-        assert_eq!(
-            hex_digit1(Partial(e)),
+            alpha1(Partial::new(b)),
             Err(ErrMode::Backtrack(Error::new(
-                Partial(e),
+                Partial::new(b),
+                ErrorKind::Alpha
+            )))
+        );
+        assert_eq!(
+            alpha1::<_, Error<_>>(Partial::new(c)),
+            Ok((Partial::new(&c[1..]), "a"))
+        );
+        assert_eq!(
+            alpha1::<_, Error<_>>(Partial::new(d)),
+            Ok((Partial::new("é12"), "az"))
+        );
+        assert_eq!(
+            digit1(Partial::new(a)),
+            Err(ErrMode::Backtrack(Error::new(
+                Partial::new(a),
+                ErrorKind::Digit
+            )))
+        );
+        assert_eq!(
+            digit1::<_, Error<_>>(Partial::new(b)),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+        assert_eq!(
+            digit1(Partial::new(c)),
+            Err(ErrMode::Backtrack(Error::new(
+                Partial::new(c),
+                ErrorKind::Digit
+            )))
+        );
+        assert_eq!(
+            digit1(Partial::new(d)),
+            Err(ErrMode::Backtrack(Error::new(
+                Partial::new(d),
+                ErrorKind::Digit
+            )))
+        );
+        assert_eq!(
+            hex_digit1::<_, Error<_>>(Partial::new(a)),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+        assert_eq!(
+            hex_digit1::<_, Error<_>>(Partial::new(b)),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+        assert_eq!(
+            hex_digit1::<_, Error<_>>(Partial::new(c)),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+        assert_eq!(
+            hex_digit1::<_, Error<_>>(Partial::new(d)),
+            Ok((Partial::new("zé12"), "a"))
+        );
+        assert_eq!(
+            hex_digit1(Partial::new(e)),
+            Err(ErrMode::Backtrack(Error::new(
+                Partial::new(e),
                 ErrorKind::HexDigit
             )))
         );
         assert_eq!(
-            oct_digit1(Partial(a)),
+            oct_digit1(Partial::new(a)),
             Err(ErrMode::Backtrack(Error::new(
-                Partial(a),
+                Partial::new(a),
                 ErrorKind::OctDigit
             )))
         );
         assert_eq!(
-            oct_digit1::<_, Error<_>>(Partial(b)),
+            oct_digit1::<_, Error<_>>(Partial::new(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            oct_digit1(Partial(c)),
+            oct_digit1(Partial::new(c)),
             Err(ErrMode::Backtrack(Error::new(
-                Partial(c),
+                Partial::new(c),
                 ErrorKind::OctDigit
             )))
         );
         assert_eq!(
-            oct_digit1(Partial(d)),
+            oct_digit1(Partial::new(d)),
             Err(ErrMode::Backtrack(Error::new(
-                Partial(d),
+                Partial::new(d),
                 ErrorKind::OctDigit
             )))
         );
         assert_eq!(
-            alphanumeric1::<_, Error<_>>(Partial(a)),
+            alphanumeric1::<_, Error<_>>(Partial::new(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         //assert_eq!(fix_error!(b,(), alphanumeric1), Ok((empty, b)));
         assert_eq!(
-            alphanumeric1::<_, Error<_>>(Partial(c)),
+            alphanumeric1::<_, Error<_>>(Partial::new(c)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            alphanumeric1::<_, Error<_>>(Partial(d)),
-            Ok((Partial("é12"), "az"))
+            alphanumeric1::<_, Error<_>>(Partial::new(d)),
+            Ok((Partial::new("é12"), "az"))
         );
         assert_eq!(
-            space1::<_, Error<_>>(Partial(e)),
+            space1::<_, Error<_>>(Partial::new(e)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
     }
@@ -1098,44 +1125,51 @@ mod partial {
         let e = &b" \t\r\n;"[..];
         let f = &b"123abcDEF;"[..];
 
-        match alpha1::<_, Error<_>>(Partial(a)) {
-            Ok((Partial(i), _)) => {
+        match alpha1::<_, Error<_>>(Partial::new(a)) {
+            Ok((i, _)) => {
+                let i = i.into_inner();
                 assert_eq!(a.offset_to(i) + i.len(), a.len());
             }
             _ => panic!("wrong return type in offset test for alpha"),
         }
-        match digit1::<_, Error<_>>(Partial(b)) {
-            Ok((Partial(i), _)) => {
+        match digit1::<_, Error<_>>(Partial::new(b)) {
+            Ok((i, _)) => {
+                let i = i.into_inner();
                 assert_eq!(b.offset_to(i) + i.len(), b.len());
             }
             _ => panic!("wrong return type in offset test for digit"),
         }
-        match alphanumeric1::<_, Error<_>>(Partial(c)) {
-            Ok((Partial(i), _)) => {
+        match alphanumeric1::<_, Error<_>>(Partial::new(c)) {
+            Ok((i, _)) => {
+                let i = i.into_inner();
                 assert_eq!(c.offset_to(i) + i.len(), c.len());
             }
             _ => panic!("wrong return type in offset test for alphanumeric"),
         }
-        match space1::<_, Error<_>>(Partial(d)) {
-            Ok((Partial(i), _)) => {
+        match space1::<_, Error<_>>(Partial::new(d)) {
+            Ok((i, _)) => {
+                let i = i.into_inner();
                 assert_eq!(d.offset_to(i) + i.len(), d.len());
             }
             _ => panic!("wrong return type in offset test for space"),
         }
-        match multispace1::<_, Error<_>>(Partial(e)) {
-            Ok((Partial(i), _)) => {
+        match multispace1::<_, Error<_>>(Partial::new(e)) {
+            Ok((i, _)) => {
+                let i = i.into_inner();
                 assert_eq!(e.offset_to(i) + i.len(), e.len());
             }
             _ => panic!("wrong return type in offset test for multispace"),
         }
-        match hex_digit1::<_, Error<_>>(Partial(f)) {
-            Ok((Partial(i), _)) => {
+        match hex_digit1::<_, Error<_>>(Partial::new(f)) {
+            Ok((i, _)) => {
+                let i = i.into_inner();
                 assert_eq!(f.offset_to(i) + i.len(), f.len());
             }
             _ => panic!("wrong return type in offset test for hex_digit"),
         }
-        match oct_digit1::<_, Error<_>>(Partial(f)) {
-            Ok((Partial(i), _)) => {
+        match oct_digit1::<_, Error<_>>(Partial::new(f)) {
+            Ok((i, _)) => {
+                let i = i.into_inner();
                 assert_eq!(f.offset_to(i) + i.len(), f.len());
             }
             _ => panic!("wrong return type in offset test for oct_digit"),
@@ -1146,25 +1180,25 @@ mod partial {
     fn is_not_line_ending_bytes() {
         let a: &[u8] = b"ab12cd\nefgh";
         assert_eq!(
-            not_line_ending::<_, Error<_>>(Partial(a)),
-            Ok((Partial(&b"\nefgh"[..]), &b"ab12cd"[..]))
+            not_line_ending::<_, Error<_>>(Partial::new(a)),
+            Ok((Partial::new(&b"\nefgh"[..]), &b"ab12cd"[..]))
         );
 
         let b: &[u8] = b"ab12cd\nefgh\nijkl";
         assert_eq!(
-            not_line_ending::<_, Error<_>>(Partial(b)),
-            Ok((Partial(&b"\nefgh\nijkl"[..]), &b"ab12cd"[..]))
+            not_line_ending::<_, Error<_>>(Partial::new(b)),
+            Ok((Partial::new(&b"\nefgh\nijkl"[..]), &b"ab12cd"[..]))
         );
 
         let c: &[u8] = b"ab12cd\r\nefgh\nijkl";
         assert_eq!(
-            not_line_ending::<_, Error<_>>(Partial(c)),
-            Ok((Partial(&b"\r\nefgh\nijkl"[..]), &b"ab12cd"[..]))
+            not_line_ending::<_, Error<_>>(Partial::new(c)),
+            Ok((Partial::new(&b"\r\nefgh\nijkl"[..]), &b"ab12cd"[..]))
         );
 
         let d: &[u8] = b"ab12cd";
         assert_eq!(
-            not_line_ending::<_, Error<_>>(Partial(d)),
+            not_line_ending::<_, Error<_>>(Partial::new(d)),
             Err(ErrMode::Incomplete(Needed::Unknown))
         );
     }
@@ -1173,13 +1207,16 @@ mod partial {
     fn is_not_line_ending_str() {
         let f = "βèƒôřè\rÂßÇáƒƭèř";
         assert_eq!(
-            not_line_ending(Partial(f)),
-            Err(ErrMode::Backtrack(Error::new(Partial(f), ErrorKind::Tag)))
+            not_line_ending(Partial::new(f)),
+            Err(ErrMode::Backtrack(Error::new(
+                Partial::new(f),
+                ErrorKind::Tag
+            )))
         );
 
         let g2: &str = "ab12cd";
         assert_eq!(
-            not_line_ending::<_, Error<_>>(Partial(g2)),
+            not_line_ending::<_, Error<_>>(Partial::new(g2)),
             Err(ErrMode::Incomplete(Needed::Unknown))
         );
     }
@@ -1188,24 +1225,24 @@ mod partial {
     fn hex_digit_test() {
         let i = &b"0123456789abcdefABCDEF;"[..];
         assert_parse!(
-            hex_digit1(Partial(i)),
-            Ok((Partial(&b";"[..]), &i[..i.len() - 1]))
+            hex_digit1(Partial::new(i)),
+            Ok((Partial::new(&b";"[..]), &i[..i.len() - 1]))
         );
 
         let i = &b"g"[..];
         assert_parse!(
-            hex_digit1(Partial(i)),
+            hex_digit1(Partial::new(i)),
             Err(ErrMode::Backtrack(error_position!(
-                Partial(i),
+                Partial::new(i),
                 ErrorKind::HexDigit
             )))
         );
 
         let i = &b"G"[..];
         assert_parse!(
-            hex_digit1(Partial(i)),
+            hex_digit1(Partial::new(i)),
             Err(ErrMode::Backtrack(error_position!(
-                Partial(i),
+                Partial::new(i),
                 ErrorKind::HexDigit
             )))
         );
@@ -1228,15 +1265,15 @@ mod partial {
     fn oct_digit_test() {
         let i = &b"01234567;"[..];
         assert_parse!(
-            oct_digit1(Partial(i)),
-            Ok((Partial(&b";"[..]), &i[..i.len() - 1]))
+            oct_digit1(Partial::new(i)),
+            Ok((Partial::new(&b";"[..]), &i[..i.len() - 1]))
         );
 
         let i = &b"8"[..];
         assert_parse!(
-            oct_digit1(Partial(i)),
+            oct_digit1(Partial::new(i)),
             Err(ErrMode::Backtrack(error_position!(
-                Partial(i),
+                Partial::new(i),
                 ErrorKind::OctDigit
             )))
         );
@@ -1260,8 +1297,11 @@ mod partial {
             pair(not_line_ending, line_ending)(i)
         }
         let input = b"abc\r\n";
-        let output = take_full_line(Partial(input));
-        assert_eq!(output, Ok((Partial(&b""[..]), (&b"abc"[..], &b"\r\n"[..]))));
+        let output = take_full_line(Partial::new(input));
+        assert_eq!(
+            output,
+            Ok((Partial::new(&b""[..]), (&b"abc"[..], &b"\r\n"[..])))
+        );
     }
 
     #[test]
@@ -1271,51 +1311,54 @@ mod partial {
             pair(not_line_ending, line_ending)(i)
         }
         let input = b"abc\n";
-        let output = take_full_line(Partial(input));
-        assert_eq!(output, Ok((Partial(&b""[..]), (&b"abc"[..], &b"\n"[..]))));
+        let output = take_full_line(Partial::new(input));
+        assert_eq!(
+            output,
+            Ok((Partial::new(&b""[..]), (&b"abc"[..], &b"\n"[..])))
+        );
     }
 
     #[test]
     fn check_windows_lineending() {
         let input = b"\r\n";
-        let output = line_ending(Partial(&input[..]));
-        assert_parse!(output, Ok((Partial(&b""[..]), &b"\r\n"[..])));
+        let output = line_ending(Partial::new(&input[..]));
+        assert_parse!(output, Ok((Partial::new(&b""[..]), &b"\r\n"[..])));
     }
 
     #[test]
     fn check_unix_lineending() {
         let input = b"\n";
-        let output = line_ending(Partial(&input[..]));
-        assert_parse!(output, Ok((Partial(&b""[..]), &b"\n"[..])));
+        let output = line_ending(Partial::new(&input[..]));
+        assert_parse!(output, Ok((Partial::new(&b""[..]), &b"\n"[..])));
     }
 
     #[test]
     fn cr_lf() {
         assert_parse!(
-            crlf(Partial(&b"\r\na"[..])),
-            Ok((Partial(&b"a"[..]), &b"\r\n"[..]))
+            crlf(Partial::new(&b"\r\na"[..])),
+            Ok((Partial::new(&b"a"[..]), &b"\r\n"[..]))
         );
         assert_parse!(
-            crlf(Partial(&b"\r"[..])),
+            crlf(Partial::new(&b"\r"[..])),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
         assert_parse!(
-            crlf(Partial(&b"\ra"[..])),
+            crlf(Partial::new(&b"\ra"[..])),
             Err(ErrMode::Backtrack(error_position!(
-                Partial(&b"\ra"[..]),
+                Partial::new(&b"\ra"[..]),
                 ErrorKind::CrLf
             )))
         );
 
-        assert_parse!(crlf(Partial("\r\na")), Ok((Partial("a"), "\r\n")));
+        assert_parse!(crlf(Partial::new("\r\na")), Ok((Partial::new("a"), "\r\n")));
         assert_parse!(
-            crlf(Partial("\r")),
+            crlf(Partial::new("\r")),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
         assert_parse!(
-            crlf(Partial("\ra")),
+            crlf(Partial::new("\ra")),
             Err(ErrMode::Backtrack(error_position!(
-                Partial("\ra"),
+                Partial::new("\ra"),
                 ErrorKind::CrLf
             )))
         );
@@ -1324,35 +1367,41 @@ mod partial {
     #[test]
     fn end_of_line() {
         assert_parse!(
-            line_ending(Partial(&b"\na"[..])),
-            Ok((Partial(&b"a"[..]), &b"\n"[..]))
+            line_ending(Partial::new(&b"\na"[..])),
+            Ok((Partial::new(&b"a"[..]), &b"\n"[..]))
         );
         assert_parse!(
-            line_ending(Partial(&b"\r\na"[..])),
-            Ok((Partial(&b"a"[..]), &b"\r\n"[..]))
+            line_ending(Partial::new(&b"\r\na"[..])),
+            Ok((Partial::new(&b"a"[..]), &b"\r\n"[..]))
         );
         assert_parse!(
-            line_ending(Partial(&b"\r"[..])),
+            line_ending(Partial::new(&b"\r"[..])),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
         assert_parse!(
-            line_ending(Partial(&b"\ra"[..])),
+            line_ending(Partial::new(&b"\ra"[..])),
             Err(ErrMode::Backtrack(error_position!(
-                Partial(&b"\ra"[..]),
+                Partial::new(&b"\ra"[..]),
                 ErrorKind::CrLf
             )))
         );
 
-        assert_parse!(line_ending(Partial("\na")), Ok((Partial("a"), "\n")));
-        assert_parse!(line_ending(Partial("\r\na")), Ok((Partial("a"), "\r\n")));
         assert_parse!(
-            line_ending(Partial("\r")),
+            line_ending(Partial::new("\na")),
+            Ok((Partial::new("a"), "\n"))
+        );
+        assert_parse!(
+            line_ending(Partial::new("\r\na")),
+            Ok((Partial::new("a"), "\r\n"))
+        );
+        assert_parse!(
+            line_ending(Partial::new("\r")),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
         assert_parse!(
-            line_ending(Partial("\ra")),
+            line_ending(Partial::new("\ra")),
             Err(ErrMode::Backtrack(error_position!(
-                Partial("\ra"),
+                Partial::new("\ra"),
                 ErrorKind::CrLf
             )))
         );
@@ -1398,16 +1447,16 @@ mod partial {
       #[test]
       #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
       fn ints(s in "\\PC*") {
-          let res1 = digit_to_i16(Partial(&s));
-          let res2 = dec_int(Partial(s.as_str()));
+          let res1 = digit_to_i16(Partial::new(&s));
+          let res2 = dec_int(Partial::new(s.as_str()));
           assert_eq!(res1, res2);
       }
 
       #[test]
       #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
       fn uints(s in "\\PC*") {
-          let res1 = digit_to_u32(Partial(&s));
-          let res2 = dec_uint(Partial(s.as_str()));
+          let res1 = digit_to_u32(Partial::new(&s));
+          let res2 = dec_uint(Partial::new(s.as_str()));
           assert_eq!(res1, res2);
       }
     }
@@ -1419,63 +1468,66 @@ mod partial {
         }
 
         assert_parse!(
-            hex_u32(Partial(&b";"[..])),
+            hex_u32(Partial::new(&b";"[..])),
             Err(ErrMode::Backtrack(error_position!(
-                Partial(&b";"[..]),
-                ErrorKind::IsA
-            )))
-        );
-        assert_parse!(hex_u32(Partial(&b"ff;"[..])), Ok((Partial(&b";"[..]), 255)));
-        assert_parse!(
-            hex_u32(Partial(&b"1be2;"[..])),
-            Ok((Partial(&b";"[..]), 7138))
-        );
-        assert_parse!(
-            hex_u32(Partial(&b"c5a31be2;"[..])),
-            Ok((Partial(&b";"[..]), 3_315_801_058))
-        );
-        assert_parse!(
-            hex_u32(Partial(&b"C5A31be2;"[..])),
-            Ok((Partial(&b";"[..]), 3_315_801_058))
-        );
-        assert_parse!(
-            hex_u32(Partial(&b"00c5a31be2;"[..])), // overflow
-            Err(ErrMode::Backtrack(error_position!(
-                Partial(&b"00c5a31be2;"[..]),
+                Partial::new(&b";"[..]),
                 ErrorKind::IsA
             )))
         );
         assert_parse!(
-            hex_u32(Partial(&b"c5a31be201;"[..])), // overflow
+            hex_u32(Partial::new(&b"ff;"[..])),
+            Ok((Partial::new(&b";"[..]), 255))
+        );
+        assert_parse!(
+            hex_u32(Partial::new(&b"1be2;"[..])),
+            Ok((Partial::new(&b";"[..]), 7138))
+        );
+        assert_parse!(
+            hex_u32(Partial::new(&b"c5a31be2;"[..])),
+            Ok((Partial::new(&b";"[..]), 3_315_801_058))
+        );
+        assert_parse!(
+            hex_u32(Partial::new(&b"C5A31be2;"[..])),
+            Ok((Partial::new(&b";"[..]), 3_315_801_058))
+        );
+        assert_parse!(
+            hex_u32(Partial::new(&b"00c5a31be2;"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
-                Partial(&b"c5a31be201;"[..]),
+                Partial::new(&b"00c5a31be2;"[..]),
                 ErrorKind::IsA
             )))
         );
         assert_parse!(
-            hex_u32(Partial(&b"ffffffff;"[..])),
-            Ok((Partial(&b";"[..]), 4_294_967_295))
-        );
-        assert_parse!(
-            hex_u32(Partial(&b"ffffffffffffffff;"[..])), // overflow
+            hex_u32(Partial::new(&b"c5a31be201;"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
-                Partial(&b"ffffffffffffffff;"[..]),
+                Partial::new(&b"c5a31be201;"[..]),
                 ErrorKind::IsA
             )))
         );
         assert_parse!(
-            hex_u32(Partial(&b"ffffffffffffffff"[..])), // overflow
+            hex_u32(Partial::new(&b"ffffffff;"[..])),
+            Ok((Partial::new(&b";"[..]), 4_294_967_295))
+        );
+        assert_parse!(
+            hex_u32(Partial::new(&b"ffffffffffffffff;"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
-                Partial(&b"ffffffffffffffff"[..]),
+                Partial::new(&b"ffffffffffffffff;"[..]),
                 ErrorKind::IsA
             )))
         );
         assert_parse!(
-            hex_u32(Partial(&b"0x1be2;"[..])),
-            Ok((Partial(&b"x1be2;"[..]), 0))
+            hex_u32(Partial::new(&b"ffffffffffffffff"[..])), // overflow
+            Err(ErrMode::Backtrack(error_position!(
+                Partial::new(&b"ffffffffffffffff"[..]),
+                ErrorKind::IsA
+            )))
         );
         assert_parse!(
-            hex_u32(Partial(&b"12af"[..])),
+            hex_u32(Partial::new(&b"0x1be2;"[..])),
+            Ok((Partial::new(&b"x1be2;"[..]), 0))
+        );
+        assert_parse!(
+            hex_u32(Partial::new(&b"12af"[..])),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
     }

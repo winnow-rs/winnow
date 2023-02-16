@@ -264,12 +264,15 @@ fn opt_test() {
     let b = &b"bcdefg"[..];
     let c = &b"ab"[..];
     assert_eq!(
-        opt_abcd(Partial(a)),
-        Ok((Partial(&b"ef"[..]), Some(&b"abcd"[..])))
+        opt_abcd(Partial::new(a)),
+        Ok((Partial::new(&b"ef"[..]), Some(&b"abcd"[..])))
     );
-    assert_eq!(opt_abcd(Partial(b)), Ok((Partial(&b"bcdefg"[..]), None)));
     assert_eq!(
-        opt_abcd(Partial(c)),
+        opt_abcd(Partial::new(b)),
+        Ok((Partial::new(&b"bcdefg"[..]), None))
+    );
+    assert_eq!(
+        opt_abcd(Partial::new(c)),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
 }
@@ -281,17 +284,17 @@ fn peek_test() {
     }
 
     assert_eq!(
-        peek_tag(Partial(&b"abcdef"[..])),
-        Ok((Partial(&b"abcdef"[..]), &b"abcd"[..]))
+        peek_tag(Partial::new(&b"abcdef"[..])),
+        Ok((Partial::new(&b"abcdef"[..]), &b"abcd"[..]))
     );
     assert_eq!(
-        peek_tag(Partial(&b"ab"[..])),
+        peek_tag(Partial::new(&b"ab"[..])),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_eq!(
-        peek_tag(Partial(&b"xxx"[..])),
+        peek_tag(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxx"[..]),
+            Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
@@ -304,19 +307,19 @@ fn not_test() {
     }
 
     assert_eq!(
-        not_aaa(Partial(&b"aaa"[..])),
+        not_aaa(Partial::new(&b"aaa"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"aaa"[..]),
+            Partial::new(&b"aaa"[..]),
             ErrorKind::Not
         )))
     );
     assert_eq!(
-        not_aaa(Partial(&b"aa"[..])),
+        not_aaa(Partial::new(&b"aa"[..])),
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-        not_aaa(Partial(&b"abcd"[..])),
-        Ok((Partial(&b"abcd"[..]), ()))
+        not_aaa(Partial::new(&b"abcd"[..])),
+        Ok((Partial::new(&b"abcd"[..]), ()))
     );
 }
 
@@ -329,19 +332,19 @@ fn verify_test() {
         verify(take(5u8), |slice: &[u8]| slice[0] == b'a')(i)
     }
     assert_eq!(
-        test(Partial(&b"bcd"[..])),
+        test(Partial::new(&b"bcd"[..])),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_eq!(
-        test(Partial(&b"bcdefg"[..])),
+        test(Partial::new(&b"bcdefg"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"bcdefg"[..]),
+            Partial::new(&b"bcdefg"[..]),
             ErrorKind::Verify
         )))
     );
     assert_eq!(
-        test(Partial(&b"abcdefg"[..])),
-        Ok((Partial(&b"fg"[..]), &b"abcde"[..]))
+        test(Partial::new(&b"abcdefg"[..])),
+        Ok((Partial::new(&b"fg"[..]), &b"abcde"[..]))
     );
 }
 
@@ -355,19 +358,19 @@ fn test_parser_verify() {
             .parse_next(i)
     }
     assert_eq!(
-        test(Partial(&b"bcd"[..])),
+        test(Partial::new(&b"bcd"[..])),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_eq!(
-        test(Partial(&b"bcdefg"[..])),
+        test(Partial::new(&b"bcdefg"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"bcdefg"[..]),
+            Partial::new(&b"bcdefg"[..]),
             ErrorKind::Verify
         )))
     );
     assert_eq!(
-        test(Partial(&b"abcdefg"[..])),
-        Ok((Partial(&b"fg"[..]), &b"abcde"[..]))
+        test(Partial::new(&b"abcdefg"[..])),
+        Ok((Partial::new(&b"fg"[..]), &b"abcde"[..]))
     );
 }
 
