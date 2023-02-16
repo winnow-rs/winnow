@@ -947,11 +947,35 @@ impl<'a> StreamIsPartial<false> for &'a BStr {}
 
 impl<const YES: bool> StreamIsPartial<YES> for crate::lib::std::convert::Infallible {}
 
-impl<I, const YES: bool> StreamIsPartial<YES> for (I, usize) where I: StreamIsPartial<YES> {}
+impl<I, const YES: bool> StreamIsPartial<YES> for (I, usize)
+where
+    I: StreamIsPartial<YES>,
+{
+    #[inline(always)]
+    fn is_partial(&self) -> bool {
+        self.0.is_partial()
+    }
+}
 
-impl<I, const YES: bool> StreamIsPartial<YES> for Located<I> where I: StreamIsPartial<YES> {}
+impl<I, const YES: bool> StreamIsPartial<YES> for Located<I>
+where
+    I: StreamIsPartial<YES>,
+{
+    #[inline(always)]
+    fn is_partial(&self) -> bool {
+        self.input.is_partial()
+    }
+}
 
-impl<I, S, const YES: bool> StreamIsPartial<YES> for Stateful<I, S> where I: StreamIsPartial<YES> {}
+impl<I, S, const YES: bool> StreamIsPartial<YES> for Stateful<I, S>
+where
+    I: StreamIsPartial<YES>,
+{
+    #[inline(always)]
+    fn is_partial(&self) -> bool {
+        self.input.is_partial()
+    }
+}
 
 impl<I> StreamIsPartial<true> for Partial<I> where I: StreamIsPartial<false> {}
 
