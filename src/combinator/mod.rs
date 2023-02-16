@@ -160,8 +160,8 @@ use crate::error::{ContextError, ErrMode, ErrorKind, FromExternalError, Needed, 
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::convert;
 use crate::lib::std::ops::Range;
-use crate::stream::Offset;
 use crate::stream::{Location, Stream};
+use crate::stream::{Offset, StreamIsPartial};
 use crate::trace::trace;
 use crate::trace::trace_result;
 use crate::*;
@@ -482,7 +482,10 @@ pub struct AndThen<F, G, O1> {
     phantom: core::marker::PhantomData<O1>,
 }
 
-impl<F, G, O1> AndThen<F, G, O1> {
+impl<F, G, O1> AndThen<F, G, O1>
+where
+    O1: StreamIsPartial,
+{
     pub(crate) fn new(f: F, g: G) -> Self {
         Self {
             f,
@@ -492,11 +495,13 @@ impl<F, G, O1> AndThen<F, G, O1> {
     }
 }
 
-impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, E>
-    for AndThen<F, G, O1>
+impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, E> for AndThen<F, G, O1>
+where
+    O1: StreamIsPartial,
 {
     fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
-        let (i, o1) = self.f.parse_next(i)?;
+        let (i, mut o1) = self.f.parse_next(i)?;
+        let _ = o1.complete();
         let (_, o2) = self.g.parse_next(o1)?;
         Ok((i, o2))
     }

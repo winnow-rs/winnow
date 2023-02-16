@@ -443,6 +443,7 @@ pub trait Parser<I, O, E> {
     /// ```
     fn and_then<G, O2>(self, g: G) -> AndThen<Self, G, O>
     where
+        O: StreamIsPartial,
         G: Parser<O, O2, E>,
         Self: core::marker::Sized,
     {
