@@ -527,8 +527,8 @@ pub trait Parser<I, O, E> {
     ///
     /// let mut parser = take(5u8).complete_err();
     ///
-    /// assert_eq!(parser.parse_next(Partial("abcdefg")), Ok((Partial("fg"), "abcde")));
-    /// assert_eq!(parser.parse_next(Partial("abcd")), Err(ErrMode::Backtrack(Error::new(Partial("abcd"), ErrorKind::Complete))));
+    /// assert_eq!(parser.parse_next(Partial::new("abcdefg")), Ok((Partial::new("fg"), "abcde")));
+    /// assert_eq!(parser.parse_next(Partial::new("abcd")), Err(ErrMode::Backtrack(Error::new(Partial::new("abcd"), ErrorKind::Complete))));
     /// # }
     /// ```
     fn complete_err(self) -> CompleteErr<Self>
@@ -881,21 +881,24 @@ mod tests {
         }
 
         assert_eq!(
-            tuple_3(Partial(&b"abcdefgh"[..])),
-            Ok((Partial(&b"h"[..]), (0x6162u16, &b"cde"[..], &b"fg"[..])))
+            tuple_3(Partial::new(&b"abcdefgh"[..])),
+            Ok((
+                Partial::new(&b"h"[..]),
+                (0x6162u16, &b"cde"[..], &b"fg"[..])
+            ))
         );
         assert_eq!(
-            tuple_3(Partial(&b"abcd"[..])),
+            tuple_3(Partial::new(&b"abcd"[..])),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            tuple_3(Partial(&b"abcde"[..])),
+            tuple_3(Partial::new(&b"abcde"[..])),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
         assert_eq!(
-            tuple_3(Partial(&b"abcdejk"[..])),
+            tuple_3(Partial::new(&b"abcdejk"[..])),
             Err(ErrMode::Backtrack(error_position!(
-                Partial(&b"jk"[..]),
+                Partial::new(&b"jk"[..]),
                 ErrorKind::Tag
             )))
         );

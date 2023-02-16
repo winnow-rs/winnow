@@ -21,7 +21,7 @@ fn parser02(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (&[u8], &[u8])> {
 #[test]
 fn overflow_incomplete_tuple() {
     assert_eq!(
-        parser02(Partial(&b"3"[..])),
+        parser02(Partial::new(&b"3"[..])),
         Err(ErrMode::Incomplete(Needed::new(18446744073709551615)))
     );
 }
@@ -35,7 +35,7 @@ fn overflow_incomplete_length_bytes() {
 
     // Trigger an overflow in length_data
     assert_eq!(
-        multi(Partial(
+        multi(Partial::new(
             &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xff"[..]
         )),
         Err(ErrMode::Incomplete(Needed::new(18446744073709551615)))
@@ -51,7 +51,7 @@ fn overflow_incomplete_many0() {
 
     // Trigger an overflow in many0
     assert_eq!(
-        multi(Partial(
+        multi(Partial::new(
             &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xef"[..]
         )),
         Err(ErrMode::Incomplete(Needed::new(18446744073709551599)))
@@ -69,7 +69,7 @@ fn overflow_incomplete_many1() {
 
     // Trigger an overflow in many1
     assert_eq!(
-        multi(Partial(
+        multi(Partial::new(
             &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xef"[..]
         )),
         Err(ErrMode::Incomplete(Needed::new(18446744073709551599)))
@@ -88,7 +88,7 @@ fn overflow_incomplete_many_till0() {
 
     // Trigger an overflow in many_till0
     assert_eq!(
-        multi(Partial(
+        multi(Partial::new(
             &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xef"[..]
         )),
         Err(ErrMode::Incomplete(Needed::new(18446744073709551599)))
@@ -106,7 +106,7 @@ fn overflow_incomplete_many_m_n() {
 
     // Trigger an overflow in many_m_n
     assert_eq!(
-        multi(Partial(
+        multi(Partial::new(
             &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xef"[..]
         )),
         Err(ErrMode::Incomplete(Needed::new(18446744073709551599)))
@@ -123,7 +123,7 @@ fn overflow_incomplete_count() {
     }
 
     assert_eq!(
-        counter(Partial(
+        counter(Partial::new(
             &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xef"[..]
         )),
         Err(ErrMode::Incomplete(Needed::new(18446744073709551599)))
@@ -141,7 +141,7 @@ fn overflow_incomplete_length_count() {
     }
 
     assert_eq!(
-        multi(Partial(
+        multi(Partial::new(
             &b"\x04\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xee"[..]
         )),
         Err(ErrMode::Incomplete(Needed::new(18446744073709551598)))
@@ -156,7 +156,7 @@ fn overflow_incomplete_length_data() {
     }
 
     assert_eq!(
-        multi(Partial(
+        multi(Partial::new(
             &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xff"[..]
         )),
         Err(ErrMode::Incomplete(Needed::new(18446744073709551615)))

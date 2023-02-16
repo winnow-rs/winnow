@@ -51,7 +51,7 @@ fn test_partial_byte_consumption_bits() {
 #[cfg(feature = "std")]
 /// Ensure that in Incomplete error is thrown, if too few bytes are passed for a given parser.
 fn test_incomplete_bits() {
-    let input = Partial(&[0x12][..]);
+    let input = Partial::new(&[0x12][..]);
 
     // Take bit slices with sizes [4, 8].
     let result: IResult<_, (u8, u8)> =
@@ -103,7 +103,7 @@ fn test_take_complete_span_over_multiple_bytes() {
 
 #[test]
 fn test_take_partial_0() {
-    let input = Partial(&[][..]);
+    let input = Partial::new(&[][..]);
     let count = 0usize;
     assert_eq!(count, 0usize);
     let offset = 0usize;
@@ -115,7 +115,7 @@ fn test_take_partial_0() {
 
 #[test]
 fn test_tag_partial_ok() {
-    let input = Partial(&[0b00011111][..]);
+    let input = Partial::new(&[0b00011111][..]);
     let offset = 0usize;
     let bits_to_take = 4usize;
     let value_to_tag = 0b0001;
@@ -128,7 +128,7 @@ fn test_tag_partial_ok() {
 
 #[test]
 fn test_tag_partial_err() {
-    let input = Partial(&[0b00011111][..]);
+    let input = Partial::new(&[0b00011111][..]);
     let offset = 0usize;
     let bits_to_take = 4usize;
     let value_to_tag = 0b1111;
@@ -171,7 +171,7 @@ fn test_bool_eof_complete() {
 
 #[test]
 fn test_bool_0_partial() {
-    let input = Partial([0b10000000].as_ref());
+    let input = Partial::new([0b10000000].as_ref());
 
     let result: crate::IResult<(Partial<&[u8]>, usize), bool> = bool((input, 0));
 
@@ -180,7 +180,7 @@ fn test_bool_0_partial() {
 
 #[test]
 fn test_bool_eof_partial() {
-    let input = Partial([0b10000000].as_ref());
+    let input = Partial::new([0b10000000].as_ref());
 
     let result: crate::IResult<(Partial<&[u8]>, usize), bool> = bool((input, 8));
 

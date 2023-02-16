@@ -25,7 +25,7 @@ pub struct Header<'a> {
 }
 
 pub fn parse(data: &[u8]) -> Option<Vec<(Request<'_>, Vec<Header<'_>>)>> {
-    let mut buf = Partial(data);
+    let mut buf = Partial::new(data);
     let mut v = Vec::new();
     loop {
         match request(buf) {

@@ -66,8 +66,8 @@ proptest! {
 fn partial_any_str() {
     use super::any;
     assert_eq!(
-        any::<_, Error<Partial<&str>>>(Partial("Ә")),
-        Ok((Partial(""), 'Ә'))
+        any::<_, Error<Partial<&str>>>(Partial::new("Ә")),
+        Ok((Partial::new(""), 'Ә'))
     );
 }
 
@@ -78,13 +78,13 @@ fn partial_one_of_test() {
     }
 
     let a = &b"abcd"[..];
-    assert_eq!(f(Partial(a)), Ok((Partial(&b"bcd"[..]), b'a')));
+    assert_eq!(f(Partial::new(a)), Ok((Partial::new(&b"bcd"[..]), b'a')));
 
     let b = &b"cde"[..];
     assert_eq!(
-        f(Partial(b)),
+        f(Partial::new(b)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(b),
+            Partial::new(b),
             ErrorKind::OneOf
         )))
     );
@@ -93,8 +93,8 @@ fn partial_one_of_test() {
         one_of("+\u{FF0B}")(i)
     }
 
-    assert!(utf8(Partial("+")).is_ok());
-    assert!(utf8(Partial("\u{FF0B}")).is_ok());
+    assert!(utf8(Partial::new("+")).is_ok());
+    assert!(utf8(Partial::new("\u{FF0B}")).is_ok());
 }
 
 #[test]
@@ -105,15 +105,15 @@ fn char_byteslice() {
 
     let a = &b"abcd"[..];
     assert_eq!(
-        f(Partial(a)),
+        f(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(a),
+            Partial::new(a),
             ErrorKind::OneOf
         )))
     );
 
     let b = &b"cde"[..];
-    assert_eq!(f(Partial(b)), Ok((Partial(&b"de"[..]), b'c')));
+    assert_eq!(f(Partial::new(b)), Ok((Partial::new(&b"de"[..]), b'c')));
 }
 
 #[test]
@@ -124,15 +124,15 @@ fn char_str() {
 
     let a = "abcd";
     assert_eq!(
-        f(Partial(a)),
+        f(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(a),
+            Partial::new(a),
             ErrorKind::OneOf
         )))
     );
 
     let b = "cde";
-    assert_eq!(f(Partial(b)), Ok((Partial("de"), 'c')));
+    assert_eq!(f(Partial::new(b)), Ok((Partial::new("de"), 'c')));
 }
 
 #[test]
@@ -143,15 +143,15 @@ fn partial_none_of_test() {
 
     let a = &b"abcd"[..];
     assert_eq!(
-        f(Partial(a)),
+        f(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(a),
+            Partial::new(a),
             ErrorKind::NoneOf
         )))
     );
 
     let b = &b"cde"[..];
-    assert_eq!(f(Partial(b)), Ok((Partial(&b"de"[..]), b'c')));
+    assert_eq!(f(Partial::new(b)), Ok((Partial::new(&b"de"[..]), b'c')));
 }
 
 #[test]
@@ -160,13 +160,13 @@ fn partial_is_a() {
         take_while1("ab")(i)
     }
 
-    let a = Partial(&b"abcd"[..]);
-    assert_eq!(a_or_b(a), Ok((Partial(&b"cd"[..]), &b"ab"[..])));
+    let a = Partial::new(&b"abcd"[..]);
+    assert_eq!(a_or_b(a), Ok((Partial::new(&b"cd"[..]), &b"ab"[..])));
 
-    let b = Partial(&b"bcde"[..]);
-    assert_eq!(a_or_b(b), Ok((Partial(&b"cde"[..]), &b"b"[..])));
+    let b = Partial::new(&b"bcde"[..]);
+    assert_eq!(a_or_b(b), Ok((Partial::new(&b"cde"[..]), &b"b"[..])));
 
-    let c = Partial(&b"cdef"[..]);
+    let c = Partial::new(&b"cdef"[..]);
     assert_eq!(
         a_or_b(c),
         Err(ErrMode::Backtrack(error_position!(
@@ -175,8 +175,8 @@ fn partial_is_a() {
         )))
     );
 
-    let d = Partial(&b"bacdef"[..]);
-    assert_eq!(a_or_b(d), Ok((Partial(&b"cdef"[..]), &b"ba"[..])));
+    let d = Partial::new(&b"bacdef"[..]);
+    assert_eq!(a_or_b(d), Ok((Partial::new(&b"cdef"[..]), &b"ba"[..])));
 }
 
 #[test]
@@ -185,22 +185,22 @@ fn partial_is_not() {
         take_till1("ab")(i)
     }
 
-    let a = Partial(&b"cdab"[..]);
-    assert_eq!(a_or_b(a), Ok((Partial(&b"ab"[..]), &b"cd"[..])));
+    let a = Partial::new(&b"cdab"[..]);
+    assert_eq!(a_or_b(a), Ok((Partial::new(&b"ab"[..]), &b"cd"[..])));
 
-    let b = Partial(&b"cbde"[..]);
-    assert_eq!(a_or_b(b), Ok((Partial(&b"bde"[..]), &b"c"[..])));
+    let b = Partial::new(&b"cbde"[..]);
+    assert_eq!(a_or_b(b), Ok((Partial::new(&b"bde"[..]), &b"c"[..])));
 
-    let c = Partial(&b"abab"[..]);
+    let c = Partial::new(&b"abab"[..]);
     assert_eq!(
         a_or_b(c),
         Err(ErrMode::Backtrack(error_position!(c, ErrorKind::TakeTill1)))
     );
 
-    let d = Partial(&b"cdefba"[..]);
-    assert_eq!(a_or_b(d), Ok((Partial(&b"ba"[..]), &b"cdef"[..])));
+    let d = Partial::new(&b"cdefba"[..]);
+    assert_eq!(a_or_b(d), Ok((Partial::new(&b"ba"[..]), &b"cdef"[..])));
 
-    let e = Partial(&b"e"[..]);
+    let e = Partial::new(&b"e"[..]);
     assert_eq!(a_or_b(e), Err(ErrMode::Incomplete(Needed::new(1))));
 }
 
@@ -210,15 +210,15 @@ fn partial_take_until_incomplete() {
         take_until0("end")(i)
     }
     assert_eq!(
-        y(Partial(&b"nd"[..])),
+        y(Partial::new(&b"nd"[..])),
         Err(ErrMode::Incomplete(Needed::Unknown))
     );
     assert_eq!(
-        y(Partial(&b"123"[..])),
+        y(Partial::new(&b"123"[..])),
         Err(ErrMode::Incomplete(Needed::Unknown))
     );
     assert_eq!(
-        y(Partial(&b"123en"[..])),
+        y(Partial::new(&b"123en"[..])),
         Err(ErrMode::Incomplete(Needed::Unknown))
     );
 }
@@ -229,7 +229,7 @@ fn partial_take_until_incomplete_s() {
         take_until0("end")(i)
     }
     assert_eq!(
-        ys(Partial("123en")),
+        ys(Partial::new("123en")),
         Err(ErrMode::Incomplete(Needed::Unknown))
     );
 }
@@ -246,52 +246,52 @@ fn partial_recognize() {
             .recognize()
             .parse_next(i)
     }
-    let r = x(Partial(&b"<!-- abc --> aaa"[..]));
-    assert_eq!(r, Ok((Partial(&b" aaa"[..]), &b"<!-- abc -->"[..])));
+    let r = x(Partial::new(&b"<!-- abc --> aaa"[..]));
+    assert_eq!(r, Ok((Partial::new(&b" aaa"[..]), &b"<!-- abc -->"[..])));
 
     let semicolon = &b";"[..];
 
     fn ya(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         alpha.recognize().parse_next(i)
     }
-    let ra = ya(Partial(&b"abc;"[..]));
-    assert_eq!(ra, Ok((Partial(semicolon), &b"abc"[..])));
+    let ra = ya(Partial::new(&b"abc;"[..]));
+    assert_eq!(ra, Ok((Partial::new(semicolon), &b"abc"[..])));
 
     fn yd(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         digit.recognize().parse_next(i)
     }
-    let rd = yd(Partial(&b"123;"[..]));
-    assert_eq!(rd, Ok((Partial(semicolon), &b"123"[..])));
+    let rd = yd(Partial::new(&b"123;"[..]));
+    assert_eq!(rd, Ok((Partial::new(semicolon), &b"123"[..])));
 
     fn yhd(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         hex_digit.recognize().parse_next(i)
     }
-    let rhd = yhd(Partial(&b"123abcDEF;"[..]));
-    assert_eq!(rhd, Ok((Partial(semicolon), &b"123abcDEF"[..])));
+    let rhd = yhd(Partial::new(&b"123abcDEF;"[..]));
+    assert_eq!(rhd, Ok((Partial::new(semicolon), &b"123abcDEF"[..])));
 
     fn yod(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         oct_digit.recognize().parse_next(i)
     }
-    let rod = yod(Partial(&b"1234567;"[..]));
-    assert_eq!(rod, Ok((Partial(semicolon), &b"1234567"[..])));
+    let rod = yod(Partial::new(&b"1234567;"[..]));
+    assert_eq!(rod, Ok((Partial::new(semicolon), &b"1234567"[..])));
 
     fn yan(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         alphanumeric.recognize().parse_next(i)
     }
-    let ran = yan(Partial(&b"123abc;"[..]));
-    assert_eq!(ran, Ok((Partial(semicolon), &b"123abc"[..])));
+    let ran = yan(Partial::new(&b"123abc;"[..]));
+    assert_eq!(ran, Ok((Partial::new(semicolon), &b"123abc"[..])));
 
     fn ys(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         space.recognize().parse_next(i)
     }
-    let rs = ys(Partial(&b" \t;"[..]));
-    assert_eq!(rs, Ok((Partial(semicolon), &b" \t"[..])));
+    let rs = ys(Partial::new(&b" \t;"[..]));
+    assert_eq!(rs, Ok((Partial::new(semicolon), &b" \t"[..])));
 
     fn yms(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         multispace.recognize().parse_next(i)
     }
-    let rms = yms(Partial(&b" \t\r\n;"[..]));
-    assert_eq!(rms, Ok((Partial(semicolon), &b" \t\r\n"[..])));
+    let rms = yms(Partial::new(&b" \t\r\n;"[..]));
+    assert_eq!(rms, Ok((Partial::new(semicolon), &b" \t\r\n"[..])));
 }
 
 #[test]
@@ -304,10 +304,10 @@ fn partial_take_while0() {
     let c = &b"abcd123"[..];
     let d = &b"123"[..];
 
-    assert_eq!(f(Partial(a)), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(f(Partial(b)), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(f(Partial(c)), Ok((Partial(d), b)));
-    assert_eq!(f(Partial(d)), Ok((Partial(d), a)));
+    assert_eq!(f(Partial::new(a)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(f(Partial::new(b)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(f(Partial::new(c)), Ok((Partial::new(d), b)));
+    assert_eq!(f(Partial::new(d)), Ok((Partial::new(d), a)));
 }
 
 #[test]
@@ -320,13 +320,13 @@ fn partial_take_while1() {
     let c = &b"abcd123"[..];
     let d = &b"123"[..];
 
-    assert_eq!(f(Partial(a)), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(f(Partial(b)), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(f(Partial(c)), Ok((Partial(&b"123"[..]), b)));
+    assert_eq!(f(Partial::new(a)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(f(Partial::new(b)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(f(Partial::new(c)), Ok((Partial::new(&b"123"[..]), b)));
     assert_eq!(
-        f(Partial(d)),
+        f(Partial::new(d)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(d),
+            Partial::new(d),
             ErrorKind::TakeWhile1
         )))
     );
@@ -344,15 +344,18 @@ fn partial_take_while_m_n() {
     let e = &b"abcde"[..];
     let f = &b"123"[..];
 
-    assert_eq!(x(Partial(a)), Err(ErrMode::Incomplete(Needed::new(2))));
-    assert_eq!(x(Partial(b)), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(x(Partial(c)), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(x(Partial(d)), Ok((Partial(&b"123"[..]), c)));
-    assert_eq!(x(Partial(e)), Ok((Partial(&b"e"[..]), &b"abcd"[..])));
+    assert_eq!(x(Partial::new(a)), Err(ErrMode::Incomplete(Needed::new(2))));
+    assert_eq!(x(Partial::new(b)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(x(Partial::new(c)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(x(Partial::new(d)), Ok((Partial::new(&b"123"[..]), c)));
     assert_eq!(
-        x(Partial(f)),
+        x(Partial::new(e)),
+        Ok((Partial::new(&b"e"[..]), &b"abcd"[..]))
+    );
+    assert_eq!(
+        x(Partial::new(f)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(f),
+            Partial::new(f),
             ErrorKind::TakeWhileMN
         )))
     );
@@ -368,10 +371,16 @@ fn partial_take_till0() {
     let c = &b"123abcd"[..];
     let d = &b"123"[..];
 
-    assert_eq!(f(Partial(a)), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(f(Partial(b)), Ok((Partial(&b"abcd"[..]), &b""[..])));
-    assert_eq!(f(Partial(c)), Ok((Partial(&b"abcd"[..]), &b"123"[..])));
-    assert_eq!(f(Partial(d)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(f(Partial::new(a)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(
+        f(Partial::new(b)),
+        Ok((Partial::new(&b"abcd"[..]), &b""[..]))
+    );
+    assert_eq!(
+        f(Partial::new(c)),
+        Ok((Partial::new(&b"abcd"[..]), &b"123"[..]))
+    );
+    assert_eq!(f(Partial::new(d)), Err(ErrMode::Incomplete(Needed::new(1))));
 }
 
 #[test]
@@ -384,16 +393,19 @@ fn partial_take_till1() {
     let c = &b"123abcd"[..];
     let d = &b"123"[..];
 
-    assert_eq!(f(Partial(a)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(f(Partial::new(a)), Err(ErrMode::Incomplete(Needed::new(1))));
     assert_eq!(
-        f(Partial(b)),
+        f(Partial::new(b)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(b),
+            Partial::new(b),
             ErrorKind::TakeTill1
         )))
     );
-    assert_eq!(f(Partial(c)), Ok((Partial(&b"abcd"[..]), &b"123"[..])));
-    assert_eq!(f(Partial(d)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(
+        f(Partial::new(c)),
+        Ok((Partial::new(&b"abcd"[..]), &b"123"[..]))
+    );
+    assert_eq!(f(Partial::new(d)), Err(ErrMode::Incomplete(Needed::new(1))));
 }
 
 #[test]
@@ -402,18 +414,33 @@ fn partial_take_while_utf8() {
         take_while0(|c| c != '點')(i)
     }
 
-    assert_eq!(f(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(f(Partial("abcd")), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(f(Partial("abcd點")), Ok((Partial("點"), "abcd")));
-    assert_eq!(f(Partial("abcd點a")), Ok((Partial("點a"), "abcd")));
+    assert_eq!(
+        f(Partial::new("")),
+        Err(ErrMode::Incomplete(Needed::new(1)))
+    );
+    assert_eq!(
+        f(Partial::new("abcd")),
+        Err(ErrMode::Incomplete(Needed::new(1)))
+    );
+    assert_eq!(f(Partial::new("abcd點")), Ok((Partial::new("點"), "abcd")));
+    assert_eq!(
+        f(Partial::new("abcd點a")),
+        Ok((Partial::new("點a"), "abcd"))
+    );
 
     fn g(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
         take_while0(|c| c == '點')(i)
     }
 
-    assert_eq!(g(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(g(Partial("點abcd")), Ok((Partial("abcd"), "點")));
-    assert_eq!(g(Partial("點點點a")), Ok((Partial("a"), "點點點")));
+    assert_eq!(
+        g(Partial::new("")),
+        Err(ErrMode::Incomplete(Needed::new(1)))
+    );
+    assert_eq!(g(Partial::new("點abcd")), Ok((Partial::new("abcd"), "點")));
+    assert_eq!(
+        g(Partial::new("點點點a")),
+        Ok((Partial::new("a"), "點點點"))
+    );
 }
 
 #[test]
@@ -422,18 +449,33 @@ fn partial_take_till0_utf8() {
         take_till0(|c| c == '點')(i)
     }
 
-    assert_eq!(f(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(f(Partial("abcd")), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(f(Partial("abcd點")), Ok((Partial("點"), "abcd")));
-    assert_eq!(f(Partial("abcd點a")), Ok((Partial("點a"), "abcd")));
+    assert_eq!(
+        f(Partial::new("")),
+        Err(ErrMode::Incomplete(Needed::new(1)))
+    );
+    assert_eq!(
+        f(Partial::new("abcd")),
+        Err(ErrMode::Incomplete(Needed::new(1)))
+    );
+    assert_eq!(f(Partial::new("abcd點")), Ok((Partial::new("點"), "abcd")));
+    assert_eq!(
+        f(Partial::new("abcd點a")),
+        Ok((Partial::new("點a"), "abcd"))
+    );
 
     fn g(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
         take_till0(|c| c != '點')(i)
     }
 
-    assert_eq!(g(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(g(Partial("點abcd")), Ok((Partial("abcd"), "點")));
-    assert_eq!(g(Partial("點點點a")), Ok((Partial("a"), "點點點")));
+    assert_eq!(
+        g(Partial::new("")),
+        Err(ErrMode::Incomplete(Needed::new(1)))
+    );
+    assert_eq!(g(Partial::new("點abcd")), Ok((Partial::new("abcd"), "點")));
+    assert_eq!(
+        g(Partial::new("點點點a")),
+        Ok((Partial::new("a"), "點點點"))
+    );
 }
 
 #[test]
@@ -442,20 +484,35 @@ fn partial_take_utf8() {
         take(3_usize)(i)
     }
 
-    assert_eq!(f(Partial("")), Err(ErrMode::Incomplete(Needed::Unknown)));
-    assert_eq!(f(Partial("ab")), Err(ErrMode::Incomplete(Needed::Unknown)));
-    assert_eq!(f(Partial("點")), Err(ErrMode::Incomplete(Needed::Unknown)));
-    assert_eq!(f(Partial("ab點cd")), Ok((Partial("cd"), "ab點")));
-    assert_eq!(f(Partial("a點bcd")), Ok((Partial("cd"), "a點b")));
-    assert_eq!(f(Partial("a點b")), Ok((Partial(""), "a點b")));
+    assert_eq!(
+        f(Partial::new("")),
+        Err(ErrMode::Incomplete(Needed::Unknown))
+    );
+    assert_eq!(
+        f(Partial::new("ab")),
+        Err(ErrMode::Incomplete(Needed::Unknown))
+    );
+    assert_eq!(
+        f(Partial::new("點")),
+        Err(ErrMode::Incomplete(Needed::Unknown))
+    );
+    assert_eq!(f(Partial::new("ab點cd")), Ok((Partial::new("cd"), "ab點")));
+    assert_eq!(f(Partial::new("a點bcd")), Ok((Partial::new("cd"), "a點b")));
+    assert_eq!(f(Partial::new("a點b")), Ok((Partial::new(""), "a點b")));
 
     fn g(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
         take_while0(|c| c == '點')(i)
     }
 
-    assert_eq!(g(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(g(Partial("點abcd")), Ok((Partial("abcd"), "點")));
-    assert_eq!(g(Partial("點點點a")), Ok((Partial("a"), "點點點")));
+    assert_eq!(
+        g(Partial::new("")),
+        Err(ErrMode::Incomplete(Needed::new(1)))
+    );
+    assert_eq!(g(Partial::new("點abcd")), Ok((Partial::new("abcd"), "點")));
+    assert_eq!(
+        g(Partial::new("點點點a")),
+        Ok((Partial::new("a"), "點點點"))
+    );
 }
 
 #[test]
@@ -463,8 +520,8 @@ fn partial_take_while_m_n_utf8_fixed() {
     fn parser(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
         take_while_m_n(1, 1, |c| c == 'A' || c == '😃')(i)
     }
-    assert_eq!(parser(Partial("A!")), Ok((Partial("!"), "A")));
-    assert_eq!(parser(Partial("😃!")), Ok((Partial("!"), "😃")));
+    assert_eq!(parser(Partial::new("A!")), Ok((Partial::new("!"), "A")));
+    assert_eq!(parser(Partial::new("😃!")), Ok((Partial::new("!"), "😃")));
 }
 
 #[test]
@@ -472,8 +529,8 @@ fn partial_take_while_m_n_utf8_range() {
     fn parser(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
         take_while_m_n(1, 2, |c| c == 'A' || c == '😃')(i)
     }
-    assert_eq!(parser(Partial("A!")), Ok((Partial("!"), "A")));
-    assert_eq!(parser(Partial("😃!")), Ok((Partial("!"), "😃")));
+    assert_eq!(parser(Partial::new("A!")), Ok((Partial::new("!"), "A")));
+    assert_eq!(parser(Partial::new("😃!")), Ok((Partial::new("!"), "😃")));
 }
 
 #[test]
@@ -481,7 +538,7 @@ fn partial_take_while_m_n_utf8_full_match_fixed() {
     fn parser(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
         take_while_m_n(1, 1, |c: char| c.is_alphabetic())(i)
     }
-    assert_eq!(parser(Partial("øn")), Ok((Partial("n"), "ø")));
+    assert_eq!(parser(Partial::new("øn")), Ok((Partial::new("n"), "ø")));
 }
 
 #[test]
@@ -489,7 +546,7 @@ fn partial_take_while_m_n_utf8_full_match_range() {
     fn parser(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
         take_while_m_n(1, 2, |c: char| c.is_alphabetic())(i)
     }
-    assert_eq!(parser(Partial("øn")), Ok((Partial(""), "øn")));
+    assert_eq!(parser(Partial::new("øn")), Ok((Partial::new(""), "øn")));
 }
 
 #[test]
@@ -502,12 +559,12 @@ fn partial_recognize_take_while0() {
         x.recognize().parse_next(i)
     }
     assert_eq!(
-        x(Partial(&b"ab."[..])),
-        Ok((Partial(&b"."[..]), &b"ab"[..]))
+        x(Partial::new(&b"ab."[..])),
+        Ok((Partial::new(&b"."[..]), &b"ab"[..]))
     );
     assert_eq!(
-        y(Partial(&b"ab."[..])),
-        Ok((Partial(&b"."[..]), &b"ab"[..]))
+        y(Partial::new(&b"ab."[..])),
+        Ok((Partial::new(&b"."[..]), &b"ab"[..]))
     );
 }
 
@@ -519,16 +576,19 @@ fn partial_length_bytes() {
         length_data(le_u8)(i)
     }
     assert_eq!(
-        x(Partial(b"\x02..>>")),
-        Ok((Partial(&b">>"[..]), &b".."[..]))
+        x(Partial::new(b"\x02..>>")),
+        Ok((Partial::new(&b">>"[..]), &b".."[..]))
     );
-    assert_eq!(x(Partial(b"\x02..")), Ok((Partial(&[][..]), &b".."[..])));
     assert_eq!(
-        x(Partial(b"\x02.")),
+        x(Partial::new(b"\x02..")),
+        Ok((Partial::new(&[][..]), &b".."[..]))
+    );
+    assert_eq!(
+        x(Partial::new(b"\x02.")),
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-        x(Partial(b"\x02")),
+        x(Partial::new(b"\x02")),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
 
@@ -537,19 +597,19 @@ fn partial_length_bytes() {
         length_data(le_u8)(i)
     }
     assert_eq!(
-        y(Partial(b"magic\x02..>>")),
-        Ok((Partial(&b">>"[..]), &b".."[..]))
+        y(Partial::new(b"magic\x02..>>")),
+        Ok((Partial::new(&b">>"[..]), &b".."[..]))
     );
     assert_eq!(
-        y(Partial(b"magic\x02..")),
-        Ok((Partial(&[][..]), &b".."[..]))
+        y(Partial::new(b"magic\x02..")),
+        Ok((Partial::new(&[][..]), &b".."[..]))
     );
     assert_eq!(
-        y(Partial(b"magic\x02.")),
+        y(Partial::new(b"magic\x02.")),
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-        y(Partial(b"magic\x02")),
+        y(Partial::new(b"magic\x02")),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
 }
@@ -561,32 +621,32 @@ fn partial_case_insensitive() {
         tag_no_case("ABcd")(i)
     }
     assert_eq!(
-        test(Partial(&b"aBCdefgh"[..])),
-        Ok((Partial(&b"efgh"[..]), &b"aBCd"[..]))
+        test(Partial::new(&b"aBCdefgh"[..])),
+        Ok((Partial::new(&b"efgh"[..]), &b"aBCd"[..]))
     );
     assert_eq!(
-        test(Partial(&b"abcdefgh"[..])),
-        Ok((Partial(&b"efgh"[..]), &b"abcd"[..]))
+        test(Partial::new(&b"abcdefgh"[..])),
+        Ok((Partial::new(&b"efgh"[..]), &b"abcd"[..]))
     );
     assert_eq!(
-        test(Partial(&b"ABCDefgh"[..])),
-        Ok((Partial(&b"efgh"[..]), &b"ABCD"[..]))
+        test(Partial::new(&b"ABCDefgh"[..])),
+        Ok((Partial::new(&b"efgh"[..]), &b"ABCD"[..]))
     );
     assert_eq!(
-        test(Partial(&b"ab"[..])),
+        test(Partial::new(&b"ab"[..])),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_eq!(
-        test(Partial(&b"Hello"[..])),
+        test(Partial::new(&b"Hello"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"Hello"[..]),
+            Partial::new(&b"Hello"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
-        test(Partial(&b"Hel"[..])),
+        test(Partial::new(&b"Hel"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"Hel"[..]),
+            Partial::new(&b"Hel"[..]),
             ErrorKind::Tag
         )))
     );
@@ -594,24 +654,33 @@ fn partial_case_insensitive() {
     fn test2(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
         tag_no_case("ABcd")(i)
     }
-    assert_eq!(test2(Partial("aBCdefgh")), Ok((Partial("efgh"), "aBCd")));
-    assert_eq!(test2(Partial("abcdefgh")), Ok((Partial("efgh"), "abcd")));
-    assert_eq!(test2(Partial("ABCDefgh")), Ok((Partial("efgh"), "ABCD")));
     assert_eq!(
-        test2(Partial("ab")),
+        test2(Partial::new("aBCdefgh")),
+        Ok((Partial::new("efgh"), "aBCd"))
+    );
+    assert_eq!(
+        test2(Partial::new("abcdefgh")),
+        Ok((Partial::new("efgh"), "abcd"))
+    );
+    assert_eq!(
+        test2(Partial::new("ABCDefgh")),
+        Ok((Partial::new("efgh"), "ABCD"))
+    );
+    assert_eq!(
+        test2(Partial::new("ab")),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_eq!(
-        test2(Partial("Hello")),
+        test2(Partial::new("Hello")),
         Err(ErrMode::Backtrack(error_position!(
-            Partial("Hello"),
+            Partial::new("Hello"),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
-        test2(Partial("Hel")),
+        test2(Partial::new("Hel")),
         Err(ErrMode::Backtrack(error_position!(
-            Partial("Hel"),
+            Partial::new("Hel"),
             ErrorKind::Tag
         )))
     );
@@ -625,7 +694,7 @@ fn partial_tag_fixed_size_array() {
     fn test2(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         tag(&[0x42])(i)
     }
-    let input = Partial(&[0x42, 0x00][..]);
-    assert_eq!(test(input), Ok((Partial(&b"\x00"[..]), &b"\x42"[..])));
-    assert_eq!(test2(input), Ok((Partial(&b"\x00"[..]), &b"\x42"[..])));
+    let input = Partial::new(&[0x42, 0x00][..]);
+    assert_eq!(test(input), Ok((Partial::new(&b"\x00"[..]), &b"\x42"[..])));
+    assert_eq!(test2(input), Ok((Partial::new(&b"\x00"[..]), &b"\x42"[..])));
 }

@@ -44,7 +44,7 @@ mod test {
         const INPUT: &str = "Hello";
         const TAG: &str = "Hello World!";
 
-        let res: IResult<_, _, error::Error<_>> = tag(TAG)(Partial(INPUT));
+        let res: IResult<_, _, error::Error<_>> = tag(TAG)(Partial::new(INPUT));
         match res {
             Err(ErrMode::Incomplete(_)) => (),
             other => {
@@ -120,7 +120,7 @@ mod test {
 
         const INPUT: &str = "βèƒôřèÂßÇá";
 
-        let res: IResult<_, _, Error<_>> = take(13_usize)(Partial(INPUT));
+        let res: IResult<_, _, Error<_>> = take(13_usize)(Partial::new(INPUT));
         match res {
             Err(ErrMode::Incomplete(_)) => (),
             other => panic!(
@@ -170,7 +170,7 @@ mod test {
         const INPUT: &str = "βèƒôřè";
         const FIND: &str = "βèƒôřèÂßÇ";
 
-        let res: IResult<_, _, Error<_>> = take_until0(FIND)(Partial(INPUT));
+        let res: IResult<_, _, Error<_>> = take_until0(FIND)(Partial::new(INPUT));
         match res {
             Err(ErrMode::Incomplete(_)) => (),
             other => panic!(
@@ -188,7 +188,7 @@ mod test {
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
         const FIND: &str = "Ráñδô₥";
 
-        let res: IResult<_, _, Error<_>> = take_until0(FIND)(Partial(INPUT));
+        let res: IResult<_, _, Error<_>> = take_until0(FIND)(Partial::new(INPUT));
         match res {
             Err(ErrMode::Incomplete(_)) => (),
             other => panic!(
@@ -217,10 +217,10 @@ mod test {
         let c = "abcd123";
         let d = "123";
 
-        assert_eq!(f(Partial(a)), Err(ErrMode::Incomplete(Needed::new(1))));
-        assert_eq!(f(Partial(b)), Err(ErrMode::Incomplete(Needed::new(1))));
-        assert_eq!(f(Partial(c)), Ok((Partial(d), b)));
-        assert_eq!(f(Partial(d)), Ok((Partial(d), a)));
+        assert_eq!(f(Partial::new(a)), Err(ErrMode::Incomplete(Needed::new(1))));
+        assert_eq!(f(Partial::new(b)), Err(ErrMode::Incomplete(Needed::new(1))));
+        assert_eq!(f(Partial::new(c)), Ok((Partial::new(d), b)));
+        assert_eq!(f(Partial::new(d)), Ok((Partial::new(d), a)));
     }
 
     #[test]
@@ -305,13 +305,13 @@ mod test {
         let c = "abcd123";
         let d = "123";
 
-        assert_eq!(f(Partial(a)), Err(ErrMode::Incomplete(Needed::new(1))));
-        assert_eq!(f(Partial(b)), Err(ErrMode::Incomplete(Needed::new(1))));
-        assert_eq!(f(Partial(c)), Ok((Partial("123"), b)));
+        assert_eq!(f(Partial::new(a)), Err(ErrMode::Incomplete(Needed::new(1))));
+        assert_eq!(f(Partial::new(b)), Err(ErrMode::Incomplete(Needed::new(1))));
+        assert_eq!(f(Partial::new(c)), Ok((Partial::new("123"), b)));
         assert_eq!(
-            f(Partial(d)),
+            f(Partial::new(d)),
             Err(ErrMode::Backtrack(winnow::error::Error {
-                input: Partial(d),
+                input: Partial::new(d),
                 kind: ErrorKind::TakeWhile1
             }))
         );

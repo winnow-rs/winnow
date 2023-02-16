@@ -1305,16 +1305,19 @@ mod tests {
             length_data(le_u8)(i)
         }
         assert_eq!(
-            x(Partial(b"\x02..>>")),
-            Ok((Partial(&b">>"[..]), &b".."[..]))
+            x(Partial::new(b"\x02..>>")),
+            Ok((Partial::new(&b">>"[..]), &b".."[..]))
         );
-        assert_eq!(x(Partial(b"\x02..")), Ok((Partial(&[][..]), &b".."[..])));
         assert_eq!(
-            x(Partial(b"\x02.")),
+            x(Partial::new(b"\x02..")),
+            Ok((Partial::new(&[][..]), &b".."[..]))
+        );
+        assert_eq!(
+            x(Partial::new(b"\x02.")),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            x(Partial(b"\x02")),
+            x(Partial::new(b"\x02")),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
 
@@ -1323,19 +1326,19 @@ mod tests {
             length_data(le_u8)(i)
         }
         assert_eq!(
-            y(Partial(b"magic\x02..>>")),
-            Ok((Partial(&b">>"[..]), &b".."[..]))
+            y(Partial::new(b"magic\x02..>>")),
+            Ok((Partial::new(&b">>"[..]), &b".."[..]))
         );
         assert_eq!(
-            y(Partial(b"magic\x02..")),
-            Ok((Partial(&[][..]), &b".."[..]))
+            y(Partial::new(b"magic\x02..")),
+            Ok((Partial::new(&[][..]), &b".."[..]))
         );
         assert_eq!(
-            y(Partial(b"magic\x02.")),
+            y(Partial::new(b"magic\x02.")),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            y(Partial(b"magic\x02")),
+            y(Partial::new(b"magic\x02")),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
     }

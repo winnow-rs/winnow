@@ -1049,7 +1049,7 @@ where
 /// type Stream<'i> = Partial<&'i Bytes>;
 ///
 /// fn stream(b: &[u8]) -> Stream<'_> {
-///     Partial(Bytes::new(b))
+///     Partial::new(Bytes::new(b))
 /// }
 ///
 /// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &Bytes> {
@@ -1097,7 +1097,7 @@ where
 /// type Stream<'i> = Partial<&'i Bytes>;
 ///
 /// fn stream(b: &[u8]) -> Stream<'_> {
-///     Partial(Bytes::new(b))
+///     Partial::new(Bytes::new(b))
 /// }
 ///
 /// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &Bytes> {

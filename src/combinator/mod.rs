@@ -784,8 +784,8 @@ where
 ///
 /// let mut parser = complete(take(5u8));
 ///
-/// assert_eq!(parser(Partial("abcdefg")), Ok((Partial("fg"), "abcde")));
-/// assert_eq!(parser(Partial("abcd")), Err(ErrMode::Backtrack(Error::new(Partial("abcd"), ErrorKind::Complete))));
+/// assert_eq!(parser(Partial::new("abcdefg")), Ok((Partial::new("fg"), "abcde")));
+/// assert_eq!(parser(Partial::new("abcd")), Err(ErrMode::Backtrack(Error::new(Partial::new("abcd"), ErrorKind::Complete))));
 /// # }
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::complete_err")]

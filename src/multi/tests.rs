@@ -41,21 +41,36 @@ fn separated0_test() {
     let h = &b"abcd,abc"[..];
 
     let res1 = vec![&b"abcd"[..]];
-    assert_eq!(multi(Partial(a)), Ok((Partial(&b"ef"[..]), res1)));
+    assert_eq!(multi(Partial::new(a)), Ok((Partial::new(&b"ef"[..]), res1)));
     let res2 = vec![&b"abcd"[..], &b"abcd"[..]];
-    assert_eq!(multi(Partial(b)), Ok((Partial(&b"ef"[..]), res2)));
-    assert_eq!(multi(Partial(c)), Ok((Partial(&b"azerty"[..]), Vec::new())));
-    let res3 = vec![&b""[..], &b""[..], &b""[..]];
-    assert_eq!(multi_empty(Partial(d)), Ok((Partial(&b"abc"[..]), res3)));
-    let res4 = vec![&b"abcd"[..], &b"abcd"[..]];
-    assert_eq!(multi(Partial(e)), Ok((Partial(&b",ef"[..]), res4)));
-
-    assert_eq!(multi(Partial(f)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(multi(Partial::new(b)), Ok((Partial::new(&b"ef"[..]), res2)));
     assert_eq!(
-        multi_longsep(Partial(g)),
+        multi(Partial::new(c)),
+        Ok((Partial::new(&b"azerty"[..]), Vec::new()))
+    );
+    let res3 = vec![&b""[..], &b""[..], &b""[..]];
+    assert_eq!(
+        multi_empty(Partial::new(d)),
+        Ok((Partial::new(&b"abc"[..]), res3))
+    );
+    let res4 = vec![&b"abcd"[..], &b"abcd"[..]];
+    assert_eq!(
+        multi(Partial::new(e)),
+        Ok((Partial::new(&b",ef"[..]), res4))
+    );
+
+    assert_eq!(
+        multi(Partial::new(f)),
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
-    assert_eq!(multi(Partial(h)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(
+        multi_longsep(Partial::new(g)),
+        Err(ErrMode::Incomplete(Needed::new(1)))
+    );
+    assert_eq!(
+        multi(Partial::new(h)),
+        Err(ErrMode::Incomplete(Needed::new(1)))
+    );
 }
 
 #[test]
@@ -70,9 +85,9 @@ fn separated0_empty_sep_test() {
 
     let i_err_pos = &i[3..];
     assert_eq!(
-        empty_sep(Partial(i)),
+        empty_sep(Partial::new(i)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(i_err_pos),
+            Partial::new(i_err_pos),
             ErrorKind::Assert
         )))
     );
@@ -98,25 +113,34 @@ fn separated1_test() {
     let h = &b"abcd,abc"[..];
 
     let res1 = vec![&b"abcd"[..]];
-    assert_eq!(multi(Partial(a)), Ok((Partial(&b"ef"[..]), res1)));
+    assert_eq!(multi(Partial::new(a)), Ok((Partial::new(&b"ef"[..]), res1)));
     let res2 = vec![&b"abcd"[..], &b"abcd"[..]];
-    assert_eq!(multi(Partial(b)), Ok((Partial(&b"ef"[..]), res2)));
+    assert_eq!(multi(Partial::new(b)), Ok((Partial::new(&b"ef"[..]), res2)));
     assert_eq!(
-        multi(Partial(c)),
+        multi(Partial::new(c)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(c),
+            Partial::new(c),
             ErrorKind::Tag
         )))
     );
     let res3 = vec![&b"abcd"[..], &b"abcd"[..]];
-    assert_eq!(multi(Partial(d)), Ok((Partial(&b",ef"[..]), res3)));
-
-    assert_eq!(multi(Partial(f)), Err(ErrMode::Incomplete(Needed::new(1))));
     assert_eq!(
-        multi_longsep(Partial(g)),
+        multi(Partial::new(d)),
+        Ok((Partial::new(&b",ef"[..]), res3))
+    );
+
+    assert_eq!(
+        multi(Partial::new(f)),
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
-    assert_eq!(multi(Partial(h)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_eq!(
+        multi_longsep(Partial::new(g)),
+        Err(ErrMode::Incomplete(Needed::new(1)))
+    );
+    assert_eq!(
+        multi(Partial::new(h)),
+        Err(ErrMode::Incomplete(Needed::new(1)))
+    );
 }
 
 #[test]
@@ -127,27 +151,27 @@ fn many0_test() {
     }
 
     assert_eq!(
-        multi(Partial(&b"abcdef"[..])),
-        Ok((Partial(&b"ef"[..]), vec![&b"abcd"[..]]))
+        multi(Partial::new(&b"abcdef"[..])),
+        Ok((Partial::new(&b"ef"[..]), vec![&b"abcd"[..]]))
     );
     assert_eq!(
-        multi(Partial(&b"abcdabcdefgh"[..])),
-        Ok((Partial(&b"efgh"[..]), vec![&b"abcd"[..], &b"abcd"[..]]))
+        multi(Partial::new(&b"abcdabcdefgh"[..])),
+        Ok((Partial::new(&b"efgh"[..]), vec![&b"abcd"[..], &b"abcd"[..]]))
     );
     assert_eq!(
-        multi(Partial(&b"azerty"[..])),
-        Ok((Partial(&b"azerty"[..]), Vec::new()))
+        multi(Partial::new(&b"azerty"[..])),
+        Ok((Partial::new(&b"azerty"[..]), Vec::new()))
     );
     assert_eq!(
-        multi(Partial(&b"abcdab"[..])),
+        multi(Partial::new(&b"abcdab"[..])),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_eq!(
-        multi(Partial(&b"abcd"[..])),
+        multi(Partial::new(&b"abcd"[..])),
         Err(ErrMode::Incomplete(Needed::new(4)))
     );
     assert_eq!(
-        multi(Partial(&b""[..])),
+        multi(Partial::new(&b""[..])),
         Err(ErrMode::Incomplete(Needed::new(4)))
     );
 }
@@ -161,9 +185,9 @@ fn many0_empty_test() {
     }
 
     assert_eq!(
-        multi_empty(Partial(&b"abcdef"[..])),
+        multi_empty(Partial::new(&b"abcdef"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"abcdef"[..]),
+            Partial::new(&b"abcdef"[..]),
             ErrorKind::Assert
         )))
     );
@@ -182,17 +206,23 @@ fn many1_test() {
     let d = &b"abcdab"[..];
 
     let res1 = vec![&b"abcd"[..]];
-    assert_eq!(multi(Partial(a)), Ok((Partial(&b"ef"[..]), res1)));
+    assert_eq!(multi(Partial::new(a)), Ok((Partial::new(&b"ef"[..]), res1)));
     let res2 = vec![&b"abcd"[..], &b"abcd"[..]];
-    assert_eq!(multi(Partial(b)), Ok((Partial(&b"efgh"[..]), res2)));
     assert_eq!(
-        multi(Partial(c)),
+        multi(Partial::new(b)),
+        Ok((Partial::new(&b"efgh"[..]), res2))
+    );
+    assert_eq!(
+        multi(Partial::new(c)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(c),
+            Partial::new(c),
             ErrorKind::Tag
         )))
     );
-    assert_eq!(multi(Partial(d)), Err(ErrMode::Incomplete(Needed::new(2))));
+    assert_eq!(
+        multi(Partial::new(d)),
+        Err(ErrMode::Incomplete(Needed::new(2)))
+    );
 }
 
 #[test]
@@ -260,19 +290,31 @@ fn many_m_n_test() {
     let e = &b"AbcdAb"[..];
 
     assert_eq!(
-        multi(Partial(a)),
+        multi(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"ef"[..]),
+            Partial::new(&b"ef"[..]),
             ErrorKind::Tag
         )))
     );
     let res1 = vec![&b"Abcd"[..], &b"Abcd"[..]];
-    assert_eq!(multi(Partial(b)), Ok((Partial(&b"efgh"[..]), res1)));
+    assert_eq!(
+        multi(Partial::new(b)),
+        Ok((Partial::new(&b"efgh"[..]), res1))
+    );
     let res2 = vec![&b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..]];
-    assert_eq!(multi(Partial(c)), Ok((Partial(&b"efgh"[..]), res2)));
+    assert_eq!(
+        multi(Partial::new(c)),
+        Ok((Partial::new(&b"efgh"[..]), res2))
+    );
     let res3 = vec![&b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..]];
-    assert_eq!(multi(Partial(d)), Ok((Partial(&b"Abcdefgh"[..]), res3)));
-    assert_eq!(multi(Partial(e)), Err(ErrMode::Incomplete(Needed::new(2))));
+    assert_eq!(
+        multi(Partial::new(d)),
+        Ok((Partial::new(&b"Abcdefgh"[..]), res3))
+    );
+    assert_eq!(
+        multi(Partial::new(e)),
+        Err(ErrMode::Incomplete(Needed::new(2)))
+    );
 }
 
 #[test]
@@ -284,35 +326,35 @@ fn count_test() {
     }
 
     assert_eq!(
-        cnt_2(Partial(&b"abcabcabcdef"[..])),
-        Ok((Partial(&b"abcdef"[..]), vec![&b"abc"[..], &b"abc"[..]]))
+        cnt_2(Partial::new(&b"abcabcabcdef"[..])),
+        Ok((Partial::new(&b"abcdef"[..]), vec![&b"abc"[..], &b"abc"[..]]))
     );
     assert_eq!(
-        cnt_2(Partial(&b"ab"[..])),
+        cnt_2(Partial::new(&b"ab"[..])),
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-        cnt_2(Partial(&b"abcab"[..])),
+        cnt_2(Partial::new(&b"abcab"[..])),
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-        cnt_2(Partial(&b"xxx"[..])),
+        cnt_2(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxx"[..]),
+            Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
-        cnt_2(Partial(&b"xxxabcabcdef"[..])),
+        cnt_2(Partial::new(&b"xxxabcabcdef"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxxabcabcdef"[..]),
+            Partial::new(&b"xxxabcabcdef"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
-        cnt_2(Partial(&b"abcxxxabcdef"[..])),
+        cnt_2(Partial::new(&b"abcxxxabcdef"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxxabcdef"[..]),
+            Partial::new(&b"xxxabcdef"[..]),
             ErrorKind::Tag
         )))
     );
@@ -390,28 +432,28 @@ fn length_count_test() {
     }
 
     assert_eq!(
-        cnt(Partial(&b"2abcabcabcdef"[..])),
-        Ok((Partial(&b"abcdef"[..]), vec![&b"abc"[..], &b"abc"[..]]))
+        cnt(Partial::new(&b"2abcabcabcdef"[..])),
+        Ok((Partial::new(&b"abcdef"[..]), vec![&b"abc"[..], &b"abc"[..]]))
     );
     assert_eq!(
-        cnt(Partial(&b"2ab"[..])),
+        cnt(Partial::new(&b"2ab"[..])),
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-        cnt(Partial(&b"3abcab"[..])),
+        cnt(Partial::new(&b"3abcab"[..])),
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-        cnt(Partial(&b"xxx"[..])),
+        cnt(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxx"[..]),
+            Partial::new(&b"xxx"[..]),
             ErrorKind::Digit
         )))
     );
     assert_eq!(
-        cnt(Partial(&b"2abcxxx"[..])),
+        cnt(Partial::new(&b"2abcxxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxx"[..]),
+            Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
@@ -431,23 +473,23 @@ fn length_data_test() {
     }
 
     assert_eq!(
-        take(Partial(&b"6abcabcabcdef"[..])),
-        Ok((Partial(&b"abcdef"[..]), &b"abcabc"[..]))
+        take(Partial::new(&b"6abcabcabcdef"[..])),
+        Ok((Partial::new(&b"abcdef"[..]), &b"abcabc"[..]))
     );
     assert_eq!(
-        take(Partial(&b"3ab"[..])),
+        take(Partial::new(&b"3ab"[..])),
         Err(ErrMode::Incomplete(Needed::new(1)))
     );
     assert_eq!(
-        take(Partial(&b"xxx"[..])),
+        take(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"xxx"[..]),
+            Partial::new(&b"xxx"[..]),
             ErrorKind::Digit
         )))
     );
     assert_eq!(
-        take(Partial(&b"2abcxxx"[..])),
-        Ok((Partial(&b"cxxx"[..]), &b"ab"[..]))
+        take(Partial::new(&b"2abcxxx"[..])),
+        Ok((Partial::new(&b"cxxx"[..]), &b"ab"[..]))
     );
 }
 
@@ -462,48 +504,54 @@ fn length_value_test() {
 
     let i1 = [0, 5, 6];
     assert_eq!(
-        length_value_1(Partial(&i1)),
+        length_value_1(Partial::new(&i1)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b""[..]),
+            Partial::new(&b""[..]),
             ErrorKind::Complete
         )))
     );
     assert_eq!(
-        length_value_2(Partial(&i1)),
+        length_value_2(Partial::new(&i1)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b""[..]),
+            Partial::new(&b""[..]),
             ErrorKind::Complete
         )))
     );
 
     let i2 = [1, 5, 6, 3];
     assert_eq!(
-        length_value_1(Partial(&i2)),
+        length_value_1(Partial::new(&i2)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&i2[1..2]),
+            Partial::new(&i2[1..2]),
             ErrorKind::Complete
         )))
     );
     assert_eq!(
-        length_value_2(Partial(&i2)),
+        length_value_2(Partial::new(&i2)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&i2[1..2]),
+            Partial::new(&i2[1..2]),
             ErrorKind::Complete
         )))
     );
 
     let i3 = [2, 5, 6, 3, 4, 5, 7];
-    assert_eq!(length_value_1(Partial(&i3)), Ok((Partial(&i3[3..]), 1286)));
     assert_eq!(
-        length_value_2(Partial(&i3)),
-        Ok((Partial(&i3[3..]), (5, 6)))
+        length_value_1(Partial::new(&i3)),
+        Ok((Partial::new(&i3[3..]), 1286))
+    );
+    assert_eq!(
+        length_value_2(Partial::new(&i3)),
+        Ok((Partial::new(&i3[3..]), (5, 6)))
     );
 
     let i4 = [3, 5, 6, 3, 4, 5];
-    assert_eq!(length_value_1(Partial(&i4)), Ok((Partial(&i4[4..]), 1286)));
     assert_eq!(
-        length_value_2(Partial(&i4)),
-        Ok((Partial(&i4[4..]), (5, 6)))
+        length_value_1(Partial::new(&i4)),
+        Ok((Partial::new(&i4[4..]), 1286))
+    );
+    assert_eq!(
+        length_value_2(Partial::new(&i4)),
+        Ok((Partial::new(&i4[4..]), (5, 6)))
     );
 }
 
@@ -522,33 +570,33 @@ fn fold_many0_test() {
     }
 
     assert_eq!(
-        multi(Partial(&b"abcdef"[..])),
-        Ok((Partial(&b"ef"[..]), vec![&b"abcd"[..]]))
+        multi(Partial::new(&b"abcdef"[..])),
+        Ok((Partial::new(&b"ef"[..]), vec![&b"abcd"[..]]))
     );
     assert_eq!(
-        multi(Partial(&b"abcdabcdefgh"[..])),
-        Ok((Partial(&b"efgh"[..]), vec![&b"abcd"[..], &b"abcd"[..]]))
+        multi(Partial::new(&b"abcdabcdefgh"[..])),
+        Ok((Partial::new(&b"efgh"[..]), vec![&b"abcd"[..], &b"abcd"[..]]))
     );
     assert_eq!(
-        multi(Partial(&b"azerty"[..])),
-        Ok((Partial(&b"azerty"[..]), Vec::new()))
+        multi(Partial::new(&b"azerty"[..])),
+        Ok((Partial::new(&b"azerty"[..]), Vec::new()))
     );
     assert_eq!(
-        multi(Partial(&b"abcdab"[..])),
+        multi(Partial::new(&b"abcdab"[..])),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_eq!(
-        multi(Partial(&b"abcd"[..])),
+        multi(Partial::new(&b"abcd"[..])),
         Err(ErrMode::Incomplete(Needed::new(4)))
     );
     assert_eq!(
-        multi(Partial(&b""[..])),
+        multi(Partial::new(&b""[..])),
         Err(ErrMode::Incomplete(Needed::new(4)))
     );
     assert_eq!(
-        multi_empty(Partial(&b"abcdef"[..])),
+        multi_empty(Partial::new(&b"abcdef"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"abcdef"[..]),
+            Partial::new(&b"abcdef"[..]),
             ErrorKind::Many0
         )))
     );
@@ -571,17 +619,23 @@ fn fold_many1_test() {
     let d = &b"abcdab"[..];
 
     let res1 = vec![&b"abcd"[..]];
-    assert_eq!(multi(Partial(a)), Ok((Partial(&b"ef"[..]), res1)));
+    assert_eq!(multi(Partial::new(a)), Ok((Partial::new(&b"ef"[..]), res1)));
     let res2 = vec![&b"abcd"[..], &b"abcd"[..]];
-    assert_eq!(multi(Partial(b)), Ok((Partial(&b"efgh"[..]), res2)));
     assert_eq!(
-        multi(Partial(c)),
+        multi(Partial::new(b)),
+        Ok((Partial::new(&b"efgh"[..]), res2))
+    );
+    assert_eq!(
+        multi(Partial::new(c)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(c),
+            Partial::new(c),
             ErrorKind::Many1
         )))
     );
-    assert_eq!(multi(Partial(d)), Err(ErrMode::Incomplete(Needed::new(2))));
+    assert_eq!(
+        multi(Partial::new(d)),
+        Err(ErrMode::Incomplete(Needed::new(2)))
+    );
 }
 
 #[test]
@@ -602,19 +656,31 @@ fn fold_many_m_n_test() {
     let e = &b"AbcdAb"[..];
 
     assert_eq!(
-        multi(Partial(a)),
+        multi(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial(&b"ef"[..]),
+            Partial::new(&b"ef"[..]),
             ErrorKind::Tag
         )))
     );
     let res1 = vec![&b"Abcd"[..], &b"Abcd"[..]];
-    assert_eq!(multi(Partial(b)), Ok((Partial(&b"efgh"[..]), res1)));
+    assert_eq!(
+        multi(Partial::new(b)),
+        Ok((Partial::new(&b"efgh"[..]), res1))
+    );
     let res2 = vec![&b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..]];
-    assert_eq!(multi(Partial(c)), Ok((Partial(&b"efgh"[..]), res2)));
+    assert_eq!(
+        multi(Partial::new(c)),
+        Ok((Partial::new(&b"efgh"[..]), res2))
+    );
     let res3 = vec![&b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..]];
-    assert_eq!(multi(Partial(d)), Ok((Partial(&b"Abcdefgh"[..]), res3)));
-    assert_eq!(multi(Partial(e)), Err(ErrMode::Incomplete(Needed::new(2))));
+    assert_eq!(
+        multi(Partial::new(d)),
+        Ok((Partial::new(&b"Abcdefgh"[..]), res3))
+    );
+    assert_eq!(
+        multi(Partial::new(e)),
+        Err(ErrMode::Incomplete(Needed::new(2)))
+    );
 }
 
 #[test]

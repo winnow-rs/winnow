@@ -53,8 +53,8 @@ pub enum Endianness {
 ///   be_u8::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01abcd"[..])), Ok((Partial(&b"\x01abcd"[..]), 0x00)));
-/// assert_eq!(parser(Partial(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01abcd"[..])), Ok((Partial::new(&b"\x01abcd"[..]), 0x00)));
+/// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn be_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
@@ -101,8 +101,8 @@ where
 ///   be_u16::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x0001)));
-/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x0001)));
+/// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn be_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
@@ -150,8 +150,8 @@ where
 ///   be_u24::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01\x02abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x000102)));
-/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01\x02abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x000102)));
+/// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
 pub fn be_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
@@ -199,8 +199,8 @@ where
 ///   be_u32::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x00010203)));
-/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01\x02\x03abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x00010203)));
+/// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
 pub fn be_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
@@ -248,8 +248,8 @@ where
 ///   be_u64::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x0001020304050607)));
-/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x0001020304050607)));
+/// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
 pub fn be_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
@@ -297,8 +297,8 @@ where
 ///   be_u128::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x00010203040506070809101112131415)));
-/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x00010203040506070809101112131415)));
+/// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
 pub fn be_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
@@ -344,8 +344,8 @@ where
 ///
 /// let parser = be_i8::<_, Error<_>>;
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01abcd"[..])), Ok((Partial(&b"\x01abcd"[..]), 0x00)));
-/// assert_eq!(parser(Partial(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01abcd"[..])), Ok((Partial::new(&b"\x01abcd"[..]), 0x00)));
+/// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn be_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
@@ -390,8 +390,8 @@ where
 ///
 /// let parser = be_i16::<_, Error<_>>;
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x0001)));
-/// assert_eq!(parser(Partial(&b""[..])), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x0001)));
+/// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
 pub fn be_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
@@ -437,8 +437,8 @@ where
 ///
 /// let parser = be_i24::<_, Error<_>>;
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01\x02abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x000102)));
-/// assert_eq!(parser(Partial(&b""[..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01\x02abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x000102)));
+/// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
 pub fn be_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
@@ -484,8 +484,8 @@ where
 ///
 /// let parser = be_i32::<_, Error<_>>;
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x00010203)));
-/// assert_eq!(parser(Partial(&b""[..])), Err(ErrMode::Incomplete(Needed::new(4))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01\x02\x03abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x00010203)));
+/// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(4))));
 /// ```
 #[inline(always)]
 pub fn be_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
@@ -531,8 +531,8 @@ where
 ///
 /// let parser = be_i64::<_, Error<_>>;
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x0001020304050607)));
-/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x0001020304050607)));
+/// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
 pub fn be_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
@@ -578,8 +578,8 @@ where
 ///
 /// let parser = be_i128::<_, Error<_>>;
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x00010203040506070809101112131415)));
-/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x00010203040506070809101112131415)));
+/// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
 pub fn be_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
@@ -625,8 +625,8 @@ where
 ///
 /// let parser = le_u8::<_, Error<_>>;
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01abcd"[..])), Ok((Partial(&b"\x01abcd"[..]), 0x00)));
-/// assert_eq!(parser(Partial(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01abcd"[..])), Ok((Partial::new(&b"\x01abcd"[..]), 0x00)));
+/// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn le_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
@@ -673,8 +673,8 @@ where
 ///   le_u16::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x0100)));
-/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x0100)));
+/// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn le_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
@@ -722,8 +722,8 @@ where
 ///   le_u24::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01\x02abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x020100)));
-/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01\x02abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x020100)));
+/// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
 pub fn le_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
@@ -771,8 +771,8 @@ where
 ///   le_u32::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x03020100)));
-/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01\x02\x03abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x03020100)));
+/// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
 pub fn le_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
@@ -820,8 +820,8 @@ where
 ///   le_u64::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x0706050403020100)));
-/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x0706050403020100)));
+/// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
 pub fn le_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
@@ -869,8 +869,8 @@ where
 ///   le_u128::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x15141312111009080706050403020100)));
-/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x15141312111009080706050403020100)));
+/// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
 pub fn le_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
@@ -916,8 +916,8 @@ where
 ///
 /// let parser = le_i8::<_, Error<_>>;
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01abcd"[..])), Ok((Partial(&b"\x01abcd"[..]), 0x00)));
-/// assert_eq!(parser(Partial(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01abcd"[..])), Ok((Partial::new(&b"\x01abcd"[..]), 0x00)));
+/// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn le_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
@@ -964,8 +964,8 @@ where
 ///   le_i16::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x0100)));
-/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x0100)));
+/// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn le_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
@@ -1013,8 +1013,8 @@ where
 ///   le_i24::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01\x02abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x020100)));
-/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01\x02abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x020100)));
+/// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
 pub fn le_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
@@ -1062,8 +1062,8 @@ where
 ///   le_i32::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x03020100)));
-/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01\x02\x03abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x03020100)));
+/// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
 pub fn le_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
@@ -1111,8 +1111,8 @@ where
 ///   le_i64::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x0706050403020100)));
-/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x0706050403020100)));
+/// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
 pub fn le_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
@@ -1160,8 +1160,8 @@ where
 ///   le_i128::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Partial(&b"abcd"[..]), 0x15141312111009080706050403020100)));
-/// assert_eq!(parser(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15abcd"[..])), Ok((Partial::new(&b"abcd"[..]), 0x15141312111009080706050403020100)));
+/// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
 pub fn le_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
@@ -1212,8 +1212,8 @@ where
 ///   u8::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x03abcefg"[..])), Ok((Partial(&b"\x03abcefg"[..]), 0x00)));
-/// assert_eq!(parser(Partial(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x03abcefg"[..])), Ok((Partial::new(&b"\x03abcefg"[..]), 0x00)));
+/// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
@@ -1271,15 +1271,15 @@ where
 ///   u16::<_, Error<_>>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_u16(Partial(&b"\x00\x03abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x0003)));
-/// assert_eq!(be_u16(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(be_u16(Partial::new(&b"\x00\x03abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0003)));
+/// assert_eq!(be_u16(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// let le_u16 = |s| {
 ///   u16::<_, Error<_>>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_u16(Partial(&b"\x00\x03abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x0300)));
-/// assert_eq!(le_u16(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(le_u16(Partial::new(&b"\x00\x03abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0300)));
+/// assert_eq!(le_u16(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn u16<I, E: ParseError<I>>(
@@ -1340,15 +1340,15 @@ where
 ///   u24::<_,Error<_>>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_u24(Partial(&b"\x00\x03\x05abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x000305)));
-/// assert_eq!(be_u24(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(be_u24(Partial::new(&b"\x00\x03\x05abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x000305)));
+/// assert_eq!(be_u24(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 ///
 /// let le_u24 = |s| {
 ///   u24::<_, Error<_>>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_u24(Partial(&b"\x00\x03\x05abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x050300)));
-/// assert_eq!(le_u24(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(le_u24(Partial::new(&b"\x00\x03\x05abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x050300)));
+/// assert_eq!(le_u24(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
 pub fn u24<I, E: ParseError<I>>(
@@ -1409,15 +1409,15 @@ where
 ///   u32::<_, Error<_>>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_u32(Partial(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x00030507)));
-/// assert_eq!(be_u32(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(be_u32(Partial::new(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x00030507)));
+/// assert_eq!(be_u32(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 ///
 /// let le_u32 = |s| {
 ///   u32::<_, Error<_>>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_u32(Partial(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x07050300)));
-/// assert_eq!(le_u32(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(le_u32(Partial::new(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x07050300)));
+/// assert_eq!(le_u32(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
 pub fn u32<I, E: ParseError<I>>(
@@ -1478,15 +1478,15 @@ where
 ///   u64::<_, Error<_>>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_u64(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x0001020304050607)));
-/// assert_eq!(be_u64(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(be_u64(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0001020304050607)));
+/// assert_eq!(be_u64(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 ///
 /// let le_u64 = |s| {
 ///   u64::<_, Error<_>>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_u64(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x0706050403020100)));
-/// assert_eq!(le_u64(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(le_u64(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0706050403020100)));
+/// assert_eq!(le_u64(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
 pub fn u64<I, E: ParseError<I>>(
@@ -1547,15 +1547,15 @@ where
 ///   u128::<_, Error<_>>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_u128(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x00010203040506070001020304050607)));
-/// assert_eq!(be_u128(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
+/// assert_eq!(be_u128(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x00010203040506070001020304050607)));
+/// assert_eq!(be_u128(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 ///
 /// let le_u128 = |s| {
 ///   u128::<_, Error<_>>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_u128(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x07060504030201000706050403020100)));
-/// assert_eq!(le_u128(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
+/// assert_eq!(le_u128(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x07060504030201000706050403020100)));
+/// assert_eq!(le_u128(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
 pub fn u128<I, E: ParseError<I>>(
@@ -1608,8 +1608,8 @@ where
 ///   i8::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&b"\x00\x03abcefg"[..])), Ok((Partial(&b"\x03abcefg"[..]), 0x00)));
-/// assert_eq!(parser(Partial(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser(Partial::new(&b"\x00\x03abcefg"[..])), Ok((Partial::new(&b"\x03abcefg"[..]), 0x00)));
+/// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
@@ -1667,15 +1667,15 @@ where
 ///   i16::<_, Error<_>>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_i16(Partial(&b"\x00\x03abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x0003)));
-/// assert_eq!(be_i16(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(be_i16(Partial::new(&b"\x00\x03abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0003)));
+/// assert_eq!(be_i16(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// let le_i16 = |s| {
 ///   i16::<_, Error<_>>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_i16(Partial(&b"\x00\x03abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x0300)));
-/// assert_eq!(le_i16(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(le_i16(Partial::new(&b"\x00\x03abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0300)));
+/// assert_eq!(le_i16(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn i16<I, E: ParseError<I>>(
@@ -1736,15 +1736,15 @@ where
 ///   i24::<_, Error<_>>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_i24(Partial(&b"\x00\x03\x05abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x000305)));
-/// assert_eq!(be_i24(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(be_i24(Partial::new(&b"\x00\x03\x05abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x000305)));
+/// assert_eq!(be_i24(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 ///
 /// let le_i24 = |s| {
 ///   i24::<_, Error<_>>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_i24(Partial(&b"\x00\x03\x05abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x050300)));
-/// assert_eq!(le_i24(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(le_i24(Partial::new(&b"\x00\x03\x05abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x050300)));
+/// assert_eq!(le_i24(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
 pub fn i24<I, E: ParseError<I>>(
@@ -1805,15 +1805,15 @@ where
 ///   i32::<_, Error<_>>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_i32(Partial(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x00030507)));
-/// assert_eq!(be_i32(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(be_i32(Partial::new(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x00030507)));
+/// assert_eq!(be_i32(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 ///
 /// let le_i32 = |s| {
 ///   i32::<_, Error<_>>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_i32(Partial(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x07050300)));
-/// assert_eq!(le_i32(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(le_i32(Partial::new(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x07050300)));
+/// assert_eq!(le_i32(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
 pub fn i32<I, E: ParseError<I>>(
@@ -1874,15 +1874,15 @@ where
 ///   i64::<_, Error<_>>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_i64(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x0001020304050607)));
-/// assert_eq!(be_i64(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(be_i64(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0001020304050607)));
+/// assert_eq!(be_i64(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 ///
 /// let le_i64 = |s| {
 ///   i64::<_, Error<_>>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_i64(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x0706050403020100)));
-/// assert_eq!(le_i64(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(le_i64(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0706050403020100)));
+/// assert_eq!(le_i64(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
 pub fn i64<I, E: ParseError<I>>(
@@ -1943,15 +1943,15 @@ where
 ///   i128::<_, Error<_>>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_i128(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x00010203040506070001020304050607)));
-/// assert_eq!(be_i128(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
+/// assert_eq!(be_i128(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x00010203040506070001020304050607)));
+/// assert_eq!(be_i128(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 ///
 /// let le_i128 = |s| {
 ///   i128::<_, Error<_>>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_i128(Partial(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial(&b"abcefg"[..]), 0x07060504030201000706050403020100)));
-/// assert_eq!(le_i128(Partial(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
+/// assert_eq!(le_i128(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x07060504030201000706050403020100)));
+/// assert_eq!(le_i128(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
 pub fn i128<I, E: ParseError<I>>(
@@ -2001,8 +2001,8 @@ where
 ///   be_f32::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&[0x40, 0x29, 0x00, 0x00][..])), Ok((Partial(&b""[..]), 2.640625)));
-/// assert_eq!(parser(Partial(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(parser(Partial::new(&[0x40, 0x29, 0x00, 0x00][..])), Ok((Partial::new(&b""[..]), 2.640625)));
+/// assert_eq!(parser(Partial::new(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
 pub fn be_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>
@@ -2050,8 +2050,8 @@ where
 ///   be_f64::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])), Ok((Partial(&b""[..]), 12.5)));
-/// assert_eq!(parser(Partial(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(parser(Partial::new(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])), Ok((Partial::new(&b""[..]), 12.5)));
+/// assert_eq!(parser(Partial::new(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
 pub fn be_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>
@@ -2099,8 +2099,8 @@ where
 ///   le_f32::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&[0x00, 0x00, 0x48, 0x41][..])), Ok((Partial(&b""[..]), 12.5)));
-/// assert_eq!(parser(Partial(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(3))));
+/// assert_eq!(parser(Partial::new(&[0x00, 0x00, 0x48, 0x41][..])), Ok((Partial::new(&b""[..]), 12.5)));
+/// assert_eq!(parser(Partial::new(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
 pub fn le_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>
@@ -2148,8 +2148,8 @@ where
 ///   le_f64::<_, Error<_>>(s)
 /// };
 ///
-/// assert_eq!(parser(Partial(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x41][..])), Ok((Partial(&b""[..]), 3145728.0)));
-/// assert_eq!(parser(Partial(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(7))));
+/// assert_eq!(parser(Partial::new(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x41][..])), Ok((Partial::new(&b""[..]), 3145728.0)));
+/// assert_eq!(parser(Partial::new(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
 pub fn le_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>
@@ -2208,15 +2208,15 @@ where
 ///   f32::<_, Error<_>>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_f32(Partial(&[0x41, 0x48, 0x00, 0x00][..])), Ok((Partial(&b""[..]), 12.5)));
-/// assert_eq!(be_f32(Partial(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(be_f32(Partial::new(&[0x41, 0x48, 0x00, 0x00][..])), Ok((Partial::new(&b""[..]), 12.5)));
+/// assert_eq!(be_f32(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// let le_f32 = |s| {
 ///   f32::<_, Error<_>>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_f32(Partial(&[0x00, 0x00, 0x48, 0x41][..])), Ok((Partial(&b""[..]), 12.5)));
-/// assert_eq!(le_f32(Partial(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(le_f32(Partial::new(&[0x00, 0x00, 0x48, 0x41][..])), Ok((Partial::new(&b""[..]), 12.5)));
+/// assert_eq!(le_f32(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn f32<I, E: ParseError<I>>(
@@ -2277,15 +2277,15 @@ where
 ///   f64::<_, Error<_>>(winnow::number::Endianness::Big)(s)
 /// };
 ///
-/// assert_eq!(be_f64(Partial(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])), Ok((Partial(&b""[..]), 12.5)));
-/// assert_eq!(be_f64(Partial(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(5))));
+/// assert_eq!(be_f64(Partial::new(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])), Ok((Partial::new(&b""[..]), 12.5)));
+/// assert_eq!(be_f64(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(5))));
 ///
 /// let le_f64 = |s| {
 ///   f64::<_, Error<_>>(winnow::number::Endianness::Little)(s)
 /// };
 ///
-/// assert_eq!(le_f64(Partial(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29, 0x40][..])), Ok((Partial(&b""[..]), 12.5)));
-/// assert_eq!(le_f64(Partial(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(5))));
+/// assert_eq!(le_f64(Partial::new(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29, 0x40][..])), Ok((Partial::new(&b""[..]), 12.5)));
+/// assert_eq!(le_f64(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(5))));
 /// ```
 #[inline(always)]
 pub fn f64<I, E: ParseError<I>>(
