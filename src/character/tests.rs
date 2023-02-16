@@ -36,16 +36,13 @@ mod complete {
             alpha1(b),
             Err(ErrMode::Backtrack(Error::new(b, ErrorKind::Alpha)))
         );
-        assert_eq!(alpha1::<_, Error<_>, false>(c), Ok((&c[1..], &b"a"[..])));
-        assert_eq!(
-            alpha1::<_, Error<_>, false>(d),
-            Ok(("é12".as_bytes(), &b"az"[..]))
-        );
+        assert_eq!(alpha1::<_, Error<_>>(c), Ok((&c[1..], &b"a"[..])));
+        assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12".as_bytes(), &b"az"[..])));
         assert_eq!(
             digit1(a),
             Err(ErrMode::Backtrack(Error::new(a, ErrorKind::Digit)))
         );
-        assert_eq!(digit1::<_, Error<_>, false>(b), Ok((empty, b)));
+        assert_eq!(digit1::<_, Error<_>>(b), Ok((empty, b)));
         assert_eq!(
             digit1(c),
             Err(ErrMode::Backtrack(Error::new(c, ErrorKind::Digit)))
@@ -54,11 +51,11 @@ mod complete {
             digit1(d),
             Err(ErrMode::Backtrack(Error::new(d, ErrorKind::Digit)))
         );
-        assert_eq!(hex_digit1::<_, Error<_>, false>(a), Ok((empty, a)));
-        assert_eq!(hex_digit1::<_, Error<_>, false>(b), Ok((empty, b)));
-        assert_eq!(hex_digit1::<_, Error<_>, false>(c), Ok((empty, c)));
+        assert_eq!(hex_digit1::<_, Error<_>>(a), Ok((empty, a)));
+        assert_eq!(hex_digit1::<_, Error<_>>(b), Ok((empty, b)));
+        assert_eq!(hex_digit1::<_, Error<_>>(c), Ok((empty, c)));
         assert_eq!(
-            hex_digit1::<_, Error<_>, false>(d),
+            hex_digit1::<_, Error<_>>(d),
             Ok(("zé12".as_bytes(), &b"a"[..]))
         );
         assert_eq!(
@@ -69,7 +66,7 @@ mod complete {
             oct_digit1(a),
             Err(ErrMode::Backtrack(Error::new(a, ErrorKind::OctDigit)))
         );
-        assert_eq!(oct_digit1::<_, Error<_>, false>(b), Ok((empty, b)));
+        assert_eq!(oct_digit1::<_, Error<_>>(b), Ok((empty, b)));
         assert_eq!(
             oct_digit1(c),
             Err(ErrMode::Backtrack(Error::new(c, ErrorKind::OctDigit)))
@@ -78,15 +75,15 @@ mod complete {
             oct_digit1(d),
             Err(ErrMode::Backtrack(Error::new(d, ErrorKind::OctDigit)))
         );
-        assert_eq!(alphanumeric1::<_, Error<_>, false>(a), Ok((empty, a)));
+        assert_eq!(alphanumeric1::<_, Error<_>>(a), Ok((empty, a)));
         //assert_eq!(fix_error!(b,(), alphanumeric), Ok((empty, b)));
-        assert_eq!(alphanumeric1::<_, Error<_>, false>(c), Ok((empty, c)));
+        assert_eq!(alphanumeric1::<_, Error<_>>(c), Ok((empty, c)));
         assert_eq!(
-            alphanumeric1::<_, Error<_>, false>(d),
+            alphanumeric1::<_, Error<_>>(d),
             Ok(("é12".as_bytes(), &b"az"[..]))
         );
-        assert_eq!(space1::<_, Error<_>, false>(e), Ok((empty, e)));
-        assert_eq!(space1::<_, Error<_>, false>(f), Ok((&b";"[..], &b" "[..])));
+        assert_eq!(space1::<_, Error<_>>(e), Ok((empty, e)));
+        assert_eq!(space1::<_, Error<_>>(f), Ok((&b";"[..], &b" "[..])));
     }
 
     #[cfg(feature = "alloc")]
@@ -98,18 +95,18 @@ mod complete {
         let c = "a123";
         let d = "azé12";
         let e = " ";
-        assert_eq!(alpha1::<_, Error<_>, false>(a), Ok((empty, a)));
+        assert_eq!(alpha1::<_, Error<_>>(a), Ok((empty, a)));
         assert_eq!(
             alpha1(b),
             Err(ErrMode::Backtrack(Error::new(b, ErrorKind::Alpha)))
         );
-        assert_eq!(alpha1::<_, Error<_>, false>(c), Ok((&c[1..], "a")));
-        assert_eq!(alpha1::<_, Error<_>, false>(d), Ok(("é12", "az")));
+        assert_eq!(alpha1::<_, Error<_>>(c), Ok((&c[1..], "a")));
+        assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12", "az")));
         assert_eq!(
             digit1(a),
             Err(ErrMode::Backtrack(Error::new(a, ErrorKind::Digit)))
         );
-        assert_eq!(digit1::<_, Error<_>, false>(b), Ok((empty, b)));
+        assert_eq!(digit1::<_, Error<_>>(b), Ok((empty, b)));
         assert_eq!(
             digit1(c),
             Err(ErrMode::Backtrack(Error::new(c, ErrorKind::Digit)))
@@ -118,10 +115,10 @@ mod complete {
             digit1(d),
             Err(ErrMode::Backtrack(Error::new(d, ErrorKind::Digit)))
         );
-        assert_eq!(hex_digit1::<_, Error<_>, false>(a), Ok((empty, a)));
-        assert_eq!(hex_digit1::<_, Error<_>, false>(b), Ok((empty, b)));
-        assert_eq!(hex_digit1::<_, Error<_>, false>(c), Ok((empty, c)));
-        assert_eq!(hex_digit1::<_, Error<_>, false>(d), Ok(("zé12", "a")));
+        assert_eq!(hex_digit1::<_, Error<_>>(a), Ok((empty, a)));
+        assert_eq!(hex_digit1::<_, Error<_>>(b), Ok((empty, b)));
+        assert_eq!(hex_digit1::<_, Error<_>>(c), Ok((empty, c)));
+        assert_eq!(hex_digit1::<_, Error<_>>(d), Ok(("zé12", "a")));
         assert_eq!(
             hex_digit1(e),
             Err(ErrMode::Backtrack(Error::new(e, ErrorKind::HexDigit)))
@@ -130,7 +127,7 @@ mod complete {
             oct_digit1(a),
             Err(ErrMode::Backtrack(Error::new(a, ErrorKind::OctDigit)))
         );
-        assert_eq!(oct_digit1::<_, Error<_>, false>(b), Ok((empty, b)));
+        assert_eq!(oct_digit1::<_, Error<_>>(b), Ok((empty, b)));
         assert_eq!(
             oct_digit1(c),
             Err(ErrMode::Backtrack(Error::new(c, ErrorKind::OctDigit)))
@@ -139,11 +136,11 @@ mod complete {
             oct_digit1(d),
             Err(ErrMode::Backtrack(Error::new(d, ErrorKind::OctDigit)))
         );
-        assert_eq!(alphanumeric1::<_, Error<_>, false>(a), Ok((empty, a)));
+        assert_eq!(alphanumeric1::<_, Error<_>>(a), Ok((empty, a)));
         //assert_eq!(fix_error!(b,(), alphanumeric), Ok((empty, b)));
-        assert_eq!(alphanumeric1::<_, Error<_>, false>(c), Ok((empty, c)));
-        assert_eq!(alphanumeric1::<_, Error<_>, false>(d), Ok(("é12", "az")));
-        assert_eq!(space1::<_, Error<_>, false>(e), Ok((empty, e)));
+        assert_eq!(alphanumeric1::<_, Error<_>>(c), Ok((empty, c)));
+        assert_eq!(alphanumeric1::<_, Error<_>>(d), Ok(("é12", "az")));
+        assert_eq!(space1::<_, Error<_>>(e), Ok((empty, e)));
     }
 
     use crate::stream::Offset;
@@ -156,43 +153,43 @@ mod complete {
         let e = &b" \t\r\n;"[..];
         let f = &b"123abcDEF;"[..];
 
-        match alpha1::<_, Error<_>, false>(a) {
+        match alpha1::<_, Error<_>>(a) {
             Ok((i, _)) => {
                 assert_eq!(a.offset_to(i) + i.len(), a.len());
             }
             _ => panic!("wrong return type in offset test for alpha"),
         }
-        match digit1::<_, Error<_>, false>(b) {
+        match digit1::<_, Error<_>>(b) {
             Ok((i, _)) => {
                 assert_eq!(b.offset_to(i) + i.len(), b.len());
             }
             _ => panic!("wrong return type in offset test for digit"),
         }
-        match alphanumeric1::<_, Error<_>, false>(c) {
+        match alphanumeric1::<_, Error<_>>(c) {
             Ok((i, _)) => {
                 assert_eq!(c.offset_to(i) + i.len(), c.len());
             }
             _ => panic!("wrong return type in offset test for alphanumeric"),
         }
-        match space1::<_, Error<_>, false>(d) {
+        match space1::<_, Error<_>>(d) {
             Ok((i, _)) => {
                 assert_eq!(d.offset_to(i) + i.len(), d.len());
             }
             _ => panic!("wrong return type in offset test for space"),
         }
-        match multispace1::<_, Error<_>, false>(e) {
+        match multispace1::<_, Error<_>>(e) {
             Ok((i, _)) => {
                 assert_eq!(e.offset_to(i) + i.len(), e.len());
             }
             _ => panic!("wrong return type in offset test for multispace"),
         }
-        match hex_digit1::<_, Error<_>, false>(f) {
+        match hex_digit1::<_, Error<_>>(f) {
             Ok((i, _)) => {
                 assert_eq!(f.offset_to(i) + i.len(), f.len());
             }
             _ => panic!("wrong return type in offset test for hex_digit"),
         }
-        match oct_digit1::<_, Error<_>, false>(f) {
+        match oct_digit1::<_, Error<_>>(f) {
             Ok((i, _)) => {
                 assert_eq!(f.offset_to(i) + i.len(), f.len());
             }
@@ -204,24 +201,24 @@ mod complete {
     fn is_not_line_ending_bytes() {
         let a: &[u8] = b"ab12cd\nefgh";
         assert_eq!(
-            not_line_ending::<_, Error<_>, false>(a),
+            not_line_ending::<_, Error<_>>(a),
             Ok((&b"\nefgh"[..], &b"ab12cd"[..]))
         );
 
         let b: &[u8] = b"ab12cd\nefgh\nijkl";
         assert_eq!(
-            not_line_ending::<_, Error<_>, false>(b),
+            not_line_ending::<_, Error<_>>(b),
             Ok((&b"\nefgh\nijkl"[..], &b"ab12cd"[..]))
         );
 
         let c: &[u8] = b"ab12cd\r\nefgh\nijkl";
         assert_eq!(
-            not_line_ending::<_, Error<_>, false>(c),
+            not_line_ending::<_, Error<_>>(c),
             Ok((&b"\r\nefgh\nijkl"[..], &b"ab12cd"[..]))
         );
 
         let d: &[u8] = b"ab12cd";
-        assert_eq!(not_line_ending::<_, Error<_>, false>(d), Ok((&[][..], d)));
+        assert_eq!(not_line_ending::<_, Error<_>>(d), Ok((&[][..], d)));
     }
 
     #[test]
@@ -233,7 +230,7 @@ mod complete {
         );
 
         let g2: &str = "ab12cd";
-        assert_eq!(not_line_ending::<_, Error<_>, false>(g2), Ok(("", g2)));
+        assert_eq!(not_line_ending::<_, Error<_>>(g2), Ok(("", g2)));
     }
 
     #[test]
@@ -395,7 +392,7 @@ mod complete {
             _ => unreachable!(),
         };
 
-        let (i, s) = match digit1::<_, crate::error::Error<_>, false>(i) {
+        let (i, s) = match digit1::<_, crate::error::Error<_>>(i) {
             Ok((i, s)) => (i, s),
             Err(_) => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
         };
@@ -528,19 +525,19 @@ mod complete {
 
         let remaining_exponent = "-1.234E-";
         assert_parse!(
-            float::<_, f64, _, false>(remaining_exponent),
+            float::<_, f64, _>(remaining_exponent),
             Err(ErrMode::Cut(Error {
                 input: "-1.234E-",
                 kind: ErrorKind::Float
             }))
         );
 
-        let (_i, nan) = float::<_, f32, (), false>("NaN").unwrap();
+        let (_i, nan) = float::<_, f32, ()>("NaN").unwrap();
         assert!(nan.is_nan());
 
-        let (_i, inf) = float::<_, f32, (), false>("inf").unwrap();
+        let (_i, inf) = float::<_, f32, ()>("inf").unwrap();
         assert!(inf.is_infinite());
-        let (_i, inf) = float::<_, f32, (), false>("infinite").unwrap();
+        let (_i, inf) = float::<_, f32, ()>("infinite").unwrap();
         assert!(inf.is_infinite());
     }
 
@@ -568,7 +565,7 @@ mod complete {
       fn floats(s in "\\PC*") {
           println!("testing {}", s);
           let res1 = parse_f64(&s);
-          let res2 = float::<_, f64, (), false>(s.as_str());
+          let res2 = float::<_, f64, ()>(s.as_str());
           assert_eq!(res1, res2);
       }
     }
@@ -883,18 +880,18 @@ mod partial {
         let d: &[u8] = "azé12".as_bytes();
         let e: &[u8] = b" ";
         let f: &[u8] = b" ;";
-        //assert_eq!(alpha1::<_, Error<_>, true>(a), Err(ErrMode::Incomplete(Needed::new(1))));
+        //assert_eq!(alpha1::<_, Error<_>>(a), Err(ErrMode::Incomplete(Needed::new(1))));
         assert_parse!(alpha1(Partial(a)), Err(ErrMode::Incomplete(Needed::new(1))));
         assert_eq!(
             alpha1(Partial(b)),
             Err(ErrMode::Backtrack(Error::new(Partial(b), ErrorKind::Alpha)))
         );
         assert_eq!(
-            alpha1::<_, Error<_>, true>(Partial(c)),
+            alpha1::<_, Error<_>>(Partial(c)),
             Ok((Partial(&c[1..]), &b"a"[..]))
         );
         assert_eq!(
-            alpha1::<_, Error<_>, true>(Partial(d)),
+            alpha1::<_, Error<_>>(Partial(d)),
             Ok((Partial("é12".as_bytes()), &b"az"[..]))
         );
         assert_eq!(
@@ -902,7 +899,7 @@ mod partial {
             Err(ErrMode::Backtrack(Error::new(Partial(a), ErrorKind::Digit)))
         );
         assert_eq!(
-            digit1::<_, Error<_>, true>(Partial(b)),
+            digit1::<_, Error<_>>(Partial(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
@@ -914,19 +911,19 @@ mod partial {
             Err(ErrMode::Backtrack(Error::new(Partial(d), ErrorKind::Digit)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>, true>(Partial(a)),
+            hex_digit1::<_, Error<_>>(Partial(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>, true>(Partial(b)),
+            hex_digit1::<_, Error<_>>(Partial(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>, true>(Partial(c)),
+            hex_digit1::<_, Error<_>>(Partial(c)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>, true>(Partial(d)),
+            hex_digit1::<_, Error<_>>(Partial(d)),
             Ok((Partial("zé12".as_bytes()), &b"a"[..]))
         );
         assert_eq!(
@@ -944,7 +941,7 @@ mod partial {
             )))
         );
         assert_eq!(
-            oct_digit1::<_, Error<_>, true>(Partial(b)),
+            oct_digit1::<_, Error<_>>(Partial(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
@@ -962,24 +959,24 @@ mod partial {
             )))
         );
         assert_eq!(
-            alphanumeric1::<_, Error<_>, true>(Partial(a)),
+            alphanumeric1::<_, Error<_>>(Partial(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         //assert_eq!(fix_error!(b,(), alphanumeric1), Ok((empty, b)));
         assert_eq!(
-            alphanumeric1::<_, Error<_>, true>(Partial(c)),
+            alphanumeric1::<_, Error<_>>(Partial(c)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            alphanumeric1::<_, Error<_>, true>(Partial(d)),
+            alphanumeric1::<_, Error<_>>(Partial(d)),
             Ok((Partial("é12".as_bytes()), &b"az"[..]))
         );
         assert_eq!(
-            space1::<_, Error<_>, true>(Partial(e)),
+            space1::<_, Error<_>>(Partial(e)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            space1::<_, Error<_>, true>(Partial(f)),
+            space1::<_, Error<_>>(Partial(f)),
             Ok((Partial(&b";"[..]), &b" "[..]))
         );
     }
@@ -993,7 +990,7 @@ mod partial {
         let d = "azé12";
         let e = " ";
         assert_eq!(
-            alpha1::<_, Error<_>, true>(Partial(a)),
+            alpha1::<_, Error<_>>(Partial(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
@@ -1001,11 +998,11 @@ mod partial {
             Err(ErrMode::Backtrack(Error::new(Partial(b), ErrorKind::Alpha)))
         );
         assert_eq!(
-            alpha1::<_, Error<_>, true>(Partial(c)),
+            alpha1::<_, Error<_>>(Partial(c)),
             Ok((Partial(&c[1..]), "a"))
         );
         assert_eq!(
-            alpha1::<_, Error<_>, true>(Partial(d)),
+            alpha1::<_, Error<_>>(Partial(d)),
             Ok((Partial("é12"), "az"))
         );
         assert_eq!(
@@ -1013,7 +1010,7 @@ mod partial {
             Err(ErrMode::Backtrack(Error::new(Partial(a), ErrorKind::Digit)))
         );
         assert_eq!(
-            digit1::<_, Error<_>, true>(Partial(b)),
+            digit1::<_, Error<_>>(Partial(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
@@ -1025,19 +1022,19 @@ mod partial {
             Err(ErrMode::Backtrack(Error::new(Partial(d), ErrorKind::Digit)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>, true>(Partial(a)),
+            hex_digit1::<_, Error<_>>(Partial(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>, true>(Partial(b)),
+            hex_digit1::<_, Error<_>>(Partial(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>, true>(Partial(c)),
+            hex_digit1::<_, Error<_>>(Partial(c)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>, true>(Partial(d)),
+            hex_digit1::<_, Error<_>>(Partial(d)),
             Ok((Partial("zé12"), "a"))
         );
         assert_eq!(
@@ -1055,7 +1052,7 @@ mod partial {
             )))
         );
         assert_eq!(
-            oct_digit1::<_, Error<_>, true>(Partial(b)),
+            oct_digit1::<_, Error<_>>(Partial(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
@@ -1073,20 +1070,20 @@ mod partial {
             )))
         );
         assert_eq!(
-            alphanumeric1::<_, Error<_>, true>(Partial(a)),
+            alphanumeric1::<_, Error<_>>(Partial(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         //assert_eq!(fix_error!(b,(), alphanumeric1), Ok((empty, b)));
         assert_eq!(
-            alphanumeric1::<_, Error<_>, true>(Partial(c)),
+            alphanumeric1::<_, Error<_>>(Partial(c)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            alphanumeric1::<_, Error<_>, true>(Partial(d)),
+            alphanumeric1::<_, Error<_>>(Partial(d)),
             Ok((Partial("é12"), "az"))
         );
         assert_eq!(
-            space1::<_, Error<_>, true>(Partial(e)),
+            space1::<_, Error<_>>(Partial(e)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
     }
@@ -1101,43 +1098,43 @@ mod partial {
         let e = &b" \t\r\n;"[..];
         let f = &b"123abcDEF;"[..];
 
-        match alpha1::<_, Error<_>, true>(Partial(a)) {
+        match alpha1::<_, Error<_>>(Partial(a)) {
             Ok((Partial(i), _)) => {
                 assert_eq!(a.offset_to(i) + i.len(), a.len());
             }
             _ => panic!("wrong return type in offset test for alpha"),
         }
-        match digit1::<_, Error<_>, true>(Partial(b)) {
+        match digit1::<_, Error<_>>(Partial(b)) {
             Ok((Partial(i), _)) => {
                 assert_eq!(b.offset_to(i) + i.len(), b.len());
             }
             _ => panic!("wrong return type in offset test for digit"),
         }
-        match alphanumeric1::<_, Error<_>, true>(Partial(c)) {
+        match alphanumeric1::<_, Error<_>>(Partial(c)) {
             Ok((Partial(i), _)) => {
                 assert_eq!(c.offset_to(i) + i.len(), c.len());
             }
             _ => panic!("wrong return type in offset test for alphanumeric"),
         }
-        match space1::<_, Error<_>, true>(Partial(d)) {
+        match space1::<_, Error<_>>(Partial(d)) {
             Ok((Partial(i), _)) => {
                 assert_eq!(d.offset_to(i) + i.len(), d.len());
             }
             _ => panic!("wrong return type in offset test for space"),
         }
-        match multispace1::<_, Error<_>, true>(Partial(e)) {
+        match multispace1::<_, Error<_>>(Partial(e)) {
             Ok((Partial(i), _)) => {
                 assert_eq!(e.offset_to(i) + i.len(), e.len());
             }
             _ => panic!("wrong return type in offset test for multispace"),
         }
-        match hex_digit1::<_, Error<_>, true>(Partial(f)) {
+        match hex_digit1::<_, Error<_>>(Partial(f)) {
             Ok((Partial(i), _)) => {
                 assert_eq!(f.offset_to(i) + i.len(), f.len());
             }
             _ => panic!("wrong return type in offset test for hex_digit"),
         }
-        match oct_digit1::<_, Error<_>, true>(Partial(f)) {
+        match oct_digit1::<_, Error<_>>(Partial(f)) {
             Ok((Partial(i), _)) => {
                 assert_eq!(f.offset_to(i) + i.len(), f.len());
             }
@@ -1149,25 +1146,25 @@ mod partial {
     fn is_not_line_ending_bytes() {
         let a: &[u8] = b"ab12cd\nefgh";
         assert_eq!(
-            not_line_ending::<_, Error<_>, true>(Partial(a)),
+            not_line_ending::<_, Error<_>>(Partial(a)),
             Ok((Partial(&b"\nefgh"[..]), &b"ab12cd"[..]))
         );
 
         let b: &[u8] = b"ab12cd\nefgh\nijkl";
         assert_eq!(
-            not_line_ending::<_, Error<_>, true>(Partial(b)),
+            not_line_ending::<_, Error<_>>(Partial(b)),
             Ok((Partial(&b"\nefgh\nijkl"[..]), &b"ab12cd"[..]))
         );
 
         let c: &[u8] = b"ab12cd\r\nefgh\nijkl";
         assert_eq!(
-            not_line_ending::<_, Error<_>, true>(Partial(c)),
+            not_line_ending::<_, Error<_>>(Partial(c)),
             Ok((Partial(&b"\r\nefgh\nijkl"[..]), &b"ab12cd"[..]))
         );
 
         let d: &[u8] = b"ab12cd";
         assert_eq!(
-            not_line_ending::<_, Error<_>, true>(Partial(d)),
+            not_line_ending::<_, Error<_>>(Partial(d)),
             Err(ErrMode::Incomplete(Needed::Unknown))
         );
     }
@@ -1182,7 +1179,7 @@ mod partial {
 
         let g2: &str = "ab12cd";
         assert_eq!(
-            not_line_ending::<_, Error<_>, true>(Partial(g2)),
+            not_line_ending::<_, Error<_>>(Partial(g2)),
             Err(ErrMode::Incomplete(Needed::Unknown))
         );
     }
@@ -1372,7 +1369,7 @@ mod partial {
             _ => unreachable!(),
         };
 
-        let (i, s) = match digit1::<_, crate::error::Error<_>, true>(i) {
+        let (i, s) = match digit1::<_, crate::error::Error<_>>(i) {
             Ok((i, s)) => (i, s),
             Err(ErrMode::Incomplete(i)) => return Err(ErrMode::Incomplete(i)),
             Err(_) => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),

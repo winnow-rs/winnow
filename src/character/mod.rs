@@ -44,16 +44,14 @@ use crate::Parser;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::character::crlf;
-/// assert_eq!(crlf::<_, Error<_>, true>(Partial("\r\nc")), Ok((Partial("c"), "\r\n")));
-/// assert_eq!(crlf::<_, Error<_>, true>(Partial("ab\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial("ab\r\nc"), ErrorKind::CrLf))));
-/// assert_eq!(crlf::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(crlf::<_, Error<_>>(Partial("\r\nc")), Ok((Partial("c"), "\r\n")));
+/// assert_eq!(crlf::<_, Error<_>>(Partial("ab\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial("ab\r\nc"), ErrorKind::CrLf))));
+/// assert_eq!(crlf::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn crlf<I, E: ParseError<I>, const PARTIAL: bool>(
-    input: I,
-) -> IResult<I, <I as Stream>::Slice, E>
+pub fn crlf<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
 {
@@ -93,18 +91,16 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::character::not_line_ending;
-/// assert_eq!(not_line_ending::<_, Error<_>, true>(Partial("ab\r\nc")), Ok((Partial("\r\nc"), "ab")));
-/// assert_eq!(not_line_ending::<_, Error<_>, true>(Partial("abc")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(not_line_ending::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(not_line_ending::<_, Error<_>, true>(Partial("a\rb\nc")), Err(ErrMode::Backtrack(Error::new(Partial("a\rb\nc"), ErrorKind::Tag ))));
-/// assert_eq!(not_line_ending::<_, Error<_>, true>(Partial("a\rbc")), Err(ErrMode::Backtrack(Error::new(Partial("a\rbc"), ErrorKind::Tag ))));
+/// assert_eq!(not_line_ending::<_, Error<_>>(Partial("ab\r\nc")), Ok((Partial("\r\nc"), "ab")));
+/// assert_eq!(not_line_ending::<_, Error<_>>(Partial("abc")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(not_line_ending::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(not_line_ending::<_, Error<_>>(Partial("a\rb\nc")), Err(ErrMode::Backtrack(Error::new(Partial("a\rb\nc"), ErrorKind::Tag ))));
+/// assert_eq!(not_line_ending::<_, Error<_>>(Partial("a\rbc")), Err(ErrMode::Backtrack(Error::new(Partial("a\rbc"), ErrorKind::Tag ))));
 /// ```
 #[inline(always)]
-pub fn not_line_ending<I, E: ParseError<I>, const PARTIAL: bool>(
-    input: I,
-) -> IResult<I, <I as Stream>::Slice, E>
+pub fn not_line_ending<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream + AsBStr,
     I: Compare<&'static str>,
     <I as Stream>::Token: AsChar,
@@ -142,16 +138,14 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::character::line_ending;
-/// assert_eq!(line_ending::<_, Error<_>, true>(Partial("\r\nc")), Ok((Partial("c"), "\r\n")));
-/// assert_eq!(line_ending::<_, Error<_>, true>(Partial("ab\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial("ab\r\nc"), ErrorKind::CrLf))));
-/// assert_eq!(line_ending::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(line_ending::<_, Error<_>>(Partial("\r\nc")), Ok((Partial("c"), "\r\n")));
+/// assert_eq!(line_ending::<_, Error<_>>(Partial("ab\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial("ab\r\nc"), ErrorKind::CrLf))));
+/// assert_eq!(line_ending::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn line_ending<I, E: ParseError<I>, const PARTIAL: bool>(
-    input: I,
-) -> IResult<I, <I as Stream>::Slice, E>
+pub fn line_ending<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
 {
@@ -188,14 +182,14 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::character::newline;
-/// assert_eq!(newline::<_, Error<_>, true>(Partial("\nc")), Ok((Partial("c"), '\n')));
-/// assert_eq!(newline::<_, Error<_>, true>(Partial("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial("\r\nc"), ErrorKind::Char))));
-/// assert_eq!(newline::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(newline::<_, Error<_>>(Partial("\nc")), Ok((Partial("c"), '\n')));
+/// assert_eq!(newline::<_, Error<_>>(Partial("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial("\r\nc"), ErrorKind::Char))));
+/// assert_eq!(newline::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn newline<I, Error: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, char, Error>
+pub fn newline<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
@@ -232,14 +226,14 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::character::tab;
-/// assert_eq!(tab::<_, Error<_>, true>(Partial("\tc")), Ok((Partial("c"), '\t')));
-/// assert_eq!(tab::<_, Error<_>, true>(Partial("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial("\r\nc"), ErrorKind::Char))));
-/// assert_eq!(tab::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(tab::<_, Error<_>>(Partial("\tc")), Ok((Partial("c"), '\t')));
+/// assert_eq!(tab::<_, Error<_>>(Partial("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial("\r\nc"), ErrorKind::Char))));
+/// assert_eq!(tab::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn tab<I, Error: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, char, Error>
+pub fn tab<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
@@ -278,16 +272,14 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::character::alpha0;
-/// assert_eq!(alpha0::<_, Error<_>, true>(Partial("ab1c")), Ok((Partial("1c"), "ab")));
-/// assert_eq!(alpha0::<_, Error<_>, true>(Partial("1c")), Ok((Partial("1c"), "")));
-/// assert_eq!(alpha0::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha0::<_, Error<_>>(Partial("ab1c")), Ok((Partial("1c"), "ab")));
+/// assert_eq!(alpha0::<_, Error<_>>(Partial("1c")), Ok((Partial("1c"), "")));
+/// assert_eq!(alpha0::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alpha0<I, E: ParseError<I>, const PARTIAL: bool>(
-    input: I,
-) -> IResult<I, <I as Stream>::Slice, E>
+pub fn alpha0<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
@@ -326,16 +318,14 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::character::alpha1;
-/// assert_eq!(alpha1::<_, Error<_>, true>(Partial("aB1c")), Ok((Partial("1c"), "aB")));
-/// assert_eq!(alpha1::<_, Error<_>, true>(Partial("1c")), Err(ErrMode::Backtrack(Error::new(Partial("1c"), ErrorKind::Alpha))));
-/// assert_eq!(alpha1::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha1::<_, Error<_>>(Partial("aB1c")), Ok((Partial("1c"), "aB")));
+/// assert_eq!(alpha1::<_, Error<_>>(Partial("1c")), Err(ErrMode::Backtrack(Error::new(Partial("1c"), ErrorKind::Alpha))));
+/// assert_eq!(alpha1::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alpha1<I, E: ParseError<I>, const PARTIAL: bool>(
-    input: I,
-) -> IResult<I, <I as Stream>::Slice, E>
+pub fn alpha1<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
@@ -375,16 +365,14 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::character::digit0;
-/// assert_eq!(digit0::<_, Error<_>, true>(Partial("21c")), Ok((Partial("c"), "21")));
-/// assert_eq!(digit0::<_, Error<_>, true>(Partial("a21c")), Ok((Partial("a21c"), "")));
-/// assert_eq!(digit0::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(digit0::<_, Error<_>>(Partial("21c")), Ok((Partial("c"), "21")));
+/// assert_eq!(digit0::<_, Error<_>>(Partial("a21c")), Ok((Partial("a21c"), "")));
+/// assert_eq!(digit0::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn digit0<I, E: ParseError<I>, const PARTIAL: bool>(
-    input: I,
-) -> IResult<I, <I as Stream>::Slice, E>
+pub fn digit0<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
@@ -423,9 +411,9 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::character::digit1;
-/// assert_eq!(digit1::<_, Error<_>, true>(Partial("21c")), Ok((Partial("c"), "21")));
-/// assert_eq!(digit1::<_, Error<_>, true>(Partial("c1")), Err(ErrMode::Backtrack(Error::new(Partial("c1"), ErrorKind::Digit))));
-/// assert_eq!(digit1::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(digit1::<_, Error<_>>(Partial("21c")), Ok((Partial("c"), "21")));
+/// assert_eq!(digit1::<_, Error<_>>(Partial("c1")), Err(ErrMode::Backtrack(Error::new(Partial("c1"), ErrorKind::Digit))));
+/// assert_eq!(digit1::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// ## Parsing an integer
@@ -444,11 +432,9 @@ where
 /// assert!(parser("b").is_err());
 /// ```
 #[inline(always)]
-pub fn digit1<I, E: ParseError<I>, const PARTIAL: bool>(
-    input: I,
-) -> IResult<I, <I as Stream>::Slice, E>
+pub fn digit1<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
@@ -486,16 +472,14 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::character::hex_digit0;
-/// assert_eq!(hex_digit0::<_, Error<_>, true>(Partial("21cZ")), Ok((Partial("Z"), "21c")));
-/// assert_eq!(hex_digit0::<_, Error<_>, true>(Partial("Z21c")), Ok((Partial("Z21c"), "")));
-/// assert_eq!(hex_digit0::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(hex_digit0::<_, Error<_>>(Partial("21cZ")), Ok((Partial("Z"), "21c")));
+/// assert_eq!(hex_digit0::<_, Error<_>>(Partial("Z21c")), Ok((Partial("Z21c"), "")));
+/// assert_eq!(hex_digit0::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn hex_digit0<I, E: ParseError<I>, const PARTIAL: bool>(
-    input: I,
-) -> IResult<I, <I as Stream>::Slice, E>
+pub fn hex_digit0<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
@@ -534,16 +518,14 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::character::hex_digit1;
-/// assert_eq!(hex_digit1::<_, Error<_>, true>(Partial("21cZ")), Ok((Partial("Z"), "21c")));
-/// assert_eq!(hex_digit1::<_, Error<_>, true>(Partial("H2")), Err(ErrMode::Backtrack(Error::new(Partial("H2"), ErrorKind::HexDigit))));
-/// assert_eq!(hex_digit1::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(hex_digit1::<_, Error<_>>(Partial("21cZ")), Ok((Partial("Z"), "21c")));
+/// assert_eq!(hex_digit1::<_, Error<_>>(Partial("H2")), Err(ErrMode::Backtrack(Error::new(Partial("H2"), ErrorKind::HexDigit))));
+/// assert_eq!(hex_digit1::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn hex_digit1<I, E: ParseError<I>, const PARTIAL: bool>(
-    input: I,
-) -> IResult<I, <I as Stream>::Slice, E>
+pub fn hex_digit1<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
@@ -582,16 +564,14 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::character::oct_digit0;
-/// assert_eq!(oct_digit0::<_, Error<_>, true>(Partial("21cZ")), Ok((Partial("cZ"), "21")));
-/// assert_eq!(oct_digit0::<_, Error<_>, true>(Partial("Z21c")), Ok((Partial("Z21c"), "")));
-/// assert_eq!(oct_digit0::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(oct_digit0::<_, Error<_>>(Partial("21cZ")), Ok((Partial("cZ"), "21")));
+/// assert_eq!(oct_digit0::<_, Error<_>>(Partial("Z21c")), Ok((Partial("Z21c"), "")));
+/// assert_eq!(oct_digit0::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn oct_digit0<I, E: ParseError<I>, const PARTIAL: bool>(
-    input: I,
-) -> IResult<I, <I as Stream>::Slice, E>
+pub fn oct_digit0<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
@@ -630,16 +610,14 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::character::oct_digit1;
-/// assert_eq!(oct_digit1::<_, Error<_>, true>(Partial("21cZ")), Ok((Partial("cZ"), "21")));
-/// assert_eq!(oct_digit1::<_, Error<_>, true>(Partial("H2")), Err(ErrMode::Backtrack(Error::new(Partial("H2"), ErrorKind::OctDigit))));
-/// assert_eq!(oct_digit1::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(oct_digit1::<_, Error<_>>(Partial("21cZ")), Ok((Partial("cZ"), "21")));
+/// assert_eq!(oct_digit1::<_, Error<_>>(Partial("H2")), Err(ErrMode::Backtrack(Error::new(Partial("H2"), ErrorKind::OctDigit))));
+/// assert_eq!(oct_digit1::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn oct_digit1<I, E: ParseError<I>, const PARTIAL: bool>(
-    input: I,
-) -> IResult<I, <I as Stream>::Slice, E>
+pub fn oct_digit1<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
@@ -678,16 +656,14 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::character::alphanumeric0;
-/// assert_eq!(alphanumeric0::<_, Error<_>, true>(Partial("21cZ%1")), Ok((Partial("%1"), "21cZ")));
-/// assert_eq!(alphanumeric0::<_, Error<_>, true>(Partial("&Z21c")), Ok((Partial("&Z21c"), "")));
-/// assert_eq!(alphanumeric0::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alphanumeric0::<_, Error<_>>(Partial("21cZ%1")), Ok((Partial("%1"), "21cZ")));
+/// assert_eq!(alphanumeric0::<_, Error<_>>(Partial("&Z21c")), Ok((Partial("&Z21c"), "")));
+/// assert_eq!(alphanumeric0::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alphanumeric0<I, E: ParseError<I>, const PARTIAL: bool>(
-    input: I,
-) -> IResult<I, <I as Stream>::Slice, E>
+pub fn alphanumeric0<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
@@ -726,16 +702,14 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::character::alphanumeric1;
-/// assert_eq!(alphanumeric1::<_, Error<_>, true>(Partial("21cZ%1")), Ok((Partial("%1"), "21cZ")));
-/// assert_eq!(alphanumeric1::<_, Error<_>, true>(Partial("&H2")), Err(ErrMode::Backtrack(Error::new(Partial("&H2"), ErrorKind::AlphaNumeric))));
-/// assert_eq!(alphanumeric1::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alphanumeric1::<_, Error<_>>(Partial("21cZ%1")), Ok((Partial("%1"), "21cZ")));
+/// assert_eq!(alphanumeric1::<_, Error<_>>(Partial("&H2")), Err(ErrMode::Backtrack(Error::new(Partial("&H2"), ErrorKind::AlphaNumeric))));
+/// assert_eq!(alphanumeric1::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alphanumeric1<I, E: ParseError<I>, const PARTIAL: bool>(
-    input: I,
-) -> IResult<I, <I as Stream>::Slice, E>
+pub fn alphanumeric1<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
@@ -762,16 +736,14 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::character::space0;
-/// assert_eq!(space0::<_, Error<_>, true>(Partial(" \t21c")), Ok((Partial("21c"), " \t")));
-/// assert_eq!(space0::<_, Error<_>, true>(Partial("Z21c")), Ok((Partial("Z21c"), "")));
-/// assert_eq!(space0::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(space0::<_, Error<_>>(Partial(" \t21c")), Ok((Partial("21c"), " \t")));
+/// assert_eq!(space0::<_, Error<_>>(Partial("Z21c")), Ok((Partial("Z21c"), "")));
+/// assert_eq!(space0::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn space0<I, E: ParseError<I>, const PARTIAL: bool>(
-    input: I,
-) -> IResult<I, <I as Stream>::Slice, E>
+pub fn space0<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
@@ -810,16 +782,14 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::character::space1;
-/// assert_eq!(space1::<_, Error<_>, true>(Partial(" \t21c")), Ok((Partial("21c"), " \t")));
-/// assert_eq!(space1::<_, Error<_>, true>(Partial("H2")), Err(ErrMode::Backtrack(Error::new(Partial("H2"), ErrorKind::Space))));
-/// assert_eq!(space1::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(space1::<_, Error<_>>(Partial(" \t21c")), Ok((Partial("21c"), " \t")));
+/// assert_eq!(space1::<_, Error<_>>(Partial("H2")), Err(ErrMode::Backtrack(Error::new(Partial("H2"), ErrorKind::Space))));
+/// assert_eq!(space1::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn space1<I, E: ParseError<I>, const PARTIAL: bool>(
-    input: I,
-) -> IResult<I, <I as Stream>::Slice, E>
+pub fn space1<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
@@ -858,16 +828,14 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::character::multispace0;
-/// assert_eq!(multispace0::<_, Error<_>, true>(Partial(" \t\n\r21c")), Ok((Partial("21c"), " \t\n\r")));
-/// assert_eq!(multispace0::<_, Error<_>, true>(Partial("Z21c")), Ok((Partial("Z21c"), "")));
-/// assert_eq!(multispace0::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(multispace0::<_, Error<_>>(Partial(" \t\n\r21c")), Ok((Partial("21c"), " \t\n\r")));
+/// assert_eq!(multispace0::<_, Error<_>>(Partial("Z21c")), Ok((Partial("Z21c"), "")));
+/// assert_eq!(multispace0::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn multispace0<I, E: ParseError<I>, const PARTIAL: bool>(
-    input: I,
-) -> IResult<I, <I as Stream>::Slice, E>
+pub fn multispace0<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
@@ -906,16 +874,14 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::character::multispace1;
-/// assert_eq!(multispace1::<_, Error<_>, true>(Partial(" \t\n\r21c")), Ok((Partial("21c"), " \t\n\r")));
-/// assert_eq!(multispace1::<_, Error<_>, true>(Partial("H2")), Err(ErrMode::Backtrack(Error::new(Partial("H2"), ErrorKind::MultiSpace))));
-/// assert_eq!(multispace1::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(multispace1::<_, Error<_>>(Partial(" \t\n\r21c")), Ok((Partial("21c"), " \t\n\r")));
+/// assert_eq!(multispace1::<_, Error<_>>(Partial("H2")), Err(ErrMode::Backtrack(Error::new(Partial("H2"), ErrorKind::MultiSpace))));
+/// assert_eq!(multispace1::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn multispace1<I, E: ParseError<I>, const PARTIAL: bool>(
-    input: I,
-) -> IResult<I, <I as Stream>::Slice, E>
+pub fn multispace1<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
@@ -933,9 +899,9 @@ where
 /// *Complete version*: can parse until the end of input.
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
-pub fn dec_uint<I, O, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, O, E>
+pub fn dec_uint<I, O, E: ParseError<I>>(input: I) -> IResult<I, O, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar + Copy,
     O: Uint,
@@ -1082,9 +1048,9 @@ impl Uint for i128 {
 /// *Complete version*: can parse until the end of input.
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
-pub fn dec_int<I, O, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, O, E>
+pub fn dec_int<I, O, E: ParseError<I>>(input: I) -> IResult<I, O, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar + Copy,
     O: Int,
@@ -1215,9 +1181,9 @@ impl Int for i128 {
 /// assert_eq!(parser(Partial(&b"ggg"[..])), Err(ErrMode::Backtrack(Error::new(Partial(&b"ggg"[..]), ErrorKind::IsA))));
 /// ```
 #[inline]
-pub fn hex_uint<I, O, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, O, E>
+pub fn hex_uint<I, O, E: ParseError<I>>(input: I) -> IResult<I, O, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     O: HexUint,
     <I as Stream>::Token: AsChar,
@@ -1353,9 +1319,9 @@ impl HexUint for u128 {
 /// assert_eq!(parser(Partial("abc")), Err(ErrMode::Backtrack(Error::new(Partial("abc"), ErrorKind::Float))));
 /// ```
 #[inline(always)]
-pub fn float<I, O, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, O, E>
+pub fn float<I, O, E: ParseError<I>>(input: I) -> IResult<I, O, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     I: Offset + Compare<&'static str>,
     <I as Stream>::Slice: ParseSlice<O>,
@@ -1411,13 +1377,13 @@ where
 /// assert_eq!(esc(Partial("12\\\"34;")), Ok((Partial(";"), "12\\\"34")));
 /// ```
 #[inline(always)]
-pub fn escaped<'a, I: 'a, Error, F, G, O1, O2, const PARTIAL: bool>(
+pub fn escaped<'a, I: 'a, Error, F, G, O1, O2>(
     mut normal: F,
     control_char: char,
     mut escapable: G,
 ) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream + Offset,
     <I as Stream>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
@@ -1504,13 +1470,13 @@ where
 /// ```
 #[cfg(feature = "alloc")]
 #[inline(always)]
-pub fn escaped_transform<I, Error, F, G, Output, const PARTIAL: bool>(
+pub fn escaped_transform<I, Error, F, G, Output>(
     mut normal: F,
     control_char: char,
     mut transform: G,
 ) -> impl FnMut(I) -> IResult<I, Output, Error>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream + Offset,
     <I as Stream>::Token: crate::stream::AsChar,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,

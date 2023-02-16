@@ -232,7 +232,7 @@ fn issue_1231_bits_expect_fn_closure() {
 fn issue_1282_findtoken_char() {
     use winnow::bytes::one_of;
     use winnow::error::Error;
-    let mut parser = one_of::<_, _, Error<_>, false>(&['a', 'b', 'c'][..]);
+    let mut parser = one_of::<_, _, Error<_>>(&['a', 'b', 'c'][..]);
     assert_eq!(parser("aaa"), Ok(("aa", 'a')));
 }
 
@@ -281,7 +281,7 @@ fn issue_1617_count_parser_returning_zero_size() {
     use winnow::{bytes::tag, error::Error, multi::count};
 
     // previously, `count()` panicked if the parser had type `O = ()`
-    let parser = tag::<_, _, Error<&str>, false>("abc").map(|_| ());
+    let parser = tag::<_, _, Error<&str>>("abc").map(|_| ());
     // shouldn't panic
     let result = count(parser, 3)("abcabcabcdef").expect("parsing should succeed");
     assert_eq!(result, ("def", vec![(), (), ()]));

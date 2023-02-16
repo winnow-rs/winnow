@@ -33,15 +33,13 @@ use crate::IResult;
 /// ```
 /// # use winnow::{bytes::any, error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
 /// # use winnow::Partial;
-/// assert_eq!(any::<_, Error<_>, true>(Partial("abc")), Ok((Partial("bc"),'a')));
-/// assert_eq!(any::<_, Error<_>, true>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(any::<_, Error<_>>(Partial("abc")), Ok((Partial("bc"),'a')));
+/// assert_eq!(any::<_, Error<_>>(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn any<I, E: ParseError<I>, const PARTIAL: bool>(
-    input: I,
-) -> IResult<I, <I as Stream>::Token, E>
+pub fn any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Token, E>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
 {
     trace("any", move |input: I| {
@@ -93,11 +91,11 @@ where
 /// assert_eq!(parser(Partial("H")), Err(ErrMode::Incomplete(Needed::new(4))));
 /// ```
 #[inline(always)]
-pub fn tag<T, I, Error: ParseError<I>, const PARTIAL: bool>(
+pub fn tag<T, I, Error: ParseError<I>>(
     tag: T,
 ) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream + Compare<T>,
     T: SliceLen + Clone,
 {
@@ -149,11 +147,11 @@ where
 /// assert_eq!(parser(Partial("")), Err(ErrMode::Incomplete(Needed::new(5))));
 /// ```
 #[inline(always)]
-pub fn tag_no_case<T, I, Error: ParseError<I>, const PARTIAL: bool>(
+pub fn tag_no_case<T, I, Error: ParseError<I>>(
     tag: T,
 ) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream + Compare<T>,
     T: SliceLen + Clone,
 {
@@ -184,9 +182,9 @@ where
 /// # use winnow::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::bytes::one_of;
-/// assert_eq!(one_of::<_, _, Error<_>, false>("abc")("b"), Ok(("", 'b')));
-/// assert_eq!(one_of::<_, _, Error<_>, false>("a")("bc"), Err(ErrMode::Backtrack(Error::new("bc", ErrorKind::OneOf))));
-/// assert_eq!(one_of::<_, _, Error<_>, false>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, Error<_>>("abc")("b"), Ok(("", 'b')));
+/// assert_eq!(one_of::<_, _, Error<_>>("a")("bc"), Err(ErrMode::Backtrack(Error::new("bc", ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::OneOf))));
 ///
 /// fn parser_fn(i: &str) -> IResult<&str, char> {
 ///     one_of(|c| c == 'a' || c == 'b')(i)
@@ -201,9 +199,9 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::bytes::one_of;
-/// assert_eq!(one_of::<_, _, Error<_>, true>("abc")(Partial("b")), Ok((Partial(""), 'b')));
-/// assert_eq!(one_of::<_, _, Error<_>, true>("a")(Partial("bc")), Err(ErrMode::Backtrack(Error::new(Partial("bc"), ErrorKind::OneOf))));
-/// assert_eq!(one_of::<_, _, Error<_>, true>("a")(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(one_of::<_, _, Error<_>>("abc")(Partial("b")), Ok((Partial(""), 'b')));
+/// assert_eq!(one_of::<_, _, Error<_>>("a")(Partial("bc")), Err(ErrMode::Backtrack(Error::new(Partial("bc"), ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, Error<_>>("a")(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// fn parser_fn(i: Partial<&str>) -> IResult<Partial<&str>, char> {
 ///     one_of(|c| c == 'a' || c == 'b')(i)
@@ -213,11 +211,11 @@ where
 /// assert_eq!(parser_fn(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn one_of<I, T, Error: ParseError<I>, const PARTIAL: bool>(
+pub fn one_of<I, T, Error: ParseError<I>>(
     list: T,
 ) -> impl FnMut(I) -> IResult<I, <I as Stream>::Token, Error>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: Copy,
     T: ContainsToken<<I as Stream>::Token>,
@@ -242,25 +240,25 @@ where
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::bytes::none_of;
-/// assert_eq!(none_of::<_, _, Error<_>, false>("abc")("z"), Ok(("", 'z')));
-/// assert_eq!(none_of::<_, _, Error<_>, false>("ab")("a"), Err(ErrMode::Backtrack(Error::new("a", ErrorKind::NoneOf))));
-/// assert_eq!(none_of::<_, _, Error<_>, false>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, Error<_>>("abc")("z"), Ok(("", 'z')));
+/// assert_eq!(none_of::<_, _, Error<_>>("ab")("a"), Err(ErrMode::Backtrack(Error::new("a", ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::NoneOf))));
 /// ```
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::bytes::none_of;
-/// assert_eq!(none_of::<_, _, Error<_>, true>("abc")(Partial("z")), Ok((Partial(""), 'z')));
-/// assert_eq!(none_of::<_, _, Error<_>, true>("ab")(Partial("a")), Err(ErrMode::Backtrack(Error::new(Partial("a"), ErrorKind::NoneOf))));
-/// assert_eq!(none_of::<_, _, Error<_>, true>("a")(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(none_of::<_, _, Error<_>>("abc")(Partial("z")), Ok((Partial(""), 'z')));
+/// assert_eq!(none_of::<_, _, Error<_>>("ab")(Partial("a")), Err(ErrMode::Backtrack(Error::new(Partial("a"), ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, Error<_>>("a")(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn none_of<I, T, Error: ParseError<I>, const PARTIAL: bool>(
+pub fn none_of<I, T, Error: ParseError<I>>(
     list: T,
 ) -> impl FnMut(I) -> IResult<I, <I as Stream>::Token, Error>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: Copy,
     T: ContainsToken<<I as Stream>::Token>,
@@ -309,11 +307,11 @@ where
 /// assert_eq!(alpha(Partial(b"")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_while0<T, I, Error: ParseError<I>, const PARTIAL: bool>(
+pub fn take_while0<T, I, Error: ParseError<I>>(
     list: T,
 ) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     T: ContainsToken<<I as Stream>::Token>,
 {
@@ -382,11 +380,11 @@ where
 /// assert_eq!(hex(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_while1<T, I, Error: ParseError<I>, const PARTIAL: bool>(
+pub fn take_while1<T, I, Error: ParseError<I>>(
     list: T,
 ) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     T: ContainsToken<<I as Stream>::Token>,
 {
@@ -440,13 +438,13 @@ where
 /// assert_eq!(short_alpha(Partial(b"12345")), Err(ErrMode::Backtrack(Error::new(Partial(&b"12345"[..]), ErrorKind::TakeWhileMN))));
 /// ```
 #[inline(always)]
-pub fn take_while_m_n<T, I, Error: ParseError<I>, const PARTIAL: bool>(
+pub fn take_while_m_n<T, I, Error: ParseError<I>>(
     m: usize,
     n: usize,
     list: T,
 ) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     T: ContainsToken<<I as Stream>::Token>,
 {
@@ -494,11 +492,11 @@ where
 /// assert_eq!(till_colon(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_till0<T, I, Error: ParseError<I>, const PARTIAL: bool>(
+pub fn take_till0<T, I, Error: ParseError<I>>(
     list: T,
 ) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     T: ContainsToken<<I as Stream>::Token>,
 {
@@ -567,11 +565,11 @@ where
 /// assert_eq!(not_space(Partial("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_till1<T, I, Error: ParseError<I>, const PARTIAL: bool>(
+pub fn take_till1<T, I, Error: ParseError<I>>(
     list: T,
 ) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     T: ContainsToken<<I as Stream>::Token>,
 {
@@ -618,8 +616,8 @@ where
 /// use winnow::error::Error;
 /// use winnow::bytes::take;
 ///
-/// assert_eq!(take::<_, _, Error<_>, false>(1usize)("💙"), Ok(("", "💙")));
-/// assert_eq!(take::<_, _, Error<_>, false>(1usize)("💙".as_bytes()), Ok((b"\x9F\x92\x99".as_ref(), b"\xF0".as_ref())));
+/// assert_eq!(take::<_, _, Error<_>>(1usize)("💙"), Ok(("", "💙")));
+/// assert_eq!(take::<_, _, Error<_>>(1usize)("💙".as_bytes()), Ok((b"\x9F\x92\x99".as_ref(), b"\xF0".as_ref())));
 /// ```
 ///
 /// ```rust
@@ -637,11 +635,11 @@ where
 /// assert_eq!(take6(Partial("short")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// ```
 #[inline(always)]
-pub fn take<C, I, Error: ParseError<I>, const PARTIAL: bool>(
+pub fn take<C, I, Error: ParseError<I>>(
     count: C,
 ) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream,
     C: ToUsize,
 {
@@ -694,11 +692,11 @@ where
 /// assert_eq!(until_eof(Partial("1eof2eof")), Ok((Partial("eof2eof"), "1")));
 /// ```
 #[inline(always)]
-pub fn take_until0<T, I, Error: ParseError<I>, const PARTIAL: bool>(
+pub fn take_until0<T, I, Error: ParseError<I>>(
     tag: T,
 ) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream + FindSlice<T>,
     T: SliceLen + Clone,
 {
@@ -753,11 +751,11 @@ where
 /// assert_eq!(until_eof(Partial("eof")),  Err(ErrMode::Backtrack(Error::new(Partial("eof"), ErrorKind::TakeUntil))));
 /// ```
 #[inline(always)]
-pub fn take_until1<T, I, Error: ParseError<I>, const PARTIAL: bool>(
+pub fn take_until1<T, I, Error: ParseError<I>>(
     tag: T,
 ) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
 where
-    I: StreamIsPartial<PARTIAL>,
+    I: StreamIsPartial,
     I: Stream + FindSlice<T>,
     T: SliceLen + Clone,
 {

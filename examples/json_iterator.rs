@@ -62,7 +62,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
 
     pub fn number(&self) -> Option<f64> {
         println!("number()");
-        match float::<_, _, (), false>(self.data()) {
+        match float::<_, _, ()>(self.data()) {
             Ok((i, o)) => {
                 self.offset(i);
                 println!("-> {}", o);
@@ -75,7 +75,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
     pub fn array(&self) -> Option<impl Iterator<Item = JsonValue<'a, 'b>>> {
         println!("array()");
 
-        match tag::<_, _, (), false>("[")(self.data()) {
+        match tag::<_, _, ()>("[")(self.data()) {
             Err(_) => None,
             Ok((i, _)) => {
                 println!("[");
@@ -99,7 +99,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
                         }
                     }
 
-                    if let Ok((i, _)) = tag::<_, _, (), false>("]")(v.data()) {
+                    if let Ok((i, _)) = tag::<_, _, ()>("]")(v.data()) {
                         println!("]");
                         v.offset(i);
                         done = true;
@@ -109,7 +109,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
                     if first {
                         first = false;
                     } else {
-                        match tag::<_, _, (), false>(",")(v.data()) {
+                        match tag::<_, _, ()>(",")(v.data()) {
                             Ok((i, _)) => {
                                 println!(",");
                                 v.offset(i);
@@ -131,7 +131,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
 
     pub fn object(&self) -> Option<impl Iterator<Item = (&'a str, JsonValue<'a, 'b>)>> {
         println!("object()");
-        match tag::<_, _, (), false>("{")(self.data()) {
+        match tag::<_, _, ()>("{")(self.data()) {
             Err(_) => None,
             Ok((i, _)) => {
                 self.offset(i);
@@ -157,7 +157,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
                         }
                     }
 
-                    if let Ok((i, _)) = tag::<_, _, (), false>("}")(v.data()) {
+                    if let Ok((i, _)) = tag::<_, _, ()>("}")(v.data()) {
                         println!("}}");
                         v.offset(i);
                         done = true;
@@ -167,7 +167,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
                     if first {
                         first = false;
                     } else {
-                        match tag::<_, _, (), false>(",")(v.data()) {
+                        match tag::<_, _, ()>(",")(v.data()) {
                             Ok((i, _)) => {
                                 println!(",");
                                 v.offset(i);
@@ -183,7 +183,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
                         Ok((i, key)) => {
                             v.offset(i);
 
-                            match tag::<_, _, (), false>(":")(v.data()) {
+                            match tag::<_, _, ()>(":")(v.data()) {
                                 Err(_) => None,
                                 Ok((i, _)) => {
                                     v.offset(i);
@@ -258,7 +258,7 @@ fn value(i: &str) -> IResult<&str, ()> {
             hash,
             array,
             string.map(|_| ()),
-            float::<_, f64, _, false>.map(|_| ()),
+            float::<_, f64, _>.map(|_| ()),
             boolean.map(|_| ()),
         )),
     )(i)

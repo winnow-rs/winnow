@@ -66,7 +66,7 @@ proptest! {
 fn partial_any_str() {
     use super::any;
     assert_eq!(
-        any::<_, Error<Partial<&str>>, true>(Partial("Ә")),
+        any::<_, Error<Partial<&str>>>(Partial("Ә")),
         Ok((Partial(""), 'Ә'))
     );
 }
