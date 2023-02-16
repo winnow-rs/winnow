@@ -967,6 +967,16 @@ where
 ///
 /// See [Partial] for marking a presumed complete buffer type as a streaming buffer.
 pub trait StreamIsPartial: Sized {
+    /// Whether the stream is currently partial or complete
+    type PartialState;
+
+    /// Mark the stream is complete
+    #[must_use]
+    fn complete(&mut self) -> Self::PartialState;
+
+    /// Restore the stream back to its previous state
+    fn restore_partial(&mut self, state: Self::PartialState);
+
     /// Report whether the [`Stream`] is can ever be incomplete
     fn is_partial_supported() -> bool;
 
@@ -978,6 +988,12 @@ pub trait StreamIsPartial: Sized {
 }
 
 impl<'a, T> StreamIsPartial for &'a [T] {
+    type PartialState = ();
+
+    fn complete(&mut self) -> Self::PartialState {}
+
+    fn restore_partial(&mut self, _state: Self::PartialState) {}
+
     #[inline(always)]
     fn is_partial_supported() -> bool {
         false
@@ -985,6 +1001,14 @@ impl<'a, T> StreamIsPartial for &'a [T] {
 }
 
 impl<'a> StreamIsPartial for &'a str {
+    type PartialState = ();
+
+    fn complete(&mut self) -> Self::PartialState {
+        // Already complete
+    }
+
+    fn restore_partial(&mut self, _state: Self::PartialState) {}
+
     #[inline(always)]
     fn is_partial_supported() -> bool {
         false
@@ -992,6 +1016,14 @@ impl<'a> StreamIsPartial for &'a str {
 }
 
 impl<'a> StreamIsPartial for &'a Bytes {
+    type PartialState = ();
+
+    fn complete(&mut self) -> Self::PartialState {
+        // Already complete
+    }
+
+    fn restore_partial(&mut self, _state: Self::PartialState) {}
+
     #[inline(always)]
     fn is_partial_supported() -> bool {
         false
@@ -999,6 +1031,14 @@ impl<'a> StreamIsPartial for &'a Bytes {
 }
 
 impl<'a> StreamIsPartial for &'a BStr {
+    type PartialState = ();
+
+    fn complete(&mut self) -> Self::PartialState {
+        // Already complete
+    }
+
+    fn restore_partial(&mut self, _state: Self::PartialState) {}
+
     #[inline(always)]
     fn is_partial_supported() -> bool {
         false
@@ -1009,6 +1049,16 @@ impl<I> StreamIsPartial for (I, usize)
 where
     I: StreamIsPartial,
 {
+    type PartialState = I::PartialState;
+
+    fn complete(&mut self) -> Self::PartialState {
+        self.0.complete()
+    }
+
+    fn restore_partial(&mut self, state: Self::PartialState) {
+        self.0.restore_partial(state);
+    }
+
     #[inline(always)]
     fn is_partial_supported() -> bool {
         I::is_partial_supported()
@@ -1024,6 +1074,16 @@ impl<I> StreamIsPartial for Located<I>
 where
     I: StreamIsPartial,
 {
+    type PartialState = I::PartialState;
+
+    fn complete(&mut self) -> Self::PartialState {
+        self.input.complete()
+    }
+
+    fn restore_partial(&mut self, state: Self::PartialState) {
+        self.input.restore_partial(state);
+    }
+
     #[inline(always)]
     fn is_partial_supported() -> bool {
         I::is_partial_supported()
@@ -1039,6 +1099,16 @@ impl<I, S> StreamIsPartial for Stateful<I, S>
 where
     I: StreamIsPartial,
 {
+    type PartialState = I::PartialState;
+
+    fn complete(&mut self) -> Self::PartialState {
+        self.input.complete()
+    }
+
+    fn restore_partial(&mut self, state: Self::PartialState) {
+        self.input.restore_partial(state);
+    }
+
     #[inline(always)]
     fn is_partial_supported() -> bool {
         I::is_partial_supported()
@@ -1054,6 +1124,16 @@ impl<I> StreamIsPartial for Partial<I>
 where
     I: StreamIsPartial,
 {
+    type PartialState = bool;
+
+    fn complete(&mut self) -> Self::PartialState {
+        self.partial
+    }
+
+    fn restore_partial(&mut self, state: Self::PartialState) {
+        self.partial = state;
+    }
+
     #[inline(always)]
     fn is_partial_supported() -> bool {
         true
