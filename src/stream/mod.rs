@@ -299,9 +299,9 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 pub struct Partial<I>(pub I);
 
 impl<I> Partial<I> {
-    /// Convert to complete counterpart
+    /// Extract the original [`Stream`]
     #[inline(always)]
-    pub fn into_complete(self) -> I {
+    pub fn into_inner(self) -> I {
         self.0
     }
 }
