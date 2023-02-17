@@ -99,7 +99,7 @@ fn parse_literal<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str,
     let not_quote_slash = take_till1("\"\\");
 
     // `verify` runs a parser, then runs a verification function on the output of
-    // the parser. The verification function accepts out output only if it
+    // the parser. The verification function accepts the output only if it
     // returns true. In this case, we want to ensure that the output of take_till1
     // is non-empty.
     not_quote_slash
