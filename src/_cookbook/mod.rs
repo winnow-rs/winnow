@@ -4,6 +4,7 @@
 //!
 //! - [Elements of Programming Languages][language]
 //! - [Implementing `FromStr`][fromstr]
+//! - [Parsing Partial Input][partial]
 //! - [Custom stream][stream]
 //! - [Custom errors][error]
 //!
@@ -14,4 +15,5 @@
 pub mod error;
 pub mod fromstr;
 pub mod language;
+pub mod partial;
 pub mod stream;

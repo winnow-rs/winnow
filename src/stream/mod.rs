@@ -204,6 +204,8 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 ///
 /// See also [`StreamIsPartial`] to tell whether the input supports complete or partial parsing.
 ///
+/// See also [Cookbook: Parsing Partial Input][crate::_cookbook::partial].
+///
 /// # Example
 ///
 /// Here is how it works in practice:
@@ -921,7 +923,7 @@ where
 
 /// Marks the input as being the complete buffer or a partial buffer for streaming input
 ///
-/// See [Partial] for marking a presumed complete buffer type as a streaming buffer.
+/// See [`Partial`] for marking a presumed complete buffer type as a streaming buffer.
 pub trait StreamIsPartial: Sized {
     /// Whether the stream is currently partial or complete
     type PartialState;
