@@ -7,6 +7,7 @@
 //!   - [Arithmetic][arithmetic]
 //!   - [s-expression][s_expression]
 //!   - [json]
+//!   - [INI][ini]
 //!   - [HTTP][http]
 //! - Special Topics:
 //!   - [Implementing `FromStr`][fromstr]
@@ -22,6 +23,7 @@ pub mod arithmetic;
 pub mod error;
 pub mod fromstr;
 pub mod http;
+pub mod ini;
 pub mod json;
 pub mod language;
 pub mod partial;
