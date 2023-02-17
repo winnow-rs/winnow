@@ -19,7 +19,7 @@ use crate::{IResult, Parser};
 /// # Arguments
 /// * `f` The parser to apply.
 ///
-/// **Note:** if the parser passed in accepts empty inputs (like `alpha0` or `digit0`), `many0` will
+/// **Warning:** if the parser passed in accepts empty inputs (like `alpha0` or `digit0`), `many0` will
 /// return an error, to prevent going into an infinite loop
 ///
 /// # Example
@@ -75,7 +75,7 @@ where
 /// # Arguments
 /// * `f` The parser to apply.
 ///
-/// **Note:** If the parser passed to `many1` accepts empty inputs
+/// **Warning:** If the parser passed to `many1` accepts empty inputs
 /// (like `alpha0` or `digit0`), `many1` will return an error,
 /// to prevent going into an infinite loop.
 ///
@@ -506,7 +506,7 @@ where
 /// * `n` The maximum number of iterations.
 /// * `f` The parser to apply.
 ///
-/// **Note:** If the parser passed to `many1` accepts empty inputs
+/// **Warning:** If the parser passed to `many1` accepts empty inputs
 /// (like `alpha0` or `digit0`), `many1` will return an error,
 /// to prevent going into an infinite loop.
 ///
@@ -582,7 +582,7 @@ where
 /// # Arguments
 /// * `f` The parser to apply.
 ///
-/// **Note:** if the parser passed in accepts empty inputs (like `alpha0` or `digit0`), `many0` will
+/// **Warning:** if the parser passed in accepts empty inputs (like `alpha0` or `digit0`), `many0` will
 /// return an error, to prevent going into an infinite loop
 ///
 /// # Example
@@ -644,7 +644,7 @@ where
 /// # Arguments
 /// * `f` The parser to apply.
 ///
-/// **Note:** If the parser passed to `many1` accepts empty inputs
+/// **Warning:** If the parser passed to `many1` accepts empty inputs
 /// (like `alpha0` or `digit0`), `many1` will return an error,
 /// to prevent going into an infinite loop.
 ///
@@ -820,7 +820,7 @@ where
 /// * `g` The function that combines a result of `f` with
 ///       the current accumulator.
 ///
-/// **Note:** if the parser passed in accepts empty inputs (like `alpha0` or `digit0`), `many0` will
+/// **Warning:** if the parser passed in accepts empty inputs (like `alpha0` or `digit0`), `many0` will
 /// return an error, to prevent going into an infinite loop
 ///
 /// # Example
@@ -897,7 +897,7 @@ where
 /// * `g` The function that combines a result of `f` with
 ///       the current accumulator.
 ///
-/// **Note:** If the parser passed to `many1` accepts empty inputs
+/// **Warning:** If the parser passed to `many1` accepts empty inputs
 /// (like `alpha0` or `digit0`), `many1` will return an error,
 /// to prevent going into an infinite loop.
 ///
@@ -985,7 +985,7 @@ where
 /// * `g` The function that combines a result of `f` with
 ///       the current accumulator.
 ///
-/// **Note:** If the parser passed to `many1` accepts empty inputs
+/// **Warning:** If the parser passed to `many1` accepts empty inputs
 /// (like `alpha0` or `digit0`), `many1` will return an error,
 /// to prevent going into an infinite loop.
 ///
