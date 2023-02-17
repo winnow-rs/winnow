@@ -1,4 +1,11 @@
 //! Parser execution tracing
+//!
+//! By default, nothing happens and tracing gets compiled away as a no-op.  To enable tracing, use
+//! `--features debug`.
+//!
+//! # Example
+//!
+//!![Trace output from string example](https://raw.githubusercontent.com/winnow-rs/winnow/main/assets/trace.svg "Example output")
 
 #[cfg(feature = "debug")]
 mod internals;
@@ -84,4 +91,30 @@ pub(crate) fn trace_result<T, E>(
         let severity = internals::Severity::with_result(res);
         internals::result(*depth, &name, severity);
     }
+}
+
+#[test]
+#[cfg(feature = "std")]
+#[cfg_attr(miri, ignore)]
+#[cfg(unix)]
+#[cfg(feature = "debug")]
+fn example() {
+    use term_transcript::{test::TestConfig, ShellOptions};
+
+    let bin = trycmd::cargo::compile_example("string", ["--features=debug"]);
+    let path = match bin {
+        trycmd::schema::Bin::Path(path) => path,
+        trycmd::schema::Bin::Name(_) | trycmd::schema::Bin::Ignore => {
+            unreachable!("compiled examples should not produce tbhis")
+        }
+        trycmd::schema::Bin::Error(err) => panic!("{}", err),
+    };
+
+    let current_dir = path.parent().unwrap();
+    let cmd = path.file_name().unwrap();
+    // HACK: term_transcript doesn't allow non-UTF8 paths
+    let cmd = format!("./{}", cmd.to_string_lossy());
+
+    TestConfig::new(ShellOptions::default().with_current_dir(current_dir))
+        .test("assets/trace.svg", [cmd.as_str()]);
 }
