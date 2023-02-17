@@ -341,7 +341,7 @@ where
 }
 
 /// Matches one byte as a character. Note that the input type will
-/// accept a `str`, but not a `&[u8]`, unlike many other nom parsers.
+/// accept a `str`, but not a `&[u8]`, unlike many other parsers.
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 /// # Example

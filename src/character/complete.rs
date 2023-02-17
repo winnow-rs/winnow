@@ -329,7 +329,7 @@ where
 }
 
 /// Matches one byte as a character. Note that the input type will
-/// accept a `str`, but not a `&[u8]`, unlike many other nom parsers.
+/// accept a `str`, but not a `&[u8]`, unlike many other parsers.
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 /// # Example

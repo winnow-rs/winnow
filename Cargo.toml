@@ -1,3 +1,6 @@
+[workspace]
+members = ["fuzz"]
+
 [package]
 name = "winnow"
 version = "0.2.0"
