@@ -899,6 +899,11 @@ where
 /// *Complete version*: can parse until the end of input.
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+#[doc(alias = "u8")]
+#[doc(alias = "u16")]
+#[doc(alias = "u32")]
+#[doc(alias = "u64")]
+#[doc(alias = "u128")]
 pub fn dec_uint<I, O, E: ParseError<I>>(input: I) -> IResult<I, O, E>
 where
     I: StreamIsPartial,
@@ -1048,6 +1053,11 @@ impl Uint for i128 {
 /// *Complete version*: can parse until the end of input.
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+#[doc(alias = "i8")]
+#[doc(alias = "i16")]
+#[doc(alias = "i32")]
+#[doc(alias = "i64")]
+#[doc(alias = "i128")]
 pub fn dec_int<I, O, E: ParseError<I>>(input: I) -> IResult<I, O, E>
 where
     I: StreamIsPartial,
@@ -1319,6 +1329,8 @@ impl HexUint for u128 {
 /// assert_eq!(parser(Partial::new("abc")), Err(ErrMode::Backtrack(Error::new(Partial::new("abc"), ErrorKind::Float))));
 /// ```
 #[inline(always)]
+#[doc(alias = "f32")]
+#[doc(alias = "double")]
 pub fn float<I, O, E: ParseError<I>>(input: I) -> IResult<I, O, E>
 where
     I: StreamIsPartial,

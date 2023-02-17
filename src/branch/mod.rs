@@ -51,6 +51,7 @@ pub trait Alt<I, O, E> {
 /// assert_eq!(parser(" "), Err(ErrMode::Backtrack(error_position!(" ", ErrorKind::Digit))));
 /// # }
 /// ```
+#[doc(alias = "choice")]
 pub fn alt<I: Stream, O, E: ParseError<I>, List: Alt<I, O, E>>(
     mut l: List,
 ) -> impl FnMut(I) -> IResult<I, O, E> {

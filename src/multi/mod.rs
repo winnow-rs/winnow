@@ -38,6 +38,9 @@ use crate::{IResult, Parser};
 /// assert_eq!(parser("123123"), Ok(("123123", vec![])));
 /// assert_eq!(parser(""), Ok(("", vec![])));
 /// ```
+#[doc(alias = "skip_many")]
+#[doc(alias = "repeated")]
+#[doc(alias = "many0_count")]
 pub fn many0<I, O, C, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, C, E>
 where
     I: Stream,
@@ -98,6 +101,9 @@ where
 /// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Tag))));
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// ```
+#[doc(alias = "skip_many1")]
+#[doc(alias = "repeated")]
+#[doc(alias = "many1_count")]
 pub fn many1<I, O, C, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, C, E>
 where
     I: Stream,
@@ -232,6 +238,8 @@ where
 /// assert_eq!(parser(""), Ok(("", vec![])));
 /// assert_eq!(parser("def|abc"), Ok(("def|abc", vec![])));
 /// ```
+#[doc(alias = "sep_by")]
+#[doc(alias = "separated_list0")]
 pub fn separated0<I, O, C, O2, E, P, S>(
     mut parser: P,
     mut sep: S,
@@ -325,6 +333,8 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(Error::new("def|abc", ErrorKind::Tag))));
 /// ```
+#[doc(alias = "sep_by1")]
+#[doc(alias = "separated_list1")]
 pub fn separated1<I, O, C, O2, E, P, S>(
     mut parser: P,
     mut sep: S,
@@ -534,6 +544,7 @@ where
 /// assert_eq!(parser(""), Ok(("", vec![])));
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
 /// ```
+#[doc(alias = "repeated")]
 pub fn many_m_n<I, O, C, E, F>(
     min: usize,
     max: usize,
@@ -672,7 +683,7 @@ where
 /// ```
 ///
 /// **WARNING:** Deprecated, replaced with [`many0`]
-#[deprecated(since = "0.3.0", note = "Replaced with `many0`")]
+#[deprecated(since = "0.3.0", note = "Replaced with `many1`")]
 pub fn many1_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>
 where
     I: Stream,
@@ -736,6 +747,7 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
 /// ```
+#[doc(alias = "skip_counskip_count")]
 pub fn count<I, O, C, E, F>(mut f: F, count: usize) -> impl FnMut(I) -> IResult<I, C, E>
 where
     I: Stream,

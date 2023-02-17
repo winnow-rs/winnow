@@ -37,6 +37,7 @@ use crate::IResult;
 /// assert_eq!(any::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
+#[doc(alias = "token")]
 pub fn any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Token, E>
 where
     I: StreamIsPartial,
@@ -91,6 +92,9 @@ where
 /// assert_eq!(parser(Partial::new("H")), Err(ErrMode::Incomplete(Needed::new(4))));
 /// ```
 #[inline(always)]
+#[doc(alias = "literal")]
+#[doc(alias = "bytes")]
+#[doc(alias = "just")]
 pub fn tag<T, I, Error: ParseError<I>>(
     tag: T,
 ) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
@@ -149,6 +153,9 @@ where
 /// assert_eq!(parser(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(5))));
 /// ```
 #[inline(always)]
+#[doc(alias = "literal")]
+#[doc(alias = "bytes")]
+#[doc(alias = "just")]
 pub fn tag_no_case<T, I, Error: ParseError<I>>(
     tag: T,
 ) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
@@ -213,6 +220,9 @@ where
 /// assert_eq!(parser_fn(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
+#[doc(alias = "char")]
+#[doc(alias = "token")]
+#[doc(alias = "satisfy")]
 pub fn one_of<I, T, Error: ParseError<I>>(
     list: T,
 ) -> impl FnMut(I) -> IResult<I, <I as Stream>::Token, Error>
@@ -389,6 +399,7 @@ where
 /// assert_eq!(hex(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
+#[doc(alias = "is_a")]
 pub fn take_while1<T, I, Error: ParseError<I>>(
     list: T,
 ) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
@@ -579,6 +590,7 @@ where
 /// assert_eq!(not_space(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
+#[doc(alias = "is_not")]
 pub fn take_till1<T, I, Error: ParseError<I>>(
     list: T,
 ) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
