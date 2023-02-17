@@ -1096,11 +1096,11 @@ where
 ///     Partial::new(Bytes::new(b))
 /// }
 ///
-/// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &Bytes> {
+/// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
 ///   length_data(be_u16)(s)
 /// }
 ///
-/// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), Bytes::new(&b"abc"[..]))));
+/// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), &b"abc"[..])));
 /// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 pub fn length_data<I, N, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, E>
@@ -1147,11 +1147,11 @@ where
 ///     Partial::new(Bytes::new(b))
 /// }
 ///
-/// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &Bytes> {
+/// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
 ///   length_value(be_u16, tag("abc"))(s)
 /// }
 ///
-/// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), Bytes::new(&b"abc"[..]))));
+/// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), &b"abc"[..])));
 /// assert_eq!(parser(stream(b"\x00\x03123123")), Err(ErrMode::Backtrack(Error::new(stream(&b"123"[..]), ErrorKind::Tag))));
 /// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
@@ -1197,14 +1197,14 @@ where
 ///     Bytes::new(b)
 /// }
 ///
-/// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, Vec<&Bytes>> {
+/// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, Vec<&[u8]>> {
 ///   length_count(u8.map(|i| {
 ///      println!("got number: {}", i);
 ///      i
 ///   }), tag("abc"))(s)
 /// }
 ///
-/// assert_eq!(parser(stream(b"\x02abcabcabc")), Ok((stream(b"abc"), vec![Bytes::new(b"abc"), Bytes::new(b"abc")])));
+/// assert_eq!(parser(stream(b"\x02abcabcabc")), Ok((stream(b"abc"), vec![&b"abc"[..], &b"abc"[..]])));
 /// assert_eq!(parser(stream(b"\x03123123123")), Err(ErrMode::Backtrack(Error::new(stream(b"123123123"), ErrorKind::Tag))));
 /// ```
 pub fn length_count<I, O, C, N, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IResult<I, C, E>

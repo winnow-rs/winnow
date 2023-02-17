@@ -86,7 +86,7 @@ where
 ///     Bytes::new(b)
 /// }
 ///
-/// fn parse(input: Stream<'_>) -> IResult<Stream<'_>, (u8, u8, &Bytes)> {
+/// fn parse(input: Stream<'_>) -> IResult<Stream<'_>, (u8, u8, &[u8])> {
 ///   bits::<_, _, Error<(_, usize)>, _, _>((
 ///     take(4usize),
 ///     take(8usize),
@@ -96,7 +96,7 @@ where
 ///
 /// let input = stream(&[0x12, 0x34, 0xff, 0xff]);
 ///
-/// assert_eq!(parse(input), Ok(( stream(&[]), (0x01, 0x23, Bytes::new(&[0xff, 0xff])) )));
+/// assert_eq!(parse(input), Ok(( stream(&[]), (0x01, 0x23, &[0xff, 0xff][..]) )));
 /// ```
 pub fn bytes<I, O, E1, E2, P>(mut parser: P) -> impl FnMut((I, usize)) -> IResult<(I, usize), O, E2>
 where
