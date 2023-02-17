@@ -12,6 +12,7 @@ use winnow::{
     IResult,
 };
 
+#[derive(Debug)]
 pub enum Expr {
     Value(i64),
     Add(Box<Expr>, Box<Expr>),
@@ -39,20 +40,6 @@ impl Display for Expr {
             Mul(ref left, ref right) => write!(format, "{} * {}", left, right),
             Div(ref left, ref right) => write!(format, "{} / {}", left, right),
             Paren(ref expr) => write!(format, "({})", expr),
-        }
-    }
-}
-
-impl Debug for Expr {
-    fn fmt(&self, format: &mut Formatter<'_>) -> fmt::Result {
-        use self::Expr::{Add, Div, Mul, Paren, Sub, Value};
-        match *self {
-            Value(val) => write!(format, "{}", val),
-            Add(ref left, ref right) => write!(format, "({:?} + {:?})", left, right),
-            Sub(ref left, ref right) => write!(format, "({:?} - {:?})", left, right),
-            Mul(ref left, ref right) => write!(format, "({:?} * {:?})", left, right),
-            Div(ref left, ref right) => write!(format, "({:?} / {:?})", left, right),
-            Paren(ref expr) => write!(format, "[{:?}]", expr),
         }
     }
 }
@@ -122,7 +109,7 @@ fn fold_exprs(initial: Expr, remainder: Vec<(Oper, Expr)>) -> Expr {
 fn factor_test() {
     assert_eq!(
         factor("  3  ").map(|(i, x)| (i, format!("{:?}", x))),
-        Ok(("", String::from("3")))
+        Ok(("", String::from("Value(3)")))
     );
 }
 
@@ -130,7 +117,7 @@ fn factor_test() {
 fn term_test() {
     assert_eq!(
         term(" 3 *  5   ").map(|(i, x)| (i, format!("{:?}", x))),
-        Ok(("", String::from("(3 * 5)")))
+        Ok(("", String::from("Mul(Value(3), Value(5))")))
     );
 }
 
@@ -138,15 +125,18 @@ fn term_test() {
 fn expr_test() {
     assert_eq!(
         expr(" 1 + 2 *  3 ").map(|(i, x)| (i, format!("{:?}", x))),
-        Ok(("", String::from("(1 + (2 * 3))")))
+        Ok(("", String::from("Add(Value(1), Mul(Value(2), Value(3)))")))
     );
     assert_eq!(
         expr(" 1 + 2 *  3 / 4 - 5 ").map(|(i, x)| (i, format!("{:?}", x))),
-        Ok(("", String::from("((1 + ((2 * 3) / 4)) - 5)")))
+        Ok((
+            "",
+            String::from("Sub(Add(Value(1), Div(Mul(Value(2), Value(3)), Value(4))), Value(5))")
+        ))
     );
     assert_eq!(
         expr(" 72 / 2 / 3 ").map(|(i, x)| (i, format!("{:?}", x))),
-        Ok(("", String::from("((72 / 2) / 3)")))
+        Ok(("", String::from("Div(Div(Value(72), Value(2)), Value(3))")))
     );
 }
 
@@ -154,6 +144,9 @@ fn expr_test() {
 fn parens_test() {
     assert_eq!(
         expr(" ( 1 + 2 ) *  3 ").map(|(i, x)| (i, format!("{:?}", x))),
-        Ok(("", String::from("([(1 + 2)] * 3)")))
+        Ok((
+            "",
+            String::from("Mul(Paren(Add(Value(1), Value(2))), Value(3))")
+        ))
     );
 }

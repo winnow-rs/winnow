@@ -62,10 +62,6 @@ codegen-units = 1
 [[example]]
 name = "arithmetic"
 test = true
-
-[[example]]
-name = "arithmetic_ast"
-test = true
 required-features = ["alloc"]
 
 [[example]]
