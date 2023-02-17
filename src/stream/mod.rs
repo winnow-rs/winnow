@@ -1319,8 +1319,7 @@ where
     }
 }
 
-/// Indicates whether a comparison was successful, an error, or
-/// if more data was needed
+/// Result of [`Compare::compare`]
 #[derive(Debug, Eq, PartialEq)]
 pub enum CompareResult {
     /// Comparison was successful
@@ -1634,8 +1633,10 @@ where
 
 /// Used to integrate `str`'s `parse()` method
 pub trait ParseSlice<R> {
-    /// Succeeds if `parse()` succeeded. The byte slice implementation
-    /// will first convert it to a `&str`, then apply the `parse()` function
+    /// Succeeds if `parse()` succeededThe
+    ///
+    /// The byte slice implementation will first convert it to a `&str`, then apply the `parse()`
+    /// function
     fn parse_slice(&self) -> Option<R>;
 }
 
@@ -2041,11 +2042,13 @@ where
     }
 }
 
-/// Transforms common types to a char for basic token parsing
+/// Transforms a token into a char for basic string parsing
 #[allow(clippy::len_without_is_empty)]
 #[allow(clippy::wrong_self_convention)]
 pub trait AsChar {
     /// Makes a char from self
+    ///
+    /// # Example
     ///
     /// ```
     /// use winnow::stream::AsChar as _;
@@ -2057,7 +2060,7 @@ pub trait AsChar {
 
     /// Tests that self is an alphabetic character
     ///
-    /// Warning: for `&str` it recognizes alphabetic
+    /// **Warning:** for `&str` it recognizes alphabetic
     /// characters outside of the 52 ASCII letters
     fn is_alpha(self) -> bool;
 
@@ -2238,6 +2241,8 @@ impl<'a> AsChar for &'a char {
 /// - `|c| true`
 /// - `b'a'..=b'z'`, `'a'..='z'` (etc for each [range type][std::ops])
 /// - `(pattern1, pattern2, ...)`
+///
+/// # Example
 ///
 /// For example, you could implement `hex_digit0` as:
 /// ```

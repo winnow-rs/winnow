@@ -171,6 +171,8 @@ mod tests;
 
 /// Return the remaining input.
 ///
+/// # Example
+///
 /// ```rust
 /// # use winnow::error::ErrorKind;
 /// # use winnow::error::Error;
@@ -189,6 +191,10 @@ where
 }
 
 /// Return the length of the remaining input.
+///
+/// Note: this does not advance the [`Stream`]
+///
+/// # Example
 ///
 /// ```rust
 /// # use winnow::error::ErrorKind;
@@ -603,9 +609,11 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> H, H: Parser<I, O2, E>> Par
     }
 }
 
-/// Optional parser, will return `None` on [`ErrMode::Backtrack`].
+/// Apply a [`Parser`], producing `None` on [`ErrMode::Backtrack`].
 ///
 /// To chain an error up, see [`cut_err`].
+///
+/// # Example
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
@@ -685,6 +693,8 @@ impl<I: Clone, O, E: crate::error::ParseError<I>, F: Parser<I, O, E>, G: Parser<
 
 /// Calls the parser if the condition is met.
 ///
+/// # Example
+///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult};
 /// use winnow::combinator::cond;
@@ -723,6 +733,8 @@ where
 
 /// Tries to apply its parser without consuming the input.
 ///
+/// # Example
+///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// use winnow::combinator::peek;
@@ -748,10 +760,11 @@ where
     })
 }
 
-/// returns its input if it is at the end of input data
+/// Match the end of the [`Stream`]
 ///
-/// When we're at the end of the data, this combinator
-/// will succeed
+/// Otherwise, it will error.
+///
+/// # Example
 ///
 /// ```
 /// # use std::str;
@@ -1037,6 +1050,10 @@ impl<I, O, E: ParseError<I>, F: Parser<I, O, E>> Parser<I, (), E> for Void<F, O>
 }
 
 /// Succeeds if the child parser returns an error.
+///
+/// **Note:** This does not advance the [`Stream`]
+///
+/// # Example
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
@@ -1540,6 +1557,8 @@ where
 ///
 /// On [`ErrMode::Backtrack`], iteration will stop.  To instead chain an error up, see [`cut_err`].
 ///
+/// # Example
+///
 /// ```rust
 /// use winnow::{combinator::iterator, IResult, bytes::tag, character::alpha1, sequence::terminated};
 /// use std::collections::HashMap;
@@ -1566,7 +1585,7 @@ where
     }
 }
 
-/// Main structure associated to the [iterator] function.
+/// Main structure associated to [`iterator`].
 pub struct ParserIterator<I, O, E, F> {
     iterator: F,
     input: I,
@@ -1628,10 +1647,14 @@ enum State<E> {
     Incomplete(Needed),
 }
 
-/// a parser which always succeeds with given value without consuming any input.
+/// Always succeeds with given value without consuming any input.
 ///
-/// It can be used for example as the last alternative in `alt` to
+/// For example, it can be used as the last alternative in `alt` to
 /// specify the default case.
+///
+/// **Note:** This never advances the [`Stream`]
+///
+/// # Example
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
@@ -1653,6 +1676,11 @@ pub fn success<I: Stream, O: Clone, E: ParseError<I>>(val: O) -> impl FnMut(I) -
 }
 
 /// A parser which always fails.
+///
+/// For example, it can be used as the last alternative in `alt` to
+/// control the error message given.
+///
+/// # Example
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};

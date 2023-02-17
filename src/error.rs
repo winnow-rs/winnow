@@ -432,7 +432,7 @@ pub struct Error<I> {
 }
 
 impl<I> Error<I> {
-    /// creates a new basic error
+    /// Creates a new basic error
     pub fn new(input: I, kind: ErrorKind) -> Error<I> {
         Error { input, kind }
     }

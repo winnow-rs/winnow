@@ -21,15 +21,11 @@ pub trait Alt<I, O, E> {
     fn choice(&mut self, input: I) -> IResult<I, O, E>;
 }
 
-/// Tests a list of parsers one by one until one succeeds.
-///
-/// It takes as argument a tuple of parsers. There is a maximum of 21
-/// parsers. If you need more, it is possible to nest them in other `alt` calls,
-/// like this: `alt(parser_a, alt(parser_b, parser_c))`
+/// Pick the first successful parser
 ///
 /// For tight control over the error, add a final case using [`fail`][crate::combinator::fail].
-/// Alternatively, with a custom error type, it is possible to track all errors or return the error of the
-/// parser that went the farthest in the input data.
+/// Alternatively, with a [custom error type][crate::_cookbook::error], it is possible to track all
+/// errors or return the error of the parser that went the farthest in the input data.
 ///
 /// When the alternative cases have unique prefixes, [`dispatch`] can offer better performance.
 ///

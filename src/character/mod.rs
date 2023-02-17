@@ -945,7 +945,7 @@ where
     })(input)
 }
 
-/// Metadata for parsing unsigned integers
+/// Metadata for parsing unsigned integers, see [`dec_uint`]
 pub trait Uint: Default {
     #[doc(hidden)]
     fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self>;
@@ -1106,7 +1106,7 @@ where
     })(input)
 }
 
-/// Metadata for parsing signed integers
+/// Metadata for parsing signed integers, see [`dec_int`]
 pub trait Int: Uint {
     #[doc(hidden)]
     fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self>;
@@ -1234,7 +1234,7 @@ where
     })(input)
 }
 
-/// Metadata for parsing hex numbers
+/// Metadata for parsing hex numbers, see [`hex_uint`]
 pub trait HexUint:
     Default + Shl<Self, Output = Self> + Add<Self, Output = Self> + From<u8>
 {
@@ -1277,7 +1277,7 @@ impl HexUint for u128 {
     }
 }
 
-/// Recognizes floating point number in text format and returns a f32.
+/// Recognizes floating point number in text format and returns a f32 or f64.
 ///
 /// *Complete version*: Can parse until the end of input.
 ///
@@ -1347,7 +1347,9 @@ where
 /// * The first argument matches the normal characters (it must not accept the control character)
 /// * The second argument is the control character (like `\` in most languages)
 /// * The third argument matches the escaped characters
+///
 /// # Example
+///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// # use winnow::character::digit1;
@@ -1416,6 +1418,8 @@ where
 /// * The third argument matches the escaped characters and transforms them
 ///
 /// As an example, the chain `abc\tdef` could be `abc    def` (it also consumes the control character)
+///
+/// # Example
 ///
 /// ```
 /// # use winnow::prelude::*;

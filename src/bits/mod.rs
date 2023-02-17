@@ -12,10 +12,9 @@ use crate::stream::{AsBytes, Stream, StreamIsPartial, ToUsize};
 use crate::trace::trace;
 use crate::{IResult, Parser};
 
-/// Converts a byte-level input to a bit-level input, for consumption by a parser that uses bits.
+/// Converts a byte-level input to a bit-level input
 ///
-/// Afterwards, the input is converted back to a byte-level parser, with any remaining bits thrown
-/// away.
+/// See [`bytes`] to convert it back.
 ///
 /// # Example
 /// ```
@@ -69,11 +68,10 @@ where
     })
 }
 
-/// Counterpart to `bits`, `bytes` transforms its bit stream input into a byte slice for the underlying
-/// parser, allowing byte-slice parsers to work on bit streams.
+/// Convert a [`bits`] stream back into a byte stream
 ///
-/// A partial byte remaining in the input will be ignored and the given parser will start parsing
-/// at the next full byte.
+/// **Warning:** A partial byte remaining in the input will be ignored and the given parser will
+/// start parsing at the next full byte.
 ///
 /// ```
 /// use winnow::prelude::*;
@@ -126,7 +124,7 @@ where
     })
 }
 
-/// Generates a parser taking `count` bits
+/// Parse taking `count` bits
 ///
 /// # Example
 /// ```rust
@@ -176,7 +174,7 @@ where
     })
 }
 
-/// Generates a parser taking `count` bits and comparing them to `pattern`
+/// Parse taking `count` bits and comparing them to `pattern`
 ///
 /// # Example
 ///

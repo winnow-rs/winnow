@@ -19,8 +19,10 @@ use crate::{IResult, Parser};
 /// # Arguments
 /// * `f` The parser to apply.
 ///
-/// *Note*: if the parser passed in accepts empty inputs (like `alpha0` or `digit0`), `many0` will
+/// **Note:** if the parser passed in accepts empty inputs (like `alpha0` or `digit0`), `many0` will
 /// return an error, to prevent going into an infinite loop
+///
+/// # Example
 ///
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 #[cfg_attr(feature = "std", doc = "```")]
@@ -65,7 +67,7 @@ where
     })
 }
 
-/// Runs the embedded parser, gathering the results in a `Vec`.
+/// Runs the specified parser, gathering the results in a `Vec`.
 ///
 /// This stops on [`ErrMode::Backtrack`] if there is at least one result.  To instead chain an error up,
 /// see [`cut_err`][crate::combinator::cut_err].
@@ -73,9 +75,11 @@ where
 /// # Arguments
 /// * `f` The parser to apply.
 ///
-/// *Note*: If the parser passed to `many1` accepts empty inputs
+/// **Note:** If the parser passed to `many1` accepts empty inputs
 /// (like `alpha0` or `digit0`), `many1` will return an error,
 /// to prevent going into an infinite loop.
+///
+/// # Example
 ///
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 #[cfg_attr(feature = "std", doc = "```")]
@@ -145,6 +149,8 @@ where
 ///
 /// `f` keeps going so long as `g` produces [`ErrMode::Backtrack`]. To instead chain an error up, see [`cut_err`][crate::combinator::cut_err].
 ///
+/// # Example
+///
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 #[cfg_attr(feature = "std", doc = "```")]
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
@@ -203,6 +209,8 @@ where
 /// # Arguments
 /// * `parser` Parses the elements of the list.
 /// * `sep` Parses the separator between list elements.
+///
+/// # Example
 ///
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 #[cfg_attr(feature = "std", doc = "```")]
@@ -294,6 +302,9 @@ where
 /// # Arguments
 /// * `sep` Parses the separator between list elements.
 /// * `f` Parses the elements of the list.
+///
+/// # Example
+///
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 #[cfg_attr(feature = "std", doc = "```")]
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
@@ -379,6 +390,8 @@ where
 /// This stops when either parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
 ///
+/// # Example
+///
 /// ```
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::separated_foldl1;
@@ -437,6 +450,8 @@ where
 /// This stops when either parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
 ///
+/// # Example
+///
 /// ```
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::separated_foldr1;
@@ -491,9 +506,11 @@ where
 /// * `n` The maximum number of iterations.
 /// * `f` The parser to apply.
 ///
-/// *Note*: If the parser passed to `many1` accepts empty inputs
+/// **Note:** If the parser passed to `many1` accepts empty inputs
 /// (like `alpha0` or `digit0`), `many1` will return an error,
 /// to prevent going into an infinite loop.
+///
+/// # Example
 ///
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 #[cfg_attr(feature = "std", doc = "```")]
@@ -565,8 +582,10 @@ where
 /// # Arguments
 /// * `f` The parser to apply.
 ///
-/// *Note*: if the parser passed in accepts empty inputs (like `alpha0` or `digit0`), `many0` will
+/// **Note:** if the parser passed in accepts empty inputs (like `alpha0` or `digit0`), `many0` will
 /// return an error, to prevent going into an infinite loop
+///
+/// # Example
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
@@ -625,9 +644,11 @@ where
 /// # Arguments
 /// * `f` The parser to apply.
 ///
-/// *Note*: If the parser passed to `many1` accepts empty inputs
+/// **Note:** If the parser passed to `many1` accepts empty inputs
 /// (like `alpha0` or `digit0`), `many1` will return an error,
 /// to prevent going into an infinite loop.
+///
+/// # Example
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
@@ -688,6 +709,9 @@ where
 /// # Arguments
 /// * `f` The parser to apply.
 /// * `count` How often to apply the parser.
+///
+/// # Example
+///
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 #[cfg_attr(feature = "std", doc = "```")]
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
@@ -739,6 +763,9 @@ where
 /// # Arguments
 /// * `f` The parser to apply.
 /// * `buf` The slice to fill
+///
+/// # Example
+///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::multi::fill;
@@ -793,8 +820,10 @@ where
 /// * `g` The function that combines a result of `f` with
 ///       the current accumulator.
 ///
-/// *Note*: if the parser passed in accepts empty inputs (like `alpha0` or `digit0`), `many0` will
+/// **Note:** if the parser passed in accepts empty inputs (like `alpha0` or `digit0`), `many0` will
 /// return an error, to prevent going into an infinite loop
+///
+/// # Example
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
@@ -868,9 +897,11 @@ where
 /// * `g` The function that combines a result of `f` with
 ///       the current accumulator.
 ///
-/// *Note*: If the parser passed to `many1` accepts empty inputs
+/// **Note:** If the parser passed to `many1` accepts empty inputs
 /// (like `alpha0` or `digit0`), `many1` will return an error,
 /// to prevent going into an infinite loop.
+///
+/// # Example
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
@@ -954,9 +985,11 @@ where
 /// * `g` The function that combines a result of `f` with
 ///       the current accumulator.
 ///
-/// *Note*: If the parser passed to `many1` accepts empty inputs
+/// **Note:** If the parser passed to `many1` accepts empty inputs
 /// (like `alpha0` or `digit0`), `many1` will return an error,
 /// to prevent going into an infinite loop.
+///
+/// # Example
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
@@ -1039,6 +1072,9 @@ where
 ///
 /// # Arguments
 /// * `f` The parser to apply.
+///
+/// # Example
+///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult, stream::Partial};
 /// use winnow::Bytes;
@@ -1087,6 +1123,9 @@ where
 /// # Arguments
 /// * `f` The parser to apply.
 /// * `g` The parser to apply on the subslice.
+///
+/// # Example
+///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult, stream::Partial};
 /// use winnow::Bytes;
@@ -1128,9 +1167,13 @@ where
 
 /// Gets a number from the first parser,
 /// then applies the second parser that many times.
+///
 /// # Arguments
 /// * `f` The parser to apply to obtain the count.
 /// * `g` The parser to apply repeatedly.
+///
+/// # Example
+///
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 #[cfg_attr(feature = "std", doc = "```")]
 /// # use winnow::prelude::*;
