@@ -3,6 +3,7 @@
 //! These are short recipes for accomplishing common tasks.
 //!
 //! - [Elements of Programming Languages][language]
+//! - [Arithmetic][arithmetic]
 //! - [Implementing `FromStr`][fromstr]
 //! - [Parsing Partial Input][partial]
 //! - [Custom stream][stream]
@@ -12,6 +13,7 @@
 //!
 //! - [`toml_edit`](https://crates.io/crates/toml_edit)
 
+pub mod arithmetic;
 pub mod error;
 pub mod fromstr;
 pub mod language;
