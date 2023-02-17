@@ -1,315 +1,44 @@
-//! # nom, eating data byte by byte
+//! > winnow, making parsing a breeze
 //!
-//! **NOTE:** This is an unofficial, short-lived fork.  I'm nominating winnow to be nom v8.
+//! `winnow` is a parser combinator library
 //!
-//! nom is a parser combinator library, supporting:
-//! - String (`&str`), byte (`&[u8]`), and [custom input types][crate::stream]
-//! - [Partial parsing][crate::Partial]
-//! - Zero copy parsing
+//! Quick links:
+//! - [List of combinators][crate::combinator]
+//! - [Tutorial][_tutorial]
+//! - [Cookbook][_cookbook]
+//! - [Discussions](https://github.com/winnow-rs/winnow/discussions)
+//!
+//! ## Aspirations
+//!
+//! In roughly priority order:
+//!
+//! 1. Open-ended design allowing mixing of combinator and imperative styles, working as a toolbox
+//!    rather than a framework.
+//! 2. Flexible enough to be used for any application, including parsing binary data, strings, or
+//!    separate lexing and parsing phases
+//! 3. Zero-cost abstractions, making it easy to write high performance parsers
+//! 4. Easy to use, making it trivial for one-off uses
+//!
+//! In addition:
+//! - Resilient maintainership, including
+//!   - Willing to break compatibility rather than batching up breaking changes in large releases
+//!   - Leverage feature flags to keep one active branch
+//! - We will support the last 6 months of rust releases (MSRV, currently 1.60)
 //!
 //! ## Example
 //!
+//! Run
+//! ```console
+//! $ cargo add winnow
+//! ```
+//!
+//! Then use it to parse:
 //! ```rust
-//! use winnow::prelude::*;
-//! use winnow::bytes::{tag, take_while_m_n};
-//!
-//! #[derive(Debug,PartialEq)]
-//! pub struct Color {
-//!   pub red:     u8,
-//!   pub green:   u8,
-//!   pub blue:    u8,
-//! }
-//!
-//! fn from_hex(input: &str) -> Result<u8, std::num::ParseIntError> {
-//!   u8::from_str_radix(input, 16)
-//! }
-//!
-//! fn is_hex_digit(c: char) -> bool {
-//!   c.is_digit(16)
-//! }
-//!
-//! fn hex_primary(input: &str) -> IResult<&str, u8> {
-//!   take_while_m_n(2, 2, is_hex_digit).map_res(from_hex).parse_next(input)
-//! }
-//!
-//! fn hex_color(input: &str) -> IResult<&str, Color> {
-//!   let (input, _) = tag("#")(input)?;
-//!   let (input, (red, green, blue)) = (hex_primary, hex_primary, hex_primary).parse_next(input)?;
-//!
-//!   Ok((input, Color { red, green, blue }))
-//! }
-//!
-//! fn main() {
-//!   let result = hex_color("#2F14DF").finish();
-//!   assert_eq!(result, Ok(Color {
-//!     red: 47,
-//!     green: 20,
-//!     blue: 223,
-//!   }));
-//! }
+#![doc = include_str!("../examples/css/parser.rs")]
 //! ```
 //!
-//! The code is available on [Github](https://github.com/Geal/nom)
-//!
-//! There are a few [guides](https://github.com/Geal/nom/tree/main/doc) with more details
-//! about [how to write parsers][_tutorial],
-//! or the [error management system][error].
-//! You can also check out the [_cookbook] module that contains examples of common patterns.
-//!
-//! **Looking for a specific combinator? Read the
-//! ["choose a combinator" guide][combinator]**
-//!
-//! If you are upgrading to nom 5.0, please read the
-//! [migration document](https://github.com/Geal/nom/blob/main/doc/upgrading_to_nom_5.md).
-//!
-//! ## Parser combinators
-//!
-//! Parser combinators are an approach to parsers that is very different from
-//! software like [lex](https://en.wikipedia.org/wiki/Lex_(software)) and
-//! [yacc](https://en.wikipedia.org/wiki/Yacc). Instead of writing the grammar
-//! in a separate syntax and generating the corresponding code, you use very small
-//! functions with very specific purposes, like "take 5 bytes", or "recognize the
-//! word 'HTTP'", and assemble them in meaningful patterns like "recognize
-//! 'HTTP', then a space, then a version".
-//! The resulting code is small, and looks like the grammar you would have
-//! written with other parser approaches.
-//!
-//! This gives us a few advantages:
-//!
-//! - The parsers are small and easy to write
-//! - The parsers components are easy to reuse (if they're general enough, please add them to nom!)
-//! - The parsers components are easy to test separately (unit tests and property-based tests)
-//! - The parser combination code looks close to the grammar you would have written
-//! - You can build partial parsers, specific to the data you need at the moment, and ignore the rest
-//!
-//! Here is an example of one such parser, to recognize text between parentheses:
-//!
-//! ```rust
-//! use winnow::{
-//!   IResult,
-//!   sequence::delimited,
-//!   bytes::take_till1
-//! };
-//!
-//! fn parens(input: &str) -> IResult<&str, &str> {
-//!   delimited('(', take_till1(")"), ')')(input)
-//! }
-//! ```
-//!
-//! It defines a function named `parens` which will recognize a sequence of the
-//! character `(`, the longest byte array not containing `)`, then the character
-//! `)`, and will return the byte array in the middle.
-//!
-//! Here is another parser, written without using nom's combinators this time:
-//!
-//! ```rust
-//! use winnow::{IResult, error::ErrMode, error::Needed};
-//!
-//! # fn main() {
-//! fn take4(i: &[u8]) -> IResult<&[u8], &[u8]>{
-//!   if i.len() < 4 {
-//!     Err(ErrMode::Incomplete(Needed::new(4)))
-//!   } else {
-//!     Ok((&i[4..], &i[0..4]))
-//!   }
-//! }
-//! # }
-//! ```
-//!
-//! This function takes a byte array as input, and tries to consume 4 bytes.
-//! Writing all the parsers manually, like this, is dangerous, despite Rust's
-//! safety features. There are still a lot of mistakes one can make. That's why
-//! nom provides a list of functions to help in developing parsers.
-//!
-//! With functions, you would write it like this:
-//!
-//! ```rust
-//! use winnow::{IResult, bytes::take, stream::Partial};
-//! fn take4(input: Partial<&str>) -> IResult<Partial<&str>, &str> {
-//!   take(4u8)(input)
-//! }
-//! ```
-//!
-//! A parser in nom is a function which, for an input type `I`, an output type `O`
-//! and an optional error type `E`, will have the following signature:
-//!
-//! ```rust,compile_fail
-//! fn parser(input: I) -> IResult<I, O, E>;
-//! ```
-//!
-//! Or like this, if you don't want to specify a custom error type (it will be `(I, ErrorKind)` by default):
-//!
-//! ```rust,compile_fail
-//! fn parser(input: I) -> IResult<I, O>;
-//! ```
-//!
-//! `IResult` is an alias for the `Result` type:
-//!
-//! ```rust
-//! use winnow::{error::Needed, error::Error};
-//!
-//! type IResult<I, O, E = Error<I>> = Result<(I, O), Err<E>>;
-//!
-//! enum Err<E> {
-//!   Incomplete(Needed),
-//!   Error(E),
-//!   Failure(E),
-//! }
-//! ```
-//!
-//! It can have the following values:
-//!
-//! - A correct result `Ok((I,O))` with the first element being the remaining of the input (not parsed yet), and the second the output value;
-//! - An error `Err(ErrMode::Backtrack(c))` with `c` an error that can be built from the input position and a parser specific error
-//! - An error `Err(ErrMode::Incomplete(Needed))` indicating that more input is necessary. `Needed` can indicate how much data is needed
-//! - An error `Err(ErrMode::Cut(c))`. It works like the `Backtrack` case, except it indicates an unrecoverable error: We cannot backtrack and test another parser
-//!
-//! Please refer to the ["choose a combinator" guide][combinator] for an exhaustive list of parsers.
-//! See also the rest of the documentation [here](https://github.com/Geal/nom/blob/main/doc).
-//!
-//! ## Making new parsers with function combinators
-//!
-//! nom is based on functions that generate parsers, with a signature like
-//! this: `(arguments) -> impl Fn(Stream) -> IResult<Stream, Output, Error>`.
-//! The arguments of a combinator can be direct values (like `take` which uses
-//! a number of bytes or character as argument) or even other parsers (like
-//! `delimited` which takes as argument 3 parsers, and returns the result of
-//! the second one if all are successful).
-//!
-//! Here are some examples:
-//!
-//! ```rust
-//! use winnow::IResult;
-//! use winnow::bytes::{tag, take};
-//! fn abcd_parser(i: &str) -> IResult<&str, &str> {
-//!   tag("abcd")(i) // will consume bytes if the input begins with "abcd"
-//! }
-//!
-//! fn take_10(i: &[u8]) -> IResult<&[u8], &[u8]> {
-//!   take(10u8)(i) // will consume and return 10 bytes of input
-//! }
-//! ```
-//!
-//! ## Combining parsers
-//!
-//! There are higher level patterns, like the **`alt`** combinator, which
-//! provides a choice between multiple parsers. If one branch fails, it tries
-//! the next, and returns the result of the first parser that succeeds:
-//!
-//! ```rust
-//! use winnow::IResult;
-//! use winnow::branch::alt;
-//! use winnow::bytes::tag;
-//!
-//! let mut alt_tags = alt((tag("abcd"), tag("efgh")));
-//!
-//! assert_eq!(alt_tags(&b"abcdxxx"[..]), Ok((&b"xxx"[..], &b"abcd"[..])));
-//! assert_eq!(alt_tags(&b"efghxxx"[..]), Ok((&b"xxx"[..], &b"efgh"[..])));
-//! assert_eq!(alt_tags(&b"ijklxxx"[..]), Err(winnow::error::ErrMode::Backtrack(winnow::error::Error::new(&b"ijklxxx"[..], winnow::error::ErrorKind::Tag))));
-//! ```
-//!
-//! The **`opt`** combinator makes a parser optional. If the child parser returns
-//! an error, **`opt`** will still succeed and return None:
-//!
-//! ```rust
-//! use winnow::{IResult, combinator::opt, bytes::tag};
-//! fn abcd_opt(i: &[u8]) -> IResult<&[u8], Option<&[u8]>> {
-//!   opt(tag("abcd"))(i)
-//! }
-//!
-//! assert_eq!(abcd_opt(&b"abcdxxx"[..]), Ok((&b"xxx"[..], Some(&b"abcd"[..]))));
-//! assert_eq!(abcd_opt(&b"efghxxx"[..]), Ok((&b"efghxxx"[..], None)));
-//! ```
-//!
-//! **`many0`** applies a parser 0 or more times, and returns a vector of the aggregated results:
-//!
-//! ```rust
-//! # #[cfg(feature = "alloc")]
-//! # fn main() {
-//! use winnow::{IResult, multi::many0, bytes::tag};
-//! use std::str;
-//!
-//! fn multi(i: &str) -> IResult<&str, Vec<&str>> {
-//!   many0(tag("abcd"))(i)
-//! }
-//!
-//! let a = "abcdef";
-//! let b = "abcdabcdef";
-//! let c = "azerty";
-//! assert_eq!(multi(a), Ok(("ef",     vec!["abcd"])));
-//! assert_eq!(multi(b), Ok(("ef",     vec!["abcd", "abcd"])));
-//! assert_eq!(multi(c), Ok(("azerty", Vec::new())));
-//! # }
-//! # #[cfg(not(feature = "alloc"))]
-//! # fn main() {}
-//! ```
-//!
-//! Here are some basic combinators available:
-//!
-//! - **`opt`**: Will make the parser optional (if it returns the `O` type, the new parser returns `Option<O>`)
-//! - **`many0`**: Will apply the parser 0 or more times (if it returns the `O` type, the new parser returns `Vec<O>`)
-//! - **`many1`**: Will apply the parser 1 or more times
-//!
-//! There are more complex (and more useful) parsers like tuples, which is
-//! used to apply a series of parsers then assemble their results.
-//!
-//! Example with tuples:
-//!
-//! ```rust
-//! # fn main() {
-//! use winnow::prelude::*;
-//! use winnow::{
-//!     error::ErrorKind, error::Error, error::Needed,
-//!     number::be_u16,
-//!     bytes::{tag, take},
-//!     stream::Partial,
-//! };
-//!
-//! let mut tpl = (be_u16, take(3u8), tag("fg"));
-//!
-//! assert_eq!(
-//!   tpl.parse_next(Partial::new(&b"abcdefgh"[..])),
-//!   Ok((
-//!     Partial::new(&b"h"[..]),
-//!     (0x6162u16, &b"cde"[..], &b"fg"[..])
-//!   ))
-//! );
-//! assert_eq!(tpl.parse_next(Partial::new(&b"abcde"[..])), Err(winnow::error::ErrMode::Incomplete(Needed::new(2))));
-//! let input = &b"abcdejk"[..];
-//! assert_eq!(tpl.parse_next(Partial::new(input)), Err(winnow::error::ErrMode::Backtrack(Error::new(Partial::new(&input[5..]), ErrorKind::Tag))));
-//! # }
-//! ```
-//!
-//! But you can also use a sequence of combinators written in imperative style,
-//! thanks to the `?` operator:
-//!
-//! ```rust
-//! # fn main() {
-//! use winnow::{IResult, bytes::tag};
-//!
-//! #[derive(Debug, PartialEq)]
-//! struct A {
-//!   a: u8,
-//!   b: u8
-//! }
-//!
-//! fn ret_int1(i:&[u8]) -> IResult<&[u8], u8> { Ok((i,1)) }
-//! fn ret_int2(i:&[u8]) -> IResult<&[u8], u8> { Ok((i,2)) }
-//!
-//! fn f(i: &[u8]) -> IResult<&[u8], A> {
-//!   // if successful, the parser returns `Ok((remaining_input, output_value))` that we can destructure
-//!   let (i, _) = tag("abcd")(i)?;
-//!   let (i, a) = ret_int1(i)?;
-//!   let (i, _) = tag("efgh")(i)?;
-//!   let (i, b) = ret_int2(i)?;
-//!
-//!   Ok((i, A { a, b }))
-//! }
-//!
-//! let r = f(b"abcdefghX");
-//! assert_eq!(r, Ok((&b"X"[..], A{a: 1, b: 2})));
-//! # }
-//! ```
+//! See also the [Tutorial][_tutorial] and [Cookbook][_cookbook]
+
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(docsrs, feature(extended_key_value_attributes))]

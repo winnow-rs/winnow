@@ -45,12 +45,13 @@ where
     }
 }
 
-/// Matches an object from the first parser and discards it,
-/// then gets an object from the second parser.
+/// Apply two parsers, only returning the output from the second.
 ///
 /// # Arguments
 /// * `first` The opening parser.
 /// * `second` The second parser to get object.
+///
+/// # Example
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
@@ -80,12 +81,13 @@ where
     })
 }
 
-/// Gets an object from the first parser,
-/// then matches an object from the second parser and discards it.
+/// Apply two parsers, only returning the output of the first.
 ///
 /// # Arguments
 /// * `first` The first parser to apply.
 /// * `second` The second parser to match an object.
+///
+/// # Example
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
@@ -115,14 +117,14 @@ where
     })
 }
 
-/// Gets an object from the first parser,
-/// then matches an object from the `sep_parser` and discards it,
-/// then gets another object from the second parser.
+/// Apply three parsers, only returning the values of the first and third.
 ///
 /// # Arguments
 /// * `first` The first parser to apply.
 /// * `sep` The separator parser to apply.
 /// * `second` The second parser to apply.
+///
+/// # Example
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
@@ -155,14 +157,14 @@ where
     })
 }
 
-/// Matches an object from the first parser and discards it,
-/// then gets an object from the second parser,
-/// and finally matches an object from the third parser and discards it.
+/// Apply three parsers, only returning the output of the second.
 ///
 /// # Arguments
 /// * `first` The first parser to apply and discard.
 /// * `second` The second parser to apply.
 /// * `third` The third parser to apply and discard.
+///
+/// # Example
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};

@@ -1,4 +1,4 @@
-//! # Cookbook
+//! # Elements of Programming Languages
 //!
 //! These are short recipes for accomplishing common tasks.
 //!
@@ -17,7 +17,6 @@
 //!     - [Binary](#binary)
 //!     - [Decimal](#decimal)
 //!   + [Floating Point Numbers](#floating-point-numbers)
-//! * [Implementing `FromStr`](#implementing-fromstr)
 //!
 //! ## Whitespace
 //!
@@ -135,7 +134,7 @@
 //! ### Escaped Strings
 //!
 //! ```rust
-#![doc = include_str!("../examples/string.rs")]
+#![doc = include_str!("../../examples/string.rs")]
 //! ```
 //!
 //! ### Integers
@@ -312,17 +311,10 @@
 //! fn decimal(input: &str) -> IResult<&str, &str> {
 //!   many1(
 //!     terminated(one_of("0123456789"), many0('_').map(|()| ()))
-//!   ).map(|()| ())
+//!   ).
+//!   map(|()| ())
 //!     .recognize()
+//!
 //!     .parse_next(input)
 //! }
-//! ```
-//!
-//! # Implementing `FromStr`
-//!
-//! The [`FromStr` trait][std::str::FromStr] provides
-//! a common interface to parse from a string.
-//!
-//! ```rust
-#![doc = include_str!("../examples/css/parser.rs")]
 //! ```

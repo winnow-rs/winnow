@@ -115,7 +115,9 @@ where
 /// the input that matches the argument with no regard to case.
 ///
 /// It will return `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::Tag)))` if the input doesn't match the pattern.
+///
 /// # Example
+///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::tag_no_case;
@@ -165,7 +167,7 @@ where
     })
 }
 
-/// Returns a token that matches the [pattern][ContainsToken]
+/// Recognize a token that matches the [pattern][ContainsToken]
 ///
 /// **Note:** [`Parser`][crate::Parser] is implemented as a convenience (complete
 /// only) for
@@ -229,7 +231,7 @@ where
     })
 }
 
-/// Returns a token that does not match the [pattern][ContainsToken]
+/// Recognize a token that does not match the [pattern][ContainsToken]
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
@@ -272,10 +274,14 @@ where
     })
 }
 
-/// Returns the longest input slice (if any) that matches the [pattern][ContainsToken]
+/// Recognize the longest input slice (if any) that matches the [pattern][ContainsToken]
 ///
 /// *Partial version*: will return a `ErrMode::Incomplete(Needed::new(1))` if the pattern reaches the end of the input.
+///
+/// To recognize a series of tokens, use [`many0`][crate::multi::many0] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`][crate::Parser::recognize].
+///
 /// # Example
+///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// use winnow::bytes::take_while0;
@@ -324,13 +330,16 @@ where
     })
 }
 
-/// Returns the longest (at least 1) input slice that matches the [pattern][ContainsToken]
+/// Recognize the longest (at least 1) input slice that matches the [pattern][ContainsToken]
 ///
 /// It will return an `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::TakeWhile1)))` if the pattern wasn't met.
 ///
 /// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` or if the pattern reaches the end of the input.
 ///
+/// To recognize a series of tokens, use [`many1`][crate::multi::many1] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`][crate::Parser::recognize].
+///
 /// # Example
+///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::take_while1;
@@ -397,14 +406,17 @@ where
     })
 }
 
-/// Returns the longest (m <= len <= n) input slice that matches the [pattern][ContainsToken]
+/// Recognize the longest (m <= len <= n) input slice that matches the [pattern][ContainsToken]
 ///
 /// It will return an `ErrMode::Backtrack(Error::new(_, ErrorKind::TakeWhileMN))` if the pattern wasn't met or is out
 /// of range (m <= len <= n).
 ///
 /// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))`  if the pattern reaches the end of the input or is too short.
 ///
+/// To recognize a series of tokens, use [`many_m_n`][crate::multi::many_m_n] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`][crate::Parser::recognize].
+///
 /// # Example
+///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::take_while_m_n;
@@ -457,12 +469,13 @@ where
     })
 }
 
-/// Returns the longest input slice (if any) till a [pattern][ContainsToken] is met.
+/// Recognize the longest input slice (if any) till a [pattern][ContainsToken] is met.
 ///
 /// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if the match reaches the
 /// end of input or if there was not match.
 ///
 /// # Example
+///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// use winnow::bytes::take_till0;
@@ -509,7 +522,7 @@ where
     })
 }
 
-/// Returns the longest (at least 1) input slice till a [pattern][ContainsToken] is met.
+/// Recognize the longest (at least 1) input slice till a [pattern][ContainsToken] is met.
 ///
 /// It will return `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::TakeTill1)))` if the input is empty or the
 /// predicate matches the first input.
@@ -518,6 +531,7 @@ where
 /// end of input or if there was not match.
 ///
 /// # Example
+///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::take_till1;
@@ -582,7 +596,7 @@ where
     })
 }
 
-/// Returns an input slice containing the first N input elements (I[..N]).
+/// Recognize an input slice containing the first N input elements (I[..N]).
 ///
 /// *Complete version*: It will return `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::Eof)))` if the input is shorter than the argument.
 ///
@@ -594,6 +608,7 @@ where
 /// the next few chars, so the result will be `ErrMode::Incomplete(Needed::Unknown)`
 ///
 /// # Example
+///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::take;
@@ -653,7 +668,7 @@ where
     })
 }
 
-/// Returns the input slice up to the first occurrence of the literal.
+/// Recognize the input slice up to the first occurrence of the literal.
 ///
 /// It doesn't consume the pattern.
 ///
@@ -662,7 +677,9 @@ where
 ///
 /// *Partial version*: will return a `ErrMode::Incomplete(Needed::new(N))` if the input doesn't
 /// contain the pattern or if the input is smaller than the pattern.
+///
 /// # Example
+///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::take_until0;
@@ -709,7 +726,7 @@ where
     })
 }
 
-/// Returns the non empty input slice up to the first occurrence of the literal.
+/// Recognize the non empty input slice up to the first occurrence of the literal.
 ///
 /// It doesn't consume the pattern.
 ///
@@ -720,6 +737,7 @@ where
 /// contain the pattern or if the input is smaller than the pattern.
 ///
 /// # Example
+///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// use winnow::bytes::take_until1;

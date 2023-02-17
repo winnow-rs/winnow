@@ -4,7 +4,7 @@ use crate::combinator::*;
 use crate::error::{ContextError, IResult, ParseError};
 use crate::stream::{AsChar, Compare, Location, Stream, StreamIsPartial};
 
-/// All nom parsers implement this trait
+/// Core trait for parsing
 ///
 /// The simplest way to implement a `Parser` is with a function
 /// ```rust
@@ -46,8 +46,9 @@ pub trait Parser<I, O, E> {
         self.parse_next(input)
     }
 
-    /// A parser takes in input type, and returns a `Result` containing
-    /// either the remaining input and the output value, or an error
+    /// Take tokens from the [`Stream`], turning it into the output
+    ///
+    /// This includes advancing the [`Stream`] to the next location.
     fn parse_next(&mut self, input: I) -> IResult<I, O, E>;
 
     /// Treat `&mut Self` as a parser
@@ -102,7 +103,7 @@ pub trait Parser<I, O, E> {
         ByRef::new(self)
     }
 
-    /// Returns the provided value if the child parser succeeds.
+    /// Produce the provided value
     ///
     /// # Example
     ///
@@ -176,7 +177,7 @@ pub trait Parser<I, O, E> {
         OutputInto::new(self)
     }
 
-    /// If the child parser was successful, return the consumed input as produced value.
+    /// Produce the consumed input as produced value.
     ///
     /// # Example
     ///
@@ -199,8 +200,9 @@ pub trait Parser<I, O, E> {
         Recognize::new(self)
     }
 
-    /// if the child parser was successful, return the consumed input with the output
-    /// as a tuple. Functions similarly to [recognize](fn.recognize.html) except it
+    /// Produce the consumed input with the output
+    ///
+    /// Functions similarly to [recognize][Parser::recognize] except it
     /// returns the parser output as well.
     ///
     /// This can be useful especially in cases where the output is not the same type
@@ -244,7 +246,7 @@ pub trait Parser<I, O, E> {
         WithRecognized::new(self)
     }
 
-    /// If the child parser was successful, return the location of the consumed input as produced value.
+    /// Produce the location of the consumed input as produced value.
     ///
     /// # Example
     ///
@@ -268,8 +270,9 @@ pub trait Parser<I, O, E> {
         Span::new(self)
     }
 
-    /// if the child parser was successful, return the location of consumed input with the output
-    /// as a tuple. Functions similarly to [`Parser::span`] except it
+    /// Produce the location of consumed input with the output
+    ///
+    /// Functions similarly to [`Parser::span`] except it
     /// returns the parser output as well.
     ///
     /// This can be useful especially in cases where the output is not the same type
@@ -315,7 +318,7 @@ pub trait Parser<I, O, E> {
         WithSpan::new(self)
     }
 
-    /// Maps a function over the result of a parser
+    /// Maps a function over the output of a parser
     ///
     /// # Example
     ///
@@ -341,7 +344,7 @@ pub trait Parser<I, O, E> {
         Map::new(self, g)
     }
 
-    /// Applies a function returning a `Result` over the result of a parser.
+    /// Applies a function returning a `Result` over the output of a parser.
     ///
     /// # Example
     ///
@@ -399,7 +402,7 @@ pub trait Parser<I, O, E> {
         VerifyMap::new(self, g)
     }
 
-    /// Creates a second parser from the output of the first one, then apply over the rest of the input
+    /// Creates a parser from the output of this one
     ///
     /// # Example
     ///
@@ -407,13 +410,29 @@ pub trait Parser<I, O, E> {
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
     /// use winnow::bytes::take;
     /// use winnow::number::u8;
-    /// # fn main() {
     ///
-    /// let mut length_data = u8.flat_map(take);
+    /// fn length_data(input: &[u8]) -> IResult<&[u8], &[u8]> {
+    ///     u8.flat_map(take).parse_next(input)
+    /// }
     ///
     /// assert_eq!(length_data.parse_next(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
     /// assert_eq!(length_data.parse_next(&[4, 0, 1, 2][..]), Err(ErrMode::Backtrack(Error::new(&[0, 1, 2][..], ErrorKind::Eof))));
-    /// # }
+    /// ```
+    ///
+    /// which is the same as
+    /// ```rust
+    /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
+    /// use winnow::bytes::take;
+    /// use winnow::number::u8;
+    ///
+    /// fn length_data(input: &[u8]) -> IResult<&[u8], &[u8]> {
+    ///     let (input, length) = u8.parse_next(input)?;
+    ///     let (input, data) = take(length).parse_next(input)?;
+    ///     Ok((input, data))
+    /// }
+    ///
+    /// assert_eq!(length_data.parse_next(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
+    /// assert_eq!(length_data.parse_next(&[4, 0, 1, 2][..]), Err(ErrMode::Backtrack(Error::new(&[0, 1, 2][..], ErrorKind::Eof))));
     /// ```
     fn flat_map<G, H, O2>(self, g: G) -> FlatMap<Self, G, O>
     where
@@ -477,7 +496,7 @@ pub trait Parser<I, O, E> {
         ParseTo::new(self)
     }
 
-    /// Returns the result of the child parser if it satisfies a verification function.
+    /// Returns the output of the child parser if it satisfies a verification function.
     ///
     /// The verification function takes as argument a reference to the output of the
     /// parser.

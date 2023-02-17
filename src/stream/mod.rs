@@ -7,52 +7,7 @@
 //!   [spans][crate::Parser::with_span]
 //! - [`Stateful`] to thread global state through your parsers
 //! - [`Partial`] can mark an input as partial buffer that is being streamed into
-//!
-//! # How do a parse a custom input type?
-//!
-//! While historically, nom has worked mainly on `&[u8]` and `&str`, it can actually
-//! use any type as input, as long as they follow a specific set of traits.
-//! Those traits were developed first to abstract away the differences between
-//! `&[u8]` and `&str`, but were then employed for more interesting types,
-//! like [`Located`], a wrapper type
-//! that can carry line and column information, or to parse
-//! [a list of tokens](https://github.com/Rydgel/monkey-rust/blob/master/lib/parser/mod.rs).
-//!
-//! ## Implementing a custom type
-//!
-//! Let's assume we have an input type we'll call `MyStream`. `MyStream` is a sequence of `MyItem` type.
-//! The goal is to define nom parsers with this signature: `MyStream -> IResult<MyStream, Output>`.
-//!
-//! ```rust,ignore
-//! fn parser(i: MyStream) -> IResult<MyStream, Output> {
-//!     tag("test")(i)
-//! }
-//! ```
-//!
-//! Here are the traits we have to implement for `MyStream`:
-//!
-//! | trait | usage |
-//! |---|---|
-//! | [`Stream`] |Core trait for driving parsing|
-//! | [`StreamIsPartial`] | Marks the input as being the complete buffer or a partial buffer for streaming input |
-//! | [`AsBytes`] |Casts the input type to a byte slice|
-//! | [`AsBStr`] |Casts the input type to a slice of ASCII / UTF-8-like bytes|
-//! | [`Compare`] |Character comparison operations|
-//! | [`FindSlice`] |Look for a substring in self|
-//! | [`Location`] |Calculate location within initial input|
-//! | [`Offset`] |Calculate the offset between slices|
-//!
-//! Here are the traits we have to implement for `MyItem`:
-//!
-//! | trait | usage |
-//! |---|---|
-//! | [`AsChar`] |Transforms common types to a char for basic token parsing|
-//! | [`ContainsToken`] |Look for the token in the given set|
-//!
-//! And traits for slices of `MyItem`:
-//!
-//! | [`SliceLen`] |Calculate the input length|
-//! | [`ParseSlice`] |Used to integrate `&str`'s `parse()` method|
+//! - [Custom stream types][crate::_cookbook::stream]
 
 #![allow(deprecated)]
 
@@ -248,6 +203,8 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 ///   [`ErrMode::Backtrack`]
 ///
 /// See also [`StreamIsPartial`] to tell whether the input supports complete or partial parsing.
+///
+/// See also [Cookbook: Parsing Partial Input][crate::_cookbook::partial].
 ///
 /// # Example
 ///
@@ -966,7 +923,7 @@ where
 
 /// Marks the input as being the complete buffer or a partial buffer for streaming input
 ///
-/// See [Partial] for marking a presumed complete buffer type as a streaming buffer.
+/// See [`Partial`] for marking a presumed complete buffer type as a streaming buffer.
 pub trait StreamIsPartial: Sized {
     /// Whether the stream is currently partial or complete
     type PartialState;
@@ -1364,8 +1321,7 @@ where
     }
 }
 
-/// Indicates whether a comparison was successful, an error, or
-/// if more data was needed
+/// Result of [`Compare::compare`]
 #[derive(Debug, Eq, PartialEq)]
 pub enum CompareResult {
     /// Comparison was successful
@@ -1679,8 +1635,10 @@ where
 
 /// Used to integrate `str`'s `parse()` method
 pub trait ParseSlice<R> {
-    /// Succeeds if `parse()` succeeded. The byte slice implementation
-    /// will first convert it to a `&str`, then apply the `parse()` function
+    /// Succeeds if `parse()` succeededThe
+    ///
+    /// The byte slice implementation will first convert it to a `&str`, then apply the `parse()`
+    /// function
     fn parse_slice(&self) -> Option<R>;
 }
 
@@ -2086,11 +2044,13 @@ where
     }
 }
 
-/// Transforms common types to a char for basic token parsing
+/// Transforms a token into a char for basic string parsing
 #[allow(clippy::len_without_is_empty)]
 #[allow(clippy::wrong_self_convention)]
 pub trait AsChar {
     /// Makes a char from self
+    ///
+    /// # Example
     ///
     /// ```
     /// use winnow::stream::AsChar as _;
@@ -2102,7 +2062,7 @@ pub trait AsChar {
 
     /// Tests that self is an alphabetic character
     ///
-    /// Warning: for `&str` it recognizes alphabetic
+    /// **Warning:** for `&str` it recognizes alphabetic
     /// characters outside of the 52 ASCII letters
     fn is_alpha(self) -> bool;
 
@@ -2283,6 +2243,8 @@ impl<'a> AsChar for &'a char {
 /// - `|c| true`
 /// - `b'a'..=b'z'`, `'a'..='z'` (etc for each [range type][std::ops])
 /// - `(pattern1, pattern2, ...)`
+///
+/// # Example
 ///
 /// For example, you could implement `hex_digit0` as:
 /// ```
