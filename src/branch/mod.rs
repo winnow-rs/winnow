@@ -24,7 +24,7 @@ pub trait Alt<I, O, E> {
 /// Pick the first successful parser
 ///
 /// For tight control over the error, add a final case using [`fail`][crate::combinator::fail].
-/// Alternatively, with a [custom error type][crate::_cookbook::error], it is possible to track all
+/// Alternatively, with a [custom error type][crate::_topic::error], it is possible to track all
 /// errors or return the error of the parser that went the farthest in the input data.
 ///
 /// When the alternative cases have unique prefixes, [`dispatch`] can offer better performance.

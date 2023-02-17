@@ -1,4 +1,4 @@
-//! # Cookbook
+//! # Special Topics
 //!
 //! These are short recipes for accomplishing common tasks.
 //!

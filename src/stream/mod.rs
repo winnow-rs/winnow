@@ -7,7 +7,7 @@
 //!   [spans][crate::Parser::with_span]
 //! - [`Stateful`] to thread global state through your parsers
 //! - [`Partial`] can mark an input as partial buffer that is being streamed into
-//! - [Custom stream types][crate::_cookbook::stream]
+//! - [Custom stream types][crate::_topic::stream]
 
 #![allow(deprecated)]
 
@@ -204,7 +204,7 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 ///
 /// See also [`StreamIsPartial`] to tell whether the input supports complete or partial parsing.
 ///
-/// See also [Cookbook: Parsing Partial Input][crate::_cookbook::partial].
+/// See also [Special Topics: Parsing Partial Input][crate::_topic::partial].
 ///
 /// # Example
 ///

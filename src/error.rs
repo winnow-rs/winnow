@@ -16,7 +16,7 @@
 //! - `()`
 //! - [`Error`]
 //! - [`VerboseError`]
-//! - [Custom errors][crate::_cookbook::error]
+//! - [Custom errors][crate::_topic::error]
 
 #![allow(deprecated)]
 
