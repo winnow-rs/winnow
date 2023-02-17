@@ -228,6 +228,8 @@ where
 /// );
 /// ```
 #[inline(always)]
+#[doc(alias = "literal")]
+#[doc(alias = "just")]
 pub fn tag<I, O, C, E: ParseError<(I, usize)>>(
     pattern: O,
     count: C,
@@ -270,6 +272,7 @@ where
 /// assert_eq!(parse((stream(&[0b10000000]), 0)), Ok(((stream(&[0b10000000]), 1), true)));
 /// assert_eq!(parse((stream(&[0b10000000]), 1)), Ok(((stream(&[0b10000000]), 2), false)));
 /// ```
+#[doc(alias = "any")]
 pub fn bool<I, E: ParseError<(I, usize)>>(input: (I, usize)) -> IResult<(I, usize), bool, E>
 where
     I: Stream<Token = u8> + AsBytes + StreamIsPartial,

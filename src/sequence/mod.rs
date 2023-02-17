@@ -66,6 +66,7 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
 /// ```
+#[doc(alias = "ignore_then")]
 pub fn preceded<I, O1, O2, E: ParseError<I>, F, G>(
     mut first: F,
     mut second: G,
@@ -102,6 +103,7 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
 /// ```
+#[doc(alias = "then_ignore")]
 pub fn terminated<I, O1, O2, E: ParseError<I>, F, G>(
     mut first: F,
     mut second: G,
@@ -179,6 +181,8 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
 /// ```
+#[doc(alias = "between")]
+#[doc(alias = "padded")]
 pub fn delimited<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
     mut first: F,
     mut second: G,

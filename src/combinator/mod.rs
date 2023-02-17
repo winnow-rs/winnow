@@ -747,6 +747,8 @@ where
 /// assert_eq!(parser("123;"), Err(ErrMode::Backtrack(Error::new("123;", ErrorKind::Alpha))));
 /// # }
 /// ```
+#[doc(alias = "look_ahead")]
+#[doc(alias = "rewind")]
 pub fn peek<I: Stream, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
     F: Parser<I, O, E>,
@@ -777,6 +779,8 @@ where
 /// assert_eq!(parser(""), Ok(("", "")));
 /// # }
 /// ```
+#[doc(alias = "end")]
+#[doc(alias = "eoi")]
 pub fn eof<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: Stream,
@@ -1671,6 +1675,8 @@ enum State<E> {
 /// assert_eq!(sign("10"), Ok(("10", 1)));
 /// # }
 /// ```
+#[doc(alias = "value")]
+#[doc(alias = "empty")]
 pub fn success<I: Stream, O: Clone, E: ParseError<I>>(val: O) -> impl FnMut(I) -> IResult<I, O, E> {
     trace("success", move |input: I| Ok((input, val.clone())))
 }
@@ -1689,6 +1695,7 @@ pub fn success<I: Stream, O: Clone, E: ParseError<I>>(val: O) -> impl FnMut(I) -
 /// let s = "string";
 /// assert_eq!(fail::<_, &str, _>(s), Err(ErrMode::Backtrack(Error::new(s, ErrorKind::Fail))));
 /// ```
+#[doc(alias = "unexpected")]
 pub fn fail<I: Stream, O, E: ParseError<I>>(i: I) -> IResult<I, O, E> {
     trace("fail", |i| {
         Err(ErrMode::from_error_kind(i, ErrorKind::Fail))

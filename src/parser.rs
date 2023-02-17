@@ -118,6 +118,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_next("123abcd;"), Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::Alpha))));
     /// # }
     /// ```
+    #[doc(alias = "to")]
     fn value<O2>(self, val: O2) -> Value<Self, O, O2>
     where
         Self: core::marker::Sized,
@@ -239,6 +240,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(recognize_parser.parse_next("abcd"), consumed_parser.parse_next("abcd"));
     /// # }
     /// ```
+    #[doc(alias = "consumed")]
     fn with_recognized(self) -> WithRecognized<Self, O>
     where
         Self: core::marker::Sized,
@@ -394,6 +396,9 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parse.parse_next("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::Verify))));
     /// # }
     /// ```
+    #[doc(alias = "satisfy_map")]
+    #[doc(alias = "filter_map")]
+    #[doc(alias = "map_opt")]
     fn verify_map<G, O2>(self, g: G) -> VerifyMap<Self, G, O>
     where
         Self: core::marker::Sized,
@@ -488,6 +493,7 @@ pub trait Parser<I, O, E> {
     /// // this will fail if digit1 fails
     /// assert_eq!(parser.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
     /// ```
+    #[doc(alias = "from_str")]
     fn parse_to<O2>(self) -> ParseTo<Self, O, O2>
     where
         Self: core::marker::Sized,
@@ -515,6 +521,8 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_next("123abcd;"),Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::Alpha))));
     /// # }
     /// ```
+    #[doc(alias = "satisfy")]
+    #[doc(alias = "filter")]
     fn verify<G, O2: ?Sized>(self, second: G) -> Verify<Self, G, O2>
     where
         Self: core::marker::Sized,
@@ -527,6 +535,7 @@ pub trait Parser<I, O, E> {
     ///
     /// This is used mainly to add user friendly information
     /// to errors when backtracking through a parse tree.
+    #[doc(alias = "labelled")]
     fn context<C>(self, context: C) -> Context<Self, O, C>
     where
         Self: core::marker::Sized,
