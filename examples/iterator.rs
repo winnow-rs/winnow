@@ -18,7 +18,7 @@ fn main() {
     // from a closure
     let it = std::iter::from_fn(move || {
         match parser(data) {
-            // when successful, a nom parser returns a tuple of
+            // when successful, a parser returns a tuple of
             // the remaining input and the output value.
             // So we replace the captured input data with the
             // remaining input, to be parsed on the next call
@@ -62,16 +62,16 @@ fn main() {
     // solutions:
     // - we can work with a normal iterator like `from_fn`
     // - we can get the remaining input afterwards, like with the `try_fold` trick
-    let mut nom_it = iterator(
+    let mut winnow_it = iterator(
         data,
         terminated(separated_pair(alphanumeric1, ":", alphanumeric1), ","),
     );
 
-    let res = nom_it
+    let res = winnow_it
         .map(|(k, v)| (k.to_uppercase(), v))
         .collect::<HashMap<_, _>>();
 
-    let parser_result: IResult<_, _> = nom_it.finish();
+    let parser_result: IResult<_, _> = winnow_it.finish();
     let (remaining_input, ()) = parser_result.unwrap();
 
     // will print "iterator returned {"key1": "value1", "key3": "value3", "key2": "value2"}, remaining input is ';'"

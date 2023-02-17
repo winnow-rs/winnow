@@ -1,4 +1,4 @@
-//! Stream capability for nom combinators to parse
+//! Stream capability for combinators to parse
 //!
 //! Stream types include:
 //! - `&[u8]` and [`Bytes`] for binary data
@@ -1859,7 +1859,7 @@ pub(crate) fn clamp_capacity<T>(capacity: usize) -> usize {
     /// amount. This reduces the risk of a bogus count value triggering a panic
     /// due to an OOM error.
     ///
-    /// This does not affect correctness. Nom will always read the full number
+    /// This does not affect correctness. `winnow` will always read the full number
     /// of elements regardless of the capacity cap.
     const MAX_INITIAL_CAPACITY_BYTES: usize = 65536;
 

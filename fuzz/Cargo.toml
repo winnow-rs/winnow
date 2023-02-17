@@ -1,6 +1,6 @@
 
 [package]
-name = "nom-fuzz"
+name = "winnow-fuzz"
 version = "0.0.0"
 authors = ["David Korczynski <david@adalogics.com>"]
 publish = false
@@ -12,13 +12,10 @@ cargo-fuzz = true
 [dependencies]
 libfuzzer-sys = "0.4.0"
 
-[dependencies.nom]
+[dependencies.winnow]
 path = ".."
-
-# Prevent this from interfering with workspaces
-[workspace]
-members = ["."]
 
 [[bin]]
 name = "fuzz_arithmetic"
 path = "fuzz_targets/fuzz_arithmetic.rs"
+test = false

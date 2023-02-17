@@ -562,20 +562,20 @@ impl<'i, I: ToOwned + ?Sized> VerboseError<&'i I> {
 pub enum VerboseErrorKind {
     /// Static string added by the `context` function
     Context(&'static str),
-    /// Error kind given by various nom parsers
-    Nom(ErrorKind),
+    /// Error kind given by various parsers
+    Winnow(ErrorKind),
 }
 
 #[cfg(feature = "alloc")]
 impl<I> ParseError<I> for VerboseError<I> {
     fn from_error_kind(input: I, kind: ErrorKind) -> Self {
         VerboseError {
-            errors: vec![(input, VerboseErrorKind::Nom(kind))],
+            errors: vec![(input, VerboseErrorKind::Winnow(kind))],
         }
     }
 
     fn append(mut self, input: I, kind: ErrorKind) -> Self {
-        self.errors.push((input, VerboseErrorKind::Nom(kind)));
+        self.errors.push((input, VerboseErrorKind::Winnow(kind)));
         self
     }
 }
@@ -620,7 +620,7 @@ impl<I: fmt::Display> fmt::Display for VerboseError<I> {
         writeln!(f, "Parse error:")?;
         for (input, error) in &self.errors {
             match error {
-                VerboseErrorKind::Nom(e) => writeln!(f, "{:?} at: {}", e, input)?,
+                VerboseErrorKind::Winnow(e) => writeln!(f, "{:?} at: {}", e, input)?,
                 VerboseErrorKind::Context(s) => writeln!(f, "in section '{}', at: {}", s, input)?,
             }
         }
@@ -672,7 +672,7 @@ pub fn convert_error<I: core::ops::Deref<Target = str>>(
                 VerboseErrorKind::Context(s) => {
                     write!(&mut result, "{}: in {}, got empty input\n\n", i, s)
                 }
-                VerboseErrorKind::Nom(e) => {
+                VerboseErrorKind::Winnow(e) => {
                     write!(&mut result, "{}: in {:?}, got empty input\n\n", i, e)
                 }
             }
@@ -714,14 +714,14 @@ pub fn convert_error<I: core::ops::Deref<Target = str>>(
                     caret = '^',
                     column = column_number,
                 ),
-                VerboseErrorKind::Nom(e) => write!(
+                VerboseErrorKind::Winnow(e) => write!(
                     &mut result,
-                    "{i}: at line {line_number}, in {nom_err:?}:\n\
+                    "{i}: at line {line_number}, in {kind:?}:\n\
              {line}\n\
              {caret:>column$}\n\n",
                     i = i,
                     line_number = line_number,
-                    nom_err = e,
+                    kind = e,
                     line = line,
                     caret = '^',
                     column = column_number,

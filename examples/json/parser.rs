@@ -18,14 +18,14 @@ pub type Stream<'i> = &'i str;
 
 /// The root element of a JSON parser is any value
 ///
-/// A nom parser has the following signature:
+/// A parser has the following signature:
 /// `Stream -> IResult<Stream, Output, Error>`, with `IResult` defined as:
 /// `type IResult<I, O, E = (I, ErrorKind)> = Result<(I, O), Err<E>>;`
 ///
 /// most of the times you can ignore the error type and use the default (but this
 /// examples shows custom error types later on!)
 ///
-/// Here we use `&str` as input type, but nom parsers can be generic over
+/// Here we use `&str` as input type, but parsers can be generic over
 /// the input type, work directly with `&[u8]`, or any other type that
 /// implements the required traits.
 pub fn json<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
@@ -189,7 +189,7 @@ fn key_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static s
 /// first we write parsers for the smallest elements (here a space character),
 /// then we'll combine them in larger parsers
 fn ws<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, &'i str, E> {
-    // nom combinators like `take_while0` return a function. That function is the
+    // Combinators like `take_while0` return a function. That function is the
     // parser,to which we can pass the input
     take_while0(WS)(input)
 }

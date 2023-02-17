@@ -62,7 +62,7 @@
 //! Example projects:
 //!
 //! - [HTTP proxy](https://github.com/sozu-proxy/sozu/tree/main/lib/src/protocol/http/parser)
-//! - [Using nom with generators](https://github.com/Geal/generator_nom)
+//! - [Using winnow with generators](https://github.com/Geal/generator_winnow)
 //!
 //! ## Parser combinators
 //!
@@ -114,7 +114,7 @@
 //! This gives us a few advantages:
 //!
 //! - The parsers are small and easy to write
-//! - The parsers components are easy to reuse (if they're general enough, please add them to nom!)
+//! - The parsers components are easy to reuse (if they're general enough, please add them to winnow!)
 //! - The parsers components are easy to test separately (unit tests and property-based tests)
 //! - The parser combination code looks close to the grammar you would have written
 //! - You can build partial parsers, specific to the data you need at the moment, and ignore the rest
@@ -137,7 +137,7 @@
 //! character `(`, the longest byte array not containing `)`, then the character
 //! `)`, and will return the byte array in the middle.
 //!
-//! Here is another parser, written without using nom's combinators this time:
+//! Here is another parser, written without using winnow's combinators this time:
 //!
 //! ```rust
 //! use winnow::{IResult, error::ErrMode, error::Needed};
@@ -156,7 +156,7 @@
 //! This function takes a byte array as input, and tries to consume 4 bytes.
 //! Writing all the parsers manually, like this, is dangerous, despite Rust's
 //! safety features. There are still a lot of mistakes one can make. That's why
-//! nom provides a list of functions to help in developing parsers.
+//! winnow provides a list of functions to help in developing parsers.
 //!
 //! With functions, you would write it like this:
 //!
@@ -167,7 +167,7 @@
 //! }
 //! ```
 //!
-//! A parser in nom is a function which, for an input type `I`, an output type `O`
+//! A parser in winnow is a function which, for an input type `I`, an output type `O`
 //! and an optional error type `E`, will have the following signature:
 //!
 //! ```rust,compile_fail
@@ -205,7 +205,7 @@
 //!
 //! ## Making new parsers with function combinators
 //!
-//! nom is based on functions that generate parsers, with a signature like
+//! winnow is based on functions that generate parsers, with a signature like
 //! this: `(arguments) -> impl Fn(Stream) -> IResult<Stream, Output, Error>`.
 //! The arguments of a combinator can be direct values (like `take` which uses
 //! a number of bytes or character as argument) or even other parsers (like
@@ -351,17 +351,17 @@
 //! Writing a parser is a very fun, interactive process, but sometimes a daunting
 //! task. How do you test it? How to see ambiguities in specifications?
 //!
-//! nom is designed to abstract data manipulation (counting array offsets,
+//! winnow is designed to abstract data manipulation (counting array offsets,
 //! converting to structures, etc) while providing a safe, composable API. It also
 //! takes care of making the code easy to test and read, but it can be confusing at
 //! first, if you are not familiar with parser combinators, or if you are not used
 //! to Rust generic functions.
 //!
-//! This document is here to help you in getting started with nom. You can also find
-//! [nom recipes for common short parsing tasks here](crate::_cookbook). If you need
+//! This document is here to help you in getting started with winnow. You can also find
+//! [winnow recipes for common short parsing tasks here](crate::_cookbook). If you need
 //! more specific help, please ping `geal` on IRC (libera, geeknode,
-//! oftc), go to `#nom-parsers` on Libera IRC, or on the
-//! [Gitter chat room](https://gitter.im/Geal/nom).
+//! oftc), go to `#winnow-parsers` on Libera IRC, or on the
+//! [Gitter chat room](https://gitter.im/Geal/winnow).
 //!
 //! # First step: the initial research
 //!
@@ -381,7 +381,7 @@
 //!
 //! While it is tempting to insert the parsing code right inside the rest of the
 //! logic, it usually results in  unmaintainable code, and makes testing challenging.
-//! Parser combinators, the parsing technique used in nom, assemble a lot of small
+//! Parser combinators, the parsing technique used in winnow, assemble a lot of small
 //! functions to make powerful parsers. This means that those functions only depend
 //! on their input, not on an external state. This makes it easy to parse the input
 //! partially, and to test those functions independently.
@@ -408,7 +408,7 @@
 //!
 //! # Writing a first parser
 //!
-//! Let's parse a simple expression like `(12345)`. nom parsers are functions that
+//! Let's parse a simple expression like `(12345)`. winnow parsers are functions that
 //! use the `winnow::IResult` type everywhere. As an example, a parser taking a byte
 //! slice `&[u8]` and returning a 32 bits unsigned integer `u32` would have this
 //! signature: `fn parse_u32(input: &[u8]) -> IResult<&[u8], u32>`.
@@ -436,7 +436,7 @@
 //! }
 //! ```
 //!
-//! nom uses this type everywhere. Every combination of parsers will pattern match
+//! winnow uses this type everywhere. Every combination of parsers will pattern match
 //! on this to know if it must return a value, an error, consume more data, etc.
 //! But this is done behind the scenes most of the time.
 //!
@@ -488,10 +488,10 @@
 //!
 //! # Finding the right combinator
 //!
-//! nom has a lot of different combinators, depending on the use case. They are all
-//! described in the [reference](https://docs.rs/nom).
+//! winnow has a lot of different combinators, depending on the use case. They are all
+//! described in the [reference][crate::combinator].
 //!
-//! [Basic functions](https://docs.rs/nom/#functions) are available. They deal mostly
+//! Basic functions are available. They deal mostly
 //! in recognizing character types, like `alphanumeric` or `digit`. They also parse
 //! big endian and little endian integers and floats of multiple sizes.
 //!
