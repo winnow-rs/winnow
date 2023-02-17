@@ -12,6 +12,31 @@ use crate::Parser;
 compile_error!("`debug` requires `std`");
 
 /// Trace the execution of the parser
+///
+/// Note that [`Parser::context` also provides high level trace information.
+///
+/// See [`trace` module][self] for more details.
+///
+/// # Example
+///
+/// ```rust
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::bytes::take_while_m_n;
+/// # use winnow::stream::AsChar;
+/// use winnow::trace::trace;
+///
+/// fn short_alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
+///   trace("short_alpha",
+///     take_while_m_n(3, 6, AsChar::is_alpha)
+///   )(s)
+/// }
+///
+/// assert_eq!(short_alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
+/// assert_eq!(short_alpha(b"lengthy"), Ok((&b"y"[..], &b"length"[..])));
+/// assert_eq!(short_alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
+/// assert_eq!(short_alpha(b"ed"), Err(ErrMode::Backtrack(Error::new(&b"ed"[..], ErrorKind::TakeWhileMN))));
+/// assert_eq!(short_alpha(b"12345"), Err(ErrMode::Backtrack(Error::new(&b"12345"[..], ErrorKind::TakeWhileMN))));
+/// ```
 #[cfg_attr(not(feature = "debug"), allow(unused_variables))]
 pub fn trace<I: Stream, O, E>(
     name: impl crate::lib::std::fmt::Display,
