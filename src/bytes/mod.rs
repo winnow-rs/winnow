@@ -278,6 +278,8 @@ where
 ///
 /// *Partial version*: will return a `ErrMode::Incomplete(Needed::new(1))` if the pattern reaches the end of the input.
 ///
+/// To recognize a series of tokens, use [`many0`][crate::multi::many0] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`][crate::Parser::recognize].
+///
 /// # Example
 ///
 /// ```rust
@@ -333,6 +335,8 @@ where
 /// It will return an `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::TakeWhile1)))` if the pattern wasn't met.
 ///
 /// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` or if the pattern reaches the end of the input.
+///
+/// To recognize a series of tokens, use [`many1`][crate::multi::many1] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`][crate::Parser::recognize].
 ///
 /// # Example
 ///
@@ -408,6 +412,8 @@ where
 /// of range (m <= len <= n).
 ///
 /// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))`  if the pattern reaches the end of the input or is too short.
+///
+/// To recognize a series of tokens, use [`many_m_n`][crate::multi::many_m_n] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`][crate::Parser::recognize].
 ///
 /// # Example
 ///

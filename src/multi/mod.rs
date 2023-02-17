@@ -11,13 +11,12 @@ use crate::stream::{Stream, StreamIsPartial, ToUsize, UpdateSlice};
 use crate::trace::trace;
 use crate::{IResult, Parser};
 
-/// Repeats the embedded parser, gathering the results in a `Vec`.
+/// [`Accumulate`] the output of a parser into a container, like `Vec`
 ///
 /// This stops on [`ErrMode::Backtrack`].  To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
 ///
-/// # Arguments
-/// * `f` The parser to apply.
+/// To recognize a series of tokens, [`Accumulate`] into a `()` and then [`Parser::recognize`].
 ///
 /// **Warning:** if the parser passed in accepts empty inputs (like `alpha0` or `digit0`), `many0` will
 /// return an error, to prevent going into an infinite loop
@@ -67,13 +66,16 @@ where
     })
 }
 
-/// Runs the specified parser, gathering the results in a `Vec`.
+/// [`Accumulate`] the output of a parser into a container, like `Vec`
+///
 ///
 /// This stops on [`ErrMode::Backtrack`] if there is at least one result.  To instead chain an error up,
 /// see [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
 /// * `f` The parser to apply.
+///
+/// To recognize a series of tokens, [`Accumulate`] into a `()` and then [`Parser::recognize`].
 ///
 /// **Warning:** If the parser passed to `many1` accepts empty inputs
 /// (like `alpha0` or `digit0`), `many1` will return an error,
@@ -148,6 +150,8 @@ where
 /// Returns a tuple of the results of `f` in a `Vec` and the result of `g`.
 ///
 /// `f` keeps going so long as `g` produces [`ErrMode::Backtrack`]. To instead chain an error up, see [`cut_err`][crate::combinator::cut_err].
+///
+/// To recognize a series of tokens, [`Accumulate`] into a `()` and then [`Parser::recognize`].
 ///
 /// # Example
 ///
@@ -506,6 +510,8 @@ where
 /// * `n` The maximum number of iterations.
 /// * `f` The parser to apply.
 ///
+/// To recognize a series of tokens, [`Accumulate`] into a `()` and then [`Parser::recognize`].
+///
 /// **Warning:** If the parser passed to `many1` accepts empty inputs
 /// (like `alpha0` or `digit0`), `many1` will return an error,
 /// to prevent going into an infinite loop.
@@ -704,11 +710,13 @@ where
     }
 }
 
-/// Runs the embedded parser `count` times, gathering the results in a `Vec`
+/// [`Accumulate`] the output of a parser into a container, like `Vec`
 ///
 /// # Arguments
 /// * `f` The parser to apply.
 /// * `count` How often to apply the parser.
+///
+/// To recognize a series of tokens, [`Accumulate`] into a `()` and then [`Parser::recognize`].
 ///
 /// # Example
 ///
