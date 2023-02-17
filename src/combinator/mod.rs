@@ -94,7 +94,7 @@
 //! - [`backtrack_err`]: Attemmpts a parse, allowing alternative parsers to be attempted despite
 //!   use of `cut_err`
 //! - [`Parser::context`]: Add context to the error if the parser fails
-//! - [`Parser::dbg_err`]: Prints a message and the input if the parser fails
+//! - [`trace`][crate::trace::trace]: Print the parse state with the `debug` feature flag
 //! - [`todo()`]: Placeholder parser
 //!
 //! ## Text parsing
@@ -1702,48 +1702,5 @@ where
                 .parse_next(i.clone())
                 .map_err(|err| err.map(|err| err.add_context(i, self.context.clone())))
         })(i)
-    }
-}
-
-/// Implementation of [`Parser::dbg_err`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-#[cfg(feature = "std")]
-pub struct DbgErr<F, O, C> {
-    f: F,
-    context: C,
-    phantom: core::marker::PhantomData<O>,
-}
-
-#[cfg(feature = "std")]
-impl<F, O, C> DbgErr<F, O, C> {
-    pub(crate) fn new(f: F, context: C) -> Self {
-        Self {
-            f,
-            context,
-            phantom: Default::default(),
-        }
-    }
-}
-
-#[cfg(feature = "std")]
-impl<I, O, E, F, C> Parser<I, O, E> for DbgErr<F, O, C>
-where
-    I: crate::stream::AsBytes,
-    I: Clone,
-    E: std::fmt::Debug,
-    F: Parser<I, O, E>,
-    C: std::fmt::Display,
-{
-    fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
-        use crate::stream::HexDisplay;
-        let i = input.clone();
-        match self.f.parse_next(i) {
-            Err(e) => {
-                let input = input.as_bytes();
-                eprintln!("{}: Error({:?}) at:\n{}", self.context, e, input.to_hex(8));
-                Err(e)
-            }
-            a => a,
-        }
     }
 }

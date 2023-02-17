@@ -188,29 +188,3 @@
 //!
 //! The more samples and test cases you get, the more you can experiment with your
 //! parser design.
-//!
-//! # Debugging the parsers
-//!
-//! There are a few tools you can use to debug how code is generated.
-//!
-//! ## `dbg_err`
-//!
-//! This function wraps a parser that accepts byte-like input (bytes, str) and
-//! prints its hexdump if the child parser encountered an error:
-//!
-//! ```rust
-//! use winnow::prelude::*;
-//! use winnow::bytes::tag;
-//!
-//! fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
-//!   tag("abcd").dbg_err("tag").parse_next(i)
-//! }
-//!
-//! let a = &b"efghijkl"[..];
-//!
-//! // Will print the following message:
-//! // tag: Error(Position(0, [101, 102, 103, 104, 105, 106, 107, 108])):
-//! // 00000000        65 66 67 68 69 6a 6b 6c         efghijkl
-//! f(a);
-//! ```
-//!

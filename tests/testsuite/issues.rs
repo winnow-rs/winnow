@@ -22,6 +22,8 @@ pub fn take_char(input: &[u8]) -> IResult<&[u8], char> {
 
 #[cfg(feature = "std")]
 mod parse_int {
+    #![allow(deprecated)]
+
     use std::str;
     use winnow::prelude::*;
     use winnow::stream::HexDisplay;

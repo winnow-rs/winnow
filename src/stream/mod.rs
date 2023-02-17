@@ -41,7 +41,6 @@
 //! | [`FindSlice`] |Look for a substring in self|
 //! | [`Location`] |Calculate location within initial input|
 //! | [`Offset`] |Calculate the offset between slices|
-//! | [`HexDisplay`] |Debug dump of input|
 //!
 //! Here are the traits we have to implement for `MyItem`:
 //!
@@ -54,6 +53,8 @@
 //!
 //! | [`SliceLen`] |Calculate the input length|
 //! | [`ParseSlice`] |Used to integrate `&str`'s `parse()` method|
+
+#![allow(deprecated)]
 
 use core::num::NonZeroUsize;
 
@@ -1957,8 +1958,12 @@ impl ToUsize for u64 {
     }
 }
 
-/// Helper trait to show a byte slice as a hex dump
+/// Deprecated, replaced with `Debug`, particularly [`Bytes`] and [`BStr`]
 #[cfg(feature = "std")]
+#[deprecated(
+    since = "0.3.0",
+    note = "Replaced with `Debug` (see `Bytes` and `BStr`"
+)]
 pub trait HexDisplay {
     /// Converts the value of `self` to a hex dump, returning the owned
     /// `String`.

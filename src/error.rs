@@ -414,33 +414,8 @@
 //! "map":  "{ 1\"hello\" : \"world\"\n  }\n  } "
 //! "map":  "{ \"a\"\t: 42,\n  \"b\": [ \"x\", \"y\", 12 ] ,\n  \"c\": { 1\"hello\" : \"world\"\n  }\n  } "
 //! ```
-//!
-//! ## Debugging parsers
-//!
-//! While you are writing your parsers, you will sometimes need to follow
-//! which part of the parser sees which part of the input.
-//!
-//! To that end, nom provides the `dbg_err` function that will observe
-//! a parser's input and output, and print a hexdump of the input if there was an
-//! error. Here is what it could return:
-//!
-#![cfg_attr(feature = "std", doc = "```")]
-#![cfg_attr(not(feature = "std"), doc = "```ignore")]
-//! use winnow::prelude::*;
-//! # use winnow::bytes::tag;
-//! fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
-//!     tag("abcd").dbg_err("tag").parse_next(i)
-//! }
-//!
-//! let a = &b"efghijkl"[..];
-//!
-//! // Will print the following message:
-//! // tag: Error(Error(Error { input: [101, 102, 103, 104, 105, 106, 107, 108], kind: Tag })) at:
-//! // 00000000        65 66 67 68 69 6a 6b 6c         efghijkl
-//! f(a);
-//! ```
-//!
-//! You can go further with the [nom-trace crate](https://github.com/rust-bakery/nom-trace)
+
+#![allow(deprecated)]
 
 #[cfg(feature = "alloc")]
 use crate::lib::std::borrow::ToOwned;
@@ -1291,7 +1266,7 @@ macro_rules! error_node_position(
 ///
 /// It also displays the input in hexdump format
 ///
-/// **WARNING:** Deprecated, replaced with [`Parser::dbg_err`]
+/// **WARNING:** Deprecated, replaced with [`trace`][crate::trace] and the `debug` feature flag.
 ///
 /// ```rust
 /// use winnow::{IResult, error::dbg_dmp, bytes::tag};
@@ -1307,7 +1282,10 @@ macro_rules! error_node_position(
 /// // 00000000        65 66 67 68 69 6a 6b 6c         efghijkl
 /// f(a);
 /// ```
-#[deprecated(since = "0.1.0", note = "Replaced with `Parser::dbg_err")]
+#[deprecated(
+    since = "0.1.0",
+    note = "Replaced with `trace` and the `debug` feature flag"
+)]
 #[cfg(feature = "std")]
 pub fn dbg_dmp<'a, F, O, E: std::fmt::Debug>(
     mut f: F,
