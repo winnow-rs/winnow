@@ -543,7 +543,7 @@ impl<'i> Stream for &'i str {
 
 impl<'i> Stream for &'i Bytes {
     type Token = u8;
-    type Slice = &'i Bytes;
+    type Slice = &'i [u8];
 
     type IterOffsets = Enumerate<Cloned<Iter<'i, u8>>>;
 
@@ -588,7 +588,7 @@ impl<'i> Stream for &'i Bytes {
 
 impl<'i> Stream for &'i BStr {
     type Token = u8;
-    type Slice = &'i BStr;
+    type Slice = &'i [u8];
 
     type IterOffsets = Enumerate<Cloned<Iter<'i, u8>>>;
 
@@ -1682,14 +1682,14 @@ impl<'a> UpdateSlice for &'a str {
 impl<'a> UpdateSlice for &'a Bytes {
     #[inline(always)]
     fn update_slice(self, inner: Self::Slice) -> Self {
-        inner
+        Bytes::new(inner)
     }
 }
 
 impl<'a> UpdateSlice for &'a BStr {
     #[inline(always)]
     fn update_slice(self, inner: Self::Slice) -> Self {
-        inner
+        BStr::new(inner)
     }
 }
 
