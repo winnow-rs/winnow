@@ -14,30 +14,16 @@ use winnow::{
     IResult, Parser,
 };
 
-/// We start by defining the types that define the shape of data that we want.
+/// We start with a top-level function to tie everything together, letting
+/// us call eval on a string directly
+pub fn eval_from_str(src: &str) -> Result<Expr, String> {
+    parse_expr(src)
+        .map_err(|e: winnow::error::ErrMode<VerboseError<&str>>| format!("{:#?}", e))
+        .and_then(|(_, exp)| eval_expression(exp).ok_or_else(|| "Eval failed".to_string()))
+}
+
+/// For parsing, we start by defining the types that define the shape of data that we want.
 /// In this case, we want something tree-like
-
-/// Starting from the most basic, we define some built-in functions that our lisp has
-#[derive(Debug, Eq, PartialEq, Clone, Copy)]
-pub enum BuiltIn {
-    Plus,
-    Minus,
-    Times,
-    Divide,
-    Equal,
-    Not,
-}
-
-/// We now wrap this type and a few other primitives into our Atom type.
-/// Remember from before that Atoms form one half of our language.
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-pub enum Atom {
-    Num(i32),
-    Keyword(String),
-    Boolean(bool),
-    BuiltIn(BuiltIn),
-}
 
 /// The remaining half is Lists. We implement these as recursive Expressions.
 /// For a list of numbers, we have `'(1 2 3)`, which we'll parse to:
@@ -48,7 +34,6 @@ pub enum Atom {
 /// Quote takes an S-expression and prevents evaluation of it, making it a data
 /// structure that we can deal with programmatically. Thus any valid expression
 /// is also a valid data structure in Lisp itself.
-
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum Expr {
     Constant(Atom),
@@ -60,6 +45,79 @@ pub enum Expr {
     IfElse(Box<Expr>, Box<Expr>, Box<Expr>),
     /// '(3 (if (+ 3 3) 4 5) 7)
     Quote(Vec<Expr>),
+}
+
+/// We now wrap this type and a few other primitives into our Atom type.
+/// Remember from before that Atoms form one half of our language.
+#[derive(Debug, Eq, PartialEq, Clone)]
+pub enum Atom {
+    Num(i32),
+    Keyword(String),
+    Boolean(bool),
+    BuiltIn(BuiltIn),
+}
+
+/// Now, the most basic type.  We define some built-in functions that our lisp has
+#[derive(Debug, Eq, PartialEq, Clone, Copy)]
+pub enum BuiltIn {
+    Plus,
+    Minus,
+    Times,
+    Divide,
+    Equal,
+    Not,
+}
+
+/// With types defined, we move onto the top-level expression parser!
+fn parse_expr(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
+    preceded(
+        multispace0,
+        alt((parse_constant, parse_application, parse_if, parse_quote)),
+    )(i)
+}
+
+/// We then add the Expr layer on top
+fn parse_constant(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
+    parse_atom.map(Expr::Constant).parse_next(i)
+}
+
+/// Now we take all these simple parsers and connect them.
+/// We can now parse half of our language!
+fn parse_atom(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
+    alt((
+        parse_num,
+        parse_bool,
+        parse_builtin.map(Atom::BuiltIn),
+        parse_keyword,
+    ))(i)
+}
+
+/// Next up is number parsing. We're keeping it simple here by accepting any number (> 1)
+/// of digits but ending the program if it doesn't fit into an i32.
+fn parse_num(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
+    alt((
+        digit1.map_res(|digit_str: &str| digit_str.parse::<i32>().map(Atom::Num)),
+        preceded("-", digit1).map(|digit_str: &str| Atom::Num(-digit_str.parse::<i32>().unwrap())),
+    ))(i)
+}
+
+/// Our boolean values are also constant, so we can do it the same way
+fn parse_bool(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
+    alt((
+        tag("#t").map(|_| Atom::Boolean(true)),
+        tag("#f").map(|_| Atom::Boolean(false)),
+    ))(i)
+}
+
+fn parse_builtin(i: &str) -> IResult<&str, BuiltIn, VerboseError<&str>> {
+    // alt gives us the result of first parser that succeeds, of the series of
+    // parsers we give it
+    alt((
+        parse_builtin_op,
+        // map lets us process the parsed output, in this case we know what we parsed,
+        // so we ignore the input and return the BuiltIn directly
+        tag("not").map(|_| BuiltIn::Not),
+    ))(i)
 }
 
 /// Continuing the trend of starting from the simplest piece and building up,
@@ -83,25 +141,6 @@ fn parse_builtin_op(i: &str) -> IResult<&str, BuiltIn, VerboseError<&str>> {
     ))
 }
 
-fn parse_builtin(i: &str) -> IResult<&str, BuiltIn, VerboseError<&str>> {
-    // alt gives us the result of first parser that succeeds, of the series of
-    // parsers we give it
-    alt((
-        parse_builtin_op,
-        // map lets us process the parsed output, in this case we know what we parsed,
-        // so we ignore the input and return the BuiltIn directly
-        tag("not").map(|_| BuiltIn::Not),
-    ))(i)
-}
-
-/// Our boolean values are also constant, so we can do it the same way
-fn parse_bool(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
-    alt((
-        tag("#t").map(|_| Atom::Boolean(true)),
-        tag("#f").map(|_| Atom::Boolean(false)),
-    ))(i)
-}
-
 /// The next easiest thing to parse are keywords.
 /// We introduce some error handling combinators: `context` for human readable errors
 /// and `cut_err` to prevent back-tracking.
@@ -113,49 +152,6 @@ fn parse_keyword(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
         .context("keyword")
         .map(|sym_str: &str| Atom::Keyword(sym_str.to_string()))
         .parse_next(i)
-}
-
-/// Next up is number parsing. We're keeping it simple here by accepting any number (> 1)
-/// of digits but ending the program if it doesn't fit into an i32.
-fn parse_num(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
-    alt((
-        digit1.map_res(|digit_str: &str| digit_str.parse::<i32>().map(Atom::Num)),
-        preceded("-", digit1).map(|digit_str: &str| Atom::Num(-digit_str.parse::<i32>().unwrap())),
-    ))(i)
-}
-
-/// Now we take all these simple parsers and connect them.
-/// We can now parse half of our language!
-fn parse_atom(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
-    alt((
-        parse_num,
-        parse_bool,
-        parse_builtin.map(Atom::BuiltIn),
-        parse_keyword,
-    ))(i)
-}
-
-/// We then add the Expr layer on top
-fn parse_constant(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
-    parse_atom.map(Expr::Constant).parse_next(i)
-}
-
-/// Before continuing, we need a helper function to parse lists.
-/// A list starts with `(` and ends with a matching `)`.
-/// By putting whitespace and newline parsing here, we can avoid having to worry about it
-/// in much of the rest of the parser.
-///
-/// Unlike the previous functions, this function doesn't take or consume input, instead it
-/// takes a parsing function and returns a new parsing function.
-fn s_exp<'a, O1, F>(inner: F) -> impl FnMut(&'a str) -> IResult<&'a str, O1, VerboseError<&'a str>>
-where
-    F: Parser<&'a str, O1, VerboseError<&'a str>>,
-{
-    delimited(
-        '(',
-        preceded(multispace0, inner),
-        cut_err(preceded(multispace0, ')')).context("closing paren"),
-    )
 }
 
 /// We can now use our new combinator to define the rest of the `Expr`s.
@@ -218,13 +214,22 @@ fn parse_quote(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
         .parse_next(i)
 }
 
-/// We tie them all together again, making a top-level expression parser!
-
-fn parse_expr(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
-    preceded(
-        multispace0,
-        alt((parse_constant, parse_application, parse_if, parse_quote)),
-    )(i)
+/// Before continuing, we need a helper function to parse lists.
+/// A list starts with `(` and ends with a matching `)`.
+/// By putting whitespace and newline parsing here, we can avoid having to worry about it
+/// in much of the rest of the parser.
+///
+/// Unlike the previous functions, this function doesn't take or consume input, instead it
+/// takes a parsing function and returns a new parsing function.
+fn s_exp<'a, O1, F>(inner: F) -> impl FnMut(&'a str) -> IResult<&'a str, O1, VerboseError<&'a str>>
+where
+    F: Parser<&'a str, O1, VerboseError<&'a str>>,
+{
+    delimited(
+        '(',
+        preceded(multispace0, inner),
+        cut_err(preceded(multispace0, ')')).context("closing paren"),
+    )
 }
 
 /// And that's it!
@@ -234,23 +239,6 @@ fn parse_expr(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
 /// a little interpreter to take an Expr, which is really an
 /// [Abstract Syntax Tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree) (AST),
 /// and give us something back
-
-/// To start we define a couple of helper functions
-fn get_num_from_expr(e: Expr) -> Option<i32> {
-    if let Expr::Constant(Atom::Num(n)) = e {
-        Some(n)
-    } else {
-        None
-    }
-}
-
-fn get_bool_from_expr(e: Expr) -> Option<bool> {
-    if let Expr::Constant(Atom::Boolean(b)) = e {
-        Some(b)
-    } else {
-        None
-    }
-}
 
 /// This function tries to reduce the AST.
 /// This has to return an Expression rather than an Atom because quoted `s_expressions`
@@ -352,10 +340,19 @@ fn eval_expression(e: Expr) -> Option<Expr> {
     }
 }
 
-/// And we add one more top-level function to tie everything together, letting
-/// us call eval on a string directly
-pub fn eval_from_str(src: &str) -> Result<Expr, String> {
-    parse_expr(src)
-        .map_err(|e: winnow::error::ErrMode<VerboseError<&str>>| format!("{:#?}", e))
-        .and_then(|(_, exp)| eval_expression(exp).ok_or_else(|| "Eval failed".to_string()))
+/// To start we define a couple of helper functions
+fn get_num_from_expr(e: Expr) -> Option<i32> {
+    if let Expr::Constant(Atom::Num(n)) = e {
+        Some(n)
+    } else {
+        None
+    }
+}
+
+fn get_bool_from_expr(e: Expr) -> Option<bool> {
+    if let Expr::Constant(Atom::Boolean(b)) = e {
+        Some(b)
+    } else {
+        None
+    }
 }
