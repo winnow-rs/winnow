@@ -439,7 +439,7 @@ impl<I> Error<I> {
 }
 
 #[cfg(feature = "alloc")]
-impl<I: ToOwned> Error<I> {
+impl<'i, I: ToOwned + ?Sized> Error<&'i I> {
     /// Obtaining ownership
     pub fn into_owned(self) -> Error<<I as ToOwned>::Owned> {
         Error {
@@ -542,7 +542,7 @@ pub struct VerboseError<I> {
 }
 
 #[cfg(feature = "alloc")]
-impl<I: ToOwned> VerboseError<I> {
+impl<'i, I: ToOwned + ?Sized> VerboseError<&'i I> {
     /// Obtaining ownership
     pub fn into_owned(self) -> VerboseError<<I as ToOwned>::Owned> {
         #[allow(clippy::redundant_clone)] // false positive
