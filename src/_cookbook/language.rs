@@ -134,7 +134,7 @@
 //! ### Escaped Strings
 //!
 //! ```rust
-#![doc = include_str!("../../examples/string/main.rs")]
+#![doc = include_str!("../../examples/string/parser.rs")]
 //! ```
 //!
 //! ### Integers
