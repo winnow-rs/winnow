@@ -402,7 +402,7 @@ pub trait Parser<I, O, E> {
         VerifyMap::new(self, g)
     }
 
-    /// Creates a second parser from the output of the first one, then apply over the rest of the input
+    /// Creates a parser from the output of this one
     ///
     /// # Example
     ///
@@ -410,13 +410,29 @@ pub trait Parser<I, O, E> {
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
     /// use winnow::bytes::take;
     /// use winnow::number::u8;
-    /// # fn main() {
     ///
-    /// let mut length_data = u8.flat_map(take);
+    /// fn length_data(input: &[u8]) -> IResult<&[u8], &[u8]> {
+    ///     u8.flat_map(take).parse_next(input)
+    /// }
     ///
     /// assert_eq!(length_data.parse_next(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
     /// assert_eq!(length_data.parse_next(&[4, 0, 1, 2][..]), Err(ErrMode::Backtrack(Error::new(&[0, 1, 2][..], ErrorKind::Eof))));
-    /// # }
+    /// ```
+    ///
+    /// which is the same as
+    /// ```rust
+    /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
+    /// use winnow::bytes::take;
+    /// use winnow::number::u8;
+    ///
+    /// fn length_data(input: &[u8]) -> IResult<&[u8], &[u8]> {
+    ///     let (input, length) = u8.parse_next(input)?;
+    ///     let (input, data) = take(length).parse_next(input)?;
+    ///     Ok((input, data))
+    /// }
+    ///
+    /// assert_eq!(length_data.parse_next(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
+    /// assert_eq!(length_data.parse_next(&[4, 0, 1, 2][..]), Err(ErrMode::Backtrack(Error::new(&[0, 1, 2][..], ErrorKind::Eof))));
     /// ```
     fn flat_map<G, H, O2>(self, g: G) -> FlatMap<Self, G, O>
     where
