@@ -2,6 +2,7 @@
 //!
 //! These are short recipes for accomplishing common tasks.
 //!
+//! - [Why `winnow`?][why]
 //! - Formats:
 //!   - [Elements of Programming Languages][language]
 //!   - [Arithmetic][arithmetic]
@@ -29,3 +30,4 @@ pub mod language;
 pub mod partial;
 pub mod s_expression;
 pub mod stream;
+pub mod why;
