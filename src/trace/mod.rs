@@ -101,14 +101,7 @@ pub(crate) fn trace_result<T, E>(
 fn example() {
     use term_transcript::{test::TestConfig, ShellOptions};
 
-    let bin = trycmd::cargo::compile_example("string", ["--features=debug"]);
-    let path = match bin {
-        trycmd::schema::Bin::Path(path) => path,
-        trycmd::schema::Bin::Name(_) | trycmd::schema::Bin::Ignore => {
-            unreachable!("compiled examples should not produce tbhis")
-        }
-        trycmd::schema::Bin::Error(err) => panic!("{}", err),
-    };
+    let path = snapbox::cmd::compile_example("string", ["--features=debug"]).unwrap();
 
     let current_dir = path.parent().unwrap();
     let cmd = path.file_name().unwrap();

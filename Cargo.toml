@@ -58,7 +58,7 @@ criterion = "0.3.5"
 lexopt = "0.3.0"
 term-transcript = "0.2.0"
 escargot = "0.5.7"
-trycmd = { version = "0.14.11", features = ["examples"] }
+snapbox = { version = "0.4.6", features = ["examples"] }
 
 [profile.bench]
 debug = true
