@@ -5,7 +5,7 @@
 //! Quick links:
 //! - [List of combinators][crate::combinator]
 //! - [Tutorial][_tutorial]
-//! - [Cookbook][_cookbook]
+//! - [Special Topics][_topic]
 //! - [Discussions](https://github.com/winnow-rs/winnow/discussions)
 //!
 //! ## Aspirations
@@ -38,7 +38,7 @@
 #![doc = include_str!("../examples/css/parser.rs")]
 //! ```
 //!
-//! See also the [Tutorial][_tutorial] and [Cookbook][_cookbook]
+//! See also the [Tutorial][_tutorial] and [Special Topics][_topic]
 
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![cfg_attr(docsrs, feature(doc_cfg))]
@@ -206,7 +206,7 @@ pub mod sequence;
 pub mod trace;
 
 #[cfg(feature = "unstable-doc")]
-pub mod _cookbook;
+pub mod _topic;
 #[cfg(feature = "unstable-doc")]
 pub mod _tutorial;
 

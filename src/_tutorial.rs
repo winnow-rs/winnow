@@ -358,7 +358,7 @@
 //! to Rust generic functions.
 //!
 //! This document is here to help you in getting started with winnow. You can also find
-//! [winnow recipes for common short parsing tasks here](crate::_cookbook). If you need
+//! [winnow recipes for common short parsing tasks here](crate::_topic). If you need
 //! more specific help, please ping `geal` on IRC (libera, geeknode,
 //! oftc), go to `#winnow-parsers` on Libera IRC, or on the
 //! [Gitter chat room](https://gitter.im/Geal/winnow).

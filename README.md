@@ -11,7 +11,7 @@ Build up a parser for your format of choice with the building blocks provided by
 
 For more details, see:
 - [Tutorial](https://docs.rs/winnow/latest/winnow/_tutorial/index.html)
-- [Cookbook](https://docs.rs/winnow/latest/winnow/_cookbook/index.html)
+- [Special Topics](https://docs.rs/winnow/latest/winnow/_topic/index.html)
 - [API Reference](https://docs.rs/winnow)
 - [List of combinators](https://docs.rs/winnow/latest/winnow/combinator/index.html)
 
