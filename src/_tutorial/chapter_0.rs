@@ -23,7 +23,13 @@
 //!     .count();  // combinator
 //! ```
 //!
-//! Parser combinators allow building parsers for complex formats from simple, reusable parsers.
+//! Parser combinators are great because:
+//!
+//! - The parsers are small and easy to write
+//! - The parsers components are easy to reuse (if they're general enough, please add them to winnow!)
+//! - The parsers components are easy to test separately (unit tests and property-based tests)
+//! - The parser combination code looks close to the grammar you would have written
+//! - You can build partial parsers, specific to the data you need at the moment, and ignore the rest
 
 #![allow(unused_imports)]
 use crate::_topic;
