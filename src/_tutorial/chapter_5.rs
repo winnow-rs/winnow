@@ -31,7 +31,7 @@
 //!  at least `m` bytes, and no more than `n` bytes.
 //!  
 //!
-//! ```rust
+//! ```rust,ignore
 //! # extern crate nom;
 //! # use std::error::Error;
 //! use nom::IResult;

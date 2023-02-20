@@ -1,40 +1,213 @@
-//! # Chapter 6: Repeating Parsers
+//! # Chapter 6: Repetition
 //!
-//! A single parser which repeats a predicate is useful, but more useful still is a combinator that
-//! repeats a parser. Nom has multiple combinators which operate on this principle; the most obvious of
-//! which is `many0`, which applies a parser as many times as possible; and returns a vector of
-//! the results of those parses. Here is an example:
+//! In [`chapter_3`], we covered how to sequence different parsers into a tuple but sometimes you need to run a
+//! single parser many times into a [`Vec`].
 //!
+//! Let's take our `parse_digits` and collect a list of them with [`many0`]:
 //! ```rust
-//! # extern crate nom;
-//! # use std::error::Error;
-//! use nom::IResult;
-//! use nom::multi::many0;
-//! use nom::bytes::complete::tag;
+//! # use winnow::IResult;
+//! # use winnow::Parser;
+//! # use winnow::bytes::take_while1;
+//! # use winnow::branch::dispatch;
+//! # use winnow::bytes::take;
+//! # use winnow::combinator::fail;
+//! use winnow::combinator::opt;
+//! use winnow::multi::many0;
+//! use winnow::sequence::terminated;
 //!
-//! fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-//!   many0(tag("abc"))(s)
+//! fn parse_list(input: &str) -> IResult<&str, Vec<usize>> {
+//!     many0(terminated(parse_digits, opt(','))).parse_next(input)
 //! }
 //!
+//! // ...
+//! # fn parse_digits(input: &str) -> IResult<&str, usize> {
+//! #     dispatch!(take(2usize);
+//! #          "0b" => parse_bin_digits.map_res(|s| usize::from_str_radix(s, 2)),
+//! #          "0o" => parse_oct_digits.map_res(|s| usize::from_str_radix(s, 8)),
+//! #          "0d" => parse_dec_digits.map_res(|s| usize::from_str_radix(s, 10)),
+//! #          "0x" => parse_hex_digits.map_res(|s| usize::from_str_radix(s, 16)),
+//! #          _ => fail,
+//! #      ).parse_next(input)
+//! # }
+//! #
+//! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='7'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='7'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='9'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='9'),
+//! #         ('A'..='F'),
+//! #         ('a'..='f'),
+//! #     )).parse_next(input)
+//! # }
+//!
 //! fn main() {
-//!     assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-//!     assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-//!     assert_eq!(parser("123123"), Ok(("123123", vec![])));
-//!     assert_eq!(parser(""), Ok(("", vec![])));
+//!     let input = "0x1a2b,0x3c4d,0x5e6f Hello";
+//!
+//!     let (remainder, digits) = parse_list.parse_next(input).unwrap();
+//!
+//!     assert_eq!(remainder, " Hello");
+//!     assert_eq!(digits, vec![0x1a2b, 0x3c4d, 0x5e6f]);
+//!
+//!     assert!(parse_digits("ghiWorld").is_err());
 //! }
 //! ```
 //!
-//! There are many different parsers to choose from:
+//! You'll notice that the above allows trailing `,` when we intended to not support that.  We can
+//! easily fix this by using [`separated0`]:
+//! ```rust
+//! # use winnow::IResult;
+//! # use winnow::Parser;
+//! # use winnow::bytes::take_while1;
+//! # use winnow::branch::dispatch;
+//! # use winnow::bytes::take;
+//! # use winnow::combinator::fail;
+//! use winnow::multi::separated0;
 //!
-//! | combinator | usage | input | output | comment |
-//! |---|---|---|---|---|
-//! | [count](https://docs.rs/nom/latest/nom/multi/fn.count.html) | `count(take(2), 3)` | `"abcdefgh"` | `Ok(("gh", vec!["ab", "cd", "ef"]))` |Applies the child parser a specified number of times|
-//! | [many0](https://docs.rs/nom/latest/nom/multi/fn.many0.html) | `many0(tag("ab"))` |  `"abababc"` | `Ok(("c", vec!["ab", "ab", "ab"]))` |Applies the parser 0 or more times and returns the list of results in a Vec. `many1` does the same operation but must return at least one element|
-//! | [many_m_n](https://docs.rs/nom/latest/nom/multi/fn.many_m_n.html) | `many_m_n(1, 3, tag("ab"))` | `"ababc"` | `Ok(("c", vec!["ab", "ab"]))` |Applies the parser between m and n times (n included) and returns the list of results in a Vec|
-//! | [many_till](https://docs.rs/nom/latest/nom/multi/fn.many_till.html) | `many_till(tag( "ab" ), tag( "ef" ))` | `"ababefg"` | `Ok(("g", (vec!["ab", "ab"], "ef")))` |Applies the first parser until the second applies. Returns a tuple containing the list of results from the first in a Vec and the result of the second|
-//! | [separated_list0](https://docs.rs/nom/latest/nom/multi/fn.separated_list0.html) | `separated_list0(tag(","), tag("ab"))` | `"ab,ab,ab."` | `Ok((".", vec!["ab", "ab", "ab"]))` |`separated_list1` works like `separated_list0` but must returns at least one element|
-//! | [fold_many0](https://docs.rs/nom/latest/nom/multi/fn.fold_many0.html) | `fold_many0(be_u8, \|\| 0, \|acc, item\| acc + item)` | `[1, 2, 3]` | `Ok(([], 6))` |Applies the parser 0 or more times and folds the list of return values. The `fold_many1` version must apply the child parser at least one time|
-//! | [fold_many_m_n](https://docs.rs/nom/latest/nom/multi/fn.fold_many_m_n.html) | `fold_many_m_n(1, 2, be_u8, \|\| 0, \|acc, item\| acc + item)` | `[1, 2, 3]` | `Ok(([3], 3))` |Applies the parser between m and n times (n included) and folds the list of return value|
-//! | [length_count](https://docs.rs/nom/latest/nom/multi/fn.length_count.html) | `length_count(number, tag("ab"))` | `"2ababab"` | `Ok(("ab", vec!["ab", "ab"]))` |Gets a number from the first parser, then applies the second parser that many times|
+//! fn parse_list(input: &str) -> IResult<&str, Vec<usize>> {
+//!     separated0(parse_digits, ",").parse_next(input)
+//! }
+//!
+//! // ...
+//! # fn parse_digits(input: &str) -> IResult<&str, usize> {
+//! #     dispatch!(take(2usize);
+//! #          "0b" => parse_bin_digits.map_res(|s| usize::from_str_radix(s, 2)),
+//! #          "0o" => parse_oct_digits.map_res(|s| usize::from_str_radix(s, 8)),
+//! #          "0d" => parse_dec_digits.map_res(|s| usize::from_str_radix(s, 10)),
+//! #          "0x" => parse_hex_digits.map_res(|s| usize::from_str_radix(s, 16)),
+//! #          _ => fail,
+//! #      ).parse_next(input)
+//! # }
+//! #
+//! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='7'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='7'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='9'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='9'),
+//! #         ('A'..='F'),
+//! #         ('a'..='f'),
+//! #     )).parse_next(input)
+//! # }
+//!
+//! fn main() {
+//!     let input = "0x1a2b,0x3c4d,0x5e6f Hello";
+//!
+//!     let (remainder, digits) = parse_list.parse_next(input).unwrap();
+//!
+//!     assert_eq!(remainder, " Hello");
+//!     assert_eq!(digits, vec![0x1a2b, 0x3c4d, 0x5e6f]);
+//!
+//!     assert!(parse_digits("ghiWorld").is_err());
+//! }
+//! ```
+//!
+//! If you look closely at [`many0`], it isn't collecting directly into a [`Vec`] but
+//! [`Accumulate`] to gather the results.  This let's us make more complex parsers than we did in
+//! [`chapter_2`] by accumulating the results into a `()` and [`recognize`][Parser::recognize]-ing the captured input:
+//! ```rust
+//! # use winnow::IResult;
+//! # use winnow::Parser;
+//! # use winnow::bytes::take_while1;
+//! # use winnow::branch::dispatch;
+//! # use winnow::bytes::take;
+//! # use winnow::combinator::fail;
+//! # use winnow::multi::separated0;
+//! #
+//! fn recognize_list(input: &str) -> IResult<&str, &str> {
+//!     parse_list.recognize().parse_next(input)
+//! }
+//!
+//! fn parse_list(input: &str) -> IResult<&str, ()> {
+//!     separated0(parse_digits, ",").parse_next(input)
+//! }
+//!
+//! // ...
+//! # fn parse_digits(input: &str) -> IResult<&str, usize> {
+//! #     dispatch!(take(2usize);
+//! #          "0b" => parse_bin_digits.map_res(|s| usize::from_str_radix(s, 2)),
+//! #          "0o" => parse_oct_digits.map_res(|s| usize::from_str_radix(s, 8)),
+//! #          "0d" => parse_dec_digits.map_res(|s| usize::from_str_radix(s, 10)),
+//! #          "0x" => parse_hex_digits.map_res(|s| usize::from_str_radix(s, 16)),
+//! #          _ => fail,
+//! #      ).parse_next(input)
+//! # }
+//! #
+//! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='7'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='7'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='9'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='9'),
+//! #         ('A'..='F'),
+//! #         ('a'..='f'),
+//! #     )).parse_next(input)
+//! # }
+//!
+//! fn main() {
+//!     let input = "0x1a2b,0x3c4d,0x5e6f Hello";
+//!
+//!     let (remainder, digits) = recognize_list.parse_next(input).unwrap();
+//!
+//!     assert_eq!(remainder, " Hello");
+//!     assert_eq!(digits, "0x1a2b,0x3c4d,0x5e6f");
+//!
+//!     assert!(parse_digits("ghiWorld").is_err());
+//! }
+//! ```
 //!
 //! [*prev*][super::chapter_5] [*next*][super::chapter_7]
+
+#![allow(unused_imports)]
+use super::chapter_2;
+use super::chapter_3;
+use crate::multi::many0;
+use crate::multi::separated0;
+use crate::stream::Accumulate;
+use crate::Parser;
+use std::vec::Vec;

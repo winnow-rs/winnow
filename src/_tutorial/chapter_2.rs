@@ -1,113 +1,154 @@
-//! # Chapter 2: Tags and Character Classes
+//! # Chapter 2: Tokens and Tags
 //!
-//! The simplest _useful_ parser you can write is one which
-//! has no special characters, it just matches a string.
+//! The simplest *useful* parser you can write is one which matches tokens.
 //!
-//! In `nom`, we call a simple collection of bytes a tag. Because
-//! these are so common, there already exists a function called `tag()`.
-//! This function returns a parser for a given string.
+//! ## Tokens
 //!
-//!  **Warning**: `nom` has multiple different definitions of `tag`, make sure you use this one for the
-//!  moment!
-//!
-//! ```rust,ignore
-//! # extern crate nom;
-//! pub use nom::bytes::complete::tag;
-//! ```
-//!
-//! For example, code to parse the string `"abc"` could be represented as `tag("abc")`.
-//!
-//! If you have not programmed in a language where functions are values, the type signature of them
-//! tag function might be a surprise:
-//!
-//! ```rust,ignore
-//! pub fn tag<T, Input, Error: ParseError<Input>>(
-//!     tag: T
-//! ) -> impl Fn(Input) -> IResult<Input, Input, Error> where
-//!     Input: InputTake + Compare<T>,
-//!     T: InputLength + Clone,
-//! ```
-//!
-//! Or, for the case where `Input` and `T` are both `&str`, and simplifying slightly:
-//!
-//! ```rust,ignore
-//! fn tag(tag: &str) -> (impl Fn(&str) -> IResult<&str, Error>)
-//! ```
-//!
-//! In other words, this function `tag` *returns a function*. The function it returns is a
-//! parser, taking a `&str` and returning an `IResult`. Functions creating parsers and
-//! returning them is a common pattern in Nom, so it is useful to call out.
-//!
-//! Below, we have implemented a function that uses `tag`.
+//! Matching a single token literal so common, `Parser` is implemented for
+//! `char`.
 //!
 //! ```rust
-//! # extern crate nom;
-//! # pub use nom::bytes::complete::tag;
-//! # pub use nom::IResult;
-//! # use std::error::Error;
-//!
-//! fn parse_input(input: &str) -> IResult<&str, &str> {
-//!     //  note that this is really creating a function, the parser for abc
-//!     //  vvvvv
-//!     //         which is then called here, returning an IResult<&str, &str>
-//!     //         vvvvv
-//!     tag("abc")(input)
+//! # use winnow::Parser;
+//! # use winnow::IResult;
+//! #
+//! fn parse_prefix(input: &str) -> IResult<&str, char> {
+//!     '0'.parse_next(input)
 //! }
 //!
-//! fn main() -> Result<(), Box<dyn Error>> {
-//!     let (leftover_input, output) = parse_input("abcWorld")?;
-//!     assert_eq!(leftover_input, "World");
-//!     assert_eq!(output, "abc");
+//! fn main()  {
+//!     let input = "0x1a2b Hello";
 //!
-//!     assert!(parse_input("defWorld").is_err());
-//! #   Ok(())
+//!     let (remainder, output) = parse_prefix.parse_next(input).unwrap();
+//!
+//!     assert_eq!(remainder, "x1a2b Hello");
+//!     assert_eq!(output, '0');
+//!
+//!     assert!(parse_prefix("d").is_err());
 //! }
 //! ```
 //!
-//! If you'd like to, you can also check tags without case-sensitivity
-//! with the [`tag_no_case`](https://docs.rs/nom/latest/nom/bytes/complete/fn.tag_no_case.html) function.
+//! ## Tags
+//!
+//! One of the most frequent way of matching a token is when they are combined into a string.
+//! Again, this is common enough that `Parser` is implemented for `&str`:
+//!
+//! ```rust
+//! # use winnow::Parser;
+//! # use winnow::IResult;
+//! #
+//! fn parse_prefix(input: &str) -> IResult<&str, &str> {
+//!     "0x".parse_next(input)
+//! }
+//!
+//! fn main()  {
+//!     let input = "0x1a2b Hello";
+//!
+//!     let (remainder, output) = parse_prefix.parse_next(input).unwrap();
+//!     assert_eq!(remainder, "1a2b Hello");
+//!     assert_eq!(output, "0x");
+//!
+//!     assert!(parse_prefix("0o123").is_err());
+//! }
+//! ```
+//!
+//! In `winnow`, we call this type of parser a [`tag`].
 //!
 //! ## Character Classes
 //!
-//! Tags are incredibly useful, but they are also incredibly restrictive.
-//! The other end of Nom's functionality is pre-written parsers that allow us to accept any of a group of characters,
-//! rather than just accepting characters in a defined sequence.
+//! Selecting a single `char` or a `tag` is fairly limited.  Sometimes, you will want to select one of several
+//! `chars` of a specific class, like digits. For this, we use the [`one_of`] parer:
 //!
-//! Here is a selection of them:
-//!
-//! - [`alpha0`](https://docs.rs/nom/latest/nom/character/complete/fn.alpha0.html): Recognizes zero or more lowercase and uppercase alphabetic characters: `/[a-zA-Z]/`. [`alpha1`](https://docs.rs/nom/latest/nom/character/complete/fn.alpha1.html) does the same but returns at least one character
-//! - [`alphanumeric0`](https://docs.rs/nom/latest/nom/character/complete/fn.alphanumeric0.html): Recognizes zero or more numerical and alphabetic characters: `/[0-9a-zA-Z]/`. [`alphanumeric1`](https://docs.rs/nom/latest/nom/character/complete/fn.alphanumeric1.html) does the same but returns at least one character
-//! - [`digit0`](https://docs.rs/nom/latest/nom/character/complete/fn.digit0.html): Recognizes zero or more numerical characters: `/[0-9]/`. [`digit1`](https://docs.rs/nom/latest/nom/character/complete/fn.digit1.html) does the same but returns at least one character
-//! - [`multispace0`](https://docs.rs/nom/latest/nom/character/complete/fn.multispace0.html): Recognizes zero or more spaces, tabs, carriage returns and line feeds. [`multispace1`](https://docs.rs/nom/latest/nom/character/complete/fn.multispace1.html) does the same but returns at least one character
-//! - [`space0`](https://docs.rs/nom/latest/nom/character/complete/fn.space0.html): Recognizes zero or more spaces and tabs. [`space1`](https://docs.rs/nom/latest/nom/character/complete/fn.space1.html) does the same but returns at least one character
-//! - [`line_ending`](https://docs.rs/nom/latest/nom/character/complete/fn.line_ending.html): Recognizes an end of line (both `\n` and `\r\n`)
-//! - [`newline`](https://docs.rs/nom/latest/nom/character/complete/fn.newline.html): Matches a newline character `\n`
-//! - [`tab`](https://docs.rs/nom/latest/nom/character/complete/fn.tab.html): Matches a tab character `\t`
-//!
-//!
-//! We can use these in
 //! ```rust
-//! # extern crate nom;
-//! # pub use nom::IResult;
-//! # use std::error::Error;
-//! pub use nom::character::complete::alpha0;
-//! fn parser(input: &str) -> IResult<&str, &str> {
-//!     alpha0(input)
+//! # use winnow::Parser;
+//! # use winnow::IResult;
+//! use winnow::bytes::one_of;
+//!
+//! fn parse_digits(input: &str) -> IResult<&str, char> {
+//!     one_of("0123456789abcdefgABCDEFG").parse_next(input)
 //! }
 //!
-//! fn main() -> Result<(), Box<dyn Error>> {
-//!     let (remaining, letters) = parser("abc123")?;
-//!     assert_eq!(remaining, "123");
-//!     assert_eq!(letters, "abc");
-//!     
-//! #   Ok(())
+//! fn main() {
+//!     let input = "1a2b Hello";
+//!
+//!     let (remainder, output) = parse_digits.parse_next(input).unwrap();
+//!     assert_eq!(remainder, "a2b Hello");
+//!     assert_eq!(output, '1');
+//!
+//!     assert!(parse_digits("Z").is_err());
 //! }
 //! ```
 //!
-//! One important note is that, due to the type signature of these functions,
-//! it is generally best to use them within a function that returns an `IResult`.
+//! > **Aside:** `one_of` might look straightforward, a function returning a value that implements `Parser`.
+//! > Let's look at it more closely as its used above (resolving all generic parameters):
+//! > ```rust
+//! > # use winnow::IResult;
+//! > pub fn one_of<'i>(
+//! >     list: &'static str
+//! > ) -> impl FnMut(&'i str) -> IResult<&'i str, char> {
+//! >     // ...
+//! > #    winnow::bytes::one_of(list)
+//! > }
+//! > ```
+//! > If you have not programmed in a language where functions are values, the type signature of the
+//! > `one_of` function might be a surprise.
+//! > The function `tag` *returns a function*. The function it returns is a
+//! > `Parser`, taking a `&str` and returning an `IResult`. This is a common pattern in winnow for
+//! > configurable or stateful parsers.
 //!
-//! If you don't, some of the information around the type of the `tag` function must be
-//! manually specified, which can lead to verbose code or confusing errors.
+//! Some of character classes are common enough that a named parser is provided, like with:
+//! - [`line_ending`][crate::character::line_ending]: Recognizes an end of line (both `\n` and `\r\n`)
+//! - [`newline`][crate::character::newline]: Matches a newline character `\n`
+//! - [`tab`][crate::character::tab]: Matches a tab character `\t`
+//!
+//! You can then capture sequences of these characters with parsers like [`take_while1`].
+//! ```rust
+//! # use winnow::Parser;
+//! # use winnow::IResult;
+//! use winnow::bytes::take_while1;
+//!
+//! fn parse_digits(input: &str) -> IResult<&str, &str> {
+//!     take_while1("0123456789abcdefgABCDEFG").parse_next(input)
+//! }
+//!
+//! fn main() {
+//!     let input = "1a2b Hello";
+//!
+//!     let (remainder, output) = parse_digits.parse_next(input).unwrap();
+//!     assert_eq!(remainder, " Hello");
+//!     assert_eq!(output, "1a2b");
+//!
+//!     assert!(parse_digits("Z").is_err());
+//! }
+//! ```
+//!
+//! We could simplify this further with by using one of the built-in character classes, [`hex_digit1`]:
+//! ```rust
+//! # use winnow::Parser;
+//! # use winnow::IResult;
+//! use winnow::character::hex_digit1;
+//!
+//! fn parse_digits(input: &str) -> IResult<&str, &str> {
+//!     hex_digit1.parse_next(input)
+//! }
+//!
+//! fn main() {
+//!     let input = "1a2b Hello";
+//!
+//!     let (remainder, output) = parse_digits.parse_next(input).unwrap();
+//!     assert_eq!(remainder, " Hello");
+//!     assert_eq!(output, "1a2b");
+//!
+//!     assert!(parse_digits("Z").is_err());
+//! }
+//! ```
 //!
 //! [*prev*][super::chapter_1] [*next*][super::chapter_3]
+
+#![allow(unused_imports)]
+use crate::bytes::one_of;
+use crate::bytes::tag;
+use crate::bytes::take_while1;
+use crate::character::hex_digit1;
+use crate::stream::ContainsToken;
+use crate::Parser;
+use std::ops::RangeInclusive;

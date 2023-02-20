@@ -1,144 +1,241 @@
-//! # Chapter 3: Alternatives and Composition
+//! # Chapter 3: Sequencing and Alternatives
 //!
-//! In the last chapter, we saw how to create simple parsers using the `tag` function;
-//! and some of Nom's prebuilt parsers.
+//! In the last chapter, we saw how to create simple parsers using prebuilt parsers.
 //!
-//! In this chapter, we explore two other widely used features of Nom:
+//! In this chapter, we explore two other widely used features:
 //! alternatives and composition.
+//!
+//! ## Sequencing
+//!
+//! Now that we can create more interesting parsers, we can sequence them together, like:
+//!
+//! ```rust
+//! # use winnow::bytes::take_while1;
+//! # use winnow::Parser;
+//! # use winnow::IResult;
+//! #
+//! fn parse_prefix(input: &str) -> IResult<&str, &str> {
+//!     "0x".parse_next(input)
+//! }
+//!
+//! fn parse_digits(input: &str) -> IResult<&str, &str> {
+//!     take_while1((
+//!         ('0'..='9'),
+//!         ('A'..='F'),
+//!         ('a'..='f'),
+//!     )).parse_next(input)
+//! }
+//!
+//! fn main()  {
+//!     let input = "0x1a2b Hello";
+//!
+//!     let (remainder, prefix) = parse_prefix.parse_next(input).unwrap();
+//!     let (remainder, digits) = parse_digits.parse_next(remainder).unwrap();
+//!
+//!     assert_eq!(prefix, "0x");
+//!     assert_eq!(digits, "1a2b");
+//!     assert_eq!(remainder, " Hello");
+//! }
+//! ```
+//!
+//! To sequence these together, you can just put them in a tuple:
+//! ```rust
+//! # use winnow::bytes::take_while1;
+//! # use winnow::Parser;
+//! # use winnow::IResult;
+//! #
+//! # fn parse_prefix(input: &str) -> IResult<&str, &str> {
+//! #     "0x".parse_next(input)
+//! # }
+//! #
+//! # fn parse_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='9'),
+//! #         ('A'..='F'),
+//! #         ('a'..='f'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! //...
+//!
+//! fn main()  {
+//!     let input = "0x1a2b Hello";
+//!
+//!     let (remainder, (prefix, digits)) = (
+//!         parse_prefix,
+//!         parse_digits
+//!     ).parse_next(input).unwrap();
+//!
+//!     assert_eq!(prefix, "0x");
+//!     assert_eq!(digits, "1a2b");
+//!     assert_eq!(remainder, " Hello");
+//! }
+//! ```
+//!
+//! Frequently, you won't care about the tag and you can instead use one of the provided combinators,
+//! like [`preceded`]:
+//! ```rust
+//! # use winnow::bytes::take_while1;
+//! # use winnow::Parser;
+//! # use winnow::IResult;
+//! use winnow::sequence::preceded;
+//!
+//! # fn parse_prefix(input: &str) -> IResult<&str, &str> {
+//! #     "0x".parse_next(input)
+//! # }
+//! #
+//! # fn parse_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='9'),
+//! #         ('A'..='F'),
+//! #         ('a'..='f'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! //...
+//!
+//! fn main() {
+//!     let input = "0x1a2b Hello";
+//!
+//!     let (remainder, digits) = preceded(
+//!         parse_prefix,
+//!         parse_digits
+//!     ).parse_next(input).unwrap();
+//!
+//!     assert_eq!(digits, "1a2b");
+//!     assert_eq!(remainder, " Hello");
+//! }
+//! ```
 //!
 //! ## Alternatives
 //!
 //! Sometimes, we might want to choose between two parsers; and we're happy with
 //! either being used.
 //!
-//! Nom gives us a similar ability through the `alt()` combinator.
-//!
-//! ```rust
-//! # extern crate nom;
-//! use nom::branch::alt;
-//! ```
-//!
-//! The `alt()` combinator will execute each parser in a tuple until it finds one
-//! that does not error. If all error, then by default you are given the error from
-//! the last error.
+//! The de facto way to do this in winnow is with the [`alt()`] combinator which will execute each
+//! parser in a tuple until it finds one that does not error. If all error, then by default you are
+//! given the error from the last parser.
 //!
 //! We can see a basic example of `alt()` below.
-//!
 //! ```rust
-//! # extern crate nom;
-//! use nom::branch::alt;
-//! use nom::bytes::complete::tag;
-//! use nom::IResult;
-//! # use std::error::Error;
+//! # use winnow::IResult;
+//! # use winnow::Parser;
+//! # use winnow::bytes::take_while1;
+//! use winnow::branch::alt;
 //!
-//! fn parse_abc_or_def(input: &str) -> IResult<&str, &str> {
+//! fn parse_digits(input: &str) -> IResult<&str, (&str, &str)> {
 //!     alt((
-//!         tag("abc"),
-//!         tag("def")
-//!     ))(input)
+//!         ("0b", parse_bin_digits),
+//!         ("0o", parse_oct_digits),
+//!         ("0d", parse_dec_digits),
+//!         ("0x", parse_hex_digits),
+//!     )).parse_next(input)
 //! }
 //!
-//! fn main() -> Result<(), Box<dyn Error>> {
-//!     let (leftover_input, output) = parse_abc_or_def("abcWorld")?;
-//!     assert_eq!(leftover_input, "World");
-//!     assert_eq!(output, "abc");
+//! // ...
+//! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='7'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='7'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='9'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='9'),
+//! #         ('A'..='F'),
+//! #         ('a'..='f'),
+//! #     )).parse_next(input)
+//! # }
 //!
-//!     assert!(parse_abc_or_def("ghiWorld").is_err());
-//! #   Ok(())
+//! fn main() {
+//!     let input = "0x1a2b Hello";
+//!
+//!     let (remainder, (prefix, digits)) = parse_digits.parse_next(input).unwrap();
+//!
+//!     assert_eq!(remainder, " Hello");
+//!     assert_eq!(prefix, "0x");
+//!     assert_eq!(digits, "1a2b");
+//!
+//!     assert!(parse_digits("ghiWorld").is_err());
 //! }
 //! ```
 //!
-//! ## Composition
-//!
-//! Now that we can create more interesting regexes, we can compose them together.
-//! The simplest way to do this is just to evaluate them in sequence:
+//! Sometimes a giant if/else-if ladder can be slow and you'd rather have a `match` statement for
+//! branches of your parser that have unique prefixes.  In this case, you can use the
+//! [`dispatch`][crate::branch::dispatch] macro:
 //!
 //! ```rust
-//! # extern crate nom;
-//! use nom::branch::alt;
-//! use nom::bytes::complete::tag;
-//! use nom::IResult;
-//! # use std::error::Error;
+//! # use winnow::IResult;
+//! # use winnow::Parser;
+//! # use winnow::bytes::take_while1;
+//! use winnow::branch::dispatch;
+//! use winnow::bytes::take;
+//! use winnow::combinator::fail;
 //!
-//! fn parse_abc(input: &str) -> IResult<&str, &str> {
-//!     tag("abc")(input)
-//! }
-//! fn parse_def_or_ghi(input: &str) -> IResult<&str, &str> {
-//!     alt((
-//!         tag("def"),
-//!         tag("ghi")
-//!     ))(input)
-//! }
-//!
-//! fn main() -> Result<(), Box<dyn Error>> {
-//!     let input = "abcghi";
-//!     let (remainder, abc) = parse_abc(input)?;
-//!     let (remainder, def_or_ghi) = parse_def_or_ghi(remainder)?;
-//!     println!("first parsed: {abc}; then parsed: {def_or_ghi};");
-//!     
-//! #   Ok(())
-//! }
-//! ```
-//!
-//! Composing tags is such a common requirement that, in fact, Nom has a few built in
-//! combinators to do it. The simplest of these is `tuple()`. The `tuple()` combinator takes a tuple of parsers,
-//! and either returns `Ok` with a tuple of all of their successful parses, or it
-//! returns the `Err` of the first failed parser.
-//!
-//! ```rust
-//! # extern crate nom;
-//! use nom::sequence::tuple;
-//! ```
-//!
-//!
-//! ```rust
-//! # extern crate nom;
-//! use nom::branch::alt;
-//! use nom::sequence::tuple;
-//! use nom::bytes::complete::tag_no_case;
-//! use nom::character::complete::{digit1};
-//! use nom::IResult;
-//! # use std::error::Error;
-//!
-//! fn parse_base(input: &str) -> IResult<&str, &str> {
-//!     alt((
-//!         tag_no_case("a"),
-//!         tag_no_case("t"),
-//!         tag_no_case("c"),
-//!         tag_no_case("g")
-//!     ))(input)
+//! fn parse_digits(input: &str) -> IResult<&str, &str> {
+//!     dispatch!(take(2usize);
+//!         "0b" => parse_bin_digits,
+//!         "0o" => parse_oct_digits,
+//!         "0d" => parse_dec_digits,
+//!         "0x" => parse_hex_digits,
+//!         _ => fail,
+//!     ).parse_next(input)
 //! }
 //!
-//! fn parse_pair(input: &str) -> IResult<&str, (&str, &str)> {
-//!     // the many_m_n combinator might also be appropriate here.
-//!     tuple((
-//!         parse_base,
-//!         parse_base,
-//!     ))(input)
-//! }
+//! // ...
+//! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='7'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='7'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='9'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='9'),
+//! #         ('A'..='F'),
+//! #         ('a'..='f'),
+//! #     )).parse_next(input)
+//! # }
 //!
-//! fn main() -> Result<(), Box<dyn Error>> {
-//!     let (remaining, parsed) = parse_pair("aTcG")?;
-//!     assert_eq!(parsed, ("a", "T"));
-//!     assert_eq!(remaining, "cG");
-//!     
-//!     assert!(parse_pair("Dct").is_err());
+//! fn main() {
+//!     let input = "0x1a2b Hello";
 //!
-//! #   Ok(())
+//!     let (remainder, digits) = parse_digits.parse_next(input).unwrap();
+//!
+//!     assert_eq!(remainder, " Hello");
+//!     assert_eq!(digits, "1a2b");
+//!
+//!     assert!(parse_digits("ghiWorld").is_err());
 //! }
 //! ```
-//!
-//!
-//! ## Extra Nom Tools
-//!
-//! After using `alt()` and `tuple()`, you might also be interested in a few other parsers that do similar things:
-//!
-//! | combinator | usage | input | output | comment |
-//! |---|---|---|---|---|
-//! | [delimited](https://docs.rs/nom/latest/nom/sequence/fn.delimited.html) | `delimited(char('('), take(2), char(')'))` | `"(ab)cd"` | `Ok(("cd", "ab"))` ||
-//! | [preceded](https://docs.rs/nom/latest/nom/sequence/fn.preceded.html) | `preceded(tag("ab"), tag("XY"))` | `"abXYZ"` | `Ok(("Z", "XY"))` ||
-//! | [terminated](https://docs.rs/nom/latest/nom/sequence/fn.terminated.html) | `terminated(tag("ab"), tag("XY"))` | `"abXYZ"` | `Ok(("Z", "ab"))` ||
-//! | [pair](https://docs.rs/nom/latest/nom/sequence/fn.pair.html) | `pair(tag("ab"), tag("XY"))` | `"abXYZ"` | `Ok(("Z", ("ab", "XY")))` ||
-//! | [separated_pair](https://docs.rs/nom/latest/nom/sequence/fn.separated_pair.html) | `separated_pair(tag("hello"), char(','), tag("world"))` | `"hello,world!"` | `Ok(("!", ("hello", "world")))` ||
 //!
 //! [*prev*][super::chapter_2] [*next*][super::chapter_4]
+
+#![allow(unused_imports)]
+use crate::branch::alt;
+use crate::branch::dispatch;
+use crate::sequence::preceded;

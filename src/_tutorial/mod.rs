@@ -1,31 +1,35 @@
-//! # The Nominomiconsa
+//! # Tutorial
 //!
-//! Welcome to Nominomicon; a guide to using the Nom parser for great good.
-//! This guide will give you an introduction to the theory and practice of
-//! using Nom.
+//! This tutorial assumes that you are:
+//! - Already familiar with Rust
+//! - Using `winnow` for the first time
 //!
-//! This guide assumes only that you are:
-//!  - Wanting to learn Nom,
-//!  - Already familiar with Rust.
+//! The focus will be on parsing in-memory strings (`&str`). Once done, you might want to check the
+//! [Special Topics][_topic] for more specialized topics or examples.
 //!
-//! Nom is a parser-combinator library. In other words, it gives you tools to define:
-//!  - "parsers" (a function that takes an input, and gives back an output), and
-//!  - "combinators" (functions that take parsers, and _combine_ them together!).
+//! ## About
 //!
-//! By combining parsers with combinators, you can build complex parsers up from
-//! simpler ones. These complex parsers are enough to understand HTML, mkv or Python!
+//! `winnow` is a parser-combinator library. In other words, it gives you tools to define:
+//! - "parsers", or functions that takes an input and gives back an output
+//! - "combinators", or functions that take parsers and _combine_ them together!
 //!
-//! Before we set off, it's important to list some caveats:
-//!  - This guide is for Nom7. Nom has undergone significant changes, so if
-//!    you are searching for documentation or StackOverflow answers, you may
-//!    find older documentation. Some common indicators that it is an old version are:
-//!     - Documentation older than 21st August, 2021
-//!     - Use of the `named!` macro
-//!     - Use of `CompleteStr` or `CompleteByteArray`.
-//!  - Nom can parse (almost) anything; but this guide will focus almost entirely on parsing
-//!    complete `&str` into things.
+//! While "combinator" might be an unfamiliar word, you are likely using them in your rust code
+//! today, like with the [`Iterator`] trait:
+//! ```rust
+//! let data = vec![1, 2, 3, 4, 5];
+//! let even_count = data.iter()
+//!     .copied()  // combinator
+//!     .filter(|d| d % 2 == 0)  // combinator
+//!     .count();  // combinator
+//! ```
+//!
+//! Parser combinators allow building parsers for complex formats from simple, reusable parsers.
 //!
 //! [*next*][chapter_1]
+
+#![allow(unused_imports)]
+use crate::_topic;
+use std::iter::Iterator;
 
 pub mod chapter_1;
 pub mod chapter_2;
@@ -34,3 +38,4 @@ pub mod chapter_4;
 pub mod chapter_5;
 pub mod chapter_6;
 pub mod chapter_7;
+pub mod chapter_8;

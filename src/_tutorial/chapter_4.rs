@@ -1,163 +1,108 @@
 //! # Chapter 4: Parsers With Custom Return Types
 //!
 //! So far, we have seen mostly functions that take an `&str`, and return a
-//! `IResult<&str, &str>`. Splitting strings into smaller strings is certainly useful,
-//! but it's not the only thing Nom is capable of!
+//! `IResult<&str, &str>`. Splitting strings into smaller strings and characters is certainly
+//! useful, but it's not the only thing winnow is capable of!
 //!
 //! A useful operation when parsing is to convert between types; for example
-//! parsing from `&str` to another primitive, like `bool`.
+//! parsing from `&str` to another primitive, like [`usize`].
 //!
 //! All we need to do for our parser to return a different type is to change
-//! the second type parameter of `IResult` to the desired return type.
-//! For example, to return a bool, return a `IResult<&str, bool>`.
-//!
+//! the second type parameter of [`IResult`] to the desired return type.
+//! For example, to return a `usize`, return a `IResult<&str, usize>`.
 //! Recall that the first type parameter of the `IResult` is the input
 //! type, so even if you're returning something different, if your input
 //! is a `&str`, the first type argument of `IResult` should be also.
 //!
-//! Until you have read the chapter on Errors, we strongly suggest avoiding
-//! the use of parsers built into Rust (like `str.parse`); as they require
-//! special handling to work well with Nom.
+//! One winnow-native way of doing a type conversion is to use the
+//! [`Parser::parse_to`] combinator
+//! to convert from a successful parse to a particular type using [`FromStr`].
 //!
-//! That said, one Nom-native way of doing a type conversion is to use the
-//! [`value`](https://docs.rs/nom/latest/nom/combinator/fn.value.html) combinator
-//! to convert from a successful parse to a particular value.
-//!
-//! The following code converts from a string containing `"true"` or `"false"`,
-//! to the corresponding `bool`.
-//!
+//! The following code converts from a string containing a number to `usize`:
 //! ```rust
-//! # extern crate nom;
-//! # use std::error::Error;
-//! use nom::IResult;
-//! use nom::bytes::complete::tag;
-//! use nom::combinator::value;
-//! use nom::branch::alt;
-//!
-//! fn parse_bool(input: &str) -> IResult<&str, bool> {
-//!     // either, parse `"true"` -> `true`; `"false"` -> `false`, or error.
-//!     alt((
-//!       value(true, tag("true")),
-//!       value(false, tag("false")),
-//!     ))(input)
+//! # use winnow::Parser;
+//! # use winnow::IResult;
+//! # use winnow::character::digit1;
+//! #
+//! fn parse_digits(input: &str) -> IResult<&str, usize> {
+//!     digit1
+//!         .parse_to()
+//!         .parse_next(input)
 //! }
 //!
-//! fn main() -> Result<(), Box<dyn Error>> {
-//!     // Parses the `"true"` out.
-//!     let (remaining, parsed) = parse_bool("true|false")?;
-//!     assert_eq!(parsed, true);
-//!     assert_eq!(remaining, "|false");
-//!    
-//!     // If we forget about the "|", we get an error.
-//!     let parsing_error = parse_bool(remaining);
-//!     assert!(parsing_error.is_err());
-//!     
-//!     // Skipping the first byte gives us `false`!
-//!     let (remaining, parsed) = parse_bool(&remaining[1..])?;
-//!     assert_eq!(parsed, false);
-//!     assert_eq!(remaining, "");
-//!     
-//!     
+//! fn main() {
+//!     let input = "1024 Hello";
 //!
-//! #   Ok(())
+//!     let (remainder, output) = parse_digits.parse_next(input).unwrap();
+//!     assert_eq!(remainder, " Hello");
+//!     assert_eq!(output, 1024);
+//!
+//!     assert!(parse_digits("Z").is_err());
 //! }
 //! ```
 //!
-//! ## Nom's in-built parser functions
-//!
-//! Nom has a wide array of parsers built in. Here is a list of
-//! [parsers which recognize specific characters](https://docs.rs/nom/latest/nom/character/complete/index.html).
-//!
-//! Some of them we have seen before in Chapter 2, but now we also can try out the parsers that return different
-//! types, like `i32`. An example of this parser is shown in the next section.
-//!
-//! ## Building a More Complex Example
-//!
-//! A more complex example of parsing custom types might be parsing a 2D coordinate.
-//!
-//! Let us try to figure out how to design this.
-//!
-//!  - We know that we want to take a string, like `"(3, -2)"`, and convert into
-//!    a `Coordinate` struct.
-//!  - We can split this into three parts:
-//!  
-//! ```ignore
-//! (vvvvvvvvvvvvv) # The outer brackets.
-//!   vvvv , vvvv   # The comma, separating values.
-//!     3     -2    # The actual integers.
-//! ```
-//!
-//!  - So, we will need three parsers, to deal with this:
-//!    1. A parser for integers, which  will deal with the raw numbers.
-//!    2. A parser for comma seperated pair, which will split it up into integers.
-//!    3. A parser for the outer brackets.
-//!    
-//!  - We can see below how we achieve this:
-//!
+//! `Parser::parse_to` is just a convenient form of [`Parser::map_res`] which we can use to handle
+//! all radices of numbers:
 //! ```rust
-//! # extern crate nom;
-//! # use std::error::Error;
-//! use nom::IResult;
-//! use nom::bytes::complete::tag;
-//! use nom::sequence::{separated_pair, delimited};
+//! # use winnow::IResult;
+//! # use winnow::Parser;
+//! # use winnow::bytes::take_while1;
+//! use winnow::branch::dispatch;
+//! use winnow::bytes::take;
+//! use winnow::combinator::fail;
 //!
-//! // This is the type we will parse into.
-//! #[derive(Debug,PartialEq)]
-//! pub struct Coordinate {
-//!   pub x:   i32,
-//!   pub y:   i32,
+//! fn parse_digits(input: &str) -> IResult<&str, usize> {
+//!     dispatch!(take(2usize);
+//!         "0b" => parse_bin_digits.map_res(|s| usize::from_str_radix(s, 2)),
+//!         "0o" => parse_oct_digits.map_res(|s| usize::from_str_radix(s, 8)),
+//!         "0d" => parse_dec_digits.map_res(|s| usize::from_str_radix(s, 10)),
+//!         "0x" => parse_hex_digits.map_res(|s| usize::from_str_radix(s, 16)),
+//!         _ => fail,
+//!     ).parse_next(input)
 //! }
 //!
-//! // 1. Nom has an in-built i32 parser.
-//! use nom::character::complete::i32;
+//! // ...
+//! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='7'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='7'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='9'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
+//! #     take_while1((
+//! #         ('0'..='9'),
+//! #         ('A'..='F'),
+//! #         ('a'..='f'),
+//! #     )).parse_next(input)
+//! # }
 //!
-//! // 2. Use the `separated_pair` parser to combine two parsers (in this case,
-//! //    both `i32`), ignoring something in-between.
-//! fn parse_integer_pair(input: &str) -> IResult<&str, (i32, i32)> {
-//!     separated_pair(
-//!         i32,
-//!         tag(", "),
-//!         i32
-//!     )(input)
-//! }
+//! fn main() {
+//!     let input = "0x1a2b Hello";
 //!
-//! // 3. Use the `delimited` parser to apply a parser, ignoring the results
-//! //    of two surrounding parsers.
-//! fn parse_coordinate(input: &str) -> IResult<&str, Coordinate> {
-//!     let (remaining, (x, y)) = delimited(
-//!         tag("("),
-//!         parse_integer_pair,
-//!         tag(")")
-//!     )(input)?;
-//!     
-//!     // Note: we could construct this by implementing `From` on `Coordinate`,
-//!     // We don't, just so it's obvious what's happening.
-//!     Ok((remaining, Coordinate {x, y}))
-//!     
-//! }
+//!     let (remainder, digits) = parse_digits.parse_next(input).unwrap();
 //!
-//! fn main() -> Result<(), Box<dyn Error>> {
-//!     let (_, parsed) = parse_coordinate("(3, 5)")?;
-//!     assert_eq!(parsed, Coordinate {x: 3, y: 5});
-//!    
-//!     let (_, parsed) = parse_coordinate("(2, -4)")?;
-//!     assert_eq!(parsed, Coordinate {x: 2, y: -4});
-//!     
-//!     let parsing_error = parse_coordinate("(3,)");
-//!     assert!(parsing_error.is_err());
-//!     
-//!     let parsing_error = parse_coordinate("(,3)");
-//!     assert!(parsing_error.is_err());
-//!     
-//!     let parsing_error = parse_coordinate("Ferris");
-//!     assert!(parsing_error.is_err());
-//!     
+//!     assert_eq!(remainder, " Hello");
+//!     assert_eq!(digits, 0x1a2b);
 //!
-//! #   Ok(())
+//!     assert!(parse_digits("ghiWorld").is_err());
 //! }
 //! ```
-//!
-//! As an exercise, you might want to explore how to make this parser deal gracefully with
-//! whitespace in the input.
 //!
 //! [*prev*][super::chapter_3] [*next*][super::chapter_5]
+
+#![allow(unused_imports)]
+use crate::IResult;
+use crate::Parser;
+use std::str::FromStr;
