@@ -4,7 +4,7 @@
 //!
 //! Quick links:
 //! - [List of combinators][crate::combinator]
-//! - [Tutorial][_tutorial]
+//! - [Tutorial][_tutorial::chapter_0]
 //! - [Special Topics][_topic]
 //! - [Discussions](https://github.com/winnow-rs/winnow/discussions)
 //!
@@ -40,7 +40,7 @@
 #![doc = include_str!("../examples/css/parser.rs")]
 //! ```
 //!
-//! See also the [Tutorial][_tutorial] and [Special Topics][_topic]
+//! See also the [Tutorial][_tutorial::chapter_0] and [Special Topics][_topic]
 
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![cfg_attr(docsrs, feature(doc_cfg))]
