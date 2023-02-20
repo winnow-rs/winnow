@@ -1,128 +1,85 @@
-//! # Chapter 7: Error Reporting
+//! # Chapter 8: Integrating the Parser
 //!
-//! ## `Error`
+//! So far, we've highlighted how to incrementally parse, but how do we bring this all together
+//! into our application?
 //!
-//! Back in [`chapter_1`], we glossed over the `Err` side of [`IResult`].  `IResult<I, O>` is
-//! actually short for `IResult<I, O, E=Error>` where [`Error`] is a cheap, universal error type
-//! for getting started.  When humans are producing the file, like with `toml`, you might want to
-//! sacrifice some performance for providing more details on how to resolve the problem
-//!
-//! winnow includes [`VerboseError`] for this but you can [customize the error as you
-//! wish][_topic::error].  You can use [`Parser::context`] to annotate the error with custom types
-//! while unwinding to further improve the error quality.
-//!
+//! The type we've been working with looks like:
 //! ```rust
-//! # use winnow::IResult;
-//! # use winnow::Parser;
-//! # use winnow::bytes::take_while1;
-//! # use winnow::branch::alt;
-//! use winnow::error::VerboseError;
-//!
-//! fn parse_digits(input: &str) -> IResult<&str, (&str, &str), VerboseError<&str>> {
-//!     alt((
-//!         ("0b", parse_bin_digits).context("binary"),
-//!         ("0o", parse_oct_digits).context("octal"),
-//!         ("0d", parse_dec_digits).context("decimal"),
-//!         ("0x", parse_hex_digits).context("hexadecimal"),
-//!     )).parse_next(input)
-//! }
-//!
-//! // ...
-//! # fn parse_bin_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
-//! #     take_while1((
-//! #         ('0'..='7'),
-//! #     )).parse_next(input)
-//! # }
-//! #
-//! # fn parse_oct_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
-//! #     take_while1((
-//! #         ('0'..='7'),
-//! #     )).parse_next(input)
-//! # }
-//! #
-//! # fn parse_dec_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
-//! #     take_while1((
-//! #         ('0'..='9'),
-//! #     )).parse_next(input)
-//! # }
-//! #
-//! # fn parse_hex_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
-//! #     take_while1((
-//! #         ('0'..='9'),
-//! #         ('A'..='F'),
-//! #         ('a'..='f'),
-//! #     )).parse_next(input)
-//! # }
-//!
-//! fn main() {
-//!     let input = "0x1a2b Hello";
-//!
-//!     let (remainder, (prefix, digits)) = parse_digits.parse_next(input).unwrap();
-//!
-//!     assert_eq!(remainder, " Hello");
-//!     assert_eq!(prefix, "0x");
-//!     assert_eq!(digits, "1a2b");
-//! }
-//! ```
-//!
-//! At first glance, this looks correct but what `context` will be reported when parsing `"0b5"`?
-//! If you remember back to [`chapter_3`], [`alt`] will only report the last error by default which
-//! means when parsing `"0b5"`, the `context` will be `"hexadecimal"`.
-//!
-//! ## `ErrMode`
-//!
-//! Let's break down `IResult<I, O, E>` one step further:
-//! ```rust
-//! # use winnow::error::Error;
-//! # use winnow::error::ErrMode;
-//! pub type IResult<I, O, E = Error<I>> = Result<(I, O), ErrMode<E>>;
-//! ```
-//! `IResult` is just a fancy wrapper around `Result` that wraps our error in an [`ErrMode`]
-//! type.
-//!
-//! `ErrMode` is an enum with `Backtrack` and `Cut` variants (ignore `Incomplete` as its only
-//! relevant for [streaming][_topic::stream].  By default, errors are `Backtrack`, meaning that
-//! other parsing branches will be attempted on failure, like the next case of an `alt`.  `Cut`
-//! shortcircuits all other branches, immediately reporting the error.
-//!
-//! So we can get the correct `context` by modifying the above example with [`cut_err`]:
-//! ```rust
-//! # use winnow::IResult;
-//! # use winnow::Parser;
-//! # use winnow::bytes::take_while1;
-//! # use winnow::branch::alt;
 //! # use winnow::error::VerboseError;
-//! use winnow::combinator::cut_err;
+//! # use winnow::error::ErrMode;
+//! type IResult<'i, O> = Result<
+//!     (&'i str, O),
+//!     ErrMode<
+//!         VerboseError<&'i str>
+//!     >
+//! >;
+//! ```
+//! 1. We have to decide what to do about the `remainder` of the input.  
+//! 2. The error type is not compatible with the rest of the Rust ecosystem
 //!
-//! fn parse_digits(input: &str) -> IResult<&str, (&str, &str), VerboseError<&str>> {
-//!     alt((
-//!         ("0b", cut_err(parse_bin_digits)).context("binary"),
-//!         ("0o", cut_err(parse_oct_digits)).context("octal"),
-//!         ("0d", cut_err(parse_dec_digits)).context("decimal"),
-//!         ("0x", cut_err(parse_hex_digits)).context("hexadecimal"),
-//!     )).parse_next(input)
+//! Normally, Rust applications want errors that are `std::error::Error + Send + Sync + 'static`
+//! meaning:
+//! - They implement the [`std::error::Error`] trait
+//! - They can be sent across threads
+//! - They are safe to be referenced across threads
+//! - They do not borrow
+//!
+//! winnow provides some helpers for this like [`FinishIResult`]:
+//! ```rust
+//! # use winnow::IResult;
+//! # use winnow::Parser;
+//! # use winnow::bytes::take_while1;
+//! # use winnow::branch::dispatch;
+//! # use winnow::bytes::take;
+//! # use winnow::combinator::fail;
+//! use winnow::FinishIResult;
+//! use winnow::error::Error;
+//!
+//! #[derive(Debug, PartialEq, Eq)]
+//! pub struct Hex(usize);
+//!
+//! impl std::str::FromStr for Hex {
+//!     type Err = Error<String>;
+//!
+//!     fn from_str(input: &str) -> Result<Self, Self::Err> {
+//!         parse_digits
+//!             .map(Hex)
+//!             .parse_next(input)
+//!             .finish()
+//!             .map_err(|e| e.into_owned())
+//!     }
 //! }
 //!
 //! // ...
-//! # fn parse_bin_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
+//! # fn parse_digits(input: &str) -> IResult<&str, usize> {
+//! #     dispatch!(take(2usize);
+//! #         "0b" => parse_bin_digits.map_res(|s| usize::from_str_radix(s, 2)),
+//! #         "0o" => parse_oct_digits.map_res(|s| usize::from_str_radix(s, 8)),
+//! #         "0d" => parse_dec_digits.map_res(|s| usize::from_str_radix(s, 10)),
+//! #         "0x" => parse_hex_digits.map_res(|s| usize::from_str_radix(s, 16)),
+//! #         _ => fail,
+//! #     ).parse_next(input)
+//! # }
+//! #
+//! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while1((
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_oct_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
+//! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while1((
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_dec_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
+//! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while1((
 //! #         ('0'..='9'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_hex_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
+//! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while1((
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
@@ -131,28 +88,28 @@
 //! # }
 //!
 //! fn main() {
+//!     let input = "0x1a2b";
+//!     assert_eq!(input.parse::<Hex>().unwrap(), Hex(0x1a2b));
+//!
 //!     let input = "0x1a2b Hello";
-//!
-//!     let (remainder, (prefix, digits)) = parse_digits.parse_next(input).unwrap();
-//!
-//!     assert_eq!(remainder, " Hello");
-//!     assert_eq!(prefix, "0x");
-//!     assert_eq!(digits, "1a2b");
+//!     assert!(input.parse::<Hex>().is_err());
+//!     let input = "ghiHello";
+//!     assert!(input.parse::<Hex>().is_err());
 //! }
 //! ```
-//! Now, when parsing `"0b5"`, the `context` will be `"binary"`.
+//! [`FinishIResult::finish`]:
+//! - Ensures we hit [`eof`]
+//! - Removes the [`ErrMode`] wrapper
 //!
-//! [*prev*][super::chapter_6] [*next*][super::chapter_8]
+//! [`Error::into_owned`]:
+//! - Converts the `&str` in `Error` to `String` which enables support for [`std::error::Error`]
+//!
+//! [*prev*][super::chapter_6]
 
 #![allow(unused_imports)]
 use super::chapter_1;
-use super::chapter_3;
-use crate::branch::alt;
-use crate::combinator::cut_err;
+use crate::combinator::eof;
 use crate::error::ErrMode;
 use crate::error::Error;
-use crate::error::VerboseError;
 use crate::FinishIResult;
 use crate::IResult;
-use crate::Parser;
-use crate::_topic;
