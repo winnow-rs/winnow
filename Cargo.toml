@@ -1,132 +1,136 @@
-[package]
+[workspace]
+members = ["fuzz"]
 
-name = "nom"
-version = "7.1.1"
-authors = [ "contact@geoffroycouprie.com" ]
+[package]
+name = "winnow"
+version = "0.2.0"
 description = "A byte-oriented, zero-copy, parser combinators library"
 license = "MIT"
-repository = "https://github.com/Geal/nom"
-readme = "README.md"
-documentation = "https://docs.rs/nom"
-keywords = ["parser", "parser-combinators", "parsing", "streaming", "bit"]
+repository = "https://github.com/winnow-rs/winnow"
 categories = ["parsing"]
-edition = "2018"
+keywords = ["parser", "parser-combinators", "parsing", "streaming", "bit"]
+edition = "2021"
+rust-version = "1.60.0"  # MSRV
+include = [
+  "build.rs",
+  "src/**/*",
+  "Cargo.toml",
+  "LICENSE*",
+  "README.md",
+  "benches/**/*",
+  "examples/**/*"
+]
 autoexamples = false
 
-# also update in README.md (badge and "Rust version requirements" section)
-rust-version = "1.48"
+[package.metadata.docs.rs]
+features = ["unstable-doc"]
+rustdoc-args = ["--cfg", "docsrs"]
+cargo-args = ["-Zunstable-options", "-Zrustdoc-scrape-examples"]
 
-include = [
-  "CHANGELOG.md",
-  "LICENSE",
-  "README.md",
-  ".gitignore",
-  "Cargo.toml",
-  "src/*.rs",
-  "src/*/*.rs",
-  "tests/*.rs",
-  "doc/nom_recipes.md",
+[package.metadata.release]
+pre-release-replacements = [
+  {file="CHANGELOG.md", search="Unreleased", replace="{{version}}", min=1},
+  {file="CHANGELOG.md", search="\\.\\.\\.HEAD", replace="...{{tag_name}}", exactly=1},
+  {file="CHANGELOG.md", search="ReleaseDate", replace="{{date}}", min=1},
+  {file="CHANGELOG.md", search="<!-- next-header -->", replace="<!-- next-header -->\n## [Unreleased] - ReleaseDate\n", exactly=1},
+  {file="CHANGELOG.md", search="<!-- next-url -->", replace="<!-- next-url -->\n[Unreleased]: https://github.com/winnow-rs/winnow/compare/{{tag_name}}...HEAD", exactly=1},
 ]
 
 [features]
-alloc = []
-std = ["alloc", "memchr/std", "minimal-lexical/std"]
 default = ["std"]
-docsrs = []
+alloc = []
+std = ["alloc", "memchr/std"]
+debug = ["dep:anstyle", "dep:is-terminal", "dep:terminal_size", "dep:concolor"]
 
-[dependencies.minimal-lexical]
-version = "0.2.0"
-default-features = false
+unstable-doc = ["alloc", "std"]
 
-[dependencies.memchr]
-version = "2.3"
-default-features = false
+[dependencies]
+anstyle = { version = "0.2.5", optional = true }
+is-terminal = { version = "0.4.3", optional = true }
+memchr = { version = "2.3", default-features = false }
+terminal_size = { version = "0.2.3", optional = true }
+concolor = { version = "0.0.8", optional = true, features = ["auto"] }
 
 [dev-dependencies]
 doc-comment = "0.3"
 proptest = "1.0.0"
-
-[package.metadata.docs.rs]
-features = ["alloc", "std", "docsrs"]
-all-features = true
+criterion = "0.3.5"
+lexopt = "0.3.0"
+term-transcript = "0.2.0"
+escargot = "0.5.7"
+snapbox = { version = "0.4.6", features = ["examples"] }
 
 [profile.bench]
 debug = true
 lto = true
 codegen-units = 1
 
-[[test]]
+[[example]]
 name = "arithmetic"
-
-[[test]]
-name = "arithmetic_ast"
-required-features = ["alloc"]
-
-[[test]]
-name = "css"
-
-[[test]]
-name = "custom_errors"
-
-[[test]]
-name = "float"
-
-[[test]]
-name = "ini"
-required-features = ["alloc"]
-
-[[test]]
-name = "ini_str"
-required-features = ["alloc"]
-
-[[test]]
-name = "issues"
-required-features = ["alloc"]
-
-[[test]]
-name = "json"
-
-[[test]]
-name = "mp4"
-required-features = ["alloc"]
-
-[[test]]
-name = "multiline"
-required-features = ["alloc"]
-
-[[test]]
-name = "overflow"
-
-[[test]]
-name = "reborrow_fold"
-
-[[test]]
-name = "fnmut"
+test = true
 required-features = ["alloc"]
 
 [[example]]
-name = "json"
+name = "css"
+test = true
+
+[[example]]
+name = "custom_error"
+test = true
 required-features = ["alloc"]
-path = "examples/json.rs"
+
+[[example]]
+name = "http"
+required-features = ["alloc"]
+
+[[example]]
+name = "ini"
+test = true
+required-features = ["std"]
+
+[[example]]
+name = "json"
+test = true
+required-features = ["std"]
+
+[[example]]
+name = "json_iterator"
+required-features = ["std"]
 
 [[example]]
 name = "iterator"
-path = "examples/iterator.rs"
 
 [[example]]
 name = "s_expression"
-path = "examples/s_expression.rs"
 required-features = ["alloc"]
 
 [[example]]
 name = "string"
 required-features = ["alloc"]
-path = "examples/string.rs"
 
-[badges]
-travis-ci = { repository = "Geal/nom" }
-coveralls = { repository = "Geal/nom", branch = "main", service = "github" }
-maintenance = { status = "actively-developed" }
+[[bench]]
+name = "arithmetic"
+path = "examples/arithmetic/bench.rs"
+harness = false
 
-[workspace]
-members = [".", "benchmarks/"]
+[[bench]]
+name = "number"
+harness = false
+
+[[bench]]
+name = "http"
+path = "examples/http/bench.rs"
+harness = false
+required-features = ["alloc"]
+
+[[bench]]
+name = "ini"
+path = "examples/ini/bench.rs"
+harness = false
+required-features = ["std"]
+
+[[bench]]
+name = "json"
+path = "examples/json/bench.rs"
+harness = false
+required-features = ["std"]

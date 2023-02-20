@@ -1,42 +1,42 @@
-extern crate nom;
+use winnow::error::ErrMode;
+use winnow::error::ErrorKind;
+use winnow::error::ParseError;
+use winnow::IResult;
 
-use nom::error::ErrorKind;
-use nom::error::ParseError;
-use nom::Err::Error;
-use nom::IResult;
-
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum CustomError<I> {
-  MyError,
-  Nom(I, ErrorKind),
+    MyError,
+    Nom(I, ErrorKind),
 }
 
 impl<I> ParseError<I> for CustomError<I> {
-  fn from_error_kind(input: I, kind: ErrorKind) -> Self {
-    CustomError::Nom(input, kind)
-  }
+    fn from_error_kind(input: I, kind: ErrorKind) -> Self {
+        CustomError::Nom(input, kind)
+    }
 
-  fn append(_: I, _: ErrorKind, other: Self) -> Self {
-    other
-  }
+    fn append(self, _: I, _: ErrorKind) -> Self {
+        self
+    }
 }
 
-fn parse(input: &str) -> IResult<&str, &str, CustomError<&str>> {
-  Err(Error(CustomError::MyError))
+pub fn parse(_input: &str) -> IResult<&str, &str, CustomError<&str>> {
+    Err(ErrMode::Backtrack(CustomError::MyError))
 }
+
+fn main() {}
 
 #[cfg(test)]
 mod tests {
-  use super::parse;
-  use super::CustomError;
-  use nom::Err::Error;
+    use super::parse;
+    use super::CustomError;
+    use winnow::error::ErrMode;
 
-  #[test]
-  fn it_works() {
-    let err = parse("").unwrap_err();
-    match err {
-      Error(e) => assert_eq!(e, CustomError::MyError),
-      _ => panic!("Unexpected error: {:?}", err),
+    #[test]
+    fn it_works() {
+        let err = parse("").unwrap_err();
+        match err {
+            ErrMode::Backtrack(e) => assert_eq!(e, CustomError::MyError),
+            _ => panic!("Unexpected error: {:?}", err),
+        }
     }
-  }
 }

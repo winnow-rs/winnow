@@ -1,0 +1,7 @@
+[default.extend-words]
+# username
+dne = "dne"
+# test data
+hel = "hel"
+ba = "ba"
+nd = "nd"

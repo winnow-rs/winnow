@@ -1,198 +1,171 @@
 name: CI
 
-on: [push, pull_request]
+permissions:
+  contents: read
+
+on:
+  pull_request:
+  push:
+    branches:
+    - main
 
 env:
-  RUST_MINVERSION: 1.41.1
-  CARGO_INCREMENTAL: 0
-  CARGO_NET_RETRY: 10
+  RUST_BACKTRACE: 1
+  CARGO_TERM_COLOR: always
+  CLICOLOR: 1
 
 jobs:
+  ci:
+    permissions:
+      contents: none
+    name: CI
+    needs: [test, miri, msrv, docs, rustfmt, clippy]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Done
+        run: exit 0
   test:
     name: Test
-    runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        rust:
-          - stable
-          - beta
-          - nightly
-          - 1.48.0
-
-        features:
-          - ''
-
-        include:
-          - rust: stable
-            features: ''
-          - rust: stable
-            features: '--features "std"'
-          - rust: stable
-            features: '--no-default-features'
-          - rust: stable
-            features: '--no-default-features --features "alloc"'
-          - rust: nightly
-            features: ''
-          - rust: nightly
-            features: '--no-default-features'
-          - rust: nightly
-            features: '--no-default-features --features "alloc"'
-
+        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
+        rust: ["stable"]
+    continue-on-error: ${{ matrix.rust != 'stable' }}
+    runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-
-      - name: Install rust (${{ matrix.rust }})
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ matrix.rust }}
-          profile: minimal
-          override: true
-
-      - name: Cache
-        uses: Swatinem/rust-cache@v1
-
-      - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --verbose ${{ matrix.features }}
-
-      - name: Test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --verbose ${{ matrix.features }}
-
-  minrust:
-    name: Test minimal rust version
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: ${{ matrix.rust }}
+    - uses: Swatinem/rust-cache@v2
+    - name: Build
+      run: cargo test --no-run --workspace --all-features
+    - name: Default features
+      run: cargo test --workspace
+    - name: All features
+      run: cargo test --workspace --all-features
+    - name: No-default features
+      run: cargo test --workspace --no-default-features
+  miri:
+    name: Miri
     runs-on: ubuntu-latest
-
+    env:
+      MIRIFLAGS: -Zmiri-tag-raw-pointers
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-
-      - name: Install rust (${{ env.RUST_MINVERSION }})
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ env.RUST_MINVERSION }}
-          profile: minimal
-          override: true
-
-      - name: Cache
-        uses: Swatinem/rust-cache@v1
-
-      - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --verbose --no-default-features --features "alloc,std"
-
-  bench:
-    name: Bench
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        profile: minimal
+        override: true
+        components: miri
+    - uses: Swatinem/rust-cache@v2
+    # no-default features is a subset, not needed
+    # all-features is `debug` which is extremely slow
+    - name: Default features
+      run: cargo miri test --workspace
+  msrv:
+    name: "Check MSRV: 1.60.0"
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-
-      - name: Install rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          profile: minimal
-          override: true
-
-      - name: Cache
-        uses: Swatinem/rust-cache@v1
-
-      - name: Compile bench
-        uses: actions-rs/cargo@v1
-        with:
-          command: bench
-          args: --verbose --no-run --features ""
-
-      - name: Run bench
-        uses: actions-rs/cargo@v1
-        with:
-          command: bench
-          args: --verbose --features ""
-
-  doc:
-    name: Build documentation
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: 1.60.0  # MSRV
+    - uses: Swatinem/rust-cache@v2
+    - name: Default features
+      run: cargo check --workspace --all-targets
+    - name: All features
+      run: cargo check --workspace --all-targets --all-features
+    - name: No-default features
+      run: cargo check --workspace --all-targets --no-default-features
+    - name: Alloc
+      run: cargo check --workspace --all-targets --no-default-features --features alloc
+  docs:
+    name: Docs
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-
-      - name: Install rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          profile: minimal
-          override: true
-
-      - name: Build
-        env:
-          RUSTDOCFLAGS: -D warnings
-        run: cargo doc --no-deps --document-private-items --workspace --verbose --features "std docsrs"
-
-  fmt:
-    name: Check formatting
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+    - uses: Swatinem/rust-cache@v2
+    - name: Check documentation
+      env:
+        RUSTDOCFLAGS: -D warnings
+      run: cargo doc --workspace --all-features --no-deps --document-private-items
+  rustfmt:
+    name: rustfmt
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-
-      - name: Install rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: rustfmt
-          profile: minimal
-          override: true
-
-      - name: cargo fmt -- --check
-        continue-on-error: true
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: -- --check
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        # Not MSRV because its harder to jump between versions and people are
+        # more likely to have stable
+        toolchain: stable
+        components: rustfmt
+    - uses: Swatinem/rust-cache@v2
+    - name: Check formatting
+      run: cargo fmt --all -- --check
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write # to upload sarif results
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: 1.60.0  # MSRV
+        components: clippy
+    - uses: Swatinem/rust-cache@v2
+    - name: Install SARIF tools
+      run: cargo install clippy-sarif --version 0.3.4  # Held back due to MSRV
+    - name: Install SARIF tools
+      run: cargo install sarif-fmt --version 0.3.4  # Held back due to MSRV
+    - name: Check
+      run: >
+        cargo clippy --workspace --all-features --all-targets --message-format=json -- -D warnings --allow deprecated
+        | clippy-sarif
+        | tee clippy-results.sarif
+        | sarif-fmt
+      continue-on-error: true
+    - name: Upload
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: clippy-results.sarif
+        wait-for-processing: true
 
   coverage:
     name: Coverage
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-
-      - name: Install rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          override: true
-
-      - name: Cache
-        uses: Swatinem/rust-cache@v1
-
-      - name: Install cargo-tarpaulin
-        uses: actions-rs/cargo@v1
-        with:
-          command: install
-          args: cargo-tarpaulin
-
-      - name: Run cargo tarpaulin
-        uses: actions-rs/cargo@v1
-        with:
-          command: tarpaulin
-          args: --output-dir coverage --out Lcov
-      
-      - name: Publish to Coveralls
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Checkout sources
+      uses: actions/checkout@v3
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+        components: clippy
+    - uses: Swatinem/rust-cache@v2
+    - name: Install cargo-tarpaulin
+      run: cargo install cargo-tarpaulin
+    - name: Run cargo tarpaulin
+      run: cargo tarpaulin --output-dir coverage --out Lcov
+    - name: Publish to Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
