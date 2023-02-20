@@ -26,6 +26,8 @@
 //!   - Leverage feature flags to keep one active branch
 //! - We will support the last 6 months of rust releases (MSRV, currently 1.60)
 //!
+//! See also [Special Topic: Why winnow?][crate::_topic::why]
+//!
 //! ## Example
 //!
 //! Run
