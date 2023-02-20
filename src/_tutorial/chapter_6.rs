@@ -1,21 +1,21 @@
 //! # Chapter 6: Repeating Parsers
-//! 
+//!
 //! A single parser which repeats a predicate is useful, but more useful still is a combinator that
 //! repeats a parser. Nom has multiple combinators which operate on this principle; the most obvious of
 //! which is `many0`, which applies a parser as many times as possible; and returns a vector of
 //! the results of those parses. Here is an example:
-//! 
+//!
 //! ```rust
 //! # extern crate nom;
 //! # use std::error::Error;
 //! use nom::IResult;
 //! use nom::multi::many0;
 //! use nom::bytes::complete::tag;
-//! 
+//!
 //! fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 //!   many0(tag("abc"))(s)
 //! }
-//! 
+//!
 //! fn main() {
 //!     assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
 //!     assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
@@ -23,9 +23,9 @@
 //!     assert_eq!(parser(""), Ok(("", vec![])));
 //! }
 //! ```
-//! 
+//!
 //! There are many different parsers to choose from:
-//! 
+//!
 //! | combinator | usage | input | output | comment |
 //! |---|---|---|---|---|
 //! | [count](https://docs.rs/nom/latest/nom/multi/fn.count.html) | `count(take(2), 3)` | `"abcdefgh"` | `Ok(("gh", vec!["ab", "cd", "ef"]))` |Applies the child parser a specified number of times|
@@ -36,4 +36,5 @@
 //! | [fold_many0](https://docs.rs/nom/latest/nom/multi/fn.fold_many0.html) | `fold_many0(be_u8, \|\| 0, \|acc, item\| acc + item)` | `[1, 2, 3]` | `Ok(([], 6))` |Applies the parser 0 or more times and folds the list of return values. The `fold_many1` version must apply the child parser at least one time|
 //! | [fold_many_m_n](https://docs.rs/nom/latest/nom/multi/fn.fold_many_m_n.html) | `fold_many_m_n(1, 2, be_u8, \|\| 0, \|acc, item\| acc + item)` | `[1, 2, 3]` | `Ok(([3], 3))` |Applies the parser between m and n times (n included) and folds the list of return value|
 //! | [length_count](https://docs.rs/nom/latest/nom/multi/fn.length_count.html) | `length_count(number, tag("ab"))` | `"2ababab"` | `Ok(("ab", vec!["ab", "ab"]))` |Gets a number from the first parser, then applies the second parser that many times|
-//! 
+//!
+//! [*prev*][super::chapter_5] [*next*][super::chapter_7]
