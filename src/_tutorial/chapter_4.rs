@@ -99,10 +99,11 @@
 //!     assert!(parse_digits("ghiWorld").is_err());
 //! }
 //! ```
-//!
-//! [*prev*][super::chapter_3] [*next*][super::chapter_5]
 
 #![allow(unused_imports)]
 use crate::IResult;
 use crate::Parser;
 use std::str::FromStr;
+
+pub use super::chapter_3 as previous;
+pub use super::chapter_5 as next;

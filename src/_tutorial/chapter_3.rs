@@ -232,10 +232,11 @@
 //!     assert!(parse_digits("ghiWorld").is_err());
 //! }
 //! ```
-//!
-//! [*prev*][super::chapter_2] [*next*][super::chapter_4]
 
 #![allow(unused_imports)]
 use crate::branch::alt;
 use crate::branch::dispatch;
 use crate::sequence::preceded;
+
+pub use super::chapter_2 as previous;
+pub use super::chapter_4 as next;

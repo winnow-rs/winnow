@@ -103,8 +103,6 @@
 //!
 //! [`Error::into_owned`]:
 //! - Converts the `&str` in `Error` to `String` which enables support for [`std::error::Error`]
-//!
-//! [*prev*][super::chapter_6]
 
 #![allow(unused_imports)]
 use super::chapter_1;
@@ -113,3 +111,5 @@ use crate::error::ErrMode;
 use crate::error::Error;
 use crate::FinishIResult;
 use crate::IResult;
+
+pub use super::chapter_6 as previous;

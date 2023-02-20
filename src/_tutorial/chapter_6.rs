@@ -141,8 +141,6 @@
 //! }
 //! ```
 //! Now, when parsing `"0b5"`, the `context` will be `"binary"`.
-//!
-//! [*prev*][super::chapter_5] [*next*][super::chapter_7]
 
 #![allow(unused_imports)]
 use super::chapter_1;
@@ -156,3 +154,6 @@ use crate::FinishIResult;
 use crate::IResult;
 use crate::Parser;
 use crate::_topic;
+
+pub use super::chapter_5 as previous;
+pub use super::chapter_7 as next;

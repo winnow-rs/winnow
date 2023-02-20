@@ -200,8 +200,6 @@
 //!     assert!(parse_digits("ghiWorld").is_err());
 //! }
 //! ```
-//!
-//! [*prev*][super::chapter_4] [*next*][super::chapter_6]
 
 #![allow(unused_imports)]
 use super::chapter_2;
@@ -211,3 +209,6 @@ use crate::multi::separated0;
 use crate::stream::Accumulate;
 use crate::Parser;
 use std::vec::Vec;
+
+pub use super::chapter_4 as previous;
+pub use super::chapter_6 as next;

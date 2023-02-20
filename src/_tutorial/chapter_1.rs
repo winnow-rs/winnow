@@ -80,9 +80,10 @@
 //!     assert_eq!(output, "");
 //! }
 //! ```
-//!
-//! [*prev*][super] [*next*][super::chapter_2]
 
 #![allow(unused_imports)]
 use crate::IResult;
 use crate::Parser;
+
+pub use super::chapter_0 as previous;
+pub use super::chapter_2 as next;

@@ -141,8 +141,6 @@
 //!     assert!(parse_digits("Z").is_err());
 //! }
 //! ```
-//!
-//! [*prev*][super::chapter_1] [*next*][super::chapter_3]
 
 #![allow(unused_imports)]
 use crate::bytes::one_of;
@@ -152,3 +150,6 @@ use crate::character::hex_digit1;
 use crate::stream::ContainsToken;
 use crate::Parser;
 use std::ops::RangeInclusive;
+
+pub use super::chapter_1 as previous;
+pub use super::chapter_3 as next;
