@@ -11,45 +11,73 @@ period.
 ### Breaking Changes
 
 - `Parser::into` in favor of `Parser::output_into` and `Parser::err_into` (#48)
-- Moved input traits from `winnow` to `winnow::stream` (#13, TODO)
 - Combinator structs returned by `Parser` were moved from `winnow` to `winnow::combinator` module (#4)
-- Merged many input traits into `winnow::stream::Stream` (TODO)
 - Tweaks were made to what input traits are needed for various types / parsers
 - Removed `pub use bits::*;` into root namespace (#52)
-- `winnow::error::Err` was renamed to `ErrMode` (TODO)
+- Moved error types and traits into the `winnnow::error` module (#73, #117)
+- `winnow::error::Err` was renamed to `ErrMode` (#117)
   - `Error` variant was renamed to `Backtrack`
   - `Fatal` variant was renamed to `Cut`
-- `winnow::error::Error`'s `code` field was renamed to `kind` (TODO)
-- `winnow::error::ErrorKind` for infinite loops, like in `winnow::multi`, was changed to `ErrorKind::Assert` (TODO)
+- `winnow::error::ParserError` function parameter order has changed (#92)
+- `winnow::error::Error`'s `code` field was renamed to `kind` (#92)
+- Removed support for `(I, ErrorKind)` errors in favor of `winnow::error::Error` (#92, #117)
+- `winnow::error::ErrorKind` for infinite loops, like in `winnow::multi`, was changed to `ErrorKind::Assert` (#146)
+- `winnow::multi` parsers will `debug_assert` by default when encountering infinite loops (#146)
 - Removed `error::error_to_u32` (#54)
+- Changed all parsers to use `FnMut` (#152, #164)
+- Moved input traits from `winnow` to `winnow::stream` (#13, #142)
+- Merged many input traits into `winnow::stream::Stream` (#105, #107, #142, #155, #157)
+  - `InputIter::Iter` is now `Stream::IterOffsets`
+  - `InputIter::iter_indices` is now `Stream::iter_offsets`
+  - `InputIter::position` is now `Stream::offset_for`
+  - `InputIter::slice_index` is now `Stream::offset_at`
+- Renamed `winnow::stream::InputLen` to `SliceLen` (#105)
+- Renamed `winnow::stream::FindSubstring` to `FindSlice` (#105)
+- Renamed `winnow::stream::FindTokens` to `ContainsToken` (#105)
+- Renamed `winnow::stream::ParseTo` to `ParseSlice` (#136)
+- Renamed `winnow::stream::Offset::offset` to `offset_to` (#105)
+- Split `AsBytes` into `AsBytes` and `AsBStr` (#134)
+- Removed seemingly unused `winnow::stream` trait impls (#105)
+- Removed `winnow::lib` from API (#118)
+
+### Compatibility
+
+MSRV was raised to 1.60 (#158, #160, #167)
 
 ### Deprecations
 
 - `character::is_*` functions in favor of `AsChar` (#25)
 - `winnow::*::complete::*` and `winnow::*::streaming::*` parsers in favor of the merged ones (#28)
-  - Unsigned parsers like `u8` were merge into `winnow::character::dec_uint` (TODO)
-  - Unsigned parsers like `i8` were merge into `winnow::character::dec_int` (TODO)
-  - `winnow::number::*::hex_u32` was replaced with `winnow::character::hex_uint` (TODO)
-  - `winnow::bytes::*::take_till` was renamed to `winnow::bytes::take_till0` (TODO)
-  - `winnow::bytes::*::take_while` was renamed to `winnow::bytes::take_while0` (TODO)
-  - `winnow::bytes::*::take_until` was renamed to `winnow::bytes::take_until0` (TODO)
-  - `winnow::bytes::*::escaped` was moved to `winnow::character::escaped` (TODO)
-  - `winnow::bytes::*::escaped_transform` was moved to `winnow::character::escaped_transform` (TODO)
-- `dbg_dmp` in favor of `-features debug` (TODO)
+  - Unsigned parsers like `u8` were merge into `winnow::character::dec_uint` (#59)
+  - Unsigned parsers like `i8` were merge into `winnow::character::dec_int` (#59)
+  - `winnow::number::*::hex_u32` was replaced with `winnow::character::hex_uint` (#59)
+  - `winnow::bytes::*::take_till` was renamed to `winnow::bytes::take_till0` (#132)
+  - `winnow::bytes::*::take_while` was renamed to `winnow::bytes::take_while0` (#132)
+  - `winnow::bytes::*::take_until` was renamed to `winnow::bytes::take_until0` (#132)
+  - `winnow::multi::*::many_till` was renamed to `winnow::multi::many_till0` (#132)
+  - `winnow::multi::*::separated_list0` was renamed to `winnow::multi::separated0` (#140)
+  - `winnow::multi::*::separated_list1` was renamed to `winnow::multi::separated1` (#140)
+  - `winnow::bytes::*::escaped` was moved to `winnow::character::escaped` (#108)
+  - `winnow::bytes::*::escaped_transform` was moved to `winnow::character::escaped_transform` (#108)
+- `dbg_dmp` in favor of `-features debug` (#173)
+- `all_consuming` in favor of `eof` / `FinishIResult::finish` (#112)
 - Freestanding parsers that were in both `winnow::combinator` to `Parser` trait (#37)
   - `map`, see `Parser::map`
   - `flat_map`, see `Parser::flat_map`
   - `map_parser`, see `Parser::and_then`
 - Freestanding parsers that were moved from `winnow::combinator` to `Parser` (#40)
   - `map_res` as `Parser::map_res`
-  - `map_opt` as `Parser::verify_map` (TODO)
-  - `complete` as `Parser::complete_err` (TODO)
+  - `map_opt` as `Parser::verify_map` (#145)
+  - `complete` as `Parser::complete_err` (#168)
   - `verify` as `Parser::verify`
   - `value` as `Parser::value`
   - `recognize` as `Parser::recognize`
   - `consumed` as `Parser::with_recognized` (note: output order swapped)
   - `context` as `Parser::context`
+- `many0_count`, `many1_count` in favor of `many0` and `many1` (#127)
 - Freestanding `into` in favor of `Parser::output_into` and `Parser::err_into` (#37, #48)
+- `winnow::combinator::cut` in favor of `winnow::combiantor::cut_err` (#117)
+- `Parser::parse` in favor of `Parser::parse_next` (#76)
 - `is_a` with `take_while1` thanks to new `FindToken` impls (#44)
 - `is_not` with `take_till1` thanks to new `FindToken` impls (#44)
 - `satisfy` with `one_of` thanks to new `FindToken` impls (#44)
@@ -57,40 +85,79 @@ period.
 - `tuple`, `pair` parser in favor of using tuples (#42, #46)
 - `ParseError::from_char` in favor of `ContextError` (#45)
 - `error::make_error` and `error::append_error` (#55)
+- `error::Finish` in favor of `FinishIResult` (#21)
+- `error::error_position!` and `error::error_mode_position!` (#92)
 
 ### Feature
 
+- Provide a `winnow::prelude` (#21)
 - `winnow::Stateful` for attaching state to the input type (#58)
-- `winnow::Located` for tracking the input's location, along with `Parser::span` and `Parser::with_span` to capture it (#58)
-- Merged streaming/complete parsers, opting in to streaming with the `Partial<I>` stream type (#28)
-  - Merged ASCII float parsers moved to `character` and made generic (#38, TODO)
+- `winnow::Located` for tracking the input's location, along with `Parser::span` and `Parser::with_span` to capture it (#61)
+- Improved debug experience with
+  - New `winnow::trace::trace` combinator, used by all `winnow` parsers (#156, #165, #176)
+  - `Bytes` and `BStr` new types with improved `Debug` (#144, #147, #149, #177)
+- Merged streaming/complete parsers, opting in to streaming with the `Partial<I>` stream type (#28, #142, #166, #170, #172)
+  - Merged ASCII float parsers moved to `character` and made generic (#38, #59)
   - Moved `one_of`, `none_of` from `character` to `bytes` as they are more general (#44)
   - Moved `character::anychar` to `bytes::any` with a more generic return type (#44)
 - Allow generic context in errors (#49)
 - `impl Parser for <tuples>` as an alternative to `tuple(())` (#42)
-- `impl Parser for (char|u8|&str|&[u8])` as an alternative to `one_of`, `char`, and `tag` (#47, #50)
+- `impl Parser for (char|u8|&str|&[u8])` as an alternative to `one_of`, `char`, and `tag` (#47, #50, #171)
 - `Parser::by_ref` to allow using `&mut impl Parser` as a `Parser` (#34, #41)
-- Add combinators directly to `Parser` (#40):
-  - `Parser::map_res`
-  - `Parser::verify_map` (TODO)
-  - `Parser::complete_err` (TODO)
-  - `Parser::verify`
-  - `Parser::value`
-  - `Parser::with_recognized`
-  - `Parser::context`
-- Allow `u8` / `char` / ranges of the prior, functions, and tuples of the prior wherever `ContainsToken` is accepted (#44, TODO)
-- Generalize `take_while`, `take_till` with `ContainsToken` trait (#44, TODO)
+- New combinators:
+  - `Parser::void` (#113)
+  - `Parser::parse_to` (#136)
+  - `winnow::combinator::todo` (#135)
+  - `winnow::combinator::backtrack_err` (#117)
+  - `winnow::branch::dispatch!` as a `match`-like alternative to `alt` (#119)
+  - `winnow::multi::separated_foldl1` (#140)
+  - `winnow::multi::separated_foldr1` (#140)
+- Add combinators directly to `Parser`:
+  - `Parser::map_res` (#40)
+  - `Parser::verify_map` (#40, #145)
+  - `Parser::complete_err` (#40, #168)
+  - `Parser::verify` (#40)
+  - `Parser::value` (#40)
+  - `Parser::with_recognized` (#40)
+  - `Parser::context` (#40)
+- Allow more containers to be used with `winnow::multi` parsers (#127)
+- Allow `u8` and `char`,  ranges of `u8` and `char`, functions, and tuples of the prior wherever `ContainsToken` is accepted (#44, #105)
+- Generalize `take_while`, `take_till` with `ContainsToken` trait (#44, #105)
 - Add `character::is_*` functions to `AsChar` that were missing (#2)
+- Implement `Stream` for `(I, usize)`, allowing more combinators to work with bit-streams (#153)
+- Treat all slices as input, regardless of token type (#111, rust-bakery/nom#1482)
+- `FinishIResult::finish` for dropping the `remainder` (#30)
+- `FindSlice` now also finds tokens, making `take_until0` and friends more flexible (#105)
+- Implement `ParseError` and `FromExternalError` for `ErrMode`, making it easier to create the right kind of error (#120, #124)
 
 ### Fixes
 
+- Correctly count multi-byte `char`s for `take_while_m_n` (#130)
 - Change `fill`, `iterator`, `bits::bits`, and `bits::bytes` from taking a function to taking a `Parser` (#10, #11, #120)
 - Allow byte arrays of any size (#14)
 - `length_data` and `length_value` now auto-detect complete/streaming, before were streaming only (#28)
+- `Clarify `Offset::offset_to` with explicit assert (#109, rust-bakery/nom#1520)
+- Prefer `Into` over `From` (#110, rust-bakery/nom#1460)
+- Use `ErrorConvert` in `ErrMode::convert` (#124)
+
+### Performance
+
+- Use `memchr::memmem` on `FindSlice` (#86, rust-bakery/nom#1375)
+- Use `Vec::with_capacity` for `length_count` (#87, rust-bakery/nom#1462)
 
 ### Documentation
 
-- Pulled loose markdown into rustdoc (#1)
+- Pulled loose markdown into rustdoc (#1, #174, #183)
+  - Pull in the nominomicon (#185, rust-bakery/nom#1525)
+  - Pull examples into the "Special Topics" section (#175)
+- Add `#[doc(alias)]`s for easier migration from `nom`, `chumsky`, and `combine` (#178)
+- Made examples more interactive (#77, #175)
+- Add example for `bits::tag` (#88, rust-bakery/nom#1501)
+- Special topics: improve identifier example (#90, rust-bakery/nom#1334)
+
+### Internal
+
+- Now verified with miri (#143, #161)
 
 ## [nom 7.1.3] - 2023-01-15
 
