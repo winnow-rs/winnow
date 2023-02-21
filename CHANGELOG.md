@@ -9,6 +9,18 @@ Versioning starts at v0.3.0 due to the historical nature of how `winnow` was
 forked from `nom`.  See also the
 [`nom8` changelog](https://github.com/winnow-rs/winnow/discussions/186).
 
+### `nom` Migration Guide
+
+1. Update all references from `nom` to `winnow`
+2. Replace
+  - `winnow::Err::Error` with `winnow::Err::Backtrack`
+  - `winnow::Err::Fatal` with `winnow::Err::Cut`
+  - `winnow::Input*` with `winnow::stream::Stream`
+  - `E::append` with `err.append`
+  - `E::add_context` with `err.add_context`
+3. Resolve remaining compile errors
+4. Resolve deprecations as described by them
+
 ### Breaking Changes
 
 - `Parser::into` in favor of `Parser::output_into` and `Parser::err_into` (#48)
