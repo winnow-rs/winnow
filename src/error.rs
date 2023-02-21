@@ -397,7 +397,7 @@ pub trait ParseError<I>: Sized {
 /// Used by the [`context`] to add custom data to error while backtracking
 ///
 /// May be implemented multiple times for different kinds of context.
-pub trait ContextError<I, C>: Sized {
+pub trait ContextError<I, C = &'static str>: Sized {
     /// Append to an existing error custom data
     ///
     /// This is used mainly in the [`context`] combinator, to add user friendly information

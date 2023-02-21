@@ -249,3 +249,7 @@ pub use stream::Located;
 pub use stream::Partial;
 pub use stream::Stateful;
 pub use stream::Str;
+
+#[deprecated(since = "0.1.0", note = "Replaced with `winnow::error::ErrMode")]
+#[doc(hidden)]
+pub type Err<E> = error::ErrMode<E>;
