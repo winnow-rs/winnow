@@ -3,10 +3,11 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
-Versioning is starting at 0.3.0 due to the historical nature of how `winnow`
-was forked from `nom`.  See
-[changelog](https://github.com/winnow-rs/winnow/discussions/186) from that
-period.
+v0.3.0 changes are relative to nom v7.1.3
+
+Versioning starts at v0.3.0 due to the historical nature of how `winnow` was
+forked from `nom`.  See also the
+[`nom8` changelog](https://github.com/winnow-rs/winnow/discussions/186).
 
 ### Breaking Changes
 
