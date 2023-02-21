@@ -4,7 +4,9 @@
 
 #![allow(deprecated)] // will just become `pub(crate)` later
 
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub mod complete;
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub mod streaming;
 #[cfg(test)]
 mod tests;
@@ -1522,6 +1524,7 @@ where
 #[inline]
 #[doc(hidden)]
 #[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_alpha`")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn is_alphabetic(chr: u8) -> bool {
     matches!(chr, 0x41..=0x5A | 0x61..=0x7A)
 }
@@ -1529,6 +1532,7 @@ pub fn is_alphabetic(chr: u8) -> bool {
 #[inline]
 #[doc(hidden)]
 #[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_dec_digit`")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn is_digit(chr: u8) -> bool {
     matches!(chr, 0x30..=0x39)
 }
@@ -1536,6 +1540,7 @@ pub fn is_digit(chr: u8) -> bool {
 #[inline]
 #[doc(hidden)]
 #[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_hex_digit`")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn is_hex_digit(chr: u8) -> bool {
     matches!(chr, 0x30..=0x39 | 0x41..=0x46 | 0x61..=0x66)
 }
@@ -1543,6 +1548,7 @@ pub fn is_hex_digit(chr: u8) -> bool {
 #[inline]
 #[doc(hidden)]
 #[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_oct_digit`")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn is_oct_digit(chr: u8) -> bool {
     matches!(chr, 0x30..=0x37)
 }
@@ -1550,6 +1556,7 @@ pub fn is_oct_digit(chr: u8) -> bool {
 #[inline]
 #[doc(hidden)]
 #[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_alphanum`")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn is_alphanumeric(chr: u8) -> bool {
     #![allow(deprecated)]
     is_alphabetic(chr) || is_digit(chr)
@@ -1558,6 +1565,7 @@ pub fn is_alphanumeric(chr: u8) -> bool {
 #[inline]
 #[doc(hidden)]
 #[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_space`")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn is_space(chr: u8) -> bool {
     chr == b' ' || chr == b'\t'
 }
@@ -1565,6 +1573,7 @@ pub fn is_space(chr: u8) -> bool {
 #[inline]
 #[doc(hidden)]
 #[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_newline`")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn is_newline(chr: u8) -> bool {
     chr == b'\n'
 }

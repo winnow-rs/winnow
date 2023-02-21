@@ -1922,6 +1922,7 @@ impl ToUsize for u64 {
     since = "0.3.0",
     note = "Replaced with `Debug` (see `Bytes` and `BStr`"
 )]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub trait HexDisplay {
     /// Converts the value of `self` to a hex dump, returning the owned
     /// `String`.
