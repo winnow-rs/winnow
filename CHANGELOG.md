@@ -3,6 +3,35 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Breaking Changes
+
+General
+- `winnow::multi` are now generic over the container via the `Accumulate` trait
+  - In most cases, type inference will catch this, but not always
+- `winnow::error::Error`'s `code` field was renamed to `kind`
+- `winnow::error::ErrorKind` for infinite loops, like in `winnow::multi`, was changed to `ErrorKind::Assert`
+- `winnow::error::Err` was renamed to `ErrMode`
+  - `Error` variant was renamed to `Backtrack`
+  - `Fatal` variant was renamed to `Cut`
+
+From 0.2.0
+- Renamed `winnow::input` to `winnow::stream`
+- Merged most stream traits into `winnow::stream::Stream`
+- Renamed `winnow::stream::InputIsStreaming` to `winnow::stream::StreamIsPartial`
+  - Changed it from taking a `const STREAMING: bool` to being `is_partial`/`is_partial_supported`
+- Renamed `winnow::stream::Streaming` to `winnow::stream::Partial`
+  - Now uses `Partial::new` instead of being directly constructable
+- `Parser::map_opt` was renamed to `Parser::verify_map`
+- `Parser::debug_err` was removed in favor of compiling with `--features debug`
+- Unsigned parsers like `winnow::character::u8` were merge into `winnow::character::dec_uint`
+- Unsigned parsers like `winnow::character::i8` were merge into `winnow::character::dec_int`
+- `winnow::character::hex_u32` was replaced with `winnow::character::hex_uint`
+- `winnow::bytes::take_till` was renamed to `winnow::bytes::take_till0`
+- `winnow::bytes::take_while` was renamed to `winnow::bytes::take_while0`
+- `winnow::bytes::take_until` was renamed to `winnow::bytes::take_until0`
+- `winnow::bytes::escaped` was moved to `winnow::character::escaped`
+- `winnow::bytes::escaped_transform` was moved to `winnow::character::escaped_transform`
+
 ## [0.2.0] - 2022-12-27
 
 ### Breaking Changes
