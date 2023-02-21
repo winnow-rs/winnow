@@ -252,6 +252,7 @@ impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for ByRef<'p, P> {
 /// # }
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::map")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn map<I, O1, O2, E, F, G>(mut parser: F, mut f: G) -> impl FnMut(I) -> IResult<I, O2, E>
 where
     F: Parser<I, O1, E>,
@@ -313,6 +314,7 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> O2> Parser<I, O2, E> for Ma
 /// # }
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::map_res")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn map_res<I: Clone, O1, O2, E: FromExternalError<I, E2>, E2, F, G>(
     mut parser: F,
     mut f: G,
@@ -391,6 +393,7 @@ where
 /// # }
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::verify_map")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn map_opt<I: Clone, O1, O2, E: ParseError<I>, F, G>(
     mut parser: F,
     mut f: G,
@@ -465,6 +468,7 @@ where
 /// # }
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::and_then")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn map_parser<I, O1, O2, E: ParseError<I>, F, G>(
     mut parser: F,
     mut applied_parser: G,
@@ -567,6 +571,7 @@ where
 /// # }
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::flat_map")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn flat_map<I, O1, O2, E: ParseError<I>, F, G, H>(
     mut parser: F,
     mut applied_parser: G,
@@ -811,6 +816,7 @@ where
 /// # }
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::complete_err")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn complete<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
     F: Parser<I, O, E>,
@@ -877,6 +883,7 @@ where
     since = "0.1.0",
     note = "Replaced with `eof` or `FinishIResult::finish`"
 )]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn all_consuming<I, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
     I: Stream,
@@ -913,6 +920,7 @@ where
 /// # }
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::verify")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn verify<I: Clone, O1, O2, E: ParseError<I>, F, G>(
     mut first: F,
     second: G,
@@ -993,6 +1001,7 @@ where
 /// # }
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::value")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn value<I, O1: Clone, O2, E: ParseError<I>, F>(
     val: O1,
     mut parser: F,
@@ -1103,6 +1112,7 @@ where
 /// # }
 /// ```
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::recognize")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn recognize<I, O, E: ParseError<I>, F>(
     mut parser: F,
 ) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, E>
@@ -1200,6 +1210,7 @@ where
     since = "0.1.0",
     note = "Replaced with `Parser::with_recognized (output ordering is changed)"
 )]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn consumed<I, O, F, E>(
     mut parser: F,
 ) -> impl FnMut(I) -> IResult<I, (<I as Stream>::Slice, O), E>
@@ -1385,6 +1396,7 @@ where
 
 /// Deprecated, see [`cut_err`]
 #[deprecated(since = "0.3.0", note = "Replaced with `cut_err`")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn cut<I, O, E: ParseError<I>, F>(parser: F) -> impl FnMut(I) -> IResult<I, O, E>
 where
     I: Stream,
@@ -1462,6 +1474,7 @@ where
     since = "0.1.0",
     note = "Replaced with `Parser::output_into` and `Parser::err_into`"
 )]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn into<I, O1, O2, E1, E2, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O2, E2>
 where
     O1: convert::Into<O2>,

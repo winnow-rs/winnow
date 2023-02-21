@@ -125,11 +125,13 @@ where
     since = "0.1.0",
     note = "Replaced with `FinishIResult` which is available via `winnow::prelude`"
 )]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub trait Finish<I, O, E> {
     #[deprecated(
         since = "0.1.0",
         note = "Replaced with `FinishIResult::finish_err` which is available via `winnow::prelude`"
     )]
+    #[cfg_attr(feature = "unstable-doc", doc(hidden))]
     fn finish(self) -> Result<(I, O), E>;
 }
 
@@ -318,6 +320,7 @@ impl<T> ErrMode<Error<T>> {
 impl ErrMode<Error<&[u8]>> {
     /// Deprecated, replaced with [`Error::into_owned`]
     #[deprecated(since = "0.3.0", note = "Replaced with `Error::into_owned`")]
+    #[cfg_attr(feature = "unstable-doc", doc(hidden))]
     pub fn to_owned(self) -> ErrMode<Error<crate::lib::std::vec::Vec<u8>>> {
         self.map_input(ToOwned::to_owned)
     }
@@ -327,6 +330,7 @@ impl ErrMode<Error<&[u8]>> {
 impl ErrMode<Error<&str>> {
     /// Deprecated, replaced with [`Error::into_owned`]
     #[deprecated(since = "0.3.0", note = "Replaced with `Error::into_owned`")]
+    #[cfg_attr(feature = "unstable-doc", doc(hidden))]
     pub fn to_owned(self) -> ErrMode<Error<crate::lib::std::string::String>> {
         self.map_input(ToOwned::to_owned)
     }
@@ -376,6 +380,7 @@ pub trait ParseError<I>: Sized {
 
     /// Creates an error from an input position and an expected character
     #[deprecated(since = "0.2.0", note = "Replaced with `ContextError`")]
+    #[cfg_attr(feature = "unstable-doc", doc(hidden))]
     fn from_char(input: I, _: char) -> Self {
         Self::from_error_kind(input, ErrorKind::Char)
     }
@@ -514,6 +519,7 @@ impl ErrorConvert<()> for () {
 
 /// Creates an error from the input position and an [`ErrorKind`]
 #[deprecated(since = "0.2.0", note = "Replaced with `ParseError::from_error_kind`")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn make_error<I, E: ParseError<I>>(input: I, kind: ErrorKind) -> E {
     E::from_error_kind(input, kind)
 }
@@ -522,6 +528,7 @@ pub fn make_error<I, E: ParseError<I>>(input: I, kind: ErrorKind) -> E {
 /// position and an [`ErrorKind`]. This is useful when backtracking
 /// through a parse tree, accumulating error context on the way
 #[deprecated(since = "0.2.0", note = "Replaced with `ParseError::append`")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn append_error<I, E: ParseError<I>>(input: I, kind: ErrorKind, other: E) -> E {
     other.append(input, kind)
 }
@@ -638,6 +645,7 @@ impl<I: fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::Error for
 ///
 /// **WARNING:** Deprecated, replaced with [`Parser::context`]
 #[deprecated(since = "0.1.0", note = "Replaced with `Parser::context")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn context<I: Clone, E: ContextError<I, &'static str>, F, O>(
     context: &'static str,
     mut f: F,
@@ -866,6 +874,7 @@ impl ErrorKind {
     not(test),
     deprecated(since = "0.3.0", note = "Replaced with `E::from_error_kind`")
 )]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 macro_rules! error_position(
   ($input:expr, $code:expr) => ({
     $crate::error::ParseError::from_error_kind($input, $code)
@@ -881,6 +890,7 @@ macro_rules! error_position(
     not(test),
     deprecated(since = "0.3.0", note = "Replaced with `E::append`")
 )]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 macro_rules! error_node_position(
   ($input:expr, $code:expr, $next:expr) => ({
     $crate::error::ParseError::append($next, $input, $code)
@@ -914,6 +924,7 @@ macro_rules! error_node_position(
     since = "0.1.0",
     note = "Replaced with `trace` and the `debug` feature flag"
 )]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 #[cfg(feature = "std")]
 pub fn dbg_dmp<'a, F, O, E: std::fmt::Debug>(
     mut f: F,

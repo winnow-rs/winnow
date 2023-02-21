@@ -140,6 +140,7 @@ where
 
 /// **WARNING:** Deprecated, replaced with [`many_till0`]
 #[deprecated(since = "0.3.0", note = "Replaced with `many_till0`")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn many_till<I, O, C, P, E, F, G>(f: F, g: G) -> impl FnMut(I) -> IResult<I, (C, P), E>
 where
     I: Stream,
@@ -293,6 +294,7 @@ where
     since = "0.3.0",
     note = "Replaced with `separated0` (note the parameter swap)"
 )]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn separated_list0<I, O, C, O2, E, F, G>(sep: G, f: F) -> impl FnMut(I) -> IResult<I, C, E>
 where
     I: Stream,
@@ -388,6 +390,7 @@ where
     since = "0.3.0",
     note = "Replaced with `separated1` (note the parameter swap)"
 )]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn separated_list1<I, O, C, O2, E, F, G>(sep: G, f: F) -> impl FnMut(I) -> IResult<I, C, E>
 where
     I: Stream,
@@ -621,6 +624,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`many0`]
 #[deprecated(since = "0.3.0", note = "Replaced with `many0`")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn many0_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>
 where
     I: Stream,
@@ -684,6 +688,7 @@ where
 ///
 /// **WARNING:** Deprecated, replaced with [`many0`]
 #[deprecated(since = "0.3.0", note = "Replaced with `many1`")]
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub fn many1_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>
 where
     I: Stream,

@@ -1,6 +1,8 @@
 //! Parsers recognizing bytes streams
 
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub mod complete;
+#[cfg_attr(feature = "unstable-doc", doc(hidden))]
 pub mod streaming;
 #[cfg(test)]
 mod tests;
