@@ -48,21 +48,6 @@
 //! | [`fold_many_m_n`][crate::multi::fold_many_m_n] | `fold_many_m_n(1, 2, be_u8, \|\| 0, \|acc, item\| acc + item)` | `[1, 2, 3]` | `Ok(([3], 3))` |Applies the parser between m and n times (n included) and folds the list of return value|
 //! | [`length_count`][crate::multi::length_count] | `length_count(number, tag("ab"))` | `"2ababab"` | `Ok(("ab", vec!["ab", "ab"]))` |Gets a number from the first parser, then applies the second parser that many times|
 //!
-//! ## Integers
-//!
-//! Parsing integers from binary formats can be done in two ways: With parser functions, or combinators with configurable endianness.
-//!
-//! The following parsers could be found on [docs.rs number section][number/complete/index].
-//!
-//! - **configurable endianness:** [`i16`][crate::number::i16], [`i32`][crate::number::i32], [`i64`][crate::number::i64], [`u16`][crate::number::u16], [`u32`][crate::number::u32], [`u64`][crate::number::u64] are combinators that take as argument a [`winnow::number::Endianness`][number/enum.Endianness], like this: `i16(endianness)`. If the parameter is `winnow::number::Endianness::Big`, parse a big endian `i16` integer, otherwise a little endian `i16` integer.
-//! - **fixed endianness**: The functions are prefixed by `be_` for big endian numbers, and by `le_` for little endian numbers, and the suffix is the type they parse to. As an example, `be_u32` parses a big endian unsigned integer stored in 32 bits.
-//!   - [`be_f32`][crate::number::be_f32], [`be_f64`][crate::number::be_f64]: Big endian floating point numbers
-//!   - [`le_f32`][crate::number::le_f32], [`le_f64`][crate::number::le_f64]: Little endian floating point numbers
-//!   - [`be_i8`][crate::number::be_i8], [`be_i16`][crate::number::be_i16], [`be_i24`][crate::number::be_i24], [`be_i32`][crate::number::be_i32], [`be_i64`][crate::number::be_i64], [`be_i128`][crate::number::be_i128]: Big endian signed integers
-//!   - [`be_u8`][crate::number::be_u8], [`be_u16`][crate::number::be_u16], [`be_u24`][crate::number::be_u24], [`be_u32`][crate::number::be_u32], [`be_u64`][crate::number::be_u64], [`be_u128`][crate::number::be_u128]: Big endian unsigned integers
-//!   - [`le_i8`][crate::number::le_i8], [`le_i16`][crate::number::le_i16], [`le_i24`][crate::number::le_i24], [`le_i32`][crate::number::le_i32], [`le_i64`][crate::number::le_i64], [`le_i128`][crate::number::le_i128]: Little endian signed integers
-//!   - [`le_u8`][crate::number::le_u8], [`le_u16`][crate::number::le_u16], [`le_u24`][crate::number::le_u24], [`le_u32`][crate::number::le_u32], [`le_u64`][crate::number::le_u64], [`le_u128`][crate::number::le_u128]: Little endian unsigned integers
-//!
 //! ## Partial related
 //!
 //! - [`eof`][eof]: Returns its input if it is at the end of input data
@@ -96,43 +81,13 @@
 //! - [`trace`][crate::trace::trace]: Print the parse state with the `debug` feature flag
 //! - [`todo()`]: Placeholder parser
 //!
-//! ## Text parsing
-//!
-//! - [`escaped`][crate::character::escaped]: Matches a byte string with escaped characters
-//! - [`escaped_transform`][crate::character::escaped_transform]: Matches a byte string with escaped characters, and returns a new string with the escaped characters replaced
-//!
-//! ## Binary format parsing
-//!
-//! - [`length_data`][crate::multi::length_data]: Gets a number from the first parser, then takes a subslice of the input of that size, and returns that subslice
-//! - [`length_value`][crate::multi::length_value]: Gets a number from the first parser, takes a subslice of the input of that size, then applies the second parser on that subslice. If the second parser returns `Incomplete`, `length_value` will return an error
-//!
-//! ## Bit stream parsing
-//!
-//! - [`bits`][crate::bits::bits]: Transforms the current input type (byte slice `&[u8]`) to a bit stream on which bit specific parsers and more general combinators can be applied
-//! - [`bytes`][crate::bits::bytes]: Transforms its bits stream input back into a byte slice for the underlying parser
-//! - [`take`][crate::bits::take]: Take a set number of its
-//! - [`tag`][crate::bits::tag]: Check if a set number of bis matches a pattern
-//! - [`bool`][crate::bits::bool]: Match any one bit
-//!
 //! ## Remaining combinators
 //!
 //! - [`success`][success]: Returns a value without consuming any input, always succeeds
 //! - [`fail`][fail]: Inversion of `success`. Always fails.
 //! - [`Parser::by_ref`]: Allow moving `&mut impl Parser` into other parsers
 //!
-//! ## Character test functions
-//!
-//! Use these functions with a combinator like `take_while0`:
-//!
-//! - [`AsChar::is_alpha`][crate::stream::AsChar::is_alpha]: Tests if byte is ASCII alphabetic: `[A-Za-z]`
-//! - [`AsChar::is_alphanum`][crate::stream::AsChar::is_alphanum]: Tests if byte is ASCII alphanumeric: `[A-Za-z0-9]`
-//! - [`AsChar::is_dec_digit`][crate::stream::AsChar::is_dec_digit]: Tests if byte is ASCII digit: `[0-9]`
-//! - [`AsChar::is_hex_digit`][crate::stream::AsChar::is_hex_digit]: Tests if byte is ASCII hex digit: `[0-9A-Fa-f]`
-//! - [`AsChar::is_oct_digit`][crate::stream::AsChar::is_oct_digit]: Tests if byte is ASCII octal digit: `[0-7]`
-//! - [`AsChar::is_space`][crate::stream::AsChar::is_space]: Tests if byte is ASCII space or tab: `[ \t]`
-//! - [`AsChar::is_newline`][crate::stream::AsChar::is_newline]: Tests if byte is ASCII newline: `[\n]`
-//!
-//! Alternatively there are ready to use functions:
+//! ## Text parsing
 //!
 //! - [`any`][crate::bytes::any]: Matches one token
 //! - [`tab`][crate::character::tab]: Matches a tab character `\t`
@@ -154,6 +109,47 @@
 //! - [`dec_int`][crate::character::dec_uint]: Decode a variable-width, decimal signed integer
 //! - [`dec_uint`][crate::character::dec_uint]: Decode a variable-width, decimal unsigned integer
 //! - [`hex_uint`][crate::character::hex_uint]: Decode a variable-width, hexadecimal integer
+//!
+//! - [`escaped`][crate::character::escaped]: Matches a byte string with escaped characters
+//! - [`escaped_transform`][crate::character::escaped_transform]: Matches a byte string with escaped characters, and returns a new string with the escaped characters replaced
+//!
+//! ### Character test functions
+//!
+//! Use these functions with a combinator like `take_while0`:
+//!
+//! - [`AsChar::is_alpha`][crate::stream::AsChar::is_alpha]: Tests if byte is ASCII alphabetic: `[A-Za-z]`
+//! - [`AsChar::is_alphanum`][crate::stream::AsChar::is_alphanum]: Tests if byte is ASCII alphanumeric: `[A-Za-z0-9]`
+//! - [`AsChar::is_dec_digit`][crate::stream::AsChar::is_dec_digit]: Tests if byte is ASCII digit: `[0-9]`
+//! - [`AsChar::is_hex_digit`][crate::stream::AsChar::is_hex_digit]: Tests if byte is ASCII hex digit: `[0-9A-Fa-f]`
+//! - [`AsChar::is_oct_digit`][crate::stream::AsChar::is_oct_digit]: Tests if byte is ASCII octal digit: `[0-7]`
+//! - [`AsChar::is_space`][crate::stream::AsChar::is_space]: Tests if byte is ASCII space or tab: `[ \t]`
+//! - [`AsChar::is_newline`][crate::stream::AsChar::is_newline]: Tests if byte is ASCII newline: `[\n]`
+//!
+//! ## Binary format parsing
+//!
+//! - [`length_data`][crate::multi::length_data]: Gets a number from the first parser, then takes a subslice of the input of that size, and returns that subslice
+//! - [`length_value`][crate::multi::length_value]: Gets a number from the first parser, takes a subslice of the input of that size, then applies the second parser on that subslice. If the second parser returns `Incomplete`, `length_value` will return an error
+//!
+//! ### Integers
+//!
+//! Parsing integers from binary formats can be done in two ways: With parser functions, or combinators with configurable endianness.
+//!
+//! - **configurable endianness:** [`i16`][crate::number::i16], [`i32`][crate::number::i32], [`i64`][crate::number::i64], [`u16`][crate::number::u16], [`u32`][crate::number::u32], [`u64`][crate::number::u64] are combinators that take as argument a [`winnow::number::Endianness`][number/enum.Endianness], like this: `i16(endianness)`. If the parameter is `winnow::number::Endianness::Big`, parse a big endian `i16` integer, otherwise a little endian `i16` integer.
+//! - **fixed endianness**: The functions are prefixed by `be_` for big endian numbers, and by `le_` for little endian numbers, and the suffix is the type they parse to. As an example, `be_u32` parses a big endian unsigned integer stored in 32 bits.
+//!   - [`be_f32`][crate::number::be_f32], [`be_f64`][crate::number::be_f64]: Big endian floating point numbers
+//!   - [`le_f32`][crate::number::le_f32], [`le_f64`][crate::number::le_f64]: Little endian floating point numbers
+//!   - [`be_i8`][crate::number::be_i8], [`be_i16`][crate::number::be_i16], [`be_i24`][crate::number::be_i24], [`be_i32`][crate::number::be_i32], [`be_i64`][crate::number::be_i64], [`be_i128`][crate::number::be_i128]: Big endian signed integers
+//!   - [`be_u8`][crate::number::be_u8], [`be_u16`][crate::number::be_u16], [`be_u24`][crate::number::be_u24], [`be_u32`][crate::number::be_u32], [`be_u64`][crate::number::be_u64], [`be_u128`][crate::number::be_u128]: Big endian unsigned integers
+//!   - [`le_i8`][crate::number::le_i8], [`le_i16`][crate::number::le_i16], [`le_i24`][crate::number::le_i24], [`le_i32`][crate::number::le_i32], [`le_i64`][crate::number::le_i64], [`le_i128`][crate::number::le_i128]: Little endian signed integers
+//!   - [`le_u8`][crate::number::le_u8], [`le_u16`][crate::number::le_u16], [`le_u24`][crate::number::le_u24], [`le_u32`][crate::number::le_u32], [`le_u64`][crate::number::le_u64], [`le_u128`][crate::number::le_u128]: Little endian unsigned integers
+//!
+//! ### Bit stream parsing
+//!
+//! - [`bits`][crate::bits::bits]: Transforms the current input type (byte slice `&[u8]`) to a bit stream on which bit specific parsers and more general combinators can be applied
+//! - [`bytes`][crate::bits::bytes]: Transforms its bits stream input back into a byte slice for the underlying parser
+//! - [`take`][crate::bits::take]: Take a set number of its
+//! - [`tag`][crate::bits::tag]: Check if a set number of bis matches a pattern
+//! - [`bool`][crate::bits::bool]: Match any one bit
 
 use crate::error::{ContextError, ErrMode, ErrorKind, FromExternalError, Needed, ParseError};
 use crate::lib::std::borrow::Borrow;
