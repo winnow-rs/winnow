@@ -23,6 +23,11 @@ forked from `nom`.  See also the
 3. Resolve remaining compile errors
 4. Resolve deprecations as described by them
 
+Examples:
+- [git-config-env](https://github.com/gitext-rs/git-config-env/pull/11)
+- [git-conventional](https://github.com/crate-ci/git-conventional/pull/37)
+- [typos](https://github.com/crate-ci/typos/pull/664)
+
 ### Breaking Changes
 
 - `Parser::into` in favor of `Parser::output_into` and `Parser::err_into` (#48)
