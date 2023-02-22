@@ -1,4 +1,4 @@
-//! # List of parsers and combinators]
+//! # List of parsers and combinators
 //!
 //! **Note**: this list is meant to provide a nicer way to find a parser than reading through the documentation on docs.rs. Function combinators are organized in module so they are a bit easier to find.
 //!
