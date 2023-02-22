@@ -134,7 +134,12 @@
 //!
 //! Parsing integers from binary formats can be done in two ways: With parser functions, or combinators with configurable endianness.
 //!
-//! - **configurable endianness:** [`i16`][crate::number::i16], [`i32`][crate::number::i32], [`i64`][crate::number::i64], [`u16`][crate::number::u16], [`u32`][crate::number::u32], [`u64`][crate::number::u64] are combinators that take as argument a [`winnow::number::Endianness`][number/enum.Endianness], like this: `i16(endianness)`. If the parameter is `winnow::number::Endianness::Big`, parse a big endian `i16` integer, otherwise a little endian `i16` integer.
+//! - **configurable endianness:** [`i16`][crate::number::i16], [`i32`][crate::number::i32],
+//!   [`i64`][crate::number::i64], [`u16`][crate::number::u16], [`u32`][crate::number::u32],
+//!   [`u64`][crate::number::u64] are combinators that take as argument a
+//!   [`winnow::number::Endianness`][crate::number::Endianness], like this: `i16(endianness)`. If the
+//!   parameter is `winnow::number::Endianness::Big`, parse a big endian `i16` integer, otherwise a
+//!   little endian `i16` integer.
 //! - **fixed endianness**: The functions are prefixed by `be_` for big endian numbers, and by `le_` for little endian numbers, and the suffix is the type they parse to. As an example, `be_u32` parses a big endian unsigned integer stored in 32 bits.
 //!   - [`be_f32`][crate::number::be_f32], [`be_f64`][crate::number::be_f64]: Big endian floating point numbers
 //!   - [`le_f32`][crate::number::le_f32], [`le_f64`][crate::number::le_f64]: Little endian floating point numbers
