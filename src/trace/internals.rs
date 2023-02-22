@@ -166,7 +166,7 @@ pub fn end(
     };
     let call_column = format!("{:depth$}< {name}{count}", "");
 
-    let (status_style, status) = match severity {
+    let (mut status_style, status) = match severity {
         Severity::Success => {
             let style = anstyle::Style::new()
                 .fg_color(Some(anstyle::AnsiColor::Green.into()))
@@ -193,6 +193,9 @@ pub fn end(
             "incomplete".to_owned(),
         ),
     };
+    if !ansi_color {
+        status_style = anstyle::Style::new().render();
+    }
 
     let writer = std::io::stderr();
     let mut writer = writer.lock();
@@ -220,7 +223,7 @@ pub fn result(depth: usize, name: &dyn crate::lib::std::fmt::Display, severity: 
 
     let call_column = format!("{:depth$}| {name}", "");
 
-    let (status_style, status) = match severity {
+    let (mut status_style, status) = match severity {
         Severity::Success => (
             anstyle::Style::new()
                 .fg_color(Some(anstyle::AnsiColor::Green.into()))
@@ -246,6 +249,9 @@ pub fn result(depth: usize, name: &dyn crate::lib::std::fmt::Display, severity: 
             "incomplete",
         ),
     };
+    if !ansi_color {
+        status_style = anstyle::Style::new().render();
+    }
 
     let writer = std::io::stderr();
     let mut writer = writer.lock();
