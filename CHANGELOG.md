@@ -57,6 +57,8 @@ forked from `nom`.  See also the
 
 MSRV was raised to 1.60 (#158, #160, #167)
 
+`memchr` is no longer used by default; opt-in with the `simd` feature
+
 ### Deprecations
 
 - `character::is_*` functions in favor of `AsChar` (#25)
