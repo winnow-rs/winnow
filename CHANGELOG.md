@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.3.0] - 2023-02-22
+
 v0.3.0 changes are relative to nom v7.1.3
 
 Versioning starts at v0.3.0 due to the historical nature of how `winnow` was
@@ -1651,7 +1653,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/winnow-rs/winnow/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/winnow-rs/winnow/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/winnow-rs/winnow/compare/294ffb3d9e0ade2c3b7ddfff52484b6d643dcce1...v0.1.0
 [nom 7.1.3]: https://github.com/rust-bakery/nom/compare/7.1.2...7.1.3
