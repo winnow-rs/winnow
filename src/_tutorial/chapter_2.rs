@@ -55,7 +55,7 @@
 //!
 //! ## Character Classes
 //!
-//! Selecting a single `char` or a `tag` is fairly limited.  Sometimes, you will want to select one of several
+//! Selecting a single `char` or a [`tag`] is fairly limited.  Sometimes, you will want to select one of several
 //! `chars` of a specific class, like digits. For this, we use the [`one_of`] parer:
 //!
 //! ```rust
@@ -78,7 +78,7 @@
 //! }
 //! ```
 //!
-//! > **Aside:** `one_of` might look straightforward, a function returning a value that implements `Parser`.
+//! > **Aside:** [`one_of`] might look straightforward, a function returning a value that implements `Parser`.
 //! > Let's look at it more closely as its used above (resolving all generic parameters):
 //! > ```rust
 //! > # use winnow::IResult;
@@ -90,8 +90,8 @@
 //! > }
 //! > ```
 //! > If you have not programmed in a language where functions are values, the type signature of the
-//! > `one_of` function might be a surprise.
-//! > The function `tag` *returns a function*. The function it returns is a
+//! > [`one_of`] function might be a surprise.
+//! > The function [`one_of`] *returns a function*. The function it returns is a
 //! > `Parser`, taking a `&str` and returning an `IResult`. This is a common pattern in winnow for
 //! > configurable or stateful parsers.
 //!
