@@ -71,7 +71,7 @@
         <div class="user-input"><pre><span class="prompt">$</span> ./string</pre></div>
         <div class="term-output"><pre>&gt; delimited                                         | "\"abc\""∅
  &gt; one_of                                           | "\"abc\""∅
-<span class="fg2"> &lt; one_of                                           | +1
+ &lt; one_of                                           | +1
  &gt; fold_many0                                       | "abc\""∅
   &gt; alt                                             | "abc\""∅
    &gt; take_till1                                     | "abc\""∅
@@ -80,7 +80,7 @@
   &lt; alt                                             | +3
   &gt; alt                                             | "\""∅
    &gt; take_till1                                     | "\""∅
-</span><span class="fg3">   &lt; take_till1                                     | backtrack
+   &lt; take_till1                                     | backtrack
    &gt; preceded                                       | "\""∅
     &gt; one_of                                        | "\""∅
     &lt; one_of                                        | backtrack
@@ -90,13 +90,13 @@
     &lt; one_of                                        | backtrack
    &lt; preceded                                       | backtrack
   &lt; alt                                             | backtrack
-</span><span class="fg2"> &lt; fold_many0                                       | +3
+ &lt; fold_many0                                       | +3
  &gt; one_of                                           | "\""∅
  &lt; one_of                                           | +1
 &lt; delimited                                         | +5
 &gt; eof                                               | ""∅
 &lt; eof                                               | +0
-abc</span></pre></div>
+abc</pre></div>
       </div>
     </foreignObject>
   </svg>
