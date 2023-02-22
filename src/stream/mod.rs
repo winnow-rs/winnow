@@ -1553,14 +1553,14 @@ pub trait FindSlice<T> {
 impl<'i, 's> FindSlice<&'s [u8]> for &'i [u8] {
     #[inline(always)]
     fn find_slice(&self, substr: &'s [u8]) -> Option<usize> {
-        memchr::memmem::find(self, substr)
+        memmem(self, substr)
     }
 }
 
 impl<'i> FindSlice<u8> for &'i [u8] {
     #[inline(always)]
     fn find_slice(&self, substr: u8) -> Option<usize> {
-        memchr::memchr(substr, self)
+        memchr(substr, self)
     }
 }
 
@@ -2365,7 +2365,7 @@ impl<C1: AsChar> ContainsToken<C1> for RangeFull {
 impl<'a> ContainsToken<u8> for &'a [u8] {
     #[inline]
     fn contains_token(&self, token: u8) -> bool {
-        memchr::memchr(token, self).is_some()
+        memchr(token, self).is_some()
     }
 }
 
@@ -2596,4 +2596,33 @@ where
     } else {
         Ok(input.next_slice(offset))
     }
+}
+
+#[cfg(feature = "simd")]
+#[inline(always)]
+fn memchr(token: u8, slice: &[u8]) -> Option<usize> {
+    memchr::memchr(token, slice)
+}
+
+#[cfg(not(feature = "simd"))]
+#[inline(always)]
+fn memchr(token: u8, slice: &[u8]) -> Option<usize> {
+    slice.iter().position(|t| *t == token)
+}
+
+#[cfg(feature = "simd")]
+#[inline(always)]
+fn memmem(slice: &[u8], tag: &[u8]) -> Option<usize> {
+    memchr::memmem::find(slice, tag)
+}
+
+#[cfg(not(feature = "simd"))]
+fn memmem(slice: &[u8], tag: &[u8]) -> Option<usize> {
+    for i in 0..slice.len() {
+        let subslice = &slice[i..];
+        if subslice.starts_with(tag) {
+            return Some(i);
+        }
+    }
+    None
 }
