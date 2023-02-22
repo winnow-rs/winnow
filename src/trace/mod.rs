@@ -108,6 +108,10 @@ fn example() {
     // HACK: term_transcript doesn't allow non-UTF8 paths
     let cmd = format!("./{}", cmd.to_string_lossy());
 
-    TestConfig::new(ShellOptions::default().with_current_dir(current_dir))
-        .test("assets/trace.svg", [cmd.as_str()]);
+    TestConfig::new(
+        ShellOptions::default()
+            .with_current_dir(current_dir)
+            .with_env("CLICOLOR_FORCE", "1"),
+    )
+    .test("assets/trace.svg", [cmd.as_str()]);
 }
