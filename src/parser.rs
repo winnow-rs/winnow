@@ -36,8 +36,8 @@ use crate::stream::{AsChar, Compare, Location, Stream, StreamIsPartial};
 /// ```
 ///
 /// Additionally, some basic types implement `Parser` as well, including
-/// - `u8` and `char`, see [`winnow::character::char`][crate::bytes::one_of]
-/// - `&[u8]` and `&str`, see [`winnow::character::char`][crate::bytes::tag]
+/// - `u8` and `char`, see [`winnow::bytes::one_of`][crate::bytes::one_of]
+/// - `&[u8]` and `&str`, see [`winnow::bytes::tag`][crate::bytes::tag]
 pub trait Parser<I, O, E> {
     /// A parser takes in input type, and returns a `Result` containing
     /// either the remaining input and the output value, or an error
