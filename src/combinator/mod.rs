@@ -29,11 +29,11 @@
 //!
 //! | combinator | usage | input | output | comment |
 //! |---|---|---|---|---|
+//! | [`(...)` (tuples)][crate::Parser] | `(tag("ab"), tag("XY"), take(1))` | `"abXYZ!"` | `Ok(("!", ("ab", "XY", "Z")))` |Chains parsers and assemble the sub results in a tuple. You can use as many child parsers as you can put elements in a tuple|
 //! | [`delimited`][crate::sequence::delimited] | `delimited(char('('), take(2), char(')'))` | `"(ab)cd"` | `Ok(("cd", "ab"))` ||
 //! | [`preceded`][crate::sequence::preceded] | `preceded(tag("ab"), tag("XY"))` | `"abXYZ"` | `Ok(("Z", "XY"))` ||
 //! | [`terminated`][crate::sequence::terminated] | `terminated(tag("ab"), tag("XY"))` | `"abXYZ"` | `Ok(("Z", "ab"))` ||
 //! | [`separated_pair`][crate::sequence::separated_pair] | `separated_pair(tag("hello"), char(','), tag("world"))` | `"hello,world!"` | `Ok(("!", ("hello", "world")))` ||
-//! | [`(...)` (tuples)][crate::Parser] | `(tag("ab"), tag("XY"), take(1))` | `"abXYZ!"` | `Ok(("!", ("ab", "XY", "Z")))` |Chains parsers and assemble the sub results in a tuple. You can use as many child parsers as you can put elements in a tuple|
 //!
 //! ## Applying a parser multiple times
 //!
