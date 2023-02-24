@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Documentation
+
+- Improve the partial parsing example
+
 ## [0.3.1] - 2023-02-24
 
 ### Fixes
