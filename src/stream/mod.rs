@@ -481,7 +481,8 @@ where
     }
     #[inline(always)]
     fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
-        (&self[offset..], &self[0..offset])
+        let (slice, next) = self.split_at(offset);
+        (next, slice)
     }
 }
 
@@ -537,7 +538,8 @@ impl<'i> Stream for &'i str {
     }
     #[inline(always)]
     fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
-        (&self[offset..], &self[0..offset])
+        let (slice, next) = self.split_at(offset);
+        (next, slice)
     }
 }
 
