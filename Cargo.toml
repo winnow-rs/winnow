@@ -60,6 +60,7 @@ lexopt = "0.3.0"
 term-transcript = "0.2.0"
 escargot = "0.5.7"
 snapbox = { version = "0.4.6", features = ["examples"] }
+circular = "0.3.0"
 
 [profile.bench]
 debug = true
@@ -91,6 +92,11 @@ required-features = ["std"]
 
 [[example]]
 name = "json"
+test = true
+required-features = ["std"]
+
+[[example]]
+name = "ndjson"
 test = true
 required-features = ["std"]
 

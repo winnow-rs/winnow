@@ -26,8 +26,14 @@
 //!
 //! # Example
 //!
+//! `main.rs`:
 //! ```rust,ignore
-#![doc = include_str!("../../examples/json/parser_partial.rs")]
+#![doc = include_str!("../../examples/ndjson/main.rs")]
+//! ```
+//!
+//! `parser.rs`:
+//! ```rust,ignore
+#![doc = include_str!("../../examples/ndjson/parser.rs")]
 //! ```
 
 #![allow(unused_imports)] // Used for intra-doc links
