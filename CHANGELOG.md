@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Fix bounds on `Parser::flat_map` so that it works with closures
+
 ## [0.3.0] - 2023-02-22
 
 v0.3.0 changes are relative to nom v7.1.3
