@@ -6,7 +6,10 @@ use crate::error::Error;
 use crate::error::ErrorKind;
 use crate::error::Needed;
 use crate::error::ParseError;
+use crate::multi::count;
+use crate::number::u16;
 use crate::number::u8;
+use crate::number::Endianness;
 use crate::IResult;
 use crate::Parser;
 use crate::Partial;
@@ -115,6 +118,12 @@ fn test_parser_flat_map() {
         u8.flat_map(take).parse_next(input),
         Ok((&[103, 104][..], &[100, 101, 102][..]))
     );
+}
+
+#[allow(dead_code)]
+fn test_closure_compiles_195(input: &[u8]) -> IResult<&[u8], ()> {
+    u8.flat_map(|num| count(u16(Endianness::Big), num as usize))
+        .parse_next(input)
 }
 
 #[test]

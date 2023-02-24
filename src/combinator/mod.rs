@@ -605,7 +605,7 @@ impl<F, G, O1> FlatMap<F, G, O1> {
     }
 }
 
-impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> H, H: Parser<I, O2, E>> Parser<I, O2, E>
+impl<I, O1, O2, E, F: Parser<I, O1, E>, G: FnMut(O1) -> H, H: Parser<I, O2, E>> Parser<I, O2, E>
     for FlatMap<F, G, O1>
 {
     fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
