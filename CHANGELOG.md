@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.3.2] - 2023-02-24
+
 ### Documentation
 
 - Improve the partial parsing example
@@ -1668,7 +1670,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/winnow-rs/winnow/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/winnow-rs/winnow/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/winnow-rs/winnow/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/winnow-rs/winnow/compare/v0.1.0...v0.2.0
