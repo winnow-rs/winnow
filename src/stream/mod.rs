@@ -128,6 +128,12 @@ impl<I> crate::lib::std::ops::Deref for Located<I> {
     }
 }
 
+impl<I: std::fmt::Display> std::fmt::Display for Located<I> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.input.fmt(f)
+    }
+}
+
 /// Thread global state through your parsers
 ///
 /// Use cases
@@ -187,6 +193,12 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
     #[inline(always)]
     fn deref(&self) -> &Self::Target {
         self.as_ref()
+    }
+}
+
+impl<I: std::fmt::Display, S> std::fmt::Display for Stateful<I, S> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.input.fmt(f)
     }
 }
 
@@ -295,6 +307,12 @@ impl<I> crate::lib::std::ops::Deref for Partial<I> {
     #[inline(always)]
     fn deref(&self) -> &Self::Target {
         &self.input
+    }
+}
+
+impl<I: std::fmt::Display> std::fmt::Display for Partial<I> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.input.fmt(f)
     }
 }
 
