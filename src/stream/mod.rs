@@ -582,7 +582,8 @@ impl<'i> Stream for &'i Bytes {
     }
     #[inline(always)]
     fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
-        (Bytes::from_bytes(&self[offset..]), &self[0..offset])
+        let (next, slice) = (&self.0).next_slice(offset);
+        (Bytes::from_bytes(next), slice)
     }
 }
 
@@ -627,7 +628,8 @@ impl<'i> Stream for &'i BStr {
     }
     #[inline(always)]
     fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
-        (BStr::from_bytes(&self[offset..]), &self[0..offset])
+        let (next, slice) = (&self.0).next_slice(offset);
+        (BStr::from_bytes(next), slice)
     }
 }
 
