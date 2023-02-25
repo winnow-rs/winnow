@@ -24,7 +24,7 @@ fn main() -> Result<(), lexopt::Error> {
         let read = file.read(buffer.space()).map_err(to_lexopt)?;
         eprintln!("read {}", read);
         if read == 0 {
-            // Should we EOF since we always make sure there is `available_space`
+            // Should be EOF since we always make sure there is `available_space`
             assert_ne!(buffer.available_space(), 0);
             assert_eq!(
                 buffer.available_data(),
