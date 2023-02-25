@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Documentation
+
+- Fix tutorial headers
+
 ## [0.3.2] - 2023-02-24
 
 ### Documentation
