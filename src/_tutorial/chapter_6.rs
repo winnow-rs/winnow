@@ -1,4 +1,4 @@
-//! # Chapter 7: Error Reporting
+//! # Chapter 6: Error Reporting
 //!
 //! ## `Error`
 //!

@@ -1,4 +1,4 @@
-//! # Chapter 8: Integrating the Parser
+//! # Chapter 7: Integrating the Parser
 //!
 //! So far, we've highlighted how to incrementally parse, but how do we bring this all together
 //! into our application?

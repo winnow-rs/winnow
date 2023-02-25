@@ -1,4 +1,4 @@
-//! # Chapter 6: Repetition
+//! # Chapter 5: Repetition
 //!
 //! In [`chapter_3`], we covered how to sequence different parsers into a tuple but sometimes you need to run a
 //! single parser many times into a [`Vec`].
