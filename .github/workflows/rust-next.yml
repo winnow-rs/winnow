@@ -93,7 +93,7 @@ jobs:
         components: clippy
     - uses: Swatinem/rust-cache@v2
     - name: Install SARIF tools
-      run: cargo install clippy-sarif:0.3.4 sarif-fmt:0.3.4  # Held back due to MSRV
+      run: cargo install clippy-sarif sarif-fmt
     - name: Check
       run: >
         cargo clippy --workspace --all-features --all-targets --message-format=json -- -D warnings --allow deprecated
