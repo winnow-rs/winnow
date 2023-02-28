@@ -475,11 +475,8 @@ where
 
     #[inline(always)]
     fn next_token(&self) -> Option<(Self, Self::Token)> {
-        if self.is_empty() {
-            None
-        } else {
-            Some((&self[1..], self[0].clone()))
-        }
+        self.split_first()
+            .map(|(token, next)| (next, token.clone()))
     }
 
     #[inline(always)]
