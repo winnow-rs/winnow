@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Ensure `Partial` can be toggled to complete.
+
 ## [0.3.3] - 2023-02-25
 
 ### Documentation
