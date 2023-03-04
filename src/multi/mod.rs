@@ -1152,7 +1152,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult, stream::Partial};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult, stream::{Partial, StreamIsPartial}};
 /// use winnow::Bytes;
 /// use winnow::number::be_u16;
 /// use winnow::multi::length_value;
@@ -1164,12 +1164,18 @@ where
 ///     Partial::new(Bytes::new(b))
 /// }
 ///
+/// fn complete_stream(b: &[u8]) -> Stream<'_> {
+///     let mut p = Partial::new(Bytes::new(b));
+///     let _ = p.complete();
+///     p
+/// }
+///
 /// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
 ///   length_value(be_u16, tag("abc"))(s)
 /// }
 ///
 /// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), &b"abc"[..])));
-/// assert_eq!(parser(stream(b"\x00\x03123123")), Err(ErrMode::Backtrack(Error::new(stream(&b"123"[..]), ErrorKind::Tag))));
+/// assert_eq!(parser(stream(b"\x00\x03123123")), Err(ErrMode::Backtrack(Error::new(complete_stream(&b"123"[..]), ErrorKind::Tag))));
 /// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 pub fn length_value<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IResult<I, O, E>

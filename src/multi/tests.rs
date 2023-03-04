@@ -495,6 +495,8 @@ fn length_data_test() {
 
 #[test]
 fn length_value_test() {
+    use crate::stream::StreamIsPartial;
+
     fn length_value_1(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u16> {
         length_value(be_u8, be_u16)(i)
     }
@@ -502,37 +504,44 @@ fn length_value_test() {
         length_value(be_u8, (be_u8, be_u8))(i)
     }
 
+    let mut empty_complete = Partial::new(&b""[..]);
+    let _ = empty_complete.complete();
+
     let i1 = [0, 5, 6];
     assert_eq!(
         length_value_1(Partial::new(&i1)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b""[..]),
-            ErrorKind::Complete
+            empty_complete,
+            ErrorKind::Eof
         )))
     );
     assert_eq!(
         length_value_2(Partial::new(&i1)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b""[..]),
-            ErrorKind::Complete
+            empty_complete,
+            ErrorKind::Eof
         )))
     );
 
     let i2 = [1, 5, 6, 3];
-    assert_eq!(
-        length_value_1(Partial::new(&i2)),
-        Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&i2[1..2]),
-            ErrorKind::Complete
-        )))
-    );
-    assert_eq!(
-        length_value_2(Partial::new(&i2)),
-        Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&i2[1..2]),
-            ErrorKind::Complete
-        )))
-    );
+    {
+        let mut middle_complete = Partial::new(&i2[1..2]);
+        let _ = middle_complete.complete();
+        assert_eq!(
+            length_value_1(Partial::new(&i2)),
+            Err(ErrMode::Backtrack(error_position!(
+                middle_complete,
+                ErrorKind::Eof
+            )))
+        );
+        assert_eq!(
+            length_value_2(Partial::new(&i2)),
+            Err(ErrMode::Backtrack(error_position!(
+                empty_complete,
+                ErrorKind::Eof
+            )))
+        );
+    }
 
     let i3 = [2, 5, 6, 3, 4, 5, 7];
     assert_eq!(
