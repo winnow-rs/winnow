@@ -1104,7 +1104,7 @@ where
     type PartialState = bool;
 
     fn complete(&mut self) -> Self::PartialState {
-        self.partial
+        core::mem::replace(&mut self.partial, false)
     }
 
     fn restore_partial(&mut self, state: Self::PartialState) {
