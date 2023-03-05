@@ -37,7 +37,9 @@
 //!
 //! Then use it to parse:
 //! ```rust
+//! # #[cfg(feature = "alloc")] {
 #![doc = include_str!("../examples/css/parser.rs")]
+//! # }
 //! ```
 //!
 //! See also the [Tutorial][_tutorial::chapter_0] and [Special Topics][_topic]

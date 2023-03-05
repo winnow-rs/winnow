@@ -75,6 +75,7 @@ required-features = ["alloc"]
 [[example]]
 name = "css"
 test = true
+required-features = ["alloc"]
 
 [[example]]
 name = "custom_error"
