@@ -128,8 +128,8 @@ impl<I> crate::lib::std::ops::Deref for Located<I> {
     }
 }
 
-impl<I: std::fmt::Display> std::fmt::Display for Located<I> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<I: crate::lib::std::fmt::Display> crate::lib::std::fmt::Display for Located<I> {
+    fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
         self.input.fmt(f)
     }
 }
@@ -196,8 +196,8 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
     }
 }
 
-impl<I: std::fmt::Display, S> std::fmt::Display for Stateful<I, S> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<I: crate::lib::std::fmt::Display, S> crate::lib::std::fmt::Display for Stateful<I, S> {
+    fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
         self.input.fmt(f)
     }
 }
@@ -310,8 +310,8 @@ impl<I> crate::lib::std::ops::Deref for Partial<I> {
     }
 }
 
-impl<I: std::fmt::Display> std::fmt::Display for Partial<I> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<I: crate::lib::std::fmt::Display> crate::lib::std::fmt::Display for Partial<I> {
+    fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
         self.input.fmt(f)
     }
 }
