@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.3.5] - 2023-03-06
+
 ### Fixes
 
 - Fix `core` and `alloc` support
@@ -1686,7 +1688,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.3.4...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.3.5...HEAD
+[0.3.5]: https://github.com/winnow-rs/winnow/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/winnow-rs/winnow/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/winnow-rs/winnow/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/winnow-rs/winnow/compare/v0.3.1...v0.3.2
