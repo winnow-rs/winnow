@@ -4,7 +4,7 @@
 //!
 //! ## Tokens
 //!
-//! Matching a single token literal so common, `Parser` is implemented for
+//! Matching a single token literal is common enough that `Parser` is implemented for
 //! `char`.
 //!
 //! ```rust

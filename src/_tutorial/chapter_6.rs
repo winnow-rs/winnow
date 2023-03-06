@@ -81,7 +81,7 @@
 //! type.
 //!
 //! `ErrMode` is an enum with `Backtrack` and `Cut` variants (ignore `Incomplete` as its only
-//! relevant for [streaming][_topic::stream].  By default, errors are `Backtrack`, meaning that
+//! relevant for [streaming][_topic::stream]).  By default, errors are `Backtrack`, meaning that
 //! other parsing branches will be attempted on failure, like the next case of an `alt`.  `Cut`
 //! shortcircuits all other branches, immediately reporting the error.
 //!
