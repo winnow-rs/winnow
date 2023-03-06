@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Fix `core` and `alloc` support
+
 ## [0.3.4] - 2023-03-01
 
 ### Fixes
