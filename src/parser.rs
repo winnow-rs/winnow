@@ -195,6 +195,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_next("abcd;"),Err(ErrMode::Backtrack(Error::new(";", ErrorKind::OneOf))));
     /// # }
     /// ```
+    #[doc(alias = "concat")]
     fn recognize(self) -> Recognize<Self, O>
     where
         Self: core::marker::Sized,
