@@ -4,9 +4,43 @@ version = 3
 
 [[package]]
 name = "anstyle"
-version = "0.2.5"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "58bb0ec944fe041c41e32dcd60b49327fcb7ff761433838878cc97ddecf16db7"
+checksum = "80c697cc33851b02ab0c26b2e8a211684fbe627ff1cc506131f35026dd7686dd"
+
+[[package]]
+name = "anstyle-parse"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a7d1bb534e9efed14f3e5f44e7dd1a4f709384023a4165199a4241e18dff0116"
+dependencies = [
+ "utf8parse",
+]
+
+[[package]]
+name = "anstyle-stream"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cb854bd007661547402bb1aeee4a00eda2cc9775afb43c9a5158f8706f448a2a"
+dependencies = [
+ "anstyle",
+ "anstyle-parse",
+ "anstyle-wincon",
+ "concolor-override",
+ "concolor-query 0.3.3",
+ "is-terminal",
+ "utf8parse",
+]
+
+[[package]]
+name = "anstyle-wincon"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c3127af6145b149f3287bb9a0d10ad9c5692dba8c53ad48285e5bec4063834fa"
+dependencies = [
+ "anstyle",
+ "windows-sys 0.45.0",
+]
 
 [[package]]
 name = "arbitrary"
@@ -131,17 +165,6 @@ dependencies = [
 
 [[package]]
 name = "concolor"
-version = "0.0.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "015267563b1df20adccdd00cb05257b1dfbea70a04928e9cf88ffb850c1a40af"
-dependencies = [
- "atty",
- "bitflags",
- "concolor-query 0.0.5",
-]
-
-[[package]]
-name = "concolor"
 version = "0.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "318d6c16e73b3a900eb212ad6a82fc7d298c5ab8184c7a9998646455bc474a16"
@@ -152,16 +175,25 @@ dependencies = [
 ]
 
 [[package]]
-name = "concolor-query"
-version = "0.0.5"
+name = "concolor-override"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6417fe6fc03a8b533fd2177742eeb39a90c7233eedec7bac96d4d6b69a09449"
+checksum = "a855d4a1978dc52fb0536a04d384c2c0c1aa273597f08b77c8c4d3b2eec6037f"
 
 [[package]]
 name = "concolor-query"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "82a90734b3d5dcf656e7624cca6bce9c3a90ee11f900e80141a7427ccfb3d317"
+
+[[package]]
+name = "concolor-query"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "88d11d52c3d7ca2e6d0040212be9e4dbbcd78b6447f535b6b561f449427944cf"
+dependencies = [
+ "windows-sys 0.45.0",
+]
 
 [[package]]
 name = "cpufeatures"
@@ -446,9 +478,9 @@ dependencies = [
 
 [[package]]
 name = "is-terminal"
-version = "0.4.3"
+version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22e18b0a45d56fe973d6db23972bf5bc46f988a4a2385deac9cc29572f09daef"
+checksum = "21b6b32576413a8e69b90e952e4a026476040d81017b80445deda5f2d3921857"
 dependencies = [
  "hermit-abi 0.3.1",
  "io-lifetimes",
@@ -972,7 +1004,7 @@ version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7329b93bf53198ce2aecd1b08a3752306cef932483521d9361ce87b40559031c"
 dependencies = [
- "concolor 0.0.11",
+ "concolor",
  "escargot",
  "normalize-line-endings",
  "similar",
@@ -1109,6 +1141,12 @@ name = "unicode-width"
 version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c0edd1e5b14653f783770bce4a4dabb4a5108a5370a5f5d8cfe8710c361f6c8b"
+
+[[package]]
+name = "utf8parse"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "711b9620af191e0cdc7468a8d14e709c3dcdb115b36f838e601583af800a370a"
 
 [[package]]
 name = "version_check"
@@ -1323,8 +1361,8 @@ name = "winnow"
 version = "0.4.3"
 dependencies = [
  "anstyle",
+ "anstyle-stream",
  "circular",
- "concolor 0.0.8",
  "criterion",
  "doc-comment",
  "escargot",
