@@ -428,7 +428,7 @@ pub trait ErrorConvert<E> {
 ///:w
 /// **Note:** [context][Parser::context] and inner errors (like from [`Parser::map_res`]) will be
 /// dropped.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Error<I> {
     /// The input stream, pointing to the location where the error occurred
     pub input: I,
