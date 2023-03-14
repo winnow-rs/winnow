@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- `error::Error` now implements `Copy`, `Clone`
+
 ## [0.3.5] - 2023-03-06
 
 ### Fixes
