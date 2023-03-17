@@ -878,7 +878,7 @@ where
 
 /// Recognize an input slice containing the first N input elements (I[..N]).
 ///
-/// *Complete version*: It will return `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::Eof)))` if the input is shorter than the argument.
+/// *Complete version*: It will return `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::TakeWhile)))` if the input is shorter than the argument.
 ///
 /// *Partial version*: if the input has less than N elements, `take` will
 /// return a `ErrMode::Incomplete(Needed::new(M))` where M is the number of
@@ -899,8 +899,8 @@ where
 ///
 /// assert_eq!(take6("1234567"), Ok(("7", "123456")));
 /// assert_eq!(take6("things"), Ok(("", "things")));
-/// assert_eq!(take6("short"), Err(ErrMode::Backtrack(Error::new("short", ErrorKind::Eof))));
-/// assert_eq!(take6(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
+/// assert_eq!(take6("short"), Err(ErrMode::Backtrack(Error::new("short", ErrorKind::TakeWhile))));
+/// assert_eq!(take6(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::TakeWhile))));
 /// ```
 ///
 /// The units that are taken will depend on the input type. For example, for a
@@ -970,7 +970,7 @@ where
 {
     match i.offset_at(c) {
         Ok(offset) => Ok(i.next_slice(offset)),
-        Err(_needed) => Err(ErrMode::from_error_kind(i, ErrorKind::Eof)),
+        Err(_needed) => Err(ErrMode::from_error_kind(i, ErrorKind::TakeWhile)),
     }
 }
 

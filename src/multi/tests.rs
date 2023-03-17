@@ -512,7 +512,7 @@ fn length_value_test() {
         length_value_1(Partial::new(&i1)),
         Err(ErrMode::Backtrack(error_position!(
             empty_complete,
-            ErrorKind::Eof
+            ErrorKind::TakeWhile
         )))
     );
     assert_eq!(
@@ -531,7 +531,7 @@ fn length_value_test() {
             length_value_1(Partial::new(&i2)),
             Err(ErrMode::Backtrack(error_position!(
                 middle_complete,
-                ErrorKind::Eof
+                ErrorKind::TakeWhile
             )))
         );
         assert_eq!(
