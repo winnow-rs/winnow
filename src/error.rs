@@ -649,7 +649,7 @@ pub fn convert_error<I: core::ops::Deref<Target = str>>(
     result
 }
 
-/// Indicates which parser returned an error
+/// Provide some minor debug context for errors
 #[rustfmt::skip]
 #[derive(Debug,PartialEq,Eq,Hash,Clone,Copy)]
 #[allow(missing_docs)]
