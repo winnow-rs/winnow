@@ -1060,23 +1060,8 @@ where
     E: ParseError<I>,
 {
     trace("length_count", move |i: I| {
-        let (i, count) = f.parse_next(i)?;
-        let mut input = i.clone();
-        let mut res = C::initial(Some(count.to_usize()));
-
-        for _ in 0..count.to_usize() {
-            let input_ = input.clone();
-            match g.parse_next(input_) {
-                Ok((i, o)) => {
-                    res.accumulate(o);
-                    input = i;
-                }
-                Err(e) => {
-                    return Err(e.append(i, ErrorKind::Count));
-                }
-            }
-        }
-
-        Ok((input, res))
+        let (i, n) = f.parse_next(i)?;
+        let n = n.to_usize();
+        count(g.by_ref(), n).parse_next(i)
     })
 }
