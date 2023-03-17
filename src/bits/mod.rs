@@ -310,7 +310,7 @@ where
 ///     parser(0b000000_01, 2, (stream(&[0b111111_11]), 0)),
 ///     Err(winnow::error::ErrMode::Backtrack(Error {
 ///         input: (stream(&[0b11111111]), 0),
-///         kind: ErrorKind::TagBits
+///         kind: ErrorKind::Tag
 ///     }))
 /// );
 ///
@@ -319,7 +319,7 @@ where
 ///     parser(0b11111110, 8, (stream(&[0b11111111]), 0)),
 ///     Err(winnow::error::ErrMode::Backtrack(Error {
 ///         input: (stream(&[0b11111111]), 0),
-///         kind: ErrorKind::TagBits
+///         kind: ErrorKind::Tag
 ///     }))
 /// );
 /// ```
@@ -343,10 +343,7 @@ where
             if pattern == o {
                 Ok((i, o))
             } else {
-                Err(ErrMode::Backtrack(E::from_error_kind(
-                    inp,
-                    ErrorKind::TagBits,
-                )))
+                Err(ErrMode::Backtrack(E::from_error_kind(inp, ErrorKind::Tag)))
             }
         })
     })

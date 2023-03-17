@@ -140,7 +140,7 @@ fn test_tag_partial_err() {
         result,
         Err(crate::error::ErrMode::Backtrack(crate::error::Error {
             input: (input, offset),
-            kind: ErrorKind::TagBits
+            kind: ErrorKind::Tag
         }))
     );
 }
