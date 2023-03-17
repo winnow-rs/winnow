@@ -1310,7 +1310,7 @@ impl HexUint for u128 {
 /// assert_eq!(parser("11e-1"), Ok(("", 1.1)));
 /// assert_eq!(parser("123E-02"), Ok(("", 1.23)));
 /// assert_eq!(parser("123K-01"), Ok(("K-01", 123.0)));
-/// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Float))));
+/// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Tag))));
 /// ```
 ///
 /// ```rust
@@ -1328,7 +1328,7 @@ impl HexUint for u128 {
 /// assert_eq!(parser(Partial::new("11e-1")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// assert_eq!(parser(Partial::new("123E-02")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// assert_eq!(parser(Partial::new("123K-01")), Ok((Partial::new("K-01"), 123.0)));
-/// assert_eq!(parser(Partial::new("abc")), Err(ErrMode::Backtrack(Error::new(Partial::new("abc"), ErrorKind::Float))));
+/// assert_eq!(parser(Partial::new("abc")), Err(ErrMode::Backtrack(Error::new(Partial::new("abc"), ErrorKind::Tag))));
 /// ```
 #[inline(always)]
 #[doc(alias = "f32")]
@@ -1348,7 +1348,7 @@ where
         let (i, s) = recognize_float_or_exceptions(input)?;
         match s.parse_slice() {
             Some(f) => Ok((i, f)),
-            None => Err(ErrMode::from_error_kind(i, ErrorKind::Float)),
+            None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
         }
     })(input)
 }
@@ -1366,31 +1366,10 @@ where
     &'static str: ContainsToken<<I as Stream>::Token>,
 {
     alt((
-        |i: I| {
-            recognize_float::<_, E>(i.clone()).map_err(|e| match e {
-                crate::error::ErrMode::Backtrack(_) => {
-                    crate::error::ErrMode::from_error_kind(i, ErrorKind::Float)
-                }
-                crate::error::ErrMode::Cut(_) => {
-                    crate::error::ErrMode::Cut(E::from_error_kind(i, ErrorKind::Float))
-                }
-                crate::error::ErrMode::Incomplete(needed) => {
-                    crate::error::ErrMode::Incomplete(needed)
-                }
-            })
-        },
-        |i: I| {
-            crate::bytes::tag_no_case::<_, _, E>("nan")(i.clone())
-                .map_err(|_err| crate::error::ErrMode::from_error_kind(i, ErrorKind::Float))
-        },
-        |i: I| {
-            crate::bytes::tag_no_case::<_, _, E>("inf")(i.clone())
-                .map_err(|_err| crate::error::ErrMode::from_error_kind(i, ErrorKind::Float))
-        },
-        |i: I| {
-            crate::bytes::tag_no_case::<_, _, E>("infinity")(i.clone())
-                .map_err(|_err| crate::error::ErrMode::from_error_kind(i, ErrorKind::Float))
-        },
+        recognize_float,
+        crate::bytes::tag_no_case("nan"),
+        crate::bytes::tag_no_case("inf"),
+        crate::bytes::tag_no_case("infinity"),
     ))(input)
 }
 

@@ -671,7 +671,6 @@ pub enum ErrorKind {
   Verify,
   TakeTill1,
   TakeWhileMN,
-  Float,
   Fail,
 }
 
@@ -697,7 +696,6 @@ impl ErrorKind {
       ErrorKind::Verify                    => "predicate verification",
       ErrorKind::TakeTill1                 => "TakeTill1",
       ErrorKind::TakeWhileMN               => "TakeWhileMN",
-      ErrorKind::Float                     => "Float",
       ErrorKind::Fail                      => "Fail",
     }
   }

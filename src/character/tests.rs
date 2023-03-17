@@ -534,8 +534,8 @@ mod complete {
         assert_parse!(
             float::<_, f64, _>(remaining_exponent),
             Err(ErrMode::Cut(Error {
-                input: "-1.234E-",
-                kind: ErrorKind::Float
+                input: "",
+                kind: ErrorKind::TakeWhile1
             }))
         );
 
