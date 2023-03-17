@@ -245,7 +245,7 @@ fn many_till_test() {
         multi(&c[..]),
         Err(ErrMode::Backtrack(error_node_position!(
             &c[..],
-            ErrorKind::ManyTill,
+            ErrorKind::Many,
             error_position!(&c[..], ErrorKind::Tag)
         )))
     );
@@ -649,7 +649,7 @@ fn fold_many1_test() {
         multi(Partial::new(c)),
         Err(ErrMode::Backtrack(error_position!(
             Partial::new(c),
-            ErrorKind::Many1
+            ErrorKind::Many
         )))
     );
     assert_eq!(

@@ -112,7 +112,7 @@ where
     E: ParseError<I>,
 {
     trace("many1", move |mut i: I| match f.parse_next(i.clone()) {
-        Err(e) => Err(e.append(i, ErrorKind::Many1)),
+        Err(e) => Err(e.append(i, ErrorKind::Many)),
         Ok((i1, o)) => {
             let mut acc = C::initial(None);
             acc.accumulate(o);
@@ -180,7 +180,7 @@ where
                 Ok((i1, o)) => return Ok((i1, (res, o))),
                 Err(ErrMode::Backtrack(_)) => {
                     match f.parse_next(i.clone()) {
-                        Err(e) => return Err(e.append(i, ErrorKind::ManyTill)),
+                        Err(e) => return Err(e.append(i, ErrorKind::Many)),
                         Ok((i1, o)) => {
                             // infinite loop check: the parser must always consume
                             if i1.eof_offset() == len {
@@ -513,7 +513,7 @@ where
 {
     trace("many_m_n", move |mut input: I| {
         if min > max {
-            return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::ManyMN)));
+            return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::Many)));
         }
 
         let mut res = C::initial(Some(min));
@@ -531,7 +531,7 @@ where
                 }
                 Err(ErrMode::Backtrack(e)) => {
                     if count < min {
-                        return Err(ErrMode::Backtrack(e.append(input, ErrorKind::ManyMN)));
+                        return Err(ErrMode::Backtrack(e.append(input, ErrorKind::Many)));
                     } else {
                         return Ok((input, res));
                     }
@@ -592,7 +592,7 @@ where
                     input = i;
                 }
                 Err(e) => {
-                    return Err(e.append(i, ErrorKind::Count));
+                    return Err(e.append(i, ErrorKind::Many));
                 }
             }
         }
@@ -645,7 +645,7 @@ where
                     input = i;
                 }
                 Err(e) => {
-                    return Err(e.append(i, ErrorKind::Count));
+                    return Err(e.append(i, ErrorKind::Many));
                 }
             }
         }
@@ -766,8 +766,8 @@ where
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
 /// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Many1))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Many1))));
+/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Many))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Many))));
 /// ```
 pub fn fold_many1<I, O, E, F, G, H, R>(
     mut f: F,
@@ -785,7 +785,7 @@ where
         let _i = i.clone();
         let init = init();
         match f.parse_next(_i) {
-            Err(ErrMode::Backtrack(_)) => Err(ErrMode::from_error_kind(i, ErrorKind::Many1)),
+            Err(ErrMode::Backtrack(_)) => Err(ErrMode::from_error_kind(i, ErrorKind::Many)),
             Err(e) => Err(e),
             Ok((i1, o1)) => {
                 let mut acc = g(init, o1);
@@ -876,7 +876,7 @@ where
 {
     trace("fold_many_m_n", move |mut input: I| {
         if min > max {
-            return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::ManyMN)));
+            return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::Many)));
         }
 
         let mut acc = init();
@@ -895,7 +895,7 @@ where
                 //FInputXMError: handle failure properly
                 Err(ErrMode::Backtrack(err)) => {
                     if count < min {
-                        return Err(ErrMode::Backtrack(err.append(input, ErrorKind::ManyMN)));
+                        return Err(ErrMode::Backtrack(err.append(input, ErrorKind::Many)));
                     } else {
                         break;
                     }
