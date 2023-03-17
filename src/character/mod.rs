@@ -1175,7 +1175,7 @@ impl Int for i128 {
 ///
 /// assert_eq!(parser(&b"01AE"[..]), Ok((&b""[..], 0x01AE)));
 /// assert_eq!(parser(&b"abc"[..]), Ok((&b""[..], 0x0ABC)));
-/// assert_eq!(parser(&b"ggg"[..]), Err(ErrMode::Backtrack(Error::new(&b"ggg"[..], ErrorKind::IsA))));
+/// assert_eq!(parser(&b"ggg"[..]), Err(ErrMode::Backtrack(Error::new(&b"ggg"[..], ErrorKind::TakeWhile1))));
 /// ```
 ///
 /// ```rust
@@ -1190,7 +1190,7 @@ impl Int for i128 {
 ///
 /// assert_eq!(parser(Partial::new(&b"01AE;"[..])), Ok((Partial::new(&b";"[..]), 0x01AE)));
 /// assert_eq!(parser(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(parser(Partial::new(&b"ggg"[..])), Err(ErrMode::Backtrack(Error::new(Partial::new(&b"ggg"[..]), ErrorKind::IsA))));
+/// assert_eq!(parser(Partial::new(&b"ggg"[..])), Err(ErrMode::Backtrack(Error::new(Partial::new(&b"ggg"[..]), ErrorKind::TakeWhile1))));
 /// ```
 #[inline]
 pub fn hex_uint<I, O, E: ParseError<I>>(input: I) -> IResult<I, O, E>
@@ -1214,7 +1214,7 @@ where
             Ok(max_offset) => {
                 if max_offset < invalid_offset {
                     // Overflow
-                    return Err(ErrMode::from_error_kind(input, ErrorKind::IsA));
+                    return Err(ErrMode::from_error_kind(input, ErrorKind::Verify));
                 } else {
                     invalid_offset
                 }
@@ -1230,7 +1230,7 @@ where
         };
         if offset == 0 {
             // Must be at least one digit
-            return Err(ErrMode::from_error_kind(input, ErrorKind::IsA));
+            return Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhile1));
         }
         let (remaining, parsed) = input.next_slice(offset);
 

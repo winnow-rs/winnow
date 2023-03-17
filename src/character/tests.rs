@@ -452,7 +452,7 @@ mod complete {
             hex_u32(&b";"[..]),
             Err(ErrMode::Backtrack(error_position!(
                 &b";"[..],
-                ErrorKind::IsA
+                ErrorKind::TakeWhile1
             )))
         );
         assert_parse!(hex_u32(&b"ff;"[..]), Ok((&b";"[..], 255)));
@@ -463,14 +463,14 @@ mod complete {
             hex_u32(&b"00c5a31be2;"[..]), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 &b"00c5a31be2;"[..],
-                ErrorKind::IsA
+                ErrorKind::Verify
             )))
         );
         assert_parse!(
             hex_u32(&b"c5a31be201;"[..]), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 &b"c5a31be201;"[..],
-                ErrorKind::IsA
+                ErrorKind::Verify
             )))
         );
         assert_parse!(hex_u32(&b"ffffffff;"[..]), Ok((&b";"[..], 4_294_967_295)));
@@ -478,14 +478,14 @@ mod complete {
             hex_u32(&b"ffffffffffffffff;"[..]), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 &b"ffffffffffffffff;"[..],
-                ErrorKind::IsA
+                ErrorKind::Verify
             )))
         );
         assert_parse!(
             hex_u32(&b"ffffffffffffffff"[..]), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 &b"ffffffffffffffff"[..],
-                ErrorKind::IsA
+                ErrorKind::Verify
             )))
         );
         assert_parse!(hex_u32(&b"0x1be2;"[..]), Ok((&b"x1be2;"[..], 0)));
@@ -1457,7 +1457,7 @@ mod partial {
             hex_u32(Partial::new(&b";"[..])),
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new(&b";"[..]),
-                ErrorKind::IsA
+                ErrorKind::TakeWhile1
             )))
         );
         assert_parse!(
@@ -1480,14 +1480,14 @@ mod partial {
             hex_u32(Partial::new(&b"00c5a31be2;"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new(&b"00c5a31be2;"[..]),
-                ErrorKind::IsA
+                ErrorKind::Verify
             )))
         );
         assert_parse!(
             hex_u32(Partial::new(&b"c5a31be201;"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new(&b"c5a31be201;"[..]),
-                ErrorKind::IsA
+                ErrorKind::Verify
             )))
         );
         assert_parse!(
@@ -1498,14 +1498,14 @@ mod partial {
             hex_u32(Partial::new(&b"ffffffffffffffff;"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new(&b"ffffffffffffffff;"[..]),
-                ErrorKind::IsA
+                ErrorKind::Verify
             )))
         );
         assert_parse!(
             hex_u32(Partial::new(&b"ffffffffffffffff"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new(&b"ffffffffffffffff"[..]),
-                ErrorKind::IsA
+                ErrorKind::Verify
             )))
         );
         assert_parse!(
