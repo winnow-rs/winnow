@@ -627,15 +627,15 @@ mod complete {
         assert_eq!(
             esc(&b"AB\\"[..]),
             Err(ErrMode::Backtrack(error_position!(
-                &b"AB\\"[..],
-                ErrorKind::Escaped
+                &b""[..],
+                ErrorKind::Eof
             )))
         );
         assert_eq!(
             esc(&b"AB\\A"[..]),
             Err(ErrMode::Backtrack(error_node_position!(
                 &b"AB\\A"[..],
-                ErrorKind::Escaped,
+                ErrorKind::Eof,
                 error_position!(&b"A"[..], ErrorKind::Verify)
             )))
         );
@@ -662,16 +662,13 @@ mod complete {
         assert_eq!(esc("ab\\\"12"), Ok(("12", "ab\\\"")));
         assert_eq!(
             esc("AB\\"),
-            Err(ErrMode::Backtrack(error_position!(
-                "AB\\",
-                ErrorKind::Escaped
-            )))
+            Err(ErrMode::Backtrack(error_position!("", ErrorKind::Eof)))
         );
         assert_eq!(
             esc("AB\\A"),
             Err(ErrMode::Backtrack(error_node_position!(
                 "AB\\A",
-                ErrorKind::Escaped,
+                ErrorKind::Eof,
                 error_position!("A", ErrorKind::Verify)
             )))
         );
@@ -739,15 +736,15 @@ mod complete {
         assert_eq!(
             esc(&b"AB\\"[..]),
             Err(ErrMode::Backtrack(error_position!(
-                &b"\\"[..],
-                ErrorKind::EscapedTransform
+                &b""[..],
+                ErrorKind::Tag
             )))
         );
         assert_eq!(
             esc(&b"AB\\A"[..]),
             Err(ErrMode::Backtrack(error_node_position!(
                 &b"AB\\A"[..],
-                ErrorKind::EscapedTransform,
+                ErrorKind::Eof,
                 error_position!(&b"A"[..], ErrorKind::Tag)
             )))
         );
@@ -799,16 +796,13 @@ mod complete {
         assert_eq!(esc("ab\\\"12"), Ok(("12", String::from("ab\""))));
         assert_eq!(
             esc("AB\\"),
-            Err(ErrMode::Backtrack(error_position!(
-                "\\",
-                ErrorKind::EscapedTransform
-            )))
+            Err(ErrMode::Backtrack(error_position!("", ErrorKind::Tag)))
         );
         assert_eq!(
             esc("AB\\A"),
             Err(ErrMode::Backtrack(error_node_position!(
                 "AB\\A",
-                ErrorKind::EscapedTransform,
+                ErrorKind::Eof,
                 error_position!("A", ErrorKind::Tag)
             )))
         );
