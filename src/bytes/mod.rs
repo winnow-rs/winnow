@@ -503,33 +503,11 @@ where
 {
     trace("take_while0", move |i: I| {
         if i.is_partial() {
-            streaming_take_while_internal(i, &list)
+            split_at_offset_partial(&i, |c| !list.contains_token(c))
         } else {
-            complete_take_while_internal(i, &list)
+            split_at_offset_complete(&i, |c| !list.contains_token(c))
         }
     })
-}
-
-pub(crate) fn streaming_take_while_internal<T, I, Error: ParseError<I>>(
-    i: I,
-    list: &T,
-) -> IResult<I, <I as Stream>::Slice, Error>
-where
-    I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    split_at_offset_partial(&i, |c| !list.contains_token(c))
-}
-
-pub(crate) fn complete_take_while_internal<T, I, Error: ParseError<I>>(
-    i: I,
-    list: &T,
-) -> IResult<I, <I as Stream>::Slice, Error>
-where
-    I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    split_at_offset_complete(&i, |c| !list.contains_token(c))
 }
 
 /// Recognize the longest (at least 1) input slice that matches the [pattern][ContainsToken]
@@ -601,36 +579,13 @@ where
     T: ContainsToken<<I as Stream>::Token>,
 {
     trace("take_while1", move |i: I| {
+        let e: ErrorKind = ErrorKind::TakeWhile1;
         if i.is_partial() {
-            streaming_take_while1_internal(i, &list)
+            split_at_offset1_partial(&i, |c| !list.contains_token(c), e)
         } else {
-            complete_take_while1_internal(i, &list)
+            split_at_offset1_complete(&i, |c| !list.contains_token(c), e)
         }
     })
-}
-
-pub(crate) fn streaming_take_while1_internal<T, I, Error: ParseError<I>>(
-    i: I,
-    list: &T,
-) -> IResult<I, <I as Stream>::Slice, Error>
-where
-    I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    let e: ErrorKind = ErrorKind::TakeWhile1;
-    split_at_offset1_partial(&i, |c| !list.contains_token(c), e)
-}
-
-pub(crate) fn complete_take_while1_internal<T, I, Error: ParseError<I>>(
-    i: I,
-    list: &T,
-) -> IResult<I, <I as Stream>::Slice, Error>
-where
-    I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    let e: ErrorKind = ErrorKind::TakeWhile1;
-    split_at_offset1_complete(&i, |c| !list.contains_token(c), e)
 }
 
 /// Recognize the longest (m <= len <= n) input slice that matches the [pattern][ContainsToken]
@@ -821,33 +776,11 @@ where
 {
     trace("take_till0", move |i: I| {
         if i.is_partial() {
-            streaming_take_till_internal(i, &list)
+            split_at_offset_partial(&i, |c| list.contains_token(c))
         } else {
-            complete_take_till_internal(i, &list)
+            split_at_offset_complete(&i, |c| list.contains_token(c))
         }
     })
-}
-
-pub(crate) fn streaming_take_till_internal<T, I, Error: ParseError<I>>(
-    i: I,
-    list: &T,
-) -> IResult<I, <I as Stream>::Slice, Error>
-where
-    I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    split_at_offset_partial(&i, |c| list.contains_token(c))
-}
-
-pub(crate) fn complete_take_till_internal<T, I, Error: ParseError<I>>(
-    i: I,
-    list: &T,
-) -> IResult<I, <I as Stream>::Slice, Error>
-where
-    I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    split_at_offset_complete(&i, |c| list.contains_token(c))
 }
 
 /// Recognize the longest (at least 1) input slice till a [pattern][ContainsToken] is met.
@@ -917,36 +850,13 @@ where
     T: ContainsToken<<I as Stream>::Token>,
 {
     trace("take_till1", move |i: I| {
+        let e: ErrorKind = ErrorKind::TakeTill1;
         if i.is_partial() {
-            streaming_take_till1_internal(i, &list)
+            split_at_offset1_partial(&i, |c| list.contains_token(c), e)
         } else {
-            complete_take_till1_internal(i, &list)
+            split_at_offset1_complete(&i, |c| list.contains_token(c), e)
         }
     })
-}
-
-pub(crate) fn streaming_take_till1_internal<T, I, Error: ParseError<I>>(
-    i: I,
-    list: &T,
-) -> IResult<I, <I as Stream>::Slice, Error>
-where
-    I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    let e: ErrorKind = ErrorKind::TakeTill1;
-    split_at_offset1_partial(&i, |c| list.contains_token(c), e)
-}
-
-pub(crate) fn complete_take_till1_internal<T, I, Error: ParseError<I>>(
-    i: I,
-    list: &T,
-) -> IResult<I, <I as Stream>::Slice, Error>
-where
-    I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    let e: ErrorKind = ErrorKind::TakeTill1;
-    split_at_offset1_complete(&i, |c| list.contains_token(c), e)
 }
 
 /// Recognize an input slice containing the first N input elements (I[..N]).
