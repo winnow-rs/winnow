@@ -39,14 +39,6 @@ use crate::stream::{AsChar, Compare, Location, Stream, StreamIsPartial};
 /// - `u8` and `char`, see [`winnow::bytes::one_of`][crate::bytes::one_of]
 /// - `&[u8]` and `&str`, see [`winnow::bytes::tag`][crate::bytes::tag]
 pub trait Parser<I, O, E> {
-    /// A parser takes in input type, and returns a `Result` containing
-    /// either the remaining input and the output value, or an error
-    #[deprecated(since = "0.3.0", note = "Replaced with `Parser::parse_next`")]
-    #[cfg_attr(feature = "unstable-doc", doc(hidden))]
-    fn parse(&mut self, input: I) -> IResult<I, O, E> {
-        self.parse_next(input)
-    }
-
     /// Take tokens from the [`Stream`], turning it into the output
     ///
     /// This includes advancing the [`Stream`] to the next location.
@@ -576,32 +568,6 @@ pub trait Parser<I, O, E> {
         E: Into<E2>,
     {
         ErrInto::new(self)
-    }
-
-    /// Applies a second parser after the first one, return their results as a tuple
-    ///
-    /// **WARNING:** Deprecated, replaced with [`winnow::sequence::tuple`][crate::sequence::tuple]
-    #[deprecated(since = "0.1.0", note = "Replaced with `winnow::sequence::tuple")]
-    #[cfg_attr(feature = "unstable-doc", doc(hidden))]
-    fn and<G, O2>(self, g: G) -> And<Self, G>
-    where
-        G: Parser<I, O2, E>,
-        Self: core::marker::Sized,
-    {
-        And::new(self, g)
-    }
-
-    /// Applies a second parser over the input if the first one failed
-    ///
-    /// **WARNING:** Deprecated, replaced with [`winnow::branch::alt`][crate::branch::alt]
-    #[deprecated(since = "0.1.0", note = "Replaced with `winnow::branch::alt")]
-    #[cfg_attr(feature = "unstable-doc", doc(hidden))]
-    fn or<G>(self, g: G) -> Or<Self, G>
-    where
-        G: Parser<I, O, E>,
-        Self: core::marker::Sized,
-    {
-        Or::new(self, g)
     }
 }
 

@@ -102,16 +102,6 @@ fn custom_error(input: &[u8]) -> IResult<&[u8], &[u8], CustomError> {
 }
 
 #[test]
-fn test_flat_map() {
-    #![allow(deprecated)]
-    let input: &[u8] = &[3, 100, 101, 102, 103, 104][..];
-    assert_parse!(
-        flat_map(u8, take)(input),
-        Ok((&[103, 104][..], &[100, 101, 102][..]))
-    );
-}
-
-#[test]
 fn test_parser_flat_map() {
     let input: &[u8] = &[3, 100, 101, 102, 103, 104][..];
     assert_parse!(
@@ -124,23 +114,6 @@ fn test_parser_flat_map() {
 fn test_closure_compiles_195(input: &[u8]) -> IResult<&[u8], ()> {
     u8.flat_map(|num| count(u16(Endianness::Big), num as usize))
         .parse_next(input)
-}
-
-#[test]
-fn test_map_opt() {
-    #![allow(deprecated)]
-    let input: &[u8] = &[50][..];
-    assert_parse!(
-        map_opt(u8, |u| if u < 20 { Some(u) } else { None })(input),
-        Err(ErrMode::Backtrack(Error {
-            input: &[50][..],
-            kind: ErrorKind::Verify
-        }))
-    );
-    assert_parse!(
-        map_opt(u8, |u| if u > 20 { Some(u) } else { None })(input),
-        Ok((&[][..], 50))
-    );
 }
 
 #[test]
@@ -162,93 +135,12 @@ fn test_parser_verify_map() {
 }
 
 #[test]
-fn test_map_parser() {
-    #![allow(deprecated)]
-    let input: &[u8] = &[100, 101, 102, 103, 104][..];
-    assert_parse!(
-        map_parser(take(4usize), take(2usize))(input),
-        Ok((&[104][..], &[100, 101][..]))
-    );
-}
-
-#[test]
 fn test_parser_map_parser() {
     let input: &[u8] = &[100, 101, 102, 103, 104][..];
     assert_parse!(
         take(4usize).and_then(take(2usize)).parse_next(input),
         Ok((&[104][..], &[100, 101][..]))
     );
-}
-
-#[test]
-fn test_all_consuming() {
-    #![allow(deprecated)]
-    let input: &[u8] = &[100, 101, 102][..];
-    assert_parse!(
-        all_consuming(take(2usize))(input),
-        Err(ErrMode::Backtrack(Error {
-            input: &[102][..],
-            kind: ErrorKind::Eof
-        }))
-    );
-    assert_parse!(
-        all_consuming(take(3usize))(input),
-        Ok((&[][..], &[100, 101, 102][..]))
-    );
-}
-
-#[test]
-#[allow(unused)]
-fn test_verify_ref() {
-    #![allow(deprecated)]
-    use crate::bytes::take;
-
-    let mut parser1 = verify(take(3u8), |s: &[u8]| s == &b"abc"[..]);
-
-    assert_eq!(parser1(&b"abcd"[..]), Ok((&b"d"[..], &b"abc"[..])));
-    assert_eq!(
-        parser1(&b"defg"[..]),
-        Err(ErrMode::Backtrack(Error {
-            input: &b"defg"[..],
-            kind: ErrorKind::Verify
-        }))
-    );
-
-    fn parser2(i: &[u8]) -> IResult<&[u8], u32> {
-        verify(crate::number::be_u32, |val: &u32| *val < 3)(i)
-    }
-}
-
-#[test]
-#[cfg(feature = "alloc")]
-fn test_verify_alloc() {
-    #![allow(deprecated)]
-    use crate::bytes::take;
-    let mut parser1 = verify(take(3u8).map(|s: &[u8]| s.to_vec()), |s: &[u8]| {
-        s == &b"abc"[..]
-    });
-
-    assert_eq!(parser1(&b"abcd"[..]), Ok((&b"d"[..], b"abc".to_vec())));
-    assert_eq!(
-        parser1(&b"defg"[..]),
-        Err(ErrMode::Backtrack(Error {
-            input: &b"defg"[..],
-            kind: ErrorKind::Verify
-        }))
-    );
-}
-
-#[test]
-#[cfg(feature = "std")]
-fn test_into() {
-    #![allow(deprecated)]
-    use crate::bytes::take;
-    use crate::error::Error;
-
-    let mut parser = into(take::<_, _, Error<_>>(3u8));
-    let result: IResult<&[u8], Vec<u8>> = parser(&b"abcdefg"[..]);
-
-    assert_eq!(result, Ok((&b"defg"[..], vec![97, 98, 99])));
 }
 
 #[test]
@@ -329,31 +221,6 @@ fn not_test() {
     assert_eq!(
         not_aaa(Partial::new(&b"abcd"[..])),
         Ok((Partial::new(&b"abcd"[..]), ()))
-    );
-}
-
-#[test]
-fn verify_test() {
-    #![allow(deprecated)]
-    use crate::bytes::take;
-
-    fn test(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        verify(take(5u8), |slice: &[u8]| slice[0] == b'a')(i)
-    }
-    assert_eq!(
-        test(Partial::new(&b"bcd"[..])),
-        Err(ErrMode::Incomplete(Needed::new(2)))
-    );
-    assert_eq!(
-        test(Partial::new(&b"bcdefg"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"bcdefg"[..]),
-            ErrorKind::Verify
-        )))
-    );
-    assert_eq!(
-        test(Partial::new(&b"abcdefg"[..])),
-        Ok((Partial::new(&b"fg"[..]), &b"abcde"[..]))
     );
 }
 
