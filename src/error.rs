@@ -662,7 +662,6 @@ pub enum ErrorKind {
   TakeWhile,
   Complete,
   Not,
-  Permutation,
   Verify,
   Fail,
 }
@@ -680,7 +679,6 @@ impl ErrorKind {
       ErrorKind::TakeWhile                 => "TakeWhile",
       ErrorKind::Complete                  => "Complete",
       ErrorKind::Not                       => "Negation",
-      ErrorKind::Permutation               => "Permutation",
       ErrorKind::Verify                    => "predicate verification",
       ErrorKind::Fail                      => "Fail",
     }
