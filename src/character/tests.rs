@@ -399,11 +399,7 @@ mod complete {
             _ => unreachable!(),
         };
 
-        let (i, s) = match digit1::<_, crate::error::Error<_>>(i) {
-            Ok((i, s)) => (i, s),
-            Err(_) => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
-        };
-
+        let (i, s) = digit1::<_, crate::error::Error<_>>(i)?;
         match s.parse_slice() {
             Some(n) => {
                 if sign {
@@ -412,7 +408,7 @@ mod complete {
                     Ok((i, -n))
                 }
             }
-            None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
+            None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
         }
     }
 
@@ -420,7 +416,7 @@ mod complete {
         let (i, s) = digit1(i)?;
         match s.parse_slice() {
             Some(n) => Ok((i, n)),
-            None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
+            None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
         }
     }
 
@@ -1404,11 +1400,7 @@ mod partial {
             _ => unreachable!(),
         };
 
-        let (i, s) = match digit1::<_, crate::error::Error<_>>(i) {
-            Ok((i, s)) => (i, s),
-            Err(ErrMode::Incomplete(i)) => return Err(ErrMode::Incomplete(i)),
-            Err(_) => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
-        };
+        let (i, s) = digit1::<_, crate::error::Error<_>>(i)?;
         match s.parse_slice() {
             Some(n) => {
                 if sign {
@@ -1417,7 +1409,7 @@ mod partial {
                     Ok((i, -n))
                 }
             }
-            None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
+            None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
         }
     }
 
@@ -1425,7 +1417,7 @@ mod partial {
         let (i, s) = digit1(i)?;
         match s.parse_slice() {
             Some(n) => Ok((i, n)),
-            None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
+            None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
         }
     }
 

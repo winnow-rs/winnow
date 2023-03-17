@@ -914,9 +914,7 @@ where
     O: Uint,
 {
     trace("dec_uint", move |input: I| {
-        let i = input.clone();
-
-        if i.eof_offset() == 0 {
+        if input.eof_offset() == 0 {
             if input.is_partial() {
                 return Err(ErrMode::Incomplete(Needed::new(1)));
             } else {
@@ -925,20 +923,20 @@ where
         }
 
         let mut value = O::default();
-        for (offset, c) in i.iter_offsets() {
+        for (offset, c) in input.iter_offsets() {
             match c.as_char().to_digit(10) {
                 Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
                     let d = d as u8;
                     v.checked_add(d, sealed::SealedMarker)
                 }) {
-                    None => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
+                    None => return Err(ErrMode::from_error_kind(input, ErrorKind::Verify)),
                     Some(v) => value = v,
                 },
                 None => {
                     if offset == 0 {
                         return Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhile1));
                     } else {
-                        return Ok((i.next_slice(offset).0, value));
+                        return Ok((input.next_slice(offset).0, value));
                     }
                 }
             }
@@ -947,7 +945,7 @@ where
         if input.is_partial() {
             Err(ErrMode::Incomplete(Needed::new(1)))
         } else {
-            Ok((i.next_slice(i.eof_offset()).0, value))
+            Ok((input.next_slice(input.eof_offset()).0, value))
         }
     })(input)
 }
@@ -1068,26 +1066,24 @@ where
     O: Int,
 {
     trace("dec_int", move |input: I| {
-        let i = input.clone();
-
         fn sign(token: impl AsChar) -> bool {
             let token = token.as_char();
             token == '+' || token == '-'
         }
-        let (i, sign) = opt(crate::bytes::one_of(sign).map(AsChar::as_char))
+        let (input, sign) = opt(crate::bytes::one_of(sign).map(AsChar::as_char))
             .map(|c| c != Some('-'))
-            .parse_next(i)?;
+            .parse_next(input)?;
 
-        if i.eof_offset() == 0 {
+        if input.eof_offset() == 0 {
             if input.is_partial() {
                 return Err(ErrMode::Incomplete(Needed::new(1)));
             } else {
-                return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+                return Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhile1));
             }
         }
 
         let mut value = O::default();
-        for (offset, c) in i.iter_offsets() {
+        for (offset, c) in input.iter_offsets() {
             match c.as_char().to_digit(10) {
                 Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
                     let d = d as u8;
@@ -1097,14 +1093,14 @@ where
                         v.checked_sub(d, sealed::SealedMarker)
                     }
                 }) {
-                    None => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
+                    None => return Err(ErrMode::from_error_kind(input, ErrorKind::Verify)),
                     Some(v) => value = v,
                 },
                 None => {
                     if offset == 0 {
-                        return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+                        return Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhile1));
                     } else {
-                        return Ok((i.next_slice(offset).0, value));
+                        return Ok((input.next_slice(offset).0, value));
                     }
                 }
             }
@@ -1113,7 +1109,7 @@ where
         if input.is_partial() {
             Err(ErrMode::Incomplete(Needed::new(1)))
         } else {
-            Ok((i.next_slice(i.eof_offset()).0, value))
+            Ok((input.next_slice(input.eof_offset()).0, value))
         }
     })(input)
 }
