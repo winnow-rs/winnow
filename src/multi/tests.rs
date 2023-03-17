@@ -574,9 +574,6 @@ fn fold_many0_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
         fold_many0(tag("abcd"), Vec::new, fold_into_vec)(i)
     }
-    fn multi_empty(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_many0(tag(""), Vec::new, fold_into_vec)(i)
-    }
 
     assert_eq!(
         multi(Partial::new(&b"abcdef"[..])),
@@ -602,11 +599,25 @@ fn fold_many0_test() {
         multi(Partial::new(&b""[..])),
         Err(ErrMode::Incomplete(Needed::new(4)))
     );
+}
+
+#[test]
+#[cfg(feature = "alloc")]
+#[cfg_attr(debug_assertions, should_panic)]
+fn fold_many0_empty_test() {
+    fn fold_into_vec<T>(mut acc: Vec<T>, item: T) -> Vec<T> {
+        acc.push(item);
+        acc
+    }
+    fn multi_empty(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
+        fold_many0(tag(""), Vec::new, fold_into_vec)(i)
+    }
+
     assert_eq!(
         multi_empty(Partial::new(&b"abcdef"[..])),
         Err(ErrMode::Backtrack(error_position!(
             Partial::new(&b"abcdef"[..]),
-            ErrorKind::Many0
+            ErrorKind::Assert
         )))
     );
 }
