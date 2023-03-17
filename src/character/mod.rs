@@ -1467,134 +1467,64 @@ where
     Error: ParseError<I>,
 {
     trace("escaped", move |input: I| {
+        let mut i = input.clone();
+
+        while i.eof_offset() > 0 {
+            let current_len = i.eof_offset();
+
+            match normal.parse_next(i.clone()) {
+                Ok((i2, _)) => {
+                    if i2.eof_offset() == 0 {
+                        if input.is_partial() {
+                            return Err(ErrMode::Incomplete(Needed::Unknown));
+                        } else {
+                            return Ok(input.next_slice(input.eof_offset()));
+                        }
+                    } else if i2.eof_offset() == current_len {
+                        let offset = input.offset_to(&i2);
+                        return Ok(input.next_slice(offset));
+                    } else {
+                        i = i2;
+                    }
+                }
+                Err(ErrMode::Backtrack(_)) => {
+                    if i.next_token().expect("eof_offset > 0").1.as_char() == control_char {
+                        let next = control_char.len_utf8();
+                        if next >= i.eof_offset() {
+                            if input.is_partial() {
+                                return Err(ErrMode::Incomplete(Needed::new(1)));
+                            } else {
+                                return Err(ErrMode::from_error_kind(input, ErrorKind::Escaped));
+                            }
+                        } else {
+                            match escapable.parse_next(i.next_slice(next).0) {
+                                Ok((i2, _)) => {
+                                    if i2.eof_offset() == 0 {
+                                        return Err(ErrMode::Incomplete(Needed::Unknown));
+                                    } else {
+                                        i = i2;
+                                    }
+                                }
+                                Err(e) => return Err(e),
+                            }
+                        }
+                    } else {
+                        let offset = input.offset_to(&i);
+                        return Ok(input.next_slice(offset));
+                    }
+                }
+                Err(e) => {
+                    return Err(e);
+                }
+            }
+        }
+
         if input.is_partial() {
-            streaming_escaped_internal(input, &mut normal, control_char, &mut escapable)
+            Err(ErrMode::Incomplete(Needed::Unknown))
         } else {
-            complete_escaped_internal(input, &mut normal, control_char, &mut escapable)
+            Ok(input.next_slice(input.eof_offset()))
         }
     })
-}
-
-pub(crate) fn streaming_escaped_internal<I, Error, F, G, O1, O2>(
-    input: I,
-    normal: &mut F,
-    control_char: char,
-    escapable: &mut G,
-) -> IResult<I, <I as Stream>::Slice, Error>
-where
-    I: Stream + Offset,
-    <I as Stream>::Token: crate::stream::AsChar,
-    F: Parser<I, O1, Error>,
-    G: Parser<I, O2, Error>,
-    Error: ParseError<I>,
-{
-    let mut i = input.clone();
-
-    while i.eof_offset() > 0 {
-        let current_len = i.eof_offset();
-
-        match normal.parse_next(i.clone()) {
-            Ok((i2, _)) => {
-                if i2.eof_offset() == 0 {
-                    return Err(ErrMode::Incomplete(Needed::Unknown));
-                } else if i2.eof_offset() == current_len {
-                    let offset = input.offset_to(&i2);
-                    return Ok(input.next_slice(offset));
-                } else {
-                    i = i2;
-                }
-            }
-            Err(ErrMode::Backtrack(_)) => {
-                if i.next_token().expect("eof_offset > 0").1.as_char() == control_char {
-                    let next = control_char.len_utf8();
-                    if next >= i.eof_offset() {
-                        return Err(ErrMode::Incomplete(Needed::new(1)));
-                    } else {
-                        match escapable.parse_next(i.next_slice(next).0) {
-                            Ok((i2, _)) => {
-                                if i2.eof_offset() == 0 {
-                                    return Err(ErrMode::Incomplete(Needed::Unknown));
-                                } else {
-                                    i = i2;
-                                }
-                            }
-                            Err(e) => return Err(e),
-                        }
-                    }
-                } else {
-                    let offset = input.offset_to(&i);
-                    return Ok(input.next_slice(offset));
-                }
-            }
-            Err(e) => {
-                return Err(e);
-            }
-        }
-    }
-
-    Err(ErrMode::Incomplete(Needed::Unknown))
-}
-
-pub(crate) fn complete_escaped_internal<'a, I: 'a, Error, F, G, O1, O2>(
-    input: I,
-    normal: &mut F,
-    control_char: char,
-    escapable: &mut G,
-) -> IResult<I, <I as Stream>::Slice, Error>
-where
-    I: Stream + Offset,
-    <I as Stream>::Token: crate::stream::AsChar,
-    F: Parser<I, O1, Error>,
-    G: Parser<I, O2, Error>,
-    Error: ParseError<I>,
-{
-    let mut i = input.clone();
-
-    while i.eof_offset() > 0 {
-        let current_len = i.eof_offset();
-
-        match normal.parse_next(i.clone()) {
-            Ok((i2, _)) => {
-                // return if we consumed everything or if the normal parser
-                // does not consume anything
-                if i2.eof_offset() == 0 {
-                    return Ok(input.next_slice(input.eof_offset()));
-                } else if i2.eof_offset() == current_len {
-                    let offset = input.offset_to(&i2);
-                    return Ok(input.next_slice(offset));
-                } else {
-                    i = i2;
-                }
-            }
-            Err(ErrMode::Backtrack(_)) => {
-                if i.next_token().expect("eof_offset > 0").1.as_char() == control_char {
-                    let next = control_char.len_utf8();
-                    if next >= i.eof_offset() {
-                        return Err(ErrMode::from_error_kind(input, ErrorKind::Escaped));
-                    } else {
-                        match escapable.parse_next(i.next_slice(next).0) {
-                            Ok((i2, _)) => {
-                                if i2.eof_offset() == 0 {
-                                    return Ok(input.next_slice(input.eof_offset()));
-                                } else {
-                                    i = i2;
-                                }
-                            }
-                            Err(e) => return Err(e),
-                        }
-                    }
-                } else {
-                    let offset = input.offset_to(&i);
-                    return Ok(input.next_slice(offset));
-                }
-            }
-            Err(e) => {
-                return Err(e);
-            }
-        }
-    }
-
-    Ok(input.next_slice(input.eof_offset()))
 }
 
 /// Matches a byte string with escaped characters.
@@ -1673,143 +1603,73 @@ where
     Error: ParseError<I>,
 {
     trace("escaped_transform", move |input: I| {
+        let mut offset = 0;
+        let mut res = Output::initial(Some(input.eof_offset()));
+
+        let i = input.clone();
+
+        while offset < i.eof_offset() {
+            let current_len = i.eof_offset();
+            let remainder = i.next_slice(offset).0;
+            match normal.parse_next(remainder.clone()) {
+                Ok((i2, o)) => {
+                    res.accumulate(o);
+                    if i2.eof_offset() == 0 {
+                        if input.is_partial() {
+                            return Err(ErrMode::Incomplete(Needed::Unknown));
+                        } else {
+                            return Ok((i.next_slice(i.eof_offset()).0, res));
+                        }
+                    } else if i2.eof_offset() == current_len {
+                        return Ok((remainder, res));
+                    } else {
+                        offset = input.offset_to(&i2);
+                    }
+                }
+                Err(ErrMode::Backtrack(_)) => {
+                    if remainder.next_token().expect("eof_offset > 0").1.as_char() == control_char {
+                        let next = offset + control_char.len_utf8();
+                        let eof_offset = input.eof_offset();
+
+                        if next >= eof_offset {
+                            if input.is_partial() {
+                                return Err(ErrMode::Incomplete(Needed::Unknown));
+                            } else {
+                                return Err(ErrMode::from_error_kind(
+                                    remainder,
+                                    ErrorKind::EscapedTransform,
+                                ));
+                            }
+                        } else {
+                            match transform.parse_next(i.next_slice(next).0) {
+                                Ok((i2, o)) => {
+                                    res.accumulate(o);
+                                    if i2.eof_offset() == 0 {
+                                        if input.is_partial() {
+                                            return Err(ErrMode::Incomplete(Needed::Unknown));
+                                        } else {
+                                            return Ok((i.next_slice(i.eof_offset()).0, res));
+                                        }
+                                    } else {
+                                        offset = input.offset_to(&i2);
+                                    }
+                                }
+                                Err(e) => return Err(e),
+                            }
+                        }
+                    } else {
+                        return Ok((remainder, res));
+                    }
+                }
+                Err(e) => return Err(e),
+            }
+        }
         if input.is_partial() {
-            streaming_escaped_transform_internal(input, &mut normal, control_char, &mut transform)
+            Err(ErrMode::Incomplete(Needed::Unknown))
         } else {
-            complete_escaped_transform_internal(input, &mut normal, control_char, &mut transform)
+            Ok((input.next_slice(offset).0, res))
         }
     })
-}
-
-#[cfg(feature = "alloc")]
-pub(crate) fn streaming_escaped_transform_internal<I, Error, F, G, Output>(
-    input: I,
-    normal: &mut F,
-    control_char: char,
-    transform: &mut G,
-) -> IResult<I, Output, Error>
-where
-    I: Stream + Offset,
-    <I as Stream>::Token: crate::stream::AsChar,
-    Output: crate::stream::Accumulate<<I as Stream>::Slice>,
-    F: Parser<I, <I as Stream>::Slice, Error>,
-    G: Parser<I, <I as Stream>::Slice, Error>,
-    Error: ParseError<I>,
-{
-    let mut offset = 0;
-    let mut res = Output::initial(Some(input.eof_offset()));
-
-    let i = input.clone();
-
-    while offset < i.eof_offset() {
-        let current_len = i.eof_offset();
-        let remainder = i.next_slice(offset).0;
-        match normal.parse_next(remainder.clone()) {
-            Ok((i2, o)) => {
-                res.accumulate(o);
-                if i2.eof_offset() == 0 {
-                    return Err(ErrMode::Incomplete(Needed::Unknown));
-                } else if i2.eof_offset() == current_len {
-                    return Ok((remainder, res));
-                } else {
-                    offset = input.offset_to(&i2);
-                }
-            }
-            Err(ErrMode::Backtrack(_)) => {
-                if remainder.next_token().expect("eof_offset > 0").1.as_char() == control_char {
-                    let next = offset + control_char.len_utf8();
-                    let eof_offset = input.eof_offset();
-
-                    if next >= eof_offset {
-                        return Err(ErrMode::Incomplete(Needed::Unknown));
-                    } else {
-                        match transform.parse_next(i.next_slice(next).0) {
-                            Ok((i2, o)) => {
-                                res.accumulate(o);
-                                if i2.eof_offset() == 0 {
-                                    return Err(ErrMode::Incomplete(Needed::Unknown));
-                                } else {
-                                    offset = input.offset_to(&i2);
-                                }
-                            }
-                            Err(e) => return Err(e),
-                        }
-                    }
-                } else {
-                    return Ok((remainder, res));
-                }
-            }
-            Err(e) => return Err(e),
-        }
-    }
-    Err(ErrMode::Incomplete(Needed::Unknown))
-}
-
-#[cfg(feature = "alloc")]
-pub(crate) fn complete_escaped_transform_internal<I, Error, F, G, Output>(
-    input: I,
-    normal: &mut F,
-    control_char: char,
-    transform: &mut G,
-) -> IResult<I, Output, Error>
-where
-    I: Stream + Offset,
-    <I as Stream>::Token: crate::stream::AsChar,
-    Output: crate::stream::Accumulate<<I as Stream>::Slice>,
-    F: Parser<I, <I as Stream>::Slice, Error>,
-    G: Parser<I, <I as Stream>::Slice, Error>,
-    Error: ParseError<I>,
-{
-    let mut offset = 0;
-    let mut res = Output::initial(Some(input.eof_offset()));
-
-    let i = input.clone();
-
-    while offset < i.eof_offset() {
-        let current_len = i.eof_offset();
-        let (remainder, _) = i.next_slice(offset);
-        match normal.parse_next(remainder.clone()) {
-            Ok((i2, o)) => {
-                res.accumulate(o);
-                if i2.eof_offset() == 0 {
-                    return Ok((i.next_slice(i.eof_offset()).0, res));
-                } else if i2.eof_offset() == current_len {
-                    return Ok((remainder, res));
-                } else {
-                    offset = input.offset_to(&i2);
-                }
-            }
-            Err(ErrMode::Backtrack(_)) => {
-                if remainder.next_token().expect("eof_offset > 0").1.as_char() == control_char {
-                    let next = offset + control_char.len_utf8();
-                    let eof_offset = input.eof_offset();
-
-                    if next >= eof_offset {
-                        return Err(ErrMode::from_error_kind(
-                            remainder,
-                            ErrorKind::EscapedTransform,
-                        ));
-                    } else {
-                        match transform.parse_next(i.next_slice(next).0) {
-                            Ok((i2, o)) => {
-                                res.accumulate(o);
-                                if i2.eof_offset() == 0 {
-                                    return Ok((i.next_slice(i.eof_offset()).0, res));
-                                } else {
-                                    offset = input.offset_to(&i2);
-                                }
-                            }
-                            Err(e) => return Err(e),
-                        }
-                    }
-                } else {
-                    return Ok((remainder, res));
-                }
-            }
-            Err(e) => return Err(e),
-        }
-    }
-    Ok((input.next_slice(offset).0, res))
 }
 
 mod sealed {

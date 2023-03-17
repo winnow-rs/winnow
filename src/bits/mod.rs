@@ -163,108 +163,51 @@ where
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
     let count = count.to_usize();
-    trace("take", move |input: (I, usize)| {
-        if input.is_partial() {
-            streaming_take_internal(input, count)
+    trace("take", move |(input, bit_offset): (I, usize)| {
+        if count == 0 {
+            Ok(((input, bit_offset), 0u8.into()))
         } else {
-            complete_take_internal(input, count)
+            let cnt = (count + bit_offset).div(8);
+            if input.eof_offset() * 8 < count + bit_offset {
+                if input.is_partial() {
+                    Err(ErrMode::Incomplete(Needed::new(count)))
+                } else {
+                    Err(ErrMode::from_error_kind(
+                        (input, bit_offset),
+                        ErrorKind::Eof,
+                    ))
+                }
+            } else {
+                let mut acc: O = 0_u8.into();
+                let mut offset: usize = bit_offset;
+                let mut remaining: usize = count;
+                let mut end_offset: usize = 0;
+
+                for byte in input.as_bytes().iter().copied().take(cnt + 1) {
+                    if remaining == 0 {
+                        break;
+                    }
+                    let val: O = if offset == 0 {
+                        byte.into()
+                    } else {
+                        (byte << offset >> offset).into()
+                    };
+
+                    if remaining < 8 - offset {
+                        acc += val >> (8 - offset - remaining);
+                        end_offset = remaining + offset;
+                        break;
+                    } else {
+                        acc += val << (remaining - (8 - offset));
+                        remaining -= 8 - offset;
+                        offset = 0;
+                    }
+                }
+                let (input, _) = input.next_slice(cnt);
+                Ok(((input, end_offset), acc))
+            }
         }
     })
-}
-
-pub(crate) fn streaming_take_internal<I, O, E: ParseError<(I, usize)>>(
-    (input, bit_offset): (I, usize),
-    count: usize,
-) -> IResult<(I, usize), O, E>
-where
-    I: Stream<Token = u8> + AsBytes,
-    O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
-{
-    if count == 0 {
-        Ok(((input, bit_offset), 0u8.into()))
-    } else {
-        let cnt = (count + bit_offset).div(8);
-        if input.eof_offset() * 8 < count + bit_offset {
-            Err(ErrMode::Incomplete(Needed::new(count)))
-        } else {
-            let mut acc: O = 0_u8.into();
-            let mut offset: usize = bit_offset;
-            let mut remaining: usize = count;
-            let mut end_offset: usize = 0;
-
-            for byte in input.as_bytes().iter().copied().take(cnt + 1) {
-                if remaining == 0 {
-                    break;
-                }
-                let val: O = if offset == 0 {
-                    byte.into()
-                } else {
-                    (byte << offset >> offset).into()
-                };
-
-                if remaining < 8 - offset {
-                    acc += val >> (8 - offset - remaining);
-                    end_offset = remaining + offset;
-                    break;
-                } else {
-                    acc += val << (remaining - (8 - offset));
-                    remaining -= 8 - offset;
-                    offset = 0;
-                }
-            }
-            let (input, _) = input.next_slice(cnt);
-            Ok(((input, end_offset), acc))
-        }
-    }
-}
-
-pub(crate) fn complete_take_internal<I, O, E: ParseError<(I, usize)>>(
-    (input, bit_offset): (I, usize),
-    count: usize,
-) -> IResult<(I, usize), O, E>
-where
-    I: Stream<Token = u8> + AsBytes,
-    O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
-{
-    if count == 0 {
-        Ok(((input, bit_offset), 0u8.into()))
-    } else {
-        let cnt = (count + bit_offset).div(8);
-        if input.eof_offset() * 8 < count + bit_offset {
-            Err(ErrMode::from_error_kind(
-                (input, bit_offset),
-                ErrorKind::Eof,
-            ))
-        } else {
-            let mut acc: O = 0_u8.into();
-            let mut offset: usize = bit_offset;
-            let mut remaining: usize = count;
-            let mut end_offset: usize = 0;
-
-            for byte in input.as_bytes().iter().copied().take(cnt + 1) {
-                if remaining == 0 {
-                    break;
-                }
-                let val: O = if offset == 0 {
-                    byte.into()
-                } else {
-                    (byte << offset >> offset).into()
-                };
-
-                if remaining < 8 - offset {
-                    acc += val >> (8 - offset - remaining);
-                    end_offset = remaining + offset;
-                    break;
-                } else {
-                    acc += val << (remaining - (8 - offset));
-                    remaining -= 8 - offset;
-                    offset = 0;
-                }
-            }
-            let (input, _) = input.next_slice(cnt);
-            Ok(((input, end_offset), acc))
-        }
-    }
 }
 
 /// Parse taking `count` bits and comparing them to `pattern`

@@ -1170,32 +1170,22 @@ where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
 {
-    trace("u8", move |input: I| {
-        if input.is_partial() {
-            streaming_u8(input)
-        } else {
-            complete_u8(input)
-        }
-    })(input)
+    trace("u8", move |input: I| u8_internal(input))(input)
 }
 
 #[inline]
-pub(crate) fn streaming_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
+pub(crate) fn u8_internal<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
+    I: StreamIsPartial,
     I: Stream<Token = u8>,
 {
-    input
-        .next_token()
-        .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))
-}
-
-pub(crate) fn complete_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
-where
-    I: Stream<Token = u8>,
-{
-    input
-        .next_token()
-        .ok_or_else(|| ErrMode::Backtrack(E::from_error_kind(input, ErrorKind::Eof)))
+    input.next_token().ok_or_else(|| {
+        if input.is_partial() {
+            ErrMode::Incomplete(Needed::new(1))
+        } else {
+            ErrMode::Backtrack(E::from_error_kind(input, ErrorKind::Eof))
+        }
+    })
 }
 
 /// Recognizes an unsigned 2 bytes integer
@@ -1601,12 +1591,7 @@ where
     I: Stream<Token = u8>,
 {
     trace("i8", move |input: I| {
-        if input.is_partial() {
-            streaming_u8(input)
-        } else {
-            complete_u8(input)
-        }
-        .map(|(i, n)| (i, n as i8))
+        u8_internal(input).map(|(i, n)| (i, n as i8))
     })(input)
 }
 
