@@ -25,21 +25,23 @@ use crate::Parser;
 ///
 /// # Example
 ///
-/// ```
-/// # use winnow::{bytes::any, error::ErrMode, error::{Error, ErrorKind}, IResult};
+/// ```rust
+/// # use winnow::{bytes::any, error::ErrMode, error::{Error, ErrorKind}};
+/// # use winnow::prelude::*;
 /// fn parser(input: &str) -> IResult<&str, char> {
-///     any(input)
+///     any.parse_next(input)
 /// }
 ///
 /// assert_eq!(parser("abc"), Ok(("bc",'a')));
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
 /// ```
 ///
-/// ```
-/// # use winnow::{bytes::any, error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// ```rust
+/// # use winnow::{bytes::any, error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// assert_eq!(any::<_, Error<_>>(Partial::new("abc")), Ok((Partial::new("bc"),'a')));
-/// assert_eq!(any::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(any::<_, Error<_>>.parse_next(Partial::new("abc")), Ok((Partial::new("bc"),'a')));
+/// assert_eq!(any::<_, Error<_>>.parse_next(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 #[doc(alias = "token")]
@@ -54,7 +56,8 @@ where
         } else {
             complete_any(input)
         }
-    })(input)
+    })
+    .parse_next(input)
 }
 
 pub(crate) fn streaming_any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Token, E>
@@ -92,7 +95,7 @@ where
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
-///   tag("Hello")(s)
+///   tag("Hello").parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("Hello, World!"), Ok((", World!", "Hello")));
@@ -101,12 +104,13 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::Partial;
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   tag("Hello")(s)
+///   tag("Hello").parse_next(s)
 /// }
 ///
 /// assert_eq!(parser(Partial::new("Hello, World!")), Ok((Partial::new(", World!"), "Hello")));
@@ -118,9 +122,7 @@ where
 #[doc(alias = "literal")]
 #[doc(alias = "bytes")]
 #[doc(alias = "just")]
-pub fn tag<T, I, Error: ParseError<I>>(
-    tag: T,
-) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
+pub fn tag<T, I, Error: ParseError<I>>(tag: T) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream + Compare<T>,
@@ -185,11 +187,12 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::bytes::tag_no_case;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
-///   tag_no_case("hello")(s)
+///   tag_no_case("hello").parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("Hello, World!"), Ok((", World!", "Hello")));
@@ -200,12 +203,13 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// use winnow::bytes::tag_no_case;
 ///
 /// fn parser(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   tag_no_case("hello")(s)
+///   tag_no_case("hello").parse_next(s)
 /// }
 ///
 /// assert_eq!(parser(Partial::new("Hello, World!")), Ok((Partial::new(", World!"), "Hello")));
@@ -220,7 +224,7 @@ where
 #[doc(alias = "just")]
 pub fn tag_no_case<T, I, Error: ParseError<I>>(
     tag: T,
-) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
+) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream + Compare<T>,
@@ -290,16 +294,16 @@ where
 ///
 /// # Example
 ///
-/// ```
-/// # use winnow::*;
+/// ```rust
+/// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::bytes::one_of;
-/// assert_eq!(one_of::<_, _, Error<_>>("abc")("b"), Ok(("", 'b')));
-/// assert_eq!(one_of::<_, _, Error<_>>("a")("bc"), Err(ErrMode::Backtrack(Error::new("bc", ErrorKind::Verify))));
-/// assert_eq!(one_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
+/// assert_eq!(one_of::<_, _, Error<_>>("abc").parse_next("b"), Ok(("", 'b')));
+/// assert_eq!(one_of::<_, _, Error<_>>("a").parse_next("bc"), Err(ErrMode::Backtrack(Error::new("bc", ErrorKind::Verify))));
+/// assert_eq!(one_of::<_, _, Error<_>>("a").parse_next(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
 ///
 /// fn parser_fn(i: &str) -> IResult<&str, char> {
-///     one_of(|c| c == 'a' || c == 'b')(i)
+///     one_of(|c| c == 'a' || c == 'b').parse_next(i)
 /// }
 /// assert_eq!(parser_fn("abc"), Ok(("bc", 'a')));
 /// assert_eq!(parser_fn("cd"), Err(ErrMode::Backtrack(Error::new("cd", ErrorKind::Verify))));
@@ -307,16 +311,16 @@ where
 /// ```
 ///
 /// ```
-/// # use winnow::*;
+/// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::bytes::one_of;
-/// assert_eq!(one_of::<_, _, Error<_>>("abc")(Partial::new("b")), Ok((Partial::new(""), 'b')));
-/// assert_eq!(one_of::<_, _, Error<_>>("a")(Partial::new("bc")), Err(ErrMode::Backtrack(Error::new(Partial::new("bc"), ErrorKind::Verify))));
-/// assert_eq!(one_of::<_, _, Error<_>>("a")(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(one_of::<_, _, Error<_>>("abc").parse_next(Partial::new("b")), Ok((Partial::new(""), 'b')));
+/// assert_eq!(one_of::<_, _, Error<_>>("a").parse_next(Partial::new("bc")), Err(ErrMode::Backtrack(Error::new(Partial::new("bc"), ErrorKind::Verify))));
+/// assert_eq!(one_of::<_, _, Error<_>>("a").parse_next(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// fn parser_fn(i: Partial<&str>) -> IResult<Partial<&str>, char> {
-///     one_of(|c| c == 'a' || c == 'b')(i)
+///     one_of(|c| c == 'a' || c == 'b').parse_next(i)
 /// }
 /// assert_eq!(parser_fn(Partial::new("abc")), Ok((Partial::new("bc"), 'a')));
 /// assert_eq!(parser_fn(Partial::new("cd")), Err(ErrMode::Backtrack(Error::new(Partial::new("cd"), ErrorKind::Verify))));
@@ -326,9 +330,7 @@ where
 #[doc(alias = "char")]
 #[doc(alias = "token")]
 #[doc(alias = "satisfy")]
-pub fn one_of<I, T, Error: ParseError<I>>(
-    list: T,
-) -> impl FnMut(I) -> IResult<I, <I as Stream>::Token, Error>
+pub fn one_of<I, T, Error: ParseError<I>>(list: T) -> impl Parser<I, <I as Stream>::Token, Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -349,26 +351,26 @@ where
 ///
 /// # Example
 ///
-/// ```
+/// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
+/// # use winnow::prelude::*;
 /// # use winnow::bytes::none_of;
-/// assert_eq!(none_of::<_, _, Error<_>>("abc")("z"), Ok(("", 'z')));
-/// assert_eq!(none_of::<_, _, Error<_>>("ab")("a"), Err(ErrMode::Backtrack(Error::new("a", ErrorKind::Verify))));
-/// assert_eq!(none_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
+/// assert_eq!(none_of::<_, _, Error<_>>("abc").parse_next("z"), Ok(("", 'z')));
+/// assert_eq!(none_of::<_, _, Error<_>>("ab").parse_next("a"), Err(ErrMode::Backtrack(Error::new("a", ErrorKind::Verify))));
+/// assert_eq!(none_of::<_, _, Error<_>>("a").parse_next(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
 /// ```
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// # use winnow::bytes::none_of;
-/// assert_eq!(none_of::<_, _, Error<_>>("abc")(Partial::new("z")), Ok((Partial::new(""), 'z')));
-/// assert_eq!(none_of::<_, _, Error<_>>("ab")(Partial::new("a")), Err(ErrMode::Backtrack(Error::new(Partial::new("a"), ErrorKind::Verify))));
-/// assert_eq!(none_of::<_, _, Error<_>>("a")(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(none_of::<_, _, Error<_>>("abc").parse_next(Partial::new("z")), Ok((Partial::new(""), 'z')));
+/// assert_eq!(none_of::<_, _, Error<_>>("ab").parse_next(Partial::new("a")), Err(ErrMode::Backtrack(Error::new(Partial::new("a"), ErrorKind::Verify))));
+/// assert_eq!(none_of::<_, _, Error<_>>("a").parse_next(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn none_of<I, T, Error: ParseError<I>>(
-    list: T,
-) -> impl FnMut(I) -> IResult<I, <I as Stream>::Token, Error>
+pub fn none_of<I, T, Error: ParseError<I>>(list: T) -> impl Parser<I, <I as Stream>::Token, Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -390,12 +392,13 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::bytes::take_while0;
 /// use winnow::stream::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
-///   take_while0(AsChar::is_alpha)(s)
+///   take_while0(AsChar::is_alpha).parse_next(s)
 /// }
 ///
 /// assert_eq!(alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
@@ -405,13 +408,14 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// use winnow::bytes::take_while0;
 /// use winnow::stream::AsChar;
 ///
 /// fn alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-///   take_while0(AsChar::is_alpha)(s)
+///   take_while0(AsChar::is_alpha).parse_next(s)
 /// }
 ///
 /// assert_eq!(alpha(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
@@ -422,7 +426,7 @@ where
 #[inline(always)]
 pub fn take_while0<T, I, Error: ParseError<I>>(
     list: T,
-) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
+) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -470,12 +474,13 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::bytes::take_while1;
 /// use winnow::stream::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
-///   take_while1(AsChar::is_alpha)(s)
+///   take_while1(AsChar::is_alpha).parse_next(s)
 /// }
 ///
 /// assert_eq!(alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
@@ -483,7 +488,7 @@ where
 /// assert_eq!(alpha(b"12345"), Err(ErrMode::Backtrack(Error::new(&b"12345"[..], ErrorKind::Slice))));
 ///
 /// fn hex(s: &str) -> IResult<&str, &str> {
-///   take_while1("1234567890ABCDEF")(s)
+///   take_while1("1234567890ABCDEF").parse_next(s)
 /// }
 ///
 /// assert_eq!(hex("123 and voila"), Ok((" and voila", "123")));
@@ -494,13 +499,14 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// use winnow::bytes::take_while1;
 /// use winnow::stream::AsChar;
 ///
 /// fn alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-///   take_while1(AsChar::is_alpha)(s)
+///   take_while1(AsChar::is_alpha).parse_next(s)
 /// }
 ///
 /// assert_eq!(alpha(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
@@ -508,7 +514,7 @@ where
 /// assert_eq!(alpha(Partial::new(b"12345")), Err(ErrMode::Backtrack(Error::new(Partial::new(&b"12345"[..]), ErrorKind::Slice))));
 ///
 /// fn hex(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take_while1("1234567890ABCDEF")(s)
+///   take_while1("1234567890ABCDEF").parse_next(s)
 /// }
 ///
 /// assert_eq!(hex(Partial::new("123 and voila")), Ok((Partial::new(" and voila"), "123")));
@@ -521,7 +527,7 @@ where
 #[doc(alias = "is_a")]
 pub fn take_while1<T, I, Error: ParseError<I>>(
     list: T,
-) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
+) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -572,12 +578,13 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::bytes::take_while_m_n;
 /// use winnow::stream::AsChar;
 ///
 /// fn short_alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
-///   take_while_m_n(3, 6, AsChar::is_alpha)(s)
+///   take_while_m_n(3, 6, AsChar::is_alpha).parse_next(s)
 /// }
 ///
 /// assert_eq!(short_alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
@@ -588,13 +595,14 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// use winnow::bytes::take_while_m_n;
 /// use winnow::stream::AsChar;
 ///
 /// fn short_alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-///   take_while_m_n(3, 6, AsChar::is_alpha)(s)
+///   take_while_m_n(3, 6, AsChar::is_alpha).parse_next(s)
 /// }
 ///
 /// assert_eq!(short_alpha(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
@@ -608,7 +616,7 @@ pub fn take_while_m_n<T, I, Error: ParseError<I>>(
     m: usize,
     n: usize,
     list: T,
-) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
+) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -710,11 +718,12 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::bytes::take_till0;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
-///   take_till0(|c| c == ':')(s)
+///   take_till0(|c| c == ':').parse_next(s)
 /// }
 ///
 /// assert_eq!(till_colon("latin:123"), Ok((":123", "latin")));
@@ -724,12 +733,13 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// use winnow::bytes::take_till0;
 ///
 /// fn till_colon(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take_till0(|c| c == ':')(s)
+///   take_till0(|c| c == ':').parse_next(s)
 /// }
 ///
 /// assert_eq!(till_colon(Partial::new("latin:123")), Ok((Partial::new(":123"), "latin")));
@@ -740,7 +750,7 @@ where
 #[inline(always)]
 pub fn take_till0<T, I, Error: ParseError<I>>(
     list: T,
-) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
+) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -788,11 +798,12 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::bytes::take_till1;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
-///   take_till1(|c| c == ':')(s)
+///   take_till1(|c| c == ':').parse_next(s)
 /// }
 ///
 /// assert_eq!(till_colon("latin:123"), Ok((":123", "latin")));
@@ -801,7 +812,7 @@ where
 /// assert_eq!(till_colon(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
 ///
 /// fn not_space(s: &str) -> IResult<&str, &str> {
-///   take_till1(" \t\r\n")(s)
+///   take_till1(" \t\r\n").parse_next(s)
 /// }
 ///
 /// assert_eq!(not_space("Hello, World!"), Ok((" World!", "Hello,")));
@@ -811,12 +822,13 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// use winnow::bytes::take_till1;
 ///
 /// fn till_colon(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take_till1(|c| c == ':')(s)
+///   take_till1(|c| c == ':').parse_next(s)
 /// }
 ///
 /// assert_eq!(till_colon(Partial::new("latin:123")), Ok((Partial::new(":123"), "latin")));
@@ -825,7 +837,7 @@ where
 /// assert_eq!(till_colon(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// fn not_space(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take_till1(" \t\r\n")(s)
+///   take_till1(" \t\r\n").parse_next(s)
 /// }
 ///
 /// assert_eq!(not_space(Partial::new("Hello, World!")), Ok((Partial::new(" World!"), "Hello,")));
@@ -837,7 +849,7 @@ where
 #[doc(alias = "is_not")]
 pub fn take_till1<T, I, Error: ParseError<I>>(
     list: T,
-) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
+) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -890,11 +902,12 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::bytes::take;
 ///
 /// fn take6(s: &str) -> IResult<&str, &str> {
-///   take(6usize)(s)
+///   take(6usize).parse_next(s)
 /// }
 ///
 /// assert_eq!(take6("1234567"), Ok(("7", "123456")));
@@ -908,20 +921,22 @@ where
 /// take that many `u8`'s:
 ///
 /// ```rust
+/// # use winnow::prelude::*;
 /// use winnow::error::Error;
 /// use winnow::bytes::take;
 ///
-/// assert_eq!(take::<_, _, Error<_>>(1usize)("💙"), Ok(("", "💙")));
-/// assert_eq!(take::<_, _, Error<_>>(1usize)("💙".as_bytes()), Ok((b"\x9F\x92\x99".as_ref(), b"\xF0".as_ref())));
+/// assert_eq!(take::<_, _, Error<_>>(1usize).parse_next("💙"), Ok(("", "💙")));
+/// assert_eq!(take::<_, _, Error<_>>(1usize).parse_next("💙".as_bytes()), Ok((b"\x9F\x92\x99".as_ref(), b"\xF0".as_ref())));
 /// ```
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// use winnow::bytes::take;
 ///
 /// fn take6(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take(6usize)(s)
+///   take(6usize).parse_next(s)
 /// }
 ///
 /// assert_eq!(take6(Partial::new("1234567")), Ok((Partial::new("7"), "123456")));
@@ -930,9 +945,7 @@ where
 /// assert_eq!(take6(Partial::new("short")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// ```
 #[inline(always)]
-pub fn take<C, I, Error: ParseError<I>>(
-    count: C,
-) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
+pub fn take<C, I, Error: ParseError<I>>(count: C) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -987,11 +1000,12 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::bytes::take_until0;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
-///   take_until0("eof")(s)
+///   take_until0("eof").parse_next(s)
 /// }
 ///
 /// assert_eq!(until_eof("hello, worldeof"), Ok(("eof", "hello, world")));
@@ -1001,12 +1015,13 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// use winnow::bytes::take_until0;
 ///
 /// fn until_eof(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take_until0("eof")(s)
+///   take_until0("eof").parse_next(s)
 /// }
 ///
 /// assert_eq!(until_eof(Partial::new("hello, worldeof")), Ok((Partial::new("eof"), "hello, world")));
@@ -1017,7 +1032,7 @@ where
 #[inline(always)]
 pub fn take_until0<T, I, Error: ParseError<I>>(
     tag: T,
-) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
+) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,
@@ -1073,11 +1088,12 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::bytes::take_until1;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
-///   take_until1("eof")(s)
+///   take_until1("eof").parse_next(s)
 /// }
 ///
 /// assert_eq!(until_eof("hello, worldeof"), Ok(("eof", "hello, world")));
@@ -1088,12 +1104,13 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// use winnow::bytes::take_until1;
 ///
 /// fn until_eof(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take_until1("eof")(s)
+///   take_until1("eof").parse_next(s)
 /// }
 ///
 /// assert_eq!(until_eof(Partial::new("hello, worldeof")), Ok((Partial::new("eof"), "hello, world")));
@@ -1105,7 +1122,7 @@ where
 #[inline(always)]
 pub fn take_until1<T, I, Error: ParseError<I>>(
     tag: T,
-) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
+) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,

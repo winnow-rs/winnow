@@ -50,11 +50,12 @@ fn parens(i: &str) -> IResult<&str, i64> {
         space,
         delimited(terminated("(", incr), expr, tag(")").map(|_| decr())),
         space,
-    )(i)
+    )
+    .parse_next(i)
 }
 
 fn factor(i: &str) -> IResult<&str, i64> {
-    alt((delimited(space, digit, space).parse_to(), parens))(i)
+    alt((delimited(space, digit, space).parse_to(), parens)).parse_next(i)
 }
 
 fn term(i: &str) -> IResult<&str, i64> {
@@ -79,7 +80,8 @@ fn term(i: &str) -> IResult<&str, i64> {
                 }
             }
         },
-    )(i);
+    )
+    .parse_next(i);
 
     decr();
     res
@@ -102,7 +104,8 @@ fn expr(i: &str) -> IResult<&str, i64> {
                 acc.saturating_sub(val)
             }
         },
-    )(i);
+    )
+    .parse_next(i);
 
     decr();
     res

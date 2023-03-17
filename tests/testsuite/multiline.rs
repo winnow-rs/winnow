@@ -4,7 +4,7 @@ use winnow::{
     character::{alphanumeric1 as alphanumeric, line_ending as eol},
     multi::many0,
     sequence::terminated,
-    IResult,
+    IResult, Parser,
 };
 
 pub fn end_of_line(input: &str) -> IResult<&str, &str> {
@@ -16,11 +16,11 @@ pub fn end_of_line(input: &str) -> IResult<&str, &str> {
 }
 
 pub fn read_line(input: &str) -> IResult<&str, &str> {
-    terminated(alphanumeric, end_of_line)(input)
+    terminated(alphanumeric, end_of_line).parse_next(input)
 }
 
 pub fn read_lines(input: &str) -> IResult<&str, Vec<&str>> {
-    many0(read_line)(input)
+    many0(read_line).parse_next(input)
 }
 
 #[cfg(feature = "alloc")]

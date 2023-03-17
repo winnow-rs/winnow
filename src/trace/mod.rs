@@ -12,7 +12,6 @@ mod internals;
 
 use crate::error::ErrMode;
 use crate::stream::Stream;
-use crate::IResult;
 use crate::Parser;
 
 #[cfg(all(feature = "debug", not(feature = "std")))]
@@ -30,12 +29,13 @@ compile_error!("`debug` requires `std`");
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
 /// # use winnow::bytes::take_while_m_n;
 /// # use winnow::stream::AsChar;
+/// # use winnow::prelude::*;
 /// use winnow::trace::trace;
 ///
 /// fn short_alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   trace("short_alpha",
 ///     take_while_m_n(3, 6, AsChar::is_alpha)
-///   )(s)
+///   ).parse_next(s)
 /// }
 ///
 /// assert_eq!(short_alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
@@ -48,11 +48,11 @@ compile_error!("`debug` requires `std`");
 pub fn trace<I: Stream, O, E>(
     name: impl crate::lib::std::fmt::Display,
     mut parser: impl Parser<I, O, E>,
-) -> impl FnMut(I) -> IResult<I, O, E> {
+) -> impl Parser<I, O, E> {
     #[cfg(feature = "debug")]
     {
         let mut call_count = 0;
-        move |i| {
+        move |i: I| {
             let depth = internals::Depth::new();
             let original = i.clone();
             internals::start(*depth, &name, call_count, &original);
@@ -76,7 +76,7 @@ pub fn trace<I: Stream, O, E>(
     }
     #[cfg(not(feature = "debug"))]
     {
-        move |i| parser.parse_next(i)
+        parser
     }
 }
 

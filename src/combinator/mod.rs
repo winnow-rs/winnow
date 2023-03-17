@@ -186,7 +186,8 @@ where
 {
     trace("rest", move |input: I| {
         Ok(input.next_slice(input.eof_offset()))
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Return the length of the remaining input.
@@ -210,7 +211,8 @@ where
     trace("rest_len", move |input: I| {
         let len = input.eof_offset();
         Ok((input, len))
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Implementation of [`Parser::by_ref`][Parser::by_ref]
@@ -436,20 +438,21 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: FnMut(O1) -> H, H: Parser<I, O2, E>> 
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
+/// # use winnow::prelude::*;
 /// use winnow::combinator::opt;
 /// use winnow::character::alpha1;
 /// # fn main() {
 ///
 /// fn parser(i: &str) -> IResult<&str, Option<&str>> {
-///   opt(alpha1)(i)
+///   opt(alpha1).parse_next(i)
 /// }
 ///
 /// assert_eq!(parser("abcd;"), Ok((";", Some("abcd"))));
 /// assert_eq!(parser("123;"), Ok(("123;", None)));
 /// # }
 /// ```
-pub fn opt<I: Stream, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, Option<O>, E>
+pub fn opt<I: Stream, O, E: ParseError<I>, F>(mut f: F) -> impl Parser<I, Option<O>, E>
 where
     F: Parser<I, O, E>,
 {
@@ -469,12 +472,13 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult};
+/// # use winnow::prelude::*;
 /// use winnow::combinator::cond;
 /// use winnow::character::alpha1;
 /// # fn main() {
 ///
 /// fn parser(b: bool, i: &str) -> IResult<&str, Option<&str>> {
-///   cond(b, alpha1)(i)
+///   cond(b, alpha1).parse_next(i)
 /// }
 ///
 /// assert_eq!(parser(true, "abcd;"), Ok((";", Some("abcd"))));
@@ -483,10 +487,7 @@ where
 /// assert_eq!(parser(false, "123;"), Ok(("123;", None)));
 /// # }
 /// ```
-pub fn cond<I, O, E: ParseError<I>, F>(
-    b: bool,
-    mut f: F,
-) -> impl FnMut(I) -> IResult<I, Option<O>, E>
+pub fn cond<I, O, E: ParseError<I>, F>(b: bool, mut f: F) -> impl Parser<I, Option<O>, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -509,19 +510,20 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::prelude::*;
 /// use winnow::combinator::peek;
 /// use winnow::character::alpha1;
 /// # fn main() {
 ///
 /// let mut parser = peek(alpha1);
 ///
-/// assert_eq!(parser("abcd;"), Ok(("abcd;", "abcd")));
-/// assert_eq!(parser("123;"), Err(ErrMode::Backtrack(Error::new("123;", ErrorKind::Slice))));
+/// assert_eq!(parser.parse_next("abcd;"), Ok(("abcd;", "abcd")));
+/// assert_eq!(parser.parse_next("123;"), Err(ErrMode::Backtrack(Error::new("123;", ErrorKind::Slice))));
 /// # }
 /// ```
 #[doc(alias = "look_ahead")]
 #[doc(alias = "rewind")]
-pub fn peek<I: Stream, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
+pub fn peek<I: Stream, O, E: ParseError<I>, F>(mut f: F) -> impl Parser<I, O, E>
 where
     F: Parser<I, O, E>,
 {
@@ -540,16 +542,15 @@ where
 ///
 /// # Example
 ///
-/// ```
+/// ```rust
 /// # use std::str;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::combinator::eof;
+/// # use winnow::prelude::*;
 ///
-/// # fn main() {
-/// let parser = eof;
-/// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Eof))));
-/// assert_eq!(parser(""), Ok(("", "")));
-/// # }
+/// let mut parser = eof;
+/// assert_eq!(parser.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Eof))));
+/// assert_eq!(parser.parse_next(""), Ok(("", "")));
 /// ```
 #[doc(alias = "end")]
 #[doc(alias = "eoi")]
@@ -563,7 +564,8 @@ where
         } else {
             Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
         }
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Implementation of [`Parser::complete_err`]
@@ -593,7 +595,8 @@ where
                 }
                 rest => rest,
             }
-        })(input)
+        })
+        .parse_next(input)
     }
 }
 
@@ -696,17 +699,18 @@ impl<I, O, E: ParseError<I>, F: Parser<I, O, E>> Parser<I, (), E> for Void<F, O>
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::prelude::*;
 /// use winnow::combinator::not;
 /// use winnow::character::alpha1;
 /// # fn main() {
 ///
 /// let mut parser = not(alpha1);
 ///
-/// assert_eq!(parser("123"), Ok(("123", ())));
-/// assert_eq!(parser("abcd"), Err(ErrMode::Backtrack(Error::new("abcd", ErrorKind::Not))));
+/// assert_eq!(parser.parse_next("123"), Ok(("123", ())));
+/// assert_eq!(parser.parse_next("abcd"), Err(ErrMode::Backtrack(Error::new("abcd", ErrorKind::Not))));
 /// # }
 /// ```
-pub fn not<I: Stream, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, (), E>
+pub fn not<I: Stream, O, E: ParseError<I>, F>(mut parser: F) -> impl Parser<I, (), E>
 where
     F: Parser<I, O, E>,
 {
@@ -862,19 +866,20 @@ where
 ///
 /// Without `cut_err`:
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::bytes::one_of;
 /// # use winnow::character::digit1;
 /// # use winnow::combinator::rest;
 /// # use winnow::branch::alt;
 /// # use winnow::sequence::preceded;
+/// # use winnow::prelude::*;
 /// # fn main() {
 ///
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///   alt((
 ///     preceded(one_of("+-"), digit1),
 ///     rest
-///   ))(input)
+///   )).parse_next(input)
 /// }
 ///
 /// assert_eq!(parser("+10 ab"), Ok((" ab", "10")));
@@ -885,7 +890,8 @@ where
 ///
 /// With `cut_err`:
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
+/// # use winnow::prelude::*;
 /// # use winnow::bytes::one_of;
 /// # use winnow::character::digit1;
 /// # use winnow::combinator::rest;
@@ -898,7 +904,7 @@ where
 ///   alt((
 ///     preceded(one_of("+-"), cut_err(digit1)),
 ///     rest
-///   ))(input)
+///   )).parse_next(input)
 /// }
 ///
 /// assert_eq!(parser("+10 ab"), Ok((" ab", "10")));
@@ -906,7 +912,7 @@ where
 /// assert_eq!(parser("+"), Err(ErrMode::Cut(Error { input: "", kind: ErrorKind::Slice })));
 /// # }
 /// ```
-pub fn cut_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O, E>
+pub fn cut_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl Parser<I, O, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -920,7 +926,7 @@ where
 ///
 /// This attempts the parse, allowing other parsers to be tried on failure, like with
 /// [`winnow::branch::alt`][crate::branch::alt].
-pub fn backtrack_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O, E>
+pub fn backtrack_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl Parser<I, O, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -954,7 +960,7 @@ where
     I: Stream,
 {
     #![allow(clippy::todo)]
-    trace("todo", move |_input: I| todo!("unimplemented parse"))(input)
+    trace("todo", move |_input: I| todo!("unimplemented parse")).parse_next(input)
 }
 
 /// Implementation of [`Parser::output_into`]
@@ -1146,7 +1152,7 @@ enum State<E> {
 /// use winnow::combinator::success;
 ///
 /// let mut parser = success::<_,_,Error<_>>(10);
-/// assert_eq!(parser("xyz"), Ok(("xyz", 10)));
+/// assert_eq!(parser.parse_next("xyz"), Ok(("xyz", 10)));
 ///
 /// fn sign(input: &str) -> IResult<&str, isize> {
 ///     alt((
@@ -1161,7 +1167,7 @@ enum State<E> {
 /// ```
 #[doc(alias = "value")]
 #[doc(alias = "empty")]
-pub fn success<I: Stream, O: Clone, E: ParseError<I>>(val: O) -> impl FnMut(I) -> IResult<I, O, E> {
+pub fn success<I: Stream, O: Clone, E: ParseError<I>>(val: O) -> impl Parser<I, O, E> {
     trace("success", move |input: I| Ok((input, val.clone())))
 }
 
@@ -1183,7 +1189,8 @@ pub fn success<I: Stream, O: Clone, E: ParseError<I>>(val: O) -> impl FnMut(I) -
 pub fn fail<I: Stream, O, E: ParseError<I>>(i: I) -> IResult<I, O, E> {
     trace("fail", |i| {
         Err(ErrMode::from_error_kind(i, ErrorKind::Fail))
-    })(i)
+    })
+    .parse_next(i)
 }
 
 /// Implementation of [`Parser::context`]
@@ -1220,6 +1227,7 @@ where
             (self.f)
                 .parse_next(i.clone())
                 .map_err(|err| err.map(|err| err.add_context(i, self.context.clone())))
-        })(i)
+        })
+        .parse_next(i)
     }
 }

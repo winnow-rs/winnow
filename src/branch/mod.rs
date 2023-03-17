@@ -32,12 +32,13 @@ pub trait Alt<I, O, E> {
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::Error,error::ErrorKind, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::Error,error::ErrorKind, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::character::{alpha1, digit1};
 /// use winnow::branch::alt;
 /// # fn main() {
 /// fn parser(input: &str) -> IResult<&str, &str> {
-///   alt((alpha1, digit1))(input)
+///   alt((alpha1, digit1)).parse_next(input)
 /// };
 ///
 /// // the first parser, alpha1, recognizes the input
@@ -53,7 +54,7 @@ pub trait Alt<I, O, E> {
 #[doc(alias = "choice")]
 pub fn alt<I: Stream, O, E: ParseError<I>, List: Alt<I, O, E>>(
     mut l: List,
-) -> impl FnMut(I) -> IResult<I, O, E> {
+) -> impl Parser<I, O, E> {
     trace("alt", move |i: I| l.choice(i))
 }
 
@@ -72,12 +73,13 @@ pub trait Permutation<I, O, E> {
 /// tuple of the parser results.
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode,error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode,error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::character::{alpha1, digit1};
 /// use winnow::branch::permutation;
 /// # fn main() {
 /// fn parser(input: &str) -> IResult<&str, (&str, &str)> {
-///   permutation((alpha1, digit1))(input)
+///   permutation((alpha1, digit1)).parse_next(input)
 /// }
 ///
 /// // permutation recognizes alphabetic characters then digit
@@ -94,12 +96,13 @@ pub trait Permutation<I, O, E> {
 /// The parsers are applied greedily: if there are multiple unapplied parsers
 /// that could parse the next slice of input, the first one is used.
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}};
+/// # use winnow::prelude::*;
 /// use winnow::branch::permutation;
 /// use winnow::bytes::any;
 ///
 /// fn parser(input: &str) -> IResult<&str, (char, char)> {
-///   permutation((any, 'a'))(input)
+///   permutation((any, 'a')).parse_next(input)
 /// }
 ///
 /// // any parses 'b', then char('a') parses 'a'
@@ -112,7 +115,7 @@ pub trait Permutation<I, O, E> {
 ///
 pub fn permutation<I: Stream, O, E: ParseError<I>, List: Permutation<I, O, E>>(
     mut l: List,
-) -> impl FnMut(I) -> IResult<I, O, E> {
+) -> impl Parser<I, O, E> {
     trace("permutation", move |i: I| l.permutation(i))
 }
 

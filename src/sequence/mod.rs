@@ -6,7 +6,7 @@ mod tests;
 use crate::error::ParseError;
 use crate::stream::Stream;
 use crate::trace::trace;
-use crate::{IResult, Parser};
+use crate::Parser;
 
 /// Apply two parsers, only returning the output from the second.
 ///
@@ -18,22 +18,23 @@ use crate::{IResult, Parser};
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// use winnow::sequence::preceded;
 /// use winnow::bytes::tag;
 ///
 /// let mut parser = preceded(tag("abc"), tag("efg"));
 ///
-/// assert_eq!(parser("abcefg"), Ok(("", "efg")));
-/// assert_eq!(parser("abcefghij"), Ok(("hij", "efg")));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
-/// assert_eq!(parser("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_next("abcefg"), Ok(("", "efg")));
+/// assert_eq!(parser.parse_next("abcefghij"), Ok(("hij", "efg")));
+/// assert_eq!(parser.parse_next(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_next("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
 /// ```
 #[doc(alias = "ignore_then")]
 pub fn preceded<I, O1, O2, E: ParseError<I>, F, G>(
     mut first: F,
     mut second: G,
-) -> impl FnMut(I) -> IResult<I, O2, E>
+) -> impl Parser<I, O2, E>
 where
     I: Stream,
     F: Parser<I, O1, E>,
@@ -55,22 +56,23 @@ where
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// use winnow::sequence::terminated;
 /// use winnow::bytes::tag;
 ///
 /// let mut parser = terminated(tag("abc"), tag("efg"));
 ///
-/// assert_eq!(parser("abcefg"), Ok(("", "abc")));
-/// assert_eq!(parser("abcefghij"), Ok(("hij", "abc")));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
-/// assert_eq!(parser("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_next("abcefg"), Ok(("", "abc")));
+/// assert_eq!(parser.parse_next("abcefghij"), Ok(("hij", "abc")));
+/// assert_eq!(parser.parse_next(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_next("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
 /// ```
 #[doc(alias = "then_ignore")]
 pub fn terminated<I, O1, O2, E: ParseError<I>, F, G>(
     mut first: F,
     mut second: G,
-) -> impl FnMut(I) -> IResult<I, O1, E>
+) -> impl Parser<I, O1, E>
 where
     I: Stream,
     F: Parser<I, O1, E>,
@@ -94,21 +96,22 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
+/// # use winnow::prelude::*;
 /// use winnow::sequence::separated_pair;
 /// use winnow::bytes::tag;
 ///
 /// let mut parser = separated_pair(tag("abc"), tag("|"), tag("efg"));
 ///
-/// assert_eq!(parser("abc|efg"), Ok(("", ("abc", "efg"))));
-/// assert_eq!(parser("abc|efghij"), Ok(("hij", ("abc", "efg"))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
-/// assert_eq!(parser("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_next("abc|efg"), Ok(("", ("abc", "efg"))));
+/// assert_eq!(parser.parse_next("abc|efghij"), Ok(("hij", ("abc", "efg"))));
+/// assert_eq!(parser.parse_next(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_next("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
 /// ```
 pub fn separated_pair<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
     mut first: F,
     mut sep: G,
     mut second: H,
-) -> impl FnMut(I) -> IResult<I, (O1, O3), E>
+) -> impl Parser<I, (O1, O3), E>
 where
     I: Stream,
     F: Parser<I, O1, E>,
@@ -134,15 +137,16 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
+/// # use winnow::prelude::*;
 /// use winnow::sequence::delimited;
 /// use winnow::bytes::tag;
 ///
 /// let mut parser = delimited(tag("("), tag("abc"), tag(")"));
 ///
-/// assert_eq!(parser("(abc)"), Ok(("", "abc")));
-/// assert_eq!(parser("(abc)def"), Ok(("def", "abc")));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
-/// assert_eq!(parser("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_next("(abc)"), Ok(("", "abc")));
+/// assert_eq!(parser.parse_next("(abc)def"), Ok(("def", "abc")));
+/// assert_eq!(parser.parse_next(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_next("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
 /// ```
 #[doc(alias = "between")]
 #[doc(alias = "padded")]
@@ -150,7 +154,7 @@ pub fn delimited<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
     mut first: F,
     mut second: G,
     mut third: H,
-) -> impl FnMut(I) -> IResult<I, O2, E>
+) -> impl Parser<I, O2, E>
 where
     I: Stream,
     F: Parser<I, O1, E>,

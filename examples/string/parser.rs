@@ -46,7 +46,7 @@ where
     // " character, the closing delimiter " would never match. When using
     // `delimited` with a looping parser (like fold_many0), be sure that the
     // loop won't accidentally match your closing delimiter!
-    delimited('"', build_string, '"')(input)
+    delimited('"', build_string, '"').parse_next(input)
 }
 
 /// A string fragment contains a fragment of a string being parsed: either
@@ -71,7 +71,8 @@ where
         parse_literal.map(StringFragment::Literal),
         parse_escaped_char.map(StringFragment::EscapedChar),
         parse_escaped_whitespace.value(StringFragment::EscapedWS),
-    ))(input)
+    ))
+    .parse_next(input)
 }
 
 /// Parse a non-empty block of text that doesn't include \ or "
@@ -117,7 +118,8 @@ where
             one_of('/').value('/'),
             one_of('"').value('"'),
         )),
-    )(input)
+    )
+    .parse_next(input)
 }
 
 /// Parse a unicode sequence, of the form u{XXXX}, where XXXX is 1 to 6
@@ -158,5 +160,5 @@ where
 fn parse_escaped_whitespace<'a, E: ParseError<&'a str>>(
     input: &'a str,
 ) -> IResult<&'a str, &'a str, E> {
-    preceded('\\', multispace1)(input)
+    preceded('\\', multispace1).parse_next(input)
 }

@@ -81,10 +81,11 @@
 //! > **Aside:** [`one_of`] might look straightforward, a function returning a value that implements `Parser`.
 //! > Let's look at it more closely as its used above (resolving all generic parameters):
 //! > ```rust
-//! > # use winnow::IResult;
+//! > # use winnow::prelude::*;
+//! > # use winnow::error::Error;
 //! > pub fn one_of<'i>(
 //! >     list: &'static str
-//! > ) -> impl FnMut(&'i str) -> IResult<&'i str, char> {
+//! > ) -> impl Parser<&'i str, char, Error<&'i str>> {
 //! >     // ...
 //! > #    winnow::bytes::one_of(list)
 //! > }

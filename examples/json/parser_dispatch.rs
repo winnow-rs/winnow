@@ -34,7 +34,7 @@ pub type Stream<'i> = &'i str;
 pub fn json<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
     input: Stream<'i>,
 ) -> IResult<Stream<'i>, JsonValue, E> {
-    delimited(ws, json_value, ws)(input)
+    delimited(ws, json_value, ws).parse_next(input)
 }
 
 /// `alt` is a combinator that tries multiple parsers one by one, until
@@ -112,7 +112,7 @@ fn string<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>
 /// You can mix the above declarative parsing with an imperative style to handle more unique cases,
 /// like escaping
 fn character<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, char, E> {
-    let (input, c) = none_of("\"")(input)?;
+    let (input, c) = none_of("\"").parse_next(input)?;
     if c == '\\' {
         dispatch!(any;
           '"' => success('"'),
@@ -191,7 +191,7 @@ fn object<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>
 fn key_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
     input: Stream<'i>,
 ) -> IResult<Stream<'i>, (String, JsonValue), E> {
-    separated_pair(string, cut_err((ws, ':', ws)), json_value)(input)
+    separated_pair(string, cut_err((ws, ':', ws)), json_value).parse_next(input)
 }
 
 /// Parser combinators are constructed from the bottom up:
@@ -200,7 +200,7 @@ fn key_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static s
 fn ws<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, &'i str, E> {
     // Combinators like `take_while0` return a function. That function is the
     // parser,to which we can pass the input
-    take_while0(WS)(input)
+    take_while0(WS).parse_next(input)
 }
 
 const WS: &str = " \t\r\n";

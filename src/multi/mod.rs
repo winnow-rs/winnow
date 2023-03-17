@@ -9,7 +9,7 @@ use crate::error::ParseError;
 use crate::stream::Accumulate;
 use crate::stream::{Stream, StreamIsPartial, ToUsize, UpdateSlice};
 use crate::trace::trace;
-use crate::{IResult, Parser};
+use crate::Parser;
 
 /// [`Accumulate`] the output of a parser into a container, like `Vec`
 ///
@@ -25,12 +25,13 @@ use crate::{IResult, Parser};
 ///
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 #[cfg_attr(feature = "std", doc = "```")]
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::multi::many0;
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   many0(tag("abc"))(s)
+///   many0(tag("abc")).parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -41,7 +42,7 @@ use crate::{IResult, Parser};
 #[doc(alias = "skip_many")]
 #[doc(alias = "repeated")]
 #[doc(alias = "many0_count")]
-pub fn many0<I, O, C, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, C, E>
+pub fn many0<I, O, C, E, F>(mut f: F) -> impl Parser<I, C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -88,12 +89,13 @@ where
 ///
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 #[cfg_attr(feature = "std", doc = "```")]
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::multi::many1;
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   many1(tag("abc"))(s)
+///   many1(tag("abc")).parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -104,7 +106,7 @@ where
 #[doc(alias = "skip_many1")]
 #[doc(alias = "repeated")]
 #[doc(alias = "many1_count")]
-pub fn many1<I, O, C, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, C, E>
+pub fn many1<I, O, C, E, F>(mut f: F) -> impl Parser<I, C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -150,12 +152,13 @@ where
 ///
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 #[cfg_attr(feature = "std", doc = "```")]
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::multi::many_till0;
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, (Vec<&str>, &str)> {
-///   many_till0(tag("abc"), tag("end"))(s)
+///   many_till0(tag("abc"), tag("end")).parse_next(s)
 /// };
 ///
 /// assert_eq!(parser("abcabcend"), Ok(("", (vec!["abc", "abc"], "end"))));
@@ -164,7 +167,7 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("abcendefg"), Ok(("efg", (vec!["abc"], "end"))));
 /// ```
-pub fn many_till0<I, O, C, P, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IResult<I, (C, P), E>
+pub fn many_till0<I, O, C, P, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, (C, P), E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -211,12 +214,13 @@ where
 ///
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 #[cfg_attr(feature = "std", doc = "```")]
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::multi::separated0;
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   separated0(tag("abc"), tag("|"))(s)
+///   separated0(tag("abc"), tag("|")).parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("abc|abc|abc"), Ok(("", vec!["abc", "abc", "abc"])));
@@ -227,10 +231,7 @@ where
 /// ```
 #[doc(alias = "sep_by")]
 #[doc(alias = "separated_list0")]
-pub fn separated0<I, O, C, O2, E, P, S>(
-    mut parser: P,
-    mut sep: S,
-) -> impl FnMut(I) -> IResult<I, C, E>
+pub fn separated0<I, O, C, O2, E, P, S>(mut parser: P, mut sep: S) -> impl Parser<I, C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -290,12 +291,13 @@ where
 ///
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 #[cfg_attr(feature = "std", doc = "```")]
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::multi::separated1;
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   separated1(tag("abc"), tag("|"))(s)
+///   separated1(tag("abc"), tag("|")).parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("abc|abc|abc"), Ok(("", vec!["abc", "abc", "abc"])));
@@ -306,10 +308,7 @@ where
 /// ```
 #[doc(alias = "sep_by1")]
 #[doc(alias = "separated_list1")]
-pub fn separated1<I, O, C, O2, E, P, S>(
-    mut parser: P,
-    mut sep: S,
-) -> impl FnMut(I) -> IResult<I, C, E>
+pub fn separated1<I, O, C, O2, E, P, S>(mut parser: P, mut sep: S) -> impl Parser<I, C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -361,13 +360,14 @@ where
 ///
 /// # Example
 ///
-/// ```
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// ```rust
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::multi::separated_foldl1;
 /// use winnow::character::dec_int;
 ///
 /// fn parser(s: &str) -> IResult<&str, i32> {
-///   separated_foldl1(dec_int, "-", |l, _, r| l - r)(s)
+///   separated_foldl1(dec_int, "-", |l, _, r| l - r).parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("9-3-5"), Ok(("", 1)));
@@ -378,7 +378,7 @@ pub fn separated_foldl1<I, O, O2, E, P, S, Op>(
     mut parser: P,
     mut sep: S,
     op: Op,
-) -> impl FnMut(I) -> IResult<I, O, E>
+) -> impl Parser<I, O, E>
 where
     I: Stream,
     P: Parser<I, O, E>,
@@ -422,12 +422,13 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::multi::separated_foldr1;
 /// use winnow::character::dec_uint;
 ///
 /// fn parser(s: &str) -> IResult<&str, u32> {
-///   separated_foldr1(dec_uint, "^", |l: u32, _, r: u32| l.pow(r))(s)
+///   separated_foldr1(dec_uint, "^", |l: u32, _, r: u32| l.pow(r)).parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("2^3^2"), Ok(("", 512)));
@@ -440,7 +441,7 @@ pub fn separated_foldr1<I, O, O2, E, P, S, Op>(
     mut parser: P,
     mut sep: S,
     op: Op,
-) -> impl FnMut(I) -> IResult<I, O, E>
+) -> impl Parser<I, O, E>
 where
     I: Stream,
     P: Parser<I, O, E>,
@@ -485,12 +486,13 @@ where
 ///
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 #[cfg_attr(feature = "std", doc = "```")]
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::multi::many_m_n;
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   many_m_n(0, 2, tag("abc"))(s)
+///   many_m_n(0, 2, tag("abc")).parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -500,11 +502,7 @@ where
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
 /// ```
 #[doc(alias = "repeated")]
-pub fn many_m_n<I, O, C, E, F>(
-    min: usize,
-    max: usize,
-    mut parse: F,
-) -> impl FnMut(I) -> IResult<I, C, E>
+pub fn many_m_n<I, O, C, E, F>(min: usize, max: usize, mut parse: F) -> impl Parser<I, C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -558,12 +556,13 @@ where
 ///
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 #[cfg_attr(feature = "std", doc = "```")]
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::multi::count;
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   count(tag("abc"), 2)(s)
+///   count(tag("abc"), 2).parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -573,7 +572,7 @@ where
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
 /// ```
 #[doc(alias = "skip_counskip_count")]
-pub fn count<I, O, C, E, F>(mut f: F, count: usize) -> impl FnMut(I) -> IResult<I, C, E>
+pub fn count<I, O, C, E, F>(mut f: F, count: usize) -> impl Parser<I, C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -612,13 +611,14 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::multi::fill;
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, [&str; 2]> {
 ///   let mut buf = ["", ""];
-///   let (rest, ()) = fill(tag("abc"), &mut buf)(s)?;
+///   let (rest, ()) = fill(tag("abc"), &mut buf).parse_next(s)?;
 ///   Ok((rest, buf))
 /// }
 ///
@@ -628,7 +628,7 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", ["abc", "abc"])));
 /// ```
-pub fn fill<'a, I, O, E, F>(mut f: F, buf: &'a mut [O]) -> impl FnMut(I) -> IResult<I, (), E> + 'a
+pub fn fill<'a, I, O, E, F>(mut f: F, buf: &'a mut [O]) -> impl Parser<I, (), E> + 'a
 where
     I: Stream + 'a,
     F: Parser<I, O, E> + 'a,
@@ -671,7 +671,8 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::multi::fold_many0;
 /// use winnow::bytes::tag;
 ///
@@ -683,7 +684,7 @@ where
 ///       acc.push(item);
 ///       acc
 ///     }
-///   )(s)
+///   ).parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -691,11 +692,7 @@ where
 /// assert_eq!(parser("123123"), Ok(("123123", vec![])));
 /// assert_eq!(parser(""), Ok(("", vec![])));
 /// ```
-pub fn fold_many0<I, O, E, F, G, H, R>(
-    mut f: F,
-    mut init: H,
-    mut g: G,
-) -> impl FnMut(I) -> IResult<I, R, E>
+pub fn fold_many0<I, O, E, F, G, H, R>(mut f: F, mut init: H, mut g: G) -> impl Parser<I, R, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -749,7 +746,8 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::multi::fold_many1;
 /// use winnow::bytes::tag;
 ///
@@ -761,7 +759,7 @@ where
 ///       acc.push(item);
 ///       acc
 ///     }
-///   )(s)
+///   ).parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -769,11 +767,7 @@ where
 /// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Many))));
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Many))));
 /// ```
-pub fn fold_many1<I, O, E, F, G, H, R>(
-    mut f: F,
-    mut init: H,
-    mut g: G,
-) -> impl FnMut(I) -> IResult<I, R, E>
+pub fn fold_many1<I, O, E, F, G, H, R>(mut f: F, mut init: H, mut g: G) -> impl Parser<I, R, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -837,7 +831,8 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::multi::fold_many_m_n;
 /// use winnow::bytes::tag;
 ///
@@ -851,7 +846,7 @@ where
 ///       acc.push(item);
 ///       acc
 ///     }
-///   )(s)
+///   ).parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -866,7 +861,7 @@ pub fn fold_many_m_n<I, O, E, F, G, H, R>(
     mut parse: F,
     mut init: H,
     mut fold: G,
-) -> impl FnMut(I) -> IResult<I, R, E>
+) -> impl Parser<I, R, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -921,7 +916,8 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult, stream::Partial};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, stream::Partial};
+/// # use winnow::prelude::*;
 /// use winnow::Bytes;
 /// use winnow::number::be_u16;
 /// use winnow::multi::length_data;
@@ -934,13 +930,13 @@ where
 /// }
 ///
 /// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
-///   length_data(be_u16)(s)
+///   length_data(be_u16).parse_next(s)
 /// }
 ///
 /// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), &b"abc"[..])));
 /// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
-pub fn length_data<I, N, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn length_data<I, N, E, F>(mut f: F) -> impl Parser<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -972,7 +968,8 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult, stream::{Partial, StreamIsPartial}};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, stream::{Partial, StreamIsPartial}};
+/// # use winnow::prelude::*;
 /// use winnow::Bytes;
 /// use winnow::number::be_u16;
 /// use winnow::multi::length_value;
@@ -991,14 +988,14 @@ where
 /// }
 ///
 /// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
-///   length_value(be_u16, tag("abc"))(s)
+///   length_value(be_u16, tag("abc")).parse_next(s)
 /// }
 ///
 /// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), &b"abc"[..])));
 /// assert_eq!(parser(stream(b"\x00\x03123123")), Err(ErrMode::Backtrack(Error::new(complete_stream(&b"123"[..]), ErrorKind::Tag))));
 /// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
-pub fn length_value<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IResult<I, O, E>
+pub fn length_value<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, O, E>
 where
     I: StreamIsPartial,
     I: Stream + UpdateSlice,
@@ -1028,7 +1025,8 @@ where
 #[cfg_attr(not(feature = "std"), doc = "```ignore")]
 #[cfg_attr(feature = "std", doc = "```")]
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::Bytes;
 /// use winnow::number::u8;
 /// use winnow::multi::length_count;
@@ -1044,13 +1042,13 @@ where
 ///   length_count(u8.map(|i| {
 ///      println!("got number: {}", i);
 ///      i
-///   }), tag("abc"))(s)
+///   }), tag("abc")).parse_next(s)
 /// }
 ///
 /// assert_eq!(parser(stream(b"\x02abcabcabc")), Ok((stream(b"abc"), vec![&b"abc"[..], &b"abc"[..]])));
 /// assert_eq!(parser(stream(b"\x03123123123")), Err(ErrMode::Backtrack(Error::new(stream(b"123123123"), ErrorKind::Tag))));
 /// ```
-pub fn length_count<I, O, C, N, E, F, G>(mut f: F, mut g: G) -> impl FnMut(I) -> IResult<I, C, E>
+pub fn length_count<I, O, C, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, C, E>
 where
     I: Stream,
     N: ToUsize,

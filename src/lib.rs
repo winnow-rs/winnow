@@ -239,7 +239,7 @@ pub mod prelude {
     pub use crate::stream::StreamIsPartial as _;
     pub use crate::FinishIResult as _;
     pub use crate::IResult;
-    pub use crate::Parser as _;
+    pub use crate::Parser;
 }
 
 pub use error::FinishIResult;

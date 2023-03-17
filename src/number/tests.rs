@@ -298,19 +298,19 @@ mod complete {
         use crate::number::Endianness;
 
         fn be_tst16(i: &[u8]) -> IResult<&[u8], u16> {
-            u16(Endianness::Big)(i)
+            u16(Endianness::Big).parse_next(i)
         }
         fn le_tst16(i: &[u8]) -> IResult<&[u8], u16> {
-            u16(Endianness::Little)(i)
+            u16(Endianness::Little).parse_next(i)
         }
         assert_eq!(be_tst16(&[0x80, 0x00]), Ok((&b""[..], 32_768_u16)));
         assert_eq!(le_tst16(&[0x80, 0x00]), Ok((&b""[..], 128_u16)));
 
         fn be_tst32(i: &[u8]) -> IResult<&[u8], u32> {
-            u32(Endianness::Big)(i)
+            u32(Endianness::Big).parse_next(i)
         }
         fn le_tst32(i: &[u8]) -> IResult<&[u8], u32> {
-            u32(Endianness::Little)(i)
+            u32(Endianness::Little).parse_next(i)
         }
         assert_eq!(
             be_tst32(&[0x12, 0x00, 0x60, 0x00]),
@@ -322,10 +322,10 @@ mod complete {
         );
 
         fn be_tst64(i: &[u8]) -> IResult<&[u8], u64> {
-            u64(Endianness::Big)(i)
+            u64(Endianness::Big).parse_next(i)
         }
         fn le_tst64(i: &[u8]) -> IResult<&[u8], u64> {
-            u64(Endianness::Little)(i)
+            u64(Endianness::Little).parse_next(i)
         }
         assert_eq!(
             be_tst64(&[0x12, 0x00, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
@@ -337,19 +337,19 @@ mod complete {
         );
 
         fn be_tsti16(i: &[u8]) -> IResult<&[u8], i16> {
-            i16(Endianness::Big)(i)
+            i16(Endianness::Big).parse_next(i)
         }
         fn le_tsti16(i: &[u8]) -> IResult<&[u8], i16> {
-            i16(Endianness::Little)(i)
+            i16(Endianness::Little).parse_next(i)
         }
         assert_eq!(be_tsti16(&[0x00, 0x80]), Ok((&b""[..], 128_i16)));
         assert_eq!(le_tsti16(&[0x00, 0x80]), Ok((&b""[..], -32_768_i16)));
 
         fn be_tsti32(i: &[u8]) -> IResult<&[u8], i32> {
-            i32(Endianness::Big)(i)
+            i32(Endianness::Big).parse_next(i)
         }
         fn le_tsti32(i: &[u8]) -> IResult<&[u8], i32> {
-            i32(Endianness::Little)(i)
+            i32(Endianness::Little).parse_next(i)
         }
         assert_eq!(
             be_tsti32(&[0x00, 0x12, 0x60, 0x00]),
@@ -361,10 +361,10 @@ mod complete {
         );
 
         fn be_tsti64(i: &[u8]) -> IResult<&[u8], i64> {
-            i64(Endianness::Big)(i)
+            i64(Endianness::Big).parse_next(i)
         }
         fn le_tsti64(i: &[u8]) -> IResult<&[u8], i64> {
-            i64(Endianness::Little)(i)
+            i64(Endianness::Little).parse_next(i)
         }
         assert_eq!(
             be_tsti64(&[0x00, 0xFF, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
@@ -958,10 +958,10 @@ mod partial {
         use crate::number::Endianness;
 
         fn be_tst16(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u16> {
-            u16(Endianness::Big)(i)
+            u16(Endianness::Big).parse_next(i)
         }
         fn le_tst16(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u16> {
-            u16(Endianness::Little)(i)
+            u16(Endianness::Little).parse_next(i)
         }
         assert_eq!(
             be_tst16(Partial::new(&[0x80, 0x00])),
@@ -973,10 +973,10 @@ mod partial {
         );
 
         fn be_tst32(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
-            u32(Endianness::Big)(i)
+            u32(Endianness::Big).parse_next(i)
         }
         fn le_tst32(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
-            u32(Endianness::Little)(i)
+            u32(Endianness::Little).parse_next(i)
         }
         assert_eq!(
             be_tst32(Partial::new(&[0x12, 0x00, 0x60, 0x00])),
@@ -988,10 +988,10 @@ mod partial {
         );
 
         fn be_tst64(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u64> {
-            u64(Endianness::Big)(i)
+            u64(Endianness::Big).parse_next(i)
         }
         fn le_tst64(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u64> {
-            u64(Endianness::Little)(i)
+            u64(Endianness::Little).parse_next(i)
         }
         assert_eq!(
             be_tst64(Partial::new(&[
@@ -1007,10 +1007,10 @@ mod partial {
         );
 
         fn be_tsti16(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i16> {
-            i16(Endianness::Big)(i)
+            i16(Endianness::Big).parse_next(i)
         }
         fn le_tsti16(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i16> {
-            i16(Endianness::Little)(i)
+            i16(Endianness::Little).parse_next(i)
         }
         assert_eq!(
             be_tsti16(Partial::new(&[0x00, 0x80])),
@@ -1022,10 +1022,10 @@ mod partial {
         );
 
         fn be_tsti32(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i32> {
-            i32(Endianness::Big)(i)
+            i32(Endianness::Big).parse_next(i)
         }
         fn le_tsti32(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i32> {
-            i32(Endianness::Little)(i)
+            i32(Endianness::Little).parse_next(i)
         }
         assert_eq!(
             be_tsti32(Partial::new(&[0x00, 0x12, 0x60, 0x00])),
@@ -1037,10 +1037,10 @@ mod partial {
         );
 
         fn be_tsti64(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i64> {
-            i64(Endianness::Big)(i)
+            i64(Endianness::Big).parse_next(i)
         }
         fn le_tsti64(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i64> {
-            i64(Endianness::Little)(i)
+            i64(Endianness::Little).parse_next(i)
         }
         assert_eq!(
             be_tsti64(Partial::new(&[

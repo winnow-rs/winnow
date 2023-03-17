@@ -713,6 +713,6 @@ mod tests {
     fn convert_error_panic() {
         let input = "";
 
-        let _result: IResult<_, _, VerboseError<&str>> = one_of('x')(input);
+        let _result: IResult<_, _, VerboseError<&str>> = one_of('x').parse_next(input);
     }
 }
