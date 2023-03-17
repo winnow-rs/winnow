@@ -447,7 +447,7 @@ fn length_count_test() {
         cnt(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
             Partial::new(&b"xxx"[..]),
-            ErrorKind::Digit
+            ErrorKind::TakeWhile1
         )))
     );
     assert_eq!(
@@ -484,7 +484,7 @@ fn length_data_test() {
         take(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
             Partial::new(&b"xxx"[..]),
-            ErrorKind::Digit
+            ErrorKind::TakeWhile1
         )))
     );
     assert_eq!(
@@ -727,7 +727,7 @@ fn many1_count_test() {
         count1_nums(&b"hello"[..]),
         Err(ErrMode::Backtrack(error_position!(
             &b"hello"[..],
-            ErrorKind::Digit
+            ErrorKind::TakeWhile1
         )))
     );
 }
