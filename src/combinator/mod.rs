@@ -288,7 +288,7 @@ where
         let (input, o1) = self.f.parse_next(input)?;
         let res = match (self.g)(o1) {
             Ok(o2) => Ok((input, o2)),
-            Err(e) => Err(ErrMode::from_external_error(i, ErrorKind::MapRes, e)),
+            Err(e) => Err(ErrMode::from_external_error(i, ErrorKind::Verify, e)),
         };
         trace_result("verify", &res);
         res

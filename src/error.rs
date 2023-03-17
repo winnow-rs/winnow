@@ -656,7 +656,6 @@ pub fn convert_error<I: core::ops::Deref<Target = str>>(
 pub enum ErrorKind {
   Assert,
   Tag,
-  MapRes,
   Alt,
   IsA,
   Many1,
@@ -685,7 +684,6 @@ impl ErrorKind {
     match *self {
       ErrorKind::Assert                    => "Assert",
       ErrorKind::Tag                       => "Tag",
-      ErrorKind::MapRes                    => "Map on Result",
       ErrorKind::Alt                       => "Alternative",
       ErrorKind::IsA                       => "IsA",
       ErrorKind::Many1                     => "Many1",
