@@ -672,17 +672,17 @@ impl ErrorKind {
     /// Converts an `ErrorKind` to a text description
     pub fn description(&self) -> &str {
     match *self {
-      ErrorKind::Assert                    => "Assert",
-      ErrorKind::Token                     => "Token",
-      ErrorKind::Tag                       => "Tag",
-      ErrorKind::Alt                       => "Alternative",
-      ErrorKind::Many                      => "Many",
-      ErrorKind::Eof                       => "End of file",
-      ErrorKind::Slice                     => "Slice",
-      ErrorKind::Complete                  => "Complete",
-      ErrorKind::Not                       => "Negation",
+      ErrorKind::Assert                    => "assert",
+      ErrorKind::Token                     => "token",
+      ErrorKind::Tag                       => "tag",
+      ErrorKind::Alt                       => "alternative",
+      ErrorKind::Many                      => "many",
+      ErrorKind::Eof                       => "end of file",
+      ErrorKind::Slice                     => "slice",
+      ErrorKind::Complete                  => "complete",
+      ErrorKind::Not                       => "negation",
       ErrorKind::Verify                    => "predicate verification",
-      ErrorKind::Fail                      => "Fail",
+      ErrorKind::Fail                      => "fail",
     }
   }
 }
