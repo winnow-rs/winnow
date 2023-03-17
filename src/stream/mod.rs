@@ -240,7 +240,7 @@ impl<I: crate::lib::std::fmt::Display, S> crate::lib::std::fmt::Display for Stat
 /// assert_eq!(take_partial(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// // but the complete parser will return an error
-/// assert_eq!(take_complete(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::TakeWhile))));
+/// assert_eq!(take_complete(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Slice))));
 ///
 /// // the alpha0 function recognizes 0 or more alphabetic characters
 /// fn alpha0_partial(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
@@ -2145,8 +2145,8 @@ impl<'a> AsChar for &'a char {
 /// }
 ///
 /// assert_eq!(hex_digit1("21cZ"), Ok(("Z", "21c")));
-/// assert_eq!(hex_digit1("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::TakeWhile))));
-/// assert_eq!(hex_digit1(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::TakeWhile))));
+/// assert_eq!(hex_digit1("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::Slice))));
+/// assert_eq!(hex_digit1(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
 /// ```
 pub trait ContainsToken<T> {
     /// Returns true if self contains the token

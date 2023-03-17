@@ -41,8 +41,8 @@ compile_error!("`debug` requires `std`");
 /// assert_eq!(short_alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
 /// assert_eq!(short_alpha(b"lengthy"), Ok((&b"y"[..], &b"length"[..])));
 /// assert_eq!(short_alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
-/// assert_eq!(short_alpha(b"ed"), Err(ErrMode::Backtrack(Error::new(&b"ed"[..], ErrorKind::TakeWhile))));
-/// assert_eq!(short_alpha(b"12345"), Err(ErrMode::Backtrack(Error::new(&b"12345"[..], ErrorKind::TakeWhile))));
+/// assert_eq!(short_alpha(b"ed"), Err(ErrMode::Backtrack(Error::new(&b"ed"[..], ErrorKind::Slice))));
+/// assert_eq!(short_alpha(b"12345"), Err(ErrMode::Backtrack(Error::new(&b"12345"[..], ErrorKind::Slice))));
 /// ```
 #[cfg_attr(not(feature = "debug"), allow(unused_variables))]
 pub fn trace<I: Stream, O, E>(
