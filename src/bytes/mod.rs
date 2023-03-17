@@ -32,7 +32,7 @@ use crate::Parser;
 /// }
 ///
 /// assert_eq!(parser("abc"), Ok(("bc",'a')));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
 /// ```
 ///
 /// ```
@@ -72,7 +72,7 @@ where
 {
     input
         .next_token()
-        .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::Eof))
+        .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::Token))
 }
 
 /// Recognizes a literal
@@ -296,14 +296,14 @@ where
 /// # use winnow::bytes::one_of;
 /// assert_eq!(one_of::<_, _, Error<_>>("abc")("b"), Ok(("", 'b')));
 /// assert_eq!(one_of::<_, _, Error<_>>("a")("bc"), Err(ErrMode::Backtrack(Error::new("bc", ErrorKind::Verify))));
-/// assert_eq!(one_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
+/// assert_eq!(one_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
 ///
 /// fn parser_fn(i: &str) -> IResult<&str, char> {
 ///     one_of(|c| c == 'a' || c == 'b')(i)
 /// }
 /// assert_eq!(parser_fn("abc"), Ok(("bc", 'a')));
 /// assert_eq!(parser_fn("cd"), Err(ErrMode::Backtrack(Error::new("cd", ErrorKind::Verify))));
-/// assert_eq!(parser_fn(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
+/// assert_eq!(parser_fn(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
 /// ```
 ///
 /// ```
@@ -354,7 +354,7 @@ where
 /// # use winnow::bytes::none_of;
 /// assert_eq!(none_of::<_, _, Error<_>>("abc")("z"), Ok(("", 'z')));
 /// assert_eq!(none_of::<_, _, Error<_>>("ab")("a"), Err(ErrMode::Backtrack(Error::new("a", ErrorKind::Verify))));
-/// assert_eq!(none_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
+/// assert_eq!(none_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
 /// ```
 ///
 /// ```

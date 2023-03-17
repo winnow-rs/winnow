@@ -519,7 +519,7 @@ fn length_value_test() {
         length_value_2(Partial::new(&i1)),
         Err(ErrMode::Backtrack(error_position!(
             empty_complete,
-            ErrorKind::Eof
+            ErrorKind::Token
         )))
     );
 
@@ -538,7 +538,7 @@ fn length_value_test() {
             length_value_2(Partial::new(&i2)),
             Err(ErrMode::Backtrack(error_position!(
                 empty_complete,
-                ErrorKind::Eof
+                ErrorKind::Token
             )))
         );
     }

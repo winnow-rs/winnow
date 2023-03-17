@@ -45,7 +45,7 @@ pub enum Endianness {
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Token))));
 /// ```
 ///
 /// ```rust
@@ -329,7 +329,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Token))));
 /// ```
 ///
 /// ```rust
@@ -592,7 +592,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Token))));
 /// ```
 ///
 /// ```rust
@@ -873,7 +873,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Token))));
 /// ```
 ///
 /// ```rust
@@ -1148,7 +1148,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Token))));
 /// ```
 ///
 /// ```rust
@@ -1195,7 +1195,7 @@ where
 {
     input
         .next_token()
-        .ok_or_else(|| ErrMode::Backtrack(E::from_error_kind(input, ErrorKind::Eof)))
+        .ok_or_else(|| ErrMode::Backtrack(E::from_error_kind(input, ErrorKind::Token)))
 }
 
 /// Recognizes an unsigned 2 bytes integer
@@ -1578,7 +1578,7 @@ where
 /// };
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&[][..], ErrorKind::Token))));
 /// ```
 ///
 /// ```rust

@@ -214,7 +214,7 @@ fn issue_1027_convert_error_panic_nonempty() {
     };
 
     let msg = convert_error(input, err);
-    assert_eq!(msg, "0: at line 1, in Eof:\na\n ^\n\n",);
+    assert_eq!(msg, "0: at line 1, in Token:\na\n ^\n\n",);
 }
 
 #[test]

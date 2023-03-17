@@ -237,7 +237,7 @@ where
 ///
 /// assert_eq!(parser("\nc"), Ok(("c", '\n')));
 /// assert_eq!(parser("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::Verify))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
 /// ```
 ///
 /// ```
@@ -279,7 +279,7 @@ where
 ///
 /// assert_eq!(parser("\tc"), Ok(("c", '\t')));
 /// assert_eq!(parser("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::Verify))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
 /// ```
 ///
 /// ```

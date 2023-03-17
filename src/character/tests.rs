@@ -615,14 +615,14 @@ mod complete {
             esc(&b"AB\\"[..]),
             Err(ErrMode::Backtrack(error_position!(
                 &b""[..],
-                ErrorKind::Eof
+                ErrorKind::Token
             )))
         );
         assert_eq!(
             esc(&b"AB\\A"[..]),
             Err(ErrMode::Backtrack(error_node_position!(
                 &b"AB\\A"[..],
-                ErrorKind::Eof,
+                ErrorKind::Token,
                 error_position!(&b"A"[..], ErrorKind::Verify)
             )))
         );
@@ -649,13 +649,13 @@ mod complete {
         assert_eq!(esc("ab\\\"12"), Ok(("12", "ab\\\"")));
         assert_eq!(
             esc("AB\\"),
-            Err(ErrMode::Backtrack(error_position!("", ErrorKind::Eof)))
+            Err(ErrMode::Backtrack(error_position!("", ErrorKind::Token)))
         );
         assert_eq!(
             esc("AB\\A"),
             Err(ErrMode::Backtrack(error_node_position!(
                 "AB\\A",
-                ErrorKind::Eof,
+                ErrorKind::Token,
                 error_position!("A", ErrorKind::Verify)
             )))
         );

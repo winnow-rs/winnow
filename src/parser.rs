@@ -593,7 +593,7 @@ where
 /// assert_eq!(parser(&b"abc"[..]), Ok((&b"bc"[..], b'a')));
 /// assert_eq!(parser(&b" abc"[..]), Err(ErrMode::Backtrack(Error::new(&b" abc"[..], ErrorKind::Verify))));
 /// assert_eq!(parser(&b"bc"[..]), Err(ErrMode::Backtrack(Error::new(&b"bc"[..], ErrorKind::Verify))));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&b""[..], ErrorKind::Eof))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&b""[..], ErrorKind::Token))));
 /// ```
 impl<I, E> Parser<I, u8, E> for u8
 where
@@ -619,7 +619,7 @@ where
 /// assert_eq!(parser("abc"), Ok(("bc", 'a')));
 /// assert_eq!(parser(" abc"), Err(ErrMode::Backtrack(Error::new(" abc", ErrorKind::Verify))));
 /// assert_eq!(parser("bc"), Err(ErrMode::Backtrack(Error::new("bc", ErrorKind::Verify))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
 /// ```
 impl<I, E> Parser<I, <I as Stream>::Token, E> for char
 where

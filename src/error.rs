@@ -655,6 +655,7 @@ pub fn convert_error<I: core::ops::Deref<Target = str>>(
 #[allow(missing_docs)]
 pub enum ErrorKind {
   Assert,
+  Token,
   Tag,
   Alt,
   Many,
@@ -672,6 +673,7 @@ impl ErrorKind {
     pub fn description(&self) -> &str {
     match *self {
       ErrorKind::Assert                    => "Assert",
+      ErrorKind::Token                     => "Token",
       ErrorKind::Tag                       => "Tag",
       ErrorKind::Alt                       => "Alternative",
       ErrorKind::Many                      => "Many",
