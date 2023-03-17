@@ -42,11 +42,11 @@ use crate::Parser;
 #[doc(alias = "skip_many")]
 #[doc(alias = "repeated")]
 #[doc(alias = "many0_count")]
-pub fn many0<I, O, C, E, F>(mut f: F) -> impl Parser<I, C, E>
+pub fn many0<I, O, C, E, F>(mut f: F) -> impl Parser<I, Output = C, Error = E>
 where
     I: Stream,
     C: Accumulate<O>,
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
     E: ParseError<I>,
 {
     trace("many0", move |mut i: I| {
@@ -106,11 +106,11 @@ where
 #[doc(alias = "skip_many1")]
 #[doc(alias = "repeated")]
 #[doc(alias = "many1_count")]
-pub fn many1<I, O, C, E, F>(mut f: F) -> impl Parser<I, C, E>
+pub fn many1<I, O, C, E, F>(mut f: F) -> impl Parser<I, Output = C, Error = E>
 where
     I: Stream,
     C: Accumulate<O>,
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
     E: ParseError<I>,
 {
     trace("many1", move |mut i: I| match f.parse_next(i.clone()) {
@@ -167,12 +167,15 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("abcendefg"), Ok(("efg", (vec!["abc"], "end"))));
 /// ```
-pub fn many_till0<I, O, C, P, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, (C, P), E>
+pub fn many_till0<I, O, C, P, E, F, G>(
+    mut f: F,
+    mut g: G,
+) -> impl Parser<I, Output = (C, P), Error = E>
 where
     I: Stream,
     C: Accumulate<O>,
-    F: Parser<I, O, E>,
-    G: Parser<I, P, E>,
+    F: Parser<I, Output = O, Error = E>,
+    G: Parser<I, Output = P, Error = E>,
     E: ParseError<I>,
 {
     trace("many_till0", move |mut i: I| {
@@ -231,12 +234,15 @@ where
 /// ```
 #[doc(alias = "sep_by")]
 #[doc(alias = "separated_list0")]
-pub fn separated0<I, O, C, O2, E, P, S>(mut parser: P, mut sep: S) -> impl Parser<I, C, E>
+pub fn separated0<I, O, C, O2, E, P, S>(
+    mut parser: P,
+    mut sep: S,
+) -> impl Parser<I, Output = C, Error = E>
 where
     I: Stream,
     C: Accumulate<O>,
-    P: Parser<I, O, E>,
-    S: Parser<I, O2, E>,
+    P: Parser<I, Output = O, Error = E>,
+    S: Parser<I, Output = O2, Error = E>,
     E: ParseError<I>,
 {
     trace("separated0", move |mut i: I| {
@@ -308,12 +314,15 @@ where
 /// ```
 #[doc(alias = "sep_by1")]
 #[doc(alias = "separated_list1")]
-pub fn separated1<I, O, C, O2, E, P, S>(mut parser: P, mut sep: S) -> impl Parser<I, C, E>
+pub fn separated1<I, O, C, O2, E, P, S>(
+    mut parser: P,
+    mut sep: S,
+) -> impl Parser<I, Output = C, Error = E>
 where
     I: Stream,
     C: Accumulate<O>,
-    P: Parser<I, O, E>,
-    S: Parser<I, O2, E>,
+    P: Parser<I, Output = O, Error = E>,
+    S: Parser<I, Output = O2, Error = E>,
     E: ParseError<I>,
 {
     trace("separated1", move |mut i: I| {
@@ -378,11 +387,11 @@ pub fn separated_foldl1<I, O, O2, E, P, S, Op>(
     mut parser: P,
     mut sep: S,
     op: Op,
-) -> impl Parser<I, O, E>
+) -> impl Parser<I, Output = O, Error = E>
 where
     I: Stream,
-    P: Parser<I, O, E>,
-    S: Parser<I, O2, E>,
+    P: Parser<I, Output = O, Error = E>,
+    S: Parser<I, Output = O2, Error = E>,
     E: ParseError<I>,
     Op: Fn(O, O2, O) -> O,
 {
@@ -441,11 +450,11 @@ pub fn separated_foldr1<I, O, O2, E, P, S, Op>(
     mut parser: P,
     mut sep: S,
     op: Op,
-) -> impl Parser<I, O, E>
+) -> impl Parser<I, Output = O, Error = E>
 where
     I: Stream,
-    P: Parser<I, O, E>,
-    S: Parser<I, O2, E>,
+    P: Parser<I, Output = O, Error = E>,
+    S: Parser<I, Output = O2, Error = E>,
     E: ParseError<I>,
     Op: Fn(O, O2, O) -> O,
 {
@@ -502,11 +511,15 @@ where
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
 /// ```
 #[doc(alias = "repeated")]
-pub fn many_m_n<I, O, C, E, F>(min: usize, max: usize, mut parse: F) -> impl Parser<I, C, E>
+pub fn many_m_n<I, O, C, E, F>(
+    min: usize,
+    max: usize,
+    mut parse: F,
+) -> impl Parser<I, Output = C, Error = E>
 where
     I: Stream,
     C: Accumulate<O>,
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
     E: ParseError<I>,
 {
     trace("many_m_n", move |mut input: I| {
@@ -572,11 +585,11 @@ where
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
 /// ```
 #[doc(alias = "skip_counskip_count")]
-pub fn count<I, O, C, E, F>(mut f: F, count: usize) -> impl Parser<I, C, E>
+pub fn count<I, O, C, E, F>(mut f: F, count: usize) -> impl Parser<I, Output = C, Error = E>
 where
     I: Stream,
     C: Accumulate<O>,
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
     E: ParseError<I>,
 {
     trace("count", move |i: I| {
@@ -628,10 +641,13 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", ["abc", "abc"])));
 /// ```
-pub fn fill<'a, I, O, E, F>(mut f: F, buf: &'a mut [O]) -> impl Parser<I, (), E> + 'a
+pub fn fill<'a, I, O, E, F>(
+    mut f: F,
+    buf: &'a mut [O],
+) -> impl Parser<I, Output = (), Error = E> + 'a
 where
     I: Stream + 'a,
-    F: Parser<I, O, E> + 'a,
+    F: Parser<I, Output = O, Error = E> + 'a,
     E: ParseError<I> + 'a,
 {
     trace("fill", move |i: I| {
@@ -692,10 +708,14 @@ where
 /// assert_eq!(parser("123123"), Ok(("123123", vec![])));
 /// assert_eq!(parser(""), Ok(("", vec![])));
 /// ```
-pub fn fold_many0<I, O, E, F, G, H, R>(mut f: F, mut init: H, mut g: G) -> impl Parser<I, R, E>
+pub fn fold_many0<I, O, E, F, G, H, R>(
+    mut f: F,
+    mut init: H,
+    mut g: G,
+) -> impl Parser<I, Output = R, Error = E>
 where
     I: Stream,
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
     G: FnMut(R, O) -> R,
     H: FnMut() -> R,
     E: ParseError<I>,
@@ -767,10 +787,14 @@ where
 /// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Many))));
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Many))));
 /// ```
-pub fn fold_many1<I, O, E, F, G, H, R>(mut f: F, mut init: H, mut g: G) -> impl Parser<I, R, E>
+pub fn fold_many1<I, O, E, F, G, H, R>(
+    mut f: F,
+    mut init: H,
+    mut g: G,
+) -> impl Parser<I, Output = R, Error = E>
 where
     I: Stream,
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
     G: FnMut(R, O) -> R,
     H: FnMut() -> R,
     E: ParseError<I>,
@@ -861,10 +885,10 @@ pub fn fold_many_m_n<I, O, E, F, G, H, R>(
     mut parse: F,
     mut init: H,
     mut fold: G,
-) -> impl Parser<I, R, E>
+) -> impl Parser<I, Output = R, Error = E>
 where
     I: Stream,
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
     G: FnMut(R, O) -> R,
     H: FnMut() -> R,
     E: ParseError<I>,
@@ -936,12 +960,12 @@ where
 /// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), &b"abc"[..])));
 /// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
-pub fn length_data<I, N, E, F>(mut f: F) -> impl Parser<I, <I as Stream>::Slice, E>
+pub fn length_data<I, N, E, F>(mut f: F) -> impl Parser<I, Output = <I as Stream>::Slice, Error = E>
 where
     I: StreamIsPartial,
     I: Stream,
     N: ToUsize,
-    F: Parser<I, N, E>,
+    F: Parser<I, Output = N, Error = E>,
     E: ParseError<I>,
 {
     trace("length_data", move |i: I| {
@@ -995,13 +1019,13 @@ where
 /// assert_eq!(parser(stream(b"\x00\x03123123")), Err(ErrMode::Backtrack(Error::new(complete_stream(&b"123"[..]), ErrorKind::Tag))));
 /// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
-pub fn length_value<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, O, E>
+pub fn length_value<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, Output = O, Error = E>
 where
     I: StreamIsPartial,
     I: Stream + UpdateSlice,
     N: ToUsize,
-    F: Parser<I, N, E>,
-    G: Parser<I, O, E>,
+    F: Parser<I, Output = N, Error = E>,
+    G: Parser<I, Output = O, Error = E>,
     E: ParseError<I>,
 {
     trace("length_value", move |i: I| {
@@ -1048,13 +1072,16 @@ where
 /// assert_eq!(parser(stream(b"\x02abcabcabc")), Ok((stream(b"abc"), vec![&b"abc"[..], &b"abc"[..]])));
 /// assert_eq!(parser(stream(b"\x03123123123")), Err(ErrMode::Backtrack(Error::new(stream(b"123123123"), ErrorKind::Tag))));
 /// ```
-pub fn length_count<I, O, C, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, C, E>
+pub fn length_count<I, O, C, N, E, F, G>(
+    mut f: F,
+    mut g: G,
+) -> impl Parser<I, Output = C, Error = E>
 where
     I: Stream,
     N: ToUsize,
     C: Accumulate<O>,
-    F: Parser<I, N, E>,
-    G: Parser<I, O, E>,
+    F: Parser<I, Output = N, Error = E>,
+    G: Parser<I, Output = O, Error = E>,
     E: ParseError<I>,
 {
     trace("length_count", move |i: I| {

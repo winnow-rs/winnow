@@ -43,12 +43,12 @@ use crate::{IResult, Parser};
 /// assert_eq!(parsed.0, 0x01);
 /// assert_eq!(parsed.1, 0x23);
 /// ```
-pub fn bits<I, O, E1, E2, P>(mut parser: P) -> impl Parser<I, O, E2>
+pub fn bits<I, O, E1, E2, P>(mut parser: P) -> impl Parser<I, Output = O, Error = E2>
 where
     E1: ParseError<(I, usize)> + ErrorConvert<E2>,
     E2: ParseError<I>,
     I: Stream,
-    P: Parser<(I, usize), O, E1>,
+    P: Parser<(I, usize), Output = O, Error = E1>,
 {
     trace("bits", move |input: I| {
         match parser.parse_next((input, 0)) {
@@ -96,12 +96,12 @@ where
 ///
 /// assert_eq!(parse(input), Ok(( stream(&[]), (0x01, 0x23, &[0xff, 0xff][..]) )));
 /// ```
-pub fn bytes<I, O, E1, E2, P>(mut parser: P) -> impl Parser<(I, usize), O, E2>
+pub fn bytes<I, O, E1, E2, P>(mut parser: P) -> impl Parser<(I, usize), Output = O, Error = E2>
 where
     E1: ParseError<I> + ErrorConvert<E2>,
     E2: ParseError<(I, usize)>,
     I: Stream<Token = u8>,
-    P: Parser<I, O, E1>,
+    P: Parser<I, Output = O, Error = E1>,
 {
     trace("bytes", move |(input, offset): (I, usize)| {
         let (inner, _) = if offset % 8 != 0 {
@@ -157,7 +157,9 @@ where
 /// assert_eq!(parser((stream(&[0b00010010]), 0), 12), Err(winnow::error::ErrMode::Backtrack(Error{input: (stream(&[0b00010010]), 0), kind: ErrorKind::Eof })));
 /// ```
 #[inline(always)]
-pub fn take<I, O, C, E: ParseError<(I, usize)>>(count: C) -> impl Parser<(I, usize), O, E>
+pub fn take<I, O, C, E: ParseError<(I, usize)>>(
+    count: C,
+) -> impl Parser<(I, usize), Output = O, Error = E>
 where
     I: Stream<Token = u8> + AsBytes + StreamIsPartial,
     C: ToUsize,
@@ -327,7 +329,7 @@ where
 pub fn tag<I, O, C, E: ParseError<(I, usize)>>(
     pattern: O,
     count: C,
-) -> impl Parser<(I, usize), O, E>
+) -> impl Parser<(I, usize), Output = O, Error = E>
 where
     I: Stream<Token = u8> + AsBytes + StreamIsPartial,
     C: ToUsize,

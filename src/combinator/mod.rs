@@ -227,7 +227,13 @@ impl<'p, P> ByRef<'p, P> {
     }
 }
 
-impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for ByRef<'p, P> {
+impl<'p, I, O, E, P: Parser<I, Output = O, Error = E>> Parser<I> for ByRef<'p, P>
+where
+    E: ParseError<I>,
+{
+    type Output = O;
+    type Error = E;
+
     fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
         self.p.parse_next(i)
     }
@@ -251,7 +257,12 @@ impl<F, G, O1> Map<F, G, O1> {
     }
 }
 
-impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> O2> Parser<I, O2, E> for Map<F, G, O1> {
+impl<I, O1, O2, E, F: Parser<I, Output = O1, Error = E>, G: Fn(O1) -> O2> Parser<I>
+    for Map<F, G, O1>
+{
+    type Output = O2;
+    type Error = E;
+
     fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
         match self.f.parse_next(i) {
             Err(e) => Err(e),
@@ -278,13 +289,16 @@ impl<F, G, O1> MapRes<F, G, O1> {
     }
 }
 
-impl<I, O1, O2, E, E2, F, G> Parser<I, O2, E> for MapRes<F, G, O1>
+impl<I, O1, O2, E, E2, F, G> Parser<I> for MapRes<F, G, O1>
 where
     I: Clone,
-    F: Parser<I, O1, E>,
+    F: Parser<I, Output = O1, Error = E>,
     G: FnMut(O1) -> Result<O2, E2>,
     E: FromExternalError<I, E2>,
 {
+    type Output = O2;
+    type Error = E;
+
     fn parse_next(&mut self, input: I) -> IResult<I, O2, E> {
         let i = input.clone();
         let (input, o1) = self.f.parse_next(input)?;
@@ -315,13 +329,16 @@ impl<F, G, O1> VerifyMap<F, G, O1> {
     }
 }
 
-impl<I, O1, O2, E, F, G> Parser<I, O2, E> for VerifyMap<F, G, O1>
+impl<I, O1, O2, E, F, G> Parser<I> for VerifyMap<F, G, O1>
 where
     I: Clone,
-    F: Parser<I, O1, E>,
+    F: Parser<I, Output = O1, Error = E>,
     G: FnMut(O1) -> Option<O2>,
     E: ParseError<I>,
 {
+    type Output = O2;
+    type Error = E;
+
     fn parse_next(&mut self, input: I) -> IResult<I, O2, E> {
         let i = input.clone();
         let (input, o1) = self.f.parse_next(input)?;
@@ -355,10 +372,14 @@ where
     }
 }
 
-impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<O1, O2, E>> Parser<I, O2, E> for AndThen<F, G, O1>
+impl<I, O1, O2, E, F: Parser<I>, G: Parser<O1, Output = O2, Error = E>> Parser<I>
+    for AndThen<F, G, O1>
 where
     O1: StreamIsPartial,
 {
+    type Output = O2;
+    type Error = E;
+
     fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
         let (i, mut o1) = self.f.parse_next(i)?;
         let _ = o1.complete();
@@ -385,13 +406,16 @@ impl<P, O1, O2> ParseTo<P, O1, O2> {
     }
 }
 
-impl<I, O1, O2, E, P> Parser<I, O2, E> for ParseTo<P, O1, O2>
+impl<I, O1, O2, E, P> Parser<I> for ParseTo<P, O1, O2>
 where
     I: Stream,
     O1: crate::stream::ParseSlice<O2>,
     E: ParseError<I>,
-    P: Parser<I, O1, E>,
+    P: Parser<I, Output = O1, Error = E>,
 {
+    type Output = O2;
+    type Error = E;
+
     fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
         let input = i.clone();
         let (i, o) = self.p.parse_next(i)?;
@@ -422,9 +446,19 @@ impl<F, G, O1> FlatMap<F, G, O1> {
     }
 }
 
-impl<I, O1, O2, E, F: Parser<I, O1, E>, G: FnMut(O1) -> H, H: Parser<I, O2, E>> Parser<I, O2, E>
-    for FlatMap<F, G, O1>
+impl<
+        I,
+        O1,
+        O2,
+        E,
+        F: Parser<I, Output = O1, Error = E>,
+        G: FnMut(O1) -> H,
+        H: Parser<I, Output = O2, Error = E>,
+    > Parser<I> for FlatMap<F, G, O1>
 {
+    type Output = O2;
+    type Error = E;
+
     fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
         let (i, o1) = self.f.parse_next(i)?;
         (self.g)(o1).parse_next(i)
@@ -452,9 +486,11 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: FnMut(O1) -> H, H: Parser<I, O2, E>> 
 /// assert_eq!(parser("123;"), Ok(("123;", None)));
 /// # }
 /// ```
-pub fn opt<I: Stream, O, E: ParseError<I>, F>(mut f: F) -> impl Parser<I, Option<O>, E>
+pub fn opt<I: Stream, O, E: ParseError<I>, F>(
+    mut f: F,
+) -> impl Parser<I, Output = Option<O>, Error = E>
 where
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
 {
     trace("opt", move |input: I| {
         let i = input.clone();
@@ -487,10 +523,13 @@ where
 /// assert_eq!(parser(false, "123;"), Ok(("123;", None)));
 /// # }
 /// ```
-pub fn cond<I, O, E: ParseError<I>, F>(b: bool, mut f: F) -> impl Parser<I, Option<O>, E>
+pub fn cond<I, O, E: ParseError<I>, F>(
+    b: bool,
+    mut f: F,
+) -> impl Parser<I, Output = Option<O>, Error = E>
 where
     I: Stream,
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
 {
     trace("cond", move |input: I| {
         if b {
@@ -523,9 +562,9 @@ where
 /// ```
 #[doc(alias = "look_ahead")]
 #[doc(alias = "rewind")]
-pub fn peek<I: Stream, O, E: ParseError<I>, F>(mut f: F) -> impl Parser<I, O, E>
+pub fn peek<I: Stream, O, E: ParseError<I>, F>(mut f: F) -> impl Parser<I, Output = O, Error = E>
 where
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
 {
     trace("peek", move |input: I| {
         let i = input.clone();
@@ -580,12 +619,15 @@ impl<F> CompleteErr<F> {
     }
 }
 
-impl<F, I, O, E> Parser<I, O, E> for CompleteErr<F>
+impl<F, I, O, E> Parser<I> for CompleteErr<F>
 where
     I: Stream,
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
     E: ParseError<I>,
 {
+    type Output = O;
+    type Error = E;
+
     fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
         trace("complete_err", |input: I| {
             let i = input.clone();
@@ -618,15 +660,18 @@ impl<F, G, O2: ?Sized> Verify<F, G, O2> {
     }
 }
 
-impl<I, O1, O2, E, F, G> Parser<I, O1, E> for Verify<F, G, O2>
+impl<I, O1, O2, E, F, G> Parser<I> for Verify<F, G, O2>
 where
     I: Clone,
     E: ParseError<I>,
-    F: Parser<I, O1, E>,
+    F: Parser<I, Output = O1, Error = E>,
     G: Fn(&O2) -> bool,
     O1: Borrow<O2>,
     O2: ?Sized,
 {
+    type Output = O1;
+    type Error = E;
+
     fn parse_next(&mut self, input: I) -> IResult<I, O1, E> {
         let i = input.clone();
         let (input, o) = (self.first).parse_next(input)?;
@@ -659,9 +704,12 @@ impl<F, O1, O2> Value<F, O1, O2> {
     }
 }
 
-impl<I, O1, O2: Clone, E: ParseError<I>, F: Parser<I, O1, E>> Parser<I, O2, E>
+impl<I, O1, O2: Clone, E: ParseError<I>, F: Parser<I, Output = O2, Error = E>> Parser<I>
     for Value<F, O1, O2>
 {
+    type Output = O1;
+    type Error = E;
+
     fn parse_next(&mut self, input: I) -> IResult<I, O2, E> {
         (self.parser)
             .parse_next(input)
@@ -685,7 +733,10 @@ impl<F, O> Void<F, O> {
     }
 }
 
-impl<I, O, E: ParseError<I>, F: Parser<I, O, E>> Parser<I, (), E> for Void<F, O> {
+impl<I, O, E: ParseError<I>, F: Parser<I, Output = O, Error = E>> Parser<I> for Void<F, O> {
+    type Output = ();
+    type Error = E;
+
     fn parse_next(&mut self, input: I) -> IResult<I, (), E> {
         (self.parser).parse_next(input).map(|(i, _)| (i, ()))
     }
@@ -710,9 +761,11 @@ impl<I, O, E: ParseError<I>, F: Parser<I, O, E>> Parser<I, (), E> for Void<F, O>
 /// assert_eq!(parser.parse_next("abcd"), Err(ErrMode::Backtrack(Error::new("abcd", ErrorKind::Not))));
 /// # }
 /// ```
-pub fn not<I: Stream, O, E: ParseError<I>, F>(mut parser: F) -> impl Parser<I, (), E>
+pub fn not<I: Stream, O, E: ParseError<I>, F>(
+    mut parser: F,
+) -> impl Parser<I, Output = (), Error = E>
 where
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
 {
     trace("not", move |input: I| {
         let i = input.clone();
@@ -740,12 +793,15 @@ impl<F, O> Recognize<F, O> {
     }
 }
 
-impl<I, O, E, F> Parser<I, <I as Stream>::Slice, E> for Recognize<F, O>
+impl<I, O, E, F> Parser<I> for Recognize<F, O>
 where
     I: Stream + Offset,
     E: ParseError<I>,
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
 {
+    type Output = <I as Stream>::Slice;
+    type Error = E;
+
     fn parse_next(&mut self, input: I) -> IResult<I, <I as Stream>::Slice, E> {
         let i = input.clone();
         match (self.parser).parse_next(i) {
@@ -774,12 +830,15 @@ impl<F, O> WithRecognized<F, O> {
     }
 }
 
-impl<I, O, E, F> Parser<I, (O, <I as Stream>::Slice), E> for WithRecognized<F, O>
+impl<I, O, E, F> Parser<I> for WithRecognized<F, O>
 where
     I: Stream + Offset,
     E: ParseError<I>,
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
 {
+    type Output = (O, <I as Stream>::Slice);
+    type Error = E;
+
     fn parse_next(&mut self, input: I) -> IResult<I, (O, <I as Stream>::Slice), E> {
         let i = input.clone();
         match (self.parser).parse_next(i) {
@@ -809,12 +868,15 @@ impl<F, O> Span<F, O> {
     }
 }
 
-impl<I, O, E, F> Parser<I, Range<usize>, E> for Span<F, O>
+impl<I, O, E, F> Parser<I> for Span<F, O>
 where
     I: Clone + Location,
     E: ParseError<I>,
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
 {
+    type Output = Range<usize>;
+    type Error = E;
+
     fn parse_next(&mut self, input: I) -> IResult<I, Range<usize>, E> {
         let start = input.location();
         self.parser.parse_next(input).map(move |(remaining, _)| {
@@ -840,12 +902,15 @@ impl<F, O> WithSpan<F, O> {
     }
 }
 
-impl<I, O, E, F> Parser<I, (O, Range<usize>), E> for WithSpan<F, O>
+impl<I, O, E, F> Parser<I> for WithSpan<F, O>
 where
     I: Clone + Location,
     E: ParseError<I>,
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
 {
+    type Output = (O, Range<usize>);
+    type Error = E;
+
     fn parse_next(&mut self, input: I) -> IResult<I, (O, Range<usize>), E> {
         let start = input.location();
         self.parser
@@ -912,10 +977,10 @@ where
 /// assert_eq!(parser("+"), Err(ErrMode::Cut(Error { input: "", kind: ErrorKind::Slice })));
 /// # }
 /// ```
-pub fn cut_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl Parser<I, O, E>
+pub fn cut_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl Parser<I, Output = O, Error = E>
 where
     I: Stream,
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
 {
     trace("cut_err", move |input: I| {
         parser.parse_next(input).map_err(|e| e.cut())
@@ -926,10 +991,12 @@ where
 ///
 /// This attempts the parse, allowing other parsers to be tried on failure, like with
 /// [`winnow::branch::alt`][crate::branch::alt].
-pub fn backtrack_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl Parser<I, O, E>
+pub fn backtrack_err<I, O, E: ParseError<I>, F>(
+    mut parser: F,
+) -> impl Parser<I, Output = O, Error = E>
 where
     I: Stream,
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
 {
     trace("backtrack_err", move |input: I| {
         parser.parse_next(input).map_err(|e| e.backtrack())
@@ -987,10 +1054,13 @@ where
     }
 }
 
-impl<I: Clone, O1, O2, E, F: Parser<I, O1, E>> Parser<I, O2, E> for OutputInto<F, O1, O2>
+impl<I: Clone, O1, O2, E, F: Parser<I, Output = O1, Error = E>> Parser<I> for OutputInto<F, O1, O2>
 where
     O1: Into<O2>,
 {
+    type Output = O2;
+    type Error = E;
+
     fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
         match self.f.parse_next(i) {
             Ok((i, o)) => Ok((i, o.into())),
@@ -1023,11 +1093,14 @@ where
     }
 }
 
-impl<I: Clone, O, E1, E2: crate::error::ParseError<I>, F: Parser<I, O, E1>> Parser<I, O, E2>
-    for ErrInto<F, E1, E2>
+impl<I: Clone, O, E1, E2: crate::error::ParseError<I>, F: Parser<I, Output = O, Error = E1>>
+    Parser<I> for ErrInto<F, E1, E2>
 where
     E1: Into<E2>,
 {
+    type Output = O;
+    type Error = E2;
+
     fn parse_next(&mut self, i: I) -> IResult<I, O, E2> {
         match self.f.parse_next(i) {
             Ok(ok) => Ok(ok),
@@ -1062,7 +1135,7 @@ where
 /// ```
 pub fn iterator<I, Output, Error, F>(input: I, f: F) -> ParserIterator<I, Output, Error, F>
 where
-    F: Parser<I, Output, Error>,
+    F: Parser<I, Output = Output, Error = Error>,
     Error: ParseError<I>,
 {
     ParserIterator {
@@ -1094,7 +1167,7 @@ impl<I: Clone, O, E, F> ParserIterator<I, O, E, F> {
 
 impl<'a, I, O, E, F> core::iter::Iterator for &'a mut ParserIterator<I, O, E, F>
 where
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
     I: Clone,
 {
     type Item = O;
@@ -1167,7 +1240,9 @@ enum State<E> {
 /// ```
 #[doc(alias = "value")]
 #[doc(alias = "empty")]
-pub fn success<I: Stream, O: Clone, E: ParseError<I>>(val: O) -> impl Parser<I, O, E> {
+pub fn success<I: Stream, O: Clone, E: ParseError<I>>(
+    val: O,
+) -> impl Parser<I, Output = O, Error = E> {
     trace("success", move |input: I| Ok((input, val.clone())))
 }
 
@@ -1211,13 +1286,16 @@ impl<F, O, C: Clone + crate::lib::std::fmt::Debug> Context<F, O, C> {
     }
 }
 
-impl<I, O, E, F, C> Parser<I, O, E> for Context<F, O, C>
+impl<I, O, E, F, C> Parser<I> for Context<F, O, C>
 where
     I: Stream,
     C: Clone + crate::lib::std::fmt::Debug,
     E: ContextError<I, C>,
-    F: Parser<I, O, E>,
+    F: Parser<I, Output = O, Error = E>,
 {
+    type Output = O;
+    type Error = E;
+
     fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
         #[cfg(feature = "debug")]
         let name = format!("context={:?}", self.context);

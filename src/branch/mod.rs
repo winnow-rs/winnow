@@ -54,7 +54,7 @@ pub trait Alt<I, O, E> {
 #[doc(alias = "choice")]
 pub fn alt<I: Stream, O, E: ParseError<I>, List: Alt<I, O, E>>(
     mut l: List,
-) -> impl Parser<I, O, E> {
+) -> impl Parser<I, Output = O, Error = E> {
     trace("alt", move |i: I| l.choice(i))
 }
 
@@ -115,7 +115,7 @@ pub trait Permutation<I, O, E> {
 ///
 pub fn permutation<I: Stream, O, E: ParseError<I>, List: Permutation<I, O, E>>(
     mut l: List,
-) -> impl Parser<I, O, E> {
+) -> impl Parser<I, Output = O, Error = E> {
     trace("permutation", move |i: I| l.permutation(i))
 }
 
@@ -138,7 +138,7 @@ macro_rules! alt_trait_impl(
   ($($id:ident)+) => (
     impl<
       I: Clone, Output, Error: ParseError<I>,
-      $($id: Parser<I, Output, Error>),+
+      $($id: Parser<I, Output=Output, Error=Error>),+
     > Alt<I, Output, Error> for ( $($id),+ ) {
 
       fn choice(&mut self, input: I) -> IResult<I, Output, Error> {
@@ -169,7 +169,7 @@ macro_rules! alt_trait_inner(
 alt_trait!(Alt2 Alt3 Alt4 Alt5 Alt6 Alt7 Alt8 Alt9 Alt10 Alt11 Alt12 Alt13 Alt14 Alt15 Alt16 Alt17 Alt18 Alt19 Alt20 Alt21 Alt22);
 
 // Manually implement Alt for (A,), the 1-tuple type
-impl<I, O, E: ParseError<I>, A: Parser<I, O, E>> Alt<I, O, E> for (A,) {
+impl<I, O, E: ParseError<I>, A: Parser<I, Output = O, Error = E>> Alt<I, O, E> for (A,) {
     fn choice(&mut self, input: I) -> IResult<I, O, E> {
         self.0.parse_next(input)
     }
@@ -199,7 +199,7 @@ macro_rules! permutation_trait_impl(
   ($($name:ident $ty:ident $item:ident),+) => (
     impl<
       I: Clone, $($ty),+ , Error: ParseError<I>,
-      $($name: Parser<I, $ty, Error>),+
+      $($name: Parser<I, Output=$ty, Error=Error>),+
     > Permutation<I, ( $($ty),+ ), Error> for ( $($name),+ ) {
 
       fn permutation(&mut self, mut input: I) -> IResult<I, ( $($ty),+ ), Error> {

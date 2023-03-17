@@ -47,8 +47,8 @@ compile_error!("`debug` requires `std`");
 #[cfg_attr(not(feature = "debug"), allow(unused_variables))]
 pub fn trace<I: Stream, O, E>(
     name: impl crate::lib::std::fmt::Display,
-    mut parser: impl Parser<I, O, E>,
-) -> impl Parser<I, O, E> {
+    mut parser: impl Parser<I, Output = O, Error = E>,
+) -> impl Parser<I, Output = O, Error = E> {
     #[cfg(feature = "debug")]
     {
         let mut call_count = 0;

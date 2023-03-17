@@ -1329,7 +1329,9 @@ where
 /// assert_eq!(le_u16(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn u16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, u16, E>
+pub fn u16<I, E: ParseError<I>>(
+    endian: crate::number::Endianness,
+) -> impl Parser<I, Output = u16, Error = E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1401,7 +1403,9 @@ where
 /// assert_eq!(le_u24(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn u24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, u32, E>
+pub fn u24<I, E: ParseError<I>>(
+    endian: crate::number::Endianness,
+) -> impl Parser<I, Output = u32, Error = E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1473,7 +1477,9 @@ where
 /// assert_eq!(le_u32(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn u32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, u32, E>
+pub fn u32<I, E: ParseError<I>>(
+    endian: crate::number::Endianness,
+) -> impl Parser<I, Output = u32, Error = E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1545,7 +1551,9 @@ where
 /// assert_eq!(le_u64(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn u64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, u64, E>
+pub fn u64<I, E: ParseError<I>>(
+    endian: crate::number::Endianness,
+) -> impl Parser<I, Output = u64, Error = E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1617,7 +1625,9 @@ where
 /// assert_eq!(le_u128(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn u128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, u128, E>
+pub fn u128<I, E: ParseError<I>>(
+    endian: crate::number::Endianness,
+) -> impl Parser<I, Output = u128, Error = E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1744,7 +1754,9 @@ where
 /// assert_eq!(le_i16(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn i16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, i16, E>
+pub fn i16<I, E: ParseError<I>>(
+    endian: crate::number::Endianness,
+) -> impl Parser<I, Output = i16, Error = E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1816,7 +1828,9 @@ where
 /// assert_eq!(le_i24(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn i24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, i32, E>
+pub fn i24<I, E: ParseError<I>>(
+    endian: crate::number::Endianness,
+) -> impl Parser<I, Output = i32, Error = E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1888,7 +1902,9 @@ where
 /// assert_eq!(le_i32(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn i32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, i32, E>
+pub fn i32<I, E: ParseError<I>>(
+    endian: crate::number::Endianness,
+) -> impl Parser<I, Output = i32, Error = E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1960,7 +1976,9 @@ where
 /// assert_eq!(le_i64(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn i64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, i64, E>
+pub fn i64<I, E: ParseError<I>>(
+    endian: crate::number::Endianness,
+) -> impl Parser<I, Output = i64, Error = E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -2032,7 +2050,9 @@ where
 /// assert_eq!(le_i128(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn i128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, i128, E>
+pub fn i128<I, E: ParseError<I>>(
+    endian: crate::number::Endianness,
+) -> impl Parser<I, Output = i128, Error = E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -2297,7 +2317,9 @@ where
 /// assert_eq!(le_f32(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn f32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, f32, E>
+pub fn f32<I, E: ParseError<I>>(
+    endian: crate::number::Endianness,
+) -> impl Parser<I, Output = f32, Error = E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -2369,7 +2391,9 @@ where
 /// assert_eq!(le_f64(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(5))));
 /// ```
 #[inline(always)]
-pub fn f64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, f64, E>
+pub fn f64<I, E: ParseError<I>>(
+    endian: crate::number::Endianness,
+) -> impl Parser<I, Output = f64, Error = E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,

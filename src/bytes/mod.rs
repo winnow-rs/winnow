@@ -122,7 +122,9 @@ where
 #[doc(alias = "literal")]
 #[doc(alias = "bytes")]
 #[doc(alias = "just")]
-pub fn tag<T, I, Error: ParseError<I>>(tag: T) -> impl Parser<I, <I as Stream>::Slice, Error>
+pub fn tag<T, I, Error: ParseError<I>>(
+    tag: T,
+) -> impl Parser<I, Output = <I as Stream>::Slice, Error = Error>
 where
     I: StreamIsPartial,
     I: Stream + Compare<T>,
@@ -224,7 +226,7 @@ where
 #[doc(alias = "just")]
 pub fn tag_no_case<T, I, Error: ParseError<I>>(
     tag: T,
-) -> impl Parser<I, <I as Stream>::Slice, Error>
+) -> impl Parser<I, Output = <I as Stream>::Slice, Error = Error>
 where
     I: StreamIsPartial,
     I: Stream + Compare<T>,
@@ -330,7 +332,9 @@ where
 #[doc(alias = "char")]
 #[doc(alias = "token")]
 #[doc(alias = "satisfy")]
-pub fn one_of<I, T, Error: ParseError<I>>(list: T) -> impl Parser<I, <I as Stream>::Token, Error>
+pub fn one_of<I, T, Error: ParseError<I>>(
+    list: T,
+) -> impl Parser<I, Output = <I as Stream>::Token, Error = Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -370,7 +374,9 @@ where
 /// assert_eq!(none_of::<_, _, Error<_>>("a").parse_next(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn none_of<I, T, Error: ParseError<I>>(list: T) -> impl Parser<I, <I as Stream>::Token, Error>
+pub fn none_of<I, T, Error: ParseError<I>>(
+    list: T,
+) -> impl Parser<I, Output = <I as Stream>::Token, Error = Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -426,7 +432,7 @@ where
 #[inline(always)]
 pub fn take_while0<T, I, Error: ParseError<I>>(
     list: T,
-) -> impl Parser<I, <I as Stream>::Slice, Error>
+) -> impl Parser<I, Output = <I as Stream>::Slice, Error = Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -527,7 +533,7 @@ where
 #[doc(alias = "is_a")]
 pub fn take_while1<T, I, Error: ParseError<I>>(
     list: T,
-) -> impl Parser<I, <I as Stream>::Slice, Error>
+) -> impl Parser<I, Output = <I as Stream>::Slice, Error = Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -616,7 +622,7 @@ pub fn take_while_m_n<T, I, Error: ParseError<I>>(
     m: usize,
     n: usize,
     list: T,
-) -> impl Parser<I, <I as Stream>::Slice, Error>
+) -> impl Parser<I, Output = <I as Stream>::Slice, Error = Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -750,7 +756,7 @@ where
 #[inline(always)]
 pub fn take_till0<T, I, Error: ParseError<I>>(
     list: T,
-) -> impl Parser<I, <I as Stream>::Slice, Error>
+) -> impl Parser<I, Output = <I as Stream>::Slice, Error = Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -849,7 +855,7 @@ where
 #[doc(alias = "is_not")]
 pub fn take_till1<T, I, Error: ParseError<I>>(
     list: T,
-) -> impl Parser<I, <I as Stream>::Slice, Error>
+) -> impl Parser<I, Output = <I as Stream>::Slice, Error = Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -945,7 +951,9 @@ where
 /// assert_eq!(take6(Partial::new("short")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// ```
 #[inline(always)]
-pub fn take<C, I, Error: ParseError<I>>(count: C) -> impl Parser<I, <I as Stream>::Slice, Error>
+pub fn take<C, I, Error: ParseError<I>>(
+    count: C,
+) -> impl Parser<I, Output = <I as Stream>::Slice, Error = Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -1032,7 +1040,7 @@ where
 #[inline(always)]
 pub fn take_until0<T, I, Error: ParseError<I>>(
     tag: T,
-) -> impl Parser<I, <I as Stream>::Slice, Error>
+) -> impl Parser<I, Output = <I as Stream>::Slice, Error = Error>
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,
@@ -1122,7 +1130,7 @@ where
 #[inline(always)]
 pub fn take_until1<T, I, Error: ParseError<I>>(
     tag: T,
-) -> impl Parser<I, <I as Stream>::Slice, Error>
+) -> impl Parser<I, Output = <I as Stream>::Slice, Error = Error>
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,

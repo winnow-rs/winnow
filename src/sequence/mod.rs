@@ -34,11 +34,11 @@ use crate::Parser;
 pub fn preceded<I, O1, O2, E: ParseError<I>, F, G>(
     mut first: F,
     mut second: G,
-) -> impl Parser<I, O2, E>
+) -> impl Parser<I, Output = O2, Error = E>
 where
     I: Stream,
-    F: Parser<I, O1, E>,
-    G: Parser<I, O2, E>,
+    F: Parser<I, Output = O1, Error = E>,
+    G: Parser<I, Output = O2, Error = E>,
 {
     trace("preceded", move |input: I| {
         let (input, _) = first.parse_next(input)?;
@@ -72,11 +72,11 @@ where
 pub fn terminated<I, O1, O2, E: ParseError<I>, F, G>(
     mut first: F,
     mut second: G,
-) -> impl Parser<I, O1, E>
+) -> impl Parser<I, Output = O1, Error = E>
 where
     I: Stream,
-    F: Parser<I, O1, E>,
-    G: Parser<I, O2, E>,
+    F: Parser<I, Output = O1, Error = E>,
+    G: Parser<I, Output = O2, Error = E>,
 {
     trace("terminated", move |input: I| {
         let (input, o1) = first.parse_next(input)?;
@@ -111,12 +111,12 @@ pub fn separated_pair<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
     mut first: F,
     mut sep: G,
     mut second: H,
-) -> impl Parser<I, (O1, O3), E>
+) -> impl Parser<I, Output = (O1, O3), Error = E>
 where
     I: Stream,
-    F: Parser<I, O1, E>,
-    G: Parser<I, O2, E>,
-    H: Parser<I, O3, E>,
+    F: Parser<I, Output = O1, Error = E>,
+    G: Parser<I, Output = O2, Error = E>,
+    H: Parser<I, Output = O3, Error = E>,
 {
     trace("separated_pair", move |input: I| {
         let (input, o1) = first.parse_next(input)?;
@@ -154,12 +154,12 @@ pub fn delimited<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
     mut first: F,
     mut second: G,
     mut third: H,
-) -> impl Parser<I, O2, E>
+) -> impl Parser<I, Output = O2, Error = E>
 where
     I: Stream,
-    F: Parser<I, O1, E>,
-    G: Parser<I, O2, E>,
-    H: Parser<I, O3, E>,
+    F: Parser<I, Output = O1, Error = E>,
+    G: Parser<I, Output = O2, Error = E>,
+    H: Parser<I, Output = O3, Error = E>,
 {
     trace("delimited", move |input: I| {
         let (input, _) = first.parse_next(input)?;

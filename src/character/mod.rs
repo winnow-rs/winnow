@@ -1457,13 +1457,13 @@ pub fn escaped<'a, I: 'a, Error, F, G, O1, O2>(
     mut normal: F,
     control_char: char,
     mut escapable: G,
-) -> impl Parser<I, <I as Stream>::Slice, Error>
+) -> impl Parser<I, Output = <I as Stream>::Slice, Error = Error>
 where
     I: StreamIsPartial,
     I: Stream + Offset,
     <I as Stream>::Token: crate::stream::AsChar,
-    F: Parser<I, O1, Error>,
-    G: Parser<I, O2, Error>,
+    F: Parser<I, Output = O1, Error = Error>,
+    G: Parser<I, Output = O2, Error = Error>,
     Error: ParseError<I>,
 {
     trace("escaped", move |input: I| {
@@ -1484,8 +1484,8 @@ pub(crate) fn streaming_escaped_internal<I, Error, F, G, O1, O2>(
 where
     I: Stream + Offset,
     <I as Stream>::Token: crate::stream::AsChar,
-    F: Parser<I, O1, Error>,
-    G: Parser<I, O2, Error>,
+    F: Parser<I, Output = O1, Error = Error>,
+    G: Parser<I, Output = O2, Error = Error>,
     Error: ParseError<I>,
 {
     let mut i = input.clone();
@@ -1540,8 +1540,8 @@ pub(crate) fn complete_escaped_internal<'a, I: 'a, Error, F, G, O1, O2>(
 where
     I: Stream + Offset,
     <I as Stream>::Token: crate::stream::AsChar,
-    F: Parser<I, O1, Error>,
-    G: Parser<I, O2, Error>,
+    F: Parser<I, Output = O1, Error = Error>,
+    G: Parser<I, Output = O2, Error = Error>,
     Error: ParseError<I>,
 {
     let mut i = input.clone();
@@ -1654,14 +1654,14 @@ pub fn escaped_transform<I, Error, F, G, Output>(
     mut normal: F,
     control_char: char,
     mut transform: G,
-) -> impl Parser<I, Output, Error>
+) -> impl Parser<I, Output = Output, Error = Error>
 where
     I: StreamIsPartial,
     I: Stream + Offset,
     <I as Stream>::Token: crate::stream::AsChar,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
-    F: Parser<I, <I as Stream>::Slice, Error>,
-    G: Parser<I, <I as Stream>::Slice, Error>,
+    F: Parser<I, Output = <I as Stream>::Slice, Error = Error>,
+    G: Parser<I, Output = <I as Stream>::Slice, Error = Error>,
     Error: ParseError<I>,
 {
     trace("escaped_transform", move |input: I| {
@@ -1684,8 +1684,8 @@ where
     I: Stream + Offset,
     <I as Stream>::Token: crate::stream::AsChar,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
-    F: Parser<I, <I as Stream>::Slice, Error>,
-    G: Parser<I, <I as Stream>::Slice, Error>,
+    F: Parser<I, Output = <I as Stream>::Slice, Error = Error>,
+    G: Parser<I, Output = <I as Stream>::Slice, Error = Error>,
     Error: ParseError<I>,
 {
     let mut offset = 0;
@@ -1742,8 +1742,8 @@ where
     I: Stream + Offset,
     <I as Stream>::Token: crate::stream::AsChar,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
-    F: Parser<I, <I as Stream>::Slice, Error>,
-    G: Parser<I, <I as Stream>::Slice, Error>,
+    F: Parser<I, Output = <I as Stream>::Slice, Error = Error>,
+    G: Parser<I, Output = <I as Stream>::Slice, Error = Error>,
     Error: ParseError<I>,
 {
     let mut offset = 0;
