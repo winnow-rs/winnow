@@ -37,7 +37,7 @@ fn model_complete_take_while_m_n(
     if n < m {
         Err(crate::error::ErrMode::from_error_kind(
             input,
-            crate::error::ErrorKind::TakeWhileMN,
+            crate::error::ErrorKind::TakeWhile,
         ))
     } else if m <= valid {
         let offset = n.min(valid);
@@ -45,7 +45,7 @@ fn model_complete_take_while_m_n(
     } else {
         Err(crate::error::ErrMode::from_error_kind(
             input,
-            crate::error::ErrorKind::TakeWhileMN,
+            crate::error::ErrorKind::TakeWhile,
         ))
     }
 }
@@ -171,10 +171,7 @@ fn partial_is_a() {
     let c = Partial::new(&b"cdef"[..]);
     assert_eq!(
         a_or_b(c),
-        Err(ErrMode::Backtrack(error_position!(
-            c,
-            ErrorKind::TakeWhile1
-        )))
+        Err(ErrMode::Backtrack(error_position!(c, ErrorKind::TakeWhile)))
     );
 
     let d = Partial::new(&b"bacdef"[..]);
@@ -196,7 +193,7 @@ fn partial_is_not() {
     let c = Partial::new(&b"abab"[..]);
     assert_eq!(
         a_or_b(c),
-        Err(ErrMode::Backtrack(error_position!(c, ErrorKind::TakeTill1)))
+        Err(ErrMode::Backtrack(error_position!(c, ErrorKind::TakeWhile)))
     );
 
     let d = Partial::new(&b"cdefba"[..]);
@@ -329,7 +326,7 @@ fn partial_take_while1() {
         f(Partial::new(d)),
         Err(ErrMode::Backtrack(error_position!(
             Partial::new(d),
-            ErrorKind::TakeWhile1
+            ErrorKind::TakeWhile
         )))
     );
 }
@@ -358,7 +355,7 @@ fn partial_take_while_m_n() {
         x(Partial::new(f)),
         Err(ErrMode::Backtrack(error_position!(
             Partial::new(f),
-            ErrorKind::TakeWhileMN
+            ErrorKind::TakeWhile
         )))
     );
 }
@@ -400,7 +397,7 @@ fn partial_take_till1() {
         f(Partial::new(b)),
         Err(ErrMode::Backtrack(error_position!(
             Partial::new(b),
-            ErrorKind::TakeTill1
+            ErrorKind::TakeWhile
         )))
     );
     assert_eq!(

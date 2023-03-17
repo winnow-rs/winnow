@@ -312,7 +312,7 @@ mod test {
             f(Partial::new(d)),
             Err(ErrMode::Backtrack(winnow::error::Error {
                 input: Partial::new(d),
-                kind: ErrorKind::TakeWhile1
+                kind: ErrorKind::TakeWhile
             }))
         );
     }

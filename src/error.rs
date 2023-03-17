@@ -658,15 +658,12 @@ pub enum ErrorKind {
   Tag,
   Alt,
   Many,
-  TakeUntil,
   Eof,
-  TakeWhile1,
+  TakeWhile,
   Complete,
   Not,
   Permutation,
   Verify,
-  TakeTill1,
-  TakeWhileMN,
   Fail,
 }
 
@@ -679,15 +676,12 @@ impl ErrorKind {
       ErrorKind::Tag                       => "Tag",
       ErrorKind::Alt                       => "Alternative",
       ErrorKind::Many                      => "Many",
-      ErrorKind::TakeUntil                 => "Take until",
       ErrorKind::Eof                       => "End of file",
-      ErrorKind::TakeWhile1                => "TakeWhile1",
+      ErrorKind::TakeWhile                 => "TakeWhile",
       ErrorKind::Complete                  => "Complete",
       ErrorKind::Not                       => "Negation",
       ErrorKind::Permutation               => "Permutation",
       ErrorKind::Verify                    => "predicate verification",
-      ErrorKind::TakeTill1                 => "TakeTill1",
-      ErrorKind::TakeWhileMN               => "TakeWhileMN",
       ErrorKind::Fail                      => "Fail",
     }
   }

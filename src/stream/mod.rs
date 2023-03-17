@@ -2145,8 +2145,8 @@ impl<'a> AsChar for &'a char {
 /// }
 ///
 /// assert_eq!(hex_digit1("21cZ"), Ok(("Z", "21c")));
-/// assert_eq!(hex_digit1("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::TakeWhile1))));
-/// assert_eq!(hex_digit1(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::TakeWhile1))));
+/// assert_eq!(hex_digit1("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::TakeWhile))));
+/// assert_eq!(hex_digit1(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::TakeWhile))));
 /// ```
 pub trait ContainsToken<T> {
     /// Returns true if self contains the token
