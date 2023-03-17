@@ -694,13 +694,7 @@ mod complete {
             escaped(digit1, '\\', one_of("\"n\\"))(s)
         }
 
-        assert_eq!(
-            esc("abcd"),
-            Err(ErrMode::Backtrack(Error {
-                input: "abcd",
-                kind: ErrorKind::Escaped
-            }))
-        );
+        assert_eq!(esc("abcd"), Ok(("abcd", "")));
     }
 
     #[cfg(feature = "alloc")]
@@ -850,13 +844,7 @@ mod complete {
             escaped_transform(digit1, '\\', "n")(s)
         }
 
-        assert_eq!(
-            esc_trans("abcd"),
-            Err(ErrMode::Backtrack(Error {
-                input: "abcd",
-                kind: ErrorKind::EscapedTransform
-            }))
-        );
+        assert_eq!(esc_trans("abcd"), Ok(("abcd", String::new())));
     }
 }
 

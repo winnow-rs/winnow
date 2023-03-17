@@ -1585,9 +1585,6 @@ where
                     }
                 } else {
                     let offset = input.offset_to(&i);
-                    if offset == 0 {
-                        return Err(ErrMode::from_error_kind(input, ErrorKind::Escaped));
-                    }
                     return Ok(input.next_slice(offset));
                 }
             }
@@ -1806,12 +1803,6 @@ where
                         }
                     }
                 } else {
-                    if offset == 0 {
-                        return Err(ErrMode::from_error_kind(
-                            remainder,
-                            ErrorKind::EscapedTransform,
-                        ));
-                    }
                     return Ok((remainder, res));
                 }
             }
