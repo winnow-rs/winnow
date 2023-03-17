@@ -236,8 +236,8 @@ where
 /// }
 ///
 /// assert_eq!(parser("\nc"), Ok(("c", '\n')));
-/// assert_eq!(parser("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::OneOf))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::OneOf))));
+/// assert_eq!(parser("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::Verify))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
 /// ```
 ///
 /// ```
@@ -245,7 +245,7 @@ where
 /// # use winnow::Partial;
 /// # use winnow::character::newline;
 /// assert_eq!(newline::<_, Error<_>>(Partial::new("\nc")), Ok((Partial::new("c"), '\n')));
-/// assert_eq!(newline::<_, Error<_>>(Partial::new("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("\r\nc"), ErrorKind::OneOf))));
+/// assert_eq!(newline::<_, Error<_>>(Partial::new("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("\r\nc"), ErrorKind::Verify))));
 /// assert_eq!(newline::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
@@ -278,8 +278,8 @@ where
 /// }
 ///
 /// assert_eq!(parser("\tc"), Ok(("c", '\t')));
-/// assert_eq!(parser("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::OneOf))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::OneOf))));
+/// assert_eq!(parser("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::Verify))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
 /// ```
 ///
 /// ```
@@ -287,7 +287,7 @@ where
 /// # use winnow::Partial;
 /// # use winnow::character::tab;
 /// assert_eq!(tab::<_, Error<_>>(Partial::new("\tc")), Ok((Partial::new("c"), '\t')));
-/// assert_eq!(tab::<_, Error<_>>(Partial::new("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("\r\nc"), ErrorKind::OneOf))));
+/// assert_eq!(tab::<_, Error<_>>(Partial::new("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("\r\nc"), ErrorKind::Verify))));
 /// assert_eq!(tab::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]

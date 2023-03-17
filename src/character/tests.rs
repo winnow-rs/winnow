@@ -636,7 +636,7 @@ mod complete {
             Err(ErrMode::Backtrack(error_node_position!(
                 &b"AB\\A"[..],
                 ErrorKind::Escaped,
-                error_position!(&b"A"[..], ErrorKind::OneOf)
+                error_position!(&b"A"[..], ErrorKind::Verify)
             )))
         );
 
@@ -672,7 +672,7 @@ mod complete {
             Err(ErrMode::Backtrack(error_node_position!(
                 "AB\\A",
                 ErrorKind::Escaped,
-                error_position!("A", ErrorKind::OneOf)
+                error_position!("A", ErrorKind::Verify)
             )))
         );
 
