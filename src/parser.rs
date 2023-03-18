@@ -39,6 +39,19 @@ use crate::stream::{AsChar, Compare, Location, Stream, StreamIsPartial};
 /// - `u8` and `char`, see [`winnow::bytes::one_of`][crate::bytes::one_of]
 /// - `&[u8]` and `&str`, see [`winnow::bytes::tag`][crate::bytes::tag]
 pub trait Parser<I, O, E> {
+    /// Parse all of `input`, generating `O` from it
+    fn parse(&mut self, input: I) -> Result<O, E>
+    where
+        I: Stream,
+        // Force users to deal with `Incomplete` when `StreamIsPartial<true>`
+        I: StreamIsPartial,
+        I: Clone,
+        E: ParseError<I>,
+    {
+        use crate::error::FinishIResult;
+        self.parse_next(input).finish()
+    }
+
     /// Take tokens from the [`Stream`], turning it into the output
     ///
     /// This includes advancing the [`Stream`] to the next location.
