@@ -104,7 +104,7 @@ fn partial_one_of_test() {
 #[test]
 fn char_byteslice() {
     fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u8> {
-        one_of('c').parse_next(i)
+        'c'.parse_next(i)
     }
 
     let a = &b"abcd"[..];
@@ -123,7 +123,7 @@ fn char_byteslice() {
 #[test]
 fn char_str() {
     fn f(i: Partial<&str>) -> IResult<Partial<&str>, char> {
-        one_of('c').parse_next(i)
+        'c'.parse_next(i)
     }
 
     let a = "abcd";

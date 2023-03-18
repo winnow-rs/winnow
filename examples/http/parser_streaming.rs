@@ -1,9 +1,5 @@
 use winnow::{
-    bytes::{one_of, take_while1},
-    character::line_ending,
-    multi::many1,
-    stream::Partial,
-    IResult, Parser,
+    bytes::take_while1, character::line_ending, multi::many1, stream::Partial, IResult, Parser,
 };
 
 pub type Stream<'i> = Partial<&'i [u8]>;
@@ -91,7 +87,7 @@ fn message_header_value(input: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
 
 fn message_header(input: Stream<'_>) -> IResult<Stream<'_>, Header<'_>> {
     let (input, name) = take_while1(is_token).parse_next(input)?;
-    let (input, _) = one_of(':').parse_next(input)?;
+    let (input, _) = ':'.parse_next(input)?;
     let (input, value) = many1(message_header_value).parse_next(input)?;
 
     Ok((input, Header { name, value }))

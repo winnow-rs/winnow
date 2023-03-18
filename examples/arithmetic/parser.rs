@@ -58,7 +58,7 @@ fn factor(i: &str) -> IResult<&str, i64> {
         spaces,
         alt((
             digits.map_res(FromStr::from_str),
-            delimited(one_of('('), expr, one_of(')')),
+            delimited('(', expr, ')'),
             parens,
         )),
         spaces,
@@ -68,7 +68,7 @@ fn factor(i: &str) -> IResult<&str, i64> {
 
 // We parse any expr surrounded by parens, ignoring all whitespaces around those
 fn parens(i: &str) -> IResult<&str, i64> {
-    delimited(one_of('('), expr, one_of(')')).parse_next(i)
+    delimited('(', expr, ')').parse_next(i)
 }
 
 #[test]

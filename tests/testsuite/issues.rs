@@ -187,8 +187,8 @@ fn issue_942() {
     pub fn parser<'a, E: ParseError<&'a str> + ContextError<&'a str, &'static str>>(
         i: &'a str,
     ) -> IResult<&'a str, usize, E> {
-        use winnow::{bytes::one_of, multi::many0};
-        many0(one_of('a').context("char_a")).parse_next(i)
+        use winnow::multi::many0;
+        many0('a'.context("char_a")).parse_next(i)
     }
     assert_eq!(parser::<()>("aaa"), Ok(("", 3)));
 }

@@ -1371,7 +1371,6 @@ enum State<E> {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::prelude::*;
 /// use winnow::branch::alt;
-/// use winnow::bytes::one_of;
 /// use winnow::combinator::success;
 ///
 /// let mut parser = success::<_,_,Error<_>>(10);
@@ -1379,8 +1378,8 @@ enum State<E> {
 ///
 /// fn sign(input: &str) -> IResult<&str, isize> {
 ///     alt((
-///         one_of('-').value(-1),
-///         one_of('+').value(1),
+///         '-'.value(-1),
+///         '+'.value(1),
 ///         success::<_,_,Error<_>>(1)
 ///     )).parse_next(input)
 /// }

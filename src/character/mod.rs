@@ -258,8 +258,7 @@ where
     <I as Stream>::Token: AsChar + Copy,
 {
     trace("newline", move |input: I| {
-        one_of('\n')
-            .map(|c: <I as Stream>::Token| c.as_char())
+        '\n'.map(|c: <I as Stream>::Token| c.as_char())
             .parse_next(input)
     })
     .parse_next(input)
@@ -301,8 +300,7 @@ where
     <I as Stream>::Token: AsChar + Copy,
 {
     trace("tab", move |input: I| {
-        one_of('\t')
-            .map(|c: <I as Stream>::Token| c.as_char())
+        '\t'.map(|c: <I as Stream>::Token| c.as_char())
             .parse_next(input)
     })
     .parse_next(input)

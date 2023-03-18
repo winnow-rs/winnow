@@ -711,12 +711,11 @@ macro_rules! error_node_position(
 #[cfg(feature = "alloc")]
 mod tests {
     use super::*;
-    use crate::bytes::one_of;
 
     #[test]
     fn convert_error_panic() {
         let input = "";
 
-        let _result: IResult<_, _, VerboseError<&str>> = one_of('x').parse_next(input);
+        let _result: IResult<_, _, VerboseError<&str>> = 'x'.parse_next(input);
     }
 }
