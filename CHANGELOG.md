@@ -3,6 +3,36 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+Breaking:
+- All `winnow` parsers now return `impl Parser`, rather than `impl FnMut`
+- `winnow::prelude::Parser` is now named
+- Some infinite loop, overflows, and bounds errors were changed to asserts
+- `ErrorKind` was greatly simplified
+- Some trait bounds and generic parameters changed
+- Deprecated APIs were removed
+
+Other
+- Deprecated `FinishIResult`
+
+### Fix
+
+- Improved type inference, especially for `""`, `''` parsers
+- `winnow::prelude` now allows named access to `Parser`
+
+### Features
+
+- `Parser::parse` added as a replacement for `FinishIResult::finish`
+
+### Performance
+
+- `escape`: Remove extraneous bounds checks
+
+### Internal
+
+- Cleaned up the code so it better serves as examples for user-written parsers
+
 ## [0.3.6] - 2023-03-14
 
 ### Features
