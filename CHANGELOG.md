@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.4.0] - 2023-03-18
+
 ### Compatibility
 
 Breaking:
@@ -1724,7 +1726,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.3.6...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/winnow-rs/winnow/compare/v0.3.6...v0.4.0
 [0.3.6]: https://github.com/winnow-rs/winnow/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/winnow-rs/winnow/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/winnow-rs/winnow/compare/v0.3.3...v0.3.4
