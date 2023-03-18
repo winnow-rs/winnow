@@ -10,7 +10,7 @@ fn main() -> Result<(), lexopt::Error> {
 
     println!("{} =", input);
     match args.implementation {
-        Impl::Eval => match parser::expr.parse_next(input).finish() {
+        Impl::Eval => match parser::expr.parse(input) {
             Ok(result) => {
                 println!("  {}", result);
             }
@@ -18,7 +18,7 @@ fn main() -> Result<(), lexopt::Error> {
                 println!("  {}", err);
             }
         },
-        Impl::Ast => match parser_ast::expr.parse_next(input).finish() {
+        Impl::Ast => match parser_ast::expr.parse(input) {
             Ok(result) => {
                 println!("  {:#?}", result);
             }

@@ -150,7 +150,6 @@ use crate::combinator::cut_err;
 use crate::error::ErrMode;
 use crate::error::Error;
 use crate::error::VerboseError;
-use crate::FinishIResult;
 use crate::IResult;
 use crate::Parser;
 use crate::_topic;

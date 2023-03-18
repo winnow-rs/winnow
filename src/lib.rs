@@ -231,7 +231,7 @@ pub mod _tutorial;
 /// }
 ///
 /// fn main() {
-///   let result = parse_data.parse_next("100").finish();
+///   let result = parse_data.parse("100");
 ///   assert_eq!(result, Ok(100));
 /// }
 /// ```

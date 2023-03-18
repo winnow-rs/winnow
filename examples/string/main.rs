@@ -19,7 +19,7 @@ fn main() -> Result<(), lexopt::Error> {
     let args = Args::parse()?;
 
     let data = args.input.as_deref().unwrap_or("\"abc\"");
-    let result = parser::parse_string::<()>(data).finish();
+    let result = parser::parse_string::<()>.parse(data);
     match result {
         Ok(data) => println!("{}", data),
         Err(err) => println!("{:?}", err),
@@ -55,14 +55,14 @@ impl Args {
 #[test]
 fn simple() {
     let data = "\"abc\"";
-    let result = parser::parse_string::<()>(data).finish();
+    let result = parser::parse_string::<()>.parse(data);
     assert_eq!(result, Ok(String::from("abc")));
 }
 
 #[test]
 fn escaped() {
     let data = "\"tab:\\tafter tab, newline:\\nnew line, quote: \\\", emoji: \\u{1F602}, newline:\\nescaped whitespace: \\    abc\"";
-    let result = parser::parse_string::<()>(data).finish();
+    let result = parser::parse_string::<()>.parse(data);
     assert_eq!(
         result,
         Ok(String::from("tab:\tafter tab, newline:\nnew line, quote: \", emoji: 😂, newline:\nescaped whitespace: abc"))

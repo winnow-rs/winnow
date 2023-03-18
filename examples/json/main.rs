@@ -27,7 +27,7 @@ fn main() -> Result<(), lexopt::Error> {
     });
 
     if args.verbose {
-        match parser::json::<VerboseError<&str>>(data).finish() {
+        match parser::json::<VerboseError<&str>>.parse(data) {
             Ok(json) => {
                 println!("{:#?}", json);
             }
@@ -41,8 +41,8 @@ fn main() -> Result<(), lexopt::Error> {
         }
     } else {
         let result = match args.implementation {
-            Impl::Naive => parser::json::<Error<&str>>(data).finish(),
-            Impl::Dispatch => parser_dispatch::json::<Error<&str>>(data).finish(),
+            Impl::Naive => parser::json::<Error<&str>>.parse(data),
+            Impl::Dispatch => parser_dispatch::json::<Error<&str>>.parse(data),
         };
         match result {
             Ok(json) => {

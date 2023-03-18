@@ -167,7 +167,7 @@ impl<I: crate::lib::std::fmt::Display> crate::lib::std::fmt::Display for Located
 /// let data = "Hello";
 /// let state = Cell::new(0);
 /// let input = Stream { input: data, state: State(&state) };
-/// let output = word.parse_next(input).finish().unwrap();
+/// let output = word.parse(input).unwrap();
 /// assert_eq!(state.get(), 1);
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]

@@ -24,15 +24,14 @@
 //! - They are safe to be referenced across threads
 //! - They do not borrow
 //!
-//! winnow provides some helpers for this like [`FinishIResult`]:
+//! winnow provides some helpers for this:
 //! ```rust
 //! # use winnow::IResult;
-//! # use winnow::Parser;
 //! # use winnow::bytes::take_while1;
 //! # use winnow::branch::dispatch;
 //! # use winnow::bytes::take;
 //! # use winnow::combinator::fail;
-//! use winnow::FinishIResult;
+//! use winnow::Parser;
 //! use winnow::error::Error;
 //!
 //! #[derive(Debug, PartialEq, Eq)]
@@ -44,8 +43,7 @@
 //!     fn from_str(input: &str) -> Result<Self, Self::Err> {
 //!         parse_digits
 //!             .map(Hex)
-//!             .parse_next(input)
-//!             .finish()
+//!             .parse(input)
 //!             .map_err(|e| e.into_owned())
 //!     }
 //! }
@@ -97,7 +95,6 @@
 //!     assert!(input.parse::<Hex>().is_err());
 //! }
 //! ```
-//! [`FinishIResult::finish`]:
 //! - Ensures we hit [`eof`]
 //! - Removes the [`ErrMode`] wrapper
 //!
@@ -109,7 +106,6 @@ use super::chapter_1;
 use crate::combinator::eof;
 use crate::error::ErrMode;
 use crate::error::Error;
-use crate::FinishIResult;
 use crate::IResult;
 
 pub use super::chapter_6 as previous;

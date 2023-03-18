@@ -268,7 +268,7 @@ pub trait Parser<I, O, E> {
     ///
     /// let mut parser = separated_pair(alpha1.span(), ',', alpha1.span());
     ///
-    /// assert_eq!(parser.parse_next(Located::new("abcd,efgh")).finish(), Ok((0..4, 5..9)));
+    /// assert_eq!(parser.parse(Located::new("abcd,efgh")), Ok((0..4, 5..9)));
     /// assert_eq!(parser.parse_next(Located::new("abcd;")),Err(ErrMode::Backtrack(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::Verify))));
     /// ```
     fn span(self) -> Span<Self, O>
@@ -307,7 +307,7 @@ pub trait Parser<I, O, E> {
     ///
     /// let mut consumed_parser = separated_pair(alpha1.value(1).with_span(), ',', alpha1.value(2).with_span());
     ///
-    /// assert_eq!(consumed_parser.parse_next(Located::new("abcd,efgh")).finish(), Ok(((1, 0..4), (2, 5..9))));
+    /// assert_eq!(consumed_parser.parse(Located::new("abcd,efgh")), Ok(((1, 0..4), (2, 5..9))));
     /// assert_eq!(consumed_parser.parse_next(Located::new("abcd;")),Err(ErrMode::Backtrack(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::Verify))));
     ///
     /// // the second output (representing the consumed input)
