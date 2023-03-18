@@ -122,6 +122,10 @@ path = "examples/arithmetic/bench.rs"
 harness = false
 
 [[bench]]
+name = "contains_token"
+harness = false
+
+[[bench]]
 name = "number"
 harness = false
 
