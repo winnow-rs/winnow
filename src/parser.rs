@@ -48,6 +48,7 @@ pub trait Parser<I, O, E> {
         I: Clone,
         E: ParseError<I>,
     {
+        #![allow(deprecated)]
         use crate::error::FinishIResult;
         self.parse_next(input).finish()
     }

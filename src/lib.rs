@@ -237,11 +237,13 @@ pub mod _tutorial;
 /// ```
 pub mod prelude {
     pub use crate::stream::StreamIsPartial as _;
+    #[allow(deprecated)]
     pub use crate::FinishIResult as _;
     pub use crate::IResult;
     pub use crate::Parser;
 }
 
+#[allow(deprecated)]
 pub use error::FinishIResult;
 pub use error::IResult;
 pub use parser::*;
