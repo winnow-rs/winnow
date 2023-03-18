@@ -1,5 +1,5 @@
 use super::*;
-use crate::bytes::tag;
+
 use crate::bytes::take;
 use crate::error::ErrMode;
 use crate::error::Error;
@@ -158,7 +158,7 @@ fn test_parser_into() {
 #[test]
 fn opt_test() {
     fn opt_abcd(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Option<&[u8]>> {
-        opt(tag("abcd")).parse_next(i)
+        opt("abcd").parse_next(i)
     }
 
     let a = &b"abcdef"[..];
@@ -181,7 +181,7 @@ fn opt_test() {
 #[test]
 fn peek_test() {
     fn peek_tag(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        peek(tag("abcd")).parse_next(i)
+        peek("abcd").parse_next(i)
     }
 
     assert_eq!(
@@ -204,7 +204,7 @@ fn peek_test() {
 #[test]
 fn not_test() {
     fn not_aaa(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, ()> {
-        not(tag("aaa")).parse_next(i)
+        not("aaa").parse_next(i)
     }
 
     assert_eq!(

@@ -1,5 +1,5 @@
 use winnow::{
-    bytes::{one_of, tag, take_while1},
+    bytes::{one_of, take_while1},
     character::line_ending,
     multi::many1,
     stream::Partial,
@@ -75,7 +75,7 @@ fn request_line(input: Stream<'_>) -> IResult<Stream<'_>, Request<'_>> {
 }
 
 fn http_version(input: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
-    let (input, _) = tag("HTTP/").parse_next(input)?;
+    let (input, _) = "HTTP/".parse_next(input)?;
     let (input, version) = take_while1(is_version).parse_next(input)?;
 
     Ok((input, version))

@@ -685,7 +685,6 @@ mod complete {
     #[cfg(feature = "alloc")]
     #[test]
     fn complete_escape_transform() {
-        use crate::bytes::tag;
         use crate::character::alpha1 as alpha;
 
         #[cfg(feature = "alloc")]
@@ -698,9 +697,9 @@ mod complete {
                 alpha,
                 '\\',
                 alt((
-                    tag("\\").value(&b"\\"[..]),
-                    tag("\"").value(&b"\""[..]),
-                    tag("n").value(&b"\n"[..]),
+                    "\\".value(&b"\\"[..]),
+                    "\"".value(&b"\""[..]),
+                    "n".value(&b"\n"[..]),
                 )),
             )
             .map(to_s)
@@ -742,8 +741,8 @@ mod complete {
                 alpha,
                 '&',
                 alt((
-                    tag("egrave;").value("è".as_bytes()),
-                    tag("agrave;").value("à".as_bytes()),
+                    "egrave;".value("è".as_bytes()),
+                    "agrave;".value("à".as_bytes()),
                 )),
             )
             .map(to_s)
@@ -762,18 +761,13 @@ mod complete {
     #[cfg(feature = "std")]
     #[test]
     fn complete_escape_transform_str() {
-        use crate::bytes::tag;
         use crate::character::alpha1 as alpha;
 
         fn esc(i: &str) -> IResult<&str, String> {
             escaped_transform(
                 alpha,
                 '\\',
-                alt((
-                    tag("\\").value("\\"),
-                    tag("\"").value("\""),
-                    tag("n").value("\n"),
-                )),
+                alt(("\\".value("\\"), "\"".value("\""), "n".value("\n"))),
             )
             .parse_next(i)
         }
@@ -800,7 +794,7 @@ mod complete {
             escaped_transform(
                 alpha,
                 '&',
-                alt((tag("egrave;").value("è"), tag("agrave;").value("à"))),
+                alt(("egrave;".value("è"), "agrave;".value("à"))),
             )
             .parse_next(i)
         }
@@ -811,12 +805,7 @@ mod complete {
         );
 
         fn esc3(i: &str) -> IResult<&str, String> {
-            escaped_transform(
-                alpha,
-                '␛',
-                alt((tag("0").value("\0"), tag("n").value("\n"))),
-            )
-            .parse_next(i)
+            escaped_transform(alpha, '␛', alt(("0".value("\0"), "n".value("\n")))).parse_next(i)
         }
         assert_eq!(esc3("a␛0bc␛n"), Ok(("", String::from("a\0bc\n"))));
     }

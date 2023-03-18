@@ -95,7 +95,7 @@ where
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
-///   tag("Hello").parse_next(s)
+///   "Hello".parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("Hello, World!"), Ok((", World!", "Hello")));
@@ -110,7 +110,7 @@ where
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   tag("Hello").parse_next(s)
+///   "Hello".parse_next(s)
 /// }
 ///
 /// assert_eq!(parser(Partial::new("Hello, World!")), Ok((Partial::new(", World!"), "Hello")));

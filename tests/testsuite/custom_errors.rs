@@ -1,6 +1,5 @@
 #![allow(dead_code)]
 
-use winnow::bytes::tag;
 use winnow::character::digit1 as digit;
 use winnow::error::{ErrorKind, ParseError};
 #[cfg(feature = "alloc")]
@@ -31,7 +30,7 @@ impl<'a> ParseError<Partial<&'a str>> for CustomError {
 
 fn test1(input: Partial<&str>) -> IResult<Partial<&str>, &str, CustomError> {
     //fix_error!(input, CustomError, tag!("abcd"))
-    tag("abcd").parse_next(input)
+    "abcd".parse_next(input)
 }
 
 fn test2(input: Partial<&str>) -> IResult<Partial<&str>, &str, CustomError> {

@@ -230,7 +230,7 @@ pub trait Parser<I, O, E> {
     /// use winnow::sequence::separated_pair;
     ///
     /// fn inner_parser(input: &str) -> IResult<&str, bool> {
-    ///     tag("1234").value(true).parse_next(input)
+    ///     "1234".value(true).parse_next(input)
     /// }
     ///
     /// # fn main() {
@@ -303,7 +303,7 @@ pub trait Parser<I, O, E> {
     /// use winnow::sequence::separated_pair;
     ///
     /// fn inner_parser(input: Located<&str>) -> IResult<Located<&str>, bool> {
-    ///     tag("1234").value(true).parse_next(input)
+    ///     "1234".value(true).parse_next(input)
     /// }
     ///
     /// # fn main() {
@@ -818,7 +818,7 @@ impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::bytes::{tag, take};
+    use crate::bytes::take;
     use crate::error::ErrMode;
     use crate::error::Error;
     use crate::error::ErrorKind;
@@ -870,7 +870,7 @@ mod tests {
     fn tuple_test() {
         #[allow(clippy::type_complexity)]
         fn tuple_3(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (u16, &[u8], &[u8])> {
-            (be_u16, take(3u8), tag("fg")).parse_next(i)
+            (be_u16, take(3u8), "fg").parse_next(i)
         }
 
         assert_eq!(

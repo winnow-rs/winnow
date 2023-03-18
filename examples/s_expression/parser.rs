@@ -5,7 +5,6 @@
 use winnow::{
     branch::alt,
     bytes::one_of,
-    bytes::tag,
     character::{alpha1, digit1, multispace0, multispace1},
     combinator::{cut_err, opt},
     error::VerboseError,
@@ -107,8 +106,8 @@ fn parse_num(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
 /// Our boolean values are also constant, so we can do it the same way
 fn parse_bool(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
     alt((
-        tag("#t").map(|_| Atom::Boolean(true)),
-        tag("#f").map(|_| Atom::Boolean(false)),
+        "#t".map(|_| Atom::Boolean(true)),
+        "#f".map(|_| Atom::Boolean(false)),
     ))
     .parse_next(i)
 }
@@ -120,7 +119,7 @@ fn parse_builtin(i: &str) -> IResult<&str, BuiltIn, VerboseError<&str>> {
         parse_builtin_op,
         // map lets us process the parsed output, in this case we know what we parsed,
         // so we ignore the input and return the BuiltIn directly
-        tag("not").map(|_| BuiltIn::Not),
+        "not".map(|_| BuiltIn::Not),
     ))
     .parse_next(i)
 }

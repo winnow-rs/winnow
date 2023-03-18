@@ -4,7 +4,7 @@ use std::str;
 use winnow::prelude::*;
 use winnow::{
     branch::alt,
-    bytes::{any, none_of, tag, take, take_while0},
+    bytes::{any, none_of, take, take_while0},
     character::float,
     combinator::{cut_err, rest},
     error::{ContextError, ParseError},
@@ -59,7 +59,7 @@ fn json_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static 
 fn null<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, &'i str, E> {
     // This is a parser that returns `"null"` if it sees the string "null", and
     // an error otherwise
-    tag("null").parse_next(input)
+    "null".parse_next(input)
 }
 
 /// We can combine `tag` with other functions, like `value` which returns a given constant value on
@@ -67,11 +67,11 @@ fn null<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>,
 fn boolean<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, bool, E> {
     // This is a parser that returns `true` if it sees the string "true", and
     // an error otherwise
-    let parse_true = tag("true").value(true);
+    let parse_true = "true".value(true);
 
     // This is a parser that returns `false` if it sees the string "false", and
     // an error otherwise
-    let parse_false = tag("false").value(false);
+    let parse_false = "false".value(false);
 
     alt((parse_true, parse_false)).parse_next(input)
 }
