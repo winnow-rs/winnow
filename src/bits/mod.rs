@@ -1,10 +1,8 @@
 //! Bit level parsers
 //!
 
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub mod complete;
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub mod streaming;
+mod complete;
+mod streaming;
 #[cfg(test)]
 mod tests;
 
@@ -243,11 +241,18 @@ where
 {
     let count = count.to_usize();
     trace("tag", move |input: (I, usize)| {
-        if input.is_partial() {
-            streaming::tag_internal(input, &pattern, count)
-        } else {
-            complete::tag_internal(input, &pattern, count)
-        }
+        let inp = input.clone();
+
+        take(count).parse_next(input).and_then(|(i, o)| {
+            if pattern == o {
+                Ok((i, o))
+            } else {
+                Err(ErrMode::Backtrack(E::from_error_kind(
+                    inp,
+                    ErrorKind::TagBits,
+                )))
+            }
+        })
     })
 }
 
@@ -279,12 +284,8 @@ pub fn bool<I, E: ParseError<(I, usize)>>(input: (I, usize)) -> IResult<(I, usiz
 where
     I: Stream<Token = u8> + AsBytes + StreamIsPartial,
 {
-    #![allow(deprecated)]
     trace("bool", |input: (I, usize)| {
-        if input.is_partial() {
-            streaming::bool(input)
-        } else {
-            complete::bool(input)
-        }
+        let (res, bit): (_, u32) = take(1usize)(input)?;
+        Ok((res, bit != 0))
     })(input)
 }

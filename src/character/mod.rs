@@ -2,21 +2,21 @@
 //!
 //! Functions recognizing specific characters
 
-#![allow(deprecated)] // will just become `pub(crate)` later
-
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub mod complete;
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub mod streaming;
+pub(crate) mod complete;
+pub(crate) mod streaming;
 #[cfg(test)]
 mod tests;
 
 use crate::lib::std::ops::{Add, Shl};
 
+use crate::branch::alt;
+use crate::bytes::one_of;
+use crate::combinator::cut_err;
 use crate::combinator::opt;
 use crate::error::ParseError;
 use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::stream::Compare;
+use crate::stream::ContainsToken;
 use crate::stream::{AsBStr, AsChar, Offset, ParseSlice, Stream, StreamIsPartial};
 use crate::trace::trace;
 use crate::IResult;
@@ -1342,18 +1342,78 @@ where
     <I as Stream>::Token: AsChar + Copy,
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
+    &'static str: ContainsToken<<I as Stream>::Token>,
 {
     trace("float", move |input: I| {
-        let (i, s) = if input.is_partial() {
-            crate::number::streaming::recognize_float_or_exceptions(input)?
-        } else {
-            crate::number::complete::recognize_float_or_exceptions(input)?
-        };
+        let (i, s) = recognize_float_or_exceptions(input)?;
         match s.parse_slice() {
             Some(f) => Ok((i, f)),
             None => Err(ErrMode::from_error_kind(i, ErrorKind::Float)),
         }
     })(input)
+}
+
+fn recognize_float_or_exceptions<I, E: ParseError<I>>(
+    input: I,
+) -> IResult<I, <I as Stream>::Slice, E>
+where
+    I: StreamIsPartial,
+    I: Stream,
+    I: Offset + Compare<&'static str>,
+    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::IterOffsets: Clone,
+    I: AsBStr,
+    &'static str: ContainsToken<<I as Stream>::Token>,
+{
+    alt((
+        |i: I| {
+            recognize_float::<_, E>(i.clone()).map_err(|e| match e {
+                crate::error::ErrMode::Backtrack(_) => {
+                    crate::error::ErrMode::from_error_kind(i, ErrorKind::Float)
+                }
+                crate::error::ErrMode::Cut(_) => {
+                    crate::error::ErrMode::Cut(E::from_error_kind(i, ErrorKind::Float))
+                }
+                crate::error::ErrMode::Incomplete(needed) => {
+                    crate::error::ErrMode::Incomplete(needed)
+                }
+            })
+        },
+        |i: I| {
+            crate::bytes::tag_no_case::<_, _, E>("nan")(i.clone())
+                .map_err(|_err| crate::error::ErrMode::from_error_kind(i, ErrorKind::Float))
+        },
+        |i: I| {
+            crate::bytes::tag_no_case::<_, _, E>("inf")(i.clone())
+                .map_err(|_err| crate::error::ErrMode::from_error_kind(i, ErrorKind::Float))
+        },
+        |i: I| {
+            crate::bytes::tag_no_case::<_, _, E>("infinity")(i.clone())
+                .map_err(|_err| crate::error::ErrMode::from_error_kind(i, ErrorKind::Float))
+        },
+    ))(input)
+}
+
+fn recognize_float<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+where
+    I: StreamIsPartial,
+    I: Stream,
+    I: Offset + Compare<&'static str>,
+    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::IterOffsets: Clone,
+    I: AsBStr,
+    &'static str: ContainsToken<<I as Stream>::Token>,
+{
+    (
+        opt(one_of("+-")),
+        alt((
+            (digit1, opt(('.', opt(digit1)))).map(|_| ()),
+            ('.', digit1).map(|_| ()),
+        )),
+        opt((one_of("eE"), opt(one_of("+-")), cut_err(digit1))),
+    )
+        .recognize()
+        .parse_next(input)
 }
 
 /// Matches a byte string with escaped characters.
@@ -1443,7 +1503,6 @@ where
 /// use winnow::character::escaped_transform;
 /// use winnow::character::alpha1;
 /// use winnow::branch::alt;
-/// use winnow::combinator::value;
 ///
 /// fn parser(input: &str) -> IResult<&str, String> {
 ///   escaped_transform(
@@ -1470,7 +1529,6 @@ where
 /// use winnow::character::escaped_transform;
 /// use winnow::character::alpha1;
 /// use winnow::branch::alt;
-/// use winnow::combinator::value;
 ///
 /// fn parser(input: Partial<&str>) -> IResult<Partial<&str>, String> {
 ///   escaped_transform(
@@ -1519,63 +1577,6 @@ where
             )
         }
     })
-}
-
-#[inline]
-#[doc(hidden)]
-#[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_alpha`")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn is_alphabetic(chr: u8) -> bool {
-    matches!(chr, 0x41..=0x5A | 0x61..=0x7A)
-}
-
-#[inline]
-#[doc(hidden)]
-#[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_dec_digit`")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn is_digit(chr: u8) -> bool {
-    matches!(chr, 0x30..=0x39)
-}
-
-#[inline]
-#[doc(hidden)]
-#[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_hex_digit`")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn is_hex_digit(chr: u8) -> bool {
-    matches!(chr, 0x30..=0x39 | 0x41..=0x46 | 0x61..=0x66)
-}
-
-#[inline]
-#[doc(hidden)]
-#[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_oct_digit`")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn is_oct_digit(chr: u8) -> bool {
-    matches!(chr, 0x30..=0x37)
-}
-
-#[inline]
-#[doc(hidden)]
-#[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_alphanum`")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn is_alphanumeric(chr: u8) -> bool {
-    #![allow(deprecated)]
-    is_alphabetic(chr) || is_digit(chr)
-}
-
-#[inline]
-#[doc(hidden)]
-#[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_space`")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn is_space(chr: u8) -> bool {
-    chr == b' ' || chr == b'\t'
-}
-
-#[inline]
-#[doc(hidden)]
-#[deprecated(since = "0.1.0", note = "Replaced with `AsChar::is_newline`")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn is_newline(chr: u8) -> bool {
-    chr == b'\n'
 }
 
 mod sealed {

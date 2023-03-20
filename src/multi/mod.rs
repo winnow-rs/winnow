@@ -138,20 +138,6 @@ where
     })
 }
 
-/// **WARNING:** Deprecated, replaced with [`many_till0`]
-#[deprecated(since = "0.3.0", note = "Replaced with `many_till0`")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn many_till<I, O, C, P, E, F, G>(f: F, g: G) -> impl FnMut(I) -> IResult<I, (C, P), E>
-where
-    I: Stream,
-    C: Accumulate<O>,
-    F: Parser<I, O, E>,
-    G: Parser<I, P, E>,
-    E: ParseError<I>,
-{
-    many_till0(f, g)
-}
-
 /// Applies the parser `f` until the parser `g` produces a result.
 ///
 /// Returns a tuple of the results of `f` in a `Vec` and the result of `g`.
@@ -289,23 +275,6 @@ where
     })
 }
 
-/// **WARNING:** Deprecated, replaced with [`separated0`] (note the parameter swap)
-#[deprecated(
-    since = "0.3.0",
-    note = "Replaced with `separated0` (note the parameter swap)"
-)]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn separated_list0<I, O, C, O2, E, F, G>(sep: G, f: F) -> impl FnMut(I) -> IResult<I, C, E>
-where
-    I: Stream,
-    C: Accumulate<O>,
-    F: Parser<I, O, E>,
-    G: Parser<I, O2, E>,
-    E: ParseError<I>,
-{
-    separated0(f, sep)
-}
-
 /// Alternates between two parsers to produce a list of elements until [`ErrMode::Backtrack`].
 ///
 /// Fails if the element parser does not produce at least one element.$
@@ -383,23 +352,6 @@ where
             }
         }
     })
-}
-
-/// **WARNING:** Deprecated, replaced with [`separated1`] (note the parameter swap)
-#[deprecated(
-    since = "0.3.0",
-    note = "Replaced with `separated1` (note the parameter swap)"
-)]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn separated_list1<I, O, C, O2, E, F, G>(sep: G, f: F) -> impl FnMut(I) -> IResult<I, C, E>
-where
-    I: Stream,
-    C: Accumulate<O>,
-    F: Parser<I, O, E>,
-    G: Parser<I, O2, E>,
-    E: ParseError<I>,
-{
-    separated1(f, sep)
 }
 
 /// Alternates between two parsers, merging the results (left associative)
@@ -592,138 +544,6 @@ where
 
         Ok((input, res))
     })
-}
-
-/// Repeats the embedded parser, counting the results
-///
-/// This stops on [`ErrMode::Backtrack`].  To instead chain an error up, see
-/// [`cut_err`][crate::combinator::cut_err].
-///
-/// # Arguments
-/// * `f` The parser to apply.
-///
-/// **Warning:** if the parser passed in accepts empty inputs (like `alpha0` or `digit0`), `many0` will
-/// return an error, to prevent going into an infinite loop
-///
-/// # Example
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
-/// use winnow::multi::many0_count;
-/// use winnow::bytes::tag;
-///
-/// fn parser(s: &str) -> IResult<&str, usize> {
-///   many0_count(tag("abc"))(s)
-/// }
-///
-/// assert_eq!(parser("abcabc"), Ok(("", 2)));
-/// assert_eq!(parser("abc123"), Ok(("123", 1)));
-/// assert_eq!(parser("123123"), Ok(("123123", 0)));
-/// assert_eq!(parser(""), Ok(("", 0)));
-/// ```
-///
-/// **WARNING:** Deprecated, replaced with [`many0`]
-#[deprecated(since = "0.3.0", note = "Replaced with `many0`")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn many0_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>
-where
-    I: Stream,
-    F: Parser<I, O, E>,
-    E: ParseError<I>,
-{
-    move |i: I| {
-        let mut input = i;
-        let mut count = 0;
-
-        loop {
-            let input_ = input.clone();
-            let len = input.eof_offset();
-            match f.parse_next(input_) {
-                Ok((i, _)) => {
-                    // infinite loop check: the parser must always consume
-                    if i.eof_offset() == len {
-                        return Err(ErrMode::from_error_kind(input, ErrorKind::Many0Count));
-                    }
-
-                    input = i;
-                    count += 1;
-                }
-
-                Err(ErrMode::Backtrack(_)) => return Ok((input, count)),
-
-                Err(e) => return Err(e),
-            }
-        }
-    }
-}
-
-/// Runs the embedded parser, counting the results.
-///
-/// This stops on [`ErrMode::Backtrack`] if there is at least one result.  To instead chain an error up,
-/// see [`cut_err`][crate::combinator::cut_err].
-///
-/// # Arguments
-/// * `f` The parser to apply.
-///
-/// **Warning:** If the parser passed to `many1` accepts empty inputs
-/// (like `alpha0` or `digit0`), `many1` will return an error,
-/// to prevent going into an infinite loop.
-///
-/// # Example
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
-/// use winnow::multi::many1_count;
-/// use winnow::bytes::tag;
-///
-/// fn parser(s: &str) -> IResult<&str, usize> {
-///   many1_count(tag("abc"))(s)
-/// }
-///
-/// assert_eq!(parser("abcabc"), Ok(("", 2)));
-/// assert_eq!(parser("abc123"), Ok(("123", 1)));
-/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Many1Count))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Many1Count))));
-/// ```
-///
-/// **WARNING:** Deprecated, replaced with [`many0`]
-#[deprecated(since = "0.3.0", note = "Replaced with `many1`")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn many1_count<I, O, E, F>(mut f: F) -> impl FnMut(I) -> IResult<I, usize, E>
-where
-    I: Stream,
-    F: Parser<I, O, E>,
-    E: ParseError<I>,
-{
-    move |i: I| {
-        let i_ = i.clone();
-        match f.parse_next(i_) {
-            Err(ErrMode::Backtrack(_)) => Err(ErrMode::from_error_kind(i, ErrorKind::Many1Count)),
-            Err(i) => Err(i),
-            Ok((i1, _)) => {
-                let mut count = 1;
-                let mut input = i1;
-
-                loop {
-                    let len = input.eof_offset();
-                    let input_ = input.clone();
-                    match f.parse_next(input_) {
-                        Err(ErrMode::Backtrack(_)) => return Ok((input, count)),
-                        Err(e) => return Err(e),
-                        Ok((i, _)) => {
-                            // infinite loop check: the parser must always consume
-                            if i.eof_offset() == len {
-                                return Err(ErrMode::from_error_kind(i, ErrorKind::Many1Count));
-                            }
-
-                            count += 1;
-                            input = i;
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 /// [`Accumulate`] the output of a parser into a container, like `Vec`

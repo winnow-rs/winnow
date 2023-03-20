@@ -62,13 +62,12 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   error::ParseError,
-//!   sequence::pair,
 //!   bytes::take_till1,
 //! };
 //!
 //! pub fn peol_comment<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, (), E>
 //! {
-//!   pair('%', take_till1("\n\r"))
+//!   ('%', take_till1("\n\r"))
 //!     .void() // Output is thrown away.
 //!     .parse_next(i)
 //! }

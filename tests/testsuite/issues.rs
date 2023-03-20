@@ -22,11 +22,8 @@ pub fn take_char(input: &[u8]) -> IResult<&[u8], char> {
 
 #[cfg(feature = "std")]
 mod parse_int {
-    #![allow(deprecated)]
-
     use std::str;
     use winnow::prelude::*;
-    use winnow::stream::HexDisplay;
     use winnow::Partial;
     use winnow::{
         character::{digit1 as digit, space1 as space},
@@ -40,7 +37,6 @@ mod parse_int {
     }
 
     fn spaces_or_int(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i32> {
-        println!("{}", input.to_hex(8));
         let (i, _) = opt(space.complete_err())(input)?;
         let (i, res) = digit
             .complete_err()

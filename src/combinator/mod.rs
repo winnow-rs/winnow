@@ -158,7 +158,6 @@
 
 use crate::error::{ContextError, ErrMode, ErrorKind, FromExternalError, Needed, ParseError};
 use crate::lib::std::borrow::Borrow;
-use crate::lib::std::convert;
 use crate::lib::std::ops::Range;
 use crate::stream::{Location, Stream};
 use crate::stream::{Offset, StreamIsPartial};
@@ -232,38 +231,6 @@ impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for ByRef<'p, P> {
     }
 }
 
-/// Maps a function on the result of a parser.
-///
-/// **WARNING:** Deprecated, replaced with [`Parser::map`]
-///
-/// ```rust
-/// use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult,Parser};
-/// use winnow::character::digit1;
-/// use winnow::combinator::map;
-/// # fn main() {
-///
-/// let mut parser = map(digit1, |s: &str| s.len());
-///
-/// // the parser will count how many characters were returned by digit1
-/// assert_eq!(parser.parse_next("123456"), Ok(("", 6)));
-///
-/// // this will fail if digit1 fails
-/// assert_eq!(parser.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
-/// # }
-/// ```
-#[deprecated(since = "0.1.0", note = "Replaced with `Parser::map")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn map<I, O1, O2, E, F, G>(mut parser: F, mut f: G) -> impl FnMut(I) -> IResult<I, O2, E>
-where
-    F: Parser<I, O1, E>,
-    G: FnMut(O1) -> O2,
-{
-    move |input: I| {
-        let (input, o1) = parser.parse_next(input)?;
-        Ok((input, f(o1)))
-    }
-}
-
 /// Implementation of [`Parser::map`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Map<F, G, O1> {
@@ -287,48 +254,6 @@ impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Fn(O1) -> O2> Parser<I, O2, E> for Ma
         match self.f.parse_next(i) {
             Err(e) => Err(e),
             Ok((i, o)) => Ok((i, (self.g)(o))),
-        }
-    }
-}
-
-/// Applies a function returning a `Result` over the result of a parser.
-///
-/// **WARNING:** Deprecated, replaced with [`Parser::map_res`]
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
-/// use winnow::character::digit1;
-/// use winnow::combinator::map_res;
-/// # fn main() {
-///
-/// let mut parse = map_res(digit1, |s: &str| s.parse::<u8>());
-///
-/// // the parser will convert the result of digit1 to a number
-/// assert_eq!(parse("123"), Ok(("", 123)));
-///
-/// // this will fail if digit1 fails
-/// assert_eq!(parse("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
-///
-/// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
-/// assert_eq!(parse("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::MapRes))));
-/// # }
-/// ```
-#[deprecated(since = "0.1.0", note = "Replaced with `Parser::map_res")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn map_res<I: Clone, O1, O2, E: FromExternalError<I, E2>, E2, F, G>(
-    mut parser: F,
-    mut f: G,
-) -> impl FnMut(I) -> IResult<I, O2, E>
-where
-    F: Parser<I, O1, E>,
-    G: FnMut(O1) -> Result<O2, E2>,
-{
-    move |input: I| {
-        let i = input.clone();
-        let (input, o1) = parser.parse_next(input)?;
-        match f(o1) {
-            Ok(o2) => Ok((input, o2)),
-            Err(e) => Err(ErrMode::from_external_error(i, ErrorKind::MapRes, e)),
         }
     }
 }
@@ -370,48 +295,6 @@ where
     }
 }
 
-/// Applies a function returning an `Option` over the result of a parser.
-///
-/// **WARNING:** Deprecated, replaced with [`Parser::verify_map`]
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
-/// use winnow::character::digit1;
-/// use winnow::combinator::map_opt;
-/// # fn main() {
-///
-/// let mut parse = map_opt(digit1, |s: &str| s.parse::<u8>().ok());
-///
-/// // the parser will convert the result of digit1 to a number
-/// assert_eq!(parse("123"), Ok(("", 123)));
-///
-/// // this will fail if digit1 fails
-/// assert_eq!(parse("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
-///
-/// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
-/// assert_eq!(parse("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::Verify))));
-/// # }
-/// ```
-#[deprecated(since = "0.1.0", note = "Replaced with `Parser::verify_map")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn map_opt<I: Clone, O1, O2, E: ParseError<I>, F, G>(
-    mut parser: F,
-    mut f: G,
-) -> impl FnMut(I) -> IResult<I, O2, E>
-where
-    F: Parser<I, O1, E>,
-    G: FnMut(O1) -> Option<O2>,
-{
-    move |input: I| {
-        let i = input.clone();
-        let (input, o1) = parser.parse_next(input)?;
-        match f(o1) {
-            Some(o2) => Ok((input, o2)),
-            None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
-        }
-    }
-}
-
 /// Implementation of [`Parser::verify_map`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct VerifyMap<F, G, O1> {
@@ -446,41 +329,6 @@ where
         };
         trace_result("verify", &res);
         res
-    }
-}
-
-/// Applies a parser over the result of another one.
-///
-/// **WARNING:** Deprecated, replaced with [`Parser::and_then`]
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
-/// use winnow::character::digit1;
-/// use winnow::bytes::take;
-/// use winnow::combinator::map_parser;
-/// # fn main() {
-///
-/// let mut parse = map_parser(take(5u8), digit1);
-///
-/// assert_eq!(parse("12345"), Ok(("", "12345")));
-/// assert_eq!(parse("123ab"), Ok(("", "123")));
-/// assert_eq!(parse("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Eof))));
-/// # }
-/// ```
-#[deprecated(since = "0.1.0", note = "Replaced with `Parser::and_then")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn map_parser<I, O1, O2, E: ParseError<I>, F, G>(
-    mut parser: F,
-    mut applied_parser: G,
-) -> impl FnMut(I) -> IResult<I, O2, E>
-where
-    F: Parser<I, O1, E>,
-    G: Parser<O1, O2, E>,
-{
-    move |input: I| {
-        let (input, o1) = parser.parse_next(input)?;
-        let (_, o2) = applied_parser.parse_next(o1)?;
-        Ok((input, o2))
     }
 }
 
@@ -553,39 +401,6 @@ where
         Ok((i, res?))
     }
 }
-/// Creates a new parser from the output of the first parser, then apply that parser over the rest of the input.
-///
-/// **WARNING:** Deprecated, replaced with [`Parser::flat_map`]
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
-/// use winnow::bytes::take;
-/// use winnow::number::u8;
-/// use winnow::combinator::flat_map;
-/// # fn main() {
-///
-/// let mut parse = flat_map(u8, take);
-///
-/// assert_eq!(parse(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
-/// assert_eq!(parse(&[4, 0, 1, 2][..]), Err(ErrMode::Backtrack(Error::new(&[0, 1, 2][..], ErrorKind::Eof))));
-/// # }
-/// ```
-#[deprecated(since = "0.1.0", note = "Replaced with `Parser::flat_map")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn flat_map<I, O1, O2, E: ParseError<I>, F, G, H>(
-    mut parser: F,
-    mut applied_parser: G,
-) -> impl FnMut(I) -> IResult<I, O2, E>
-where
-    F: Parser<I, O1, E>,
-    G: FnMut(O1) -> H,
-    H: Parser<I, O2, E>,
-{
-    move |input: I| {
-        let (input, o1) = parser.parse_next(input)?;
-        applied_parser(o1).parse_next(input)
-    }
-}
 
 /// Implementation of [`Parser::flat_map`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
@@ -646,54 +461,6 @@ where
             Err(e) => Err(e),
         }
     })
-}
-
-/// Implementation of [`Parser::and`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct And<F, G> {
-    f: F,
-    g: G,
-}
-
-impl<F, G> And<F, G> {
-    pub(crate) fn new(f: F, g: G) -> Self {
-        Self { f, g }
-    }
-}
-
-impl<I, O1, O2, E, F: Parser<I, O1, E>, G: Parser<I, O2, E>> Parser<I, (O1, O2), E> for And<F, G> {
-    fn parse_next(&mut self, i: I) -> IResult<I, (O1, O2), E> {
-        let (i, o1) = self.f.parse_next(i)?;
-        let (i, o2) = self.g.parse_next(i)?;
-        Ok((i, (o1, o2)))
-    }
-}
-
-/// Implementation of [`Parser::or`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct Or<F, G> {
-    f: F,
-    g: G,
-}
-
-impl<F, G> Or<F, G> {
-    pub(crate) fn new(f: F, g: G) -> Self {
-        Self { f, g }
-    }
-}
-
-impl<I: Clone, O, E: crate::error::ParseError<I>, F: Parser<I, O, E>, G: Parser<I, O, E>>
-    Parser<I, O, E> for Or<F, G>
-{
-    fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
-        match self.f.parse_next(i.clone()) {
-            Err(ErrMode::Backtrack(e1)) => match self.g.parse_next(i) {
-                Err(ErrMode::Backtrack(e2)) => Err(ErrMode::Backtrack(e1.or(e2))),
-                res => res,
-            },
-            res => res,
-        }
-    }
 }
 
 /// Calls the parser if the condition is met.
@@ -799,37 +566,6 @@ where
     })(input)
 }
 
-/// Transforms `Incomplete` into `Backtrack`.
-///
-/// **WARNING:** Deprecated, replaced with [`Parser::complete_err`]
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, stream::Partial};
-/// use winnow::bytes::take;
-/// use winnow::combinator::complete;
-/// # fn main() {
-///
-/// let mut parser = complete(take(5u8));
-///
-/// assert_eq!(parser(Partial::new("abcdefg")), Ok((Partial::new("fg"), "abcde")));
-/// assert_eq!(parser(Partial::new("abcd")), Err(ErrMode::Backtrack(Error::new(Partial::new("abcd"), ErrorKind::Complete))));
-/// # }
-/// ```
-#[deprecated(since = "0.1.0", note = "Replaced with `Parser::complete_err")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn complete<I: Clone, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
-where
-    F: Parser<I, O, E>,
-{
-    move |input: I| {
-        let i = input.clone();
-        match f.parse_next(input) {
-            Err(ErrMode::Incomplete(_)) => Err(ErrMode::from_error_kind(i, ErrorKind::Complete)),
-            rest => rest,
-        }
-    }
-}
-
 /// Implementation of [`Parser::complete_err`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct CompleteErr<F> {
@@ -858,88 +594,6 @@ where
                 rest => rest,
             }
         })(input)
-    }
-}
-
-/// Succeeds if all the input has been consumed by its child parser.
-///
-/// **WARNING:** Deprecated, replaced [`eof`] or
-/// [`FinishIResult::finish`][crate::FinishIResult::finish]
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
-/// use winnow::combinator::all_consuming;
-/// use winnow::character::alpha1;
-/// # fn main() {
-///
-/// let mut parser = all_consuming(alpha1);
-///
-/// assert_eq!(parser("abcd"), Ok(("", "abcd")));
-/// assert_eq!(parser("abcd;"),Err(ErrMode::Backtrack(Error::new(";", ErrorKind::Eof))));
-/// assert_eq!(parser("123abcd;"),Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::Alpha))));
-/// # }
-/// ```
-#[deprecated(
-    since = "0.1.0",
-    note = "Replaced with `eof` or `FinishIResult::finish`"
-)]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn all_consuming<I, O, E: ParseError<I>, F>(mut f: F) -> impl FnMut(I) -> IResult<I, O, E>
-where
-    I: Stream,
-    F: Parser<I, O, E>,
-{
-    move |input: I| {
-        let (input, res) = f.parse_next(input)?;
-        if input.eof_offset() == 0 {
-            Ok((input, res))
-        } else {
-            Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
-        }
-    }
-}
-
-/// Returns the result of the child parser if it satisfies a verification function.
-///
-/// The verification function takes as argument a reference to the output of the
-/// parser.
-///
-/// **WARNING:** Deprecated, replaced with [`Parser::map`]
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
-/// use winnow::combinator::verify;
-/// use winnow::character::alpha1;
-/// # fn main() {
-///
-/// let mut parser = verify(alpha1, |s: &str| s.len() == 4);
-///
-/// assert_eq!(parser("abcd"), Ok(("", "abcd")));
-/// assert_eq!(parser("abcde"), Err(ErrMode::Backtrack(Error::new("abcde", ErrorKind::Verify))));
-/// assert_eq!(parser("123abcd;"),Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::Alpha))));
-/// # }
-/// ```
-#[deprecated(since = "0.1.0", note = "Replaced with `Parser::verify")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn verify<I: Clone, O1, O2, E: ParseError<I>, F, G>(
-    mut first: F,
-    second: G,
-) -> impl FnMut(I) -> IResult<I, O1, E>
-where
-    F: Parser<I, O1, E>,
-    G: Fn(&O2) -> bool,
-    O1: Borrow<O2>,
-    O2: ?Sized,
-{
-    move |input: I| {
-        let i = input.clone();
-        let (input, o) = first.parse_next(input)?;
-
-        if second(o.borrow()) {
-            Ok((input, o))
-        } else {
-            Err(ErrMode::from_error_kind(i, ErrorKind::Verify))
-        }
     }
 }
 
@@ -982,34 +636,6 @@ where
         trace_result("verify", &res);
         res
     }
-}
-
-/// Returns the provided value if the child parser succeeds.
-///
-/// **WARNING:** Deprecated, replaced with [`Parser::value`]
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
-/// use winnow::combinator::value;
-/// use winnow::character::alpha1;
-/// # fn main() {
-///
-/// let mut parser = value(1234, alpha1);
-///
-/// assert_eq!(parser("abcd"), Ok(("", 1234)));
-/// assert_eq!(parser("123abcd;"), Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::Alpha))));
-/// # }
-/// ```
-#[deprecated(since = "0.1.0", note = "Replaced with `Parser::value")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn value<I, O1: Clone, O2, E: ParseError<I>, F>(
-    val: O1,
-    mut parser: F,
-) -> impl FnMut(I) -> IResult<I, O1, E>
-where
-    F: Parser<I, O2, E>,
-{
-    move |input: I| parser.parse_next(input).map(|(i, _)| (i, val.clone()))
 }
 
 /// Implementation of [`Parser::value`]
@@ -1094,44 +720,6 @@ where
     })
 }
 
-/// If the child parser was successful, return the consumed input as produced value.
-///
-/// **WARNING:** Deprecated, replaced with [`Parser::recognize`]
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
-/// use winnow::combinator::recognize;
-/// use winnow::character::{alpha1};
-/// use winnow::sequence::separated_pair;
-/// # fn main() {
-///
-/// let mut parser = recognize(separated_pair(alpha1, ',', alpha1));
-///
-/// assert_eq!(parser("abcd,efgh"), Ok(("", "abcd,efgh")));
-/// assert_eq!(parser("abcd;"),Err(ErrMode::Backtrack(Error::new(";", ErrorKind::OneOf))));
-/// # }
-/// ```
-#[deprecated(since = "0.1.0", note = "Replaced with `Parser::recognize")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn recognize<I, O, E: ParseError<I>, F>(
-    mut parser: F,
-) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, E>
-where
-    I: Stream + Offset,
-    F: Parser<I, O, E>,
-{
-    move |input: I| {
-        let i = input.clone();
-        match parser.parse_next(i) {
-            Ok((i, _)) => {
-                let offset = input.offset_to(&i);
-                Ok(input.next_slice(offset))
-            }
-            Err(e) => Err(e),
-        }
-    }
-}
-
 /// Implementation of [`Parser::recognize`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Recognize<F, O> {
@@ -1160,72 +748,6 @@ where
             Ok((i, _)) => {
                 let offset = input.offset_to(&i);
                 Ok(input.next_slice(offset))
-            }
-            Err(e) => Err(e),
-        }
-    }
-}
-
-/// if the child parser was successful, return the consumed input with the output
-/// as a tuple. Functions similarly to [recognize](fn.recognize.html) except it
-/// returns the parser output as well.
-///
-/// This can be useful especially in cases where the output is not the same type
-/// as the input, or the input is a user defined type.
-///
-/// Returned tuple is of the format `(consumed input, produced output)`.
-///
-/// **WARNING:** Deprecated, replaced with [`Parser::with_recognized`] (output ordering is changed)
-///
-/// ```rust
-/// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
-/// use winnow::combinator::{consumed, value, recognize, map};
-/// use winnow::character::{alpha1};
-/// use winnow::bytes::tag;
-/// use winnow::sequence::separated_pair;
-///
-/// fn inner_parser(input: &str) -> IResult<&str, bool> {
-///     value(true, tag("1234"))(input)
-/// }
-///
-/// # fn main() {
-///
-/// let mut consumed_parser = consumed(value(true, separated_pair(alpha1, ',', alpha1)));
-///
-/// assert_eq!(consumed_parser("abcd,efgh1"), Ok(("1", ("abcd,efgh", true))));
-/// assert_eq!(consumed_parser("abcd;"),Err(ErrMode::Backtrack(Error::new(";", ErrorKind::OneOf))));
-///
-///
-/// // the first output (representing the consumed input)
-/// // should be the same as that of the `recognize` parser.
-/// let mut recognize_parser = recognize(inner_parser);
-/// let mut consumed_parser = consumed(inner_parser).map(|(consumed, output)| consumed);
-///
-/// assert_eq!(recognize_parser("1234"), consumed_parser.parse_next("1234"));
-/// assert_eq!(recognize_parser("abcd"), consumed_parser.parse_next("abcd"));
-/// # }
-/// ```
-#[deprecated(
-    since = "0.1.0",
-    note = "Replaced with `Parser::with_recognized (output ordering is changed)"
-)]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn consumed<I, O, F, E>(
-    mut parser: F,
-) -> impl FnMut(I) -> IResult<I, (<I as Stream>::Slice, O), E>
-where
-    I: Stream + Offset,
-    E: ParseError<I>,
-    F: Parser<I, O, E>,
-{
-    move |input: I| {
-        let i = input.clone();
-        match parser.parse_next(i) {
-            Ok((remaining, result)) => {
-                let offset = input.offset_to(&remaining);
-                let (remaining, recognized) = input.next_slice(offset);
-                Ok((remaining, (recognized, result)))
             }
             Err(e) => Err(e),
         }
@@ -1394,17 +916,6 @@ where
     })
 }
 
-/// Deprecated, see [`cut_err`]
-#[deprecated(since = "0.3.0", note = "Replaced with `cut_err`")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn cut<I, O, E: ParseError<I>, F>(parser: F) -> impl FnMut(I) -> IResult<I, O, E>
-where
-    I: Stream,
-    F: Parser<I, O, E>,
-{
-    cut_err(parser)
-}
-
 /// Transforms an [`ErrMode::Cut`] (unrecoverable) to [`ErrMode::Backtrack`] (recoverable)
 ///
 /// This attempts the parse, allowing other parsers to be tried on failure, like with
@@ -1444,52 +955,6 @@ where
 {
     #![allow(clippy::todo)]
     trace("todo", move |_input: I| todo!("unimplemented parse"))(input)
-}
-
-/// automatically converts the child parser's result to another type
-///
-/// it will be able to convert the output value and the error value
-/// as long as the `Into` implementations are available
-///
-/// **WARNING:** Deprecated, replaced with [`Parser::output_into`] and [`Parser::err_into`]
-///
-/// ```rust
-/// # use winnow::IResult;
-/// use winnow::combinator::into;
-/// use winnow::character::alpha1;
-/// # fn main() {
-///
-///  fn parser1(i: &str) -> IResult<&str, &str> {
-///    alpha1(i)
-///  }
-///
-///  let mut parser2 = into(parser1);
-///
-/// // the parser converts the &str output of the child parser into a Vec<u8>
-/// let bytes: IResult<&str, Vec<u8>> = parser2("abcd");
-/// assert_eq!(bytes, Ok(("", vec![97, 98, 99, 100])));
-/// # }
-/// ```
-#[deprecated(
-    since = "0.1.0",
-    note = "Replaced with `Parser::output_into` and `Parser::err_into`"
-)]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn into<I, O1, O2, E1, E2, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O2, E2>
-where
-    O1: convert::Into<O2>,
-    E1: convert::Into<E2>,
-    E1: ParseError<I>,
-    E2: ParseError<I>,
-    F: Parser<I, O1, E1>,
-{
-    //map(parser, Into::into)
-    move |input: I| match parser.parse_next(input) {
-        Ok((i, o)) => Ok((i, o.into())),
-        Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.into())),
-        Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.into())),
-        Err(ErrMode::Incomplete(e)) => Err(ErrMode::Incomplete(e)),
-    }
 }
 
 /// Implementation of [`Parser::output_into`]
@@ -1674,19 +1139,25 @@ enum State<E> {
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
+/// # use winnow::prelude::*;
 /// use winnow::branch::alt;
-/// use winnow::combinator::{success, value};
-/// # fn main() {
+/// use winnow::bytes::one_of;
+/// use winnow::combinator::success;
 ///
 /// let mut parser = success::<_,_,Error<_>>(10);
 /// assert_eq!(parser("xyz"), Ok(("xyz", 10)));
 ///
-/// let mut sign = alt((value(-1, '-'), value(1, '+'), success::<_,_,Error<_>>(1)));
+/// fn sign(input: &str) -> IResult<&str, isize> {
+///     alt((
+///         one_of('-').value(-1),
+///         one_of('+').value(1),
+///         success::<_,_,Error<_>>(1)
+///     )).parse_next(input)
+/// }
 /// assert_eq!(sign("+10"), Ok(("10", 1)));
 /// assert_eq!(sign("-10"), Ok(("10", -1)));
 /// assert_eq!(sign("10"), Ok(("10", 1)));
-/// # }
 /// ```
 #[doc(alias = "value")]
 #[doc(alias = "empty")]

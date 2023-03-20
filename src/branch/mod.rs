@@ -32,8 +32,7 @@ pub trait Alt<I, O, E> {
 /// # Example
 ///
 /// ```rust
-/// # use winnow::error_position;
-/// # use winnow::{error::ErrMode,error::ErrorKind, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::Error,error::ErrorKind, error::Needed, IResult};
 /// use winnow::character::{alpha1, digit1};
 /// use winnow::branch::alt;
 /// # fn main() {
@@ -48,7 +47,7 @@ pub trait Alt<I, O, E> {
 /// assert_eq!(parser("123456"), Ok(("", "123456")));
 ///
 /// // both parsers failed, and with the default error type, alt will return the last error
-/// assert_eq!(parser(" "), Err(ErrMode::Backtrack(error_position!(" ", ErrorKind::Digit))));
+/// assert_eq!(parser(" "), Err(ErrMode::Backtrack(Error::new(" ", ErrorKind::Digit))));
 /// # }
 /// ```
 #[doc(alias = "choice")]

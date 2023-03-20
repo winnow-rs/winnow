@@ -289,9 +289,8 @@ mod complete {
 
     #[test]
     fn full_line_windows() {
-        use crate::sequence::pair;
         fn take_full_line(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8])> {
-            pair(not_line_ending, line_ending)(i)
+            (not_line_ending, line_ending).parse_next(i)
         }
         let input = b"abc\r\n";
         let output = take_full_line(input);
@@ -300,9 +299,8 @@ mod complete {
 
     #[test]
     fn full_line_unix() {
-        use crate::sequence::pair;
         fn take_full_line(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8])> {
-            pair(not_line_ending, line_ending)(i)
+            (not_line_ending, line_ending).parse_next(i)
         }
         let input = b"abc\n";
         let output = take_full_line(input);
@@ -544,7 +542,7 @@ mod complete {
     #[cfg(feature = "std")]
     fn parse_f64(i: &str) -> IResult<&str, f64, ()> {
         #[allow(deprecated)] // will just become `pub(crate)` later
-        match crate::number::complete::recognize_float_or_exceptions(i) {
+        match super::recognize_float_or_exceptions(i) {
             Err(e) => Err(e),
             Ok((i, s)) => {
                 if s.is_empty() {
@@ -859,7 +857,6 @@ mod partial {
     use crate::error::Error;
     use crate::error::ErrorKind;
     use crate::error::{ErrMode, Needed};
-    use crate::sequence::pair;
     use crate::stream::ParseSlice;
     use crate::IResult;
     use crate::Partial;
@@ -1294,7 +1291,7 @@ mod partial {
     fn full_line_windows() {
         #[allow(clippy::type_complexity)]
         fn take_full_line(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (&[u8], &[u8])> {
-            pair(not_line_ending, line_ending)(i)
+            (not_line_ending, line_ending).parse_next(i)
         }
         let input = b"abc\r\n";
         let output = take_full_line(Partial::new(input));
@@ -1308,7 +1305,7 @@ mod partial {
     fn full_line_unix() {
         #[allow(clippy::type_complexity)]
         fn take_full_line(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (&[u8], &[u8])> {
-            pair(not_line_ending, line_ending)(i)
+            (not_line_ending, line_ending).parse_next(i)
         }
         let input = b"abc\n";
         let output = take_full_line(Partial::new(input));
@@ -1408,8 +1405,6 @@ mod partial {
     }
 
     fn digit_to_i16(input: Partial<&str>) -> IResult<Partial<&str>, i16> {
-        use crate::bytes::one_of;
-
         let i = input;
         let (i, opt_sign) = opt(one_of("+-"))(i)?;
         let sign = match opt_sign {

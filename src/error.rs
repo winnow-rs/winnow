@@ -18,8 +18,6 @@
 //! - [`VerboseError`]
 //! - [Custom errors][crate::_topic::error]
 
-#![allow(deprecated)]
-
 #[cfg(feature = "alloc")]
 use crate::lib::std::borrow::ToOwned;
 use crate::lib::std::fmt;
@@ -27,6 +25,7 @@ use core::num::NonZeroUsize;
 
 use crate::stream::Stream;
 use crate::stream::StreamIsPartial;
+#[allow(unused_imports)] // Here for intra-doc links
 use crate::Parser;
 
 /// Holds the result of [`Parser`]
@@ -115,34 +114,6 @@ where
             Err(ErrMode::Backtrack(e)) | Err(ErrMode::Cut(e)) => Err(e),
             Err(ErrMode::Incomplete(_)) => {
                 panic!("complete parsers should not report `Err(ErrMode::Incomplete(_))`")
-            }
-        }
-    }
-}
-
-#[doc(hidden)]
-#[deprecated(
-    since = "0.1.0",
-    note = "Replaced with `FinishIResult` which is available via `winnow::prelude`"
-)]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub trait Finish<I, O, E> {
-    #[deprecated(
-        since = "0.1.0",
-        note = "Replaced with `FinishIResult::finish_err` which is available via `winnow::prelude`"
-    )]
-    #[cfg_attr(feature = "unstable-doc", doc(hidden))]
-    fn finish(self) -> Result<(I, O), E>;
-}
-
-#[allow(deprecated)]
-impl<I, O, E> Finish<I, O, E> for IResult<I, O, E> {
-    fn finish(self) -> Result<(I, O), E> {
-        match self {
-            Ok(res) => Ok(res),
-            Err(ErrMode::Backtrack(e)) | Err(ErrMode::Cut(e)) => Err(e),
-            Err(ErrMode::Incomplete(_)) => {
-                panic!("Cannot call `finish()` on `Err(ErrMode::Incomplete(_))`: this result means that the parser does not have enough data to decide, you should gather more data and try to reapply  the parser instead")
             }
         }
     }
@@ -316,26 +287,6 @@ impl<T> ErrMode<Error<T>> {
     }
 }
 
-#[cfg(feature = "alloc")]
-impl ErrMode<Error<&[u8]>> {
-    /// Deprecated, replaced with [`Error::into_owned`]
-    #[deprecated(since = "0.3.0", note = "Replaced with `Error::into_owned`")]
-    #[cfg_attr(feature = "unstable-doc", doc(hidden))]
-    pub fn to_owned(self) -> ErrMode<Error<crate::lib::std::vec::Vec<u8>>> {
-        self.map_input(ToOwned::to_owned)
-    }
-}
-
-#[cfg(feature = "alloc")]
-impl ErrMode<Error<&str>> {
-    /// Deprecated, replaced with [`Error::into_owned`]
-    #[deprecated(since = "0.3.0", note = "Replaced with `Error::into_owned`")]
-    #[cfg_attr(feature = "unstable-doc", doc(hidden))]
-    pub fn to_owned(self) -> ErrMode<Error<crate::lib::std::string::String>> {
-        self.map_input(ToOwned::to_owned)
-    }
-}
-
 impl<E: Eq> Eq for ErrMode<E> {}
 
 impl<E> fmt::Display for ErrMode<E>
@@ -378,13 +329,6 @@ pub trait ParseError<I>: Sized {
     /// way.
     fn append(self, input: I, kind: ErrorKind) -> Self;
 
-    /// Creates an error from an input position and an expected character
-    #[deprecated(since = "0.2.0", note = "Replaced with `ContextError`")]
-    #[cfg_attr(feature = "unstable-doc", doc(hidden))]
-    fn from_char(input: I, _: char) -> Self {
-        Self::from_error_kind(input, ErrorKind::Char)
-    }
-
     /// Combines errors from two different parse branches.
     ///
     /// For example, this would be used by [`alt`][crate::branch::alt] to report the error from
@@ -394,13 +338,13 @@ pub trait ParseError<I>: Sized {
     }
 }
 
-/// Used by the [`context`] to add custom data to error while backtracking
+/// Used by [`Parser::context`] to add custom data to error while backtracking
 ///
 /// May be implemented multiple times for different kinds of context.
 pub trait ContextError<I, C = &'static str>: Sized {
     /// Append to an existing error custom data
     ///
-    /// This is used mainly in the [`context`] combinator, to add user friendly information
+    /// This is used mainly by [`Parser::context`], to add user friendly information
     /// to errors when backtracking through a parse tree
     fn add_context(self, _input: I, _ctx: C) -> Self {
         self
@@ -517,22 +461,6 @@ impl ErrorConvert<()> for () {
     fn convert(self) {}
 }
 
-/// Creates an error from the input position and an [`ErrorKind`]
-#[deprecated(since = "0.2.0", note = "Replaced with `ParseError::from_error_kind`")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn make_error<I, E: ParseError<I>>(input: I, kind: ErrorKind) -> E {
-    E::from_error_kind(input, kind)
-}
-
-/// Combines an existing error with a new one created from the input
-/// position and an [`ErrorKind`]. This is useful when backtracking
-/// through a parse tree, accumulating error context on the way
-#[deprecated(since = "0.2.0", note = "Replaced with `ParseError::append`")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn append_error<I, E: ParseError<I>>(input: I, kind: ErrorKind, other: E) -> E {
-    other.append(input, kind)
-}
-
 /// Accumulates error information while backtracking
 ///
 /// For less overhead (and information), see [`Error`].
@@ -639,28 +567,6 @@ impl<I: fmt::Display> fmt::Display for VerboseError<I> {
 #[cfg(feature = "std")]
 impl<I: fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::Error for VerboseError<I> {}
 
-/// Create a new error from an input position, a static string and an existing error.
-/// This is used mainly in the [context] combinator, to add user friendly information
-/// to errors when backtracking through a parse tree
-///
-/// **WARNING:** Deprecated, replaced with [`Parser::context`]
-#[deprecated(since = "0.1.0", note = "Replaced with `Parser::context")]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-pub fn context<I: Clone, E: ContextError<I, &'static str>, F, O>(
-    context: &'static str,
-    mut f: F,
-) -> impl FnMut(I) -> IResult<I, O, E>
-where
-    F: Parser<I, O, E>,
-{
-    move |i: I| match f.parse_next(i.clone()) {
-        Ok(o) => Ok(o),
-        Err(ErrMode::Incomplete(i)) => Err(ErrMode::Incomplete(i)),
-        Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.add_context(i, context))),
-        Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.add_context(i, context))),
-    }
-}
-
 /// Transforms a `VerboseError` into a trace with input position information
 #[cfg(feature = "alloc")]
 pub fn convert_error<I: core::ops::Deref<Target = str>>(
@@ -746,7 +652,7 @@ pub fn convert_error<I: core::ops::Deref<Target = str>>(
 /// Indicates which parser returned an error
 #[rustfmt::skip]
 #[derive(Debug,PartialEq,Eq,Hash,Clone,Copy)]
-#[allow(deprecated,missing_docs)]
+#[allow(missing_docs)]
 pub enum ErrorKind {
   Assert,
   Tag,
@@ -805,7 +711,6 @@ pub enum ErrorKind {
 
 impl ErrorKind {
     #[rustfmt::skip]
-  #[allow(deprecated)]
     /// Converts an `ErrorKind` to a text description
     pub fn description(&self) -> &str {
     match *self {
@@ -868,80 +773,19 @@ impl ErrorKind {
 
 /// Creates a parse error from a [`ErrorKind`]
 /// and the position in the input
-#[allow(unused_variables)]
-#[macro_export(local_inner_macros)]
-#[cfg_attr(
-    not(test),
-    deprecated(since = "0.3.0", note = "Replaced with `E::from_error_kind`")
-)]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
+#[cfg(test)]
 macro_rules! error_position(
   ($input:expr, $code:expr) => ({
     $crate::error::ParseError::from_error_kind($input, $code)
   });
 );
 
-/// Creates a parse error from a [`ErrorKind`],
-/// the position in the input and the next error in
-/// the parsing tree
-#[allow(unused_variables)]
-#[macro_export(local_inner_macros)]
-#[cfg_attr(
-    not(test),
-    deprecated(since = "0.3.0", note = "Replaced with `E::append`")
-)]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
+#[cfg(test)]
 macro_rules! error_node_position(
   ($input:expr, $code:expr, $next:expr) => ({
     $crate::error::ParseError::append($next, $input, $code)
   });
 );
-
-/// Prints a message and the input if the parser fails.
-///
-/// The message prints the `Backtrack` or `Incomplete`
-/// and the parser's calling kind.
-///
-/// It also displays the input in hexdump format
-///
-/// **WARNING:** Deprecated, replaced with [`trace`][crate::trace] and the `debug` feature flag.
-///
-/// ```rust
-/// use winnow::{IResult, error::dbg_dmp, bytes::tag};
-///
-/// fn f(i: &[u8]) -> IResult<&[u8], &[u8]> {
-///   dbg_dmp(tag("abcd"), "tag")(i)
-/// }
-///
-///   let a = &b"efghijkl"[..];
-///
-/// // Will print the following message:
-/// // Error(Position(0, [101, 102, 103, 104, 105, 106, 107, 108])) at l.5 by ' tag ! ( "abcd" ) '
-/// // 00000000        65 66 67 68 69 6a 6b 6c         efghijkl
-/// f(a);
-/// ```
-#[deprecated(
-    since = "0.1.0",
-    note = "Replaced with `trace` and the `debug` feature flag"
-)]
-#[cfg_attr(feature = "unstable-doc", doc(hidden))]
-#[cfg(feature = "std")]
-pub fn dbg_dmp<'a, F, O, E: std::fmt::Debug>(
-    mut f: F,
-    context: &'static str,
-) -> impl FnMut(&'a [u8]) -> IResult<&'a [u8], O, E>
-where
-    F: Parser<&'a [u8], O, E>,
-{
-    use crate::stream::HexDisplay;
-    move |i: &'a [u8]| match f.parse_next(i) {
-        Err(e) => {
-            println!("{}: Error({:?}) at:\n{}", context, e, i.to_hex(8));
-            Err(e)
-        }
-        a => a,
-    }
-}
 
 #[cfg(test)]
 #[cfg(feature = "alloc")]
