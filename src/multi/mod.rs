@@ -258,7 +258,7 @@ where
                 Ok((i1, _)) => {
                     // infinite loop check: the parser must always consume
                     if i1.eof_offset() == len {
-                        return Err(ErrMode::assert(i, "many parsers must always consume"));
+                        return Err(ErrMode::assert(i, "sep parsers must always consume"));
                     }
 
                     match parser.parse_next(i1.clone()) {
@@ -337,7 +337,7 @@ where
                 Ok((i1, _)) => {
                     // infinite loop check: the parser must always consume
                     if i1.eof_offset() == len {
-                        return Err(ErrMode::from_error_kind(i1, ErrorKind::SeparatedList));
+                        return Err(ErrMode::assert(i, "sep parsers must always consume"));
                     }
 
                     match parser.parse_next(i1.clone()) {
@@ -397,7 +397,7 @@ where
                 Ok((i1, s)) => {
                     // infinite loop check: the parser must always consume
                     if i1.eof_offset() == len {
-                        return Err(ErrMode::from_error_kind(i1, ErrorKind::SeparatedList));
+                        return Err(ErrMode::assert(i, "many parsers must always consume"));
                     }
 
                     match parser.parse_next(i1.clone()) {
@@ -523,7 +523,7 @@ where
                 Ok((tail, value)) => {
                     // infinite loop check: the parser must always consume
                     if tail.eof_offset() == len {
-                        return Err(ErrMode::from_error_kind(input, ErrorKind::ManyMN));
+                        return Err(ErrMode::assert(input, "many parsers must always consume"));
                     }
 
                     res.accumulate(value);
@@ -714,7 +714,7 @@ where
                 Ok((i, o)) => {
                     // infinite loop check: the parser must always consume
                     if i.eof_offset() == len {
-                        return Err(ErrMode::from_error_kind(input, ErrorKind::Many0));
+                        return Err(ErrMode::assert(i, "many parsers must always consume"));
                     }
 
                     res = g(res, o);
@@ -802,7 +802,7 @@ where
                         Ok((i, o)) => {
                             // infinite loop check: the parser must always consume
                             if i.eof_offset() == len {
-                                return Err(ErrMode::Cut(E::from_error_kind(i, ErrorKind::Many1)));
+                                return Err(ErrMode::assert(i, "many parsers must always consume"));
                             }
 
                             acc = g(acc, o);
@@ -886,7 +886,7 @@ where
                 Ok((tail, value)) => {
                     // infinite loop check: the parser must always consume
                     if tail.eof_offset() == len {
-                        return Err(ErrMode::from_error_kind(tail, ErrorKind::ManyMN));
+                        return Err(ErrMode::assert(input, "many parsers must always consume"));
                     }
 
                     acc = fold(acc, value);
