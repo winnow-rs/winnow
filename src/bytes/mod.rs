@@ -707,7 +707,7 @@ where
     T: ContainsToken<<I as Stream>::Token>,
 {
     if n < m {
-        return Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN));
+        return Err(ErrMode::assert(input, "`m` should be <= `n`"));
     }
 
     let mut final_count = 0;
@@ -749,7 +749,7 @@ where
     T: ContainsToken<<I as Stream>::Token>,
 {
     if n < m {
-        return Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN));
+        return Err(ErrMode::assert(input, "`m` should be <= `n`"));
     }
 
     let mut final_count = 0;

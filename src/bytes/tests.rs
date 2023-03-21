@@ -57,8 +57,10 @@ proptest! {
   fn complete_take_while_m_n_bounds(m in 0..20usize, n in 0..20usize, valid in 0..20usize, invalid in 0..20usize) {
       let input = format!("{:a<valid$}{:b<invalid$}", "", "", valid=valid, invalid=invalid);
       let expected = model_complete_take_while_m_n(m, n, valid, &input);
-      let actual = take_while_m_n(m, n, |c: char| c == 'a')(input.as_str());
-      assert_eq!(expected, actual);
+      if m <= n {
+          let actual = take_while_m_n(m, n, |c: char| c == 'a')(input.as_str());
+          assert_eq!(expected, actual);
+      }
   }
 }
 
