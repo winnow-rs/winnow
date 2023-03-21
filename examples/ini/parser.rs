@@ -33,7 +33,7 @@ pub fn key_value(i: Stream<'_>) -> IResult<Stream<'_>, (&str, &str)> {
     let (i, val) = take_while0(|c| c != b'\n' && c != b';')
         .map_res(str::from_utf8)
         .parse_next(i)?;
-    let (i, _) = opt((';', take_while0(|c| c != b'\n')))(i)?;
+    let (i, _) = opt((';', take_while0(|c| c != b'\n'))).parse_next(i)?;
     Ok((i, (key, val)))
 }
 

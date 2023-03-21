@@ -28,7 +28,7 @@ use crate::{IResult, Parser};
 /// }
 ///
 /// fn parse(input: Stream<'_>) -> IResult<Stream<'_>, (u8, u8)> {
-///     bits::<_, _, Error<(_, usize)>, _, _>((take(4usize), take(8usize)))(input)
+///     bits::<_, _, Error<(_, usize)>, _, _>((take(4usize), take(8usize))).parse_next(input)
 /// }
 ///
 /// let input = stream(&[0x12, 0x34, 0xff, 0xff]);
@@ -43,7 +43,7 @@ use crate::{IResult, Parser};
 /// assert_eq!(parsed.0, 0x01);
 /// assert_eq!(parsed.1, 0x23);
 /// ```
-pub fn bits<I, O, E1, E2, P>(mut parser: P) -> impl FnMut(I) -> IResult<I, O, E2>
+pub fn bits<I, O, E1, E2, P>(mut parser: P) -> impl Parser<I, O, E2>
 where
     E1: ParseError<(I, usize)> + ErrorConvert<E2>,
     E2: ParseError<I>,
@@ -89,14 +89,14 @@ where
 ///     take(4usize),
 ///     take(8usize),
 ///     bytes::<_, _, Error<_>, _, _>(rest)
-///   ))(input)
+///   )).parse_next(input)
 /// }
 ///
 /// let input = stream(&[0x12, 0x34, 0xff, 0xff]);
 ///
 /// assert_eq!(parse(input), Ok(( stream(&[]), (0x01, 0x23, &[0xff, 0xff][..]) )));
 /// ```
-pub fn bytes<I, O, E1, E2, P>(mut parser: P) -> impl FnMut((I, usize)) -> IResult<(I, usize), O, E2>
+pub fn bytes<I, O, E1, E2, P>(mut parser: P) -> impl Parser<(I, usize), O, E2>
 where
     E1: ParseError<I> + ErrorConvert<E2>,
     E2: ParseError<(I, usize)>,
@@ -141,7 +141,7 @@ where
 /// }
 ///
 /// fn parser(input: (Stream<'_>, usize), count: usize)-> IResult<(Stream<'_>, usize), u8> {
-///  take(count)(input)
+///  take(count).parse_next(input)
 /// }
 ///
 /// // Consumes 0 bits, returns 0
@@ -157,9 +157,7 @@ where
 /// assert_eq!(parser((stream(&[0b00010010]), 0), 12), Err(winnow::error::ErrMode::Backtrack(Error{input: (stream(&[0b00010010]), 0), kind: ErrorKind::Eof })));
 /// ```
 #[inline(always)]
-pub fn take<I, O, C, E: ParseError<(I, usize)>>(
-    count: C,
-) -> impl FnMut((I, usize)) -> IResult<(I, usize), O, E>
+pub fn take<I, O, C, E: ParseError<(I, usize)>>(count: C) -> impl Parser<(I, usize), O, E>
 where
     I: Stream<Token = u8> + AsBytes + StreamIsPartial,
     C: ToUsize,
@@ -290,7 +288,7 @@ where
 /// /// Return Ok and the matching section of `input` if there's a match.
 /// /// Return Err if there's no match.
 /// fn parser(pattern: u8, count: u8, input: (Stream<'_>, usize)) -> IResult<(Stream<'_>, usize), u8> {
-///     tag(pattern, count)(input)
+///     tag(pattern, count).parse_next(input)
 /// }
 ///
 /// // The lowest 4 bits of 0b00001111 match the lowest 4 bits of 0b11111111.
@@ -329,7 +327,7 @@ where
 pub fn tag<I, O, C, E: ParseError<(I, usize)>>(
     pattern: O,
     count: C,
-) -> impl FnMut((I, usize)) -> IResult<(I, usize), O, E>
+) -> impl Parser<(I, usize), O, E>
 where
     I: Stream<Token = u8> + AsBytes + StreamIsPartial,
     C: ToUsize,
@@ -366,7 +364,7 @@ where
 /// }
 ///
 /// fn parse(input: (Stream<'_>, usize)) -> IResult<(Stream<'_>, usize), bool> {
-///     bool(input)
+///     bool.parse_next(input)
 /// }
 ///
 /// assert_eq!(parse((stream(&[0b10000000]), 0)), Ok(((stream(&[0b10000000]), 1), true)));
@@ -378,7 +376,8 @@ where
     I: Stream<Token = u8> + AsBytes + StreamIsPartial,
 {
     trace("bool", |input: (I, usize)| {
-        let (res, bit): (_, u32) = take(1usize)(input)?;
+        let (res, bit): (_, u32) = take(1usize).parse_next(input)?;
         Ok((res, bit != 0))
-    })(input)
+    })
+    .parse_next(input)
 }

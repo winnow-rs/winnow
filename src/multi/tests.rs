@@ -22,13 +22,13 @@ use crate::{
 #[cfg(feature = "alloc")]
 fn separated0_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated0(tag("abcd"), tag(","))(i)
+        separated0(tag("abcd"), tag(",")).parse_next(i)
     }
     fn multi_empty(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated0(tag(""), tag(","))(i)
+        separated0(tag(""), tag(",")).parse_next(i)
     }
     fn multi_longsep(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated0(tag("abcd"), tag(".."))(i)
+        separated0(tag("abcd"), tag("..")).parse_next(i)
     }
 
     let a = &b"abcdef"[..];
@@ -78,7 +78,7 @@ fn separated0_test() {
 #[cfg_attr(debug_assertions, should_panic)]
 fn separated0_empty_sep_test() {
     fn empty_sep(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated0(tag("abc"), tag(""))(i)
+        separated0(tag("abc"), tag("")).parse_next(i)
     }
 
     let i = &b"abcabc"[..];
@@ -97,10 +97,10 @@ fn separated0_empty_sep_test() {
 #[cfg(feature = "alloc")]
 fn separated1_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated1(tag("abcd"), tag(","))(i)
+        separated1(tag("abcd"), tag(",")).parse_next(i)
     }
     fn multi_longsep(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated1(tag("abcd"), tag(".."))(i)
+        separated1(tag("abcd"), tag("..")).parse_next(i)
     }
 
     let a = &b"abcdef"[..];
@@ -147,7 +147,7 @@ fn separated1_test() {
 #[cfg(feature = "alloc")]
 fn many0_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        many0(tag("abcd"))(i)
+        many0(tag("abcd")).parse_next(i)
     }
 
     assert_eq!(
@@ -181,7 +181,7 @@ fn many0_test() {
 #[cfg_attr(debug_assertions, should_panic)]
 fn many0_empty_test() {
     fn multi_empty(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        many0(tag(""))(i)
+        many0(tag("")).parse_next(i)
     }
 
     assert_eq!(
@@ -197,7 +197,7 @@ fn many0_empty_test() {
 #[cfg(feature = "alloc")]
 fn many1_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        many1(tag("abcd"))(i)
+        many1(tag("abcd")).parse_next(i)
     }
 
     let a = &b"abcdef"[..];
@@ -230,7 +230,7 @@ fn many1_test() {
 fn many_till_test() {
     #[allow(clippy::type_complexity)]
     fn multi(i: &[u8]) -> IResult<&[u8], (Vec<&[u8]>, &[u8])> {
-        many_till0(tag("abcd"), tag("efgh"))(i)
+        many_till0(tag("abcd"), tag("efgh")).parse_next(i)
     }
 
     let a = b"abcdabcdefghabcd";
@@ -261,13 +261,13 @@ fn infinite_many() {
 
     // should not go into an infinite loop
     fn multi0(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-        many0(tst)(i)
+        many0(tst).parse_next(i)
     }
     let a = &b"abcdef"[..];
     assert_eq!(multi0(a), Ok((a, Vec::new())));
 
     fn multi1(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-        many1(tst)(i)
+        many1(tst).parse_next(i)
     }
     let a = &b"abcdef"[..];
     assert_eq!(
@@ -280,7 +280,7 @@ fn infinite_many() {
 #[cfg(feature = "alloc")]
 fn many_m_n_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        many_m_n(2, 4, tag("Abcd"))(i)
+        many_m_n(2, 4, tag("Abcd")).parse_next(i)
     }
 
     let a = &b"Abcdef"[..];
@@ -322,7 +322,7 @@ fn many_m_n_test() {
 fn count_test() {
     const TIMES: usize = 2;
     fn cnt_2(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        count(tag("abc"), TIMES)(i)
+        count(tag("abc"), TIMES).parse_next(i)
     }
 
     assert_eq!(
@@ -365,7 +365,7 @@ fn count_test() {
 fn count_zero() {
     const TIMES: usize = 0;
     fn counter_2(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-        count(tag("abc"), TIMES)(i)
+        count(tag("abc"), TIMES).parse_next(i)
     }
 
     let done = &b"abcabcabcdef"[..];
@@ -428,7 +428,7 @@ fn length_count_test() {
     }
 
     fn cnt(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        length_count(number, tag("abc"))(i)
+        length_count(number, tag("abc")).parse_next(i)
     }
 
     assert_eq!(
@@ -469,7 +469,7 @@ fn length_data_test() {
     }
 
     fn take(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        length_data(number)(i)
+        length_data(number).parse_next(i)
     }
 
     assert_eq!(
@@ -498,10 +498,10 @@ fn length_value_test() {
     use crate::stream::StreamIsPartial;
 
     fn length_value_1(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u16> {
-        length_value(be_u8, be_u16)(i)
+        length_value(be_u8, be_u16).parse_next(i)
     }
     fn length_value_2(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (u8, u8)> {
-        length_value(be_u8, (be_u8, be_u8))(i)
+        length_value(be_u8, (be_u8, be_u8)).parse_next(i)
     }
 
     let mut empty_complete = Partial::new(&b""[..]);
@@ -572,7 +572,7 @@ fn fold_many0_test() {
         acc
     }
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_many0(tag("abcd"), Vec::new, fold_into_vec)(i)
+        fold_many0(tag("abcd"), Vec::new, fold_into_vec).parse_next(i)
     }
 
     assert_eq!(
@@ -610,7 +610,7 @@ fn fold_many0_empty_test() {
         acc
     }
     fn multi_empty(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_many0(tag(""), Vec::new, fold_into_vec)(i)
+        fold_many0(tag(""), Vec::new, fold_into_vec).parse_next(i)
     }
 
     assert_eq!(
@@ -630,7 +630,7 @@ fn fold_many1_test() {
         acc
     }
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_many1(tag("abcd"), Vec::new, fold_into_vec)(i)
+        fold_many1(tag("abcd"), Vec::new, fold_into_vec).parse_next(i)
     }
 
     let a = &b"abcdef"[..];
@@ -666,7 +666,7 @@ fn fold_many_m_n_test() {
         acc
     }
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_many_m_n(2, 4, tag("Abcd"), Vec::new, fold_into_vec)(i)
+        fold_many_m_n(2, 4, tag("Abcd"), Vec::new, fold_into_vec).parse_next(i)
     }
 
     let a = &b"Abcdef"[..];
@@ -706,7 +706,7 @@ fn fold_many_m_n_test() {
 #[test]
 fn many0_count_test() {
     fn count0_nums(i: &[u8]) -> IResult<&[u8], usize> {
-        many0((digit, tag(",")))(i)
+        many0((digit, tag(","))).parse_next(i)
     }
 
     assert_eq!(count0_nums(&b"123,junk"[..]), Ok((&b"junk"[..], 1)));
@@ -724,7 +724,7 @@ fn many0_count_test() {
 #[test]
 fn many1_count_test() {
     fn count1_nums(i: &[u8]) -> IResult<&[u8], usize> {
-        many1((digit, tag(",")))(i)
+        many1((digit, tag(","))).parse_next(i)
     }
 
     assert_eq!(count1_nums(&b"123,45,junk"[..]), Ok((&b"junk"[..], 2)));

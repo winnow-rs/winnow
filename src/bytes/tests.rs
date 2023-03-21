@@ -17,13 +17,15 @@ use crate::Partial;
 
 #[test]
 fn complete_take_while_m_n_utf8_all_matching() {
-    let result: IResult<&str, &str> = take_while_m_n(1, 4, |c: char| c.is_alphabetic())("øn");
+    let result: IResult<&str, &str> =
+        take_while_m_n(1, 4, |c: char| c.is_alphabetic()).parse_next("øn");
     assert_eq!(result, Ok(("", "øn")));
 }
 
 #[test]
 fn complete_take_while_m_n_utf8_all_matching_substring() {
-    let result: IResult<&str, &str> = take_while_m_n(1, 1, |c: char| c.is_alphabetic())("øn");
+    let result: IResult<&str, &str> =
+        take_while_m_n(1, 1, |c: char| c.is_alphabetic()).parse_next("øn");
     assert_eq!(result, Ok(("n", "ø")));
 }
 
@@ -58,7 +60,7 @@ proptest! {
       let input = format!("{:a<valid$}{:b<invalid$}", "", "", valid=valid, invalid=invalid);
       let expected = model_complete_take_while_m_n(m, n, valid, &input);
       if m <= n {
-          let actual = take_while_m_n(m, n, |c: char| c == 'a')(input.as_str());
+          let actual = take_while_m_n(m, n, |c: char| c == 'a').parse_next(input.as_str());
           assert_eq!(expected, actual);
       }
   }
@@ -76,7 +78,7 @@ fn partial_any_str() {
 #[test]
 fn partial_one_of_test() {
     fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u8> {
-        one_of("ab")(i)
+        one_of("ab").parse_next(i)
     }
 
     let a = &b"abcd"[..];
@@ -92,7 +94,7 @@ fn partial_one_of_test() {
     );
 
     fn utf8(i: Partial<&str>) -> IResult<Partial<&str>, char> {
-        one_of("+\u{FF0B}")(i)
+        one_of("+\u{FF0B}").parse_next(i)
     }
 
     assert!(utf8(Partial::new("+")).is_ok());
@@ -102,7 +104,7 @@ fn partial_one_of_test() {
 #[test]
 fn char_byteslice() {
     fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u8> {
-        one_of('c')(i)
+        one_of('c').parse_next(i)
     }
 
     let a = &b"abcd"[..];
@@ -121,7 +123,7 @@ fn char_byteslice() {
 #[test]
 fn char_str() {
     fn f(i: Partial<&str>) -> IResult<Partial<&str>, char> {
-        one_of('c')(i)
+        one_of('c').parse_next(i)
     }
 
     let a = "abcd";
@@ -140,7 +142,7 @@ fn char_str() {
 #[test]
 fn partial_none_of_test() {
     fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u8> {
-        none_of("ab")(i)
+        none_of("ab").parse_next(i)
     }
 
     let a = &b"abcd"[..];
@@ -159,7 +161,7 @@ fn partial_none_of_test() {
 #[test]
 fn partial_is_a() {
     fn a_or_b(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_while1("ab")(i)
+        take_while1("ab").parse_next(i)
     }
 
     let a = Partial::new(&b"abcd"[..]);
@@ -181,7 +183,7 @@ fn partial_is_a() {
 #[test]
 fn partial_is_not() {
     fn a_or_b(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_till1("ab")(i)
+        take_till1("ab").parse_next(i)
     }
 
     let a = Partial::new(&b"cdab"[..]);
@@ -206,7 +208,7 @@ fn partial_is_not() {
 #[test]
 fn partial_take_until_incomplete() {
     fn y(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_until0("end")(i)
+        take_until0("end").parse_next(i)
     }
     assert_eq!(
         y(Partial::new(&b"nd"[..])),
@@ -225,7 +227,7 @@ fn partial_take_until_incomplete() {
 #[test]
 fn partial_take_until_incomplete_s() {
     fn ys(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_until0("end")(i)
+        take_until0("end").parse_next(i)
     }
     assert_eq!(
         ys(Partial::new("123en")),
@@ -296,7 +298,7 @@ fn partial_recognize() {
 #[test]
 fn partial_take_while0() {
     fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_while0(AsChar::is_alpha)(i)
+        take_while0(AsChar::is_alpha).parse_next(i)
     }
     let a = &b""[..];
     let b = &b"abcd"[..];
@@ -312,7 +314,7 @@ fn partial_take_while0() {
 #[test]
 fn partial_take_while1() {
     fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_while1(AsChar::is_alpha)(i)
+        take_while1(AsChar::is_alpha).parse_next(i)
     }
     let a = &b""[..];
     let b = &b"abcd"[..];
@@ -334,7 +336,7 @@ fn partial_take_while1() {
 #[test]
 fn partial_take_while_m_n() {
     fn x(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_while_m_n(2, 4, AsChar::is_alpha)(i)
+        take_while_m_n(2, 4, AsChar::is_alpha).parse_next(i)
     }
     let a = &b""[..];
     let b = &b"a"[..];
@@ -363,7 +365,7 @@ fn partial_take_while_m_n() {
 #[test]
 fn partial_take_till0() {
     fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_till0(AsChar::is_alpha)(i)
+        take_till0(AsChar::is_alpha).parse_next(i)
     }
     let a = &b""[..];
     let b = &b"abcd"[..];
@@ -385,7 +387,7 @@ fn partial_take_till0() {
 #[test]
 fn partial_take_till1() {
     fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_till1(AsChar::is_alpha)(i)
+        take_till1(AsChar::is_alpha).parse_next(i)
     }
     let a = &b""[..];
     let b = &b"abcd"[..];
@@ -410,7 +412,7 @@ fn partial_take_till1() {
 #[test]
 fn partial_take_while_utf8() {
     fn f(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while0(|c| c != '點')(i)
+        take_while0(|c| c != '點').parse_next(i)
     }
 
     assert_eq!(
@@ -428,7 +430,7 @@ fn partial_take_while_utf8() {
     );
 
     fn g(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while0(|c| c == '點')(i)
+        take_while0(|c| c == '點').parse_next(i)
     }
 
     assert_eq!(
@@ -445,7 +447,7 @@ fn partial_take_while_utf8() {
 #[test]
 fn partial_take_till0_utf8() {
     fn f(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_till0(|c| c == '點')(i)
+        take_till0(|c| c == '點').parse_next(i)
     }
 
     assert_eq!(
@@ -463,7 +465,7 @@ fn partial_take_till0_utf8() {
     );
 
     fn g(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_till0(|c| c != '點')(i)
+        take_till0(|c| c != '點').parse_next(i)
     }
 
     assert_eq!(
@@ -480,7 +482,7 @@ fn partial_take_till0_utf8() {
 #[test]
 fn partial_take_utf8() {
     fn f(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take(3_usize)(i)
+        take(3_usize).parse_next(i)
     }
 
     assert_eq!(
@@ -500,7 +502,7 @@ fn partial_take_utf8() {
     assert_eq!(f(Partial::new("a點b")), Ok((Partial::new(""), "a點b")));
 
     fn g(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while0(|c| c == '點')(i)
+        take_while0(|c| c == '點').parse_next(i)
     }
 
     assert_eq!(
@@ -517,7 +519,7 @@ fn partial_take_utf8() {
 #[test]
 fn partial_take_while_m_n_utf8_fixed() {
     fn parser(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while_m_n(1, 1, |c| c == 'A' || c == '😃')(i)
+        take_while_m_n(1, 1, |c| c == 'A' || c == '😃').parse_next(i)
     }
     assert_eq!(parser(Partial::new("A!")), Ok((Partial::new("!"), "A")));
     assert_eq!(parser(Partial::new("😃!")), Ok((Partial::new("!"), "😃")));
@@ -526,7 +528,7 @@ fn partial_take_while_m_n_utf8_fixed() {
 #[test]
 fn partial_take_while_m_n_utf8_range() {
     fn parser(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while_m_n(1, 2, |c| c == 'A' || c == '😃')(i)
+        take_while_m_n(1, 2, |c| c == 'A' || c == '😃').parse_next(i)
     }
     assert_eq!(parser(Partial::new("A!")), Ok((Partial::new("!"), "A")));
     assert_eq!(parser(Partial::new("😃!")), Ok((Partial::new("!"), "😃")));
@@ -535,7 +537,7 @@ fn partial_take_while_m_n_utf8_range() {
 #[test]
 fn partial_take_while_m_n_utf8_full_match_fixed() {
     fn parser(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while_m_n(1, 1, |c: char| c.is_alphabetic())(i)
+        take_while_m_n(1, 1, |c: char| c.is_alphabetic()).parse_next(i)
     }
     assert_eq!(parser(Partial::new("øn")), Ok((Partial::new("n"), "ø")));
 }
@@ -543,7 +545,7 @@ fn partial_take_while_m_n_utf8_full_match_fixed() {
 #[test]
 fn partial_take_while_m_n_utf8_full_match_range() {
     fn parser(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while_m_n(1, 2, |c: char| c.is_alphabetic())(i)
+        take_while_m_n(1, 2, |c: char| c.is_alphabetic()).parse_next(i)
     }
     assert_eq!(parser(Partial::new("øn")), Ok((Partial::new(""), "øn")));
 }
@@ -552,7 +554,7 @@ fn partial_take_while_m_n_utf8_full_match_range() {
 #[cfg(feature = "std")]
 fn partial_recognize_take_while0() {
     fn x(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_while0(AsChar::is_alphanum)(i)
+        take_while0(AsChar::is_alphanum).parse_next(i)
     }
     fn y(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         x.recognize().parse_next(i)
@@ -572,7 +574,7 @@ fn partial_length_bytes() {
     use crate::number::le_u8;
 
     fn x(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        length_data(le_u8)(i)
+        length_data(le_u8).parse_next(i)
     }
     assert_eq!(
         x(Partial::new(b"\x02..>>")),
@@ -592,8 +594,8 @@ fn partial_length_bytes() {
     );
 
     fn y(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        let (i, _) = tag("magic")(i)?;
-        length_data(le_u8)(i)
+        let (i, _) = tag("magic").parse_next(i)?;
+        length_data(le_u8).parse_next(i)
     }
     assert_eq!(
         y(Partial::new(b"magic\x02..>>")),
@@ -617,7 +619,7 @@ fn partial_length_bytes() {
 #[test]
 fn partial_case_insensitive() {
     fn test(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        tag_no_case("ABcd")(i)
+        tag_no_case("ABcd").parse_next(i)
     }
     assert_eq!(
         test(Partial::new(&b"aBCdefgh"[..])),
@@ -651,7 +653,7 @@ fn partial_case_insensitive() {
     );
 
     fn test2(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        tag_no_case("ABcd")(i)
+        tag_no_case("ABcd").parse_next(i)
     }
     assert_eq!(
         test2(Partial::new("aBCdefgh")),
@@ -688,10 +690,10 @@ fn partial_case_insensitive() {
 #[test]
 fn partial_tag_fixed_size_array() {
     fn test(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        tag([0x42])(i)
+        tag([0x42]).parse_next(i)
     }
     fn test2(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        tag(&[0x42])(i)
+        tag(&[0x42]).parse_next(i)
     }
     let input = Partial::new(&[0x42, 0x00][..]);
     assert_eq!(test(input), Ok((Partial::new(&b"\x00"[..]), &b"\x42"[..])));

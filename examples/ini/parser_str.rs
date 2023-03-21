@@ -12,7 +12,7 @@ use winnow::{
 pub type Stream<'i> = &'i str;
 
 pub fn categories(input: Stream<'_>) -> IResult<Stream<'_>, HashMap<&str, HashMap<&str, &str>>> {
-    many0(category_and_keys)(input)
+    many0(category_and_keys).parse_next(input)
 }
 
 fn category_and_keys(i: Stream<'_>) -> IResult<Stream<'_>, (&str, HashMap<&str, &str>)> {
@@ -23,20 +23,21 @@ fn category(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
     terminated(
         delimited('[', take_while0(|c| c != ']'), ']'),
         opt(take_while1(" \r\n")),
-    )(i)
+    )
+    .parse_next(i)
 }
 
 fn keys_and_values(input: Stream<'_>) -> IResult<Stream<'_>, HashMap<&str, &str>> {
-    many0(key_value)(input)
+    many0(key_value).parse_next(input)
 }
 
 fn key_value(i: Stream<'_>) -> IResult<Stream<'_>, (&str, &str)> {
     let (i, key) = alphanumeric(i)?;
     let (i, _) = (opt(space), "=", opt(space)).parse_next(i)?;
-    let (i, val) = take_till0(is_line_ending_or_comment)(i)?;
-    let (i, _) = opt(space)(i)?;
-    let (i, _) = opt((";", not_line_ending))(i)?;
-    let (i, _) = opt(space_or_line_ending)(i)?;
+    let (i, val) = take_till0(is_line_ending_or_comment).parse_next(i)?;
+    let (i, _) = opt(space).parse_next(i)?;
+    let (i, _) = opt((";", not_line_ending)).parse_next(i)?;
+    let (i, _) = opt(space_or_line_ending).parse_next(i)?;
 
     Ok((i, (key, val)))
 }
@@ -46,11 +47,11 @@ fn is_line_ending_or_comment(chr: char) -> bool {
 }
 
 fn not_line_ending(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
-    take_while0(|c| c != '\r' && c != '\n')(i)
+    take_while0(|c| c != '\r' && c != '\n').parse_next(i)
 }
 
 fn space_or_line_ending(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
-    take_while1(" \r\n")(i)
+    take_while1(" \r\n").parse_next(i)
 }
 
 #[test]

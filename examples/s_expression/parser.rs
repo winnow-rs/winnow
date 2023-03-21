@@ -73,7 +73,8 @@ fn parse_expr(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
     preceded(
         multispace0,
         alt((parse_constant, parse_application, parse_if, parse_quote)),
-    )(i)
+    )
+    .parse_next(i)
 }
 
 /// We then add the Expr layer on top
@@ -89,7 +90,8 @@ fn parse_atom(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
         parse_bool,
         parse_builtin.map(Atom::BuiltIn),
         parse_keyword,
-    ))(i)
+    ))
+    .parse_next(i)
 }
 
 /// Next up is number parsing. We're keeping it simple here by accepting any number (> 1)
@@ -98,7 +100,8 @@ fn parse_num(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
     alt((
         digit1.map_res(|digit_str: &str| digit_str.parse::<i32>().map(Atom::Num)),
         preceded("-", digit1).map(|digit_str: &str| Atom::Num(-digit_str.parse::<i32>().unwrap())),
-    ))(i)
+    ))
+    .parse_next(i)
 }
 
 /// Our boolean values are also constant, so we can do it the same way
@@ -106,7 +109,8 @@ fn parse_bool(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
     alt((
         tag("#t").map(|_| Atom::Boolean(true)),
         tag("#f").map(|_| Atom::Boolean(false)),
-    ))(i)
+    ))
+    .parse_next(i)
 }
 
 fn parse_builtin(i: &str) -> IResult<&str, BuiltIn, VerboseError<&str>> {
@@ -117,14 +121,15 @@ fn parse_builtin(i: &str) -> IResult<&str, BuiltIn, VerboseError<&str>> {
         // map lets us process the parsed output, in this case we know what we parsed,
         // so we ignore the input and return the BuiltIn directly
         tag("not").map(|_| BuiltIn::Not),
-    ))(i)
+    ))
+    .parse_next(i)
 }
 
 /// Continuing the trend of starting from the simplest piece and building up,
 /// we start by creating a parser for the built-in operator functions.
 fn parse_builtin_op(i: &str) -> IResult<&str, BuiltIn, VerboseError<&str>> {
     // one_of matches one of the characters we give it
-    let (i, t) = one_of("+-*/=")(i)?;
+    let (i, t) = one_of("+-*/=").parse_next(i)?;
 
     // because we are matching single character tokens, we can do the matching logic
     // on the returned value
@@ -167,7 +172,7 @@ fn parse_application(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
     let application_inner =
         (parse_expr, many0(parse_expr)).map(|(head, tail)| Expr::Application(Box::new(head), tail));
     // finally, we wrap it in an s-expression
-    s_exp(application_inner)(i)
+    s_exp(application_inner).parse_next(i)
 }
 
 /// Because `Expr::If` and `Expr::IfElse` are so similar (we easily could have
@@ -196,7 +201,7 @@ fn parse_if(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
         }
     })
     .context("if expression");
-    s_exp(if_inner)(i)
+    s_exp(if_inner).parse_next(i)
 }
 
 /// A quoted S-expression is list data structure.
@@ -218,10 +223,10 @@ fn parse_quote(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
 /// A list starts with `(` and ends with a matching `)`.
 /// By putting whitespace and newline parsing here, we can avoid having to worry about it
 /// in much of the rest of the parser.
-///
+//.parse_next/
 /// Unlike the previous functions, this function doesn't take or consume input, instead it
 /// takes a parsing function and returns a new parsing function.
-fn s_exp<'a, O1, F>(inner: F) -> impl FnMut(&'a str) -> IResult<&'a str, O1, VerboseError<&'a str>>
+fn s_exp<'a, O1, F>(inner: F) -> impl Parser<&'a str, O1, VerboseError<&'a str>>
 where
     F: Parser<&'a str, O1, VerboseError<&'a str>>,
 {

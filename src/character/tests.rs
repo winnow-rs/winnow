@@ -383,7 +383,7 @@ mod complete {
 
     fn digit_to_i16(input: &str) -> IResult<&str, i16> {
         let i = input;
-        let (i, opt_sign) = opt(alt(('+', '-')))(i)?;
+        let (i, opt_sign) = opt(alt(('+', '-'))).parse_next(i)?;
         let sign = match opt_sign {
             Some('+') | None => true,
             Some('-') => false,
@@ -571,7 +571,7 @@ mod complete {
         fn escaped_string(input: &str) -> IResult<&str, &str> {
             use crate::bytes::one_of;
             use crate::character::alpha0;
-            escaped(alpha0, '\\', one_of("n"))(input)
+            escaped(alpha0, '\\', one_of("n")).parse_next(input)
         }
 
         escaped_string("7").unwrap();
@@ -590,7 +590,8 @@ mod complete {
                 '"',
                 escaped(opt(none_of(r#"\""#)), '\\', one_of(r#"\"rnt"#)),
                 '"',
-            )(input)
+            )
+            .parse_next(input)
         }
 
         assert_eq!(unquote(r#""""#), Ok(("", "")));
@@ -604,7 +605,7 @@ mod complete {
         use crate::character::{alpha1 as alpha, digit1 as digit};
 
         fn esc(i: &[u8]) -> IResult<&[u8], &[u8]> {
-            escaped(alpha, '\\', one_of("\"n\\"))(i)
+            escaped(alpha, '\\', one_of("\"n\\")).parse_next(i)
         }
         assert_eq!(esc(&b"abcd;"[..]), Ok((&b";"[..], &b"abcd"[..])));
         assert_eq!(esc(&b"ab\\\"cd;"[..]), Ok((&b";"[..], &b"ab\\\"cd"[..])));
@@ -628,7 +629,7 @@ mod complete {
         );
 
         fn esc2(i: &[u8]) -> IResult<&[u8], &[u8]> {
-            escaped(digit, '\\', one_of("\"n\\"))(i)
+            escaped(digit, '\\', one_of("\"n\\")).parse_next(i)
         }
         assert_eq!(esc2(&b"12\\nnn34"[..]), Ok((&b"nn34"[..], &b"12\\n"[..])));
     }
@@ -640,7 +641,7 @@ mod complete {
         use crate::character::{alpha1 as alpha, digit1 as digit};
 
         fn esc(i: &str) -> IResult<&str, &str> {
-            escaped(alpha, '\\', one_of("\"n\\"))(i)
+            escaped(alpha, '\\', one_of("\"n\\")).parse_next(i)
         }
         assert_eq!(esc("abcd;"), Ok((";", "abcd")));
         assert_eq!(esc("ab\\\"cd;"), Ok((";", "ab\\\"cd")));
@@ -661,12 +662,12 @@ mod complete {
         );
 
         fn esc2(i: &str) -> IResult<&str, &str> {
-            escaped(digit, '\\', one_of("\"n\\"))(i)
+            escaped(digit, '\\', one_of("\"n\\")).parse_next(i)
         }
         assert_eq!(esc2("12\\nnn34"), Ok(("nn34", "12\\n")));
 
         fn esc3(i: &str) -> IResult<&str, &str> {
-            escaped(alpha, '\u{241b}', one_of("\"n"))(i)
+            escaped(alpha, '\u{241b}', one_of("\"n")).parse_next(i)
         }
         assert_eq!(esc3("ab␛ncd;"), Ok((";", "ab␛ncd")));
     }
@@ -675,7 +676,7 @@ mod complete {
     fn test_escaped_error() {
         fn esc(s: &str) -> IResult<&str, &str> {
             use crate::character::digit1;
-            escaped(digit1, '\\', one_of("\"n\\"))(s)
+            escaped(digit1, '\\', one_of("\"n\\")).parse_next(s)
         }
 
         assert_eq!(esc("abcd"), Ok(("abcd", "")));
@@ -773,7 +774,8 @@ mod complete {
                     tag("\"").value("\""),
                     tag("n").value("\n"),
                 )),
-            )(i)
+            )
+            .parse_next(i)
         }
 
         assert_eq!(esc("abcd;"), Ok((";", String::from("abcd"))));
@@ -799,7 +801,8 @@ mod complete {
                 alpha,
                 '&',
                 alt((tag("egrave;").value("è"), tag("agrave;").value("à"))),
-            )(i)
+            )
+            .parse_next(i)
         }
         assert_eq!(esc2("ab&egrave;DEF;"), Ok((";", String::from("abèDEF"))));
         assert_eq!(
@@ -812,7 +815,8 @@ mod complete {
                 alpha,
                 '␛',
                 alt((tag("0").value("\0"), tag("n").value("\n"))),
-            )(i)
+            )
+            .parse_next(i)
         }
         assert_eq!(esc3("a␛0bc␛n"), Ok(("", String::from("a\0bc\n"))));
     }
@@ -822,7 +826,7 @@ mod complete {
     fn test_escaped_transform_error() {
         fn esc_trans(s: &str) -> IResult<&str, String> {
             use crate::character::digit1;
-            escaped_transform(digit1, '\\', "n")(s)
+            escaped_transform(digit1, '\\', "n").parse_next(s)
         }
 
         assert_eq!(esc_trans("abcd"), Ok(("abcd", String::new())));
@@ -1384,7 +1388,7 @@ mod partial {
 
     fn digit_to_i16(input: Partial<&str>) -> IResult<Partial<&str>, i16> {
         let i = input;
-        let (i, opt_sign) = opt(one_of("+-"))(i)?;
+        let (i, opt_sign) = opt(one_of("+-")).parse_next(i)?;
         let sign = match opt_sign {
             Some('+') | None => true,
             Some('-') => false,

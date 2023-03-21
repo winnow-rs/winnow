@@ -34,9 +34,9 @@
 //!
 //! /// A combinator that takes a parser `inner` and produces a parser that also consumes both leading and
 //! /// trailing whitespace, returning the output of `inner`.
-//! fn ws<'a, F, O, E: ParseError<&'a str>>(inner: F) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
+//! fn ws<'a, F, O, E: ParseError<&'a str>>(inner: F) -> impl Parser<&'a str, O, E>
 //!   where
-//!   F: FnMut(&'a str) -> IResult<&'a str, O, E>,
+//!   F: Parser<&'a str, O, E>,
 //! {
 //!   delimited(
 //!     multispace0,
@@ -169,7 +169,7 @@
 //!     many1(
 //!       terminated(one_of("0123456789abcdefABCDEF"), many0('_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
-//!   )(input)
+//!   ).parse_next(input)
 //! }
 //! ```
 //!
@@ -215,7 +215,7 @@
 //!     many1(
 //!       terminated(one_of("01234567"), many0('_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
-//!   )(input)
+//!   ).parse_next(input)
 //! }
 //! ```
 //!
@@ -237,7 +237,7 @@
 //!     many1(
 //!       terminated(one_of("01"), many0('_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
-//!   )(input)
+//!   ).parse_next(input)
 //! }
 //! ```
 //!
@@ -304,7 +304,7 @@
 //!       '.',
 //!       opt(decimal)
 //!     ).recognize()
-//!   ))(input)
+//!   )).parse_next(input)
 //! }
 //!
 //! fn decimal(input: &str) -> IResult<&str, &str> {
@@ -313,7 +313,6 @@
 //!   ).
 //!   map(|()| ())
 //!     .recognize()
-//!
 //!     .parse_next(input)
 //! }
 //! ```

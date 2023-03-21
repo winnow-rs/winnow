@@ -58,7 +58,7 @@ where
     I: Stream,
     I: Compare<&'static str>,
 {
-    trace("crlf", move |input: I| tag("\r\n").parse_next(input))(input)
+    trace("crlf", move |input: I| tag("\r\n").parse_next(input)).parse_next(input)
 }
 
 /// Recognizes a string of any char except '\r\n' or '\n'.
@@ -108,7 +108,8 @@ where
         } else {
             complete_not_line_ending(input)
         }
-    })(input)
+    })
+    .parse_next(input)
 }
 
 pub(crate) fn streaming_not_line_ending<T, E: ParseError<T>>(
@@ -217,7 +218,8 @@ where
 {
     trace("line_ending", move |input: I| {
         alt(("\n", "\r\n")).parse_next(input)
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Matches a newline character '\n'.
@@ -259,7 +261,8 @@ where
         one_of('\n')
             .map(|c: <I as Stream>::Token| c.as_char())
             .parse_next(input)
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Matches a tab character '\t'.
@@ -301,7 +304,8 @@ where
         one_of('\t')
             .map(|c: <I as Stream>::Token| c.as_char())
             .parse_next(input)
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
@@ -343,7 +347,8 @@ where
 {
     trace("alpha0", move |input: I| {
         take_while0(|c: <I as Stream>::Token| c.is_alpha()).parse_next(input)
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Recognizes one or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
@@ -385,7 +390,8 @@ where
 {
     trace("alpha1", move |input: I| {
         take_while1(|c: <I as Stream>::Token| c.is_alpha()).parse_next(input)
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Recognizes zero or more ASCII numerical characters: 0-9
@@ -428,7 +434,8 @@ where
 {
     trace("digit0", move |input: I| {
         take_while0(|c: <I as Stream>::Token| c.is_dec_digit()).parse_next(input)
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Recognizes one or more ASCII numerical characters: 0-9
@@ -486,7 +493,8 @@ where
 {
     trace("digit1", move |input: I| {
         take_while1(|c: <I as Stream>::Token| c.is_dec_digit()).parse_next(input)
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Recognizes zero or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
@@ -527,7 +535,8 @@ where
 {
     trace("hex_digit0", move |input: I| {
         take_while0(|c: <I as Stream>::Token| c.is_hex_digit()).parse_next(input)
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Recognizes one or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
@@ -569,7 +578,8 @@ where
 {
     trace("hex_digit1", move |input: I| {
         take_while1(|c: <I as Stream>::Token| c.is_hex_digit()).parse_next(input)
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Recognizes zero or more octal characters: 0-7
@@ -611,7 +621,8 @@ where
 {
     trace("oct_digit0", move |input: I| {
         take_while0(|c: <I as Stream>::Token| c.is_oct_digit()).parse_next(input)
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Recognizes one or more octal characters: 0-7
@@ -653,7 +664,8 @@ where
 {
     trace("oct_digit0", move |input: I| {
         take_while1(|c: <I as Stream>::Token| c.is_oct_digit()).parse_next(input)
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Recognizes zero or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
@@ -695,7 +707,8 @@ where
 {
     trace("alphanumeric0", move |input: I| {
         take_while0(|c: <I as Stream>::Token| c.is_alphanum()).parse_next(input)
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Recognizes one or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
@@ -737,7 +750,8 @@ where
 {
     trace("alphanumeric1", move |input: I| {
         take_while1(|c: <I as Stream>::Token| c.is_alphanum()).parse_next(input)
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Recognizes zero or more spaces and tabs.
@@ -767,7 +781,8 @@ where
 {
     trace("space0", move |input: I| {
         take_while0((' ', '\t')).parse_next(input)
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Recognizes one or more spaces and tabs.
@@ -809,7 +824,8 @@ where
 {
     trace("space1", move |input: I| {
         take_while1((' ', '\t')).parse_next(input)
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Recognizes zero or more spaces, tabs, carriage returns and line feeds.
@@ -851,7 +867,8 @@ where
 {
     trace("multispace0", move |input: I| {
         take_while0((' ', '\t', '\r', '\n')).parse_next(input)
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Recognizes one or more spaces, tabs, carriage returns and line feeds.
@@ -893,7 +910,8 @@ where
 {
     trace("multispace1", move |input: I| {
         take_while1((' ', '\t', '\r', '\n')).parse_next(input)
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Decode a decimal unsigned integer
@@ -947,7 +965,8 @@ where
         } else {
             Ok((input.next_slice(input.eof_offset()).0, value))
         }
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Metadata for parsing unsigned integers, see [`dec_uint`]
@@ -1111,7 +1130,8 @@ where
         } else {
             Ok((input.next_slice(input.eof_offset()).0, value))
         }
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Metadata for parsing signed integers, see [`dec_int`]
@@ -1239,7 +1259,8 @@ where
         }
 
         Ok((remaining, res))
-    })(input)
+    })
+    .parse_next(input)
 }
 
 /// Metadata for parsing hex numbers, see [`hex_uint`]
@@ -1346,7 +1367,8 @@ where
             Some(f) => Ok((i, f)),
             None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
         }
-    })(input)
+    })
+    .parse_next(input)
 }
 
 fn recognize_float_or_exceptions<I, E: ParseError<I>>(
@@ -1366,7 +1388,8 @@ where
         crate::bytes::tag_no_case("nan"),
         crate::bytes::tag_no_case("inf"),
         crate::bytes::tag_no_case("infinity"),
-    ))(input)
+    ))
+    .parse_next(input)
 }
 
 fn recognize_float<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
@@ -1399,29 +1422,31 @@ where
 ///
 /// # Example
 ///
-/// ```
+/// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// # use winnow::character::digit1;
+/// # use winnow::prelude::*;
 /// use winnow::character::escaped;
 /// use winnow::bytes::one_of;
 ///
 /// fn esc(s: &str) -> IResult<&str, &str> {
-///   escaped(digit1, '\\', one_of(r#""n\"#))(s)
+///   escaped(digit1, '\\', one_of(r#""n\"#)).parse_next(s)
 /// }
 ///
 /// assert_eq!(esc("123;"), Ok((";", "123")));
 /// assert_eq!(esc(r#"12\"34;"#), Ok((";", r#"12\"34"#)));
 /// ```
 ///
-/// ```
+/// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// # use winnow::character::digit1;
+/// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// use winnow::character::escaped;
 /// use winnow::bytes::one_of;
 ///
 /// fn esc(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   escaped(digit1, '\\', one_of("\"n\\"))(s)
+///   escaped(digit1, '\\', one_of("\"n\\")).parse_next(s)
 /// }
 ///
 /// assert_eq!(esc(Partial::new("123;")), Ok((Partial::new(";"), "123")));
@@ -1432,7 +1457,7 @@ pub fn escaped<'a, I: 'a, Error, F, G, O1, O2>(
     mut normal: F,
     control_char: char,
     mut escapable: G,
-) -> impl FnMut(I) -> IResult<I, <I as Stream>::Slice, Error>
+) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream + Offset,
@@ -1574,7 +1599,7 @@ where
 ///
 /// # Example
 ///
-/// ```
+/// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use std::str::from_utf8;
@@ -1592,7 +1617,7 @@ where
 ///       tag("\"").value("\""),
 ///       tag("n").value("\n"),
 ///     ))
-///   )(input)
+///   ).parse_next(input)
 /// }
 ///
 /// assert_eq!(parser("ab\\\"cd"), Ok(("", String::from("ab\"cd"))));
@@ -1618,7 +1643,7 @@ where
 ///       tag("\"").value("\""),
 ///       tag("n").value("\n"),
 ///     ))
-///   )(input)
+///   ).parse_next(input)
 /// }
 ///
 /// assert_eq!(parser(Partial::new("ab\\\"cd\"")), Ok((Partial::new("\""), String::from("ab\"cd"))));
@@ -1629,7 +1654,7 @@ pub fn escaped_transform<I, Error, F, G, Output>(
     mut normal: F,
     control_char: char,
     mut transform: G,
-) -> impl FnMut(I) -> IResult<I, Output, Error>
+) -> impl Parser<I, Output, Error>
 where
     I: StreamIsPartial,
     I: Stream + Offset,

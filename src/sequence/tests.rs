@@ -20,8 +20,8 @@ struct C {
 fn complete() {
     use crate::bytes::tag;
     fn err_test(i: &[u8]) -> IResult<&[u8], &[u8]> {
-        let (i, _) = tag("ijkl")(i)?;
-        tag("mnop")(i)
+        let (i, _) = tag("ijkl").parse_next(i)?;
+        tag("mnop").parse_next(i)
     }
     let a = &b"ijklmn"[..];
 
@@ -39,7 +39,7 @@ fn complete() {
 fn separated_pair_test() {
     #[allow(clippy::type_complexity)]
     fn sep_pair_abc_def(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (&[u8], &[u8])> {
-        separated_pair(tag("abc"), tag(","), tag("def"))(i)
+        separated_pair(tag("abc"), tag(","), tag("def")).parse_next(i)
     }
 
     assert_eq!(
@@ -80,7 +80,7 @@ fn separated_pair_test() {
 #[test]
 fn preceded_test() {
     fn preceded_abcd_efgh(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        preceded(tag("abcd"), tag("efgh"))(i)
+        preceded(tag("abcd"), tag("efgh")).parse_next(i)
     }
 
     assert_eq!(
@@ -121,7 +121,7 @@ fn preceded_test() {
 #[test]
 fn terminated_test() {
     fn terminated_abcd_efgh(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        terminated(tag("abcd"), tag("efgh"))(i)
+        terminated(tag("abcd"), tag("efgh")).parse_next(i)
     }
 
     assert_eq!(
@@ -162,7 +162,7 @@ fn terminated_test() {
 #[test]
 fn delimited_test() {
     fn delimited_abc_def_ghi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        delimited(tag("abc"), tag("def"), tag("ghi"))(i)
+        delimited(tag("abc"), tag("def"), tag("ghi")).parse_next(i)
     }
 
     assert_eq!(

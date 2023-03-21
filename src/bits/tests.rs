@@ -10,9 +10,8 @@ fn test_complete_byte_consumption_bits() {
 
     // Take 3 bit slices with sizes [4, 8, 4].
     let result: IResult<&[u8], (u8, u8, u8)> =
-        bits::<_, _, Error<(&[u8], usize)>, _, _>((take(4usize), take(8usize), take(4usize)))(
-            input,
-        );
+        bits::<_, _, Error<(&[u8], usize)>, _, _>((take(4usize), take(8usize), take(4usize)))
+            .parse_next(input);
 
     let output = result.expect("We take 2 bytes and the input is longer than 2 bytes");
 
@@ -35,7 +34,7 @@ fn test_partial_byte_consumption_bits() {
 
     // Take bit slices with sizes [4, 8].
     let result: IResult<&[u8], (u8, u8)> =
-        bits::<_, _, Error<(&[u8], usize)>, _, _>((take(4usize), take(8usize)))(input);
+        bits::<_, _, Error<(&[u8], usize)>, _, _>((take(4usize), take(8usize))).parse_next(input);
 
     let output = result.expect("We take 1.5 bytes and the input is longer than 2 bytes");
 
@@ -55,7 +54,7 @@ fn test_incomplete_bits() {
 
     // Take bit slices with sizes [4, 8].
     let result: IResult<_, (u8, u8)> =
-        bits::<_, _, Error<(_, usize)>, _, _>((take(4usize), take(8usize)))(input);
+        bits::<_, _, Error<(_, usize)>, _, _>((take(4usize), take(8usize))).parse_next(input);
 
     assert!(result.is_err());
     let error = result.err().unwrap();
@@ -69,7 +68,7 @@ fn test_take_complete_0() {
     assert_eq!(count, 0usize);
     let offset = 0usize;
 
-    let result: crate::IResult<(&[u8], usize), usize> = take(count)((input, offset));
+    let result: crate::IResult<(&[u8], usize), usize> = take(count).parse_next((input, offset));
 
     assert_eq!(result, Ok(((input, offset), 0)));
 }
@@ -78,7 +77,7 @@ fn test_take_complete_0() {
 fn test_take_complete_eof() {
     let input = &[0b00010010][..];
 
-    let result: crate::IResult<(&[u8], usize), usize> = take(1usize)((input, 8));
+    let result: crate::IResult<(&[u8], usize), usize> = take(1usize).parse_next((input, 8));
 
     assert_eq!(
         result,
@@ -93,7 +92,7 @@ fn test_take_complete_eof() {
 fn test_take_complete_span_over_multiple_bytes() {
     let input = &[0b00010010, 0b00110100, 0b11111111, 0b11111111][..];
 
-    let result: crate::IResult<(&[u8], usize), usize> = take(24usize)((input, 4));
+    let result: crate::IResult<(&[u8], usize), usize> = take(24usize).parse_next((input, 4));
 
     assert_eq!(
         result,
@@ -108,7 +107,7 @@ fn test_take_partial_0() {
     assert_eq!(count, 0usize);
     let offset = 0usize;
 
-    let result: crate::IResult<(_, usize), usize> = take(count)((input, offset));
+    let result: crate::IResult<(_, usize), usize> = take(count).parse_next((input, offset));
 
     assert_eq!(result, Ok(((input, offset), 0)));
 }
@@ -121,7 +120,7 @@ fn test_tag_partial_ok() {
     let value_to_tag = 0b0001;
 
     let result: crate::IResult<(_, usize), usize> =
-        tag(value_to_tag, bits_to_take)((input, offset));
+        tag(value_to_tag, bits_to_take).parse_next((input, offset));
 
     assert_eq!(result, Ok(((input, bits_to_take), value_to_tag)));
 }
@@ -134,7 +133,7 @@ fn test_tag_partial_err() {
     let value_to_tag = 0b1111;
 
     let result: crate::IResult<(_, usize), usize> =
-        tag(value_to_tag, bits_to_take)((input, offset));
+        tag(value_to_tag, bits_to_take).parse_next((input, offset));
 
     assert_eq!(
         result,
@@ -182,7 +181,7 @@ fn test_bool_0_partial() {
 fn test_bool_eof_partial() {
     let input = Partial::new([0b10000000].as_ref());
 
-    let result: crate::IResult<(Partial<&[u8]>, usize), bool> = bool((input, 8));
+    let result: crate::IResult<(Partial<&[u8]>, usize), bool> = bool.parse_next((input, 8));
 
     assert_eq!(
         result,
