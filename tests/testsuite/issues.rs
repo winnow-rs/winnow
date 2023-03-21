@@ -161,6 +161,7 @@ mod issue_647 {
 }
 
 #[test]
+#[cfg_attr(debug_assertions, should_panic)]
 fn issue_848_overflow_incomplete_bits_to_bytes() {
     fn take(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         use winnow::bytes::take;
@@ -175,7 +176,7 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
         parser(Partial::new(&b""[..])),
         Err(ErrMode::Cut(winnow::error::Error {
             input: Partial::new(&b""[..]),
-            kind: ErrorKind::TooLarge
+            kind: ErrorKind::Assert
         }))
     );
 }
