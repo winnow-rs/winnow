@@ -51,7 +51,7 @@ fn std_float(input: &[u8]) -> IResult<&[u8], f64, Error<&[u8]>> {
         Some(n) => Ok((&[], n)),
         None => Err(ErrMode::Backtrack(Error {
             input,
-            kind: ErrorKind::Float,
+            kind: ErrorKind::Slice,
         })),
     }
 }

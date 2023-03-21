@@ -245,7 +245,7 @@ fn many_till_test() {
         multi(&c[..]),
         Err(ErrMode::Backtrack(error_node_position!(
             &c[..],
-            ErrorKind::ManyTill,
+            ErrorKind::Many,
             error_position!(&c[..], ErrorKind::Tag)
         )))
     );
@@ -447,7 +447,7 @@ fn length_count_test() {
         cnt(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
             Partial::new(&b"xxx"[..]),
-            ErrorKind::TakeWhile1
+            ErrorKind::Slice
         )))
     );
     assert_eq!(
@@ -484,7 +484,7 @@ fn length_data_test() {
         take(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
             Partial::new(&b"xxx"[..]),
-            ErrorKind::TakeWhile1
+            ErrorKind::Slice
         )))
     );
     assert_eq!(
@@ -512,14 +512,14 @@ fn length_value_test() {
         length_value_1(Partial::new(&i1)),
         Err(ErrMode::Backtrack(error_position!(
             empty_complete,
-            ErrorKind::Eof
+            ErrorKind::Slice
         )))
     );
     assert_eq!(
         length_value_2(Partial::new(&i1)),
         Err(ErrMode::Backtrack(error_position!(
             empty_complete,
-            ErrorKind::Eof
+            ErrorKind::Token
         )))
     );
 
@@ -531,14 +531,14 @@ fn length_value_test() {
             length_value_1(Partial::new(&i2)),
             Err(ErrMode::Backtrack(error_position!(
                 middle_complete,
-                ErrorKind::Eof
+                ErrorKind::Slice
             )))
         );
         assert_eq!(
             length_value_2(Partial::new(&i2)),
             Err(ErrMode::Backtrack(error_position!(
                 empty_complete,
-                ErrorKind::Eof
+                ErrorKind::Token
             )))
         );
     }
@@ -649,7 +649,7 @@ fn fold_many1_test() {
         multi(Partial::new(c)),
         Err(ErrMode::Backtrack(error_position!(
             Partial::new(c),
-            ErrorKind::Many1
+            ErrorKind::Many
         )))
     );
     assert_eq!(
@@ -738,7 +738,7 @@ fn many1_count_test() {
         count1_nums(&b"hello"[..]),
         Err(ErrMode::Backtrack(error_position!(
             &b"hello"[..],
-            ErrorKind::TakeWhile1
+            ErrorKind::Slice
         )))
     );
 }

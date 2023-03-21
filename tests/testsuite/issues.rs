@@ -214,7 +214,7 @@ fn issue_1027_convert_error_panic_nonempty() {
     };
 
     let msg = convert_error(input, err);
-    assert_eq!(msg, "0: at line 1, in Eof:\na\n ^\n\n",);
+    assert_eq!(msg, "0: at line 1, in Token:\na\n ^\n\n",);
 }
 
 #[test]
@@ -257,7 +257,7 @@ fn issue_x_looser_fill_bounds() {
         fill_pair(b"123,,"),
         Err(ErrMode::Backtrack(winnow::error::Error {
             input: &b","[..],
-            kind: ErrorKind::TakeWhile1
+            kind: ErrorKind::Slice
         }))
     );
 }

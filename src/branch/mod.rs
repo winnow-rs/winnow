@@ -47,7 +47,7 @@ pub trait Alt<I, O, E> {
 /// assert_eq!(parser("123456"), Ok(("", "123456")));
 ///
 /// // both parsers failed, and with the default error type, alt will return the last error
-/// assert_eq!(parser(" "), Err(ErrMode::Backtrack(Error::new(" ", ErrorKind::TakeWhile1))));
+/// assert_eq!(parser(" "), Err(ErrMode::Backtrack(Error::new(" ", ErrorKind::Slice))));
 /// # }
 /// ```
 #[doc(alias = "choice")]
@@ -87,7 +87,7 @@ pub trait Permutation<I, O, E> {
 /// assert_eq!(parser("123abc"), Ok(("", ("abc", "123"))));
 ///
 /// // it will fail if one of the parsers failed
-/// assert_eq!(parser("abc;"), Err(ErrMode::Backtrack(Error::new(";", ErrorKind::TakeWhile1))));
+/// assert_eq!(parser("abc;"), Err(ErrMode::Backtrack(Error::new(";", ErrorKind::Slice))));
 /// # }
 /// ```
 ///
@@ -210,7 +210,7 @@ macro_rules! permutation_trait_impl(
           // or errored on the remaining input
           if let Some(err) = err {
             // There are remaining parsers, and all errored on the remaining input
-            return Err(ErrMode::Backtrack(err.append(input, ErrorKind::Permutation)));
+            return Err(ErrMode::Backtrack(err.append(input, ErrorKind::Alt)));
           }
 
           // All parsers were applied

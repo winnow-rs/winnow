@@ -32,7 +32,7 @@ use crate::Parser;
 /// }
 ///
 /// assert_eq!(parser("abc"), Ok(("bc",'a')));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
 /// ```
 ///
 /// ```
@@ -72,7 +72,7 @@ where
 {
     input
         .next_token()
-        .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::Eof))
+        .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::Token))
 }
 
 /// Recognizes a literal
@@ -296,14 +296,14 @@ where
 /// # use winnow::bytes::one_of;
 /// assert_eq!(one_of::<_, _, Error<_>>("abc")("b"), Ok(("", 'b')));
 /// assert_eq!(one_of::<_, _, Error<_>>("a")("bc"), Err(ErrMode::Backtrack(Error::new("bc", ErrorKind::Verify))));
-/// assert_eq!(one_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
+/// assert_eq!(one_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
 ///
 /// fn parser_fn(i: &str) -> IResult<&str, char> {
 ///     one_of(|c| c == 'a' || c == 'b')(i)
 /// }
 /// assert_eq!(parser_fn("abc"), Ok(("bc", 'a')));
 /// assert_eq!(parser_fn("cd"), Err(ErrMode::Backtrack(Error::new("cd", ErrorKind::Verify))));
-/// assert_eq!(parser_fn(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
+/// assert_eq!(parser_fn(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
 /// ```
 ///
 /// ```
@@ -354,7 +354,7 @@ where
 /// # use winnow::bytes::none_of;
 /// assert_eq!(none_of::<_, _, Error<_>>("abc")("z"), Ok(("", 'z')));
 /// assert_eq!(none_of::<_, _, Error<_>>("ab")("a"), Err(ErrMode::Backtrack(Error::new("a", ErrorKind::Verify))));
-/// assert_eq!(none_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
+/// assert_eq!(none_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
 /// ```
 ///
 /// ```
@@ -461,7 +461,7 @@ where
 
 /// Recognize the longest (at least 1) input slice that matches the [pattern][ContainsToken]
 ///
-/// It will return an `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::TakeWhile1)))` if the pattern wasn't met.
+/// It will return an `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::Slice)))` if the pattern wasn't met.
 ///
 /// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` or if the pattern reaches the end of the input.
 ///
@@ -480,7 +480,7 @@ where
 ///
 /// assert_eq!(alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
 /// assert_eq!(alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
-/// assert_eq!(alpha(b"12345"), Err(ErrMode::Backtrack(Error::new(&b"12345"[..], ErrorKind::TakeWhile1))));
+/// assert_eq!(alpha(b"12345"), Err(ErrMode::Backtrack(Error::new(&b"12345"[..], ErrorKind::Slice))));
 ///
 /// fn hex(s: &str) -> IResult<&str, &str> {
 ///   take_while1("1234567890ABCDEF")(s)
@@ -490,7 +490,7 @@ where
 /// assert_eq!(hex("DEADBEEF and others"), Ok((" and others", "DEADBEEF")));
 /// assert_eq!(hex("BADBABEsomething"), Ok(("something", "BADBABE")));
 /// assert_eq!(hex("D15EA5E"), Ok(("", "D15EA5E")));
-/// assert_eq!(hex(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::TakeWhile1))));
+/// assert_eq!(hex(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
 /// ```
 ///
 /// ```rust
@@ -505,7 +505,7 @@ where
 ///
 /// assert_eq!(alpha(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
 /// assert_eq!(alpha(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(alpha(Partial::new(b"12345")), Err(ErrMode::Backtrack(Error::new(Partial::new(&b"12345"[..]), ErrorKind::TakeWhile1))));
+/// assert_eq!(alpha(Partial::new(b"12345")), Err(ErrMode::Backtrack(Error::new(Partial::new(&b"12345"[..]), ErrorKind::Slice))));
 ///
 /// fn hex(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   take_while1("1234567890ABCDEF")(s)
@@ -544,7 +544,7 @@ where
     I: Stream,
     T: ContainsToken<<I as Stream>::Token>,
 {
-    let e: ErrorKind = ErrorKind::TakeWhile1;
+    let e: ErrorKind = ErrorKind::Slice;
     split_at_offset1_partial(&i, |c| !list.contains_token(c), e)
 }
 
@@ -556,13 +556,13 @@ where
     I: Stream,
     T: ContainsToken<<I as Stream>::Token>,
 {
-    let e: ErrorKind = ErrorKind::TakeWhile1;
+    let e: ErrorKind = ErrorKind::Slice;
     split_at_offset1_complete(&i, |c| !list.contains_token(c), e)
 }
 
 /// Recognize the longest (m <= len <= n) input slice that matches the [pattern][ContainsToken]
 ///
-/// It will return an `ErrMode::Backtrack(Error::new(_, ErrorKind::TakeWhileMN))` if the pattern wasn't met or is out
+/// It will return an `ErrMode::Backtrack(Error::new(_, ErrorKind::Slice))` if the pattern wasn't met or is out
 /// of range (m <= len <= n).
 ///
 /// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))`  if the pattern reaches the end of the input or is too short.
@@ -583,8 +583,8 @@ where
 /// assert_eq!(short_alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
 /// assert_eq!(short_alpha(b"lengthy"), Ok((&b"y"[..], &b"length"[..])));
 /// assert_eq!(short_alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
-/// assert_eq!(short_alpha(b"ed"), Err(ErrMode::Backtrack(Error::new(&b"ed"[..], ErrorKind::TakeWhileMN))));
-/// assert_eq!(short_alpha(b"12345"), Err(ErrMode::Backtrack(Error::new(&b"12345"[..], ErrorKind::TakeWhileMN))));
+/// assert_eq!(short_alpha(b"ed"), Err(ErrMode::Backtrack(Error::new(&b"ed"[..], ErrorKind::Slice))));
+/// assert_eq!(short_alpha(b"12345"), Err(ErrMode::Backtrack(Error::new(&b"12345"[..], ErrorKind::Slice))));
 /// ```
 ///
 /// ```rust
@@ -601,7 +601,7 @@ where
 /// assert_eq!(short_alpha(Partial::new(b"lengthy")), Ok((Partial::new(&b"y"[..]), &b"length"[..])));
 /// assert_eq!(short_alpha(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// assert_eq!(short_alpha(Partial::new(b"ed")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(short_alpha(Partial::new(b"12345")), Err(ErrMode::Backtrack(Error::new(Partial::new(&b"12345"[..]), ErrorKind::TakeWhileMN))));
+/// assert_eq!(short_alpha(Partial::new(b"12345")), Err(ErrMode::Backtrack(Error::new(Partial::new(&b"12345"[..]), ErrorKind::Slice))));
 /// ```
 #[inline(always)]
 pub fn take_while_m_n<T, I, Error: ParseError<I>>(
@@ -641,7 +641,7 @@ where
     for (processed, (offset, token)) in input.iter_offsets().enumerate() {
         if !list.contains_token(token) {
             if processed < m {
-                return Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN));
+                return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
             } else {
                 return Ok(input.next_slice(offset));
             }
@@ -683,7 +683,7 @@ where
     for (processed, (offset, token)) in input.iter_offsets().enumerate() {
         if !list.contains_token(token) {
             if processed < m {
-                return Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN));
+                return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
             } else {
                 return Ok(input.next_slice(offset));
             }
@@ -698,7 +698,7 @@ where
     if m <= final_count {
         Ok(input.next_slice(input.eof_offset()))
     } else {
-        Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN))
+        Err(ErrMode::from_error_kind(input, ErrorKind::Slice))
     }
 }
 
@@ -779,7 +779,7 @@ where
 
 /// Recognize the longest (at least 1) input slice till a [pattern][ContainsToken] is met.
 ///
-/// It will return `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::TakeTill1)))` if the input is empty or the
+/// It will return `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::Slice)))` if the input is empty or the
 /// predicate matches the first input.
 ///
 /// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if the match reaches the
@@ -796,9 +796,9 @@ where
 /// }
 ///
 /// assert_eq!(till_colon("latin:123"), Ok((":123", "latin")));
-/// assert_eq!(till_colon(":empty matched"), Err(ErrMode::Backtrack(Error::new(":empty matched", ErrorKind::TakeTill1))));
+/// assert_eq!(till_colon(":empty matched"), Err(ErrMode::Backtrack(Error::new(":empty matched", ErrorKind::Slice))));
 /// assert_eq!(till_colon("12345"), Ok(("", "12345")));
-/// assert_eq!(till_colon(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::TakeTill1))));
+/// assert_eq!(till_colon(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
 ///
 /// fn not_space(s: &str) -> IResult<&str, &str> {
 ///   take_till1(" \t\r\n")(s)
@@ -807,7 +807,7 @@ where
 /// assert_eq!(not_space("Hello, World!"), Ok((" World!", "Hello,")));
 /// assert_eq!(not_space("Sometimes\t"), Ok(("\t", "Sometimes")));
 /// assert_eq!(not_space("Nospace"), Ok(("", "Nospace")));
-/// assert_eq!(not_space(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::TakeTill1))));
+/// assert_eq!(not_space(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
 /// ```
 ///
 /// ```rust
@@ -820,7 +820,7 @@ where
 /// }
 ///
 /// assert_eq!(till_colon(Partial::new("latin:123")), Ok((Partial::new(":123"), "latin")));
-/// assert_eq!(till_colon(Partial::new(":empty matched")), Err(ErrMode::Backtrack(Error::new(Partial::new(":empty matched"), ErrorKind::TakeTill1))));
+/// assert_eq!(till_colon(Partial::new(":empty matched")), Err(ErrMode::Backtrack(Error::new(Partial::new(":empty matched"), ErrorKind::Slice))));
 /// assert_eq!(till_colon(Partial::new("12345")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// assert_eq!(till_colon(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
@@ -860,7 +860,7 @@ where
     I: Stream,
     T: ContainsToken<<I as Stream>::Token>,
 {
-    let e: ErrorKind = ErrorKind::TakeTill1;
+    let e: ErrorKind = ErrorKind::Slice;
     split_at_offset1_partial(&i, |c| list.contains_token(c), e)
 }
 
@@ -872,13 +872,13 @@ where
     I: Stream,
     T: ContainsToken<<I as Stream>::Token>,
 {
-    let e: ErrorKind = ErrorKind::TakeTill1;
+    let e: ErrorKind = ErrorKind::Slice;
     split_at_offset1_complete(&i, |c| list.contains_token(c), e)
 }
 
 /// Recognize an input slice containing the first N input elements (I[..N]).
 ///
-/// *Complete version*: It will return `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::Eof)))` if the input is shorter than the argument.
+/// *Complete version*: It will return `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::Slice)))` if the input is shorter than the argument.
 ///
 /// *Partial version*: if the input has less than N elements, `take` will
 /// return a `ErrMode::Incomplete(Needed::new(M))` where M is the number of
@@ -899,8 +899,8 @@ where
 ///
 /// assert_eq!(take6("1234567"), Ok(("7", "123456")));
 /// assert_eq!(take6("things"), Ok(("", "things")));
-/// assert_eq!(take6("short"), Err(ErrMode::Backtrack(Error::new("short", ErrorKind::Eof))));
-/// assert_eq!(take6(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
+/// assert_eq!(take6("short"), Err(ErrMode::Backtrack(Error::new("short", ErrorKind::Slice))));
+/// assert_eq!(take6(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
 /// ```
 ///
 /// The units that are taken will depend on the input type. For example, for a
@@ -970,7 +970,7 @@ where
 {
     match i.offset_at(c) {
         Ok(offset) => Ok(i.next_slice(offset)),
-        Err(_needed) => Err(ErrMode::from_error_kind(i, ErrorKind::Eof)),
+        Err(_needed) => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
     }
 }
 
@@ -978,7 +978,7 @@ where
 ///
 /// It doesn't consume the pattern.
 ///
-/// *Complete version*: It will return `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::TakeUntil)))`
+/// *Complete version*: It will return `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::Slice)))`
 /// if the pattern wasn't met.
 ///
 /// *Partial version*: will return a `ErrMode::Incomplete(Needed::new(N))` if the input doesn't
@@ -995,8 +995,8 @@ where
 /// }
 ///
 /// assert_eq!(until_eof("hello, worldeof"), Ok(("eof", "hello, world")));
-/// assert_eq!(until_eof("hello, world"), Err(ErrMode::Backtrack(Error::new("hello, world", ErrorKind::TakeUntil))));
-/// assert_eq!(until_eof(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::TakeUntil))));
+/// assert_eq!(until_eof("hello, world"), Err(ErrMode::Backtrack(Error::new("hello, world", ErrorKind::Slice))));
+/// assert_eq!(until_eof(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
 /// ```
 ///
@@ -1056,7 +1056,7 @@ where
 {
     match i.find_slice(t) {
         Some(offset) => Ok(i.next_slice(offset)),
-        None => Err(ErrMode::from_error_kind(i, ErrorKind::TakeUntil)),
+        None => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
     }
 }
 
@@ -1064,7 +1064,7 @@ where
 ///
 /// It doesn't consume the pattern.
 ///
-/// *Complete version*: It will return `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::TakeUntil)))`
+/// *Complete version*: It will return `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::Slice)))`
 /// if the pattern wasn't met.
 ///
 /// *Partial version*: will return a `ErrMode::Incomplete(Needed::new(N))` if the input doesn't
@@ -1081,10 +1081,10 @@ where
 /// }
 ///
 /// assert_eq!(until_eof("hello, worldeof"), Ok(("eof", "hello, world")));
-/// assert_eq!(until_eof("hello, world"), Err(ErrMode::Backtrack(Error::new("hello, world", ErrorKind::TakeUntil))));
-/// assert_eq!(until_eof(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::TakeUntil))));
+/// assert_eq!(until_eof("hello, world"), Err(ErrMode::Backtrack(Error::new("hello, world", ErrorKind::Slice))));
+/// assert_eq!(until_eof(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
-/// assert_eq!(until_eof("eof"), Err(ErrMode::Backtrack(Error::new("eof", ErrorKind::TakeUntil))));
+/// assert_eq!(until_eof("eof"), Err(ErrMode::Backtrack(Error::new("eof", ErrorKind::Slice))));
 /// ```
 ///
 /// ```rust
@@ -1100,7 +1100,7 @@ where
 /// assert_eq!(until_eof(Partial::new("hello, world")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// assert_eq!(until_eof(Partial::new("hello, worldeo")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// assert_eq!(until_eof(Partial::new("1eof2eof")), Ok((Partial::new("eof2eof"), "1")));
-/// assert_eq!(until_eof(Partial::new("eof")),  Err(ErrMode::Backtrack(Error::new(Partial::new("eof"), ErrorKind::TakeUntil))));
+/// assert_eq!(until_eof(Partial::new("eof")),  Err(ErrMode::Backtrack(Error::new(Partial::new("eof"), ErrorKind::Slice))));
 /// ```
 #[inline(always)]
 pub fn take_until1<T, I, Error: ParseError<I>>(
@@ -1130,7 +1130,7 @@ where
 {
     match i.find_slice(t) {
         None => Err(ErrMode::Incomplete(Needed::Unknown)),
-        Some(0) => Err(ErrMode::from_error_kind(i, ErrorKind::TakeUntil)),
+        Some(0) => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
         Some(offset) => Ok(i.next_slice(offset)),
     }
 }
@@ -1144,7 +1144,7 @@ where
     T: SliceLen,
 {
     match i.find_slice(t) {
-        None | Some(0) => Err(ErrMode::from_error_kind(i, ErrorKind::TakeUntil)),
+        None | Some(0) => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
         Some(offset) => Ok(i.next_slice(offset)),
     }
 }

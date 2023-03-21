@@ -288,7 +288,7 @@ where
         let (input, o1) = self.f.parse_next(input)?;
         let res = match (self.g)(o1) {
             Ok(o2) => Ok((input, o2)),
-            Err(e) => Err(ErrMode::from_external_error(i, ErrorKind::MapRes, e)),
+            Err(e) => Err(ErrMode::from_external_error(i, ErrorKind::Verify, e)),
         };
         trace_result("verify", &res);
         res
@@ -479,7 +479,7 @@ where
 ///
 /// assert_eq!(parser(true, "abcd;"), Ok((";", Some("abcd"))));
 /// assert_eq!(parser(false, "abcd;"), Ok(("abcd;", None)));
-/// assert_eq!(parser(true, "123;"), Err(ErrMode::Backtrack(Error::new("123;", ErrorKind::TakeWhile1))));
+/// assert_eq!(parser(true, "123;"), Err(ErrMode::Backtrack(Error::new("123;", ErrorKind::Slice))));
 /// assert_eq!(parser(false, "123;"), Ok(("123;", None)));
 /// # }
 /// ```
@@ -516,7 +516,7 @@ where
 /// let mut parser = peek(alpha1);
 ///
 /// assert_eq!(parser("abcd;"), Ok(("abcd;", "abcd")));
-/// assert_eq!(parser("123;"), Err(ErrMode::Backtrack(Error::new("123;", ErrorKind::TakeWhile1))));
+/// assert_eq!(parser("123;"), Err(ErrMode::Backtrack(Error::new("123;", ErrorKind::Slice))));
 /// # }
 /// ```
 #[doc(alias = "look_ahead")]
@@ -903,7 +903,7 @@ where
 ///
 /// assert_eq!(parser("+10 ab"), Ok((" ab", "10")));
 /// assert_eq!(parser("ab"), Ok(("", "ab")));
-/// assert_eq!(parser("+"), Err(ErrMode::Cut(Error { input: "", kind: ErrorKind::TakeWhile1 })));
+/// assert_eq!(parser("+"), Err(ErrMode::Cut(Error { input: "", kind: ErrorKind::Slice })));
 /// # }
 /// ```
 pub fn cut_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl FnMut(I) -> IResult<I, O, E>

@@ -34,22 +34,22 @@ mod complete {
         assert_parse!(alpha1(a), Ok((empty, a)));
         assert_eq!(
             alpha1(b),
-            Err(ErrMode::Backtrack(Error::new(b, ErrorKind::TakeWhile1)))
+            Err(ErrMode::Backtrack(Error::new(b, ErrorKind::Slice)))
         );
         assert_eq!(alpha1::<_, Error<_>>(c), Ok((&c[1..], &b"a"[..])));
         assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12".as_bytes(), &b"az"[..])));
         assert_eq!(
             digit1(a),
-            Err(ErrMode::Backtrack(Error::new(a, ErrorKind::TakeWhile1)))
+            Err(ErrMode::Backtrack(Error::new(a, ErrorKind::Slice)))
         );
         assert_eq!(digit1::<_, Error<_>>(b), Ok((empty, b)));
         assert_eq!(
             digit1(c),
-            Err(ErrMode::Backtrack(Error::new(c, ErrorKind::TakeWhile1)))
+            Err(ErrMode::Backtrack(Error::new(c, ErrorKind::Slice)))
         );
         assert_eq!(
             digit1(d),
-            Err(ErrMode::Backtrack(Error::new(d, ErrorKind::TakeWhile1)))
+            Err(ErrMode::Backtrack(Error::new(d, ErrorKind::Slice)))
         );
         assert_eq!(hex_digit1::<_, Error<_>>(a), Ok((empty, a)));
         assert_eq!(hex_digit1::<_, Error<_>>(b), Ok((empty, b)));
@@ -60,20 +60,20 @@ mod complete {
         );
         assert_eq!(
             hex_digit1(e),
-            Err(ErrMode::Backtrack(Error::new(e, ErrorKind::TakeWhile1)))
+            Err(ErrMode::Backtrack(Error::new(e, ErrorKind::Slice)))
         );
         assert_eq!(
             oct_digit1(a),
-            Err(ErrMode::Backtrack(Error::new(a, ErrorKind::TakeWhile1)))
+            Err(ErrMode::Backtrack(Error::new(a, ErrorKind::Slice)))
         );
         assert_eq!(oct_digit1::<_, Error<_>>(b), Ok((empty, b)));
         assert_eq!(
             oct_digit1(c),
-            Err(ErrMode::Backtrack(Error::new(c, ErrorKind::TakeWhile1)))
+            Err(ErrMode::Backtrack(Error::new(c, ErrorKind::Slice)))
         );
         assert_eq!(
             oct_digit1(d),
-            Err(ErrMode::Backtrack(Error::new(d, ErrorKind::TakeWhile1)))
+            Err(ErrMode::Backtrack(Error::new(d, ErrorKind::Slice)))
         );
         assert_eq!(alphanumeric1::<_, Error<_>>(a), Ok((empty, a)));
         //assert_eq!(fix_error!(b,(), alphanumeric), Ok((empty, b)));
@@ -98,22 +98,22 @@ mod complete {
         assert_eq!(alpha1::<_, Error<_>>(a), Ok((empty, a)));
         assert_eq!(
             alpha1(b),
-            Err(ErrMode::Backtrack(Error::new(b, ErrorKind::TakeWhile1)))
+            Err(ErrMode::Backtrack(Error::new(b, ErrorKind::Slice)))
         );
         assert_eq!(alpha1::<_, Error<_>>(c), Ok((&c[1..], "a")));
         assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12", "az")));
         assert_eq!(
             digit1(a),
-            Err(ErrMode::Backtrack(Error::new(a, ErrorKind::TakeWhile1)))
+            Err(ErrMode::Backtrack(Error::new(a, ErrorKind::Slice)))
         );
         assert_eq!(digit1::<_, Error<_>>(b), Ok((empty, b)));
         assert_eq!(
             digit1(c),
-            Err(ErrMode::Backtrack(Error::new(c, ErrorKind::TakeWhile1)))
+            Err(ErrMode::Backtrack(Error::new(c, ErrorKind::Slice)))
         );
         assert_eq!(
             digit1(d),
-            Err(ErrMode::Backtrack(Error::new(d, ErrorKind::TakeWhile1)))
+            Err(ErrMode::Backtrack(Error::new(d, ErrorKind::Slice)))
         );
         assert_eq!(hex_digit1::<_, Error<_>>(a), Ok((empty, a)));
         assert_eq!(hex_digit1::<_, Error<_>>(b), Ok((empty, b)));
@@ -121,20 +121,20 @@ mod complete {
         assert_eq!(hex_digit1::<_, Error<_>>(d), Ok(("zé12", "a")));
         assert_eq!(
             hex_digit1(e),
-            Err(ErrMode::Backtrack(Error::new(e, ErrorKind::TakeWhile1)))
+            Err(ErrMode::Backtrack(Error::new(e, ErrorKind::Slice)))
         );
         assert_eq!(
             oct_digit1(a),
-            Err(ErrMode::Backtrack(Error::new(a, ErrorKind::TakeWhile1)))
+            Err(ErrMode::Backtrack(Error::new(a, ErrorKind::Slice)))
         );
         assert_eq!(oct_digit1::<_, Error<_>>(b), Ok((empty, b)));
         assert_eq!(
             oct_digit1(c),
-            Err(ErrMode::Backtrack(Error::new(c, ErrorKind::TakeWhile1)))
+            Err(ErrMode::Backtrack(Error::new(c, ErrorKind::Slice)))
         );
         assert_eq!(
             oct_digit1(d),
-            Err(ErrMode::Backtrack(Error::new(d, ErrorKind::TakeWhile1)))
+            Err(ErrMode::Backtrack(Error::new(d, ErrorKind::Slice)))
         );
         assert_eq!(alphanumeric1::<_, Error<_>>(a), Ok((empty, a)));
         //assert_eq!(fix_error!(b,(), alphanumeric), Ok((empty, b)));
@@ -241,19 +241,13 @@ mod complete {
         let i = &b"g"[..];
         assert_parse!(
             hex_digit1(i),
-            Err(ErrMode::Backtrack(error_position!(
-                i,
-                ErrorKind::TakeWhile1
-            )))
+            Err(ErrMode::Backtrack(error_position!(i, ErrorKind::Slice)))
         );
 
         let i = &b"G"[..];
         assert_parse!(
             hex_digit1(i),
-            Err(ErrMode::Backtrack(error_position!(
-                i,
-                ErrorKind::TakeWhile1
-            )))
+            Err(ErrMode::Backtrack(error_position!(i, ErrorKind::Slice)))
         );
 
         assert!(AsChar::is_hex_digit(b'0'));
@@ -278,10 +272,7 @@ mod complete {
         let i = &b"8"[..];
         assert_parse!(
             oct_digit1(i),
-            Err(ErrMode::Backtrack(error_position!(
-                i,
-                ErrorKind::TakeWhile1
-            )))
+            Err(ErrMode::Backtrack(error_position!(i, ErrorKind::Slice)))
         );
 
         assert!(AsChar::is_oct_digit(b'0'));
@@ -399,11 +390,7 @@ mod complete {
             _ => unreachable!(),
         };
 
-        let (i, s) = match digit1::<_, crate::error::Error<_>>(i) {
-            Ok((i, s)) => (i, s),
-            Err(_) => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
-        };
-
+        let (i, s) = digit1::<_, crate::error::Error<_>>(i)?;
         match s.parse_slice() {
             Some(n) => {
                 if sign {
@@ -412,7 +399,7 @@ mod complete {
                     Ok((i, -n))
                 }
             }
-            None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
+            None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
         }
     }
 
@@ -420,7 +407,7 @@ mod complete {
         let (i, s) = digit1(i)?;
         match s.parse_slice() {
             Some(n) => Ok((i, n)),
-            None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
+            None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
         }
     }
 
@@ -452,7 +439,7 @@ mod complete {
             hex_u32(&b";"[..]),
             Err(ErrMode::Backtrack(error_position!(
                 &b";"[..],
-                ErrorKind::IsA
+                ErrorKind::Slice
             )))
         );
         assert_parse!(hex_u32(&b"ff;"[..]), Ok((&b";"[..], 255)));
@@ -463,14 +450,14 @@ mod complete {
             hex_u32(&b"00c5a31be2;"[..]), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 &b"00c5a31be2;"[..],
-                ErrorKind::IsA
+                ErrorKind::Verify
             )))
         );
         assert_parse!(
             hex_u32(&b"c5a31be201;"[..]), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 &b"c5a31be201;"[..],
-                ErrorKind::IsA
+                ErrorKind::Verify
             )))
         );
         assert_parse!(hex_u32(&b"ffffffff;"[..]), Ok((&b";"[..], 4_294_967_295)));
@@ -478,14 +465,14 @@ mod complete {
             hex_u32(&b"ffffffffffffffff;"[..]), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 &b"ffffffffffffffff;"[..],
-                ErrorKind::IsA
+                ErrorKind::Verify
             )))
         );
         assert_parse!(
             hex_u32(&b"ffffffffffffffff"[..]), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 &b"ffffffffffffffff"[..],
-                ErrorKind::IsA
+                ErrorKind::Verify
             )))
         );
         assert_parse!(hex_u32(&b"0x1be2;"[..]), Ok((&b"x1be2;"[..], 0)));
@@ -534,8 +521,8 @@ mod complete {
         assert_parse!(
             float::<_, f64, _>(remaining_exponent),
             Err(ErrMode::Cut(Error {
-                input: "-1.234E-",
-                kind: ErrorKind::Float
+                input: "",
+                kind: ErrorKind::Slice
             }))
         );
 
@@ -628,14 +615,14 @@ mod complete {
             esc(&b"AB\\"[..]),
             Err(ErrMode::Backtrack(error_position!(
                 &b""[..],
-                ErrorKind::Eof
+                ErrorKind::Token
             )))
         );
         assert_eq!(
             esc(&b"AB\\A"[..]),
             Err(ErrMode::Backtrack(error_node_position!(
                 &b"AB\\A"[..],
-                ErrorKind::Eof,
+                ErrorKind::Token,
                 error_position!(&b"A"[..], ErrorKind::Verify)
             )))
         );
@@ -662,13 +649,13 @@ mod complete {
         assert_eq!(esc("ab\\\"12"), Ok(("12", "ab\\\"")));
         assert_eq!(
             esc("AB\\"),
-            Err(ErrMode::Backtrack(error_position!("", ErrorKind::Eof)))
+            Err(ErrMode::Backtrack(error_position!("", ErrorKind::Token)))
         );
         assert_eq!(
             esc("AB\\A"),
             Err(ErrMode::Backtrack(error_node_position!(
                 "AB\\A",
-                ErrorKind::Eof,
+                ErrorKind::Token,
                 error_position!("A", ErrorKind::Verify)
             )))
         );
@@ -877,7 +864,7 @@ mod partial {
             alpha1(Partial::new(b)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(b),
-                ErrorKind::TakeWhile1
+                ErrorKind::Slice
             )))
         );
         assert_eq!(
@@ -892,7 +879,7 @@ mod partial {
             digit1(Partial::new(a)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(a),
-                ErrorKind::TakeWhile1
+                ErrorKind::Slice
             )))
         );
         assert_eq!(
@@ -903,14 +890,14 @@ mod partial {
             digit1(Partial::new(c)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(c),
-                ErrorKind::TakeWhile1
+                ErrorKind::Slice
             )))
         );
         assert_eq!(
             digit1(Partial::new(d)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(d),
-                ErrorKind::TakeWhile1
+                ErrorKind::Slice
             )))
         );
         assert_eq!(
@@ -933,14 +920,14 @@ mod partial {
             hex_digit1(Partial::new(e)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(e),
-                ErrorKind::TakeWhile1
+                ErrorKind::Slice
             )))
         );
         assert_eq!(
             oct_digit1(Partial::new(a)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(a),
-                ErrorKind::TakeWhile1
+                ErrorKind::Slice
             )))
         );
         assert_eq!(
@@ -951,14 +938,14 @@ mod partial {
             oct_digit1(Partial::new(c)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(c),
-                ErrorKind::TakeWhile1
+                ErrorKind::Slice
             )))
         );
         assert_eq!(
             oct_digit1(Partial::new(d)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(d),
-                ErrorKind::TakeWhile1
+                ErrorKind::Slice
             )))
         );
         assert_eq!(
@@ -1000,7 +987,7 @@ mod partial {
             alpha1(Partial::new(b)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(b),
-                ErrorKind::TakeWhile1
+                ErrorKind::Slice
             )))
         );
         assert_eq!(
@@ -1015,7 +1002,7 @@ mod partial {
             digit1(Partial::new(a)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(a),
-                ErrorKind::TakeWhile1
+                ErrorKind::Slice
             )))
         );
         assert_eq!(
@@ -1026,14 +1013,14 @@ mod partial {
             digit1(Partial::new(c)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(c),
-                ErrorKind::TakeWhile1
+                ErrorKind::Slice
             )))
         );
         assert_eq!(
             digit1(Partial::new(d)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(d),
-                ErrorKind::TakeWhile1
+                ErrorKind::Slice
             )))
         );
         assert_eq!(
@@ -1056,14 +1043,14 @@ mod partial {
             hex_digit1(Partial::new(e)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(e),
-                ErrorKind::TakeWhile1
+                ErrorKind::Slice
             )))
         );
         assert_eq!(
             oct_digit1(Partial::new(a)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(a),
-                ErrorKind::TakeWhile1
+                ErrorKind::Slice
             )))
         );
         assert_eq!(
@@ -1074,14 +1061,14 @@ mod partial {
             oct_digit1(Partial::new(c)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(c),
-                ErrorKind::TakeWhile1
+                ErrorKind::Slice
             )))
         );
         assert_eq!(
             oct_digit1(Partial::new(d)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(d),
-                ErrorKind::TakeWhile1
+                ErrorKind::Slice
             )))
         );
         assert_eq!(
@@ -1222,7 +1209,7 @@ mod partial {
             hex_digit1(Partial::new(i)),
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new(i),
-                ErrorKind::TakeWhile1
+                ErrorKind::Slice
             )))
         );
 
@@ -1231,7 +1218,7 @@ mod partial {
             hex_digit1(Partial::new(i)),
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new(i),
-                ErrorKind::TakeWhile1
+                ErrorKind::Slice
             )))
         );
 
@@ -1262,7 +1249,7 @@ mod partial {
             oct_digit1(Partial::new(i)),
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new(i),
-                ErrorKind::TakeWhile1
+                ErrorKind::Slice
             )))
         );
 
@@ -1404,11 +1391,7 @@ mod partial {
             _ => unreachable!(),
         };
 
-        let (i, s) = match digit1::<_, crate::error::Error<_>>(i) {
-            Ok((i, s)) => (i, s),
-            Err(ErrMode::Incomplete(i)) => return Err(ErrMode::Incomplete(i)),
-            Err(_) => return Err(ErrMode::from_error_kind(input, ErrorKind::Digit)),
-        };
+        let (i, s) = digit1::<_, crate::error::Error<_>>(i)?;
         match s.parse_slice() {
             Some(n) => {
                 if sign {
@@ -1417,7 +1400,7 @@ mod partial {
                     Ok((i, -n))
                 }
             }
-            None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
+            None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
         }
     }
 
@@ -1425,7 +1408,7 @@ mod partial {
         let (i, s) = digit1(i)?;
         match s.parse_slice() {
             Some(n) => Ok((i, n)),
-            None => Err(ErrMode::from_error_kind(i, ErrorKind::Digit)),
+            None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
         }
     }
 
@@ -1457,7 +1440,7 @@ mod partial {
             hex_u32(Partial::new(&b";"[..])),
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new(&b";"[..]),
-                ErrorKind::IsA
+                ErrorKind::Slice
             )))
         );
         assert_parse!(
@@ -1480,14 +1463,14 @@ mod partial {
             hex_u32(Partial::new(&b"00c5a31be2;"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new(&b"00c5a31be2;"[..]),
-                ErrorKind::IsA
+                ErrorKind::Verify
             )))
         );
         assert_parse!(
             hex_u32(Partial::new(&b"c5a31be201;"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new(&b"c5a31be201;"[..]),
-                ErrorKind::IsA
+                ErrorKind::Verify
             )))
         );
         assert_parse!(
@@ -1498,14 +1481,14 @@ mod partial {
             hex_u32(Partial::new(&b"ffffffffffffffff;"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new(&b"ffffffffffffffff;"[..]),
-                ErrorKind::IsA
+                ErrorKind::Verify
             )))
         );
         assert_parse!(
             hex_u32(Partial::new(&b"ffffffffffffffff"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new(&b"ffffffffffffffff"[..]),
-                ErrorKind::IsA
+                ErrorKind::Verify
             )))
         );
         assert_parse!(

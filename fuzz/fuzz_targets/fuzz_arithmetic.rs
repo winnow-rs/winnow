@@ -31,7 +31,7 @@ fn incr(i: &str) -> IResult<&str, ()> {
         if *l.borrow() >= 8192 {
             Err(winnow::error::ErrMode::Cut(winnow::error::Error::new(
                 i,
-                winnow::error::ErrorKind::Count,
+                winnow::error::ErrorKind::Many,
             )))
         } else {
             Ok((i, ()))

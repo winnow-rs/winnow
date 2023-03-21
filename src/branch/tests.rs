@@ -166,7 +166,7 @@ fn permutation_test() {
         perm(Partial::new(d)),
         Err(ErrMode::Backtrack(error_node_position!(
             Partial::new(&b"efgxyzabcdefghi"[..]),
-            ErrorKind::Permutation,
+            ErrorKind::Alt,
             error_position!(Partial::new(&b"xyzabcdefghi"[..]), ErrorKind::Tag)
         )))
     );
