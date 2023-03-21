@@ -432,8 +432,8 @@ where
 ///
 /// assert_eq!(parser("2^3^2"), Ok(("", 512)));
 /// assert_eq!(parser("2"), Ok(("", 2)));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Digit))));
-/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(Error::new("def|abc", ErrorKind::Digit))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::TakeWhile1))));
+/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(Error::new("def|abc", ErrorKind::TakeWhile1))));
 /// ```
 #[cfg(feature = "alloc")]
 pub fn separated_foldr1<I, O, O2, E, P, S, Op>(

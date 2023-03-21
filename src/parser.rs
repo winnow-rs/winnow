@@ -108,7 +108,7 @@ pub trait Parser<I, O, E> {
     /// let mut parser = alpha1.value(1234);
     ///
     /// assert_eq!(parser.parse_next("abcd"), Ok(("", 1234)));
-    /// assert_eq!(parser.parse_next("123abcd;"), Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::Alpha))));
+    /// assert_eq!(parser.parse_next("123abcd;"), Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::TakeWhile1))));
     /// # }
     /// ```
     #[doc(alias = "to")]
@@ -132,7 +132,7 @@ pub trait Parser<I, O, E> {
     /// let mut parser = alpha1.void();
     ///
     /// assert_eq!(parser.parse_next("abcd"), Ok(("", ())));
-    /// assert_eq!(parser.parse_next("123abcd;"), Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::Alpha))));
+    /// assert_eq!(parser.parse_next("123abcd;"), Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::TakeWhile1))));
     /// # }
     /// ```
     fn void(self) -> Void<Self, O>
@@ -329,7 +329,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_next("123456"), Ok(("", 6)));
     ///
     /// // this will fail if digit1 fails
-    /// assert_eq!(parser.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
+    /// assert_eq!(parser.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::TakeWhile1))));
     /// # }
     /// ```
     fn map<G, O2>(self, g: G) -> Map<Self, G, O>
@@ -355,7 +355,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parse.parse_next("123"), Ok(("", 123)));
     ///
     /// // this will fail if digit1 fails
-    /// assert_eq!(parse.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
+    /// assert_eq!(parse.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::TakeWhile1))));
     ///
     /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
     /// assert_eq!(parse.parse_next("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::MapRes))));
@@ -384,7 +384,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parse.parse_next("123"), Ok(("", 123)));
     ///
     /// // this will fail if digit1 fails
-    /// assert_eq!(parse.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
+    /// assert_eq!(parse.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::TakeWhile1))));
     ///
     /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
     /// assert_eq!(parse.parse_next("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::Verify))));
@@ -485,7 +485,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_next("123456"), Ok(("", 123456)));
     ///
     /// // this will fail if digit1 fails
-    /// assert_eq!(parser.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
+    /// assert_eq!(parser.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::TakeWhile1))));
     /// ```
     #[doc(alias = "from_str")]
     fn parse_to<O2>(self) -> ParseTo<Self, O, O2>
@@ -512,7 +512,7 @@ pub trait Parser<I, O, E> {
     ///
     /// assert_eq!(parser.parse_next("abcd"), Ok(("", "abcd")));
     /// assert_eq!(parser.parse_next("abcde"), Err(ErrMode::Backtrack(Error::new("abcde", ErrorKind::Verify))));
-    /// assert_eq!(parser.parse_next("123abcd;"),Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::Alpha))));
+    /// assert_eq!(parser.parse_next("123abcd;"),Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::TakeWhile1))));
     /// # }
     /// ```
     #[doc(alias = "satisfy")]
@@ -834,7 +834,7 @@ mod tests {
             parser.parse_next("123def"),
             Err(ErrMode::Backtrack(Error {
                 input: "123def",
-                kind: ErrorKind::Alpha
+                kind: ErrorKind::TakeWhile1
             }))
         );
     }

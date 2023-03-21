@@ -1,14 +1,18 @@
 //! Parsers recognizing bytes streams
 
-pub(crate) mod complete;
-pub(crate) mod streaming;
 #[cfg(test)]
 mod tests;
 
+use crate::error::ErrMode;
+use crate::error::ErrorKind;
+use crate::error::Needed;
 use crate::error::ParseError;
+use crate::lib::std::result::Result::Ok;
 use crate::stream::{
-    Compare, ContainsToken, FindSlice, SliceLen, Stream, StreamIsPartial, ToUsize,
+    split_at_offset1_complete, split_at_offset1_partial, split_at_offset_complete,
+    split_at_offset_partial, Compare, CompareResult, ContainsToken, FindSlice, SliceLen, Stream,
 };
+use crate::stream::{StreamIsPartial, ToUsize};
 use crate::trace::trace;
 use crate::IResult;
 
@@ -45,11 +49,29 @@ where
 {
     trace("any", move |input: I| {
         if input.is_partial() {
-            streaming::any(input)
+            streaming_any(input)
         } else {
-            complete::any(input)
+            complete_any(input)
         }
     })(input)
+}
+
+pub(crate) fn streaming_any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Token, E>
+where
+    I: Stream,
+{
+    input
+        .next_token()
+        .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))
+}
+
+pub(crate) fn complete_any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Token, E>
+where
+    I: Stream,
+{
+    input
+        .next_token()
+        .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::Eof))
 }
 
 /// Recognizes a literal
@@ -106,11 +128,50 @@ where
     trace("tag", move |i: I| {
         let t = tag.clone();
         if i.is_partial() {
-            streaming::tag_internal(i, t)
+            streaming_tag_internal(i, t)
         } else {
-            complete::tag_internal(i, t)
+            complete_tag_internal(i, t)
         }
     })
+}
+
+pub(crate) fn streaming_tag_internal<T, I, Error: ParseError<I>>(
+    i: I,
+    t: T,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream + Compare<T>,
+    T: SliceLen,
+{
+    let tag_len = t.slice_len();
+    match i.compare(t) {
+        CompareResult::Ok => Ok(i.next_slice(tag_len)),
+        CompareResult::Incomplete => {
+            Err(ErrMode::Incomplete(Needed::new(tag_len - i.eof_offset())))
+        }
+        CompareResult::Error => {
+            let e: ErrorKind = ErrorKind::Tag;
+            Err(ErrMode::from_error_kind(i, e))
+        }
+    }
+}
+
+pub(crate) fn complete_tag_internal<T, I, Error: ParseError<I>>(
+    i: I,
+    t: T,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream + Compare<T>,
+    T: SliceLen,
+{
+    let tag_len = t.slice_len();
+    match i.compare(t) {
+        CompareResult::Ok => Ok(i.next_slice(tag_len)),
+        CompareResult::Incomplete | CompareResult::Error => {
+            let e: ErrorKind = ErrorKind::Tag;
+            Err(ErrMode::from_error_kind(i, e))
+        }
+    }
 }
 
 /// Recognizes a case insensitive literal.
@@ -167,11 +228,52 @@ where
     trace("tag_no_case", move |i: I| {
         let t = tag.clone();
         if i.is_partial() {
-            streaming::tag_no_case_internal(i, t)
+            streaming_tag_no_case_internal(i, t)
         } else {
-            complete::tag_no_case_internal(i, t)
+            complete_tag_no_case_internal(i, t)
         }
     })
+}
+
+pub(crate) fn streaming_tag_no_case_internal<T, I, Error: ParseError<I>>(
+    i: I,
+    t: T,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream + Compare<T>,
+    T: SliceLen,
+{
+    let tag_len = t.slice_len();
+
+    match (i).compare_no_case(t) {
+        CompareResult::Ok => Ok(i.next_slice(tag_len)),
+        CompareResult::Incomplete => {
+            Err(ErrMode::Incomplete(Needed::new(tag_len - i.eof_offset())))
+        }
+        CompareResult::Error => {
+            let e: ErrorKind = ErrorKind::Tag;
+            Err(ErrMode::from_error_kind(i, e))
+        }
+    }
+}
+
+pub(crate) fn complete_tag_no_case_internal<T, I, Error: ParseError<I>>(
+    i: I,
+    t: T,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream + Compare<T>,
+    T: SliceLen,
+{
+    let tag_len = t.slice_len();
+
+    match (i).compare_no_case(t) {
+        CompareResult::Ok => Ok(i.next_slice(tag_len)),
+        CompareResult::Incomplete | CompareResult::Error => {
+            let e: ErrorKind = ErrorKind::Tag;
+            Err(ErrMode::from_error_kind(i, e))
+        }
+    }
 }
 
 /// Recognize a token that matches the [pattern][ContainsToken]
@@ -234,11 +336,45 @@ where
 {
     trace("one_of", move |i: I| {
         if i.is_partial() {
-            streaming::one_of_internal(i, &list)
+            streaming_one_of_internal(i, &list)
         } else {
-            complete::one_of_internal(i, &list)
+            complete_one_of_internal(i, &list)
         }
     })
+}
+
+pub(crate) fn streaming_one_of_internal<I, T, E: ParseError<I>>(
+    input: I,
+    list: &T,
+) -> IResult<I, <I as Stream>::Token, E>
+where
+    I: Stream,
+    <I as Stream>::Token: Copy,
+    T: ContainsToken<<I as Stream>::Token>,
+{
+    let (new_input, token) = input
+        .next_token()
+        .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
+    if list.contains_token(token) {
+        Ok((new_input, token))
+    } else {
+        Err(ErrMode::from_error_kind(input, ErrorKind::OneOf))
+    }
+}
+
+pub(crate) fn complete_one_of_internal<I, T, E: ParseError<I>>(
+    input: I,
+    list: &T,
+) -> IResult<I, <I as Stream>::Token, E>
+where
+    I: Stream,
+    <I as Stream>::Token: Copy,
+    T: ContainsToken<<I as Stream>::Token>,
+{
+    input
+        .next_token()
+        .filter(|(_, t)| list.contains_token(*t))
+        .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::OneOf))
 }
 
 /// Recognize a token that does not match the [pattern][ContainsToken]
@@ -277,11 +413,45 @@ where
 {
     trace("none_of", move |i: I| {
         if i.is_partial() {
-            streaming::none_of_internal(i, &list)
+            streaming_none_of_internal(i, &list)
         } else {
-            complete::none_of_internal(i, &list)
+            complete_none_of_internal(i, &list)
         }
     })
+}
+
+pub(crate) fn streaming_none_of_internal<I, T, E: ParseError<I>>(
+    input: I,
+    list: &T,
+) -> IResult<I, <I as Stream>::Token, E>
+where
+    I: Stream,
+    <I as Stream>::Token: Copy,
+    T: ContainsToken<<I as Stream>::Token>,
+{
+    let (new_input, token) = input
+        .next_token()
+        .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
+    if !list.contains_token(token) {
+        Ok((new_input, token))
+    } else {
+        Err(ErrMode::from_error_kind(input, ErrorKind::NoneOf))
+    }
+}
+
+pub(crate) fn complete_none_of_internal<I, T, E: ParseError<I>>(
+    input: I,
+    list: &T,
+) -> IResult<I, <I as Stream>::Token, E>
+where
+    I: Stream,
+    <I as Stream>::Token: Copy,
+    T: ContainsToken<<I as Stream>::Token>,
+{
+    input
+        .next_token()
+        .filter(|(_, t)| !list.contains_token(*t))
+        .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::NoneOf))
 }
 
 /// Recognize the longest input slice (if any) that matches the [pattern][ContainsToken]
@@ -333,11 +503,33 @@ where
 {
     trace("take_while0", move |i: I| {
         if i.is_partial() {
-            streaming::take_while_internal(i, &list)
+            streaming_take_while_internal(i, &list)
         } else {
-            complete::take_while_internal(i, &list)
+            complete_take_while_internal(i, &list)
         }
     })
+}
+
+pub(crate) fn streaming_take_while_internal<T, I, Error: ParseError<I>>(
+    i: I,
+    list: &T,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
+{
+    split_at_offset_partial(&i, |c| !list.contains_token(c))
+}
+
+pub(crate) fn complete_take_while_internal<T, I, Error: ParseError<I>>(
+    i: I,
+    list: &T,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
+{
+    split_at_offset_complete(&i, |c| !list.contains_token(c))
 }
 
 /// Recognize the longest (at least 1) input slice that matches the [pattern][ContainsToken]
@@ -410,11 +602,35 @@ where
 {
     trace("take_while1", move |i: I| {
         if i.is_partial() {
-            streaming::take_while1_internal(i, &list)
+            streaming_take_while1_internal(i, &list)
         } else {
-            complete::take_while1_internal(i, &list)
+            complete_take_while1_internal(i, &list)
         }
     })
+}
+
+pub(crate) fn streaming_take_while1_internal<T, I, Error: ParseError<I>>(
+    i: I,
+    list: &T,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
+{
+    let e: ErrorKind = ErrorKind::TakeWhile1;
+    split_at_offset1_partial(&i, |c| !list.contains_token(c), e)
+}
+
+pub(crate) fn complete_take_while1_internal<T, I, Error: ParseError<I>>(
+    i: I,
+    list: &T,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
+{
+    let e: ErrorKind = ErrorKind::TakeWhile1;
+    split_at_offset1_complete(&i, |c| !list.contains_token(c), e)
 }
 
 /// Recognize the longest (m <= len <= n) input slice that matches the [pattern][ContainsToken]
@@ -473,11 +689,90 @@ where
 {
     trace("take_while_m_n", move |i: I| {
         if i.is_partial() {
-            streaming::take_while_m_n_internal(i, m, n, &list)
+            streaming_take_while_m_n_internal(i, m, n, &list)
         } else {
-            complete::take_while_m_n_internal(i, m, n, &list)
+            complete_take_while_m_n_internal(i, m, n, &list)
         }
     })
+}
+
+pub(crate) fn streaming_take_while_m_n_internal<T, I, Error: ParseError<I>>(
+    input: I,
+    m: usize,
+    n: usize,
+    list: &T,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
+{
+    if n < m {
+        return Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN));
+    }
+
+    let mut final_count = 0;
+    for (processed, (offset, token)) in input.iter_offsets().enumerate() {
+        if !list.contains_token(token) {
+            if processed < m {
+                return Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN));
+            } else {
+                return Ok(input.next_slice(offset));
+            }
+        } else {
+            if processed == n {
+                return Ok(input.next_slice(offset));
+            }
+            final_count = processed + 1;
+        }
+    }
+
+    if final_count == n {
+        Ok(input.next_slice(input.eof_offset()))
+    } else {
+        let needed = if m > input.eof_offset() {
+            m - input.eof_offset()
+        } else {
+            1
+        };
+        Err(ErrMode::Incomplete(Needed::new(needed)))
+    }
+}
+
+pub(crate) fn complete_take_while_m_n_internal<T, I, Error: ParseError<I>>(
+    input: I,
+    m: usize,
+    n: usize,
+    list: &T,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
+{
+    if n < m {
+        return Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN));
+    }
+
+    let mut final_count = 0;
+    for (processed, (offset, token)) in input.iter_offsets().enumerate() {
+        if !list.contains_token(token) {
+            if processed < m {
+                return Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN));
+            } else {
+                return Ok(input.next_slice(offset));
+            }
+        } else {
+            if processed == n {
+                return Ok(input.next_slice(offset));
+            }
+            final_count = processed + 1;
+        }
+    }
+
+    if m <= final_count {
+        Ok(input.next_slice(input.eof_offset()))
+    } else {
+        Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhileMN))
+    }
 }
 
 /// Recognize the longest input slice (if any) till a [pattern][ContainsToken] is met.
@@ -526,11 +821,33 @@ where
 {
     trace("take_till0", move |i: I| {
         if i.is_partial() {
-            streaming::take_till_internal(i, &list)
+            streaming_take_till_internal(i, &list)
         } else {
-            complete::take_till_internal(i, &list)
+            complete_take_till_internal(i, &list)
         }
     })
+}
+
+pub(crate) fn streaming_take_till_internal<T, I, Error: ParseError<I>>(
+    i: I,
+    list: &T,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
+{
+    split_at_offset_partial(&i, |c| list.contains_token(c))
+}
+
+pub(crate) fn complete_take_till_internal<T, I, Error: ParseError<I>>(
+    i: I,
+    list: &T,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
+{
+    split_at_offset_complete(&i, |c| list.contains_token(c))
 }
 
 /// Recognize the longest (at least 1) input slice till a [pattern][ContainsToken] is met.
@@ -601,11 +918,35 @@ where
 {
     trace("take_till1", move |i: I| {
         if i.is_partial() {
-            streaming::take_till1_internal(i, &list)
+            streaming_take_till1_internal(i, &list)
         } else {
-            complete::take_till1_internal(i, &list)
+            complete_take_till1_internal(i, &list)
         }
     })
+}
+
+pub(crate) fn streaming_take_till1_internal<T, I, Error: ParseError<I>>(
+    i: I,
+    list: &T,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
+{
+    let e: ErrorKind = ErrorKind::TakeTill1;
+    split_at_offset1_partial(&i, |c| list.contains_token(c), e)
+}
+
+pub(crate) fn complete_take_till1_internal<T, I, Error: ParseError<I>>(
+    i: I,
+    list: &T,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
+{
+    let e: ErrorKind = ErrorKind::TakeTill1;
+    split_at_offset1_complete(&i, |c| list.contains_token(c), e)
 }
 
 /// Recognize an input slice containing the first N input elements (I[..N]).
@@ -673,11 +1014,37 @@ where
     let c = count.to_usize();
     trace("take", move |i: I| {
         if i.is_partial() {
-            streaming::take_internal(i, c)
+            streaming_take_internal(i, c)
         } else {
-            complete::take_internal(i, c)
+            complete_take_internal(i, c)
         }
     })
+}
+
+pub(crate) fn streaming_take_internal<I, Error: ParseError<I>>(
+    i: I,
+    c: usize,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream,
+{
+    match i.offset_at(c) {
+        Ok(offset) => Ok(i.next_slice(offset)),
+        Err(i) => Err(ErrMode::Incomplete(i)),
+    }
+}
+
+pub(crate) fn complete_take_internal<I, Error: ParseError<I>>(
+    i: I,
+    c: usize,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream,
+{
+    match i.offset_at(c) {
+        Ok(offset) => Ok(i.next_slice(offset)),
+        Err(_needed) => Err(ErrMode::from_error_kind(i, ErrorKind::Eof)),
+    }
 }
 
 /// Recognize the input slice up to the first occurrence of the literal.
@@ -731,11 +1098,39 @@ where
 {
     trace("take_until0", move |i: I| {
         if i.is_partial() {
-            streaming::take_until_internal(i, tag.clone())
+            streaming_take_until_internal(i, tag.clone())
         } else {
-            complete::take_until_internal(i, tag.clone())
+            complete_take_until_internal(i, tag.clone())
         }
     })
+}
+
+pub(crate) fn streaming_take_until_internal<T, I, Error: ParseError<I>>(
+    i: I,
+    t: T,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream + FindSlice<T>,
+    T: SliceLen,
+{
+    match i.find_slice(t) {
+        Some(offset) => Ok(i.next_slice(offset)),
+        None => Err(ErrMode::Incomplete(Needed::Unknown)),
+    }
+}
+
+pub(crate) fn complete_take_until_internal<T, I, Error: ParseError<I>>(
+    i: I,
+    t: T,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream + FindSlice<T>,
+    T: SliceLen,
+{
+    match i.find_slice(t) {
+        Some(offset) => Ok(i.next_slice(offset)),
+        None => Err(ErrMode::from_error_kind(i, ErrorKind::TakeUntil)),
+    }
 }
 
 /// Recognize the non empty input slice up to the first occurrence of the literal.
@@ -791,9 +1186,38 @@ where
 {
     trace("take_until1", move |i: I| {
         if i.is_partial() {
-            streaming::take_until1_internal(i, tag.clone())
+            streaming_take_until1_internal(i, tag.clone())
         } else {
-            complete::take_until1_internal(i, tag.clone())
+            complete_take_until1_internal(i, tag.clone())
         }
     })
+}
+
+pub(crate) fn streaming_take_until1_internal<T, I, Error: ParseError<I>>(
+    i: I,
+    t: T,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream + FindSlice<T>,
+    T: SliceLen,
+{
+    match i.find_slice(t) {
+        None => Err(ErrMode::Incomplete(Needed::Unknown)),
+        Some(0) => Err(ErrMode::from_error_kind(i, ErrorKind::TakeUntil)),
+        Some(offset) => Ok(i.next_slice(offset)),
+    }
+}
+
+pub(crate) fn complete_take_until1_internal<T, I, Error: ParseError<I>>(
+    i: I,
+    t: T,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream + FindSlice<T>,
+    T: SliceLen,
+{
+    match i.find_slice(t) {
+        None | Some(0) => Err(ErrMode::from_error_kind(i, ErrorKind::TakeUntil)),
+        Some(offset) => Ok(i.next_slice(offset)),
+    }
 }

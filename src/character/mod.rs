@@ -2,8 +2,6 @@
 //!
 //! Functions recognizing specific characters
 
-pub(crate) mod complete;
-pub(crate) mod streaming;
 #[cfg(test)]
 mod tests;
 
@@ -11,13 +9,16 @@ use crate::lib::std::ops::{Add, Shl};
 
 use crate::branch::alt;
 use crate::bytes::one_of;
+use crate::bytes::tag;
+use crate::bytes::take_while0;
+use crate::bytes::take_while1;
 use crate::combinator::cut_err;
 use crate::combinator::opt;
 use crate::error::ParseError;
 use crate::error::{ErrMode, ErrorKind, Needed};
-use crate::stream::Compare;
 use crate::stream::ContainsToken;
 use crate::stream::{AsBStr, AsChar, Offset, ParseSlice, Stream, StreamIsPartial};
+use crate::stream::{Compare, CompareResult};
 use crate::trace::trace;
 use crate::IResult;
 use crate::Parser;
@@ -38,8 +39,8 @@ use crate::Parser;
 /// }
 ///
 /// assert_eq!(parser("\r\nc"), Ok(("c", "\r\n")));
-/// assert_eq!(parser("ab\r\nc"), Err(ErrMode::Backtrack(Error::new("ab\r\nc", ErrorKind::CrLf))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::CrLf))));
+/// assert_eq!(parser("ab\r\nc"), Err(ErrMode::Backtrack(Error::new("ab\r\nc", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// ```
 ///
 /// ```
@@ -47,7 +48,7 @@ use crate::Parser;
 /// # use winnow::Partial;
 /// # use winnow::character::crlf;
 /// assert_eq!(crlf::<_, Error<_>>(Partial::new("\r\nc")), Ok((Partial::new("c"), "\r\n")));
-/// assert_eq!(crlf::<_, Error<_>>(Partial::new("ab\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("ab\r\nc"), ErrorKind::CrLf))));
+/// assert_eq!(crlf::<_, Error<_>>(Partial::new("ab\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("ab\r\nc"), ErrorKind::Tag))));
 /// assert_eq!(crlf::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
@@ -57,13 +58,7 @@ where
     I: Stream,
     I: Compare<&'static str>,
 {
-    trace("crlf", move |input: I| {
-        if input.is_partial() {
-            streaming::crlf(input)
-        } else {
-            complete::crlf(input)
-        }
-    })(input)
+    trace("crlf", move |input: I| tag("\r\n").parse_next(input))(input)
 }
 
 /// Recognizes a string of any char except '\r\n' or '\n'.
@@ -109,11 +104,80 @@ where
 {
     trace("not_line_ending", move |input: I| {
         if input.is_partial() {
-            streaming::not_line_ending(input)
+            streaming_not_line_ending(input)
         } else {
-            complete::not_line_ending(input)
+            complete_not_line_ending(input)
         }
     })(input)
+}
+
+pub(crate) fn streaming_not_line_ending<T, E: ParseError<T>>(
+    input: T,
+) -> IResult<T, <T as Stream>::Slice, E>
+where
+    T: Stream + AsBStr,
+    T: Compare<&'static str>,
+    <T as Stream>::Token: AsChar,
+{
+    match input.offset_for(|item| {
+        let c = item.as_char();
+        c == '\r' || c == '\n'
+    }) {
+        None => Err(ErrMode::Incomplete(Needed::Unknown)),
+        Some(offset) => {
+            let (new_input, res) = input.next_slice(offset);
+            let bytes = new_input.as_bstr();
+            let nth = bytes[0];
+            if nth == b'\r' {
+                let comp = new_input.compare("\r\n");
+                match comp {
+                    //FIXME: calculate the right index
+                    CompareResult::Ok => {}
+                    CompareResult::Incomplete => {
+                        return Err(ErrMode::Incomplete(Needed::Unknown));
+                    }
+                    CompareResult::Error => {
+                        let e: ErrorKind = ErrorKind::Tag;
+                        return Err(ErrMode::from_error_kind(input, e));
+                    }
+                }
+            }
+            Ok((new_input, res))
+        }
+    }
+}
+
+pub(crate) fn complete_not_line_ending<T, E: ParseError<T>>(
+    input: T,
+) -> IResult<T, <T as Stream>::Slice, E>
+where
+    T: Stream + AsBStr,
+    T: Compare<&'static str>,
+    <T as Stream>::Token: AsChar,
+{
+    match input.offset_for(|item| {
+        let c = item.as_char();
+        c == '\r' || c == '\n'
+    }) {
+        None => Ok(input.next_slice(input.eof_offset())),
+        Some(offset) => {
+            let (new_input, res) = input.next_slice(offset);
+            let bytes = new_input.as_bstr();
+            let nth = bytes[0];
+            if nth == b'\r' {
+                let comp = new_input.compare("\r\n");
+                match comp {
+                    //FIXME: calculate the right index
+                    CompareResult::Ok => {}
+                    CompareResult::Incomplete | CompareResult::Error => {
+                        let e: ErrorKind = ErrorKind::Tag;
+                        return Err(ErrMode::from_error_kind(input, e));
+                    }
+                }
+            }
+            Ok((new_input, res))
+        }
+    }
 }
 
 /// Recognizes an end of line (both '\n' and '\r\n').
@@ -132,8 +196,8 @@ where
 /// }
 ///
 /// assert_eq!(parser("\r\nc"), Ok(("c", "\r\n")));
-/// assert_eq!(parser("ab\r\nc"), Err(ErrMode::Backtrack(Error::new("ab\r\nc", ErrorKind::CrLf))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::CrLf))));
+/// assert_eq!(parser("ab\r\nc"), Err(ErrMode::Backtrack(Error::new("ab\r\nc", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// ```
 ///
 /// ```
@@ -141,7 +205,7 @@ where
 /// # use winnow::Partial;
 /// # use winnow::character::line_ending;
 /// assert_eq!(line_ending::<_, Error<_>>(Partial::new("\r\nc")), Ok((Partial::new("c"), "\r\n")));
-/// assert_eq!(line_ending::<_, Error<_>>(Partial::new("ab\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("ab\r\nc"), ErrorKind::CrLf))));
+/// assert_eq!(line_ending::<_, Error<_>>(Partial::new("ab\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("ab\r\nc"), ErrorKind::Tag))));
 /// assert_eq!(line_ending::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
@@ -152,11 +216,7 @@ where
     I: Compare<&'static str>,
 {
     trace("line_ending", move |input: I| {
-        if input.is_partial() {
-            streaming::line_ending(input)
-        } else {
-            complete::line_ending(input)
-        }
+        alt(("\n", "\r\n")).parse_next(input)
     })(input)
 }
 
@@ -176,8 +236,8 @@ where
 /// }
 ///
 /// assert_eq!(parser("\nc"), Ok(("c", '\n')));
-/// assert_eq!(parser("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::Char))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Char))));
+/// assert_eq!(parser("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::OneOf))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::OneOf))));
 /// ```
 ///
 /// ```
@@ -185,7 +245,7 @@ where
 /// # use winnow::Partial;
 /// # use winnow::character::newline;
 /// assert_eq!(newline::<_, Error<_>>(Partial::new("\nc")), Ok((Partial::new("c"), '\n')));
-/// assert_eq!(newline::<_, Error<_>>(Partial::new("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("\r\nc"), ErrorKind::Char))));
+/// assert_eq!(newline::<_, Error<_>>(Partial::new("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("\r\nc"), ErrorKind::OneOf))));
 /// assert_eq!(newline::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
@@ -193,14 +253,12 @@ pub fn newline<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar,
+    <I as Stream>::Token: AsChar + Copy,
 {
     trace("newline", move |input: I| {
-        if input.is_partial() {
-            streaming::newline(input)
-        } else {
-            complete::newline(input)
-        }
+        one_of('\n')
+            .map(|c: <I as Stream>::Token| c.as_char())
+            .parse_next(input)
     })(input)
 }
 
@@ -220,8 +278,8 @@ where
 /// }
 ///
 /// assert_eq!(parser("\tc"), Ok(("c", '\t')));
-/// assert_eq!(parser("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::Char))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Char))));
+/// assert_eq!(parser("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::OneOf))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::OneOf))));
 /// ```
 ///
 /// ```
@@ -229,7 +287,7 @@ where
 /// # use winnow::Partial;
 /// # use winnow::character::tab;
 /// assert_eq!(tab::<_, Error<_>>(Partial::new("\tc")), Ok((Partial::new("c"), '\t')));
-/// assert_eq!(tab::<_, Error<_>>(Partial::new("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("\r\nc"), ErrorKind::Char))));
+/// assert_eq!(tab::<_, Error<_>>(Partial::new("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("\r\nc"), ErrorKind::OneOf))));
 /// assert_eq!(tab::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
@@ -237,14 +295,12 @@ pub fn tab<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar,
+    <I as Stream>::Token: AsChar + Copy,
 {
-    trace("tag", move |input: I| {
-        if input.is_partial() {
-            streaming::tab(input)
-        } else {
-            complete::tab(input)
-        }
+    trace("tab", move |input: I| {
+        one_of('\t')
+            .map(|c: <I as Stream>::Token| c.as_char())
+            .parse_next(input)
     })(input)
 }
 
@@ -286,11 +342,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("alpha0", move |input: I| {
-        if input.is_partial() {
-            streaming::alpha0(input)
-        } else {
-            complete::alpha0(input)
-        }
+        take_while0(|c: <I as Stream>::Token| c.is_alpha()).parse_next(input)
     })(input)
 }
 
@@ -312,8 +364,8 @@ where
 /// }
 ///
 /// assert_eq!(parser("aB1c"), Ok(("1c", "aB")));
-/// assert_eq!(parser("1c"), Err(ErrMode::Backtrack(Error::new("1c", ErrorKind::Alpha))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Alpha))));
+/// assert_eq!(parser("1c"), Err(ErrMode::Backtrack(Error::new("1c", ErrorKind::TakeWhile1))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::TakeWhile1))));
 /// ```
 ///
 /// ```
@@ -321,7 +373,7 @@ where
 /// # use winnow::Partial;
 /// # use winnow::character::alpha1;
 /// assert_eq!(alpha1::<_, Error<_>>(Partial::new("aB1c")), Ok((Partial::new("1c"), "aB")));
-/// assert_eq!(alpha1::<_, Error<_>>(Partial::new("1c")), Err(ErrMode::Backtrack(Error::new(Partial::new("1c"), ErrorKind::Alpha))));
+/// assert_eq!(alpha1::<_, Error<_>>(Partial::new("1c")), Err(ErrMode::Backtrack(Error::new(Partial::new("1c"), ErrorKind::TakeWhile1))));
 /// assert_eq!(alpha1::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
@@ -332,11 +384,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("alpha1", move |input: I| {
-        if input.is_partial() {
-            streaming::alpha1(input)
-        } else {
-            complete::alpha1(input)
-        }
+        take_while1(|c: <I as Stream>::Token| c.is_alpha()).parse_next(input)
     })(input)
 }
 
@@ -379,11 +427,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("digit0", move |input: I| {
-        if input.is_partial() {
-            streaming::digit0(input)
-        } else {
-            complete::digit0(input)
-        }
+        take_while0(|c: <I as Stream>::Token| c.is_dec_digit()).parse_next(input)
     })(input)
 }
 
@@ -405,8 +449,8 @@ where
 /// }
 ///
 /// assert_eq!(parser("21c"), Ok(("c", "21")));
-/// assert_eq!(parser("c1"), Err(ErrMode::Backtrack(Error::new("c1", ErrorKind::Digit))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Digit))));
+/// assert_eq!(parser("c1"), Err(ErrMode::Backtrack(Error::new("c1", ErrorKind::TakeWhile1))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::TakeWhile1))));
 /// ```
 ///
 /// ```
@@ -414,7 +458,7 @@ where
 /// # use winnow::Partial;
 /// # use winnow::character::digit1;
 /// assert_eq!(digit1::<_, Error<_>>(Partial::new("21c")), Ok((Partial::new("c"), "21")));
-/// assert_eq!(digit1::<_, Error<_>>(Partial::new("c1")), Err(ErrMode::Backtrack(Error::new(Partial::new("c1"), ErrorKind::Digit))));
+/// assert_eq!(digit1::<_, Error<_>>(Partial::new("c1")), Err(ErrMode::Backtrack(Error::new(Partial::new("c1"), ErrorKind::TakeWhile1))));
 /// assert_eq!(digit1::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
@@ -441,11 +485,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("digit1", move |input: I| {
-        if input.is_partial() {
-            streaming::digit1(input)
-        } else {
-            complete::digit1(input)
-        }
+        take_while1(|c: <I as Stream>::Token| c.is_dec_digit()).parse_next(input)
     })(input)
 }
 
@@ -486,11 +526,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("hex_digit0", move |input: I| {
-        if input.is_partial() {
-            streaming::hex_digit0(input)
-        } else {
-            complete::hex_digit0(input)
-        }
+        take_while0(|c: <I as Stream>::Token| c.is_hex_digit()).parse_next(input)
     })(input)
 }
 
@@ -512,8 +548,8 @@ where
 /// }
 ///
 /// assert_eq!(parser("21cZ"), Ok(("Z", "21c")));
-/// assert_eq!(parser("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::HexDigit))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::HexDigit))));
+/// assert_eq!(parser("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::TakeWhile1))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::TakeWhile1))));
 /// ```
 ///
 /// ```
@@ -521,7 +557,7 @@ where
 /// # use winnow::Partial;
 /// # use winnow::character::hex_digit1;
 /// assert_eq!(hex_digit1::<_, Error<_>>(Partial::new("21cZ")), Ok((Partial::new("Z"), "21c")));
-/// assert_eq!(hex_digit1::<_, Error<_>>(Partial::new("H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("H2"), ErrorKind::HexDigit))));
+/// assert_eq!(hex_digit1::<_, Error<_>>(Partial::new("H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("H2"), ErrorKind::TakeWhile1))));
 /// assert_eq!(hex_digit1::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
@@ -532,11 +568,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("hex_digit1", move |input: I| {
-        if input.is_partial() {
-            streaming::hex_digit1(input)
-        } else {
-            complete::hex_digit1(input)
-        }
+        take_while1(|c: <I as Stream>::Token| c.is_hex_digit()).parse_next(input)
     })(input)
 }
 
@@ -578,11 +610,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("oct_digit0", move |input: I| {
-        if input.is_partial() {
-            streaming::oct_digit0(input)
-        } else {
-            complete::oct_digit0(input)
-        }
+        take_while0(|c: <I as Stream>::Token| c.is_oct_digit()).parse_next(input)
     })(input)
 }
 
@@ -604,8 +632,8 @@ where
 /// }
 ///
 /// assert_eq!(parser("21cZ"), Ok(("cZ", "21")));
-/// assert_eq!(parser("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::OctDigit))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::OctDigit))));
+/// assert_eq!(parser("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::TakeWhile1))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::TakeWhile1))));
 /// ```
 ///
 /// ```
@@ -613,7 +641,7 @@ where
 /// # use winnow::Partial;
 /// # use winnow::character::oct_digit1;
 /// assert_eq!(oct_digit1::<_, Error<_>>(Partial::new("21cZ")), Ok((Partial::new("cZ"), "21")));
-/// assert_eq!(oct_digit1::<_, Error<_>>(Partial::new("H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("H2"), ErrorKind::OctDigit))));
+/// assert_eq!(oct_digit1::<_, Error<_>>(Partial::new("H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("H2"), ErrorKind::TakeWhile1))));
 /// assert_eq!(oct_digit1::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
@@ -624,11 +652,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("oct_digit0", move |input: I| {
-        if input.is_partial() {
-            streaming::oct_digit1(input)
-        } else {
-            complete::oct_digit1(input)
-        }
+        take_while1(|c: <I as Stream>::Token| c.is_oct_digit()).parse_next(input)
     })(input)
 }
 
@@ -670,11 +694,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("alphanumeric0", move |input: I| {
-        if input.is_partial() {
-            streaming::alphanumeric0(input)
-        } else {
-            complete::alphanumeric0(input)
-        }
+        take_while0(|c: <I as Stream>::Token| c.is_alphanum()).parse_next(input)
     })(input)
 }
 
@@ -696,8 +716,8 @@ where
 /// }
 ///
 /// assert_eq!(parser("21cZ%1"), Ok(("%1", "21cZ")));
-/// assert_eq!(parser("&H2"), Err(ErrMode::Backtrack(Error::new("&H2", ErrorKind::AlphaNumeric))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::AlphaNumeric))));
+/// assert_eq!(parser("&H2"), Err(ErrMode::Backtrack(Error::new("&H2", ErrorKind::TakeWhile1))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::TakeWhile1))));
 /// ```
 ///
 /// ```
@@ -705,7 +725,7 @@ where
 /// # use winnow::Partial;
 /// # use winnow::character::alphanumeric1;
 /// assert_eq!(alphanumeric1::<_, Error<_>>(Partial::new("21cZ%1")), Ok((Partial::new("%1"), "21cZ")));
-/// assert_eq!(alphanumeric1::<_, Error<_>>(Partial::new("&H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("&H2"), ErrorKind::AlphaNumeric))));
+/// assert_eq!(alphanumeric1::<_, Error<_>>(Partial::new("&H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("&H2"), ErrorKind::TakeWhile1))));
 /// assert_eq!(alphanumeric1::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
@@ -716,11 +736,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("alphanumeric1", move |input: I| {
-        if input.is_partial() {
-            streaming::alphanumeric1(input)
-        } else {
-            complete::alphanumeric1(input)
-        }
+        take_while1(|c: <I as Stream>::Token| c.is_alphanum()).parse_next(input)
     })(input)
 }
 
@@ -747,14 +763,10 @@ pub fn space0<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice,
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar,
+    <I as Stream>::Token: AsChar + Copy,
 {
     trace("space0", move |input: I| {
-        if input.is_partial() {
-            streaming::space0(input)
-        } else {
-            complete::space0(input)
-        }
+        take_while0((' ', '\t')).parse_next(input)
     })(input)
 }
 
@@ -776,8 +788,8 @@ where
 /// }
 ///
 /// assert_eq!(parser(" \t21c"), Ok(("21c", " \t")));
-/// assert_eq!(parser("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::Space))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Space))));
+/// assert_eq!(parser("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::TakeWhile1))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::TakeWhile1))));
 /// ```
 ///
 /// ```
@@ -785,7 +797,7 @@ where
 /// # use winnow::Partial;
 /// # use winnow::character::space1;
 /// assert_eq!(space1::<_, Error<_>>(Partial::new(" \t21c")), Ok((Partial::new("21c"), " \t")));
-/// assert_eq!(space1::<_, Error<_>>(Partial::new("H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("H2"), ErrorKind::Space))));
+/// assert_eq!(space1::<_, Error<_>>(Partial::new("H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("H2"), ErrorKind::TakeWhile1))));
 /// assert_eq!(space1::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
@@ -793,14 +805,10 @@ pub fn space1<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice,
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar,
+    <I as Stream>::Token: AsChar + Copy,
 {
     trace("space1", move |input: I| {
-        if input.is_partial() {
-            streaming::space1(input)
-        } else {
-            complete::space1(input)
-        }
+        take_while1((' ', '\t')).parse_next(input)
     })(input)
 }
 
@@ -839,14 +847,10 @@ pub fn multispace0<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::S
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar,
+    <I as Stream>::Token: AsChar + Copy,
 {
     trace("multispace0", move |input: I| {
-        if input.is_partial() {
-            streaming::multispace0(input)
-        } else {
-            complete::multispace0(input)
-        }
+        take_while0((' ', '\t', '\r', '\n')).parse_next(input)
     })(input)
 }
 
@@ -868,8 +872,8 @@ where
 /// }
 ///
 /// assert_eq!(parser(" \t\n\r21c"), Ok(("21c", " \t\n\r")));
-/// assert_eq!(parser("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::MultiSpace))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::MultiSpace))));
+/// assert_eq!(parser("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::TakeWhile1))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::TakeWhile1))));
 /// ```
 ///
 /// ```
@@ -877,7 +881,7 @@ where
 /// # use winnow::Partial;
 /// # use winnow::character::multispace1;
 /// assert_eq!(multispace1::<_, Error<_>>(Partial::new(" \t\n\r21c")), Ok((Partial::new("21c"), " \t\n\r")));
-/// assert_eq!(multispace1::<_, Error<_>>(Partial::new("H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("H2"), ErrorKind::MultiSpace))));
+/// assert_eq!(multispace1::<_, Error<_>>(Partial::new("H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("H2"), ErrorKind::TakeWhile1))));
 /// assert_eq!(multispace1::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
@@ -885,14 +889,10 @@ pub fn multispace1<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::S
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar,
+    <I as Stream>::Token: AsChar + Copy,
 {
     trace("multispace1", move |input: I| {
-        if input.is_partial() {
-            streaming::multispace1(input)
-        } else {
-            complete::multispace1(input)
-        }
+        take_while1((' ', '\t', '\r', '\n')).parse_next(input)
     })(input)
 }
 
@@ -920,7 +920,7 @@ where
             if input.is_partial() {
                 return Err(ErrMode::Incomplete(Needed::new(1)));
             } else {
-                return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+                return Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhile1));
             }
         }
 
@@ -936,7 +936,7 @@ where
                 },
                 None => {
                     if offset == 0 {
-                        return Err(ErrMode::from_error_kind(input, ErrorKind::Digit));
+                        return Err(ErrMode::from_error_kind(input, ErrorKind::TakeWhile1));
                     } else {
                         return Ok((i.next_slice(offset).0, value));
                     }
@@ -1468,21 +1468,136 @@ where
 {
     trace("escaped", move |input: I| {
         if input.is_partial() {
-            crate::bytes::streaming::escaped_internal(
-                input,
-                &mut normal,
-                control_char,
-                &mut escapable,
-            )
+            streaming_escaped_internal(input, &mut normal, control_char, &mut escapable)
         } else {
-            crate::bytes::complete::escaped_internal(
-                input,
-                &mut normal,
-                control_char,
-                &mut escapable,
-            )
+            complete_escaped_internal(input, &mut normal, control_char, &mut escapable)
         }
     })
+}
+
+pub(crate) fn streaming_escaped_internal<I, Error, F, G, O1, O2>(
+    input: I,
+    normal: &mut F,
+    control_char: char,
+    escapable: &mut G,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream + Offset,
+    <I as Stream>::Token: crate::stream::AsChar,
+    F: Parser<I, O1, Error>,
+    G: Parser<I, O2, Error>,
+    Error: ParseError<I>,
+{
+    let mut i = input.clone();
+
+    while i.eof_offset() > 0 {
+        let current_len = i.eof_offset();
+
+        match normal.parse_next(i.clone()) {
+            Ok((i2, _)) => {
+                if i2.eof_offset() == 0 {
+                    return Err(ErrMode::Incomplete(Needed::Unknown));
+                } else if i2.eof_offset() == current_len {
+                    let offset = input.offset_to(&i2);
+                    return Ok(input.next_slice(offset));
+                } else {
+                    i = i2;
+                }
+            }
+            Err(ErrMode::Backtrack(_)) => {
+                if i.next_token().expect("eof_offset > 0").1.as_char() == control_char {
+                    let next = control_char.len_utf8();
+                    if next >= i.eof_offset() {
+                        return Err(ErrMode::Incomplete(Needed::new(1)));
+                    } else {
+                        match escapable.parse_next(i.next_slice(next).0) {
+                            Ok((i2, _)) => {
+                                if i2.eof_offset() == 0 {
+                                    return Err(ErrMode::Incomplete(Needed::Unknown));
+                                } else {
+                                    i = i2;
+                                }
+                            }
+                            Err(e) => return Err(e),
+                        }
+                    }
+                } else {
+                    let offset = input.offset_to(&i);
+                    return Ok(input.next_slice(offset));
+                }
+            }
+            Err(e) => {
+                return Err(e);
+            }
+        }
+    }
+
+    Err(ErrMode::Incomplete(Needed::Unknown))
+}
+
+pub(crate) fn complete_escaped_internal<'a, I: 'a, Error, F, G, O1, O2>(
+    input: I,
+    normal: &mut F,
+    control_char: char,
+    escapable: &mut G,
+) -> IResult<I, <I as Stream>::Slice, Error>
+where
+    I: Stream + Offset,
+    <I as Stream>::Token: crate::stream::AsChar,
+    F: Parser<I, O1, Error>,
+    G: Parser<I, O2, Error>,
+    Error: ParseError<I>,
+{
+    let mut i = input.clone();
+
+    while i.eof_offset() > 0 {
+        let current_len = i.eof_offset();
+
+        match normal.parse_next(i.clone()) {
+            Ok((i2, _)) => {
+                // return if we consumed everything or if the normal parser
+                // does not consume anything
+                if i2.eof_offset() == 0 {
+                    return Ok(input.next_slice(input.eof_offset()));
+                } else if i2.eof_offset() == current_len {
+                    let offset = input.offset_to(&i2);
+                    return Ok(input.next_slice(offset));
+                } else {
+                    i = i2;
+                }
+            }
+            Err(ErrMode::Backtrack(_)) => {
+                if i.next_token().expect("eof_offset > 0").1.as_char() == control_char {
+                    let next = control_char.len_utf8();
+                    if next >= i.eof_offset() {
+                        return Err(ErrMode::from_error_kind(input, ErrorKind::Escaped));
+                    } else {
+                        match escapable.parse_next(i.next_slice(next).0) {
+                            Ok((i2, _)) => {
+                                if i2.eof_offset() == 0 {
+                                    return Ok(input.next_slice(input.eof_offset()));
+                                } else {
+                                    i = i2;
+                                }
+                            }
+                            Err(e) => return Err(e),
+                        }
+                    }
+                } else {
+                    let offset = input.offset_to(&i);
+                    if offset == 0 {
+                        return Err(ErrMode::from_error_kind(input, ErrorKind::Escaped));
+                    }
+                    return Ok(input.next_slice(offset));
+                }
+            }
+            Err(e) => {
+                return Err(e);
+            }
+        }
+    }
+
+    Ok(input.next_slice(input.eof_offset()))
 }
 
 /// Matches a byte string with escaped characters.
@@ -1562,21 +1677,148 @@ where
 {
     trace("escaped_transform", move |input: I| {
         if input.is_partial() {
-            crate::bytes::streaming::escaped_transform_internal(
-                input,
-                &mut normal,
-                control_char,
-                &mut transform,
-            )
+            streaming_escaped_transform_internal(input, &mut normal, control_char, &mut transform)
         } else {
-            crate::bytes::complete::escaped_transform_internal(
-                input,
-                &mut normal,
-                control_char,
-                &mut transform,
-            )
+            complete_escaped_transform_internal(input, &mut normal, control_char, &mut transform)
         }
     })
+}
+
+#[cfg(feature = "alloc")]
+pub(crate) fn streaming_escaped_transform_internal<I, Error, F, G, Output>(
+    input: I,
+    normal: &mut F,
+    control_char: char,
+    transform: &mut G,
+) -> IResult<I, Output, Error>
+where
+    I: Stream + Offset,
+    <I as Stream>::Token: crate::stream::AsChar,
+    Output: crate::stream::Accumulate<<I as Stream>::Slice>,
+    F: Parser<I, <I as Stream>::Slice, Error>,
+    G: Parser<I, <I as Stream>::Slice, Error>,
+    Error: ParseError<I>,
+{
+    let mut offset = 0;
+    let mut res = Output::initial(Some(input.eof_offset()));
+
+    let i = input.clone();
+
+    while offset < i.eof_offset() {
+        let current_len = i.eof_offset();
+        let remainder = i.next_slice(offset).0;
+        match normal.parse_next(remainder.clone()) {
+            Ok((i2, o)) => {
+                res.accumulate(o);
+                if i2.eof_offset() == 0 {
+                    return Err(ErrMode::Incomplete(Needed::Unknown));
+                } else if i2.eof_offset() == current_len {
+                    return Ok((remainder, res));
+                } else {
+                    offset = input.offset_to(&i2);
+                }
+            }
+            Err(ErrMode::Backtrack(_)) => {
+                if remainder.next_token().expect("eof_offset > 0").1.as_char() == control_char {
+                    let next = offset + control_char.len_utf8();
+                    let eof_offset = input.eof_offset();
+
+                    if next >= eof_offset {
+                        return Err(ErrMode::Incomplete(Needed::Unknown));
+                    } else {
+                        match transform.parse_next(i.next_slice(next).0) {
+                            Ok((i2, o)) => {
+                                res.accumulate(o);
+                                if i2.eof_offset() == 0 {
+                                    return Err(ErrMode::Incomplete(Needed::Unknown));
+                                } else {
+                                    offset = input.offset_to(&i2);
+                                }
+                            }
+                            Err(e) => return Err(e),
+                        }
+                    }
+                } else {
+                    return Ok((remainder, res));
+                }
+            }
+            Err(e) => return Err(e),
+        }
+    }
+    Err(ErrMode::Incomplete(Needed::Unknown))
+}
+
+#[cfg(feature = "alloc")]
+pub(crate) fn complete_escaped_transform_internal<I, Error, F, G, Output>(
+    input: I,
+    normal: &mut F,
+    control_char: char,
+    transform: &mut G,
+) -> IResult<I, Output, Error>
+where
+    I: Stream + Offset,
+    <I as Stream>::Token: crate::stream::AsChar,
+    Output: crate::stream::Accumulate<<I as Stream>::Slice>,
+    F: Parser<I, <I as Stream>::Slice, Error>,
+    G: Parser<I, <I as Stream>::Slice, Error>,
+    Error: ParseError<I>,
+{
+    let mut offset = 0;
+    let mut res = Output::initial(Some(input.eof_offset()));
+
+    let i = input.clone();
+
+    while offset < i.eof_offset() {
+        let current_len = i.eof_offset();
+        let (remainder, _) = i.next_slice(offset);
+        match normal.parse_next(remainder.clone()) {
+            Ok((i2, o)) => {
+                res.accumulate(o);
+                if i2.eof_offset() == 0 {
+                    return Ok((i.next_slice(i.eof_offset()).0, res));
+                } else if i2.eof_offset() == current_len {
+                    return Ok((remainder, res));
+                } else {
+                    offset = input.offset_to(&i2);
+                }
+            }
+            Err(ErrMode::Backtrack(_)) => {
+                if remainder.next_token().expect("eof_offset > 0").1.as_char() == control_char {
+                    let next = offset + control_char.len_utf8();
+                    let eof_offset = input.eof_offset();
+
+                    if next >= eof_offset {
+                        return Err(ErrMode::from_error_kind(
+                            remainder,
+                            ErrorKind::EscapedTransform,
+                        ));
+                    } else {
+                        match transform.parse_next(i.next_slice(next).0) {
+                            Ok((i2, o)) => {
+                                res.accumulate(o);
+                                if i2.eof_offset() == 0 {
+                                    return Ok((i.next_slice(i.eof_offset()).0, res));
+                                } else {
+                                    offset = input.offset_to(&i2);
+                                }
+                            }
+                            Err(e) => return Err(e),
+                        }
+                    }
+                } else {
+                    if offset == 0 {
+                        return Err(ErrMode::from_error_kind(
+                            remainder,
+                            ErrorKind::EscapedTransform,
+                        ));
+                    }
+                    return Ok((remainder, res));
+                }
+            }
+            Err(e) => return Err(e),
+        }
+    }
+    Ok((input.next_slice(offset).0, res))
 }
 
 mod sealed {

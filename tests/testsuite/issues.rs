@@ -256,7 +256,7 @@ fn issue_x_looser_fill_bounds() {
         fill_pair(b"123,,"),
         Err(ErrMode::Backtrack(winnow::error::Error {
             input: &b","[..],
-            kind: ErrorKind::Digit
+            kind: ErrorKind::TakeWhile1
         }))
     );
 }

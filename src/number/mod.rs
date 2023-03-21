@@ -1,11 +1,15 @@
 //! Parsers recognizing numbers
 
-pub(crate) mod complete;
-pub(crate) mod streaming;
+#![allow(clippy::match_same_arms)]
+
 #[cfg(test)]
 mod tests;
 
+use crate::error::ErrMode;
+use crate::error::ErrorKind;
+use crate::error::Needed;
 use crate::error::ParseError;
+use crate::lib::std::ops::{Add, Shl};
 use crate::stream::{AsBytes, Stream, StreamIsPartial};
 use crate::trace::trace;
 use crate::IResult;
@@ -60,13 +64,7 @@ where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
 {
-    trace("be_u8", move |input: I| {
-        if input.is_partial() {
-            streaming::be_u8(input)
-        } else {
-            complete::be_u8(input)
-        }
-    })(input)
+    u8(input)
 }
 
 /// Recognizes a big endian unsigned 2 bytes integer.
@@ -109,13 +107,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_u16", move |input: I| {
-        if input.is_partial() {
-            streaming::be_u16(input)
-        } else {
-            complete::be_u16(input)
-        }
-    })(input)
+    trace("be_u16", move |input: I| be_uint(input, 2))(input)
 }
 
 /// Recognizes a big endian unsigned 3 byte integer.
@@ -158,13 +150,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_u23", move |input: I| {
-        if input.is_partial() {
-            streaming::be_u24(input)
-        } else {
-            complete::be_u24(input)
-        }
-    })(input)
+    trace("be_u23", move |input: I| be_uint(input, 3))(input)
 }
 
 /// Recognizes a big endian unsigned 4 bytes integer.
@@ -207,13 +193,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_u32", move |input: I| {
-        if input.is_partial() {
-            streaming::be_u32(input)
-        } else {
-            complete::be_u32(input)
-        }
-    })(input)
+    trace("be_u32", move |input: I| be_uint(input, 4))(input)
 }
 
 /// Recognizes a big endian unsigned 8 bytes integer.
@@ -256,13 +236,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_u64", move |input: I| {
-        if input.is_partial() {
-            streaming::be_u64(input)
-        } else {
-            complete::be_u64(input)
-        }
-    })(input)
+    trace("be_u64", move |input: I| be_uint(input, 8))(input)
 }
 
 /// Recognizes a big endian unsigned 16 bytes integer.
@@ -305,13 +279,76 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_u128", move |input: I| {
-        if input.is_partial() {
-            streaming::be_u128(input)
-        } else {
-            complete::be_u128(input)
+    trace("be_u128", move |input: I| be_uint(input, 16))(input)
+}
+
+#[inline]
+fn be_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
+where
+    I: StreamIsPartial,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
+    Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
+{
+    if input.is_partial() {
+        streaming_be_uint(input, bound)
+    } else {
+        complete_be_uint(input, bound)
+    }
+}
+
+#[inline]
+fn streaming_be_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
+where
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
+    Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
+{
+    let offset = input.offset_at(bound).map_err(ErrMode::Incomplete)?;
+    let (input, number) = input.next_slice(offset);
+    let number = number.as_bytes();
+
+    let mut res = Uint::default();
+    // special case to avoid shift a byte with overflow
+    if bound > 1 {
+        for byte in number.iter().copied().take(bound) {
+            res = (res << 8) + byte.into();
         }
-    })(input)
+    } else {
+        for byte in number.iter().copied().take(bound) {
+            res = byte.into();
+        }
+    }
+
+    Ok((input, res))
+}
+
+#[inline]
+fn complete_be_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
+where
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
+    Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
+{
+    let offset = input
+        .offset_at(bound)
+        .map_err(|_err| ErrMode::Backtrack(E::from_error_kind(input.clone(), ErrorKind::Eof)))?;
+    let (input, number) = input.next_slice(offset);
+    let number = number.as_bytes();
+
+    let mut res = Uint::default();
+    // special case to avoid shift a byte with overflow
+    if bound > 1 {
+        for byte in number.iter().copied().take(bound) {
+            res = (res << 8) + byte.into();
+        }
+    } else {
+        for byte in number.iter().copied().take(bound) {
+            res = byte.into();
+        }
+    }
+
+    Ok((input, res))
 }
 
 /// Recognizes a signed 1 byte integer.
@@ -351,13 +388,7 @@ where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
 {
-    trace("be_i8", move |input: I| {
-        if input.is_partial() {
-            streaming::be_i8(input)
-        } else {
-            complete::be_i8(input)
-        }
-    })(input)
+    i8(input)
 }
 
 /// Recognizes a big endian signed 2 bytes integer.
@@ -399,11 +430,7 @@ where
     <I as Stream>::Slice: AsBytes,
 {
     trace("be_i16", move |input: I| {
-        if input.is_partial() {
-            streaming::be_i16(input)
-        } else {
-            complete::be_i16(input)
-        }
+        be_uint::<_, u16, _>(input, 2).map(|(i, n)| (i, n as i16))
     })(input)
 }
 
@@ -446,11 +473,15 @@ where
     <I as Stream>::Slice: AsBytes,
 {
     trace("be_i24", move |input: I| {
-        if input.is_partial() {
-            streaming::be_i24(input)
-        } else {
-            complete::be_i24(input)
-        }
+        be_uint::<_, u32, _>(input, 3).map(|(i, n)| {
+            // Same as the unsigned version but we need to sign-extend manually here
+            let n = if n & 0x80_00_00 != 0 {
+                (n | 0xff_00_00_00) as i32
+            } else {
+                n as i32
+            };
+            (i, n)
+        })
     })(input)
 }
 
@@ -493,11 +524,7 @@ where
     <I as Stream>::Slice: AsBytes,
 {
     trace("be_i32", move |input: I| {
-        if input.is_partial() {
-            streaming::be_i32(input)
-        } else {
-            complete::be_i32(input)
-        }
+        be_uint::<_, u32, _>(input, 4).map(|(i, n)| (i, n as i32))
     })(input)
 }
 
@@ -540,11 +567,7 @@ where
     <I as Stream>::Slice: AsBytes,
 {
     trace("be_i64", move |input: I| {
-        if input.is_partial() {
-            streaming::be_i64(input)
-        } else {
-            complete::be_i64(input)
-        }
+        be_uint::<_, u64, _>(input, 8).map(|(i, n)| (i, n as i64))
     })(input)
 }
 
@@ -587,11 +610,7 @@ where
     <I as Stream>::Slice: AsBytes,
 {
     trace("be_i128", move |input: I| {
-        if input.is_partial() {
-            streaming::be_i128(input)
-        } else {
-            complete::be_i128(input)
-        }
+        be_uint::<_, u128, _>(input, 16).map(|(i, n)| (i, n as i128))
     })(input)
 }
 
@@ -632,13 +651,7 @@ where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
 {
-    trace("le_u8", move |input: I| {
-        if input.is_partial() {
-            streaming::le_u8(input)
-        } else {
-            complete::le_u8(input)
-        }
-    })(input)
+    u8(input)
 }
 
 /// Recognizes a little endian unsigned 2 bytes integer.
@@ -681,13 +694,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_u16", move |input: I| {
-        if input.is_partial() {
-            streaming::le_u16(input)
-        } else {
-            complete::le_u16(input)
-        }
-    })(input)
+    trace("le_u16", move |input: I| le_uint(input, 2))(input)
 }
 
 /// Recognizes a little endian unsigned 3 byte integer.
@@ -730,13 +737,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_u24", move |input: I| {
-        if input.is_partial() {
-            streaming::le_u24(input)
-        } else {
-            complete::le_u24(input)
-        }
-    })(input)
+    trace("le_u24", move |input: I| le_uint(input, 3))(input)
 }
 
 /// Recognizes a little endian unsigned 4 bytes integer.
@@ -779,13 +780,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_u32", move |input: I| {
-        if input.is_partial() {
-            streaming::le_u32(input)
-        } else {
-            complete::le_u32(input)
-        }
-    })(input)
+    trace("le_u32", move |input: I| le_uint(input, 4))(input)
 }
 
 /// Recognizes a little endian unsigned 8 bytes integer.
@@ -828,13 +823,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_u64", move |input: I| {
-        if input.is_partial() {
-            streaming::le_u64(input)
-        } else {
-            complete::le_u64(input)
-        }
-    })(input)
+    trace("le_u64", move |input: I| le_uint(input, 8))(input)
 }
 
 /// Recognizes a little endian unsigned 16 bytes integer.
@@ -877,13 +866,62 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_u128", move |input: I| {
-        if input.is_partial() {
-            streaming::le_u128(input)
-        } else {
-            complete::le_u128(input)
-        }
-    })(input)
+    trace("le_u128", move |input: I| le_uint(input, 16))(input)
+}
+
+#[inline]
+fn le_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
+where
+    I: StreamIsPartial,
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
+    Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
+{
+    if input.is_partial() {
+        streaming_le_uint(input, bound)
+    } else {
+        complete_le_uint(input, bound)
+    }
+}
+
+#[inline]
+fn streaming_le_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
+where
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
+    Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
+{
+    let offset = input.offset_at(bound).map_err(ErrMode::Incomplete)?;
+    let (input, number) = input.next_slice(offset);
+    let number = number.as_bytes();
+
+    let mut res = Uint::default();
+    for (index, byte) in number.iter_offsets().take(bound) {
+        res = res + (Uint::from(byte) << (8 * index as u8));
+    }
+
+    Ok((input, res))
+}
+
+#[inline]
+fn complete_le_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
+where
+    I: Stream<Token = u8>,
+    <I as Stream>::Slice: AsBytes,
+    Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
+{
+    let offset = input
+        .offset_at(bound)
+        .map_err(|_err| ErrMode::Backtrack(E::from_error_kind(input.clone(), ErrorKind::Eof)))?;
+    let (input, number) = input.next_slice(offset);
+    let number = number.as_bytes();
+
+    let mut res = Uint::default();
+    for (index, byte) in number.iter_offsets().take(bound) {
+        res = res + (Uint::from(byte) << (8 * index as u8));
+    }
+
+    Ok((input, res))
 }
 
 /// Recognizes a signed 1 byte integer.
@@ -923,13 +961,7 @@ where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
 {
-    trace("le_i8", move |input: I| {
-        if input.is_partial() {
-            streaming::le_i8(input)
-        } else {
-            complete::le_i8(input)
-        }
-    })(input)
+    i8(input)
 }
 
 /// Recognizes a little endian signed 2 bytes integer.
@@ -973,11 +1005,7 @@ where
     <I as Stream>::Slice: AsBytes,
 {
     trace("le_i16", move |input: I| {
-        if input.is_partial() {
-            streaming::le_i16(input)
-        } else {
-            complete::le_i16(input)
-        }
+        le_uint::<_, u16, _>(input, 2).map(|(i, n)| (i, n as i16))
     })(input)
 }
 
@@ -1022,11 +1050,15 @@ where
     <I as Stream>::Slice: AsBytes,
 {
     trace("le_i24", move |input: I| {
-        if input.is_partial() {
-            streaming::le_i24(input)
-        } else {
-            complete::le_i24(input)
-        }
+        le_uint::<_, u32, _>(input, 3).map(|(i, n)| {
+            // Same as the unsigned version but we need to sign-extend manually here
+            let n = if n & 0x80_00_00 != 0 {
+                (n | 0xff_00_00_00) as i32
+            } else {
+                n as i32
+            };
+            (i, n)
+        })
     })(input)
 }
 
@@ -1071,11 +1103,7 @@ where
     <I as Stream>::Slice: AsBytes,
 {
     trace("le_i32", move |input: I| {
-        if input.is_partial() {
-            streaming::le_i32(input)
-        } else {
-            complete::le_i32(input)
-        }
+        le_uint::<_, u32, _>(input, 4).map(|(i, n)| (i, n as i32))
     })(input)
 }
 
@@ -1120,11 +1148,7 @@ where
     <I as Stream>::Slice: AsBytes,
 {
     trace("le_i64", move |input: I| {
-        if input.is_partial() {
-            streaming::le_i64(input)
-        } else {
-            complete::le_i64(input)
-        }
+        le_uint::<_, u64, _>(input, 8).map(|(i, n)| (i, n as i64))
     })(input)
 }
 
@@ -1169,11 +1193,7 @@ where
     <I as Stream>::Slice: AsBytes,
 {
     trace("le_i128", move |input: I| {
-        if input.is_partial() {
-            streaming::le_i128(input)
-        } else {
-            complete::le_i128(input)
-        }
+        le_uint::<_, u128, _>(input, 16).map(|(i, n)| (i, n as i128))
     })(input)
 }
 
@@ -1221,11 +1241,30 @@ where
 {
     trace("u8", move |input: I| {
         if input.is_partial() {
-            streaming::u8(input)
+            streaming_u8(input)
         } else {
-            complete::u8(input)
+            complete_u8(input)
         }
     })(input)
+}
+
+#[inline]
+pub(crate) fn streaming_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
+where
+    I: Stream<Token = u8>,
+{
+    input
+        .next_token()
+        .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))
+}
+
+pub(crate) fn complete_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
+where
+    I: Stream<Token = u8>,
+{
+    input
+        .next_token()
+        .ok_or_else(|| ErrMode::Backtrack(E::from_error_kind(input, ErrorKind::Eof)))
 }
 
 /// Recognizes an unsigned 2 bytes integer
@@ -1288,13 +1327,16 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("u16", move |input: I| {
-        if input.is_partial() {
-            streaming::u16(endian)
-        } else {
-            complete::u16(endian)
+    move |input: I| {
+        match endian {
+            crate::number::Endianness::Big => be_u16,
+            crate::number::Endianness::Little => le_u16,
+            #[cfg(target_endian = "big")]
+            crate::number::Endianness::Native => be_u16,
+            #[cfg(target_endian = "little")]
+            crate::number::Endianness::Native => le_u16,
         }
-    }(input))
+    }(input)
 }
 
 /// Recognizes an unsigned 3 byte integer
@@ -1357,13 +1399,16 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("u23", move |input: I| {
-        if input.is_partial() {
-            streaming::u24(endian)
-        } else {
-            complete::u24(endian)
+    move |input: I| {
+        match endian {
+            crate::number::Endianness::Big => be_u24,
+            crate::number::Endianness::Little => le_u24,
+            #[cfg(target_endian = "big")]
+            crate::number::Endianness::Native => be_u24,
+            #[cfg(target_endian = "little")]
+            crate::number::Endianness::Native => le_u24,
         }
-    }(input))
+    }(input)
 }
 
 /// Recognizes an unsigned 4 byte integer
@@ -1426,13 +1471,16 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("u32", move |input: I| {
-        if input.is_partial() {
-            streaming::u32(endian)
-        } else {
-            complete::u32(endian)
+    move |input: I| {
+        match endian {
+            crate::number::Endianness::Big => be_u32,
+            crate::number::Endianness::Little => le_u32,
+            #[cfg(target_endian = "big")]
+            crate::number::Endianness::Native => be_u32,
+            #[cfg(target_endian = "little")]
+            crate::number::Endianness::Native => le_u32,
         }
-    }(input))
+    }(input)
 }
 
 /// Recognizes an unsigned 8 byte integer
@@ -1495,13 +1543,16 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("u64", move |input: I| {
-        if input.is_partial() {
-            streaming::u64(endian)
-        } else {
-            complete::u64(endian)
+    move |input: I| {
+        match endian {
+            crate::number::Endianness::Big => be_u64,
+            crate::number::Endianness::Little => le_u64,
+            #[cfg(target_endian = "big")]
+            crate::number::Endianness::Native => be_u64,
+            #[cfg(target_endian = "little")]
+            crate::number::Endianness::Native => le_u64,
         }
-    }(input))
+    }(input)
 }
 
 /// Recognizes an unsigned 16 byte integer
@@ -1564,13 +1615,16 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("u128", move |input: I| {
-        if input.is_partial() {
-            streaming::u128(endian)
-        } else {
-            complete::u128(endian)
+    move |input: I| {
+        match endian {
+            crate::number::Endianness::Big => be_u128,
+            crate::number::Endianness::Little => le_u128,
+            #[cfg(target_endian = "big")]
+            crate::number::Endianness::Native => be_u128,
+            #[cfg(target_endian = "little")]
+            crate::number::Endianness::Native => le_u128,
         }
-    }(input))
+    }(input)
 }
 
 /// Recognizes a signed 1 byte integer
@@ -1617,10 +1671,11 @@ where
 {
     trace("i8", move |input: I| {
         if input.is_partial() {
-            streaming::i8(input)
+            streaming_u8(input)
         } else {
-            complete::i8(input)
+            complete_u8(input)
         }
+        .map(|(i, n)| (i, n as i8))
     })(input)
 }
 
@@ -1684,13 +1739,16 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("i16", move |input: I| {
-        if input.is_partial() {
-            streaming::i16(endian)
-        } else {
-            complete::i16(endian)
+    move |input: I| {
+        match endian {
+            crate::number::Endianness::Big => be_i16,
+            crate::number::Endianness::Little => le_i16,
+            #[cfg(target_endian = "big")]
+            crate::number::Endianness::Native => be_i16,
+            #[cfg(target_endian = "little")]
+            crate::number::Endianness::Native => le_i16,
         }
-    }(input))
+    }(input)
 }
 
 /// Recognizes a signed 3 byte integer
@@ -1753,13 +1811,16 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("i24", move |input: I| {
-        if input.is_partial() {
-            streaming::i24(endian)
-        } else {
-            complete::i24(endian)
+    move |input: I| {
+        match endian {
+            crate::number::Endianness::Big => be_i24,
+            crate::number::Endianness::Little => le_i24,
+            #[cfg(target_endian = "big")]
+            crate::number::Endianness::Native => be_i24,
+            #[cfg(target_endian = "little")]
+            crate::number::Endianness::Native => le_i24,
         }
-    }(input))
+    }(input)
 }
 
 /// Recognizes a signed 4 byte integer
@@ -1822,13 +1883,16 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("i32", move |input: I| {
-        if input.is_partial() {
-            streaming::i32(endian)
-        } else {
-            complete::i32(endian)
+    move |input: I| {
+        match endian {
+            crate::number::Endianness::Big => be_i32,
+            crate::number::Endianness::Little => le_i32,
+            #[cfg(target_endian = "big")]
+            crate::number::Endianness::Native => be_i32,
+            #[cfg(target_endian = "little")]
+            crate::number::Endianness::Native => le_i32,
         }
-    }(input))
+    }(input)
 }
 
 /// Recognizes a signed 8 byte integer
@@ -1891,13 +1955,16 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("i64", move |input: I| {
-        if input.is_partial() {
-            streaming::i64(endian)
-        } else {
-            complete::i64(endian)
+    move |input: I| {
+        match endian {
+            crate::number::Endianness::Big => be_i64,
+            crate::number::Endianness::Little => le_i64,
+            #[cfg(target_endian = "big")]
+            crate::number::Endianness::Native => be_i64,
+            #[cfg(target_endian = "little")]
+            crate::number::Endianness::Native => le_i64,
         }
-    }(input))
+    }(input)
 }
 
 /// Recognizes a signed 16 byte integer
@@ -1960,13 +2027,16 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("i128", move |input: I| {
-        if input.is_partial() {
-            streaming::i128(endian)
-        } else {
-            complete::i128(endian)
+    move |input: I| {
+        match endian {
+            crate::number::Endianness::Big => be_i128,
+            crate::number::Endianness::Little => le_i128,
+            #[cfg(target_endian = "big")]
+            crate::number::Endianness::Native => be_i128,
+            #[cfg(target_endian = "little")]
+            crate::number::Endianness::Native => le_i128,
         }
-    }(input))
+    }(input)
 }
 
 /// Recognizes a big endian 4 bytes floating point number.
@@ -2010,11 +2080,7 @@ where
     <I as Stream>::Slice: AsBytes,
 {
     trace("be_f32", move |input: I| {
-        if input.is_partial() {
-            streaming::be_f32(input)
-        } else {
-            complete::be_f32(input)
-        }
+        be_uint::<_, u32, _>(input, 4).map(|(i, n)| (i, f32::from_bits(n)))
     })(input)
 }
 
@@ -2059,11 +2125,7 @@ where
     <I as Stream>::Slice: AsBytes,
 {
     trace("be_f64", move |input: I| {
-        if input.is_partial() {
-            streaming::be_f64(input)
-        } else {
-            complete::be_f64(input)
-        }
+        be_uint::<_, u64, _>(input, 8).map(|(i, n)| (i, f64::from_bits(n)))
     })(input)
 }
 
@@ -2108,11 +2170,7 @@ where
     <I as Stream>::Slice: AsBytes,
 {
     trace("le_f32", move |input: I| {
-        if input.is_partial() {
-            streaming::le_f32(input)
-        } else {
-            complete::le_f32(input)
-        }
+        le_uint::<_, u32, _>(input, 4).map(|(i, n)| (i, f32::from_bits(n)))
     })(input)
 }
 
@@ -2156,12 +2214,8 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_f64", move |input: I| {
-        if input.is_partial() {
-            streaming::le_f64(input)
-        } else {
-            complete::le_f64(input)
-        }
+    trace("be_f64", move |input: I| {
+        le_uint::<_, u64, _>(input, 8).map(|(i, n)| (i, f64::from_bits(n)))
     })(input)
 }
 
@@ -2225,13 +2279,16 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("f32", move |input: I| {
-        if input.is_partial() {
-            streaming::f32(endian)
-        } else {
-            complete::f32(endian)
+    move |input: I| {
+        match endian {
+            crate::number::Endianness::Big => be_f32,
+            crate::number::Endianness::Little => le_f32,
+            #[cfg(target_endian = "big")]
+            crate::number::Endianness::Native => be_f32,
+            #[cfg(target_endian = "little")]
+            crate::number::Endianness::Native => le_f32,
         }
-    }(input))
+    }(input)
 }
 
 /// Recognizes an 8 byte floating point number
@@ -2294,11 +2351,14 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("f64", move |input: I|{
-        if input.is_partial() {
-            streaming::f64(endian)
-        } else {
-            complete::f64(endian)
+    move |input: I| {
+        match endian {
+            crate::number::Endianness::Big => be_f64,
+            crate::number::Endianness::Little => le_f64,
+            #[cfg(target_endian = "big")]
+            crate::number::Endianness::Native => be_f64,
+            #[cfg(target_endian = "little")]
+            crate::number::Endianness::Native => le_f64,
         }
-    }(input))
+    }(input)
 }
