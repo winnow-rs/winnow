@@ -5,6 +5,7 @@
 #[cfg(test)]
 mod tests;
 
+use crate::bytes::take;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::Needed;
@@ -13,6 +14,7 @@ use crate::lib::std::ops::{Add, Shl};
 use crate::stream::{AsBytes, Stream, StreamIsPartial};
 use crate::trace::trace;
 use crate::IResult;
+use crate::Parser;
 
 /// Configurable endianness
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -290,65 +292,23 @@ where
     <I as Stream>::Slice: AsBytes,
     Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
 {
-    if input.is_partial() {
-        streaming_be_uint(input, bound)
-    } else {
-        complete_be_uint(input, bound)
-    }
+    debug_assert_ne!(bound, 1, "to_be_uint needs extra work to avoid overflow");
+    take(bound)
+        .map(|n: <I as Stream>::Slice| to_be_uint(n.as_bytes()))
+        .parse_next(input)
 }
 
 #[inline]
-fn streaming_be_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
+fn to_be_uint<Uint>(number: &[u8]) -> Uint
 where
-    I: Stream<Token = u8>,
-    <I as Stream>::Slice: AsBytes,
     Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
 {
-    let offset = input.offset_at(bound).map_err(ErrMode::Incomplete)?;
-    let (input, number) = input.next_slice(offset);
-    let number = number.as_bytes();
-
     let mut res = Uint::default();
-    // special case to avoid shift a byte with overflow
-    if bound > 1 {
-        for byte in number.iter().copied().take(bound) {
-            res = (res << 8) + byte.into();
-        }
-    } else {
-        for byte in number.iter().copied().take(bound) {
-            res = byte.into();
-        }
+    for byte in number.iter().copied() {
+        res = (res << 8) + byte.into();
     }
 
-    Ok((input, res))
-}
-
-#[inline]
-fn complete_be_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
-where
-    I: Stream<Token = u8>,
-    <I as Stream>::Slice: AsBytes,
-    Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
-{
-    let offset = input
-        .offset_at(bound)
-        .map_err(|_err| ErrMode::Backtrack(E::from_error_kind(input.clone(), ErrorKind::Eof)))?;
-    let (input, number) = input.next_slice(offset);
-    let number = number.as_bytes();
-
-    let mut res = Uint::default();
-    // special case to avoid shift a byte with overflow
-    if bound > 1 {
-        for byte in number.iter().copied().take(bound) {
-            res = (res << 8) + byte.into();
-        }
-    } else {
-        for byte in number.iter().copied().take(bound) {
-            res = byte.into();
-        }
-    }
-
-    Ok((input, res))
+    res
 }
 
 /// Recognizes a signed 1 byte integer.
@@ -877,51 +837,22 @@ where
     <I as Stream>::Slice: AsBytes,
     Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
 {
-    if input.is_partial() {
-        streaming_le_uint(input, bound)
-    } else {
-        complete_le_uint(input, bound)
-    }
+    take(bound)
+        .map(|n: <I as Stream>::Slice| to_le_uint(n.as_bytes()))
+        .parse_next(input)
 }
 
 #[inline]
-fn streaming_le_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
+fn to_le_uint<Uint>(number: &[u8]) -> Uint
 where
-    I: Stream<Token = u8>,
-    <I as Stream>::Slice: AsBytes,
     Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
 {
-    let offset = input.offset_at(bound).map_err(ErrMode::Incomplete)?;
-    let (input, number) = input.next_slice(offset);
-    let number = number.as_bytes();
-
     let mut res = Uint::default();
-    for (index, byte) in number.iter_offsets().take(bound) {
+    for (index, byte) in number.iter_offsets() {
         res = res + (Uint::from(byte) << (8 * index as u8));
     }
 
-    Ok((input, res))
-}
-
-#[inline]
-fn complete_le_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
-where
-    I: Stream<Token = u8>,
-    <I as Stream>::Slice: AsBytes,
-    Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
-{
-    let offset = input
-        .offset_at(bound)
-        .map_err(|_err| ErrMode::Backtrack(E::from_error_kind(input.clone(), ErrorKind::Eof)))?;
-    let (input, number) = input.next_slice(offset);
-    let number = number.as_bytes();
-
-    let mut res = Uint::default();
-    for (index, byte) in number.iter_offsets().take(bound) {
-        res = res + (Uint::from(byte) << (8 * index as u8));
-    }
-
-    Ok((input, res))
+    res
 }
 
 /// Recognizes a signed 1 byte integer.
