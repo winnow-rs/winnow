@@ -15,6 +15,7 @@ use crate::stream::{
 use crate::stream::{StreamIsPartial, ToUsize};
 use crate::trace::trace;
 use crate::IResult;
+use crate::Parser;
 
 /// Matches one token
 ///
@@ -294,15 +295,15 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::bytes::one_of;
 /// assert_eq!(one_of::<_, _, Error<_>>("abc")("b"), Ok(("", 'b')));
-/// assert_eq!(one_of::<_, _, Error<_>>("a")("bc"), Err(ErrMode::Backtrack(Error::new("bc", ErrorKind::OneOf))));
-/// assert_eq!(one_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, Error<_>>("a")("bc"), Err(ErrMode::Backtrack(Error::new("bc", ErrorKind::Verify))));
+/// assert_eq!(one_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
 ///
 /// fn parser_fn(i: &str) -> IResult<&str, char> {
 ///     one_of(|c| c == 'a' || c == 'b')(i)
 /// }
 /// assert_eq!(parser_fn("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser_fn("cd"), Err(ErrMode::Backtrack(Error::new("cd", ErrorKind::OneOf))));
-/// assert_eq!(parser_fn(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::OneOf))));
+/// assert_eq!(parser_fn("cd"), Err(ErrMode::Backtrack(Error::new("cd", ErrorKind::Verify))));
+/// assert_eq!(parser_fn(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
 /// ```
 ///
 /// ```
@@ -311,14 +312,14 @@ where
 /// # use winnow::Partial;
 /// # use winnow::bytes::one_of;
 /// assert_eq!(one_of::<_, _, Error<_>>("abc")(Partial::new("b")), Ok((Partial::new(""), 'b')));
-/// assert_eq!(one_of::<_, _, Error<_>>("a")(Partial::new("bc")), Err(ErrMode::Backtrack(Error::new(Partial::new("bc"), ErrorKind::OneOf))));
+/// assert_eq!(one_of::<_, _, Error<_>>("a")(Partial::new("bc")), Err(ErrMode::Backtrack(Error::new(Partial::new("bc"), ErrorKind::Verify))));
 /// assert_eq!(one_of::<_, _, Error<_>>("a")(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// fn parser_fn(i: Partial<&str>) -> IResult<Partial<&str>, char> {
 ///     one_of(|c| c == 'a' || c == 'b')(i)
 /// }
 /// assert_eq!(parser_fn(Partial::new("abc")), Ok((Partial::new("bc"), 'a')));
-/// assert_eq!(parser_fn(Partial::new("cd")), Err(ErrMode::Backtrack(Error::new(Partial::new("cd"), ErrorKind::OneOf))));
+/// assert_eq!(parser_fn(Partial::new("cd")), Err(ErrMode::Backtrack(Error::new(Partial::new("cd"), ErrorKind::Verify))));
 /// assert_eq!(parser_fn(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
@@ -334,47 +335,10 @@ where
     <I as Stream>::Token: Copy,
     T: ContainsToken<<I as Stream>::Token>,
 {
-    trace("one_of", move |i: I| {
-        if i.is_partial() {
-            streaming_one_of_internal(i, &list)
-        } else {
-            complete_one_of_internal(i, &list)
-        }
-    })
-}
-
-pub(crate) fn streaming_one_of_internal<I, T, E: ParseError<I>>(
-    input: I,
-    list: &T,
-) -> IResult<I, <I as Stream>::Token, E>
-where
-    I: Stream,
-    <I as Stream>::Token: Copy,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    let (new_input, token) = input
-        .next_token()
-        .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
-    if list.contains_token(token) {
-        Ok((new_input, token))
-    } else {
-        Err(ErrMode::from_error_kind(input, ErrorKind::OneOf))
-    }
-}
-
-pub(crate) fn complete_one_of_internal<I, T, E: ParseError<I>>(
-    input: I,
-    list: &T,
-) -> IResult<I, <I as Stream>::Token, E>
-where
-    I: Stream,
-    <I as Stream>::Token: Copy,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    input
-        .next_token()
-        .filter(|(_, t)| list.contains_token(*t))
-        .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::OneOf))
+    trace(
+        "one_of",
+        any.verify(move |t: &<I as Stream>::Token| list.contains_token(*t)),
+    )
 }
 
 /// Recognize a token that does not match the [pattern][ContainsToken]
@@ -389,8 +353,8 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::bytes::none_of;
 /// assert_eq!(none_of::<_, _, Error<_>>("abc")("z"), Ok(("", 'z')));
-/// assert_eq!(none_of::<_, _, Error<_>>("ab")("a"), Err(ErrMode::Backtrack(Error::new("a", ErrorKind::NoneOf))));
-/// assert_eq!(none_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, Error<_>>("ab")("a"), Err(ErrMode::Backtrack(Error::new("a", ErrorKind::Verify))));
+/// assert_eq!(none_of::<_, _, Error<_>>("a")(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
 /// ```
 ///
 /// ```
@@ -398,7 +362,7 @@ where
 /// # use winnow::Partial;
 /// # use winnow::bytes::none_of;
 /// assert_eq!(none_of::<_, _, Error<_>>("abc")(Partial::new("z")), Ok((Partial::new(""), 'z')));
-/// assert_eq!(none_of::<_, _, Error<_>>("ab")(Partial::new("a")), Err(ErrMode::Backtrack(Error::new(Partial::new("a"), ErrorKind::NoneOf))));
+/// assert_eq!(none_of::<_, _, Error<_>>("ab")(Partial::new("a")), Err(ErrMode::Backtrack(Error::new(Partial::new("a"), ErrorKind::Verify))));
 /// assert_eq!(none_of::<_, _, Error<_>>("a")(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
@@ -411,47 +375,10 @@ where
     <I as Stream>::Token: Copy,
     T: ContainsToken<<I as Stream>::Token>,
 {
-    trace("none_of", move |i: I| {
-        if i.is_partial() {
-            streaming_none_of_internal(i, &list)
-        } else {
-            complete_none_of_internal(i, &list)
-        }
-    })
-}
-
-pub(crate) fn streaming_none_of_internal<I, T, E: ParseError<I>>(
-    input: I,
-    list: &T,
-) -> IResult<I, <I as Stream>::Token, E>
-where
-    I: Stream,
-    <I as Stream>::Token: Copy,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    let (new_input, token) = input
-        .next_token()
-        .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
-    if !list.contains_token(token) {
-        Ok((new_input, token))
-    } else {
-        Err(ErrMode::from_error_kind(input, ErrorKind::NoneOf))
-    }
-}
-
-pub(crate) fn complete_none_of_internal<I, T, E: ParseError<I>>(
-    input: I,
-    list: &T,
-) -> IResult<I, <I as Stream>::Token, E>
-where
-    I: Stream,
-    <I as Stream>::Token: Copy,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    input
-        .next_token()
-        .filter(|(_, t)| !list.contains_token(*t))
-        .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::NoneOf))
+    trace(
+        "none_of",
+        any.verify(move |t: &<I as Stream>::Token| !list.contains_token(*t)),
+    )
 }
 
 /// Recognize the longest input slice (if any) that matches the [pattern][ContainsToken]

@@ -87,7 +87,7 @@ fn partial_one_of_test() {
         f(Partial::new(b)),
         Err(ErrMode::Backtrack(error_position!(
             Partial::new(b),
-            ErrorKind::OneOf
+            ErrorKind::Verify
         )))
     );
 
@@ -110,7 +110,7 @@ fn char_byteslice() {
         f(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
             Partial::new(a),
-            ErrorKind::OneOf
+            ErrorKind::Verify
         )))
     );
 
@@ -129,7 +129,7 @@ fn char_str() {
         f(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
             Partial::new(a),
-            ErrorKind::OneOf
+            ErrorKind::Verify
         )))
     );
 
@@ -148,7 +148,7 @@ fn partial_none_of_test() {
         f(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
             Partial::new(a),
-            ErrorKind::NoneOf
+            ErrorKind::Verify
         )))
     );
 

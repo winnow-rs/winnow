@@ -184,7 +184,7 @@ pub trait Parser<I, O, E> {
     /// let mut parser = separated_pair(alpha1, ',', alpha1).recognize();
     ///
     /// assert_eq!(parser.parse_next("abcd,efgh"), Ok(("", "abcd,efgh")));
-    /// assert_eq!(parser.parse_next("abcd;"),Err(ErrMode::Backtrack(Error::new(";", ErrorKind::OneOf))));
+    /// assert_eq!(parser.parse_next("abcd;"),Err(ErrMode::Backtrack(Error::new(";", ErrorKind::Verify))));
     /// # }
     /// ```
     #[doc(alias = "concat")]
@@ -223,7 +223,7 @@ pub trait Parser<I, O, E> {
     /// let mut consumed_parser = separated_pair(alpha1, ',', alpha1).value(true).with_recognized();
     ///
     /// assert_eq!(consumed_parser.parse_next("abcd,efgh1"), Ok(("1", (true, "abcd,efgh"))));
-    /// assert_eq!(consumed_parser.parse_next("abcd;"),Err(ErrMode::Backtrack(Error::new(";", ErrorKind::OneOf))));
+    /// assert_eq!(consumed_parser.parse_next("abcd;"),Err(ErrMode::Backtrack(Error::new(";", ErrorKind::Verify))));
     ///
     /// // the second output (representing the consumed input)
     /// // should be the same as that of the `recognize` parser.
@@ -256,7 +256,7 @@ pub trait Parser<I, O, E> {
     /// let mut parser = separated_pair(alpha1.span(), ',', alpha1.span());
     ///
     /// assert_eq!(parser.parse_next(Located::new("abcd,efgh")).finish(), Ok((0..4, 5..9)));
-    /// assert_eq!(parser.parse_next(Located::new("abcd;")),Err(ErrMode::Backtrack(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::OneOf))));
+    /// assert_eq!(parser.parse_next(Located::new("abcd;")),Err(ErrMode::Backtrack(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::Verify))));
     /// ```
     fn span(self) -> Span<Self, O>
     where
@@ -295,7 +295,7 @@ pub trait Parser<I, O, E> {
     /// let mut consumed_parser = separated_pair(alpha1.value(1).with_span(), ',', alpha1.value(2).with_span());
     ///
     /// assert_eq!(consumed_parser.parse_next(Located::new("abcd,efgh")).finish(), Ok(((1, 0..4), (2, 5..9))));
-    /// assert_eq!(consumed_parser.parse_next(Located::new("abcd;")),Err(ErrMode::Backtrack(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::OneOf))));
+    /// assert_eq!(consumed_parser.parse_next(Located::new("abcd;")),Err(ErrMode::Backtrack(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::Verify))));
     ///
     /// // the second output (representing the consumed input)
     /// // should be the same as that of the `span` parser.
@@ -591,9 +591,9 @@ where
 ///     b'a'.parse_next(i)
 /// }
 /// assert_eq!(parser(&b"abc"[..]), Ok((&b"bc"[..], b'a')));
-/// assert_eq!(parser(&b" abc"[..]), Err(ErrMode::Backtrack(Error::new(&b" abc"[..], ErrorKind::OneOf))));
-/// assert_eq!(parser(&b"bc"[..]), Err(ErrMode::Backtrack(Error::new(&b"bc"[..], ErrorKind::OneOf))));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&b""[..], ErrorKind::OneOf))));
+/// assert_eq!(parser(&b" abc"[..]), Err(ErrMode::Backtrack(Error::new(&b" abc"[..], ErrorKind::Verify))));
+/// assert_eq!(parser(&b"bc"[..]), Err(ErrMode::Backtrack(Error::new(&b"bc"[..], ErrorKind::Verify))));
+/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(Error::new(&b""[..], ErrorKind::Eof))));
 /// ```
 impl<I, E> Parser<I, u8, E> for u8
 where
@@ -617,9 +617,9 @@ where
 ///     'a'.parse_next(i)
 /// }
 /// assert_eq!(parser("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser(" abc"), Err(ErrMode::Backtrack(Error::new(" abc", ErrorKind::OneOf))));
-/// assert_eq!(parser("bc"), Err(ErrMode::Backtrack(Error::new("bc", ErrorKind::OneOf))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::OneOf))));
+/// assert_eq!(parser(" abc"), Err(ErrMode::Backtrack(Error::new(" abc", ErrorKind::Verify))));
+/// assert_eq!(parser("bc"), Err(ErrMode::Backtrack(Error::new("bc", ErrorKind::Verify))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
 /// ```
 impl<I, E> Parser<I, <I as Stream>::Token, E> for char
 where

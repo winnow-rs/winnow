@@ -236,8 +236,8 @@ where
 /// }
 ///
 /// assert_eq!(parser("\nc"), Ok(("c", '\n')));
-/// assert_eq!(parser("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::OneOf))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::OneOf))));
+/// assert_eq!(parser("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::Verify))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
 /// ```
 ///
 /// ```
@@ -245,7 +245,7 @@ where
 /// # use winnow::Partial;
 /// # use winnow::character::newline;
 /// assert_eq!(newline::<_, Error<_>>(Partial::new("\nc")), Ok((Partial::new("c"), '\n')));
-/// assert_eq!(newline::<_, Error<_>>(Partial::new("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("\r\nc"), ErrorKind::OneOf))));
+/// assert_eq!(newline::<_, Error<_>>(Partial::new("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("\r\nc"), ErrorKind::Verify))));
 /// assert_eq!(newline::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
@@ -278,8 +278,8 @@ where
 /// }
 ///
 /// assert_eq!(parser("\tc"), Ok(("c", '\t')));
-/// assert_eq!(parser("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::OneOf))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::OneOf))));
+/// assert_eq!(parser("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::Verify))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Eof))));
 /// ```
 ///
 /// ```
@@ -287,7 +287,7 @@ where
 /// # use winnow::Partial;
 /// # use winnow::character::tab;
 /// assert_eq!(tab::<_, Error<_>>(Partial::new("\tc")), Ok((Partial::new("c"), '\t')));
-/// assert_eq!(tab::<_, Error<_>>(Partial::new("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("\r\nc"), ErrorKind::OneOf))));
+/// assert_eq!(tab::<_, Error<_>>(Partial::new("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("\r\nc"), ErrorKind::Verify))));
 /// assert_eq!(tab::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
@@ -1507,19 +1507,15 @@ where
             Err(ErrMode::Backtrack(_)) => {
                 if i.next_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = control_char.len_utf8();
-                    if next >= i.eof_offset() {
-                        return Err(ErrMode::Incomplete(Needed::new(1)));
-                    } else {
-                        match escapable.parse_next(i.next_slice(next).0) {
-                            Ok((i2, _)) => {
-                                if i2.eof_offset() == 0 {
-                                    return Err(ErrMode::Incomplete(Needed::Unknown));
-                                } else {
-                                    i = i2;
-                                }
+                    match escapable.parse_next(i.next_slice(next).0) {
+                        Ok((i2, _)) => {
+                            if i2.eof_offset() == 0 {
+                                return Err(ErrMode::Incomplete(Needed::Unknown));
+                            } else {
+                                i = i2;
                             }
-                            Err(e) => return Err(e),
                         }
+                        Err(e) => return Err(e),
                     }
                 } else {
                     let offset = input.offset_to(&i);
@@ -1569,19 +1565,15 @@ where
             Err(ErrMode::Backtrack(_)) => {
                 if i.next_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = control_char.len_utf8();
-                    if next >= i.eof_offset() {
-                        return Err(ErrMode::from_error_kind(input, ErrorKind::Escaped));
-                    } else {
-                        match escapable.parse_next(i.next_slice(next).0) {
-                            Ok((i2, _)) => {
-                                if i2.eof_offset() == 0 {
-                                    return Ok(input.next_slice(input.eof_offset()));
-                                } else {
-                                    i = i2;
-                                }
+                    match escapable.parse_next(i.next_slice(next).0) {
+                        Ok((i2, _)) => {
+                            if i2.eof_offset() == 0 {
+                                return Ok(input.next_slice(input.eof_offset()));
+                            } else {
+                                i = i2;
                             }
-                            Err(e) => return Err(e),
                         }
+                        Err(e) => return Err(e),
                     }
                 } else {
                     let offset = input.offset_to(&i);
@@ -1718,22 +1710,16 @@ where
             Err(ErrMode::Backtrack(_)) => {
                 if remainder.next_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = offset + control_char.len_utf8();
-                    let eof_offset = input.eof_offset();
-
-                    if next >= eof_offset {
-                        return Err(ErrMode::Incomplete(Needed::Unknown));
-                    } else {
-                        match transform.parse_next(i.next_slice(next).0) {
-                            Ok((i2, o)) => {
-                                res.accumulate(o);
-                                if i2.eof_offset() == 0 {
-                                    return Err(ErrMode::Incomplete(Needed::Unknown));
-                                } else {
-                                    offset = input.offset_to(&i2);
-                                }
+                    match transform.parse_next(i.next_slice(next).0) {
+                        Ok((i2, o)) => {
+                            res.accumulate(o);
+                            if i2.eof_offset() == 0 {
+                                return Err(ErrMode::Incomplete(Needed::Unknown));
+                            } else {
+                                offset = input.offset_to(&i2);
                             }
-                            Err(e) => return Err(e),
                         }
+                        Err(e) => return Err(e),
                     }
                 } else {
                     return Ok((remainder, res));
@@ -1782,25 +1768,16 @@ where
             Err(ErrMode::Backtrack(_)) => {
                 if remainder.next_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = offset + control_char.len_utf8();
-                    let eof_offset = input.eof_offset();
-
-                    if next >= eof_offset {
-                        return Err(ErrMode::from_error_kind(
-                            remainder,
-                            ErrorKind::EscapedTransform,
-                        ));
-                    } else {
-                        match transform.parse_next(i.next_slice(next).0) {
-                            Ok((i2, o)) => {
-                                res.accumulate(o);
-                                if i2.eof_offset() == 0 {
-                                    return Ok((i.next_slice(i.eof_offset()).0, res));
-                                } else {
-                                    offset = input.offset_to(&i2);
-                                }
+                    match transform.parse_next(i.next_slice(next).0) {
+                        Ok((i2, o)) => {
+                            res.accumulate(o);
+                            if i2.eof_offset() == 0 {
+                                return Ok((i.next_slice(i.eof_offset()).0, res));
+                            } else {
+                                offset = input.offset_to(&i2);
                             }
-                            Err(e) => return Err(e),
                         }
+                        Err(e) => return Err(e),
                     }
                 } else {
                     return Ok((remainder, res));
