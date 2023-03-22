@@ -39,6 +39,20 @@ use crate::stream::{AsChar, Compare, Location, Stream, StreamIsPartial};
 /// - `u8` and `char`, see [`winnow::bytes::one_of`][crate::bytes::one_of]
 /// - `&[u8]` and `&str`, see [`winnow::bytes::tag`][crate::bytes::tag]
 pub trait Parser<I, O, E> {
+    /// Parse all of `input`, generating `O` from it
+    fn parse(&mut self, input: I) -> Result<O, E>
+    where
+        I: Stream,
+        // Force users to deal with `Incomplete` when `StreamIsPartial<true>`
+        I: StreamIsPartial,
+        I: Clone,
+        E: ParseError<I>,
+    {
+        #![allow(deprecated)]
+        use crate::error::FinishIResult;
+        self.parse_next(input).finish()
+    }
+
     /// Take tokens from the [`Stream`], turning it into the output
     ///
     /// This includes advancing the [`Stream`] to the next location.
@@ -255,7 +269,7 @@ pub trait Parser<I, O, E> {
     ///
     /// let mut parser = separated_pair(alpha1.span(), ',', alpha1.span());
     ///
-    /// assert_eq!(parser.parse_next(Located::new("abcd,efgh")).finish(), Ok((0..4, 5..9)));
+    /// assert_eq!(parser.parse(Located::new("abcd,efgh")), Ok((0..4, 5..9)));
     /// assert_eq!(parser.parse_next(Located::new("abcd;")),Err(ErrMode::Backtrack(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::Verify))));
     /// ```
     fn span(self) -> Span<Self, O>
@@ -294,7 +308,7 @@ pub trait Parser<I, O, E> {
     ///
     /// let mut consumed_parser = separated_pair(alpha1.value(1).with_span(), ',', alpha1.value(2).with_span());
     ///
-    /// assert_eq!(consumed_parser.parse_next(Located::new("abcd,efgh")).finish(), Ok(((1, 0..4), (2, 5..9))));
+    /// assert_eq!(consumed_parser.parse(Located::new("abcd,efgh")), Ok(((1, 0..4), (2, 5..9))));
     /// assert_eq!(consumed_parser.parse_next(Located::new("abcd;")),Err(ErrMode::Backtrack(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::Verify))));
     ///
     /// // the second output (representing the consumed input)

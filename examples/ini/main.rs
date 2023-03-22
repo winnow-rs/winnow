@@ -9,7 +9,7 @@ fn main() -> Result<(), lexopt::Error> {
     let input = args.input.as_deref().unwrap_or("1 + 1");
 
     if args.binary {
-        match parser::categories.parse_next(input.as_bytes()).finish() {
+        match parser::categories.parse(input.as_bytes()) {
             Ok(result) => {
                 println!("  {:?}", result);
             }
@@ -18,7 +18,7 @@ fn main() -> Result<(), lexopt::Error> {
             }
         }
     } else {
-        match parser_str::categories.parse_next(input).finish() {
+        match parser_str::categories.parse(input) {
             Ok(result) => {
                 println!("  {:?}", result);
             }

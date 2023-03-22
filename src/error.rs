@@ -40,6 +40,7 @@ use crate::Parser;
 pub type IResult<I, O, E = Error<I>> = Result<(I, O), ErrMode<E>>;
 
 /// Extension trait to convert a parser's [`IResult`] to a more manageable type
+#[deprecated(since = "0.4.0", note = "Replaced with `Parser::parse`")]
 pub trait FinishIResult<I, O, E> {
     /// Converts the parser's [`IResult`] to a type that is more consumable by callers.
     ///
@@ -69,6 +70,7 @@ pub trait FinishIResult<I, O, E> {
     ///     hex_uint.map(Hex).parse_next(value).finish().map_err(Error::into_owned)
     /// }
     /// ```
+    #[deprecated(since = "0.4.0", note = "Replaced with `Parser::parse`")]
     fn finish(self) -> Result<O, E>;
 
     /// Converts the parser's [`IResult`] to a type that is more consumable by errors.
@@ -81,9 +83,11 @@ pub trait FinishIResult<I, O, E> {
     /// If the result is `Err(ErrMode::Incomplete(_))`, this method will panic as [`ErrMode::Incomplete`]
     /// should only be set when the input is [`StreamIsPartial<false>`] which this isn't implemented
     /// for.
+    #[deprecated(since = "0.4.0", note = "Replaced with `Parser::parse`")]
     fn finish_err(self) -> Result<(I, O), E>;
 }
 
+#[allow(deprecated)]
 impl<I, O, E> FinishIResult<I, O, E> for IResult<I, O, E>
 where
     I: Stream,

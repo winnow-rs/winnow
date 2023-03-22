@@ -13,9 +13,7 @@ impl std::str::FromStr for Color {
     type Err = winnow::error::Error<String>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        hex_color(s)
-            .finish()
-            .map_err(winnow::error::Error::into_owned)
+        hex_color.parse(s).map_err(winnow::error::Error::into_owned)
     }
 }
 

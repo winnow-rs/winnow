@@ -231,17 +231,19 @@ pub mod _tutorial;
 /// }
 ///
 /// fn main() {
-///   let result = parse_data.parse_next("100").finish();
+///   let result = parse_data.parse("100");
 ///   assert_eq!(result, Ok(100));
 /// }
 /// ```
 pub mod prelude {
     pub use crate::stream::StreamIsPartial as _;
+    #[allow(deprecated)]
     pub use crate::FinishIResult as _;
     pub use crate::IResult;
     pub use crate::Parser;
 }
 
+#[allow(deprecated)]
 pub use error::FinishIResult;
 pub use error::IResult;
 pub use parser::*;
