@@ -48,7 +48,7 @@ fn decr() {
 fn parens(i: &str) -> IResult<&str, i64> {
     delimited(
         space,
-        delimited(terminated("(", incr), expr, tag(")").map(|_| decr())),
+        delimited(terminated("(", incr), expr, ")".map(|_| decr())),
         space,
     )
     .parse_next(i)

@@ -10,7 +10,7 @@
 //!   escape and the next non-whitespace character
 
 use winnow::branch::alt;
-use winnow::bytes::{one_of, take_till1, take_while_m_n};
+use winnow::bytes::{take_till1, take_while_m_n};
 use winnow::character::multispace1;
 use winnow::error::{FromExternalError, ParseError};
 use winnow::multi::fold_many0;
@@ -109,14 +109,14 @@ where
             // parser (the second argument) succeeds. In these cases, it looks for
             // the marker characters (n, r, t, etc) and returns the matching
             // character (\n, \r, \t, etc).
-            one_of('n').value('\n'),
-            one_of('r').value('\r'),
-            one_of('t').value('\t'),
-            one_of('b').value('\u{08}'),
-            one_of('f').value('\u{0C}'),
-            one_of('\\').value('\\'),
-            one_of('/').value('/'),
-            one_of('"').value('"'),
+            'n'.value('\n'),
+            'r'.value('\r'),
+            't'.value('\t'),
+            'b'.value('\u{08}'),
+            'f'.value('\u{0C}'),
+            '\\'.value('\\'),
+            '/'.value('/'),
+            '"'.value('"'),
         )),
     )
     .parse_next(input)

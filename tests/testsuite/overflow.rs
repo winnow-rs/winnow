@@ -79,11 +79,11 @@ fn overflow_incomplete_many1() {
 #[test]
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_many_till0() {
-    use winnow::{bytes::tag, multi::many_till0};
+    use winnow::multi::many_till0;
 
     #[allow(clippy::type_complexity)]
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (Vec<&[u8]>, &[u8])> {
-        many_till0(length_data(be_u64), tag("abc")).parse_next(i)
+        many_till0(length_data(be_u64), "abc").parse_next(i)
     }
 
     // Trigger an overflow in many_till0

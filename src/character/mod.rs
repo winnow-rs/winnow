@@ -9,7 +9,7 @@ use crate::lib::std::ops::{Add, Shl};
 
 use crate::branch::alt;
 use crate::bytes::one_of;
-use crate::bytes::tag;
+
 use crate::bytes::take_while0;
 use crate::bytes::take_while1;
 use crate::combinator::cut_err;
@@ -58,7 +58,7 @@ where
     I: Stream,
     I: Compare<&'static str>,
 {
-    trace("crlf", move |input: I| tag("\r\n").parse_next(input)).parse_next(input)
+    trace("crlf", move |input: I| "\r\n".parse_next(input)).parse_next(input)
 }
 
 /// Recognizes a string of any char except '\r\n' or '\n'.
@@ -258,8 +258,7 @@ where
     <I as Stream>::Token: AsChar + Copy,
 {
     trace("newline", move |input: I| {
-        one_of('\n')
-            .map(|c: <I as Stream>::Token| c.as_char())
+        '\n'.map(|c: <I as Stream>::Token| c.as_char())
             .parse_next(input)
     })
     .parse_next(input)
@@ -301,8 +300,7 @@ where
     <I as Stream>::Token: AsChar + Copy,
 {
     trace("tab", move |input: I| {
-        one_of('\t')
-            .map(|c: <I as Stream>::Token| c.as_char())
+        '\t'.map(|c: <I as Stream>::Token| c.as_char())
             .parse_next(input)
     })
     .parse_next(input)
@@ -1613,9 +1611,9 @@ where
 ///     alpha1,
 ///     '\\',
 ///     alt((
-///       tag("\\").value("\\"),
-///       tag("\"").value("\""),
-///       tag("n").value("\n"),
+///       "\\".value("\\"),
+///       "\"".value("\""),
+///       "n".value("\n"),
 ///     ))
 ///   ).parse_next(input)
 /// }
@@ -1639,9 +1637,9 @@ where
 ///     alpha1,
 ///     '\\',
 ///     alt((
-///       tag("\\").value("\\"),
-///       tag("\"").value("\""),
-///       tag("n").value("\n"),
+///       "\\".value("\\"),
+///       "\"".value("\""),
+///       "n".value("\n"),
 ///     ))
 ///   ).parse_next(input)
 /// }

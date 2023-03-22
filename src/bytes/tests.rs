@@ -104,7 +104,7 @@ fn partial_one_of_test() {
 #[test]
 fn char_byteslice() {
     fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u8> {
-        one_of('c').parse_next(i)
+        'c'.parse_next(i)
     }
 
     let a = &b"abcd"[..];
@@ -123,7 +123,7 @@ fn char_byteslice() {
 #[test]
 fn char_str() {
     fn f(i: Partial<&str>) -> IResult<Partial<&str>, char> {
-        one_of('c').parse_next(i)
+        'c'.parse_next(i)
     }
 
     let a = "abcd";
@@ -243,7 +243,7 @@ fn partial_recognize() {
     };
 
     fn x(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        delimited(tag("<!--"), take(5_usize), tag("-->"))
+        delimited("<!--", take(5_usize), "-->")
             .recognize()
             .parse_next(i)
     }
@@ -594,7 +594,7 @@ fn partial_length_bytes() {
     );
 
     fn y(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        let (i, _) = tag("magic").parse_next(i)?;
+        let (i, _) = "magic".parse_next(i)?;
         length_data(le_u8).parse_next(i)
     }
     assert_eq!(

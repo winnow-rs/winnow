@@ -1,8 +1,8 @@
 //! Basic types to build the parsers
 
 use crate::combinator::*;
-use crate::error::{ContextError, IResult, ParseError};
-use crate::stream::{AsChar, Compare, Location, Stream, StreamIsPartial};
+use crate::error::{ContextError, FromExternalError, IResult, ParseError};
+use crate::stream::{AsChar, Compare, Location, Offset, ParseSlice, Stream, StreamIsPartial};
 
 /// Core trait for parsing
 ///
@@ -126,7 +126,7 @@ pub trait Parser<I, O, E> {
     /// # }
     /// ```
     #[doc(alias = "to")]
-    fn value<O2>(self, val: O2) -> Value<Self, O, O2>
+    fn value<O2>(self, val: O2) -> Value<Self, I, O, O2, E>
     where
         Self: core::marker::Sized,
         O2: Clone,
@@ -149,7 +149,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_next("123abcd;"), Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::Slice))));
     /// # }
     /// ```
-    fn void(self) -> Void<Self, O>
+    fn void(self) -> Void<Self, I, O, E>
     where
         Self: core::marker::Sized,
     {
@@ -177,7 +177,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(bytes, Ok(("", vec![97, 98, 99, 100])));
     /// # }
     /// ```
-    fn output_into<O2>(self) -> OutputInto<Self, O, O2>
+    fn output_into<O2>(self) -> OutputInto<Self, I, O, O2, E>
     where
         Self: core::marker::Sized,
         O: Into<O2>,
@@ -202,9 +202,10 @@ pub trait Parser<I, O, E> {
     /// # }
     /// ```
     #[doc(alias = "concat")]
-    fn recognize(self) -> Recognize<Self, O>
+    fn recognize(self) -> Recognize<Self, I, O, E>
     where
         Self: core::marker::Sized,
+        I: Stream + Offset,
     {
         Recognize::new(self)
     }
@@ -229,7 +230,7 @@ pub trait Parser<I, O, E> {
     /// use winnow::sequence::separated_pair;
     ///
     /// fn inner_parser(input: &str) -> IResult<&str, bool> {
-    ///     tag("1234").value(true).parse_next(input)
+    ///     "1234".value(true).parse_next(input)
     /// }
     ///
     /// # fn main() {
@@ -249,9 +250,10 @@ pub trait Parser<I, O, E> {
     /// # }
     /// ```
     #[doc(alias = "consumed")]
-    fn with_recognized(self) -> WithRecognized<Self, O>
+    fn with_recognized(self) -> WithRecognized<Self, I, O, E>
     where
         Self: core::marker::Sized,
+        I: Stream + Offset,
     {
         WithRecognized::new(self)
     }
@@ -272,10 +274,10 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse(Located::new("abcd,efgh")), Ok((0..4, 5..9)));
     /// assert_eq!(parser.parse_next(Located::new("abcd;")),Err(ErrMode::Backtrack(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::Verify))));
     /// ```
-    fn span(self) -> Span<Self, O>
+    fn span(self) -> Span<Self, I, O, E>
     where
         Self: core::marker::Sized,
-        I: Location + Clone,
+        I: Stream + Location,
     {
         Span::new(self)
     }
@@ -301,7 +303,7 @@ pub trait Parser<I, O, E> {
     /// use winnow::sequence::separated_pair;
     ///
     /// fn inner_parser(input: Located<&str>) -> IResult<Located<&str>, bool> {
-    ///     tag("1234").value(true).parse_next(input)
+    ///     "1234".value(true).parse_next(input)
     /// }
     ///
     /// # fn main() {
@@ -320,10 +322,10 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(recognize_parser.parse_next(Located::new("abcd")), consumed_parser.parse_next(Located::new("abcd")));
     /// # }
     /// ```
-    fn with_span(self) -> WithSpan<Self, O>
+    fn with_span(self) -> WithSpan<Self, I, O, E>
     where
         Self: core::marker::Sized,
-        I: Location + Clone,
+        I: Stream + Location,
     {
         WithSpan::new(self)
     }
@@ -346,12 +348,12 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Slice))));
     /// # }
     /// ```
-    fn map<G, O2>(self, g: G) -> Map<Self, G, O>
+    fn map<G, O2>(self, map: G) -> Map<Self, G, I, O, O2, E>
     where
         G: Fn(O) -> O2,
         Self: core::marker::Sized,
     {
-        Map::new(self, g)
+        Map::new(self, map)
     }
 
     /// Applies a function returning a `Result` over the output of a parser.
@@ -375,12 +377,14 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parse.parse_next("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::Verify))));
     /// # }
     /// ```
-    fn map_res<G, O2, E2>(self, g: G) -> MapRes<Self, G, O>
+    fn map_res<G, O2, E2>(self, map: G) -> MapRes<Self, G, I, O, O2, E, E2>
     where
         Self: core::marker::Sized,
         G: FnMut(O) -> Result<O2, E2>,
+        I: Clone,
+        E: FromExternalError<I, E2>,
     {
-        MapRes::new(self, g)
+        MapRes::new(self, map)
     }
 
     /// Apply both [`Parser::verify`] and [`Parser::map`].
@@ -407,12 +411,14 @@ pub trait Parser<I, O, E> {
     #[doc(alias = "satisfy_map")]
     #[doc(alias = "filter_map")]
     #[doc(alias = "map_opt")]
-    fn verify_map<G, O2>(self, g: G) -> VerifyMap<Self, G, O>
+    fn verify_map<G, O2>(self, map: G) -> VerifyMap<Self, G, I, O, O2, E>
     where
         Self: core::marker::Sized,
         G: FnMut(O) -> Option<O2>,
+        I: Clone,
+        E: ParseError<I>,
     {
-        VerifyMap::new(self, g)
+        VerifyMap::new(self, map)
     }
 
     /// Creates a parser from the output of this one
@@ -447,13 +453,13 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(length_data.parse_next(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
     /// assert_eq!(length_data.parse_next(&[4, 0, 1, 2][..]), Err(ErrMode::Backtrack(Error::new(&[0, 1, 2][..], ErrorKind::Slice))));
     /// ```
-    fn flat_map<G, H, O2>(self, g: G) -> FlatMap<Self, G, O>
+    fn flat_map<G, H, O2>(self, map: G) -> FlatMap<Self, G, H, I, O, O2, E>
     where
+        Self: core::marker::Sized,
         G: FnMut(O) -> H,
         H: Parser<I, O2, E>,
-        Self: core::marker::Sized,
     {
-        FlatMap::new(self, g)
+        FlatMap::new(self, map)
     }
 
     /// Applies a second parser over the output of the first one
@@ -473,13 +479,13 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(digits.parse_next("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Slice))));
     /// # }
     /// ```
-    fn and_then<G, O2>(self, g: G) -> AndThen<Self, G, O>
+    fn and_then<G, O2>(self, inner: G) -> AndThen<Self, G, I, O, O2, E>
     where
-        O: StreamIsPartial,
-        G: Parser<O, O2, E>,
         Self: core::marker::Sized,
+        G: Parser<O, O2, E>,
+        O: StreamIsPartial,
     {
-        AndThen::new(self, g)
+        AndThen::new(self, inner)
     }
 
     /// Apply [`std::str::FromStr`] to the output of the parser
@@ -502,10 +508,12 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Slice))));
     /// ```
     #[doc(alias = "from_str")]
-    fn parse_to<O2>(self) -> ParseTo<Self, O, O2>
+    fn parse_to<O2>(self) -> ParseTo<Self, I, O, O2, E>
     where
         Self: core::marker::Sized,
-        O: crate::stream::ParseSlice<O2>,
+        I: Stream,
+        O: ParseSlice<O2>,
+        E: ParseError<I>,
     {
         ParseTo::new(self)
     }
@@ -531,12 +539,16 @@ pub trait Parser<I, O, E> {
     /// ```
     #[doc(alias = "satisfy")]
     #[doc(alias = "filter")]
-    fn verify<G, O2: ?Sized>(self, second: G) -> Verify<Self, G, O2>
+    fn verify<G, O2>(self, filter: G) -> Verify<Self, G, I, O, O2, E>
     where
         Self: core::marker::Sized,
         G: Fn(&O2) -> bool,
+        I: Clone,
+        O: crate::lib::std::borrow::Borrow<O2>,
+        O2: ?Sized,
+        E: ParseError<I>,
     {
-        Verify::new(self, second)
+        Verify::new(self, filter)
     }
 
     /// If parsing fails, add context to the error
@@ -544,11 +556,12 @@ pub trait Parser<I, O, E> {
     /// This is used mainly to add user friendly information
     /// to errors when backtracking through a parse tree.
     #[doc(alias = "labelled")]
-    fn context<C>(self, context: C) -> Context<Self, O, C>
+    fn context<C>(self, context: C) -> Context<Self, I, O, E, C>
     where
         Self: core::marker::Sized,
-        C: Clone + crate::lib::std::fmt::Debug,
+        I: Stream,
         E: ContextError<I, C>,
+        C: Clone + crate::lib::std::fmt::Debug,
     {
         Context::new(self, context)
     }
@@ -576,7 +589,7 @@ pub trait Parser<I, O, E> {
     }
 
     /// Convert the parser's error to another type using [`std::convert::From`]
-    fn err_into<E2>(self) -> ErrInto<Self, E, E2>
+    fn err_into<E2>(self) -> ErrInto<Self, I, O, E, E2>
     where
         Self: core::marker::Sized,
         E: Into<E2>,
@@ -805,7 +818,7 @@ impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::bytes::{tag, take};
+    use crate::bytes::take;
     use crate::error::ErrMode;
     use crate::error::Error;
     use crate::error::ErrorKind;
@@ -857,7 +870,7 @@ mod tests {
     fn tuple_test() {
         #[allow(clippy::type_complexity)]
         fn tuple_3(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (u16, &[u8], &[u8])> {
-            (be_u16, take(3u8), tag("fg")).parse_next(i)
+            (be_u16, take(3u8), "fg").parse_next(i)
         }
 
         assert_eq!(

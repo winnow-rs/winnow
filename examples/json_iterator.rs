@@ -220,7 +220,7 @@ fn string(i: &str) -> IResult<&str, &str> {
 }
 
 fn boolean(input: &str) -> IResult<&str, bool> {
-    alt((tag("false").map(|_| false), tag("true").map(|_| true))).parse_next(input)
+    alt(("false".map(|_| false), "true".map(|_| true))).parse_next(input)
 }
 
 fn array(i: &str) -> IResult<&str, ()> {

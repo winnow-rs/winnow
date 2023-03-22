@@ -5,7 +5,7 @@ mod test {
     #[cfg(feature = "alloc")]
     use winnow::{branch::alt, bytes::tag_no_case, multi::many1};
     use winnow::{
-        bytes::{tag, take, take_till0, take_till1, take_until0, take_while1},
+        bytes::{take, take_till0, take_till1, take_until0, take_while1},
         error::ErrMode,
         error::{self, Error, ErrorKind},
         IResult,
@@ -14,19 +14,18 @@ mod test {
     #[test]
     fn tag_succeed_str() {
         const INPUT: &str = "Hello World!";
-        const TAG: &str = "Hello";
         fn test(input: &str) -> IResult<&str, &str> {
-            tag(TAG).parse_next(input)
+            "Hello".parse_next(input)
         }
 
         match test(INPUT) {
             Ok((extra, output)) => {
                 assert!(extra == " World!", "Parser `tag` consumed leftover input.");
                 assert!(
-                    output == TAG,
+                    output == "Hello",
                     "Parser `tag` doesn't return the tag it matched on success. \
            Expected `{}`, got `{}`.",
-                    TAG,
+                    "Hello",
                     output
                 );
             }
@@ -40,12 +39,9 @@ mod test {
 
     #[test]
     fn tag_incomplete_str() {
-        use winnow::bytes::tag;
-
         const INPUT: &str = "Hello";
-        const TAG: &str = "Hello World!";
 
-        let res: IResult<_, _, error::Error<_>> = tag(TAG).parse_next(Partial::new(INPUT));
+        let res: IResult<_, _, error::Error<_>> = "Hello World!".parse_next(Partial::new(INPUT));
         match res {
             Err(ErrMode::Incomplete(_)) => (),
             other => {
@@ -61,9 +57,8 @@ mod test {
     #[test]
     fn tag_error_str() {
         const INPUT: &str = "Hello World!";
-        const TAG: &str = "Random"; // TAG must be closer than INPUT.
 
-        let res: IResult<_, _, error::Error<_>> = tag(TAG).parse_next(INPUT);
+        let res: IResult<_, _, error::Error<_>> = "Random".parse_next(INPUT);
         match res {
             Err(ErrMode::Backtrack(_)) => (),
             other => {
@@ -510,7 +505,7 @@ mod test {
         let b = "ababcd";
 
         fn f(i: &str) -> IResult<&str, &str> {
-            many1::<_, _, (), _, _>(alt((tag("a"), tag("b"))))
+            many1::<_, _, (), _, _>(alt(("a", "b")))
                 .recognize()
                 .parse_next(i)
         }
@@ -522,7 +517,7 @@ mod test {
     #[test]
     fn utf8_indexing_str() {
         fn dot(i: &str) -> IResult<&str, &str> {
-            tag(".").parse_next(i)
+            ".".parse_next(i)
         }
 
         let _ = dot("點");

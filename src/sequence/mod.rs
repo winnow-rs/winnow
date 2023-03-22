@@ -23,7 +23,7 @@ use crate::Parser;
 /// use winnow::sequence::preceded;
 /// use winnow::bytes::tag;
 ///
-/// let mut parser = preceded(tag("abc"), tag("efg"));
+/// let mut parser = preceded("abc", "efg");
 ///
 /// assert_eq!(parser.parse_next("abcefg"), Ok(("", "efg")));
 /// assert_eq!(parser.parse_next("abcefghij"), Ok(("hij", "efg")));
@@ -61,7 +61,7 @@ where
 /// use winnow::sequence::terminated;
 /// use winnow::bytes::tag;
 ///
-/// let mut parser = terminated(tag("abc"), tag("efg"));
+/// let mut parser = terminated("abc", "efg");
 ///
 /// assert_eq!(parser.parse_next("abcefg"), Ok(("", "abc")));
 /// assert_eq!(parser.parse_next("abcefghij"), Ok(("hij", "abc")));
@@ -100,7 +100,7 @@ where
 /// use winnow::sequence::separated_pair;
 /// use winnow::bytes::tag;
 ///
-/// let mut parser = separated_pair(tag("abc"), tag("|"), tag("efg"));
+/// let mut parser = separated_pair("abc", "|", "efg");
 ///
 /// assert_eq!(parser.parse_next("abc|efg"), Ok(("", ("abc", "efg"))));
 /// assert_eq!(parser.parse_next("abc|efghij"), Ok(("hij", ("abc", "efg"))));
@@ -141,7 +141,7 @@ where
 /// use winnow::sequence::delimited;
 /// use winnow::bytes::tag;
 ///
-/// let mut parser = delimited(tag("("), tag("abc"), tag(")"));
+/// let mut parser = delimited("(", "abc", ")");
 ///
 /// assert_eq!(parser.parse_next("(abc)"), Ok(("", "abc")));
 /// assert_eq!(parser.parse_next("(abc)def"), Ok(("def", "abc")));

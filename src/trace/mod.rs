@@ -45,6 +45,7 @@ compile_error!("`debug` requires `std`");
 /// assert_eq!(short_alpha(b"12345"), Err(ErrMode::Backtrack(Error::new(&b"12345"[..], ErrorKind::Slice))));
 /// ```
 #[cfg_attr(not(feature = "debug"), allow(unused_variables))]
+#[cfg_attr(not(feature = "debug"), allow(unused_mut))]
 pub fn trace<I: Stream, O, E>(
     name: impl crate::lib::std::fmt::Display,
     mut parser: impl Parser<I, O, E>,

@@ -1,4 +1,4 @@
-use winnow::bytes::{tag, take_while_m_n};
+use winnow::bytes::take_while_m_n;
 use winnow::prelude::*;
 
 #[derive(Debug, Eq, PartialEq)]
@@ -18,7 +18,7 @@ impl std::str::FromStr for Color {
 }
 
 pub fn hex_color(input: &str) -> IResult<&str, Color> {
-    let (input, _) = tag("#").parse_next(input)?;
+    let (input, _) = "#".parse_next(input)?;
     let (input, (red, green, blue)) = (hex_primary, hex_primary, hex_primary).parse_next(input)?;
 
     Ok((input, Color { red, green, blue }))

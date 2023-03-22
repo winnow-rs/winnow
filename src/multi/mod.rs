@@ -31,7 +31,7 @@ use crate::Parser;
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   many0(tag("abc")).parse_next(s)
+///   many0("abc").parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -95,7 +95,7 @@ where
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   many1(tag("abc")).parse_next(s)
+///   many1("abc").parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -158,7 +158,7 @@ where
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, (Vec<&str>, &str)> {
-///   many_till0(tag("abc"), tag("end")).parse_next(s)
+///   many_till0("abc", "end").parse_next(s)
 /// };
 ///
 /// assert_eq!(parser("abcabcend"), Ok(("", (vec!["abc", "abc"], "end"))));
@@ -220,7 +220,7 @@ where
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   separated0(tag("abc"), tag("|")).parse_next(s)
+///   separated0("abc", "|").parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("abc|abc|abc"), Ok(("", vec!["abc", "abc", "abc"])));
@@ -297,7 +297,7 @@ where
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   separated1(tag("abc"), tag("|")).parse_next(s)
+///   separated1("abc", "|").parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("abc|abc|abc"), Ok(("", vec!["abc", "abc", "abc"])));
@@ -492,7 +492,7 @@ where
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   many_m_n(0, 2, tag("abc")).parse_next(s)
+///   many_m_n(0, 2, "abc").parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -562,7 +562,7 @@ where
 /// use winnow::bytes::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   count(tag("abc"), 2).parse_next(s)
+///   count("abc", 2).parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -618,7 +618,7 @@ where
 ///
 /// fn parser(s: &str) -> IResult<&str, [&str; 2]> {
 ///   let mut buf = ["", ""];
-///   let (rest, ()) = fill(tag("abc"), &mut buf).parse_next(s)?;
+///   let (rest, ()) = fill("abc", &mut buf).parse_next(s)?;
 ///   Ok((rest, buf))
 /// }
 ///
@@ -678,7 +678,7 @@ where
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   fold_many0(
-///     tag("abc"),
+///     "abc",
 ///     Vec::new,
 ///     |mut acc: Vec<_>, item| {
 ///       acc.push(item);
@@ -753,7 +753,7 @@ where
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   fold_many1(
-///     tag("abc"),
+///     "abc",
 ///     Vec::new,
 ///     |mut acc: Vec<_>, item| {
 ///       acc.push(item);
@@ -840,7 +840,7 @@ where
 ///   fold_many_m_n(
 ///     0,
 ///     2,
-///     tag("abc"),
+///     "abc",
 ///     Vec::new,
 ///     |mut acc: Vec<_>, item| {
 ///       acc.push(item);
@@ -988,7 +988,7 @@ where
 /// }
 ///
 /// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
-///   length_value(be_u16, tag("abc")).parse_next(s)
+///   length_value(be_u16, "abc").parse_next(s)
 /// }
 ///
 /// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), &b"abc"[..])));
@@ -1042,7 +1042,7 @@ where
 ///   length_count(u8.map(|i| {
 ///      println!("got number: {}", i);
 ///      i
-///   }), tag("abc")).parse_next(s)
+///   }), "abc").parse_next(s)
 /// }
 ///
 /// assert_eq!(parser(stream(b"\x02abcabcabc")), Ok((stream(b"abc"), vec![&b"abc"[..], &b"abc"[..]])));

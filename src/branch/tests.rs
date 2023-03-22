@@ -1,5 +1,5 @@
 use crate::branch::{alt, permutation};
-use crate::bytes::tag;
+
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::Needed;
@@ -89,7 +89,7 @@ fn alt_test() {
     assert_eq!(alt3(a), Ok((a, &b""[..])));
 
     fn alt4(i: &[u8]) -> IResult<&[u8], &[u8]> {
-        alt((tag("abcd"), tag("efgh"))).parse_next(i)
+        alt(("abcd", "efgh")).parse_next(i)
     }
     let b = &b"efgh"[..];
     assert_eq!(alt4(a), Ok((&b""[..], a)));
@@ -99,7 +99,7 @@ fn alt_test() {
 #[test]
 fn alt_incomplete() {
     fn alt1(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        alt((tag("a"), tag("bc"), tag("def"))).parse_next(i)
+        alt(("a", "bc", "def")).parse_next(i)
     }
 
     let a = &b""[..];
@@ -141,7 +141,7 @@ fn alt_incomplete() {
 fn permutation_test() {
     #[allow(clippy::type_complexity)]
     fn perm(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (&[u8], &[u8], &[u8])> {
-        permutation((tag("abcd"), tag("efg"), tag("hi"))).parse_next(i)
+        permutation(("abcd", "efg", "hi")).parse_next(i)
     }
 
     let expected = (&b"abcd"[..], &b"efg"[..], &b"hi"[..]);

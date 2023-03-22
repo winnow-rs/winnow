@@ -4,7 +4,7 @@ use std::str;
 use winnow::prelude::*;
 use winnow::{
     branch::{alt, dispatch},
-    bytes::{any, none_of, tag, take, take_while0},
+    bytes::{any, none_of, take, take_while0},
     character::float,
     combinator::cut_err,
     combinator::fail,
@@ -65,7 +65,7 @@ fn json_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static 
 fn null<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, &'i str, E> {
     // This is a parser that returns `"null"` if it sees the string "null", and
     // an error otherwise
-    tag("null").parse_next(input)
+    "null".parse_next(input)
 }
 
 /// We can combine `tag` with other functions, like `value` which returns a given constant value on
@@ -73,7 +73,7 @@ fn null<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>,
 fn true_<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, bool, E> {
     // This is a parser that returns `true` if it sees the string "true", and
     // an error otherwise
-    tag("true").value(true).parse_next(input)
+    "true".value(true).parse_next(input)
 }
 
 /// We can combine `tag` with other functions, like `value` which returns a given constant value on
@@ -81,7 +81,7 @@ fn true_<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>
 fn false_<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, bool, E> {
     // This is a parser that returns `false` if it sees the string "false", and
     // an error otherwise
-    tag("false").value(false).parse_next(input)
+    "false".value(false).parse_next(input)
 }
 
 /// This parser gathers all `char`s up into a `String`with a parse to recognize the double quote

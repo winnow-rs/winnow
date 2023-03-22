@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use std::iter::Iterator;
 
-use winnow::bytes::tag;
 use winnow::character::alphanumeric1;
 use winnow::combinator::iterator;
 use winnow::prelude::*;
@@ -11,7 +10,7 @@ fn main() {
     let mut data = "abcabcabcabc";
 
     fn parser(i: &str) -> IResult<&str, &str> {
-        tag("abc").parse_next(i)
+        "abc".parse_next(i)
     }
 
     // `from_fn` (available from Rust 1.34) can create an iterator

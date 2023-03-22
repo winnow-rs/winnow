@@ -154,7 +154,7 @@ mod issue_647 {
 
     fn data(input: Stream<'_>) -> IResult<Stream<'_>, Data> {
         let (i, c) = be_f64(input)?;
-        let (i, _) = tag("\n").parse_next(i)?;
+        let (i, _) = "\n".parse_next(i)?;
         let (i, v) = list(i, &c)?;
         Ok((i, Data { c, v }))
     }
@@ -187,8 +187,8 @@ fn issue_942() {
     pub fn parser<'a, E: ParseError<&'a str> + ContextError<&'a str, &'static str>>(
         i: &'a str,
     ) -> IResult<&'a str, usize, E> {
-        use winnow::{bytes::one_of, multi::many0};
-        many0(one_of('a').context("char_a")).parse_next(i)
+        use winnow::multi::many0;
+        many0('a'.context("char_a")).parse_next(i)
     }
     assert_eq!(parser::<()>("aaa"), Ok(("", 3)));
 }
@@ -237,11 +237,11 @@ fn issue_1282_findtoken_char() {
 
 #[test]
 fn issue_x_looser_fill_bounds() {
-    use winnow::{bytes::tag, character::digit1, multi::fill, sequence::terminated};
+    use winnow::{character::digit1, multi::fill, sequence::terminated};
 
     fn fill_pair(i: &[u8]) -> IResult<&[u8], [&[u8]; 2]> {
         let mut buf = [&[][..], &[][..]];
-        let (i, _) = fill(terminated(digit1, tag(",")), &mut buf).parse_next(i)?;
+        let (i, _) = fill(terminated(digit1, ","), &mut buf).parse_next(i)?;
         Ok((i, buf))
     }
 
