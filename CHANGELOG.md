@@ -3,6 +3,14 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Allow array references and char arrays for `ContainsToken`
+
+### Performance
+
+- Revert a regression in `space0`, `space1`, `multiscape0`, `multispace1`
+
 ## [0.4.0] - 2023-03-18
 
 ### Compatibility
