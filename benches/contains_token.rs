@@ -23,6 +23,9 @@ fn contains_token(c: &mut criterion::Criterion) {
         group.bench_with_input(criterion::BenchmarkId::new("slice", name), &len, |b, _| {
             b.iter(|| black_box(parser_slice.parse_next(black_box(sample)).unwrap()));
         });
+        group.bench_with_input(criterion::BenchmarkId::new("array", name), &len, |b, _| {
+            b.iter(|| black_box(parser_array.parse_next(black_box(sample)).unwrap()));
+        });
         group.bench_with_input(criterion::BenchmarkId::new("tuple", name), &len, |b, _| {
             b.iter(|| black_box(parser_tuple.parse_next(black_box(sample)).unwrap()));
         });
@@ -57,6 +60,11 @@ fn parser_str(input: &str) -> IResult<&str, usize> {
 
 fn parser_slice(input: &str) -> IResult<&str, usize> {
     let contains = &['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'][..];
+    many0(alt((take_while1(contains), take_till1(contains)))).parse_next(input)
+}
+
+fn parser_array(input: &str) -> IResult<&str, usize> {
+    let contains = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
     many0(alt((take_while1(contains), take_till1(contains)))).parse_next(input)
 }
 

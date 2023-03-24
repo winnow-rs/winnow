@@ -2245,116 +2245,59 @@ impl<C1: AsChar> ContainsToken<C1> for RangeFull {
     }
 }
 
-impl<'a> ContainsToken<u8> for &'a [u8] {
-    #[inline(always)]
-    fn contains_token(&self, token: u8) -> bool {
-        memchr(token, self).is_some()
-    }
-}
-
-impl<'a, 'b> ContainsToken<&'a u8> for &'b [u8] {
-    #[inline(always)]
-    fn contains_token(&self, token: &u8) -> bool {
-        self.contains_token(*token)
-    }
-}
-
-impl<'a> ContainsToken<char> for &'a [u8] {
+impl<C: AsChar> ContainsToken<C> for &'_ [u8] {
     #[inline]
-    fn contains_token(&self, token: char) -> bool {
-        self.iter().any(|i| i.as_char() == token)
+    fn contains_token(&self, token: C) -> bool {
+        let token = token.as_char();
+        self.iter().any(|t| t.as_char() == token)
     }
 }
 
-impl<'a, 'b> ContainsToken<&'a char> for &'b [u8] {
-    #[inline(always)]
-    fn contains_token(&self, token: &char) -> bool {
-        self.contains_token(*token)
-    }
-}
-
-impl<const LEN: usize> ContainsToken<u8> for [u8; LEN] {
-    #[inline(always)]
-    fn contains_token(&self, token: u8) -> bool {
-        let slice = &self[..];
-        slice.contains_token(token)
-    }
-}
-
-impl<'a, const LEN: usize> ContainsToken<&'a u8> for [u8; LEN] {
-    #[inline(always)]
-    fn contains_token(&self, token: &u8) -> bool {
-        self.contains_token(*token)
-    }
-}
-
-impl<const LEN: usize> ContainsToken<char> for [u8; LEN] {
+impl<C: AsChar> ContainsToken<C> for &'_ [char] {
     #[inline]
-    fn contains_token(&self, token: char) -> bool {
-        self.iter().any(|i| i.as_char() == token)
+    fn contains_token(&self, token: C) -> bool {
+        let token = token.as_char();
+        self.iter().any(|t| *t == token)
     }
 }
 
-impl<'a, const LEN: usize> ContainsToken<&'a char> for [u8; LEN] {
-    #[inline(always)]
-    fn contains_token(&self, token: &char) -> bool {
-        self.contains_token(*token)
-    }
-}
-
-impl<'a> ContainsToken<u8> for &'a str {
-    #[inline(always)]
-    fn contains_token(&self, token: u8) -> bool {
-        self.as_bytes().contains_token(token)
-    }
-}
-
-impl<'a, 'b> ContainsToken<&'a u8> for &'b str {
-    #[inline(always)]
-    fn contains_token(&self, token: &u8) -> bool {
-        self.as_bytes().contains_token(token)
-    }
-}
-
-impl<'a> ContainsToken<char> for &'a str {
+impl<const LEN: usize, C: AsChar> ContainsToken<C> for &'_ [u8; LEN] {
     #[inline]
-    fn contains_token(&self, token: char) -> bool {
+    fn contains_token(&self, token: C) -> bool {
+        let token = token.as_char();
+        self.iter().any(|t| t.as_char() == token)
+    }
+}
+
+impl<const LEN: usize, C: AsChar> ContainsToken<C> for &'_ [char; LEN] {
+    #[inline]
+    fn contains_token(&self, token: C) -> bool {
+        let token = token.as_char();
+        self.iter().any(|t| *t == token)
+    }
+}
+
+impl<const LEN: usize, C: AsChar> ContainsToken<C> for [u8; LEN] {
+    #[inline]
+    fn contains_token(&self, token: C) -> bool {
+        let token = token.as_char();
+        self.iter().any(|t| t.as_char() == token)
+    }
+}
+
+impl<const LEN: usize, C: AsChar> ContainsToken<C> for [char; LEN] {
+    #[inline]
+    fn contains_token(&self, token: C) -> bool {
+        let token = token.as_char();
+        self.iter().any(|t| *t == token)
+    }
+}
+
+impl<C: AsChar> ContainsToken<C> for &'_ str {
+    #[inline(always)]
+    fn contains_token(&self, token: C) -> bool {
+        let token = token.as_char();
         self.chars().any(|i| i == token)
-    }
-}
-
-impl<'a, 'b> ContainsToken<&'a char> for &'b str {
-    #[inline(always)]
-    fn contains_token(&self, token: &char) -> bool {
-        self.contains_token(*token)
-    }
-}
-
-impl<'a> ContainsToken<u8> for &'a [char] {
-    #[inline]
-    fn contains_token(&self, token: u8) -> bool {
-        self.iter().any(|i| *i == token.as_char())
-    }
-}
-
-impl<'a, 'b> ContainsToken<&'a u8> for &'b [char] {
-    #[inline(always)]
-    fn contains_token(&self, token: &u8) -> bool {
-        self.contains_token(*token)
-    }
-}
-
-impl<'a> ContainsToken<char> for &'a [char] {
-    #[inline]
-    fn contains_token(&self, token: char) -> bool {
-        self.iter().any(|i| *i == token)
-    }
-}
-
-impl<'a, 'b> ContainsToken<&'a char> for &'b [char] {
-    #[inline(always)]
-    fn contains_token(&self, token: &char) -> bool {
-        self.contains_token(*token)
     }
 }
 
