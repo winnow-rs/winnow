@@ -1974,7 +1974,7 @@ pub trait AsChar {
 }
 
 impl AsChar for u8 {
-    #[inline]
+    #[inline(always)]
     fn as_char(self) -> char {
         self as char
     }
@@ -2011,7 +2011,7 @@ impl AsChar for u8 {
     }
 }
 impl<'a> AsChar for &'a u8 {
-    #[inline]
+    #[inline(always)]
     fn as_char(self) -> char {
         *self as char
     }
@@ -2049,7 +2049,7 @@ impl<'a> AsChar for &'a u8 {
 }
 
 impl AsChar for char {
-    #[inline]
+    #[inline(always)]
     fn as_char(self) -> char {
         self
     }
@@ -2087,7 +2087,7 @@ impl AsChar for char {
 }
 
 impl<'a> AsChar for &'a char {
-    #[inline]
+    #[inline(always)]
     fn as_char(self) -> char {
         *self
     }
@@ -2155,7 +2155,7 @@ pub trait ContainsToken<T> {
 }
 
 impl ContainsToken<u8> for u8 {
-    #[inline]
+    #[inline(always)]
     fn contains_token(&self, token: u8) -> bool {
         *self == token
     }
@@ -2169,7 +2169,7 @@ impl<'a> ContainsToken<&'a u8> for u8 {
 }
 
 impl ContainsToken<char> for u8 {
-    #[inline]
+    #[inline(always)]
     fn contains_token(&self, token: char) -> bool {
         self.as_char() == token
     }
@@ -2183,21 +2183,21 @@ impl<'a> ContainsToken<&'a char> for u8 {
 }
 
 impl<C: AsChar> ContainsToken<C> for char {
-    #[inline]
+    #[inline(always)]
     fn contains_token(&self, token: C) -> bool {
         *self == token.as_char()
     }
 }
 
 impl<C: AsChar, F: Fn(C) -> bool> ContainsToken<C> for F {
-    #[inline]
+    #[inline(always)]
     fn contains_token(&self, token: C) -> bool {
         self(token)
     }
 }
 
 impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for Range<C2> {
-    #[inline]
+    #[inline(always)]
     fn contains_token(&self, token: C1) -> bool {
         let start = self.start.clone().as_char();
         let end = self.end.clone().as_char();
@@ -2206,7 +2206,7 @@ impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for Range<C2> {
 }
 
 impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeInclusive<C2> {
-    #[inline]
+    #[inline(always)]
     fn contains_token(&self, token: C1) -> bool {
         let start = self.start().clone().as_char();
         let end = self.end().clone().as_char();
@@ -2215,7 +2215,7 @@ impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeInclusive<C2> {
 }
 
 impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeFrom<C2> {
-    #[inline]
+    #[inline(always)]
     fn contains_token(&self, token: C1) -> bool {
         let start = self.start.clone().as_char();
         (start..).contains(&token.as_char())
@@ -2223,7 +2223,7 @@ impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeFrom<C2> {
 }
 
 impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeTo<C2> {
-    #[inline]
+    #[inline(always)]
     fn contains_token(&self, token: C1) -> bool {
         let end = self.end.clone().as_char();
         (..end).contains(&token.as_char())
@@ -2231,7 +2231,7 @@ impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeTo<C2> {
 }
 
 impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeToInclusive<C2> {
-    #[inline]
+    #[inline(always)]
     fn contains_token(&self, token: C1) -> bool {
         let end = self.end.clone().as_char();
         (..=end).contains(&token.as_char())
@@ -2246,7 +2246,7 @@ impl<C1: AsChar> ContainsToken<C1> for RangeFull {
 }
 
 impl<'a> ContainsToken<u8> for &'a [u8] {
-    #[inline]
+    #[inline(always)]
     fn contains_token(&self, token: u8) -> bool {
         memchr(token, self).is_some()
     }
