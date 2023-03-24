@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.4.1] - 2023-03-24
+
 ### Features
 
 - Allow array references and char arrays for `ContainsToken`
@@ -1734,7 +1736,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/winnow-rs/winnow/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/winnow-rs/winnow/compare/v0.3.6...v0.4.0
 [0.3.6]: https://github.com/winnow-rs/winnow/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/winnow-rs/winnow/compare/v0.3.4...v0.3.5
