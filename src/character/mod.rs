@@ -778,7 +778,11 @@ where
     <I as Stream>::Token: AsChar + Copy,
 {
     trace("space0", move |input: I| {
-        take_while0((' ', '\t')).parse_next(input)
+        take_while0(|c: <I as Stream>::Token| {
+            let ch = c.as_char();
+            matches!(ch, ' ' | '\t')
+        })
+        .parse_next(input)
     })
     .parse_next(input)
 }
@@ -821,7 +825,11 @@ where
     <I as Stream>::Token: AsChar + Copy,
 {
     trace("space1", move |input: I| {
-        take_while1((' ', '\t')).parse_next(input)
+        take_while1(|c: <I as Stream>::Token| {
+            let ch = c.as_char();
+            matches!(ch, ' ' | '\t')
+        })
+        .parse_next(input)
     })
     .parse_next(input)
 }
@@ -864,7 +872,11 @@ where
     <I as Stream>::Token: AsChar + Copy,
 {
     trace("multispace0", move |input: I| {
-        take_while0((' ', '\t', '\r', '\n')).parse_next(input)
+        take_while0(|c: <I as Stream>::Token| {
+            let ch = c.as_char();
+            matches!(ch, ' ' | '\t' | '\r' | '\n')
+        })
+        .parse_next(input)
     })
     .parse_next(input)
 }
@@ -907,7 +919,11 @@ where
     <I as Stream>::Token: AsChar + Copy,
 {
     trace("multispace1", move |input: I| {
-        take_while1((' ', '\t', '\r', '\n')).parse_next(input)
+        take_while1(|c: <I as Stream>::Token| {
+            let ch = c.as_char();
+            matches!(ch, ' ' | '\t' | '\r' | '\n')
+        })
+        .parse_next(input)
     })
     .parse_next(input)
 }
