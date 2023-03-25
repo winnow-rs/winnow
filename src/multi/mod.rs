@@ -23,8 +23,8 @@ use crate::Parser;
 ///
 /// # Example
 ///
-#[cfg_attr(not(feature = "std"), doc = "```ignore")]
-#[cfg_attr(feature = "std", doc = "```")]
+/// ```rust
+/// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::multi::many0;
@@ -38,6 +38,7 @@ use crate::Parser;
 /// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
 /// assert_eq!(parser("123123"), Ok(("123123", vec![])));
 /// assert_eq!(parser(""), Ok(("", vec![])));
+/// # }
 /// ```
 #[doc(alias = "skip_many")]
 #[doc(alias = "repeated")]
@@ -87,8 +88,8 @@ where
 ///
 /// # Example
 ///
-#[cfg_attr(not(feature = "std"), doc = "```ignore")]
-#[cfg_attr(feature = "std", doc = "```")]
+/// ```rust
+/// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::multi::many1;
@@ -102,6 +103,7 @@ where
 /// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
 /// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Tag))));
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
+/// # }
 /// ```
 #[doc(alias = "skip_many1")]
 #[doc(alias = "repeated")]
@@ -150,8 +152,8 @@ where
 ///
 /// # Example
 ///
-#[cfg_attr(not(feature = "std"), doc = "```ignore")]
-#[cfg_attr(feature = "std", doc = "```")]
+/// ```rust
+/// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::multi::many_till0;
@@ -166,6 +168,7 @@ where
 /// assert_eq!(parser("123123end"), Err(ErrMode::Backtrack(Error::new("123123end", ErrorKind::Tag))));
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("abcendefg"), Ok(("efg", (vec!["abc"], "end"))));
+/// # }
 /// ```
 pub fn many_till0<I, O, C, P, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, (C, P), E>
 where
@@ -212,8 +215,8 @@ where
 ///
 /// # Example
 ///
-#[cfg_attr(not(feature = "std"), doc = "```ignore")]
-#[cfg_attr(feature = "std", doc = "```")]
+/// ```rust
+/// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::multi::separated0;
@@ -228,6 +231,7 @@ where
 /// assert_eq!(parser("abc|def"), Ok(("|def", vec!["abc"])));
 /// assert_eq!(parser(""), Ok(("", vec![])));
 /// assert_eq!(parser("def|abc"), Ok(("def|abc", vec![])));
+/// # }
 /// ```
 #[doc(alias = "sep_by")]
 #[doc(alias = "separated_list0")]
@@ -289,8 +293,8 @@ where
 ///
 /// # Example
 ///
-#[cfg_attr(not(feature = "std"), doc = "```ignore")]
-#[cfg_attr(feature = "std", doc = "```")]
+/// ```rust
+/// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::multi::separated1;
@@ -305,6 +309,7 @@ where
 /// assert_eq!(parser("abc|def"), Ok(("|def", vec!["abc"])));
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(Error::new("def|abc", ErrorKind::Tag))));
+/// # }
 /// ```
 #[doc(alias = "sep_by1")]
 #[doc(alias = "separated_list1")]
@@ -484,8 +489,8 @@ where
 ///
 /// # Example
 ///
-#[cfg_attr(not(feature = "std"), doc = "```ignore")]
-#[cfg_attr(feature = "std", doc = "```")]
+/// ```rust
+/// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::multi::many_m_n;
@@ -500,6 +505,7 @@ where
 /// assert_eq!(parser("123123"), Ok(("123123", vec![])));
 /// assert_eq!(parser(""), Ok(("", vec![])));
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
+/// # }
 /// ```
 #[doc(alias = "repeated")]
 pub fn many_m_n<I, O, C, E, F>(min: usize, max: usize, mut parse: F) -> impl Parser<I, C, E>
@@ -554,8 +560,8 @@ where
 ///
 /// # Example
 ///
-#[cfg_attr(not(feature = "std"), doc = "```ignore")]
-#[cfg_attr(feature = "std", doc = "```")]
+/// ```rust
+/// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::multi::count;
@@ -570,6 +576,7 @@ where
 /// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Tag))));
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
+/// # }
 /// ```
 #[doc(alias = "skip_counskip_count")]
 pub fn count<I, O, C, E, F>(mut f: F, count: usize) -> impl Parser<I, C, E>
@@ -1022,8 +1029,8 @@ where
 ///
 /// # Example
 ///
-#[cfg_attr(not(feature = "std"), doc = "```ignore")]
-#[cfg_attr(feature = "std", doc = "```")]
+/// ```rust
+/// # #[cfg(feature = "std")] {
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
@@ -1047,6 +1054,7 @@ where
 ///
 /// assert_eq!(parser(stream(b"\x02abcabcabc")), Ok((stream(b"abc"), vec![&b"abc"[..], &b"abc"[..]])));
 /// assert_eq!(parser(stream(b"\x03123123123")), Err(ErrMode::Backtrack(Error::new(stream(b"123123123"), ErrorKind::Tag))));
+/// # }
 /// ```
 pub fn length_count<I, O, C, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, C, E>
 where

@@ -58,8 +58,8 @@ pub trait FinishIResult<I, O, E> {
     ///
     /// # Example
     ///
-    #[cfg_attr(not(feature = "std"), doc = "```ignore")]
-    #[cfg_attr(feature = "std", doc = "```")]
+    /// ```rust
+    /// # #[cfg(feature = "std")] {
     /// use winnow::prelude::*;
     /// use winnow::character::hex_uint;
     /// use winnow::error::Error;
@@ -69,6 +69,7 @@ pub trait FinishIResult<I, O, E> {
     /// fn parse(value: &str) -> Result<Hex, Error<String>> {
     ///     hex_uint.map(Hex).parse_next(value).finish().map_err(Error::into_owned)
     /// }
+    /// # }
     /// ```
     #[deprecated(since = "0.4.0", note = "Replaced with `Parser::parse`")]
     fn finish(self) -> Result<O, E>;
