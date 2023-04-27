@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::iter::Iterator;
 
-use winnow::character::alphanumeric1;
+use winnow::ascii::alphanumeric1;
 use winnow::combinator::iterator;
 use winnow::combinator::{separated_pair, terminated};
 use winnow::prelude::*;

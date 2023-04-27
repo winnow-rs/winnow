@@ -4,7 +4,7 @@ use std::str;
 
 use winnow::prelude::*;
 use winnow::{
-    character::{digit1 as digit, space0 as space},
+    ascii::{digit1 as digit, space0 as space},
     combinator::alt,
     combinator::fold_many0,
     combinator::{delimited, terminated},

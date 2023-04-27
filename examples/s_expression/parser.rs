@@ -3,7 +3,7 @@
 //! Lisp is a simple type of language made up of Atoms and Lists, forming easily parsable trees.
 
 use winnow::{
-    character::{alpha1, digit1, multispace0, multispace1},
+    ascii::{alpha1, digit1, multispace0, multispace1},
     combinator::alt,
     combinator::many0,
     combinator::{cut_err, opt},

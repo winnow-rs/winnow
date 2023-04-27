@@ -9,7 +9,7 @@
 //! - an escape followed by whitespace consumes all whitespace between the
 //!   escape and the next non-whitespace character
 
-use winnow::character::multispace1;
+use winnow::ascii::multispace1;
 use winnow::combinator::alt;
 use winnow::combinator::fold_many0;
 use winnow::combinator::{delimited, preceded};

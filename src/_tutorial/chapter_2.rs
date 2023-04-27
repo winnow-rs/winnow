@@ -97,9 +97,9 @@
 //! > configurable or stateful parsers.
 //!
 //! Some of character classes are common enough that a named parser is provided, like with:
-//! - [`line_ending`][crate::character::line_ending]: Recognizes an end of line (both `\n` and `\r\n`)
-//! - [`newline`][crate::character::newline]: Matches a newline character `\n`
-//! - [`tab`][crate::character::tab]: Matches a tab character `\t`
+//! - [`line_ending`][crate::ascii::line_ending]: Recognizes an end of line (both `\n` and `\r\n`)
+//! - [`newline`][crate::ascii::newline]: Matches a newline character `\n`
+//! - [`tab`][crate::ascii::tab]: Matches a tab character `\t`
 //!
 //! You can then capture sequences of these characters with parsers like [`take_while1`].
 //! ```rust
@@ -126,7 +126,7 @@
 //! ```rust
 //! # use winnow::Parser;
 //! # use winnow::IResult;
-//! use winnow::character::hex_digit1;
+//! use winnow::ascii::hex_digit1;
 //!
 //! fn parse_digits(input: &str) -> IResult<&str, &str> {
 //!     hex_digit1.parse_next(input)
@@ -144,7 +144,7 @@
 //! ```
 
 #![allow(unused_imports)]
-use crate::character::hex_digit1;
+use crate::ascii::hex_digit1;
 use crate::stream::ContainsToken;
 use crate::token::one_of;
 use crate::token::tag;

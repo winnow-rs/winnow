@@ -27,7 +27,7 @@ pub trait Alt<I, O, E> {
 /// ```rust
 /// # use winnow::{error::ErrMode, error::Error,error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::character::{alpha1, digit1};
+/// use winnow::ascii::{alpha1, digit1};
 /// use winnow::combinator::alt;
 /// # fn main() {
 /// fn parser(input: &str) -> IResult<&str, &str> {
@@ -68,7 +68,7 @@ pub trait Permutation<I, O, E> {
 /// ```rust
 /// # use winnow::{error::ErrMode,error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::character::{alpha1, digit1};
+/// use winnow::ascii::{alpha1, digit1};
 /// use winnow::combinator::permutation;
 /// # fn main() {
 /// fn parser(input: &str) -> IResult<&str, (&str, &str)> {

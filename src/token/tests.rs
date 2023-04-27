@@ -237,7 +237,7 @@ fn partial_take_until_incomplete_s() {
 
 #[test]
 fn partial_recognize() {
-    use crate::character::{
+    use crate::ascii::{
         alpha1 as alpha, alphanumeric1 as alphanumeric, digit1 as digit, hex_digit1 as hex_digit,
         multispace1 as multispace, oct_digit1 as oct_digit, space1 as space,
     };

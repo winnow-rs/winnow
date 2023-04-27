@@ -22,7 +22,7 @@
 //! ```rust
 //! # use winnow::Parser;
 //! # use winnow::IResult;
-//! # use winnow::character::digit1;
+//! # use winnow::ascii::digit1;
 //! #
 //! fn parse_digits(input: &str) -> IResult<&str, usize> {
 //!     digit1

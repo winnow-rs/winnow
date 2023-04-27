@@ -116,7 +116,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
-    /// use winnow::character::alpha1;
+    /// use winnow::ascii::alpha1;
     /// # fn main() {
     ///
     /// let mut parser = alpha1.value(1234);
@@ -140,7 +140,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
-    /// use winnow::character::alpha1;
+    /// use winnow::ascii::alpha1;
     /// # fn main() {
     ///
     /// let mut parser = alpha1.void();
@@ -163,7 +163,7 @@ pub trait Parser<I, O, E> {
     /// ```rust
     /// # use winnow::IResult;
     /// # use winnow::Parser;
-    /// use winnow::character::alpha1;
+    /// use winnow::ascii::alpha1;
     /// # fn main() {
     ///
     ///  fn parser1(i: &str) -> IResult<&str, &str> {
@@ -191,7 +191,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
-    /// use winnow::character::{alpha1};
+    /// use winnow::ascii::{alpha1};
     /// use winnow::combinator::separated_pair;
     /// # fn main() {
     ///
@@ -225,7 +225,7 @@ pub trait Parser<I, O, E> {
     /// ```rust
     /// # use winnow::prelude::*;
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult};
-    /// use winnow::character::{alpha1};
+    /// use winnow::ascii::{alpha1};
     /// use winnow::token::tag;
     /// use winnow::combinator::separated_pair;
     ///
@@ -266,7 +266,7 @@ pub trait Parser<I, O, E> {
     /// # use winnow::prelude::*;
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, stream::Stream};
     /// use winnow::stream::Located;
-    /// use winnow::character::alpha1;
+    /// use winnow::ascii::alpha1;
     /// use winnow::combinator::separated_pair;
     ///
     /// let mut parser = separated_pair(alpha1.span(), ',', alpha1.span());
@@ -298,7 +298,7 @@ pub trait Parser<I, O, E> {
     /// # use winnow::prelude::*;
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, stream::Stream};
     /// use winnow::stream::Located;
-    /// use winnow::character::alpha1;
+    /// use winnow::ascii::alpha1;
     /// use winnow::token::tag;
     /// use winnow::combinator::separated_pair;
     ///
@@ -336,7 +336,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult,Parser};
-    /// use winnow::character::digit1;
+    /// use winnow::ascii::digit1;
     /// # fn main() {
     ///
     /// let mut parser = digit1.map(|s: &str| s.len());
@@ -362,7 +362,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
-    /// use winnow::character::digit1;
+    /// use winnow::ascii::digit1;
     /// # fn main() {
     ///
     /// let mut parse = digit1.try_map(|s: &str| s.parse::<u8>());
@@ -405,7 +405,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
-    /// use winnow::character::digit1;
+    /// use winnow::ascii::digit1;
     /// # fn main() {
     ///
     /// let mut parse = digit1.verify_map(|s: &str| s.parse::<u8>().ok());
@@ -480,7 +480,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
-    /// use winnow::character::digit1;
+    /// use winnow::ascii::digit1;
     /// use winnow::token::take;
     /// # fn main() {
     ///
@@ -507,7 +507,7 @@ pub trait Parser<I, O, E> {
     /// ```rust
     /// # use winnow::prelude::*;
     /// use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult,Parser};
-    /// use winnow::character::digit1;
+    /// use winnow::ascii::digit1;
     ///
     /// fn parser(input: &str) -> IResult<&str, u64> {
     ///     digit1.parse_to().parse_next(input)
@@ -539,7 +539,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
-    /// # use winnow::character::alpha1;
+    /// # use winnow::ascii::alpha1;
     /// # fn main() {
     ///
     /// let mut parser = alpha1.verify(|s: &str| s.len() == 4);
@@ -864,7 +864,7 @@ mod tests {
 
     #[test]
     fn single_element_tuples() {
-        use crate::character::alpha1;
+        use crate::ascii::alpha1;
         use crate::error::ErrorKind;
 
         let mut parser = (alpha1,);

@@ -3,8 +3,8 @@ use std::str;
 
 use winnow::prelude::*;
 use winnow::{
-    character::float,
-    character::line_ending,
+    ascii::float,
+    ascii::line_ending,
     combinator::alt,
     combinator::cut_err,
     combinator::{delimited, preceded, separated_pair, terminated},

@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use winnow::character::digit1 as digit;
+use winnow::ascii::digit1 as digit;
 #[cfg(feature = "alloc")]
 use winnow::combinator::count;
 use winnow::combinator::terminated;

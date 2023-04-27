@@ -1,9 +1,9 @@
 use super::*;
 
+use crate::ascii::digit1 as digit;
 use crate::binary::u16;
 use crate::binary::u8;
 use crate::binary::Endianness;
-use crate::character::digit1 as digit;
 use crate::error::ErrMode;
 use crate::error::Error;
 use crate::error::ErrorKind;
@@ -101,7 +101,7 @@ struct CustomError;
 #[allow(dead_code)]
 fn custom_error(input: &[u8]) -> IResult<&[u8], &[u8], CustomError> {
     //fix_error!(input, CustomError<_>, alphanumeric)
-    crate::character::alphanumeric1(input)
+    crate::ascii::alphanumeric1(input)
 }
 
 #[test]

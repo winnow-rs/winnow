@@ -3,7 +3,7 @@ use std::str;
 
 use winnow::prelude::*;
 use winnow::{
-    character::float,
+    ascii::float,
     combinator::alt,
     combinator::{cut_err, rest},
     combinator::{delimited, preceded, separated_pair, terminated},

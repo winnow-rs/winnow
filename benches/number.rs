@@ -3,8 +3,8 @@ extern crate criterion;
 
 use criterion::Criterion;
 
+use winnow::ascii::float;
 use winnow::binary::be_u64;
-use winnow::character::float;
 use winnow::error::ErrMode;
 use winnow::error::Error;
 use winnow::error::ErrorKind;

@@ -569,7 +569,7 @@ mod complete {
     fn complete_escaped_hang() {
         // issue #1336 "escaped hangs if normal parser accepts empty"
         fn escaped_string(input: &str) -> IResult<&str, &str> {
-            use crate::character::alpha0;
+            use crate::ascii::alpha0;
             use crate::token::one_of;
             escaped(alpha0, '\\', one_of("n")).parse_next(input)
         }
@@ -601,7 +601,7 @@ mod complete {
     #[allow(unused_variables)]
     #[test]
     fn complete_escaping() {
-        use crate::character::{alpha1 as alpha, digit1 as digit};
+        use crate::ascii::{alpha1 as alpha, digit1 as digit};
         use crate::token::one_of;
 
         fn esc(i: &[u8]) -> IResult<&[u8], &[u8]> {
@@ -637,7 +637,7 @@ mod complete {
     #[cfg(feature = "alloc")]
     #[test]
     fn complete_escaping_str() {
-        use crate::character::{alpha1 as alpha, digit1 as digit};
+        use crate::ascii::{alpha1 as alpha, digit1 as digit};
         use crate::token::one_of;
 
         fn esc(i: &str) -> IResult<&str, &str> {
@@ -675,7 +675,7 @@ mod complete {
     #[test]
     fn test_escaped_error() {
         fn esc(s: &str) -> IResult<&str, &str> {
-            use crate::character::digit1;
+            use crate::ascii::digit1;
             escaped(digit1, '\\', one_of("\"n\\")).parse_next(s)
         }
 
@@ -685,7 +685,7 @@ mod complete {
     #[cfg(feature = "alloc")]
     #[test]
     fn complete_escape_transform() {
-        use crate::character::alpha1 as alpha;
+        use crate::ascii::alpha1 as alpha;
 
         #[cfg(feature = "alloc")]
         fn to_s(i: Vec<u8>) -> String {
@@ -761,7 +761,7 @@ mod complete {
     #[cfg(feature = "std")]
     #[test]
     fn complete_escape_transform_str() {
-        use crate::character::alpha1 as alpha;
+        use crate::ascii::alpha1 as alpha;
 
         fn esc(i: &str) -> IResult<&str, String> {
             escaped_transform(
@@ -814,7 +814,7 @@ mod complete {
     #[cfg(feature = "alloc")]
     fn test_escaped_transform_error() {
         fn esc_trans(s: &str) -> IResult<&str, String> {
-            use crate::character::digit1;
+            use crate::ascii::digit1;
             escaped_transform(digit1, '\\', "n").parse_next(s)
         }
 

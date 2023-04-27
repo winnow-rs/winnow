@@ -366,7 +366,7 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated_foldl1;
-/// use winnow::character::dec_int;
+/// use winnow::ascii::dec_int;
 ///
 /// fn parser(s: &str) -> IResult<&str, i32> {
 ///   separated_foldl1(dec_int, "-", |l, _, r| l - r).parse_next(s)
@@ -427,7 +427,7 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated_foldr1;
-/// use winnow::character::dec_uint;
+/// use winnow::ascii::dec_uint;
 ///
 /// fn parser(s: &str) -> IResult<&str, u32> {
 ///   separated_foldr1(dec_uint, "^", |l: u32, _, r: u32| l.pow(r)).parse_next(s)

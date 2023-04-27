@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use winnow::prelude::*;
 use winnow::{
-    character::{digit1 as digits, space0 as spaces},
+    ascii::{digit1 as digits, space0 as spaces},
     combinator::alt,
     combinator::delimited,
     combinator::fold_many0,

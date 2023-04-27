@@ -145,7 +145,7 @@ impl<I: crate::lib::std::fmt::Display> crate::lib::std::fmt::Display for Located
 /// # use std::cell::Cell;
 /// # use winnow::prelude::*;
 /// # use winnow::stream::Stateful;
-/// # use winnow::character::alpha1;
+/// # use winnow::ascii::alpha1;
 /// # type Error = ();
 ///
 /// #[derive(Clone, Debug)]
@@ -221,7 +221,7 @@ impl<I: crate::lib::std::fmt::Display, S> crate::lib::std::fmt::Display for Stat
 /// Here is how it works in practice:
 ///
 /// ```rust
-/// # use winnow::{IResult, error::ErrMode, error::Needed, error::{Error, ErrorKind}, token, character, stream::Partial};
+/// # use winnow::{IResult, error::ErrMode, error::Needed, error::{Error, ErrorKind}, token, ascii, stream::Partial};
 /// # use winnow::prelude::*;
 ///
 /// fn take_partial(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
@@ -245,11 +245,11 @@ impl<I: crate::lib::std::fmt::Display, S> crate::lib::std::fmt::Display for Stat
 ///
 /// // the alpha0 function recognizes 0 or more alphabetic characters
 /// fn alpha0_partial(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   character::alpha0(i)
+///   ascii::alpha0(i)
 /// }
 ///
 /// fn alpha0_complete(i: &str) -> IResult<&str, &str> {
-///   character::alpha0(i)
+///   ascii::alpha0(i)
 /// }
 ///
 /// // if there's a clear limit to the recognized characters, both parsers work the same way

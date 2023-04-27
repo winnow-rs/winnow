@@ -60,7 +60,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::opt;
-/// use winnow::character::alpha1;
+/// use winnow::ascii::alpha1;
 /// # fn main() {
 ///
 /// fn parser(i: &str) -> IResult<&str, Option<&str>> {
@@ -93,7 +93,7 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::cond;
-/// use winnow::character::alpha1;
+/// use winnow::ascii::alpha1;
 /// # fn main() {
 ///
 /// fn parser(b: bool, i: &str) -> IResult<&str, Option<&str>> {
@@ -131,7 +131,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::peek;
-/// use winnow::character::alpha1;
+/// use winnow::ascii::alpha1;
 /// # fn main() {
 ///
 /// let mut parser = peek(alpha1);
@@ -197,7 +197,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::not;
-/// use winnow::character::alpha1;
+/// use winnow::ascii::alpha1;
 /// # fn main() {
 ///
 /// let mut parser = not(alpha1);
@@ -231,7 +231,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::token::one_of;
-/// # use winnow::character::digit1;
+/// # use winnow::ascii::digit1;
 /// # use winnow::combinator::rest;
 /// # use winnow::combinator::alt;
 /// # use winnow::combinator::preceded;
@@ -256,7 +256,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::prelude::*;
 /// # use winnow::token::one_of;
-/// # use winnow::character::digit1;
+/// # use winnow::ascii::digit1;
 /// # use winnow::combinator::rest;
 /// # use winnow::combinator::alt;
 /// # use winnow::combinator::preceded;
@@ -336,7 +336,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// use winnow::{combinator::iterator, IResult, token::tag, character::alpha1, combinator::terminated};
+/// use winnow::{combinator::iterator, IResult, token::tag, ascii::alpha1, combinator::terminated};
 /// use std::collections::HashMap;
 ///
 /// let data = "abc|defg|hijkl|mnopqr|123";

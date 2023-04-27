@@ -1,7 +1,7 @@
 #![cfg(feature = "alloc")]
 
 use winnow::{
-    character::{alphanumeric1 as alphanumeric, line_ending as eol},
+    ascii::{alphanumeric1 as alphanumeric, line_ending as eol},
     combinator::many0,
     combinator::terminated,
     IResult, Parser,

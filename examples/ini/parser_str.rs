@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use winnow::prelude::*;
 use winnow::{
-    character::{alphanumeric1 as alphanumeric, space0 as space},
+    ascii::{alphanumeric1 as alphanumeric, space0 as space},
     combinator::many0,
     combinator::opt,
     combinator::{delimited, terminated},

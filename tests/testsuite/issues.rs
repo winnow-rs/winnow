@@ -26,7 +26,7 @@ mod parse_int {
     use winnow::prelude::*;
     use winnow::Partial;
     use winnow::{
-        character::{digit1 as digit, space1 as space},
+        ascii::{digit1 as digit, space1 as space},
         combinator::many0,
         combinator::opt,
         IResult,
@@ -95,7 +95,7 @@ fn take_till0_issue() {
 
 #[test]
 fn issue_655() {
-    use winnow::character::{line_ending, not_line_ending};
+    use winnow::ascii::{line_ending, not_line_ending};
     fn twolines(i: Partial<&str>) -> IResult<Partial<&str>, (&str, &str)> {
         let (i, l1) = not_line_ending(i)?;
         let (i, _) = line_ending(i)?;
@@ -237,7 +237,7 @@ fn issue_1282_findtoken_char() {
 
 #[test]
 fn issue_x_looser_fill_bounds() {
-    use winnow::{character::digit1, combinator::fill, combinator::terminated};
+    use winnow::{ascii::digit1, combinator::fill, combinator::terminated};
 
     fn fill_pair(i: &[u8]) -> IResult<&[u8], [&[u8]; 2]> {
         let mut buf = [&[][..], &[][..]];

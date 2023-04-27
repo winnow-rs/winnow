@@ -386,8 +386,8 @@ mod partial {
     use crate::lib::std::vec::Vec;
     use crate::Partial;
     use crate::{
+        ascii::digit1 as digit,
         binary::{be_u16, be_u8},
-        character::digit1 as digit,
         error::ErrorKind,
         lib::std::str::{self, FromStr},
         IResult,

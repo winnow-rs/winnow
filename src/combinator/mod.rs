@@ -89,28 +89,28 @@
 //! ## Text parsing
 //!
 //! - [`any`][crate::token::any]: Matches one token
-//! - [`tab`][crate::character::tab]: Matches a tab character `\t`
-//! - [`crlf`][crate::character::crlf]: Recognizes the string `\r\n`
-//! - [`line_ending`][crate::character::line_ending]: Recognizes an end of line (both `\n` and `\r\n`)
-//! - [`newline`][crate::character::newline]: Matches a newline character `\n`
-//! - [`not_line_ending`][crate::character::not_line_ending]: Recognizes a string of any char except `\r` or `\n`
+//! - [`tab`][crate::ascii::tab]: Matches a tab character `\t`
+//! - [`crlf`][crate::ascii::crlf]: Recognizes the string `\r\n`
+//! - [`line_ending`][crate::ascii::line_ending]: Recognizes an end of line (both `\n` and `\r\n`)
+//! - [`newline`][crate::ascii::newline]: Matches a newline character `\n`
+//! - [`not_line_ending`][crate::ascii::not_line_ending]: Recognizes a string of any char except `\r` or `\n`
 //! - [`rest`][rest]: Return the remaining input
 //!
-//! - [`alpha0`][crate::character::alpha0]: Recognizes zero or more lowercase and uppercase alphabetic characters: `[a-zA-Z]`. [`alpha1`][crate::character::alpha1] does the same but returns at least one character
-//! - [`alphanumeric0`][crate::character::alphanumeric0]: Recognizes zero or more numerical and alphabetic characters: `[0-9a-zA-Z]`. [`alphanumeric1`][crate::character::alphanumeric1] does the same but returns at least one character
-//! - [`space0`][crate::character::space0]: Recognizes zero or more spaces and tabs. [`space1`][crate::character::space1] does the same but returns at least one character
-//! - [`multispace0`][crate::character::multispace0]: Recognizes zero or more spaces, tabs, carriage returns and line feeds. [`multispace1`][crate::character::multispace1] does the same but returns at least one character
-//! - [`digit0`][crate::character::digit0]: Recognizes zero or more numerical characters: `[0-9]`. [`digit1`][crate::character::digit1] does the same but returns at least one character
-//! - [`hex_digit0`][crate::character::hex_digit0]: Recognizes zero or more hexadecimal numerical characters: `[0-9A-Fa-f]`. [`hex_digit1`][crate::character::hex_digit1] does the same but returns at least one character
-//! - [`oct_digit0`][crate::character::oct_digit0]: Recognizes zero or more octal characters: `[0-7]`. [`oct_digit1`][crate::character::oct_digit1] does the same but returns at least one character
+//! - [`alpha0`][crate::ascii::alpha0]: Recognizes zero or more lowercase and uppercase alphabetic characters: `[a-zA-Z]`. [`alpha1`][crate::ascii::alpha1] does the same but returns at least one character
+//! - [`alphanumeric0`][crate::ascii::alphanumeric0]: Recognizes zero or more numerical and alphabetic characters: `[0-9a-zA-Z]`. [`alphanumeric1`][crate::ascii::alphanumeric1] does the same but returns at least one character
+//! - [`space0`][crate::ascii::space0]: Recognizes zero or more spaces and tabs. [`space1`][crate::ascii::space1] does the same but returns at least one character
+//! - [`multispace0`][crate::ascii::multispace0]: Recognizes zero or more spaces, tabs, carriage returns and line feeds. [`multispace1`][crate::ascii::multispace1] does the same but returns at least one character
+//! - [`digit0`][crate::ascii::digit0]: Recognizes zero or more numerical characters: `[0-9]`. [`digit1`][crate::ascii::digit1] does the same but returns at least one character
+//! - [`hex_digit0`][crate::ascii::hex_digit0]: Recognizes zero or more hexadecimal numerical characters: `[0-9A-Fa-f]`. [`hex_digit1`][crate::ascii::hex_digit1] does the same but returns at least one character
+//! - [`oct_digit0`][crate::ascii::oct_digit0]: Recognizes zero or more octal characters: `[0-7]`. [`oct_digit1`][crate::ascii::oct_digit1] does the same but returns at least one character
 //!
-//! - [`float`][crate::character::float]: Parse a floating point number in a byte string
-//! - [`dec_int`][crate::character::dec_uint]: Decode a variable-width, decimal signed integer
-//! - [`dec_uint`][crate::character::dec_uint]: Decode a variable-width, decimal unsigned integer
-//! - [`hex_uint`][crate::character::hex_uint]: Decode a variable-width, hexadecimal integer
+//! - [`float`][crate::ascii::float]: Parse a floating point number in a byte string
+//! - [`dec_int`][crate::ascii::dec_uint]: Decode a variable-width, decimal signed integer
+//! - [`dec_uint`][crate::ascii::dec_uint]: Decode a variable-width, decimal unsigned integer
+//! - [`hex_uint`][crate::ascii::hex_uint]: Decode a variable-width, hexadecimal integer
 //!
-//! - [`escaped`][crate::character::escaped]: Matches a byte string with escaped characters
-//! - [`escaped_transform`][crate::character::escaped_transform]: Matches a byte string with escaped characters, and returns a new string with the escaped characters replaced
+//! - [`escaped`][crate::ascii::escaped]: Matches a byte string with escaped characters
+//! - [`escaped_transform`][crate::ascii::escaped_transform]: Matches a byte string with escaped characters, and returns a new string with the escaped characters replaced
 //!
 //! ### Character test functions
 //!

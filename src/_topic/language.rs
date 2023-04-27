@@ -29,7 +29,7 @@
 //! use winnow::{
 //!   error::ParseError,
 //!   combinator::delimited,
-//!   character::multispace0,
+//!   ascii::multispace0,
 //! };
 //!
 //! /// A combinator that takes a parser `inner` and produces a parser that also consumes both leading and

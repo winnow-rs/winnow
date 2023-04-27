@@ -1,4 +1,4 @@
-use winnow::character::digit1 as digit;
+use winnow::ascii::digit1 as digit;
 use winnow::combinator::alt;
 use winnow::combinator::delimited;
 use winnow::combinator::opt;
