@@ -65,14 +65,14 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// Because parsers are `FnMut`, they can be called multiple times.  This prevents moving `f`
-    /// into [`length_data`][crate::multi::length_data] and `g` into
+    /// into [`length_data`][crate::binary::length_data] and `g` into
     /// [`Parser::complete_err`]:
     /// ```rust,compile_fail
     /// # use winnow::prelude::*;
     /// # use winnow::IResult;
     /// # use winnow::Parser;
     /// # use winnow::error::ParseError;
-    /// # use winnow::multi::length_data;
+    /// # use winnow::binary::length_data;
     /// pub fn length_value<'i, O, E: ParseError<&'i [u8]>>(
     ///     mut f: impl Parser<&'i [u8], usize, E>,
     ///     mut g: impl Parser<&'i [u8], O, E>
@@ -91,7 +91,7 @@ pub trait Parser<I, O, E> {
     /// # use winnow::IResult;
     /// # use winnow::Parser;
     /// # use winnow::error::ParseError;
-    /// # use winnow::multi::length_data;
+    /// # use winnow::binary::length_data;
     /// pub fn length_value<'i, O, E: ParseError<&'i [u8]>>(
     ///     mut f: impl Parser<&'i [u8], usize, E>,
     ///     mut g: impl Parser<&'i [u8], O, E>

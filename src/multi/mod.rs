@@ -3,6 +3,7 @@
 #[cfg(test)]
 mod tests;
 
+use crate::binary;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
@@ -910,40 +911,10 @@ where
     })
 }
 
-/// Gets a number from the parser and returns a
-/// subslice of the input of that size.
-///
-/// *Complete version*: Returns an error if there is not enough input data.
-///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
-///
-/// # Arguments
-/// * `f` The parser to apply.
-///
-/// # Example
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, stream::Partial};
-/// # use winnow::prelude::*;
-/// use winnow::Bytes;
-/// use winnow::binary::be_u16;
-/// use winnow::multi::length_data;
-/// use winnow::bytes::tag;
-///
-/// type Stream<'i> = Partial<&'i Bytes>;
-///
-/// fn stream(b: &[u8]) -> Stream<'_> {
-///     Partial::new(Bytes::new(b))
-/// }
-///
-/// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
-///   length_data(be_u16).parse_next(s)
-/// }
-///
-/// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), &b"abc"[..])));
-/// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
-/// ```
-pub fn length_data<I, N, E, F>(mut f: F) -> impl Parser<I, <I as Stream>::Slice, E>
+/// Deprecated, replaced by [`binary::length_data`]
+#[deprecated(since = "0.4.2", note = "Replaced with `binary::length_data`")]
+#[inline(always)]
+pub fn length_data<I, N, E, F>(f: F) -> impl Parser<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -951,58 +922,13 @@ where
     F: Parser<I, N, E>,
     E: ParseError<I>,
 {
-    trace("length_data", move |i: I| {
-        let (i, length) = f.parse_next(i)?;
-
-        crate::bytes::take(length).parse_next(i)
-    })
+    binary::length_data(f)
 }
 
-/// Gets a number from the first parser,
-/// takes a subslice of the input of that size,
-/// then applies the second parser on that subslice.
-/// If the second parser returns `Incomplete`,
-/// `length_value` will return an error.
-///
-/// *Complete version*: Returns an error if there is not enough input data.
-///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
-///
-/// # Arguments
-/// * `f` The parser to apply.
-/// * `g` The parser to apply on the subslice.
-///
-/// # Example
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, stream::{Partial, StreamIsPartial}};
-/// # use winnow::prelude::*;
-/// use winnow::Bytes;
-/// use winnow::binary::be_u16;
-/// use winnow::multi::length_value;
-/// use winnow::bytes::tag;
-///
-/// type Stream<'i> = Partial<&'i Bytes>;
-///
-/// fn stream(b: &[u8]) -> Stream<'_> {
-///     Partial::new(Bytes::new(b))
-/// }
-///
-/// fn complete_stream(b: &[u8]) -> Stream<'_> {
-///     let mut p = Partial::new(Bytes::new(b));
-///     let _ = p.complete();
-///     p
-/// }
-///
-/// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
-///   length_value(be_u16, "abc").parse_next(s)
-/// }
-///
-/// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), &b"abc"[..])));
-/// assert_eq!(parser(stream(b"\x00\x03123123")), Err(ErrMode::Backtrack(Error::new(complete_stream(&b"123"[..]), ErrorKind::Tag))));
-/// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
-/// ```
-pub fn length_value<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, O, E>
+/// Deprecated, replaced by [`binary::length_value`]
+#[deprecated(since = "0.4.2", note = "Replaced with `binary::length_value`")]
+#[inline(always)]
+pub fn length_value<I, O, N, E, F, G>(f: F, g: G) -> impl Parser<I, O, E>
 where
     I: StreamIsPartial,
     I: Stream + UpdateSlice,
@@ -1011,52 +937,13 @@ where
     G: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    trace("length_value", move |i: I| {
-        let (i, data) = length_data(f.by_ref()).parse_next(i)?;
-        let mut data = I::update_slice(i.clone(), data);
-        let _ = data.complete();
-        let (_, o) = g.by_ref().complete_err().parse_next(data)?;
-        Ok((i, o))
-    })
+    binary::length_value(f, g)
 }
 
-/// Gets a number from the first parser,
-/// then applies the second parser that many times.
-///
-/// # Arguments
-/// * `f` The parser to apply to obtain the count.
-/// * `g` The parser to apply repeatedly.
-///
-/// # Example
-///
-/// ```rust
-/// # #[cfg(feature = "std")] {
-/// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::Bytes;
-/// use winnow::binary::u8;
-/// use winnow::multi::length_count;
-/// use winnow::bytes::tag;
-///
-/// type Stream<'i> = &'i Bytes;
-///
-/// fn stream(b: &[u8]) -> Stream<'_> {
-///     Bytes::new(b)
-/// }
-///
-/// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, Vec<&[u8]>> {
-///   length_count(u8.map(|i| {
-///      println!("got number: {}", i);
-///      i
-///   }), "abc").parse_next(s)
-/// }
-///
-/// assert_eq!(parser(stream(b"\x02abcabcabc")), Ok((stream(b"abc"), vec![&b"abc"[..], &b"abc"[..]])));
-/// assert_eq!(parser(stream(b"\x03123123123")), Err(ErrMode::Backtrack(Error::new(stream(b"123123123"), ErrorKind::Tag))));
-/// # }
-/// ```
-pub fn length_count<I, O, C, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, C, E>
+/// Deprecated, replaced by [`binary::length_count`]
+#[deprecated(since = "0.4.2", note = "Replaced with `binary::length_count`")]
+#[inline(always)]
+pub fn length_count<I, O, C, N, E, F, G>(f: F, g: G) -> impl Parser<I, C, E>
 where
     I: Stream,
     N: ToUsize,
@@ -1065,9 +952,5 @@ where
     G: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    trace("length_count", move |i: I| {
-        let (i, n) = f.parse_next(i)?;
-        let n = n.to_usize();
-        count(g.by_ref(), n).parse_next(i)
-    })
+    binary::length_count(f, g)
 }

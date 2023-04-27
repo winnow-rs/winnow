@@ -3,12 +3,12 @@ use super::*;
 #[cfg(feature = "std")]
 use proptest::prelude::*;
 
+use crate::binary::length_data;
 use crate::bytes::tag;
 use crate::error::ErrMode;
 use crate::error::Error;
 use crate::error::ErrorKind;
 use crate::error::Needed;
-use crate::multi::length_data;
 use crate::sequence::delimited;
 use crate::stream::AsChar;
 use crate::IResult;
