@@ -12,6 +12,7 @@
 //!   - [HTTP][http]
 //! - Special Topics:
 //!   - [Implementing `FromStr`][fromstr]
+//!   - [Performance][performance]
 //!   - [Parsing Partial Input][partial]
 //!   - [Custom stream][stream]
 //!   - [Custom errors][error]
@@ -29,6 +30,7 @@ pub mod ini;
 pub mod json;
 pub mod language;
 pub mod partial;
+pub mod performance;
 pub mod s_expression;
 pub mod stream;
 pub mod why;
