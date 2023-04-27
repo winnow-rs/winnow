@@ -2,7 +2,9 @@
 
 use crate::combinator::*;
 use crate::error::{ContextError, FromExternalError, IResult, ParseError};
-use crate::stream::{AsChar, Compare, Location, Offset, ParseSlice, Stream, StreamIsPartial};
+use crate::stream::{
+    AsChar, Compare, Location, Offset, ParseSlice, Stream, StreamIsPartial, UpdateSlice,
+};
 
 /// Core trait for parsing
 ///
@@ -187,19 +189,21 @@ pub trait Parser<I, O, E> {
 
     /// Produce the consumed input as produced value.
     ///
+    /// The produced value is of type `Stream::Slice`. If you're looking for an alternative that
+    /// returns the original input `Stream`'s type, use [`output_stream`](Parser::output_stream)
+    /// instead.
+    ///
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
-    /// use winnow::character::{alpha1};
+    /// # use winnow::{error::{ErrMode, Error, ErrorKind}, IResult, Parser};
+    /// use winnow::character::alpha1;
     /// use winnow::sequence::separated_pair;
-    /// # fn main() {
     ///
     /// let mut parser = separated_pair(alpha1, ',', alpha1).recognize();
     ///
     /// assert_eq!(parser.parse_next("abcd,efgh"), Ok(("", "abcd,efgh")));
     /// assert_eq!(parser.parse_next("abcd;"),Err(ErrMode::Backtrack(Error::new(";", ErrorKind::Verify))));
-    /// # }
     /// ```
     #[doc(alias = "concat")]
     fn recognize(self) -> Recognize<Self, I, O, E>
@@ -212,28 +216,28 @@ pub trait Parser<I, O, E> {
 
     /// Produce the consumed input with the output
     ///
-    /// Functions similarly to [recognize][Parser::recognize] except it
-    /// returns the parser output as well.
+    /// Functions similarly to [`recognize`][Parser::recognize] except it returns the parser output
+    /// as well.
     ///
     /// This can be useful especially in cases where the output is not the same type
     /// as the input, or the input is a user defined type.
+    ///
+    /// The consumed input's value is of type `Stream::Slice`. If you're looking for an alternative
+    /// that returns the original input `Stream`'s type, use
+    /// [`with_output_stream`](Parser::with_output_stream) instead.
     ///
     /// Returned tuple is of the format `(produced output, consumed input)`.
     ///
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::prelude::*;
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult};
-    /// use winnow::character::{alpha1};
-    /// use winnow::bytes::tag;
+    /// # use winnow::{error::{ErrMode, Error, ErrorKind}, IResult, Parser};
+    /// use winnow::character::alpha1;
     /// use winnow::sequence::separated_pair;
     ///
     /// fn inner_parser(input: &str) -> IResult<&str, bool> {
     ///     "1234".value(true).parse_next(input)
     /// }
-    ///
-    /// # fn main() {
     ///
     /// let mut consumed_parser = separated_pair(alpha1, ',', alpha1).value(true).with_recognized();
     ///
@@ -247,7 +251,6 @@ pub trait Parser<I, O, E> {
     ///
     /// assert_eq!(recognize_parser.parse_next("1234"), consumed_parser.parse_next("1234"));
     /// assert_eq!(recognize_parser.parse_next("abcd"), consumed_parser.parse_next("abcd"));
-    /// # }
     /// ```
     #[doc(alias = "consumed")]
     fn with_recognized(self) -> WithRecognized<Self, I, O, E>
@@ -256,6 +259,99 @@ pub trait Parser<I, O, E> {
         I: Stream + Offset,
     {
         WithRecognized::new(self)
+    }
+
+    /// Produce the consumed input as produced value.
+    ///
+    /// The produced value is of the same type as the input `Stream`. If you're looking for an
+    /// alternative that returns `Stream::Slice`, use [`recognize`](Parser::recognize) instead.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use winnow::{error::{ErrMode, Error, ErrorKind}, IResult, Parser};
+    /// use winnow::character::alpha1;
+    /// use winnow::sequence::separated_pair;
+    /// use winnow::stream::BStr;
+    ///
+    /// let mut parser = separated_pair(alpha1, ',', alpha1).output_stream();
+    ///
+    /// assert_eq!(
+    ///     parser.parse_next(BStr::new("abcd,efgh")),
+    ///     Ok((BStr::new(""), BStr::new("abcd,efgh"))),
+    /// );
+    /// assert_eq!(
+    ///     parser.parse_next(BStr::new("abcd;")),
+    ///     Err(ErrMode::Backtrack(Error::new(BStr::new(";"), ErrorKind::Verify))),
+    /// );
+    /// ```
+    fn output_stream(self) -> OutputStream<Self, I, O, E>
+    where
+        Self: core::marker::Sized,
+        I: UpdateSlice,
+    {
+        OutputStream::new(self)
+    }
+
+    /// Produce the consumed input with the output.
+    ///
+    /// Functions similarly to [`output_stream`][Parser::output_stream] except it returns the
+    /// parser output as well.
+    ///
+    /// This can be useful especially in cases where the output is not the same type as the input.
+    ///
+    /// The consumed input's value is of the same type as the input `Stream`. If you're looking for
+    /// an alternative that returns `Stream::Slice`, use
+    /// [`with_recognized`](Parser::with_recognized) instead.
+    ///
+    /// Returned tuple is of the format `(produced output, consumed input)`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use winnow::{error::{ErrMode, Error, ErrorKind}, IResult, Parser};
+    /// use winnow::character::alpha1;
+    /// use winnow::sequence::separated_pair;
+    /// use winnow::stream::BStr;
+    ///
+    /// fn inner_parser(input: &BStr) -> IResult<&BStr, bool> {
+    ///     "1234".value(true).parse_next(input)
+    /// }
+    ///
+    /// let mut consumed_parser = separated_pair(alpha1, ',', alpha1)
+    ///     .value(true)
+    ///     .with_output_stream();
+    ///
+    /// assert_eq!(
+    ///     consumed_parser.parse_next(BStr::new("abcd,efgh1")),
+    ///     Ok((BStr::new("1"), (true, BStr::new("abcd,efgh")))),
+    /// );
+    /// assert_eq!(
+    ///     consumed_parser.parse_next(BStr::new("abcd;")),
+    ///     Err(ErrMode::Backtrack(Error::new(BStr::new(";"), ErrorKind::Verify))),
+    /// );
+    ///
+    /// // The second output (representing the consumed input) should be the same as that of the
+    /// // `output_stream` parser.
+    /// let mut output_stream_parser = inner_parser.output_stream();
+    /// let mut consumed_parser = inner_parser.with_output_stream()
+    ///     .map(|(output, output_stream)| output_stream);
+    ///
+    /// assert_eq!(
+    ///     output_stream_parser.parse_next(BStr::new("1234")),
+    ///     consumed_parser.parse_next(BStr::new("1234")),
+    /// );
+    /// assert_eq!(
+    ///     output_stream_parser.parse_next(BStr::new("abcd")),
+    ///     consumed_parser.parse_next(BStr::new("abcd")),
+    /// );
+    /// ```
+    fn with_output_stream(self) -> WithOutputStream<Self, I, O, E>
+    where
+        Self: core::marker::Sized,
+        I: UpdateSlice,
+    {
+        WithOutputStream::new(self)
     }
 
     /// Produce the location of the consumed input as produced value.

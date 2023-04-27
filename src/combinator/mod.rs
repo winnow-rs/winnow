@@ -159,7 +159,7 @@
 use crate::error::{ContextError, ErrMode, ErrorKind, FromExternalError, Needed, ParseError};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::ops::Range;
-use crate::stream::{Location, Stream};
+use crate::stream::{Location, Stream, UpdateSlice};
 use crate::stream::{Offset, StreamIsPartial};
 use crate::trace::trace;
 use crate::trace::trace_result;
@@ -966,6 +966,96 @@ where
                 let offset = input.offset_to(&remaining);
                 let (remaining, recognized) = input.next_slice(offset);
                 Ok((remaining, (result, recognized)))
+            }
+            Err(e) => Err(e),
+        }
+    }
+}
+
+/// Implementation of [`Parser::output_stream`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct OutputStream<F, I, O, E>
+where
+    F: Parser<I, O, E>,
+    I: UpdateSlice,
+{
+    parser: F,
+    i: core::marker::PhantomData<I>,
+    o: core::marker::PhantomData<O>,
+    e: core::marker::PhantomData<E>,
+}
+
+impl<F, I, O, E> OutputStream<F, I, O, E>
+where
+    F: Parser<I, O, E>,
+    I: UpdateSlice,
+{
+    pub(crate) fn new(parser: F) -> Self {
+        Self {
+            parser,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
+    }
+}
+
+impl<I, O, E, F> Parser<I, I, E> for OutputStream<F, I, O, E>
+where
+    F: Parser<I, O, E>,
+    I: UpdateSlice,
+{
+    fn parse_next(&mut self, input: I) -> IResult<I, I, E> {
+        match self.parser.parse_next(input.clone()) {
+            Ok((remaining, _)) => {
+                let offset = input.offset_to(&remaining);
+                let (remaining, slice) = input.next_slice(offset);
+                Ok((remaining, input.update_slice(slice)))
+            }
+            Err(e) => Err(e),
+        }
+    }
+}
+
+/// Implementation of [`Parser::with_output_stream`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct WithOutputStream<F, I, O, E>
+where
+    F: Parser<I, O, E>,
+    I: UpdateSlice,
+{
+    parser: F,
+    i: core::marker::PhantomData<I>,
+    o: core::marker::PhantomData<O>,
+    e: core::marker::PhantomData<E>,
+}
+
+impl<F, I, O, E> WithOutputStream<F, I, O, E>
+where
+    F: Parser<I, O, E>,
+    I: UpdateSlice,
+{
+    pub(crate) fn new(parser: F) -> Self {
+        Self {
+            parser,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
+    }
+}
+
+impl<F, I, O, E> Parser<I, (O, I), E> for WithOutputStream<F, I, O, E>
+where
+    F: Parser<I, O, E>,
+    I: UpdateSlice,
+{
+    fn parse_next(&mut self, input: I) -> IResult<I, (O, I), E> {
+        match self.parser.parse_next(input.clone()) {
+            Ok((remaining, output)) => {
+                let offset = input.offset_to(&remaining);
+                let (remaining, slice) = input.next_slice(offset);
+                Ok((remaining, (output, input.update_slice(slice))))
             }
             Err(e) => Err(e),
         }
