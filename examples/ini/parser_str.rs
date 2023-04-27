@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use winnow::prelude::*;
 use winnow::{
     ascii::{alphanumeric1 as alphanumeric, space0 as space},
-    combinator::many0,
     combinator::opt,
+    combinator::repeat0,
     combinator::{delimited, terminated},
     token::{take_till0, take_while0, take_while1},
 };
@@ -12,7 +12,7 @@ use winnow::{
 pub type Stream<'i> = &'i str;
 
 pub fn categories(input: Stream<'_>) -> IResult<Stream<'_>, HashMap<&str, HashMap<&str, &str>>> {
-    many0(category_and_keys).parse_next(input)
+    repeat0(category_and_keys).parse_next(input)
 }
 
 fn category_and_keys(i: Stream<'_>) -> IResult<Stream<'_>, (&str, HashMap<&str, &str>)> {
@@ -28,7 +28,7 @@ fn category(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
 }
 
 fn keys_and_values(input: Stream<'_>) -> IResult<Stream<'_>, HashMap<&str, &str>> {
-    many0(key_value).parse_next(input)
+    repeat0(key_value).parse_next(input)
 }
 
 fn key_value(i: Stream<'_>) -> IResult<Stream<'_>, (&str, &str)> {

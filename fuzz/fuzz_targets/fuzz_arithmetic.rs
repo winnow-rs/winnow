@@ -6,7 +6,7 @@ use winnow::prelude::*;
 use winnow::{
     ascii::{digit1 as digit, space0 as space},
     combinator::alt,
-    combinator::fold_many0,
+    combinator::fold_repeat0,
     combinator::{delimited, terminated},
 };
 
@@ -64,7 +64,7 @@ fn term(i: &str) -> IResult<&str, i64> {
         e
     })?;
 
-    let res = fold_many0(
+    let res = fold_repeat0(
         alt((('*', factor), ('/', factor.verify(|i| *i != 0)))),
         || init,
         |acc, (op, val): (char, i64)| {
@@ -93,7 +93,7 @@ fn expr(i: &str) -> IResult<&str, i64> {
         e
     })?;
 
-    let res = fold_many0(
+    let res = fold_repeat0(
         (alt(('+', '-')), term),
         || init,
         |acc, (op, val): (char, i64)| {

@@ -146,8 +146,8 @@
 //! string slice to an integer value is slightly simpler. You can also strip the `_` from the string
 //! slice that is returned, which is demonstrated in the second hexadecimal number parser.
 //!
-//! If you wish to limit the number of digits in a valid integer literal, replace `many1` with
-//! `many_m_n` in the recipes.
+//! If you wish to limit the number of digits in a valid integer literal, replace `repeat1` with
+//! `repeat_m_n` in the recipes.
 //!
 //! #### Hexadecimal
 //!
@@ -157,7 +157,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   combinator::{many0, many1},
+//!   combinator::{repeat0, repeat1},
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
 //!   token::tag,
@@ -166,8 +166,8 @@
 //! fn hexadecimal(input: &str) -> IResult<&str, &str> { // <'a, E: ParseError<&'a str>>
 //!   preceded(
 //!     alt(("0x", "0X")),
-//!     many1(
-//!       terminated(one_of("0123456789abcdefABCDEF"), many0('_').map(|()| ()))
+//!     repeat1(
+//!       terminated(one_of("0123456789abcdefABCDEF"), repeat0('_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
 //!   ).parse_next(input)
 //! }
@@ -179,7 +179,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   combinator::{many0, many1},
+//!   combinator::{repeat0, repeat1},
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
 //!   token::tag,
@@ -188,8 +188,8 @@
 //! fn hexadecimal_value(input: &str) -> IResult<&str, i64> {
 //!   preceded(
 //!     alt(("0x", "0X")),
-//!     many1(
-//!       terminated(one_of("0123456789abcdefABCDEF"), many0('_').map(|()| ()))
+//!     repeat1(
+//!       terminated(one_of("0123456789abcdefABCDEF"), repeat0('_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
 //!   ).try_map(
 //!     |out: &str| i64::from_str_radix(&str::replace(&out, "_", ""), 16)
@@ -203,7 +203,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   combinator::{many0, many1},
+//!   combinator::{repeat0, repeat1},
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
 //!   token::tag,
@@ -212,8 +212,8 @@
 //! fn octal(input: &str) -> IResult<&str, &str> {
 //!   preceded(
 //!     alt(("0o", "0O")),
-//!     many1(
-//!       terminated(one_of("01234567"), many0('_').map(|()| ()))
+//!     repeat1(
+//!       terminated(one_of("01234567"), repeat0('_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
 //!   ).parse_next(input)
 //! }
@@ -225,7 +225,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   combinator::{many0, many1},
+//!   combinator::{repeat0, repeat1},
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
 //!   token::tag,
@@ -234,8 +234,8 @@
 //! fn binary(input: &str) -> IResult<&str, &str> {
 //!   preceded(
 //!     alt(("0b", "0B")),
-//!     many1(
-//!       terminated(one_of("01"), many0('_').map(|()| ()))
+//!     repeat1(
+//!       terminated(one_of("01"), repeat0('_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
 //!   ).parse_next(input)
 //! }
@@ -247,14 +247,14 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   IResult,
-//!   combinator::{many0, many1},
+//!   combinator::{repeat0, repeat1},
 //!   combinator::terminated,
 //!   token::one_of,
 //! };
 //!
 //! fn decimal(input: &str) -> IResult<&str, &str> {
-//!   many1(
-//!     terminated(one_of("0123456789"), many0('_').map(|()| ()))
+//!   repeat1(
+//!     terminated(one_of("0123456789"), repeat0('_').map(|()| ()))
 //!   ).map(|()| ())
 //!     .recognize()
 //!     .parse_next(input)
@@ -269,7 +269,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   combinator::{many0, many1},
+//!   combinator::{repeat0, repeat1},
 //!   combinator::opt,
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
@@ -308,8 +308,8 @@
 //! }
 //!
 //! fn decimal(input: &str) -> IResult<&str, &str> {
-//!   many1(
-//!     terminated(one_of("0123456789"), many0('_').map(|()| ()))
+//!   repeat1(
+//!     terminated(one_of("0123456789"), repeat0('_').map(|()| ()))
 //!   ).
 //!   map(|()| ())
 //!     .recognize()

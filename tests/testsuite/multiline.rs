@@ -2,7 +2,7 @@
 
 use winnow::{
     ascii::{alphanumeric1 as alphanumeric, line_ending as eol},
-    combinator::many0,
+    combinator::repeat0,
     combinator::terminated,
     IResult, Parser,
 };
@@ -20,7 +20,7 @@ pub fn read_line(input: &str) -> IResult<&str, &str> {
 }
 
 pub fn read_lines(input: &str) -> IResult<&str, Vec<&str>> {
-    many0(read_line).parse_next(input)
+    repeat0(read_line).parse_next(input)
 }
 
 #[cfg(feature = "alloc")]
