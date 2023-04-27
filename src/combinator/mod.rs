@@ -60,7 +60,7 @@
 //! - [`Parser::map`][crate::Parser::map]: method to map a function on the result of a parser
 //! - [`Parser::and_then`][crate::Parser::and_then]: Applies a second parser over the output of the first one
 //! - [`Parser::verify_map`][Parser::verify_map]: Maps a function returning an `Option` on the output of a parser
-//! - [`Parser::map_res`][Parser::map_res]: Maps a function returning a `Result` on the output of a parser
+//! - [`Parser::try_map`][Parser::try_map]: Maps a function returning a `Result` on the output of a parser
 //! - [`Parser::parse_to`][crate::Parser::parse_to]: Apply [`std::str::FromStr`] to the output of the parser
 //! - [`not`][not]: Returns a result only if the embedded parser returns `Backtrack` or `Incomplete`. Does not consume the input
 //! - [`opt`][opt]: Make the underlying parser optional
@@ -278,9 +278,12 @@ where
     }
 }
 
-/// Implementation of [`Parser::map_res`]
+#[deprecated(since = "0.4.2", note = "Replaced with `TryMap`")]
+pub use TryMap as MapRes;
+
+/// Implementation of [`Parser::try_map`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct MapRes<F, G, I, O, O2, E, E2>
+pub struct TryMap<F, G, I, O, O2, E, E2>
 where
     F: Parser<I, O, E>,
     G: FnMut(O) -> Result<O2, E2>,
@@ -296,7 +299,7 @@ where
     e2: core::marker::PhantomData<E2>,
 }
 
-impl<F, G, I, O, O2, E, E2> MapRes<F, G, I, O, O2, E, E2>
+impl<F, G, I, O, O2, E, E2> TryMap<F, G, I, O, O2, E, E2>
 where
     F: Parser<I, O, E>,
     G: FnMut(O) -> Result<O2, E2>,
@@ -316,7 +319,7 @@ where
     }
 }
 
-impl<F, G, I, O, O2, E, E2> Parser<I, O2, E> for MapRes<F, G, I, O, O2, E, E2>
+impl<F, G, I, O, O2, E, E2> Parser<I, O2, E> for TryMap<F, G, I, O, O2, E, E2>
 where
     F: Parser<I, O, E>,
     G: FnMut(O) -> Result<O2, E2>,

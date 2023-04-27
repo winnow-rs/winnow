@@ -81,7 +81,7 @@ fn term(i: &str) -> IResult<&str, Expr> {
 fn factor(i: &str) -> IResult<&str, Expr> {
     alt((
         delimited(multispace, digit, multispace)
-            .map_res(FromStr::from_str)
+            .try_map(FromStr::from_str)
             .map(Expr::Value),
         parens,
     ))

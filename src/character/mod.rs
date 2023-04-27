@@ -469,13 +469,13 @@ where
 ///
 /// ## Parsing an integer
 ///
-/// You can use `digit1` in combination with [`Parser::map_res`][crate::Parser::map_res] to parse an integer:
+/// You can use `digit1` in combination with [`Parser::try_map`][crate::Parser::try_map] to parse an integer:
 ///
 /// ```
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed, Parser};
 /// # use winnow::character::digit1;
 /// fn parser(input: &str) -> IResult<&str, u32> {
-///   digit1.map_res(str::parse).parse_next(input)
+///   digit1.try_map(str::parse).parse_next(input)
 /// }
 ///
 /// assert_eq!(parser("416"), Ok(("", 416)));

@@ -1070,8 +1070,8 @@ mod partial {
     fn length_count_test() {
         fn number(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
             digit
-                .map_res(str::from_utf8)
-                .map_res(FromStr::from_str)
+                .try_map(str::from_utf8)
+                .try_map(FromStr::from_str)
                 .parse_next(i)
         }
 
@@ -1111,8 +1111,8 @@ mod partial {
     fn length_data_test() {
         fn number(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
             digit
-                .map_res(str::from_utf8)
-                .map_res(FromStr::from_str)
+                .try_map(str::from_utf8)
+                .try_map(FromStr::from_str)
                 .parse_next(i)
         }
 

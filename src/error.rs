@@ -358,7 +358,7 @@ pub trait ContextError<I, C = &'static str>: Sized {
 
 /// Create a new error with an external error, from [`std::str::FromStr`]
 ///
-/// This trait is required by the [`Parser::map_res`] combinator.
+/// This trait is required by the [`Parser::try_map`] combinator.
 pub trait FromExternalError<I, E> {
     /// Like [`ParseError::from_error_kind`] but also include an external error.
     fn from_external_error(input: I, kind: ErrorKind, e: E) -> Self;
@@ -375,7 +375,7 @@ pub trait ErrorConvert<E> {
 /// This is a low-overhead error that only provides basic information.  For less overhead, see
 /// `()`.  Fore more information, see [`VerboseError`].
 ///:w
-/// **Note:** [context][Parser::context] and inner errors (like from [`Parser::map_res`]) will be
+/// **Note:** [context][Parser::context] and inner errors (like from [`Parser::try_map`]) will be
 /// dropped.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Error<I> {

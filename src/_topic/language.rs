@@ -191,7 +191,7 @@
 //!     many1(
 //!       terminated(one_of("0123456789abcdefABCDEF"), many0('_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
-//!   ).map_res(
+//!   ).try_map(
 //!     |out: &str| i64::from_str_radix(&str::replace(&out, "_", ""), 16)
 //!   ).parse_next(input)
 //! }

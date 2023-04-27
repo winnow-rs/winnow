@@ -365,7 +365,7 @@ pub trait Parser<I, O, E> {
     /// use winnow::character::digit1;
     /// # fn main() {
     ///
-    /// let mut parse = digit1.map_res(|s: &str| s.parse::<u8>());
+    /// let mut parse = digit1.try_map(|s: &str| s.parse::<u8>());
     ///
     /// // the parser will convert the result of digit1 to a number
     /// assert_eq!(parse.parse_next("123"), Ok(("", 123)));
@@ -377,6 +377,18 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parse.parse_next("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::Verify))));
     /// # }
     /// ```
+    fn try_map<G, O2, E2>(self, map: G) -> TryMap<Self, G, I, O, O2, E, E2>
+    where
+        Self: core::marker::Sized,
+        G: FnMut(O) -> Result<O2, E2>,
+        I: Clone,
+        E: FromExternalError<I, E2>,
+    {
+        TryMap::new(self, map)
+    }
+
+    /// Deprecated, see [`Parser::try_map`]
+    #[deprecated(since = "0.4.2", note = "Replaced with `Parser::try_map`")]
     fn map_res<G, O2, E2>(self, map: G) -> MapRes<Self, G, I, O, O2, E, E2>
     where
         Self: core::marker::Sized,
@@ -384,7 +396,7 @@ pub trait Parser<I, O, E> {
         I: Clone,
         E: FromExternalError<I, E2>,
     {
-        MapRes::new(self, map)
+        self.try_map(map)
     }
 
     /// Apply both [`Parser::verify`] and [`Parser::map`].

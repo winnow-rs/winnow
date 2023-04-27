@@ -23,15 +23,15 @@ pub fn categories(i: Stream<'_>) -> IResult<Stream<'_>, HashMap<&str, HashMap<&s
 
 fn category(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
     delimited('[', take_while0(|c| c != b']'), ']')
-        .map_res(str::from_utf8)
+        .try_map(str::from_utf8)
         .parse_next(i)
 }
 
 pub fn key_value(i: Stream<'_>) -> IResult<Stream<'_>, (&str, &str)> {
-    let (i, key) = alphanumeric.map_res(str::from_utf8).parse_next(i)?;
+    let (i, key) = alphanumeric.try_map(str::from_utf8).parse_next(i)?;
     let (i, _) = (opt(space), '=', opt(space)).parse_next(i)?;
     let (i, val) = take_while0(|c| c != b'\n' && c != b';')
-        .map_res(str::from_utf8)
+        .try_map(str::from_utf8)
         .parse_next(i)?;
     let (i, _) = opt((';', take_while0(|c| c != b'\n'))).parse_next(i)?;
     Ok((i, (key, val)))

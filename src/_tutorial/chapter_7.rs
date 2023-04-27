@@ -51,10 +51,10 @@
 //! // ...
 //! # fn parse_digits(input: &str) -> IResult<&str, usize> {
 //! #     dispatch!(take(2usize);
-//! #         "0b" => parse_bin_digits.map_res(|s| usize::from_str_radix(s, 2)),
-//! #         "0o" => parse_oct_digits.map_res(|s| usize::from_str_radix(s, 8)),
-//! #         "0d" => parse_dec_digits.map_res(|s| usize::from_str_radix(s, 10)),
-//! #         "0x" => parse_hex_digits.map_res(|s| usize::from_str_radix(s, 16)),
+//! #         "0b" => parse_bin_digits.try_map(|s| usize::from_str_radix(s, 2)),
+//! #         "0o" => parse_oct_digits.try_map(|s| usize::from_str_radix(s, 8)),
+//! #         "0d" => parse_dec_digits.try_map(|s| usize::from_str_radix(s, 10)),
+//! #         "0x" => parse_hex_digits.try_map(|s| usize::from_str_radix(s, 16)),
 //! #         _ => fail,
 //! #     ).parse_next(input)
 //! # }

@@ -57,7 +57,7 @@ fn factor(i: &str) -> IResult<&str, i64> {
     delimited(
         spaces,
         alt((
-            digits.map_res(FromStr::from_str),
+            digits.try_map(FromStr::from_str),
             delimited('(', expr, ')'),
             parens,
         )),

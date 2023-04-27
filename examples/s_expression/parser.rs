@@ -97,7 +97,7 @@ fn parse_atom(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
 /// of digits but ending the program if it doesn't fit into an i32.
 fn parse_num(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
     alt((
-        digit1.map_res(|digit_str: &str| digit_str.parse::<i32>().map(Atom::Num)),
+        digit1.try_map(|digit_str: &str| digit_str.parse::<i32>().map(Atom::Num)),
         preceded("-", digit1).map(|digit_str: &str| Atom::Num(-digit_str.parse::<i32>().unwrap())),
     ))
     .parse_next(i)
