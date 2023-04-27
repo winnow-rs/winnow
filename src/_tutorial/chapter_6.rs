@@ -14,8 +14,8 @@
 //! ```rust
 //! # use winnow::IResult;
 //! # use winnow::Parser;
-//! # use winnow::bytes::take_while1;
-//! # use winnow::branch::alt;
+//! # use winnow::token::take_while1;
+//! # use winnow::combinator::alt;
 //! use winnow::error::VerboseError;
 //!
 //! fn parse_digits(input: &str) -> IResult<&str, (&str, &str), VerboseError<&str>> {
@@ -89,8 +89,8 @@
 //! ```rust
 //! # use winnow::IResult;
 //! # use winnow::Parser;
-//! # use winnow::bytes::take_while1;
-//! # use winnow::branch::alt;
+//! # use winnow::token::take_while1;
+//! # use winnow::combinator::alt;
 //! # use winnow::error::VerboseError;
 //! use winnow::combinator::cut_err;
 //!
@@ -145,7 +145,7 @@
 #![allow(unused_imports)]
 use super::chapter_1;
 use super::chapter_3;
-use crate::branch::alt;
+use crate::combinator::alt;
 use crate::combinator::cut_err;
 use crate::error::ErrMode;
 use crate::error::Error;

@@ -1,13 +1,10 @@
 //! Combinators applying their child parser multiple times
 
-#[cfg(test)]
-mod tests;
-
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::stream::Accumulate;
-use crate::stream::{Stream, StreamIsPartial, ToUsize, UpdateSlice};
+use crate::stream::Stream;
 use crate::trace::trace;
 use crate::Parser;
 
@@ -27,8 +24,8 @@ use crate::Parser;
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::many0;
-/// use winnow::bytes::tag;
+/// use winnow::combinator::many0;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   many0("abc").parse_next(s)
@@ -73,7 +70,6 @@ where
 
 /// [`Accumulate`] the output of a parser into a container, like `Vec`
 ///
-///
 /// This stops on [`ErrMode::Backtrack`] if there is at least one result.  To instead chain an error up,
 /// see [`cut_err`][crate::combinator::cut_err].
 ///
@@ -92,8 +88,8 @@ where
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::many1;
-/// use winnow::bytes::tag;
+/// use winnow::combinator::many1;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   many1("abc").parse_next(s)
@@ -142,7 +138,8 @@ where
     })
 }
 
-/// Applies the parser `f` until the parser `g` produces a result.
+/// [`Accumulate`] the output of parser `f` into a container, like `Vec`, until the parser `g`
+/// produces a result.
 ///
 /// Returns a tuple of the results of `f` in a `Vec` and the result of `g`.
 ///
@@ -156,8 +153,8 @@ where
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::many_till0;
-/// use winnow::bytes::tag;
+/// use winnow::combinator::many_till0;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, (Vec<&str>, &str)> {
 ///   many_till0("abc", "end").parse_next(s)
@@ -204,7 +201,7 @@ where
     })
 }
 
-/// Alternates between two parsers to produce a list of elements.
+/// [`Accumulate`] the output of a parser, interleaed with `sep`
 ///
 /// This stops when either parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
@@ -219,8 +216,8 @@ where
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::separated0;
-/// use winnow::bytes::tag;
+/// use winnow::combinator::separated0;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   separated0("abc", "|").parse_next(s)
@@ -280,7 +277,7 @@ where
     })
 }
 
-/// Alternates between two parsers to produce a list of elements until [`ErrMode::Backtrack`].
+/// [`Accumulate`] the output of a parser, interleaed with `sep`
 ///
 /// Fails if the element parser does not produce at least one element.$
 ///
@@ -297,8 +294,8 @@ where
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::separated1;
-/// use winnow::bytes::tag;
+/// use winnow::combinator::separated1;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   separated1("abc", "|").parse_next(s)
@@ -368,8 +365,8 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::separated_foldl1;
-/// use winnow::character::dec_int;
+/// use winnow::combinator::separated_foldl1;
+/// use winnow::ascii::dec_int;
 ///
 /// fn parser(s: &str) -> IResult<&str, i32> {
 ///   separated_foldl1(dec_int, "-", |l, _, r| l - r).parse_next(s)
@@ -429,8 +426,8 @@ where
 /// ```
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::separated_foldr1;
-/// use winnow::character::dec_uint;
+/// use winnow::combinator::separated_foldr1;
+/// use winnow::ascii::dec_uint;
 ///
 /// fn parser(s: &str) -> IResult<&str, u32> {
 ///   separated_foldr1(dec_uint, "^", |l: u32, _, r: u32| l.pow(r)).parse_next(s)
@@ -471,7 +468,7 @@ where
     })
 }
 
-/// Repeats the embedded parser `m..=n` times
+/// [`Accumulate`] the output of a parser into a container, like `Vec`
 ///
 /// This stops before `n` when the parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
@@ -493,8 +490,8 @@ where
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::many_m_n;
-/// use winnow::bytes::tag;
+/// use winnow::combinator::many_m_n;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   many_m_n(0, 2, "abc").parse_next(s)
@@ -564,8 +561,8 @@ where
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::count;
-/// use winnow::bytes::tag;
+/// use winnow::combinator::count;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   count("abc", 2).parse_next(s)
@@ -607,7 +604,7 @@ where
     })
 }
 
-/// Runs the embedded parser repeatedly, filling the given slice with results.
+/// Repeats the embedded parser, filling the given slice with results.
 ///
 /// This parser fails if the input runs out before the given slice is full.
 ///
@@ -620,8 +617,8 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::fill;
-/// use winnow::bytes::tag;
+/// use winnow::combinator::fill;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, [&str; 2]> {
 ///   let mut buf = ["", ""];
@@ -680,8 +677,8 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::fold_many0;
-/// use winnow::bytes::tag;
+/// use winnow::combinator::fold_many0;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   fold_many0(
@@ -755,8 +752,8 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::fold_many1;
-/// use winnow::bytes::tag;
+/// use winnow::combinator::fold_many1;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   fold_many1(
@@ -840,8 +837,8 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::fold_many_m_n;
-/// use winnow::bytes::tag;
+/// use winnow::combinator::fold_many_m_n;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   fold_many_m_n(
@@ -907,167 +904,5 @@ where
         }
 
         Ok((input, acc))
-    })
-}
-
-/// Gets a number from the parser and returns a
-/// subslice of the input of that size.
-///
-/// *Complete version*: Returns an error if there is not enough input data.
-///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
-///
-/// # Arguments
-/// * `f` The parser to apply.
-///
-/// # Example
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, stream::Partial};
-/// # use winnow::prelude::*;
-/// use winnow::Bytes;
-/// use winnow::number::be_u16;
-/// use winnow::multi::length_data;
-/// use winnow::bytes::tag;
-///
-/// type Stream<'i> = Partial<&'i Bytes>;
-///
-/// fn stream(b: &[u8]) -> Stream<'_> {
-///     Partial::new(Bytes::new(b))
-/// }
-///
-/// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
-///   length_data(be_u16).parse_next(s)
-/// }
-///
-/// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), &b"abc"[..])));
-/// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
-/// ```
-pub fn length_data<I, N, E, F>(mut f: F) -> impl Parser<I, <I as Stream>::Slice, E>
-where
-    I: StreamIsPartial,
-    I: Stream,
-    N: ToUsize,
-    F: Parser<I, N, E>,
-    E: ParseError<I>,
-{
-    trace("length_data", move |i: I| {
-        let (i, length) = f.parse_next(i)?;
-
-        crate::bytes::take(length).parse_next(i)
-    })
-}
-
-/// Gets a number from the first parser,
-/// takes a subslice of the input of that size,
-/// then applies the second parser on that subslice.
-/// If the second parser returns `Incomplete`,
-/// `length_value` will return an error.
-///
-/// *Complete version*: Returns an error if there is not enough input data.
-///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
-///
-/// # Arguments
-/// * `f` The parser to apply.
-/// * `g` The parser to apply on the subslice.
-///
-/// # Example
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, stream::{Partial, StreamIsPartial}};
-/// # use winnow::prelude::*;
-/// use winnow::Bytes;
-/// use winnow::number::be_u16;
-/// use winnow::multi::length_value;
-/// use winnow::bytes::tag;
-///
-/// type Stream<'i> = Partial<&'i Bytes>;
-///
-/// fn stream(b: &[u8]) -> Stream<'_> {
-///     Partial::new(Bytes::new(b))
-/// }
-///
-/// fn complete_stream(b: &[u8]) -> Stream<'_> {
-///     let mut p = Partial::new(Bytes::new(b));
-///     let _ = p.complete();
-///     p
-/// }
-///
-/// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
-///   length_value(be_u16, "abc").parse_next(s)
-/// }
-///
-/// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), &b"abc"[..])));
-/// assert_eq!(parser(stream(b"\x00\x03123123")), Err(ErrMode::Backtrack(Error::new(complete_stream(&b"123"[..]), ErrorKind::Tag))));
-/// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
-/// ```
-pub fn length_value<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, O, E>
-where
-    I: StreamIsPartial,
-    I: Stream + UpdateSlice,
-    N: ToUsize,
-    F: Parser<I, N, E>,
-    G: Parser<I, O, E>,
-    E: ParseError<I>,
-{
-    trace("length_value", move |i: I| {
-        let (i, data) = length_data(f.by_ref()).parse_next(i)?;
-        let mut data = I::update_slice(i.clone(), data);
-        let _ = data.complete();
-        let (_, o) = g.by_ref().complete_err().parse_next(data)?;
-        Ok((i, o))
-    })
-}
-
-/// Gets a number from the first parser,
-/// then applies the second parser that many times.
-///
-/// # Arguments
-/// * `f` The parser to apply to obtain the count.
-/// * `g` The parser to apply repeatedly.
-///
-/// # Example
-///
-/// ```rust
-/// # #[cfg(feature = "std")] {
-/// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::Bytes;
-/// use winnow::number::u8;
-/// use winnow::multi::length_count;
-/// use winnow::bytes::tag;
-///
-/// type Stream<'i> = &'i Bytes;
-///
-/// fn stream(b: &[u8]) -> Stream<'_> {
-///     Bytes::new(b)
-/// }
-///
-/// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, Vec<&[u8]>> {
-///   length_count(u8.map(|i| {
-///      println!("got number: {}", i);
-///      i
-///   }), "abc").parse_next(s)
-/// }
-///
-/// assert_eq!(parser(stream(b"\x02abcabcabc")), Ok((stream(b"abc"), vec![&b"abc"[..], &b"abc"[..]])));
-/// assert_eq!(parser(stream(b"\x03123123123")), Err(ErrMode::Backtrack(Error::new(stream(b"123123123"), ErrorKind::Tag))));
-/// # }
-/// ```
-pub fn length_count<I, O, C, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, C, E>
-where
-    I: Stream,
-    N: ToUsize,
-    C: Accumulate<O>,
-    F: Parser<I, N, E>,
-    G: Parser<I, O, E>,
-    E: ParseError<I>,
-{
-    trace("length_count", move |i: I| {
-        let (i, n) = f.parse_next(i)?;
-        let n = n.to_usize();
-        count(g.by_ref(), n).parse_next(i)
     })
 }

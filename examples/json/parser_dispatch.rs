@@ -3,16 +3,16 @@ use std::str;
 
 use winnow::prelude::*;
 use winnow::{
-    branch::{alt, dispatch},
-    bytes::{any, none_of, take, take_while0},
-    character::float,
+    ascii::float,
     combinator::cut_err,
     combinator::fail,
     combinator::peek,
     combinator::success,
+    combinator::{alt, dispatch},
+    combinator::{delimited, preceded, separated_pair, terminated},
+    combinator::{fold_many0, separated0},
     error::{ContextError, ParseError},
-    multi::{fold_many0, separated0},
-    sequence::{delimited, preceded, separated_pair, terminated},
+    token::{any, none_of, take, take_while0},
 };
 
 use crate::json::JsonValue;

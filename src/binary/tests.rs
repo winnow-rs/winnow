@@ -295,7 +295,7 @@ mod complete {
 
     #[test]
     fn configurable_endianness() {
-        use crate::number::Endianness;
+        use crate::binary::Endianness;
 
         fn be_tst16(i: &[u8]) -> IResult<&[u8], u16> {
             u16(Endianness::Big).parse_next(i)
@@ -382,7 +382,16 @@ mod partial {
     use crate::error::ErrMode;
     use crate::error::Error;
     use crate::error::Needed;
+    #[cfg(feature = "alloc")]
+    use crate::lib::std::vec::Vec;
     use crate::Partial;
+    use crate::{
+        ascii::digit1 as digit,
+        binary::{be_u16, be_u8},
+        error::ErrorKind,
+        lib::std::str::{self, FromStr},
+        IResult,
+    };
 
     macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
@@ -955,7 +964,7 @@ mod partial {
 
     #[test]
     fn configurable_endianness() {
-        use crate::number::Endianness;
+        use crate::binary::Endianness;
 
         fn be_tst16(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u16> {
             u16(Endianness::Big).parse_next(i)
@@ -1053,6 +1062,153 @@ mod partial {
                 0x00, 0xFF, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00
             ])),
             Ok((Partial::new(&b""[..]), 36_028_874_334_732_032_i64))
+        );
+    }
+
+    #[test]
+    #[cfg(feature = "alloc")]
+    fn length_count_test() {
+        fn number(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
+            digit
+                .try_map(str::from_utf8)
+                .try_map(FromStr::from_str)
+                .parse_next(i)
+        }
+
+        fn cnt(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
+            length_count(number, "abc").parse_next(i)
+        }
+
+        assert_eq!(
+            cnt(Partial::new(&b"2abcabcabcdef"[..])),
+            Ok((Partial::new(&b"abcdef"[..]), vec![&b"abc"[..], &b"abc"[..]]))
+        );
+        assert_eq!(
+            cnt(Partial::new(&b"2ab"[..])),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+        assert_eq!(
+            cnt(Partial::new(&b"3abcab"[..])),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+        assert_eq!(
+            cnt(Partial::new(&b"xxx"[..])),
+            Err(ErrMode::Backtrack(error_position!(
+                Partial::new(&b"xxx"[..]),
+                ErrorKind::Slice
+            )))
+        );
+        assert_eq!(
+            cnt(Partial::new(&b"2abcxxx"[..])),
+            Err(ErrMode::Backtrack(error_position!(
+                Partial::new(&b"xxx"[..]),
+                ErrorKind::Tag
+            )))
+        );
+    }
+
+    #[test]
+    fn length_data_test() {
+        fn number(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
+            digit
+                .try_map(str::from_utf8)
+                .try_map(FromStr::from_str)
+                .parse_next(i)
+        }
+
+        fn take(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
+            length_data(number).parse_next(i)
+        }
+
+        assert_eq!(
+            take(Partial::new(&b"6abcabcabcdef"[..])),
+            Ok((Partial::new(&b"abcdef"[..]), &b"abcabc"[..]))
+        );
+        assert_eq!(
+            take(Partial::new(&b"3ab"[..])),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+        assert_eq!(
+            take(Partial::new(&b"xxx"[..])),
+            Err(ErrMode::Backtrack(error_position!(
+                Partial::new(&b"xxx"[..]),
+                ErrorKind::Slice
+            )))
+        );
+        assert_eq!(
+            take(Partial::new(&b"2abcxxx"[..])),
+            Ok((Partial::new(&b"cxxx"[..]), &b"ab"[..]))
+        );
+    }
+
+    #[test]
+    fn length_value_test() {
+        use crate::stream::StreamIsPartial;
+
+        fn length_value_1(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u16> {
+            length_value(be_u8, be_u16).parse_next(i)
+        }
+        fn length_value_2(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (u8, u8)> {
+            length_value(be_u8, (be_u8, be_u8)).parse_next(i)
+        }
+
+        let mut empty_complete = Partial::new(&b""[..]);
+        let _ = empty_complete.complete();
+
+        let i1 = [0, 5, 6];
+        assert_eq!(
+            length_value_1(Partial::new(&i1)),
+            Err(ErrMode::Backtrack(error_position!(
+                empty_complete,
+                ErrorKind::Slice
+            )))
+        );
+        assert_eq!(
+            length_value_2(Partial::new(&i1)),
+            Err(ErrMode::Backtrack(error_position!(
+                empty_complete,
+                ErrorKind::Token
+            )))
+        );
+
+        let i2 = [1, 5, 6, 3];
+        {
+            let mut middle_complete = Partial::new(&i2[1..2]);
+            let _ = middle_complete.complete();
+            assert_eq!(
+                length_value_1(Partial::new(&i2)),
+                Err(ErrMode::Backtrack(error_position!(
+                    middle_complete,
+                    ErrorKind::Slice
+                )))
+            );
+            assert_eq!(
+                length_value_2(Partial::new(&i2)),
+                Err(ErrMode::Backtrack(error_position!(
+                    empty_complete,
+                    ErrorKind::Token
+                )))
+            );
+        }
+
+        let i3 = [2, 5, 6, 3, 4, 5, 7];
+        assert_eq!(
+            length_value_1(Partial::new(&i3)),
+            Ok((Partial::new(&i3[3..]), 1286))
+        );
+        assert_eq!(
+            length_value_2(Partial::new(&i3)),
+            Ok((Partial::new(&i3[3..]), (5, 6)))
+        );
+
+        let i4 = [3, 5, 6, 3, 4, 5];
+        assert_eq!(
+            length_value_1(Partial::new(&i4)),
+            Ok((Partial::new(&i4[4..]), 1286))
+        );
+        assert_eq!(
+            length_value_2(Partial::new(&i4)),
+            Ok((Partial::new(&i4[4..]), (5, 6)))
         );
     }
 }

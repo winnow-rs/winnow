@@ -2,11 +2,11 @@ use std::str::FromStr;
 
 use winnow::prelude::*;
 use winnow::{
-    branch::alt,
-    bytes::one_of,
-    character::{digit1 as digits, space0 as spaces},
-    multi::fold_many0,
-    sequence::delimited,
+    ascii::{digit1 as digits, space0 as spaces},
+    combinator::alt,
+    combinator::delimited,
+    combinator::fold_many0,
+    token::one_of,
     IResult,
 };
 
@@ -57,7 +57,7 @@ fn factor(i: &str) -> IResult<&str, i64> {
     delimited(
         spaces,
         alt((
-            digits.map_res(FromStr::from_str),
+            digits.try_map(FromStr::from_str),
             delimited('(', expr, ')'),
             parens,
         )),

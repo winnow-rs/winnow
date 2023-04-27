@@ -27,7 +27,7 @@
 //! #    E: winnow::error::ParseError<I>,
 //! {
 //!     // ...some chained combinators...
-//! # winnow::bytes::any
+//! # winnow::token::any
 //! }
 //! ```
 //!
@@ -42,13 +42,13 @@
 //! {
 //!     move |input: I| {
 //!         // ...some chained combinators...
-//! # winnow::bytes::any
+//! # winnow::token::any
 //!             .parse_next(input)
 //!     }
 //! }
 //! ```
 
 #![allow(unused_imports)]
-use crate::branch::alt;
-use crate::branch::dispatch;
+use crate::combinator::alt;
+use crate::combinator::dispatch;
 use crate::stream::BStr;

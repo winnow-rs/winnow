@@ -61,7 +61,7 @@ pub trait FinishIResult<I, O, E> {
     /// ```rust
     /// # #[cfg(feature = "std")] {
     /// use winnow::prelude::*;
-    /// use winnow::character::hex_uint;
+    /// use winnow::ascii::hex_uint;
     /// use winnow::error::Error;
     ///
     /// struct Hex(u64);
@@ -177,7 +177,7 @@ pub enum ErrMode<E> {
     /// The parser failed with a recoverable error (the default).
     ///
     /// For example, a parser for json values might include a
-    /// [`dec_uint`][crate::character::dec_uint] as one case in an [`alt`][crate::branch::alt]
+    /// [`dec_uint`][crate::ascii::dec_uint] as one case in an [`alt`][crate::combinator::alt]
     /// combiantor.  If it fails, the next case should be tried.
     Backtrack(E),
     /// The parser had an unrecoverable error.
@@ -186,7 +186,7 @@ pub enum ErrMode<E> {
     /// other branches. You can use [`cut_err()`][crate::combinator::cut_err] combinator to switch
     /// from `ErrMode::Backtrack` to `ErrMode::Cut`.
     ///
-    /// For example, one case in an [`alt`][crate::branch::alt] combinator found a unique prefix
+    /// For example, one case in an [`alt`][crate::combinator::alt] combinator found a unique prefix
     /// and you want any further errors parsing the case to be reported to the user.
     Cut(E),
 }
@@ -336,7 +336,7 @@ pub trait ParseError<I>: Sized {
 
     /// Combines errors from two different parse branches.
     ///
-    /// For example, this would be used by [`alt`][crate::branch::alt] to report the error from
+    /// For example, this would be used by [`alt`][crate::combinator::alt] to report the error from
     /// each case.
     fn or(self, other: Self) -> Self {
         other
@@ -358,7 +358,7 @@ pub trait ContextError<I, C = &'static str>: Sized {
 
 /// Create a new error with an external error, from [`std::str::FromStr`]
 ///
-/// This trait is required by the [`Parser::map_res`] combinator.
+/// This trait is required by the [`Parser::try_map`] combinator.
 pub trait FromExternalError<I, E> {
     /// Like [`ParseError::from_error_kind`] but also include an external error.
     fn from_external_error(input: I, kind: ErrorKind, e: E) -> Self;
@@ -375,7 +375,7 @@ pub trait ErrorConvert<E> {
 /// This is a low-overhead error that only provides basic information.  For less overhead, see
 /// `()`.  Fore more information, see [`VerboseError`].
 ///:w
-/// **Note:** [context][Parser::context] and inner errors (like from [`Parser::map_res`]) will be
+/// **Note:** [context][Parser::context] and inner errors (like from [`Parser::try_map`]) will be
 /// dropped.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Error<I> {
@@ -473,7 +473,7 @@ impl ErrorConvert<()> for () {
 /// [`convert_error`] provides an example of how to render this for end-users.
 ///
 /// **Note:** This will only capture the last failed branch for combinators like
-/// [`alt`][crate::branch::alt].
+/// [`alt`][crate::combinator::alt].
 #[cfg(feature = "alloc")]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct VerboseError<I> {

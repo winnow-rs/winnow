@@ -3,11 +3,11 @@ mod test {
     use winnow::Parser;
     use winnow::Partial;
     #[cfg(feature = "alloc")]
-    use winnow::{branch::alt, bytes::tag_no_case, multi::many1};
+    use winnow::{combinator::alt, combinator::many1, token::tag_no_case};
     use winnow::{
-        bytes::{take, take_till0, take_till1, take_until0, take_while1},
         error::ErrMode,
         error::{self, Error, ErrorKind},
+        token::{take, take_till0, take_till1, take_until0, take_while1},
         IResult,
     };
 
@@ -112,7 +112,7 @@ mod test {
 
     #[test]
     fn take_incomplete_str() {
-        use winnow::bytes::take;
+        use winnow::token::take;
 
         const INPUT: &str = "βèƒôřèÂßÇá";
 
@@ -161,7 +161,7 @@ mod test {
 
     #[test]
     fn take_until_incomplete_str() {
-        use winnow::bytes::take_until0;
+        use winnow::token::take_until0;
 
         const INPUT: &str = "βèƒôřè";
         const FIND: &str = "βèƒôřèÂßÇ";
@@ -179,7 +179,7 @@ mod test {
 
     #[test]
     fn take_until_error_str() {
-        use winnow::bytes::take_until0;
+        use winnow::token::take_until0;
 
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
         const FIND: &str = "Ráñδô₥";
@@ -203,7 +203,7 @@ mod test {
     fn take_while_str() {
         use winnow::error::Needed;
 
-        use winnow::bytes::take_while0;
+        use winnow::token::take_while0;
 
         fn f(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
             take_while0(is_alphabetic).parse_next(i)
@@ -221,7 +221,7 @@ mod test {
 
     #[test]
     fn take_while_succeed_none_str() {
-        use winnow::bytes::take_while0;
+        use winnow::token::take_while0;
 
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
         const CONSUMED: &str = "";
@@ -256,7 +256,7 @@ mod test {
 
     #[test]
     fn take_while_succeed_some_str() {
-        use winnow::bytes::take_while0;
+        use winnow::token::take_while0;
 
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
         const CONSUMED: &str = "βèƒôřèÂßÇ";
@@ -315,7 +315,7 @@ mod test {
 
     #[test]
     fn take_while1_fn_succeed_str() {
-        use winnow::bytes::take_while1;
+        use winnow::token::take_while1;
 
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
         const CONSUMED: &str = "βèƒôřèÂßÇ";
@@ -381,7 +381,7 @@ mod test {
 
     #[test]
     fn take_while1_fn_fail_str() {
-        use winnow::bytes::take_while1;
+        use winnow::token::take_while1;
 
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
         fn while1_s(c: char) -> bool {

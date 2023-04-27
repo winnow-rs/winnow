@@ -38,9 +38,9 @@
 
 #![allow(unused_imports)] // Used for intra-doc links
 
+use crate::binary::length_value;
+use crate::combinator::many0;
 use crate::error::ErrMode::Incomplete;
 use crate::error::Needed;
-use crate::multi::length_value;
-use crate::multi::many0;
 use crate::stream::Partial;
 use crate::stream::StreamIsPartial;

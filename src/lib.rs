@@ -199,6 +199,8 @@ mod parser;
 
 pub mod stream;
 
+pub mod ascii;
+pub mod binary;
 pub mod bits;
 pub mod branch;
 pub mod bytes;
@@ -207,6 +209,7 @@ pub mod combinator;
 pub mod multi;
 pub mod number;
 pub mod sequence;
+pub mod token;
 pub mod trace;
 
 #[cfg(feature = "unstable-doc")]
@@ -227,7 +230,7 @@ pub mod _tutorial;
 ///
 /// fn parse_data(input: &str) -> IResult<&str, u64> {
 ///     // ...
-/// #   winnow::character::dec_uint(input)
+/// #   winnow::ascii::dec_uint(input)
 /// }
 ///
 /// fn main() {

@@ -9,13 +9,13 @@
 //! - an escape followed by whitespace consumes all whitespace between the
 //!   escape and the next non-whitespace character
 
-use winnow::branch::alt;
-use winnow::bytes::{take_till1, take_while_m_n};
-use winnow::character::multispace1;
+use winnow::ascii::multispace1;
+use winnow::combinator::alt;
+use winnow::combinator::fold_many0;
+use winnow::combinator::{delimited, preceded};
 use winnow::error::{FromExternalError, ParseError};
-use winnow::multi::fold_many0;
 use winnow::prelude::*;
-use winnow::sequence::{delimited, preceded};
+use winnow::token::{take_till1, take_while_m_n};
 
 /// Parse a string. Use a loop of `parse_fragment` and push all of the fragments
 /// into an output string.
@@ -143,12 +143,12 @@ where
         delimited('{', parse_hex, '}'),
     );
 
-    // `map_res` takes the result of a parser and applies a function that returns
+    // `try_map` takes the result of a parser and applies a function that returns
     // a Result. In this case we take the hex bytes from parse_hex and attempt to
     // convert them to a u32.
-    let parse_u32 = parse_delimited_hex.map_res(move |hex| u32::from_str_radix(hex, 16));
+    let parse_u32 = parse_delimited_hex.try_map(move |hex| u32::from_str_radix(hex, 16));
 
-    // verify_map is like map_res, but it takes an Option instead of a Result. If
+    // verify_map is like try_map, but it takes an Option instead of a Result. If
     // the function returns None, verify_map returns an error. In this case, because
     // not all u32 values are valid unicode code points, we have to fallibly
     // convert to char with from_u32.

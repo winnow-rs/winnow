@@ -17,7 +17,7 @@
 //!
 //! ```rust
 //! # use winnow::prelude::*;
-//! # use winnow::bytes::tag;
+//! # use winnow::token::tag;
 //! # type MyStream<'i> = &'i str;
 //! # type Output<'i> = &'i str;
 //! fn parser(i: MyStream<'_>) -> IResult<MyStream<'_>, Output<'_>> {

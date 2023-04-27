@@ -36,8 +36,8 @@ use crate::stream::{AsChar, Compare, Location, Offset, ParseSlice, Stream, Strea
 /// ```
 ///
 /// Additionally, some basic types implement `Parser` as well, including
-/// - `u8` and `char`, see [`winnow::bytes::one_of`][crate::bytes::one_of]
-/// - `&[u8]` and `&str`, see [`winnow::bytes::tag`][crate::bytes::tag]
+/// - `u8` and `char`, see [`winnow::token::one_of`][crate::token::one_of]
+/// - `&[u8]` and `&str`, see [`winnow::token::tag`][crate::token::tag]
 pub trait Parser<I, O, E> {
     /// Parse all of `input`, generating `O` from it
     fn parse(&mut self, input: I) -> Result<O, E>
@@ -65,14 +65,14 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// Because parsers are `FnMut`, they can be called multiple times.  This prevents moving `f`
-    /// into [`length_data`][crate::multi::length_data] and `g` into
+    /// into [`length_data`][crate::binary::length_data] and `g` into
     /// [`Parser::complete_err`]:
     /// ```rust,compile_fail
     /// # use winnow::prelude::*;
     /// # use winnow::IResult;
     /// # use winnow::Parser;
     /// # use winnow::error::ParseError;
-    /// # use winnow::multi::length_data;
+    /// # use winnow::binary::length_data;
     /// pub fn length_value<'i, O, E: ParseError<&'i [u8]>>(
     ///     mut f: impl Parser<&'i [u8], usize, E>,
     ///     mut g: impl Parser<&'i [u8], O, E>
@@ -91,7 +91,7 @@ pub trait Parser<I, O, E> {
     /// # use winnow::IResult;
     /// # use winnow::Parser;
     /// # use winnow::error::ParseError;
-    /// # use winnow::multi::length_data;
+    /// # use winnow::binary::length_data;
     /// pub fn length_value<'i, O, E: ParseError<&'i [u8]>>(
     ///     mut f: impl Parser<&'i [u8], usize, E>,
     ///     mut g: impl Parser<&'i [u8], O, E>
@@ -116,7 +116,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
-    /// use winnow::character::alpha1;
+    /// use winnow::ascii::alpha1;
     /// # fn main() {
     ///
     /// let mut parser = alpha1.value(1234);
@@ -140,7 +140,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
-    /// use winnow::character::alpha1;
+    /// use winnow::ascii::alpha1;
     /// # fn main() {
     ///
     /// let mut parser = alpha1.void();
@@ -163,7 +163,7 @@ pub trait Parser<I, O, E> {
     /// ```rust
     /// # use winnow::IResult;
     /// # use winnow::Parser;
-    /// use winnow::character::alpha1;
+    /// use winnow::ascii::alpha1;
     /// # fn main() {
     ///
     ///  fn parser1(i: &str) -> IResult<&str, &str> {
@@ -191,8 +191,8 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
-    /// use winnow::character::{alpha1};
-    /// use winnow::sequence::separated_pair;
+    /// use winnow::ascii::{alpha1};
+    /// use winnow::combinator::separated_pair;
     /// # fn main() {
     ///
     /// let mut parser = separated_pair(alpha1, ',', alpha1).recognize();
@@ -225,9 +225,9 @@ pub trait Parser<I, O, E> {
     /// ```rust
     /// # use winnow::prelude::*;
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult};
-    /// use winnow::character::{alpha1};
-    /// use winnow::bytes::tag;
-    /// use winnow::sequence::separated_pair;
+    /// use winnow::ascii::{alpha1};
+    /// use winnow::token::tag;
+    /// use winnow::combinator::separated_pair;
     ///
     /// fn inner_parser(input: &str) -> IResult<&str, bool> {
     ///     "1234".value(true).parse_next(input)
@@ -266,8 +266,8 @@ pub trait Parser<I, O, E> {
     /// # use winnow::prelude::*;
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, stream::Stream};
     /// use winnow::stream::Located;
-    /// use winnow::character::alpha1;
-    /// use winnow::sequence::separated_pair;
+    /// use winnow::ascii::alpha1;
+    /// use winnow::combinator::separated_pair;
     ///
     /// let mut parser = separated_pair(alpha1.span(), ',', alpha1.span());
     ///
@@ -298,9 +298,9 @@ pub trait Parser<I, O, E> {
     /// # use winnow::prelude::*;
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, stream::Stream};
     /// use winnow::stream::Located;
-    /// use winnow::character::alpha1;
-    /// use winnow::bytes::tag;
-    /// use winnow::sequence::separated_pair;
+    /// use winnow::ascii::alpha1;
+    /// use winnow::token::tag;
+    /// use winnow::combinator::separated_pair;
     ///
     /// fn inner_parser(input: Located<&str>) -> IResult<Located<&str>, bool> {
     ///     "1234".value(true).parse_next(input)
@@ -336,7 +336,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult,Parser};
-    /// use winnow::character::digit1;
+    /// use winnow::ascii::digit1;
     /// # fn main() {
     ///
     /// let mut parser = digit1.map(|s: &str| s.len());
@@ -362,10 +362,10 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
-    /// use winnow::character::digit1;
+    /// use winnow::ascii::digit1;
     /// # fn main() {
     ///
-    /// let mut parse = digit1.map_res(|s: &str| s.parse::<u8>());
+    /// let mut parse = digit1.try_map(|s: &str| s.parse::<u8>());
     ///
     /// // the parser will convert the result of digit1 to a number
     /// assert_eq!(parse.parse_next("123"), Ok(("", 123)));
@@ -377,6 +377,18 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parse.parse_next("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::Verify))));
     /// # }
     /// ```
+    fn try_map<G, O2, E2>(self, map: G) -> TryMap<Self, G, I, O, O2, E, E2>
+    where
+        Self: core::marker::Sized,
+        G: FnMut(O) -> Result<O2, E2>,
+        I: Clone,
+        E: FromExternalError<I, E2>,
+    {
+        TryMap::new(self, map)
+    }
+
+    /// Deprecated, see [`Parser::try_map`]
+    #[deprecated(since = "0.4.2", note = "Replaced with `Parser::try_map`")]
     fn map_res<G, O2, E2>(self, map: G) -> MapRes<Self, G, I, O, O2, E, E2>
     where
         Self: core::marker::Sized,
@@ -384,7 +396,7 @@ pub trait Parser<I, O, E> {
         I: Clone,
         E: FromExternalError<I, E2>,
     {
-        MapRes::new(self, map)
+        self.try_map(map)
     }
 
     /// Apply both [`Parser::verify`] and [`Parser::map`].
@@ -393,7 +405,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
-    /// use winnow::character::digit1;
+    /// use winnow::ascii::digit1;
     /// # fn main() {
     ///
     /// let mut parse = digit1.verify_map(|s: &str| s.parse::<u8>().ok());
@@ -427,8 +439,8 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
-    /// use winnow::bytes::take;
-    /// use winnow::number::u8;
+    /// use winnow::token::take;
+    /// use winnow::binary::u8;
     ///
     /// fn length_data(input: &[u8]) -> IResult<&[u8], &[u8]> {
     ///     u8.flat_map(take).parse_next(input)
@@ -441,8 +453,8 @@ pub trait Parser<I, O, E> {
     /// which is the same as
     /// ```rust
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
-    /// use winnow::bytes::take;
-    /// use winnow::number::u8;
+    /// use winnow::token::take;
+    /// use winnow::binary::u8;
     ///
     /// fn length_data(input: &[u8]) -> IResult<&[u8], &[u8]> {
     ///     let (input, length) = u8.parse_next(input)?;
@@ -468,8 +480,8 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
-    /// use winnow::character::digit1;
-    /// use winnow::bytes::take;
+    /// use winnow::ascii::digit1;
+    /// use winnow::token::take;
     /// # fn main() {
     ///
     /// let mut digits = take(5u8).and_then(digit1);
@@ -495,7 +507,7 @@ pub trait Parser<I, O, E> {
     /// ```rust
     /// # use winnow::prelude::*;
     /// use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult,Parser};
-    /// use winnow::character::digit1;
+    /// use winnow::ascii::digit1;
     ///
     /// fn parser(input: &str) -> IResult<&str, u64> {
     ///     digit1.parse_to().parse_next(input)
@@ -527,7 +539,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
-    /// # use winnow::character::alpha1;
+    /// # use winnow::ascii::alpha1;
     /// # fn main() {
     ///
     /// let mut parser = alpha1.verify(|s: &str| s.len() == 4);
@@ -572,7 +584,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, stream::Partial, Parser};
-    /// # use winnow::bytes::take;
+    /// # use winnow::token::take;
     /// # fn main() {
     ///
     /// let mut parser = take(5u8).complete_err();
@@ -607,7 +619,7 @@ where
     }
 }
 
-/// This is a shortcut for [`one_of`][crate::bytes::one_of].
+/// This is a shortcut for [`one_of`][crate::token::one_of].
 ///
 /// # Example
 ///
@@ -629,11 +641,11 @@ where
     E: ParseError<I>,
 {
     fn parse_next(&mut self, i: I) -> IResult<I, u8, E> {
-        crate::bytes::one_of(*self).parse_next(i)
+        crate::token::one_of(*self).parse_next(i)
     }
 }
 
-/// This is a shortcut for [`one_of`][crate::bytes::one_of].
+/// This is a shortcut for [`one_of`][crate::token::one_of].
 ///
 /// # Example
 ///
@@ -656,18 +668,18 @@ where
     E: ParseError<I>,
 {
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Stream>::Token, E> {
-        crate::bytes::one_of(*self).parse_next(i)
+        crate::token::one_of(*self).parse_next(i)
     }
 }
 
-/// This is a shortcut for [`tag`][crate::bytes::tag].
+/// This is a shortcut for [`tag`][crate::token::tag].
 ///
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
-/// # use winnow::branch::alt;
-/// # use winnow::bytes::take;
+/// # use winnow::combinator::alt;
+/// # use winnow::token::take;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   alt((&"Hello"[..], take(5usize))).parse_next(s)
@@ -684,18 +696,18 @@ where
     I: Stream,
 {
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Stream>::Slice, E> {
-        crate::bytes::tag(*self).parse_next(i)
+        crate::token::tag(*self).parse_next(i)
     }
 }
 
-/// This is a shortcut for [`tag`][crate::bytes::tag].
+/// This is a shortcut for [`tag`][crate::token::tag].
 ///
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
-/// # use winnow::branch::alt;
-/// # use winnow::bytes::take;
+/// # use winnow::combinator::alt;
+/// # use winnow::token::take;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   alt((b"Hello", take(5usize))).parse_next(s)
@@ -712,18 +724,18 @@ where
     I: Stream,
 {
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Stream>::Slice, E> {
-        crate::bytes::tag(*self).parse_next(i)
+        crate::token::tag(*self).parse_next(i)
     }
 }
 
-/// This is a shortcut for [`tag`][crate::bytes::tag].
+/// This is a shortcut for [`tag`][crate::token::tag].
 ///
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}};
-/// # use winnow::branch::alt;
-/// # use winnow::bytes::take;
+/// # use winnow::combinator::alt;
+/// # use winnow::token::take;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
 ///   alt(("Hello", take(5usize))).parse_next(s)
@@ -740,7 +752,7 @@ where
     I: Stream,
 {
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Stream>::Slice, E> {
-        crate::bytes::tag(*self).parse_next(i)
+        crate::token::tag(*self).parse_next(i)
     }
 }
 
@@ -818,12 +830,12 @@ impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::bytes::take;
+    use crate::binary::be_u16;
     use crate::error::ErrMode;
     use crate::error::Error;
     use crate::error::ErrorKind;
     use crate::error::Needed;
-    use crate::number::be_u16;
+    use crate::token::take;
     use crate::Partial;
 
     #[doc(hidden)]
@@ -852,7 +864,7 @@ mod tests {
 
     #[test]
     fn single_element_tuples() {
-        use crate::character::alpha1;
+        use crate::ascii::alpha1;
         use crate::error::ErrorKind;
 
         let mut parser = (alpha1,);

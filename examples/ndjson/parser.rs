@@ -3,15 +3,15 @@ use std::str;
 
 use winnow::prelude::*;
 use winnow::{
-    branch::alt,
-    bytes::{any, none_of, take, take_while0},
-    character::float,
-    character::line_ending,
+    ascii::float,
+    ascii::line_ending,
+    combinator::alt,
     combinator::cut_err,
+    combinator::{delimited, preceded, separated_pair, terminated},
+    combinator::{fold_many0, separated0},
     error::{ContextError, ParseError},
-    multi::{fold_many0, separated0},
-    sequence::{delimited, preceded, separated_pair, terminated},
     stream::Partial,
+    token::{any, none_of, take, take_while0},
 };
 
 #[derive(Debug, PartialEq, Clone)]

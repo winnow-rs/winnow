@@ -1,8 +1,8 @@
-use winnow::branch::alt;
-use winnow::character::digit1 as digit;
+use winnow::ascii::digit1 as digit;
+use winnow::combinator::alt;
+use winnow::combinator::delimited;
 use winnow::combinator::opt;
 use winnow::prelude::*;
-use winnow::sequence::delimited;
 use winnow::IResult;
 
 use std::str;
@@ -14,8 +14,8 @@ fn unsigned_float(i: &[u8]) -> IResult<&[u8], f32> {
         delimited(opt(digit), ".", digit),
     ))
     .recognize();
-    let float_str = float_bytes.map_res(str::from_utf8);
-    float_str.map_res(FromStr::from_str).parse_next(i)
+    let float_str = float_bytes.try_map(str::from_utf8);
+    float_str.try_map(FromStr::from_str).parse_next(i)
 }
 
 fn float(i: &[u8]) -> IResult<&[u8], f32> {

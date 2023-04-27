@@ -1,4 +1,4 @@
-//! Parsers recognizing bytes streams
+//! Parsers extracting tokens from the stream
 
 #[cfg(test)]
 mod tests;
@@ -26,7 +26,7 @@ use crate::Parser;
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{bytes::any, error::ErrMode, error::{Error, ErrorKind}};
+/// # use winnow::{token::any, error::ErrMode, error::{Error, ErrorKind}};
 /// # use winnow::prelude::*;
 /// fn parser(input: &str) -> IResult<&str, char> {
 ///     any.parse_next(input)
@@ -37,7 +37,7 @@ use crate::Parser;
 /// ```
 ///
 /// ```rust
-/// # use winnow::{bytes::any, error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::{token::any, error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// assert_eq!(any::<_, Error<_>>.parse_next(Partial::new("abc")), Ok((Partial::new("bc"),'a')));
@@ -92,7 +92,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
 ///   "Hello".parse_next(s)
@@ -107,7 +107,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::Partial;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   "Hello".parse_next(s)
@@ -189,7 +189,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::bytes::tag_no_case;
+/// use winnow::token::tag_no_case;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
 ///   tag_no_case("hello").parse_next(s)
@@ -206,7 +206,7 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::bytes::tag_no_case;
+/// use winnow::token::tag_no_case;
 ///
 /// fn parser(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   tag_no_case("hello").parse_next(s)
@@ -297,7 +297,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
-/// # use winnow::bytes::one_of;
+/// # use winnow::token::one_of;
 /// assert_eq!(one_of::<_, _, Error<_>>("abc").parse_next("b"), Ok(("", 'b')));
 /// assert_eq!(one_of::<_, _, Error<_>>("a").parse_next("bc"), Err(ErrMode::Backtrack(Error::new("bc", ErrorKind::Verify))));
 /// assert_eq!(one_of::<_, _, Error<_>>("a").parse_next(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
@@ -314,7 +314,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
-/// # use winnow::bytes::one_of;
+/// # use winnow::token::one_of;
 /// assert_eq!(one_of::<_, _, Error<_>>("abc").parse_next(Partial::new("b")), Ok((Partial::new(""), 'b')));
 /// assert_eq!(one_of::<_, _, Error<_>>("a").parse_next(Partial::new("bc")), Err(ErrMode::Backtrack(Error::new(Partial::new("bc"), ErrorKind::Verify))));
 /// assert_eq!(one_of::<_, _, Error<_>>("a").parse_next(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
@@ -354,7 +354,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::prelude::*;
-/// # use winnow::bytes::none_of;
+/// # use winnow::token::none_of;
 /// assert_eq!(none_of::<_, _, Error<_>>("abc").parse_next("z"), Ok(("", 'z')));
 /// assert_eq!(none_of::<_, _, Error<_>>("ab").parse_next("a"), Err(ErrMode::Backtrack(Error::new("a", ErrorKind::Verify))));
 /// assert_eq!(none_of::<_, _, Error<_>>("a").parse_next(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
@@ -364,7 +364,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// # use winnow::bytes::none_of;
+/// # use winnow::token::none_of;
 /// assert_eq!(none_of::<_, _, Error<_>>("abc").parse_next(Partial::new("z")), Ok((Partial::new(""), 'z')));
 /// assert_eq!(none_of::<_, _, Error<_>>("ab").parse_next(Partial::new("a")), Err(ErrMode::Backtrack(Error::new(Partial::new("a"), ErrorKind::Verify))));
 /// assert_eq!(none_of::<_, _, Error<_>>("a").parse_next(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
@@ -387,14 +387,14 @@ where
 ///
 /// *Partial version*: will return a `ErrMode::Incomplete(Needed::new(1))` if the pattern reaches the end of the input.
 ///
-/// To recognize a series of tokens, use [`many0`][crate::multi::many0] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`][crate::Parser::recognize].
+/// To recognize a series of tokens, use [`many0`][crate::combinator::many0] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`][crate::Parser::recognize].
 ///
 /// # Example
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::bytes::take_while0;
+/// use winnow::token::take_while0;
 /// use winnow::stream::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
@@ -411,7 +411,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::bytes::take_while0;
+/// use winnow::token::take_while0;
 /// use winnow::stream::AsChar;
 ///
 /// fn alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
@@ -469,14 +469,14 @@ where
 ///
 /// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` or if the pattern reaches the end of the input.
 ///
-/// To recognize a series of tokens, use [`many1`][crate::multi::many1] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`][crate::Parser::recognize].
+/// To recognize a series of tokens, use [`many1`][crate::combinator::many1] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`][crate::Parser::recognize].
 ///
 /// # Example
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::bytes::take_while1;
+/// use winnow::token::take_while1;
 /// use winnow::stream::AsChar;
 ///
 /// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
@@ -502,7 +502,7 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::bytes::take_while1;
+/// use winnow::token::take_while1;
 /// use winnow::stream::AsChar;
 ///
 /// fn alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
@@ -573,14 +573,14 @@ where
 ///
 /// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))`  if the pattern reaches the end of the input or is too short.
 ///
-/// To recognize a series of tokens, use [`many_m_n`][crate::multi::many_m_n] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`][crate::Parser::recognize].
+/// To recognize a series of tokens, use [`many_m_n`][crate::combinator::many_m_n] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`][crate::Parser::recognize].
 ///
 /// # Example
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::bytes::take_while_m_n;
+/// use winnow::token::take_while_m_n;
 /// use winnow::stream::AsChar;
 ///
 /// fn short_alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
@@ -598,7 +598,7 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::bytes::take_while_m_n;
+/// use winnow::token::take_while_m_n;
 /// use winnow::stream::AsChar;
 ///
 /// fn short_alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
@@ -720,7 +720,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::bytes::take_till0;
+/// use winnow::token::take_till0;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
 ///   take_till0(|c| c == ':').parse_next(s)
@@ -736,7 +736,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::bytes::take_till0;
+/// use winnow::token::take_till0;
 ///
 /// fn till_colon(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   take_till0(|c| c == ':').parse_next(s)
@@ -800,7 +800,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::bytes::take_till1;
+/// use winnow::token::take_till1;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
 ///   take_till1(|c| c == ':').parse_next(s)
@@ -825,7 +825,7 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::bytes::take_till1;
+/// use winnow::token::take_till1;
 ///
 /// fn till_colon(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   take_till1(|c| c == ':').parse_next(s)
@@ -904,7 +904,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::bytes::take;
+/// use winnow::token::take;
 ///
 /// fn take6(s: &str) -> IResult<&str, &str> {
 ///   take(6usize).parse_next(s)
@@ -923,7 +923,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// use winnow::error::Error;
-/// use winnow::bytes::take;
+/// use winnow::token::take;
 ///
 /// assert_eq!(take::<_, _, Error<_>>(1usize).parse_next("💙"), Ok(("", "💙")));
 /// assert_eq!(take::<_, _, Error<_>>(1usize).parse_next("💙".as_bytes()), Ok((b"\x9F\x92\x99".as_ref(), b"\xF0".as_ref())));
@@ -933,7 +933,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
-/// use winnow::bytes::take;
+/// use winnow::token::take;
 ///
 /// fn take6(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   take(6usize).parse_next(s)
@@ -1002,7 +1002,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::bytes::take_until0;
+/// use winnow::token::take_until0;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
 ///   take_until0("eof").parse_next(s)
@@ -1018,7 +1018,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::bytes::take_until0;
+/// use winnow::token::take_until0;
 ///
 /// fn until_eof(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   take_until0("eof").parse_next(s)
@@ -1090,7 +1090,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::bytes::take_until1;
+/// use winnow::token::take_until1;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
 ///   take_until1("eof").parse_next(s)
@@ -1107,7 +1107,7 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::bytes::take_until1;
+/// use winnow::token::take_until1;
 ///
 /// fn until_eof(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   take_until1("eof").parse_next(s)

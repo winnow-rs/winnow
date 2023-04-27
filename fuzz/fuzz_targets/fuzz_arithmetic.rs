@@ -4,11 +4,10 @@ use std::str;
 
 use winnow::prelude::*;
 use winnow::{
-    branch::alt,
-    bytes::tag,
-    character::{digit1 as digit, space0 as space},
-    multi::fold_many0,
-    sequence::{delimited, terminated},
+    ascii::{digit1 as digit, space0 as space},
+    combinator::alt,
+    combinator::fold_many0,
+    combinator::{delimited, terminated},
 };
 
 use std::cell::RefCell;

@@ -3,14 +3,14 @@ use super::*;
 #[cfg(feature = "std")]
 use proptest::prelude::*;
 
-use crate::bytes::tag;
+use crate::binary::length_data;
+use crate::combinator::delimited;
 use crate::error::ErrMode;
 use crate::error::Error;
 use crate::error::ErrorKind;
 use crate::error::Needed;
-use crate::multi::length_data;
-use crate::sequence::delimited;
 use crate::stream::AsChar;
+use crate::token::tag;
 use crate::IResult;
 use crate::Parser;
 use crate::Partial;
@@ -237,7 +237,7 @@ fn partial_take_until_incomplete_s() {
 
 #[test]
 fn partial_recognize() {
-    use crate::character::{
+    use crate::ascii::{
         alpha1 as alpha, alphanumeric1 as alphanumeric, digit1 as digit, hex_digit1 as hex_digit,
         multispace1 as multispace, oct_digit1 as oct_digit, space1 as space,
     };
@@ -571,7 +571,7 @@ fn partial_recognize_take_while0() {
 
 #[test]
 fn partial_length_bytes() {
-    use crate::number::le_u8;
+    use crate::binary::le_u8;
 
     fn x(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         length_data(le_u8).parse_next(i)

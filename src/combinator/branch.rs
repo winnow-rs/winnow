@@ -1,14 +1,7 @@
-//! Choice combinators
-
-#[cfg(test)]
-mod tests;
-
-use crate::error::ErrMode;
-use crate::error::ErrorKind;
-use crate::error::ParseError;
+use crate::error::{ErrMode, ErrorKind, ParseError};
 use crate::stream::Stream;
 use crate::trace::trace;
-use crate::{IResult, Parser};
+use crate::*;
 
 #[doc(inline)]
 pub use crate::dispatch;
@@ -34,8 +27,8 @@ pub trait Alt<I, O, E> {
 /// ```rust
 /// # use winnow::{error::ErrMode, error::Error,error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::character::{alpha1, digit1};
-/// use winnow::branch::alt;
+/// use winnow::ascii::{alpha1, digit1};
+/// use winnow::combinator::alt;
 /// # fn main() {
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///   alt((alpha1, digit1)).parse_next(input)
@@ -75,8 +68,8 @@ pub trait Permutation<I, O, E> {
 /// ```rust
 /// # use winnow::{error::ErrMode,error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::character::{alpha1, digit1};
-/// use winnow::branch::permutation;
+/// use winnow::ascii::{alpha1, digit1};
+/// use winnow::combinator::permutation;
 /// # fn main() {
 /// fn parser(input: &str) -> IResult<&str, (&str, &str)> {
 ///   permutation((alpha1, digit1)).parse_next(input)
@@ -98,8 +91,8 @@ pub trait Permutation<I, O, E> {
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}};
 /// # use winnow::prelude::*;
-/// use winnow::branch::permutation;
-/// use winnow::bytes::any;
+/// use winnow::combinator::permutation;
+/// use winnow::token::any;
 ///
 /// fn parser(input: &str) -> IResult<&str, (char, char)> {
 ///   permutation((any, 'a')).parse_next(input)

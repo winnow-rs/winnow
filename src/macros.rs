@@ -1,7 +1,7 @@
 /// `match` for parsers
 ///
 /// When parsers have unique prefixes to test for, this offers better performance over
-/// [`alt`][crate::branch::alt] though it might be at the cost of duplicating parts of your grammar
+/// [`alt`][crate::combinator::alt] though it might be at the cost of duplicating parts of your grammar
 /// if you needed to [`peek`][crate::combinator::peek].
 ///
 /// For tight control over the error in a catch-all case, use [`fail`][crate::combinator::fail].
@@ -10,10 +10,10 @@
 ///
 /// ```rust
 /// use winnow::prelude::*;
-/// use winnow::branch::dispatch;
-/// # use winnow::bytes::any;
+/// use winnow::combinator::dispatch;
+/// # use winnow::token::any;
 /// # use winnow::combinator::peek;
-/// # use winnow::sequence::preceded;
+/// # use winnow::combinator::preceded;
 /// # use winnow::combinator::success;
 /// # use winnow::combinator::fail;
 ///

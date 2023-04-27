@@ -26,9 +26,9 @@ mod parse_int {
     use winnow::prelude::*;
     use winnow::Partial;
     use winnow::{
-        character::{digit1 as digit, space1 as space},
+        ascii::{digit1 as digit, space1 as space},
+        combinator::many0,
         combinator::opt,
-        multi::many0,
         IResult,
     };
 
@@ -69,15 +69,15 @@ mod parse_int {
 
 #[test]
 fn usize_length_bytes_issue() {
-    use winnow::multi::length_data;
-    use winnow::number::be_u16;
+    use winnow::binary::be_u16;
+    use winnow::binary::length_data;
     #[allow(clippy::type_complexity)]
     let _: IResult<Partial<&[u8]>, &[u8]> = length_data(be_u16).parse_next(Partial::new(b"012346"));
 }
 
 #[test]
 fn take_till0_issue() {
-    use winnow::bytes::take_till0;
+    use winnow::token::take_till0;
 
     fn nothing(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         take_till0(|_| true).parse_next(i)
@@ -95,7 +95,7 @@ fn take_till0_issue() {
 
 #[test]
 fn issue_655() {
-    use winnow::character::{line_ending, not_line_ending};
+    use winnow::ascii::{line_ending, not_line_ending};
     fn twolines(i: Partial<&str>) -> IResult<Partial<&str>, (&str, &str)> {
         let (i, l1) = not_line_ending(i)?;
         let (i, _) = line_ending(i)?;
@@ -125,17 +125,17 @@ fn issue_655() {
 
 #[cfg(feature = "alloc")]
 fn issue_717(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-    use winnow::bytes::{tag, take_till1};
-    use winnow::multi::separated0;
+    use winnow::combinator::separated0;
+    use winnow::token::{tag, take_till1};
 
     separated0(take_till1([0x0u8]), tag([0x0])).parse_next(i)
 }
 
 mod issue_647 {
-    use winnow::bytes::tag;
-    use winnow::multi::separated0;
+    use winnow::combinator::separated0;
     use winnow::prelude::*;
-    use winnow::{error::ErrMode, error::Error, number::be_f64, IResult};
+    use winnow::token::tag;
+    use winnow::{binary::be_f64, error::ErrMode, error::Error, IResult};
     pub type Stream<'a> = winnow::Partial<&'a [u8]>;
 
     #[derive(PartialEq, Debug, Clone)]
@@ -164,11 +164,11 @@ mod issue_647 {
 #[cfg_attr(debug_assertions, should_panic)]
 fn issue_848_overflow_incomplete_bits_to_bytes() {
     fn take(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        use winnow::bytes::take;
+        use winnow::token::take;
         take(0x2000000000000000_usize).parse_next(i)
     }
     fn parser(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        use winnow::bits::{bits, bytes};
+        use winnow::binary::bits::{bits, bytes};
 
         bits(bytes(take)).parse_next(i)
     }
@@ -187,7 +187,7 @@ fn issue_942() {
     pub fn parser<'a, E: ParseError<&'a str> + ContextError<&'a str, &'static str>>(
         i: &'a str,
     ) -> IResult<&'a str, usize, E> {
-        use winnow::multi::many0;
+        use winnow::combinator::many0;
         many0('a'.context("char_a")).parse_next(i)
     }
     assert_eq!(parser::<()>("aaa"), Ok(("", 3)));
@@ -196,7 +196,7 @@ fn issue_942() {
 #[test]
 #[cfg(feature = "std")]
 fn issue_many_m_n_with_zeros() {
-    use winnow::multi::many_m_n;
+    use winnow::combinator::many_m_n;
     let mut parser = many_m_n::<_, _, Vec<_>, (), _>(0, 0, 'a');
     assert_eq!(parser.parse_next("aaa"), Ok(("aaa", vec![])));
 }
@@ -219,7 +219,7 @@ fn issue_1027_convert_error_panic_nonempty() {
 
 #[test]
 fn issue_1231_bits_expect_fn_closure() {
-    use winnow::bits::{bits, take};
+    use winnow::binary::bits::{bits, take};
     use winnow::error::Error;
     pub fn example(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
         bits::<_, _, Error<_>, _, _>((take(1usize), take(1usize))).parse_next(input)
@@ -229,15 +229,15 @@ fn issue_1231_bits_expect_fn_closure() {
 
 #[test]
 fn issue_1282_findtoken_char() {
-    use winnow::bytes::one_of;
     use winnow::error::Error;
+    use winnow::token::one_of;
     let mut parser = one_of::<_, _, Error<_>>(&['a', 'b', 'c'][..]);
     assert_eq!(parser.parse_next("aaa"), Ok(("aa", 'a')));
 }
 
 #[test]
 fn issue_x_looser_fill_bounds() {
-    use winnow::{character::digit1, multi::fill, sequence::terminated};
+    use winnow::{ascii::digit1, combinator::fill, combinator::terminated};
 
     fn fill_pair(i: &[u8]) -> IResult<&[u8], [&[u8]; 2]> {
         let mut buf = [&[][..], &[][..]];
@@ -265,7 +265,7 @@ fn issue_x_looser_fill_bounds() {
 #[cfg(feature = "std")]
 fn issue_1459_clamp_capacity() {
     // shouldn't panic
-    use winnow::multi::many_m_n;
+    use winnow::combinator::many_m_n;
     let mut parser = many_m_n::<_, _, Vec<_>, (), _>(usize::MAX, usize::MAX, 'a');
     assert_eq!(
         parser.parse_next("a"),
@@ -273,7 +273,7 @@ fn issue_1459_clamp_capacity() {
     );
 
     // shouldn't panic
-    use winnow::multi::count;
+    use winnow::combinator::count;
     let mut parser = count::<_, _, Vec<_>, (), _>('a', usize::MAX);
     assert_eq!(
         parser.parse_next("a"),
@@ -283,7 +283,7 @@ fn issue_1459_clamp_capacity() {
 
 #[test]
 fn issue_1617_count_parser_returning_zero_size() {
-    use winnow::{bytes::tag, error::Error, multi::count};
+    use winnow::{combinator::count, error::Error, token::tag};
 
     // previously, `count()` panicked if the parser had type `O = ()`
     let parser = tag::<_, _, Error<&str>>("abc").map(|_| ());

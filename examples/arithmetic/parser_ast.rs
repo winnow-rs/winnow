@@ -5,10 +5,10 @@ use std::str::FromStr;
 
 use winnow::prelude::*;
 use winnow::{
-    branch::alt,
-    character::{digit1 as digit, multispace0 as multispace},
-    multi::many0,
-    sequence::{delimited, preceded},
+    ascii::{digit1 as digit, multispace0 as multispace},
+    combinator::alt,
+    combinator::many0,
+    combinator::{delimited, preceded},
     IResult,
 };
 
@@ -81,7 +81,7 @@ fn term(i: &str) -> IResult<&str, Expr> {
 fn factor(i: &str) -> IResult<&str, Expr> {
     alt((
         delimited(multispace, digit, multispace)
-            .map_res(FromStr::from_str)
+            .try_map(FromStr::from_str)
             .map(Expr::Value),
         parens,
     ))

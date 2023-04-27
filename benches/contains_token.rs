@@ -1,10 +1,10 @@
 use criterion::black_box;
 
-use winnow::branch::alt;
-use winnow::bytes::take_till1;
-use winnow::bytes::take_while1;
-use winnow::multi::many0;
+use winnow::combinator::alt;
+use winnow::combinator::many0;
 use winnow::prelude::*;
+use winnow::token::take_till1;
+use winnow::token::take_while1;
 
 fn contains_token(c: &mut criterion::Criterion) {
     let data = [

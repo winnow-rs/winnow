@@ -1,4 +1,4 @@
-use winnow::multi::many0;
+use winnow::combinator::many0;
 use winnow::prelude::*;
 
 mod parser;

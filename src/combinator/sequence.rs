@@ -1,14 +1,9 @@
-//! Combinators applying parsers in sequence
-
-#[cfg(test)]
-mod tests;
-
 use crate::error::ParseError;
 use crate::stream::Stream;
 use crate::trace::trace;
-use crate::Parser;
+use crate::*;
 
-/// Apply two parsers, only returning the output from the second.
+/// Sequence two parsers, only returning the output from the second.
 ///
 /// # Arguments
 /// * `first` The opening parser.
@@ -20,8 +15,8 @@ use crate::Parser;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::sequence::preceded;
-/// use winnow::bytes::tag;
+/// use winnow::combinator::preceded;
+/// use winnow::token::tag;
 ///
 /// let mut parser = preceded("abc", "efg");
 ///
@@ -46,7 +41,7 @@ where
     })
 }
 
-/// Apply two parsers, only returning the output of the first.
+/// Sequence two parsers, only returning the output of the first.
 ///
 /// # Arguments
 /// * `first` The first parser to apply.
@@ -58,8 +53,8 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::sequence::terminated;
-/// use winnow::bytes::tag;
+/// use winnow::combinator::terminated;
+/// use winnow::token::tag;
 ///
 /// let mut parser = terminated("abc", "efg");
 ///
@@ -84,7 +79,7 @@ where
     })
 }
 
-/// Apply three parsers, only returning the values of the first and third.
+/// Sequence three parsers, only returning the values of the first and third.
 ///
 /// # Arguments
 /// * `first` The first parser to apply.
@@ -97,8 +92,8 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
 /// # use winnow::prelude::*;
-/// use winnow::sequence::separated_pair;
-/// use winnow::bytes::tag;
+/// use winnow::combinator::separated_pair;
+/// use winnow::token::tag;
 ///
 /// let mut parser = separated_pair("abc", "|", "efg");
 ///
@@ -125,7 +120,7 @@ where
     })
 }
 
-/// Apply three parsers, only returning the output of the second.
+/// Sequence three parsers, only returning the output of the second.
 ///
 /// # Arguments
 /// * `first` The first parser to apply and discard.
@@ -138,8 +133,8 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
 /// # use winnow::prelude::*;
-/// use winnow::sequence::delimited;
-/// use winnow::bytes::tag;
+/// use winnow::combinator::delimited;
+/// use winnow::token::tag;
 ///
 /// let mut parser = delimited("(", "abc", ")");
 ///

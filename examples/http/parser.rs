@@ -1,4 +1,4 @@
-use winnow::{bytes::take_while1, character::line_ending, multi::many1, IResult, Parser};
+use winnow::{ascii::line_ending, combinator::many1, token::take_while1, IResult, Parser};
 
 pub type Stream<'i> = &'i [u8];
 

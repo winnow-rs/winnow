@@ -18,7 +18,7 @@ use crate::{IResult, Parser};
 /// ```
 /// use winnow::prelude::*;
 /// use winnow::Bytes;
-/// use winnow::bits::{bits, take};
+/// use winnow::binary::bits::{bits, take};
 /// use winnow::error::Error;
 ///
 /// type Stream<'i> = &'i Bytes;
@@ -74,7 +74,7 @@ where
 /// ```
 /// use winnow::prelude::*;
 /// use winnow::Bytes;
-/// use winnow::bits::{bits, bytes, take};
+/// use winnow::binary::bits::{bits, bytes, take};
 /// use winnow::combinator::rest;
 /// use winnow::error::Error;
 ///
@@ -132,7 +132,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
 /// # use winnow::error::{Error, ErrorKind};
-/// use winnow::bits::take;
+/// use winnow::binary::bits::take;
 ///
 /// type Stream<'i> = &'i Bytes;
 ///
@@ -276,7 +276,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
 /// # use winnow::error::{Error, ErrorKind};
-/// use winnow::bits::tag;
+/// use winnow::binary::bits::tag;
 ///
 /// type Stream<'i> = &'i Bytes;
 ///
@@ -355,7 +355,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
 /// # use winnow::error::{Error, ErrorKind};
-/// use winnow::bits::bool;
+/// use winnow::binary::bits::bool;
 ///
 /// type Stream<'i> = &'i Bytes;
 ///

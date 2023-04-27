@@ -10,7 +10,7 @@
 //! Now that we can create more interesting parsers, we can sequence them together, like:
 //!
 //! ```rust
-//! # use winnow::bytes::take_while1;
+//! # use winnow::token::take_while1;
 //! # use winnow::Parser;
 //! # use winnow::IResult;
 //! #
@@ -40,7 +40,7 @@
 //!
 //! To sequence these together, you can just put them in a tuple:
 //! ```rust
-//! # use winnow::bytes::take_while1;
+//! # use winnow::token::take_while1;
 //! # use winnow::Parser;
 //! # use winnow::IResult;
 //! #
@@ -75,10 +75,10 @@
 //! Frequently, you won't care about the tag and you can instead use one of the provided combinators,
 //! like [`preceded`]:
 //! ```rust
-//! # use winnow::bytes::take_while1;
+//! # use winnow::token::take_while1;
 //! # use winnow::Parser;
 //! # use winnow::IResult;
-//! use winnow::sequence::preceded;
+//! use winnow::combinator::preceded;
 //!
 //! # fn parse_prefix(input: &str) -> IResult<&str, &str> {
 //! #     "0x".parse_next(input)
@@ -120,8 +120,8 @@
 //! ```rust
 //! # use winnow::IResult;
 //! # use winnow::Parser;
-//! # use winnow::bytes::take_while1;
-//! use winnow::branch::alt;
+//! # use winnow::token::take_while1;
+//! use winnow::combinator::alt;
 //!
 //! fn parse_digits(input: &str) -> IResult<&str, (&str, &str)> {
 //!     alt((
@@ -174,14 +174,14 @@
 //!
 //! Sometimes a giant if/else-if ladder can be slow and you'd rather have a `match` statement for
 //! branches of your parser that have unique prefixes.  In this case, you can use the
-//! [`dispatch`][crate::branch::dispatch] macro:
+//! [`dispatch`][crate::combinator::dispatch] macro:
 //!
 //! ```rust
 //! # use winnow::IResult;
 //! # use winnow::Parser;
-//! # use winnow::bytes::take_while1;
-//! use winnow::branch::dispatch;
-//! use winnow::bytes::take;
+//! # use winnow::token::take_while1;
+//! use winnow::combinator::dispatch;
+//! use winnow::token::take;
 //! use winnow::combinator::fail;
 //!
 //! fn parse_digits(input: &str) -> IResult<&str, &str> {
@@ -234,9 +234,9 @@
 //! ```
 
 #![allow(unused_imports)]
-use crate::branch::alt;
-use crate::branch::dispatch;
-use crate::sequence::preceded;
+use crate::combinator::alt;
+use crate::combinator::dispatch;
+use crate::combinator::preceded;
 
 pub use super::chapter_2 as previous;
 pub use super::chapter_4 as next;

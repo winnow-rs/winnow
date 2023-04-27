@@ -3,13 +3,13 @@
 //! Lisp is a simple type of language made up of Atoms and Lists, forming easily parsable trees.
 
 use winnow::{
-    branch::alt,
-    bytes::one_of,
-    character::{alpha1, digit1, multispace0, multispace1},
+    ascii::{alpha1, digit1, multispace0, multispace1},
+    combinator::alt,
+    combinator::many0,
     combinator::{cut_err, opt},
+    combinator::{delimited, preceded, terminated},
     error::VerboseError,
-    multi::many0,
-    sequence::{delimited, preceded, terminated},
+    token::one_of,
     IResult, Parser,
 };
 
@@ -97,7 +97,7 @@ fn parse_atom(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
 /// of digits but ending the program if it doesn't fit into an i32.
 fn parse_num(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
     alt((
-        digit1.map_res(|digit_str: &str| digit_str.parse::<i32>().map(Atom::Num)),
+        digit1.try_map(|digit_str: &str| digit_str.parse::<i32>().map(Atom::Num)),
         preceded("-", digit1).map(|digit_str: &str| Atom::Num(-digit_str.parse::<i32>().unwrap())),
     ))
     .parse_next(i)

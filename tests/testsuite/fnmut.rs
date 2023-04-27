@@ -1,6 +1,6 @@
 #![cfg(feature = "alloc")]
 
-use winnow::multi::many0;
+use winnow::combinator::many0;
 use winnow::Parser;
 
 #[test]

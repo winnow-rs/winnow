@@ -1,5 +1,5 @@
-use winnow::bytes::take_while_m_n;
 use winnow::prelude::*;
+use winnow::token::take_while_m_n;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Color {
@@ -26,6 +26,6 @@ pub fn hex_color(input: &str) -> IResult<&str, Color> {
 
 fn hex_primary(input: &str) -> IResult<&str, u8> {
     take_while_m_n(2, 2, |c: char| c.is_ascii_hexdigit())
-        .map_res(|input| u8::from_str_radix(input, 16))
+        .try_map(|input| u8::from_str_radix(input, 16))
         .parse_next(input)
 }

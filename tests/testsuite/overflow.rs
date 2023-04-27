@@ -1,13 +1,14 @@
 #![allow(clippy::unreadable_literal)]
 #![cfg(target_pointer_width = "64")]
 
-use winnow::bytes::take;
+#[cfg(feature = "alloc")]
+use winnow::binary::be_u64;
+use winnow::binary::length_data;
+#[cfg(feature = "alloc")]
+use winnow::combinator::many0;
 use winnow::error::{ErrMode, Needed};
-#[cfg(feature = "alloc")]
-use winnow::multi::{length_data, many0};
-#[cfg(feature = "alloc")]
-use winnow::number::be_u64;
 use winnow::prelude::*;
+use winnow::token::take;
 use winnow::Partial;
 
 // Parser definition
@@ -61,7 +62,7 @@ fn overflow_incomplete_many0() {
 #[test]
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_many1() {
-    use winnow::multi::many1;
+    use winnow::combinator::many1;
 
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
         many1(length_data(be_u64)).parse_next(i)
@@ -79,7 +80,7 @@ fn overflow_incomplete_many1() {
 #[test]
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_many_till0() {
-    use winnow::multi::many_till0;
+    use winnow::combinator::many_till0;
 
     #[allow(clippy::type_complexity)]
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (Vec<&[u8]>, &[u8])> {
@@ -98,7 +99,7 @@ fn overflow_incomplete_many_till0() {
 #[test]
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_many_m_n() {
-    use winnow::multi::many_m_n;
+    use winnow::combinator::many_m_n;
 
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
         many_m_n(2, 4, length_data(be_u64)).parse_next(i)
@@ -116,7 +117,7 @@ fn overflow_incomplete_many_m_n() {
 #[test]
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_count() {
-    use winnow::multi::count;
+    use winnow::combinator::count;
 
     fn counter(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
         count(length_data(be_u64), 2).parse_next(i)
@@ -133,8 +134,8 @@ fn overflow_incomplete_count() {
 #[test]
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_length_count() {
-    use winnow::multi::length_count;
-    use winnow::number::be_u8;
+    use winnow::binary::be_u8;
+    use winnow::binary::length_count;
 
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
         length_count(be_u8, length_data(be_u64)).parse_next(i)
