@@ -199,6 +199,7 @@ mod parser;
 
 pub mod stream;
 
+pub mod binary;
 pub mod bits;
 pub mod branch;
 pub mod bytes;

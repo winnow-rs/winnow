@@ -1,5 +1,8 @@
 use super::*;
 
+use crate::binary::u16;
+use crate::binary::u8;
+use crate::binary::Endianness;
 use crate::bytes::take;
 use crate::error::ErrMode;
 use crate::error::Error;
@@ -7,9 +10,6 @@ use crate::error::ErrorKind;
 use crate::error::Needed;
 use crate::error::ParseError;
 use crate::multi::count;
-use crate::number::u16;
-use crate::number::u8;
-use crate::number::Endianness;
 use crate::IResult;
 use crate::Parser;
 use crate::Partial;
@@ -270,7 +270,7 @@ fn test_parser_verify_ref() {
     );
 
     fn parser2(i: &[u8]) -> IResult<&[u8], u32> {
-        crate::number::be_u32
+        crate::binary::be_u32
             .verify(|val: &u32| *val < 3)
             .parse_next(i)
     }

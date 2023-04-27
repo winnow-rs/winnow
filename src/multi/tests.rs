@@ -2,10 +2,10 @@ use super::{length_data, length_value, many0, many1};
 use crate::Parser;
 use crate::Partial;
 use crate::{
+    binary::{be_u16, be_u8},
     character::digit1 as digit,
     error::{ErrMode, ErrorKind, Needed, ParseError},
     lib::std::str::{self, FromStr},
-    number::{be_u16, be_u8},
     IResult,
 };
 #[cfg(feature = "alloc")]

@@ -428,7 +428,7 @@ pub trait Parser<I, O, E> {
     /// ```rust
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
     /// use winnow::bytes::take;
-    /// use winnow::number::u8;
+    /// use winnow::binary::u8;
     ///
     /// fn length_data(input: &[u8]) -> IResult<&[u8], &[u8]> {
     ///     u8.flat_map(take).parse_next(input)
@@ -442,7 +442,7 @@ pub trait Parser<I, O, E> {
     /// ```rust
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
     /// use winnow::bytes::take;
-    /// use winnow::number::u8;
+    /// use winnow::binary::u8;
     ///
     /// fn length_data(input: &[u8]) -> IResult<&[u8], &[u8]> {
     ///     let (input, length) = u8.parse_next(input)?;
@@ -818,12 +818,12 @@ impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::binary::be_u16;
     use crate::bytes::take;
     use crate::error::ErrMode;
     use crate::error::Error;
     use crate::error::ErrorKind;
     use crate::error::Needed;
-    use crate::number::be_u16;
     use crate::Partial;
 
     #[doc(hidden)]

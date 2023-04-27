@@ -69,8 +69,8 @@ mod parse_int {
 
 #[test]
 fn usize_length_bytes_issue() {
+    use winnow::binary::be_u16;
     use winnow::multi::length_data;
-    use winnow::number::be_u16;
     #[allow(clippy::type_complexity)]
     let _: IResult<Partial<&[u8]>, &[u8]> = length_data(be_u16).parse_next(Partial::new(b"012346"));
 }
@@ -135,7 +135,7 @@ mod issue_647 {
     use winnow::bytes::tag;
     use winnow::multi::separated0;
     use winnow::prelude::*;
-    use winnow::{error::ErrMode, error::Error, number::be_f64, IResult};
+    use winnow::{binary::be_f64, error::ErrMode, error::Error, IResult};
     pub type Stream<'a> = winnow::Partial<&'a [u8]>;
 
     #[derive(PartialEq, Debug, Clone)]

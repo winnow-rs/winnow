@@ -1,12 +1,12 @@
 #![allow(clippy::unreadable_literal)]
 #![cfg(target_pointer_width = "64")]
 
+#[cfg(feature = "alloc")]
+use winnow::binary::be_u64;
 use winnow::bytes::take;
 use winnow::error::{ErrMode, Needed};
 #[cfg(feature = "alloc")]
 use winnow::multi::{length_data, many0};
-#[cfg(feature = "alloc")]
-use winnow::number::be_u64;
 use winnow::prelude::*;
 use winnow::Partial;
 
@@ -133,8 +133,8 @@ fn overflow_incomplete_count() {
 #[test]
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_length_count() {
+    use winnow::binary::be_u8;
     use winnow::multi::length_count;
-    use winnow::number::be_u8;
 
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
         length_count(be_u8, length_data(be_u64)).parse_next(i)

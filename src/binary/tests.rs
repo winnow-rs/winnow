@@ -295,7 +295,7 @@ mod complete {
 
     #[test]
     fn configurable_endianness() {
-        use crate::number::Endianness;
+        use crate::binary::Endianness;
 
         fn be_tst16(i: &[u8]) -> IResult<&[u8], u16> {
             u16(Endianness::Big).parse_next(i)
@@ -955,7 +955,7 @@ mod partial {
 
     #[test]
     fn configurable_endianness() {
-        use crate::number::Endianness;
+        use crate::binary::Endianness;
 
         fn be_tst16(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u16> {
             u16(Endianness::Big).parse_next(i)

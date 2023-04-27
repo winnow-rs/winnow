@@ -926,7 +926,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, stream::Partial};
 /// # use winnow::prelude::*;
 /// use winnow::Bytes;
-/// use winnow::number::be_u16;
+/// use winnow::binary::be_u16;
 /// use winnow::multi::length_data;
 /// use winnow::bytes::tag;
 ///
@@ -978,7 +978,7 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, stream::{Partial, StreamIsPartial}};
 /// # use winnow::prelude::*;
 /// use winnow::Bytes;
-/// use winnow::number::be_u16;
+/// use winnow::binary::be_u16;
 /// use winnow::multi::length_value;
 /// use winnow::bytes::tag;
 ///
@@ -1035,7 +1035,7 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::Bytes;
-/// use winnow::number::u8;
+/// use winnow::binary::u8;
 /// use winnow::multi::length_count;
 /// use winnow::bytes::tag;
 ///

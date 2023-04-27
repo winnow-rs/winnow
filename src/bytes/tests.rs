@@ -571,7 +571,7 @@ fn partial_recognize_take_while0() {
 
 #[test]
 fn partial_length_bytes() {
-    use crate::number::le_u8;
+    use crate::binary::le_u8;
 
     fn x(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         length_data(le_u8).parse_next(i)

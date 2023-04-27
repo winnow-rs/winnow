@@ -39,7 +39,7 @@ pub enum Endianness {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::be_u8;
+/// use winnow::binary::be_u8;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], u8> {
 ///     be_u8.parse_next(s)
@@ -53,7 +53,7 @@ pub enum Endianness {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::be_u8;
+/// use winnow::binary::be_u8;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u8> {
 ///     be_u8.parse_next(s)
@@ -83,7 +83,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::be_u16;
+/// use winnow::binary::be_u16;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], u16> {
 ///     be_u16.parse_next(s)
@@ -97,7 +97,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::be_u16;
+/// use winnow::binary::be_u16;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u16> {
 ///     be_u16.parse_next(s)
@@ -128,7 +128,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::be_u24;
+/// use winnow::binary::be_u24;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], u32> {
 ///     be_u24.parse_next(s)
@@ -142,7 +142,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::be_u24;
+/// use winnow::binary::be_u24;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
 ///     be_u24.parse_next(s)
@@ -173,7 +173,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::be_u32;
+/// use winnow::binary::be_u32;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], u32> {
 ///     be_u32.parse_next(s)
@@ -187,7 +187,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::be_u32;
+/// use winnow::binary::be_u32;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
 ///     be_u32.parse_next(s)
@@ -218,7 +218,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::be_u64;
+/// use winnow::binary::be_u64;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], u64> {
 ///     be_u64.parse_next(s)
@@ -232,7 +232,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::be_u64;
+/// use winnow::binary::be_u64;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u64> {
 ///     be_u64.parse_next(s)
@@ -263,7 +263,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::be_u128;
+/// use winnow::binary::be_u128;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], u128> {
 ///     be_u128.parse_next(s)
@@ -277,7 +277,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::be_u128;
+/// use winnow::binary::be_u128;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u128> {
 ///     be_u128.parse_next(s)
@@ -335,7 +335,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::be_i8;
+/// use winnow::binary::be_i8;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], i8> {
 ///     be_i8.parse_next(s)
@@ -349,7 +349,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::be_i8;
+/// use winnow::binary::be_i8;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i8> {
 ///       be_i8.parse_next(s)
@@ -379,7 +379,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::be_i16;
+/// use winnow::binary::be_i16;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], i16> {
 ///     be_i16.parse_next(s)
@@ -393,7 +393,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::be_i16;
+/// use winnow::binary::be_i16;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i16> {
 ///       be_i16.parse_next(s)
@@ -427,7 +427,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::be_i24;
+/// use winnow::binary::be_i24;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], i32> {
 ///     be_i24.parse_next(s)
@@ -441,7 +441,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::be_i24;
+/// use winnow::binary::be_i24;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i32> {
 ///       be_i24.parse_next(s)
@@ -483,7 +483,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::be_i32;
+/// use winnow::binary::be_i32;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], i32> {
 ///       be_i32.parse_next(s)
@@ -497,7 +497,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::be_i32;
+/// use winnow::binary::be_i32;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i32> {
 ///       be_i32.parse_next(s)
@@ -531,7 +531,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::be_i64;
+/// use winnow::binary::be_i64;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], i64> {
 ///       be_i64.parse_next(s)
@@ -545,7 +545,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::be_i64;
+/// use winnow::binary::be_i64;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i64> {
 ///       be_i64.parse_next(s)
@@ -579,7 +579,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::be_i128;
+/// use winnow::binary::be_i128;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], i128> {
 ///       be_i128.parse_next(s)
@@ -593,7 +593,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::be_i128;
+/// use winnow::binary::be_i128;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i128> {
 ///       be_i128.parse_next(s)
@@ -627,7 +627,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::le_u8;
+/// use winnow::binary::le_u8;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], u8> {
 ///       le_u8.parse_next(s)
@@ -641,7 +641,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::le_u8;
+/// use winnow::binary::le_u8;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u8> {
 ///       le_u8.parse_next(s)
@@ -671,7 +671,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::le_u16;
+/// use winnow::binary::le_u16;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], u16> {
 ///       le_u16.parse_next(s)
@@ -685,7 +685,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::le_u16;
+/// use winnow::binary::le_u16;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u16> {
 ///       le_u16::<_, Error<_>>.parse_next(s)
@@ -716,7 +716,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::le_u24;
+/// use winnow::binary::le_u24;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], u32> {
 ///       le_u24.parse_next(s)
@@ -730,7 +730,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::le_u24;
+/// use winnow::binary::le_u24;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
 ///       le_u24::<_, Error<_>>.parse_next(s)
@@ -761,7 +761,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::le_u32;
+/// use winnow::binary::le_u32;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], u32> {
 ///       le_u32.parse_next(s)
@@ -775,7 +775,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::le_u32;
+/// use winnow::binary::le_u32;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
 ///       le_u32::<_, Error<_>>.parse_next(s)
@@ -806,7 +806,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::le_u64;
+/// use winnow::binary::le_u64;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], u64> {
 ///       le_u64.parse_next(s)
@@ -820,7 +820,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::le_u64;
+/// use winnow::binary::le_u64;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u64> {
 ///       le_u64::<_, Error<_>>.parse_next(s)
@@ -851,7 +851,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::le_u128;
+/// use winnow::binary::le_u128;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], u128> {
 ///       le_u128.parse_next(s)
@@ -865,7 +865,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::le_u128;
+/// use winnow::binary::le_u128;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u128> {
 ///       le_u128::<_, Error<_>>.parse_next(s)
@@ -922,7 +922,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::le_i8;
+/// use winnow::binary::le_i8;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], i8> {
 ///       le_i8.parse_next(s)
@@ -936,7 +936,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::le_i8;
+/// use winnow::binary::le_i8;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i8> {
 ///       le_i8.parse_next(s)
@@ -966,7 +966,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::le_i16;
+/// use winnow::binary::le_i16;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], i16> {
 ///       le_i16.parse_next(s)
@@ -980,7 +980,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::le_i16;
+/// use winnow::binary::le_i16;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i16> {
 ///       le_i16::<_, Error<_>>.parse_next(s)
@@ -1014,7 +1014,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::le_i24;
+/// use winnow::binary::le_i24;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], i32> {
 ///       le_i24.parse_next(s)
@@ -1028,7 +1028,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::le_i24;
+/// use winnow::binary::le_i24;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i32> {
 ///       le_i24::<_, Error<_>>.parse_next(s)
@@ -1070,7 +1070,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::le_i32;
+/// use winnow::binary::le_i32;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], i32> {
 ///       le_i32.parse_next(s)
@@ -1084,7 +1084,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::le_i32;
+/// use winnow::binary::le_i32;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i32> {
 ///       le_i32::<_, Error<_>>.parse_next(s)
@@ -1118,7 +1118,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::le_i64;
+/// use winnow::binary::le_i64;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], i64> {
 ///       le_i64.parse_next(s)
@@ -1132,7 +1132,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::le_i64;
+/// use winnow::binary::le_i64;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i64> {
 ///       le_i64::<_, Error<_>>.parse_next(s)
@@ -1166,7 +1166,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::le_i128;
+/// use winnow::binary::le_i128;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], i128> {
 ///       le_i128.parse_next(s)
@@ -1180,7 +1180,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::le_i128;
+/// use winnow::binary::le_i128;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i128> {
 ///       le_i128::<_, Error<_>>.parse_next(s)
@@ -1216,7 +1216,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::u8;
+/// use winnow::binary::u8;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], u8> {
 ///       u8.parse_next(s)
@@ -1231,7 +1231,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// # use winnow::Partial;
-/// use winnow::number::u8;
+/// use winnow::binary::u8;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u8> {
 ///       u8::<_, Error<_>>.parse_next(s)
@@ -1277,8 +1277,8 @@ where
 
 /// Recognizes an unsigned 2 bytes integer
 ///
-/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian u16 integer,
-/// otherwise if `winnow::number::Endianness::Little` parse a little endian u16 integer.
+/// If the parameter is `winnow::binary::Endianness::Big`, parse a big endian u16 integer,
+/// otherwise if `winnow::binary::Endianness::Little` parse a little endian u16 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
@@ -1290,17 +1290,17 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::u16;
+/// use winnow::binary::u16;
 ///
 /// let be_u16 = |s| {
-///     u16(winnow::number::Endianness::Big).parse_next(s)
+///     u16(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_u16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
 /// assert_eq!(be_u16(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Slice))));
 ///
 /// let le_u16 = |s| {
-///     u16(winnow::number::Endianness::Little).parse_next(s)
+///     u16(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_u16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
@@ -1312,24 +1312,24 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// # use winnow::Partial;
-/// use winnow::number::u16;
+/// use winnow::binary::u16;
 ///
 /// let be_u16 = |s| {
-///     u16::<_, Error<_>>(winnow::number::Endianness::Big).parse_next(s)
+///     u16::<_, Error<_>>(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_u16(Partial::new(&b"\x00\x03abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0003)));
 /// assert_eq!(be_u16(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// let le_u16 = |s| {
-///     u16::<_, Error<_>>(winnow::number::Endianness::Little).parse_next(s)
+///     u16::<_, Error<_>>(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_u16(Partial::new(&b"\x00\x03abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0300)));
 /// assert_eq!(le_u16(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn u16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, u16, E>
+pub fn u16<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, u16, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1337,20 +1337,20 @@ where
 {
     move |input: I| {
         match endian {
-            crate::number::Endianness::Big => be_u16,
-            crate::number::Endianness::Little => le_u16,
+            Endianness::Big => be_u16,
+            Endianness::Little => le_u16,
             #[cfg(target_endian = "big")]
-            crate::number::Endianness::Native => be_u16,
+            Endianness::Native => be_u16,
             #[cfg(target_endian = "little")]
-            crate::number::Endianness::Native => le_u16,
+            Endianness::Native => le_u16,
         }
     }(input)
 }
 
 /// Recognizes an unsigned 3 byte integer
 ///
-/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian u24 integer,
-/// otherwise if `winnow::number::Endianness::Little` parse a little endian u24 integer.
+/// If the parameter is `winnow::binary::Endianness::Big`, parse a big endian u24 integer,
+/// otherwise if `winnow::binary::Endianness::Little` parse a little endian u24 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
@@ -1362,17 +1362,17 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::u24;
+/// use winnow::binary::u24;
 ///
 /// let be_u24 = |s| {
-///     u24(winnow::number::Endianness::Big).parse_next(s)
+///     u24(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_u24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
 /// assert_eq!(be_u24(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Slice))));
 ///
 /// let le_u24 = |s| {
-///     u24(winnow::number::Endianness::Little).parse_next(s)
+///     u24(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_u24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
@@ -1384,24 +1384,24 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// # use winnow::Partial;
-/// use winnow::number::u24;
+/// use winnow::binary::u24;
 ///
 /// let be_u24 = |s| {
-///     u24::<_,Error<_>>(winnow::number::Endianness::Big).parse_next(s)
+///     u24::<_,Error<_>>(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_u24(Partial::new(&b"\x00\x03\x05abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x000305)));
 /// assert_eq!(be_u24(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 ///
 /// let le_u24 = |s| {
-///     u24::<_, Error<_>>(winnow::number::Endianness::Little).parse_next(s)
+///     u24::<_, Error<_>>(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_u24(Partial::new(&b"\x00\x03\x05abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x050300)));
 /// assert_eq!(le_u24(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn u24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, u32, E>
+pub fn u24<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, u32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1409,20 +1409,20 @@ where
 {
     move |input: I| {
         match endian {
-            crate::number::Endianness::Big => be_u24,
-            crate::number::Endianness::Little => le_u24,
+            Endianness::Big => be_u24,
+            Endianness::Little => le_u24,
             #[cfg(target_endian = "big")]
-            crate::number::Endianness::Native => be_u24,
+            Endianness::Native => be_u24,
             #[cfg(target_endian = "little")]
-            crate::number::Endianness::Native => le_u24,
+            Endianness::Native => le_u24,
         }
     }(input)
 }
 
 /// Recognizes an unsigned 4 byte integer
 ///
-/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian u32 integer,
-/// otherwise if `winnow::number::Endianness::Little` parse a little endian u32 integer.
+/// If the parameter is `winnow::binary::Endianness::Big`, parse a big endian u32 integer,
+/// otherwise if `winnow::binary::Endianness::Little` parse a little endian u32 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
@@ -1434,17 +1434,17 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::u32;
+/// use winnow::binary::u32;
 ///
 /// let be_u32 = |s| {
-///     u32(winnow::number::Endianness::Big).parse_next(s)
+///     u32(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_u32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
 /// assert_eq!(be_u32(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Slice))));
 ///
 /// let le_u32 = |s| {
-///     u32(winnow::number::Endianness::Little).parse_next(s)
+///     u32(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_u32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
@@ -1456,24 +1456,24 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// # use winnow::Partial;
-/// use winnow::number::u32;
+/// use winnow::binary::u32;
 ///
 /// let be_u32 = |s| {
-///     u32::<_, Error<_>>(winnow::number::Endianness::Big).parse_next(s)
+///     u32::<_, Error<_>>(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_u32(Partial::new(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x00030507)));
 /// assert_eq!(be_u32(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 ///
 /// let le_u32 = |s| {
-///     u32::<_, Error<_>>(winnow::number::Endianness::Little).parse_next(s)
+///     u32::<_, Error<_>>(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_u32(Partial::new(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x07050300)));
 /// assert_eq!(le_u32(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn u32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, u32, E>
+pub fn u32<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, u32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1481,20 +1481,20 @@ where
 {
     move |input: I| {
         match endian {
-            crate::number::Endianness::Big => be_u32,
-            crate::number::Endianness::Little => le_u32,
+            Endianness::Big => be_u32,
+            Endianness::Little => le_u32,
             #[cfg(target_endian = "big")]
-            crate::number::Endianness::Native => be_u32,
+            Endianness::Native => be_u32,
             #[cfg(target_endian = "little")]
-            crate::number::Endianness::Native => le_u32,
+            Endianness::Native => le_u32,
         }
     }(input)
 }
 
 /// Recognizes an unsigned 8 byte integer
 ///
-/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian u64 integer,
-/// otherwise if `winnow::number::Endianness::Little` parse a little endian u64 integer.
+/// If the parameter is `winnow::binary::Endianness::Big`, parse a big endian u64 integer,
+/// otherwise if `winnow::binary::Endianness::Little` parse a little endian u64 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
@@ -1506,17 +1506,17 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::u64;
+/// use winnow::binary::u64;
 ///
 /// let be_u64 = |s| {
-///     u64(winnow::number::Endianness::Big).parse_next(s)
+///     u64(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_u64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
 /// assert_eq!(be_u64(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Slice))));
 ///
 /// let le_u64 = |s| {
-///     u64(winnow::number::Endianness::Little).parse_next(s)
+///     u64(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_u64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
@@ -1528,24 +1528,24 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// # use winnow::Partial;
-/// use winnow::number::u64;
+/// use winnow::binary::u64;
 ///
 /// let be_u64 = |s| {
-///     u64::<_, Error<_>>(winnow::number::Endianness::Big).parse_next(s)
+///     u64::<_, Error<_>>(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_u64(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0001020304050607)));
 /// assert_eq!(be_u64(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 ///
 /// let le_u64 = |s| {
-///     u64::<_, Error<_>>(winnow::number::Endianness::Little).parse_next(s)
+///     u64::<_, Error<_>>(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_u64(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0706050403020100)));
 /// assert_eq!(le_u64(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn u64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, u64, E>
+pub fn u64<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, u64, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1553,20 +1553,20 @@ where
 {
     move |input: I| {
         match endian {
-            crate::number::Endianness::Big => be_u64,
-            crate::number::Endianness::Little => le_u64,
+            Endianness::Big => be_u64,
+            Endianness::Little => le_u64,
             #[cfg(target_endian = "big")]
-            crate::number::Endianness::Native => be_u64,
+            Endianness::Native => be_u64,
             #[cfg(target_endian = "little")]
-            crate::number::Endianness::Native => le_u64,
+            Endianness::Native => le_u64,
         }
     }(input)
 }
 
 /// Recognizes an unsigned 16 byte integer
 ///
-/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian u128 integer,
-/// otherwise if `winnow::number::Endianness::Little` parse a little endian u128 integer.
+/// If the parameter is `winnow::binary::Endianness::Big`, parse a big endian u128 integer,
+/// otherwise if `winnow::binary::Endianness::Little` parse a little endian u128 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
@@ -1578,17 +1578,17 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::u128;
+/// use winnow::binary::u128;
 ///
 /// let be_u128 = |s| {
-///     u128(winnow::number::Endianness::Big).parse_next(s)
+///     u128(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_u128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
 /// assert_eq!(be_u128(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Slice))));
 ///
 /// let le_u128 = |s| {
-///     u128(winnow::number::Endianness::Little).parse_next(s)
+///     u128(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_u128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
@@ -1600,24 +1600,24 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// # use winnow::Partial;
-/// use winnow::number::u128;
+/// use winnow::binary::u128;
 ///
 /// let be_u128 = |s| {
-///     u128::<_, Error<_>>(winnow::number::Endianness::Big).parse_next(s)
+///     u128::<_, Error<_>>(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_u128(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x00010203040506070001020304050607)));
 /// assert_eq!(be_u128(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 ///
 /// let le_u128 = |s| {
-///     u128::<_, Error<_>>(winnow::number::Endianness::Little).parse_next(s)
+///     u128::<_, Error<_>>(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_u128(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x07060504030201000706050403020100)));
 /// assert_eq!(le_u128(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn u128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, u128, E>
+pub fn u128<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, u128, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1625,12 +1625,12 @@ where
 {
     move |input: I| {
         match endian {
-            crate::number::Endianness::Big => be_u128,
-            crate::number::Endianness::Little => le_u128,
+            Endianness::Big => be_u128,
+            Endianness::Little => le_u128,
             #[cfg(target_endian = "big")]
-            crate::number::Endianness::Native => be_u128,
+            Endianness::Native => be_u128,
             #[cfg(target_endian = "little")]
-            crate::number::Endianness::Native => le_u128,
+            Endianness::Native => le_u128,
         }
     }(input)
 }
@@ -1649,7 +1649,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::i8;
+/// use winnow::binary::i8;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], i8> {
 ///       i8.parse_next(s)
@@ -1664,7 +1664,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// # use winnow::Partial;
-/// use winnow::number::i8;
+/// use winnow::binary::i8;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i8> {
 ///       i8.parse_next(s)
@@ -1692,8 +1692,8 @@ where
 
 /// Recognizes a signed 2 byte integer
 ///
-/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian i16 integer,
-/// otherwise if `winnow::number::Endianness::Little` parse a little endian i16 integer.
+/// If the parameter is `winnow::binary::Endianness::Big`, parse a big endian i16 integer,
+/// otherwise if `winnow::binary::Endianness::Little` parse a little endian i16 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
@@ -1705,17 +1705,17 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::i16;
+/// use winnow::binary::i16;
 ///
 /// let be_i16 = |s| {
-///     i16(winnow::number::Endianness::Big).parse_next(s)
+///     i16(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_i16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
 /// assert_eq!(be_i16(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Slice))));
 ///
 /// let le_i16 = |s| {
-///     i16(winnow::number::Endianness::Little).parse_next(s)
+///     i16(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_i16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
@@ -1727,24 +1727,24 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// # use winnow::Partial;
-/// use winnow::number::i16;
+/// use winnow::binary::i16;
 ///
 /// let be_i16 = |s| {
-///     i16::<_, Error<_>>(winnow::number::Endianness::Big).parse_next(s)
+///     i16::<_, Error<_>>(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_i16(Partial::new(&b"\x00\x03abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0003)));
 /// assert_eq!(be_i16(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// let le_i16 = |s| {
-///     i16::<_, Error<_>>(winnow::number::Endianness::Little).parse_next(s)
+///     i16::<_, Error<_>>(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_i16(Partial::new(&b"\x00\x03abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0300)));
 /// assert_eq!(le_i16(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn i16<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, i16, E>
+pub fn i16<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, i16, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1752,20 +1752,20 @@ where
 {
     move |input: I| {
         match endian {
-            crate::number::Endianness::Big => be_i16,
-            crate::number::Endianness::Little => le_i16,
+            Endianness::Big => be_i16,
+            Endianness::Little => le_i16,
             #[cfg(target_endian = "big")]
-            crate::number::Endianness::Native => be_i16,
+            Endianness::Native => be_i16,
             #[cfg(target_endian = "little")]
-            crate::number::Endianness::Native => le_i16,
+            Endianness::Native => le_i16,
         }
     }(input)
 }
 
 /// Recognizes a signed 3 byte integer
 ///
-/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian i24 integer,
-/// otherwise if `winnow::number::Endianness::Little` parse a little endian i24 integer.
+/// If the parameter is `winnow::binary::Endianness::Big`, parse a big endian i24 integer,
+/// otherwise if `winnow::binary::Endianness::Little` parse a little endian i24 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
@@ -1777,17 +1777,17 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::i24;
+/// use winnow::binary::i24;
 ///
 /// let be_i24 = |s| {
-///     i24(winnow::number::Endianness::Big).parse_next(s)
+///     i24(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_i24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
 /// assert_eq!(be_i24(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Slice))));
 ///
 /// let le_i24 = |s| {
-///     i24(winnow::number::Endianness::Little).parse_next(s)
+///     i24(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_i24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
@@ -1799,24 +1799,24 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// # use winnow::Partial;
-/// use winnow::number::i24;
+/// use winnow::binary::i24;
 ///
 /// let be_i24 = |s| {
-///     i24::<_, Error<_>>(winnow::number::Endianness::Big).parse_next(s)
+///     i24::<_, Error<_>>(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_i24(Partial::new(&b"\x00\x03\x05abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x000305)));
 /// assert_eq!(be_i24(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 ///
 /// let le_i24 = |s| {
-///     i24::<_, Error<_>>(winnow::number::Endianness::Little).parse_next(s)
+///     i24::<_, Error<_>>(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_i24(Partial::new(&b"\x00\x03\x05abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x050300)));
 /// assert_eq!(le_i24(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn i24<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, i32, E>
+pub fn i24<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, i32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1824,20 +1824,20 @@ where
 {
     move |input: I| {
         match endian {
-            crate::number::Endianness::Big => be_i24,
-            crate::number::Endianness::Little => le_i24,
+            Endianness::Big => be_i24,
+            Endianness::Little => le_i24,
             #[cfg(target_endian = "big")]
-            crate::number::Endianness::Native => be_i24,
+            Endianness::Native => be_i24,
             #[cfg(target_endian = "little")]
-            crate::number::Endianness::Native => le_i24,
+            Endianness::Native => le_i24,
         }
     }(input)
 }
 
 /// Recognizes a signed 4 byte integer
 ///
-/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian i32 integer,
-/// otherwise if `winnow::number::Endianness::Little` parse a little endian i32 integer.
+/// If the parameter is `winnow::binary::Endianness::Big`, parse a big endian i32 integer,
+/// otherwise if `winnow::binary::Endianness::Little` parse a little endian i32 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
@@ -1849,17 +1849,17 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::i32;
+/// use winnow::binary::i32;
 ///
 /// let be_i32 = |s| {
-///     i32(winnow::number::Endianness::Big).parse_next(s)
+///     i32(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_i32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
 /// assert_eq!(be_i32(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Slice))));
 ///
 /// let le_i32 = |s| {
-///     i32(winnow::number::Endianness::Little).parse_next(s)
+///     i32(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_i32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
@@ -1871,24 +1871,24 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// # use winnow::Partial;
-/// use winnow::number::i32;
+/// use winnow::binary::i32;
 ///
 /// let be_i32 = |s| {
-///     i32::<_, Error<_>>(winnow::number::Endianness::Big).parse_next(s)
+///     i32::<_, Error<_>>(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_i32(Partial::new(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x00030507)));
 /// assert_eq!(be_i32(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 ///
 /// let le_i32 = |s| {
-///     i32::<_, Error<_>>(winnow::number::Endianness::Little).parse_next(s)
+///     i32::<_, Error<_>>(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_i32(Partial::new(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x07050300)));
 /// assert_eq!(le_i32(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn i32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, i32, E>
+pub fn i32<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, i32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1896,20 +1896,20 @@ where
 {
     move |input: I| {
         match endian {
-            crate::number::Endianness::Big => be_i32,
-            crate::number::Endianness::Little => le_i32,
+            Endianness::Big => be_i32,
+            Endianness::Little => le_i32,
             #[cfg(target_endian = "big")]
-            crate::number::Endianness::Native => be_i32,
+            Endianness::Native => be_i32,
             #[cfg(target_endian = "little")]
-            crate::number::Endianness::Native => le_i32,
+            Endianness::Native => le_i32,
         }
     }(input)
 }
 
 /// Recognizes a signed 8 byte integer
 ///
-/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian i64 integer,
-/// otherwise if `winnow::number::Endianness::Little` parse a little endian i64 integer.
+/// If the parameter is `winnow::binary::Endianness::Big`, parse a big endian i64 integer,
+/// otherwise if `winnow::binary::Endianness::Little` parse a little endian i64 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
@@ -1921,17 +1921,17 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::i64;
+/// use winnow::binary::i64;
 ///
 /// let be_i64 = |s| {
-///     i64(winnow::number::Endianness::Big).parse_next(s)
+///     i64(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_i64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
 /// assert_eq!(be_i64(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Slice))));
 ///
 /// let le_i64 = |s| {
-///     i64(winnow::number::Endianness::Little).parse_next(s)
+///     i64(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_i64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
@@ -1943,24 +1943,24 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// # use winnow::Partial;
-/// use winnow::number::i64;
+/// use winnow::binary::i64;
 ///
 /// let be_i64 = |s| {
-///     i64::<_, Error<_>>(winnow::number::Endianness::Big).parse_next(s)
+///     i64::<_, Error<_>>(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_i64(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0001020304050607)));
 /// assert_eq!(be_i64(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 ///
 /// let le_i64 = |s| {
-///     i64::<_, Error<_>>(winnow::number::Endianness::Little).parse_next(s)
+///     i64::<_, Error<_>>(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_i64(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0706050403020100)));
 /// assert_eq!(le_i64(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn i64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, i64, E>
+pub fn i64<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, i64, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1968,20 +1968,20 @@ where
 {
     move |input: I| {
         match endian {
-            crate::number::Endianness::Big => be_i64,
-            crate::number::Endianness::Little => le_i64,
+            Endianness::Big => be_i64,
+            Endianness::Little => le_i64,
             #[cfg(target_endian = "big")]
-            crate::number::Endianness::Native => be_i64,
+            Endianness::Native => be_i64,
             #[cfg(target_endian = "little")]
-            crate::number::Endianness::Native => le_i64,
+            Endianness::Native => le_i64,
         }
     }(input)
 }
 
 /// Recognizes a signed 16 byte integer
 ///
-/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian i128 integer,
-/// otherwise if `winnow::number::Endianness::Little` parse a little endian i128 integer.
+/// If the parameter is `winnow::binary::Endianness::Big`, parse a big endian i128 integer,
+/// otherwise if `winnow::binary::Endianness::Little` parse a little endian i128 integer.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
@@ -1993,17 +1993,17 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::i128;
+/// use winnow::binary::i128;
 ///
 /// let be_i128 = |s| {
-///     i128(winnow::number::Endianness::Big).parse_next(s)
+///     i128(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_i128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
 /// assert_eq!(be_i128(&b"\x01"[..]), Err(ErrMode::Backtrack(Error::new(&[0x01][..], ErrorKind::Slice))));
 ///
 /// let le_i128 = |s| {
-///     i128(winnow::number::Endianness::Little).parse_next(s)
+///     i128(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_i128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
@@ -2015,24 +2015,24 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// # use winnow::Partial;
-/// use winnow::number::i128;
+/// use winnow::binary::i128;
 ///
 /// let be_i128 = |s| {
-///     i128::<_, Error<_>>(winnow::number::Endianness::Big).parse_next(s)
+///     i128::<_, Error<_>>(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_i128(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x00010203040506070001020304050607)));
 /// assert_eq!(be_i128(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 ///
 /// let le_i128 = |s| {
-///     i128::<_, Error<_>>(winnow::number::Endianness::Little).parse_next(s)
+///     i128::<_, Error<_>>(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_i128(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x07060504030201000706050403020100)));
 /// assert_eq!(le_i128(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn i128<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, i128, E>
+pub fn i128<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, i128, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -2040,12 +2040,12 @@ where
 {
     move |input: I| {
         match endian {
-            crate::number::Endianness::Big => be_i128,
-            crate::number::Endianness::Little => le_i128,
+            Endianness::Big => be_i128,
+            Endianness::Little => le_i128,
             #[cfg(target_endian = "big")]
-            crate::number::Endianness::Native => be_i128,
+            Endianness::Native => be_i128,
             #[cfg(target_endian = "little")]
-            crate::number::Endianness::Native => le_i128,
+            Endianness::Native => le_i128,
         }
     }(input)
 }
@@ -2063,7 +2063,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::be_f32;
+/// use winnow::binary::be_f32;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], f32> {
 ///       be_f32.parse_next(s)
@@ -2077,7 +2077,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::be_f32;
+/// use winnow::binary::be_f32;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, f32> {
 ///       be_f32.parse_next(s)
@@ -2111,7 +2111,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::be_f64;
+/// use winnow::binary::be_f64;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], f64> {
 ///       be_f64.parse_next(s)
@@ -2125,7 +2125,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::be_f64;
+/// use winnow::binary::be_f64;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, f64> {
 ///       be_f64::<_, Error<_>>.parse_next(s)
@@ -2159,7 +2159,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::le_f32;
+/// use winnow::binary::le_f32;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], f32> {
 ///       le_f32.parse_next(s)
@@ -2173,7 +2173,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::le_f32;
+/// use winnow::binary::le_f32;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, f32> {
 ///       le_f32::<_, Error<_>>.parse_next(s)
@@ -2207,7 +2207,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::le_f64;
+/// use winnow::binary::le_f64;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], f64> {
 ///       le_f64.parse_next(s)
@@ -2221,7 +2221,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::number::le_f64;
+/// use winnow::binary::le_f64;
 ///
 /// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, f64> {
 ///       le_f64::<_, Error<_>>.parse_next(s)
@@ -2245,8 +2245,8 @@ where
 
 /// Recognizes a 4 byte floating point number
 ///
-/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian f32 float,
-/// otherwise if `winnow::number::Endianness::Little` parse a little endian f32 float.
+/// If the parameter is `winnow::binary::Endianness::Big`, parse a big endian f32 float,
+/// otherwise if `winnow::binary::Endianness::Little` parse a little endian f32 float.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
@@ -2258,17 +2258,17 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::f32;
+/// use winnow::binary::f32;
 ///
 /// let be_f32 = |s| {
-///     f32(winnow::number::Endianness::Big).parse_next(s)
+///     f32(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_f32(&[0x41, 0x48, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
 /// assert_eq!(be_f32(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Slice))));
 ///
 /// let le_f32 = |s| {
-///     f32(winnow::number::Endianness::Little).parse_next(s)
+///     f32(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_f32(&[0x00, 0x00, 0x48, 0x41][..]), Ok((&b""[..], 12.5)));
@@ -2280,24 +2280,24 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// # use winnow::Partial;
-/// use winnow::number::f32;
+/// use winnow::binary::f32;
 ///
 /// let be_f32 = |s| {
-///     f32::<_, Error<_>>(winnow::number::Endianness::Big).parse_next(s)
+///     f32::<_, Error<_>>(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_f32(Partial::new(&[0x41, 0x48, 0x00, 0x00][..])), Ok((Partial::new(&b""[..]), 12.5)));
 /// assert_eq!(be_f32(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// let le_f32 = |s| {
-///     f32::<_, Error<_>>(winnow::number::Endianness::Little).parse_next(s)
+///     f32::<_, Error<_>>(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_f32(Partial::new(&[0x00, 0x00, 0x48, 0x41][..])), Ok((Partial::new(&b""[..]), 12.5)));
 /// assert_eq!(le_f32(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn f32<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, f32, E>
+pub fn f32<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, f32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -2305,20 +2305,20 @@ where
 {
     move |input: I| {
         match endian {
-            crate::number::Endianness::Big => be_f32,
-            crate::number::Endianness::Little => le_f32,
+            Endianness::Big => be_f32,
+            Endianness::Little => le_f32,
             #[cfg(target_endian = "big")]
-            crate::number::Endianness::Native => be_f32,
+            Endianness::Native => be_f32,
             #[cfg(target_endian = "little")]
-            crate::number::Endianness::Native => le_f32,
+            Endianness::Native => le_f32,
         }
     }(input)
 }
 
 /// Recognizes an 8 byte floating point number
 ///
-/// If the parameter is `winnow::number::Endianness::Big`, parse a big endian f64 float,
-/// otherwise if `winnow::number::Endianness::Little` parse a little endian f64 float.
+/// If the parameter is `winnow::binary::Endianness::Big`, parse a big endian f64 float,
+/// otherwise if `winnow::binary::Endianness::Little` parse a little endian f64 float.
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
@@ -2330,17 +2330,17 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::number::f64;
+/// use winnow::binary::f64;
 ///
 /// let be_f64 = |s| {
-///     f64(winnow::number::Endianness::Big).parse_next(s)
+///     f64(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_f64(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
 /// assert_eq!(be_f64(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Slice))));
 ///
 /// let le_f64 = |s| {
-///     f64(winnow::number::Endianness::Little).parse_next(s)
+///     f64(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_f64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29, 0x40][..]), Ok((&b""[..], 12.5)));
@@ -2352,24 +2352,24 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// # use winnow::Partial;
-/// use winnow::number::f64;
+/// use winnow::binary::f64;
 ///
 /// let be_f64 = |s| {
-///     f64::<_, Error<_>>(winnow::number::Endianness::Big).parse_next(s)
+///     f64::<_, Error<_>>(winnow::binary::Endianness::Big).parse_next(s)
 /// };
 ///
 /// assert_eq!(be_f64(Partial::new(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])), Ok((Partial::new(&b""[..]), 12.5)));
 /// assert_eq!(be_f64(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(5))));
 ///
 /// let le_f64 = |s| {
-///     f64::<_, Error<_>>(winnow::number::Endianness::Little).parse_next(s)
+///     f64::<_, Error<_>>(winnow::binary::Endianness::Little).parse_next(s)
 /// };
 ///
 /// assert_eq!(le_f64(Partial::new(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29, 0x40][..])), Ok((Partial::new(&b""[..]), 12.5)));
 /// assert_eq!(le_f64(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(5))));
 /// ```
 #[inline(always)]
-pub fn f64<I, E: ParseError<I>>(endian: crate::number::Endianness) -> impl Parser<I, f64, E>
+pub fn f64<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, f64, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -2377,12 +2377,12 @@ where
 {
     move |input: I| {
         match endian {
-            crate::number::Endianness::Big => be_f64,
-            crate::number::Endianness::Little => le_f64,
+            Endianness::Big => be_f64,
+            Endianness::Little => le_f64,
             #[cfg(target_endian = "big")]
-            crate::number::Endianness::Native => be_f64,
+            Endianness::Native => be_f64,
             #[cfg(target_endian = "little")]
-            crate::number::Endianness::Native => le_f64,
+            Endianness::Native => le_f64,
         }
     }(input)
 }
