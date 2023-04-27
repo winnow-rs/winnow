@@ -1,7 +1,7 @@
 use criterion::black_box;
 
 use winnow::combinator::alt;
-use winnow::multi::many0;
+use winnow::combinator::many0;
 use winnow::prelude::*;
 use winnow::token::take_till1;
 use winnow::token::take_while1;

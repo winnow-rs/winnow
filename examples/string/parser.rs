@@ -11,9 +11,9 @@
 
 use winnow::character::multispace1;
 use winnow::combinator::alt;
+use winnow::combinator::fold_many0;
 use winnow::combinator::{delimited, preceded};
 use winnow::error::{FromExternalError, ParseError};
-use winnow::multi::fold_many0;
 use winnow::prelude::*;
 use winnow::token::{take_till1, take_while_m_n};
 

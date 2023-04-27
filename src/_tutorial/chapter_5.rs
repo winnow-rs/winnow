@@ -12,7 +12,7 @@
 //! # use winnow::token::take;
 //! # use winnow::combinator::fail;
 //! use winnow::combinator::opt;
-//! use winnow::multi::many0;
+//! use winnow::combinator::many0;
 //! use winnow::combinator::terminated;
 //!
 //! fn parse_list(input: &str) -> IResult<&str, Vec<usize>> {
@@ -77,7 +77,7 @@
 //! # use winnow::combinator::dispatch;
 //! # use winnow::token::take;
 //! # use winnow::combinator::fail;
-//! use winnow::multi::separated0;
+//! use winnow::combinator::separated0;
 //!
 //! fn parse_list(input: &str) -> IResult<&str, Vec<usize>> {
 //!     separated0(parse_digits, ",").parse_next(input)
@@ -142,7 +142,7 @@
 //! # use winnow::combinator::dispatch;
 //! # use winnow::token::take;
 //! # use winnow::combinator::fail;
-//! # use winnow::multi::separated0;
+//! # use winnow::combinator::separated0;
 //! #
 //! fn recognize_list(input: &str) -> IResult<&str, &str> {
 //!     parse_list.recognize().parse_next(input)
@@ -204,8 +204,8 @@
 #![allow(unused_imports)]
 use super::chapter_2;
 use super::chapter_3;
-use crate::multi::many0;
-use crate::multi::separated0;
+use crate::combinator::many0;
+use crate::combinator::separated0;
 use crate::stream::Accumulate;
 use crate::Parser;
 use std::vec::Vec;

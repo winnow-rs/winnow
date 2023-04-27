@@ -2,8 +2,8 @@
 
 use winnow::{
     character::{alphanumeric1 as alphanumeric, line_ending as eol},
+    combinator::many0,
     combinator::terminated,
-    multi::many0,
     IResult, Parser,
 };
 

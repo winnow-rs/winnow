@@ -5,7 +5,7 @@ use winnow::{
     character::{digit1 as digits, space0 as spaces},
     combinator::alt,
     combinator::delimited,
-    multi::fold_many0,
+    combinator::fold_many0,
     token::one_of,
     IResult,
 };

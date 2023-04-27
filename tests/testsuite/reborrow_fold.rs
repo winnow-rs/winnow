@@ -4,7 +4,7 @@
 use std::str;
 
 use winnow::combinator::delimited;
-use winnow::multi::fold_many0;
+use winnow::combinator::fold_many0;
 use winnow::prelude::*;
 use winnow::token::take_till1;
 use winnow::IResult;

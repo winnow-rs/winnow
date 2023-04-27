@@ -7,8 +7,8 @@ use winnow::{
     combinator::alt,
     combinator::cut_err,
     combinator::{delimited, preceded, separated_pair, terminated},
+    combinator::{fold_many0, separated0},
     error::{ContextError, ParseError},
-    multi::{fold_many0, separated0},
     token::{any, none_of, take, take_while0},
 };
 

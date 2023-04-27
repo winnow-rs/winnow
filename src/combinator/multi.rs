@@ -1,14 +1,10 @@
 //! Combinators applying their child parser multiple times
 
-#[cfg(test)]
-mod tests;
-
-use crate::binary;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::stream::Accumulate;
-use crate::stream::{Stream, StreamIsPartial, ToUsize, UpdateSlice};
+use crate::stream::Stream;
 use crate::trace::trace;
 use crate::Parser;
 
@@ -28,7 +24,7 @@ use crate::Parser;
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::many0;
+/// use winnow::combinator::many0;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
@@ -93,7 +89,7 @@ where
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::many1;
+/// use winnow::combinator::many1;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
@@ -157,7 +153,7 @@ where
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::many_till0;
+/// use winnow::combinator::many_till0;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, (Vec<&str>, &str)> {
@@ -220,7 +216,7 @@ where
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::separated0;
+/// use winnow::combinator::separated0;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
@@ -298,7 +294,7 @@ where
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::separated1;
+/// use winnow::combinator::separated1;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
@@ -369,7 +365,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::separated_foldl1;
+/// use winnow::combinator::separated_foldl1;
 /// use winnow::character::dec_int;
 ///
 /// fn parser(s: &str) -> IResult<&str, i32> {
@@ -430,7 +426,7 @@ where
 /// ```
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::separated_foldr1;
+/// use winnow::combinator::separated_foldr1;
 /// use winnow::character::dec_uint;
 ///
 /// fn parser(s: &str) -> IResult<&str, u32> {
@@ -494,7 +490,7 @@ where
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::many_m_n;
+/// use winnow::combinator::many_m_n;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
@@ -565,7 +561,7 @@ where
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::count;
+/// use winnow::combinator::count;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
@@ -621,7 +617,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::fill;
+/// use winnow::combinator::fill;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, [&str; 2]> {
@@ -681,7 +677,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::fold_many0;
+/// use winnow::combinator::fold_many0;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
@@ -756,7 +752,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::fold_many1;
+/// use winnow::combinator::fold_many1;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
@@ -841,7 +837,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::multi::fold_many_m_n;
+/// use winnow::combinator::fold_many_m_n;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
@@ -909,48 +905,4 @@ where
 
         Ok((input, acc))
     })
-}
-
-/// Deprecated, replaced by [`binary::length_data`]
-#[deprecated(since = "0.4.2", note = "Replaced with `binary::length_data`")]
-#[inline(always)]
-pub fn length_data<I, N, E, F>(f: F) -> impl Parser<I, <I as Stream>::Slice, E>
-where
-    I: StreamIsPartial,
-    I: Stream,
-    N: ToUsize,
-    F: Parser<I, N, E>,
-    E: ParseError<I>,
-{
-    binary::length_data(f)
-}
-
-/// Deprecated, replaced by [`binary::length_value`]
-#[deprecated(since = "0.4.2", note = "Replaced with `binary::length_value`")]
-#[inline(always)]
-pub fn length_value<I, O, N, E, F, G>(f: F, g: G) -> impl Parser<I, O, E>
-where
-    I: StreamIsPartial,
-    I: Stream + UpdateSlice,
-    N: ToUsize,
-    F: Parser<I, N, E>,
-    G: Parser<I, O, E>,
-    E: ParseError<I>,
-{
-    binary::length_value(f, g)
-}
-
-/// Deprecated, replaced by [`binary::length_count`]
-#[deprecated(since = "0.4.2", note = "Replaced with `binary::length_count`")]
-#[inline(always)]
-pub fn length_count<I, O, C, N, E, F, G>(f: F, g: G) -> impl Parser<I, C, E>
-where
-    I: Stream,
-    N: ToUsize,
-    C: Accumulate<O>,
-    F: Parser<I, N, E>,
-    G: Parser<I, O, E>,
-    E: ParseError<I>,
-{
-    binary::length_count(f, g)
 }

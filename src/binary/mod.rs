@@ -7,12 +7,12 @@ pub mod bits;
 #[cfg(test)]
 mod tests;
 
+use crate::combinator::count;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::Needed;
 use crate::error::ParseError;
 use crate::lib::std::ops::{Add, Shl};
-use crate::multi::count;
 use crate::stream::Accumulate;
 use crate::stream::{AsBytes, Stream, StreamIsPartial};
 use crate::stream::{ToUsize, UpdateSlice};

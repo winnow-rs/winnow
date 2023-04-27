@@ -157,7 +157,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   multi::{many0, many1},
+//!   combinator::{many0, many1},
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
 //!   token::tag,
@@ -179,7 +179,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   multi::{many0, many1},
+//!   combinator::{many0, many1},
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
 //!   token::tag,
@@ -203,7 +203,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   multi::{many0, many1},
+//!   combinator::{many0, many1},
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
 //!   token::tag,
@@ -225,7 +225,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   multi::{many0, many1},
+//!   combinator::{many0, many1},
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
 //!   token::tag,
@@ -247,7 +247,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   IResult,
-//!   multi::{many0, many1},
+//!   combinator::{many0, many1},
 //!   combinator::terminated,
 //!   token::one_of,
 //! };
@@ -269,7 +269,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   multi::{many0, many1},
+//!   combinator::{many0, many1},
 //!   combinator::opt,
 //!   combinator::{preceded, terminated},
 //!   token::one_of,

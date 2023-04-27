@@ -27,8 +27,8 @@ mod parse_int {
     use winnow::Partial;
     use winnow::{
         character::{digit1 as digit, space1 as space},
+        combinator::many0,
         combinator::opt,
-        multi::many0,
         IResult,
     };
 
@@ -125,14 +125,14 @@ fn issue_655() {
 
 #[cfg(feature = "alloc")]
 fn issue_717(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-    use winnow::multi::separated0;
+    use winnow::combinator::separated0;
     use winnow::token::{tag, take_till1};
 
     separated0(take_till1([0x0u8]), tag([0x0])).parse_next(i)
 }
 
 mod issue_647 {
-    use winnow::multi::separated0;
+    use winnow::combinator::separated0;
     use winnow::prelude::*;
     use winnow::token::tag;
     use winnow::{binary::be_f64, error::ErrMode, error::Error, IResult};
@@ -187,7 +187,7 @@ fn issue_942() {
     pub fn parser<'a, E: ParseError<&'a str> + ContextError<&'a str, &'static str>>(
         i: &'a str,
     ) -> IResult<&'a str, usize, E> {
-        use winnow::multi::many0;
+        use winnow::combinator::many0;
         many0('a'.context("char_a")).parse_next(i)
     }
     assert_eq!(parser::<()>("aaa"), Ok(("", 3)));
@@ -196,7 +196,7 @@ fn issue_942() {
 #[test]
 #[cfg(feature = "std")]
 fn issue_many_m_n_with_zeros() {
-    use winnow::multi::many_m_n;
+    use winnow::combinator::many_m_n;
     let mut parser = many_m_n::<_, _, Vec<_>, (), _>(0, 0, 'a');
     assert_eq!(parser.parse_next("aaa"), Ok(("aaa", vec![])));
 }
@@ -237,7 +237,7 @@ fn issue_1282_findtoken_char() {
 
 #[test]
 fn issue_x_looser_fill_bounds() {
-    use winnow::{character::digit1, combinator::terminated, multi::fill};
+    use winnow::{character::digit1, combinator::fill, combinator::terminated};
 
     fn fill_pair(i: &[u8]) -> IResult<&[u8], [&[u8]; 2]> {
         let mut buf = [&[][..], &[][..]];
@@ -265,7 +265,7 @@ fn issue_x_looser_fill_bounds() {
 #[cfg(feature = "std")]
 fn issue_1459_clamp_capacity() {
     // shouldn't panic
-    use winnow::multi::many_m_n;
+    use winnow::combinator::many_m_n;
     let mut parser = many_m_n::<_, _, Vec<_>, (), _>(usize::MAX, usize::MAX, 'a');
     assert_eq!(
         parser.parse_next("a"),
@@ -273,7 +273,7 @@ fn issue_1459_clamp_capacity() {
     );
 
     // shouldn't panic
-    use winnow::multi::count;
+    use winnow::combinator::count;
     let mut parser = count::<_, _, Vec<_>, (), _>('a', usize::MAX);
     assert_eq!(
         parser.parse_next("a"),
@@ -283,7 +283,7 @@ fn issue_1459_clamp_capacity() {
 
 #[test]
 fn issue_1617_count_parser_returning_zero_size() {
-    use winnow::{error::Error, multi::count, token::tag};
+    use winnow::{combinator::count, error::Error, token::tag};
 
     // previously, `count()` panicked if the parser had type `O = ()`
     let parser = tag::<_, _, Error<&str>>("abc").map(|_| ());

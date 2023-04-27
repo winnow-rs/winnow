@@ -4,9 +4,9 @@ use std::str;
 use winnow::prelude::*;
 use winnow::{
     character::{alphanumeric1 as alphanumeric, multispace0 as multispace, space0 as space},
+    combinator::many0,
     combinator::opt,
     combinator::{delimited, separated_pair, terminated},
-    multi::many0,
     token::take_while0,
 };
 
