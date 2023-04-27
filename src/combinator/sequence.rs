@@ -3,6 +3,9 @@ use crate::stream::Stream;
 use crate::trace::trace;
 use crate::*;
 
+#[doc(inline)]
+pub use crate::seq;
+
 /// Sequence two parsers, only returning the output from the second.
 ///
 /// # Arguments

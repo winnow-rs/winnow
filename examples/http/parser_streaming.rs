@@ -1,3 +1,4 @@
+use winnow::combinator::seq;
 use winnow::{
     ascii::line_ending, combinator::repeat, prelude::*, stream::Partial, token::take_while,
 };
@@ -52,18 +53,15 @@ fn request<'s>(input: &mut Stream<'s>) -> PResult<(Request<'s>, Vec<Header<'s>>)
 }
 
 fn request_line<'s>(input: &mut Stream<'s>) -> PResult<Request<'s>> {
-    let method = take_while(1.., is_token).parse_next(input)?;
-    let _ = take_while(1.., is_space).parse_next(input)?;
-    let uri = take_while(1.., is_not_space).parse_next(input)?;
-    let _ = take_while(1.., is_space).parse_next(input)?;
-    let version = http_version(input)?;
-    let _ = line_ending.parse_next(input)?;
-
-    Ok(Request {
-        method,
-        uri,
-        version,
+    seq!( Request {
+        method: take_while(1.., is_token),
+        _: take_while(1.., is_space),
+        uri: take_while(1.., is_not_space),
+        _: take_while(1.., is_space),
+        version: http_version,
+        _: line_ending,
     })
+    .parse_next(input)
 }
 
 fn http_version<'s>(input: &mut Stream<'s>) -> PResult<&'s [u8]> {
@@ -82,11 +80,12 @@ fn message_header_value<'s>(input: &mut Stream<'s>) -> PResult<&'s [u8]> {
 }
 
 fn message_header<'s>(input: &mut Stream<'s>) -> PResult<Header<'s>> {
-    let name = take_while(1.., is_token).parse_next(input)?;
-    let _ = ':'.parse_next(input)?;
-    let value = repeat(1.., message_header_value).parse_next(input)?;
-
-    Ok(Header { name, value })
+    seq!(Header {
+        name: take_while(1.., is_token),
+        _: ':',
+        value: repeat(1.., message_header_value),
+    })
+    .parse_next(input)
 }
 
 #[rustfmt::skip]

@@ -1,5 +1,7 @@
+use crate::ascii::dec_uint;
 use crate::combinator::dispatch;
 use crate::combinator::fail;
+use crate::combinator::seq;
 use crate::combinator::success;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
@@ -8,7 +10,7 @@ use crate::prelude::*;
 use crate::token::any;
 
 #[test]
-fn basics() {
+fn dispatch_basics() {
     fn escape_seq_char(input: &mut &str) -> PResult<char> {
         dispatch! {any;
             'b' => success('\u{8}'),
@@ -37,4 +39,110 @@ fn basics() {
             ErrorKind::Fail
         )))
     );
+}
+
+#[test]
+fn seq_struct_basics() {
+    #[derive(Debug, PartialEq)]
+    struct Point {
+        x: u32,
+        y: u32,
+    }
+
+    fn parser(input: &mut &str) -> PResult<Point> {
+        seq! {
+            Point {
+                x: dec_uint,
+                _: ',',
+                y: dec_uint,
+            }
+        }
+        .parse_next(input)
+    }
+    assert_eq!(
+        parser.parse_peek("123,4 remaining"),
+        Ok((" remaining", Point { x: 123, y: 4 },)),
+    );
+    assert_eq!(
+        parser.parse_peek("123, remaining"),
+        Err(ErrMode::Backtrack(ParserError::from_error_kind(
+            &" remaining",
+            ErrorKind::Fail
+        )))
+    );
+    assert_eq!(
+        parser.parse_peek(""),
+        Err(ErrMode::Backtrack(ParserError::from_error_kind(
+            &"",
+            ErrorKind::Fail
+        )))
+    );
+}
+
+#[test]
+fn seq_struct_trailing_comma_elided() {
+    #![allow(dead_code)]
+
+    #[derive(Debug, PartialEq)]
+    struct Point {
+        x: u32,
+        y: u32,
+    }
+
+    fn parser(input: &mut &str) -> PResult<Point> {
+        seq! {
+            Point {
+                x: dec_uint,
+                _: ',',
+                y: dec_uint,
+                _: success(()),
+            }
+        }
+        .parse_next(input)
+    }
+}
+
+#[test]
+fn seq_struct_no_trailing_comma() {
+    #![allow(dead_code)]
+
+    #[derive(Debug, PartialEq)]
+    struct Point {
+        x: u32,
+        y: u32,
+    }
+
+    fn parser(input: &mut &str) -> PResult<Point> {
+        seq! {
+            Point {
+                x: dec_uint,
+                _: ',',
+                y: dec_uint
+            }
+        }
+        .parse_next(input)
+    }
+}
+
+#[test]
+fn seq_struct_no_trailing_comma_elided() {
+    #![allow(dead_code)]
+
+    #[derive(Debug, PartialEq)]
+    struct Point {
+        x: u32,
+        y: u32,
+    }
+
+    fn parser(input: &mut &str) -> PResult<Point> {
+        seq! {
+            Point {
+                x: dec_uint,
+                _: ',',
+                y: dec_uint,
+                _: success(())
+            }
+        }
+        .parse_next(input)
+    }
 }
