@@ -1,6 +1,6 @@
 use criterion::black_box;
 
-use winnow::branch::alt;
+use winnow::combinator::alt;
 use winnow::multi::many0;
 use winnow::prelude::*;
 use winnow::token::take_till1;

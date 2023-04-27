@@ -21,9 +21,9 @@
 //!
 //! | combinator | usage | input | output | comment |
 //! |---|---|---|---|---|
-//! | [`alt`][alt] | `alt(("ab", "cd"))` |  `"cdef"` | `Ok(("ef", "cd"))` |Try a list of parsers and return the result of the first successful one|
-//! | [`dispatch`][dispatch] | \- | \- | \- | `match` for parsers |
-//! | [`permutation`][permutation] | `permutation(("ab", "cd", "12"))` | `"cd12abc"` | `Ok(("c", ("ab", "cd", "12"))` |Succeeds when all its child parser have succeeded, whatever the order|
+//! | [`alt`][crate::combinator::alt] | `alt(("ab", "cd"))` |  `"cdef"` | `Ok(("ef", "cd"))` |Try a list of parsers and return the result of the first successful one|
+//! | [`dispatch`][crate::combinator::dispatch] | \- | \- | \- | `match` for parsers |
+//! | [`permutation`][crate::combinator::permutation] | `permutation(("ab", "cd", "12"))` | `"cd12abc"` | `Ok(("c", ("ab", "cd", "12"))` |Succeeds when all its child parser have succeeded, whatever the order|
 //!
 //! ## Sequence combinators
 //!
@@ -156,6 +156,7 @@
 //! - [`tag`][crate::binary::bits::tag]: Check if a set number of bis matches a pattern
 //! - [`bool`][crate::binary::bits::bool]: Match any one bit
 
+mod branch;
 mod core;
 mod parser;
 mod sequence;
@@ -163,11 +164,10 @@ mod sequence;
 #[cfg(test)]
 mod tests;
 
+pub use self::branch::*;
 pub use self::core::*;
 pub use self::parser::*;
 pub use self::sequence::*;
 
-#[allow(unused_imports)]
-use crate::branch::*;
 #[allow(unused_imports)]
 use crate::Parser;

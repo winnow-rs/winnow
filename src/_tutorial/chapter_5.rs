@@ -8,7 +8,7 @@
 //! # use winnow::IResult;
 //! # use winnow::Parser;
 //! # use winnow::token::take_while1;
-//! # use winnow::branch::dispatch;
+//! # use winnow::combinator::dispatch;
 //! # use winnow::token::take;
 //! # use winnow::combinator::fail;
 //! use winnow::combinator::opt;
@@ -74,7 +74,7 @@
 //! # use winnow::IResult;
 //! # use winnow::Parser;
 //! # use winnow::token::take_while1;
-//! # use winnow::branch::dispatch;
+//! # use winnow::combinator::dispatch;
 //! # use winnow::token::take;
 //! # use winnow::combinator::fail;
 //! use winnow::multi::separated0;
@@ -139,7 +139,7 @@
 //! # use winnow::IResult;
 //! # use winnow::Parser;
 //! # use winnow::token::take_while1;
-//! # use winnow::branch::dispatch;
+//! # use winnow::combinator::dispatch;
 //! # use winnow::token::take;
 //! # use winnow::combinator::fail;
 //! # use winnow::multi::separated0;

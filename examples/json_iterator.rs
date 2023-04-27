@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use winnow::prelude::*;
 use winnow::{
-    branch::alt,
     character::{alphanumeric1 as alphanumeric, escaped, float},
+    combinator::alt,
     combinator::cut_err,
     combinator::{preceded, separated_pair, terminated},
     error::ParseError,

@@ -5,8 +5,8 @@ use std::str::FromStr;
 
 use winnow::prelude::*;
 use winnow::{
-    branch::alt,
     character::{digit1 as digit, multispace0 as multispace},
+    combinator::alt,
     combinator::{delimited, preceded},
     multi::many0,
     IResult,

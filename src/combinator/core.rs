@@ -223,7 +223,7 @@ where
 /// Transforms an [`ErrMode::Backtrack`] (recoverable) to [`ErrMode::Cut`] (unrecoverable)
 ///
 /// This commits the parse result, preventing alternative branch paths like with
-/// [`winnow::branch::alt`][crate::branch::alt].
+/// [`winnow::combinator::alt`][crate::combinator::alt].
 ///
 /// # Example
 ///
@@ -233,7 +233,7 @@ where
 /// # use winnow::token::one_of;
 /// # use winnow::character::digit1;
 /// # use winnow::combinator::rest;
-/// # use winnow::branch::alt;
+/// # use winnow::combinator::alt;
 /// # use winnow::combinator::preceded;
 /// # use winnow::prelude::*;
 /// # fn main() {
@@ -258,7 +258,7 @@ where
 /// # use winnow::token::one_of;
 /// # use winnow::character::digit1;
 /// # use winnow::combinator::rest;
-/// # use winnow::branch::alt;
+/// # use winnow::combinator::alt;
 /// # use winnow::combinator::preceded;
 /// use winnow::combinator::cut_err;
 /// # fn main() {
@@ -288,7 +288,7 @@ where
 /// Transforms an [`ErrMode::Cut`] (unrecoverable) to [`ErrMode::Backtrack`] (recoverable)
 ///
 /// This attempts the parse, allowing other parsers to be tried on failure, like with
-/// [`winnow::branch::alt`][crate::branch::alt].
+/// [`winnow::combinator::alt`][crate::combinator::alt].
 pub fn backtrack_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl Parser<I, O, E>
 where
     I: Stream,
@@ -444,7 +444,7 @@ enum State<E> {
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::prelude::*;
-/// use winnow::branch::alt;
+/// use winnow::combinator::alt;
 /// use winnow::combinator::success;
 ///
 /// let mut parser = success::<_,_,Error<_>>(10);

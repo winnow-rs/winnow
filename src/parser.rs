@@ -678,7 +678,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
-/// # use winnow::branch::alt;
+/// # use winnow::combinator::alt;
 /// # use winnow::token::take;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], &[u8]> {
@@ -706,7 +706,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
-/// # use winnow::branch::alt;
+/// # use winnow::combinator::alt;
 /// # use winnow::token::take;
 ///
 /// fn parser(s: &[u8]) -> IResult<&[u8], &[u8]> {
@@ -734,7 +734,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}};
-/// # use winnow::branch::alt;
+/// # use winnow::combinator::alt;
 /// # use winnow::token::take;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {

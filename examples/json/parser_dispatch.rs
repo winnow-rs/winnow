@@ -3,12 +3,12 @@ use std::str;
 
 use winnow::prelude::*;
 use winnow::{
-    branch::{alt, dispatch},
     character::float,
     combinator::cut_err,
     combinator::fail,
     combinator::peek,
     combinator::success,
+    combinator::{alt, dispatch},
     combinator::{delimited, preceded, separated_pair, terminated},
     error::{ContextError, ParseError},
     multi::{fold_many0, separated0},

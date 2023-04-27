@@ -121,7 +121,7 @@
 //! # use winnow::IResult;
 //! # use winnow::Parser;
 //! # use winnow::token::take_while1;
-//! use winnow::branch::alt;
+//! use winnow::combinator::alt;
 //!
 //! fn parse_digits(input: &str) -> IResult<&str, (&str, &str)> {
 //!     alt((
@@ -174,13 +174,13 @@
 //!
 //! Sometimes a giant if/else-if ladder can be slow and you'd rather have a `match` statement for
 //! branches of your parser that have unique prefixes.  In this case, you can use the
-//! [`dispatch`][crate::branch::dispatch] macro:
+//! [`dispatch`][crate::combinator::dispatch] macro:
 //!
 //! ```rust
 //! # use winnow::IResult;
 //! # use winnow::Parser;
 //! # use winnow::token::take_while1;
-//! use winnow::branch::dispatch;
+//! use winnow::combinator::dispatch;
 //! use winnow::token::take;
 //! use winnow::combinator::fail;
 //!
@@ -234,8 +234,8 @@
 //! ```
 
 #![allow(unused_imports)]
-use crate::branch::alt;
-use crate::branch::dispatch;
+use crate::combinator::alt;
+use crate::combinator::dispatch;
 use crate::combinator::preceded;
 
 pub use super::chapter_2 as previous;

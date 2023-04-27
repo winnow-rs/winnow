@@ -1,5 +1,5 @@
-use winnow::branch::alt;
 use winnow::character::digit1 as digit;
+use winnow::combinator::alt;
 use winnow::combinator::delimited;
 use winnow::combinator::opt;
 use winnow::prelude::*;

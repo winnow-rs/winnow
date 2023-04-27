@@ -3,8 +3,8 @@
 //! Lisp is a simple type of language made up of Atoms and Lists, forming easily parsable trees.
 
 use winnow::{
-    branch::alt,
     character::{alpha1, digit1, multispace0, multispace1},
+    combinator::alt,
     combinator::{cut_err, opt},
     combinator::{delimited, preceded, terminated},
     error::VerboseError,

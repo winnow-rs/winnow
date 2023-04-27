@@ -49,6 +49,6 @@
 //! ```
 
 #![allow(unused_imports)]
-use crate::branch::alt;
-use crate::branch::dispatch;
+use crate::combinator::alt;
+use crate::combinator::dispatch;
 use crate::stream::BStr;

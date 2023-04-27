@@ -7,7 +7,7 @@ mod tests;
 
 use crate::lib::std::ops::{Add, Shl};
 
-use crate::branch::alt;
+use crate::combinator::alt;
 use crate::token::one_of;
 
 use crate::combinator::cut_err;
@@ -1620,7 +1620,7 @@ where
 /// use winnow::token::tag;
 /// use winnow::character::escaped_transform;
 /// use winnow::character::alpha1;
-/// use winnow::branch::alt;
+/// use winnow::combinator::alt;
 ///
 /// fn parser(input: &str) -> IResult<&str, String> {
 ///   escaped_transform(
@@ -1646,7 +1646,7 @@ where
 /// use winnow::token::tag;
 /// use winnow::character::escaped_transform;
 /// use winnow::character::alpha1;
-/// use winnow::branch::alt;
+/// use winnow::combinator::alt;
 ///
 /// fn parser(input: Partial<&str>) -> IResult<Partial<&str>, String> {
 ///   escaped_transform(

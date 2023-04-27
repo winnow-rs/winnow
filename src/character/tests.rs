@@ -2,7 +2,7 @@ use super::*;
 
 mod complete {
     use super::*;
-    use crate::branch::alt;
+    use crate::combinator::alt;
     use crate::combinator::opt;
     use crate::error::ErrMode;
     use crate::error::Error;

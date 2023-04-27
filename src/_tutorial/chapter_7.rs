@@ -28,7 +28,7 @@
 //! ```rust
 //! # use winnow::IResult;
 //! # use winnow::token::take_while1;
-//! # use winnow::branch::dispatch;
+//! # use winnow::combinator::dispatch;
 //! # use winnow::token::take;
 //! # use winnow::combinator::fail;
 //! use winnow::Parser;

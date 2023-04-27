@@ -3,9 +3,9 @@ use std::str;
 
 use winnow::prelude::*;
 use winnow::{
-    branch::alt,
     character::float,
     character::line_ending,
+    combinator::alt,
     combinator::cut_err,
     combinator::{delimited, preceded, separated_pair, terminated},
     error::{ContextError, ParseError},

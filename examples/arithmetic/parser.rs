@@ -2,8 +2,8 @@ use std::str::FromStr;
 
 use winnow::prelude::*;
 use winnow::{
-    branch::alt,
     character::{digit1 as digits, space0 as spaces},
+    combinator::alt,
     combinator::delimited,
     multi::fold_many0,
     token::one_of,

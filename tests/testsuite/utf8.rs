@@ -3,7 +3,7 @@ mod test {
     use winnow::Parser;
     use winnow::Partial;
     #[cfg(feature = "alloc")]
-    use winnow::{branch::alt, multi::many1, token::tag_no_case};
+    use winnow::{combinator::alt, multi::many1, token::tag_no_case};
     use winnow::{
         error::ErrMode,
         error::{self, Error, ErrorKind},
