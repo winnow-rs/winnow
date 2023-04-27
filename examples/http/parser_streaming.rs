@@ -1,5 +1,5 @@
 use winnow::{
-    bytes::take_while1, character::line_ending, multi::many1, stream::Partial, IResult, Parser,
+    character::line_ending, multi::many1, stream::Partial, token::take_while1, IResult, Parser,
 };
 
 pub type Stream<'i> = Partial<&'i [u8]>;

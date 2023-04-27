@@ -4,13 +4,13 @@ use super::*;
 use proptest::prelude::*;
 
 use crate::binary::length_data;
-use crate::bytes::tag;
 use crate::error::ErrMode;
 use crate::error::Error;
 use crate::error::ErrorKind;
 use crate::error::Needed;
 use crate::sequence::delimited;
 use crate::stream::AsChar;
+use crate::token::tag;
 use crate::IResult;
 use crate::Parser;
 use crate::Partial;

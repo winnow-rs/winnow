@@ -221,15 +221,15 @@ impl<I: crate::lib::std::fmt::Display, S> crate::lib::std::fmt::Display for Stat
 /// Here is how it works in practice:
 ///
 /// ```rust
-/// # use winnow::{IResult, error::ErrMode, error::Needed, error::{Error, ErrorKind}, bytes, character, stream::Partial};
+/// # use winnow::{IResult, error::ErrMode, error::Needed, error::{Error, ErrorKind}, token, character, stream::Partial};
 /// # use winnow::prelude::*;
 ///
 /// fn take_partial(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-///   bytes::take(4u8).parse_next(i)
+///   token::take(4u8).parse_next(i)
 /// }
 ///
 /// fn take_complete(i: &[u8]) -> IResult<&[u8], &[u8]> {
-///   bytes::take(4u8).parse_next(i)
+///   token::take(4u8).parse_next(i)
 /// }
 ///
 /// // both parsers will take 4 bytes as expected
@@ -2140,7 +2140,7 @@ impl<'a> AsChar for &'a char {
 /// ```
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
-/// # use winnow::bytes::take_while1;
+/// # use winnow::token::take_while1;
 /// fn hex_digit1(input: &str) -> IResult<&str, &str> {
 ///     take_while1(('a'..='f', 'A'..='F', '0'..='9')).parse_next(input)
 /// }

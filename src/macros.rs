@@ -11,7 +11,7 @@
 /// ```rust
 /// use winnow::prelude::*;
 /// use winnow::branch::dispatch;
-/// # use winnow::bytes::any;
+/// # use winnow::token::any;
 /// # use winnow::combinator::peek;
 /// # use winnow::sequence::preceded;
 /// # use winnow::combinator::success;

@@ -208,6 +208,7 @@ pub mod combinator;
 pub mod multi;
 pub mod number;
 pub mod sequence;
+pub mod token;
 pub mod trace;
 
 #[cfg(feature = "unstable-doc")]

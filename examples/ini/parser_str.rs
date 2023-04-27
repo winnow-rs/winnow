@@ -2,11 +2,11 @@ use std::collections::HashMap;
 
 use winnow::prelude::*;
 use winnow::{
-    bytes::{take_till0, take_while0, take_while1},
     character::{alphanumeric1 as alphanumeric, space0 as space},
     combinator::opt,
     multi::many0,
     sequence::{delimited, terminated},
+    token::{take_till0, take_while0, take_while1},
 };
 
 pub type Stream<'i> = &'i str;

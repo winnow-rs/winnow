@@ -3,10 +3,10 @@ use std::str::FromStr;
 use winnow::prelude::*;
 use winnow::{
     branch::alt,
-    bytes::one_of,
     character::{digit1 as digits, space0 as spaces},
     multi::fold_many0,
     sequence::delimited,
+    token::one_of,
     IResult,
 };
 

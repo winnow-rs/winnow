@@ -21,7 +21,7 @@ use crate::Parser;
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// use winnow::sequence::preceded;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// let mut parser = preceded("abc", "efg");
 ///
@@ -59,7 +59,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// use winnow::sequence::terminated;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// let mut parser = terminated("abc", "efg");
 ///
@@ -98,7 +98,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// # use winnow::prelude::*;
 /// use winnow::sequence::separated_pair;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// let mut parser = separated_pair("abc", "|", "efg");
 ///
@@ -139,7 +139,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// # use winnow::prelude::*;
 /// use winnow::sequence::delimited;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// let mut parser = delimited("(", "abc", ")");
 ///

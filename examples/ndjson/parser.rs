@@ -4,7 +4,6 @@ use std::str;
 use winnow::prelude::*;
 use winnow::{
     branch::alt,
-    bytes::{any, none_of, take, take_while0},
     character::float,
     character::line_ending,
     combinator::cut_err,
@@ -12,6 +11,7 @@ use winnow::{
     multi::{fold_many0, separated0},
     sequence::{delimited, preceded, separated_pair, terminated},
     stream::Partial,
+    token::{any, none_of, take, take_while0},
 };
 
 #[derive(Debug, PartialEq, Clone)]

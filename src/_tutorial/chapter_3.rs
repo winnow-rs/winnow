@@ -10,7 +10,7 @@
 //! Now that we can create more interesting parsers, we can sequence them together, like:
 //!
 //! ```rust
-//! # use winnow::bytes::take_while1;
+//! # use winnow::token::take_while1;
 //! # use winnow::Parser;
 //! # use winnow::IResult;
 //! #
@@ -40,7 +40,7 @@
 //!
 //! To sequence these together, you can just put them in a tuple:
 //! ```rust
-//! # use winnow::bytes::take_while1;
+//! # use winnow::token::take_while1;
 //! # use winnow::Parser;
 //! # use winnow::IResult;
 //! #
@@ -75,7 +75,7 @@
 //! Frequently, you won't care about the tag and you can instead use one of the provided combinators,
 //! like [`preceded`]:
 //! ```rust
-//! # use winnow::bytes::take_while1;
+//! # use winnow::token::take_while1;
 //! # use winnow::Parser;
 //! # use winnow::IResult;
 //! use winnow::sequence::preceded;
@@ -120,7 +120,7 @@
 //! ```rust
 //! # use winnow::IResult;
 //! # use winnow::Parser;
-//! # use winnow::bytes::take_while1;
+//! # use winnow::token::take_while1;
 //! use winnow::branch::alt;
 //!
 //! fn parse_digits(input: &str) -> IResult<&str, (&str, &str)> {
@@ -179,9 +179,9 @@
 //! ```rust
 //! # use winnow::IResult;
 //! # use winnow::Parser;
-//! # use winnow::bytes::take_while1;
+//! # use winnow::token::take_while1;
 //! use winnow::branch::dispatch;
-//! use winnow::bytes::take;
+//! use winnow::token::take;
 //! use winnow::combinator::fail;
 //!
 //! fn parse_digits(input: &str) -> IResult<&str, &str> {

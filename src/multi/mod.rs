@@ -29,7 +29,7 @@ use crate::Parser;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::multi::many0;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   many0("abc").parse_next(s)
@@ -94,7 +94,7 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::multi::many1;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   many1("abc").parse_next(s)
@@ -158,7 +158,7 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::multi::many_till0;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, (Vec<&str>, &str)> {
 ///   many_till0("abc", "end").parse_next(s)
@@ -221,7 +221,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::multi::separated0;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   separated0("abc", "|").parse_next(s)
@@ -299,7 +299,7 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::multi::separated1;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   separated1("abc", "|").parse_next(s)
@@ -495,7 +495,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::multi::many_m_n;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   many_m_n(0, 2, "abc").parse_next(s)
@@ -566,7 +566,7 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::multi::count;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   count("abc", 2).parse_next(s)
@@ -622,7 +622,7 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::multi::fill;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, [&str; 2]> {
 ///   let mut buf = ["", ""];
@@ -682,7 +682,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::multi::fold_many0;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   fold_many0(
@@ -757,7 +757,7 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::multi::fold_many1;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   fold_many1(
@@ -842,7 +842,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::multi::fold_many_m_n;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   fold_many_m_n(

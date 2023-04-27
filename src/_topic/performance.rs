@@ -27,7 +27,7 @@
 //! #    E: winnow::error::ParseError<I>,
 //! {
 //!     // ...some chained combinators...
-//! # winnow::bytes::any
+//! # winnow::token::any
 //! }
 //! ```
 //!
@@ -42,7 +42,7 @@
 //! {
 //!     move |input: I| {
 //!         // ...some chained combinators...
-//! # winnow::bytes::any
+//! # winnow::token::any
 //!             .parse_next(input)
 //!     }
 //! }

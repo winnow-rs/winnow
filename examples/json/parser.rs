@@ -4,12 +4,12 @@ use std::str;
 use winnow::prelude::*;
 use winnow::{
     branch::alt,
-    bytes::{any, none_of, take, take_while0},
     character::float,
     combinator::cut_err,
     error::{ContextError, ParseError},
     multi::{fold_many0, separated0},
     sequence::{delimited, preceded, separated_pair, terminated},
+    token::{any, none_of, take, take_while0},
 };
 
 use crate::json::JsonValue;

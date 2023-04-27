@@ -99,7 +99,7 @@ pub trait Permutation<I, O, E> {
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}};
 /// # use winnow::prelude::*;
 /// use winnow::branch::permutation;
-/// use winnow::bytes::any;
+/// use winnow::token::any;
 ///
 /// fn parser(input: &str) -> IResult<&str, (char, char)> {
 ///   permutation((any, 'a')).parse_next(input)

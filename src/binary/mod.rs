@@ -7,7 +7,6 @@ pub mod bits;
 #[cfg(test)]
 mod tests;
 
-use crate::bytes::take;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::Needed;
@@ -17,6 +16,7 @@ use crate::multi::count;
 use crate::stream::Accumulate;
 use crate::stream::{AsBytes, Stream, StreamIsPartial};
 use crate::stream::{ToUsize, UpdateSlice};
+use crate::token::take;
 use crate::trace::trace;
 use crate::IResult;
 use crate::Parser;
@@ -2410,7 +2410,7 @@ where
 /// use winnow::Bytes;
 /// use winnow::binary::be_u16;
 /// use winnow::binary::length_data;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// type Stream<'i> = Partial<&'i Bytes>;
 ///
@@ -2436,7 +2436,7 @@ where
     trace("length_data", move |i: I| {
         let (i, length) = f.parse_next(i)?;
 
-        crate::bytes::take(length).parse_next(i)
+        crate::token::take(length).parse_next(i)
     })
 }
 
@@ -2462,7 +2462,7 @@ where
 /// use winnow::Bytes;
 /// use winnow::binary::be_u16;
 /// use winnow::binary::length_value;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// type Stream<'i> = Partial<&'i Bytes>;
 ///
@@ -2519,7 +2519,7 @@ where
 /// use winnow::Bytes;
 /// use winnow::binary::u8;
 /// use winnow::binary::length_count;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 ///
 /// type Stream<'i> = &'i Bytes;
 ///

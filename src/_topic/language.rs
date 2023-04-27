@@ -62,7 +62,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   error::ParseError,
-//!   bytes::take_till1,
+//!   token::take_till1,
 //! };
 //!
 //! pub fn peol_comment<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, (), E>
@@ -82,7 +82,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   error::ParseError,
-//!   bytes::{tag, take_until0},
+//!   token::{tag, take_until0},
 //! };
 //!
 //! pub fn pinline_comment<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, (), E> {
@@ -107,8 +107,8 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   stream::AsChar,
-//!   bytes::take_while0,
-//!   bytes::one_of,
+//!   token::take_while0,
+//!   token::one_of,
 //! };
 //!
 //! pub fn identifier(input: &str) -> IResult<&str, &str> {
@@ -122,8 +122,8 @@
 //! ```
 //!
 //! Let's say we apply this to the identifier `hello_world123abc`. The first element of the tuple
-//! would uses [`one_of`][crate::bytes::one_of] which would recognize `h`. The tuple ensures that
-//! `ello_world123abc` will be piped to the next [`take_while0`][crate::bytes::take_while0] parser,
+//! would uses [`one_of`][crate::token::one_of] which would recognize `h`. The tuple ensures that
+//! `ello_world123abc` will be piped to the next [`take_while0`][crate::token::take_while0] parser,
 //! which recognizes every remaining character. However, the tuple returns a tuple of the results
 //! of its sub-parsers. The [`recognize`][crate::Parser::recognize] parser produces a `&str` of the
 //! input text that was parsed, which in this case is the entire `&str` `hello_world123abc`.
@@ -159,8 +159,8 @@
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   bytes::one_of,
-//!   bytes::tag,
+//!   token::one_of,
+//!   token::tag,
 //! };
 //!
 //! fn hexadecimal(input: &str) -> IResult<&str, &str> { // <'a, E: ParseError<&'a str>>
@@ -181,8 +181,8 @@
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   bytes::one_of,
-//!   bytes::tag,
+//!   token::one_of,
+//!   token::tag,
 //! };
 //!
 //! fn hexadecimal_value(input: &str) -> IResult<&str, i64> {
@@ -205,8 +205,8 @@
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   bytes::one_of,
-//!   bytes::tag,
+//!   token::one_of,
+//!   token::tag,
 //! };
 //!
 //! fn octal(input: &str) -> IResult<&str, &str> {
@@ -227,8 +227,8 @@
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   sequence::{preceded, terminated},
-//!   bytes::one_of,
-//!   bytes::tag,
+//!   token::one_of,
+//!   token::tag,
 //! };
 //!
 //! fn binary(input: &str) -> IResult<&str, &str> {
@@ -249,7 +249,7 @@
 //!   IResult,
 //!   multi::{many0, many1},
 //!   sequence::terminated,
-//!   bytes::one_of,
+//!   token::one_of,
 //! };
 //!
 //! fn decimal(input: &str) -> IResult<&str, &str> {
@@ -272,7 +272,7 @@
 //!   multi::{many0, many1},
 //!   combinator::opt,
 //!   sequence::{preceded, terminated},
-//!   bytes::one_of,
+//!   token::one_of,
 //! };
 //!
 //! fn float(input: &str) -> IResult<&str, &str> {

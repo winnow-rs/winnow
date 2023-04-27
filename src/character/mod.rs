@@ -8,10 +8,8 @@ mod tests;
 use crate::lib::std::ops::{Add, Shl};
 
 use crate::branch::alt;
-use crate::bytes::one_of;
+use crate::token::one_of;
 
-use crate::bytes::take_while0;
-use crate::bytes::take_while1;
 use crate::combinator::cut_err;
 use crate::combinator::opt;
 use crate::error::ParseError;
@@ -19,6 +17,8 @@ use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::stream::ContainsToken;
 use crate::stream::{AsBStr, AsChar, Offset, ParseSlice, Stream, StreamIsPartial};
 use crate::stream::{Compare, CompareResult};
+use crate::token::take_while0;
+use crate::token::take_while1;
 use crate::trace::trace;
 use crate::IResult;
 use crate::Parser;
@@ -1103,7 +1103,7 @@ where
             let token = token.as_char();
             token == '+' || token == '-'
         }
-        let (input, sign) = opt(crate::bytes::one_of(sign).map(AsChar::as_char))
+        let (input, sign) = opt(crate::token::one_of(sign).map(AsChar::as_char))
             .map(|c| c != Some('-'))
             .parse_next(input)?;
 
@@ -1399,9 +1399,9 @@ where
 {
     alt((
         recognize_float,
-        crate::bytes::tag_no_case("nan"),
-        crate::bytes::tag_no_case("inf"),
-        crate::bytes::tag_no_case("infinity"),
+        crate::token::tag_no_case("nan"),
+        crate::token::tag_no_case("inf"),
+        crate::token::tag_no_case("infinity"),
     ))
     .parse_next(input)
 }
@@ -1441,7 +1441,7 @@ where
 /// # use winnow::character::digit1;
 /// # use winnow::prelude::*;
 /// use winnow::character::escaped;
-/// use winnow::bytes::one_of;
+/// use winnow::token::one_of;
 ///
 /// fn esc(s: &str) -> IResult<&str, &str> {
 ///   escaped(digit1, '\\', one_of(r#""n\"#)).parse_next(s)
@@ -1457,7 +1457,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// use winnow::character::escaped;
-/// use winnow::bytes::one_of;
+/// use winnow::token::one_of;
 ///
 /// fn esc(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   escaped(digit1, '\\', one_of("\"n\\")).parse_next(s)
@@ -1617,7 +1617,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use std::str::from_utf8;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 /// use winnow::character::escaped_transform;
 /// use winnow::character::alpha1;
 /// use winnow::branch::alt;
@@ -1643,7 +1643,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use std::str::from_utf8;
 /// # use winnow::Partial;
-/// use winnow::bytes::tag;
+/// use winnow::token::tag;
 /// use winnow::character::escaped_transform;
 /// use winnow::character::alpha1;
 /// use winnow::branch::alt;

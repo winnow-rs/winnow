@@ -77,7 +77,7 @@ fn usize_length_bytes_issue() {
 
 #[test]
 fn take_till0_issue() {
-    use winnow::bytes::take_till0;
+    use winnow::token::take_till0;
 
     fn nothing(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         take_till0(|_| true).parse_next(i)
@@ -125,16 +125,16 @@ fn issue_655() {
 
 #[cfg(feature = "alloc")]
 fn issue_717(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-    use winnow::bytes::{tag, take_till1};
     use winnow::multi::separated0;
+    use winnow::token::{tag, take_till1};
 
     separated0(take_till1([0x0u8]), tag([0x0])).parse_next(i)
 }
 
 mod issue_647 {
-    use winnow::bytes::tag;
     use winnow::multi::separated0;
     use winnow::prelude::*;
+    use winnow::token::tag;
     use winnow::{binary::be_f64, error::ErrMode, error::Error, IResult};
     pub type Stream<'a> = winnow::Partial<&'a [u8]>;
 
@@ -164,7 +164,7 @@ mod issue_647 {
 #[cfg_attr(debug_assertions, should_panic)]
 fn issue_848_overflow_incomplete_bits_to_bytes() {
     fn take(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        use winnow::bytes::take;
+        use winnow::token::take;
         take(0x2000000000000000_usize).parse_next(i)
     }
     fn parser(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
@@ -229,8 +229,8 @@ fn issue_1231_bits_expect_fn_closure() {
 
 #[test]
 fn issue_1282_findtoken_char() {
-    use winnow::bytes::one_of;
     use winnow::error::Error;
+    use winnow::token::one_of;
     let mut parser = one_of::<_, _, Error<_>>(&['a', 'b', 'c'][..]);
     assert_eq!(parser.parse_next("aaa"), Ok(("aa", 'a')));
 }
@@ -283,7 +283,7 @@ fn issue_1459_clamp_capacity() {
 
 #[test]
 fn issue_1617_count_parser_returning_zero_size() {
-    use winnow::{bytes::tag, error::Error, multi::count};
+    use winnow::{error::Error, multi::count, token::tag};
 
     // previously, `count()` panicked if the parser had type `O = ()`
     let parser = tag::<_, _, Error<&str>>("abc").map(|_| ());

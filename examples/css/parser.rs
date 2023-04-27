@@ -1,5 +1,5 @@
-use winnow::bytes::take_while_m_n;
 use winnow::prelude::*;
+use winnow::token::take_while_m_n;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Color {

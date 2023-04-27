@@ -3,11 +3,11 @@ use std::str;
 
 use winnow::prelude::*;
 use winnow::{
-    bytes::take_while0,
     character::{alphanumeric1 as alphanumeric, multispace0 as multispace, space0 as space},
     combinator::opt,
     multi::many0,
     sequence::{delimited, separated_pair, terminated},
+    token::take_while0,
 };
 
 pub type Stream<'i> = &'i [u8];

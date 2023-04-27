@@ -27,7 +27,7 @@ compile_error!("`debug` requires `std`");
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
-/// # use winnow::bytes::take_while_m_n;
+/// # use winnow::token::take_while_m_n;
 /// # use winnow::stream::AsChar;
 /// # use winnow::prelude::*;
 /// use winnow::trace::trace;

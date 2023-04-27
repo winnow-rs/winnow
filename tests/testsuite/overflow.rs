@@ -4,11 +4,11 @@
 #[cfg(feature = "alloc")]
 use winnow::binary::be_u64;
 use winnow::binary::length_data;
-use winnow::bytes::take;
 use winnow::error::{ErrMode, Needed};
 #[cfg(feature = "alloc")]
 use winnow::multi::many0;
 use winnow::prelude::*;
+use winnow::token::take;
 use winnow::Partial;
 
 // Parser definition

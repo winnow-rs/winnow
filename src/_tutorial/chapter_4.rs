@@ -46,9 +46,9 @@
 //! ```rust
 //! # use winnow::IResult;
 //! # use winnow::Parser;
-//! # use winnow::bytes::take_while1;
+//! # use winnow::token::take_while1;
 //! use winnow::branch::dispatch;
-//! use winnow::bytes::take;
+//! use winnow::token::take;
 //! use winnow::combinator::fail;
 //!
 //! fn parse_digits(input: &str) -> IResult<&str, usize> {

@@ -1,4 +1,5 @@
 //! Deprecated, see [`binary::bits`]
+#![deprecated(since = "0.4.2", note = "Replaced with `binary::bits`")]
 
 use crate::binary;
 use crate::error::{ErrorConvert, ParseError};

@@ -3,13 +3,13 @@ use super::*;
 use crate::binary::u16;
 use crate::binary::u8;
 use crate::binary::Endianness;
-use crate::bytes::take;
 use crate::error::ErrMode;
 use crate::error::Error;
 use crate::error::ErrorKind;
 use crate::error::Needed;
 use crate::error::ParseError;
 use crate::multi::count;
+use crate::token::take;
 use crate::IResult;
 use crate::Parser;
 use crate::Partial;
@@ -146,8 +146,8 @@ fn test_parser_map_parser() {
 #[test]
 #[cfg(feature = "std")]
 fn test_parser_into() {
-    use crate::bytes::take;
     use crate::error::Error;
+    use crate::token::take;
 
     let mut parser = take::<_, _, Error<_>>(3u8).output_into();
     let result: IResult<&[u8], Vec<u8>> = parser.parse_next(&b"abcdefg"[..]);
@@ -226,7 +226,7 @@ fn not_test() {
 
 #[test]
 fn test_parser_verify() {
-    use crate::bytes::take;
+    use crate::token::take;
 
     fn test(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         take(5u8)
@@ -253,7 +253,7 @@ fn test_parser_verify() {
 #[test]
 #[allow(unused)]
 fn test_parser_verify_ref() {
-    use crate::bytes::take;
+    use crate::token::take;
 
     let mut parser1 = take(3u8).verify(|s: &[u8]| s == &b"abc"[..]);
 
@@ -279,7 +279,7 @@ fn test_parser_verify_ref() {
 #[test]
 #[cfg(feature = "alloc")]
 fn test_parser_verify_alloc() {
-    use crate::bytes::take;
+    use crate::token::take;
     let mut parser1 = take(3u8)
         .map(|s: &[u8]| s.to_vec())
         .verify(|s: &[u8]| s == &b"abc"[..]);

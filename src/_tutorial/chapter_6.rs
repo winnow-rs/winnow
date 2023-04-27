@@ -14,7 +14,7 @@
 //! ```rust
 //! # use winnow::IResult;
 //! # use winnow::Parser;
-//! # use winnow::bytes::take_while1;
+//! # use winnow::token::take_while1;
 //! # use winnow::branch::alt;
 //! use winnow::error::VerboseError;
 //!
@@ -89,7 +89,7 @@
 //! ```rust
 //! # use winnow::IResult;
 //! # use winnow::Parser;
-//! # use winnow::bytes::take_while1;
+//! # use winnow::token::take_while1;
 //! # use winnow::branch::alt;
 //! # use winnow::error::VerboseError;
 //! use winnow::combinator::cut_err;

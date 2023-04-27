@@ -4,12 +4,12 @@
 
 use winnow::{
     branch::alt,
-    bytes::one_of,
     character::{alpha1, digit1, multispace0, multispace1},
     combinator::{cut_err, opt},
     error::VerboseError,
     multi::many0,
     sequence::{delimited, preceded, terminated},
+    token::one_of,
     IResult, Parser,
 };
 

@@ -61,7 +61,7 @@
 //! ```rust
 //! # use winnow::Parser;
 //! # use winnow::IResult;
-//! use winnow::bytes::one_of;
+//! use winnow::token::one_of;
 //!
 //! fn parse_digits(input: &str) -> IResult<&str, char> {
 //!     one_of("0123456789abcdefgABCDEFG").parse_next(input)
@@ -87,7 +87,7 @@
 //! >     list: &'static str
 //! > ) -> impl Parser<&'i str, char, Error<&'i str>> {
 //! >     // ...
-//! > #    winnow::bytes::one_of(list)
+//! > #    winnow::token::one_of(list)
 //! > }
 //! > ```
 //! > If you have not programmed in a language where functions are values, the type signature of the
@@ -105,7 +105,7 @@
 //! ```rust
 //! # use winnow::Parser;
 //! # use winnow::IResult;
-//! use winnow::bytes::take_while1;
+//! use winnow::token::take_while1;
 //!
 //! fn parse_digits(input: &str) -> IResult<&str, &str> {
 //!     take_while1("0123456789abcdefgABCDEFG").parse_next(input)
@@ -144,11 +144,11 @@
 //! ```
 
 #![allow(unused_imports)]
-use crate::bytes::one_of;
-use crate::bytes::tag;
-use crate::bytes::take_while1;
 use crate::character::hex_digit1;
 use crate::stream::ContainsToken;
+use crate::token::one_of;
+use crate::token::tag;
+use crate::token::take_while1;
 use crate::Parser;
 use std::ops::RangeInclusive;
 
