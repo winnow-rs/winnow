@@ -105,8 +105,8 @@ where
     combinator::separated_foldr1(parser, sep, op)
 }
 
-/// Deprecated, replaced by [`combinator::repeat_m_n`]
-#[deprecated(since = "0.4.2", note = "Replaced with `combinator::repeat_m_n`")]
+/// Deprecated, replaced by [`combinator::repeat`]
+#[deprecated(since = "0.4.2", note = "Replaced with `combinator::repeat`")]
 #[inline(always)]
 pub fn many_m_n<I, O, C, E, F>(min: usize, max: usize, parse: F) -> impl Parser<I, C, E>
 where
@@ -115,7 +115,7 @@ where
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    combinator::repeat_m_n(min, max, parse)
+    combinator::repeat(min..=max, parse)
 }
 
 /// Deprecated, replaced by [`combinator::count`]

@@ -4,9 +4,70 @@ use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParseError;
 use crate::stream::Accumulate;
+use crate::stream::Range;
 use crate::stream::Stream;
 use crate::trace::trace;
+use crate::IResult;
 use crate::Parser;
+
+/// [`Accumulate`] the output of a parser into a container, like `Vec`
+///
+/// This stops before `n` when the parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
+/// [`cut_err`][crate::combinator::cut_err].
+///
+/// # Arguments
+/// * `m` The minimum number of iterations.
+/// * `n` The maximum number of iterations.
+/// * `f` The parser to apply.
+///
+/// To recognize a series of tokens, [`Accumulate`] into a `()` and then [`Parser::recognize`].
+///
+/// **Warning:** If the parser passed to `repeat` accepts empty inputs
+/// (like `alpha0` or `digit0`), `repeat` will return an error,
+/// to prevent going into an infinite loop.
+///
+/// # Example
+///
+/// ```rust
+/// # #[cfg(feature = "std")] {
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::prelude::*;
+/// use winnow::combinator::repeat;
+/// use winnow::token::tag;
+///
+/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
+///   repeat(0..=2, "abc").parse_next(s)
+/// }
+///
+/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
+/// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
+/// assert_eq!(parser("123123"), Ok(("123123", vec![])));
+/// assert_eq!(parser(""), Ok(("", vec![])));
+/// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
+/// # }
+/// ```
+#[doc(alias = "repeated")]
+#[doc(alias = "many_m_n")]
+#[inline(always)]
+pub fn repeat<I, O, C, E, F>(range: impl Into<Range>, mut f: F) -> impl Parser<I, C, E>
+where
+    I: Stream,
+    C: Accumulate<O>,
+    F: Parser<I, O, E>,
+    E: ParseError<I>,
+{
+    let Range {
+        start_inclusive,
+        end_inclusive,
+    } = range.into();
+    trace("repeat", move |i: I| {
+        match (start_inclusive, end_inclusive) {
+            (0, None) => repeat0_(&mut f, i),
+            (1, None) => repeat1(f.by_ref()).parse_next(i),
+            (start, end) => repeat_m_n_(start, end.unwrap_or(usize::MAX), &mut f, i),
+        }
+    })
+}
 
 /// [`Accumulate`] the output of a parser into a container, like `Vec`
 ///
@@ -48,25 +109,33 @@ where
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    trace("repeat0", move |mut i: I| {
-        let mut acc = C::initial(None);
-        loop {
-            let len = i.eof_offset();
-            match f.parse_next(i.clone()) {
-                Err(ErrMode::Backtrack(_)) => return Ok((i, acc)),
-                Err(e) => return Err(e),
-                Ok((i1, o)) => {
-                    // infinite loop check: the parser must always consume
-                    if i1.eof_offset() == len {
-                        return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
-                    }
+    trace("repeat0", move |i: I| repeat0_(&mut f, i))
+}
 
-                    i = i1;
-                    acc.accumulate(o);
+fn repeat0_<I, O, C, E, F>(f: &mut F, mut i: I) -> IResult<I, C, E>
+where
+    I: Stream,
+    C: Accumulate<O>,
+    F: Parser<I, O, E>,
+    E: ParseError<I>,
+{
+    let mut acc = C::initial(None);
+    loop {
+        let len = i.eof_offset();
+        match f.parse_next(i.clone()) {
+            Err(ErrMode::Backtrack(_)) => return Ok((i, acc)),
+            Err(e) => return Err(e),
+            Ok((i1, o)) => {
+                // infinite loop check: the parser must always consume
+                if i1.eof_offset() == len {
+                    return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
                 }
+
+                i = i1;
+                acc.accumulate(o);
             }
         }
-    })
+    }
 }
 
 /// [`Accumulate`] the output of a parser into a container, like `Vec`
@@ -113,7 +182,17 @@ where
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    trace("repeat1", move |mut i: I| match f.parse_next(i.clone()) {
+    trace("repeat1", move |i: I| repeat1_(&mut f, i))
+}
+
+fn repeat1_<I, O, C, E, F>(f: &mut F, mut i: I) -> IResult<I, C, E>
+where
+    I: Stream,
+    C: Accumulate<O>,
+    F: Parser<I, O, E>,
+    E: ParseError<I>,
+{
+    match f.parse_next(i.clone()) {
         Err(e) => Err(e.append(i, ErrorKind::Many)),
         Ok((i1, o)) => {
             let mut acc = C::initial(None);
@@ -137,7 +216,7 @@ where
                 }
             }
         }
-    })
+    }
 }
 
 /// [`Accumulate`] the output of parser `f` into a container, like `Vec`, until the parser `g`
@@ -474,87 +553,52 @@ where
     })
 }
 
-/// [`Accumulate`] the output of a parser into a container, like `Vec`
-///
-/// This stops before `n` when the parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
-/// [`cut_err`][crate::combinator::cut_err].
-///
-/// # Arguments
-/// * `m` The minimum number of iterations.
-/// * `n` The maximum number of iterations.
-/// * `f` The parser to apply.
-///
-/// To recognize a series of tokens, [`Accumulate`] into a `()` and then [`Parser::recognize`].
-///
-/// **Warning:** If the parser passed to `repeat_m_n` accepts empty inputs
-/// (like `alpha0` or `digit0`), `repeat_m_n` will return an error,
-/// to prevent going into an infinite loop.
-///
-/// # Example
-///
-/// ```rust
-/// # #[cfg(feature = "std")] {
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::combinator::repeat_m_n;
-/// use winnow::token::tag;
-///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   repeat_m_n(0, 2, "abc").parse_next(s)
-/// }
-///
-/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Ok(("123123", vec![])));
-/// assert_eq!(parser(""), Ok(("", vec![])));
-/// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
-/// # }
-/// ```
-#[doc(alias = "repeated")]
-#[doc(alias = "many_m_n")]
-pub fn repeat_m_n<I, O, C, E, F>(min: usize, max: usize, mut parse: F) -> impl Parser<I, C, E>
+fn repeat_m_n_<I, O, C, E, F>(
+    min: usize,
+    max: usize,
+    parse: &mut F,
+    mut input: I,
+) -> IResult<I, C, E>
 where
     I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    trace("repeat_m_n", move |mut input: I| {
-        if min > max {
-            return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::Many)));
-        }
+    if min > max {
+        return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::Many)));
+    }
 
-        let mut res = C::initial(Some(min));
-        for count in 0..max {
-            let len = input.eof_offset();
-            match parse.parse_next(input.clone()) {
-                Ok((tail, value)) => {
-                    // infinite loop check: the parser must always consume
-                    if tail.eof_offset() == len {
-                        return Err(ErrMode::assert(
-                            input,
-                            "`repeat` parsers must always consume",
-                        ));
-                    }
+    let mut res = C::initial(Some(min));
+    for count in 0..max {
+        let len = input.eof_offset();
+        match parse.parse_next(input.clone()) {
+            Ok((tail, value)) => {
+                // infinite loop check: the parser must always consume
+                if tail.eof_offset() == len {
+                    return Err(ErrMode::assert(
+                        input,
+                        "`repeat` parsers must always consume",
+                    ));
+                }
 
-                    res.accumulate(value);
-                    input = tail;
-                }
-                Err(ErrMode::Backtrack(e)) => {
-                    if count < min {
-                        return Err(ErrMode::Backtrack(e.append(input, ErrorKind::Many)));
-                    } else {
-                        return Ok((input, res));
-                    }
-                }
-                Err(e) => {
-                    return Err(e);
+                res.accumulate(value);
+                input = tail;
+            }
+            Err(ErrMode::Backtrack(e)) => {
+                if count < min {
+                    return Err(ErrMode::Backtrack(e.append(input, ErrorKind::Many)));
+                } else {
+                    return Ok((input, res));
                 }
             }
+            Err(e) => {
+                return Err(e);
+            }
         }
+    }
 
-        Ok((input, res))
-    })
+    Ok((input, res))
 }
 
 /// [`Accumulate`] the output of a parser into a container, like `Vec`

@@ -147,7 +147,7 @@
 //! slice that is returned, which is demonstrated in the second hexadecimal number parser.
 //!
 //! If you wish to limit the number of digits in a valid integer literal, replace `repeat1` with
-//! `repeat_m_n` in the recipes.
+//! `repeat` in the recipes.
 //!
 //! #### Hexadecimal
 //!

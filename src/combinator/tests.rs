@@ -948,9 +948,9 @@ fn infinite_many() {
 
 #[test]
 #[cfg(feature = "alloc")]
-fn repeat_m_n_test() {
+fn repeat_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat_m_n(2, 4, "Abcd").parse_next(i)
+        repeat(2..=4, "Abcd").parse_next(i)
     }
 
     let a = &b"Abcdef"[..];

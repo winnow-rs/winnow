@@ -99,13 +99,13 @@ fn overflow_incomplete_many_till0() {
 #[test]
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_many_m_n() {
-    use winnow::combinator::repeat_m_n;
+    use winnow::combinator::repeat;
 
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat_m_n(2, 4, length_data(be_u64)).parse_next(i)
+        repeat(2..=4, length_data(be_u64)).parse_next(i)
     }
 
-    // Trigger an overflow in repeat_m_n
+    // Trigger an overflow in repeat
     assert_eq!(
         multi(Partial::new(
             &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xef"[..]
