@@ -70,7 +70,6 @@ where
 
 /// [`Accumulate`] the output of a parser into a container, like `Vec`
 ///
-///
 /// This stops on [`ErrMode::Backtrack`] if there is at least one result.  To instead chain an error up,
 /// see [`cut_err`][crate::combinator::cut_err].
 ///
@@ -139,7 +138,8 @@ where
     })
 }
 
-/// Applies the parser `f` until the parser `g` produces a result.
+/// [`Accumulate`] the output of parser `f` into a container, like `Vec`, until the parser `g`
+/// produces a result.
 ///
 /// Returns a tuple of the results of `f` in a `Vec` and the result of `g`.
 ///
@@ -201,7 +201,7 @@ where
     })
 }
 
-/// Alternates between two parsers to produce a list of elements.
+/// [`Accumulate`] the output of a parser, interleaed with `sep`
 ///
 /// This stops when either parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
@@ -277,7 +277,7 @@ where
     })
 }
 
-/// Alternates between two parsers to produce a list of elements until [`ErrMode::Backtrack`].
+/// [`Accumulate`] the output of a parser, interleaed with `sep`
 ///
 /// Fails if the element parser does not produce at least one element.$
 ///
@@ -468,7 +468,7 @@ where
     })
 }
 
-/// Repeats the embedded parser `m..=n` times
+/// [`Accumulate`] the output of a parser into a container, like `Vec`
 ///
 /// This stops before `n` when the parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
@@ -604,7 +604,7 @@ where
     })
 }
 
-/// Runs the embedded parser repeatedly, filling the given slice with results.
+/// Repeats the embedded parser, filling the given slice with results.
 ///
 /// This parser fails if the input runs out before the given slice is full.
 ///

@@ -3,7 +3,7 @@ use crate::stream::Stream;
 use crate::trace::trace;
 use crate::*;
 
-/// Apply two parsers, only returning the output from the second.
+/// Sequence two parsers, only returning the output from the second.
 ///
 /// # Arguments
 /// * `first` The opening parser.
@@ -41,7 +41,7 @@ where
     })
 }
 
-/// Apply two parsers, only returning the output of the first.
+/// Sequence two parsers, only returning the output of the first.
 ///
 /// # Arguments
 /// * `first` The first parser to apply.
@@ -79,7 +79,7 @@ where
     })
 }
 
-/// Apply three parsers, only returning the values of the first and third.
+/// Sequence three parsers, only returning the values of the first and third.
 ///
 /// # Arguments
 /// * `first` The first parser to apply.
@@ -120,7 +120,7 @@ where
     })
 }
 
-/// Apply three parsers, only returning the output of the second.
+/// Sequence three parsers, only returning the output of the second.
 ///
 /// # Arguments
 /// * `first` The first parser to apply and discard.

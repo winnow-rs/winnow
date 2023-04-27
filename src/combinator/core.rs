@@ -326,7 +326,7 @@ where
     trace("todo", move |_input: I| todo!("unimplemented parse")).parse_next(input)
 }
 
-/// Creates an iterator from input data and a parser.
+/// Repeats the embedded parser, lazily returning the results
 ///
 /// Call the iterator's [`ParserIterator::finish`] method to get the remaining input if successful,
 /// or the error value if we encountered an error.
