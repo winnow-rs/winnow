@@ -8,7 +8,6 @@ use winnow::{
     character::{digit1 as digit, space0 as space},
     multi::fold_many0,
     sequence::{delimited, terminated},
-    token::tag,
 };
 
 use std::cell::RefCell;
