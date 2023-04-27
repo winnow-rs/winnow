@@ -3,8 +3,8 @@ use std::iter::Iterator;
 
 use winnow::character::alphanumeric1;
 use winnow::combinator::iterator;
+use winnow::combinator::{separated_pair, terminated};
 use winnow::prelude::*;
-use winnow::sequence::{separated_pair, terminated};
 
 fn main() {
     let mut data = "abcabcabcabc";

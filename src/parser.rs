@@ -192,7 +192,7 @@ pub trait Parser<I, O, E> {
     /// ```rust
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
     /// use winnow::character::{alpha1};
-    /// use winnow::sequence::separated_pair;
+    /// use winnow::combinator::separated_pair;
     /// # fn main() {
     ///
     /// let mut parser = separated_pair(alpha1, ',', alpha1).recognize();
@@ -227,7 +227,7 @@ pub trait Parser<I, O, E> {
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult};
     /// use winnow::character::{alpha1};
     /// use winnow::token::tag;
-    /// use winnow::sequence::separated_pair;
+    /// use winnow::combinator::separated_pair;
     ///
     /// fn inner_parser(input: &str) -> IResult<&str, bool> {
     ///     "1234".value(true).parse_next(input)
@@ -267,7 +267,7 @@ pub trait Parser<I, O, E> {
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, stream::Stream};
     /// use winnow::stream::Located;
     /// use winnow::character::alpha1;
-    /// use winnow::sequence::separated_pair;
+    /// use winnow::combinator::separated_pair;
     ///
     /// let mut parser = separated_pair(alpha1.span(), ',', alpha1.span());
     ///
@@ -300,7 +300,7 @@ pub trait Parser<I, O, E> {
     /// use winnow::stream::Located;
     /// use winnow::character::alpha1;
     /// use winnow::token::tag;
-    /// use winnow::sequence::separated_pair;
+    /// use winnow::combinator::separated_pair;
     ///
     /// fn inner_parser(input: Located<&str>) -> IResult<Located<&str>, bool> {
     ///     "1234".value(true).parse_next(input)

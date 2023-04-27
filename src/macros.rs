@@ -13,7 +13,7 @@
 /// use winnow::branch::dispatch;
 /// # use winnow::token::any;
 /// # use winnow::combinator::peek;
-/// # use winnow::sequence::preceded;
+/// # use winnow::combinator::preceded;
 /// # use winnow::combinator::success;
 /// # use winnow::combinator::fail;
 ///

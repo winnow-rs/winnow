@@ -1,8 +1,8 @@
 use winnow::branch::alt;
 use winnow::character::digit1 as digit;
+use winnow::combinator::delimited;
 use winnow::combinator::opt;
 use winnow::prelude::*;
-use winnow::sequence::delimited;
 use winnow::IResult;
 
 use std::str;

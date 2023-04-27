@@ -6,8 +6,8 @@ use winnow::prelude::*;
 use winnow::{
     branch::alt,
     character::{digit1 as digit, space0 as space},
+    combinator::{delimited, terminated},
     multi::fold_many0,
-    sequence::{delimited, terminated},
 };
 
 use std::cell::RefCell;

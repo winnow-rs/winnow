@@ -1,11 +1,11 @@
 #![allow(dead_code)]
 
 use winnow::character::digit1 as digit;
+use winnow::combinator::terminated;
 use winnow::error::{ErrorKind, ParseError};
 #[cfg(feature = "alloc")]
 use winnow::multi::count;
 use winnow::prelude::*;
-use winnow::sequence::terminated;
 use winnow::IResult;
 use winnow::Partial;
 

@@ -7,8 +7,8 @@ use winnow::prelude::*;
 use winnow::{
     branch::alt,
     character::{digit1 as digit, multispace0 as multispace},
+    combinator::{delimited, preceded},
     multi::many0,
-    sequence::{delimited, preceded},
     IResult,
 };
 

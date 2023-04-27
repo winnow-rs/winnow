@@ -158,16 +158,16 @@
 
 mod core;
 mod parser;
+mod sequence;
 
 #[cfg(test)]
 mod tests;
 
 pub use self::core::*;
 pub use self::parser::*;
+pub use self::sequence::*;
 
 #[allow(unused_imports)]
 use crate::branch::*;
-#[allow(unused_imports)]
-use crate::sequence::*;
 #[allow(unused_imports)]
 use crate::Parser;

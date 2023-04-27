@@ -11,10 +11,10 @@
 
 use winnow::branch::alt;
 use winnow::character::multispace1;
+use winnow::combinator::{delimited, preceded};
 use winnow::error::{FromExternalError, ParseError};
 use winnow::multi::fold_many0;
 use winnow::prelude::*;
-use winnow::sequence::{delimited, preceded};
 use winnow::token::{take_till1, take_while_m_n};
 
 /// Parse a string. Use a loop of `parse_fragment` and push all of the fragments

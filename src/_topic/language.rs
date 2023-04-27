@@ -28,7 +28,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   error::ParseError,
-//!   sequence::delimited,
+//!   combinator::delimited,
 //!   character::multispace0,
 //! };
 //!
@@ -158,7 +158,7 @@
 //! use winnow::{
 //!   branch::alt,
 //!   multi::{many0, many1},
-//!   sequence::{preceded, terminated},
+//!   combinator::{preceded, terminated},
 //!   token::one_of,
 //!   token::tag,
 //! };
@@ -180,7 +180,7 @@
 //! use winnow::{
 //!   branch::alt,
 //!   multi::{many0, many1},
-//!   sequence::{preceded, terminated},
+//!   combinator::{preceded, terminated},
 //!   token::one_of,
 //!   token::tag,
 //! };
@@ -204,7 +204,7 @@
 //! use winnow::{
 //!   branch::alt,
 //!   multi::{many0, many1},
-//!   sequence::{preceded, terminated},
+//!   combinator::{preceded, terminated},
 //!   token::one_of,
 //!   token::tag,
 //! };
@@ -226,7 +226,7 @@
 //! use winnow::{
 //!   branch::alt,
 //!   multi::{many0, many1},
-//!   sequence::{preceded, terminated},
+//!   combinator::{preceded, terminated},
 //!   token::one_of,
 //!   token::tag,
 //! };
@@ -248,7 +248,7 @@
 //! use winnow::{
 //!   IResult,
 //!   multi::{many0, many1},
-//!   sequence::terminated,
+//!   combinator::terminated,
 //!   token::one_of,
 //! };
 //!
@@ -271,7 +271,7 @@
 //!   branch::alt,
 //!   multi::{many0, many1},
 //!   combinator::opt,
-//!   sequence::{preceded, terminated},
+//!   combinator::{preceded, terminated},
 //!   token::one_of,
 //! };
 //!

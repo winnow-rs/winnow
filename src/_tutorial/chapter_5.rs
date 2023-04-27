@@ -13,7 +13,7 @@
 //! # use winnow::combinator::fail;
 //! use winnow::combinator::opt;
 //! use winnow::multi::many0;
-//! use winnow::sequence::terminated;
+//! use winnow::combinator::terminated;
 //!
 //! fn parse_list(input: &str) -> IResult<&str, Vec<usize>> {
 //!     many0(terminated(parse_digits, opt(','))).parse_next(input)

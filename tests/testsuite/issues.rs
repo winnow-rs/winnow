@@ -237,7 +237,7 @@ fn issue_1282_findtoken_char() {
 
 #[test]
 fn issue_x_looser_fill_bounds() {
-    use winnow::{character::digit1, multi::fill, sequence::terminated};
+    use winnow::{character::digit1, combinator::terminated, multi::fill};
 
     fn fill_pair(i: &[u8]) -> IResult<&[u8], [&[u8]; 2]> {
         let mut buf = [&[][..], &[][..]];

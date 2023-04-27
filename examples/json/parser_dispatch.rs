@@ -9,9 +9,9 @@ use winnow::{
     combinator::fail,
     combinator::peek,
     combinator::success,
+    combinator::{delimited, preceded, separated_pair, terminated},
     error::{ContextError, ParseError},
     multi::{fold_many0, separated0},
-    sequence::{delimited, preceded, separated_pair, terminated},
     token::{any, none_of, take, take_while0},
 };
 

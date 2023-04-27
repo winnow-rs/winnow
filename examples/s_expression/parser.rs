@@ -6,9 +6,9 @@ use winnow::{
     branch::alt,
     character::{alpha1, digit1, multispace0, multispace1},
     combinator::{cut_err, opt},
+    combinator::{delimited, preceded, terminated},
     error::VerboseError,
     multi::many0,
-    sequence::{delimited, preceded, terminated},
     token::one_of,
     IResult, Parser,
 };

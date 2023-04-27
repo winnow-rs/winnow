@@ -1,12 +1,7 @@
-//! Combinators applying parsers in sequence
-
-#[cfg(test)]
-mod tests;
-
 use crate::error::ParseError;
 use crate::stream::Stream;
 use crate::trace::trace;
-use crate::Parser;
+use crate::*;
 
 /// Apply two parsers, only returning the output from the second.
 ///
@@ -20,7 +15,7 @@ use crate::Parser;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::sequence::preceded;
+/// use winnow::combinator::preceded;
 /// use winnow::token::tag;
 ///
 /// let mut parser = preceded("abc", "efg");
@@ -58,7 +53,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
-/// use winnow::sequence::terminated;
+/// use winnow::combinator::terminated;
 /// use winnow::token::tag;
 ///
 /// let mut parser = terminated("abc", "efg");
@@ -97,7 +92,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
 /// # use winnow::prelude::*;
-/// use winnow::sequence::separated_pair;
+/// use winnow::combinator::separated_pair;
 /// use winnow::token::tag;
 ///
 /// let mut parser = separated_pair("abc", "|", "efg");
@@ -138,7 +133,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::error::Needed::Size;
 /// # use winnow::prelude::*;
-/// use winnow::sequence::delimited;
+/// use winnow::combinator::delimited;
 /// use winnow::token::tag;
 ///
 /// let mut parser = delimited("(", "abc", ")");

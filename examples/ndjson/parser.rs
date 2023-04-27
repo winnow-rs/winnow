@@ -7,9 +7,9 @@ use winnow::{
     character::float,
     character::line_ending,
     combinator::cut_err,
+    combinator::{delimited, preceded, separated_pair, terminated},
     error::{ContextError, ParseError},
     multi::{fold_many0, separated0},
-    sequence::{delimited, preceded, separated_pair, terminated},
     stream::Partial,
     token::{any, none_of, take, take_while0},
 };

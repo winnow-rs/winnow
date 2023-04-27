@@ -234,7 +234,7 @@ where
 /// # use winnow::character::digit1;
 /// # use winnow::combinator::rest;
 /// # use winnow::branch::alt;
-/// # use winnow::sequence::preceded;
+/// # use winnow::combinator::preceded;
 /// # use winnow::prelude::*;
 /// # fn main() {
 ///
@@ -259,7 +259,7 @@ where
 /// # use winnow::character::digit1;
 /// # use winnow::combinator::rest;
 /// # use winnow::branch::alt;
-/// # use winnow::sequence::preceded;
+/// # use winnow::combinator::preceded;
 /// use winnow::combinator::cut_err;
 /// # fn main() {
 ///
@@ -336,7 +336,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// use winnow::{combinator::iterator, IResult, token::tag, character::alpha1, sequence::terminated};
+/// use winnow::{combinator::iterator, IResult, token::tag, character::alpha1, combinator::terminated};
 /// use std::collections::HashMap;
 ///
 /// let data = "abc|defg|hijkl|mnopqr|123";

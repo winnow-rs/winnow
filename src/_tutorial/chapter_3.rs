@@ -78,7 +78,7 @@
 //! # use winnow::token::take_while1;
 //! # use winnow::Parser;
 //! # use winnow::IResult;
-//! use winnow::sequence::preceded;
+//! use winnow::combinator::preceded;
 //!
 //! # fn parse_prefix(input: &str) -> IResult<&str, &str> {
 //! #     "0x".parse_next(input)
@@ -236,7 +236,7 @@
 #![allow(unused_imports)]
 use crate::branch::alt;
 use crate::branch::dispatch;
-use crate::sequence::preceded;
+use crate::combinator::preceded;
 
 pub use super::chapter_2 as previous;
 pub use super::chapter_4 as next;

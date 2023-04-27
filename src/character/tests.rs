@@ -582,8 +582,8 @@ mod complete {
     fn complete_escaped_hang_1118() {
         // issue ##1118 escaped does not work with empty string
         fn unquote(input: &str) -> IResult<&str, &str> {
+            use crate::combinator::delimited;
             use crate::combinator::opt;
-            use crate::sequence::delimited;
             use crate::token::one_of;
 
             delimited(
