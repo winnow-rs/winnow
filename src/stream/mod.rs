@@ -13,9 +13,6 @@ use core::num::NonZeroUsize;
 
 use crate::error::{ErrMode, ErrorKind, Needed, ParseError};
 use crate::lib::std::iter::{Cloned, Enumerate};
-use crate::lib::std::ops::{
-    Range, RangeFrom, RangeFull, RangeInclusive, RangeTo, RangeToInclusive,
-};
 use crate::lib::std::slice::Iter;
 use crate::lib::std::str::from_utf8;
 use crate::lib::std::str::CharIndices;
@@ -2196,7 +2193,7 @@ impl<C: AsChar, F: Fn(C) -> bool> ContainsToken<C> for F {
     }
 }
 
-impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for Range<C2> {
+impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for crate::lib::std::ops::Range<C2> {
     #[inline(always)]
     fn contains_token(&self, token: C1) -> bool {
         let start = self.start.clone().as_char();
@@ -2205,7 +2202,9 @@ impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for Range<C2> {
     }
 }
 
-impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeInclusive<C2> {
+impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1>
+    for crate::lib::std::ops::RangeInclusive<C2>
+{
     #[inline(always)]
     fn contains_token(&self, token: C1) -> bool {
         let start = self.start().clone().as_char();
@@ -2214,7 +2213,7 @@ impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeInclusive<C2> {
     }
 }
 
-impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeFrom<C2> {
+impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for crate::lib::std::ops::RangeFrom<C2> {
     #[inline(always)]
     fn contains_token(&self, token: C1) -> bool {
         let start = self.start.clone().as_char();
@@ -2222,7 +2221,7 @@ impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeFrom<C2> {
     }
 }
 
-impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeTo<C2> {
+impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for crate::lib::std::ops::RangeTo<C2> {
     #[inline(always)]
     fn contains_token(&self, token: C1) -> bool {
         let end = self.end.clone().as_char();
@@ -2230,7 +2229,9 @@ impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeTo<C2> {
     }
 }
 
-impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeToInclusive<C2> {
+impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1>
+    for crate::lib::std::ops::RangeToInclusive<C2>
+{
     #[inline(always)]
     fn contains_token(&self, token: C1) -> bool {
         let end = self.end.clone().as_char();
@@ -2238,7 +2239,7 @@ impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for RangeToInclusive<C2> 
     }
 }
 
-impl<C1: AsChar> ContainsToken<C1> for RangeFull {
+impl<C1: AsChar> ContainsToken<C1> for crate::lib::std::ops::RangeFull {
     #[inline(always)]
     fn contains_token(&self, _token: C1) -> bool {
         true
