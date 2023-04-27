@@ -168,7 +168,7 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
         take(0x2000000000000000_usize).parse_next(i)
     }
     fn parser(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        use winnow::bits::{bits, bytes};
+        use winnow::binary::bits::{bits, bytes};
 
         bits(bytes(take)).parse_next(i)
     }
@@ -219,7 +219,7 @@ fn issue_1027_convert_error_panic_nonempty() {
 
 #[test]
 fn issue_1231_bits_expect_fn_closure() {
-    use winnow::bits::{bits, take};
+    use winnow::binary::bits::{bits, take};
     use winnow::error::Error;
     pub fn example(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
         bits::<_, _, Error<_>, _, _>((take(1usize), take(1usize))).parse_next(input)

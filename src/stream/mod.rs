@@ -708,7 +708,7 @@ where
     }
 }
 
-/// Iterator for [bit][crate::bits] stream (`(I, usize)`)
+/// Iterator for [bit][crate::binary::bits] stream (`(I, usize)`)
 pub struct BitOffsets<I> {
     i: (I, usize),
     o: usize,

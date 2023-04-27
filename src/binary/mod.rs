@@ -2,6 +2,8 @@
 
 #![allow(clippy::match_same_arms)]
 
+pub mod bits;
+
 #[cfg(test)]
 mod tests;
 
