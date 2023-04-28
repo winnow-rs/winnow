@@ -27,14 +27,14 @@ compile_error!("`debug` requires `std`");
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, IResult};
-/// # use winnow::token::take_while_m_n;
+/// # use winnow::token::take_while;
 /// # use winnow::stream::AsChar;
 /// # use winnow::prelude::*;
 /// use winnow::trace::trace;
 ///
 /// fn short_alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   trace("short_alpha",
-///     take_while_m_n(3, 6, AsChar::is_alpha)
+///     take_while(3..=6, AsChar::is_alpha)
 ///   ).parse_next(s)
 /// }
 ///
