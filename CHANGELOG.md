@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Improve color control for `debug` feature
+
 ## [0.4.3] - 2023-04-28
 
 ### Fixes
