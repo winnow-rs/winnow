@@ -3,6 +3,7 @@
 
 #[cfg(feature = "alloc")]
 use winnow::binary::be_u64;
+#[cfg(feature = "alloc")]
 use winnow::binary::length_data;
 #[cfg(feature = "alloc")]
 use winnow::combinator::repeat0;
