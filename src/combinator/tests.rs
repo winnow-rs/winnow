@@ -948,9 +948,9 @@ fn infinite_many() {
 
 #[test]
 #[cfg(feature = "alloc")]
-fn repeat_m_n_test() {
+fn repeat_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat_m_n(2, 4, "Abcd").parse_next(i)
+        repeat(2..=4, "Abcd").parse_next(i)
     }
 
     let a = &b"Abcdef"[..];
@@ -1183,13 +1183,13 @@ fn fold_repeat1_test() {
 
 #[test]
 #[cfg(feature = "alloc")]
-fn fold_repeat_m_n_test() {
+fn fold_repeat_test() {
     fn fold_into_vec<T>(mut acc: Vec<T>, item: T) -> Vec<T> {
         acc.push(item);
         acc
     }
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_repeat_m_n(2, 4, "Abcd", Vec::new, fold_into_vec).parse_next(i)
+        fold_repeat(2..=4, "Abcd", Vec::new, fold_into_vec).parse_next(i)
     }
 
     let a = &b"Abcdef"[..];

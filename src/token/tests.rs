@@ -18,14 +18,13 @@ use crate::Partial;
 #[test]
 fn complete_take_while_m_n_utf8_all_matching() {
     let result: IResult<&str, &str> =
-        take_while_m_n(1, 4, |c: char| c.is_alphabetic()).parse_next("øn");
+        take_while(1..=4, |c: char| c.is_alphabetic()).parse_next("øn");
     assert_eq!(result, Ok(("", "øn")));
 }
 
 #[test]
 fn complete_take_while_m_n_utf8_all_matching_substring() {
-    let result: IResult<&str, &str> =
-        take_while_m_n(1, 1, |c: char| c.is_alphabetic()).parse_next("øn");
+    let result: IResult<&str, &str> = take_while(1, |c: char| c.is_alphabetic()).parse_next("øn");
     assert_eq!(result, Ok(("n", "ø")));
 }
 
@@ -60,7 +59,7 @@ proptest! {
       let input = format!("{:a<valid$}{:b<invalid$}", "", "", valid=valid, invalid=invalid);
       let expected = model_complete_take_while_m_n(m, n, valid, &input);
       if m <= n {
-          let actual = take_while_m_n(m, n, |c: char| c == 'a').parse_next(input.as_str());
+          let actual = take_while(m..=n, |c: char| c == 'a').parse_next(input.as_str());
           assert_eq!(expected, actual);
       }
   }
@@ -336,7 +335,7 @@ fn partial_take_while1() {
 #[test]
 fn partial_take_while_m_n() {
     fn x(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_while_m_n(2, 4, AsChar::is_alpha).parse_next(i)
+        take_while(2..=4, AsChar::is_alpha).parse_next(i)
     }
     let a = &b""[..];
     let b = &b"a"[..];
@@ -519,7 +518,7 @@ fn partial_take_utf8() {
 #[test]
 fn partial_take_while_m_n_utf8_fixed() {
     fn parser(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while_m_n(1, 1, |c| c == 'A' || c == '😃').parse_next(i)
+        take_while(1, |c| c == 'A' || c == '😃').parse_next(i)
     }
     assert_eq!(parser(Partial::new("A!")), Ok((Partial::new("!"), "A")));
     assert_eq!(parser(Partial::new("😃!")), Ok((Partial::new("!"), "😃")));
@@ -528,7 +527,7 @@ fn partial_take_while_m_n_utf8_fixed() {
 #[test]
 fn partial_take_while_m_n_utf8_range() {
     fn parser(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while_m_n(1, 2, |c| c == 'A' || c == '😃').parse_next(i)
+        take_while(1..=2, |c| c == 'A' || c == '😃').parse_next(i)
     }
     assert_eq!(parser(Partial::new("A!")), Ok((Partial::new("!"), "A")));
     assert_eq!(parser(Partial::new("😃!")), Ok((Partial::new("!"), "😃")));
@@ -537,7 +536,7 @@ fn partial_take_while_m_n_utf8_range() {
 #[test]
 fn partial_take_while_m_n_utf8_full_match_fixed() {
     fn parser(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while_m_n(1, 1, |c: char| c.is_alphabetic()).parse_next(i)
+        take_while(1, |c: char| c.is_alphabetic()).parse_next(i)
     }
     assert_eq!(parser(Partial::new("øn")), Ok((Partial::new("n"), "ø")));
 }
@@ -545,7 +544,7 @@ fn partial_take_while_m_n_utf8_full_match_fixed() {
 #[test]
 fn partial_take_while_m_n_utf8_full_match_range() {
     fn parser(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while_m_n(1, 2, |c: char| c.is_alphabetic()).parse_next(i)
+        take_while(1..=2, |c: char| c.is_alphabetic()).parse_next(i)
     }
     assert_eq!(parser(Partial::new("øn")), Ok((Partial::new(""), "øn")));
 }

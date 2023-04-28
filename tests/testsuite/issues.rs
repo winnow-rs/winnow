@@ -196,8 +196,8 @@ fn issue_942() {
 #[test]
 #[cfg(feature = "std")]
 fn issue_many_m_n_with_zeros() {
-    use winnow::combinator::repeat_m_n;
-    let mut parser = repeat_m_n::<_, _, Vec<_>, (), _>(0, 0, 'a');
+    use winnow::combinator::repeat;
+    let mut parser = repeat::<_, _, Vec<_>, (), _>(0, 'a');
     assert_eq!(parser.parse_next("aaa"), Ok(("aaa", vec![])));
 }
 
@@ -265,8 +265,8 @@ fn issue_x_looser_fill_bounds() {
 #[cfg(feature = "std")]
 fn issue_1459_clamp_capacity() {
     // shouldn't panic
-    use winnow::combinator::repeat_m_n;
-    let mut parser = repeat_m_n::<_, _, Vec<_>, (), _>(usize::MAX, usize::MAX, 'a');
+    use winnow::combinator::repeat;
+    let mut parser = repeat::<_, _, Vec<_>, (), _>(usize::MAX..=usize::MAX, 'a');
     assert_eq!(
         parser.parse_next("a"),
         Err(winnow::error::ErrMode::Backtrack(()))

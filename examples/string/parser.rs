@@ -15,7 +15,7 @@ use winnow::combinator::fold_repeat0;
 use winnow::combinator::{delimited, preceded};
 use winnow::error::{FromExternalError, ParseError};
 use winnow::prelude::*;
-use winnow::token::{take_till1, take_while_m_n};
+use winnow::token::{take_till1, take_while};
 
 /// Parse a string. Use a loop of `parse_fragment` and push all of the fragments
 /// into an output string.
@@ -129,9 +129,9 @@ fn parse_unicode<'a, E>(input: &'a str) -> IResult<&'a str, char, E>
 where
     E: ParseError<&'a str> + FromExternalError<&'a str, std::num::ParseIntError>,
 {
-    // `take_while_m_n` parses between `m` and `n` bytes (inclusive) that match
+    // `take_while` parses between `m` and `n` bytes (inclusive) that match
     // a predicate. `parse_hex` here parses between 1 and 6 hexadecimal numerals.
-    let parse_hex = take_while_m_n(1, 6, |c: char| c.is_ascii_hexdigit());
+    let parse_hex = take_while(1..=6, |c: char| c.is_ascii_hexdigit());
 
     // `preceded` takes a prefix parser, and if it succeeds, returns the result
     // of the body parser. In this case, it parses u{XXXX}.

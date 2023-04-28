@@ -8,6 +8,7 @@ use crate::error::ErrorKind;
 use crate::error::Needed;
 use crate::error::ParseError;
 use crate::lib::std::result::Result::Ok;
+use crate::stream::Range;
 use crate::stream::{
     split_at_offset1_complete, split_at_offset1_partial, split_at_offset_complete,
     split_at_offset_partial, Compare, CompareResult, ContainsToken, FindSlice, SliceLen, Stream,
@@ -383,6 +384,93 @@ where
     )
 }
 
+/// Recognize the longest (m <= len <= n) input slice that matches the [pattern][ContainsToken]
+///
+/// It will return an `ErrMode::Backtrack(Error::new(_, ErrorKind::Slice))` if the pattern wasn't met or is out
+/// of range (m <= len <= n).
+///
+/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))`  if the pattern reaches the end of the input or is too short.
+///
+/// To recognize a series of tokens, use [`repeat`][crate::combinator::repeat] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`][crate::Parser::recognize].
+///
+/// # Example
+///
+/// ```rust
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
+/// use winnow::token::take_while;
+/// use winnow::stream::AsChar;
+///
+/// fn short_alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
+///   take_while(3..=6, AsChar::is_alpha).parse_next(s)
+/// }
+///
+/// assert_eq!(short_alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
+/// assert_eq!(short_alpha(b"lengthy"), Ok((&b"y"[..], &b"length"[..])));
+/// assert_eq!(short_alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
+/// assert_eq!(short_alpha(b"ed"), Err(ErrMode::Backtrack(Error::new(&b"ed"[..], ErrorKind::Slice))));
+/// assert_eq!(short_alpha(b"12345"), Err(ErrMode::Backtrack(Error::new(&b"12345"[..], ErrorKind::Slice))));
+/// ```
+///
+/// ```rust
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::Partial;
+/// use winnow::token::take_while;
+/// use winnow::stream::AsChar;
+///
+/// fn short_alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
+///   take_while(3..=6, AsChar::is_alpha).parse_next(s)
+/// }
+///
+/// assert_eq!(short_alpha(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
+/// assert_eq!(short_alpha(Partial::new(b"lengthy")), Ok((Partial::new(&b"y"[..]), &b"length"[..])));
+/// assert_eq!(short_alpha(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(short_alpha(Partial::new(b"ed")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(short_alpha(Partial::new(b"12345")), Err(ErrMode::Backtrack(Error::new(Partial::new(&b"12345"[..]), ErrorKind::Slice))));
+/// ```
+#[inline(always)]
+pub fn take_while<T, I, Error: ParseError<I>>(
+    range: impl Into<Range>,
+    list: T,
+) -> impl Parser<I, <I as Stream>::Slice, Error>
+where
+    I: StreamIsPartial,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
+{
+    let Range {
+        start_inclusive,
+        end_inclusive,
+    } = range.into();
+    trace("take_while", move |i: I| {
+        match (start_inclusive, end_inclusive) {
+            (0, None) => {
+                if i.is_partial() {
+                    streaming_take_while_internal(i, &list)
+                } else {
+                    complete_take_while_internal(i, &list)
+                }
+            }
+            (1, None) => {
+                if i.is_partial() {
+                    streaming_take_while1_internal(i, &list)
+                } else {
+                    complete_take_while1_internal(i, &list)
+                }
+            }
+            (start, end) => {
+                let end = end.unwrap_or(usize::MAX);
+                if i.is_partial() {
+                    streaming_take_while_m_n_internal(i, start, end, &list)
+                } else {
+                    complete_take_while_m_n_internal(i, start, end, &list)
+                }
+            }
+        }
+    })
+}
+
 /// Recognize the longest input slice (if any) that matches the [pattern][ContainsToken]
 ///
 /// *Partial version*: will return a `ErrMode::Incomplete(Needed::new(1))` if the pattern reaches the end of the input.
@@ -564,71 +652,6 @@ where
 {
     let e: ErrorKind = ErrorKind::Slice;
     split_at_offset1_complete(&i, |c| !list.contains_token(c), e)
-}
-
-/// Recognize the longest (m <= len <= n) input slice that matches the [pattern][ContainsToken]
-///
-/// It will return an `ErrMode::Backtrack(Error::new(_, ErrorKind::Slice))` if the pattern wasn't met or is out
-/// of range (m <= len <= n).
-///
-/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))`  if the pattern reaches the end of the input or is too short.
-///
-/// To recognize a series of tokens, use [`repeat_m_n`][crate::combinator::repeat_m_n] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`][crate::Parser::recognize].
-///
-/// # Example
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::token::take_while_m_n;
-/// use winnow::stream::AsChar;
-///
-/// fn short_alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
-///   take_while_m_n(3, 6, AsChar::is_alpha).parse_next(s)
-/// }
-///
-/// assert_eq!(short_alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
-/// assert_eq!(short_alpha(b"lengthy"), Ok((&b"y"[..], &b"length"[..])));
-/// assert_eq!(short_alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
-/// assert_eq!(short_alpha(b"ed"), Err(ErrMode::Backtrack(Error::new(&b"ed"[..], ErrorKind::Slice))));
-/// assert_eq!(short_alpha(b"12345"), Err(ErrMode::Backtrack(Error::new(&b"12345"[..], ErrorKind::Slice))));
-/// ```
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
-/// # use winnow::prelude::*;
-/// # use winnow::Partial;
-/// use winnow::token::take_while_m_n;
-/// use winnow::stream::AsChar;
-///
-/// fn short_alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-///   take_while_m_n(3, 6, AsChar::is_alpha).parse_next(s)
-/// }
-///
-/// assert_eq!(short_alpha(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
-/// assert_eq!(short_alpha(Partial::new(b"lengthy")), Ok((Partial::new(&b"y"[..]), &b"length"[..])));
-/// assert_eq!(short_alpha(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(short_alpha(Partial::new(b"ed")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(short_alpha(Partial::new(b"12345")), Err(ErrMode::Backtrack(Error::new(Partial::new(&b"12345"[..]), ErrorKind::Slice))));
-/// ```
-#[inline(always)]
-pub fn take_while_m_n<T, I, Error: ParseError<I>>(
-    m: usize,
-    n: usize,
-    list: T,
-) -> impl Parser<I, <I as Stream>::Slice, Error>
-where
-    I: StreamIsPartial,
-    I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    trace("take_while_m_n", move |i: I| {
-        if i.is_partial() {
-            streaming_take_while_m_n_internal(i, m, n, &list)
-        } else {
-            complete_take_while_m_n_internal(i, m, n, &list)
-        }
-    })
 }
 
 pub(crate) fn streaming_take_while_m_n_internal<T, I, Error: ParseError<I>>(

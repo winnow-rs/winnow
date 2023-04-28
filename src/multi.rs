@@ -105,8 +105,8 @@ where
     combinator::separated_foldr1(parser, sep, op)
 }
 
-/// Deprecated, replaced by [`combinator::repeat_m_n`]
-#[deprecated(since = "0.4.2", note = "Replaced with `combinator::repeat_m_n`")]
+/// Deprecated, replaced by [`combinator::repeat`]
+#[deprecated(since = "0.4.2", note = "Replaced with `combinator::repeat`")]
 #[inline(always)]
 pub fn many_m_n<I, O, C, E, F>(min: usize, max: usize, parse: F) -> impl Parser<I, C, E>
 where
@@ -115,7 +115,7 @@ where
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    combinator::repeat_m_n(min, max, parse)
+    combinator::repeat(min..=max, parse)
 }
 
 /// Deprecated, replaced by [`combinator::count`]
@@ -171,8 +171,8 @@ where
     combinator::fold_repeat1(f, init, g)
 }
 
-/// Deprecated, replaced by [`combinator::fold_repeat_m_n`]
-#[deprecated(since = "0.4.2", note = "Replaced with `combinator::fold_repeat_m_n`")]
+/// Deprecated, replaced by [`combinator::fold_repeat`]
+#[deprecated(since = "0.4.2", note = "Replaced with `combinator::fold_repeat`")]
 #[inline(always)]
 pub fn fold_many_m_n<I, O, E, F, G, H, R>(
     min: usize,
@@ -188,7 +188,7 @@ where
     H: FnMut() -> R,
     E: ParseError<I>,
 {
-    combinator::fold_repeat_m_n(min, max, parse, init, fold)
+    combinator::fold_repeat(min..=max, parse, init, fold)
 }
 
 /// Deprecated, replaced by [`binary::length_data`]
