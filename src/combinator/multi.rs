@@ -712,6 +712,84 @@ where
     })
 }
 
+/// Repeats the embedded parser `m..=n` times, calling `g` to gather the results
+///
+/// This stops before `n` when the parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
+/// [`cut_err`][crate::combinator::cut_err].
+///
+/// # Arguments
+/// * `m` The minimum number of iterations.
+/// * `n` The maximum number of iterations.
+/// * `f` The parser to apply.
+/// * `init` A function returning the initial value.
+/// * `g` The function that combines a result of `f` with
+///       the current accumulator.
+///
+/// **Warning:** If the parser passed to `fold_repeat` accepts empty inputs
+/// (like `alpha0` or `digit0`), `fold_repeat` will return an error,
+/// to prevent going into an infinite loop.
+///
+/// # Example
+///
+/// ```rust
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::prelude::*;
+/// use winnow::combinator::fold_repeat;
+/// use winnow::token::tag;
+///
+/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
+///   fold_repeat(
+///     0..=2,
+///     "abc",
+///     Vec::new,
+///     |mut acc: Vec<_>, item| {
+///       acc.push(item);
+///       acc
+///     }
+///   ).parse_next(s)
+/// }
+///
+/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
+/// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
+/// assert_eq!(parser("123123"), Ok(("123123", vec![])));
+/// assert_eq!(parser(""), Ok(("", vec![])));
+/// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
+/// ```
+#[doc(alias = "fold_many_m_n")]
+#[inline(always)]
+pub fn fold_repeat<I, O, E, F, G, H, R>(
+    range: impl Into<Range>,
+    mut f: F,
+    mut init: H,
+    mut g: G,
+) -> impl Parser<I, R, E>
+where
+    I: Stream,
+    F: Parser<I, O, E>,
+    G: FnMut(R, O) -> R,
+    H: FnMut() -> R,
+    E: ParseError<I>,
+{
+    let Range {
+        start_inclusive,
+        end_inclusive,
+    } = range.into();
+    trace("fold_repeat", move |i: I| {
+        match (start_inclusive, end_inclusive) {
+            (0, None) => fold_repeat0_(&mut f, &mut init, &mut g, i),
+            (1, None) => fold_repeat1_(&mut f, &mut init, &mut g, i),
+            (start, end) => fold_repeat_m_n_(
+                start,
+                end.unwrap_or(usize::MAX),
+                &mut f,
+                &mut init,
+                &mut g,
+                i,
+            ),
+        }
+    })
+}
+
 /// Repeats the embedded parser, calling `g` to gather the results.
 ///
 /// This stops on [`ErrMode::Backtrack`].  To instead chain an error up, see
@@ -761,31 +839,42 @@ where
     E: ParseError<I>,
 {
     trace("fold_repeat0", move |i: I| {
-        let mut res = init();
-        let mut input = i;
+        fold_repeat0_(&mut f, &mut init, &mut g, i)
+    })
+}
 
-        loop {
-            let i_ = input.clone();
-            let len = input.eof_offset();
-            match f.parse_next(i_) {
-                Ok((i, o)) => {
-                    // infinite loop check: the parser must always consume
-                    if i.eof_offset() == len {
-                        return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
-                    }
+fn fold_repeat0_<I, O, E, F, G, H, R>(f: &mut F, init: &mut H, g: &mut G, i: I) -> IResult<I, R, E>
+where
+    I: Stream,
+    F: Parser<I, O, E>,
+    G: FnMut(R, O) -> R,
+    H: FnMut() -> R,
+    E: ParseError<I>,
+{
+    let mut res = init();
+    let mut input = i;
 
-                    res = g(res, o);
-                    input = i;
+    loop {
+        let i_ = input.clone();
+        let len = input.eof_offset();
+        match f.parse_next(i_) {
+            Ok((i, o)) => {
+                // infinite loop check: the parser must always consume
+                if i.eof_offset() == len {
+                    return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
                 }
-                Err(ErrMode::Backtrack(_)) => {
-                    return Ok((input, res));
-                }
-                Err(e) => {
-                    return Err(e);
-                }
+
+                res = g(res, o);
+                input = i;
+            }
+            Err(ErrMode::Backtrack(_)) => {
+                return Ok((input, res));
+            }
+            Err(e) => {
+                return Err(e);
             }
         }
-    })
+    }
 }
 
 /// Repeats the embedded parser, calling `g` to gather the results.
@@ -837,96 +926,11 @@ where
     E: ParseError<I>,
 {
     trace("fold_repeat1", move |i: I| {
-        let _i = i.clone();
-        let init = init();
-        match f.parse_next(_i) {
-            Err(ErrMode::Backtrack(_)) => Err(ErrMode::from_error_kind(i, ErrorKind::Many)),
-            Err(e) => Err(e),
-            Ok((i1, o1)) => {
-                let mut acc = g(init, o1);
-                let mut input = i1;
-
-                loop {
-                    let _input = input.clone();
-                    let len = input.eof_offset();
-                    match f.parse_next(_input) {
-                        Err(ErrMode::Backtrack(_)) => {
-                            break;
-                        }
-                        Err(e) => return Err(e),
-                        Ok((i, o)) => {
-                            // infinite loop check: the parser must always consume
-                            if i.eof_offset() == len {
-                                return Err(ErrMode::assert(
-                                    i,
-                                    "`repeat` parsers must always consume",
-                                ));
-                            }
-
-                            acc = g(acc, o);
-                            input = i;
-                        }
-                    }
-                }
-
-                Ok((input, acc))
-            }
-        }
+        fold_repeat1_(&mut f, &mut init, &mut g, i)
     })
 }
 
-/// Repeats the embedded parser `m..=n` times, calling `g` to gather the results
-///
-/// This stops before `n` when the parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
-/// [`cut_err`][crate::combinator::cut_err].
-///
-/// # Arguments
-/// * `m` The minimum number of iterations.
-/// * `n` The maximum number of iterations.
-/// * `f` The parser to apply.
-/// * `init` A function returning the initial value.
-/// * `g` The function that combines a result of `f` with
-///       the current accumulator.
-///
-/// **Warning:** If the parser passed to `fold_repeat_m_n` accepts empty inputs
-/// (like `alpha0` or `digit0`), `fold_repeat_m_n` will return an error,
-/// to prevent going into an infinite loop.
-///
-/// # Example
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::combinator::fold_repeat_m_n;
-/// use winnow::token::tag;
-///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   fold_repeat_m_n(
-///     0,
-///     2,
-///     "abc",
-///     Vec::new,
-///     |mut acc: Vec<_>, item| {
-///       acc.push(item);
-///       acc
-///     }
-///   ).parse_next(s)
-/// }
-///
-/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Ok(("123123", vec![])));
-/// assert_eq!(parser(""), Ok(("", vec![])));
-/// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
-/// ```
-#[doc(alias = "fold_many_m_n")]
-pub fn fold_repeat_m_n<I, O, E, F, G, H, R>(
-    min: usize,
-    max: usize,
-    mut parse: F,
-    mut init: H,
-    mut fold: G,
-) -> impl Parser<I, R, E>
+fn fold_repeat1_<I, O, E, F, G, H, R>(f: &mut F, init: &mut H, g: &mut G, i: I) -> IResult<I, R, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -934,39 +938,86 @@ where
     H: FnMut() -> R,
     E: ParseError<I>,
 {
-    trace("fold_repeat_m_n", move |mut input: I| {
-        if min > max {
-            return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::Many)));
-        }
+    let _i = i.clone();
+    let init = init();
+    match f.parse_next(_i) {
+        Err(ErrMode::Backtrack(_)) => Err(ErrMode::from_error_kind(i, ErrorKind::Many)),
+        Err(e) => Err(e),
+        Ok((i1, o1)) => {
+            let mut acc = g(init, o1);
+            let mut input = i1;
 
-        let mut acc = init();
-        for count in 0..max {
-            let len = input.eof_offset();
-            match parse.parse_next(input.clone()) {
-                Ok((tail, value)) => {
-                    // infinite loop check: the parser must always consume
-                    if tail.eof_offset() == len {
-                        return Err(ErrMode::assert(
-                            input,
-                            "`repeat` parsers must always consume",
-                        ));
-                    }
-
-                    acc = fold(acc, value);
-                    input = tail;
-                }
-                //FInputXMError: handle failure properly
-                Err(ErrMode::Backtrack(err)) => {
-                    if count < min {
-                        return Err(ErrMode::Backtrack(err.append(input, ErrorKind::Many)));
-                    } else {
+            loop {
+                let _input = input.clone();
+                let len = input.eof_offset();
+                match f.parse_next(_input) {
+                    Err(ErrMode::Backtrack(_)) => {
                         break;
                     }
-                }
-                Err(e) => return Err(e),
-            }
-        }
+                    Err(e) => return Err(e),
+                    Ok((i, o)) => {
+                        // infinite loop check: the parser must always consume
+                        if i.eof_offset() == len {
+                            return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
+                        }
 
-        Ok((input, acc))
-    })
+                        acc = g(acc, o);
+                        input = i;
+                    }
+                }
+            }
+
+            Ok((input, acc))
+        }
+    }
+}
+
+fn fold_repeat_m_n_<I, O, E, F, G, H, R>(
+    min: usize,
+    max: usize,
+    parse: &mut F,
+    init: &mut H,
+    fold: &mut G,
+    mut input: I,
+) -> IResult<I, R, E>
+where
+    I: Stream,
+    F: Parser<I, O, E>,
+    G: FnMut(R, O) -> R,
+    H: FnMut() -> R,
+    E: ParseError<I>,
+{
+    if min > max {
+        return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::Many)));
+    }
+
+    let mut acc = init();
+    for count in 0..max {
+        let len = input.eof_offset();
+        match parse.parse_next(input.clone()) {
+            Ok((tail, value)) => {
+                // infinite loop check: the parser must always consume
+                if tail.eof_offset() == len {
+                    return Err(ErrMode::assert(
+                        input,
+                        "`repeat` parsers must always consume",
+                    ));
+                }
+
+                acc = fold(acc, value);
+                input = tail;
+            }
+            //FInputXMError: handle failure properly
+            Err(ErrMode::Backtrack(err)) => {
+                if count < min {
+                    return Err(ErrMode::Backtrack(err.append(input, ErrorKind::Many)));
+                } else {
+                    break;
+                }
+            }
+            Err(e) => return Err(e),
+        }
+    }
+
+    Ok((input, acc))
 }

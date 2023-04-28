@@ -171,8 +171,8 @@ where
     combinator::fold_repeat1(f, init, g)
 }
 
-/// Deprecated, replaced by [`combinator::fold_repeat_m_n`]
-#[deprecated(since = "0.4.2", note = "Replaced with `combinator::fold_repeat_m_n`")]
+/// Deprecated, replaced by [`combinator::fold_repeat`]
+#[deprecated(since = "0.4.2", note = "Replaced with `combinator::fold_repeat`")]
 #[inline(always)]
 pub fn fold_many_m_n<I, O, E, F, G, H, R>(
     min: usize,
@@ -188,7 +188,7 @@ where
     H: FnMut() -> R,
     E: ParseError<I>,
 {
-    combinator::fold_repeat_m_n(min, max, parse, init, fold)
+    combinator::fold_repeat(min..=max, parse, init, fold)
 }
 
 /// Deprecated, replaced by [`binary::length_data`]
