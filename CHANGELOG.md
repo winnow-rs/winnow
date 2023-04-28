@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Reduce risk of breaking when using glob imports
+
 ## [0.4.2] - 2023-04-28
 
 ### Compatibility
