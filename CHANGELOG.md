@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.4.3] - 2023-04-28
+
 ### Fixes
 
 - Reduce risk of breaking when using glob imports
@@ -1770,7 +1772,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.4.3...HEAD
+[0.4.3]: https://github.com/winnow-rs/winnow/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/winnow-rs/winnow/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/winnow-rs/winnow/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/winnow-rs/winnow/compare/v0.3.6...v0.4.0
