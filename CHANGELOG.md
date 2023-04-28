@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.4.4] - 2023-04-28
+
 ### Fixes
 
 - Improve color control for `debug` feature
@@ -1776,7 +1778,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.4.3...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.4.4...HEAD
+[0.4.4]: https://github.com/winnow-rs/winnow/compare/v0.4.3...v0.4.4
 [0.4.3]: https://github.com/winnow-rs/winnow/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/winnow-rs/winnow/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/winnow-rs/winnow/compare/v0.4.0...v0.4.1
