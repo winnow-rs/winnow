@@ -3,7 +3,7 @@ mod test {
     use winnow::Parser;
     use winnow::Partial;
     #[cfg(feature = "alloc")]
-    use winnow::{combinator::alt, combinator::many1, token::tag_no_case};
+    use winnow::{combinator::alt, combinator::repeat1, token::tag_no_case};
     use winnow::{
         error::ErrMode,
         error::{self, Error, ErrorKind},
@@ -505,7 +505,7 @@ mod test {
         let b = "ababcd";
 
         fn f(i: &str) -> IResult<&str, &str> {
-            many1::<_, _, (), _, _>(alt(("a", "b")))
+            repeat1::<_, _, (), _, _>(alt(("a", "b")))
                 .recognize()
                 .parse_next(i)
         }

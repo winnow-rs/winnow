@@ -5,7 +5,7 @@
 use winnow::binary::be_u64;
 use winnow::binary::length_data;
 #[cfg(feature = "alloc")]
-use winnow::combinator::many0;
+use winnow::combinator::repeat0;
 use winnow::error::{ErrMode, Needed};
 use winnow::prelude::*;
 use winnow::token::take;
@@ -31,7 +31,7 @@ fn overflow_incomplete_tuple() {
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_length_bytes() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        many0(length_data(be_u64)).parse_next(i)
+        repeat0(length_data(be_u64)).parse_next(i)
     }
 
     // Trigger an overflow in length_data
@@ -47,10 +47,10 @@ fn overflow_incomplete_length_bytes() {
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_many0() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        many0(length_data(be_u64)).parse_next(i)
+        repeat0(length_data(be_u64)).parse_next(i)
     }
 
-    // Trigger an overflow in many0
+    // Trigger an overflow in repeat0
     assert_eq!(
         multi(Partial::new(
             &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xef"[..]
@@ -62,13 +62,13 @@ fn overflow_incomplete_many0() {
 #[test]
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_many1() {
-    use winnow::combinator::many1;
+    use winnow::combinator::repeat1;
 
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        many1(length_data(be_u64)).parse_next(i)
+        repeat1(length_data(be_u64)).parse_next(i)
     }
 
-    // Trigger an overflow in many1
+    // Trigger an overflow in repeat1
     assert_eq!(
         multi(Partial::new(
             &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xef"[..]
@@ -80,14 +80,14 @@ fn overflow_incomplete_many1() {
 #[test]
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_many_till0() {
-    use winnow::combinator::many_till0;
+    use winnow::combinator::repeat_till0;
 
     #[allow(clippy::type_complexity)]
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (Vec<&[u8]>, &[u8])> {
-        many_till0(length_data(be_u64), "abc").parse_next(i)
+        repeat_till0(length_data(be_u64), "abc").parse_next(i)
     }
 
-    // Trigger an overflow in many_till0
+    // Trigger an overflow in repeat_till0
     assert_eq!(
         multi(Partial::new(
             &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xef"[..]
@@ -99,13 +99,13 @@ fn overflow_incomplete_many_till0() {
 #[test]
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_many_m_n() {
-    use winnow::combinator::many_m_n;
+    use winnow::combinator::repeat_m_n;
 
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        many_m_n(2, 4, length_data(be_u64)).parse_next(i)
+        repeat_m_n(2, 4, length_data(be_u64)).parse_next(i)
     }
 
-    // Trigger an overflow in many_m_n
+    // Trigger an overflow in repeat_m_n
     assert_eq!(
         multi(Partial::new(
             &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xef"[..]
@@ -153,7 +153,7 @@ fn overflow_incomplete_length_count() {
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_length_data() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        many0(length_data(be_u64)).parse_next(i)
+        repeat0(length_data(be_u64)).parse_next(i)
     }
 
     assert_eq!(

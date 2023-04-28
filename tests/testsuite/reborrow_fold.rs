@@ -4,7 +4,7 @@
 use std::str;
 
 use winnow::combinator::delimited;
-use winnow::combinator::fold_many0;
+use winnow::combinator::fold_repeat0;
 use winnow::prelude::*;
 use winnow::token::take_till1;
 use winnow::IResult;
@@ -22,7 +22,7 @@ fn atom(_tomb: &mut ()) -> impl for<'a> FnMut(&'a [u8]) -> IResult<&'a [u8], Str
 fn list<'a>(i: &'a [u8], tomb: &mut ()) -> IResult<&'a [u8], String> {
     delimited(
         '(',
-        fold_many0(atom(tomb), String::new, |mut acc: String, next: String| {
+        fold_repeat0(atom(tomb), String::new, |mut acc: String, next: String| {
             acc.push_str(next.as_str());
             acc
         }),

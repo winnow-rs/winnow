@@ -7,7 +7,7 @@ use winnow::prelude::*;
 use winnow::{
     ascii::{digit1 as digit, multispace0 as multispace},
     combinator::alt,
-    combinator::many0,
+    combinator::repeat0,
     combinator::{delimited, preceded},
     IResult,
 };
@@ -46,7 +46,7 @@ impl Display for Expr {
 
 pub fn expr(i: &str) -> IResult<&str, Expr> {
     let (i, initial) = term(i)?;
-    let (i, remainder) = many0(alt((
+    let (i, remainder) = repeat0(alt((
         |i| {
             let (i, add) = preceded("+", term).parse_next(i)?;
             Ok((i, (Oper::Add, add)))
@@ -63,7 +63,7 @@ pub fn expr(i: &str) -> IResult<&str, Expr> {
 
 fn term(i: &str) -> IResult<&str, Expr> {
     let (i, initial) = factor(i)?;
-    let (i, remainder) = many0(alt((
+    let (i, remainder) = repeat0(alt((
         |i| {
             let (i, mul) = preceded("*", factor).parse_next(i)?;
             Ok((i, (Oper::Mul, mul)))

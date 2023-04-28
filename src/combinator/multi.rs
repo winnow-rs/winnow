@@ -15,7 +15,7 @@ use crate::Parser;
 ///
 /// To recognize a series of tokens, [`Accumulate`] into a `()` and then [`Parser::recognize`].
 ///
-/// **Warning:** if the parser passed in accepts empty inputs (like `alpha0` or `digit0`), `many0` will
+/// **Warning:** if the parser passed in accepts empty inputs (like `alpha0` or `digit0`), `repeat0` will
 /// return an error, to prevent going into an infinite loop
 ///
 /// # Example
@@ -24,11 +24,11 @@ use crate::Parser;
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::combinator::many0;
+/// use winnow::combinator::repeat0;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   many0("abc").parse_next(s)
+///   repeat0("abc").parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -40,14 +40,15 @@ use crate::Parser;
 #[doc(alias = "skip_many")]
 #[doc(alias = "repeated")]
 #[doc(alias = "many0_count")]
-pub fn many0<I, O, C, E, F>(mut f: F) -> impl Parser<I, C, E>
+#[doc(alias = "many0")]
+pub fn repeat0<I, O, C, E, F>(mut f: F) -> impl Parser<I, C, E>
 where
     I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    trace("many0", move |mut i: I| {
+    trace("repeat0", move |mut i: I| {
         let mut acc = C::initial(None);
         loop {
             let len = i.eof_offset();
@@ -57,7 +58,7 @@ where
                 Ok((i1, o)) => {
                     // infinite loop check: the parser must always consume
                     if i1.eof_offset() == len {
-                        return Err(ErrMode::assert(i, "many parsers must always consume"));
+                        return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
                     }
 
                     i = i1;
@@ -78,8 +79,8 @@ where
 ///
 /// To recognize a series of tokens, [`Accumulate`] into a `()` and then [`Parser::recognize`].
 ///
-/// **Warning:** If the parser passed to `many1` accepts empty inputs
-/// (like `alpha0` or `digit0`), `many1` will return an error,
+/// **Warning:** If the parser passed to `repeat1` accepts empty inputs
+/// (like `alpha0` or `digit0`), `repeat1` will return an error,
 /// to prevent going into an infinite loop.
 ///
 /// # Example
@@ -88,11 +89,11 @@ where
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::combinator::many1;
+/// use winnow::combinator::repeat1;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   many1("abc").parse_next(s)
+///   repeat1("abc").parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -104,14 +105,15 @@ where
 #[doc(alias = "skip_many1")]
 #[doc(alias = "repeated")]
 #[doc(alias = "many1_count")]
-pub fn many1<I, O, C, E, F>(mut f: F) -> impl Parser<I, C, E>
+#[doc(alias = "many1")]
+pub fn repeat1<I, O, C, E, F>(mut f: F) -> impl Parser<I, C, E>
 where
     I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    trace("many1", move |mut i: I| match f.parse_next(i.clone()) {
+    trace("repeat1", move |mut i: I| match f.parse_next(i.clone()) {
         Err(e) => Err(e.append(i, ErrorKind::Many)),
         Ok((i1, o)) => {
             let mut acc = C::initial(None);
@@ -126,7 +128,7 @@ where
                     Ok((i1, o)) => {
                         // infinite loop check: the parser must always consume
                         if i1.eof_offset() == len {
-                            return Err(ErrMode::assert(i, "many parsers must always consume"));
+                            return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
                         }
 
                         i = i1;
@@ -153,11 +155,11 @@ where
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::combinator::many_till0;
+/// use winnow::combinator::repeat_till0;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, (Vec<&str>, &str)> {
-///   many_till0("abc", "end").parse_next(s)
+///   repeat_till0("abc", "end").parse_next(s)
 /// };
 ///
 /// assert_eq!(parser("abcabcend"), Ok(("", (vec!["abc", "abc"], "end"))));
@@ -167,7 +169,8 @@ where
 /// assert_eq!(parser("abcendefg"), Ok(("efg", (vec!["abc"], "end"))));
 /// # }
 /// ```
-pub fn many_till0<I, O, C, P, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, (C, P), E>
+#[doc(alias = "many_till0")]
+pub fn repeat_till0<I, O, C, P, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, (C, P), E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -175,7 +178,7 @@ where
     G: Parser<I, P, E>,
     E: ParseError<I>,
 {
-    trace("many_till0", move |mut i: I| {
+    trace("repeat_till0", move |mut i: I| {
         let mut res = C::initial(None);
         loop {
             let len = i.eof_offset();
@@ -187,7 +190,10 @@ where
                         Ok((i1, o)) => {
                             // infinite loop check: the parser must always consume
                             if i1.eof_offset() == len {
-                                return Err(ErrMode::assert(i, "many parsers must always consume"));
+                                return Err(ErrMode::assert(
+                                    i,
+                                    "`repeat` parsers must always consume",
+                                ));
                             }
 
                             res.accumulate(o);
@@ -399,7 +405,7 @@ where
                 Ok((i1, s)) => {
                     // infinite loop check: the parser must always consume
                     if i1.eof_offset() == len {
-                        return Err(ErrMode::assert(i, "many parsers must always consume"));
+                        return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
                     }
 
                     match parser.parse_next(i1.clone()) {
@@ -454,7 +460,7 @@ where
     trace("separated_foldr1", move |i: I| {
         let (i, ol) = parser.parse_next(i)?;
         let (i, all): (_, crate::lib::std::vec::Vec<(O2, O)>) =
-            many0((sep.by_ref(), parser.by_ref())).parse_next(i)?;
+            repeat0((sep.by_ref(), parser.by_ref())).parse_next(i)?;
         if let Some((s, or)) = all
             .into_iter()
             .rev()
@@ -480,8 +486,8 @@ where
 ///
 /// To recognize a series of tokens, [`Accumulate`] into a `()` and then [`Parser::recognize`].
 ///
-/// **Warning:** If the parser passed to `many1` accepts empty inputs
-/// (like `alpha0` or `digit0`), `many1` will return an error,
+/// **Warning:** If the parser passed to `repeat_m_n` accepts empty inputs
+/// (like `alpha0` or `digit0`), `repeat_m_n` will return an error,
 /// to prevent going into an infinite loop.
 ///
 /// # Example
@@ -490,11 +496,11 @@ where
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::combinator::many_m_n;
+/// use winnow::combinator::repeat_m_n;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   many_m_n(0, 2, "abc").parse_next(s)
+///   repeat_m_n(0, 2, "abc").parse_next(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -505,14 +511,15 @@ where
 /// # }
 /// ```
 #[doc(alias = "repeated")]
-pub fn many_m_n<I, O, C, E, F>(min: usize, max: usize, mut parse: F) -> impl Parser<I, C, E>
+#[doc(alias = "many_m_n")]
+pub fn repeat_m_n<I, O, C, E, F>(min: usize, max: usize, mut parse: F) -> impl Parser<I, C, E>
 where
     I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    trace("many_m_n", move |mut input: I| {
+    trace("repeat_m_n", move |mut input: I| {
         if min > max {
             return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::Many)));
         }
@@ -524,7 +531,10 @@ where
                 Ok((tail, value)) => {
                     // infinite loop check: the parser must always consume
                     if tail.eof_offset() == len {
-                        return Err(ErrMode::assert(input, "many parsers must always consume"));
+                        return Err(ErrMode::assert(
+                            input,
+                            "`repeat` parsers must always consume",
+                        ));
                     }
 
                     res.accumulate(value);
@@ -669,7 +679,8 @@ where
 /// * `g` The function that combines a result of `f` with
 ///       the current accumulator.
 ///
-/// **Warning:** if the parser passed in accepts empty inputs (like `alpha0` or `digit0`), `many0` will
+/// **Warning:** if the parser passed in accepts empty inputs (like `alpha0` or `digit0`),
+/// `fold_repeat0` will
 /// return an error, to prevent going into an infinite loop
 ///
 /// # Example
@@ -677,11 +688,11 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::combinator::fold_many0;
+/// use winnow::combinator::fold_repeat0;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   fold_many0(
+///   fold_repeat0(
 ///     "abc",
 ///     Vec::new,
 ///     |mut acc: Vec<_>, item| {
@@ -696,7 +707,8 @@ where
 /// assert_eq!(parser("123123"), Ok(("123123", vec![])));
 /// assert_eq!(parser(""), Ok(("", vec![])));
 /// ```
-pub fn fold_many0<I, O, E, F, G, H, R>(mut f: F, mut init: H, mut g: G) -> impl Parser<I, R, E>
+#[doc(alias = "fold_many0")]
+pub fn fold_repeat0<I, O, E, F, G, H, R>(mut f: F, mut init: H, mut g: G) -> impl Parser<I, R, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -704,7 +716,7 @@ where
     H: FnMut() -> R,
     E: ParseError<I>,
 {
-    trace("fold_many0", move |i: I| {
+    trace("fold_repeat0", move |i: I| {
         let mut res = init();
         let mut input = i;
 
@@ -715,7 +727,7 @@ where
                 Ok((i, o)) => {
                     // infinite loop check: the parser must always consume
                     if i.eof_offset() == len {
-                        return Err(ErrMode::assert(i, "many parsers must always consume"));
+                        return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
                     }
 
                     res = g(res, o);
@@ -743,8 +755,8 @@ where
 /// * `g` The function that combines a result of `f` with
 ///       the current accumulator.
 ///
-/// **Warning:** If the parser passed to `many1` accepts empty inputs
-/// (like `alpha0` or `digit0`), `many1` will return an error,
+/// **Warning:** If the parser passed to `fold_repeat1` accepts empty inputs
+/// (like `alpha0` or `digit0`), `fold_repeat1` will return an error,
 /// to prevent going into an infinite loop.
 ///
 /// # Example
@@ -752,11 +764,11 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::combinator::fold_many1;
+/// use winnow::combinator::fold_repeat1;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   fold_many1(
+///   fold_repeat1(
 ///     "abc",
 ///     Vec::new,
 ///     |mut acc: Vec<_>, item| {
@@ -771,7 +783,8 @@ where
 /// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Many))));
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Many))));
 /// ```
-pub fn fold_many1<I, O, E, F, G, H, R>(mut f: F, mut init: H, mut g: G) -> impl Parser<I, R, E>
+#[doc(alias = "fold_many1")]
+pub fn fold_repeat1<I, O, E, F, G, H, R>(mut f: F, mut init: H, mut g: G) -> impl Parser<I, R, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -779,7 +792,7 @@ where
     H: FnMut() -> R,
     E: ParseError<I>,
 {
-    trace("fold_many1", move |i: I| {
+    trace("fold_repeat1", move |i: I| {
         let _i = i.clone();
         let init = init();
         match f.parse_next(_i) {
@@ -800,7 +813,10 @@ where
                         Ok((i, o)) => {
                             // infinite loop check: the parser must always consume
                             if i.eof_offset() == len {
-                                return Err(ErrMode::assert(i, "many parsers must always consume"));
+                                return Err(ErrMode::assert(
+                                    i,
+                                    "`repeat` parsers must always consume",
+                                ));
                             }
 
                             acc = g(acc, o);
@@ -828,8 +844,8 @@ where
 /// * `g` The function that combines a result of `f` with
 ///       the current accumulator.
 ///
-/// **Warning:** If the parser passed to `many1` accepts empty inputs
-/// (like `alpha0` or `digit0`), `many1` will return an error,
+/// **Warning:** If the parser passed to `fold_repeat_m_n` accepts empty inputs
+/// (like `alpha0` or `digit0`), `fold_repeat_m_n` will return an error,
 /// to prevent going into an infinite loop.
 ///
 /// # Example
@@ -837,11 +853,11 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::combinator::fold_many_m_n;
+/// use winnow::combinator::fold_repeat_m_n;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   fold_many_m_n(
+///   fold_repeat_m_n(
 ///     0,
 ///     2,
 ///     "abc",
@@ -859,7 +875,8 @@ where
 /// assert_eq!(parser(""), Ok(("", vec![])));
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
 /// ```
-pub fn fold_many_m_n<I, O, E, F, G, H, R>(
+#[doc(alias = "fold_many_m_n")]
+pub fn fold_repeat_m_n<I, O, E, F, G, H, R>(
     min: usize,
     max: usize,
     mut parse: F,
@@ -873,7 +890,7 @@ where
     H: FnMut() -> R,
     E: ParseError<I>,
 {
-    trace("fold_many_m_n", move |mut input: I| {
+    trace("fold_repeat_m_n", move |mut input: I| {
         if min > max {
             return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::Many)));
         }
@@ -885,7 +902,10 @@ where
                 Ok((tail, value)) => {
                     // infinite loop check: the parser must always consume
                     if tail.eof_offset() == len {
-                        return Err(ErrMode::assert(input, "many parsers must always consume"));
+                        return Err(ErrMode::assert(
+                            input,
+                            "`repeat` parsers must always consume",
+                        ));
                     }
 
                     acc = fold(acc, value);

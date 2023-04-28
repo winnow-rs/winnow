@@ -815,9 +815,9 @@ fn separated1_test() {
 
 #[test]
 #[cfg(feature = "alloc")]
-fn many0_test() {
+fn repeat0_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        many0("abcd").parse_next(i)
+        repeat0("abcd").parse_next(i)
     }
 
     assert_eq!(
@@ -849,9 +849,9 @@ fn many0_test() {
 #[test]
 #[cfg(feature = "alloc")]
 #[cfg_attr(debug_assertions, should_panic)]
-fn many0_empty_test() {
+fn repeat0_empty_test() {
     fn multi_empty(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        many0("").parse_next(i)
+        repeat0("").parse_next(i)
     }
 
     assert_eq!(
@@ -865,9 +865,9 @@ fn many0_empty_test() {
 
 #[test]
 #[cfg(feature = "alloc")]
-fn many1_test() {
+fn repeat1_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        many1("abcd").parse_next(i)
+        repeat1("abcd").parse_next(i)
     }
 
     let a = &b"abcdef"[..];
@@ -897,10 +897,10 @@ fn many1_test() {
 
 #[test]
 #[cfg(feature = "alloc")]
-fn many_till_test() {
+fn repeat_till_test() {
     #[allow(clippy::type_complexity)]
     fn multi(i: &[u8]) -> IResult<&[u8], (Vec<&[u8]>, &[u8])> {
-        many_till0("abcd", "efgh").parse_next(i)
+        repeat_till0("abcd", "efgh").parse_next(i)
     }
 
     let a = b"abcdabcdefghabcd";
@@ -931,13 +931,13 @@ fn infinite_many() {
 
     // should not go into an infinite loop
     fn multi0(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-        many0(tst).parse_next(i)
+        repeat0(tst).parse_next(i)
     }
     let a = &b"abcdef"[..];
     assert_eq!(multi0(a), Ok((a, Vec::new())));
 
     fn multi1(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-        many1(tst).parse_next(i)
+        repeat1(tst).parse_next(i)
     }
     let a = &b"abcdef"[..];
     assert_eq!(
@@ -948,9 +948,9 @@ fn infinite_many() {
 
 #[test]
 #[cfg(feature = "alloc")]
-fn many_m_n_test() {
+fn repeat_m_n_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        many_m_n(2, 4, "Abcd").parse_next(i)
+        repeat_m_n(2, 4, "Abcd").parse_next(i)
     }
 
     let a = &b"Abcdef"[..];
@@ -1089,13 +1089,13 @@ impl<I> ParseError<I> for NilError {
 
 #[test]
 #[cfg(feature = "alloc")]
-fn fold_many0_test() {
+fn fold_repeat0_test() {
     fn fold_into_vec<T>(mut acc: Vec<T>, item: T) -> Vec<T> {
         acc.push(item);
         acc
     }
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_many0("abcd", Vec::new, fold_into_vec).parse_next(i)
+        fold_repeat0("abcd", Vec::new, fold_into_vec).parse_next(i)
     }
 
     assert_eq!(
@@ -1127,13 +1127,13 @@ fn fold_many0_test() {
 #[test]
 #[cfg(feature = "alloc")]
 #[cfg_attr(debug_assertions, should_panic)]
-fn fold_many0_empty_test() {
+fn fold_repeat0_empty_test() {
     fn fold_into_vec<T>(mut acc: Vec<T>, item: T) -> Vec<T> {
         acc.push(item);
         acc
     }
     fn multi_empty(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_many0("", Vec::new, fold_into_vec).parse_next(i)
+        fold_repeat0("", Vec::new, fold_into_vec).parse_next(i)
     }
 
     assert_eq!(
@@ -1147,13 +1147,13 @@ fn fold_many0_empty_test() {
 
 #[test]
 #[cfg(feature = "alloc")]
-fn fold_many1_test() {
+fn fold_repeat1_test() {
     fn fold_into_vec<T>(mut acc: Vec<T>, item: T) -> Vec<T> {
         acc.push(item);
         acc
     }
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_many1("abcd", Vec::new, fold_into_vec).parse_next(i)
+        fold_repeat1("abcd", Vec::new, fold_into_vec).parse_next(i)
     }
 
     let a = &b"abcdef"[..];
@@ -1183,13 +1183,13 @@ fn fold_many1_test() {
 
 #[test]
 #[cfg(feature = "alloc")]
-fn fold_many_m_n_test() {
+fn fold_repeat_m_n_test() {
     fn fold_into_vec<T>(mut acc: Vec<T>, item: T) -> Vec<T> {
         acc.push(item);
         acc
     }
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_many_m_n(2, 4, "Abcd", Vec::new, fold_into_vec).parse_next(i)
+        fold_repeat_m_n(2, 4, "Abcd", Vec::new, fold_into_vec).parse_next(i)
     }
 
     let a = &b"Abcdef"[..];
@@ -1227,9 +1227,9 @@ fn fold_many_m_n_test() {
 }
 
 #[test]
-fn many0_count_test() {
+fn repeat0_count_test() {
     fn count0_nums(i: &[u8]) -> IResult<&[u8], usize> {
-        many0((digit, ",")).parse_next(i)
+        repeat0((digit, ",")).parse_next(i)
     }
 
     assert_eq!(count0_nums(&b"123,junk"[..]), Ok((&b"junk"[..], 1)));
@@ -1245,9 +1245,9 @@ fn many0_count_test() {
 }
 
 #[test]
-fn many1_count_test() {
+fn repeat1_count_test() {
     fn count1_nums(i: &[u8]) -> IResult<&[u8], usize> {
-        many1((digit, ",")).parse_next(i)
+        repeat1((digit, ",")).parse_next(i)
     }
 
     assert_eq!(count1_nums(&b"123,45,junk"[..]), Ok((&b"junk"[..], 2)));

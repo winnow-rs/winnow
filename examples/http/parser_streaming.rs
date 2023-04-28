@@ -1,5 +1,5 @@
 use winnow::{
-    ascii::line_ending, combinator::many1, stream::Partial, token::take_while1, IResult, Parser,
+    ascii::line_ending, combinator::repeat1, stream::Partial, token::take_while1, IResult, Parser,
 };
 
 pub type Stream<'i> = Partial<&'i [u8]>;
@@ -46,7 +46,7 @@ pub fn parse(data: &[u8]) -> Option<Vec<(Request<'_>, Vec<Header<'_>>)>> {
 
 fn request(input: Stream<'_>) -> IResult<Stream<'_>, (Request<'_>, Vec<Header<'_>>)> {
     let (input, req) = request_line(input)?;
-    let (input, h) = many1(message_header).parse_next(input)?;
+    let (input, h) = repeat1(message_header).parse_next(input)?;
     let (input, _) = line_ending(input)?;
 
     Ok((input, (req, h)))
@@ -88,7 +88,7 @@ fn message_header_value(input: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
 fn message_header(input: Stream<'_>) -> IResult<Stream<'_>, Header<'_>> {
     let (input, name) = take_while1(is_token).parse_next(input)?;
     let (input, _) = ':'.parse_next(input)?;
-    let (input, value) = many1(message_header_value).parse_next(input)?;
+    let (input, value) = repeat1(message_header_value).parse_next(input)?;
 
     Ok((input, Header { name, value }))
 }

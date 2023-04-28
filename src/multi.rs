@@ -8,8 +8,8 @@ use crate::stream::Accumulate;
 use crate::stream::{Stream, StreamIsPartial, ToUsize, UpdateSlice};
 use crate::Parser;
 
-/// Deprecated, replaced by [`combinator::many0`]
-#[deprecated(since = "0.4.2", note = "Replaced with `combinator::many0`")]
+/// Deprecated, replaced by [`combinator::repeat0`]
+#[deprecated(since = "0.4.2", note = "Replaced with `combinator::repeat0`")]
 #[inline(always)]
 pub fn many0<I, O, C, E, F>(f: F) -> impl Parser<I, C, E>
 where
@@ -18,11 +18,11 @@ where
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    combinator::many0(f)
+    combinator::repeat0(f)
 }
 
-/// Deprecated, replaced by [`combinator::many1`]
-#[deprecated(since = "0.4.2", note = "Replaced with `combinator::many1`")]
+/// Deprecated, replaced by [`combinator::repeat1`]
+#[deprecated(since = "0.4.2", note = "Replaced with `combinator::repeat1`")]
 #[inline(always)]
 pub fn many1<I, O, C, E, F>(f: F) -> impl Parser<I, C, E>
 where
@@ -31,11 +31,11 @@ where
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    combinator::many1(f)
+    combinator::repeat1(f)
 }
 
-/// Deprecated, replaced by [`combinator::many_till0`]
-#[deprecated(since = "0.4.2", note = "Replaced with `combinator::many_till0`")]
+/// Deprecated, replaced by [`combinator::repeat_till0`]
+#[deprecated(since = "0.4.2", note = "Replaced with `combinator::repeat_till0`")]
 #[inline(always)]
 pub fn many_till0<I, O, C, P, E, F, G>(f: F, g: G) -> impl Parser<I, (C, P), E>
 where
@@ -45,7 +45,7 @@ where
     G: Parser<I, P, E>,
     E: ParseError<I>,
 {
-    combinator::many_till0(f, g)
+    combinator::repeat_till0(f, g)
 }
 
 /// Deprecated, replaced by [`combinator::separated0`]
@@ -105,8 +105,8 @@ where
     combinator::separated_foldr1(parser, sep, op)
 }
 
-/// Deprecated, replaced by [`combinator::many_m_n`]
-#[deprecated(since = "0.4.2", note = "Replaced with `combinator::many_m_n`")]
+/// Deprecated, replaced by [`combinator::repeat_m_n`]
+#[deprecated(since = "0.4.2", note = "Replaced with `combinator::repeat_m_n`")]
 #[inline(always)]
 pub fn many_m_n<I, O, C, E, F>(min: usize, max: usize, parse: F) -> impl Parser<I, C, E>
 where
@@ -115,7 +115,7 @@ where
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    combinator::many_m_n(min, max, parse)
+    combinator::repeat_m_n(min, max, parse)
 }
 
 /// Deprecated, replaced by [`combinator::count`]
@@ -143,8 +143,8 @@ where
     combinator::fill(f, buf)
 }
 
-/// Deprecated, replaced by [`combinator::fold_many0`]
-#[deprecated(since = "0.4.2", note = "Replaced with `combinator::fold_many0`")]
+/// Deprecated, replaced by [`combinator::fold_repeat0`]
+#[deprecated(since = "0.4.2", note = "Replaced with `combinator::fold_repeat0`")]
 #[inline(always)]
 pub fn fold_many0<I, O, E, F, G, H, R>(f: F, init: H, g: G) -> impl Parser<I, R, E>
 where
@@ -154,11 +154,11 @@ where
     H: FnMut() -> R,
     E: ParseError<I>,
 {
-    combinator::fold_many0(f, init, g)
+    combinator::fold_repeat0(f, init, g)
 }
 
-/// Deprecated, replaced by [`combinator::fold_many1`]
-#[deprecated(since = "0.4.2", note = "Replaced with `combinator::fold_many1`")]
+/// Deprecated, replaced by [`combinator::fold_repeat1`]
+#[deprecated(since = "0.4.2", note = "Replaced with `combinator::fold_repeat1`")]
 #[inline(always)]
 pub fn fold_many1<I, O, E, F, G, H, R>(f: F, init: H, g: G) -> impl Parser<I, R, E>
 where
@@ -168,11 +168,11 @@ where
     H: FnMut() -> R,
     E: ParseError<I>,
 {
-    combinator::fold_many1(f, init, g)
+    combinator::fold_repeat1(f, init, g)
 }
 
-/// Deprecated, replaced by [`combinator::fold_many_m_n`]
-#[deprecated(since = "0.4.2", note = "Replaced with `combinator::fold_many_m_n`")]
+/// Deprecated, replaced by [`combinator::fold_repeat_m_n`]
+#[deprecated(since = "0.4.2", note = "Replaced with `combinator::fold_repeat_m_n`")]
 #[inline(always)]
 pub fn fold_many_m_n<I, O, E, F, G, H, R>(
     min: usize,
@@ -188,7 +188,7 @@ where
     H: FnMut() -> R,
     E: ParseError<I>,
 {
-    combinator::fold_many_m_n(min, max, parse, init, fold)
+    combinator::fold_repeat_m_n(min, max, parse, init, fold)
 }
 
 /// Deprecated, replaced by [`binary::length_data`]
