@@ -3,6 +3,34 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+- MSRV raised to 1.64.0
+- `bits`, `bytes`, `character`, `number`, `sequence`, `branch`, and `multi` modules are deprecated
+- `Parser::map_res` is deprecated
+
+### Fixes
+
+- Renamed `Parser::map_res` to `Parser::try_map` for consistency
+- Renamed `bytes` to `token` to clarify its scope
+- Renamed `character` to `ascii` to make it agnostic of `char` tokens
+- Moved all binary-related parsing combinators into the `binary` module
+  - `bits` -> `binary::bits`
+  - `number`
+  - `multi::length_*`
+- Moved all generic combinators into `combinator`
+  - `sequence`
+  - `branch`
+  - `multi`
+- Renamed the `*many*` combiantors as `*repeat*` to make the code read more clearly
+- Generalized `repeat_m_n` as `repeat` which takes any range type
+- Generalzied `fold_repeat_m_n` as `fold_repeat` which takes any range type
+- Generalized `take_while_m_n` as `take_while` which takes any range type
+
+### Documentation
+
+- Start "Performance" special topic
+
 ## [0.4.1] - 2023-03-24
 
 ### Features
