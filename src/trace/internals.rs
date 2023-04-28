@@ -74,30 +74,9 @@ pub fn start<I: Stream>(
     count: usize,
     input: &I,
 ) {
-    let ansi_color = ansi_color();
-    let reset = if ansi_color {
-        anstyle::Reset.render().to_string()
-    } else {
-        "".to_owned()
-    };
-    let gutter_style = if ansi_color {
-        anstyle::Style::new().bold()
-    } else {
-        anstyle::Style::new()
-    }
-    .render();
-    let input_style = if ansi_color {
-        anstyle::Style::new().underline()
-    } else {
-        anstyle::Style::new()
-    }
-    .render();
-    let eof_style = if ansi_color {
-        anstyle::Style::new().fg_color(Some(anstyle::AnsiColor::Cyan.into()))
-    } else {
-        anstyle::Style::new()
-    }
-    .render();
+    let gutter_style = anstyle::Style::new().bold();
+    let input_style = anstyle::Style::new().underline();
+    let eof_style = anstyle::Style::new().fg_color(Some(anstyle::AnsiColor::Cyan.into()));
 
     let (call_width, input_width) = column_widths();
 
@@ -132,9 +111,18 @@ pub fn start<I: Stream>(
         (debug_slice, eof)
     };
 
-    let writer = std::io::stderr();
+    let writer = anstyle_stream::stderr();
     let mut writer = writer.lock();
-    let _ = writeln!(writer, "{call_column:call_width$} {gutter_style}|{reset} {input_style}{debug_slice}{eof_style}{eof}{reset}");
+    let _ = writeln!(
+        writer,
+        "{call_column:call_width$} {gutter_style}|{gutter_reset} {input_style}{debug_slice}{input_reset}{eof_style}{eof}{eof_reset}",
+        gutter_style=gutter_style.render(),
+        gutter_reset=gutter_style.render_reset(),
+        input_style=input_style.render(),
+        input_reset=input_style.render_reset(),
+        eof_style=eof_style.render(),
+        eof_reset=eof_style.render_reset(),
+    );
 }
 
 pub fn end(
@@ -144,18 +132,7 @@ pub fn end(
     consumed: Option<usize>,
     severity: Severity,
 ) {
-    let ansi_color = ansi_color();
-    let reset = if ansi_color {
-        anstyle::Reset.render().to_string()
-    } else {
-        "".to_owned()
-    };
-    let gutter_style = if ansi_color {
-        anstyle::Style::new().bold()
-    } else {
-        anstyle::Style::new()
-    }
-    .render();
+    let gutter_style = anstyle::Style::new().bold();
 
     let (call_width, _) = column_widths();
 
@@ -166,103 +143,74 @@ pub fn end(
     };
     let call_column = format!("{:depth$}< {name}{count}", "");
 
-    let (mut status_style, status) = match severity {
+    let (status_style, status) = match severity {
         Severity::Success => {
-            let style = anstyle::Style::new()
-                .fg_color(Some(anstyle::AnsiColor::Green.into()))
-                .render();
+            let style = anstyle::Style::new().fg_color(Some(anstyle::AnsiColor::Green.into()));
             let status = format!("+{}", consumed.unwrap_or_default());
             (style, status)
         }
         Severity::Backtrack => (
-            anstyle::Style::new()
-                .fg_color(Some(anstyle::AnsiColor::Yellow.into()))
-                .render(),
+            anstyle::Style::new().fg_color(Some(anstyle::AnsiColor::Yellow.into())),
             "backtrack".to_owned(),
         ),
         Severity::Cut => (
-            anstyle::Style::new()
-                .fg_color(Some(anstyle::AnsiColor::Red.into()))
-                .render(),
+            anstyle::Style::new().fg_color(Some(anstyle::AnsiColor::Red.into())),
             "cut".to_owned(),
         ),
         Severity::Incomplete => (
-            anstyle::Style::new()
-                .fg_color(Some(anstyle::AnsiColor::Red.into()))
-                .render(),
+            anstyle::Style::new().fg_color(Some(anstyle::AnsiColor::Red.into())),
             "incomplete".to_owned(),
         ),
     };
-    if !ansi_color {
-        status_style = anstyle::Style::new().render();
-    }
 
-    let writer = std::io::stderr();
+    let writer = anstyle_stream::stderr();
     let mut writer = writer.lock();
     let _ = writeln!(
         writer,
-        "{status_style}{call_column:call_width$}{reset} {gutter_style}|{reset} {status_style}{status}{reset}"
+        "{status_style}{call_column:call_width$}{status_reset} {gutter_style}|{gutter_reset} {status_style}{status}{status_reset}",
+        gutter_style=gutter_style.render(),
+        gutter_reset=gutter_style.render_reset(),
+        status_style=status_style.render(),
+        status_reset=status_style.render_reset(),
     );
 }
 
 pub fn result(depth: usize, name: &dyn crate::lib::std::fmt::Display, severity: Severity) {
-    let ansi_color = ansi_color();
-    let reset = if ansi_color {
-        anstyle::Reset.render().to_string()
-    } else {
-        "".to_owned()
-    };
-    let gutter_style = if ansi_color {
-        anstyle::Style::new().bold()
-    } else {
-        anstyle::Style::new()
-    }
-    .render();
+    let gutter_style = anstyle::Style::new().bold();
 
     let (call_width, _) = column_widths();
 
     let call_column = format!("{:depth$}| {name}", "");
 
-    let (mut status_style, status) = match severity {
+    let (status_style, status) = match severity {
         Severity::Success => (
-            anstyle::Style::new()
-                .fg_color(Some(anstyle::AnsiColor::Green.into()))
-                .render(),
+            anstyle::Style::new().fg_color(Some(anstyle::AnsiColor::Green.into())),
             "",
         ),
         Severity::Backtrack => (
-            anstyle::Style::new()
-                .fg_color(Some(anstyle::AnsiColor::Yellow.into()))
-                .render(),
+            anstyle::Style::new().fg_color(Some(anstyle::AnsiColor::Yellow.into())),
             "backtrack",
         ),
         Severity::Cut => (
-            anstyle::Style::new()
-                .fg_color(Some(anstyle::AnsiColor::Red.into()))
-                .render(),
+            anstyle::Style::new().fg_color(Some(anstyle::AnsiColor::Red.into())),
             "cut",
         ),
         Severity::Incomplete => (
-            anstyle::Style::new()
-                .fg_color(Some(anstyle::AnsiColor::Red.into()))
-                .render(),
+            anstyle::Style::new().fg_color(Some(anstyle::AnsiColor::Red.into())),
             "incomplete",
         ),
     };
-    if !ansi_color {
-        status_style = anstyle::Style::new().render();
-    }
 
-    let writer = std::io::stderr();
+    let writer = anstyle_stream::stderr();
     let mut writer = writer.lock();
     let _ = writeln!(
         writer,
-        "{status_style}{call_column:call_width$}{reset} {gutter_style}|{reset} {status_style}{status}{reset}"
+        "{status_style}{call_column:call_width$}{status_reset} {gutter_style}|{gutter_reset} {status_style}{status}{status_reset}",
+        gutter_style=gutter_style.render(),
+        gutter_reset=gutter_style.render_reset(),
+        status_style=status_style.render(),
+        status_reset=status_style.render_reset(),
     );
-}
-
-fn ansi_color() -> bool {
-    concolor::get(concolor::Stream::Stderr).ansi_color()
 }
 
 fn column_widths() -> (usize, usize) {
