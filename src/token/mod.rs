@@ -52,7 +52,7 @@ where
     I: Stream,
 {
     trace("any", move |input: I| {
-        if input.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             streaming_any(input)
         } else {
             complete_any(input)
@@ -131,7 +131,7 @@ where
 {
     trace("tag", move |i: I| {
         let t = tag.clone();
-        if i.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
             streaming_tag_internal(i, t)
         } else {
             complete_tag_internal(i, t)
@@ -233,7 +233,7 @@ where
 {
     trace("tag_no_case", move |i: I| {
         let t = tag.clone();
-        if i.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
             streaming_tag_no_case_internal(i, t)
         } else {
             complete_tag_no_case_internal(i, t)
@@ -446,7 +446,7 @@ where
     trace("take_while", move |i: I| {
         match (start_inclusive, end_inclusive) {
             (0, None) => {
-                if i.is_partial() {
+                if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
                     split_at_offset_partial(&i, |c| !list.contains_token(c))
                 } else {
                     split_at_offset_complete(&i, |c| !list.contains_token(c))
@@ -454,7 +454,7 @@ where
             }
             (1, None) => {
                 let e: ErrorKind = ErrorKind::Slice;
-                if i.is_partial() {
+                if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
                     split_at_offset1_partial(&i, |c| !list.contains_token(c), e)
                 } else {
                     split_at_offset1_complete(&i, |c| !list.contains_token(c), e)
@@ -462,7 +462,7 @@ where
             }
             (start, end) => {
                 let end = end.unwrap_or(usize::MAX);
-                if i.is_partial() {
+                if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
                     streaming_take_while_m_n_internal(i, start, end, &list)
                 } else {
                     complete_take_while_m_n_internal(i, start, end, &list)
@@ -522,7 +522,7 @@ where
     T: ContainsToken<<I as Stream>::Token>,
 {
     trace("take_while0", move |i: I| {
-        if i.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
             split_at_offset_partial(&i, |c| !list.contains_token(c))
         } else {
             split_at_offset_complete(&i, |c| !list.contains_token(c))
@@ -602,7 +602,7 @@ where
 {
     trace("take_while1", move |i: I| {
         let e: ErrorKind = ErrorKind::Slice;
-        if i.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
             split_at_offset1_partial(&i, |c| !list.contains_token(c), e)
         } else {
             split_at_offset1_complete(&i, |c| !list.contains_token(c), e)
@@ -736,7 +736,7 @@ where
     T: ContainsToken<<I as Stream>::Token>,
 {
     trace("take_till0", move |i: I| {
-        if i.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
             split_at_offset_partial(&i, |c| list.contains_token(c))
         } else {
             split_at_offset_complete(&i, |c| list.contains_token(c))
@@ -814,7 +814,7 @@ where
 {
     trace("take_till1", move |i: I| {
         let e: ErrorKind = ErrorKind::Slice;
-        if i.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
             split_at_offset1_partial(&i, |c| list.contains_token(c), e)
         } else {
             split_at_offset1_complete(&i, |c| list.contains_token(c), e)
@@ -887,7 +887,7 @@ where
 {
     let c = count.to_usize();
     trace("take", move |i: I| {
-        if i.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
             streaming_take_internal(i, c)
         } else {
             complete_take_internal(i, c)
@@ -973,7 +973,7 @@ where
     T: SliceLen + Clone,
 {
     trace("take_until0", move |i: I| {
-        if i.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
             streaming_take_until_internal(i, tag.clone())
         } else {
             complete_take_until_internal(i, tag.clone())
@@ -1063,7 +1063,7 @@ where
     T: SliceLen + Clone,
 {
     trace("take_until1", move |i: I| {
-        if i.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
             streaming_take_until1_internal(i, tag.clone())
         } else {
             complete_take_until1_internal(i, tag.clone())

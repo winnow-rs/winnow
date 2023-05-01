@@ -1252,7 +1252,7 @@ where
     I: Stream<Token = u8>,
 {
     trace("u8", move |input: I| {
-        if input.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             streaming_u8(input)
         } else {
             complete_u8(input)
@@ -1685,7 +1685,7 @@ where
     I: Stream<Token = u8>,
 {
     trace("i8", move |input: I| {
-        if input.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             streaming_u8(input)
         } else {
             complete_u8(input)

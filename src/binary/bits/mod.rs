@@ -165,7 +165,7 @@ where
 {
     let count = count.to_usize();
     trace("take", move |input: (I, usize)| {
-        if input.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             streaming_take_internal(input, count)
         } else {
             complete_take_internal(input, count)

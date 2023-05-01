@@ -103,7 +103,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("not_line_ending", move |input: I| {
-        if input.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             streaming_not_line_ending(input)
         } else {
             complete_not_line_ending(input)
@@ -943,7 +943,7 @@ where
 {
     trace("dec_uint", move |input: I| {
         if input.eof_offset() == 0 {
-            if input.is_partial() {
+            if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
                 return Err(ErrMode::Incomplete(Needed::new(1)));
             } else {
                 return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
@@ -970,7 +970,7 @@ where
             }
         }
 
-        if input.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             Err(ErrMode::Incomplete(Needed::new(1)))
         } else {
             Ok((input.next_slice(input.eof_offset()).0, value))
@@ -1104,7 +1104,7 @@ where
             .parse_next(input)?;
 
         if input.eof_offset() == 0 {
-            if input.is_partial() {
+            if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
                 return Err(ErrMode::Incomplete(Needed::new(1)));
             } else {
                 return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
@@ -1135,7 +1135,7 @@ where
             }
         }
 
-        if input.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             Err(ErrMode::Incomplete(Needed::new(1)))
         } else {
             Ok((input.next_slice(input.eof_offset()).0, value))
@@ -1246,7 +1246,10 @@ where
                 }
             }
             Err(_) => {
-                if input.is_partial() && invalid_offset == input.eof_offset() {
+                if <I as StreamIsPartial>::is_partial_supported()
+                    && input.is_partial()
+                    && invalid_offset == input.eof_offset()
+                {
                     // Only the next byte is guaranteed required
                     return Err(ErrMode::Incomplete(Needed::new(1)));
                 } else {
@@ -1477,7 +1480,7 @@ where
     Error: ParseError<I>,
 {
     trace("escaped", move |input: I| {
-        if input.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             streaming_escaped_internal(input, &mut normal, control_char, &mut escapable)
         } else {
             complete_escaped_internal(input, &mut normal, control_char, &mut escapable)
@@ -1675,7 +1678,7 @@ where
     Error: ParseError<I>,
 {
     trace("escaped_transform", move |input: I| {
-        if input.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             streaming_escaped_transform_internal(input, &mut normal, control_char, &mut transform)
         } else {
             complete_escaped_transform_internal(input, &mut normal, control_char, &mut transform)
