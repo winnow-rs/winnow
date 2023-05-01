@@ -1261,7 +1261,6 @@ where
     .parse_next(input)
 }
 
-#[inline]
 fn streaming_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
     I: StreamIsPartial,
