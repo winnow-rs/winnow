@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Improve partial-parsing performance by ~15%
+
 ## [0.4.4] - 2023-04-28
 
 ### Fixes
