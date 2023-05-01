@@ -112,9 +112,7 @@ where
     .parse_next(input)
 }
 
-pub(crate) fn streaming_not_line_ending<T, E: ParseError<T>>(
-    input: T,
-) -> IResult<T, <T as Stream>::Slice, E>
+fn streaming_not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
     T: Stream + AsBStr,
     T: Compare<&'static str>,
@@ -148,9 +146,7 @@ where
     }
 }
 
-pub(crate) fn complete_not_line_ending<T, E: ParseError<T>>(
-    input: T,
-) -> IResult<T, <T as Stream>::Slice, E>
+fn complete_not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
 where
     T: Stream + AsBStr,
     T: Compare<&'static str>,
@@ -1489,7 +1485,7 @@ where
     })
 }
 
-pub(crate) fn streaming_escaped_internal<I, Error, F, G, O1, O2>(
+fn streaming_escaped_internal<I, Error, F, G, O1, O2>(
     input: I,
     normal: &mut F,
     control_char: char,
@@ -1545,7 +1541,7 @@ where
     Err(ErrMode::Incomplete(Needed::Unknown))
 }
 
-pub(crate) fn complete_escaped_internal<'a, I: 'a, Error, F, G, O1, O2>(
+fn complete_escaped_internal<'a, I: 'a, Error, F, G, O1, O2>(
     input: I,
     normal: &mut F,
     control_char: char,
@@ -1688,7 +1684,7 @@ where
 }
 
 #[cfg(feature = "alloc")]
-pub(crate) fn streaming_escaped_transform_internal<I, Error, F, G, Output>(
+fn streaming_escaped_transform_internal<I, Error, F, G, Output>(
     input: I,
     normal: &mut F,
     control_char: char,
@@ -1746,7 +1742,7 @@ where
 }
 
 #[cfg(feature = "alloc")]
-pub(crate) fn complete_escaped_transform_internal<I, Error, F, G, Output>(
+fn complete_escaped_transform_internal<I, Error, F, G, Output>(
     input: I,
     normal: &mut F,
     control_char: char,
