@@ -1264,6 +1264,7 @@ where
 #[inline]
 fn streaming_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
+    I: StreamIsPartial,
     I: Stream<Token = u8>,
 {
     input
@@ -1273,6 +1274,7 @@ where
 
 fn complete_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
+    I: StreamIsPartial,
     I: Stream<Token = u8>,
 {
     input

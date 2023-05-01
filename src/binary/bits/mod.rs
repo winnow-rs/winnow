@@ -178,6 +178,7 @@ fn streaming_take_internal<I, O, E: ParseError<(I, usize)>>(
     count: usize,
 ) -> IResult<(I, usize), O, E>
 where
+    I: StreamIsPartial,
     I: Stream<Token = u8> + AsBytes,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
@@ -224,6 +225,7 @@ fn complete_take_internal<I, O, E: ParseError<(I, usize)>>(
     count: usize,
 ) -> IResult<(I, usize), O, E>
 where
+    I: StreamIsPartial,
     I: Stream<Token = u8> + AsBytes,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {

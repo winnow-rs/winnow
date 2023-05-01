@@ -114,6 +114,7 @@ where
 
 fn streaming_not_line_ending<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
+    I: StreamIsPartial,
     I: Stream + AsBStr,
     I: Compare<&'static str>,
     <I as Stream>::Token: AsChar,
@@ -148,6 +149,7 @@ where
 
 fn complete_not_line_ending<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
+    I: StreamIsPartial,
     I: Stream + AsBStr,
     I: Compare<&'static str>,
     <I as Stream>::Token: AsChar,
@@ -1495,6 +1497,7 @@ fn streaming_escaped_internal<I, Error, F, G, O1, O2>(
     escapable: &mut G,
 ) -> IResult<I, <I as Stream>::Slice, Error>
 where
+    I: StreamIsPartial,
     I: Stream + Offset,
     <I as Stream>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
@@ -1551,6 +1554,7 @@ fn complete_escaped_internal<'a, I: 'a, Error, F, G, O1, O2>(
     escapable: &mut G,
 ) -> IResult<I, <I as Stream>::Slice, Error>
 where
+    I: StreamIsPartial,
     I: Stream + Offset,
     <I as Stream>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
@@ -1694,6 +1698,7 @@ fn streaming_escaped_transform_internal<I, Error, F, G, Output>(
     transform: &mut G,
 ) -> IResult<I, Output, Error>
 where
+    I: StreamIsPartial,
     I: Stream + Offset,
     <I as Stream>::Token: crate::stream::AsChar,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
@@ -1752,6 +1757,7 @@ fn complete_escaped_transform_internal<I, Error, F, G, Output>(
     transform: &mut G,
 ) -> IResult<I, Output, Error>
 where
+    I: StreamIsPartial,
     I: Stream + Offset,
     <I as Stream>::Token: crate::stream::AsChar,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,

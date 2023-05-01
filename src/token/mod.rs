@@ -63,6 +63,7 @@ where
 
 fn streaming_any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Token, E>
 where
+    I: StreamIsPartial,
     I: Stream,
 {
     input
@@ -72,6 +73,7 @@ where
 
 fn complete_any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Token, E>
 where
+    I: StreamIsPartial,
     I: Stream,
 {
     input
@@ -144,6 +146,7 @@ fn streaming_tag_internal<T, I, Error: ParseError<I>>(
     t: T,
 ) -> IResult<I, <I as Stream>::Slice, Error>
 where
+    I: StreamIsPartial,
     I: Stream + Compare<T>,
     T: SliceLen,
 {
@@ -165,6 +168,7 @@ fn complete_tag_internal<T, I, Error: ParseError<I>>(
     t: T,
 ) -> IResult<I, <I as Stream>::Slice, Error>
 where
+    I: StreamIsPartial,
     I: Stream + Compare<T>,
     T: SliceLen,
 {
@@ -246,6 +250,7 @@ fn streaming_tag_no_case_internal<T, I, Error: ParseError<I>>(
     t: T,
 ) -> IResult<I, <I as Stream>::Slice, Error>
 where
+    I: StreamIsPartial,
     I: Stream + Compare<T>,
     T: SliceLen,
 {
@@ -268,6 +273,7 @@ fn complete_tag_no_case_internal<T, I, Error: ParseError<I>>(
     t: T,
 ) -> IResult<I, <I as Stream>::Slice, Error>
 where
+    I: StreamIsPartial,
     I: Stream + Compare<T>,
     T: SliceLen,
 {
@@ -617,6 +623,7 @@ fn streaming_take_while_m_n_internal<T, I, Error: ParseError<I>>(
     list: &T,
 ) -> IResult<I, <I as Stream>::Slice, Error>
 where
+    I: StreamIsPartial,
     I: Stream,
     T: ContainsToken<<I as Stream>::Token>,
 {
@@ -659,6 +666,7 @@ fn complete_take_while_m_n_internal<T, I, Error: ParseError<I>>(
     list: &T,
 ) -> IResult<I, <I as Stream>::Slice, Error>
 where
+    I: StreamIsPartial,
     I: Stream,
     T: ContainsToken<<I as Stream>::Token>,
 {
@@ -900,6 +908,7 @@ fn streaming_take_internal<I, Error: ParseError<I>>(
     c: usize,
 ) -> IResult<I, <I as Stream>::Slice, Error>
 where
+    I: StreamIsPartial,
     I: Stream,
 {
     match i.offset_at(c) {
@@ -913,6 +922,7 @@ fn complete_take_internal<I, Error: ParseError<I>>(
     c: usize,
 ) -> IResult<I, <I as Stream>::Slice, Error>
 where
+    I: StreamIsPartial,
     I: Stream,
 {
     match i.offset_at(c) {
@@ -986,6 +996,7 @@ fn streaming_take_until_internal<T, I, Error: ParseError<I>>(
     t: T,
 ) -> IResult<I, <I as Stream>::Slice, Error>
 where
+    I: StreamIsPartial,
     I: Stream + FindSlice<T>,
     T: SliceLen,
 {
@@ -1000,6 +1011,7 @@ fn complete_take_until_internal<T, I, Error: ParseError<I>>(
     t: T,
 ) -> IResult<I, <I as Stream>::Slice, Error>
 where
+    I: StreamIsPartial,
     I: Stream + FindSlice<T>,
     T: SliceLen,
 {
@@ -1076,6 +1088,7 @@ fn streaming_take_until1_internal<T, I, Error: ParseError<I>>(
     t: T,
 ) -> IResult<I, <I as Stream>::Slice, Error>
 where
+    I: StreamIsPartial,
     I: Stream + FindSlice<T>,
     T: SliceLen,
 {
@@ -1091,6 +1104,7 @@ fn complete_take_until1_internal<T, I, Error: ParseError<I>>(
     t: T,
 ) -> IResult<I, <I as Stream>::Slice, Error>
 where
+    I: StreamIsPartial,
     I: Stream + FindSlice<T>,
     T: SliceLen,
 {
