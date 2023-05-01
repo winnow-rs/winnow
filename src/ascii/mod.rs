@@ -103,16 +103,18 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("not_line_ending", move |input: I| {
-        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
-            streaming_not_line_ending(input)
+        if <I as StreamIsPartial>::is_partial_supported() {
+            not_line_ending_::<_, _, true>(input)
         } else {
-            complete_not_line_ending(input)
+            not_line_ending_::<_, _, false>(input)
         }
     })
     .parse_next(input)
 }
 
-fn streaming_not_line_ending<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+fn not_line_ending_<I, E: ParseError<I>, const PARTIAL: bool>(
+    input: I,
+) -> IResult<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream + AsBStr,
@@ -123,41 +125,7 @@ where
         let c = item.as_char();
         c == '\r' || c == '\n'
     }) {
-        None => Err(ErrMode::Incomplete(Needed::Unknown)),
-        Some(offset) => {
-            let (new_input, res) = input.next_slice(offset);
-            let bytes = new_input.as_bstr();
-            let nth = bytes[0];
-            if nth == b'\r' {
-                let comp = new_input.compare("\r\n");
-                match comp {
-                    //FIXME: calculate the right index
-                    CompareResult::Ok => {}
-                    CompareResult::Incomplete => {
-                        return Err(ErrMode::Incomplete(Needed::Unknown));
-                    }
-                    CompareResult::Error => {
-                        let e: ErrorKind = ErrorKind::Tag;
-                        return Err(ErrMode::from_error_kind(input, e));
-                    }
-                }
-            }
-            Ok((new_input, res))
-        }
-    }
-}
-
-fn complete_not_line_ending<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
-where
-    I: StreamIsPartial,
-    I: Stream + AsBStr,
-    I: Compare<&'static str>,
-    <I as Stream>::Token: AsChar,
-{
-    match input.offset_for(|item| {
-        let c = item.as_char();
-        c == '\r' || c == '\n'
-    }) {
+        None if PARTIAL && input.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
         None => Ok(input.next_slice(input.eof_offset())),
         Some(offset) => {
             let (new_input, res) = input.next_slice(offset);
@@ -168,6 +136,9 @@ where
                 match comp {
                     //FIXME: calculate the right index
                     CompareResult::Ok => {}
+                    CompareResult::Incomplete if PARTIAL && input.is_partial() => {
+                        return Err(ErrMode::Incomplete(Needed::Unknown));
+                    }
                     CompareResult::Incomplete | CompareResult::Error => {
                         let e: ErrorKind = ErrorKind::Tag;
                         return Err(ErrMode::from_error_kind(input, e));
