@@ -112,11 +112,11 @@ where
     .parse_next(input)
 }
 
-fn streaming_not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
+fn streaming_not_line_ending<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    T: Stream + AsBStr,
-    T: Compare<&'static str>,
-    <T as Stream>::Token: AsChar,
+    I: Stream + AsBStr,
+    I: Compare<&'static str>,
+    <I as Stream>::Token: AsChar,
 {
     match input.offset_for(|item| {
         let c = item.as_char();
@@ -146,11 +146,11 @@ where
     }
 }
 
-fn complete_not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
+fn complete_not_line_ending<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
 where
-    T: Stream + AsBStr,
-    T: Compare<&'static str>,
-    <T as Stream>::Token: AsChar,
+    I: Stream + AsBStr,
+    I: Compare<&'static str>,
+    <I as Stream>::Token: AsChar,
 {
     match input.offset_for(|item| {
         let c = item.as_char();
