@@ -173,7 +173,7 @@ where
     })
 }
 
-pub(crate) fn streaming_take_internal<I, O, E: ParseError<(I, usize)>>(
+fn streaming_take_internal<I, O, E: ParseError<(I, usize)>>(
     (input, bit_offset): (I, usize),
     count: usize,
 ) -> IResult<(I, usize), O, E>
@@ -219,7 +219,7 @@ where
     }
 }
 
-pub(crate) fn complete_take_internal<I, O, E: ParseError<(I, usize)>>(
+fn complete_take_internal<I, O, E: ParseError<(I, usize)>>(
     (input, bit_offset): (I, usize),
     count: usize,
 ) -> IResult<(I, usize), O, E>
