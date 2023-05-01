@@ -1262,7 +1262,7 @@ where
 }
 
 #[inline]
-pub(crate) fn streaming_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
+fn streaming_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
     I: Stream<Token = u8>,
 {
@@ -1271,7 +1271,7 @@ where
         .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))
 }
 
-pub(crate) fn complete_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
+fn complete_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
 where
     I: Stream<Token = u8>,
 {

@@ -61,7 +61,7 @@ where
     .parse_next(input)
 }
 
-pub(crate) fn streaming_any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Token, E>
+fn streaming_any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Token, E>
 where
     I: Stream,
 {
@@ -70,7 +70,7 @@ where
         .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))
 }
 
-pub(crate) fn complete_any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Token, E>
+fn complete_any<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Token, E>
 where
     I: Stream,
 {
@@ -139,7 +139,7 @@ where
     })
 }
 
-pub(crate) fn streaming_tag_internal<T, I, Error: ParseError<I>>(
+fn streaming_tag_internal<T, I, Error: ParseError<I>>(
     i: I,
     t: T,
 ) -> IResult<I, <I as Stream>::Slice, Error>
@@ -160,7 +160,7 @@ where
     }
 }
 
-pub(crate) fn complete_tag_internal<T, I, Error: ParseError<I>>(
+fn complete_tag_internal<T, I, Error: ParseError<I>>(
     i: I,
     t: T,
 ) -> IResult<I, <I as Stream>::Slice, Error>
@@ -241,7 +241,7 @@ where
     })
 }
 
-pub(crate) fn streaming_tag_no_case_internal<T, I, Error: ParseError<I>>(
+fn streaming_tag_no_case_internal<T, I, Error: ParseError<I>>(
     i: I,
     t: T,
 ) -> IResult<I, <I as Stream>::Slice, Error>
@@ -263,7 +263,7 @@ where
     }
 }
 
-pub(crate) fn complete_tag_no_case_internal<T, I, Error: ParseError<I>>(
+fn complete_tag_no_case_internal<T, I, Error: ParseError<I>>(
     i: I,
     t: T,
 ) -> IResult<I, <I as Stream>::Slice, Error>
@@ -610,7 +610,7 @@ where
     })
 }
 
-pub(crate) fn streaming_take_while_m_n_internal<T, I, Error: ParseError<I>>(
+fn streaming_take_while_m_n_internal<T, I, Error: ParseError<I>>(
     input: I,
     m: usize,
     n: usize,
@@ -652,7 +652,7 @@ where
     }
 }
 
-pub(crate) fn complete_take_while_m_n_internal<T, I, Error: ParseError<I>>(
+fn complete_take_while_m_n_internal<T, I, Error: ParseError<I>>(
     input: I,
     m: usize,
     n: usize,
@@ -895,7 +895,7 @@ where
     })
 }
 
-pub(crate) fn streaming_take_internal<I, Error: ParseError<I>>(
+fn streaming_take_internal<I, Error: ParseError<I>>(
     i: I,
     c: usize,
 ) -> IResult<I, <I as Stream>::Slice, Error>
@@ -908,7 +908,7 @@ where
     }
 }
 
-pub(crate) fn complete_take_internal<I, Error: ParseError<I>>(
+fn complete_take_internal<I, Error: ParseError<I>>(
     i: I,
     c: usize,
 ) -> IResult<I, <I as Stream>::Slice, Error>
@@ -981,7 +981,7 @@ where
     })
 }
 
-pub(crate) fn streaming_take_until_internal<T, I, Error: ParseError<I>>(
+fn streaming_take_until_internal<T, I, Error: ParseError<I>>(
     i: I,
     t: T,
 ) -> IResult<I, <I as Stream>::Slice, Error>
@@ -995,7 +995,7 @@ where
     }
 }
 
-pub(crate) fn complete_take_until_internal<T, I, Error: ParseError<I>>(
+fn complete_take_until_internal<T, I, Error: ParseError<I>>(
     i: I,
     t: T,
 ) -> IResult<I, <I as Stream>::Slice, Error>
@@ -1071,7 +1071,7 @@ where
     })
 }
 
-pub(crate) fn streaming_take_until1_internal<T, I, Error: ParseError<I>>(
+fn streaming_take_until1_internal<T, I, Error: ParseError<I>>(
     i: I,
     t: T,
 ) -> IResult<I, <I as Stream>::Slice, Error>
@@ -1086,7 +1086,7 @@ where
     }
 }
 
-pub(crate) fn complete_take_until1_internal<T, I, Error: ParseError<I>>(
+fn complete_take_until1_internal<T, I, Error: ParseError<I>>(
     i: I,
     t: T,
 ) -> IResult<I, <I as Stream>::Slice, Error>
