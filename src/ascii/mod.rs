@@ -103,59 +103,29 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("not_line_ending", move |input: I| {
-        if input.is_partial() {
-            streaming_not_line_ending(input)
+        if <I as StreamIsPartial>::is_partial_supported() {
+            not_line_ending_::<_, _, true>(input)
         } else {
-            complete_not_line_ending(input)
+            not_line_ending_::<_, _, false>(input)
         }
     })
     .parse_next(input)
 }
 
-fn streaming_not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
+fn not_line_ending_<I, E: ParseError<I>, const PARTIAL: bool>(
+    input: I,
+) -> IResult<I, <I as Stream>::Slice, E>
 where
-    T: Stream + AsBStr,
-    T: Compare<&'static str>,
-    <T as Stream>::Token: AsChar,
+    I: StreamIsPartial,
+    I: Stream + AsBStr,
+    I: Compare<&'static str>,
+    <I as Stream>::Token: AsChar,
 {
     match input.offset_for(|item| {
         let c = item.as_char();
         c == '\r' || c == '\n'
     }) {
-        None => Err(ErrMode::Incomplete(Needed::Unknown)),
-        Some(offset) => {
-            let (new_input, res) = input.next_slice(offset);
-            let bytes = new_input.as_bstr();
-            let nth = bytes[0];
-            if nth == b'\r' {
-                let comp = new_input.compare("\r\n");
-                match comp {
-                    //FIXME: calculate the right index
-                    CompareResult::Ok => {}
-                    CompareResult::Incomplete => {
-                        return Err(ErrMode::Incomplete(Needed::Unknown));
-                    }
-                    CompareResult::Error => {
-                        let e: ErrorKind = ErrorKind::Tag;
-                        return Err(ErrMode::from_error_kind(input, e));
-                    }
-                }
-            }
-            Ok((new_input, res))
-        }
-    }
-}
-
-fn complete_not_line_ending<T, E: ParseError<T>>(input: T) -> IResult<T, <T as Stream>::Slice, E>
-where
-    T: Stream + AsBStr,
-    T: Compare<&'static str>,
-    <T as Stream>::Token: AsChar,
-{
-    match input.offset_for(|item| {
-        let c = item.as_char();
-        c == '\r' || c == '\n'
-    }) {
+        None if PARTIAL && input.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
         None => Ok(input.next_slice(input.eof_offset())),
         Some(offset) => {
             let (new_input, res) = input.next_slice(offset);
@@ -166,6 +136,9 @@ where
                 match comp {
                     //FIXME: calculate the right index
                     CompareResult::Ok => {}
+                    CompareResult::Incomplete if PARTIAL && input.is_partial() => {
+                        return Err(ErrMode::Incomplete(Needed::Unknown));
+                    }
                     CompareResult::Incomplete | CompareResult::Error => {
                         let e: ErrorKind = ErrorKind::Tag;
                         return Err(ErrMode::from_error_kind(input, e));
@@ -943,7 +916,7 @@ where
 {
     trace("dec_uint", move |input: I| {
         if input.eof_offset() == 0 {
-            if input.is_partial() {
+            if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
                 return Err(ErrMode::Incomplete(Needed::new(1)));
             } else {
                 return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
@@ -970,7 +943,7 @@ where
             }
         }
 
-        if input.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             Err(ErrMode::Incomplete(Needed::new(1)))
         } else {
             Ok((input.next_slice(input.eof_offset()).0, value))
@@ -1104,7 +1077,7 @@ where
             .parse_next(input)?;
 
         if input.eof_offset() == 0 {
-            if input.is_partial() {
+            if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
                 return Err(ErrMode::Incomplete(Needed::new(1)));
             } else {
                 return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
@@ -1135,7 +1108,7 @@ where
             }
         }
 
-        if input.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             Err(ErrMode::Incomplete(Needed::new(1)))
         } else {
             Ok((input.next_slice(input.eof_offset()).0, value))
@@ -1246,7 +1219,10 @@ where
                 }
             }
             Err(_) => {
-                if input.is_partial() && invalid_offset == input.eof_offset() {
+                if <I as StreamIsPartial>::is_partial_supported()
+                    && input.is_partial()
+                    && invalid_offset == input.eof_offset()
+                {
                     // Only the next byte is guaranteed required
                     return Err(ErrMode::Incomplete(Needed::new(1)));
                 } else {
@@ -1477,7 +1453,7 @@ where
     Error: ParseError<I>,
 {
     trace("escaped", move |input: I| {
-        if input.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             streaming_escaped_internal(input, &mut normal, control_char, &mut escapable)
         } else {
             complete_escaped_internal(input, &mut normal, control_char, &mut escapable)
@@ -1492,6 +1468,7 @@ fn streaming_escaped_internal<I, Error, F, G, O1, O2>(
     escapable: &mut G,
 ) -> IResult<I, <I as Stream>::Slice, Error>
 where
+    I: StreamIsPartial,
     I: Stream + Offset,
     <I as Stream>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
@@ -1548,6 +1525,7 @@ fn complete_escaped_internal<'a, I: 'a, Error, F, G, O1, O2>(
     escapable: &mut G,
 ) -> IResult<I, <I as Stream>::Slice, Error>
 where
+    I: StreamIsPartial,
     I: Stream + Offset,
     <I as Stream>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
@@ -1675,7 +1653,7 @@ where
     Error: ParseError<I>,
 {
     trace("escaped_transform", move |input: I| {
-        if input.is_partial() {
+        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             streaming_escaped_transform_internal(input, &mut normal, control_char, &mut transform)
         } else {
             complete_escaped_transform_internal(input, &mut normal, control_char, &mut transform)
@@ -1691,6 +1669,7 @@ fn streaming_escaped_transform_internal<I, Error, F, G, Output>(
     transform: &mut G,
 ) -> IResult<I, Output, Error>
 where
+    I: StreamIsPartial,
     I: Stream + Offset,
     <I as Stream>::Token: crate::stream::AsChar,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
@@ -1749,6 +1728,7 @@ fn complete_escaped_transform_internal<I, Error, F, G, Output>(
     transform: &mut G,
 ) -> IResult<I, Output, Error>
 where
+    I: StreamIsPartial,
     I: Stream + Offset,
     <I as Stream>::Token: crate::stream::AsChar,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
