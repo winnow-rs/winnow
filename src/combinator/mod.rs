@@ -43,7 +43,6 @@
 //! | [`repeat`][crate::combinator::repeat] | `repeat(1..=3, "ab")` | `"ababc"` | `Ok(("c", vec!["ab", "ab"]))` |Applies the parser between m and n times (n included) and returns the list of results in a Vec|
 //! | [`repeat_till0`][crate::combinator::repeat_till0] | `repeat_till0(tag( "ab" ), tag( "ef" ))` | `"ababefg"` | `Ok(("g", (vec!["ab", "ab"], "ef")))` |Applies the first parser until the second applies. Returns a tuple containing the list of results from the first in a Vec and the result of the second|
 //! | [`separated0`][crate::combinator::separated0] | `separated0("ab", ",")` | `"ab,ab,ab."` | `Ok((".", vec!["ab", "ab", "ab"]))` |`separated1` works like `separated0` but must returns at least one element|
-//! | [`fold_repeat0`][crate::combinator::fold_repeat0] | `fold_repeat0(be_u8, \|\| 0, \|acc, item\| acc + item)` | `[1, 2, 3]` | `Ok(([], 6))` |Applies the parser 0 or more times and folds the list of return values. The `fold_repeat1` version must apply the child parser at least one time|
 //! | [`fold_repeat`][crate::combinator::fold_repeat] | `fold_repeat(1..=2, be_u8, \|\| 0, \|acc, item\| acc + item)` | `[1, 2, 3]` | `Ok(([3], 3))` |Applies the parser between m and n times (n included) and folds the list of return value|
 //!
 //! ## Partial related

@@ -70,8 +70,8 @@ where
 pub use combinator::count;
 pub use combinator::fill;
 
-/// Deprecated, replaced by [`combinator::fold_repeat0`]
-#[deprecated(since = "0.4.2", note = "Replaced with `combinator::fold_repeat0`")]
+/// Deprecated, replaced by [`combinator::fold_repeat`]
+#[deprecated(since = "0.4.2", note = "Replaced with `combinator::fold_repeat`")]
 #[inline(always)]
 pub fn fold_many0<I, O, E, F, G, H, R>(f: F, init: H, g: G) -> impl Parser<I, R, E>
 where
@@ -81,11 +81,11 @@ where
     H: FnMut() -> R,
     E: ParseError<I>,
 {
-    combinator::fold_repeat0(f, init, g)
+    combinator::fold_repeat(0.., f, init, g)
 }
 
-/// Deprecated, replaced by [`combinator::fold_repeat1`]
-#[deprecated(since = "0.4.2", note = "Replaced with `combinator::fold_repeat1`")]
+/// Deprecated, replaced by [`combinator::fold_repeat`]
+#[deprecated(since = "0.4.2", note = "Replaced with `combinator::fold_repeat`")]
 #[inline(always)]
 pub fn fold_many1<I, O, E, F, G, H, R>(f: F, init: H, g: G) -> impl Parser<I, R, E>
 where
@@ -95,7 +95,7 @@ where
     H: FnMut() -> R,
     E: ParseError<I>,
 {
-    combinator::fold_repeat1(f, init, g)
+    combinator::fold_repeat(1.., f, init, g)
 }
 
 /// Deprecated, replaced by [`combinator::fold_repeat`]
