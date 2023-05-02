@@ -101,14 +101,14 @@
 //! - [`newline`][crate::ascii::newline]: Matches a newline character `\n`
 //! - [`tab`][crate::ascii::tab]: Matches a tab character `\t`
 //!
-//! You can then capture sequences of these characters with parsers like [`take_while1`].
+//! You can then capture sequences of these characters with parsers like [`take_while`].
 //! ```rust
 //! # use winnow::Parser;
 //! # use winnow::IResult;
-//! use winnow::token::take_while1;
+//! use winnow::token::take_while;
 //!
 //! fn parse_digits(input: &str) -> IResult<&str, &str> {
-//!     take_while1("0123456789abcdefgABCDEFG").parse_next(input)
+//!     take_while(1.., "0123456789abcdefgABCDEFG").parse_next(input)
 //! }
 //!
 //! fn main() {
@@ -148,7 +148,7 @@ use crate::ascii::hex_digit1;
 use crate::stream::ContainsToken;
 use crate::token::one_of;
 use crate::token::tag;
-use crate::token::take_while1;
+use crate::token::take_while;
 use crate::Parser;
 use std::ops::RangeInclusive;
 

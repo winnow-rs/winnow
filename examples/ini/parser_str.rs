@@ -6,7 +6,7 @@ use winnow::{
     combinator::opt,
     combinator::repeat,
     combinator::{delimited, terminated},
-    token::{take_till0, take_while0, take_while1},
+    token::{take_till0, take_while},
 };
 
 pub type Stream<'i> = &'i str;
@@ -21,8 +21,8 @@ fn category_and_keys(i: Stream<'_>) -> IResult<Stream<'_>, (&str, HashMap<&str, 
 
 fn category(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
     terminated(
-        delimited('[', take_while0(|c| c != ']'), ']'),
-        opt(take_while1(" \r\n")),
+        delimited('[', take_while(0.., |c| c != ']'), ']'),
+        opt(take_while(1.., " \r\n")),
     )
     .parse_next(i)
 }
@@ -47,11 +47,11 @@ fn is_line_ending_or_comment(chr: char) -> bool {
 }
 
 fn not_line_ending(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
-    take_while0(|c| c != '\r' && c != '\n').parse_next(i)
+    take_while(0.., |c| c != '\r' && c != '\n').parse_next(i)
 }
 
 fn space_or_line_ending(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
-    take_while1(" \r\n").parse_next(i)
+    take_while(1.., " \r\n").parse_next(i)
 }
 
 #[test]

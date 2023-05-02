@@ -107,14 +107,14 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   stream::AsChar,
-//!   token::take_while0,
+//!   token::take_while,
 //!   token::one_of,
 //! };
 //!
 //! pub fn identifier(input: &str) -> IResult<&str, &str> {
 //!   (
 //!       one_of(|c: char| c.is_alpha() || c == '_'),
-//!       take_while0(|c: char| c.is_alphanum() || c == '_')
+//!       take_while(0.., |c: char| c.is_alphanum() || c == '_')
 //!   )
 //!   .recognize()
 //!   .parse_next(input)
@@ -123,7 +123,7 @@
 //!
 //! Let's say we apply this to the identifier `hello_world123abc`. The first element of the tuple
 //! would uses [`one_of`][crate::token::one_of] which would recognize `h`. The tuple ensures that
-//! `ello_world123abc` will be piped to the next [`take_while0`][crate::token::take_while0] parser,
+//! `ello_world123abc` will be piped to the next [`take_while`][crate::token::take_while] parser,
 //! which recognizes every remaining character. However, the tuple returns a tuple of the results
 //! of its sub-parsers. The [`recognize`][crate::Parser::recognize] parser produces a `&str` of the
 //! input text that was parsed, which in this case is the entire `&str` `hello_world123abc`.

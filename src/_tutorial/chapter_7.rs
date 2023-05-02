@@ -27,7 +27,7 @@
 //! winnow provides some helpers for this:
 //! ```rust
 //! # use winnow::IResult;
-//! # use winnow::token::take_while1;
+//! # use winnow::token::take_while;
 //! # use winnow::combinator::dispatch;
 //! # use winnow::token::take;
 //! # use winnow::combinator::fail;
@@ -60,25 +60,25 @@
 //! # }
 //! #
 //! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
 //! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
 //! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #     )).parse_next(input)
 //! # }
 //! #
 //! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),

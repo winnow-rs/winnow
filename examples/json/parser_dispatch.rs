@@ -12,7 +12,7 @@ use winnow::{
     combinator::{delimited, preceded, separated_pair, terminated},
     combinator::{fold_repeat, separated0},
     error::{ContextError, ParseError},
-    token::{any, none_of, take, take_while0},
+    token::{any, none_of, take, take_while},
 };
 
 use crate::json::JsonValue;
@@ -198,9 +198,9 @@ fn key_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static s
 /// first we write parsers for the smallest elements (here a space character),
 /// then we'll combine them in larger parsers
 fn ws<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, &'i str, E> {
-    // Combinators like `take_while0` return a function. That function is the
+    // Combinators like `take_while` return a function. That function is the
     // parser,to which we can pass the input
-    take_while0(WS).parse_next(input)
+    take_while(0.., WS).parse_next(input)
 }
 
 const WS: &str = " \t\r\n";
