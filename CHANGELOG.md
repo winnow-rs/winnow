@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.4.6] - 2023-05-02
+
 ### Compatibility
 
 - Deprecated `count`, `repeat0`, `repeat1` in favor of `repeat`
@@ -1790,7 +1792,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.4.5...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.4.6...HEAD
+[0.4.6]: https://github.com/winnow-rs/winnow/compare/v0.4.5...v0.4.6
 [0.4.5]: https://github.com/winnow-rs/winnow/compare/v0.4.4...v0.4.5
 [0.4.4]: https://github.com/winnow-rs/winnow/compare/v0.4.3...v0.4.4
 [0.4.3]: https://github.com/winnow-rs/winnow/compare/v0.4.2...v0.4.3
