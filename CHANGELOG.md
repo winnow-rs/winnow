@@ -3,6 +3,12 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+- Deprecated `count`, `repeat0`, `repeat1` in favor of `repeat`
+- Deprecated `take_while0`, `take_while1` in favor of `take_while`
+- Deprecated `fold_repeat0`, `fold_repeat1` in favor of `fold_repeat`
+
 ## [0.4.5] - 2023-05-01
 
 ### Performance
