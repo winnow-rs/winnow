@@ -66,6 +66,26 @@ use crate::Parser;
 /// # }
 /// ```
 ///
+/// Fixed number of repeitions:
+/// ```rust
+/// # #[cfg(feature = "std")] {
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
+/// use winnow::combinator::repeat;
+/// use winnow::token::tag;
+///
+/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
+///   repeat(2, "abc").parse_next(s)
+/// }
+///
+/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
+/// assert_eq!(parser("abc123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
+/// # }
+/// ```
+///
 /// Arbitrary reptitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
@@ -86,6 +106,7 @@ use crate::Parser;
 /// # }
 /// ```
 #[doc(alias = "many0")]
+#[doc(alias = "count")]
 #[doc(alias = "many0_count")]
 #[doc(alias = "many1")]
 #[doc(alias = "many1_count")]
@@ -109,6 +130,7 @@ where
         match (start_inclusive, end_inclusive) {
             (0, None) => repeat0_(&mut f, i),
             (1, None) => repeat1_(&mut f, i),
+            (start, end) if Some(start) == end => repeat_n_(start, &mut f, i),
             (start, end) => repeat_m_n_(start, end.unwrap_or(usize::MAX), &mut f, i),
         }
     })
@@ -582,61 +604,43 @@ where
     Ok((input, res))
 }
 
-/// [`Accumulate`] the output of a parser into a container, like `Vec`
-///
-/// # Arguments
-/// * `f` The parser to apply.
-/// * `count` How often to apply the parser.
-///
-/// To recognize a series of tokens, [`Accumulate`] into a `()` and then [`Parser::recognize`].
-///
-/// # Example
-///
-/// ```rust
-/// # #[cfg(feature = "std")] {
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::combinator::count;
-/// use winnow::token::tag;
-///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   count("abc", 2).parse_next(s)
-/// }
-///
-/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
-/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Tag))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
-/// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
-/// # }
-/// ```
-#[doc(alias = "skip_counskip_count")]
-pub fn count<I, O, C, E, F>(mut f: F, count: usize) -> impl Parser<I, C, E>
+/// Deprecated, replaced by [`repeat`]
+#[deprecated(since = "0.4.6", note = "Replaced with `repeat`")]
+#[inline(always)]
+pub fn count<I, O, C, E, F>(f: F, count: usize) -> impl Parser<I, C, E>
 where
     I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    trace("count", move |i: I| {
-        let mut input = i.clone();
-        let mut res = C::initial(Some(count));
+    repeat(count, f)
+}
 
-        for _ in 0..count {
-            let input_ = input.clone();
-            match f.parse_next(input_) {
-                Ok((i, o)) => {
-                    res.accumulate(o);
-                    input = i;
-                }
-                Err(e) => {
-                    return Err(e.append(i, ErrorKind::Many));
-                }
+fn repeat_n_<I, O, C, E, F>(count: usize, f: &mut F, i: I) -> IResult<I, C, E>
+where
+    I: Stream,
+    C: Accumulate<O>,
+    F: Parser<I, O, E>,
+    E: ParseError<I>,
+{
+    let mut input = i.clone();
+    let mut res = C::initial(Some(count));
+
+    for _ in 0..count {
+        let input_ = input.clone();
+        match f.parse_next(input_) {
+            Ok((i, o)) => {
+                res.accumulate(o);
+                input = i;
+            }
+            Err(e) => {
+                return Err(e.append(i, ErrorKind::Many));
             }
         }
+    }
 
-        Ok((input, res))
-    })
+    Ok((input, res))
 }
 
 /// Repeats the embedded parser, filling the given slice with results.

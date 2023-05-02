@@ -118,10 +118,8 @@ fn overflow_incomplete_many_m_n() {
 #[test]
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_count() {
-    use winnow::combinator::count;
-
     fn counter(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        count(length_data(be_u64), 2).parse_next(i)
+        repeat(2, length_data(be_u64)).parse_next(i)
     }
 
     assert_eq!(

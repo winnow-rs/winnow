@@ -115,7 +115,7 @@ fn test_parser_flat_map() {
 
 #[allow(dead_code)]
 fn test_closure_compiles_195(input: &[u8]) -> IResult<&[u8], ()> {
-    u8.flat_map(|num| count(u16(Endianness::Big), num as usize))
+    u8.flat_map(|num| repeat(num as usize, u16(Endianness::Big)))
         .parse_next(input)
 }
 
@@ -992,7 +992,7 @@ fn repeat_test() {
 fn count_test() {
     const TIMES: usize = 2;
     fn cnt_2(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        count("abc", TIMES).parse_next(i)
+        repeat(TIMES, "abc").parse_next(i)
     }
 
     assert_eq!(
@@ -1035,7 +1035,7 @@ fn count_test() {
 fn count_zero() {
     const TIMES: usize = 0;
     fn counter_2(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-        count("abc", TIMES).parse_next(i)
+        repeat(TIMES, "abc").parse_next(i)
     }
 
     let done = &b"abcabcabcdef"[..];

@@ -273,8 +273,7 @@ fn issue_1459_clamp_capacity() {
     );
 
     // shouldn't panic
-    use winnow::combinator::count;
-    let mut parser = count::<_, _, Vec<_>, (), _>('a', usize::MAX);
+    let mut parser = repeat::<_, _, Vec<_>, (), _>(usize::MAX, 'a');
     assert_eq!(
         parser.parse_next("a"),
         Err(winnow::error::ErrMode::Backtrack(()))
@@ -283,12 +282,12 @@ fn issue_1459_clamp_capacity() {
 
 #[test]
 fn issue_1617_count_parser_returning_zero_size() {
-    use winnow::{combinator::count, error::Error, token::tag};
+    use winnow::{combinator::repeat, error::Error, token::tag};
 
-    // previously, `count()` panicked if the parser had type `O = ()`
+    // previously, `repeat()` panicked if the parser had type `O = ()`
     let parser = tag::<_, _, Error<&str>>("abc").map(|_| ());
     // shouldn't panic
-    let result = count(parser, 3)
+    let result = repeat(3, parser)
         .parse_next("abcabcabcdef")
         .expect("parsing should succeed");
     assert_eq!(result, ("def", vec![(), (), ()]));

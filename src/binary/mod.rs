@@ -7,7 +7,7 @@ pub mod bits;
 #[cfg(test)]
 mod tests;
 
-use crate::combinator::count;
+use crate::combinator::repeat;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::Needed;
@@ -2545,6 +2545,6 @@ where
     trace("length_count", move |i: I| {
         let (i, n) = f.parse_next(i)?;
         let n = n.to_usize();
-        count(g.by_ref(), n).parse_next(i)
+        repeat(n, g.by_ref()).parse_next(i)
     })
 }

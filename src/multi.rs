@@ -67,6 +67,7 @@ where
     combinator::repeat(min..=max, parse)
 }
 
+#[allow(deprecated)]
 pub use combinator::count;
 pub use combinator::fill;
 
