@@ -40,7 +40,6 @@
 //! | combinator | usage | input | output | comment |
 //! |---|---|---|---|---|
 //! | [`count`][crate::combinator::count] | `count(take(2), 3)` | `"abcdefgh"` | `Ok(("gh", vec!["ab", "cd", "ef"]))` |Applies the child parser a specified number of times|
-//! | [`repeat0`][crate::combinator::repeat0] | `repeat0("ab")` |  `"abababc"` | `Ok(("c", vec!["ab", "ab", "ab"]))` |Applies the parser 0 or more times and returns the list of results in a Vec. `repeat1` does the same operation but must return at least one element|
 //! | [`repeat`][crate::combinator::repeat] | `repeat(1..=3, "ab")` | `"ababc"` | `Ok(("c", vec!["ab", "ab"]))` |Applies the parser between m and n times (n included) and returns the list of results in a Vec|
 //! | [`repeat_till0`][crate::combinator::repeat_till0] | `repeat_till0(tag( "ab" ), tag( "ef" ))` | `"ababefg"` | `Ok(("g", (vec!["ab", "ab"], "ef")))` |Applies the first parser until the second applies. Returns a tuple containing the list of results from the first in a Vec and the result of the second|
 //! | [`separated0`][crate::combinator::separated0] | `separated0("ab", ",")` | `"ab,ab,ab."` | `Ok((".", vec!["ab", "ab", "ab"]))` |`separated1` works like `separated0` but must returns at least one element|

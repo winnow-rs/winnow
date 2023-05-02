@@ -8,8 +8,8 @@ use crate::stream::Accumulate;
 use crate::stream::Stream;
 use crate::Parser;
 
-/// Deprecated, replaced by [`combinator::repeat0`]
-#[deprecated(since = "0.4.2", note = "Replaced with `combinator::repeat0`")]
+/// Deprecated, replaced by [`combinator::repeat`]
+#[deprecated(since = "0.4.2", note = "Replaced with `combinator::repeat`")]
 #[inline(always)]
 pub fn many0<I, O, C, E, F>(f: F) -> impl Parser<I, C, E>
 where
@@ -18,11 +18,11 @@ where
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    combinator::repeat0(f)
+    combinator::repeat(0.., f)
 }
 
-/// Deprecated, replaced by [`combinator::repeat1`]
-#[deprecated(since = "0.4.2", note = "Replaced with `combinator::repeat1`")]
+/// Deprecated, replaced by [`combinator::repeat`]
+#[deprecated(since = "0.4.2", note = "Replaced with `combinator::repeat`")]
 #[inline(always)]
 pub fn many1<I, O, C, E, F>(f: F) -> impl Parser<I, C, E>
 where
@@ -31,7 +31,7 @@ where
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    combinator::repeat1(f)
+    combinator::repeat(1.., f)
 }
 
 /// Deprecated, replaced by [`combinator::repeat_till0`]

@@ -5,7 +5,7 @@ use winnow::prelude::*;
 use winnow::{
     ascii::{alphanumeric1 as alphanumeric, multispace0 as multispace, space0 as space},
     combinator::opt,
-    combinator::repeat0,
+    combinator::repeat,
     combinator::{delimited, separated_pair, terminated},
     token::take_while0,
 };
@@ -13,11 +13,14 @@ use winnow::{
 pub type Stream<'i> = &'i [u8];
 
 pub fn categories(i: Stream<'_>) -> IResult<Stream<'_>, HashMap<&str, HashMap<&str, &str>>> {
-    repeat0(separated_pair(
-        category,
-        opt(multispace),
-        repeat0(terminated(key_value, opt(multispace))),
-    ))
+    repeat(
+        0..,
+        separated_pair(
+            category,
+            opt(multispace),
+            repeat(0.., terminated(key_value, opt(multispace))),
+        ),
+    )
     .parse_next(i)
 }
 

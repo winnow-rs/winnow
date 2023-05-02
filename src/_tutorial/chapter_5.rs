@@ -3,7 +3,7 @@
 //! In [`chapter_3`], we covered how to sequence different parsers into a tuple but sometimes you need to run a
 //! single parser multiple times, collecting the result into a [`Vec`].
 //!
-//! Let's take our `parse_digits` and collect a list of them with [`repeat0`]:
+//! Let's take our `parse_digits` and collect a list of them with [`repeat`]:
 //! ```rust
 //! # use winnow::IResult;
 //! # use winnow::Parser;
@@ -12,11 +12,11 @@
 //! # use winnow::token::take;
 //! # use winnow::combinator::fail;
 //! use winnow::combinator::opt;
-//! use winnow::combinator::repeat0;
+//! use winnow::combinator::repeat;
 //! use winnow::combinator::terminated;
 //!
 //! fn parse_list(input: &str) -> IResult<&str, Vec<usize>> {
-//!     repeat0(terminated(parse_digits, opt(','))).parse_next(input)
+//!     repeat(0.., terminated(parse_digits, opt(','))).parse_next(input)
 //! }
 //!
 //! // ...
@@ -132,7 +132,7 @@
 //! }
 //! ```
 //!
-//! If you look closely at [`repeat0`], it isn't collecting directly into a [`Vec`] but
+//! If you look closely at [`repeat`], it isn't collecting directly into a [`Vec`] but
 //! [`Accumulate`] to gather the results.  This let's us make more complex parsers than we did in
 //! [`chapter_2`] by accumulating the results into a `()` and [`recognize`][Parser::recognize]-ing the captured input:
 //! ```rust
@@ -204,7 +204,7 @@
 #![allow(unused_imports)]
 use super::chapter_2;
 use super::chapter_3;
-use crate::combinator::repeat0;
+use crate::combinator::repeat;
 use crate::combinator::separated0;
 use crate::stream::Accumulate;
 use crate::Parser;

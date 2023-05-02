@@ -28,6 +28,45 @@ use crate::Parser;
 ///
 /// # Example
 ///
+/// Zero or more reptitions:
+/// ```rust
+/// # #[cfg(feature = "std")] {
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::prelude::*;
+/// use winnow::combinator::repeat;
+/// use winnow::token::tag;
+///
+/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
+///   repeat(0.., "abc").parse_next(s)
+/// }
+///
+/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
+/// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
+/// assert_eq!(parser("123123"), Ok(("123123", vec![])));
+/// assert_eq!(parser(""), Ok(("", vec![])));
+/// # }
+/// ```
+///
+/// One or more reptitions:
+/// ```rust
+/// # #[cfg(feature = "std")] {
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
+/// use winnow::combinator::repeat;
+/// use winnow::token::tag;
+///
+/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
+///   repeat(1.., "abc").parse_next(s)
+/// }
+///
+/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
+/// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
+/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
+/// # }
+/// ```
+///
+/// Arbitrary reptitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
@@ -46,8 +85,14 @@ use crate::Parser;
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
 /// # }
 /// ```
-#[doc(alias = "repeated")]
+#[doc(alias = "many0")]
+#[doc(alias = "many0_count")]
+#[doc(alias = "many1")]
+#[doc(alias = "many1_count")]
 #[doc(alias = "many_m_n")]
+#[doc(alias = "repeated")]
+#[doc(alias = "skip_many")]
+#[doc(alias = "skip_many1")]
 #[inline(always)]
 pub fn repeat<I, O, C, E, F>(range: impl Into<Range>, mut f: F) -> impl Parser<I, C, E>
 where
@@ -63,53 +108,23 @@ where
     trace("repeat", move |i: I| {
         match (start_inclusive, end_inclusive) {
             (0, None) => repeat0_(&mut f, i),
-            (1, None) => repeat1(f.by_ref()).parse_next(i),
+            (1, None) => repeat1_(&mut f, i),
             (start, end) => repeat_m_n_(start, end.unwrap_or(usize::MAX), &mut f, i),
         }
     })
 }
 
-/// [`Accumulate`] the output of a parser into a container, like `Vec`
-///
-/// This stops on [`ErrMode::Backtrack`].  To instead chain an error up, see
-/// [`cut_err`][crate::combinator::cut_err].
-///
-/// To recognize a series of tokens, [`Accumulate`] into a `()` and then [`Parser::recognize`].
-///
-/// **Warning:** if the parser passed in accepts empty inputs (like `alpha0` or `digit0`), `repeat0` will
-/// return an error, to prevent going into an infinite loop
-///
-/// # Example
-///
-/// ```rust
-/// # #[cfg(feature = "std")] {
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::combinator::repeat0;
-/// use winnow::token::tag;
-///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   repeat0("abc").parse_next(s)
-/// }
-///
-/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Ok(("123123", vec![])));
-/// assert_eq!(parser(""), Ok(("", vec![])));
-/// # }
-/// ```
-#[doc(alias = "skip_many")]
-#[doc(alias = "repeated")]
-#[doc(alias = "many0_count")]
-#[doc(alias = "many0")]
-pub fn repeat0<I, O, C, E, F>(mut f: F) -> impl Parser<I, C, E>
+/// Deprecated, replaced by [`repeat`]
+#[deprecated(since = "0.4.6", note = "Replaced with `repeat`")]
+#[inline(always)]
+pub fn repeat0<I, O, C, E, F>(f: F) -> impl Parser<I, C, E>
 where
     I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    trace("repeat0", move |i: I| repeat0_(&mut f, i))
+    repeat(0.., f)
 }
 
 fn repeat0_<I, O, C, E, F>(f: &mut F, mut i: I) -> IResult<I, C, E>
@@ -138,51 +153,17 @@ where
     }
 }
 
-/// [`Accumulate`] the output of a parser into a container, like `Vec`
-///
-/// This stops on [`ErrMode::Backtrack`] if there is at least one result.  To instead chain an error up,
-/// see [`cut_err`][crate::combinator::cut_err].
-///
-/// # Arguments
-/// * `f` The parser to apply.
-///
-/// To recognize a series of tokens, [`Accumulate`] into a `()` and then [`Parser::recognize`].
-///
-/// **Warning:** If the parser passed to `repeat1` accepts empty inputs
-/// (like `alpha0` or `digit0`), `repeat1` will return an error,
-/// to prevent going into an infinite loop.
-///
-/// # Example
-///
-/// ```rust
-/// # #[cfg(feature = "std")] {
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::combinator::repeat1;
-/// use winnow::token::tag;
-///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   repeat1("abc").parse_next(s)
-/// }
-///
-/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Tag))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
-/// # }
-/// ```
-#[doc(alias = "skip_many1")]
-#[doc(alias = "repeated")]
-#[doc(alias = "many1_count")]
-#[doc(alias = "many1")]
-pub fn repeat1<I, O, C, E, F>(mut f: F) -> impl Parser<I, C, E>
+/// Deprecated, replaced by [`repeat`]
+#[deprecated(since = "0.4.6", note = "Replaced with `repeat`")]
+#[inline(always)]
+pub fn repeat1<I, O, C, E, F>(f: F) -> impl Parser<I, C, E>
 where
     I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    trace("repeat1", move |i: I| repeat1_(&mut f, i))
+    repeat(1.., f)
 }
 
 fn repeat1_<I, O, C, E, F>(f: &mut F, mut i: I) -> IResult<I, C, E>
@@ -539,7 +520,7 @@ where
     trace("separated_foldr1", move |i: I| {
         let (i, ol) = parser.parse_next(i)?;
         let (i, all): (_, crate::lib::std::vec::Vec<(O2, O)>) =
-            repeat0((sep.by_ref(), parser.by_ref())).parse_next(i)?;
+            repeat(0.., (sep.by_ref(), parser.by_ref())).parse_next(i)?;
         if let Some((s, or)) = all
             .into_iter()
             .rev()

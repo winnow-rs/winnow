@@ -6,7 +6,7 @@ use winnow::binary::be_u64;
 #[cfg(feature = "alloc")]
 use winnow::binary::length_data;
 #[cfg(feature = "alloc")]
-use winnow::combinator::repeat0;
+use winnow::combinator::repeat;
 use winnow::error::{ErrMode, Needed};
 use winnow::prelude::*;
 use winnow::token::take;
@@ -32,7 +32,7 @@ fn overflow_incomplete_tuple() {
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_length_bytes() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat0(length_data(be_u64)).parse_next(i)
+        repeat(0.., length_data(be_u64)).parse_next(i)
     }
 
     // Trigger an overflow in length_data
@@ -48,10 +48,10 @@ fn overflow_incomplete_length_bytes() {
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_many0() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat0(length_data(be_u64)).parse_next(i)
+        repeat(0.., length_data(be_u64)).parse_next(i)
     }
 
-    // Trigger an overflow in repeat0
+    // Trigger an overflow in repeat
     assert_eq!(
         multi(Partial::new(
             &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xef"[..]
@@ -63,13 +63,13 @@ fn overflow_incomplete_many0() {
 #[test]
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_many1() {
-    use winnow::combinator::repeat1;
+    use winnow::combinator::repeat;
 
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat1(length_data(be_u64)).parse_next(i)
+        repeat(1.., length_data(be_u64)).parse_next(i)
     }
 
-    // Trigger an overflow in repeat1
+    // Trigger an overflow in repeat
     assert_eq!(
         multi(Partial::new(
             &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xef"[..]
@@ -154,7 +154,7 @@ fn overflow_incomplete_length_count() {
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_length_data() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat0(length_data(be_u64)).parse_next(i)
+        repeat(0.., length_data(be_u64)).parse_next(i)
     }
 
     assert_eq!(

@@ -28,12 +28,12 @@ mod parse_int {
     use winnow::{
         ascii::{digit1 as digit, space1 as space},
         combinator::opt,
-        combinator::repeat0,
+        combinator::repeat,
         IResult,
     };
 
     fn parse_ints(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<i32>> {
-        repeat0(spaces_or_int).parse_next(input)
+        repeat(0.., spaces_or_int).parse_next(input)
     }
 
     fn spaces_or_int(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i32> {
@@ -187,8 +187,8 @@ fn issue_942() {
     pub fn parser<'a, E: ParseError<&'a str> + ContextError<&'a str, &'static str>>(
         i: &'a str,
     ) -> IResult<&'a str, usize, E> {
-        use winnow::combinator::repeat0;
-        repeat0('a'.context("char_a")).parse_next(i)
+        use winnow::combinator::repeat;
+        repeat(0.., 'a'.context("char_a")).parse_next(i)
     }
     assert_eq!(parser::<()>("aaa"), Ok(("", 3)));
 }
