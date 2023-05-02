@@ -107,14 +107,14 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   stream::AsChar,
-//!   token::take_while0,
+//!   token::take_while,
 //!   token::one_of,
 //! };
 //!
 //! pub fn identifier(input: &str) -> IResult<&str, &str> {
 //!   (
 //!       one_of(|c: char| c.is_alpha() || c == '_'),
-//!       take_while0(|c: char| c.is_alphanum() || c == '_')
+//!       take_while(0.., |c: char| c.is_alphanum() || c == '_')
 //!   )
 //!   .recognize()
 //!   .parse_next(input)
@@ -123,7 +123,7 @@
 //!
 //! Let's say we apply this to the identifier `hello_world123abc`. The first element of the tuple
 //! would uses [`one_of`][crate::token::one_of] which would recognize `h`. The tuple ensures that
-//! `ello_world123abc` will be piped to the next [`take_while0`][crate::token::take_while0] parser,
+//! `ello_world123abc` will be piped to the next [`take_while`][crate::token::take_while] parser,
 //! which recognizes every remaining character. However, the tuple returns a tuple of the results
 //! of its sub-parsers. The [`recognize`][crate::Parser::recognize] parser produces a `&str` of the
 //! input text that was parsed, which in this case is the entire `&str` `hello_world123abc`.
@@ -146,9 +146,6 @@
 //! string slice to an integer value is slightly simpler. You can also strip the `_` from the string
 //! slice that is returned, which is demonstrated in the second hexadecimal number parser.
 //!
-//! If you wish to limit the number of digits in a valid integer literal, replace `repeat1` with
-//! `repeat` in the recipes.
-//!
 //! #### Hexadecimal
 //!
 //! The parser outputs the string slice of the digits without the leading `0x`/`0X`.
@@ -157,7 +154,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   combinator::{repeat0, repeat1},
+//!   combinator::{repeat},
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
 //!   token::tag,
@@ -166,8 +163,8 @@
 //! fn hexadecimal(input: &str) -> IResult<&str, &str> { // <'a, E: ParseError<&'a str>>
 //!   preceded(
 //!     alt(("0x", "0X")),
-//!     repeat1(
-//!       terminated(one_of("0123456789abcdefABCDEF"), repeat0('_').map(|()| ()))
+//!     repeat(1..,
+//!       terminated(one_of("0123456789abcdefABCDEF"), repeat(0.., '_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
 //!   ).parse_next(input)
 //! }
@@ -179,7 +176,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   combinator::{repeat0, repeat1},
+//!   combinator::{repeat},
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
 //!   token::tag,
@@ -188,8 +185,8 @@
 //! fn hexadecimal_value(input: &str) -> IResult<&str, i64> {
 //!   preceded(
 //!     alt(("0x", "0X")),
-//!     repeat1(
-//!       terminated(one_of("0123456789abcdefABCDEF"), repeat0('_').map(|()| ()))
+//!     repeat(1..,
+//!       terminated(one_of("0123456789abcdefABCDEF"), repeat(0.., '_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
 //!   ).try_map(
 //!     |out: &str| i64::from_str_radix(&str::replace(&out, "_", ""), 16)
@@ -203,7 +200,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   combinator::{repeat0, repeat1},
+//!   combinator::{repeat},
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
 //!   token::tag,
@@ -212,8 +209,8 @@
 //! fn octal(input: &str) -> IResult<&str, &str> {
 //!   preceded(
 //!     alt(("0o", "0O")),
-//!     repeat1(
-//!       terminated(one_of("01234567"), repeat0('_').map(|()| ()))
+//!     repeat(1..,
+//!       terminated(one_of("01234567"), repeat(0.., '_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
 //!   ).parse_next(input)
 //! }
@@ -225,7 +222,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   combinator::{repeat0, repeat1},
+//!   combinator::{repeat},
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
 //!   token::tag,
@@ -234,8 +231,8 @@
 //! fn binary(input: &str) -> IResult<&str, &str> {
 //!   preceded(
 //!     alt(("0b", "0B")),
-//!     repeat1(
-//!       terminated(one_of("01"), repeat0('_').map(|()| ()))
+//!     repeat(1..,
+//!       terminated(one_of("01"), repeat(0.., '_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
 //!   ).parse_next(input)
 //! }
@@ -247,14 +244,14 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   IResult,
-//!   combinator::{repeat0, repeat1},
+//!   combinator::{repeat},
 //!   combinator::terminated,
 //!   token::one_of,
 //! };
 //!
 //! fn decimal(input: &str) -> IResult<&str, &str> {
-//!   repeat1(
-//!     terminated(one_of("0123456789"), repeat0('_').map(|()| ()))
+//!   repeat(1..,
+//!     terminated(one_of("0123456789"), repeat(0.., '_').map(|()| ()))
 //!   ).map(|()| ())
 //!     .recognize()
 //!     .parse_next(input)
@@ -269,7 +266,7 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   combinator::alt,
-//!   combinator::{repeat0, repeat1},
+//!   combinator::{repeat},
 //!   combinator::opt,
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
@@ -308,8 +305,8 @@
 //! }
 //!
 //! fn decimal(input: &str) -> IResult<&str, &str> {
-//!   repeat1(
-//!     terminated(one_of("0123456789"), repeat0('_').map(|()| ()))
+//!   repeat(1..,
+//!     terminated(one_of("0123456789"), repeat(0.., '_').map(|()| ()))
 //!   ).
 //!   map(|()| ())
 //!     .recognize()

@@ -1,6 +1,6 @@
 #![cfg(feature = "alloc")]
 
-use winnow::combinator::repeat0;
+use winnow::combinator::repeat;
 use winnow::Parser;
 
 #[test]
@@ -9,7 +9,7 @@ fn parse() {
     let mut counter = 0;
 
     let res = {
-        let mut parser = repeat0::<_, _, Vec<_>, (), _>(|i| {
+        let mut parser = repeat::<_, _, Vec<_>, (), _>(0.., |i| {
             counter += 1;
             "abc".parse_next(i)
         });
@@ -26,7 +26,7 @@ fn accumulate() {
     let mut v = Vec::new();
 
     let (_, count) = {
-        let mut parser = repeat0::<_, _, usize, (), _>(|i| {
+        let mut parser = repeat::<_, _, usize, (), _>(0.., |i| {
             let (i, o) = "abc".parse_next(i)?;
             v.push(o);
             Ok((i, ()))

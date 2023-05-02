@@ -4,15 +4,15 @@ use winnow::prelude::*;
 use winnow::{
     ascii::{alphanumeric1 as alphanumeric, space0 as space},
     combinator::opt,
-    combinator::repeat0,
+    combinator::repeat,
     combinator::{delimited, terminated},
-    token::{take_till0, take_while0, take_while1},
+    token::{take_till0, take_while},
 };
 
 pub type Stream<'i> = &'i str;
 
 pub fn categories(input: Stream<'_>) -> IResult<Stream<'_>, HashMap<&str, HashMap<&str, &str>>> {
-    repeat0(category_and_keys).parse_next(input)
+    repeat(0.., category_and_keys).parse_next(input)
 }
 
 fn category_and_keys(i: Stream<'_>) -> IResult<Stream<'_>, (&str, HashMap<&str, &str>)> {
@@ -21,14 +21,14 @@ fn category_and_keys(i: Stream<'_>) -> IResult<Stream<'_>, (&str, HashMap<&str, 
 
 fn category(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
     terminated(
-        delimited('[', take_while0(|c| c != ']'), ']'),
-        opt(take_while1(" \r\n")),
+        delimited('[', take_while(0.., |c| c != ']'), ']'),
+        opt(take_while(1.., " \r\n")),
     )
     .parse_next(i)
 }
 
 fn keys_and_values(input: Stream<'_>) -> IResult<Stream<'_>, HashMap<&str, &str>> {
-    repeat0(key_value).parse_next(input)
+    repeat(0.., key_value).parse_next(input)
 }
 
 fn key_value(i: Stream<'_>) -> IResult<Stream<'_>, (&str, &str)> {
@@ -47,11 +47,11 @@ fn is_line_ending_or_comment(chr: char) -> bool {
 }
 
 fn not_line_ending(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
-    take_while0(|c| c != '\r' && c != '\n').parse_next(i)
+    take_while(0.., |c| c != '\r' && c != '\n').parse_next(i)
 }
 
 fn space_or_line_ending(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
-    take_while1(" \r\n").parse_next(i)
+    take_while(1.., " \r\n").parse_next(i)
 }
 
 #[test]

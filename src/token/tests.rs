@@ -160,7 +160,7 @@ fn partial_none_of_test() {
 #[test]
 fn partial_is_a() {
     fn a_or_b(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_while1("ab").parse_next(i)
+        take_while(1.., "ab").parse_next(i)
     }
 
     let a = Partial::new(&b"abcd"[..]);
@@ -297,7 +297,7 @@ fn partial_recognize() {
 #[test]
 fn partial_take_while0() {
     fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_while0(AsChar::is_alpha).parse_next(i)
+        take_while(0.., AsChar::is_alpha).parse_next(i)
     }
     let a = &b""[..];
     let b = &b"abcd"[..];
@@ -313,7 +313,7 @@ fn partial_take_while0() {
 #[test]
 fn partial_take_while1() {
     fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_while1(AsChar::is_alpha).parse_next(i)
+        take_while(1.., AsChar::is_alpha).parse_next(i)
     }
     let a = &b""[..];
     let b = &b"abcd"[..];
@@ -411,7 +411,7 @@ fn partial_take_till1() {
 #[test]
 fn partial_take_while_utf8() {
     fn f(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while0(|c| c != '點').parse_next(i)
+        take_while(0.., |c| c != '點').parse_next(i)
     }
 
     assert_eq!(
@@ -429,7 +429,7 @@ fn partial_take_while_utf8() {
     );
 
     fn g(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while0(|c| c == '點').parse_next(i)
+        take_while(0.., |c| c == '點').parse_next(i)
     }
 
     assert_eq!(
@@ -501,7 +501,7 @@ fn partial_take_utf8() {
     assert_eq!(f(Partial::new("a點b")), Ok((Partial::new(""), "a點b")));
 
     fn g(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while0(|c| c == '點').parse_next(i)
+        take_while(0.., |c| c == '點').parse_next(i)
     }
 
     assert_eq!(
@@ -553,7 +553,7 @@ fn partial_take_while_m_n_utf8_full_match_range() {
 #[cfg(feature = "std")]
 fn partial_recognize_take_while0() {
     fn x(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_while0(AsChar::is_alphanum).parse_next(i)
+        take_while(0.., AsChar::is_alphanum).parse_next(i)
     }
     fn y(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         x.recognize().parse_next(i)

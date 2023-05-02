@@ -21,7 +21,7 @@
 //! Caveats:
 //! - `winnow` takes the approach of re-parsing from scratch.  Chunks should be relatively small to
 //!   prevent the re-parsing overhead from dominating.
-//! - Parsers like [`repeat0`] do not know when an `eof` is from insufficient data or the end of the
+//! - Parsers like [`repeat`] do not know when an `eof` is from insufficient data or the end of the
 //!   stream, causing them to always report [`Incomplete`].
 //!
 //! # Example
@@ -39,7 +39,7 @@
 #![allow(unused_imports)] // Used for intra-doc links
 
 use crate::binary::length_value;
-use crate::combinator::repeat0;
+use crate::combinator::repeat;
 use crate::error::ErrMode::Incomplete;
 use crate::error::Needed;
 use crate::stream::Partial;

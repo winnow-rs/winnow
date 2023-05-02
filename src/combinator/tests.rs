@@ -115,7 +115,7 @@ fn test_parser_flat_map() {
 
 #[allow(dead_code)]
 fn test_closure_compiles_195(input: &[u8]) -> IResult<&[u8], ()> {
-    u8.flat_map(|num| count(u16(Endianness::Big), num as usize))
+    u8.flat_map(|num| repeat(num as usize, u16(Endianness::Big)))
         .parse_next(input)
 }
 
@@ -817,7 +817,7 @@ fn separated1_test() {
 #[cfg(feature = "alloc")]
 fn repeat0_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat0("abcd").parse_next(i)
+        repeat(0.., "abcd").parse_next(i)
     }
 
     assert_eq!(
@@ -851,7 +851,7 @@ fn repeat0_test() {
 #[cfg_attr(debug_assertions, should_panic)]
 fn repeat0_empty_test() {
     fn multi_empty(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat0("").parse_next(i)
+        repeat(0.., "").parse_next(i)
     }
 
     assert_eq!(
@@ -867,7 +867,7 @@ fn repeat0_empty_test() {
 #[cfg(feature = "alloc")]
 fn repeat1_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat1("abcd").parse_next(i)
+        repeat(1.., "abcd").parse_next(i)
     }
 
     let a = &b"abcdef"[..];
@@ -931,13 +931,13 @@ fn infinite_many() {
 
     // should not go into an infinite loop
     fn multi0(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-        repeat0(tst).parse_next(i)
+        repeat(0.., tst).parse_next(i)
     }
     let a = &b"abcdef"[..];
     assert_eq!(multi0(a), Ok((a, Vec::new())));
 
     fn multi1(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-        repeat1(tst).parse_next(i)
+        repeat(1.., tst).parse_next(i)
     }
     let a = &b"abcdef"[..];
     assert_eq!(
@@ -992,7 +992,7 @@ fn repeat_test() {
 fn count_test() {
     const TIMES: usize = 2;
     fn cnt_2(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        count("abc", TIMES).parse_next(i)
+        repeat(TIMES, "abc").parse_next(i)
     }
 
     assert_eq!(
@@ -1035,7 +1035,7 @@ fn count_test() {
 fn count_zero() {
     const TIMES: usize = 0;
     fn counter_2(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-        count("abc", TIMES).parse_next(i)
+        repeat(TIMES, "abc").parse_next(i)
     }
 
     let done = &b"abcabcabcdef"[..];
@@ -1095,7 +1095,7 @@ fn fold_repeat0_test() {
         acc
     }
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_repeat0("abcd", Vec::new, fold_into_vec).parse_next(i)
+        fold_repeat(0.., "abcd", Vec::new, fold_into_vec).parse_next(i)
     }
 
     assert_eq!(
@@ -1133,7 +1133,7 @@ fn fold_repeat0_empty_test() {
         acc
     }
     fn multi_empty(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_repeat0("", Vec::new, fold_into_vec).parse_next(i)
+        fold_repeat(0.., "", Vec::new, fold_into_vec).parse_next(i)
     }
 
     assert_eq!(
@@ -1153,7 +1153,7 @@ fn fold_repeat1_test() {
         acc
     }
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_repeat1("abcd", Vec::new, fold_into_vec).parse_next(i)
+        fold_repeat(1.., "abcd", Vec::new, fold_into_vec).parse_next(i)
     }
 
     let a = &b"abcdef"[..];
@@ -1229,7 +1229,7 @@ fn fold_repeat_test() {
 #[test]
 fn repeat0_count_test() {
     fn count0_nums(i: &[u8]) -> IResult<&[u8], usize> {
-        repeat0((digit, ",")).parse_next(i)
+        repeat(0.., (digit, ",")).parse_next(i)
     }
 
     assert_eq!(count0_nums(&b"123,junk"[..]), Ok((&b"junk"[..], 1)));
@@ -1247,7 +1247,7 @@ fn repeat0_count_test() {
 #[test]
 fn repeat1_count_test() {
     fn count1_nums(i: &[u8]) -> IResult<&[u8], usize> {
-        repeat1((digit, ",")).parse_next(i)
+        repeat(1.., (digit, ",")).parse_next(i)
     }
 
     assert_eq!(count1_nums(&b"123,45,junk"[..]), Ok((&b"junk"[..], 2)));

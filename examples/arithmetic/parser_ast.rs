@@ -7,7 +7,7 @@ use winnow::prelude::*;
 use winnow::{
     ascii::{digit1 as digit, multispace0 as multispace},
     combinator::alt,
-    combinator::repeat0,
+    combinator::repeat,
     combinator::{delimited, preceded},
     IResult,
 };
@@ -46,16 +46,19 @@ impl Display for Expr {
 
 pub fn expr(i: &str) -> IResult<&str, Expr> {
     let (i, initial) = term(i)?;
-    let (i, remainder) = repeat0(alt((
-        |i| {
-            let (i, add) = preceded("+", term).parse_next(i)?;
-            Ok((i, (Oper::Add, add)))
-        },
-        |i| {
-            let (i, sub) = preceded("-", term).parse_next(i)?;
-            Ok((i, (Oper::Sub, sub)))
-        },
-    )))
+    let (i, remainder) = repeat(
+        0..,
+        alt((
+            |i| {
+                let (i, add) = preceded("+", term).parse_next(i)?;
+                Ok((i, (Oper::Add, add)))
+            },
+            |i| {
+                let (i, sub) = preceded("-", term).parse_next(i)?;
+                Ok((i, (Oper::Sub, sub)))
+            },
+        )),
+    )
     .parse_next(i)?;
 
     Ok((i, fold_exprs(initial, remainder)))
@@ -63,16 +66,19 @@ pub fn expr(i: &str) -> IResult<&str, Expr> {
 
 fn term(i: &str) -> IResult<&str, Expr> {
     let (i, initial) = factor(i)?;
-    let (i, remainder) = repeat0(alt((
-        |i| {
-            let (i, mul) = preceded("*", factor).parse_next(i)?;
-            Ok((i, (Oper::Mul, mul)))
-        },
-        |i| {
-            let (i, div) = preceded("/", factor).parse_next(i)?;
-            Ok((i, (Oper::Div, div)))
-        },
-    )))
+    let (i, remainder) = repeat(
+        0..,
+        alt((
+            |i| {
+                let (i, mul) = preceded("*", factor).parse_next(i)?;
+                Ok((i, (Oper::Mul, mul)))
+            },
+            |i| {
+                let (i, div) = preceded("/", factor).parse_next(i)?;
+                Ok((i, (Oper::Div, div)))
+            },
+        )),
+    )
     .parse_next(i)?;
 
     Ok((i, fold_exprs(initial, remainder)))

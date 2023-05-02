@@ -1,5 +1,5 @@
 use winnow::{
-    ascii::line_ending, combinator::repeat1, stream::Partial, token::take_while1, IResult, Parser,
+    ascii::line_ending, combinator::repeat, stream::Partial, token::take_while, IResult, Parser,
 };
 
 pub type Stream<'i> = Partial<&'i [u8]>;
@@ -46,17 +46,17 @@ pub fn parse(data: &[u8]) -> Option<Vec<(Request<'_>, Vec<Header<'_>>)>> {
 
 fn request(input: Stream<'_>) -> IResult<Stream<'_>, (Request<'_>, Vec<Header<'_>>)> {
     let (input, req) = request_line(input)?;
-    let (input, h) = repeat1(message_header).parse_next(input)?;
+    let (input, h) = repeat(1.., message_header).parse_next(input)?;
     let (input, _) = line_ending(input)?;
 
     Ok((input, (req, h)))
 }
 
 fn request_line(input: Stream<'_>) -> IResult<Stream<'_>, Request<'_>> {
-    let (input, method) = take_while1(is_token).parse_next(input)?;
-    let (input, _) = take_while1(is_space).parse_next(input)?;
-    let (input, uri) = take_while1(is_not_space).parse_next(input)?;
-    let (input, _) = take_while1(is_space).parse_next(input)?;
+    let (input, method) = take_while(1.., is_token).parse_next(input)?;
+    let (input, _) = take_while(1.., is_space).parse_next(input)?;
+    let (input, uri) = take_while(1.., is_not_space).parse_next(input)?;
+    let (input, _) = take_while(1.., is_space).parse_next(input)?;
     let (input, version) = http_version(input)?;
     let (input, _) = line_ending(input)?;
 
@@ -72,23 +72,23 @@ fn request_line(input: Stream<'_>) -> IResult<Stream<'_>, Request<'_>> {
 
 fn http_version(input: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
     let (input, _) = "HTTP/".parse_next(input)?;
-    let (input, version) = take_while1(is_version).parse_next(input)?;
+    let (input, version) = take_while(1.., is_version).parse_next(input)?;
 
     Ok((input, version))
 }
 
 fn message_header_value(input: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
-    let (input, _) = take_while1(is_horizontal_space).parse_next(input)?;
-    let (input, data) = take_while1(not_line_ending).parse_next(input)?;
+    let (input, _) = take_while(1.., is_horizontal_space).parse_next(input)?;
+    let (input, data) = take_while(1.., not_line_ending).parse_next(input)?;
     let (input, _) = line_ending(input)?;
 
     Ok((input, data))
 }
 
 fn message_header(input: Stream<'_>) -> IResult<Stream<'_>, Header<'_>> {
-    let (input, name) = take_while1(is_token).parse_next(input)?;
+    let (input, name) = take_while(1.., is_token).parse_next(input)?;
     let (input, _) = ':'.parse_next(input)?;
-    let (input, value) = repeat1(message_header_value).parse_next(input)?;
+    let (input, value) = repeat(1.., message_header_value).parse_next(input)?;
 
     Ok((input, Header { name, value }))
 }

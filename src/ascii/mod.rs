@@ -17,8 +17,7 @@ use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::stream::ContainsToken;
 use crate::stream::{AsBStr, AsChar, Offset, ParseSlice, Stream, StreamIsPartial};
 use crate::stream::{Compare, CompareResult};
-use crate::token::take_while0;
-use crate::token::take_while1;
+use crate::token::take_while;
 use crate::trace::trace;
 use crate::IResult;
 use crate::Parser;
@@ -313,7 +312,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("alpha0", move |input: I| {
-        take_while0(|c: <I as Stream>::Token| c.is_alpha()).parse_next(input)
+        take_while(0.., |c: <I as Stream>::Token| c.is_alpha()).parse_next(input)
     })
     .parse_next(input)
 }
@@ -356,7 +355,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("alpha1", move |input: I| {
-        take_while1(|c: <I as Stream>::Token| c.is_alpha()).parse_next(input)
+        take_while(1.., |c: <I as Stream>::Token| c.is_alpha()).parse_next(input)
     })
     .parse_next(input)
 }
@@ -400,7 +399,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("digit0", move |input: I| {
-        take_while0(|c: <I as Stream>::Token| c.is_dec_digit()).parse_next(input)
+        take_while(0.., |c: <I as Stream>::Token| c.is_dec_digit()).parse_next(input)
     })
     .parse_next(input)
 }
@@ -459,7 +458,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("digit1", move |input: I| {
-        take_while1(|c: <I as Stream>::Token| c.is_dec_digit()).parse_next(input)
+        take_while(1.., |c: <I as Stream>::Token| c.is_dec_digit()).parse_next(input)
     })
     .parse_next(input)
 }
@@ -501,7 +500,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("hex_digit0", move |input: I| {
-        take_while0(|c: <I as Stream>::Token| c.is_hex_digit()).parse_next(input)
+        take_while(0.., |c: <I as Stream>::Token| c.is_hex_digit()).parse_next(input)
     })
     .parse_next(input)
 }
@@ -544,7 +543,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("hex_digit1", move |input: I| {
-        take_while1(|c: <I as Stream>::Token| c.is_hex_digit()).parse_next(input)
+        take_while(1.., |c: <I as Stream>::Token| c.is_hex_digit()).parse_next(input)
     })
     .parse_next(input)
 }
@@ -587,7 +586,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("oct_digit0", move |input: I| {
-        take_while0(|c: <I as Stream>::Token| c.is_oct_digit()).parse_next(input)
+        take_while(0.., |c: <I as Stream>::Token| c.is_oct_digit()).parse_next(input)
     })
     .parse_next(input)
 }
@@ -630,7 +629,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("oct_digit0", move |input: I| {
-        take_while1(|c: <I as Stream>::Token| c.is_oct_digit()).parse_next(input)
+        take_while(1.., |c: <I as Stream>::Token| c.is_oct_digit()).parse_next(input)
     })
     .parse_next(input)
 }
@@ -673,7 +672,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("alphanumeric0", move |input: I| {
-        take_while0(|c: <I as Stream>::Token| c.is_alphanum()).parse_next(input)
+        take_while(0.., |c: <I as Stream>::Token| c.is_alphanum()).parse_next(input)
     })
     .parse_next(input)
 }
@@ -716,7 +715,7 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("alphanumeric1", move |input: I| {
-        take_while1(|c: <I as Stream>::Token| c.is_alphanum()).parse_next(input)
+        take_while(1.., |c: <I as Stream>::Token| c.is_alphanum()).parse_next(input)
     })
     .parse_next(input)
 }
@@ -747,7 +746,7 @@ where
     <I as Stream>::Token: AsChar + Copy,
 {
     trace("space0", move |input: I| {
-        take_while0(|c: <I as Stream>::Token| {
+        take_while(0.., |c: <I as Stream>::Token| {
             let ch = c.as_char();
             matches!(ch, ' ' | '\t')
         })
@@ -794,7 +793,7 @@ where
     <I as Stream>::Token: AsChar + Copy,
 {
     trace("space1", move |input: I| {
-        take_while1(|c: <I as Stream>::Token| {
+        take_while(1.., |c: <I as Stream>::Token| {
             let ch = c.as_char();
             matches!(ch, ' ' | '\t')
         })
@@ -841,7 +840,7 @@ where
     <I as Stream>::Token: AsChar + Copy,
 {
     trace("multispace0", move |input: I| {
-        take_while0(|c: <I as Stream>::Token| {
+        take_while(0.., |c: <I as Stream>::Token| {
             let ch = c.as_char();
             matches!(ch, ' ' | '\t' | '\r' | '\n')
         })
@@ -888,7 +887,7 @@ where
     <I as Stream>::Token: AsChar + Copy,
 {
     trace("multispace1", move |input: I| {
-        take_while1(|c: <I as Stream>::Token| {
+        take_while(1.., |c: <I as Stream>::Token| {
             let ch = c.as_char();
             matches!(ch, ' ' | '\t' | '\r' | '\n')
         })

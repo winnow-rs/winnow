@@ -3,11 +3,11 @@ mod test {
     use winnow::Parser;
     use winnow::Partial;
     #[cfg(feature = "alloc")]
-    use winnow::{combinator::alt, combinator::repeat1, token::tag_no_case};
+    use winnow::{combinator::alt, combinator::repeat, token::tag_no_case};
     use winnow::{
         error::ErrMode,
         error::{self, Error, ErrorKind},
-        token::{take, take_till0, take_till1, take_until0, take_while1},
+        token::{take, take_till0, take_till1, take_until0, take_while},
         IResult,
     };
 
@@ -203,10 +203,10 @@ mod test {
     fn take_while_str() {
         use winnow::error::Needed;
 
-        use winnow::token::take_while0;
+        use winnow::token::take_while;
 
         fn f(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-            take_while0(is_alphabetic).parse_next(i)
+            take_while(0.., is_alphabetic).parse_next(i)
         }
         let a = "";
         let b = "abcd";
@@ -221,7 +221,7 @@ mod test {
 
     #[test]
     fn take_while_succeed_none_str() {
-        use winnow::token::take_while0;
+        use winnow::token::take_while;
 
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
         const CONSUMED: &str = "";
@@ -230,24 +230,24 @@ mod test {
             c == '9'
         }
         fn test(input: &str) -> IResult<&str, &str> {
-            take_while0(while_s).parse_next(input)
+            take_while(0.., while_s).parse_next(input)
         }
         match test(INPUT) {
             Ok((extra, output)) => {
                 assert!(
                     extra == LEFTOVER,
-                    "Parser `take_while0` consumed leftover input."
+                    "Parser `take_while` consumed leftover input."
                 );
                 assert!(
                     output == CONSUMED,
-                    "Parser `take_while0` doesn't return the string it consumed on success. \
+                    "Parser `take_while` doesn't return the string it consumed on success. \
            Expected `{}`, got `{}`.",
                     CONSUMED,
                     output
                 );
             }
             other => panic!(
-                "Parser `take_while0` didn't succeed when it should have. \
+                "Parser `take_while` didn't succeed when it should have. \
          Got `{:?}`.",
                 other
             ),
@@ -256,7 +256,7 @@ mod test {
 
     #[test]
     fn take_while_succeed_some_str() {
-        use winnow::token::take_while0;
+        use winnow::token::take_while;
 
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
         const CONSUMED: &str = "βèƒôřèÂßÇ";
@@ -265,24 +265,24 @@ mod test {
             matches!(c, 'β' | 'è' | 'ƒ' | 'ô' | 'ř' | 'Â' | 'ß' | 'Ç')
         }
         fn test(input: &str) -> IResult<&str, &str> {
-            take_while0(while_s).parse_next(input)
+            take_while(0.., while_s).parse_next(input)
         }
         match test(INPUT) {
             Ok((extra, output)) => {
                 assert!(
                     extra == LEFTOVER,
-                    "Parser `take_while0` consumed leftover input."
+                    "Parser `take_while` consumed leftover input."
                 );
                 assert!(
                     output == CONSUMED,
-                    "Parser `take_while0` doesn't return the string it consumed on success. \
+                    "Parser `take_while` doesn't return the string it consumed on success. \
            Expected `{}`, got `{}`.",
                     CONSUMED,
                     output
                 );
             }
             other => panic!(
-                "Parser `take_while0` didn't succeed when it should have. \
+                "Parser `take_while` didn't succeed when it should have. \
          Got `{:?}`.",
                 other
             ),
@@ -294,7 +294,7 @@ mod test {
         use winnow::error::Needed;
 
         fn f(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-            take_while1(is_alphabetic).parse_next(i)
+            take_while(1.., is_alphabetic).parse_next(i)
         }
         let a = "";
         let b = "abcd";
@@ -315,7 +315,7 @@ mod test {
 
     #[test]
     fn take_while1_fn_succeed_str() {
-        use winnow::token::take_while1;
+        use winnow::token::take_while;
 
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
         const CONSUMED: &str = "βèƒôřèÂßÇ";
@@ -324,24 +324,24 @@ mod test {
             matches!(c, 'β' | 'è' | 'ƒ' | 'ô' | 'ř' | 'Â' | 'ß' | 'Ç')
         }
         fn test(input: &str) -> IResult<&str, &str> {
-            take_while1(while1_s).parse_next(input)
+            take_while(1.., while1_s).parse_next(input)
         }
         match test(INPUT) {
             Ok((extra, output)) => {
                 assert!(
                     extra == LEFTOVER,
-                    "Parser `take_while1` consumed leftover input."
+                    "Parser `take_while` consumed leftover input."
                 );
                 assert!(
                     output == CONSUMED,
-                    "Parser `take_while1` doesn't return the string it consumed on success. \
+                    "Parser `take_while` doesn't return the string it consumed on success. \
            Expected `{}`, got `{}`.",
                     CONSUMED,
                     output
                 );
             }
             other => panic!(
-                "Parser `take_while1` didn't succeed when it should have. \
+                "Parser `take_while` didn't succeed when it should have. \
          Got `{:?}`.",
                 other
             ),
@@ -355,7 +355,7 @@ mod test {
         const CONSUMED: &str = "βèƒôřèÂßÇ";
         const LEFTOVER: &str = "áƒƭèř";
         fn test(input: &str) -> IResult<&str, &str> {
-            take_while1(MATCH).parse_next(input)
+            take_while(1.., MATCH).parse_next(input)
         }
         match test(INPUT) {
             Ok((extra, output)) => {
@@ -381,19 +381,19 @@ mod test {
 
     #[test]
     fn take_while1_fn_fail_str() {
-        use winnow::token::take_while1;
+        use winnow::token::take_while;
 
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
         fn while1_s(c: char) -> bool {
             c == '9'
         }
         fn test(input: &str) -> IResult<&str, &str> {
-            take_while1(while1_s).parse_next(input)
+            take_while(1.., while1_s).parse_next(input)
         }
         match test(INPUT) {
             Err(ErrMode::Backtrack(_)) => (),
             other => panic!(
-                "Parser `take_while1` didn't fail when it should have. \
+                "Parser `take_while` didn't fail when it should have. \
          Got `{:?}`.",
                 other
             ),
@@ -405,7 +405,7 @@ mod test {
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
         const MATCH: &str = "Ûñℓúçƙ¥";
         fn test(input: &str) -> IResult<&str, &str> {
-            take_while1(MATCH).parse_next(input)
+            take_while(1.., MATCH).parse_next(input)
         }
         match test(INPUT) {
             Err(ErrMode::Backtrack(_)) => (),
@@ -505,7 +505,7 @@ mod test {
         let b = "ababcd";
 
         fn f(i: &str) -> IResult<&str, &str> {
-            repeat1::<_, _, (), _, _>(alt(("a", "b")))
+            repeat::<_, _, (), _, _>(1.., alt(("a", "b")))
                 .recognize()
                 .parse_next(i)
         }

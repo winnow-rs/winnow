@@ -75,7 +75,7 @@
 <span class="fg2">  &lt; any                                            </span> <span class="bold">|</span> <span class="fg2">+1</span>
 <span class="fg2">  | verify                                         </span> <span class="bold">|</span> 
 <span class="fg2"> &lt; one_of                                          </span> <span class="bold">|</span> <span class="fg2">+1</span>
- &gt; fold_repeat0                                     <span class="bold">|</span> <span class="underline">"abc\""</span><span class="underline fg6">∅</span>
+ &gt; fold_repeat                                      <span class="bold">|</span> <span class="underline">"abc\""</span><span class="underline fg6">∅</span>
   &gt; alt                                             <span class="bold">|</span> <span class="underline">"abc\""</span><span class="underline fg6">∅</span>
    &gt; take_till1                                     <span class="bold">|</span> <span class="underline">"abc\""</span><span class="underline fg6">∅</span>
 <span class="fg2">   &lt; take_till1                                    </span> <span class="bold">|</span> <span class="fg2">+3</span>
@@ -99,7 +99,7 @@
 <span class="fg3">    &lt; one_of                                       </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
 <span class="fg3">   &lt; preceded                                      </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
 <span class="fg3">  &lt; alt                                            </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
-<span class="fg2"> &lt; fold_repeat0                                    </span> <span class="bold">|</span> <span class="fg2">+3</span>
+<span class="fg2"> &lt; fold_repeat                                     </span> <span class="bold">|</span> <span class="fg2">+3</span>
  &gt; one_of                                           <span class="bold">|</span> <span class="underline">"\""</span><span class="underline fg6">∅</span>
   &gt; any                                             <span class="bold">|</span> <span class="underline">"\""</span><span class="underline fg6">∅</span>
 <span class="fg2">  &lt; any                                            </span> <span class="bold">|</span> <span class="fg2">+1</span>

@@ -2,7 +2,7 @@
 
 use winnow::ascii::digit1 as digit;
 #[cfg(feature = "alloc")]
-use winnow::combinator::count;
+use winnow::combinator::repeat;
 use winnow::combinator::terminated;
 use winnow::error::{ErrorKind, ParseError};
 use winnow::prelude::*;
@@ -46,5 +46,5 @@ fn test3(input: Partial<&str>) -> IResult<Partial<&str>, &str, CustomError> {
 
 #[cfg(feature = "alloc")]
 fn test4(input: Partial<&str>) -> IResult<Partial<&str>, Vec<&str>, CustomError> {
-    count(test1, 4).parse_next(input)
+    repeat(4, test1).parse_next(input)
 }

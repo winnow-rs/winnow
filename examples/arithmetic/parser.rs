@@ -5,7 +5,7 @@ use winnow::{
     ascii::{digit1 as digits, space0 as spaces},
     combinator::alt,
     combinator::delimited,
-    combinator::fold_repeat0,
+    combinator::fold_repeat,
     token::one_of,
     IResult,
 };
@@ -15,7 +15,8 @@ use winnow::{
 pub fn expr(i: &str) -> IResult<&str, i64> {
     let (i, init) = term(i)?;
 
-    fold_repeat0(
+    fold_repeat(
+        0..,
         (one_of("+-"), term),
         move || init,
         |acc, (op, val): (char, i64)| {
@@ -35,7 +36,8 @@ pub fn expr(i: &str) -> IResult<&str, i64> {
 fn term(i: &str) -> IResult<&str, i64> {
     let (i, init) = factor(i)?;
 
-    fold_repeat0(
+    fold_repeat(
+        0..,
         (one_of("*/"), factor),
         move || init,
         |acc, (op, val): (char, i64)| {

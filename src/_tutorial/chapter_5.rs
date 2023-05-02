@@ -3,20 +3,20 @@
 //! In [`chapter_3`], we covered how to sequence different parsers into a tuple but sometimes you need to run a
 //! single parser multiple times, collecting the result into a [`Vec`].
 //!
-//! Let's take our `parse_digits` and collect a list of them with [`repeat0`]:
+//! Let's take our `parse_digits` and collect a list of them with [`repeat`]:
 //! ```rust
 //! # use winnow::IResult;
 //! # use winnow::Parser;
-//! # use winnow::token::take_while1;
+//! # use winnow::token::take_while;
 //! # use winnow::combinator::dispatch;
 //! # use winnow::token::take;
 //! # use winnow::combinator::fail;
 //! use winnow::combinator::opt;
-//! use winnow::combinator::repeat0;
+//! use winnow::combinator::repeat;
 //! use winnow::combinator::terminated;
 //!
 //! fn parse_list(input: &str) -> IResult<&str, Vec<usize>> {
-//!     repeat0(terminated(parse_digits, opt(','))).parse_next(input)
+//!     repeat(0.., terminated(parse_digits, opt(','))).parse_next(input)
 //! }
 //!
 //! // ...
@@ -31,25 +31,25 @@
 //! # }
 //! #
 //! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
 //! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
 //! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #     )).parse_next(input)
 //! # }
 //! #
 //! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
@@ -73,7 +73,7 @@
 //! ```rust
 //! # use winnow::IResult;
 //! # use winnow::Parser;
-//! # use winnow::token::take_while1;
+//! # use winnow::token::take_while;
 //! # use winnow::combinator::dispatch;
 //! # use winnow::token::take;
 //! # use winnow::combinator::fail;
@@ -95,25 +95,25 @@
 //! # }
 //! #
 //! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
 //! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
 //! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #     )).parse_next(input)
 //! # }
 //! #
 //! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
@@ -132,13 +132,13 @@
 //! }
 //! ```
 //!
-//! If you look closely at [`repeat0`], it isn't collecting directly into a [`Vec`] but
+//! If you look closely at [`repeat`], it isn't collecting directly into a [`Vec`] but
 //! [`Accumulate`] to gather the results.  This let's us make more complex parsers than we did in
 //! [`chapter_2`] by accumulating the results into a `()` and [`recognize`][Parser::recognize]-ing the captured input:
 //! ```rust
 //! # use winnow::IResult;
 //! # use winnow::Parser;
-//! # use winnow::token::take_while1;
+//! # use winnow::token::take_while;
 //! # use winnow::combinator::dispatch;
 //! # use winnow::token::take;
 //! # use winnow::combinator::fail;
@@ -164,25 +164,25 @@
 //! # }
 //! #
 //! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
 //! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
 //! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #     )).parse_next(input)
 //! # }
 //! #
 //! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
@@ -204,7 +204,7 @@
 #![allow(unused_imports)]
 use super::chapter_2;
 use super::chapter_3;
-use crate::combinator::repeat0;
+use crate::combinator::repeat;
 use crate::combinator::separated0;
 use crate::stream::Accumulate;
 use crate::Parser;

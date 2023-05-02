@@ -5,7 +5,7 @@
 use winnow::{
     ascii::{alpha1, digit1, multispace0, multispace1},
     combinator::alt,
-    combinator::repeat0,
+    combinator::repeat,
     combinator::{cut_err, opt},
     combinator::{delimited, preceded, terminated},
     error::VerboseError,
@@ -168,7 +168,7 @@ fn parse_keyword(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
 /// tuples are themselves a parser, used to sequence parsers together, so we can translate this
 /// directly and then map over it to transform the output into an `Expr::Application`
 fn parse_application(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
-    let application_inner = (parse_expr, repeat0(parse_expr))
+    let application_inner = (parse_expr, repeat(0.., parse_expr))
         .map(|(head, tail)| Expr::Application(Box::new(head), tail));
     // finally, we wrap it in an s-expression
     s_exp(application_inner).parse_next(i)
@@ -212,7 +212,7 @@ fn parse_quote(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
     // this should look very straight-forward after all we've done:
     // we find the `'` (quote) character, use cut_err to say that we're unambiguously
     // looking for an s-expression of 0 or more expressions, and then parse them
-    preceded("'", cut_err(s_exp(repeat0(parse_expr))))
+    preceded("'", cut_err(s_exp(repeat(0.., parse_expr))))
         .context("quote")
         .map(Expr::Quote)
         .parse_next(i)

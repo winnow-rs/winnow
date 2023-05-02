@@ -356,6 +356,93 @@ where
 ///
 /// # Example
 ///
+/// Zero or more tokens:
+/// ```rust
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::prelude::*;
+/// use winnow::token::take_while;
+/// use winnow::stream::AsChar;
+///
+/// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
+///   take_while(0.., AsChar::is_alpha).parse_next(s)
+/// }
+///
+/// assert_eq!(alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
+/// assert_eq!(alpha(b"12345"), Ok((&b"12345"[..], &b""[..])));
+/// assert_eq!(alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
+/// assert_eq!(alpha(b""), Ok((&b""[..], &b""[..])));
+/// ```
+///
+/// ```rust
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::Partial;
+/// use winnow::token::take_while;
+/// use winnow::stream::AsChar;
+///
+/// fn alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
+///   take_while(0.., AsChar::is_alpha).parse_next(s)
+/// }
+///
+/// assert_eq!(alpha(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
+/// assert_eq!(alpha(Partial::new(b"12345")), Ok((Partial::new(&b"12345"[..]), &b""[..])));
+/// assert_eq!(alpha(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha(Partial::new(b"")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// ```
+///
+/// One or more tokens:
+/// ```rust
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
+/// use winnow::token::take_while;
+/// use winnow::stream::AsChar;
+///
+/// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
+///   take_while(1.., AsChar::is_alpha).parse_next(s)
+/// }
+///
+/// assert_eq!(alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
+/// assert_eq!(alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
+/// assert_eq!(alpha(b"12345"), Err(ErrMode::Backtrack(Error::new(&b"12345"[..], ErrorKind::Slice))));
+///
+/// fn hex(s: &str) -> IResult<&str, &str> {
+///   take_while(1.., "1234567890ABCDEF").parse_next(s)
+/// }
+///
+/// assert_eq!(hex("123 and voila"), Ok((" and voila", "123")));
+/// assert_eq!(hex("DEADBEEF and others"), Ok((" and others", "DEADBEEF")));
+/// assert_eq!(hex("BADBABEsomething"), Ok(("something", "BADBABE")));
+/// assert_eq!(hex("D15EA5E"), Ok(("", "D15EA5E")));
+/// assert_eq!(hex(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
+/// ```
+///
+/// ```rust
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::Partial;
+/// use winnow::token::take_while;
+/// use winnow::stream::AsChar;
+///
+/// fn alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
+///   take_while(1.., AsChar::is_alpha).parse_next(s)
+/// }
+///
+/// assert_eq!(alpha(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
+/// assert_eq!(alpha(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha(Partial::new(b"12345")), Err(ErrMode::Backtrack(Error::new(Partial::new(&b"12345"[..]), ErrorKind::Slice))));
+///
+/// fn hex(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
+///   take_while(1.., "1234567890ABCDEF").parse_next(s)
+/// }
+///
+/// assert_eq!(hex(Partial::new("123 and voila")), Ok((Partial::new(" and voila"), "123")));
+/// assert_eq!(hex(Partial::new("DEADBEEF and others")), Ok((Partial::new(" and others"), "DEADBEEF")));
+/// assert_eq!(hex(Partial::new("BADBABEsomething")), Ok((Partial::new("something"), "BADBABE")));
+/// assert_eq!(hex(Partial::new("D15EA5E")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(hex(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// ```
+///
+/// Arbitrary amount of tokens:
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
@@ -391,6 +478,9 @@ where
 /// assert_eq!(short_alpha(Partial::new(b"12345")), Err(ErrMode::Backtrack(Error::new(Partial::new(&b"12345"[..]), ErrorKind::Slice))));
 /// ```
 #[inline(always)]
+#[doc(alias = "is_a")]
+#[doc(alias = "take_while0")]
+#[doc(alias = "take_while1")]
 pub fn take_while<T, I, Error: ParseError<I>>(
     range: impl Into<Range>,
     list: T,
@@ -433,46 +523,8 @@ where
     })
 }
 
-/// Recognize the longest input slice (if any) that matches the [pattern][ContainsToken]
-///
-/// *Partial version*: will return a `ErrMode::Incomplete(Needed::new(1))` if the pattern reaches the end of the input.
-///
-/// To recognize a series of tokens, use [`repeat0`][crate::combinator::repeat0] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`][crate::Parser::recognize].
-///
-/// # Example
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::token::take_while0;
-/// use winnow::stream::AsChar;
-///
-/// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
-///   take_while0(AsChar::is_alpha).parse_next(s)
-/// }
-///
-/// assert_eq!(alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
-/// assert_eq!(alpha(b"12345"), Ok((&b"12345"[..], &b""[..])));
-/// assert_eq!(alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
-/// assert_eq!(alpha(b""), Ok((&b""[..], &b""[..])));
-/// ```
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
-/// # use winnow::prelude::*;
-/// # use winnow::Partial;
-/// use winnow::token::take_while0;
-/// use winnow::stream::AsChar;
-///
-/// fn alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-///   take_while0(AsChar::is_alpha).parse_next(s)
-/// }
-///
-/// assert_eq!(alpha(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
-/// assert_eq!(alpha(Partial::new(b"12345")), Ok((Partial::new(&b"12345"[..]), &b""[..])));
-/// assert_eq!(alpha(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(alpha(Partial::new(b"")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// ```
+/// Deprecated, see [`take_while`]
+#[deprecated(since = "0.4.6", note = "Replaced with `take_while`")]
 #[inline(always)]
 pub fn take_while0<T, I, Error: ParseError<I>>(
     list: T,
@@ -482,77 +534,12 @@ where
     I: Stream,
     T: ContainsToken<<I as Stream>::Token>,
 {
-    trace("take_while0", move |i: I| {
-        if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
-            split_at_offset_partial(&i, |c| !list.contains_token(c))
-        } else {
-            split_at_offset_complete(&i, |c| !list.contains_token(c))
-        }
-    })
+    take_while(0.., list)
 }
 
-/// Recognize the longest (at least 1) input slice that matches the [pattern][ContainsToken]
-///
-/// It will return an `Err(ErrMode::Backtrack(Error::new(_, ErrorKind::Slice)))` if the pattern wasn't met.
-///
-/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` or if the pattern reaches the end of the input.
-///
-/// To recognize a series of tokens, use [`repeat1`][crate::combinator::repeat1] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`][crate::Parser::recognize].
-///
-/// # Example
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::token::take_while1;
-/// use winnow::stream::AsChar;
-///
-/// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
-///   take_while1(AsChar::is_alpha).parse_next(s)
-/// }
-///
-/// assert_eq!(alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
-/// assert_eq!(alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
-/// assert_eq!(alpha(b"12345"), Err(ErrMode::Backtrack(Error::new(&b"12345"[..], ErrorKind::Slice))));
-///
-/// fn hex(s: &str) -> IResult<&str, &str> {
-///   take_while1("1234567890ABCDEF").parse_next(s)
-/// }
-///
-/// assert_eq!(hex("123 and voila"), Ok((" and voila", "123")));
-/// assert_eq!(hex("DEADBEEF and others"), Ok((" and others", "DEADBEEF")));
-/// assert_eq!(hex("BADBABEsomething"), Ok(("something", "BADBABE")));
-/// assert_eq!(hex("D15EA5E"), Ok(("", "D15EA5E")));
-/// assert_eq!(hex(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
-/// ```
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
-/// # use winnow::prelude::*;
-/// # use winnow::Partial;
-/// use winnow::token::take_while1;
-/// use winnow::stream::AsChar;
-///
-/// fn alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-///   take_while1(AsChar::is_alpha).parse_next(s)
-/// }
-///
-/// assert_eq!(alpha(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
-/// assert_eq!(alpha(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(alpha(Partial::new(b"12345")), Err(ErrMode::Backtrack(Error::new(Partial::new(&b"12345"[..]), ErrorKind::Slice))));
-///
-/// fn hex(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take_while1("1234567890ABCDEF").parse_next(s)
-/// }
-///
-/// assert_eq!(hex(Partial::new("123 and voila")), Ok((Partial::new(" and voila"), "123")));
-/// assert_eq!(hex(Partial::new("DEADBEEF and others")), Ok((Partial::new(" and others"), "DEADBEEF")));
-/// assert_eq!(hex(Partial::new("BADBABEsomething")), Ok((Partial::new("something"), "BADBABE")));
-/// assert_eq!(hex(Partial::new("D15EA5E")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(hex(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// ```
+/// Deprecated, see [`take_while`]
+#[deprecated(since = "0.4.6", note = "Replaced with `take_while`")]
 #[inline(always)]
-#[doc(alias = "is_a")]
 pub fn take_while1<T, I, Error: ParseError<I>>(
     list: T,
 ) -> impl Parser<I, <I as Stream>::Slice, Error>
@@ -561,14 +548,7 @@ where
     I: Stream,
     T: ContainsToken<<I as Stream>::Token>,
 {
-    trace("take_while1", move |i: I| {
-        let e: ErrorKind = ErrorKind::Slice;
-        if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
-            split_at_offset1_partial(&i, |c| !list.contains_token(c), e)
-        } else {
-            split_at_offset1_complete(&i, |c| !list.contains_token(c), e)
-        }
-    })
+    take_while(1.., list)
 }
 
 fn take_while_m_n_<T, I, Error: ParseError<I>, const PARTIAL: bool>(

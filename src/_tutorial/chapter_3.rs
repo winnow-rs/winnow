@@ -10,7 +10,7 @@
 //! Now that we can create more interesting parsers, we can sequence them together, like:
 //!
 //! ```rust
-//! # use winnow::token::take_while1;
+//! # use winnow::token::take_while;
 //! # use winnow::Parser;
 //! # use winnow::IResult;
 //! #
@@ -19,7 +19,7 @@
 //! }
 //!
 //! fn parse_digits(input: &str) -> IResult<&str, &str> {
-//!     take_while1((
+//!     take_while(1.., (
 //!         ('0'..='9'),
 //!         ('A'..='F'),
 //!         ('a'..='f'),
@@ -40,7 +40,7 @@
 //!
 //! To sequence these together, you can just put them in a tuple:
 //! ```rust
-//! # use winnow::token::take_while1;
+//! # use winnow::token::take_while;
 //! # use winnow::Parser;
 //! # use winnow::IResult;
 //! #
@@ -49,7 +49,7 @@
 //! # }
 //! #
 //! # fn parse_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
@@ -75,7 +75,7 @@
 //! Frequently, you won't care about the tag and you can instead use one of the provided combinators,
 //! like [`preceded`]:
 //! ```rust
-//! # use winnow::token::take_while1;
+//! # use winnow::token::take_while;
 //! # use winnow::Parser;
 //! # use winnow::IResult;
 //! use winnow::combinator::preceded;
@@ -85,7 +85,7 @@
 //! # }
 //! #
 //! # fn parse_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
@@ -120,7 +120,7 @@
 //! ```rust
 //! # use winnow::IResult;
 //! # use winnow::Parser;
-//! # use winnow::token::take_while1;
+//! # use winnow::token::take_while;
 //! use winnow::combinator::alt;
 //!
 //! fn parse_digits(input: &str) -> IResult<&str, (&str, &str)> {
@@ -134,25 +134,25 @@
 //!
 //! // ...
 //! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
 //! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
 //! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #     )).parse_next(input)
 //! # }
 //! #
 //! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
@@ -179,7 +179,7 @@
 //! ```rust
 //! # use winnow::IResult;
 //! # use winnow::Parser;
-//! # use winnow::token::take_while1;
+//! # use winnow::token::take_while;
 //! use winnow::combinator::dispatch;
 //! use winnow::token::take;
 //! use winnow::combinator::fail;
@@ -196,25 +196,25 @@
 //!
 //! // ...
 //! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
 //! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
 //! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #     )).parse_next(input)
 //! # }
 //! #
 //! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
-//! #     take_while1((
+//! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),

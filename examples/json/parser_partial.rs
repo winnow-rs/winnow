@@ -7,10 +7,10 @@ use winnow::{
     combinator::alt,
     combinator::{cut_err, rest},
     combinator::{delimited, preceded, separated_pair, terminated},
-    combinator::{fold_repeat0, separated0},
+    combinator::{fold_repeat, separated0},
     error::{ContextError, ParseError},
     stream::Partial,
-    token::{any, none_of, take, take_while0},
+    token::{any, none_of, take, take_while},
 };
 
 use crate::json::JsonValue;
@@ -88,7 +88,7 @@ fn string<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>
         // right branch (since we found the `"` character) but encountered an error when
         // parsing the string
         cut_err(terminated(
-            fold_repeat0(character, String::new, |mut string, c| {
+            fold_repeat(0.., character, String::new, |mut string, c| {
                 string.push(c);
                 string
             }),
@@ -192,9 +192,9 @@ fn key_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static s
 /// first we write parsers for the smallest elements (here a space character),
 /// then we'll combine them in larger parsers
 fn ws<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, &'i str, E> {
-    // Combinators like `take_while0` return a function. That function is the
+    // Combinators like `take_while` return a function. That function is the
     // parser,to which we can pass the input
-    take_while0(WS).parse_next(input)
+    take_while(0.., WS).parse_next(input)
 }
 
 fn ws_or_eof<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, &'i str, E> {
