@@ -150,7 +150,7 @@ fn parse_builtin_op(i: &str) -> IResult<&str, BuiltIn, VerboseError<&str>> {
 /// and `cut_err` to prevent back-tracking.
 ///
 /// Put plainly: `preceded(":", cut_err(alpha1))` means that once we see the `:`
-/// character, we have to see one or more alphabetic chararcters or the input is invalid.
+/// character, we have to see one or more alphabetic characters or the input is invalid.
 fn parse_keyword(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
     preceded(":", cut_err(alpha1))
         .context("keyword")
