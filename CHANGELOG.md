@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Resolve a performance regression in `winnow::ascii:` parsers (any that use `take_while`)
+
 ## [0.4.6] - 2023-05-02
 
 ### Compatibility
