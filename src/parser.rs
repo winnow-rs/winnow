@@ -40,6 +40,7 @@ use crate::stream::{AsChar, Compare, Location, Offset, ParseSlice, Stream, Strea
 /// - `&[u8]` and `&str`, see [`winnow::token::tag`][crate::token::tag]
 pub trait Parser<I, O, E> {
     /// Parse all of `input`, generating `O` from it
+    #[inline]
     fn parse(&mut self, input: I) -> Result<O, E>
     where
         I: Stream,
@@ -614,6 +615,7 @@ impl<'a, I, O, E, F> Parser<I, O, E> for F
 where
     F: FnMut(I) -> IResult<I, O, E> + 'a,
 {
+    #[inline(always)]
     fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
         self(i)
     }
@@ -640,6 +642,7 @@ where
     I: Stream<Token = u8>,
     E: ParseError<I>,
 {
+    #[inline(always)]
     fn parse_next(&mut self, i: I) -> IResult<I, u8, E> {
         crate::token::one_of(*self).parse_next(i)
     }
@@ -667,6 +670,7 @@ where
     <I as Stream>::Token: AsChar + Copy,
     E: ParseError<I>,
 {
+    #[inline(always)]
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Stream>::Token, E> {
         crate::token::one_of(*self).parse_next(i)
     }
@@ -695,6 +699,7 @@ where
     I: Compare<&'s [u8]> + StreamIsPartial,
     I: Stream,
 {
+    #[inline(always)]
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Stream>::Slice, E> {
         crate::token::tag(*self).parse_next(i)
     }
@@ -723,6 +728,7 @@ where
     I: Compare<&'s [u8; N]> + StreamIsPartial,
     I: Stream,
 {
+    #[inline(always)]
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Stream>::Slice, E> {
         crate::token::tag(*self).parse_next(i)
     }
@@ -751,12 +757,14 @@ where
     I: Compare<&'s str> + StreamIsPartial,
     I: Stream,
 {
+    #[inline(always)]
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Stream>::Slice, E> {
         crate::token::tag(*self).parse_next(i)
     }
 }
 
 impl<I, E: ParseError<I>> Parser<I, (), E> for () {
+    #[inline(always)]
     fn parse_next(&mut self, i: I) -> IResult<I, (), E> {
         Ok((i, ()))
     }
@@ -769,6 +777,7 @@ macro_rules! impl_parser_for_tuple {
     where
       $($parser: Parser<I, $output, E>),+
     {
+      #[inline(always)]
       fn parse_next(&mut self, i: I) -> IResult<I, ($($output),+,), E> {
         let ($(ref mut $parser),+,) = *self;
 
@@ -822,6 +831,7 @@ use alloc::boxed::Box;
 
 #[cfg(feature = "alloc")]
 impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a> {
+    #[inline(always)]
     fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
         (**self).parse_next(input)
     }
