@@ -2118,6 +2118,7 @@ impl AsChar for u8 {
     fn is_space(self) -> bool {
         self == b' ' || self == b'\t'
     }
+    #[inline]
     fn is_newline(self) -> bool {
         self == b'\n'
     }
@@ -2155,6 +2156,7 @@ impl<'a> AsChar for &'a u8 {
     fn is_space(self) -> bool {
         *self == b' ' || *self == b'\t'
     }
+    #[inline]
     fn is_newline(self) -> bool {
         *self == b'\n'
     }
@@ -2193,6 +2195,7 @@ impl AsChar for char {
     fn is_space(self) -> bool {
         self == ' ' || self == '\t'
     }
+    #[inline]
     fn is_newline(self) -> bool {
         self == '\n'
     }
@@ -2231,6 +2234,7 @@ impl<'a> AsChar for &'a char {
     fn is_space(self) -> bool {
         *self == ' ' || *self == '\t'
     }
+    #[inline]
     fn is_newline(self) -> bool {
         *self == '\n'
     }
