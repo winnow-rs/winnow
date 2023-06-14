@@ -46,6 +46,7 @@ compile_error!("`debug` requires `std`");
 /// ```
 #[cfg_attr(not(feature = "debug"), allow(unused_variables))]
 #[cfg_attr(not(feature = "debug"), allow(unused_mut))]
+#[cfg_attr(not(feature = "debug"), inline(always))]
 pub fn trace<I: Stream, O, E>(
     name: impl crate::lib::std::fmt::Display,
     mut parser: impl Parser<I, O, E>,
