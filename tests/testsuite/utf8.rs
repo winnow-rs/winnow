@@ -351,7 +351,7 @@ mod test {
     #[test]
     fn take_while1_set_succeed_str() {
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
-        const MATCH: &str = "βèƒôřèÂßÇ";
+        const MATCH: &[char] = &['β', 'è', 'ƒ', 'ô', 'ř', 'è', 'Â', 'ß', 'Ç'];
         const CONSUMED: &str = "βèƒôřèÂßÇ";
         const LEFTOVER: &str = "áƒƭèř";
         fn test(input: &str) -> IResult<&str, &str> {
@@ -403,7 +403,7 @@ mod test {
     #[test]
     fn take_while1_set_fail_str() {
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
-        const MATCH: &str = "Ûñℓúçƙ¥";
+        const MATCH: &[char] = &['Û', 'ñ', 'ℓ', 'ú', 'ç', 'ƙ', '¥'];
         fn test(input: &str) -> IResult<&str, &str> {
             take_while(1.., MATCH).parse_next(input)
         }
@@ -452,7 +452,7 @@ mod test {
     #[test]
     fn take_till1_succeed_str() {
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
-        const AVOID: &str = "£úçƙ¥á";
+        const AVOID: &[char] = &['£', 'ú', 'ç', 'ƙ', '¥', 'á'];
         const CONSUMED: &str = "βèƒôřèÂßÇ";
         const LEFTOVER: &str = "áƒƭèř";
         fn test(input: &str) -> IResult<&str, &str> {
@@ -483,7 +483,7 @@ mod test {
     #[test]
     fn take_till1_failed_str() {
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
-        const AVOID: &str = "βúçƙ¥";
+        const AVOID: &[char] = &['β', 'ú', 'ç', 'ƙ', '¥'];
         fn test(input: &str) -> IResult<&str, &str> {
             take_till1(AVOID).parse_next(input)
         }

@@ -14,7 +14,6 @@ use crate::combinator::cut_err;
 use crate::combinator::opt;
 use crate::error::ParseError;
 use crate::error::{ErrMode, ErrorKind, Needed};
-use crate::stream::ContainsToken;
 use crate::stream::{AsBStr, AsChar, Offset, ParseSlice, Stream, StreamIsPartial};
 use crate::stream::{Compare, CompareResult};
 use crate::token::take_while;
@@ -1344,7 +1343,6 @@ where
     <I as Stream>::Token: AsChar + Copy,
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
-    &'static str: ContainsToken<<I as Stream>::Token>,
 {
     trace("float", move |input: I| {
         let (i, s) = recognize_float_or_exceptions(input)?;
@@ -1366,7 +1364,6 @@ where
     <I as Stream>::Token: AsChar + Copy,
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
-    &'static str: ContainsToken<<I as Stream>::Token>,
 {
     alt((
         recognize_float,
@@ -1385,15 +1382,14 @@ where
     <I as Stream>::Token: AsChar + Copy,
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
-    &'static str: ContainsToken<<I as Stream>::Token>,
 {
     (
-        opt(one_of("+-")),
+        opt(one_of(['+', '-'])),
         alt((
             (digit1, opt(('.', opt(digit1)))).map(|_| ()),
             ('.', digit1).map(|_| ()),
         )),
-        opt((one_of("eE"), opt(one_of("+-")), cut_err(digit1))),
+        opt((one_of(['e', 'E']), opt(one_of(['+', '-'])), cut_err(digit1))),
     )
         .recognize()
         .parse_next(input)
@@ -1415,7 +1411,7 @@ where
 /// use winnow::token::one_of;
 ///
 /// fn esc(s: &str) -> IResult<&str, &str> {
-///   escaped(digit1, '\\', one_of(r#""n\"#)).parse_next(s)
+///   escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_next(s)
 /// }
 ///
 /// assert_eq!(esc("123;"), Ok((";", "123")));
@@ -1431,7 +1427,7 @@ where
 /// use winnow::token::one_of;
 ///
 /// fn esc(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   escaped(digit1, '\\', one_of("\"n\\")).parse_next(s)
+///   escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_next(s)
 /// }
 ///
 /// assert_eq!(esc(Partial::new("123;")), Ok((Partial::new(";"), "123")));

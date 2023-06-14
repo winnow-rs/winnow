@@ -210,7 +210,7 @@ fn sp<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str, E> {
 }
 
 fn parse_str<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str, E> {
-    escaped(alphanumeric, '\\', one_of("\"n\\")).parse_next(i)
+    escaped(alphanumeric, '\\', one_of(['"', 'n', '\\'])).parse_next(i)
 }
 
 fn string(i: &str) -> IResult<&str, &str> {
