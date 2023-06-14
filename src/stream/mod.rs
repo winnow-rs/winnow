@@ -2415,14 +2415,6 @@ impl<const LEN: usize, C: AsChar> ContainsToken<C> for [char; LEN] {
     }
 }
 
-impl<C: AsChar> ContainsToken<C> for &'_ str {
-    #[inline(always)]
-    fn contains_token(&self, token: C) -> bool {
-        let token = token.as_char();
-        self.chars().any(|i| i == token)
-    }
-}
-
 impl<T> ContainsToken<T> for () {
     #[inline(always)]
     fn contains_token(&self, _token: T) -> bool {

@@ -17,9 +17,6 @@ fn contains_token(c: &mut criterion::Criterion) {
         let len = sample.len();
         group.throughput(criterion::Throughput::Bytes(len as u64));
 
-        group.bench_with_input(criterion::BenchmarkId::new("str", name), &len, |b, _| {
-            b.iter(|| black_box(parser_str.parse_next(black_box(sample)).unwrap()));
-        });
         group.bench_with_input(criterion::BenchmarkId::new("slice", name), &len, |b, _| {
             b.iter(|| black_box(parser_slice.parse_next(black_box(sample)).unwrap()));
         });
@@ -51,11 +48,6 @@ fn contains_token(c: &mut criterion::Criterion) {
         );
     }
     group.finish();
-}
-
-fn parser_str(input: &str) -> IResult<&str, usize> {
-    let contains = "0123456789";
-    repeat(0.., alt((take_while(1.., contains), take_till1(contains)))).parse_next(input)
 }
 
 fn parser_slice(input: &str) -> IResult<&str, usize> {
