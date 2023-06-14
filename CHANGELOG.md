@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.4.7] - 2023-06-14
+
 ### Performance
 
 - Resolve a performance regression in `winnow::ascii:` parsers (any that use `take_while`)
@@ -1796,7 +1798,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.4.6...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.4.7...HEAD
+[0.4.7]: https://github.com/winnow-rs/winnow/compare/v0.4.6...v0.4.7
 [0.4.6]: https://github.com/winnow-rs/winnow/compare/v0.4.5...v0.4.6
 [0.4.5]: https://github.com/winnow-rs/winnow/compare/v0.4.4...v0.4.5
 [0.4.4]: https://github.com/winnow-rs/winnow/compare/v0.4.3...v0.4.4
