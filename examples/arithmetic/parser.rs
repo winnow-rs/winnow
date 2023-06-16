@@ -17,7 +17,7 @@ pub fn expr(i: &str) -> IResult<&str, i64> {
 
     fold_repeat(
         0..,
-        (one_of("+-"), term),
+        (one_of(['+', '-']), term),
         move || init,
         |acc, (op, val): (char, i64)| {
             if op == '+' {
@@ -38,7 +38,7 @@ fn term(i: &str) -> IResult<&str, i64> {
 
     fold_repeat(
         0..,
-        (one_of("*/"), factor),
+        (one_of(['*', '/']), factor),
         move || init,
         |acc, (op, val): (char, i64)| {
             if op == '*' {

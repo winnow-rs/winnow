@@ -67,7 +67,7 @@
 //!
 //! pub fn peol_comment<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, (), E>
 //! {
-//!   ('%', take_till1("\n\r"))
+//!   ('%', take_till1(['\n', '\r']))
 //!     .void() // Output is thrown away.
 //!     .parse_next(i)
 //! }
@@ -164,7 +164,7 @@
 //!   preceded(
 //!     alt(("0x", "0X")),
 //!     repeat(1..,
-//!       terminated(one_of("0123456789abcdefABCDEF"), repeat(0.., '_').map(|()| ()))
+//!       terminated(one_of(('0'..='9', 'a'..='f', 'A'..='F')), repeat(0.., '_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
 //!   ).parse_next(input)
 //! }
@@ -186,7 +186,7 @@
 //!   preceded(
 //!     alt(("0x", "0X")),
 //!     repeat(1..,
-//!       terminated(one_of("0123456789abcdefABCDEF"), repeat(0.., '_').map(|()| ()))
+//!       terminated(one_of(('0'..='9', 'a'..='f', 'A'..='F')), repeat(0.., '_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
 //!   ).try_map(
 //!     |out: &str| i64::from_str_radix(&str::replace(&out, "_", ""), 16)
@@ -210,7 +210,7 @@
 //!   preceded(
 //!     alt(("0o", "0O")),
 //!     repeat(1..,
-//!       terminated(one_of("01234567"), repeat(0.., '_').map(|()| ()))
+//!       terminated(one_of('0'..='7'), repeat(0.., '_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
 //!   ).parse_next(input)
 //! }
@@ -232,7 +232,7 @@
 //!   preceded(
 //!     alt(("0b", "0B")),
 //!     repeat(1..,
-//!       terminated(one_of("01"), repeat(0.., '_').map(|()| ()))
+//!       terminated(one_of('0'..='1'), repeat(0.., '_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
 //!   ).parse_next(input)
 //! }
@@ -251,7 +251,7 @@
 //!
 //! fn decimal(input: &str) -> IResult<&str, &str> {
 //!   repeat(1..,
-//!     terminated(one_of("0123456789"), repeat(0.., '_').map(|()| ()))
+//!     terminated(one_of('0'..='9'), repeat(0.., '_').map(|()| ()))
 //!   ).map(|()| ())
 //!     .recognize()
 //!     .parse_next(input)
@@ -279,8 +279,8 @@
 //!       '.',
 //!       decimal,
 //!       opt((
-//!         one_of("eE"),
-//!         opt(one_of("+-")),
+//!         one_of(['e', 'E']),
+//!         opt(one_of(['+', '-'])),
 //!         decimal
 //!       ))
 //!     ).recognize()
@@ -291,8 +291,8 @@
 //!         '.',
 //!         decimal,
 //!       )),
-//!       one_of("eE"),
-//!       opt(one_of("+-")),
+//!       one_of(['e', 'E']),
+//!       opt(one_of(['+', '-'])),
 //!       decimal
 //!     ).recognize()
 //!     , // Case three: 42. and 42.42
@@ -306,7 +306,7 @@
 //!
 //! fn decimal(input: &str) -> IResult<&str, &str> {
 //!   repeat(1..,
-//!     terminated(one_of("0123456789"), repeat(0.., '_').map(|()| ()))
+//!     terminated(one_of('0'..='9'), repeat(0.., '_').map(|()| ()))
 //!   ).
 //!   map(|()| ())
 //!     .recognize()

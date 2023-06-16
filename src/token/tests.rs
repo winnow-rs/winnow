@@ -77,7 +77,7 @@ fn partial_any_str() {
 #[test]
 fn partial_one_of_test() {
     fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u8> {
-        one_of("ab").parse_next(i)
+        one_of(['a', 'b']).parse_next(i)
     }
 
     let a = &b"abcd"[..];
@@ -93,7 +93,7 @@ fn partial_one_of_test() {
     );
 
     fn utf8(i: Partial<&str>) -> IResult<Partial<&str>, char> {
-        one_of("+\u{FF0B}").parse_next(i)
+        one_of(['+', '\u{FF0B}']).parse_next(i)
     }
 
     assert!(utf8(Partial::new("+")).is_ok());
@@ -141,7 +141,7 @@ fn char_str() {
 #[test]
 fn partial_none_of_test() {
     fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u8> {
-        none_of("ab").parse_next(i)
+        none_of(['a', 'b']).parse_next(i)
     }
 
     let a = &b"abcd"[..];
@@ -160,7 +160,7 @@ fn partial_none_of_test() {
 #[test]
 fn partial_is_a() {
     fn a_or_b(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_while(1.., "ab").parse_next(i)
+        take_while(1.., ['a', 'b']).parse_next(i)
     }
 
     let a = Partial::new(&b"abcd"[..]);
@@ -182,7 +182,7 @@ fn partial_is_a() {
 #[test]
 fn partial_is_not() {
     fn a_or_b(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_till1("ab").parse_next(i)
+        take_till1(['a', 'b']).parse_next(i)
     }
 
     let a = Partial::new(&b"cdab"[..]);

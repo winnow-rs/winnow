@@ -112,7 +112,7 @@ fn string<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>
 /// You can mix the above declarative parsing with an imperative style to handle more unique cases,
 /// like escaping
 fn character<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, char, E> {
-    let (input, c) = none_of("\"").parse_next(input)?;
+    let (input, c) = none_of('\"').parse_next(input)?;
     if c == '\\' {
         dispatch!(any;
           '"' => success('"'),
@@ -203,7 +203,7 @@ fn ws<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, &
     take_while(0.., WS).parse_next(input)
 }
 
-const WS: &str = " \t\r\n";
+const WS: &[char] = &[' ', '\t', '\r', '\n'];
 
 #[cfg(test)]
 mod test {

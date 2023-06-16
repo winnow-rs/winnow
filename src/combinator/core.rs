@@ -240,7 +240,7 @@ where
 ///
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///   alt((
-///     preceded(one_of("+-"), digit1),
+///     preceded(one_of(['+', '-']), digit1),
 ///     rest
 ///   )).parse_next(input)
 /// }
@@ -265,7 +265,7 @@ where
 ///
 /// fn parser(input: &str) -> IResult<&str, &str> {
 ///   alt((
-///     preceded(one_of("+-"), cut_err(digit1)),
+///     preceded(one_of(['+', '-']), cut_err(digit1)),
 ///     rest
 ///   )).parse_next(input)
 /// }

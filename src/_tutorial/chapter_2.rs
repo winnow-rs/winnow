@@ -64,7 +64,7 @@
 //! use winnow::token::one_of;
 //!
 //! fn parse_digits(input: &str) -> IResult<&str, char> {
-//!     one_of("0123456789abcdefgABCDEFG").parse_next(input)
+//!     one_of(('0'..='9', 'a'..='f', 'A'..='F')).parse_next(input)
 //! }
 //!
 //! fn main() {
@@ -84,7 +84,7 @@
 //! > # use winnow::prelude::*;
 //! > # use winnow::error::Error;
 //! > pub fn one_of<'i>(
-//! >     list: &'static str
+//! >     list: &'static [char]
 //! > ) -> impl Parser<&'i str, char, Error<&'i str>> {
 //! >     // ...
 //! > #    winnow::token::one_of(list)
@@ -108,7 +108,7 @@
 //! use winnow::token::take_while;
 //!
 //! fn parse_digits(input: &str) -> IResult<&str, &str> {
-//!     take_while(1.., "0123456789abcdefgABCDEFG").parse_next(input)
+//!     take_while(1.., ('0'..='9', 'a'..='f', 'A'..='F')).parse_next(input)
 //! }
 //!
 //! fn main() {

@@ -260,9 +260,9 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::token::one_of;
-/// assert_eq!(one_of::<_, _, Error<_>>("abc").parse_next("b"), Ok(("", 'b')));
-/// assert_eq!(one_of::<_, _, Error<_>>("a").parse_next("bc"), Err(ErrMode::Backtrack(Error::new("bc", ErrorKind::Verify))));
-/// assert_eq!(one_of::<_, _, Error<_>>("a").parse_next(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
+/// assert_eq!(one_of::<_, _, Error<_>>(['a', 'b', 'c']).parse_next("b"), Ok(("", 'b')));
+/// assert_eq!(one_of::<_, _, Error<_>>('a').parse_next("bc"), Err(ErrMode::Backtrack(Error::new("bc", ErrorKind::Verify))));
+/// assert_eq!(one_of::<_, _, Error<_>>('a').parse_next(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
 ///
 /// fn parser_fn(i: &str) -> IResult<&str, char> {
 ///     one_of(|c| c == 'a' || c == 'b').parse_next(i)
@@ -277,9 +277,9 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::token::one_of;
-/// assert_eq!(one_of::<_, _, Error<_>>("abc").parse_next(Partial::new("b")), Ok((Partial::new(""), 'b')));
-/// assert_eq!(one_of::<_, _, Error<_>>("a").parse_next(Partial::new("bc")), Err(ErrMode::Backtrack(Error::new(Partial::new("bc"), ErrorKind::Verify))));
-/// assert_eq!(one_of::<_, _, Error<_>>("a").parse_next(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(one_of::<_, _, Error<_>>(['a', 'b', 'c']).parse_next(Partial::new("b")), Ok((Partial::new(""), 'b')));
+/// assert_eq!(one_of::<_, _, Error<_>>('a').parse_next(Partial::new("bc")), Err(ErrMode::Backtrack(Error::new(Partial::new("bc"), ErrorKind::Verify))));
+/// assert_eq!(one_of::<_, _, Error<_>>('a').parse_next(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// fn parser_fn(i: Partial<&str>) -> IResult<Partial<&str>, char> {
 ///     one_of(|c| c == 'a' || c == 'b').parse_next(i)
@@ -317,9 +317,9 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::prelude::*;
 /// # use winnow::token::none_of;
-/// assert_eq!(none_of::<_, _, Error<_>>("abc").parse_next("z"), Ok(("", 'z')));
-/// assert_eq!(none_of::<_, _, Error<_>>("ab").parse_next("a"), Err(ErrMode::Backtrack(Error::new("a", ErrorKind::Verify))));
-/// assert_eq!(none_of::<_, _, Error<_>>("a").parse_next(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
+/// assert_eq!(none_of::<_, _, Error<_>>(['a', 'b', 'c']).parse_next("z"), Ok(("", 'z')));
+/// assert_eq!(none_of::<_, _, Error<_>>(['a', 'b']).parse_next("a"), Err(ErrMode::Backtrack(Error::new("a", ErrorKind::Verify))));
+/// assert_eq!(none_of::<_, _, Error<_>>('a').parse_next(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
 /// ```
 ///
 /// ```
@@ -327,9 +327,9 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// # use winnow::token::none_of;
-/// assert_eq!(none_of::<_, _, Error<_>>("abc").parse_next(Partial::new("z")), Ok((Partial::new(""), 'z')));
-/// assert_eq!(none_of::<_, _, Error<_>>("ab").parse_next(Partial::new("a")), Err(ErrMode::Backtrack(Error::new(Partial::new("a"), ErrorKind::Verify))));
-/// assert_eq!(none_of::<_, _, Error<_>>("a").parse_next(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(none_of::<_, _, Error<_>>(['a', 'b', 'c']).parse_next(Partial::new("z")), Ok((Partial::new(""), 'z')));
+/// assert_eq!(none_of::<_, _, Error<_>>(['a', 'b']).parse_next(Partial::new("a")), Err(ErrMode::Backtrack(Error::new(Partial::new("a"), ErrorKind::Verify))));
+/// assert_eq!(none_of::<_, _, Error<_>>('a').parse_next(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn none_of<I, T, Error: ParseError<I>>(list: T) -> impl Parser<I, <I as Stream>::Token, Error>
@@ -406,7 +406,7 @@ where
 /// assert_eq!(alpha(b"12345"), Err(ErrMode::Backtrack(Error::new(&b"12345"[..], ErrorKind::Slice))));
 ///
 /// fn hex(s: &str) -> IResult<&str, &str> {
-///   take_while(1.., "1234567890ABCDEF").parse_next(s)
+///   take_while(1.., ('0'..='9', 'A'..='F')).parse_next(s)
 /// }
 ///
 /// assert_eq!(hex("123 and voila"), Ok((" and voila", "123")));
@@ -432,7 +432,7 @@ where
 /// assert_eq!(alpha(Partial::new(b"12345")), Err(ErrMode::Backtrack(Error::new(Partial::new(&b"12345"[..]), ErrorKind::Slice))));
 ///
 /// fn hex(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take_while(1.., "1234567890ABCDEF").parse_next(s)
+///   take_while(1.., ('0'..='9', 'A'..='F')).parse_next(s)
 /// }
 ///
 /// assert_eq!(hex(Partial::new("123 and voila")), Ok((Partial::new(" and voila"), "123")));
@@ -713,7 +713,7 @@ where
 /// assert_eq!(till_colon(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
 ///
 /// fn not_space(s: &str) -> IResult<&str, &str> {
-///   take_till1(" \t\r\n").parse_next(s)
+///   take_till1([' ', '\t', '\r', '\n']).parse_next(s)
 /// }
 ///
 /// assert_eq!(not_space("Hello, World!"), Ok((" World!", "Hello,")));
@@ -738,7 +738,7 @@ where
 /// assert_eq!(till_colon(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// fn not_space(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take_till1(" \t\r\n").parse_next(s)
+///   take_till1([' ', '\t', '\r', '\n']).parse_next(s)
 /// }
 ///
 /// assert_eq!(not_space(Partial::new("Hello, World!")), Ok((Partial::new(" World!"), "Hello,")));

@@ -128,7 +128,7 @@ fn parse_builtin(i: &str) -> IResult<&str, BuiltIn, VerboseError<&str>> {
 /// we start by creating a parser for the built-in operator functions.
 fn parse_builtin_op(i: &str) -> IResult<&str, BuiltIn, VerboseError<&str>> {
     // one_of matches one of the characters we give it
-    let (i, t) = one_of("+-*/=").parse_next(i)?;
+    let (i, t) = one_of(['+', '-', '*', '/', '=']).parse_next(i)?;
 
     // because we are matching single character tokens, we can do the matching logic
     // on the returned value

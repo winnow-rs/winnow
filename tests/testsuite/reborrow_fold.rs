@@ -11,7 +11,7 @@ use winnow::IResult;
 
 fn atom(_tomb: &mut ()) -> impl for<'a> FnMut(&'a [u8]) -> IResult<&'a [u8], String> {
     move |input| {
-        take_till1(" \t\r\n")
+        take_till1([' ', '\t', '\r', '\n'])
             .try_map(str::from_utf8)
             .map(ToString::to_string)
             .parse_next(input)
