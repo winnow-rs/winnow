@@ -537,7 +537,6 @@ mod complete {
 
     #[cfg(feature = "std")]
     fn parse_f64(i: &str) -> IResult<&str, f64, ()> {
-        #[allow(deprecated)] // will just become `pub(crate)` later
         match super::recognize_float_or_exceptions(i) {
             Err(e) => Err(e),
             Ok((i, s)) => {

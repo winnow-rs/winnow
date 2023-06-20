@@ -201,14 +201,7 @@ pub mod stream;
 
 pub mod ascii;
 pub mod binary;
-pub mod bits;
-pub mod branch;
-pub mod bytes;
-pub mod character;
 pub mod combinator;
-pub mod multi;
-pub mod number;
-pub mod sequence;
 pub mod token;
 pub mod trace;
 
@@ -220,7 +213,7 @@ pub mod _tutorial;
 /// Core concepts available for glob import
 ///
 /// Including
-/// - [`FinishIResult`]
+/// - [`StreamIsPartial`][crate::stream::StreamIsPartial]
 /// - [`Parser`]
 ///
 /// ## Example
@@ -240,14 +233,10 @@ pub mod _tutorial;
 /// ```
 pub mod prelude {
     pub use crate::stream::StreamIsPartial as _;
-    #[allow(deprecated)]
-    pub use crate::FinishIResult as _;
     pub use crate::IResult;
     pub use crate::Parser;
 }
 
-#[allow(deprecated)]
-pub use error::FinishIResult;
 pub use error::IResult;
 pub use parser::*;
 pub use stream::BStr;

@@ -9,8 +9,8 @@
 //! - Help thread-through the [stream][crate::stream]
 //!
 //! To abstract these needs away from the user, generally `winnow` parsers use the [`IResult`]
-//! alias, rather than [`Result`][std::result::Result].  [`finish`][FinishIResult::finish] is
-//! provided for top-level parsers to integrate with your application's error reporting.
+//! alias, rather than [`Result`][std::result::Result].  [`Parser::parse`] is a top-level operation
+//! that can help convert to a `Result` for integrating with your application's error reporting.
 //!
 //! Error types include:
 //! - `()`
@@ -23,8 +23,6 @@ use crate::lib::std::borrow::ToOwned;
 use crate::lib::std::fmt;
 use core::num::NonZeroUsize;
 
-use crate::stream::Stream;
-use crate::stream::StreamIsPartial;
 #[allow(unused_imports)] // Here for intra-doc links
 use crate::Parser;
 
@@ -35,98 +33,13 @@ use crate::Parser;
 ///
 /// By default, the error type (`E`) is [`Error`]
 ///
-/// At the top-level of your parser, you can use the [`FinishIResult::finish`] method to convert
-/// it to a more common result type
+/// [`Parser::parse`] is a top-level operation that can help convert to a `Result` for integrating
+/// with your application's error reporting.
 pub type IResult<I, O, E = Error<I>> = Result<(I, O), ErrMode<E>>;
-
-/// Extension trait to convert a parser's [`IResult`] to a more manageable type
-#[deprecated(since = "0.4.0", note = "Replaced with `Parser::parse`")]
-pub trait FinishIResult<I, O, E> {
-    /// Converts the parser's [`IResult`] to a type that is more consumable by callers.
-    ///
-    /// Errors if the parser is not at the [end of input][crate::combinator::eof].  See
-    /// [`FinishIResult::finish_err`] if the remaining input is needed.
-    ///
-    /// # Panic
-    ///
-    /// If the result is `Err(ErrMode::Incomplete(_))`, this method will panic.
-    /// - **Complete parsers:** It will not be an issue, `Incomplete` is never used
-    /// - **Partial parsers:** `Incomplete` will be returned if there's not enough data
-    /// for the parser to decide, and you should gather more data before parsing again.
-    /// Once the parser returns either `Ok(_)`, `Err(ErrMode::Backtrack(_))` or `Err(ErrMode::Cut(_))`,
-    /// you can get out of the parsing loop and call `finish_err()` on the parser's result
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// # #[cfg(feature = "std")] {
-    /// use winnow::prelude::*;
-    /// use winnow::ascii::hex_uint;
-    /// use winnow::error::Error;
-    ///
-    /// struct Hex(u64);
-    ///
-    /// fn parse(value: &str) -> Result<Hex, Error<String>> {
-    ///     hex_uint.map(Hex).parse_next(value).finish().map_err(Error::into_owned)
-    /// }
-    /// # }
-    /// ```
-    #[deprecated(since = "0.4.0", note = "Replaced with `Parser::parse`")]
-    fn finish(self) -> Result<O, E>;
-
-    /// Converts the parser's [`IResult`] to a type that is more consumable by errors.
-    ///
-    ///  It keeps the same `Ok` branch, and merges `ErrMode::Backtrack` and `ErrMode::Cut` into the `Err`
-    ///  side.
-    ///
-    /// # Panic
-    ///
-    /// If the result is `Err(ErrMode::Incomplete(_))`, this method will panic as [`ErrMode::Incomplete`]
-    /// should only be set when the input is [`StreamIsPartial<false>`] which this isn't implemented
-    /// for.
-    #[deprecated(since = "0.4.0", note = "Replaced with `Parser::parse`")]
-    fn finish_err(self) -> Result<(I, O), E>;
-}
-
-#[allow(deprecated)]
-impl<I, O, E> FinishIResult<I, O, E> for IResult<I, O, E>
-where
-    I: Stream,
-    // Force users to deal with `Incomplete` when `StreamIsPartial<true>`
-    I: StreamIsPartial,
-    I: Clone,
-    E: ParseError<I>,
-{
-    fn finish(self) -> Result<O, E> {
-        debug_assert!(
-            !I::is_partial_supported(),
-            "partial streams need to handle `ErrMode::Incomplete`"
-        );
-
-        let (i, o) = self.finish_err()?;
-        crate::combinator::eof(i).finish_err()?;
-        Ok(o)
-    }
-
-    fn finish_err(self) -> Result<(I, O), E> {
-        debug_assert!(
-            !I::is_partial_supported(),
-            "partial streams need to handle `ErrMode::Incomplete`"
-        );
-
-        match self {
-            Ok(res) => Ok(res),
-            Err(ErrMode::Backtrack(e)) | Err(ErrMode::Cut(e)) => Err(e),
-            Err(ErrMode::Incomplete(_)) => {
-                panic!("complete parsers should not report `Err(ErrMode::Incomplete(_))`")
-            }
-        }
-    }
-}
 
 /// Contains information on needed data if a parser returned `Incomplete`
 ///
-/// **Note:** This is only possible for `Stream` that are [partial][`StreamIsPartial`],
+/// **Note:** This is only possible for `Stream` that are [partial][`crate::stream::StreamIsPartial`],
 /// like [`Partial`][crate::Partial].
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
@@ -169,7 +82,7 @@ pub enum ErrMode<E> {
     ///
     /// More data needs to be buffered before retrying the parse.
     ///
-    /// This must only be set when the [`Stream`] is [partial][`StreamIsPartial`], like with
+    /// This must only be set when the [`Stream`][crate::stream::Stream] is [partial][`crate::stream::StreamIsPartial`], like with
     /// [`Partial`][crate::Partial]
     ///
     /// Convert this into an `Backtrack` with [`Parser::complete_err`]
@@ -231,6 +144,16 @@ impl<E> ErrMode<E> {
         E: ErrorConvert<F>,
     {
         self.map(ErrorConvert::convert)
+    }
+
+    #[cfg_attr(debug_assertions, track_caller)]
+    pub(crate) fn into_inner(self) -> E {
+        match self {
+            ErrMode::Backtrack(e) | ErrMode::Cut(e) => e,
+            ErrMode::Incomplete(_) => {
+                panic!("complete parsers should not report `ErrMode::Incomplete(_)`")
+            }
+        }
     }
 }
 

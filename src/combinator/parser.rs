@@ -70,9 +70,6 @@ where
     }
 }
 
-#[deprecated(since = "0.4.2", note = "Replaced with `TryMap`")]
-pub use TryMap as MapRes;
-
 /// Implementation of [`Parser::try_map`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct TryMap<F, G, I, O, O2, E, E2>

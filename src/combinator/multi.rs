@@ -136,19 +136,6 @@ where
     })
 }
 
-/// Deprecated, replaced by [`repeat`]
-#[deprecated(since = "0.4.6", note = "Replaced with `repeat`")]
-#[inline(always)]
-pub fn repeat0<I, O, C, E, F>(f: F) -> impl Parser<I, C, E>
-where
-    I: Stream,
-    C: Accumulate<O>,
-    F: Parser<I, O, E>,
-    E: ParseError<I>,
-{
-    repeat(0.., f)
-}
-
 fn repeat0_<I, O, C, E, F>(f: &mut F, mut i: I) -> IResult<I, C, E>
 where
     I: Stream,
@@ -173,19 +160,6 @@ where
             }
         }
     }
-}
-
-/// Deprecated, replaced by [`repeat`]
-#[deprecated(since = "0.4.6", note = "Replaced with `repeat`")]
-#[inline(always)]
-pub fn repeat1<I, O, C, E, F>(f: F) -> impl Parser<I, C, E>
-where
-    I: Stream,
-    C: Accumulate<O>,
-    F: Parser<I, O, E>,
-    E: ParseError<I>,
-{
-    repeat(1.., f)
 }
 
 fn repeat1_<I, O, C, E, F>(f: &mut F, mut i: I) -> IResult<I, C, E>
@@ -604,19 +578,6 @@ where
     Ok((input, res))
 }
 
-/// Deprecated, replaced by [`repeat`]
-#[deprecated(since = "0.4.6", note = "Replaced with `repeat`")]
-#[inline(always)]
-pub fn count<I, O, C, E, F>(f: F, count: usize) -> impl Parser<I, C, E>
-where
-    I: Stream,
-    C: Accumulate<O>,
-    F: Parser<I, O, E>,
-    E: ParseError<I>,
-{
-    repeat(count, f)
-}
-
 fn repeat_n_<I, O, C, E, F>(count: usize, f: &mut F, i: I) -> IResult<I, C, E>
 where
     I: Stream,
@@ -828,22 +789,6 @@ where
     })
 }
 
-/// Deprecated, replaced by [`fold_repeat`]
-#[deprecated(since = "0.4.6", note = "Replaced with `fold_repeat`")]
-#[inline(always)]
-pub fn fold_repeat0<I, O, E, F, G, H, R>(mut f: F, mut init: H, mut g: G) -> impl Parser<I, R, E>
-where
-    I: Stream,
-    F: Parser<I, O, E>,
-    G: FnMut(R, O) -> R,
-    H: FnMut() -> R,
-    E: ParseError<I>,
-{
-    trace("fold_repeat0", move |i: I| {
-        fold_repeat0_(&mut f, &mut init, &mut g, i)
-    })
-}
-
 fn fold_repeat0_<I, O, E, F, G, H, R>(f: &mut F, init: &mut H, g: &mut G, i: I) -> IResult<I, R, E>
 where
     I: Stream,
@@ -876,22 +821,6 @@ where
             }
         }
     }
-}
-
-/// Deprecated, replaced by [`fold_repeat`]
-#[deprecated(since = "0.4.6", note = "Replaced with `fold_repeat`")]
-#[inline(always)]
-pub fn fold_repeat1<I, O, E, F, G, H, R>(mut f: F, mut init: H, mut g: G) -> impl Parser<I, R, E>
-where
-    I: Stream,
-    F: Parser<I, O, E>,
-    G: FnMut(R, O) -> R,
-    H: FnMut() -> R,
-    E: ParseError<I>,
-{
-    trace("fold_repeat1", move |i: I| {
-        fold_repeat1_(&mut f, &mut init, &mut g, i)
-    })
 }
 
 fn fold_repeat1_<I, O, E, F, G, H, R>(f: &mut F, init: &mut H, g: &mut G, i: I) -> IResult<I, R, E>
