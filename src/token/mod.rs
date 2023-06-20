@@ -522,34 +522,6 @@ where
     })
 }
 
-/// Deprecated, see [`take_while`]
-#[deprecated(since = "0.4.6", note = "Replaced with `take_while`")]
-#[inline(always)]
-pub fn take_while0<T, I, Error: ParseError<I>>(
-    list: T,
-) -> impl Parser<I, <I as Stream>::Slice, Error>
-where
-    I: StreamIsPartial,
-    I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    take_while(0.., list)
-}
-
-/// Deprecated, see [`take_while`]
-#[deprecated(since = "0.4.6", note = "Replaced with `take_while`")]
-#[inline(always)]
-pub fn take_while1<T, I, Error: ParseError<I>>(
-    list: T,
-) -> impl Parser<I, <I as Stream>::Slice, Error>
-where
-    I: StreamIsPartial,
-    I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    take_while(1.., list)
-}
-
 fn take_while0_<T, I, Error: ParseError<I>, const PARTIAL: bool>(
     input: I,
     list: &T,

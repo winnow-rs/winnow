@@ -49,9 +49,14 @@ pub trait Parser<I, O, E> {
         I: Clone,
         E: ParseError<I>,
     {
-        #![allow(deprecated)]
-        use crate::error::FinishIResult;
-        self.parse_next(input).finish()
+        debug_assert!(
+            !I::is_partial_supported(),
+            "partial streams need to handle `ErrMode::Incomplete`"
+        );
+
+        let (i, o) = self.parse_next(input).map_err(|e| e.into_inner())?;
+        let _ = crate::combinator::eof(i).map_err(|e| e.into_inner())?;
+        Ok(o)
     }
 
     /// Take tokens from the [`Stream`], turning it into the output
@@ -386,18 +391,6 @@ pub trait Parser<I, O, E> {
         E: FromExternalError<I, E2>,
     {
         TryMap::new(self, map)
-    }
-
-    /// Deprecated, see [`Parser::try_map`]
-    #[deprecated(since = "0.4.2", note = "Replaced with `Parser::try_map`")]
-    fn map_res<G, O2, E2>(self, map: G) -> MapRes<Self, G, I, O, O2, E, E2>
-    where
-        Self: core::marker::Sized,
-        G: FnMut(O) -> Result<O2, E2>,
-        I: Clone,
-        E: FromExternalError<I, E2>,
-    {
-        self.try_map(map)
     }
 
     /// Apply both [`Parser::verify`] and [`Parser::map`].
