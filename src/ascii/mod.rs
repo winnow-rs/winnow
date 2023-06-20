@@ -1489,15 +1489,11 @@ where
             Err(ErrMode::Backtrack(_)) => {
                 if i.next_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = control_char.len_utf8();
-                    match escapable.parse_next(i.next_slice(next).0) {
-                        Ok((i2, _)) => {
-                            if i2.eof_offset() == 0 {
-                                return Err(ErrMode::Incomplete(Needed::Unknown));
-                            } else {
-                                i = i2;
-                            }
-                        }
-                        Err(e) => return Err(e),
+                    let (i2, _) = escapable.parse_next(i.next_slice(next).0)?;
+                    if i2.eof_offset() == 0 {
+                        return Err(ErrMode::Incomplete(Needed::Unknown));
+                    } else {
+                        i = i2;
                     }
                 } else {
                     let offset = input.offset_to(&i);
@@ -1548,15 +1544,11 @@ where
             Err(ErrMode::Backtrack(_)) => {
                 if i.next_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = control_char.len_utf8();
-                    match escapable.parse_next(i.next_slice(next).0) {
-                        Ok((i2, _)) => {
-                            if i2.eof_offset() == 0 {
-                                return Ok(input.next_slice(input.eof_offset()));
-                            } else {
-                                i = i2;
-                            }
-                        }
-                        Err(e) => return Err(e),
+                    let (i2, _) = escapable.parse_next(i.next_slice(next).0)?;
+                    if i2.eof_offset() == 0 {
+                        return Ok(input.next_slice(input.eof_offset()));
+                    } else {
+                        i = i2;
                     }
                 } else {
                     let offset = input.offset_to(&i);
@@ -1694,16 +1686,12 @@ where
             Err(ErrMode::Backtrack(_)) => {
                 if remainder.next_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = offset + control_char.len_utf8();
-                    match transform.parse_next(i.next_slice(next).0) {
-                        Ok((i2, o)) => {
-                            res.accumulate(o);
-                            if i2.eof_offset() == 0 {
-                                return Err(ErrMode::Incomplete(Needed::Unknown));
-                            } else {
-                                offset = input.offset_to(&i2);
-                            }
-                        }
-                        Err(e) => return Err(e),
+                    let (i2, o) = transform.parse_next(i.next_slice(next).0)?;
+                    res.accumulate(o);
+                    if i2.eof_offset() == 0 {
+                        return Err(ErrMode::Incomplete(Needed::Unknown));
+                    } else {
+                        offset = input.offset_to(&i2);
                     }
                 } else {
                     return Ok((remainder, res));
@@ -1753,16 +1741,12 @@ where
             Err(ErrMode::Backtrack(_)) => {
                 if remainder.next_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = offset + control_char.len_utf8();
-                    match transform.parse_next(i.next_slice(next).0) {
-                        Ok((i2, o)) => {
-                            res.accumulate(o);
-                            if i2.eof_offset() == 0 {
-                                return Ok((i.next_slice(i.eof_offset()).0, res));
-                            } else {
-                                offset = input.offset_to(&i2);
-                            }
-                        }
-                        Err(e) => return Err(e),
+                    let (i2, o) = transform.parse_next(i.next_slice(next).0)?;
+                    res.accumulate(o);
+                    if i2.eof_offset() == 0 {
+                        return Ok((i.next_slice(i.eof_offset()).0, res));
+                    } else {
+                        offset = input.offset_to(&i2);
                     }
                 } else {
                     return Ok((remainder, res));
