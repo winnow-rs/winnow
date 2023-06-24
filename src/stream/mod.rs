@@ -683,7 +683,7 @@ where
         P: Fn(Self::Token) -> bool,
     {
         self.iter_offsets()
-            .find_map(|(o, b)| predicate(b).then(|| o))
+            .find_map(|(o, b)| predicate(b).then_some(o))
     }
     #[inline(always)]
     fn offset_at(&self, tokens: usize) -> Result<usize, Needed> {
