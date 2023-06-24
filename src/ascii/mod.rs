@@ -14,7 +14,7 @@ use crate::combinator::cut_err;
 use crate::combinator::opt;
 use crate::error::ParseError;
 use crate::error::{ErrMode, ErrorKind, Needed};
-use crate::stream::{AsBStr, AsChar, Offset, ParseSlice, Stream, StreamIsPartial};
+use crate::stream::{AsBStr, AsChar, ParseSlice, Stream, StreamIsPartial};
 use crate::stream::{Compare, CompareResult};
 use crate::token::take_while;
 use crate::trace::trace;
@@ -1338,7 +1338,7 @@ pub fn float<I, O, E: ParseError<I>>(input: I) -> IResult<I, O, E>
 where
     I: StreamIsPartial,
     I: Stream,
-    I: Offset + Compare<&'static str>,
+    I: Compare<&'static str>,
     <I as Stream>::Slice: ParseSlice<O>,
     <I as Stream>::Token: AsChar + Copy,
     <I as Stream>::IterOffsets: Clone,
@@ -1360,7 +1360,7 @@ fn recognize_float_or_exceptions<I, E: ParseError<I>>(
 where
     I: StreamIsPartial,
     I: Stream,
-    I: Offset + Compare<&'static str>,
+    I: Compare<&'static str>,
     <I as Stream>::Token: AsChar + Copy,
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
@@ -1378,7 +1378,7 @@ fn recognize_float<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::S
 where
     I: StreamIsPartial,
     I: Stream,
-    I: Offset + Compare<&'static str>,
+    I: Compare<&'static str>,
     <I as Stream>::Token: AsChar + Copy,
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
@@ -1441,7 +1441,7 @@ pub fn escaped<'a, I: 'a, Error, F, G, O1, O2>(
 ) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
-    I: Stream + Offset,
+    I: Stream,
     <I as Stream>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
@@ -1464,7 +1464,7 @@ fn streaming_escaped_internal<I, Error, F, G, O1, O2>(
 ) -> IResult<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
-    I: Stream + Offset,
+    I: Stream,
     <I as Stream>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
@@ -1517,7 +1517,7 @@ fn complete_escaped_internal<'a, I: 'a, Error, F, G, O1, O2>(
 ) -> IResult<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
-    I: Stream + Offset,
+    I: Stream,
     <I as Stream>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
@@ -1632,7 +1632,7 @@ pub fn escaped_transform<I, Error, F, G, Output>(
 ) -> impl Parser<I, Output, Error>
 where
     I: StreamIsPartial,
-    I: Stream + Offset,
+    I: Stream,
     <I as Stream>::Token: crate::stream::AsChar,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
@@ -1657,7 +1657,7 @@ fn streaming_escaped_transform_internal<I, Error, F, G, Output>(
 ) -> IResult<I, Output, Error>
 where
     I: StreamIsPartial,
-    I: Stream + Offset,
+    I: Stream,
     <I as Stream>::Token: crate::stream::AsChar,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
@@ -1712,7 +1712,7 @@ fn complete_escaped_transform_internal<I, Error, F, G, Output>(
 ) -> IResult<I, Output, Error>
 where
     I: StreamIsPartial,
-    I: Stream + Offset,
+    I: Stream,
     <I as Stream>::Token: crate::stream::AsChar,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
