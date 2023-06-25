@@ -449,6 +449,12 @@ pub trait Stream: Offset + Clone + crate::lib::std::fmt::Debug {
     ///   sequence boundaries.
     ///
     fn next_slice(&self, offset: usize) -> (Self, Self::Slice);
+
+    /// Advance to the end of the stream
+    #[inline(always)]
+    fn finish(&self) -> (Self, Self::Slice) {
+        self.next_slice(self.eof_offset())
+    }
 }
 
 impl<'i, T> Stream for &'i [T]

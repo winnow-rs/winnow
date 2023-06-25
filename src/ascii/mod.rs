@@ -124,7 +124,7 @@ where
         c == '\r' || c == '\n'
     }) {
         None if PARTIAL && input.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
-        None => Ok(input.next_slice(input.eof_offset())),
+        None => Ok(input.finish()),
         Some(offset) => {
             let (new_input, res) = input.next_slice(offset);
             let bytes = new_input.as_bstr();
@@ -944,7 +944,7 @@ where
         if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             Err(ErrMode::Incomplete(Needed::new(1)))
         } else {
-            Ok((input.next_slice(input.eof_offset()).0, value))
+            Ok((input.finish().0, value))
         }
     })
     .parse_next(input)
@@ -1109,7 +1109,7 @@ where
         if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             Err(ErrMode::Incomplete(Needed::new(1)))
         } else {
-            Ok((input.next_slice(input.eof_offset()).0, value))
+            Ok((input.finish().0, value))
         }
     })
     .parse_next(input)
@@ -1546,7 +1546,7 @@ where
                     let next = control_char.len_utf8();
                     let (i2, _) = escapable.parse_next(i.next_slice(next).0)?;
                     if i2.eof_offset() == 0 {
-                        return Ok(input.next_slice(input.eof_offset()));
+                        return Ok(input.finish());
                     } else {
                         i = i2;
                     }
@@ -1561,7 +1561,7 @@ where
         }
     }
 
-    Ok(input.next_slice(input.eof_offset()))
+    Ok(input.finish())
 }
 
 /// Matches a byte string with escaped characters.
@@ -1744,7 +1744,7 @@ where
                     let (i2, o) = transform.parse_next(i.next_slice(next).0)?;
                     res.accumulate(o);
                     if i2.eof_offset() == 0 {
-                        return Ok((i.next_slice(i.eof_offset()).0, res));
+                        return Ok((i.finish().0, res));
                     } else {
                         offset = i2.offset_from(&input);
                     }

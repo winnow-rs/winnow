@@ -587,7 +587,7 @@ where
     }
     if PARTIAL && input.is_partial() {
         if final_count == n {
-            Ok(input.next_slice(input.eof_offset()))
+            Ok(input.finish())
         } else {
             let needed = if m > input.eof_offset() {
                 m - input.eof_offset()
@@ -598,7 +598,7 @@ where
         }
     } else {
         if m <= final_count {
-            Ok(input.next_slice(input.eof_offset()))
+            Ok(input.finish())
         } else {
             Err(ErrMode::from_error_kind(input, ErrorKind::Slice))
         }
