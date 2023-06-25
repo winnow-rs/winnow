@@ -2,7 +2,7 @@
 
 use crate::combinator::*;
 use crate::error::{ContextError, FromExternalError, IResult, ParseError};
-use crate::stream::{AsChar, Compare, Location, Offset, ParseSlice, Stream, StreamIsPartial};
+use crate::stream::{AsChar, Compare, Location, ParseSlice, Stream, StreamIsPartial};
 
 /// Core trait for parsing
 ///
@@ -211,7 +211,7 @@ pub trait Parser<I, O, E> {
     fn recognize(self) -> Recognize<Self, I, O, E>
     where
         Self: core::marker::Sized,
-        I: Stream + Offset,
+        I: Stream,
     {
         Recognize::new(self)
     }
@@ -259,7 +259,7 @@ pub trait Parser<I, O, E> {
     fn with_recognized(self) -> WithRecognized<Self, I, O, E>
     where
         Self: core::marker::Sized,
-        I: Stream + Offset,
+        I: Stream,
     {
         WithRecognized::new(self)
     }

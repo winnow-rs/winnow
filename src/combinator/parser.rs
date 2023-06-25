@@ -1,8 +1,8 @@
 use crate::error::{ContextError, ErrMode, ErrorKind, FromExternalError, ParseError};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::ops::Range;
+use crate::stream::StreamIsPartial;
 use crate::stream::{Location, Stream};
-use crate::stream::{Offset, StreamIsPartial};
 use crate::trace::trace;
 use crate::trace::trace_result;
 use crate::*;
@@ -508,7 +508,7 @@ where
 pub struct Recognize<F, I, O, E>
 where
     F: Parser<I, O, E>,
-    I: Stream + Offset,
+    I: Stream,
 {
     parser: F,
     i: core::marker::PhantomData<I>,
@@ -519,7 +519,7 @@ where
 impl<F, I, O, E> Recognize<F, I, O, E>
 where
     F: Parser<I, O, E>,
-    I: Stream + Offset,
+    I: Stream,
 {
     pub(crate) fn new(parser: F) -> Self {
         Self {
@@ -534,7 +534,7 @@ where
 impl<I, O, E, F> Parser<I, <I as Stream>::Slice, E> for Recognize<F, I, O, E>
 where
     F: Parser<I, O, E>,
-    I: Stream + Offset,
+    I: Stream,
 {
     fn parse_next(&mut self, input: I) -> IResult<I, <I as Stream>::Slice, E> {
         let i = input.clone();
@@ -553,7 +553,7 @@ where
 pub struct WithRecognized<F, I, O, E>
 where
     F: Parser<I, O, E>,
-    I: Stream + Offset,
+    I: Stream,
 {
     parser: F,
     i: core::marker::PhantomData<I>,
@@ -564,7 +564,7 @@ where
 impl<F, I, O, E> WithRecognized<F, I, O, E>
 where
     F: Parser<I, O, E>,
-    I: Stream + Offset,
+    I: Stream,
 {
     pub(crate) fn new(parser: F) -> Self {
         Self {
@@ -579,7 +579,7 @@ where
 impl<F, I, O, E> Parser<I, (O, <I as Stream>::Slice), E> for WithRecognized<F, I, O, E>
 where
     F: Parser<I, O, E>,
-    I: Stream + Offset,
+    I: Stream,
 {
     fn parse_next(&mut self, input: I) -> IResult<I, (O, <I as Stream>::Slice), E> {
         let i = input.clone();
