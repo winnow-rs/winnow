@@ -501,6 +501,7 @@ pub fn convert_error<I: core::ops::Deref<Target = str>>(
     input: I,
     e: VerboseError<I>,
 ) -> crate::lib::std::string::String {
+    #![allow(clippy::explicit_deref_methods)]
     use crate::lib::std::fmt::Write;
     use crate::stream::Offset;
 
@@ -508,7 +509,8 @@ pub fn convert_error<I: core::ops::Deref<Target = str>>(
     let input = &*input;
 
     for (i, (substring, kind)) in e.errors.iter().enumerate() {
-        let offset = substring.offset_from(input);
+        let substring = substring.deref();
+        let offset = substring.offset_from(&input);
 
         if input.is_empty() {
             match kind {
@@ -542,7 +544,7 @@ pub fn convert_error<I: core::ops::Deref<Target = str>>(
                 .trim_end();
 
             // The (1-indexed) column number is the offset of our substring into that line
-            let column_number = substring.offset_from(line) + 1;
+            let column_number = substring.offset_from(&line) + 1;
 
             match kind {
                 VerboseErrorKind::Context(s) => write!(
