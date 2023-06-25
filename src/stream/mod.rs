@@ -1226,9 +1226,9 @@ where
 }
 
 /// Useful functions to calculate the offset between slices and show a hexdump of a slice
-pub trait Offset {
+pub trait Offset<Start = Self> {
     /// Offset between the first byte of `start` and the first byte of `self`
-    fn offset_from(&self, start: &Self) -> usize;
+    fn offset_from(&self, start: &Start) -> usize;
 }
 
 impl<'a, T> Offset for &'a [T] {
