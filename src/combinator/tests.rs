@@ -9,6 +9,7 @@ use crate::error::Error;
 use crate::error::ErrorKind;
 use crate::error::Needed;
 use crate::error::ParseError;
+use crate::stream::Stream;
 use crate::token::take;
 use crate::IResult;
 use crate::Parser;
@@ -560,7 +561,7 @@ fn alt_test() {
     }
 
     fn work(input: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
-        Ok((&b""[..], input))
+        Ok(input.finish())
     }
 
     #[allow(unused_variables)]

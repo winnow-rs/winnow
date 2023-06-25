@@ -19,10 +19,7 @@ pub fn rest<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E
 where
     I: Stream,
 {
-    trace("rest", move |input: I| {
-        Ok(input.next_slice(input.eof_offset()))
-    })
-    .parse_next(input)
+    trace("rest", move |input: I| Ok(input.finish())).parse_next(input)
 }
 
 /// Return the length of the remaining input.
