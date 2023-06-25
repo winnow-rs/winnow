@@ -61,14 +61,7 @@ pub fn trace<I: Stream, O, E>(
 
             let res = parser.parse_next(i);
 
-            let consumed = res.as_ref().ok().map(|(i, _)| {
-                if i.eof_offset() == 0 {
-                    // Sometimes, an unrelated empty string is returned which can break `offset_to`
-                    original.eof_offset()
-                } else {
-                    i.offset_from(&original)
-                }
-            });
+            let consumed = res.as_ref().ok().map(|(i, _)| i.offset_from(&original));
             let severity = internals::Severity::with_result(&res);
             internals::end(*depth, &name, call_count, consumed, severity);
             call_count += 1;
