@@ -10,9 +10,9 @@ fn test_offset_u8() {
     let b = &a[2..];
     let c = &a[..4];
     let d = &a[3..5];
-    assert_eq!(a.offset_to(b), 2);
-    assert_eq!(a.offset_to(c), 0);
-    assert_eq!(a.offset_to(d), 3);
+    assert_eq!(b.offset_from(a), 2);
+    assert_eq!(c.offset_from(a), 0);
+    assert_eq!(d.offset_from(a), 3);
 }
 
 #[test]
@@ -21,9 +21,9 @@ fn test_offset_str() {
     let b = &a[7..];
     let c = &a[..5];
     let d = &a[5..9];
-    assert_eq!(a.offset_to(b), 7);
-    assert_eq!(a.offset_to(c), 0);
-    assert_eq!(a.offset_to(d), 5);
+    assert_eq!(b.offset_from(a), 7);
+    assert_eq!(c.offset_from(a), 0);
+    assert_eq!(d.offset_from(a), 5);
 }
 
 #[test]
@@ -56,7 +56,7 @@ fn test_bit_stream_empty() {
 fn test_bit_offset_empty() {
     let i = (&b""[..], 0);
 
-    let actual = i.offset_to(&i);
+    let actual = i.offset_from(&i);
     assert_eq!(actual, 0);
 }
 
@@ -81,7 +81,7 @@ fn bit_stream_inner(byte_len: usize, start: usize) {
     let mut curr_i = i;
     let mut curr_offset = 0;
     while let Some((next_i, _token)) = curr_i.next_token() {
-        let to_offset = i.offset_to(&curr_i);
+        let to_offset = curr_i.offset_from(&i);
         assert_eq!(curr_offset, to_offset);
 
         let (slice_i, _) = i.next_slice(curr_offset);

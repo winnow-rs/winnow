@@ -540,7 +540,7 @@ where
         let i = input.clone();
         match (self.parser).parse_next(i) {
             Ok((i, _)) => {
-                let offset = input.offset_to(&i);
+                let offset = i.offset_from(&input);
                 Ok(input.next_slice(offset))
             }
             Err(e) => Err(e),
@@ -585,7 +585,7 @@ where
         let i = input.clone();
         match (self.parser).parse_next(i) {
             Ok((remaining, result)) => {
-                let offset = input.offset_to(&remaining);
+                let offset = remaining.offset_from(&input);
                 let (remaining, recognized) = input.next_slice(offset);
                 Ok((remaining, (result, recognized)))
             }

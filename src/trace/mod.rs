@@ -66,7 +66,7 @@ pub fn trace<I: Stream, O, E>(
                     // Sometimes, an unrelated empty string is returned which can break `offset_to`
                     original.eof_offset()
                 } else {
-                    original.offset_to(i)
+                    i.offset_from(&original)
                 }
             });
             let severity = internals::Severity::with_result(&res);

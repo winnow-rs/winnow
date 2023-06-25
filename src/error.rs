@@ -505,9 +505,10 @@ pub fn convert_error<I: core::ops::Deref<Target = str>>(
     use crate::stream::Offset;
 
     let mut result = crate::lib::std::string::String::new();
+    let input = &*input;
 
     for (i, (substring, kind)) in e.errors.iter().enumerate() {
-        let offset = input.offset_to(substring);
+        let offset = substring.offset_from(input);
 
         if input.is_empty() {
             match kind {
@@ -541,7 +542,7 @@ pub fn convert_error<I: core::ops::Deref<Target = str>>(
                 .trim_end();
 
             // The (1-indexed) column number is the offset of our substring into that line
-            let column_number = line.offset_to(substring) + 1;
+            let column_number = substring.offset_from(line) + 1;
 
             match kind {
                 VerboseErrorKind::Context(s) => write!(

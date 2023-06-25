@@ -103,7 +103,7 @@ where
     }
 
     fn location(&self) -> usize {
-        self.initial.offset_to(&self.input)
+        self.input.offset_from(&self.initial)
     }
 }
 
@@ -1120,23 +1120,23 @@ where
 
 /// Useful functions to calculate the offset between slices and show a hexdump of a slice
 pub trait Offset {
-    /// Offset between the first byte of self and the first byte of the argument
-    fn offset_to(&self, second: &Self) -> usize;
+    /// Offset between the first byte of `start` and the first byte of `self`
+    fn offset_from(&self, start: &Self) -> usize;
 }
 
 impl<'a, T> Offset for &'a [T] {
     #[inline(always)]
-    fn offset_to(&self, second: &Self) -> usize {
-        (*self).offset_to(*second)
+    fn offset_from(&self, start: &Self) -> usize {
+        (*self).offset_from(*start)
     }
 }
 
 /// Convenience implementation to accept `&[T]` instead of `&&[T]` as above
 impl<T> Offset for [T] {
     #[inline]
-    fn offset_to(&self, second: &Self) -> usize {
-        let fst = self.as_ptr();
-        let snd = second.as_ptr();
+    fn offset_from(&self, start: &Self) -> usize {
+        let fst = start.as_ptr();
+        let snd = self.as_ptr();
 
         debug_assert!(
             fst <= snd,
@@ -1148,44 +1148,44 @@ impl<T> Offset for [T] {
 
 impl<'a> Offset for &'a str {
     #[inline(always)]
-    fn offset_to(&self, second: &Self) -> usize {
-        self.as_bytes().offset_to(second.as_bytes())
+    fn offset_from(&self, start: &Self) -> usize {
+        self.as_bytes().offset_from(start.as_bytes())
     }
 }
 
 /// Convenience implementation to accept `&str` instead of `&&str` as above
 impl Offset for str {
     #[inline(always)]
-    fn offset_to(&self, second: &Self) -> usize {
-        self.as_bytes().offset_to(second.as_bytes())
+    fn offset_from(&self, start: &Self) -> usize {
+        self.as_bytes().offset_from(start.as_bytes())
     }
 }
 
 impl Offset for Bytes {
     #[inline(always)]
-    fn offset_to(&self, second: &Self) -> usize {
-        self.as_bytes().offset_to(second.as_bytes())
+    fn offset_from(&self, start: &Self) -> usize {
+        self.as_bytes().offset_from(start.as_bytes())
     }
 }
 
 impl<'a> Offset for &'a Bytes {
     #[inline(always)]
-    fn offset_to(&self, second: &Self) -> usize {
-        self.as_bytes().offset_to(second.as_bytes())
+    fn offset_from(&self, start: &Self) -> usize {
+        self.as_bytes().offset_from(start.as_bytes())
     }
 }
 
 impl Offset for BStr {
     #[inline(always)]
-    fn offset_to(&self, second: &Self) -> usize {
-        self.as_bytes().offset_to(second.as_bytes())
+    fn offset_from(&self, start: &Self) -> usize {
+        self.as_bytes().offset_from(start.as_bytes())
     }
 }
 
 impl<'a> Offset for &'a BStr {
     #[inline(always)]
-    fn offset_to(&self, second: &Self) -> usize {
-        self.as_bytes().offset_to(second.as_bytes())
+    fn offset_from(&self, start: &Self) -> usize {
+        self.as_bytes().offset_from(start.as_bytes())
     }
 }
 
@@ -1194,8 +1194,8 @@ where
     I: Offset,
 {
     #[inline(always)]
-    fn offset_to(&self, other: &Self) -> usize {
-        self.0.offset_to(&other.0) * 8 + other.1 - self.1
+    fn offset_from(&self, start: &Self) -> usize {
+        self.0.offset_from(&start.0) * 8 + self.1 - start.1
     }
 }
 
@@ -1204,8 +1204,8 @@ where
     I: Offset,
 {
     #[inline(always)]
-    fn offset_to(&self, other: &Self) -> usize {
-        self.input.offset_to(&other.input)
+    fn offset_from(&self, other: &Self) -> usize {
+        self.input.offset_from(&other.input)
     }
 }
 
@@ -1214,8 +1214,8 @@ where
     I: Offset,
 {
     #[inline(always)]
-    fn offset_to(&self, other: &Self) -> usize {
-        self.input.offset_to(&other.input)
+    fn offset_from(&self, start: &Self) -> usize {
+        self.input.offset_from(&start.input)
     }
 }
 
@@ -1224,8 +1224,8 @@ where
     I: Offset,
 {
     #[inline(always)]
-    fn offset_to(&self, second: &Self) -> usize {
-        self.input.offset_to(&second.input)
+    fn offset_from(&self, start: &Self) -> usize {
+        self.input.offset_from(&start.input)
     }
 }
 

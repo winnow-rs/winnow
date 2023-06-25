@@ -155,43 +155,43 @@ mod complete {
 
         match alpha1::<_, Error<_>>(a) {
             Ok((i, _)) => {
-                assert_eq!(a.offset_to(i) + i.len(), a.len());
+                assert_eq!(i.offset_from(a) + i.len(), a.len());
             }
             _ => panic!("wrong return type in offset test for alpha"),
         }
         match digit1::<_, Error<_>>(b) {
             Ok((i, _)) => {
-                assert_eq!(b.offset_to(i) + i.len(), b.len());
+                assert_eq!(i.offset_from(b) + i.len(), b.len());
             }
             _ => panic!("wrong return type in offset test for digit"),
         }
         match alphanumeric1::<_, Error<_>>(c) {
             Ok((i, _)) => {
-                assert_eq!(c.offset_to(i) + i.len(), c.len());
+                assert_eq!(i.offset_from(c) + i.len(), c.len());
             }
             _ => panic!("wrong return type in offset test for alphanumeric"),
         }
         match space1::<_, Error<_>>(d) {
             Ok((i, _)) => {
-                assert_eq!(d.offset_to(i) + i.len(), d.len());
+                assert_eq!(i.offset_from(d) + i.len(), d.len());
             }
             _ => panic!("wrong return type in offset test for space"),
         }
         match multispace1::<_, Error<_>>(e) {
             Ok((i, _)) => {
-                assert_eq!(e.offset_to(i) + i.len(), e.len());
+                assert_eq!(i.offset_from(e) + i.len(), e.len());
             }
             _ => panic!("wrong return type in offset test for multispace"),
         }
         match hex_digit1::<_, Error<_>>(f) {
             Ok((i, _)) => {
-                assert_eq!(f.offset_to(i) + i.len(), f.len());
+                assert_eq!(i.offset_from(f) + i.len(), f.len());
             }
             _ => panic!("wrong return type in offset test for hex_digit"),
         }
         match oct_digit1::<_, Error<_>>(f) {
             Ok((i, _)) => {
-                assert_eq!(f.offset_to(i) + i.len(), f.len());
+                assert_eq!(i.offset_from(f) + i.len(), f.len());
             }
             _ => panic!("wrong return type in offset test for oct_digit"),
         }
@@ -1099,49 +1099,49 @@ mod partial {
         match alpha1::<_, Error<_>>(Partial::new(a)) {
             Ok((i, _)) => {
                 let i = i.into_inner();
-                assert_eq!(a.offset_to(i) + i.len(), a.len());
+                assert_eq!(i.offset_from(a) + i.len(), a.len());
             }
             _ => panic!("wrong return type in offset test for alpha"),
         }
         match digit1::<_, Error<_>>(Partial::new(b)) {
             Ok((i, _)) => {
                 let i = i.into_inner();
-                assert_eq!(b.offset_to(i) + i.len(), b.len());
+                assert_eq!(i.offset_from(b) + i.len(), b.len());
             }
             _ => panic!("wrong return type in offset test for digit"),
         }
         match alphanumeric1::<_, Error<_>>(Partial::new(c)) {
             Ok((i, _)) => {
                 let i = i.into_inner();
-                assert_eq!(c.offset_to(i) + i.len(), c.len());
+                assert_eq!(i.offset_from(c) + i.len(), c.len());
             }
             _ => panic!("wrong return type in offset test for alphanumeric"),
         }
         match space1::<_, Error<_>>(Partial::new(d)) {
             Ok((i, _)) => {
                 let i = i.into_inner();
-                assert_eq!(d.offset_to(i) + i.len(), d.len());
+                assert_eq!(i.offset_from(d) + i.len(), d.len());
             }
             _ => panic!("wrong return type in offset test for space"),
         }
         match multispace1::<_, Error<_>>(Partial::new(e)) {
             Ok((i, _)) => {
                 let i = i.into_inner();
-                assert_eq!(e.offset_to(i) + i.len(), e.len());
+                assert_eq!(i.offset_from(e) + i.len(), e.len());
             }
             _ => panic!("wrong return type in offset test for multispace"),
         }
         match hex_digit1::<_, Error<_>>(Partial::new(f)) {
             Ok((i, _)) => {
                 let i = i.into_inner();
-                assert_eq!(f.offset_to(i) + i.len(), f.len());
+                assert_eq!(i.offset_from(f) + i.len(), f.len());
             }
             _ => panic!("wrong return type in offset test for hex_digit"),
         }
         match oct_digit1::<_, Error<_>>(Partial::new(f)) {
             Ok((i, _)) => {
                 let i = i.into_inner();
-                assert_eq!(f.offset_to(i) + i.len(), f.len());
+                assert_eq!(i.offset_from(f) + i.len(), f.len());
             }
             _ => panic!("wrong return type in offset test for oct_digit"),
         }

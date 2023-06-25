@@ -1480,7 +1480,7 @@ where
                 if i2.eof_offset() == 0 {
                     return Err(ErrMode::Incomplete(Needed::Unknown));
                 } else if i2.eof_offset() == current_len {
-                    let offset = input.offset_to(&i2);
+                    let offset = i2.offset_from(&input);
                     return Ok(input.next_slice(offset));
                 } else {
                     i = i2;
@@ -1496,7 +1496,7 @@ where
                         i = i2;
                     }
                 } else {
-                    let offset = input.offset_to(&i);
+                    let offset = i.offset_from(&input);
                     return Ok(input.next_slice(offset));
                 }
             }
@@ -1535,7 +1535,7 @@ where
                 if i2.eof_offset() == 0 {
                     return Ok(input.next_slice(input.eof_offset()));
                 } else if i2.eof_offset() == current_len {
-                    let offset = input.offset_to(&i2);
+                    let offset = i2.offset_from(&input);
                     return Ok(input.next_slice(offset));
                 } else {
                     i = i2;
@@ -1551,7 +1551,7 @@ where
                         i = i2;
                     }
                 } else {
-                    let offset = input.offset_to(&i);
+                    let offset = i.offset_from(&input);
                     return Ok(input.next_slice(offset));
                 }
             }
@@ -1680,7 +1680,7 @@ where
                 } else if i2.eof_offset() == current_len {
                     return Ok((remainder, res));
                 } else {
-                    offset = input.offset_to(&i2);
+                    offset = i2.offset_from(&input);
                 }
             }
             Err(ErrMode::Backtrack(_)) => {
@@ -1691,7 +1691,7 @@ where
                     if i2.eof_offset() == 0 {
                         return Err(ErrMode::Incomplete(Needed::Unknown));
                     } else {
-                        offset = input.offset_to(&i2);
+                        offset = i2.offset_from(&input);
                     }
                 } else {
                     return Ok((remainder, res));
@@ -1735,7 +1735,7 @@ where
                 } else if i2.eof_offset() == current_len {
                     return Ok((remainder, res));
                 } else {
-                    offset = input.offset_to(&i2);
+                    offset = i2.offset_from(&input);
                 }
             }
             Err(ErrMode::Backtrack(_)) => {
@@ -1746,7 +1746,7 @@ where
                     if i2.eof_offset() == 0 {
                         return Ok((i.next_slice(i.eof_offset()).0, res));
                     } else {
-                        offset = input.offset_to(&i2);
+                        offset = i2.offset_from(&input);
                     }
                 } else {
                     return Ok((remainder, res));

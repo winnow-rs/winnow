@@ -43,7 +43,7 @@ fn main() -> Result<(), lexopt::Error> {
                     println!("{:?}", value);
                     println!();
                     // Tell the buffer how much we read
-                    let consumed = input.offset_to(&remainder);
+                    let consumed = remainder.offset_from(&input);
                     buffer.consume(consumed);
                 }
                 Err(ErrMode::Backtrack(e)) | Err(ErrMode::Cut(e)) => {
