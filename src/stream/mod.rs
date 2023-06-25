@@ -1131,18 +1131,10 @@ pub trait Offset {
 }
 
 impl<'a, T> Offset for &'a [T] {
-    #[inline(always)]
-    fn offset_from(&self, start: &Self) -> usize {
-        (*self).offset_from(*start)
-    }
-}
-
-/// Convenience implementation to accept `&[T]` instead of `&&[T]` as above
-impl<T> Offset for [T] {
     #[inline]
     fn offset_from(&self, start: &Self) -> usize {
-        let fst = start.as_ptr();
-        let snd = self.as_ptr();
+        let fst = (*start).as_ptr();
+        let snd = (*self).as_ptr();
 
         debug_assert!(
             fst <= snd,
@@ -1155,43 +1147,21 @@ impl<T> Offset for [T] {
 impl<'a> Offset for &'a str {
     #[inline(always)]
     fn offset_from(&self, start: &Self) -> usize {
-        self.as_bytes().offset_from(start.as_bytes())
-    }
-}
-
-/// Convenience implementation to accept `&str` instead of `&&str` as above
-impl Offset for str {
-    #[inline(always)]
-    fn offset_from(&self, start: &Self) -> usize {
-        self.as_bytes().offset_from(start.as_bytes())
-    }
-}
-
-impl Offset for Bytes {
-    #[inline(always)]
-    fn offset_from(&self, start: &Self) -> usize {
-        self.as_bytes().offset_from(start.as_bytes())
+        self.as_bytes().offset_from(&start.as_bytes())
     }
 }
 
 impl<'a> Offset for &'a Bytes {
     #[inline(always)]
     fn offset_from(&self, start: &Self) -> usize {
-        self.as_bytes().offset_from(start.as_bytes())
-    }
-}
-
-impl Offset for BStr {
-    #[inline(always)]
-    fn offset_from(&self, start: &Self) -> usize {
-        self.as_bytes().offset_from(start.as_bytes())
+        self.as_bytes().offset_from(&start.as_bytes())
     }
 }
 
 impl<'a> Offset for &'a BStr {
     #[inline(always)]
     fn offset_from(&self, start: &Self) -> usize {
-        self.as_bytes().offset_from(start.as_bytes())
+        self.as_bytes().offset_from(&start.as_bytes())
     }
 }
 
