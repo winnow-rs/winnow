@@ -537,11 +537,13 @@ where
     I: Stream,
 {
     fn parse_next(&mut self, input: I) -> IResult<I, <I as Stream>::Slice, E> {
-        let i = input.clone();
-        match (self.parser).parse_next(i) {
-            Ok((i, _)) => {
-                let offset = i.offset_from(&input);
-                Ok(input.next_slice(offset))
+        let checkpoint = input.checkpoint();
+        match (self.parser).parse_next(input) {
+            Ok((mut input, _)) => {
+                let offset = input.offset_from(&checkpoint);
+                input.reset(checkpoint);
+                let (input, recognized) = input.next_slice(offset);
+                Ok((input, recognized))
             }
             Err(e) => Err(e),
         }
@@ -582,12 +584,13 @@ where
     I: Stream,
 {
     fn parse_next(&mut self, input: I) -> IResult<I, (O, <I as Stream>::Slice), E> {
-        let i = input.clone();
-        match (self.parser).parse_next(i) {
-            Ok((remaining, result)) => {
-                let offset = remaining.offset_from(&input);
-                let (remaining, recognized) = input.next_slice(offset);
-                Ok((remaining, (result, recognized)))
+        let checkpoint = input.checkpoint();
+        match (self.parser).parse_next(input) {
+            Ok((mut input, result)) => {
+                let offset = input.offset_from(&checkpoint);
+                input.reset(checkpoint);
+                let (input, recognized) = input.next_slice(offset);
+                Ok((input, (result, recognized)))
             }
             Err(e) => Err(e),
         }
