@@ -1457,7 +1457,7 @@ where
 }
 
 fn streaming_escaped_internal<I, Error, F, G, O1, O2>(
-    input: I,
+    mut input: I,
     normal: &mut F,
     control_char: char,
     escapable: &mut G,
@@ -1470,34 +1470,34 @@ where
     G: Parser<I, O2, Error>,
     Error: ParseError<I>,
 {
-    let mut i = input.clone();
+    let start = input.clone();
 
-    while i.eof_offset() > 0 {
-        let current_len = i.eof_offset();
+    while input.eof_offset() > 0 {
+        let current_len = input.eof_offset();
 
-        match normal.parse_next(i.clone()) {
+        match normal.parse_next(input.clone()) {
             Ok((i2, _)) => {
                 if i2.eof_offset() == 0 {
                     return Err(ErrMode::Incomplete(Needed::Unknown));
                 } else if i2.eof_offset() == current_len {
-                    let offset = i2.offset_from(&input);
-                    return Ok(input.next_slice(offset));
+                    let offset = i2.offset_from(&start);
+                    return Ok(start.next_slice(offset));
                 } else {
-                    i = i2;
+                    input = i2;
                 }
             }
             Err(ErrMode::Backtrack(_)) => {
-                if i.next_token().expect("eof_offset > 0").1.as_char() == control_char {
+                if input.next_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = control_char.len_utf8();
-                    let (i2, _) = escapable.parse_next(i.next_slice(next).0)?;
+                    let (i2, _) = escapable.parse_next(input.next_slice(next).0)?;
                     if i2.eof_offset() == 0 {
                         return Err(ErrMode::Incomplete(Needed::Unknown));
                     } else {
-                        i = i2;
+                        input = i2;
                     }
                 } else {
-                    let offset = i.offset_from(&input);
-                    return Ok(input.next_slice(offset));
+                    let offset = input.offset_from(&start);
+                    return Ok(start.next_slice(offset));
                 }
             }
             Err(e) => {
@@ -1510,7 +1510,7 @@ where
 }
 
 fn complete_escaped_internal<'a, I: 'a, Error, F, G, O1, O2>(
-    input: I,
+    mut input: I,
     normal: &mut F,
     control_char: char,
     escapable: &mut G,
@@ -1523,36 +1523,36 @@ where
     G: Parser<I, O2, Error>,
     Error: ParseError<I>,
 {
-    let mut i = input.clone();
+    let start = input.clone();
 
-    while i.eof_offset() > 0 {
-        let current_len = i.eof_offset();
+    while input.eof_offset() > 0 {
+        let current_len = input.eof_offset();
 
-        match normal.parse_next(i.clone()) {
+        match normal.parse_next(input.clone()) {
             Ok((i2, _)) => {
                 // return if we consumed everything or if the normal parser
                 // does not consume anything
                 if i2.eof_offset() == 0 {
-                    return Ok(input.next_slice(input.eof_offset()));
+                    return Ok(start.finish());
                 } else if i2.eof_offset() == current_len {
-                    let offset = i2.offset_from(&input);
-                    return Ok(input.next_slice(offset));
+                    let offset = i2.offset_from(&start);
+                    return Ok(start.next_slice(offset));
                 } else {
-                    i = i2;
+                    input = i2;
                 }
             }
             Err(ErrMode::Backtrack(_)) => {
-                if i.next_token().expect("eof_offset > 0").1.as_char() == control_char {
+                if input.next_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = control_char.len_utf8();
-                    let (i2, _) = escapable.parse_next(i.next_slice(next).0)?;
+                    let (i2, _) = escapable.parse_next(input.next_slice(next).0)?;
                     if i2.eof_offset() == 0 {
-                        return Ok(input.finish());
+                        return Ok(start.finish());
                     } else {
-                        i = i2;
+                        input = i2;
                     }
                 } else {
-                    let offset = i.offset_from(&input);
-                    return Ok(input.next_slice(offset));
+                    let offset = input.offset_from(&start);
+                    return Ok(start.next_slice(offset));
                 }
             }
             Err(e) => {
