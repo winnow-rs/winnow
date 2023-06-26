@@ -1311,7 +1311,7 @@ where
 
 impl<I> Offset<<(I, usize) as Stream>::Checkpoint> for (I, usize)
 where
-    I: Stream<Token = u8> + Offset,
+    I: Stream<Token = u8>,
 {
     #[inline(always)]
     fn offset_from(&self, other: &<(I, usize) as Stream>::Checkpoint) -> usize {
@@ -1321,17 +1321,17 @@ where
 
 impl<I> Offset for Located<I>
 where
-    I: Offset,
+    I: Stream,
 {
     #[inline(always)]
     fn offset_from(&self, other: &Self) -> usize {
-        self.input.offset_from(&other.input)
+        self.offset_from(&other.checkpoint())
     }
 }
 
 impl<I> Offset<<Located<I> as Stream>::Checkpoint> for Located<I>
 where
-    I: Stream + Offset,
+    I: Stream,
 {
     #[inline(always)]
     fn offset_from(&self, other: &<Located<I> as Stream>::Checkpoint) -> usize {
@@ -1341,17 +1341,18 @@ where
 
 impl<I, S> Offset for Stateful<I, S>
 where
-    I: Offset,
+    I: Stream,
+    S: Clone + crate::lib::std::fmt::Debug,
 {
     #[inline(always)]
     fn offset_from(&self, start: &Self) -> usize {
-        self.input.offset_from(&start.input)
+        self.offset_from(&start.checkpoint())
     }
 }
 
 impl<I, S> Offset<<Stateful<I, S> as Stream>::Checkpoint> for Stateful<I, S>
 where
-    I: Stream + Offset,
+    I: Stream,
     S: Clone + crate::lib::std::fmt::Debug,
 {
     #[inline(always)]
@@ -1362,17 +1363,17 @@ where
 
 impl<I> Offset for Partial<I>
 where
-    I: Offset,
+    I: Stream,
 {
     #[inline(always)]
     fn offset_from(&self, start: &Self) -> usize {
-        self.input.offset_from(&start.input)
+        self.offset_from(&start.checkpoint())
     }
 }
 
 impl<I> Offset<<Partial<I> as Stream>::Checkpoint> for Partial<I>
 where
-    I: Stream + Offset,
+    I: Stream,
 {
     #[inline(always)]
     fn offset_from(&self, other: &<Partial<I> as Stream>::Checkpoint) -> usize {
