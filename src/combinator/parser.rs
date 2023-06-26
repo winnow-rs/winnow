@@ -542,7 +542,7 @@ where
             Ok((mut input, _)) => {
                 let offset = input.offset_from(&checkpoint);
                 input.reset(checkpoint);
-                let (input, recognized) = input.next_slice(offset);
+                let (input, recognized) = input.peek_slice(offset);
                 Ok((input, recognized))
             }
             Err(e) => Err(e),
@@ -589,7 +589,7 @@ where
             Ok((mut input, result)) => {
                 let offset = input.offset_from(&checkpoint);
                 input.reset(checkpoint);
-                let (input, recognized) = input.next_slice(offset);
+                let (input, recognized) = input.peek_slice(offset);
                 Ok((input, (result, recognized)))
             }
             Err(e) => Err(e),

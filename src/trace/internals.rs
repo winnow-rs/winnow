@@ -89,7 +89,7 @@ pub fn start<I: Stream>(
 
     let eof_offset = input.eof_offset();
     let offset = input.offset_at(input_width).unwrap_or(eof_offset);
-    let (_, slice) = input.next_slice(offset);
+    let (_, slice) = input.peek_slice(offset);
 
     // The debug version of `slice` might be wider, either due to rendering one byte as two nibbles or
     // escaping in strings.

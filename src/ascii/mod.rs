@@ -124,9 +124,9 @@ where
         c == '\r' || c == '\n'
     }) {
         None if PARTIAL && input.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
-        None => Ok(input.finish()),
+        None => Ok(input.peek_finish()),
         Some(offset) => {
-            let (new_input, res) = input.next_slice(offset);
+            let (new_input, res) = input.peek_slice(offset);
             let bytes = new_input.as_bstr();
             let nth = bytes[0];
             if nth == b'\r' {
@@ -935,7 +935,7 @@ where
                     if offset == 0 {
                         return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
                     } else {
-                        return Ok((input.next_slice(offset).0, value));
+                        return Ok((input.peek_slice(offset).0, value));
                     }
                 }
             }
@@ -944,7 +944,7 @@ where
         if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             Err(ErrMode::Incomplete(Needed::new(1)))
         } else {
-            Ok((input.finish().0, value))
+            Ok((input.peek_finish().0, value))
         }
     })
     .parse_next(input)
@@ -1100,7 +1100,7 @@ where
                     if offset == 0 {
                         return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
                     } else {
-                        return Ok((input.next_slice(offset).0, value));
+                        return Ok((input.peek_slice(offset).0, value));
                     }
                 }
             }
@@ -1109,7 +1109,7 @@ where
         if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             Err(ErrMode::Incomplete(Needed::new(1)))
         } else {
-            Ok((input.finish().0, value))
+            Ok((input.peek_finish().0, value))
         }
     })
     .parse_next(input)
@@ -1232,7 +1232,7 @@ where
             // Must be at least one digit
             return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
         }
-        let (remaining, parsed) = input.next_slice(offset);
+        let (remaining, parsed) = input.peek_slice(offset);
 
         let mut res = O::default();
         for c in parsed.as_bstr() {
@@ -1482,15 +1482,15 @@ where
                 } else if i2.eof_offset() == current_len {
                     let offset = i2.offset_from(&start);
                     input.reset(start);
-                    return Ok(input.next_slice(offset));
+                    return Ok(input.peek_slice(offset));
                 } else {
                     input = i2;
                 }
             }
             Err(ErrMode::Backtrack(_)) => {
-                if input.next_token().expect("eof_offset > 0").1.as_char() == control_char {
+                if input.peek_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = control_char.len_utf8();
-                    let (i2, _) = escapable.parse_next(input.next_slice(next).0)?;
+                    let (i2, _) = escapable.parse_next(input.peek_slice(next).0)?;
                     if i2.eof_offset() == 0 {
                         return Err(ErrMode::Incomplete(Needed::Unknown));
                     } else {
@@ -1499,7 +1499,7 @@ where
                 } else {
                     let offset = input.offset_from(&start);
                     input.reset(start);
-                    return Ok(input.next_slice(offset));
+                    return Ok(input.peek_slice(offset));
                 }
             }
             Err(e) => {
@@ -1536,29 +1536,29 @@ where
                 // does not consume anything
                 if i2.eof_offset() == 0 {
                     input.reset(start);
-                    return Ok(input.finish());
+                    return Ok(input.peek_finish());
                 } else if i2.eof_offset() == current_len {
                     let offset = i2.offset_from(&start);
                     input.reset(start);
-                    return Ok(input.next_slice(offset));
+                    return Ok(input.peek_slice(offset));
                 } else {
                     input = i2;
                 }
             }
             Err(ErrMode::Backtrack(_)) => {
-                if input.next_token().expect("eof_offset > 0").1.as_char() == control_char {
+                if input.peek_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = control_char.len_utf8();
-                    let (i2, _) = escapable.parse_next(input.next_slice(next).0)?;
+                    let (i2, _) = escapable.parse_next(input.peek_slice(next).0)?;
                     if i2.eof_offset() == 0 {
                         input.reset(start);
-                        return Ok(input.finish());
+                        return Ok(input.peek_finish());
                     } else {
                         input = i2;
                     }
                 } else {
                     let offset = input.offset_from(&start);
                     input.reset(start);
-                    return Ok(input.next_slice(offset));
+                    return Ok(input.peek_slice(offset));
                 }
             }
             Err(e) => {
@@ -1567,7 +1567,7 @@ where
         }
     }
 
-    Ok(input.finish())
+    Ok(input.peek_finish())
 }
 
 /// Matches a byte string with escaped characters.
@@ -1684,9 +1684,9 @@ where
                 }
             }
             Err(ErrMode::Backtrack(_)) => {
-                if input.next_token().expect("eof_offset > 0").1.as_char() == control_char {
+                if input.peek_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = control_char.len_utf8();
-                    let (i2, o) = transform.parse_next(input.next_slice(next).0)?;
+                    let (i2, o) = transform.parse_next(input.peek_slice(next).0)?;
                     res.accumulate(o);
                     if i2.eof_offset() == 0 {
                         return Err(ErrMode::Incomplete(Needed::Unknown));
@@ -1727,7 +1727,7 @@ where
             Ok((i2, o)) => {
                 res.accumulate(o);
                 if i2.eof_offset() == 0 {
-                    return Ok((input.finish().0, res));
+                    return Ok((input.peek_finish().0, res));
                 } else if i2.eof_offset() == current_len {
                     return Ok((input, res));
                 } else {
@@ -1735,12 +1735,12 @@ where
                 }
             }
             Err(ErrMode::Backtrack(_)) => {
-                if input.next_token().expect("eof_offset > 0").1.as_char() == control_char {
+                if input.peek_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = control_char.len_utf8();
-                    let (i2, o) = transform.parse_next(input.next_slice(next).0)?;
+                    let (i2, o) = transform.parse_next(input.peek_slice(next).0)?;
                     res.accumulate(o);
                     if i2.eof_offset() == 0 {
-                        return Ok((input.finish().0, res));
+                        return Ok((input.peek_finish().0, res));
                     } else {
                         input = i2;
                     }

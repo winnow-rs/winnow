@@ -19,7 +19,7 @@ pub fn rest<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E
 where
     I: Stream,
 {
-    trace("rest", move |input: I| Ok(input.finish())).parse_next(input)
+    trace("rest", move |input: I| Ok(input.peek_finish())).parse_next(input)
 }
 
 /// Return the length of the remaining input.
@@ -176,7 +176,7 @@ where
 {
     trace("eof", move |input: I| {
         if input.eof_offset() == 0 {
-            Ok(input.next_slice(0))
+            Ok(input.peek_slice(0))
         } else {
             Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
         }

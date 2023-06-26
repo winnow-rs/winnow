@@ -429,7 +429,14 @@ pub trait Stream:
     fn eof_offset(&self) -> usize;
 
     /// Split off the next token from the input
-    fn next_token(&self) -> Option<(Self, Self::Token)>;
+    fn next_token(&mut self) -> Option<Self::Token>;
+    /// Split off the next token from the input
+    #[inline(always)]
+    fn peek_token(&self) -> Option<(Self, Self::Token)> {
+        let mut peek = self.clone();
+        let token = peek.next_token()?;
+        Some((peek, token))
+    }
 
     /// Finds the offset of the next matching token
     fn offset_for<P>(&self, predicate: P) -> Option<usize>
@@ -456,12 +463,26 @@ pub trait Stream:
     /// * Indexes must uphold invariants of the stream, like for `str` they must lie on UTF-8
     ///   sequence boundaries.
     ///
-    fn next_slice(&self, offset: usize) -> (Self, Self::Slice);
+    fn next_slice(&mut self, offset: usize) -> Self::Slice;
+    /// Split off a slice of tokens from the input
+    #[inline(always)]
+    fn peek_slice(&self, offset: usize) -> (Self, Self::Slice) {
+        let mut peek = self.clone();
+        let slice = peek.next_slice(offset);
+        (peek, slice)
+    }
 
     /// Advance to the end of the stream
     #[inline(always)]
-    fn finish(&self) -> (Self, Self::Slice) {
+    fn finish(&mut self) -> Self::Slice {
         self.next_slice(self.eof_offset())
+    }
+    /// Advance to the end of the stream
+    #[inline(always)]
+    fn peek_finish(&self) -> (Self, Self::Slice) {
+        let mut peek = self.clone();
+        let slice = peek.finish();
+        (peek, slice)
     }
 
     /// Save the current parse location within the stream
@@ -495,9 +516,10 @@ where
     }
 
     #[inline(always)]
-    fn next_token(&self) -> Option<(Self, Self::Token)> {
-        self.split_first()
-            .map(|(token, next)| (next, token.clone()))
+    fn next_token(&mut self) -> Option<Self::Token> {
+        let (token, next) = self.split_first()?;
+        *self = next;
+        Some(token.clone())
     }
 
     #[inline(always)]
@@ -516,9 +538,10 @@ where
         }
     }
     #[inline(always)]
-    fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
+    fn next_slice(&mut self, offset: usize) -> Self::Slice {
         let (slice, next) = self.split_at(offset);
-        (next, slice)
+        *self = next;
+        slice
     }
 
     #[inline(always)]
@@ -549,10 +572,11 @@ impl<'i> Stream for &'i str {
     }
 
     #[inline(always)]
-    fn next_token(&self) -> Option<(Self, Self::Token)> {
+    fn next_token(&mut self) -> Option<Self::Token> {
         let c = self.chars().next()?;
         let offset = c.len();
-        Some((&self[offset..], c))
+        *self = &self[offset..];
+        Some(c)
     }
 
     #[inline(always)]
@@ -584,9 +608,10 @@ impl<'i> Stream for &'i str {
         }
     }
     #[inline(always)]
-    fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
+    fn next_slice(&mut self, offset: usize) -> Self::Slice {
         let (slice, next) = self.split_at(offset);
-        (next, slice)
+        *self = next;
+        slice
     }
 
     #[inline(always)]
@@ -617,11 +642,13 @@ impl<'i> Stream for &'i Bytes {
     }
 
     #[inline(always)]
-    fn next_token(&self) -> Option<(Self, Self::Token)> {
+    fn next_token(&mut self) -> Option<Self::Token> {
         if self.is_empty() {
             None
         } else {
-            Some((Bytes::from_bytes(&self[1..]), self[0]))
+            let token = self[0];
+            *self = &self[1..];
+            Some(token)
         }
     }
 
@@ -641,9 +668,10 @@ impl<'i> Stream for &'i Bytes {
         }
     }
     #[inline(always)]
-    fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
-        let (next, slice) = (&self.0).next_slice(offset);
-        (Bytes::from_bytes(next), slice)
+    fn next_slice(&mut self, offset: usize) -> Self::Slice {
+        let (slice, next) = self.0.split_at(offset);
+        *self = Bytes::from_bytes(next);
+        slice
     }
 
     #[inline(always)]
@@ -674,11 +702,13 @@ impl<'i> Stream for &'i BStr {
     }
 
     #[inline(always)]
-    fn next_token(&self) -> Option<(Self, Self::Token)> {
+    fn next_token(&mut self) -> Option<Self::Token> {
         if self.is_empty() {
             None
         } else {
-            Some((BStr::from_bytes(&self[1..]), self[0]))
+            let token = self[0];
+            *self = &self[1..];
+            Some(token)
         }
     }
 
@@ -698,9 +728,10 @@ impl<'i> Stream for &'i BStr {
         }
     }
     #[inline(always)]
-    fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
-        let (next, slice) = (&self.0).next_slice(offset);
-        (BStr::from_bytes(next), slice)
+    fn next_slice(&mut self, offset: usize) -> Self::Slice {
+        let (slice, next) = self.0.split_at(offset);
+        *self = BStr::from_bytes(next);
+        slice
     }
 
     #[inline(always)]
@@ -742,7 +773,7 @@ where
     }
 
     #[inline(always)]
-    fn next_token(&self) -> Option<(Self, Self::Token)> {
+    fn next_token(&mut self) -> Option<Self::Token> {
         next_bit(self)
     }
 
@@ -766,11 +797,13 @@ where
         }
     }
     #[inline(always)]
-    fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
+    fn next_slice(&mut self, offset: usize) -> Self::Slice {
         let byte_offset = (offset + self.1) / 8;
         let end_offset = (offset + self.1) % 8;
-        let (i, s) = self.0.next_slice(byte_offset);
-        ((i, end_offset), (s, self.1, end_offset))
+        let s = self.0.next_slice(byte_offset);
+        let start_offset = self.1;
+        self.1 = end_offset;
+        (s, start_offset, end_offset)
     }
 
     #[inline(always)]
@@ -796,33 +829,36 @@ where
 {
     type Item = (usize, bool);
     fn next(&mut self) -> Option<Self::Item> {
-        let (next, b) = next_bit(&self.i)?;
+        let b = next_bit(&mut self.i)?;
         let o = self.o;
 
-        self.i = next;
         self.o += 1;
 
         Some((o, b))
     }
 }
 
-fn next_bit<I>(i: &(I, usize)) -> Option<((I, usize), bool)>
+fn next_bit<I>(i: &mut (I, usize)) -> Option<bool>
 where
     I: Stream<Token = u8>,
 {
     if i.eof_offset() == 0 {
         return None;
     }
+    let offset = i.1;
 
-    let i = i.clone();
-    let (next_i, byte) = i.0.next_token()?;
-    let bit = (byte >> i.1) & 0x1 == 0x1;
+    let mut next_i = i.0.clone();
+    let byte = next_i.next_token()?;
+    let bit = (byte >> offset) & 0x1 == 0x1;
 
-    let next_offset = i.1 + 1;
+    let next_offset = offset + 1;
     if next_offset == 8 {
-        Some(((next_i, 0), bit))
+        i.0 = next_i;
+        i.1 = 0;
+        Some(bit)
     } else {
-        Some(((i.0, next_offset), bit))
+        i.1 = next_offset;
+        Some(bit)
     }
 }
 
@@ -844,15 +880,8 @@ impl<I: Stream> Stream for Located<I> {
     }
 
     #[inline(always)]
-    fn next_token(&self) -> Option<(Self, Self::Token)> {
-        let (next, token) = self.input.next_token()?;
-        Some((
-            Self {
-                initial: self.initial.clone(),
-                input: next,
-            },
-            token,
-        ))
+    fn next_token(&mut self) -> Option<Self::Token> {
+        self.input.next_token()
     }
 
     #[inline(always)]
@@ -867,15 +896,8 @@ impl<I: Stream> Stream for Located<I> {
         self.input.offset_at(tokens)
     }
     #[inline(always)]
-    fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
-        let (next, slice) = self.input.next_slice(offset);
-        (
-            Self {
-                initial: self.initial.clone(),
-                input: next,
-            },
-            slice,
-        )
+    fn next_slice(&mut self, offset: usize) -> Self::Slice {
+        self.input.next_slice(offset)
     }
 
     #[inline(always)]
@@ -906,15 +928,8 @@ impl<I: Stream, S: Clone + crate::lib::std::fmt::Debug> Stream for Stateful<I, S
     }
 
     #[inline(always)]
-    fn next_token(&self) -> Option<(Self, Self::Token)> {
-        let (next, token) = self.input.next_token()?;
-        Some((
-            Self {
-                input: next,
-                state: self.state.clone(),
-            },
-            token,
-        ))
+    fn next_token(&mut self) -> Option<Self::Token> {
+        self.input.next_token()
     }
 
     #[inline(always)]
@@ -929,15 +944,8 @@ impl<I: Stream, S: Clone + crate::lib::std::fmt::Debug> Stream for Stateful<I, S
         self.input.offset_at(tokens)
     }
     #[inline(always)]
-    fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
-        let (next, slice) = self.input.next_slice(offset);
-        (
-            Self {
-                input: next,
-                state: self.state.clone(),
-            },
-            slice,
-        )
+    fn next_slice(&mut self, offset: usize) -> Self::Slice {
+        self.input.next_slice(offset)
     }
 
     #[inline(always)]
@@ -968,15 +976,8 @@ impl<I: Stream> Stream for Partial<I> {
     }
 
     #[inline(always)]
-    fn next_token(&self) -> Option<(Self, Self::Token)> {
-        let (next, token) = self.input.next_token()?;
-        Some((
-            Partial {
-                input: next,
-                partial: self.partial,
-            },
-            token,
-        ))
+    fn next_token(&mut self) -> Option<Self::Token> {
+        self.input.next_token()
     }
 
     #[inline(always)]
@@ -991,15 +992,8 @@ impl<I: Stream> Stream for Partial<I> {
         self.input.offset_at(tokens)
     }
     #[inline(always)]
-    fn next_slice(&self, offset: usize) -> (Self, Self::Slice) {
-        let (next, slice) = self.input.next_slice(offset);
-        (
-            Partial {
-                input: next,
-                partial: self.partial,
-            },
-            slice,
-        )
+    fn next_slice(&mut self, offset: usize) -> Self::Slice {
+        self.input.next_slice(offset)
     }
 
     #[inline(always)]

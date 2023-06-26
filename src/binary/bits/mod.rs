@@ -57,7 +57,7 @@ where
                 // The parser functions might already slice away all fully read bytes.
                 // That's why `offset / 8` isn't necessarily needed at all times.
                 let remaining_bytes_index = offset / 8 + if offset % 8 == 0 { 0 } else { 1 };
-                let (input, _) = rest.next_slice(remaining_bytes_index);
+                let (input, _) = rest.peek_slice(remaining_bytes_index);
                 Ok((input, result))
             }
             Err(ErrMode::Incomplete(n)) => Err(ErrMode::Incomplete(n.map(|u| u.get() / 8 + 1))),
@@ -105,9 +105,9 @@ where
 {
     trace("bytes", move |(input, offset): (I, usize)| {
         let (inner, _) = if offset % 8 != 0 {
-            input.next_slice(1 + offset / 8)
+            input.peek_slice(1 + offset / 8)
         } else {
-            input.next_slice(offset / 8)
+            input.peek_slice(offset / 8)
         };
         let i = (input, offset);
         match parser.parse_next(inner) {
@@ -221,7 +221,7 @@ where
                     offset = 0;
                 }
             }
-            let (input, _) = input.next_slice(cnt);
+            let (input, _) = input.peek_slice(cnt);
             Ok(((input, end_offset), acc))
         }
     }

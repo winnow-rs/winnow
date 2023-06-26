@@ -1266,7 +1266,7 @@ where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
 {
-    input.next_token().ok_or_else(|| {
+    input.peek_token().ok_or_else(|| {
         if PARTIAL && input.is_partial() {
             ErrMode::Incomplete(Needed::new(1))
         } else {
