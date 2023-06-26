@@ -56,8 +56,8 @@ pub fn trace<I: Stream, O, E>(
         let mut call_count = 0;
         move |i: I| {
             let depth = internals::Depth::new();
-            let original = i.clone();
-            internals::start(*depth, &name, call_count, &original);
+            let original = i.checkpoint();
+            internals::start(*depth, &name, call_count, &i);
 
             let res = parser.parse_next(i);
 

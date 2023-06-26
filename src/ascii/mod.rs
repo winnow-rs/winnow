@@ -1470,7 +1470,7 @@ where
     G: Parser<I, O2, Error>,
     Error: ParseError<I>,
 {
-    let start = input.clone();
+    let start = input.checkpoint();
 
     while input.eof_offset() > 0 {
         let current_len = input.eof_offset();
@@ -1481,7 +1481,8 @@ where
                     return Err(ErrMode::Incomplete(Needed::Unknown));
                 } else if i2.eof_offset() == current_len {
                     let offset = i2.offset_from(&start);
-                    return Ok(start.next_slice(offset));
+                    input.reset(start);
+                    return Ok(input.next_slice(offset));
                 } else {
                     input = i2;
                 }
@@ -1497,7 +1498,8 @@ where
                     }
                 } else {
                     let offset = input.offset_from(&start);
-                    return Ok(start.next_slice(offset));
+                    input.reset(start);
+                    return Ok(input.next_slice(offset));
                 }
             }
             Err(e) => {
@@ -1523,7 +1525,7 @@ where
     G: Parser<I, O2, Error>,
     Error: ParseError<I>,
 {
-    let start = input.clone();
+    let start = input.checkpoint();
 
     while input.eof_offset() > 0 {
         let current_len = input.eof_offset();
@@ -1533,10 +1535,12 @@ where
                 // return if we consumed everything or if the normal parser
                 // does not consume anything
                 if i2.eof_offset() == 0 {
-                    return Ok(start.finish());
+                    input.reset(start);
+                    return Ok(input.finish());
                 } else if i2.eof_offset() == current_len {
                     let offset = i2.offset_from(&start);
-                    return Ok(start.next_slice(offset));
+                    input.reset(start);
+                    return Ok(input.next_slice(offset));
                 } else {
                     input = i2;
                 }
@@ -1546,13 +1550,15 @@ where
                     let next = control_char.len_utf8();
                     let (i2, _) = escapable.parse_next(input.next_slice(next).0)?;
                     if i2.eof_offset() == 0 {
-                        return Ok(start.finish());
+                        input.reset(start);
+                        return Ok(input.finish());
                     } else {
                         input = i2;
                     }
                 } else {
                     let offset = input.offset_from(&start);
-                    return Ok(start.next_slice(offset));
+                    input.reset(start);
+                    return Ok(input.next_slice(offset));
                 }
             }
             Err(e) => {

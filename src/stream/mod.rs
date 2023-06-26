@@ -402,7 +402,9 @@ where
 }
 
 /// Core definition for parser input state
-pub trait Stream: Offset + Clone + crate::lib::std::fmt::Debug {
+pub trait Stream:
+    Offset<<Self as Stream>::Checkpoint> + Offset + Clone + crate::lib::std::fmt::Debug
+{
     /// The smallest unit being parsed
     ///
     /// Example: `u8` for `&[u8]` or `char` for `&str`
@@ -414,6 +416,9 @@ pub trait Stream: Offset + Clone + crate::lib::std::fmt::Debug {
 
     /// Iterate with the offset from the current location
     type IterOffsets: Iterator<Item = (usize, Self::Token)>;
+
+    /// A parse location within the stream
+    type Checkpoint: Offset + Clone + crate::lib::std::fmt::Debug;
 
     /// Iterate with the offset from the current location
     fn iter_offsets(&self) -> Self::IterOffsets;
@@ -455,6 +460,15 @@ pub trait Stream: Offset + Clone + crate::lib::std::fmt::Debug {
     fn finish(&self) -> (Self, Self::Slice) {
         self.next_slice(self.eof_offset())
     }
+
+    /// Save the current parse location within the stream
+    fn checkpoint(&self) -> Self::Checkpoint;
+    /// Revert the stream to a prior [`Self::Checkpoint`]
+    ///
+    /// # Panic
+    ///
+    /// May panic if an invalid [`Self::Checkpoint`] is provided
+    fn reset(&mut self, checkpoint: Self::Checkpoint);
 }
 
 impl<'i, T> Stream for &'i [T]
@@ -465,6 +479,8 @@ where
     type Slice = &'i [T];
 
     type IterOffsets = Enumerate<Cloned<Iter<'i, T>>>;
+
+    type Checkpoint = Checkpoint<Self>;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
@@ -501,6 +517,15 @@ where
         let (slice, next) = self.split_at(offset);
         (next, slice)
     }
+
+    #[inline(always)]
+    fn checkpoint(&self) -> Self::Checkpoint {
+        Checkpoint(*self)
+    }
+    #[inline(always)]
+    fn reset(&mut self, checkpoint: Self::Checkpoint) {
+        *self = checkpoint.0;
+    }
 }
 
 impl<'i> Stream for &'i str {
@@ -508,6 +533,8 @@ impl<'i> Stream for &'i str {
     type Slice = &'i str;
 
     type IterOffsets = CharIndices<'i>;
+
+    type Checkpoint = Checkpoint<Self>;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
@@ -558,6 +585,15 @@ impl<'i> Stream for &'i str {
         let (slice, next) = self.split_at(offset);
         (next, slice)
     }
+
+    #[inline(always)]
+    fn checkpoint(&self) -> Self::Checkpoint {
+        Checkpoint(*self)
+    }
+    #[inline(always)]
+    fn reset(&mut self, checkpoint: Self::Checkpoint) {
+        *self = checkpoint.0;
+    }
 }
 
 impl<'i> Stream for &'i Bytes {
@@ -565,6 +601,8 @@ impl<'i> Stream for &'i Bytes {
     type Slice = &'i [u8];
 
     type IterOffsets = Enumerate<Cloned<Iter<'i, u8>>>;
+
+    type Checkpoint = Checkpoint<Self>;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
@@ -604,6 +642,15 @@ impl<'i> Stream for &'i Bytes {
         let (next, slice) = (&self.0).next_slice(offset);
         (Bytes::from_bytes(next), slice)
     }
+
+    #[inline(always)]
+    fn checkpoint(&self) -> Self::Checkpoint {
+        Checkpoint(*self)
+    }
+    #[inline(always)]
+    fn reset(&mut self, checkpoint: Self::Checkpoint) {
+        *self = checkpoint.0;
+    }
 }
 
 impl<'i> Stream for &'i BStr {
@@ -611,6 +658,8 @@ impl<'i> Stream for &'i BStr {
     type Slice = &'i [u8];
 
     type IterOffsets = Enumerate<Cloned<Iter<'i, u8>>>;
+
+    type Checkpoint = Checkpoint<Self>;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
@@ -650,6 +699,15 @@ impl<'i> Stream for &'i BStr {
         let (next, slice) = (&self.0).next_slice(offset);
         (BStr::from_bytes(next), slice)
     }
+
+    #[inline(always)]
+    fn checkpoint(&self) -> Self::Checkpoint {
+        Checkpoint(*self)
+    }
+    #[inline(always)]
+    fn reset(&mut self, checkpoint: Self::Checkpoint) {
+        *self = checkpoint.0;
+    }
 }
 
 impl<I> Stream for (I, usize)
@@ -660,6 +718,8 @@ where
     type Slice = (I::Slice, usize, usize);
 
     type IterOffsets = BitOffsets<I>;
+
+    type Checkpoint = Checkpoint<(I::Checkpoint, usize)>;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
@@ -708,6 +768,16 @@ where
         let end_offset = (offset + self.1) % 8;
         let (i, s) = self.0.next_slice(byte_offset);
         ((i, end_offset), (s, self.1, end_offset))
+    }
+
+    #[inline(always)]
+    fn checkpoint(&self) -> Self::Checkpoint {
+        Checkpoint((self.0.checkpoint(), self.1))
+    }
+    #[inline(always)]
+    fn reset(&mut self, checkpoint: Self::Checkpoint) {
+        self.0.reset(checkpoint.0 .0);
+        self.1 = checkpoint.0 .1;
     }
 }
 
@@ -759,6 +829,8 @@ impl<I: Stream> Stream for Located<I> {
 
     type IterOffsets = <I as Stream>::IterOffsets;
 
+    type Checkpoint = Checkpoint<I::Checkpoint>;
+
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
         self.input.iter_offsets()
@@ -801,6 +873,15 @@ impl<I: Stream> Stream for Located<I> {
             },
             slice,
         )
+    }
+
+    #[inline(always)]
+    fn checkpoint(&self) -> Self::Checkpoint {
+        Checkpoint(self.input.checkpoint())
+    }
+    #[inline(always)]
+    fn reset(&mut self, checkpoint: Self::Checkpoint) {
+        self.input.reset(checkpoint.0);
     }
 }
 
@@ -810,6 +891,8 @@ impl<I: Stream, S: Clone + crate::lib::std::fmt::Debug> Stream for Stateful<I, S
 
     type IterOffsets = <I as Stream>::IterOffsets;
 
+    type Checkpoint = Checkpoint<I::Checkpoint>;
+
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
         self.input.iter_offsets()
@@ -852,6 +935,15 @@ impl<I: Stream, S: Clone + crate::lib::std::fmt::Debug> Stream for Stateful<I, S
             },
             slice,
         )
+    }
+
+    #[inline(always)]
+    fn checkpoint(&self) -> Self::Checkpoint {
+        Checkpoint(self.input.checkpoint())
+    }
+    #[inline(always)]
+    fn reset(&mut self, checkpoint: Self::Checkpoint) {
+        self.input.reset(checkpoint.0);
     }
 }
 
@@ -861,6 +953,8 @@ impl<I: Stream> Stream for Partial<I> {
 
     type IterOffsets = <I as Stream>::IterOffsets;
 
+    type Checkpoint = Checkpoint<I::Checkpoint>;
+
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
         self.input.iter_offsets()
@@ -903,6 +997,15 @@ impl<I: Stream> Stream for Partial<I> {
             },
             slice,
         )
+    }
+
+    #[inline(always)]
+    fn checkpoint(&self) -> Self::Checkpoint {
+        Checkpoint(self.input.checkpoint())
+    }
+    #[inline(always)]
+    fn reset(&mut self, checkpoint: Self::Checkpoint) {
+        self.input.reset(checkpoint.0);
     }
 }
 
@@ -1125,9 +1228,9 @@ where
 }
 
 /// Useful functions to calculate the offset between slices and show a hexdump of a slice
-pub trait Offset {
+pub trait Offset<Start = Self> {
     /// Offset between the first byte of `start` and the first byte of `self`
-    fn offset_from(&self, start: &Self) -> usize;
+    fn offset_from(&self, start: &Start) -> usize;
 }
 
 impl<'a, T> Offset for &'a [T] {
@@ -1144,10 +1247,27 @@ impl<'a, T> Offset for &'a [T] {
     }
 }
 
+impl<'a, T> Offset<<&'a [T] as Stream>::Checkpoint> for &'a [T]
+where
+    T: Clone + crate::lib::std::fmt::Debug,
+{
+    #[inline(always)]
+    fn offset_from(&self, other: &<&'a [T] as Stream>::Checkpoint) -> usize {
+        self.checkpoint().offset_from(other)
+    }
+}
+
 impl<'a> Offset for &'a str {
     #[inline(always)]
     fn offset_from(&self, start: &Self) -> usize {
         self.as_bytes().offset_from(&start.as_bytes())
+    }
+}
+
+impl<'a> Offset<<&'a str as Stream>::Checkpoint> for &'a str {
+    #[inline(always)]
+    fn offset_from(&self, other: &<&'a str as Stream>::Checkpoint) -> usize {
+        self.checkpoint().offset_from(other)
     }
 }
 
@@ -1158,10 +1278,24 @@ impl<'a> Offset for &'a Bytes {
     }
 }
 
+impl<'a> Offset<<&'a Bytes as Stream>::Checkpoint> for &'a Bytes {
+    #[inline(always)]
+    fn offset_from(&self, other: &<&'a Bytes as Stream>::Checkpoint) -> usize {
+        self.checkpoint().offset_from(other)
+    }
+}
+
 impl<'a> Offset for &'a BStr {
     #[inline(always)]
     fn offset_from(&self, start: &Self) -> usize {
         self.as_bytes().offset_from(&start.as_bytes())
+    }
+}
+
+impl<'a> Offset<<&'a BStr as Stream>::Checkpoint> for &'a BStr {
+    #[inline(always)]
+    fn offset_from(&self, other: &<&'a BStr as Stream>::Checkpoint) -> usize {
+        self.checkpoint().offset_from(other)
     }
 }
 
@@ -1175,33 +1309,85 @@ where
     }
 }
 
+impl<I> Offset<<(I, usize) as Stream>::Checkpoint> for (I, usize)
+where
+    I: Stream<Token = u8>,
+{
+    #[inline(always)]
+    fn offset_from(&self, other: &<(I, usize) as Stream>::Checkpoint) -> usize {
+        self.checkpoint().offset_from(other)
+    }
+}
+
 impl<I> Offset for Located<I>
 where
-    I: Offset,
+    I: Stream,
 {
     #[inline(always)]
     fn offset_from(&self, other: &Self) -> usize {
-        self.input.offset_from(&other.input)
+        self.offset_from(&other.checkpoint())
+    }
+}
+
+impl<I> Offset<<Located<I> as Stream>::Checkpoint> for Located<I>
+where
+    I: Stream,
+{
+    #[inline(always)]
+    fn offset_from(&self, other: &<Located<I> as Stream>::Checkpoint) -> usize {
+        self.checkpoint().offset_from(other)
     }
 }
 
 impl<I, S> Offset for Stateful<I, S>
 where
-    I: Offset,
+    I: Stream,
+    S: Clone + crate::lib::std::fmt::Debug,
 {
     #[inline(always)]
     fn offset_from(&self, start: &Self) -> usize {
-        self.input.offset_from(&start.input)
+        self.offset_from(&start.checkpoint())
+    }
+}
+
+impl<I, S> Offset<<Stateful<I, S> as Stream>::Checkpoint> for Stateful<I, S>
+where
+    I: Stream,
+    S: Clone + crate::lib::std::fmt::Debug,
+{
+    #[inline(always)]
+    fn offset_from(&self, other: &<Stateful<I, S> as Stream>::Checkpoint) -> usize {
+        self.checkpoint().offset_from(other)
     }
 }
 
 impl<I> Offset for Partial<I>
 where
+    I: Stream,
+{
+    #[inline(always)]
+    fn offset_from(&self, start: &Self) -> usize {
+        self.offset_from(&start.checkpoint())
+    }
+}
+
+impl<I> Offset<<Partial<I> as Stream>::Checkpoint> for Partial<I>
+where
+    I: Stream,
+{
+    #[inline(always)]
+    fn offset_from(&self, other: &<Partial<I> as Stream>::Checkpoint) -> usize {
+        self.checkpoint().offset_from(other)
+    }
+}
+
+impl<I> Offset for Checkpoint<I>
+where
     I: Offset,
 {
     #[inline(always)]
     fn offset_from(&self, start: &Self) -> usize {
-        self.input.offset_from(&start.input)
+        self.0.offset_from(&start.0)
     }
 }
 
@@ -1719,6 +1905,10 @@ where
         }
     }
 }
+
+/// Ensure checkpoint details are kept privazte
+#[derive(Copy, Clone, Debug)]
+pub struct Checkpoint<T>(T);
 
 /// A range bounded inclusively for counting parses performed
 #[derive(PartialEq, Eq)]
