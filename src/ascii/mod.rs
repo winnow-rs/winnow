@@ -1648,7 +1648,7 @@ where
 }
 
 fn streaming_escaped_transform_internal<I, Error, F, G, Output>(
-    input: I,
+    mut input: I,
     normal: &mut F,
     control_char: char,
     transform: &mut G,
@@ -1662,37 +1662,33 @@ where
     G: Parser<I, <I as Stream>::Slice, Error>,
     Error: ParseError<I>,
 {
-    let mut offset = 0;
     let mut res = Output::initial(Some(input.eof_offset()));
 
-    let i = input.clone();
-
-    while offset < i.eof_offset() {
-        let current_len = i.eof_offset();
-        let remainder = i.next_slice(offset).0;
-        match normal.parse_next(remainder.clone()) {
+    while input.eof_offset() > 0 {
+        let current_len = input.eof_offset();
+        match normal.parse_next(input.clone()) {
             Ok((i2, o)) => {
                 res.accumulate(o);
                 if i2.eof_offset() == 0 {
                     return Err(ErrMode::Incomplete(Needed::Unknown));
                 } else if i2.eof_offset() == current_len {
-                    return Ok((remainder, res));
+                    return Ok((i2, res));
                 } else {
-                    offset = i2.offset_from(&input);
+                    input = i2;
                 }
             }
             Err(ErrMode::Backtrack(_)) => {
-                if remainder.next_token().expect("eof_offset > 0").1.as_char() == control_char {
-                    let next = offset + control_char.len_utf8();
-                    let (i2, o) = transform.parse_next(i.next_slice(next).0)?;
+                if input.next_token().expect("eof_offset > 0").1.as_char() == control_char {
+                    let next = control_char.len_utf8();
+                    let (i2, o) = transform.parse_next(input.next_slice(next).0)?;
                     res.accumulate(o);
                     if i2.eof_offset() == 0 {
                         return Err(ErrMode::Incomplete(Needed::Unknown));
                     } else {
-                        offset = i2.offset_from(&input);
+                        input = i2;
                     }
                 } else {
-                    return Ok((remainder, res));
+                    return Ok((input, res));
                 }
             }
             Err(e) => return Err(e),
@@ -1702,7 +1698,7 @@ where
 }
 
 fn complete_escaped_transform_internal<I, Error, F, G, Output>(
-    input: I,
+    mut input: I,
     normal: &mut F,
     control_char: char,
     transform: &mut G,
@@ -1716,43 +1712,40 @@ where
     G: Parser<I, <I as Stream>::Slice, Error>,
     Error: ParseError<I>,
 {
-    let mut offset = 0;
     let mut res = Output::initial(Some(input.eof_offset()));
 
-    let i = input.clone();
+    while input.eof_offset() > 0 {
+        let current_len = input.eof_offset();
 
-    while offset < i.eof_offset() {
-        let current_len = i.eof_offset();
-        let (remainder, _) = i.next_slice(offset);
-        match normal.parse_next(remainder.clone()) {
+        match normal.parse_next(input.clone()) {
             Ok((i2, o)) => {
                 res.accumulate(o);
                 if i2.eof_offset() == 0 {
-                    return Ok((i.next_slice(i.eof_offset()).0, res));
+                    return Ok((input.finish().0, res));
                 } else if i2.eof_offset() == current_len {
-                    return Ok((remainder, res));
+                    return Ok((input, res));
                 } else {
-                    offset = i2.offset_from(&input);
+                    input = i2;
                 }
             }
             Err(ErrMode::Backtrack(_)) => {
-                if remainder.next_token().expect("eof_offset > 0").1.as_char() == control_char {
-                    let next = offset + control_char.len_utf8();
-                    let (i2, o) = transform.parse_next(i.next_slice(next).0)?;
+                if input.next_token().expect("eof_offset > 0").1.as_char() == control_char {
+                    let next = control_char.len_utf8();
+                    let (i2, o) = transform.parse_next(input.next_slice(next).0)?;
                     res.accumulate(o);
                     if i2.eof_offset() == 0 {
-                        return Ok((i.finish().0, res));
+                        return Ok((input.finish().0, res));
                     } else {
-                        offset = i2.offset_from(&input);
+                        input = i2;
                     }
                 } else {
-                    return Ok((remainder, res));
+                    return Ok((input, res));
                 }
             }
             Err(e) => return Err(e),
         }
     }
-    Ok((input.next_slice(offset).0, res))
+    Ok((input, res))
 }
 
 mod sealed {
