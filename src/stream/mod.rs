@@ -416,7 +416,7 @@ pub trait Stream: Offset + Clone + crate::lib::std::fmt::Debug {
     type IterOffsets: Iterator<Item = (usize, Self::Token)>;
 
     /// A parse location within the stream
-    type Checkpoint: Clone + crate::lib::std::fmt::Debug;
+    type Checkpoint: Offset + Clone + crate::lib::std::fmt::Debug;
 
     /// Iterate with the offset from the current location
     fn iter_offsets(&self) -> Self::IterOffsets;
@@ -1303,6 +1303,16 @@ where
     #[inline(always)]
     fn offset_from(&self, start: &Self) -> usize {
         self.input.offset_from(&start.input)
+    }
+}
+
+impl<I> Offset for Checkpoint<I>
+where
+    I: Offset,
+{
+    #[inline(always)]
+    fn offset_from(&self, start: &Self) -> usize {
+        self.0.offset_from(&start.0)
     }
 }
 
