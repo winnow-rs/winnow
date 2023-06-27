@@ -69,7 +69,7 @@
 //! {
 //!   ('%', take_till1(['\n', '\r']))
 //!     .void() // Output is thrown away.
-//!     .parse_next(i)
+//!     .parse_peek(i)
 //! }
 //! ```
 //!
@@ -92,7 +92,7 @@
 //!     "*)"
 //!   )
 //!     .void() // Output is thrown away.
-//!     .parse_next(i)
+//!     .parse_peek(i)
 //! }
 //! ```
 //!
@@ -117,7 +117,7 @@
 //!       take_while(0.., |c: char| c.is_alphanum() || c == '_')
 //!   )
 //!   .recognize()
-//!   .parse_next(input)
+//!   .parse_peek(input)
 //! }
 //! ```
 //!
@@ -168,7 +168,7 @@
 //!     repeat(1..,
 //!       terminated(one_of(('0'..='9', 'a'..='f', 'A'..='F')), repeat(0.., '_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
-//!   ).parse_next(input)
+//!   ).parse_peek(input)
 //! }
 //! ```
 //!
@@ -192,7 +192,7 @@
 //!     ).map(|()| ()).recognize()
 //!   ).try_map(
 //!     |out: &str| i64::from_str_radix(&str::replace(&out, "_", ""), 16)
-//!   ).parse_next(input)
+//!   ).parse_peek(input)
 //! }
 //! ```
 //!
@@ -216,7 +216,7 @@
 //!     repeat(1..,
 //!       terminated(one_of('0'..='7'), repeat(0.., '_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
-//!   ).parse_next(input)
+//!   ).parse_peek(input)
 //! }
 //! ```
 //!
@@ -238,7 +238,7 @@
 //!     repeat(1..,
 //!       terminated(one_of('0'..='1'), repeat(0.., '_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
-//!   ).parse_next(input)
+//!   ).parse_peek(input)
 //! }
 //! ```
 //!
@@ -258,7 +258,7 @@
 //!     terminated(one_of('0'..='9'), repeat(0.., '_').map(|()| ()))
 //!   ).map(|()| ())
 //!     .recognize()
-//!     .parse_next(input)
+//!     .parse_peek(input)
 //! }
 //! ```
 //!
@@ -307,7 +307,7 @@
 //!       '.',
 //!       opt(decimal)
 //!     ).recognize()
-//!   )).parse_next(input)
+//!   )).parse_peek(input)
 //! }
 //!
 //! fn decimal(input: &str) -> IResult<&str, &str> {
@@ -316,7 +316,7 @@
 //!   ).
 //!   map(|()| ())
 //!     .recognize()
-//!     .parse_next(input)
+//!     .parse_peek(input)
 //! }
 //! ```
 //!

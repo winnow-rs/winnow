@@ -43,7 +43,7 @@
 //!     move |input: I| {
 //!         // ...some chained combinators...
 //! # winnow::token::any
-//!             .parse_next(input)
+//!             .parse_peek(input)
 //!     }
 //! }
 //! ```

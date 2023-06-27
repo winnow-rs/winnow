@@ -15,7 +15,7 @@ mod test {
     fn tag_succeed_str() {
         const INPUT: &str = "Hello World!";
         fn test(input: &str) -> IResult<&str, &str> {
-            "Hello".parse_next(input)
+            "Hello".parse_peek(input)
         }
 
         match test(INPUT) {
@@ -41,7 +41,7 @@ mod test {
     fn tag_incomplete_str() {
         const INPUT: &str = "Hello";
 
-        let res: IResult<_, _, error::Error<_>> = "Hello World!".parse_next(Partial::new(INPUT));
+        let res: IResult<_, _, error::Error<_>> = "Hello World!".parse_peek(Partial::new(INPUT));
         match res {
             Err(ErrMode::Incomplete(_)) => (),
             other => {
@@ -58,7 +58,7 @@ mod test {
     fn tag_error_str() {
         const INPUT: &str = "Hello World!";
 
-        let res: IResult<_, _, error::Error<_>> = "Random".parse_next(INPUT);
+        let res: IResult<_, _, error::Error<_>> = "Random".parse_peek(INPUT);
         match res {
             Err(ErrMode::Backtrack(_)) => (),
             other => {
@@ -74,7 +74,7 @@ mod test {
     #[test]
     fn tag_case_insensitive_str() {
         fn test(i: &str) -> IResult<&str, &str> {
-            tag_no_case("ABcd").parse_next(i)
+            tag_no_case("ABcd").parse_peek(i)
         }
         assert_eq!(test("aBCdefgh"), Ok(("efgh", "aBCd")));
         assert_eq!(test("abcdefgh"), Ok(("efgh", "abcd")));
@@ -87,7 +87,7 @@ mod test {
         const CONSUMED: &str = "βèƒôřèÂßÇ";
         const LEFTOVER: &str = "áƒƭèř";
 
-        let res: IResult<_, _, error::Error<_>> = take(9_usize).parse_next(INPUT);
+        let res: IResult<_, _, error::Error<_>> = take(9_usize).parse_peek(INPUT);
         match res {
             Ok((extra, output)) => {
                 assert!(
@@ -116,7 +116,7 @@ mod test {
 
         const INPUT: &str = "βèƒôřèÂßÇá";
 
-        let res: IResult<_, _, Error<_>> = take(13_usize).parse_next(Partial::new(INPUT));
+        let res: IResult<_, _, Error<_>> = take(13_usize).parse_peek(Partial::new(INPUT));
         match res {
             Err(ErrMode::Incomplete(_)) => (),
             other => panic!(
@@ -134,7 +134,7 @@ mod test {
         const CONSUMED: &str = "βèƒôřè";
         const LEFTOVER: &str = "ÂßÇ∂áƒƭèř";
 
-        let res: IResult<_, _, Error<_>> = take_until0(FIND).parse_next(INPUT);
+        let res: IResult<_, _, Error<_>> = take_until0(FIND).parse_peek(INPUT);
         match res {
             Ok((extra, output)) => {
                 assert!(
@@ -166,7 +166,7 @@ mod test {
         const INPUT: &str = "βèƒôřè";
         const FIND: &str = "βèƒôřèÂßÇ";
 
-        let res: IResult<_, _, Error<_>> = take_until0(FIND).parse_next(Partial::new(INPUT));
+        let res: IResult<_, _, Error<_>> = take_until0(FIND).parse_peek(Partial::new(INPUT));
         match res {
             Err(ErrMode::Incomplete(_)) => (),
             other => panic!(
@@ -184,7 +184,7 @@ mod test {
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
         const FIND: &str = "Ráñδô₥";
 
-        let res: IResult<_, _, Error<_>> = take_until0(FIND).parse_next(Partial::new(INPUT));
+        let res: IResult<_, _, Error<_>> = take_until0(FIND).parse_peek(Partial::new(INPUT));
         match res {
             Err(ErrMode::Incomplete(_)) => (),
             other => panic!(
@@ -206,7 +206,7 @@ mod test {
         use winnow::token::take_while;
 
         fn f(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-            take_while(0.., is_alphabetic).parse_next(i)
+            take_while(0.., is_alphabetic).parse_peek(i)
         }
         let a = "";
         let b = "abcd";
@@ -230,7 +230,7 @@ mod test {
             c == '9'
         }
         fn test(input: &str) -> IResult<&str, &str> {
-            take_while(0.., while_s).parse_next(input)
+            take_while(0.., while_s).parse_peek(input)
         }
         match test(INPUT) {
             Ok((extra, output)) => {
@@ -265,7 +265,7 @@ mod test {
             matches!(c, 'β' | 'è' | 'ƒ' | 'ô' | 'ř' | 'Â' | 'ß' | 'Ç')
         }
         fn test(input: &str) -> IResult<&str, &str> {
-            take_while(0.., while_s).parse_next(input)
+            take_while(0.., while_s).parse_peek(input)
         }
         match test(INPUT) {
             Ok((extra, output)) => {
@@ -294,7 +294,7 @@ mod test {
         use winnow::error::Needed;
 
         fn f(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-            take_while(1.., is_alphabetic).parse_next(i)
+            take_while(1.., is_alphabetic).parse_peek(i)
         }
         let a = "";
         let b = "abcd";
@@ -324,7 +324,7 @@ mod test {
             matches!(c, 'β' | 'è' | 'ƒ' | 'ô' | 'ř' | 'Â' | 'ß' | 'Ç')
         }
         fn test(input: &str) -> IResult<&str, &str> {
-            take_while(1.., while1_s).parse_next(input)
+            take_while(1.., while1_s).parse_peek(input)
         }
         match test(INPUT) {
             Ok((extra, output)) => {
@@ -355,7 +355,7 @@ mod test {
         const CONSUMED: &str = "βèƒôřèÂßÇ";
         const LEFTOVER: &str = "áƒƭèř";
         fn test(input: &str) -> IResult<&str, &str> {
-            take_while(1.., MATCH).parse_next(input)
+            take_while(1.., MATCH).parse_peek(input)
         }
         match test(INPUT) {
             Ok((extra, output)) => {
@@ -388,7 +388,7 @@ mod test {
             c == '9'
         }
         fn test(input: &str) -> IResult<&str, &str> {
-            take_while(1.., while1_s).parse_next(input)
+            take_while(1.., while1_s).parse_peek(input)
         }
         match test(INPUT) {
             Err(ErrMode::Backtrack(_)) => (),
@@ -405,7 +405,7 @@ mod test {
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
         const MATCH: &[char] = &['Û', 'ñ', 'ℓ', 'ú', 'ç', 'ƙ', '¥'];
         fn test(input: &str) -> IResult<&str, &str> {
-            take_while(1.., MATCH).parse_next(input)
+            take_while(1.., MATCH).parse_peek(input)
         }
         match test(INPUT) {
             Err(ErrMode::Backtrack(_)) => (),
@@ -425,7 +425,7 @@ mod test {
             c == 'á'
         }
         fn test(input: &str) -> IResult<&str, &str> {
-            take_till0(till_s).parse_next(input)
+            take_till0(till_s).parse_peek(input)
         }
         match test(INPUT) {
             Ok((extra, output)) => {
@@ -456,7 +456,7 @@ mod test {
         const CONSUMED: &str = "βèƒôřèÂßÇ";
         const LEFTOVER: &str = "áƒƭèř";
         fn test(input: &str) -> IResult<&str, &str> {
-            take_till1(AVOID).parse_next(input)
+            take_till1(AVOID).parse_peek(input)
         }
         match test(INPUT) {
             Ok((extra, output)) => {
@@ -485,7 +485,7 @@ mod test {
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
         const AVOID: &[char] = &['β', 'ú', 'ç', 'ƙ', '¥'];
         fn test(input: &str) -> IResult<&str, &str> {
-            take_till1(AVOID).parse_next(input)
+            take_till1(AVOID).parse_peek(input)
         }
         match test(INPUT) {
             Err(ErrMode::Backtrack(_)) => (),
@@ -507,7 +507,7 @@ mod test {
         fn f(i: &str) -> IResult<&str, &str> {
             repeat::<_, _, (), _, _>(1.., alt(("a", "b")))
                 .recognize()
-                .parse_next(i)
+                .parse_peek(i)
         }
 
         assert_eq!(f(a), Ok((&a[6..], a)));
@@ -517,7 +517,7 @@ mod test {
     #[test]
     fn utf8_indexing_str() {
         fn dot(i: &str) -> IResult<&str, &str> {
-            ".".parse_next(i)
+            ".".parse_peek(i)
         }
 
         let _ = dot("點");

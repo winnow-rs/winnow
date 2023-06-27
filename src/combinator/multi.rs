@@ -37,7 +37,7 @@ use crate::Parser;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   repeat(0.., "abc").parse_next(s)
+///   repeat(0.., "abc").parse_peek(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -56,7 +56,7 @@ use crate::Parser;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   repeat(1.., "abc").parse_next(s)
+///   repeat(1.., "abc").parse_peek(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -75,7 +75,7 @@ use crate::Parser;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   repeat(2, "abc").parse_next(s)
+///   repeat(2, "abc").parse_peek(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -95,7 +95,7 @@ use crate::Parser;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   repeat(0..=2, "abc").parse_next(s)
+///   repeat(0..=2, "abc").parse_peek(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -146,7 +146,7 @@ where
     let mut acc = C::initial(None);
     loop {
         let len = i.eof_offset();
-        match f.parse_next(i.clone()) {
+        match f.parse_peek(i.clone()) {
             Err(ErrMode::Backtrack(_)) => return Ok((i, acc)),
             Err(e) => return Err(e),
             Ok((i1, o)) => {
@@ -169,7 +169,7 @@ where
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    match f.parse_next(i.clone()) {
+    match f.parse_peek(i.clone()) {
         Err(e) => Err(e.append(i, ErrorKind::Many)),
         Ok((i1, o)) => {
             let mut acc = C::initial(None);
@@ -178,7 +178,7 @@ where
 
             loop {
                 let len = i.eof_offset();
-                match f.parse_next(i.clone()) {
+                match f.parse_peek(i.clone()) {
                     Err(ErrMode::Backtrack(_)) => return Ok((i, acc)),
                     Err(e) => return Err(e),
                     Ok((i1, o)) => {
@@ -215,7 +215,7 @@ where
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, (Vec<&str>, &str)> {
-///   repeat_till0("abc", "end").parse_next(s)
+///   repeat_till0("abc", "end").parse_peek(s)
 /// };
 ///
 /// assert_eq!(parser("abcabcend"), Ok(("", (vec!["abc", "abc"], "end"))));
@@ -238,10 +238,10 @@ where
         let mut res = C::initial(None);
         loop {
             let len = i.eof_offset();
-            match g.parse_next(i.clone()) {
+            match g.parse_peek(i.clone()) {
                 Ok((i1, o)) => return Ok((i1, (res, o))),
                 Err(ErrMode::Backtrack(_)) => {
-                    match f.parse_next(i.clone()) {
+                    match f.parse_peek(i.clone()) {
                         Err(e) => return Err(e.append(i, ErrorKind::Many)),
                         Ok((i1, o)) => {
                             // infinite loop check: the parser must always consume
@@ -282,7 +282,7 @@ where
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   separated0("abc", "|").parse_next(s)
+///   separated0("abc", "|").parse_peek(s)
 /// }
 ///
 /// assert_eq!(parser("abc|abc|abc"), Ok(("", vec!["abc", "abc", "abc"])));
@@ -305,7 +305,7 @@ where
     trace("separated0", move |mut i: I| {
         let mut res = C::initial(None);
 
-        match parser.parse_next(i.clone()) {
+        match parser.parse_peek(i.clone()) {
             Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
             Err(e) => return Err(e),
             Ok((i1, o)) => {
@@ -316,7 +316,7 @@ where
 
         loop {
             let len = i.eof_offset();
-            match sep.parse_next(i.clone()) {
+            match sep.parse_peek(i.clone()) {
                 Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
                 Err(e) => return Err(e),
                 Ok((i1, _)) => {
@@ -325,7 +325,7 @@ where
                         return Err(ErrMode::assert(i, "sep parsers must always consume"));
                     }
 
-                    match parser.parse_next(i1.clone()) {
+                    match parser.parse_peek(i1.clone()) {
                         Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
                         Err(e) => return Err(e),
                         Ok((i2, o)) => {
@@ -360,7 +360,7 @@ where
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   separated1("abc", "|").parse_next(s)
+///   separated1("abc", "|").parse_peek(s)
 /// }
 ///
 /// assert_eq!(parser("abc|abc|abc"), Ok(("", vec!["abc", "abc", "abc"])));
@@ -384,7 +384,7 @@ where
         let mut res = C::initial(None);
 
         // Parse the first element
-        match parser.parse_next(i.clone()) {
+        match parser.parse_peek(i.clone()) {
             Err(e) => return Err(e),
             Ok((i1, o)) => {
                 res.accumulate(o);
@@ -394,7 +394,7 @@ where
 
         loop {
             let len = i.eof_offset();
-            match sep.parse_next(i.clone()) {
+            match sep.parse_peek(i.clone()) {
                 Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
                 Err(e) => return Err(e),
                 Ok((i1, _)) => {
@@ -403,7 +403,7 @@ where
                         return Err(ErrMode::assert(i, "sep parsers must always consume"));
                     }
 
-                    match parser.parse_next(i1.clone()) {
+                    match parser.parse_peek(i1.clone()) {
                         Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
                         Err(e) => return Err(e),
                         Ok((i2, o)) => {
@@ -431,7 +431,7 @@ where
 /// use winnow::ascii::dec_int;
 ///
 /// fn parser(s: &str) -> IResult<&str, i32> {
-///   separated_foldl1(dec_int, "-", |l, _, r| l - r).parse_next(s)
+///   separated_foldl1(dec_int, "-", |l, _, r| l - r).parse_peek(s)
 /// }
 ///
 /// assert_eq!(parser("9-3-5"), Ok(("", 1)));
@@ -451,11 +451,11 @@ where
     Op: Fn(O, O2, O) -> O,
 {
     trace("separated_foldl1", move |i: I| {
-        let (mut i, mut ol) = parser.parse_next(i)?;
+        let (mut i, mut ol) = parser.parse_peek(i)?;
 
         loop {
             let len = i.eof_offset();
-            match sep.parse_next(i.clone()) {
+            match sep.parse_peek(i.clone()) {
                 Err(ErrMode::Backtrack(_)) => return Ok((i, ol)),
                 Err(e) => return Err(e),
                 Ok((i1, s)) => {
@@ -464,7 +464,7 @@ where
                         return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
                     }
 
-                    match parser.parse_next(i1.clone()) {
+                    match parser.parse_peek(i1.clone()) {
                         Err(ErrMode::Backtrack(_)) => return Ok((i, ol)),
                         Err(e) => return Err(e),
                         Ok((i2, or)) => {
@@ -492,7 +492,7 @@ where
 /// use winnow::ascii::dec_uint;
 ///
 /// fn parser(s: &str) -> IResult<&str, u32> {
-///   separated_foldr1(dec_uint, "^", |l: u32, _, r: u32| l.pow(r)).parse_next(s)
+///   separated_foldr1(dec_uint, "^", |l: u32, _, r: u32| l.pow(r)).parse_peek(s)
 /// }
 ///
 /// assert_eq!(parser("2^3^2"), Ok(("", 512)));
@@ -514,9 +514,9 @@ where
     Op: Fn(O, O2, O) -> O,
 {
     trace("separated_foldr1", move |i: I| {
-        let (i, ol) = parser.parse_next(i)?;
+        let (i, ol) = parser.parse_peek(i)?;
         let (i, all): (_, crate::lib::std::vec::Vec<(O2, O)>) =
-            repeat(0.., (sep.by_ref(), parser.by_ref())).parse_next(i)?;
+            repeat(0.., (sep.by_ref(), parser.by_ref())).parse_peek(i)?;
         if let Some((s, or)) = all
             .into_iter()
             .rev()
@@ -549,7 +549,7 @@ where
     let mut res = C::initial(Some(min));
     for count in 0..max {
         let len = input.eof_offset();
-        match parse.parse_next(input.clone()) {
+        match parse.parse_peek(input.clone()) {
             Ok((tail, value)) => {
                 // infinite loop check: the parser must always consume
                 if tail.eof_offset() == len {
@@ -590,7 +590,7 @@ where
 
     for _ in 0..count {
         let input_ = input.clone();
-        match f.parse_next(input_) {
+        match f.parse_peek(input_) {
             Ok((i, o)) => {
                 res.accumulate(o);
                 input = i;
@@ -622,7 +622,7 @@ where
 ///
 /// fn parser(s: &str) -> IResult<&str, [&str; 2]> {
 ///   let mut buf = ["", ""];
-///   let (rest, ()) = fill("abc", &mut buf).parse_next(s)?;
+///   let (rest, ()) = fill("abc", &mut buf).parse_peek(s)?;
 ///   Ok((rest, buf))
 /// }
 ///
@@ -643,7 +643,7 @@ where
 
         for elem in buf.iter_mut() {
             let input_ = input.clone();
-            match f.parse_next(input_) {
+            match f.parse_peek(input_) {
                 Ok((i, o)) => {
                     *elem = o;
                     input = i;
@@ -693,7 +693,7 @@ where
 ///       acc.push(item);
 ///       acc
 ///     }
-///   ).parse_next(s)
+///   ).parse_peek(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -718,7 +718,7 @@ where
 ///       acc.push(item);
 ///       acc
 ///     }
-///   ).parse_next(s)
+///   ).parse_peek(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -743,7 +743,7 @@ where
 ///       acc.push(item);
 ///       acc
 ///     }
-///   ).parse_next(s)
+///   ).parse_peek(s)
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
@@ -803,7 +803,7 @@ where
     loop {
         let i_ = input.clone();
         let len = input.eof_offset();
-        match f.parse_next(i_) {
+        match f.parse_peek(i_) {
             Ok((i, o)) => {
                 // infinite loop check: the parser must always consume
                 if i.eof_offset() == len {
@@ -833,7 +833,7 @@ where
 {
     let _i = i.clone();
     let init = init();
-    match f.parse_next(_i) {
+    match f.parse_peek(_i) {
         Err(ErrMode::Backtrack(_)) => Err(ErrMode::from_error_kind(i, ErrorKind::Many)),
         Err(e) => Err(e),
         Ok((i1, o1)) => {
@@ -843,7 +843,7 @@ where
             loop {
                 let _input = input.clone();
                 let len = input.eof_offset();
-                match f.parse_next(_input) {
+                match f.parse_peek(_input) {
                     Err(ErrMode::Backtrack(_)) => {
                         break;
                     }
@@ -887,7 +887,7 @@ where
     let mut acc = init();
     for count in 0..max {
         let len = input.eof_offset();
-        match parse.parse_next(input.clone()) {
+        match parse.parse_peek(input.clone()) {
             Ok((tail, value)) => {
                 // infinite loop check: the parser must always consume
                 if tail.eof_offset() == len {

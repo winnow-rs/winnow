@@ -47,7 +47,7 @@ where
     // " character, the closing delimiter " would never match. When using
     // `delimited` with a looping parser (like fold_repeat), be sure that the
     // loop won't accidentally match your closing delimiter!
-    delimited('"', build_string, '"').parse_next(input)
+    delimited('"', build_string, '"').parse_peek(input)
 }
 
 /// A string fragment contains a fragment of a string being parsed: either
@@ -73,7 +73,7 @@ where
         parse_escaped_char.map(StringFragment::EscapedChar),
         parse_escaped_whitespace.value(StringFragment::EscapedWS),
     ))
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Parse a non-empty block of text that doesn't include \ or "
@@ -88,7 +88,7 @@ fn parse_literal<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str,
     // is non-empty.
     not_quote_slash
         .verify(|s: &str| !s.is_empty())
-        .parse_next(input)
+        .parse_peek(input)
 }
 
 // parser combinators are constructed from the bottom up:
@@ -120,7 +120,7 @@ where
             '"'.value('"'),
         )),
     )
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Parse a unicode sequence, of the form u{XXXX}, where XXXX is 1 to 6
@@ -153,7 +153,7 @@ where
     // the function returns None, verify_map returns an error. In this case, because
     // not all u32 values are valid unicode code points, we have to fallibly
     // convert to char with from_u32.
-    parse_u32.verify_map(std::char::from_u32).parse_next(input)
+    parse_u32.verify_map(std::char::from_u32).parse_peek(input)
 }
 
 /// Parse a backslash, followed by any amount of whitespace. This is used later
@@ -161,5 +161,5 @@ where
 fn parse_escaped_whitespace<'a, E: ParseError<&'a str>>(
     input: &'a str,
 ) -> IResult<&'a str, &'a str, E> {
-    preceded('\\', multispace1).parse_next(input)
+    preceded('\\', multispace1).parse_peek(input)
 }

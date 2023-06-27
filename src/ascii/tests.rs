@@ -290,7 +290,7 @@ mod complete {
     #[test]
     fn full_line_windows() {
         fn take_full_line(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8])> {
-            (not_line_ending, line_ending).parse_next(i)
+            (not_line_ending, line_ending).parse_peek(i)
         }
         let input = b"abc\r\n";
         let output = take_full_line(input);
@@ -300,7 +300,7 @@ mod complete {
     #[test]
     fn full_line_unix() {
         fn take_full_line(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8])> {
-            (not_line_ending, line_ending).parse_next(i)
+            (not_line_ending, line_ending).parse_peek(i)
         }
         let input = b"abc\n";
         let output = take_full_line(input);
@@ -383,7 +383,7 @@ mod complete {
 
     fn digit_to_i16(input: &str) -> IResult<&str, i16> {
         let i = input;
-        let (i, opt_sign) = opt(alt(('+', '-'))).parse_next(i)?;
+        let (i, opt_sign) = opt(alt(('+', '-'))).parse_peek(i)?;
         let sign = match opt_sign {
             Some('+') | None => true,
             Some('-') => false,
@@ -573,7 +573,7 @@ mod complete {
         fn escaped_string(input: &str) -> IResult<&str, &str> {
             use crate::ascii::alpha0;
             use crate::token::one_of;
-            escaped(alpha0, '\\', one_of(['n'])).parse_next(input)
+            escaped(alpha0, '\\', one_of(['n'])).parse_peek(input)
         }
 
         escaped_string("7").unwrap();
@@ -597,7 +597,7 @@ mod complete {
                 ),
                 '"',
             )
-            .parse_next(input)
+            .parse_peek(input)
         }
 
         assert_eq!(unquote(r#""""#), Ok(("", "")));
@@ -611,7 +611,7 @@ mod complete {
         use crate::token::one_of;
 
         fn esc(i: &[u8]) -> IResult<&[u8], &[u8]> {
-            escaped(alpha, '\\', one_of(['\"', 'n', '\\'])).parse_next(i)
+            escaped(alpha, '\\', one_of(['\"', 'n', '\\'])).parse_peek(i)
         }
         assert_eq!(esc(&b"abcd;"[..]), Ok((&b";"[..], &b"abcd"[..])));
         assert_eq!(esc(&b"ab\\\"cd;"[..]), Ok((&b";"[..], &b"ab\\\"cd"[..])));
@@ -635,7 +635,7 @@ mod complete {
         );
 
         fn esc2(i: &[u8]) -> IResult<&[u8], &[u8]> {
-            escaped(digit, '\\', one_of(['\"', 'n', '\\'])).parse_next(i)
+            escaped(digit, '\\', one_of(['\"', 'n', '\\'])).parse_peek(i)
         }
         assert_eq!(esc2(&b"12\\nnn34"[..]), Ok((&b"nn34"[..], &b"12\\n"[..])));
     }
@@ -647,7 +647,7 @@ mod complete {
         use crate::token::one_of;
 
         fn esc(i: &str) -> IResult<&str, &str> {
-            escaped(alpha, '\\', one_of(['\"', 'n', '\\'])).parse_next(i)
+            escaped(alpha, '\\', one_of(['\"', 'n', '\\'])).parse_peek(i)
         }
         assert_eq!(esc("abcd;"), Ok((";", "abcd")));
         assert_eq!(esc("ab\\\"cd;"), Ok((";", "ab\\\"cd")));
@@ -668,12 +668,12 @@ mod complete {
         );
 
         fn esc2(i: &str) -> IResult<&str, &str> {
-            escaped(digit, '\\', one_of(['\"', 'n', '\\'])).parse_next(i)
+            escaped(digit, '\\', one_of(['\"', 'n', '\\'])).parse_peek(i)
         }
         assert_eq!(esc2("12\\nnn34"), Ok(("nn34", "12\\n")));
 
         fn esc3(i: &str) -> IResult<&str, &str> {
-            escaped(alpha, '\u{241b}', one_of(['\"', 'n'])).parse_next(i)
+            escaped(alpha, '\u{241b}', one_of(['\"', 'n'])).parse_peek(i)
         }
         assert_eq!(esc3("ab␛ncd;"), Ok((";", "ab␛ncd")));
     }
@@ -682,7 +682,7 @@ mod complete {
     fn test_escaped_error() {
         fn esc(s: &str) -> IResult<&str, &str> {
             use crate::ascii::digit1;
-            escaped(digit1, '\\', one_of(['\"', 'n', '\\'])).parse_next(s)
+            escaped(digit1, '\\', one_of(['\"', 'n', '\\'])).parse_peek(s)
         }
 
         assert_eq!(esc("abcd"), Ok(("abcd", "")));
@@ -709,7 +709,7 @@ mod complete {
                 )),
             )
             .map(to_s)
-            .parse_next(i)
+            .parse_peek(i)
         }
 
         assert_eq!(esc(&b"abcd;"[..]), Ok((&b";"[..], String::from("abcd"))));
@@ -752,7 +752,7 @@ mod complete {
                 )),
             )
             .map(to_s)
-            .parse_next(i)
+            .parse_peek(i)
         }
         assert_eq!(
             esc2(&b"ab&egrave;DEF;"[..]),
@@ -775,7 +775,7 @@ mod complete {
                 '\\',
                 alt(("\\".value("\\"), "\"".value("\""), "n".value("\n"))),
             )
-            .parse_next(i)
+            .parse_peek(i)
         }
 
         assert_eq!(esc("abcd;"), Ok((";", String::from("abcd"))));
@@ -802,7 +802,7 @@ mod complete {
                 '&',
                 alt(("egrave;".value("è"), "agrave;".value("à"))),
             )
-            .parse_next(i)
+            .parse_peek(i)
         }
         assert_eq!(esc2("ab&egrave;DEF;"), Ok((";", String::from("abèDEF"))));
         assert_eq!(
@@ -811,7 +811,7 @@ mod complete {
         );
 
         fn esc3(i: &str) -> IResult<&str, String> {
-            escaped_transform(alpha, '␛', alt(("0".value("\0"), "n".value("\n")))).parse_next(i)
+            escaped_transform(alpha, '␛', alt(("0".value("\0"), "n".value("\n")))).parse_peek(i)
         }
         assert_eq!(esc3("a␛0bc␛n"), Ok(("", String::from("a\0bc\n"))));
     }
@@ -821,7 +821,7 @@ mod complete {
     fn test_escaped_transform_error() {
         fn esc_trans(s: &str) -> IResult<&str, String> {
             use crate::ascii::digit1;
-            escaped_transform(digit1, '\\', "n").parse_next(s)
+            escaped_transform(digit1, '\\', "n").parse_peek(s)
         }
 
         assert_eq!(esc_trans("abcd"), Ok(("abcd", String::new())));
@@ -1268,7 +1268,7 @@ mod partial {
     fn full_line_windows() {
         #[allow(clippy::type_complexity)]
         fn take_full_line(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (&[u8], &[u8])> {
-            (not_line_ending, line_ending).parse_next(i)
+            (not_line_ending, line_ending).parse_peek(i)
         }
         let input = b"abc\r\n";
         let output = take_full_line(Partial::new(input));
@@ -1282,7 +1282,7 @@ mod partial {
     fn full_line_unix() {
         #[allow(clippy::type_complexity)]
         fn take_full_line(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (&[u8], &[u8])> {
-            (not_line_ending, line_ending).parse_next(i)
+            (not_line_ending, line_ending).parse_peek(i)
         }
         let input = b"abc\n";
         let output = take_full_line(Partial::new(input));
@@ -1383,7 +1383,7 @@ mod partial {
 
     fn digit_to_i16(input: Partial<&str>) -> IResult<Partial<&str>, i16> {
         let i = input;
-        let (i, opt_sign) = opt(one_of(['+', '-'])).parse_next(i)?;
+        let (i, opt_sign) = opt(one_of(['+', '-'])).parse_peek(i)?;
         let sign = match opt_sign {
             Some('+') | None => true,
             Some('-') => false,

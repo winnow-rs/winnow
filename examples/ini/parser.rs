@@ -21,22 +21,22 @@ pub fn categories(i: Stream<'_>) -> IResult<Stream<'_>, HashMap<&str, HashMap<&s
             repeat(0.., terminated(key_value, opt(multispace))),
         ),
     )
-    .parse_next(i)
+    .parse_peek(i)
 }
 
 fn category(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
     delimited('[', take_while(0.., |c| c != b']'), ']')
         .try_map(str::from_utf8)
-        .parse_next(i)
+        .parse_peek(i)
 }
 
 pub fn key_value(i: Stream<'_>) -> IResult<Stream<'_>, (&str, &str)> {
-    let (i, key) = alphanumeric.try_map(str::from_utf8).parse_next(i)?;
-    let (i, _) = (opt(space), '=', opt(space)).parse_next(i)?;
+    let (i, key) = alphanumeric.try_map(str::from_utf8).parse_peek(i)?;
+    let (i, _) = (opt(space), '=', opt(space)).parse_peek(i)?;
     let (i, val) = take_while(0.., |c| c != b'\n' && c != b';')
         .try_map(str::from_utf8)
-        .parse_next(i)?;
-    let (i, _) = opt((';', take_while(0.., |c| c != b'\n'))).parse_next(i)?;
+        .parse_peek(i)?;
+    let (i, _) = opt((';', take_while(0.., |c| c != b'\n'))).parse_peek(i)?;
     Ok((i, (key, val)))
 }
 

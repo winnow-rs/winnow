@@ -32,7 +32,7 @@ pub type Stream<'i> = Partial<&'i str>;
 pub fn json<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
     input: Stream<'i>,
 ) -> IResult<Stream<'i>, JsonValue, E> {
-    delimited(ws, json_value, ws_or_eof).parse_next(input)
+    delimited(ws, json_value, ws_or_eof).parse_peek(input)
 }
 
 /// `alt` is a combinator that tries multiple parsers one by one, until
@@ -50,7 +50,7 @@ fn json_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static 
         array.map(JsonValue::Array),
         object.map(JsonValue::Object),
     ))
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// `tag(string)` generates a parser that recognizes the argument string.
@@ -59,7 +59,7 @@ fn json_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static 
 fn null<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, &'i str, E> {
     // This is a parser that returns `"null"` if it sees the string "null", and
     // an error otherwise
-    "null".parse_next(input)
+    "null".parse_peek(input)
 }
 
 /// We can combine `tag` with other functions, like `value` which returns a given constant value on
@@ -73,7 +73,7 @@ fn boolean<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'
     // an error otherwise
     let parse_false = "false".value(false);
 
-    alt((parse_true, parse_false)).parse_next(input)
+    alt((parse_true, parse_false)).parse_peek(input)
 }
 
 /// This parser gathers all `char`s up into a `String`with a parse to recognize the double quote
@@ -98,13 +98,13 @@ fn string<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>
     // `context` lets you add a static string to errors to provide more information in the
     // error chain (to indicate which parser had an error)
     .context("string")
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// You can mix the above declarative parsing with an imperative style to handle more unique cases,
 /// like escaping
 fn character<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, char, E> {
-    let (input, c) = none_of('\"').parse_next(input)?;
+    let (input, c) = none_of('\"').parse_peek(input)?;
     if c == '\\' {
         alt((
             any.verify_map(|c| {
@@ -120,7 +120,7 @@ fn character<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream
             }),
             preceded('u', unicode_escape),
         ))
-        .parse_next(input)
+        .parse_peek(input)
     } else {
         Ok((input, c))
     }
@@ -147,13 +147,13 @@ fn unicode_escape<'i, E: ParseError<Stream<'i>>>(
         // Could be probably replaced with .unwrap() or _unchecked due to the verify checks
         std::char::from_u32,
     )
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 fn u16_hex<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, u16, E> {
     take(4usize)
         .verify_map(|s| u16::from_str_radix(s, 16).ok())
-        .parse_next(input)
+        .parse_peek(input)
 }
 
 /// Some combinators, like `separated0` or `many0`, will call a parser repeatedly,
@@ -168,7 +168,7 @@ fn array<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>
         cut_err(terminated(separated0(json_value, (ws, ',', ws)), (ws, ']'))),
     )
     .context("array")
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 fn object<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
@@ -179,13 +179,13 @@ fn object<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>
         cut_err(terminated(separated0(key_value, (ws, ',', ws)), (ws, '}'))),
     )
     .context("object")
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 fn key_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
     input: Stream<'i>,
 ) -> IResult<Stream<'i>, (String, JsonValue), E> {
-    separated_pair(string, cut_err((ws, ':', ws)), json_value).parse_next(input)
+    separated_pair(string, cut_err((ws, ':', ws)), json_value).parse_peek(input)
 }
 
 /// Parser combinators are constructed from the bottom up:
@@ -194,12 +194,12 @@ fn key_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static s
 fn ws<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, &'i str, E> {
     // Combinators like `take_while` return a function. That function is the
     // parser,to which we can pass the input
-    take_while(0.., WS).parse_next(input)
+    take_while(0.., WS).parse_peek(input)
 }
 
 fn ws_or_eof<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, &'i str, E> {
     rest.verify(|s: &str| s.chars().all(|c| WS.contains(&c)))
-        .parse_next(input)
+        .parse_peek(input)
 }
 
 const WS: &[char] = &[' ', '\t', '\r', '\n'];

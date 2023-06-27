@@ -27,7 +27,7 @@ pub fn expr(i: &str) -> IResult<&str, i64> {
             }
         },
     )
-    .parse_next(i)
+    .parse_peek(i)
 }
 
 // We read an initial factor and for each time we find
@@ -48,7 +48,7 @@ fn term(i: &str) -> IResult<&str, i64> {
             }
         },
     )
-    .parse_next(i)
+    .parse_peek(i)
 }
 
 // We transform an integer string into a i64, ignoring surrounding whitespaces
@@ -65,12 +65,12 @@ fn factor(i: &str) -> IResult<&str, i64> {
         )),
         spaces,
     )
-    .parse_next(i)
+    .parse_peek(i)
 }
 
 // We parse any expr surrounded by parens, ignoring all whitespaces around those
 fn parens(i: &str) -> IResult<&str, i64> {
-    delimited('(', expr, ')').parse_next(i)
+    delimited('(', expr, ')').parse_peek(i)
 }
 
 #[test]

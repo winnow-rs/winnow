@@ -685,6 +685,6 @@ mod tests {
     fn convert_error_panic() {
         let input = "";
 
-        let _result: IResult<_, _, VerboseError<&str>> = 'x'.parse_next(input);
+        let _result: IResult<_, _, VerboseError<&str>> = 'x'.parse_peek(input);
     }
 }

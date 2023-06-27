@@ -16,11 +16,11 @@ pub fn end_of_line(input: &str) -> IResult<&str, &str> {
 }
 
 pub fn read_line(input: &str) -> IResult<&str, &str> {
-    terminated(alphanumeric, end_of_line).parse_next(input)
+    terminated(alphanumeric, end_of_line).parse_peek(input)
 }
 
 pub fn read_lines(input: &str) -> IResult<&str, Vec<&str>> {
-    repeat(0.., read_line).parse_next(input)
+    repeat(0.., read_line).parse_peek(input)
 }
 
 #[cfg(feature = "alloc")]

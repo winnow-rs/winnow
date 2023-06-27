@@ -20,8 +20,8 @@ impl<'p, P> ByRef<'p, P> {
 }
 
 impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for ByRef<'p, P> {
-    fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
-        self.p.parse_next(i)
+    fn parse_peek(&mut self, i: I) -> IResult<I, O, E> {
+        self.p.parse_peek(i)
     }
 }
 
@@ -62,8 +62,8 @@ where
     F: Parser<I, O, E>,
     G: Fn(O) -> O2,
 {
-    fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
-        match self.parser.parse_next(i) {
+    fn parse_peek(&mut self, i: I) -> IResult<I, O2, E> {
+        match self.parser.parse_peek(i) {
             Err(e) => Err(e),
             Ok((i, o)) => Ok((i, (self.map)(o))),
         }
@@ -115,9 +115,9 @@ where
     I: Clone,
     E: FromExternalError<I, E2>,
 {
-    fn parse_next(&mut self, input: I) -> IResult<I, O2, E> {
+    fn parse_peek(&mut self, input: I) -> IResult<I, O2, E> {
         let i = input.clone();
-        let (input, o) = self.parser.parse_next(input)?;
+        let (input, o) = self.parser.parse_peek(input)?;
         let res = match (self.map)(o) {
             Ok(o2) => Ok((input, o2)),
             Err(e) => Err(ErrMode::from_external_error(i, ErrorKind::Verify, e)),
@@ -170,9 +170,9 @@ where
     I: Clone,
     E: ParseError<I>,
 {
-    fn parse_next(&mut self, input: I) -> IResult<I, O2, E> {
+    fn parse_peek(&mut self, input: I) -> IResult<I, O2, E> {
         let i = input.clone();
-        let (input, o) = self.parser.parse_next(input)?;
+        let (input, o) = self.parser.parse_peek(input)?;
         let res = match (self.map)(o) {
             Some(o2) => Ok((input, o2)),
             None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
@@ -222,10 +222,10 @@ where
     G: Parser<O, O2, E>,
     O: StreamIsPartial,
 {
-    fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
-        let (i, mut o) = self.outer.parse_next(i)?;
+    fn parse_peek(&mut self, i: I) -> IResult<I, O2, E> {
+        let (i, mut o) = self.outer.parse_peek(i)?;
         let _ = o.complete();
-        let (_, o2) = self.inner.parse_next(o)?;
+        let (_, o2) = self.inner.parse_peek(o)?;
         Ok((i, o2))
     }
 }
@@ -271,9 +271,9 @@ where
     O: crate::stream::ParseSlice<O2>,
     E: ParseError<I>,
 {
-    fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
+    fn parse_peek(&mut self, i: I) -> IResult<I, O2, E> {
         let input = i.clone();
-        let (i, o) = self.p.parse_next(i)?;
+        let (i, o) = self.p.parse_peek(i)?;
 
         let res = o
             .parse_slice()
@@ -325,9 +325,9 @@ where
     G: FnMut(O) -> H,
     H: Parser<I, O2, E>,
 {
-    fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
-        let (i, o) = self.f.parse_next(i)?;
-        (self.g)(o).parse_next(i)
+    fn parse_peek(&mut self, i: I) -> IResult<I, O2, E> {
+        let (i, o) = self.f.parse_peek(i)?;
+        (self.g)(o).parse_peek(i)
     }
 }
 
@@ -349,17 +349,17 @@ where
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
+    fn parse_peek(&mut self, input: I) -> IResult<I, O, E> {
         trace("complete_err", |input: I| {
             let i = input.clone();
-            match (self.f).parse_next(input) {
+            match (self.f).parse_peek(input) {
                 Err(ErrMode::Incomplete(_)) => {
                     Err(ErrMode::from_error_kind(i, ErrorKind::Complete))
                 }
                 rest => rest,
             }
         })
-        .parse_next(input)
+        .parse_peek(input)
     }
 }
 
@@ -412,9 +412,9 @@ where
     O2: ?Sized,
     E: ParseError<I>,
 {
-    fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
+    fn parse_peek(&mut self, input: I) -> IResult<I, O, E> {
         let i = input.clone();
-        let (input, o) = self.parser.parse_next(input)?;
+        let (input, o) = self.parser.parse_peek(input)?;
 
         let res = if (self.filter)(o.borrow()) {
             Ok((input, o))
@@ -461,9 +461,9 @@ where
     F: Parser<I, O, E>,
     O2: Clone,
 {
-    fn parse_next(&mut self, input: I) -> IResult<I, O2, E> {
+    fn parse_peek(&mut self, input: I) -> IResult<I, O2, E> {
         (self.parser)
-            .parse_next(input)
+            .parse_peek(input)
             .map(|(i, _)| (i, self.val.clone()))
     }
 }
@@ -498,8 +498,8 @@ impl<F, I, O, E> Parser<I, (), E> for Void<F, I, O, E>
 where
     F: Parser<I, O, E>,
 {
-    fn parse_next(&mut self, input: I) -> IResult<I, (), E> {
-        (self.parser).parse_next(input).map(|(i, _)| (i, ()))
+    fn parse_peek(&mut self, input: I) -> IResult<I, (), E> {
+        (self.parser).parse_peek(input).map(|(i, _)| (i, ()))
     }
 }
 
@@ -536,9 +536,9 @@ where
     F: Parser<I, O, E>,
     I: Stream,
 {
-    fn parse_next(&mut self, input: I) -> IResult<I, <I as Stream>::Slice, E> {
+    fn parse_peek(&mut self, input: I) -> IResult<I, <I as Stream>::Slice, E> {
         let checkpoint = input.checkpoint();
-        match (self.parser).parse_next(input) {
+        match (self.parser).parse_peek(input) {
             Ok((mut input, _)) => {
                 let offset = input.offset_from(&checkpoint);
                 input.reset(checkpoint);
@@ -583,9 +583,9 @@ where
     F: Parser<I, O, E>,
     I: Stream,
 {
-    fn parse_next(&mut self, input: I) -> IResult<I, (O, <I as Stream>::Slice), E> {
+    fn parse_peek(&mut self, input: I) -> IResult<I, (O, <I as Stream>::Slice), E> {
         let checkpoint = input.checkpoint();
-        match (self.parser).parse_next(input) {
+        match (self.parser).parse_peek(input) {
             Ok((mut input, result)) => {
                 let offset = input.offset_from(&checkpoint);
                 input.reset(checkpoint);
@@ -630,9 +630,9 @@ where
     F: Parser<I, O, E>,
     I: Clone + Location,
 {
-    fn parse_next(&mut self, input: I) -> IResult<I, Range<usize>, E> {
+    fn parse_peek(&mut self, input: I) -> IResult<I, Range<usize>, E> {
         let start = input.location();
-        self.parser.parse_next(input).map(move |(remaining, _)| {
+        self.parser.parse_peek(input).map(move |(remaining, _)| {
             let end = remaining.location();
             (remaining, (start..end))
         })
@@ -672,10 +672,10 @@ where
     F: Parser<I, O, E>,
     I: Clone + Location,
 {
-    fn parse_next(&mut self, input: I) -> IResult<I, (O, Range<usize>), E> {
+    fn parse_peek(&mut self, input: I) -> IResult<I, (O, Range<usize>), E> {
         let start = input.location();
         self.parser
-            .parse_next(input)
+            .parse_peek(input)
             .map(move |(remaining, output)| {
                 let end = remaining.location();
                 (remaining, (output, (start..end)))
@@ -718,8 +718,8 @@ where
     F: Parser<I, O, E>,
     O: Into<O2>,
 {
-    fn parse_next(&mut self, i: I) -> IResult<I, O2, E> {
-        match self.parser.parse_next(i) {
+    fn parse_peek(&mut self, i: I) -> IResult<I, O2, E> {
+        match self.parser.parse_peek(i) {
             Ok((i, o)) => Ok((i, o.into())),
             Err(err) => Err(err),
         }
@@ -761,8 +761,8 @@ where
     F: Parser<I, O, E>,
     E: Into<E2>,
 {
-    fn parse_next(&mut self, i: I) -> IResult<I, O, E2> {
-        match self.parser.parse_next(i) {
+    fn parse_peek(&mut self, i: I) -> IResult<I, O, E2> {
+        match self.parser.parse_peek(i) {
             Ok(ok) => Ok(ok),
             Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.into())),
             Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.into())),
@@ -812,16 +812,16 @@ where
     E: ContextError<I, C>,
     C: Clone + crate::lib::std::fmt::Debug,
 {
-    fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
+    fn parse_peek(&mut self, i: I) -> IResult<I, O, E> {
         #[cfg(feature = "debug")]
         let name = format!("context={:?}", self.context);
         #[cfg(not(feature = "debug"))]
         let name = "context";
         trace(name, move |i: I| {
             (self.parser)
-                .parse_next(i.clone())
+                .parse_peek(i.clone())
                 .map_err(|err| err.map(|err| err.add_context(i, self.context.clone())))
         })
-        .parse_next(i)
+        .parse_peek(i)
     }
 }
