@@ -1,7 +1,7 @@
 //! Basic types to build the parsers
 
 use crate::combinator::*;
-use crate::error::{ContextError, FromExternalError, IResult, ParseError};
+use crate::error::{ContextError, FromExternalError, IResult, PResult, ParseError};
 use crate::stream::{AsChar, Compare, Location, ParseSlice, Stream, StreamIsPartial};
 
 /// Core trait for parsing
@@ -63,6 +63,25 @@ pub trait Parser<I, O, E> {
                 .expect("complete parsers should not report `ErrMode::Incomplete(_)`")
         })?;
         Ok(o)
+    }
+
+    /// Take tokens from the [`Stream`], turning it into the output
+    ///
+    /// This includes advancing the [`Stream`] to the next location.
+    ///
+    /// On error, `input` will be left pointing at the error location.
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut I) -> PResult<O, E>
+    where
+        I: Clone,
+    {
+        match self.parse_peek((*input).clone()) {
+            Ok((i, o)) => {
+                *input = i;
+                Ok(o)
+            }
+            Err(err) => Err(err),
+        }
     }
 
     /// Take tokens from the [`Stream`], turning it into the output
