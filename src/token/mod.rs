@@ -9,10 +9,7 @@ use crate::error::Needed;
 use crate::error::ParseError;
 use crate::lib::std::result::Result::Ok;
 use crate::stream::Range;
-use crate::stream::{
-    split_at_offset1_complete, split_at_offset1_partial, split_at_offset_complete,
-    split_at_offset_partial, Compare, CompareResult, ContainsToken, FindSlice, SliceLen, Stream,
-};
+use crate::stream::{Compare, CompareResult, ContainsToken, FindSlice, SliceLen, Stream};
 use crate::stream::{StreamIsPartial, ToUsize};
 use crate::trace::trace;
 use crate::IResult;
@@ -552,6 +549,88 @@ where
         split_at_offset1_partial(&input, |c| !list.contains_token(c), e)
     } else {
         split_at_offset1_complete(&input, |c| !list.contains_token(c), e)
+    }
+}
+
+/// Looks for the first element of the input type for which the condition returns true,
+/// and returns the input up to this position.
+///
+/// *Partial version*: If no element is found matching the condition, this will return `Incomplete`
+fn split_at_offset_partial<P, I: Stream, E: ParseError<I>>(
+    input: &I,
+    predicate: P,
+) -> IResult<I, <I as Stream>::Slice, E>
+where
+    P: Fn(I::Token) -> bool,
+{
+    let offset = input
+        .offset_for(predicate)
+        .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
+    Ok(input.next_slice(offset))
+}
+
+/// Looks for the first element of the input type for which the condition returns true
+/// and returns the input up to this position.
+///
+/// Fails if the produced slice is empty.
+///
+/// *Partial version*: If no element is found matching the condition, this will return `Incomplete`
+fn split_at_offset1_partial<P, I: Stream, E: ParseError<I>>(
+    input: &I,
+    predicate: P,
+    e: ErrorKind,
+) -> IResult<I, <I as Stream>::Slice, E>
+where
+    P: Fn(I::Token) -> bool,
+{
+    let offset = input
+        .offset_for(predicate)
+        .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
+    if offset == 0 {
+        Err(ErrMode::from_error_kind(input.clone(), e))
+    } else {
+        Ok(input.next_slice(offset))
+    }
+}
+
+/// Looks for the first element of the input type for which the condition returns true,
+/// and returns the input up to this position.
+///
+/// *Complete version*: If no element is found matching the condition, this will return the whole input
+fn split_at_offset_complete<P, I: Stream, E: ParseError<I>>(
+    input: &I,
+    predicate: P,
+) -> IResult<I, <I as Stream>::Slice, E>
+where
+    P: Fn(I::Token) -> bool,
+{
+    let offset = input
+        .offset_for(predicate)
+        .unwrap_or_else(|| input.eof_offset());
+    Ok(input.next_slice(offset))
+}
+
+/// Looks for the first element of the input type for which the condition returns true
+/// and returns the input up to this position.
+///
+/// Fails if the produced slice is empty.
+///
+/// *Complete version*: If no element is found matching the condition, this will return the whole input
+fn split_at_offset1_complete<P, I: Stream, E: ParseError<I>>(
+    input: &I,
+    predicate: P,
+    e: ErrorKind,
+) -> IResult<I, <I as Stream>::Slice, E>
+where
+    P: Fn(I::Token) -> bool,
+{
+    let offset = input
+        .offset_for(predicate)
+        .unwrap_or_else(|| input.eof_offset());
+    if offset == 0 {
+        Err(ErrMode::from_error_kind(input.clone(), e))
+    } else {
+        Ok(input.next_slice(offset))
     }
 }
 

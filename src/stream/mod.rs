@@ -11,13 +11,16 @@
 
 use core::num::NonZeroUsize;
 
-use crate::error::{ErrMode, ErrorKind, Needed, ParseError};
+use crate::error::Needed;
 use crate::lib::std::iter::{Cloned, Enumerate};
 use crate::lib::std::slice::Iter;
 use crate::lib::std::str::from_utf8;
 use crate::lib::std::str::CharIndices;
 use crate::lib::std::str::FromStr;
-use crate::IResult;
+
+#[allow(unused_imports)]
+#[cfg(feature = "unstable-doc")]
+use crate::error::ErrMode;
 
 #[cfg(feature = "alloc")]
 use crate::lib::std::collections::BTreeMap;
@@ -2621,88 +2624,6 @@ macro_rules! impl_contains_token_for_tuples {
 impl_contains_token_for_tuples!(
     F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21
 );
-
-/// Looks for the first element of the input type for which the condition returns true,
-/// and returns the input up to this position.
-///
-/// *Partial version*: If no element is found matching the condition, this will return `Incomplete`
-pub(crate) fn split_at_offset_partial<P, I: Stream, E: ParseError<I>>(
-    input: &I,
-    predicate: P,
-) -> IResult<I, <I as Stream>::Slice, E>
-where
-    P: Fn(I::Token) -> bool,
-{
-    let offset = input
-        .offset_for(predicate)
-        .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
-    Ok(input.next_slice(offset))
-}
-
-/// Looks for the first element of the input type for which the condition returns true
-/// and returns the input up to this position.
-///
-/// Fails if the produced slice is empty.
-///
-/// *Partial version*: If no element is found matching the condition, this will return `Incomplete`
-pub(crate) fn split_at_offset1_partial<P, I: Stream, E: ParseError<I>>(
-    input: &I,
-    predicate: P,
-    e: ErrorKind,
-) -> IResult<I, <I as Stream>::Slice, E>
-where
-    P: Fn(I::Token) -> bool,
-{
-    let offset = input
-        .offset_for(predicate)
-        .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
-    if offset == 0 {
-        Err(ErrMode::from_error_kind(input.clone(), e))
-    } else {
-        Ok(input.next_slice(offset))
-    }
-}
-
-/// Looks for the first element of the input type for which the condition returns true,
-/// and returns the input up to this position.
-///
-/// *Complete version*: If no element is found matching the condition, this will return the whole input
-pub(crate) fn split_at_offset_complete<P, I: Stream, E: ParseError<I>>(
-    input: &I,
-    predicate: P,
-) -> IResult<I, <I as Stream>::Slice, E>
-where
-    P: Fn(I::Token) -> bool,
-{
-    let offset = input
-        .offset_for(predicate)
-        .unwrap_or_else(|| input.eof_offset());
-    Ok(input.next_slice(offset))
-}
-
-/// Looks for the first element of the input type for which the condition returns true
-/// and returns the input up to this position.
-///
-/// Fails if the produced slice is empty.
-///
-/// *Complete version*: If no element is found matching the condition, this will return the whole input
-pub(crate) fn split_at_offset1_complete<P, I: Stream, E: ParseError<I>>(
-    input: &I,
-    predicate: P,
-    e: ErrorKind,
-) -> IResult<I, <I as Stream>::Slice, E>
-where
-    P: Fn(I::Token) -> bool,
-{
-    let offset = input
-        .offset_for(predicate)
-        .unwrap_or_else(|| input.eof_offset());
-    if offset == 0 {
-        Err(ErrMode::from_error_kind(input.clone(), e))
-    } else {
-        Ok(input.next_slice(offset))
-    }
-}
 
 #[cfg(feature = "simd")]
 #[inline(always)]
