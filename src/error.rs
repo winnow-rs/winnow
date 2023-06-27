@@ -619,6 +619,35 @@ impl ErrorKind {
   }
 }
 
+impl<I> ParseError<I> for ErrorKind {
+    fn from_error_kind(_input: I, kind: ErrorKind) -> Self {
+        kind
+    }
+
+    fn append(self, _: I, _: ErrorKind) -> Self {
+        self
+    }
+}
+
+impl<I, C> ContextError<I, C> for ErrorKind {}
+
+impl<I, E> FromExternalError<I, E> for ErrorKind {
+    /// Create a new error from an input position and an external error
+    fn from_external_error(_input: I, kind: ErrorKind, _e: E) -> Self {
+        kind
+    }
+}
+
+/// The Display implementation allows the `std::error::Error` implementation
+impl fmt::Display for ErrorKind {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "error {:?}", self)
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for ErrorKind {}
+
 /// Creates a parse error from a [`ErrorKind`]
 /// and the position in the input
 #[cfg(test)]
