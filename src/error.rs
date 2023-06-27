@@ -23,6 +23,7 @@ use crate::lib::std::borrow::ToOwned;
 use crate::lib::std::fmt;
 use core::num::NonZeroUsize;
 
+use crate::stream::Stream;
 #[allow(unused_imports)] // Here for intra-doc links
 use crate::Parser;
 
@@ -497,7 +498,7 @@ impl<I: fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::Error for
 
 /// Transforms a `VerboseError` into a trace with input position information
 #[cfg(feature = "alloc")]
-pub fn convert_error<I: core::ops::Deref<Target = str>>(
+pub fn convert_error<I: Stream + core::ops::Deref<Target = str>>(
     input: I,
     e: VerboseError<I>,
 ) -> crate::lib::std::string::String {
