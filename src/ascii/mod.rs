@@ -56,7 +56,7 @@ where
     I: Stream,
     I: Compare<&'static str>,
 {
-    trace("crlf", move |input: I| "\r\n".parse_next(input)).parse_next(input)
+    trace("crlf", move |input: I| "\r\n".parse_peek(input)).parse_peek(input)
 }
 
 /// Recognizes a string of any char except '\r\n' or '\n'.
@@ -107,7 +107,7 @@ where
             not_line_ending_::<_, _, false>(input)
         }
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 fn not_line_ending_<I, E: ParseError<I>, const PARTIAL: bool>(
@@ -184,9 +184,9 @@ where
     I: Compare<&'static str>,
 {
     trace("line_ending", move |input: I| {
-        alt(("\n", "\r\n")).parse_next(input)
+        alt(("\n", "\r\n")).parse_peek(input)
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Matches a newline character '\n'.
@@ -226,9 +226,9 @@ where
 {
     trace("newline", move |input: I| {
         '\n'.map(|c: <I as Stream>::Token| c.as_char())
-            .parse_next(input)
+            .parse_peek(input)
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Matches a tab character '\t'.
@@ -268,9 +268,9 @@ where
 {
     trace("tab", move |input: I| {
         '\t'.map(|c: <I as Stream>::Token| c.as_char())
-            .parse_next(input)
+            .parse_peek(input)
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
@@ -311,9 +311,9 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("alpha0", move |input: I| {
-        take_while(0.., |c: <I as Stream>::Token| c.is_alpha()).parse_next(input)
+        take_while(0.., |c: <I as Stream>::Token| c.is_alpha()).parse_peek(input)
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Recognizes one or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
@@ -354,9 +354,9 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("alpha1", move |input: I| {
-        take_while(1.., |c: <I as Stream>::Token| c.is_alpha()).parse_next(input)
+        take_while(1.., |c: <I as Stream>::Token| c.is_alpha()).parse_peek(input)
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Recognizes zero or more ASCII numerical characters: 0-9
@@ -398,9 +398,9 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("digit0", move |input: I| {
-        take_while(0.., |c: <I as Stream>::Token| c.is_dec_digit()).parse_next(input)
+        take_while(0.., |c: <I as Stream>::Token| c.is_dec_digit()).parse_peek(input)
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Recognizes one or more ASCII numerical characters: 0-9
@@ -442,7 +442,7 @@ where
 /// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed, Parser};
 /// # use winnow::ascii::digit1;
 /// fn parser(input: &str) -> IResult<&str, u32> {
-///   digit1.try_map(str::parse).parse_next(input)
+///   digit1.try_map(str::parse).parse_peek(input)
 /// }
 ///
 /// assert_eq!(parser("416"), Ok(("", 416)));
@@ -457,9 +457,9 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("digit1", move |input: I| {
-        take_while(1.., |c: <I as Stream>::Token| c.is_dec_digit()).parse_next(input)
+        take_while(1.., |c: <I as Stream>::Token| c.is_dec_digit()).parse_peek(input)
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Recognizes zero or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
@@ -499,9 +499,9 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("hex_digit0", move |input: I| {
-        take_while(0.., |c: <I as Stream>::Token| c.is_hex_digit()).parse_next(input)
+        take_while(0.., |c: <I as Stream>::Token| c.is_hex_digit()).parse_peek(input)
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Recognizes one or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
@@ -542,9 +542,9 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("hex_digit1", move |input: I| {
-        take_while(1.., |c: <I as Stream>::Token| c.is_hex_digit()).parse_next(input)
+        take_while(1.., |c: <I as Stream>::Token| c.is_hex_digit()).parse_peek(input)
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Recognizes zero or more octal characters: 0-7
@@ -585,9 +585,9 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("oct_digit0", move |input: I| {
-        take_while(0.., |c: <I as Stream>::Token| c.is_oct_digit()).parse_next(input)
+        take_while(0.., |c: <I as Stream>::Token| c.is_oct_digit()).parse_peek(input)
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Recognizes one or more octal characters: 0-7
@@ -628,9 +628,9 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("oct_digit0", move |input: I| {
-        take_while(1.., |c: <I as Stream>::Token| c.is_oct_digit()).parse_next(input)
+        take_while(1.., |c: <I as Stream>::Token| c.is_oct_digit()).parse_peek(input)
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Recognizes zero or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
@@ -671,9 +671,9 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("alphanumeric0", move |input: I| {
-        take_while(0.., |c: <I as Stream>::Token| c.is_alphanum()).parse_next(input)
+        take_while(0.., |c: <I as Stream>::Token| c.is_alphanum()).parse_peek(input)
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Recognizes one or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
@@ -714,9 +714,9 @@ where
     <I as Stream>::Token: AsChar,
 {
     trace("alphanumeric1", move |input: I| {
-        take_while(1.., |c: <I as Stream>::Token| c.is_alphanum()).parse_next(input)
+        take_while(1.., |c: <I as Stream>::Token| c.is_alphanum()).parse_peek(input)
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Recognizes zero or more spaces and tabs.
@@ -749,9 +749,9 @@ where
             let ch = c.as_char();
             matches!(ch, ' ' | '\t')
         })
-        .parse_next(input)
+        .parse_peek(input)
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Recognizes one or more spaces and tabs.
@@ -796,9 +796,9 @@ where
             let ch = c.as_char();
             matches!(ch, ' ' | '\t')
         })
-        .parse_next(input)
+        .parse_peek(input)
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Recognizes zero or more spaces, tabs, carriage returns and line feeds.
@@ -843,9 +843,9 @@ where
             let ch = c.as_char();
             matches!(ch, ' ' | '\t' | '\r' | '\n')
         })
-        .parse_next(input)
+        .parse_peek(input)
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Recognizes one or more spaces, tabs, carriage returns and line feeds.
@@ -890,9 +890,9 @@ where
             let ch = c.as_char();
             matches!(ch, ' ' | '\t' | '\r' | '\n')
         })
-        .parse_next(input)
+        .parse_peek(input)
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Decode a decimal unsigned integer
@@ -947,7 +947,7 @@ where
             Ok((input.peek_finish().0, value))
         }
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Metadata for parsing unsigned integers, see [`dec_uint`]
@@ -1072,7 +1072,7 @@ where
         }
         let (input, sign) = opt(crate::token::one_of(sign).map(AsChar::as_char))
             .map(|c| c != Some('-'))
-            .parse_next(input)?;
+            .parse_peek(input)?;
 
         if input.eof_offset() == 0 {
             if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
@@ -1112,7 +1112,7 @@ where
             Ok((input.peek_finish().0, value))
         }
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Metadata for parsing signed integers, see [`dec_int`]
@@ -1244,7 +1244,7 @@ where
 
         Ok((remaining, res))
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Metadata for parsing hex numbers, see [`hex_uint`]
@@ -1351,7 +1351,7 @@ where
             None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
         }
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 fn recognize_float_or_exceptions<I, E: ParseError<I>>(
@@ -1371,7 +1371,7 @@ where
         crate::token::tag_no_case("infinity"),
         crate::token::tag_no_case("inf"),
     ))
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 fn recognize_float<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
@@ -1392,7 +1392,7 @@ where
         opt((one_of(['e', 'E']), opt(one_of(['+', '-'])), cut_err(digit1))),
     )
         .recognize()
-        .parse_next(input)
+        .parse_peek(input)
 }
 
 /// Matches a byte string with escaped characters.
@@ -1411,7 +1411,7 @@ where
 /// use winnow::token::one_of;
 ///
 /// fn esc(s: &str) -> IResult<&str, &str> {
-///   escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_next(s)
+///   escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_peek(s)
 /// }
 ///
 /// assert_eq!(esc("123;"), Ok((";", "123")));
@@ -1427,7 +1427,7 @@ where
 /// use winnow::token::one_of;
 ///
 /// fn esc(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_next(s)
+///   escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_peek(s)
 /// }
 ///
 /// assert_eq!(esc(Partial::new("123;")), Ok((Partial::new(";"), "123")));
@@ -1475,7 +1475,7 @@ where
     while input.eof_offset() > 0 {
         let current_len = input.eof_offset();
 
-        match normal.parse_next(input.clone()) {
+        match normal.parse_peek(input.clone()) {
             Ok((i2, _)) => {
                 if i2.eof_offset() == 0 {
                     return Err(ErrMode::Incomplete(Needed::Unknown));
@@ -1490,7 +1490,7 @@ where
             Err(ErrMode::Backtrack(_)) => {
                 if input.peek_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = control_char.len_utf8();
-                    let (i2, _) = escapable.parse_next(input.peek_slice(next).0)?;
+                    let (i2, _) = escapable.parse_peek(input.peek_slice(next).0)?;
                     if i2.eof_offset() == 0 {
                         return Err(ErrMode::Incomplete(Needed::Unknown));
                     } else {
@@ -1530,7 +1530,7 @@ where
     while input.eof_offset() > 0 {
         let current_len = input.eof_offset();
 
-        match normal.parse_next(input.clone()) {
+        match normal.parse_peek(input.clone()) {
             Ok((i2, _)) => {
                 // return if we consumed everything or if the normal parser
                 // does not consume anything
@@ -1548,7 +1548,7 @@ where
             Err(ErrMode::Backtrack(_)) => {
                 if input.peek_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = control_char.len_utf8();
-                    let (i2, _) = escapable.parse_next(input.peek_slice(next).0)?;
+                    let (i2, _) = escapable.parse_peek(input.peek_slice(next).0)?;
                     if i2.eof_offset() == 0 {
                         input.reset(start);
                         return Ok(input.peek_finish());
@@ -1598,7 +1598,7 @@ where
 ///       "\"".value("\""),
 ///       "n".value("\n"),
 ///     ))
-///   ).parse_next(input)
+///   ).parse_peek(input)
 /// }
 ///
 /// assert_eq!(parser("ab\\\"cd"), Ok(("", String::from("ab\"cd"))));
@@ -1624,7 +1624,7 @@ where
 ///       "\"".value("\""),
 ///       "n".value("\n"),
 ///     ))
-///   ).parse_next(input)
+///   ).parse_peek(input)
 /// }
 ///
 /// assert_eq!(parser(Partial::new("ab\\\"cd\"")), Ok((Partial::new("\""), String::from("ab\"cd"))));
@@ -1672,7 +1672,7 @@ where
 
     while input.eof_offset() > 0 {
         let current_len = input.eof_offset();
-        match normal.parse_next(input.clone()) {
+        match normal.parse_peek(input.clone()) {
             Ok((i2, o)) => {
                 res.accumulate(o);
                 if i2.eof_offset() == 0 {
@@ -1686,7 +1686,7 @@ where
             Err(ErrMode::Backtrack(_)) => {
                 if input.peek_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = control_char.len_utf8();
-                    let (i2, o) = transform.parse_next(input.peek_slice(next).0)?;
+                    let (i2, o) = transform.parse_peek(input.peek_slice(next).0)?;
                     res.accumulate(o);
                     if i2.eof_offset() == 0 {
                         return Err(ErrMode::Incomplete(Needed::Unknown));
@@ -1723,7 +1723,7 @@ where
     while input.eof_offset() > 0 {
         let current_len = input.eof_offset();
 
-        match normal.parse_next(input.clone()) {
+        match normal.parse_peek(input.clone()) {
             Ok((i2, o)) => {
                 res.accumulate(o);
                 if i2.eof_offset() == 0 {
@@ -1737,7 +1737,7 @@ where
             Err(ErrMode::Backtrack(_)) => {
                 if input.peek_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = control_char.len_utf8();
-                    let (i2, o) = transform.parse_next(input.peek_slice(next).0)?;
+                    let (i2, o) = transform.parse_peek(input.peek_slice(next).0)?;
                     res.accumulate(o);
                     if i2.eof_offset() == 0 {
                         return Ok((input.peek_finish().0, res));

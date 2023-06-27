@@ -225,11 +225,11 @@ impl<I: crate::lib::std::fmt::Display, S> crate::lib::std::fmt::Display for Stat
 /// # use winnow::prelude::*;
 ///
 /// fn take_partial(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-///   token::take(4u8).parse_next(i)
+///   token::take(4u8).parse_peek(i)
 /// }
 ///
 /// fn take_complete(i: &[u8]) -> IResult<&[u8], &[u8]> {
-///   token::take(4u8).parse_next(i)
+///   token::take(4u8).parse_peek(i)
 /// }
 ///
 /// // both parsers will take 4 bytes as expected
@@ -2423,7 +2423,7 @@ impl<'a> AsChar for &'a char {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::token::take_while;
 /// fn hex_digit1(input: &str) -> IResult<&str, &str> {
-///     take_while(1.., ('a'..='f', 'A'..='F', '0'..='9')).parse_next(input)
+///     take_while(1.., ('a'..='f', 'A'..='F', '0'..='9')).parse_peek(input)
 /// }
 ///
 /// assert_eq!(hex_digit1("21cZ"), Ok(("Z", "21c")));

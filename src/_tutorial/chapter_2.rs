@@ -12,13 +12,13 @@
 //! # use winnow::IResult;
 //! #
 //! fn parse_prefix(input: &str) -> IResult<&str, char> {
-//!     '0'.parse_next(input)
+//!     '0'.parse_peek(input)
 //! }
 //!
 //! fn main()  {
 //!     let input = "0x1a2b Hello";
 //!
-//!     let (remainder, output) = parse_prefix.parse_next(input).unwrap();
+//!     let (remainder, output) = parse_prefix.parse_peek(input).unwrap();
 //!
 //!     assert_eq!(remainder, "x1a2b Hello");
 //!     assert_eq!(output, '0');
@@ -37,13 +37,13 @@
 //! # use winnow::IResult;
 //! #
 //! fn parse_prefix(input: &str) -> IResult<&str, &str> {
-//!     "0x".parse_next(input)
+//!     "0x".parse_peek(input)
 //! }
 //!
 //! fn main()  {
 //!     let input = "0x1a2b Hello";
 //!
-//!     let (remainder, output) = parse_prefix.parse_next(input).unwrap();
+//!     let (remainder, output) = parse_prefix.parse_peek(input).unwrap();
 //!     assert_eq!(remainder, "1a2b Hello");
 //!     assert_eq!(output, "0x");
 //!
@@ -64,13 +64,13 @@
 //! use winnow::token::one_of;
 //!
 //! fn parse_digits(input: &str) -> IResult<&str, char> {
-//!     one_of(('0'..='9', 'a'..='f', 'A'..='F')).parse_next(input)
+//!     one_of(('0'..='9', 'a'..='f', 'A'..='F')).parse_peek(input)
 //! }
 //!
 //! fn main() {
 //!     let input = "1a2b Hello";
 //!
-//!     let (remainder, output) = parse_digits.parse_next(input).unwrap();
+//!     let (remainder, output) = parse_digits.parse_peek(input).unwrap();
 //!     assert_eq!(remainder, "a2b Hello");
 //!     assert_eq!(output, '1');
 //!
@@ -108,13 +108,13 @@
 //! use winnow::token::take_while;
 //!
 //! fn parse_digits(input: &str) -> IResult<&str, &str> {
-//!     take_while(1.., ('0'..='9', 'a'..='f', 'A'..='F')).parse_next(input)
+//!     take_while(1.., ('0'..='9', 'a'..='f', 'A'..='F')).parse_peek(input)
 //! }
 //!
 //! fn main() {
 //!     let input = "1a2b Hello";
 //!
-//!     let (remainder, output) = parse_digits.parse_next(input).unwrap();
+//!     let (remainder, output) = parse_digits.parse_peek(input).unwrap();
 //!     assert_eq!(remainder, " Hello");
 //!     assert_eq!(output, "1a2b");
 //!
@@ -129,13 +129,13 @@
 //! use winnow::ascii::hex_digit1;
 //!
 //! fn parse_digits(input: &str) -> IResult<&str, &str> {
-//!     hex_digit1.parse_next(input)
+//!     hex_digit1.parse_peek(input)
 //! }
 //!
 //! fn main() {
 //!     let input = "1a2b Hello";
 //!
-//!     let (remainder, output) = parse_digits.parse_next(input).unwrap();
+//!     let (remainder, output) = parse_digits.parse_peek(input).unwrap();
 //!     assert_eq!(remainder, " Hello");
 //!     assert_eq!(output, "1a2b");
 //!

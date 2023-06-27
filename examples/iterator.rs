@@ -10,7 +10,7 @@ fn main() {
     let mut data = "abcabcabcabc";
 
     fn parser(i: &str) -> IResult<&str, &str> {
-        "abc".parse_next(i)
+        "abc".parse_peek(i)
     }
 
     // `from_fn` (available from Rust 1.34) can create an iterator

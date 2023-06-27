@@ -15,7 +15,7 @@
 //! # use winnow::IResult;
 //! #
 //! fn parse_prefix(input: &str) -> IResult<&str, &str> {
-//!     "0x".parse_next(input)
+//!     "0x".parse_peek(input)
 //! }
 //!
 //! fn parse_digits(input: &str) -> IResult<&str, &str> {
@@ -23,14 +23,14 @@
 //!         ('0'..='9'),
 //!         ('A'..='F'),
 //!         ('a'..='f'),
-//!     )).parse_next(input)
+//!     )).parse_peek(input)
 //! }
 //!
 //! fn main()  {
 //!     let input = "0x1a2b Hello";
 //!
-//!     let (remainder, prefix) = parse_prefix.parse_next(input).unwrap();
-//!     let (remainder, digits) = parse_digits.parse_next(remainder).unwrap();
+//!     let (remainder, prefix) = parse_prefix.parse_peek(input).unwrap();
+//!     let (remainder, digits) = parse_digits.parse_peek(remainder).unwrap();
 //!
 //!     assert_eq!(prefix, "0x");
 //!     assert_eq!(digits, "1a2b");
@@ -45,7 +45,7 @@
 //! # use winnow::IResult;
 //! #
 //! # fn parse_prefix(input: &str) -> IResult<&str, &str> {
-//! #     "0x".parse_next(input)
+//! #     "0x".parse_peek(input)
 //! # }
 //! #
 //! # fn parse_digits(input: &str) -> IResult<&str, &str> {
@@ -53,7 +53,7 @@
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! //...
@@ -64,7 +64,7 @@
 //!     let (remainder, (prefix, digits)) = (
 //!         parse_prefix,
 //!         parse_digits
-//!     ).parse_next(input).unwrap();
+//!     ).parse_peek(input).unwrap();
 //!
 //!     assert_eq!(prefix, "0x");
 //!     assert_eq!(digits, "1a2b");
@@ -81,7 +81,7 @@
 //! use winnow::combinator::preceded;
 //!
 //! # fn parse_prefix(input: &str) -> IResult<&str, &str> {
-//! #     "0x".parse_next(input)
+//! #     "0x".parse_peek(input)
 //! # }
 //! #
 //! # fn parse_digits(input: &str) -> IResult<&str, &str> {
@@ -89,7 +89,7 @@
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! //...
@@ -100,7 +100,7 @@
 //!     let (remainder, digits) = preceded(
 //!         parse_prefix,
 //!         parse_digits
-//!     ).parse_next(input).unwrap();
+//!     ).parse_peek(input).unwrap();
 //!
 //!     assert_eq!(digits, "1a2b");
 //!     assert_eq!(remainder, " Hello");
@@ -129,26 +129,26 @@
 //!         ("0o", parse_oct_digits),
 //!         ("0d", parse_dec_digits),
 //!         ("0x", parse_hex_digits),
-//!     )).parse_next(input)
+//!     )).parse_peek(input)
 //! }
 //!
 //! // ...
 //! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
@@ -156,13 +156,13 @@
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //!
 //! fn main() {
 //!     let input = "0x1a2b Hello";
 //!
-//!     let (remainder, (prefix, digits)) = parse_digits.parse_next(input).unwrap();
+//!     let (remainder, (prefix, digits)) = parse_digits.parse_peek(input).unwrap();
 //!
 //!     assert_eq!(remainder, " Hello");
 //!     assert_eq!(prefix, "0x");
@@ -191,26 +191,26 @@
 //!         "0d" => parse_dec_digits,
 //!         "0x" => parse_hex_digits,
 //!         _ => fail,
-//!     ).parse_next(input)
+//!     ).parse_peek(input)
 //! }
 //!
 //! // ...
 //! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
@@ -218,13 +218,13 @@
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //!
 //! fn main() {
 //!     let input = "0x1a2b Hello";
 //!
-//!     let (remainder, digits) = parse_digits.parse_next(input).unwrap();
+//!     let (remainder, digits) = parse_digits.parse_peek(input).unwrap();
 //!
 //!     assert_eq!(remainder, " Hello");
 //!     assert_eq!(digits, "1a2b");

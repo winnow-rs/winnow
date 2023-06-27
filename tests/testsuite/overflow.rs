@@ -17,7 +17,7 @@ use winnow::Partial;
 // We request a length that would trigger an overflow if computing consumed + requested
 #[allow(clippy::type_complexity)]
 fn parser02(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (&[u8], &[u8])> {
-    (take(1_usize), take(18446744073709551615_usize)).parse_next(i)
+    (take(1_usize), take(18446744073709551615_usize)).parse_peek(i)
 }
 
 #[test]
@@ -32,7 +32,7 @@ fn overflow_incomplete_tuple() {
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_length_bytes() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat(0.., length_data(be_u64)).parse_next(i)
+        repeat(0.., length_data(be_u64)).parse_peek(i)
     }
 
     // Trigger an overflow in length_data
@@ -48,7 +48,7 @@ fn overflow_incomplete_length_bytes() {
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_many0() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat(0.., length_data(be_u64)).parse_next(i)
+        repeat(0.., length_data(be_u64)).parse_peek(i)
     }
 
     // Trigger an overflow in repeat
@@ -66,7 +66,7 @@ fn overflow_incomplete_many1() {
     use winnow::combinator::repeat;
 
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat(1.., length_data(be_u64)).parse_next(i)
+        repeat(1.., length_data(be_u64)).parse_peek(i)
     }
 
     // Trigger an overflow in repeat
@@ -85,7 +85,7 @@ fn overflow_incomplete_many_till0() {
 
     #[allow(clippy::type_complexity)]
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (Vec<&[u8]>, &[u8])> {
-        repeat_till0(length_data(be_u64), "abc").parse_next(i)
+        repeat_till0(length_data(be_u64), "abc").parse_peek(i)
     }
 
     // Trigger an overflow in repeat_till0
@@ -103,7 +103,7 @@ fn overflow_incomplete_many_m_n() {
     use winnow::combinator::repeat;
 
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat(2..=4, length_data(be_u64)).parse_next(i)
+        repeat(2..=4, length_data(be_u64)).parse_peek(i)
     }
 
     // Trigger an overflow in repeat
@@ -119,7 +119,7 @@ fn overflow_incomplete_many_m_n() {
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_count() {
     fn counter(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat(2, length_data(be_u64)).parse_next(i)
+        repeat(2, length_data(be_u64)).parse_peek(i)
     }
 
     assert_eq!(
@@ -137,7 +137,7 @@ fn overflow_incomplete_length_count() {
     use winnow::binary::length_count;
 
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        length_count(be_u8, length_data(be_u64)).parse_next(i)
+        length_count(be_u8, length_data(be_u64)).parse_peek(i)
     }
 
     assert_eq!(
@@ -152,7 +152,7 @@ fn overflow_incomplete_length_count() {
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_length_data() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat(0.., length_data(be_u64)).parse_next(i)
+        repeat(0.., length_data(be_u64)).parse_peek(i)
     }
 
     assert_eq!(

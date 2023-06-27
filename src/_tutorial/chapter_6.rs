@@ -24,26 +24,26 @@
 //!         ("0o", parse_oct_digits).context("octal"),
 //!         ("0d", parse_dec_digits).context("decimal"),
 //!         ("0x", parse_hex_digits).context("hexadecimal"),
-//!     )).parse_next(input)
+//!     )).parse_peek(input)
 //! }
 //!
 //! // ...
 //! # fn parse_bin_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_oct_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_dec_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_hex_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
@@ -51,13 +51,13 @@
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //!
 //! fn main() {
 //!     let input = "0x1a2b Hello";
 //!
-//!     let (remainder, (prefix, digits)) = parse_digits.parse_next(input).unwrap();
+//!     let (remainder, (prefix, digits)) = parse_digits.parse_peek(input).unwrap();
 //!
 //!     assert_eq!(remainder, " Hello");
 //!     assert_eq!(prefix, "0x");
@@ -100,26 +100,26 @@
 //!         ("0o", cut_err(parse_oct_digits)).context("octal"),
 //!         ("0d", cut_err(parse_dec_digits)).context("decimal"),
 //!         ("0x", cut_err(parse_hex_digits)).context("hexadecimal"),
-//!     )).parse_next(input)
+//!     )).parse_peek(input)
 //! }
 //!
 //! // ...
 //! # fn parse_bin_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_oct_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_dec_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_hex_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
@@ -127,13 +127,13 @@
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //!
 //! fn main() {
 //!     let input = "0x1a2b Hello";
 //!
-//!     let (remainder, (prefix, digits)) = parse_digits.parse_next(input).unwrap();
+//!     let (remainder, (prefix, digits)) = parse_digits.parse_peek(input).unwrap();
 //!
 //!     assert_eq!(remainder, " Hello");
 //!     assert_eq!(prefix, "0x");

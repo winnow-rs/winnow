@@ -18,8 +18,8 @@ impl std::str::FromStr for Color {
 }
 
 pub fn hex_color(input: &str) -> IResult<&str, Color> {
-    let (input, _) = "#".parse_next(input)?;
-    let (input, (red, green, blue)) = (hex_primary, hex_primary, hex_primary).parse_next(input)?;
+    let (input, _) = "#".parse_peek(input)?;
+    let (input, (red, green, blue)) = (hex_primary, hex_primary, hex_primary).parse_peek(input)?;
 
     Ok((input, Color { red, green, blue }))
 }
@@ -27,5 +27,5 @@ pub fn hex_color(input: &str) -> IResult<&str, Color> {
 fn hex_primary(input: &str) -> IResult<&str, u8> {
     take_while(2, |c: char| c.is_ascii_hexdigit())
         .try_map(|input| u8::from_str_radix(input, 16))
-        .parse_next(input)
+        .parse_peek(input)
 }

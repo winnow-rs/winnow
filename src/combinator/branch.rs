@@ -31,7 +31,7 @@ pub trait Alt<I, O, E> {
 /// use winnow::combinator::alt;
 /// # fn main() {
 /// fn parser(input: &str) -> IResult<&str, &str> {
-///   alt((alpha1, digit1)).parse_next(input)
+///   alt((alpha1, digit1)).parse_peek(input)
 /// };
 ///
 /// // the first parser, alpha1, recognizes the input
@@ -72,7 +72,7 @@ pub trait Permutation<I, O, E> {
 /// use winnow::combinator::permutation;
 /// # fn main() {
 /// fn parser(input: &str) -> IResult<&str, (&str, &str)> {
-///   permutation((alpha1, digit1)).parse_next(input)
+///   permutation((alpha1, digit1)).parse_peek(input)
 /// }
 ///
 /// // permutation recognizes alphabetic characters then digit
@@ -95,7 +95,7 @@ pub trait Permutation<I, O, E> {
 /// use winnow::token::any;
 ///
 /// fn parser(input: &str) -> IResult<&str, (char, char)> {
-///   permutation((any, 'a')).parse_next(input)
+///   permutation((any, 'a')).parse_peek(input)
 /// }
 ///
 /// // any parses 'b', then char('a') parses 'a'
@@ -135,7 +135,7 @@ macro_rules! alt_trait_impl(
     > Alt<I, Output, Error> for ( $($id),+ ) {
 
       fn choice(&mut self, input: I) -> IResult<I, Output, Error> {
-        match self.0.parse_next(input.clone()) {
+        match self.0.parse_peek(input.clone()) {
           Err(ErrMode::Backtrack(e)) => alt_trait_inner!(1, self, input, e, $($id)+),
           res => res,
         }
@@ -146,7 +146,7 @@ macro_rules! alt_trait_impl(
 
 macro_rules! alt_trait_inner(
   ($it:tt, $self:expr, $input:expr, $err:expr, $head:ident $($id:ident)+) => (
-    match $self.$it.parse_next($input.clone()) {
+    match $self.$it.parse_peek($input.clone()) {
       Err(ErrMode::Backtrack(e)) => {
         let err = $err.or(e);
         succ!($it, alt_trait_inner!($self, $input, err, $($id)+))
@@ -164,7 +164,7 @@ alt_trait!(Alt2 Alt3 Alt4 Alt5 Alt6 Alt7 Alt8 Alt9 Alt10 Alt11 Alt12 Alt13 Alt14
 // Manually implement Alt for (A,), the 1-tuple type
 impl<I, O, E: ParseError<I>, A: Parser<I, O, E>> Alt<I, O, E> for (A,) {
     fn choice(&mut self, input: I) -> IResult<I, O, E> {
-        self.0.parse_next(input)
+        self.0.parse_peek(input)
     }
 }
 
@@ -223,7 +223,7 @@ macro_rules! permutation_trait_impl(
 macro_rules! permutation_trait_inner(
   ($it:tt, $self:expr, $input:ident, $res:expr, $err:expr, $head:ident $($id:ident)*) => (
     if $res.$it.is_none() {
-      match $self.$it.parse_next($input.clone()) {
+      match $self.$it.parse_peek($input.clone()) {
         Ok((i, o)) => {
           $input = i;
           $res.$it = Some(o);

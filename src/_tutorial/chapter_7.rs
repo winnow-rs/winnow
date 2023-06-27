@@ -56,25 +56,25 @@
 //! #         "0d" => parse_dec_digits.try_map(|s| usize::from_str_radix(s, 10)),
 //! #         "0x" => parse_hex_digits.try_map(|s| usize::from_str_radix(s, 16)),
 //! #         _ => fail,
-//! #     ).parse_next(input)
+//! #     ).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
@@ -82,7 +82,7 @@
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //!
 //! fn main() {

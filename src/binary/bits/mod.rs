@@ -28,7 +28,7 @@ use crate::{IResult, Parser};
 /// }
 ///
 /// fn parse(input: Stream<'_>) -> IResult<Stream<'_>, (u8, u8)> {
-///     bits::<_, _, Error<(_, usize)>, _, _>((take(4usize), take(8usize))).parse_next(input)
+///     bits::<_, _, Error<(_, usize)>, _, _>((take(4usize), take(8usize))).parse_peek(input)
 /// }
 ///
 /// let input = stream(&[0x12, 0x34, 0xff, 0xff]);
@@ -51,7 +51,7 @@ where
     P: Parser<(I, usize), O, E1>,
 {
     trace("bits", move |input: I| {
-        match parser.parse_next((input, 0)) {
+        match parser.parse_peek((input, 0)) {
             Ok(((rest, offset), result)) => {
                 // If the next byte has been partially read, it will be sliced away as well.
                 // The parser functions might already slice away all fully read bytes.
@@ -89,7 +89,7 @@ where
 ///     take(4usize),
 ///     take(8usize),
 ///     bytes::<_, _, Error<_>, _, _>(rest)
-///   )).parse_next(input)
+///   )).parse_peek(input)
 /// }
 ///
 /// let input = stream(&[0x12, 0x34, 0xff, 0xff]);
@@ -110,7 +110,7 @@ where
             input.peek_slice(offset / 8)
         };
         let i = (input, offset);
-        match parser.parse_next(inner) {
+        match parser.parse_peek(inner) {
             Ok((rest, res)) => Ok(((rest, 0), res)),
             Err(ErrMode::Incomplete(Needed::Unknown)) => Err(ErrMode::Incomplete(Needed::Unknown)),
             Err(ErrMode::Incomplete(Needed::Size(sz))) => Err(match sz.get().checked_mul(8) {
@@ -141,7 +141,7 @@ where
 /// }
 ///
 /// fn parser(input: (Stream<'_>, usize), count: usize)-> IResult<(Stream<'_>, usize), u8> {
-///  take(count).parse_next(input)
+///  take(count).parse_peek(input)
 /// }
 ///
 /// // Consumes 0 bits, returns 0
@@ -247,7 +247,7 @@ where
 /// /// Return Ok and the matching section of `input` if there's a match.
 /// /// Return Err if there's no match.
 /// fn parser(pattern: u8, count: u8, input: (Stream<'_>, usize)) -> IResult<(Stream<'_>, usize), u8> {
-///     tag(pattern, count).parse_next(input)
+///     tag(pattern, count).parse_peek(input)
 /// }
 ///
 /// // The lowest 4 bits of 0b00001111 match the lowest 4 bits of 0b11111111.
@@ -296,7 +296,7 @@ where
     trace("tag", move |input: (I, usize)| {
         let inp = input.clone();
 
-        take(count).parse_next(input).and_then(|(i, o)| {
+        take(count).parse_peek(input).and_then(|(i, o)| {
             if pattern == o {
                 Ok((i, o))
             } else {
@@ -323,7 +323,7 @@ where
 /// }
 ///
 /// fn parse(input: (Stream<'_>, usize)) -> IResult<(Stream<'_>, usize), bool> {
-///     bool.parse_next(input)
+///     bool.parse_peek(input)
 /// }
 ///
 /// assert_eq!(parse((stream(&[0b10000000]), 0)), Ok(((stream(&[0b10000000]), 1), true)));
@@ -335,8 +335,8 @@ where
     I: Stream<Token = u8> + AsBytes + StreamIsPartial,
 {
     trace("bool", |input: (I, usize)| {
-        let (res, bit): (_, u32) = take(1usize).parse_next(input)?;
+        let (res, bit): (_, u32) = take(1usize).parse_peek(input)?;
         Ok((res, bit != 0))
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
