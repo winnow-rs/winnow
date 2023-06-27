@@ -9,10 +9,7 @@ use crate::error::Needed;
 use crate::error::ParseError;
 use crate::lib::std::result::Result::Ok;
 use crate::stream::Range;
-use crate::stream::{
-    split_at_offset1_complete, split_at_offset1_partial, split_at_offset_complete,
-    split_at_offset_partial, Compare, CompareResult, ContainsToken, FindSlice, SliceLen, Stream,
-};
+use crate::stream::{Compare, CompareResult, ContainsToken, FindSlice, SliceLen, Stream};
 use crate::stream::{StreamIsPartial, ToUsize};
 use crate::trace::trace;
 use crate::IResult;
@@ -532,9 +529,9 @@ where
     T: ContainsToken<<I as Stream>::Token>,
 {
     if PARTIAL && input.is_partial() {
-        split_at_offset_partial(&input, |c| !list.contains_token(c))
+        take_till0_partial(&input, |c| !list.contains_token(c))
     } else {
-        split_at_offset_complete(&input, |c| !list.contains_token(c))
+        take_till0_complete(&input, |c| !list.contains_token(c))
     }
 }
 
@@ -549,9 +546,91 @@ where
 {
     let e: ErrorKind = ErrorKind::Slice;
     if PARTIAL && input.is_partial() {
-        split_at_offset1_partial(&input, |c| !list.contains_token(c), e)
+        take_till1_partial(&input, |c| !list.contains_token(c), e)
     } else {
-        split_at_offset1_complete(&input, |c| !list.contains_token(c), e)
+        take_till1_complete(&input, |c| !list.contains_token(c), e)
+    }
+}
+
+/// Looks for the first element of the input type for which the condition returns true,
+/// and returns the input up to this position.
+///
+/// *Partial version*: If no element is found matching the condition, this will return `Incomplete`
+fn take_till0_partial<P, I: Stream, E: ParseError<I>>(
+    input: &I,
+    predicate: P,
+) -> IResult<I, <I as Stream>::Slice, E>
+where
+    P: Fn(I::Token) -> bool,
+{
+    let offset = input
+        .offset_for(predicate)
+        .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
+    Ok(input.next_slice(offset))
+}
+
+/// Looks for the first element of the input type for which the condition returns true
+/// and returns the input up to this position.
+///
+/// Fails if the produced slice is empty.
+///
+/// *Partial version*: If no element is found matching the condition, this will return `Incomplete`
+fn take_till1_partial<P, I: Stream, E: ParseError<I>>(
+    input: &I,
+    predicate: P,
+    e: ErrorKind,
+) -> IResult<I, <I as Stream>::Slice, E>
+where
+    P: Fn(I::Token) -> bool,
+{
+    let offset = input
+        .offset_for(predicate)
+        .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
+    if offset == 0 {
+        Err(ErrMode::from_error_kind(input.clone(), e))
+    } else {
+        Ok(input.next_slice(offset))
+    }
+}
+
+/// Looks for the first element of the input type for which the condition returns true,
+/// and returns the input up to this position.
+///
+/// *Complete version*: If no element is found matching the condition, this will return the whole input
+fn take_till0_complete<P, I: Stream, E: ParseError<I>>(
+    input: &I,
+    predicate: P,
+) -> IResult<I, <I as Stream>::Slice, E>
+where
+    P: Fn(I::Token) -> bool,
+{
+    let offset = input
+        .offset_for(predicate)
+        .unwrap_or_else(|| input.eof_offset());
+    Ok(input.next_slice(offset))
+}
+
+/// Looks for the first element of the input type for which the condition returns true
+/// and returns the input up to this position.
+///
+/// Fails if the produced slice is empty.
+///
+/// *Complete version*: If no element is found matching the condition, this will return the whole input
+fn take_till1_complete<P, I: Stream, E: ParseError<I>>(
+    input: &I,
+    predicate: P,
+    e: ErrorKind,
+) -> IResult<I, <I as Stream>::Slice, E>
+where
+    P: Fn(I::Token) -> bool,
+{
+    let offset = input
+        .offset_for(predicate)
+        .unwrap_or_else(|| input.eof_offset());
+    if offset == 0 {
+        Err(ErrMode::from_error_kind(input.clone(), e))
+    } else {
+        Ok(input.next_slice(offset))
     }
 }
 
@@ -653,9 +732,9 @@ where
 {
     trace("take_till0", move |i: I| {
         if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
-            split_at_offset_partial(&i, |c| list.contains_token(c))
+            take_till0_partial(&i, |c| list.contains_token(c))
         } else {
-            split_at_offset_complete(&i, |c| list.contains_token(c))
+            take_till0_complete(&i, |c| list.contains_token(c))
         }
     })
 }
@@ -731,9 +810,9 @@ where
     trace("take_till1", move |i: I| {
         let e: ErrorKind = ErrorKind::Slice;
         if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
-            split_at_offset1_partial(&i, |c| list.contains_token(c), e)
+            take_till1_partial(&i, |c| list.contains_token(c), e)
         } else {
-            split_at_offset1_complete(&i, |c| list.contains_token(c), e)
+            take_till1_complete(&i, |c| list.contains_token(c), e)
         }
     })
 }
