@@ -234,10 +234,12 @@ pub mod _tutorial;
 pub mod prelude {
     pub use crate::stream::StreamIsPartial as _;
     pub use crate::IResult;
+    pub use crate::PResult;
     pub use crate::Parser;
 }
 
 pub use error::IResult;
+pub use error::PResult;
 pub use parser::*;
 pub use stream::BStr;
 pub use stream::Bytes;
