@@ -529,9 +529,9 @@ where
     T: ContainsToken<<I as Stream>::Token>,
 {
     if PARTIAL && input.is_partial() {
-        split_at_offset_partial(&input, |c| !list.contains_token(c))
+        take_till0_partial(&input, |c| !list.contains_token(c))
     } else {
-        split_at_offset_complete(&input, |c| !list.contains_token(c))
+        take_till0_complete(&input, |c| !list.contains_token(c))
     }
 }
 
@@ -546,9 +546,9 @@ where
 {
     let e: ErrorKind = ErrorKind::Slice;
     if PARTIAL && input.is_partial() {
-        split_at_offset1_partial(&input, |c| !list.contains_token(c), e)
+        take_till1_partial(&input, |c| !list.contains_token(c), e)
     } else {
-        split_at_offset1_complete(&input, |c| !list.contains_token(c), e)
+        take_till1_complete(&input, |c| !list.contains_token(c), e)
     }
 }
 
@@ -556,7 +556,7 @@ where
 /// and returns the input up to this position.
 ///
 /// *Partial version*: If no element is found matching the condition, this will return `Incomplete`
-fn split_at_offset_partial<P, I: Stream, E: ParseError<I>>(
+fn take_till0_partial<P, I: Stream, E: ParseError<I>>(
     input: &I,
     predicate: P,
 ) -> IResult<I, <I as Stream>::Slice, E>
@@ -575,7 +575,7 @@ where
 /// Fails if the produced slice is empty.
 ///
 /// *Partial version*: If no element is found matching the condition, this will return `Incomplete`
-fn split_at_offset1_partial<P, I: Stream, E: ParseError<I>>(
+fn take_till1_partial<P, I: Stream, E: ParseError<I>>(
     input: &I,
     predicate: P,
     e: ErrorKind,
@@ -597,7 +597,7 @@ where
 /// and returns the input up to this position.
 ///
 /// *Complete version*: If no element is found matching the condition, this will return the whole input
-fn split_at_offset_complete<P, I: Stream, E: ParseError<I>>(
+fn take_till0_complete<P, I: Stream, E: ParseError<I>>(
     input: &I,
     predicate: P,
 ) -> IResult<I, <I as Stream>::Slice, E>
@@ -616,7 +616,7 @@ where
 /// Fails if the produced slice is empty.
 ///
 /// *Complete version*: If no element is found matching the condition, this will return the whole input
-fn split_at_offset1_complete<P, I: Stream, E: ParseError<I>>(
+fn take_till1_complete<P, I: Stream, E: ParseError<I>>(
     input: &I,
     predicate: P,
     e: ErrorKind,
@@ -732,9 +732,9 @@ where
 {
     trace("take_till0", move |i: I| {
         if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
-            split_at_offset_partial(&i, |c| list.contains_token(c))
+            take_till0_partial(&i, |c| list.contains_token(c))
         } else {
-            split_at_offset_complete(&i, |c| list.contains_token(c))
+            take_till0_complete(&i, |c| list.contains_token(c))
         }
     })
 }
@@ -810,9 +810,9 @@ where
     trace("take_till1", move |i: I| {
         let e: ErrorKind = ErrorKind::Slice;
         if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
-            split_at_offset1_partial(&i, |c| list.contains_token(c), e)
+            take_till1_partial(&i, |c| list.contains_token(c), e)
         } else {
-            split_at_offset1_complete(&i, |c| list.contains_token(c), e)
+            take_till1_complete(&i, |c| list.contains_token(c), e)
         }
     })
 }
