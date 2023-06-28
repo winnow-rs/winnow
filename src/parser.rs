@@ -41,7 +41,7 @@ use crate::stream::{AsChar, Compare, Location, ParseSlice, Stream, StreamIsParti
 pub trait Parser<I, O, E> {
     /// Parse all of `input`, generating `O` from it
     #[inline]
-    fn parse(&mut self, input: I) -> Result<O, E>
+    fn parse(&mut self, mut input: I) -> Result<O, E>
     where
         I: Stream,
         // Force users to deal with `Incomplete` when `StreamIsPartial<true>`
@@ -54,11 +54,11 @@ pub trait Parser<I, O, E> {
             "partial streams need to handle `ErrMode::Incomplete`"
         );
 
-        let (i, o) = self.parse_peek(input).map_err(|e| {
+        let o = self.parse_next(&mut input).map_err(|e| {
             e.into_inner()
                 .expect("complete parsers should not report `ErrMode::Incomplete(_)`")
         })?;
-        let _ = crate::combinator::eof(i).map_err(|e| {
+        let _ = crate::combinator::eof.parse_next(&mut input).map_err(|e| {
             e.into_inner()
                 .expect("complete parsers should not report `ErrMode::Incomplete(_)`")
         })?;
