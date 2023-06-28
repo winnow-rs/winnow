@@ -1,18 +1,18 @@
 //! # Chapter 4: Parsers With Custom Return Types
 //!
 //! So far, we have seen mostly functions that take an `&str`, and return a
-//! `IResult<&str, &str>`. Splitting strings into smaller strings and characters is certainly
+//! `PResult<&str>`. Splitting strings into smaller strings and characters is certainly
 //! useful, but it's not the only thing winnow is capable of!
 //!
 //! A useful operation when parsing is to convert between types; for example
 //! parsing from `&str` to another primitive, like [`usize`].
 //!
 //! All we need to do for our parser to return a different type is to change
-//! the second type parameter of [`IResult`] to the desired return type.
-//! For example, to return a `usize`, return a `IResult<&str, usize>`.
-//! Recall that the first type parameter of the `IResult` is the input
+//! the type parameter of [`PResult`] to the desired return type.
+//! For example, to return a `usize`, return a `PResult<usize>`.
+//! Recall that the type parameter of the `PResult` is the input
 //! type, so even if you're returning something different, if your input
-//! is a `&str`, the first type argument of `IResult` should be also.
+//! is a `&str`, the type argument of `PResult` should be also.
 //!
 //! One winnow-native way of doing a type conversion is to use the
 //! [`Parser::parse_to`] combinator
@@ -20,88 +20,86 @@
 //!
 //! The following code converts from a string containing a number to `usize`:
 //! ```rust
-//! # use winnow::Parser;
-//! # use winnow::IResult;
+//! # use winnow::prelude::*;
 //! # use winnow::ascii::digit1;
 //! #
-//! fn parse_digits(input: &str) -> IResult<&str, usize> {
+//! fn parse_digits(input: &mut &str) -> PResult<usize> {
 //!     digit1
 //!         .parse_to()
-//!         .parse_peek(input)
+//!         .parse_next(input)
 //! }
 //!
 //! fn main() {
-//!     let input = "1024 Hello";
+//!     let mut input = "1024 Hello";
 //!
-//!     let (remainder, output) = parse_digits.parse_peek(input).unwrap();
-//!     assert_eq!(remainder, " Hello");
+//!     let output = parse_digits.parse_next(&mut input).unwrap();
+//!     assert_eq!(input, " Hello");
 //!     assert_eq!(output, 1024);
 //!
-//!     assert!(parse_digits("Z").is_err());
+//!     assert!(parse_digits(&mut "Z").is_err());
 //! }
 //! ```
 //!
 //! `Parser::parse_to` is just a convenient form of [`Parser::try_map`] which we can use to handle
 //! all radices of numbers:
 //! ```rust
-//! # use winnow::IResult;
-//! # use winnow::Parser;
+//! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
 //! use winnow::combinator::dispatch;
 //! use winnow::token::take;
 //! use winnow::combinator::fail;
 //!
-//! fn parse_digits(input: &str) -> IResult<&str, usize> {
+//! fn parse_digits(input: &mut &str) -> PResult<usize> {
 //!     dispatch!(take(2usize);
 //!         "0b" => parse_bin_digits.try_map(|s| usize::from_str_radix(s, 2)),
 //!         "0o" => parse_oct_digits.try_map(|s| usize::from_str_radix(s, 8)),
 //!         "0d" => parse_dec_digits.try_map(|s| usize::from_str_radix(s, 10)),
 //!         "0x" => parse_hex_digits.try_map(|s| usize::from_str_radix(s, 16)),
 //!         _ => fail,
-//!     ).parse_peek(input)
+//!     ).parse_next(input)
 //! }
 //!
 //! // ...
-//! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //!
 //! fn main() {
-//!     let input = "0x1a2b Hello";
+//!     let mut input = "0x1a2b Hello";
 //!
-//!     let (remainder, digits) = parse_digits.parse_peek(input).unwrap();
+//!     let digits = parse_digits.parse_next(&mut input).unwrap();
 //!
-//!     assert_eq!(remainder, " Hello");
+//!     assert_eq!(input, " Hello");
 //!     assert_eq!(digits, 0x1a2b);
 //!
-//!     assert!(parse_digits("ghiWorld").is_err());
+//!     assert!(parse_digits(&mut "ghiWorld").is_err());
 //! }
 //! ```
 
 #![allow(unused_imports)]
-use crate::IResult;
+use crate::PResult;
 use crate::Parser;
 use std::str::FromStr;
 

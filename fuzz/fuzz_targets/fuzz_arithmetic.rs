@@ -8,6 +8,7 @@ use winnow::{
     combinator::alt,
     combinator::fold_repeat,
     combinator::{delimited, terminated},
+    unpeek,
 };
 
 use std::cell::RefCell;
@@ -47,14 +48,18 @@ fn decr() {
 fn parens(i: &str) -> IResult<&str, i64> {
     delimited(
         space,
-        delimited(terminated("(", incr), expr, ")".map(|_| decr())),
+        delimited(
+            terminated("(", unpeek(incr)),
+            unpeek(expr),
+            ")".map(|_| decr()),
+        ),
         space,
     )
     .parse_peek(i)
 }
 
 fn factor(i: &str) -> IResult<&str, i64> {
-    alt((delimited(space, digit, space).parse_to(), parens)).parse_peek(i)
+    alt((delimited(space, digit, space).parse_to(), unpeek(parens))).parse_peek(i)
 }
 
 fn term(i: &str) -> IResult<&str, i64> {
@@ -66,7 +71,10 @@ fn term(i: &str) -> IResult<&str, i64> {
 
     let res = fold_repeat(
         0..,
-        alt((('*', factor), ('/', factor.verify(|i| *i != 0)))),
+        alt((
+            ('*', unpeek(factor)),
+            ('/', unpeek(factor).verify(|i| *i != 0)),
+        )),
         || init,
         |acc, (op, val): (char, i64)| {
             if op == '*' {
@@ -96,7 +104,7 @@ fn expr(i: &str) -> IResult<&str, i64> {
 
     let res = fold_repeat(
         0..,
-        (alt(('+', '-')), term),
+        (alt(('+', '-')), unpeek(term)),
         || init,
         |acc, (op, val): (char, i64)| {
             if op == '+' {

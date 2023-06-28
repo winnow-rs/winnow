@@ -1,4 +1,5 @@
 use super::*;
+use crate::IResult;
 
 mod complete {
     use super::*;
@@ -1130,7 +1131,7 @@ mod partial {
         }
 
         fn cnt(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-            length_count(number, "abc").parse_peek(i)
+            length_count(unpeek(number), "abc").parse_peek(i)
         }
 
         assert_eq!(
@@ -1171,7 +1172,7 @@ mod partial {
         }
 
         fn take(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-            length_data(number).parse_peek(i)
+            length_data(unpeek(number)).parse_peek(i)
         }
 
         assert_eq!(

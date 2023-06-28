@@ -6,6 +6,7 @@ use winnow::combinator::repeat;
 use winnow::combinator::terminated;
 use winnow::error::{ErrorKind, ParseError};
 use winnow::prelude::*;
+use winnow::unpeek;
 use winnow::IResult;
 use winnow::Partial;
 
@@ -35,16 +36,16 @@ fn test1(input: Partial<&str>) -> IResult<Partial<&str>, &str, CustomError> {
 
 fn test2(input: Partial<&str>) -> IResult<Partial<&str>, &str, CustomError> {
     //terminated!(input, test1, fix_error!(CustomError, digit))
-    terminated(test1, digit).parse_peek(input)
+    terminated(unpeek(test1), digit).parse_peek(input)
 }
 
 fn test3(input: Partial<&str>) -> IResult<Partial<&str>, &str, CustomError> {
-    test1
+    unpeek(test1)
         .verify(|s: &str| s.starts_with("abcd"))
         .parse_peek(input)
 }
 
 #[cfg(feature = "alloc")]
 fn test4(input: Partial<&str>) -> IResult<Partial<&str>, Vec<&str>, CustomError> {
-    repeat(4, test1).parse_peek(input)
+    repeat(4, unpeek(test1)).parse_peek(input)
 }

@@ -10,7 +10,7 @@ use winnow::{
     combinator::{delimited, preceded, terminated},
     error::VerboseError,
     token::one_of,
-    IResult, Parser,
+    unpeek, IResult, Parser,
 };
 
 /// We start with a top-level function to tie everything together, letting
@@ -71,24 +71,29 @@ pub enum BuiltIn {
 fn parse_expr(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
     preceded(
         multispace0,
-        alt((parse_constant, parse_application, parse_if, parse_quote)),
+        alt((
+            unpeek(parse_constant),
+            unpeek(parse_application),
+            unpeek(parse_if),
+            unpeek(parse_quote),
+        )),
     )
     .parse_peek(i)
 }
 
 /// We then add the Expr layer on top
 fn parse_constant(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
-    parse_atom.map(Expr::Constant).parse_peek(i)
+    unpeek(parse_atom).map(Expr::Constant).parse_peek(i)
 }
 
 /// Now we take all these simple parsers and connect them.
 /// We can now parse half of our language!
 fn parse_atom(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
     alt((
-        parse_num,
-        parse_bool,
-        parse_builtin.map(Atom::BuiltIn),
-        parse_keyword,
+        unpeek(parse_num),
+        unpeek(parse_bool),
+        unpeek(parse_builtin).map(Atom::BuiltIn),
+        unpeek(parse_keyword),
     ))
     .parse_peek(i)
 }
@@ -116,7 +121,7 @@ fn parse_builtin(i: &str) -> IResult<&str, BuiltIn, VerboseError<&str>> {
     // alt gives us the result of first parser that succeeds, of the series of
     // parsers we give it
     alt((
-        parse_builtin_op,
+        unpeek(parse_builtin_op),
         // map lets us process the parsed output, in this case we know what we parsed,
         // so we ignore the input and return the BuiltIn directly
         "not".map(|_| BuiltIn::Not),
@@ -168,7 +173,7 @@ fn parse_keyword(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
 /// tuples are themselves a parser, used to sequence parsers together, so we can translate this
 /// directly and then map over it to transform the output into an `Expr::Application`
 fn parse_application(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
-    let application_inner = (parse_expr, repeat(0.., parse_expr))
+    let application_inner = (unpeek(parse_expr), repeat(0.., unpeek(parse_expr)))
         .map(|(head, tail)| Expr::Application(Box::new(head), tail));
     // finally, we wrap it in an s-expression
     s_exp(application_inner).parse_peek(i)
@@ -186,7 +191,11 @@ fn parse_if(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
         // variables to our language, we say that if must be terminated by at least
         // one whitespace character
         terminated("if", multispace1),
-        cut_err((parse_expr, parse_expr, opt(parse_expr))),
+        cut_err((
+            unpeek(parse_expr),
+            unpeek(parse_expr),
+            opt(unpeek(parse_expr)),
+        )),
     )
     .map(|(pred, true_branch, maybe_false_branch)| {
         if let Some(false_branch) = maybe_false_branch {
@@ -212,7 +221,7 @@ fn parse_quote(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
     // this should look very straight-forward after all we've done:
     // we find the `'` (quote) character, use cut_err to say that we're unambiguously
     // looking for an s-expression of 0 or more expressions, and then parse them
-    preceded("'", cut_err(s_exp(repeat(0.., parse_expr))))
+    preceded("'", cut_err(s_exp(repeat(0.., unpeek(parse_expr)))))
         .context("quote")
         .map(Expr::Quote)
         .parse_peek(i)

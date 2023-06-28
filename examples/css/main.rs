@@ -1,4 +1,5 @@
 use winnow::prelude::*;
+use winnow::unpeek;
 
 mod parser;
 
@@ -10,7 +11,7 @@ fn main() -> Result<(), lexopt::Error> {
     let input = args.input.as_deref().unwrap_or("#AAAAAA");
 
     println!("{} =", input);
-    match hex_color.parse(input) {
+    match unpeek(hex_color).parse(input) {
         Ok(result) => {
             println!("  {:?}", result);
         }

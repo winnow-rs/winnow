@@ -40,10 +40,10 @@
 //! #    I: winnow::stream::StreamIsPartial,
 //! #    E: winnow::error::ParseError<I>,
 //! {
-//!     move |input: I| {
+//!     move |input: &mut I| {
 //!         // ...some chained combinators...
 //! # winnow::token::any
-//!             .parse_peek(input)
+//!             .parse_next(input)
 //!     }
 //! }
 //! ```

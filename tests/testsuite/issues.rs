@@ -4,7 +4,7 @@
 
 use winnow::prelude::*;
 use winnow::Partial;
-use winnow::{error::ErrMode, error::ErrorKind, error::Needed, IResult};
+use winnow::{error::ErrMode, error::ErrorKind, error::Needed, unpeek, IResult};
 
 #[allow(dead_code)]
 struct Range {
@@ -29,11 +29,11 @@ mod parse_int {
         ascii::{digit1 as digit, space1 as space},
         combinator::opt,
         combinator::repeat,
-        IResult,
+        unpeek, IResult,
     };
 
     fn parse_ints(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<i32>> {
-        repeat(0.., spaces_or_int).parse_peek(input)
+        repeat(0.., unpeek(spaces_or_int)).parse_peek(input)
     }
 
     fn spaces_or_int(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i32> {
@@ -170,7 +170,7 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
     fn parser(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         use winnow::binary::bits::{bits, bytes};
 
-        bits(bytes(take)).parse_peek(i)
+        bits(bytes(unpeek(take))).parse_peek(i)
     }
     assert_eq!(
         parser(Partial::new(&b""[..])),

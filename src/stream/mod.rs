@@ -159,9 +159,9 @@ impl<I: crate::lib::std::fmt::Display> crate::lib::std::fmt::Display for Located
 ///
 /// type Stream<'is> = Stateful<&'is str, State<'is>>;
 ///
-/// fn word(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
+/// fn word<'s>(i: &mut Stream<'s>) -> PResult<&'s str> {
 ///   i.state.count();
-///   alpha1(i)
+///   alpha1.parse_next(i)
 /// }
 ///
 /// let data = "Hello";
@@ -221,48 +221,48 @@ impl<I: crate::lib::std::fmt::Display, S> crate::lib::std::fmt::Display for Stat
 /// Here is how it works in practice:
 ///
 /// ```rust
-/// # use winnow::{IResult, error::ErrMode, error::Needed, error::{Error, ErrorKind}, token, ascii, stream::Partial};
+/// # use winnow::{PResult, error::ErrMode, error::Needed, error::{Error, ErrorKind}, token, ascii, stream::Partial};
 /// # use winnow::prelude::*;
 ///
-/// fn take_partial(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-///   token::take(4u8).parse_peek(i)
+/// fn take_partial<'s>(i: &mut Partial<&'s [u8]>) -> PResult<&'s [u8], Error<Partial<&'s [u8]>>> {
+///   token::take(4u8).parse_next(i)
 /// }
 ///
-/// fn take_complete(i: &[u8]) -> IResult<&[u8], &[u8]> {
-///   token::take(4u8).parse_peek(i)
+/// fn take_complete<'s>(i: &mut &'s [u8]) -> PResult<&'s [u8], Error<&'s [u8]>> {
+///   token::take(4u8).parse_next(i)
 /// }
 ///
 /// // both parsers will take 4 bytes as expected
-/// assert_eq!(take_partial(Partial::new(&b"abcde"[..])), Ok((Partial::new(&b"e"[..]), &b"abcd"[..])));
-/// assert_eq!(take_complete(&b"abcde"[..]), Ok((&b"e"[..], &b"abcd"[..])));
+/// assert_eq!(take_partial.parse_peek(Partial::new(&b"abcde"[..])), Ok((Partial::new(&b"e"[..]), &b"abcd"[..])));
+/// assert_eq!(take_complete.parse_peek(&b"abcde"[..]), Ok((&b"e"[..], &b"abcd"[..])));
 ///
 /// // if the input is smaller than 4 bytes, the partial parser
 /// // will return `Incomplete` to indicate that we need more data
-/// assert_eq!(take_partial(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(take_partial.parse_peek(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// // but the complete parser will return an error
-/// assert_eq!(take_complete(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Slice))));
+/// assert_eq!(take_complete.parse_peek(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Slice))));
 ///
 /// // the alpha0 function recognizes 0 or more alphabetic characters
-/// fn alpha0_partial(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   ascii::alpha0(i)
+/// fn alpha0_partial<'s>(i: &mut Partial<&'s str>) -> PResult<&'s str, Error<Partial<&'s str>>> {
+///   ascii::alpha0.parse_next(i)
 /// }
 ///
-/// fn alpha0_complete(i: &str) -> IResult<&str, &str> {
-///   ascii::alpha0(i)
+/// fn alpha0_complete<'s>(i: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+///   ascii::alpha0.parse_next(i)
 /// }
 ///
 /// // if there's a clear limit to the recognized characters, both parsers work the same way
-/// assert_eq!(alpha0_partial(Partial::new("abcd;")), Ok((Partial::new(";"), "abcd")));
-/// assert_eq!(alpha0_complete("abcd;"), Ok((";", "abcd")));
+/// assert_eq!(alpha0_partial.parse_peek(Partial::new("abcd;")), Ok((Partial::new(";"), "abcd")));
+/// assert_eq!(alpha0_complete.parse_peek("abcd;"), Ok((";", "abcd")));
 ///
 /// // but when there's no limit, the partial version returns `Incomplete`, because it cannot
 /// // know if more input data should be recognized. The whole input could be "abcd;", or
 /// // "abcde;"
-/// assert_eq!(alpha0_partial(Partial::new("abcd")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha0_partial.parse_peek(Partial::new("abcd")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// // while the complete version knows that all of the data is there
-/// assert_eq!(alpha0_complete("abcd"), Ok(("", "abcd")));
+/// assert_eq!(alpha0_complete.parse_peek("abcd"), Ok(("", "abcd")));
 /// ```
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Partial<I> {
