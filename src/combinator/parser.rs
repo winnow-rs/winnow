@@ -26,11 +26,7 @@ where
 {
     #[inline(always)]
     fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
-        unpeek(|i| self.parse_peek(i))(i)
-    }
-
-    fn parse_peek(&mut self, i: I) -> IResult<I, O, E> {
-        self.p.parse_peek(i)
+        self.p.parse_next(i)
     }
 }
 
