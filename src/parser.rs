@@ -406,7 +406,7 @@ pub trait Parser<I, O, E> {
     where
         Self: core::marker::Sized,
         G: FnMut(O) -> Result<O2, E2>,
-        I: Clone,
+        I: Stream,
         E: FromExternalError<I, E2>,
     {
         TryMap::new(self, map)
@@ -440,7 +440,7 @@ pub trait Parser<I, O, E> {
     where
         Self: core::marker::Sized,
         G: FnMut(O) -> Option<O2>,
-        I: Clone,
+        I: Stream,
         E: ParseError<I>,
     {
         VerifyMap::new(self, map)
@@ -509,6 +509,7 @@ pub trait Parser<I, O, E> {
         Self: core::marker::Sized,
         G: Parser<O, O2, E>,
         O: StreamIsPartial,
+        I: Stream,
     {
         AndThen::new(self, inner)
     }
@@ -568,7 +569,7 @@ pub trait Parser<I, O, E> {
     where
         Self: core::marker::Sized,
         G: Fn(&O2) -> bool,
-        I: Clone,
+        I: Stream,
         O: crate::lib::std::borrow::Borrow<O2>,
         O2: ?Sized,
         E: ParseError<I>,
@@ -869,6 +870,44 @@ where
         }
         Err(err) => Err(err),
     }
+}
+
+#[inline(always)]
+pub(crate) fn parser<I, O, E>(parser: impl FnMut(&mut I) -> PResult<O, E>) -> impl Parser<I, O, E> {
+    struct Wrapper<P, I, O, E>
+    where
+        P: FnMut(&mut I) -> PResult<O, E>,
+    {
+        p: P,
+        i: core::marker::PhantomData<I>,
+        o: core::marker::PhantomData<O>,
+        e: core::marker::PhantomData<E>,
+    }
+
+    impl<P, I, O, E> Wrapper<P, I, O, E>
+    where
+        P: FnMut(&mut I) -> PResult<O, E>,
+    {
+        pub(crate) fn new(p: P) -> Self {
+            Self {
+                p,
+                i: Default::default(),
+                o: Default::default(),
+                e: Default::default(),
+            }
+        }
+    }
+
+    impl<I, O, E, P> Parser<I, O, E> for Wrapper<P, I, O, E>
+    where
+        P: FnMut(&mut I) -> PResult<O, E>,
+    {
+        #[inline(always)]
+        fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
+            (self.p)(i)
+        }
+    }
+    Wrapper::new(parser)
 }
 
 #[cfg(test)]
