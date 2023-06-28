@@ -11,7 +11,7 @@ pub fn end_of_line(input: &str) -> IResult<&str, &str> {
     if input.is_empty() {
         Ok((input, input))
     } else {
-        eol(input)
+        eol.parse_peek(input)
     }
 }
 

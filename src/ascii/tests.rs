@@ -31,59 +31,68 @@ mod complete {
         let e: &[u8] = b" ";
         let f: &[u8] = b" ;";
         //assert_eq!(alpha1::<_, Error>(a), Err(ErrMode::Incomplete(Needed::Size(1))));
-        assert_parse!(alpha1(a), Ok((empty, a)));
+        assert_parse!(alpha1.parse_peek(a), Ok((empty, a)));
         assert_eq!(
-            alpha1(b),
+            alpha1.parse_peek(b),
             Err(ErrMode::Backtrack(Error::new(b, ErrorKind::Slice)))
         );
-        assert_eq!(alpha1::<_, Error<_>>(c), Ok((&c[1..], &b"a"[..])));
-        assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12".as_bytes(), &b"az"[..])));
         assert_eq!(
-            digit1(a),
+            alpha1::<_, Error<_>>.parse_peek(c),
+            Ok((&c[1..], &b"a"[..]))
+        );
+        assert_eq!(
+            alpha1::<_, Error<_>>.parse_peek(d),
+            Ok(("é12".as_bytes(), &b"az"[..]))
+        );
+        assert_eq!(
+            digit1.parse_peek(a),
             Err(ErrMode::Backtrack(Error::new(a, ErrorKind::Slice)))
         );
-        assert_eq!(digit1::<_, Error<_>>(b), Ok((empty, b)));
+        assert_eq!(digit1::<_, Error<_>>.parse_peek(b), Ok((empty, b)));
         assert_eq!(
-            digit1(c),
+            digit1.parse_peek(c),
             Err(ErrMode::Backtrack(Error::new(c, ErrorKind::Slice)))
         );
         assert_eq!(
-            digit1(d),
+            digit1.parse_peek(d),
             Err(ErrMode::Backtrack(Error::new(d, ErrorKind::Slice)))
         );
-        assert_eq!(hex_digit1::<_, Error<_>>(a), Ok((empty, a)));
-        assert_eq!(hex_digit1::<_, Error<_>>(b), Ok((empty, b)));
-        assert_eq!(hex_digit1::<_, Error<_>>(c), Ok((empty, c)));
+        assert_eq!(hex_digit1::<_, Error<_>>.parse_peek(a), Ok((empty, a)));
+        assert_eq!(hex_digit1::<_, Error<_>>.parse_peek(b), Ok((empty, b)));
+        assert_eq!(hex_digit1::<_, Error<_>>.parse_peek(c), Ok((empty, c)));
         assert_eq!(
-            hex_digit1::<_, Error<_>>(d),
+            hex_digit1::<_, Error<_>>.parse_peek(d),
             Ok(("zé12".as_bytes(), &b"a"[..]))
         );
         assert_eq!(
-            hex_digit1(e),
+            hex_digit1.parse_peek(e),
             Err(ErrMode::Backtrack(Error::new(e, ErrorKind::Slice)))
         );
         assert_eq!(
-            oct_digit1(a),
+            oct_digit1.parse_peek(a),
             Err(ErrMode::Backtrack(Error::new(a, ErrorKind::Slice)))
         );
-        assert_eq!(oct_digit1::<_, Error<_>>(b), Ok((empty, b)));
+        assert_eq!(oct_digit1::<_, Error<_>>.parse_peek(b), Ok((empty, b)));
         assert_eq!(
-            oct_digit1(c),
+            oct_digit1.parse_peek(c),
             Err(ErrMode::Backtrack(Error::new(c, ErrorKind::Slice)))
         );
         assert_eq!(
-            oct_digit1(d),
+            oct_digit1.parse_peek(d),
             Err(ErrMode::Backtrack(Error::new(d, ErrorKind::Slice)))
         );
-        assert_eq!(alphanumeric1::<_, Error<_>>(a), Ok((empty, a)));
+        assert_eq!(alphanumeric1::<_, Error<_>>.parse_peek(a), Ok((empty, a)));
         //assert_eq!(fix_error!(b,(), alphanumeric), Ok((empty, b)));
-        assert_eq!(alphanumeric1::<_, Error<_>>(c), Ok((empty, c)));
+        assert_eq!(alphanumeric1::<_, Error<_>>.parse_peek(c), Ok((empty, c)));
         assert_eq!(
-            alphanumeric1::<_, Error<_>>(d),
+            alphanumeric1::<_, Error<_>>.parse_peek(d),
             Ok(("é12".as_bytes(), &b"az"[..]))
         );
-        assert_eq!(space1::<_, Error<_>>(e), Ok((empty, e)));
-        assert_eq!(space1::<_, Error<_>>(f), Ok((&b";"[..], &b" "[..])));
+        assert_eq!(space1::<_, Error<_>>.parse_peek(e), Ok((empty, e)));
+        assert_eq!(
+            space1::<_, Error<_>>.parse_peek(f),
+            Ok((&b";"[..], &b" "[..]))
+        );
     }
 
     #[cfg(feature = "alloc")]
@@ -95,52 +104,55 @@ mod complete {
         let c = "a123";
         let d = "azé12";
         let e = " ";
-        assert_eq!(alpha1::<_, Error<_>>(a), Ok((empty, a)));
+        assert_eq!(alpha1::<_, Error<_>>.parse_peek(a), Ok((empty, a)));
         assert_eq!(
-            alpha1(b),
+            alpha1.parse_peek(b),
             Err(ErrMode::Backtrack(Error::new(b, ErrorKind::Slice)))
         );
-        assert_eq!(alpha1::<_, Error<_>>(c), Ok((&c[1..], "a")));
-        assert_eq!(alpha1::<_, Error<_>>(d), Ok(("é12", "az")));
+        assert_eq!(alpha1::<_, Error<_>>.parse_peek(c), Ok((&c[1..], "a")));
+        assert_eq!(alpha1::<_, Error<_>>.parse_peek(d), Ok(("é12", "az")));
         assert_eq!(
-            digit1(a),
+            digit1.parse_peek(a),
             Err(ErrMode::Backtrack(Error::new(a, ErrorKind::Slice)))
         );
-        assert_eq!(digit1::<_, Error<_>>(b), Ok((empty, b)));
+        assert_eq!(digit1::<_, Error<_>>.parse_peek(b), Ok((empty, b)));
         assert_eq!(
-            digit1(c),
+            digit1.parse_peek(c),
             Err(ErrMode::Backtrack(Error::new(c, ErrorKind::Slice)))
         );
         assert_eq!(
-            digit1(d),
+            digit1.parse_peek(d),
             Err(ErrMode::Backtrack(Error::new(d, ErrorKind::Slice)))
         );
-        assert_eq!(hex_digit1::<_, Error<_>>(a), Ok((empty, a)));
-        assert_eq!(hex_digit1::<_, Error<_>>(b), Ok((empty, b)));
-        assert_eq!(hex_digit1::<_, Error<_>>(c), Ok((empty, c)));
-        assert_eq!(hex_digit1::<_, Error<_>>(d), Ok(("zé12", "a")));
+        assert_eq!(hex_digit1::<_, Error<_>>.parse_peek(a), Ok((empty, a)));
+        assert_eq!(hex_digit1::<_, Error<_>>.parse_peek(b), Ok((empty, b)));
+        assert_eq!(hex_digit1::<_, Error<_>>.parse_peek(c), Ok((empty, c)));
+        assert_eq!(hex_digit1::<_, Error<_>>.parse_peek(d), Ok(("zé12", "a")));
         assert_eq!(
-            hex_digit1(e),
+            hex_digit1.parse_peek(e),
             Err(ErrMode::Backtrack(Error::new(e, ErrorKind::Slice)))
         );
         assert_eq!(
-            oct_digit1(a),
+            oct_digit1.parse_peek(a),
             Err(ErrMode::Backtrack(Error::new(a, ErrorKind::Slice)))
         );
-        assert_eq!(oct_digit1::<_, Error<_>>(b), Ok((empty, b)));
+        assert_eq!(oct_digit1::<_, Error<_>>.parse_peek(b), Ok((empty, b)));
         assert_eq!(
-            oct_digit1(c),
+            oct_digit1.parse_peek(c),
             Err(ErrMode::Backtrack(Error::new(c, ErrorKind::Slice)))
         );
         assert_eq!(
-            oct_digit1(d),
+            oct_digit1.parse_peek(d),
             Err(ErrMode::Backtrack(Error::new(d, ErrorKind::Slice)))
         );
-        assert_eq!(alphanumeric1::<_, Error<_>>(a), Ok((empty, a)));
+        assert_eq!(alphanumeric1::<_, Error<_>>.parse_peek(a), Ok((empty, a)));
         //assert_eq!(fix_error!(b,(), alphanumeric), Ok((empty, b)));
-        assert_eq!(alphanumeric1::<_, Error<_>>(c), Ok((empty, c)));
-        assert_eq!(alphanumeric1::<_, Error<_>>(d), Ok(("é12", "az")));
-        assert_eq!(space1::<_, Error<_>>(e), Ok((empty, e)));
+        assert_eq!(alphanumeric1::<_, Error<_>>.parse_peek(c), Ok((empty, c)));
+        assert_eq!(
+            alphanumeric1::<_, Error<_>>.parse_peek(d),
+            Ok(("é12", "az"))
+        );
+        assert_eq!(space1::<_, Error<_>>.parse_peek(e), Ok((empty, e)));
     }
 
     use crate::stream::Offset;
@@ -153,43 +165,43 @@ mod complete {
         let e = &b" \t\r\n;"[..];
         let f = &b"123abcDEF;"[..];
 
-        match alpha1::<_, Error<_>>(a) {
+        match alpha1::<_, Error<_>>.parse_peek(a) {
             Ok((i, _)) => {
                 assert_eq!(i.offset_from(&a) + i.len(), a.len());
             }
             _ => panic!("wrong return type in offset test for alpha"),
         }
-        match digit1::<_, Error<_>>(b) {
+        match digit1::<_, Error<_>>.parse_peek(b) {
             Ok((i, _)) => {
                 assert_eq!(i.offset_from(&b) + i.len(), b.len());
             }
             _ => panic!("wrong return type in offset test for digit"),
         }
-        match alphanumeric1::<_, Error<_>>(c) {
+        match alphanumeric1::<_, Error<_>>.parse_peek(c) {
             Ok((i, _)) => {
                 assert_eq!(i.offset_from(&c) + i.len(), c.len());
             }
             _ => panic!("wrong return type in offset test for alphanumeric"),
         }
-        match space1::<_, Error<_>>(d) {
+        match space1::<_, Error<_>>.parse_peek(d) {
             Ok((i, _)) => {
                 assert_eq!(i.offset_from(&d) + i.len(), d.len());
             }
             _ => panic!("wrong return type in offset test for space"),
         }
-        match multispace1::<_, Error<_>>(e) {
+        match multispace1::<_, Error<_>>.parse_peek(e) {
             Ok((i, _)) => {
                 assert_eq!(i.offset_from(&e) + i.len(), e.len());
             }
             _ => panic!("wrong return type in offset test for multispace"),
         }
-        match hex_digit1::<_, Error<_>>(f) {
+        match hex_digit1::<_, Error<_>>.parse_peek(f) {
             Ok((i, _)) => {
                 assert_eq!(i.offset_from(&f) + i.len(), f.len());
             }
             _ => panic!("wrong return type in offset test for hex_digit"),
         }
-        match oct_digit1::<_, Error<_>>(f) {
+        match oct_digit1::<_, Error<_>>.parse_peek(f) {
             Ok((i, _)) => {
                 assert_eq!(i.offset_from(&f) + i.len(), f.len());
             }
@@ -201,52 +213,55 @@ mod complete {
     fn is_not_line_ending_bytes() {
         let a: &[u8] = b"ab12cd\nefgh";
         assert_eq!(
-            not_line_ending::<_, Error<_>>(a),
+            not_line_ending::<_, Error<_>>.parse_peek(a),
             Ok((&b"\nefgh"[..], &b"ab12cd"[..]))
         );
 
         let b: &[u8] = b"ab12cd\nefgh\nijkl";
         assert_eq!(
-            not_line_ending::<_, Error<_>>(b),
+            not_line_ending::<_, Error<_>>.parse_peek(b),
             Ok((&b"\nefgh\nijkl"[..], &b"ab12cd"[..]))
         );
 
         let c: &[u8] = b"ab12cd\r\nefgh\nijkl";
         assert_eq!(
-            not_line_ending::<_, Error<_>>(c),
+            not_line_ending::<_, Error<_>>.parse_peek(c),
             Ok((&b"\r\nefgh\nijkl"[..], &b"ab12cd"[..]))
         );
 
         let d: &[u8] = b"ab12cd";
-        assert_eq!(not_line_ending::<_, Error<_>>(d), Ok((&[][..], d)));
+        assert_eq!(
+            not_line_ending::<_, Error<_>>.parse_peek(d),
+            Ok((&[][..], d))
+        );
     }
 
     #[test]
     fn is_not_line_ending_str() {
         let f = "βèƒôřè\rÂßÇáƒƭèř";
         assert_eq!(
-            not_line_ending(f),
+            not_line_ending.parse_peek(f),
             Err(ErrMode::Backtrack(Error::new(f, ErrorKind::Tag)))
         );
 
         let g2: &str = "ab12cd";
-        assert_eq!(not_line_ending::<_, Error<_>>(g2), Ok(("", g2)));
+        assert_eq!(not_line_ending::<_, Error<_>>.parse_peek(g2), Ok(("", g2)));
     }
 
     #[test]
     fn hex_digit_test() {
         let i = &b"0123456789abcdefABCDEF;"[..];
-        assert_parse!(hex_digit1(i), Ok((&b";"[..], &i[..i.len() - 1])));
+        assert_parse!(hex_digit1.parse_peek(i), Ok((&b";"[..], &i[..i.len() - 1])));
 
         let i = &b"g"[..];
         assert_parse!(
-            hex_digit1(i),
+            hex_digit1.parse_peek(i),
             Err(ErrMode::Backtrack(error_position!(i, ErrorKind::Slice)))
         );
 
         let i = &b"G"[..];
         assert_parse!(
-            hex_digit1(i),
+            hex_digit1.parse_peek(i),
             Err(ErrMode::Backtrack(error_position!(i, ErrorKind::Slice)))
         );
 
@@ -267,11 +282,11 @@ mod complete {
     #[test]
     fn oct_digit_test() {
         let i = &b"01234567;"[..];
-        assert_parse!(oct_digit1(i), Ok((&b";"[..], &i[..i.len() - 1])));
+        assert_parse!(oct_digit1.parse_peek(i), Ok((&b";"[..], &i[..i.len() - 1])));
 
         let i = &b"8"[..];
         assert_parse!(
-            oct_digit1(i),
+            oct_digit1.parse_peek(i),
             Err(ErrMode::Backtrack(error_position!(i, ErrorKind::Slice)))
         );
 
@@ -310,73 +325,82 @@ mod complete {
     #[test]
     fn check_windows_lineending() {
         let input = b"\r\n";
-        let output = line_ending(&input[..]);
+        let output = line_ending.parse_peek(&input[..]);
         assert_parse!(output, Ok((&b""[..], &b"\r\n"[..])));
     }
 
     #[test]
     fn check_unix_lineending() {
         let input = b"\n";
-        let output = line_ending(&input[..]);
+        let output = line_ending.parse_peek(&input[..]);
         assert_parse!(output, Ok((&b""[..], &b"\n"[..])));
     }
 
     #[test]
     fn cr_lf() {
-        assert_parse!(crlf(&b"\r\na"[..]), Ok((&b"a"[..], &b"\r\n"[..])));
         assert_parse!(
-            crlf(&b"\r"[..]),
+            crlf.parse_peek(&b"\r\na"[..]),
+            Ok((&b"a"[..], &b"\r\n"[..]))
+        );
+        assert_parse!(
+            crlf.parse_peek(&b"\r"[..]),
             Err(ErrMode::Backtrack(error_position!(
                 &b"\r"[..],
                 ErrorKind::Tag
             )))
         );
         assert_parse!(
-            crlf(&b"\ra"[..]),
+            crlf.parse_peek(&b"\ra"[..]),
             Err(ErrMode::Backtrack(error_position!(
                 &b"\ra"[..],
                 ErrorKind::Tag
             )))
         );
 
-        assert_parse!(crlf("\r\na"), Ok(("a", "\r\n")));
+        assert_parse!(crlf.parse_peek("\r\na"), Ok(("a", "\r\n")));
         assert_parse!(
-            crlf("\r"),
+            crlf.parse_peek("\r"),
             Err(ErrMode::Backtrack(error_position!("\r", ErrorKind::Tag)))
         );
         assert_parse!(
-            crlf("\ra"),
+            crlf.parse_peek("\ra"),
             Err(ErrMode::Backtrack(error_position!("\ra", ErrorKind::Tag)))
         );
     }
 
     #[test]
     fn end_of_line() {
-        assert_parse!(line_ending(&b"\na"[..]), Ok((&b"a"[..], &b"\n"[..])));
-        assert_parse!(line_ending(&b"\r\na"[..]), Ok((&b"a"[..], &b"\r\n"[..])));
         assert_parse!(
-            line_ending(&b"\r"[..]),
+            line_ending.parse_peek(&b"\na"[..]),
+            Ok((&b"a"[..], &b"\n"[..]))
+        );
+        assert_parse!(
+            line_ending.parse_peek(&b"\r\na"[..]),
+            Ok((&b"a"[..], &b"\r\n"[..]))
+        );
+        assert_parse!(
+            line_ending.parse_peek(&b"\r"[..]),
             Err(ErrMode::Backtrack(error_position!(
                 &b"\r"[..],
                 ErrorKind::Tag
             )))
         );
         assert_parse!(
-            line_ending(&b"\ra"[..]),
+            line_ending.parse_peek(&b"\ra"[..]),
             Err(ErrMode::Backtrack(error_position!(
                 &b"\ra"[..],
                 ErrorKind::Tag
             )))
         );
 
-        assert_parse!(line_ending("\na"), Ok(("a", "\n")));
-        assert_parse!(line_ending("\r\na"), Ok(("a", "\r\n")));
+        assert_parse!(line_ending.parse_peek("\na"), Ok(("a", "\n")));
+        assert_parse!(line_ending.parse_peek("\r\na"), Ok(("a", "\r\n")));
         assert_parse!(
-            line_ending("\r"),
+            line_ending.parse_peek("\r"),
             Err(ErrMode::Backtrack(error_position!("\r", ErrorKind::Tag)))
         );
         assert_parse!(
-            line_ending("\ra"),
+            line_ending.parse_peek("\ra"),
             Err(ErrMode::Backtrack(error_position!("\ra", ErrorKind::Tag)))
         );
     }
@@ -390,7 +414,7 @@ mod complete {
             _ => unreachable!(),
         };
 
-        let (i, s) = digit1::<_, crate::error::Error<_>>(i)?;
+        let (i, s) = digit1::<_, crate::error::Error<_>>.parse_peek(i)?;
         match s.parse_slice() {
             Some(n) => {
                 if sign {
@@ -404,7 +428,7 @@ mod complete {
     }
 
     fn digit_to_u32(i: &str) -> IResult<&str, u32> {
-        let (i, s) = digit1(i)?;
+        let (i, s) = digit1.parse_peek(i)?;
         match s.parse_slice() {
             Some(n) => Ok((i, n)),
             None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
@@ -416,7 +440,7 @@ mod complete {
       #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
       fn ints(s in "\\PC*") {
           let res1 = digit_to_i16(&s);
-          let res2 = dec_int(s.as_str());
+          let res2 = dec_int.parse_peek(s.as_str());
           assert_eq!(res1, res2);
       }
 
@@ -424,7 +448,7 @@ mod complete {
       #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
       fn uints(s in "\\PC*") {
           let res1 = digit_to_u32(&s);
-          let res2 = dec_uint(s.as_str());
+          let res2 = dec_uint.parse_peek(s.as_str());
           assert_eq!(res1, res2);
       }
     }
@@ -432,7 +456,7 @@ mod complete {
     #[test]
     fn hex_uint_tests() {
         fn hex_u32(input: &[u8]) -> IResult<&[u8], u32> {
-            hex_uint(input)
+            hex_uint.parse_peek(input)
         }
 
         assert_parse!(
@@ -510,30 +534,36 @@ mod complete {
 
             let larger = test.to_string();
 
-            assert_parse!(float(larger.as_bytes()), Ok((&b""[..], expected32)));
-            assert_parse!(float(&larger[..]), Ok(("", expected32)));
+            assert_parse!(
+                float.parse_peek(larger.as_bytes()),
+                Ok((&b""[..], expected32))
+            );
+            assert_parse!(float.parse_peek(&larger[..]), Ok(("", expected32)));
 
-            assert_parse!(float(larger.as_bytes()), Ok((&b""[..], expected64)));
-            assert_parse!(float(&larger[..]), Ok(("", expected64)));
+            assert_parse!(
+                float.parse_peek(larger.as_bytes()),
+                Ok((&b""[..], expected64))
+            );
+            assert_parse!(float.parse_peek(&larger[..]), Ok(("", expected64)));
         }
 
         let remaining_exponent = "-1.234E-";
         assert_parse!(
-            float::<_, f64, _>(remaining_exponent),
+            float::<_, f64, _>.parse_peek(remaining_exponent),
             Err(ErrMode::Cut(Error {
                 input: "",
                 kind: ErrorKind::Slice
             }))
         );
 
-        let (i, nan) = float::<_, f32, ()>("NaN").unwrap();
+        let (i, nan) = float::<_, f32, ()>.parse_peek("NaN").unwrap();
         assert!(nan.is_nan());
         assert_eq!(i, "");
 
-        let (i, inf) = float::<_, f32, ()>("inf").unwrap();
+        let (i, inf) = float::<_, f32, ()>.parse_peek("inf").unwrap();
         assert!(inf.is_infinite());
         assert_eq!(i, "");
-        let (i, inf) = float::<_, f32, ()>("infinity").unwrap();
+        let (i, inf) = float::<_, f32, ()>.parse_peek("infinity").unwrap();
         assert!(inf.is_infinite());
         assert_eq!(i, "");
     }
@@ -561,7 +591,7 @@ mod complete {
       fn floats(s in "\\PC*") {
           println!("testing {}", s);
           let res1 = parse_f64(&s);
-          let res2 = float::<_, f64, ()>(s.as_str());
+          let res2 = float::<_, f64, ()>.parse_peek(s.as_str());
           assert_eq!(res1, res2);
       }
     }
@@ -856,116 +886,116 @@ mod partial {
         let f: &[u8] = b" ;";
         //assert_eq!(alpha1::<_, Error<_>>(a), Err(ErrMode::Incomplete(Needed::new(1))));
         assert_parse!(
-            alpha1(Partial::new(a)),
+            alpha1.parse_peek(Partial::new(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            alpha1(Partial::new(b)),
+            alpha1.parse_peek(Partial::new(b)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(b),
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            alpha1::<_, Error<_>>(Partial::new(c)),
+            alpha1::<_, Error<_>>.parse_peek(Partial::new(c)),
             Ok((Partial::new(&c[1..]), &b"a"[..]))
         );
         assert_eq!(
-            alpha1::<_, Error<_>>(Partial::new(d)),
+            alpha1::<_, Error<_>>.parse_peek(Partial::new(d)),
             Ok((Partial::new("é12".as_bytes()), &b"az"[..]))
         );
         assert_eq!(
-            digit1(Partial::new(a)),
+            digit1.parse_peek(Partial::new(a)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(a),
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            digit1::<_, Error<_>>(Partial::new(b)),
+            digit1::<_, Error<_>>.parse_peek(Partial::new(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            digit1(Partial::new(c)),
+            digit1.parse_peek(Partial::new(c)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(c),
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            digit1(Partial::new(d)),
+            digit1.parse_peek(Partial::new(d)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(d),
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>>(Partial::new(a)),
+            hex_digit1::<_, Error<_>>.parse_peek(Partial::new(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>>(Partial::new(b)),
+            hex_digit1::<_, Error<_>>.parse_peek(Partial::new(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>>(Partial::new(c)),
+            hex_digit1::<_, Error<_>>.parse_peek(Partial::new(c)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>>(Partial::new(d)),
+            hex_digit1::<_, Error<_>>.parse_peek(Partial::new(d)),
             Ok((Partial::new("zé12".as_bytes()), &b"a"[..]))
         );
         assert_eq!(
-            hex_digit1(Partial::new(e)),
+            hex_digit1.parse_peek(Partial::new(e)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(e),
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            oct_digit1(Partial::new(a)),
+            oct_digit1.parse_peek(Partial::new(a)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(a),
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            oct_digit1::<_, Error<_>>(Partial::new(b)),
+            oct_digit1::<_, Error<_>>.parse_peek(Partial::new(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            oct_digit1(Partial::new(c)),
+            oct_digit1.parse_peek(Partial::new(c)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(c),
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            oct_digit1(Partial::new(d)),
+            oct_digit1.parse_peek(Partial::new(d)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(d),
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            alphanumeric1::<_, Error<_>>(Partial::new(a)),
+            alphanumeric1::<_, Error<_>>.parse_peek(Partial::new(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         //assert_eq!(fix_error!(b,(), alphanumeric1), Ok((empty, b)));
         assert_eq!(
-            alphanumeric1::<_, Error<_>>(Partial::new(c)),
+            alphanumeric1::<_, Error<_>>.parse_peek(Partial::new(c)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            alphanumeric1::<_, Error<_>>(Partial::new(d)),
+            alphanumeric1::<_, Error<_>>.parse_peek(Partial::new(d)),
             Ok((Partial::new("é12".as_bytes()), &b"az"[..]))
         );
         assert_eq!(
-            space1::<_, Error<_>>(Partial::new(e)),
+            space1::<_, Error<_>>.parse_peek(Partial::new(e)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            space1::<_, Error<_>>(Partial::new(f)),
+            space1::<_, Error<_>>.parse_peek(Partial::new(f)),
             Ok((Partial::new(&b";"[..]), &b" "[..]))
         );
     }
@@ -979,112 +1009,112 @@ mod partial {
         let d = "azé12";
         let e = " ";
         assert_eq!(
-            alpha1::<_, Error<_>>(Partial::new(a)),
+            alpha1::<_, Error<_>>.parse_peek(Partial::new(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            alpha1(Partial::new(b)),
+            alpha1.parse_peek(Partial::new(b)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(b),
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            alpha1::<_, Error<_>>(Partial::new(c)),
+            alpha1::<_, Error<_>>.parse_peek(Partial::new(c)),
             Ok((Partial::new(&c[1..]), "a"))
         );
         assert_eq!(
-            alpha1::<_, Error<_>>(Partial::new(d)),
+            alpha1::<_, Error<_>>.parse_peek(Partial::new(d)),
             Ok((Partial::new("é12"), "az"))
         );
         assert_eq!(
-            digit1(Partial::new(a)),
+            digit1.parse_peek(Partial::new(a)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(a),
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            digit1::<_, Error<_>>(Partial::new(b)),
+            digit1::<_, Error<_>>.parse_peek(Partial::new(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            digit1(Partial::new(c)),
+            digit1.parse_peek(Partial::new(c)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(c),
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            digit1(Partial::new(d)),
+            digit1.parse_peek(Partial::new(d)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(d),
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>>(Partial::new(a)),
+            hex_digit1::<_, Error<_>>.parse_peek(Partial::new(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>>(Partial::new(b)),
+            hex_digit1::<_, Error<_>>.parse_peek(Partial::new(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>>(Partial::new(c)),
+            hex_digit1::<_, Error<_>>.parse_peek(Partial::new(c)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            hex_digit1::<_, Error<_>>(Partial::new(d)),
+            hex_digit1::<_, Error<_>>.parse_peek(Partial::new(d)),
             Ok((Partial::new("zé12"), "a"))
         );
         assert_eq!(
-            hex_digit1(Partial::new(e)),
+            hex_digit1.parse_peek(Partial::new(e)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(e),
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            oct_digit1(Partial::new(a)),
+            oct_digit1.parse_peek(Partial::new(a)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(a),
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            oct_digit1::<_, Error<_>>(Partial::new(b)),
+            oct_digit1::<_, Error<_>>.parse_peek(Partial::new(b)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            oct_digit1(Partial::new(c)),
+            oct_digit1.parse_peek(Partial::new(c)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(c),
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            oct_digit1(Partial::new(d)),
+            oct_digit1.parse_peek(Partial::new(d)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(d),
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            alphanumeric1::<_, Error<_>>(Partial::new(a)),
+            alphanumeric1::<_, Error<_>>.parse_peek(Partial::new(a)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         //assert_eq!(fix_error!(b,(), alphanumeric1), Ok((empty, b)));
         assert_eq!(
-            alphanumeric1::<_, Error<_>>(Partial::new(c)),
+            alphanumeric1::<_, Error<_>>.parse_peek(Partial::new(c)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            alphanumeric1::<_, Error<_>>(Partial::new(d)),
+            alphanumeric1::<_, Error<_>>.parse_peek(Partial::new(d)),
             Ok((Partial::new("é12"), "az"))
         );
         assert_eq!(
-            space1::<_, Error<_>>(Partial::new(e)),
+            space1::<_, Error<_>>.parse_peek(Partial::new(e)),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
     }
@@ -1099,49 +1129,49 @@ mod partial {
         let e = &b" \t\r\n;"[..];
         let f = &b"123abcDEF;"[..];
 
-        match alpha1::<_, Error<_>>(Partial::new(a)) {
+        match alpha1::<_, Error<_>>.parse_peek(Partial::new(a)) {
             Ok((i, _)) => {
                 let i = i.into_inner();
                 assert_eq!(i.offset_from(&a) + i.len(), a.len());
             }
             _ => panic!("wrong return type in offset test for alpha"),
         }
-        match digit1::<_, Error<_>>(Partial::new(b)) {
+        match digit1::<_, Error<_>>.parse_peek(Partial::new(b)) {
             Ok((i, _)) => {
                 let i = i.into_inner();
                 assert_eq!(i.offset_from(&b) + i.len(), b.len());
             }
             _ => panic!("wrong return type in offset test for digit"),
         }
-        match alphanumeric1::<_, Error<_>>(Partial::new(c)) {
+        match alphanumeric1::<_, Error<_>>.parse_peek(Partial::new(c)) {
             Ok((i, _)) => {
                 let i = i.into_inner();
                 assert_eq!(i.offset_from(&c) + i.len(), c.len());
             }
             _ => panic!("wrong return type in offset test for alphanumeric"),
         }
-        match space1::<_, Error<_>>(Partial::new(d)) {
+        match space1::<_, Error<_>>.parse_peek(Partial::new(d)) {
             Ok((i, _)) => {
                 let i = i.into_inner();
                 assert_eq!(i.offset_from(&d) + i.len(), d.len());
             }
             _ => panic!("wrong return type in offset test for space"),
         }
-        match multispace1::<_, Error<_>>(Partial::new(e)) {
+        match multispace1::<_, Error<_>>.parse_peek(Partial::new(e)) {
             Ok((i, _)) => {
                 let i = i.into_inner();
                 assert_eq!(i.offset_from(&e) + i.len(), e.len());
             }
             _ => panic!("wrong return type in offset test for multispace"),
         }
-        match hex_digit1::<_, Error<_>>(Partial::new(f)) {
+        match hex_digit1::<_, Error<_>>.parse_peek(Partial::new(f)) {
             Ok((i, _)) => {
                 let i = i.into_inner();
                 assert_eq!(i.offset_from(&f) + i.len(), f.len());
             }
             _ => panic!("wrong return type in offset test for hex_digit"),
         }
-        match oct_digit1::<_, Error<_>>(Partial::new(f)) {
+        match oct_digit1::<_, Error<_>>.parse_peek(Partial::new(f)) {
             Ok((i, _)) => {
                 let i = i.into_inner();
                 assert_eq!(i.offset_from(&f) + i.len(), f.len());
@@ -1154,25 +1184,25 @@ mod partial {
     fn is_not_line_ending_bytes() {
         let a: &[u8] = b"ab12cd\nefgh";
         assert_eq!(
-            not_line_ending::<_, Error<_>>(Partial::new(a)),
+            not_line_ending::<_, Error<_>>.parse_peek(Partial::new(a)),
             Ok((Partial::new(&b"\nefgh"[..]), &b"ab12cd"[..]))
         );
 
         let b: &[u8] = b"ab12cd\nefgh\nijkl";
         assert_eq!(
-            not_line_ending::<_, Error<_>>(Partial::new(b)),
+            not_line_ending::<_, Error<_>>.parse_peek(Partial::new(b)),
             Ok((Partial::new(&b"\nefgh\nijkl"[..]), &b"ab12cd"[..]))
         );
 
         let c: &[u8] = b"ab12cd\r\nefgh\nijkl";
         assert_eq!(
-            not_line_ending::<_, Error<_>>(Partial::new(c)),
+            not_line_ending::<_, Error<_>>.parse_peek(Partial::new(c)),
             Ok((Partial::new(&b"\r\nefgh\nijkl"[..]), &b"ab12cd"[..]))
         );
 
         let d: &[u8] = b"ab12cd";
         assert_eq!(
-            not_line_ending::<_, Error<_>>(Partial::new(d)),
+            not_line_ending::<_, Error<_>>.parse_peek(Partial::new(d)),
             Err(ErrMode::Incomplete(Needed::Unknown))
         );
     }
@@ -1181,7 +1211,7 @@ mod partial {
     fn is_not_line_ending_str() {
         let f = "βèƒôřè\rÂßÇáƒƭèř";
         assert_eq!(
-            not_line_ending(Partial::new(f)),
+            not_line_ending.parse_peek(Partial::new(f)),
             Err(ErrMode::Backtrack(Error::new(
                 Partial::new(f),
                 ErrorKind::Tag
@@ -1190,7 +1220,7 @@ mod partial {
 
         let g2: &str = "ab12cd";
         assert_eq!(
-            not_line_ending::<_, Error<_>>(Partial::new(g2)),
+            not_line_ending::<_, Error<_>>.parse_peek(Partial::new(g2)),
             Err(ErrMode::Incomplete(Needed::Unknown))
         );
     }
@@ -1199,13 +1229,13 @@ mod partial {
     fn hex_digit_test() {
         let i = &b"0123456789abcdefABCDEF;"[..];
         assert_parse!(
-            hex_digit1(Partial::new(i)),
+            hex_digit1.parse_peek(Partial::new(i)),
             Ok((Partial::new(&b";"[..]), &i[..i.len() - 1]))
         );
 
         let i = &b"g"[..];
         assert_parse!(
-            hex_digit1(Partial::new(i)),
+            hex_digit1.parse_peek(Partial::new(i)),
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new(i),
                 ErrorKind::Slice
@@ -1214,7 +1244,7 @@ mod partial {
 
         let i = &b"G"[..];
         assert_parse!(
-            hex_digit1(Partial::new(i)),
+            hex_digit1.parse_peek(Partial::new(i)),
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new(i),
                 ErrorKind::Slice
@@ -1239,13 +1269,13 @@ mod partial {
     fn oct_digit_test() {
         let i = &b"01234567;"[..];
         assert_parse!(
-            oct_digit1(Partial::new(i)),
+            oct_digit1.parse_peek(Partial::new(i)),
             Ok((Partial::new(&b";"[..]), &i[..i.len() - 1]))
         );
 
         let i = &b"8"[..];
         assert_parse!(
-            oct_digit1(Partial::new(i)),
+            oct_digit1.parse_peek(Partial::new(i)),
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new(i),
                 ErrorKind::Slice
@@ -1295,42 +1325,45 @@ mod partial {
     #[test]
     fn check_windows_lineending() {
         let input = b"\r\n";
-        let output = line_ending(Partial::new(&input[..]));
+        let output = line_ending.parse_peek(Partial::new(&input[..]));
         assert_parse!(output, Ok((Partial::new(&b""[..]), &b"\r\n"[..])));
     }
 
     #[test]
     fn check_unix_lineending() {
         let input = b"\n";
-        let output = line_ending(Partial::new(&input[..]));
+        let output = line_ending.parse_peek(Partial::new(&input[..]));
         assert_parse!(output, Ok((Partial::new(&b""[..]), &b"\n"[..])));
     }
 
     #[test]
     fn cr_lf() {
         assert_parse!(
-            crlf(Partial::new(&b"\r\na"[..])),
+            crlf.parse_peek(Partial::new(&b"\r\na"[..])),
             Ok((Partial::new(&b"a"[..]), &b"\r\n"[..]))
         );
         assert_parse!(
-            crlf(Partial::new(&b"\r"[..])),
+            crlf.parse_peek(Partial::new(&b"\r"[..])),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_parse!(
-            crlf(Partial::new(&b"\ra"[..])),
+            crlf.parse_peek(Partial::new(&b"\ra"[..])),
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new(&b"\ra"[..]),
                 ErrorKind::Tag
             )))
         );
 
-        assert_parse!(crlf(Partial::new("\r\na")), Ok((Partial::new("a"), "\r\n")));
         assert_parse!(
-            crlf(Partial::new("\r")),
+            crlf.parse_peek(Partial::new("\r\na")),
+            Ok((Partial::new("a"), "\r\n"))
+        );
+        assert_parse!(
+            crlf.parse_peek(Partial::new("\r")),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_parse!(
-            crlf(Partial::new("\ra")),
+            crlf.parse_peek(Partial::new("\ra")),
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new("\ra"),
                 ErrorKind::Tag
@@ -1341,19 +1374,19 @@ mod partial {
     #[test]
     fn end_of_line() {
         assert_parse!(
-            line_ending(Partial::new(&b"\na"[..])),
+            line_ending.parse_peek(Partial::new(&b"\na"[..])),
             Ok((Partial::new(&b"a"[..]), &b"\n"[..]))
         );
         assert_parse!(
-            line_ending(Partial::new(&b"\r\na"[..])),
+            line_ending.parse_peek(Partial::new(&b"\r\na"[..])),
             Ok((Partial::new(&b"a"[..]), &b"\r\n"[..]))
         );
         assert_parse!(
-            line_ending(Partial::new(&b"\r"[..])),
+            line_ending.parse_peek(Partial::new(&b"\r"[..])),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_parse!(
-            line_ending(Partial::new(&b"\ra"[..])),
+            line_ending.parse_peek(Partial::new(&b"\ra"[..])),
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new(&b"\ra"[..]),
                 ErrorKind::Tag
@@ -1361,19 +1394,19 @@ mod partial {
         );
 
         assert_parse!(
-            line_ending(Partial::new("\na")),
+            line_ending.parse_peek(Partial::new("\na")),
             Ok((Partial::new("a"), "\n"))
         );
         assert_parse!(
-            line_ending(Partial::new("\r\na")),
+            line_ending.parse_peek(Partial::new("\r\na")),
             Ok((Partial::new("a"), "\r\n"))
         );
         assert_parse!(
-            line_ending(Partial::new("\r")),
+            line_ending.parse_peek(Partial::new("\r")),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_parse!(
-            line_ending(Partial::new("\ra")),
+            line_ending.parse_peek(Partial::new("\ra")),
             Err(ErrMode::Backtrack(error_position!(
                 Partial::new("\ra"),
                 ErrorKind::Tag
@@ -1390,7 +1423,7 @@ mod partial {
             _ => unreachable!(),
         };
 
-        let (i, s) = digit1::<_, crate::error::Error<_>>(i)?;
+        let (i, s) = digit1::<_, crate::error::Error<_>>.parse_peek(i)?;
         match s.parse_slice() {
             Some(n) => {
                 if sign {
@@ -1404,7 +1437,7 @@ mod partial {
     }
 
     fn digit_to_u32(i: Partial<&str>) -> IResult<Partial<&str>, u32> {
-        let (i, s) = digit1(i)?;
+        let (i, s) = digit1.parse_peek(i)?;
         match s.parse_slice() {
             Some(n) => Ok((i, n)),
             None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
@@ -1416,7 +1449,7 @@ mod partial {
       #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
       fn ints(s in "\\PC*") {
           let res1 = digit_to_i16(Partial::new(&s));
-          let res2 = dec_int(Partial::new(s.as_str()));
+          let res2 = dec_int.parse_peek(Partial::new(s.as_str()));
           assert_eq!(res1, res2);
       }
 
@@ -1424,7 +1457,7 @@ mod partial {
       #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
       fn uints(s in "\\PC*") {
           let res1 = digit_to_u32(Partial::new(&s));
-          let res2 = dec_uint(Partial::new(s.as_str()));
+          let res2 = dec_uint.parse_peek(Partial::new(s.as_str()));
           assert_eq!(res1, res2);
       }
     }
@@ -1432,7 +1465,7 @@ mod partial {
     #[test]
     fn hex_uint_tests() {
         fn hex_u32(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
-            hex_uint(input)
+            hex_uint.parse_peek(input)
         }
 
         assert_parse!(
