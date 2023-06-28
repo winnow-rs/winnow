@@ -10,9 +10,9 @@ use crate::stream::{AsChar, Compare, Location, ParseSlice, Stream, StreamIsParti
 /// ```rust
 /// use winnow::prelude::*;
 ///
-/// fn success(input: &str) -> IResult<&str, ()> {
+/// fn success(input: &mut &str) -> PResult<()> {
 ///     let output = ();
-///     Ok((input, output))
+///     Ok(output)
 /// }
 ///
 /// let (input, output) = success.parse_peek("Hello").unwrap();
@@ -23,10 +23,10 @@ use crate::stream::{AsChar, Compare, Location, ParseSlice, Stream, StreamIsParti
 /// ```rust
 /// use winnow::prelude::*;
 ///
-/// fn success<O: Clone>(output: O) -> impl FnMut(&str) -> IResult<&str, O> {
-///     move |input: &str| {
+/// fn success<O: Clone>(output: O) -> impl FnMut(&mut &str) -> PResult<O> {
+///     move |input: &mut &str| {
 ///         let output = output.clone();
-///         Ok((input, output))
+///         Ok(output)
 ///     }
 /// }
 ///
@@ -186,12 +186,12 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::IResult;
-    /// # use winnow::Parser;
+    /// # use winnow::prelude::*;
+    /// # use winnow::error::Error;
     /// use winnow::ascii::alpha1;
     /// # fn main() {
     ///
-    ///  fn parser1(i: &str) -> IResult<&str, &str> {
+    ///  fn parser1<'s>(i: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
     ///    alpha1(i)
     ///  }
     ///
@@ -254,8 +254,8 @@ pub trait Parser<I, O, E> {
     /// use winnow::token::tag;
     /// use winnow::combinator::separated_pair;
     ///
-    /// fn inner_parser(input: &str) -> IResult<&str, bool> {
-    ///     "1234".value(true).parse_peek(input)
+    /// fn inner_parser<'s>(input: &mut &'s str) -> PResult<bool, Error<&'s str>> {
+    ///     "1234".value(true).parse_next(input)
     /// }
     ///
     /// # fn main() {
@@ -327,8 +327,8 @@ pub trait Parser<I, O, E> {
     /// use winnow::token::tag;
     /// use winnow::combinator::separated_pair;
     ///
-    /// fn inner_parser(input: Located<&str>) -> IResult<Located<&str>, bool> {
-    ///     "1234".value(true).parse_peek(input)
+    /// fn inner_parser<'s>(input: &mut Located<&'s str>) -> PResult<bool, Error<Located<&'s str>>> {
+    ///     "1234".value(true).parse_next(input)
     /// }
     ///
     /// # fn main() {
@@ -451,12 +451,12 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
+    /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, PResult, Parser};
     /// use winnow::token::take;
     /// use winnow::binary::u8;
     ///
-    /// fn length_data(input: &[u8]) -> IResult<&[u8], &[u8]> {
-    ///     u8.flat_map(take).parse_peek(input)
+    /// fn length_data<'s>(input: &mut &'s [u8]) -> PResult<&'s [u8], Error<&'s [u8]>> {
+    ///     u8.flat_map(take).parse_next(input)
     /// }
     ///
     /// assert_eq!(length_data.parse_peek(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
@@ -465,14 +465,14 @@ pub trait Parser<I, O, E> {
     ///
     /// which is the same as
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult, Parser};
+    /// # use winnow::{error::ErrMode,error::ErrorKind, error::Error, PResult, Parser};
     /// use winnow::token::take;
     /// use winnow::binary::u8;
     ///
-    /// fn length_data(input: &[u8]) -> IResult<&[u8], &[u8]> {
-    ///     let (input, length) = u8.parse_peek(input)?;
-    ///     let (input, data) = take(length).parse_peek(input)?;
-    ///     Ok((input, data))
+    /// fn length_data<'s>(input: &mut &'s [u8]) -> PResult<&'s [u8], Error<&'s [u8]>> {
+    ///     let length = u8.parse_next(input)?;
+    ///     let data = take(length).parse_next(input)?;
+    ///     Ok(data)
     /// }
     ///
     /// assert_eq!(length_data.parse_peek(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
@@ -523,8 +523,8 @@ pub trait Parser<I, O, E> {
     /// use winnow::{error::ErrMode,error::ErrorKind, error::Error, IResult,Parser};
     /// use winnow::ascii::digit1;
     ///
-    /// fn parser(input: &str) -> IResult<&str, u64> {
-    ///     digit1.parse_to().parse_peek(input)
+    /// fn parser<'s>(input: &mut &'s str) -> PResult<u64, Error<&'s str>> {
+    ///     digit1.parse_to().parse_next(input)
     /// }
     ///
     /// // the parser will count how many characters were returned by digit1
@@ -626,16 +626,11 @@ pub trait Parser<I, O, E> {
 
 impl<'a, I, O, E, F> Parser<I, O, E> for F
 where
-    F: FnMut(I) -> IResult<I, O, E> + 'a,
+    F: FnMut(&mut I) -> PResult<O, E> + 'a,
     I: Clone,
 {
     #[inline(always)]
     fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
-        unpeek(|i| self.parse_peek(i))(i)
-    }
-
-    #[inline(always)]
-    fn parse_peek(&mut self, i: I) -> IResult<I, O, E> {
         self(i)
     }
 }
@@ -856,8 +851,9 @@ impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a> {
     }
 }
 
+/// Convert a [`Parser::parse_peek`] style parse function to be a [`Parser`]
 #[inline(always)]
-pub(crate) fn unpeek<'a, I, O, E>(
+pub fn unpeek<'a, I, O, E>(
     mut peek: impl FnMut(I) -> IResult<I, O, E> + 'a,
 ) -> impl FnMut(&mut I) -> PResult<O, E>
 where
@@ -870,44 +866,6 @@ where
         }
         Err(err) => Err(err),
     }
-}
-
-#[inline(always)]
-pub(crate) fn parser<I, O, E>(parser: impl FnMut(&mut I) -> PResult<O, E>) -> impl Parser<I, O, E> {
-    struct Wrapper<P, I, O, E>
-    where
-        P: FnMut(&mut I) -> PResult<O, E>,
-    {
-        p: P,
-        i: core::marker::PhantomData<I>,
-        o: core::marker::PhantomData<O>,
-        e: core::marker::PhantomData<E>,
-    }
-
-    impl<P, I, O, E> Wrapper<P, I, O, E>
-    where
-        P: FnMut(&mut I) -> PResult<O, E>,
-    {
-        pub(crate) fn new(p: P) -> Self {
-            Self {
-                p,
-                i: Default::default(),
-                o: Default::default(),
-                e: Default::default(),
-            }
-        }
-    }
-
-    impl<I, O, E, P> Parser<I, O, E> for Wrapper<P, I, O, E>
-    where
-        P: FnMut(&mut I) -> PResult<O, E>,
-    {
-        #[inline(always)]
-        fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
-            (self.p)(i)
-        }
-    }
-    Wrapper::new(parser)
 }
 
 #[cfg(test)]
@@ -994,8 +952,8 @@ mod tests {
 
     #[test]
     fn unit_type() {
-        fn parser(i: &str) -> IResult<&str, ()> {
-            ().parse_peek(i)
+        fn parser(i: &mut &str) -> PResult<()> {
+            ().parse_next(i)
         }
         assert_eq!(parser.parse_peek("abxsbsh"), Ok(("abxsbsh", ())));
         assert_eq!(parser.parse_peek("sdfjakdsas"), Ok(("sdfjakdsas", ())));

@@ -8,6 +8,7 @@ use winnow::{
     combinator::repeat,
     combinator::{delimited, separated_pair, terminated},
     token::take_while,
+    unpeek,
 };
 
 pub type Stream<'i> = &'i [u8];
@@ -16,9 +17,9 @@ pub fn categories(i: Stream<'_>) -> IResult<Stream<'_>, HashMap<&str, HashMap<&s
     repeat(
         0..,
         separated_pair(
-            category,
+            unpeek(category),
             opt(multispace),
-            repeat(0.., terminated(key_value, opt(multispace))),
+            repeat(0.., terminated(unpeek(key_value), opt(multispace))),
         ),
     )
     .parse_peek(i)

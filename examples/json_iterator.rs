@@ -10,7 +10,7 @@ use winnow::{
     error::ParseError,
     token::one_of,
     token::{tag, take_while},
-    IResult,
+    unpeek, IResult,
 };
 
 use std::cell::Cell;
@@ -214,7 +214,7 @@ fn parse_str<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str
 }
 
 fn string(i: &str) -> IResult<&str, &str> {
-    preceded('\"', cut_err(terminated(parse_str, '\"')))
+    preceded('\"', cut_err(terminated(unpeek(parse_str), '\"')))
         .context("string")
         .parse_peek(i)
 }
@@ -227,8 +227,8 @@ fn array(i: &str) -> IResult<&str, ()> {
     preceded(
         '[',
         cut_err(terminated(
-            separated0(value, preceded(sp, ',')),
-            preceded(sp, ']'),
+            separated0(unpeek(value), preceded(unpeek(sp), ',')),
+            preceded(unpeek(sp), ']'),
         )),
     )
     .context("array")
@@ -236,15 +236,20 @@ fn array(i: &str) -> IResult<&str, ()> {
 }
 
 fn key_value(i: &str) -> IResult<&str, (&str, ())> {
-    separated_pair(preceded(sp, string), cut_err(preceded(sp, ':')), value).parse_peek(i)
+    separated_pair(
+        preceded(unpeek(sp), unpeek(string)),
+        cut_err(preceded(unpeek(sp), ':')),
+        unpeek(value),
+    )
+    .parse_peek(i)
 }
 
 fn hash(i: &str) -> IResult<&str, ()> {
     preceded(
         '{',
         cut_err(terminated(
-            separated0(key_value, preceded(sp, ',')),
-            preceded(sp, '}'),
+            separated0(unpeek(key_value), preceded(unpeek(sp), ',')),
+            preceded(unpeek(sp), '}'),
         )),
     )
     .context("map")
@@ -253,13 +258,13 @@ fn hash(i: &str) -> IResult<&str, ()> {
 
 fn value(i: &str) -> IResult<&str, ()> {
     preceded(
-        sp,
+        unpeek(sp),
         alt((
-            hash,
-            array,
-            string.map(|_| ()),
+            unpeek(hash),
+            unpeek(array),
+            unpeek(string).map(|_| ()),
             float::<_, f64, _>.map(|_| ()),
-            boolean.map(|_| ()),
+            unpeek(boolean).map(|_| ()),
         )),
     )
     .parse_peek(i)

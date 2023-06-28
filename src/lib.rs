@@ -221,7 +221,7 @@ pub mod _tutorial;
 /// ```rust
 /// use winnow::prelude::*;
 ///
-/// fn parse_data(input: &str) -> IResult<&str, u64> {
+/// fn parse_data(input: &mut &str) -> PResult<u64> {
 ///     // ...
 /// #   winnow::ascii::dec_uint(input)
 /// }

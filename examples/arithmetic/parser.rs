@@ -7,7 +7,7 @@ use winnow::{
     combinator::delimited,
     combinator::fold_repeat,
     token::one_of,
-    IResult,
+    unpeek, IResult,
 };
 
 // Parser definition
@@ -17,7 +17,7 @@ pub fn expr(i: &str) -> IResult<&str, i64> {
 
     fold_repeat(
         0..,
-        (one_of(['+', '-']), term),
+        (one_of(['+', '-']), unpeek(term)),
         move || init,
         |acc, (op, val): (char, i64)| {
             if op == '+' {
@@ -38,7 +38,7 @@ fn term(i: &str) -> IResult<&str, i64> {
 
     fold_repeat(
         0..,
-        (one_of(['*', '/']), factor),
+        (one_of(['*', '/']), unpeek(factor)),
         move || init,
         |acc, (op, val): (char, i64)| {
             if op == '*' {
@@ -60,8 +60,8 @@ fn factor(i: &str) -> IResult<&str, i64> {
         spaces,
         alt((
             digits.try_map(FromStr::from_str),
-            delimited('(', expr, ')'),
-            parens,
+            delimited('(', unpeek(expr), ')'),
+            unpeek(parens),
         )),
         spaces,
     )
@@ -70,7 +70,7 @@ fn factor(i: &str) -> IResult<&str, i64> {
 
 // We parse any expr surrounded by parens, ignoring all whitespaces around those
 fn parens(i: &str) -> IResult<&str, i64> {
-    delimited('(', expr, ')').parse_peek(i)
+    delimited('(', unpeek(expr), ')').parse_peek(i)
 }
 
 #[test]

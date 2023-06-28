@@ -53,8 +53,10 @@ pub fn trace<I: Stream, O, E>(
 ) -> impl Parser<I, O, E> {
     #[cfg(feature = "debug")]
     {
+        use crate::unpeek;
+
         let mut call_count = 0;
-        move |i: I| {
+        unpeek(move |i: I| {
             let depth = internals::Depth::new();
             let original = i.checkpoint();
             internals::start(*depth, &name, call_count, &i);
@@ -67,7 +69,7 @@ pub fn trace<I: Stream, O, E>(
             call_count += 1;
 
             res
-        }
+        })
     }
     #[cfg(not(feature = "debug"))]
     {

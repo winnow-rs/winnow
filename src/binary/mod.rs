@@ -18,7 +18,8 @@ use crate::stream::{AsBytes, Stream, StreamIsPartial};
 use crate::stream::{ToUsize, UpdateSlice};
 use crate::token::take;
 use crate::trace::trace;
-use crate::IResult;
+use crate::unpeek;
+use crate::PResult;
 use crate::Parser;
 
 /// Configurable endianness
@@ -68,7 +69,7 @@ pub enum Endianness {
 /// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn be_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
+pub fn be_u8<I, E: ParseError<I>>(input: &mut I) -> PResult<u8, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -112,13 +113,13 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn be_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
+pub fn be_u16<I, E: ParseError<I>>(input: &mut I) -> PResult<u16, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_u16", move |input: I| be_uint(input, 2)).parse_peek(input)
+    trace("be_u16", move |input: &mut I| be_uint(input, 2)).parse_next(input)
 }
 
 /// Recognizes a big endian unsigned 3 byte integer.
@@ -157,13 +158,13 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn be_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
+pub fn be_u24<I, E: ParseError<I>>(input: &mut I) -> PResult<u32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_u23", move |input: I| be_uint(input, 3)).parse_peek(input)
+    trace("be_u23", move |input: &mut I| be_uint(input, 3)).parse_next(input)
 }
 
 /// Recognizes a big endian unsigned 4 bytes integer.
@@ -202,13 +203,13 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn be_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
+pub fn be_u32<I, E: ParseError<I>>(input: &mut I) -> PResult<u32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_u32", move |input: I| be_uint(input, 4)).parse_peek(input)
+    trace("be_u32", move |input: &mut I| be_uint(input, 4)).parse_next(input)
 }
 
 /// Recognizes a big endian unsigned 8 bytes integer.
@@ -247,13 +248,13 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn be_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
+pub fn be_u64<I, E: ParseError<I>>(input: &mut I) -> PResult<u64, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_u64", move |input: I| be_uint(input, 8)).parse_peek(input)
+    trace("be_u64", move |input: &mut I| be_uint(input, 8)).parse_next(input)
 }
 
 /// Recognizes a big endian unsigned 16 bytes integer.
@@ -292,17 +293,17 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn be_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
+pub fn be_u128<I, E: ParseError<I>>(input: &mut I) -> PResult<u128, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_u128", move |input: I| be_uint(input, 16)).parse_peek(input)
+    trace("be_u128", move |input: &mut I| be_uint(input, 16)).parse_next(input)
 }
 
 #[inline]
-fn be_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
+fn be_uint<I, Uint, E: ParseError<I>>(input: &mut I, bound: usize) -> PResult<Uint, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -312,7 +313,7 @@ where
     debug_assert_ne!(bound, 1, "to_be_uint needs extra work to avoid overflow");
     take(bound)
         .map(|n: <I as Stream>::Slice| to_be_uint(n.as_bytes()))
-        .parse_peek(input)
+        .parse_next(input)
 }
 
 #[inline]
@@ -364,7 +365,7 @@ where
 /// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn be_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
+pub fn be_i8<I, E: ParseError<I>>(input: &mut I) -> PResult<i8, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -408,16 +409,16 @@ where
 /// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn be_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
+pub fn be_i16<I, E: ParseError<I>>(input: &mut I) -> PResult<i16, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_i16", move |input: I| {
-        be_uint::<_, u16, _>(input, 2).map(|(i, n)| (i, n as i16))
+    trace("be_i16", move |input: &mut I| {
+        be_uint::<_, u16, _>(input, 2).map(|n| n as i16)
     })
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes a big endian signed 3 bytes integer.
@@ -456,24 +457,24 @@ where
 /// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn be_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
+pub fn be_i24<I, E: ParseError<I>>(input: &mut I) -> PResult<i32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_i24", move |input: I| {
-        be_uint::<_, u32, _>(input, 3).map(|(i, n)| {
+    trace("be_i24", move |input: &mut I| {
+        be_uint::<_, u32, _>(input, 3).map(|n| {
             // Same as the unsigned version but we need to sign-extend manually here
             let n = if n & 0x80_00_00 != 0 {
                 (n | 0xff_00_00_00) as i32
             } else {
                 n as i32
             };
-            (i, n)
+            n
         })
     })
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes a big endian signed 4 bytes integer.
@@ -512,16 +513,16 @@ where
 /// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(4))));
 /// ```
 #[inline(always)]
-pub fn be_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
+pub fn be_i32<I, E: ParseError<I>>(input: &mut I) -> PResult<i32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_i32", move |input: I| {
-        be_uint::<_, u32, _>(input, 4).map(|(i, n)| (i, n as i32))
+    trace("be_i32", move |input: &mut I| {
+        be_uint::<_, u32, _>(input, 4).map(|n| n as i32)
     })
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes a big endian signed 8 bytes integer.
@@ -560,16 +561,16 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn be_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
+pub fn be_i64<I, E: ParseError<I>>(input: &mut I) -> PResult<i64, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_i64", move |input: I| {
-        be_uint::<_, u64, _>(input, 8).map(|(i, n)| (i, n as i64))
+    trace("be_i64", move |input: &mut I| {
+        be_uint::<_, u64, _>(input, 8).map(|n| n as i64)
     })
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes a big endian signed 16 bytes integer.
@@ -608,16 +609,16 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn be_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
+pub fn be_i128<I, E: ParseError<I>>(input: &mut I) -> PResult<i128, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_i128", move |input: I| {
-        be_uint::<_, u128, _>(input, 16).map(|(i, n)| (i, n as i128))
+    trace("be_i128", move |input: &mut I| {
+        be_uint::<_, u128, _>(input, 16).map(|n| n as i128)
     })
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes an unsigned 1 byte integer.
@@ -656,7 +657,7 @@ where
 /// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn le_u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
+pub fn le_u8<I, E: ParseError<I>>(input: &mut I) -> PResult<u8, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -700,13 +701,13 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn le_u16<I, E: ParseError<I>>(input: I) -> IResult<I, u16, E>
+pub fn le_u16<I, E: ParseError<I>>(input: &mut I) -> PResult<u16, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_u16", move |input: I| le_uint(input, 2)).parse_peek(input)
+    trace("le_u16", move |input: &mut I| le_uint(input, 2)).parse_next(input)
 }
 
 /// Recognizes a little endian unsigned 3 byte integer.
@@ -745,13 +746,13 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn le_u24<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
+pub fn le_u24<I, E: ParseError<I>>(input: &mut I) -> PResult<u32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_u24", move |input: I| le_uint(input, 3)).parse_peek(input)
+    trace("le_u24", move |input: &mut I| le_uint(input, 3)).parse_next(input)
 }
 
 /// Recognizes a little endian unsigned 4 bytes integer.
@@ -790,13 +791,13 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn le_u32<I, E: ParseError<I>>(input: I) -> IResult<I, u32, E>
+pub fn le_u32<I, E: ParseError<I>>(input: &mut I) -> PResult<u32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_u32", move |input: I| le_uint(input, 4)).parse_peek(input)
+    trace("le_u32", move |input: &mut I| le_uint(input, 4)).parse_next(input)
 }
 
 /// Recognizes a little endian unsigned 8 bytes integer.
@@ -835,13 +836,13 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn le_u64<I, E: ParseError<I>>(input: I) -> IResult<I, u64, E>
+pub fn le_u64<I, E: ParseError<I>>(input: &mut I) -> PResult<u64, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_u64", move |input: I| le_uint(input, 8)).parse_peek(input)
+    trace("le_u64", move |input: &mut I| le_uint(input, 8)).parse_next(input)
 }
 
 /// Recognizes a little endian unsigned 16 bytes integer.
@@ -880,17 +881,17 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn le_u128<I, E: ParseError<I>>(input: I) -> IResult<I, u128, E>
+pub fn le_u128<I, E: ParseError<I>>(input: &mut I) -> PResult<u128, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_u128", move |input: I| le_uint(input, 16)).parse_peek(input)
+    trace("le_u128", move |input: &mut I| le_uint(input, 16)).parse_next(input)
 }
 
 #[inline]
-fn le_uint<I, Uint, E: ParseError<I>>(input: I, bound: usize) -> IResult<I, Uint, E>
+fn le_uint<I, Uint, E: ParseError<I>>(input: &mut I, bound: usize) -> PResult<Uint, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -899,7 +900,7 @@ where
 {
     take(bound)
         .map(|n: <I as Stream>::Slice| to_le_uint(n.as_bytes()))
-        .parse_peek(input)
+        .parse_next(input)
 }
 
 #[inline]
@@ -951,7 +952,7 @@ where
 /// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn le_i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
+pub fn le_i8<I, E: ParseError<I>>(input: &mut I) -> PResult<i8, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -995,16 +996,16 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn le_i16<I, E: ParseError<I>>(input: I) -> IResult<I, i16, E>
+pub fn le_i16<I, E: ParseError<I>>(input: &mut I) -> PResult<i16, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_i16", move |input: I| {
-        le_uint::<_, u16, _>(input, 2).map(|(i, n)| (i, n as i16))
+    trace("le_i16", move |input: &mut I| {
+        le_uint::<_, u16, _>(input, 2).map(|n| n as i16)
     })
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes a little endian signed 3 bytes integer.
@@ -1043,24 +1044,24 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn le_i24<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
+pub fn le_i24<I, E: ParseError<I>>(input: &mut I) -> PResult<i32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_i24", move |input: I| {
-        le_uint::<_, u32, _>(input, 3).map(|(i, n)| {
+    trace("le_i24", move |input: &mut I| {
+        le_uint::<_, u32, _>(input, 3).map(|n| {
             // Same as the unsigned version but we need to sign-extend manually here
             let n = if n & 0x80_00_00 != 0 {
                 (n | 0xff_00_00_00) as i32
             } else {
                 n as i32
             };
-            (i, n)
+            n
         })
     })
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes a little endian signed 4 bytes integer.
@@ -1099,16 +1100,16 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn le_i32<I, E: ParseError<I>>(input: I) -> IResult<I, i32, E>
+pub fn le_i32<I, E: ParseError<I>>(input: &mut I) -> PResult<i32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_i32", move |input: I| {
-        le_uint::<_, u32, _>(input, 4).map(|(i, n)| (i, n as i32))
+    trace("le_i32", move |input: &mut I| {
+        le_uint::<_, u32, _>(input, 4).map(|n| n as i32)
     })
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes a little endian signed 8 bytes integer.
@@ -1147,16 +1148,16 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn le_i64<I, E: ParseError<I>>(input: I) -> IResult<I, i64, E>
+pub fn le_i64<I, E: ParseError<I>>(input: &mut I) -> PResult<i64, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_i64", move |input: I| {
-        le_uint::<_, u64, _>(input, 8).map(|(i, n)| (i, n as i64))
+    trace("le_i64", move |input: &mut I| {
+        le_uint::<_, u64, _>(input, 8).map(|n| n as i64)
     })
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes a little endian signed 16 bytes integer.
@@ -1195,16 +1196,16 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn le_i128<I, E: ParseError<I>>(input: I) -> IResult<I, i128, E>
+pub fn le_i128<I, E: ParseError<I>>(input: &mut I) -> PResult<i128, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_i128", move |input: I| {
-        le_uint::<_, u128, _>(input, 16).map(|(i, n)| (i, n as i128))
+    trace("le_i128", move |input: &mut I| {
+        le_uint::<_, u128, _>(input, 16).map(|n| n as i128)
     })
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes an unsigned 1 byte integer
@@ -1246,31 +1247,31 @@ where
 /// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn u8<I, E: ParseError<I>>(input: I) -> IResult<I, u8, E>
+pub fn u8<I, E: ParseError<I>>(input: &mut I) -> PResult<u8, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
 {
-    trace("u8", move |input: I| {
+    trace("u8", move |input: &mut I| {
         if <I as StreamIsPartial>::is_partial_supported() {
             u8_::<_, _, true>(input)
         } else {
             u8_::<_, _, false>(input)
         }
     })
-    .parse_peek(input)
+    .parse_next(input)
 }
 
-fn u8_<I, E: ParseError<I>, const PARTIAL: bool>(input: I) -> IResult<I, u8, E>
+fn u8_<I, E: ParseError<I>, const PARTIAL: bool>(input: &mut I) -> PResult<u8, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
 {
-    input.peek_token().ok_or_else(|| {
+    input.next_token().ok_or_else(|| {
         if PARTIAL && input.is_partial() {
             ErrMode::Incomplete(Needed::new(1))
         } else {
-            ErrMode::Backtrack(E::from_error_kind(input, ErrorKind::Token))
+            ErrMode::Backtrack(E::from_error_kind(input.clone(), ErrorKind::Token))
         }
     })
 }
@@ -1335,7 +1336,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    move |input: I| {
+    move |input: &mut I| {
         match endian {
             Endianness::Big => be_u16,
             Endianness::Little => le_u16,
@@ -1407,7 +1408,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    move |input: I| {
+    move |input: &mut I| {
         match endian {
             Endianness::Big => be_u24,
             Endianness::Little => le_u24,
@@ -1479,7 +1480,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    move |input: I| {
+    move |input: &mut I| {
         match endian {
             Endianness::Big => be_u32,
             Endianness::Little => le_u32,
@@ -1551,7 +1552,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    move |input: I| {
+    move |input: &mut I| {
         match endian {
             Endianness::Big => be_u64,
             Endianness::Little => le_u64,
@@ -1623,7 +1624,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    move |input: I| {
+    move |input: &mut I| {
         match endian {
             Endianness::Big => be_u128,
             Endianness::Little => le_u128,
@@ -1674,20 +1675,20 @@ where
 /// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn i8<I, E: ParseError<I>>(input: I) -> IResult<I, i8, E>
+pub fn i8<I, E: ParseError<I>>(input: &mut I) -> PResult<i8, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
 {
-    trace("i8", move |input: I| {
+    trace("i8", move |input: &mut I| {
         if <I as StreamIsPartial>::is_partial_supported() {
             u8_::<_, _, true>(input)
         } else {
             u8_::<_, _, false>(input)
         }
-        .map(|(i, n)| (i, n as i8))
+        .map(|n| n as i8)
     })
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes a signed 2 byte integer
@@ -1750,7 +1751,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    move |input: I| {
+    move |input: &mut I| {
         match endian {
             Endianness::Big => be_i16,
             Endianness::Little => le_i16,
@@ -1822,7 +1823,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    move |input: I| {
+    move |input: &mut I| {
         match endian {
             Endianness::Big => be_i24,
             Endianness::Little => le_i24,
@@ -1894,7 +1895,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    move |input: I| {
+    move |input: &mut I| {
         match endian {
             Endianness::Big => be_i32,
             Endianness::Little => le_i32,
@@ -1966,7 +1967,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    move |input: I| {
+    move |input: &mut I| {
         match endian {
             Endianness::Big => be_i64,
             Endianness::Little => le_i64,
@@ -2038,7 +2039,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    move |input: I| {
+    move |input: &mut I| {
         match endian {
             Endianness::Big => be_i128,
             Endianness::Little => le_i128,
@@ -2087,16 +2088,16 @@ where
 /// assert_eq!(parser(Partial::new(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn be_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>
+pub fn be_f32<I, E: ParseError<I>>(input: &mut I) -> PResult<f32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_f32", move |input: I| {
-        be_uint::<_, u32, _>(input, 4).map(|(i, n)| (i, f32::from_bits(n)))
+    trace("be_f32", move |input: &mut I| {
+        be_uint::<_, u32, _>(input, 4).map(f32::from_bits)
     })
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes a big endian 8 bytes floating point number.
@@ -2135,16 +2136,16 @@ where
 /// assert_eq!(parser(Partial::new(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn be_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>
+pub fn be_f64<I, E: ParseError<I>>(input: &mut I) -> PResult<f64, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_f64", move |input: I| {
-        be_uint::<_, u64, _>(input, 8).map(|(i, n)| (i, f64::from_bits(n)))
+    trace("be_f64", move |input: &mut I| {
+        be_uint::<_, u64, _>(input, 8).map(f64::from_bits)
     })
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes a little endian 4 bytes floating point number.
@@ -2183,16 +2184,16 @@ where
 /// assert_eq!(parser(Partial::new(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn le_f32<I, E: ParseError<I>>(input: I) -> IResult<I, f32, E>
+pub fn le_f32<I, E: ParseError<I>>(input: &mut I) -> PResult<f32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("le_f32", move |input: I| {
-        le_uint::<_, u32, _>(input, 4).map(|(i, n)| (i, f32::from_bits(n)))
+    trace("le_f32", move |input: &mut I| {
+        le_uint::<_, u32, _>(input, 4).map(f32::from_bits)
     })
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes a little endian 8 bytes floating point number.
@@ -2231,16 +2232,16 @@ where
 /// assert_eq!(parser(Partial::new(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn le_f64<I, E: ParseError<I>>(input: I) -> IResult<I, f64, E>
+pub fn le_f64<I, E: ParseError<I>>(input: &mut I) -> PResult<f64, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    trace("be_f64", move |input: I| {
-        le_uint::<_, u64, _>(input, 8).map(|(i, n)| (i, f64::from_bits(n)))
+    trace("be_f64", move |input: &mut I| {
+        le_uint::<_, u64, _>(input, 8).map(f64::from_bits)
     })
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes a 4 byte floating point number
@@ -2303,7 +2304,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    move |input: I| {
+    move |input: &mut I| {
         match endian {
             Endianness::Big => be_f32,
             Endianness::Little => le_f32,
@@ -2375,7 +2376,7 @@ where
     I: Stream<Token = u8>,
     <I as Stream>::Slice: AsBytes,
 {
-    move |input: I| {
+    move |input: &mut I| {
         match endian {
             Endianness::Big => be_f64,
             Endianness::Little => le_f64,
@@ -2428,11 +2429,14 @@ where
     F: Parser<I, N, E>,
     E: ParseError<I>,
 {
-    trace("length_data", move |i: I| {
-        let (i, length) = f.parse_peek(i)?;
+    trace(
+        "length_data",
+        unpeek(move |i: I| {
+            let (i, length) = f.parse_peek(i)?;
 
-        crate::token::take(length).parse_peek(i)
-    })
+            crate::token::take(length).parse_peek(i)
+        }),
+    )
 }
 
 /// Gets a number from the first parser,
@@ -2488,13 +2492,16 @@ where
     G: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    trace("length_value", move |i: I| {
-        let (i, data) = length_data(f.by_ref()).parse_peek(i)?;
-        let mut data = I::update_slice(i.clone(), data);
-        let _ = data.complete();
-        let (_, o) = g.by_ref().complete_err().parse_peek(data)?;
-        Ok((i, o))
-    })
+    trace(
+        "length_value",
+        unpeek(move |i: I| {
+            let (i, data) = length_data(f.by_ref()).parse_peek(i)?;
+            let mut data = I::update_slice(i.clone(), data);
+            let _ = data.complete();
+            let (_, o) = g.by_ref().complete_err().parse_peek(data)?;
+            Ok((i, o))
+        }),
+    )
 }
 
 /// Gets a number from the first parser,
@@ -2542,9 +2549,12 @@ where
     G: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    trace("length_count", move |i: I| {
-        let (i, n) = f.parse_peek(i)?;
-        let n = n.to_usize();
-        repeat(n, g.by_ref()).parse_peek(i)
-    })
+    trace(
+        "length_count",
+        unpeek(move |i: I| {
+            let (i, n) = f.parse_peek(i)?;
+            let n = n.to_usize();
+            repeat(n, g.by_ref()).parse_peek(i)
+        }),
+    )
 }

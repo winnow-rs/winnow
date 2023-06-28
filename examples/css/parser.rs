@@ -1,5 +1,6 @@
 use winnow::prelude::*;
 use winnow::token::take_while;
+use winnow::unpeek;
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct Color {
@@ -13,13 +14,20 @@ impl std::str::FromStr for Color {
     type Err = winnow::error::Error<String>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        hex_color.parse(s).map_err(winnow::error::Error::into_owned)
+        unpeek(hex_color)
+            .parse(s)
+            .map_err(winnow::error::Error::into_owned)
     }
 }
 
 pub fn hex_color(input: &str) -> IResult<&str, Color> {
     let (input, _) = "#".parse_peek(input)?;
-    let (input, (red, green, blue)) = (hex_primary, hex_primary, hex_primary).parse_peek(input)?;
+    let (input, (red, green, blue)) = (
+        unpeek(hex_primary),
+        unpeek(hex_primary),
+        unpeek(hex_primary),
+    )
+        .parse_peek(input)?;
 
     Ok((input, Color { red, green, blue }))
 }

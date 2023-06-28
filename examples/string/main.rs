@@ -14,12 +14,13 @@
 mod parser;
 
 use winnow::prelude::*;
+use winnow::unpeek;
 
 fn main() -> Result<(), lexopt::Error> {
     let args = Args::parse()?;
 
     let data = args.input.as_deref().unwrap_or("\"abc\"");
-    let result = parser::parse_string::<()>.parse(data);
+    let result = unpeek(parser::parse_string::<()>).parse(data);
     match result {
         Ok(data) => println!("{}", data),
         Err(err) => println!("{:?}", err),

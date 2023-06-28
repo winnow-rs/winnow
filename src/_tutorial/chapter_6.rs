@@ -2,64 +2,63 @@
 //!
 //! ## `Error`
 //!
-//! Back in [`chapter_1`], we glossed over the `Err` side of [`IResult`].  `IResult<I, O>` is
-//! actually short for `IResult<I, O, E=Error>` where [`Error`] is a cheap, universal error type
-//! for getting started.  When humans are producing the file, like with `toml`, you might want to
-//! sacrifice some performance for providing more details on how to resolve the problem
+//! Back in [`chapter_1`], we glossed over the `Err` side of [`PResult`].  `PResult<O>` is
+//! actually short for `PResult<O, E=ErrorKind>` where [`ErrorKind`] is a cheap, piece of debug information.
 //!
+//! When humans are producing the content to parse, like with `toml`, you might want to
+//! sacrifice some performance for providing more details on how to resolve the problem
 //! winnow includes [`VerboseError`] for this but you can [customize the error as you
 //! wish][_topic::error].  You can use [`Parser::context`] to annotate the error with custom types
 //! while unwinding to further improve the error quality.
 //!
 //! ```rust
-//! # use winnow::IResult;
-//! # use winnow::Parser;
+//! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
 //! # use winnow::combinator::alt;
 //! use winnow::error::VerboseError;
 //!
-//! fn parse_digits(input: &str) -> IResult<&str, (&str, &str), VerboseError<&str>> {
+//! fn parse_digits<'s>(input: &mut &'s str) -> PResult<(&'s str, &'s str), VerboseError<&'s str>> {
 //!     alt((
 //!         ("0b", parse_bin_digits).context("binary"),
 //!         ("0o", parse_oct_digits).context("octal"),
 //!         ("0d", parse_dec_digits).context("decimal"),
 //!         ("0x", parse_hex_digits).context("hexadecimal"),
-//!     )).parse_peek(input)
+//!     )).parse_next(input)
 //! }
 //!
 //! // ...
-//! # fn parse_bin_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str, VerboseError<&'s str>> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_oct_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str, VerboseError<&'s str>> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_dec_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str, VerboseError<&'s str>> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_hex_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str, VerboseError<&'s str>> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //!
 //! fn main() {
-//!     let input = "0x1a2b Hello";
+//!     let mut input = "0x1a2b Hello";
 //!
-//!     let (remainder, (prefix, digits)) = parse_digits.parse_peek(input).unwrap();
+//!     let (prefix, digits) = parse_digits.parse_next(&mut input).unwrap();
 //!
-//!     assert_eq!(remainder, " Hello");
+//!     assert_eq!(input, " Hello");
 //!     assert_eq!(prefix, "0x");
 //!     assert_eq!(digits, "1a2b");
 //! }
@@ -71,13 +70,13 @@
 //!
 //! ## `ErrMode`
 //!
-//! Let's break down `IResult<I, O, E>` one step further:
+//! Let's break down `PResult<O, E>` one step further:
 //! ```rust
-//! # use winnow::error::Error;
+//! # use winnow::error::ErrorKind;
 //! # use winnow::error::ErrMode;
-//! pub type IResult<I, O, E = Error<I>> = Result<(I, O), ErrMode<E>>;
+//! pub type OResult<O, E = ErrorKind> = Result<O, ErrMode<E>>;
 //! ```
-//! `IResult` is just a fancy wrapper around `Result` that wraps our error in an [`ErrMode`]
+//! `PResult` is just a fancy wrapper around `Result` that wraps our error in an [`ErrMode`]
 //! type.
 //!
 //! `ErrMode` is an enum with `Backtrack` and `Cut` variants (ignore `Incomplete` as its only
@@ -87,55 +86,54 @@
 //!
 //! So we can get the correct `context` by modifying the above example with [`cut_err`]:
 //! ```rust
-//! # use winnow::IResult;
-//! # use winnow::Parser;
+//! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
 //! # use winnow::combinator::alt;
 //! # use winnow::error::VerboseError;
 //! use winnow::combinator::cut_err;
 //!
-//! fn parse_digits(input: &str) -> IResult<&str, (&str, &str), VerboseError<&str>> {
+//! fn parse_digits<'s>(input: &mut &'s str) -> PResult<(&'s str, &'s str), VerboseError<&'s str>> {
 //!     alt((
 //!         ("0b", cut_err(parse_bin_digits)).context("binary"),
 //!         ("0o", cut_err(parse_oct_digits)).context("octal"),
 //!         ("0d", cut_err(parse_dec_digits)).context("decimal"),
 //!         ("0x", cut_err(parse_hex_digits)).context("hexadecimal"),
-//!     )).parse_peek(input)
+//!     )).parse_next(input)
 //! }
 //!
 //! // ...
-//! # fn parse_bin_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str, VerboseError<&'s str>> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_oct_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str, VerboseError<&'s str>> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_dec_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str, VerboseError<&'s str>> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_hex_digits(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str, VerboseError<&'s str>> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //!
 //! fn main() {
-//!     let input = "0x1a2b Hello";
+//!     let mut input = "0x1a2b Hello";
 //!
-//!     let (remainder, (prefix, digits)) = parse_digits.parse_peek(input).unwrap();
+//!     let (prefix, digits) = parse_digits.parse_next(&mut input).unwrap();
 //!
-//!     assert_eq!(remainder, " Hello");
+//!     assert_eq!(input, " Hello");
 //!     assert_eq!(prefix, "0x");
 //!     assert_eq!(digits, "1a2b");
 //! }
@@ -148,9 +146,9 @@ use super::chapter_3;
 use crate::combinator::alt;
 use crate::combinator::cut_err;
 use crate::error::ErrMode;
-use crate::error::Error;
+use crate::error::ErrorKind;
 use crate::error::VerboseError;
-use crate::IResult;
+use crate::PResult;
 use crate::Parser;
 use crate::_topic;
 

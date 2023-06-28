@@ -3,6 +3,7 @@ use winnow::combinator::alt;
 use winnow::combinator::delimited;
 use winnow::combinator::opt;
 use winnow::prelude::*;
+use winnow::unpeek;
 use winnow::IResult;
 
 use std::str;
@@ -19,7 +20,7 @@ fn unsigned_float(i: &[u8]) -> IResult<&[u8], f32> {
 }
 
 fn float(i: &[u8]) -> IResult<&[u8], f32> {
-    (opt(alt(("+", "-"))), unsigned_float)
+    (opt(alt(("+", "-"))), unpeek(unsigned_float))
         .map(|(sign, value)| {
             sign.and_then(|s| if s[0] == b'-' { Some(-1f32) } else { None })
                 .unwrap_or(1f32)

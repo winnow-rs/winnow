@@ -8,6 +8,7 @@ use winnow::error::convert_error;
 use winnow::error::Error;
 use winnow::error::VerboseError;
 use winnow::prelude::*;
+use winnow::unpeek;
 
 fn main() -> Result<(), lexopt::Error> {
     let args = Args::parse()?;
@@ -27,7 +28,7 @@ fn main() -> Result<(), lexopt::Error> {
     });
 
     if args.verbose {
-        match parser::json::<VerboseError<&str>>.parse(data) {
+        match unpeek(parser::json::<VerboseError<&str>>).parse(data) {
             Ok(json) => {
                 println!("{:#?}", json);
             }
@@ -41,8 +42,8 @@ fn main() -> Result<(), lexopt::Error> {
         }
     } else {
         let result = match args.implementation {
-            Impl::Naive => parser::json::<Error<&str>>.parse(data),
-            Impl::Dispatch => parser_dispatch::json::<Error<&str>>.parse(data),
+            Impl::Naive => unpeek(parser::json::<Error<&str>>).parse(data),
+            Impl::Dispatch => unpeek(parser_dispatch::json::<Error<&str>>).parse(data),
         };
         match result {
             Ok(json) => {

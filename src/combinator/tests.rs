@@ -11,6 +11,7 @@ use crate::error::Needed;
 use crate::error::ParseError;
 use crate::stream::Stream;
 use crate::token::take;
+use crate::unpeek;
 use crate::IResult;
 use crate::Parser;
 use crate::Partial;
@@ -574,13 +575,19 @@ fn alt_test() {
     }
 
     fn alt1(i: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
-        alt((dont_work, dont_work)).parse_peek(i)
+        alt((unpeek(dont_work), unpeek(dont_work))).parse_peek(i)
     }
     fn alt2(i: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
-        alt((dont_work, work)).parse_peek(i)
+        alt((unpeek(dont_work), unpeek(work))).parse_peek(i)
     }
     fn alt3(i: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
-        alt((dont_work, dont_work, work2, dont_work)).parse_peek(i)
+        alt((
+            unpeek(dont_work),
+            unpeek(dont_work),
+            unpeek(work2),
+            unpeek(dont_work),
+        ))
+        .parse_peek(i)
     }
     //named!(alt1, alt!(dont_work | dont_work));
     //named!(alt2, alt!(dont_work | work));
@@ -932,13 +939,13 @@ fn infinite_many() {
 
     // should not go into an infinite loop
     fn multi0(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-        repeat(0.., tst).parse_peek(i)
+        repeat(0.., unpeek(tst)).parse_peek(i)
     }
     let a = &b"abcdef"[..];
     assert_eq!(multi0(a), Ok((a, Vec::new())));
 
     fn multi1(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-        repeat(1.., tst).parse_peek(i)
+        repeat(1.., unpeek(tst)).parse_peek(i)
     }
     let a = &b"abcdef"[..];
     assert_eq!(

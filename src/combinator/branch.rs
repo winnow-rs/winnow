@@ -48,7 +48,7 @@ pub trait Alt<I, O, E> {
 pub fn alt<I: Stream, O, E: ParseError<I>, List: Alt<I, O, E>>(
     mut l: List,
 ) -> impl Parser<I, O, E> {
-    trace("alt", move |i: I| l.choice(i))
+    trace("alt", unpeek(move |i: I| l.choice(i)))
 }
 
 /// Helper trait for the [permutation()] combinator.
@@ -109,7 +109,7 @@ pub trait Permutation<I, O, E> {
 pub fn permutation<I: Stream, O, E: ParseError<I>, List: Permutation<I, O, E>>(
     mut l: List,
 ) -> impl Parser<I, O, E> {
-    trace("permutation", move |i: I| l.permutation(i))
+    trace("permutation", unpeek(move |i: I| l.permutation(i)))
 }
 
 macro_rules! alt_trait(
