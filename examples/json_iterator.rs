@@ -62,7 +62,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
 
     pub fn number(&self) -> Option<f64> {
         println!("number()");
-        match float::<_, _, ()>(self.data()) {
+        match float::<_, _, ()>.parse_peek(self.data()) {
             Ok((i, o)) => {
                 self.offset(i);
                 println!("-> {}", o);
