@@ -70,24 +70,18 @@ pub trait Parser<I, O, E> {
     /// This includes advancing the [`Stream`] to the next location.
     ///
     /// On error, `input` will be left pointing at the error location.
-    #[inline(always)]
-    fn parse_next(&mut self, input: &mut I) -> PResult<O, E>
-    where
-        I: Clone,
-    {
-        match self.parse_peek((*input).clone()) {
-            Ok((i, o)) => {
-                *input = i;
-                Ok(o)
-            }
-            Err(err) => Err(err),
-        }
-    }
+    fn parse_next(&mut self, input: &mut I) -> PResult<O, E>;
 
     /// Take tokens from the [`Stream`], turning it into the output
     ///
     /// This includes advancing the [`Stream`] to the next location.
-    fn parse_peek(&mut self, input: I) -> IResult<I, O, E>;
+    #[inline(always)]
+    fn parse_peek(&mut self, mut input: I) -> IResult<I, O, E> {
+        match self.parse_next(&mut input) {
+            Ok(o) => Ok((input, o)),
+            Err(err) => Err(err),
+        }
+    }
 
     /// Treat `&mut Self` as a parser
     ///
@@ -632,7 +626,13 @@ pub trait Parser<I, O, E> {
 impl<'a, I, O, E, F> Parser<I, O, E> for F
 where
     F: FnMut(I) -> IResult<I, O, E> + 'a,
+    I: Clone,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     #[inline(always)]
     fn parse_peek(&mut self, i: I) -> IResult<I, O, E> {
         self(i)
@@ -661,6 +661,11 @@ where
     E: ParseError<I>,
 {
     #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<u8, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
+    #[inline(always)]
     fn parse_peek(&mut self, i: I) -> IResult<I, u8, E> {
         crate::token::one_of(*self).parse_peek(i)
     }
@@ -688,6 +693,11 @@ where
     <I as Stream>::Token: AsChar + Copy,
     E: ParseError<I>,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<<I as Stream>::Token, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     #[inline(always)]
     fn parse_peek(&mut self, i: I) -> IResult<I, <I as Stream>::Token, E> {
         crate::token::one_of(*self).parse_peek(i)
@@ -718,6 +728,11 @@ where
     I: Stream,
 {
     #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<<I as Stream>::Slice, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
+    #[inline(always)]
     fn parse_peek(&mut self, i: I) -> IResult<I, <I as Stream>::Slice, E> {
         crate::token::tag(*self).parse_peek(i)
     }
@@ -746,6 +761,11 @@ where
     I: Compare<&'s [u8; N]> + StreamIsPartial,
     I: Stream,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<<I as Stream>::Slice, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     #[inline(always)]
     fn parse_peek(&mut self, i: I) -> IResult<I, <I as Stream>::Slice, E> {
         crate::token::tag(*self).parse_peek(i)
@@ -776,12 +796,25 @@ where
     I: Stream,
 {
     #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<<I as Stream>::Slice, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
+    #[inline(always)]
     fn parse_peek(&mut self, i: I) -> IResult<I, <I as Stream>::Slice, E> {
         crate::token::tag(*self).parse_peek(i)
     }
 }
 
-impl<I, E: ParseError<I>> Parser<I, (), E> for () {
+impl<I, E: ParseError<I>> Parser<I, (), E> for ()
+where
+    I: Clone,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<(), E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     #[inline(always)]
     fn parse_peek(&mut self, i: I) -> IResult<I, (), E> {
         Ok((i, ()))
@@ -793,8 +826,14 @@ macro_rules! impl_parser_for_tuple {
     #[allow(non_snake_case)]
     impl<I, $($output),+, E: ParseError<I>, $($parser),+> Parser<I, ($($output),+,), E> for ($($parser),+,)
     where
+      I: Clone,
       $($parser: Parser<I, $output, E>),+
     {
+      #[inline(always)]
+      fn parse_next(&mut self, i: &mut I) -> PResult<($($output),+,), E> {
+          unpeek(|i| self.parse_peek(i))(i)
+      }
+
       #[inline(always)]
       fn parse_peek(&mut self, i: I) -> IResult<I, ($($output),+,), E> {
         let ($(ref mut $parser),+,) = *self;
@@ -848,10 +887,34 @@ impl_parser_for_tuples!(
 use alloc::boxed::Box;
 
 #[cfg(feature = "alloc")]
-impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a> {
+impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a>
+where
+    I: Clone,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     #[inline(always)]
     fn parse_peek(&mut self, input: I) -> IResult<I, O, E> {
         (**self).parse_peek(input)
+    }
+}
+
+#[inline(always)]
+pub(crate) fn unpeek<'a, I, O, E>(
+    mut peek: impl FnMut(I) -> IResult<I, O, E> + 'a,
+) -> impl FnMut(&mut I) -> PResult<O, E>
+where
+    I: Clone,
+{
+    move |input| match peek((*input).clone()) {
+        Ok((i, o)) => {
+            *input = i;
+            Ok(o)
+        }
+        Err(err) => Err(err),
     }
 }
 

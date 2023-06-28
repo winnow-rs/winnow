@@ -1,6 +1,7 @@
 use crate::error::{ContextError, ErrMode, ErrorKind, FromExternalError, ParseError};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::ops::Range;
+use crate::parser::unpeek;
 use crate::stream::StreamIsPartial;
 use crate::stream::{Location, Stream};
 use crate::trace::trace;
@@ -19,7 +20,15 @@ impl<'p, P> ByRef<'p, P> {
     }
 }
 
-impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for ByRef<'p, P> {
+impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for ByRef<'p, P>
+where
+    I: Clone,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     fn parse_peek(&mut self, i: I) -> IResult<I, O, E> {
         self.p.parse_peek(i)
     }
@@ -61,7 +70,13 @@ impl<F, G, I, O, O2, E> Parser<I, O2, E> for Map<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
     G: Fn(O) -> O2,
+    I: Clone,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O2, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     fn parse_peek(&mut self, i: I) -> IResult<I, O2, E> {
         match self.parser.parse_peek(i) {
             Err(e) => Err(e),
@@ -115,6 +130,11 @@ where
     I: Clone,
     E: FromExternalError<I, E2>,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O2, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     fn parse_peek(&mut self, input: I) -> IResult<I, O2, E> {
         let i = input.clone();
         let (input, o) = self.parser.parse_peek(input)?;
@@ -170,6 +190,11 @@ where
     I: Clone,
     E: ParseError<I>,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O2, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     fn parse_peek(&mut self, input: I) -> IResult<I, O2, E> {
         let i = input.clone();
         let (input, o) = self.parser.parse_peek(input)?;
@@ -221,7 +246,13 @@ where
     F: Parser<I, O, E>,
     G: Parser<O, O2, E>,
     O: StreamIsPartial,
+    I: Clone,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O2, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     fn parse_peek(&mut self, i: I) -> IResult<I, O2, E> {
         let (i, mut o) = self.outer.parse_peek(i)?;
         let _ = o.complete();
@@ -271,6 +302,11 @@ where
     O: crate::stream::ParseSlice<O2>,
     E: ParseError<I>,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O2, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     fn parse_peek(&mut self, i: I) -> IResult<I, O2, E> {
         let input = i.clone();
         let (i, o) = self.p.parse_peek(i)?;
@@ -324,7 +360,13 @@ where
     F: Parser<I, O, E>,
     G: FnMut(O) -> H,
     H: Parser<I, O2, E>,
+    I: Clone,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O2, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     fn parse_peek(&mut self, i: I) -> IResult<I, O2, E> {
         let (i, o) = self.f.parse_peek(i)?;
         (self.g)(o).parse_peek(i)
@@ -349,6 +391,11 @@ where
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     fn parse_peek(&mut self, input: I) -> IResult<I, O, E> {
         trace("complete_err", |input: I| {
             let i = input.clone();
@@ -412,6 +459,11 @@ where
     O2: ?Sized,
     E: ParseError<I>,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     fn parse_peek(&mut self, input: I) -> IResult<I, O, E> {
         let i = input.clone();
         let (input, o) = self.parser.parse_peek(input)?;
@@ -460,7 +512,13 @@ impl<F, I, O, O2, E> Parser<I, O2, E> for Value<F, I, O, O2, E>
 where
     F: Parser<I, O, E>,
     O2: Clone,
+    I: Clone,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O2, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     fn parse_peek(&mut self, input: I) -> IResult<I, O2, E> {
         (self.parser)
             .parse_peek(input)
@@ -497,7 +555,13 @@ where
 impl<F, I, O, E> Parser<I, (), E> for Void<F, I, O, E>
 where
     F: Parser<I, O, E>,
+    I: Clone,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<(), E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     fn parse_peek(&mut self, input: I) -> IResult<I, (), E> {
         (self.parser).parse_peek(input).map(|(i, _)| (i, ()))
     }
@@ -536,6 +600,11 @@ where
     F: Parser<I, O, E>,
     I: Stream,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<<I as Stream>::Slice, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     fn parse_peek(&mut self, input: I) -> IResult<I, <I as Stream>::Slice, E> {
         let checkpoint = input.checkpoint();
         match (self.parser).parse_peek(input) {
@@ -583,6 +652,11 @@ where
     F: Parser<I, O, E>,
     I: Stream,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<(O, <I as Stream>::Slice), E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     fn parse_peek(&mut self, input: I) -> IResult<I, (O, <I as Stream>::Slice), E> {
         let checkpoint = input.checkpoint();
         match (self.parser).parse_peek(input) {
@@ -630,6 +704,11 @@ where
     F: Parser<I, O, E>,
     I: Clone + Location,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<Range<usize>, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     fn parse_peek(&mut self, input: I) -> IResult<I, Range<usize>, E> {
         let start = input.location();
         self.parser.parse_peek(input).map(move |(remaining, _)| {
@@ -672,6 +751,11 @@ where
     F: Parser<I, O, E>,
     I: Clone + Location,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<(O, Range<usize>), E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     fn parse_peek(&mut self, input: I) -> IResult<I, (O, Range<usize>), E> {
         let start = input.location();
         self.parser
@@ -717,7 +801,13 @@ impl<F, I, O, O2, E> Parser<I, O2, E> for OutputInto<F, I, O, O2, E>
 where
     F: Parser<I, O, E>,
     O: Into<O2>,
+    I: Clone,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O2, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     fn parse_peek(&mut self, i: I) -> IResult<I, O2, E> {
         match self.parser.parse_peek(i) {
             Ok((i, o)) => Ok((i, o.into())),
@@ -760,7 +850,13 @@ impl<F, I, O, E, E2> Parser<I, O, E2> for ErrInto<F, I, O, E, E2>
 where
     F: Parser<I, O, E>,
     E: Into<E2>,
+    I: Clone,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O, E2> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     fn parse_peek(&mut self, i: I) -> IResult<I, O, E2> {
         match self.parser.parse_peek(i) {
             Ok(ok) => Ok(ok),
@@ -812,6 +908,11 @@ where
     E: ContextError<I, C>,
     C: Clone + crate::lib::std::fmt::Debug,
 {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
+        unpeek(|i| self.parse_peek(i))(i)
+    }
+
     fn parse_peek(&mut self, i: I) -> IResult<I, O, E> {
         #[cfg(feature = "debug")]
         let name = format!("context={:?}", self.context);
