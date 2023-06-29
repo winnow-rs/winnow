@@ -526,13 +526,16 @@ mod complete {
             }))
         );
 
-        let (_i, nan) = float::<_, f32, ()>("NaN").unwrap();
+        let (i, nan) = float::<_, f32, ()>("NaN").unwrap();
         assert!(nan.is_nan());
+        assert_eq!(i, "");
 
-        let (_i, inf) = float::<_, f32, ()>("inf").unwrap();
+        let (i, inf) = float::<_, f32, ()>("inf").unwrap();
         assert!(inf.is_infinite());
-        let (_i, inf) = float::<_, f32, ()>("infinite").unwrap();
+        assert_eq!(i, "");
+        let (i, inf) = float::<_, f32, ()>("infinity").unwrap();
         assert!(inf.is_infinite());
+        assert_eq!(i, "inity");
     }
 
     #[cfg(feature = "std")]
