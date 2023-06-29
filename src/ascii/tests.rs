@@ -535,7 +535,7 @@ mod complete {
         assert_eq!(i, "");
         let (i, inf) = float::<_, f32, ()>("infinity").unwrap();
         assert!(inf.is_infinite());
-        assert_eq!(i, "inity");
+        assert_eq!(i, "");
     }
 
     #[cfg(feature = "std")]

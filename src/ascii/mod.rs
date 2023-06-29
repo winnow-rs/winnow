@@ -1371,8 +1371,8 @@ where
     alt((
         recognize_float,
         crate::token::tag_no_case("nan"),
-        crate::token::tag_no_case("inf"),
         crate::token::tag_no_case("infinity"),
+        crate::token::tag_no_case("inf"),
     ))
     .parse_next(input)
 }
