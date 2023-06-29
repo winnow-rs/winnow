@@ -53,23 +53,21 @@ pub fn trace<I: Stream, O, E>(
 ) -> impl Parser<I, O, E> {
     #[cfg(feature = "debug")]
     {
-        use crate::unpeek;
-
         let mut call_count = 0;
-        unpeek(move |i: I| {
+        move |i: &mut I| {
             let depth = internals::Depth::new();
             let original = i.checkpoint();
-            internals::start(*depth, &name, call_count, &i);
+            internals::start(*depth, &name, call_count, i);
 
-            let res = parser.parse_peek(i);
+            let res = parser.parse_next(i);
 
-            let consumed = res.as_ref().ok().map(|(i, _)| i.offset_from(&original));
+            let consumed = i.offset_from(&original);
             let severity = internals::Severity::with_result(&res);
             internals::end(*depth, &name, call_count, consumed, severity);
             call_count += 1;
 
             res
-        })
+        }
     }
     #[cfg(not(feature = "debug"))]
     {
