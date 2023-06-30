@@ -30,7 +30,7 @@ fn json_bench(c: &mut criterion::Criterion) {
             criterion::BenchmarkId::new("dispatch", name),
             &len,
             |b, _| {
-                type Error<'i> = winnow::error::Error<parser::Stream<'i>>;
+                type Error<'i> = winnow::error::Error<parser_dispatch::Stream<'i>>;
 
                 b.iter(|| parser_dispatch::json::<Error>(sample).unwrap());
             },
