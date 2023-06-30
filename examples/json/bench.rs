@@ -1,3 +1,4 @@
+use winnow::prelude::*;
 use winnow::Partial;
 
 mod json;
@@ -15,12 +16,12 @@ fn json_bench(c: &mut criterion::Criterion) {
         group.bench_with_input(criterion::BenchmarkId::new("basic", name), &len, |b, _| {
             type Error<'i> = winnow::error::Error<parser::Stream<'i>>;
 
-            b.iter(|| parser::json::<Error>(sample).unwrap());
+            b.iter(|| parser::json::<Error>.parse_peek(sample).unwrap());
         });
         group.bench_with_input(criterion::BenchmarkId::new("unit", name), &len, |b, _| {
             type Error<'i> = ();
 
-            b.iter(|| parser::json::<Error>(sample).unwrap());
+            b.iter(|| parser::json::<Error>.parse_peek(sample).unwrap());
         });
         group.bench_with_input(
             criterion::BenchmarkId::new("verbose", name),
@@ -28,7 +29,7 @@ fn json_bench(c: &mut criterion::Criterion) {
             |b, _| {
                 type Error<'i> = winnow::error::VerboseError<parser::Stream<'i>>;
 
-                b.iter(|| parser::json::<Error>(sample).unwrap());
+                b.iter(|| parser::json::<Error>.parse_peek(sample).unwrap());
             },
         );
         group.bench_with_input(
@@ -37,7 +38,7 @@ fn json_bench(c: &mut criterion::Criterion) {
             |b, _| {
                 type Error<'i> = winnow::error::Error<parser_dispatch::Stream<'i>>;
 
-                b.iter(|| parser_dispatch::json::<Error>(sample).unwrap());
+                b.iter(|| parser_dispatch::json::<Error>.parse_peek(sample).unwrap());
             },
         );
         group.bench_with_input(
@@ -46,7 +47,11 @@ fn json_bench(c: &mut criterion::Criterion) {
             |b, _| {
                 type Error<'i> = winnow::error::Error<parser_partial::Stream<'i>>;
 
-                b.iter(|| parser_partial::json::<Error>(Partial::new(sample)).unwrap());
+                b.iter(|| {
+                    parser_partial::json::<Error>
+                        .parse_peek(Partial::new(sample))
+                        .unwrap()
+                });
             },
         );
     }

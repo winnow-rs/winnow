@@ -8,9 +8,9 @@ use winnow::{
     combinator::separated0,
     combinator::{preceded, separated_pair, terminated},
     error::ParseError,
+    stream::Offset,
     token::one_of,
     token::{tag, take_while},
-    unpeek, IResult,
 };
 
 use std::cell::Cell;
@@ -28,7 +28,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
     }
 
     pub fn offset(&self, input: &'a str) {
-        let offset = input.as_ptr() as usize - self.input.as_ptr() as usize;
+        let offset = input.offset_from(&self.input);
         self.offset.set(offset);
     }
 
@@ -38,9 +38,10 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
 
     pub fn string(&self) -> Option<&'a str> {
         println!("string()");
-        match string(self.data()) {
-            Ok((i, s)) => {
-                self.offset(i);
+        let mut data = self.data();
+        match string(&mut data) {
+            Ok(s) => {
+                self.offset(data);
                 println!("-> {}", s);
                 Some(s)
             }
@@ -50,9 +51,10 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
 
     pub fn boolean(&self) -> Option<bool> {
         println!("boolean()");
-        match boolean(self.data()) {
-            Ok((i, o)) => {
-                self.offset(i);
+        let mut data = self.data();
+        match boolean(&mut data) {
+            Ok(o) => {
+                self.offset(data);
                 println!("-> {}", o);
                 Some(o)
             }
@@ -62,9 +64,10 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
 
     pub fn number(&self) -> Option<f64> {
         println!("number()");
-        match float::<_, _, ()>.parse_peek(self.data()) {
-            Ok((i, o)) => {
-                self.offset(i);
+        let mut data = self.data();
+        match float::<_, _, ()>.parse_next(&mut data) {
+            Ok(o) => {
+                self.offset(data);
                 println!("-> {}", o);
                 Some(o)
             }
@@ -75,11 +78,12 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
     pub fn array(&self) -> Option<impl Iterator<Item = JsonValue<'a, 'b>>> {
         println!("array()");
 
-        match tag::<_, _, ()>("[").parse_peek(self.data()) {
+        let mut data = self.data();
+        match tag::<_, _, ()>("[").parse_next(&mut data) {
             Err(_) => None,
-            Ok((i, _)) => {
+            Ok(_) => {
                 println!("[");
-                self.offset(i);
+                self.offset(data);
                 let mut first = true;
                 let mut done = false;
                 let mut previous = std::usize::MAX;
@@ -94,14 +98,14 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
                     // if we ignored one of the items, skip over the value
                     if v.offset.get() == previous {
                         println!("skipping value");
-                        if let Ok((i, _)) = value(v.data()) {
-                            v.offset(i);
+                        if value(&mut data).is_ok() {
+                            v.offset(data);
                         }
                     }
 
-                    if let Ok((i, _)) = tag::<_, _, ()>("]").parse_peek(v.data()) {
+                    if tag::<_, _, ()>("]").parse_next(&mut data).is_ok() {
                         println!("]");
-                        v.offset(i);
+                        v.offset(data);
                         done = true;
                         return None;
                     }
@@ -109,10 +113,10 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
                     if first {
                         first = false;
                     } else {
-                        match tag::<_, _, ()>(",").parse_peek(v.data()) {
-                            Ok((i, _)) => {
+                        match tag::<_, _, ()>(",").parse_next(&mut data) {
+                            Ok(_) => {
                                 println!(",");
-                                v.offset(i);
+                                v.offset(data);
                             }
                             Err(_) => {
                                 done = true;
@@ -131,10 +135,11 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
 
     pub fn object(&self) -> Option<impl Iterator<Item = (&'a str, JsonValue<'a, 'b>)>> {
         println!("object()");
-        match tag::<_, _, ()>("{").parse_peek(self.data()) {
+        let mut data = self.data();
+        match tag::<_, _, ()>("{").parse_next(&mut data) {
             Err(_) => None,
-            Ok((i, _)) => {
-                self.offset(i);
+            Ok(_) => {
+                self.offset(data);
 
                 println!("{{");
 
@@ -152,14 +157,14 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
                     // if we ignored one of the items, skip over the value
                     if v.offset.get() == previous {
                         println!("skipping value");
-                        if let Ok((i, _)) = value(v.data()) {
-                            v.offset(i);
+                        if value(&mut data).is_ok() {
+                            v.offset(data);
                         }
                     }
 
-                    if let Ok((i, _)) = tag::<_, _, ()>("}").parse_peek(v.data()) {
+                    if tag::<_, _, ()>("}").parse_next(&mut data).is_ok() {
                         println!("}}");
-                        v.offset(i);
+                        v.offset(data);
                         done = true;
                         return None;
                     }
@@ -167,10 +172,10 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
                     if first {
                         first = false;
                     } else {
-                        match tag::<_, _, ()>(",").parse_peek(v.data()) {
-                            Ok((i, _)) => {
+                        match tag::<_, _, ()>(",").parse_next(&mut data) {
+                            Ok(_) => {
                                 println!(",");
-                                v.offset(i);
+                                v.offset(data);
                             }
                             Err(_) => {
                                 done = true;
@@ -179,14 +184,14 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
                         }
                     }
 
-                    match string(v.data()) {
-                        Ok((i, key)) => {
-                            v.offset(i);
+                    match string(&mut data) {
+                        Ok(key) => {
+                            v.offset(data);
 
-                            match tag::<_, _, ()>(":").parse_peek(v.data()) {
+                            match tag::<_, _, ()>(":").parse_next(&mut data) {
                                 Err(_) => None,
-                                Ok((i, _)) => {
-                                    v.offset(i);
+                                Ok(_) => {
+                                    v.offset(data);
 
                                     previous = v.offset.get();
 
@@ -203,71 +208,66 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
     }
 }
 
-fn sp<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str, E> {
+fn sp<'a, E: ParseError<&'a str>>(i: &mut &'a str) -> PResult<&'a str, E> {
     let chars = " \t\r\n";
 
-    take_while(0.., move |c| chars.contains(c)).parse_peek(i)
+    take_while(0.., move |c| chars.contains(c)).parse_next(i)
 }
 
-fn parse_str<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, &'a str, E> {
-    escaped(alphanumeric, '\\', one_of(['"', 'n', '\\'])).parse_peek(i)
+fn parse_str<'a, E: ParseError<&'a str>>(i: &mut &'a str) -> PResult<&'a str, E> {
+    escaped(alphanumeric, '\\', one_of(['"', 'n', '\\'])).parse_next(i)
 }
 
-fn string(i: &str) -> IResult<&str, &str> {
-    preceded('\"', cut_err(terminated(unpeek(parse_str), '\"')))
+fn string<'s>(i: &mut &'s str) -> PResult<&'s str> {
+    preceded('\"', cut_err(terminated(parse_str, '\"')))
         .context("string")
-        .parse_peek(i)
+        .parse_next(i)
 }
 
-fn boolean(input: &str) -> IResult<&str, bool> {
-    alt(("false".map(|_| false), "true".map(|_| true))).parse_peek(input)
+fn boolean(input: &mut &str) -> PResult<bool> {
+    alt(("false".map(|_| false), "true".map(|_| true))).parse_next(input)
 }
 
-fn array(i: &str) -> IResult<&str, ()> {
+fn array(i: &mut &str) -> PResult<()> {
     preceded(
         '[',
         cut_err(terminated(
-            separated0(unpeek(value), preceded(unpeek(sp), ',')),
-            preceded(unpeek(sp), ']'),
+            separated0(value, preceded(sp, ',')),
+            preceded(sp, ']'),
         )),
     )
     .context("array")
-    .parse_peek(i)
+    .parse_next(i)
 }
 
-fn key_value(i: &str) -> IResult<&str, (&str, ())> {
-    separated_pair(
-        preceded(unpeek(sp), unpeek(string)),
-        cut_err(preceded(unpeek(sp), ':')),
-        unpeek(value),
-    )
-    .parse_peek(i)
+fn key_value<'s>(i: &mut &'s str) -> PResult<(&'s str, ())> {
+    separated_pair(preceded(sp, string), cut_err(preceded(sp, ':')), value).parse_next(i)
 }
 
-fn hash(i: &str) -> IResult<&str, ()> {
+fn hash(i: &mut &str) -> PResult<()> {
     preceded(
         '{',
         cut_err(terminated(
-            separated0(unpeek(key_value), preceded(unpeek(sp), ',')),
-            preceded(unpeek(sp), '}'),
+            separated0(key_value, preceded(sp, ',')),
+            preceded(sp, '}'),
         )),
     )
     .context("map")
-    .parse_peek(i)
+    .parse_next(i)
 }
 
-fn value(i: &str) -> IResult<&str, ()> {
+fn value(i: &mut &str) -> PResult<()> {
     preceded(
-        unpeek(sp),
+        sp,
         alt((
-            unpeek(hash),
-            unpeek(array),
-            unpeek(string).map(|_| ()),
+            hash,
+            array,
+            string.map(|_| ()),
             float::<_, f64, _>.map(|_| ()),
-            unpeek(boolean).map(|_| ()),
+            boolean.map(|_| ()),
         )),
     )
-    .parse_peek(i)
+    .parse_next(i)
 }
 
 /// object(input) -> iterator over (key, `JsonValue`)

@@ -1,5 +1,5 @@
-use winnow::unpeek;
-use winnow::{ascii::line_ending, combinator::repeat, token::take_while, IResult, Parser};
+use winnow::prelude::*;
+use winnow::{ascii::line_ending, combinator::repeat, token::take_while};
 
 pub type Stream<'i> = &'i [u8];
 
@@ -23,12 +23,11 @@ pub fn parse(data: &[u8]) -> Option<Vec<(Request<'_>, Vec<Header<'_>>)>> {
     let mut buf = data;
     let mut v = Vec::new();
     loop {
-        match request(buf) {
-            Ok((b, r)) => {
-                buf = b;
+        match request(&mut buf) {
+            Ok(r) => {
                 v.push(r);
 
-                if b.is_empty() {
+                if buf.is_empty() {
                     //println!("{}", i);
                     break;
                 }
@@ -43,53 +42,50 @@ pub fn parse(data: &[u8]) -> Option<Vec<(Request<'_>, Vec<Header<'_>>)>> {
     Some(v)
 }
 
-fn request(input: Stream<'_>) -> IResult<Stream<'_>, (Request<'_>, Vec<Header<'_>>)> {
-    let (input, req) = request_line(input)?;
-    let (input, h) = repeat(1.., unpeek(message_header)).parse_peek(input)?;
-    let (input, _) = line_ending.parse_peek(input)?;
+fn request<'s>(input: &mut Stream<'s>) -> PResult<(Request<'s>, Vec<Header<'s>>)> {
+    let req = request_line(input)?;
+    let h = repeat(1.., message_header).parse_next(input)?;
+    let _ = line_ending.parse_next(input)?;
 
-    Ok((input, (req, h)))
+    Ok((req, h))
 }
 
-fn request_line(input: Stream<'_>) -> IResult<Stream<'_>, Request<'_>> {
-    let (input, method) = take_while(1.., is_token).parse_peek(input)?;
-    let (input, _) = take_while(1.., is_space).parse_peek(input)?;
-    let (input, uri) = take_while(1.., is_not_space).parse_peek(input)?;
-    let (input, _) = take_while(1.., is_space).parse_peek(input)?;
-    let (input, version) = http_version(input)?;
-    let (input, _) = line_ending.parse_peek(input)?;
+fn request_line<'s>(input: &mut Stream<'s>) -> PResult<Request<'s>> {
+    let method = take_while(1.., is_token).parse_next(input)?;
+    let _ = take_while(1.., is_space).parse_next(input)?;
+    let uri = take_while(1.., is_not_space).parse_next(input)?;
+    let _ = take_while(1.., is_space).parse_next(input)?;
+    let version = http_version(input)?;
+    let _ = line_ending.parse_next(input)?;
 
-    Ok((
-        input,
-        Request {
-            method,
-            uri,
-            version,
-        },
-    ))
+    Ok(Request {
+        method,
+        uri,
+        version,
+    })
 }
 
-fn http_version(input: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
-    let (input, _) = "HTTP/".parse_peek(input)?;
-    let (input, version) = take_while(1.., is_version).parse_peek(input)?;
+fn http_version<'s>(input: &mut Stream<'s>) -> PResult<&'s [u8]> {
+    let _ = "HTTP/".parse_next(input)?;
+    let version = take_while(1.., is_version).parse_next(input)?;
 
-    Ok((input, version))
+    Ok(version)
 }
 
-fn message_header_value(input: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
-    let (input, _) = take_while(1.., is_horizontal_space).parse_peek(input)?;
-    let (input, data) = take_while(1.., not_line_ending).parse_peek(input)?;
-    let (input, _) = line_ending.parse_peek(input)?;
+fn message_header_value<'s>(input: &mut Stream<'s>) -> PResult<&'s [u8]> {
+    let _ = take_while(1.., is_horizontal_space).parse_next(input)?;
+    let data = take_while(1.., not_line_ending).parse_next(input)?;
+    let _ = line_ending.parse_next(input)?;
 
-    Ok((input, data))
+    Ok(data)
 }
 
-fn message_header(input: Stream<'_>) -> IResult<Stream<'_>, Header<'_>> {
-    let (input, name) = take_while(1.., is_token).parse_peek(input)?;
-    let (input, _) = ':'.parse_peek(input)?;
-    let (input, value) = repeat(1.., unpeek(message_header_value)).parse_peek(input)?;
+fn message_header<'s>(input: &mut Stream<'s>) -> PResult<Header<'s>> {
+    let name = take_while(1.., is_token).parse_next(input)?;
+    let _ = ':'.parse_next(input)?;
+    let value = repeat(1.., message_header_value).parse_next(input)?;
 
-    Ok((input, Header { name, value }))
+    Ok(Header { name, value })
 }
 
 #[rustfmt::skip]
