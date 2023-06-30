@@ -147,13 +147,14 @@ impl<E> ErrMode<E> {
         self.map(ErrorConvert::convert)
     }
 
+    /// Unwrap the mode, returning the underlying error
+    ///
+    /// Returns `None` for [`ErrMode::Incomplete`]
     #[cfg_attr(debug_assertions, track_caller)]
-    pub(crate) fn into_inner(self) -> E {
+    pub fn into_inner(self) -> Option<E> {
         match self {
-            ErrMode::Backtrack(e) | ErrMode::Cut(e) => e,
-            ErrMode::Incomplete(_) => {
-                panic!("complete parsers should not report `ErrMode::Incomplete(_)`")
-            }
+            ErrMode::Backtrack(e) | ErrMode::Cut(e) => Some(e),
+            ErrMode::Incomplete(_) => None,
         }
     }
 }

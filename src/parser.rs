@@ -54,8 +54,14 @@ pub trait Parser<I, O, E> {
             "partial streams need to handle `ErrMode::Incomplete`"
         );
 
-        let (i, o) = self.parse_next(input).map_err(|e| e.into_inner())?;
-        let _ = crate::combinator::eof(i).map_err(|e| e.into_inner())?;
+        let (i, o) = self.parse_next(input).map_err(|e| {
+            e.into_inner()
+                .expect("complete parsers should not report `ErrMode::Incomplete(_)`")
+        })?;
+        let _ = crate::combinator::eof(i).map_err(|e| {
+            e.into_inner()
+                .expect("complete parsers should not report `ErrMode::Incomplete(_)`")
+        })?;
         Ok(o)
     }
 
