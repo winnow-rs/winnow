@@ -97,7 +97,7 @@ pub fn start<I: Stream>(
     let (debug_slice, eof) = if let Some(debug_offset) = debug_slice
         .char_indices()
         .enumerate()
-        .find_map(|(pos, (offset, _))| (input_width <= pos).then(|| offset))
+        .find_map(|(pos, (offset, _))| (input_width <= pos).then_some(offset))
     {
         debug_slice.truncate(debug_offset);
         let eof = "";
