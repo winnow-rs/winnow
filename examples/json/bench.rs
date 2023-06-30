@@ -17,6 +17,11 @@ fn json_bench(c: &mut criterion::Criterion) {
 
             b.iter(|| parser::json::<Error>(sample).unwrap());
         });
+        group.bench_with_input(criterion::BenchmarkId::new("unit", name), &len, |b, _| {
+            type Error<'i> = ();
+
+            b.iter(|| parser::json::<Error>(sample).unwrap());
+        });
         group.bench_with_input(
             criterion::BenchmarkId::new("verbose", name),
             &len,
