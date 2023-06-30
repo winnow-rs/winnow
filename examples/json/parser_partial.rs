@@ -11,7 +11,6 @@ use winnow::{
     error::{ContextError, ParseError},
     stream::Partial,
     token::{any, none_of, take, take_while},
-    unpeek,
 };
 
 use crate::json::JsonValue;
@@ -31,41 +30,41 @@ pub type Stream<'i> = Partial<&'i str>;
 /// the input type, work directly with `&[u8]`, or any other type that
 /// implements the required traits.
 pub fn json<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
-    input: Stream<'i>,
-) -> IResult<Stream<'i>, JsonValue, E> {
-    delimited(unpeek(ws), unpeek(json_value), unpeek(ws_or_eof)).parse_peek(input)
+    input: &mut Stream<'i>,
+) -> PResult<JsonValue, E> {
+    delimited(ws, json_value, ws_or_eof).parse_next(input)
 }
 
 /// `alt` is a combinator that tries multiple parsers one by one, until
 /// one of them succeeds
 fn json_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
-    input: Stream<'i>,
-) -> IResult<Stream<'i>, JsonValue, E> {
+    input: &mut Stream<'i>,
+) -> PResult<JsonValue, E> {
     // `alt` combines the each value parser. It returns the result of the first
     // successful parser, or an error
     alt((
-        unpeek(null).value(JsonValue::Null),
-        unpeek(boolean).map(JsonValue::Boolean),
-        unpeek(string).map(JsonValue::Str),
+        null.value(JsonValue::Null),
+        boolean.map(JsonValue::Boolean),
+        string.map(JsonValue::Str),
         float.map(JsonValue::Num),
-        unpeek(array).map(JsonValue::Array),
-        unpeek(object).map(JsonValue::Object),
+        array.map(JsonValue::Array),
+        object.map(JsonValue::Object),
     ))
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// `tag(string)` generates a parser that recognizes the argument string.
 ///
 /// This also shows returning a sub-slice of the original input
-fn null<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, &'i str, E> {
+fn null<'i, E: ParseError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<&'i str, E> {
     // This is a parser that returns `"null"` if it sees the string "null", and
     // an error otherwise
-    "null".parse_peek(input)
+    "null".parse_next(input)
 }
 
 /// We can combine `tag` with other functions, like `value` which returns a given constant value on
 /// success.
-fn boolean<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, bool, E> {
+fn boolean<'i, E: ParseError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<bool, E> {
     // This is a parser that returns `true` if it sees the string "true", and
     // an error otherwise
     let parse_true = "true".value(true);
@@ -74,14 +73,14 @@ fn boolean<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'
     // an error otherwise
     let parse_false = "false".value(false);
 
-    alt((parse_true, parse_false)).parse_peek(input)
+    alt((parse_true, parse_false)).parse_next(input)
 }
 
 /// This parser gathers all `char`s up into a `String`with a parse to recognize the double quote
 /// character, before the string (using `preceded`) and after the string (using `terminated`).
 fn string<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
-    input: Stream<'i>,
-) -> IResult<Stream<'i>, String, E> {
+    input: &mut Stream<'i>,
+) -> PResult<String, E> {
     preceded(
         '\"',
         // `cut_err` transforms an `ErrMode::Backtrack(e)` to `ErrMode::Cut(e)`, signaling to
@@ -89,7 +88,7 @@ fn string<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>
         // right branch (since we found the `"` character) but encountered an error when
         // parsing the string
         cut_err(terminated(
-            fold_repeat(0.., unpeek(character), String::new, |mut string, c| {
+            fold_repeat(0.., character, String::new, |mut string, c| {
                 string.push(c);
                 string
             }),
@@ -99,13 +98,13 @@ fn string<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>
     // `context` lets you add a static string to errors to provide more information in the
     // error chain (to indicate which parser had an error)
     .context("string")
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// You can mix the above declarative parsing with an imperative style to handle more unique cases,
 /// like escaping
-fn character<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, char, E> {
-    let (input, c) = none_of('\"').parse_peek(input)?;
+fn character<'i, E: ParseError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<char, E> {
+    let c = none_of('\"').parse_next(input)?;
     if c == '\\' {
         alt((
             any.verify_map(|c| {
@@ -119,24 +118,22 @@ fn character<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream
                     _ => return None,
                 })
             }),
-            preceded('u', unpeek(unicode_escape)),
+            preceded('u', unicode_escape),
         ))
-        .parse_peek(input)
+        .parse_next(input)
     } else {
-        Ok((input, c))
+        Ok(c)
     }
 }
 
-fn unicode_escape<'i, E: ParseError<Stream<'i>>>(
-    input: Stream<'i>,
-) -> IResult<Stream<'i>, char, E> {
+fn unicode_escape<'i, E: ParseError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<char, E> {
     alt((
         // Not a surrogate
-        unpeek(u16_hex)
+        u16_hex
             .verify(|cp| !(0xD800..0xE000).contains(cp))
             .map(|cp| cp as u32),
         // See https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF for details
-        separated_pair(unpeek(u16_hex), "\\u", unpeek(u16_hex))
+        separated_pair(u16_hex, "\\u", u16_hex)
             .verify(|(high, low)| (0xD800..0xDC00).contains(high) && (0xDC00..0xE000).contains(low))
             .map(|(high, low)| {
                 let high_ten = (high as u32) - 0xD800;
@@ -148,13 +145,13 @@ fn unicode_escape<'i, E: ParseError<Stream<'i>>>(
         // Could be probably replaced with .unwrap() or _unchecked due to the verify checks
         std::char::from_u32,
     )
-    .parse_peek(input)
+    .parse_next(input)
 }
 
-fn u16_hex<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, u16, E> {
+fn u16_hex<'i, E: ParseError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<u16, E> {
     take(4usize)
         .verify_map(|s| u16::from_str_radix(s, 16).ok())
-        .parse_peek(input)
+        .parse_next(input)
 }
 
 /// Some combinators, like `separated0` or `many0`, will call a parser repeatedly,
@@ -162,56 +159,45 @@ fn u16_hex<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'
 /// If you want more control on the parser application, check out the `iterator`
 /// combinator (cf `examples/iterator.rs`)
 fn array<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
-    input: Stream<'i>,
-) -> IResult<Stream<'i>, Vec<JsonValue>, E> {
+    input: &mut Stream<'i>,
+) -> PResult<Vec<JsonValue>, E> {
     preceded(
-        ('[', unpeek(ws)),
-        cut_err(terminated(
-            separated0(unpeek(json_value), (unpeek(ws), ',', unpeek(ws))),
-            (unpeek(ws), ']'),
-        )),
+        ('[', ws),
+        cut_err(terminated(separated0(json_value, (ws, ',', ws)), (ws, ']'))),
     )
     .context("array")
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 fn object<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
-    input: Stream<'i>,
-) -> IResult<Stream<'i>, HashMap<String, JsonValue>, E> {
+    input: &mut Stream<'i>,
+) -> PResult<HashMap<String, JsonValue>, E> {
     preceded(
-        ('{', unpeek(ws)),
-        cut_err(terminated(
-            separated0(unpeek(key_value), (unpeek(ws), ',', unpeek(ws))),
-            (unpeek(ws), '}'),
-        )),
+        ('{', ws),
+        cut_err(terminated(separated0(key_value, (ws, ',', ws)), (ws, '}'))),
     )
     .context("object")
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 fn key_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
-    input: Stream<'i>,
-) -> IResult<Stream<'i>, (String, JsonValue), E> {
-    separated_pair(
-        unpeek(string),
-        cut_err((unpeek(ws), ':', unpeek(ws))),
-        unpeek(json_value),
-    )
-    .parse_peek(input)
+    input: &mut Stream<'i>,
+) -> PResult<(String, JsonValue), E> {
+    separated_pair(string, cut_err((ws, ':', ws)), json_value).parse_next(input)
 }
 
 /// Parser combinators are constructed from the bottom up:
 /// first we write parsers for the smallest elements (here a space character),
 /// then we'll combine them in larger parsers
-fn ws<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, &'i str, E> {
+fn ws<'i, E: ParseError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<&'i str, E> {
     // Combinators like `take_while` return a function. That function is the
     // parser,to which we can pass the input
-    take_while(0.., WS).parse_peek(input)
+    take_while(0.., WS).parse_next(input)
 }
 
-fn ws_or_eof<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream<'i>, &'i str, E> {
+fn ws_or_eof<'i, E: ParseError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<&'i str, E> {
     rest.verify(|s: &str| s.chars().all(|c| WS.contains(&c)))
-        .parse_peek(input)
+        .parse_next(input)
 }
 
 const WS: &[char] = &[' ', '\t', '\r', '\n'];
@@ -229,15 +215,15 @@ mod test {
     #[test]
     fn json_string() {
         assert_eq!(
-            string::<Error<'_>>(Partial::new("\"\"")),
+            string::<Error<'_>>.parse_peek(Partial::new("\"\"")),
             Ok((Partial::new(""), "".to_string()))
         );
         assert_eq!(
-            string::<Error<'_>>(Partial::new("\"abc\"")),
+            string::<Error<'_>>.parse_peek(Partial::new("\"abc\"")),
             Ok((Partial::new(""), "abc".to_string()))
         );
         assert_eq!(
-            string::<Error<'_>>(Partial::new(
+            string::<Error<'_>>.parse_peek(Partial::new(
                 "\"abc\\\"\\\\\\/\\b\\f\\n\\r\\t\\u0001\\u2014\u{2014}def\""
             )),
             Ok((
@@ -246,17 +232,29 @@ mod test {
             )),
         );
         assert_eq!(
-            string::<Error<'_>>(Partial::new("\"\\uD83D\\uDE10\"")),
+            string::<Error<'_>>.parse_peek(Partial::new("\"\\uD83D\\uDE10\"")),
             Ok((Partial::new(""), "😐".to_string()))
         );
 
-        assert!(string::<Error<'_>>(Partial::new("\"")).is_err());
-        assert!(string::<Error<'_>>(Partial::new("\"abc")).is_err());
-        assert!(string::<Error<'_>>(Partial::new("\"\\\"")).is_err());
-        assert!(string::<Error<'_>>(Partial::new("\"\\u123\"")).is_err());
-        assert!(string::<Error<'_>>(Partial::new("\"\\uD800\"")).is_err());
-        assert!(string::<Error<'_>>(Partial::new("\"\\uD800\\uD800\"")).is_err());
-        assert!(string::<Error<'_>>(Partial::new("\"\\uDC00\"")).is_err());
+        assert!(string::<Error<'_>>.parse_peek(Partial::new("\"")).is_err());
+        assert!(string::<Error<'_>>
+            .parse_peek(Partial::new("\"abc"))
+            .is_err());
+        assert!(string::<Error<'_>>
+            .parse_peek(Partial::new("\"\\\""))
+            .is_err());
+        assert!(string::<Error<'_>>
+            .parse_peek(Partial::new("\"\\u123\""))
+            .is_err());
+        assert!(string::<Error<'_>>
+            .parse_peek(Partial::new("\"\\uD800\""))
+            .is_err());
+        assert!(string::<Error<'_>>
+            .parse_peek(Partial::new("\"\\uD800\\uD800\""))
+            .is_err());
+        assert!(string::<Error<'_>>
+            .parse_peek(Partial::new("\"\\uDC00\""))
+            .is_err());
     }
 
     #[test]
@@ -275,7 +273,7 @@ mod test {
         );
 
         assert_eq!(
-            json::<Error<'_>>(Partial::new(input)),
+            json::<Error<'_>>.parse_peek(Partial::new(input)),
             Ok((Partial::new(""), expected))
         );
     }
@@ -289,7 +287,7 @@ mod test {
         let expected = Array(vec![Num(42.0), Str("x".to_string())]);
 
         assert_eq!(
-            json::<Error<'_>>(Partial::new(input)),
+            json::<Error<'_>>.parse_peek(Partial::new(input)),
             Ok((Partial::new(""), expected))
         );
     }
@@ -313,7 +311,7 @@ mod test {
   "#;
 
         assert_eq!(
-            json::<Error<'_>>(Partial::new(input)),
+            json::<Error<'_>>.parse_peek(Partial::new(input)),
             Ok((
                 Partial::new(""),
                 Object(

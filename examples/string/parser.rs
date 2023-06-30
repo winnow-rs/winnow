@@ -16,11 +16,10 @@ use winnow::combinator::{delimited, preceded};
 use winnow::error::{FromExternalError, ParseError};
 use winnow::prelude::*;
 use winnow::token::{take_till1, take_while};
-use winnow::unpeek;
 
 /// Parse a string. Use a loop of `parse_fragment` and push all of the fragments
 /// into an output string.
-pub fn parse_string<'a, E>(input: &'a str) -> IResult<&'a str, String, E>
+pub fn parse_string<'a, E>(input: &mut &'a str) -> PResult<String, E>
 where
     E: ParseError<&'a str> + FromExternalError<&'a str, std::num::ParseIntError>,
 {
@@ -29,7 +28,7 @@ where
     let build_string = fold_repeat(
         0..,
         // Our parser function – parses a single string fragment
-        unpeek(parse_fragment),
+        parse_fragment,
         // Our init value, an empty string
         String::new,
         // Our folding function. For each fragment, append the fragment to the
@@ -48,7 +47,7 @@ where
     // " character, the closing delimiter " would never match. When using
     // `delimited` with a looping parser (like fold_repeat), be sure that the
     // loop won't accidentally match your closing delimiter!
-    delimited('"', build_string, '"').parse_peek(input)
+    delimited('"', build_string, '"').parse_next(input)
 }
 
 /// A string fragment contains a fragment of a string being parsed: either
@@ -63,22 +62,22 @@ enum StringFragment<'a> {
 
 /// Combine `parse_literal`, `parse_escaped_whitespace`, and `parse_escaped_char`
 /// into a `StringFragment`.
-fn parse_fragment<'a, E>(input: &'a str) -> IResult<&'a str, StringFragment<'a>, E>
+fn parse_fragment<'a, E>(input: &mut &'a str) -> PResult<StringFragment<'a>, E>
 where
     E: ParseError<&'a str> + FromExternalError<&'a str, std::num::ParseIntError>,
 {
     alt((
         // The `map` combinator runs a parser, then applies a function to the output
         // of that parser.
-        unpeek(parse_literal).map(StringFragment::Literal),
-        unpeek(parse_escaped_char).map(StringFragment::EscapedChar),
-        unpeek(parse_escaped_whitespace).value(StringFragment::EscapedWS),
+        parse_literal.map(StringFragment::Literal),
+        parse_escaped_char.map(StringFragment::EscapedChar),
+        parse_escaped_whitespace.value(StringFragment::EscapedWS),
     ))
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Parse a non-empty block of text that doesn't include \ or "
-fn parse_literal<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str, &'a str, E> {
+fn parse_literal<'a, E: ParseError<&'a str>>(input: &mut &'a str) -> PResult<&'a str, E> {
     // `take_till1` parses a string of 0 or more characters that aren't one of the
     // given characters.
     let not_quote_slash = take_till1(['"', '\\']);
@@ -89,7 +88,7 @@ fn parse_literal<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str,
     // is non-empty.
     not_quote_slash
         .verify(|s: &str| !s.is_empty())
-        .parse_peek(input)
+        .parse_next(input)
 }
 
 // parser combinators are constructed from the bottom up:
@@ -97,7 +96,7 @@ fn parse_literal<'a, E: ParseError<&'a str>>(input: &'a str) -> IResult<&'a str,
 // then combine them into larger parsers.
 
 /// Parse an escaped character: \n, \t, \r, \u{00AC}, etc.
-fn parse_escaped_char<'a, E>(input: &'a str) -> IResult<&'a str, char, E>
+fn parse_escaped_char<'a, E>(input: &mut &'a str) -> PResult<char, E>
 where
     E: ParseError<&'a str> + FromExternalError<&'a str, std::num::ParseIntError>,
 {
@@ -106,7 +105,7 @@ where
         // `alt` tries each parser in sequence, returning the result of
         // the first successful match
         alt((
-            unpeek(parse_unicode),
+            parse_unicode,
             // The `value` parser returns a fixed value (the first argument) if its
             // parser (the second argument) succeeds. In these cases, it looks for
             // the marker characters (n, r, t, etc) and returns the matching
@@ -121,13 +120,13 @@ where
             '"'.value('"'),
         )),
     )
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Parse a unicode sequence, of the form u{XXXX}, where XXXX is 1 to 6
 /// hexadecimal numerals. We will combine this later with `parse_escaped_char`
 /// to parse sequences like \u{00AC}.
-fn parse_unicode<'a, E>(input: &'a str) -> IResult<&'a str, char, E>
+fn parse_unicode<'a, E>(input: &mut &'a str) -> PResult<char, E>
 where
     E: ParseError<&'a str> + FromExternalError<&'a str, std::num::ParseIntError>,
 {
@@ -154,13 +153,13 @@ where
     // the function returns None, verify_map returns an error. In this case, because
     // not all u32 values are valid unicode code points, we have to fallibly
     // convert to char with from_u32.
-    parse_u32.verify_map(std::char::from_u32).parse_peek(input)
+    parse_u32.verify_map(std::char::from_u32).parse_next(input)
 }
 
 /// Parse a backslash, followed by any amount of whitespace. This is used later
 /// to discard any escaped whitespace.
 fn parse_escaped_whitespace<'a, E: ParseError<&'a str>>(
-    input: &'a str,
-) -> IResult<&'a str, &'a str, E> {
-    preceded('\\', multispace1).parse_peek(input)
+    input: &mut &'a str,
+) -> PResult<&'a str, E> {
+    preceded('\\', multispace1).parse_next(input)
 }

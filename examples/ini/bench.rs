@@ -1,6 +1,5 @@
 use winnow::combinator::repeat;
 use winnow::prelude::*;
-use winnow::unpeek;
 
 mod parser;
 mod parser_str;
@@ -19,10 +18,10 @@ file=payroll.dat
     let mut group = c.benchmark_group("ini");
     group.throughput(criterion::Throughput::Bytes(str.len() as u64));
     group.bench_function(criterion::BenchmarkId::new("bytes", str.len()), |b| {
-        b.iter(|| parser::categories(str.as_bytes()).unwrap());
+        b.iter(|| parser::categories.parse_peek(str.as_bytes()).unwrap());
     });
     group.bench_function(criterion::BenchmarkId::new("str", str.len()), |b| {
-        b.iter(|| parser_str::categories(str).unwrap())
+        b.iter(|| parser_str::categories.parse_peek(str).unwrap())
     });
 }
 
@@ -32,14 +31,14 @@ port=143
 file=payroll.dat
 \0";
 
-    fn acc(i: parser::Stream<'_>) -> IResult<parser::Stream<'_>, Vec<(&str, &str)>> {
-        repeat(0.., unpeek(parser::key_value)).parse_peek(i)
+    fn acc<'s>(i: &mut parser::Stream<'s>) -> PResult<Vec<(&'s str, &'s str)>> {
+        repeat(0.., parser::key_value).parse_next(i)
     }
 
     let mut group = c.benchmark_group("ini keys and values");
     group.throughput(criterion::Throughput::Bytes(str.len() as u64));
     group.bench_function(criterion::BenchmarkId::new("bytes", str.len()), |b| {
-        b.iter(|| acc(str.as_bytes()).unwrap());
+        b.iter(|| acc.parse_peek(str.as_bytes()).unwrap());
     });
 }
 
@@ -49,7 +48,7 @@ fn bench_ini_key_value(c: &mut criterion::Criterion) {
     let mut group = c.benchmark_group("ini key value");
     group.throughput(criterion::Throughput::Bytes(str.len() as u64));
     group.bench_function(criterion::BenchmarkId::new("bytes", str.len()), |b| {
-        b.iter(|| parser::key_value(str.as_bytes()).unwrap());
+        b.iter(|| parser::key_value.parse_peek(str.as_bytes()).unwrap());
     });
 }
 

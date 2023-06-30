@@ -8,37 +8,36 @@ use winnow::{
     combinator::repeat,
     combinator::{delimited, separated_pair, terminated},
     token::take_while,
-    unpeek,
 };
 
 pub type Stream<'i> = &'i [u8];
 
-pub fn categories(i: Stream<'_>) -> IResult<Stream<'_>, HashMap<&str, HashMap<&str, &str>>> {
+pub fn categories<'s>(i: &mut Stream<'s>) -> PResult<HashMap<&'s str, HashMap<&'s str, &'s str>>> {
     repeat(
         0..,
         separated_pair(
-            unpeek(category),
+            category,
             opt(multispace),
-            repeat(0.., terminated(unpeek(key_value), opt(multispace))),
+            repeat(0.., terminated(key_value, opt(multispace))),
         ),
     )
-    .parse_peek(i)
+    .parse_next(i)
 }
 
-fn category(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
+fn category<'s>(i: &mut Stream<'s>) -> PResult<&'s str> {
     delimited('[', take_while(0.., |c| c != b']'), ']')
         .try_map(str::from_utf8)
-        .parse_peek(i)
+        .parse_next(i)
 }
 
-pub fn key_value(i: Stream<'_>) -> IResult<Stream<'_>, (&str, &str)> {
-    let (i, key) = alphanumeric.try_map(str::from_utf8).parse_peek(i)?;
-    let (i, _) = (opt(space), '=', opt(space)).parse_peek(i)?;
-    let (i, val) = take_while(0.., |c| c != b'\n' && c != b';')
+pub fn key_value<'s>(i: &mut Stream<'s>) -> PResult<(&'s str, &'s str)> {
+    let key = alphanumeric.try_map(str::from_utf8).parse_next(i)?;
+    let _ = (opt(space), '=', opt(space)).parse_next(i)?;
+    let val = take_while(0.., |c| c != b'\n' && c != b';')
         .try_map(str::from_utf8)
-        .parse_peek(i)?;
-    let (i, _) = opt((';', take_while(0.., |c| c != b'\n'))).parse_peek(i)?;
-    Ok((i, (key, val)))
+        .parse_next(i)?;
+    let _ = opt((';', take_while(0.., |c| c != b'\n'))).parse_next(i)?;
+    Ok((key, val))
 }
 
 #[test]
@@ -51,7 +50,7 @@ key = value2"[..];
     let ini_without_category = &b"\n\nparameter=value
 key = value2"[..];
 
-    let res = category(ini_file);
+    let res = category.parse_peek(ini_file);
     println!("{:?}", res);
     match res {
         Ok((i, o)) => println!("i: {:?} | o: {:?}", str::from_utf8(i), o),
@@ -68,7 +67,7 @@ key = value2"[..];
 
     let ini_without_key_value = &b"\nkey = value2"[..];
 
-    let res = key_value(ini_file);
+    let res = key_value.parse_peek(ini_file);
     println!("{:?}", res);
     match res {
         Ok((i, (o1, o2))) => println!("i: {:?} | o: ({:?},{:?})", str::from_utf8(i), o1, o2),
@@ -85,7 +84,7 @@ key = value2"[..];
 
     let ini_without_key_value = &b"\nkey = value2"[..];
 
-    let res = key_value(ini_file);
+    let res = key_value.parse_peek(ini_file);
     println!("{:?}", res);
     match res {
         Ok((i, (o1, o2))) => println!("i: {:?} | o: ({:?},{:?})", str::from_utf8(i), o1, o2),
@@ -102,7 +101,7 @@ key = value2"[..];
 
     let ini_without_key_value = &b"\nkey = value2"[..];
 
-    let res = key_value(ini_file);
+    let res = key_value.parse_peek(ini_file);
     println!("{:?}", res);
     match res {
         Ok((i, (o1, o2))) => println!("i: {:?} | o: ({:?},{:?})", str::from_utf8(i), o1, o2),
@@ -127,7 +126,7 @@ key4 = value4
 
     let ini_after_parser = &b""[..];
 
-    let res = categories(ini_file);
+    let res = categories.parse_peek(ini_file);
     //println!("{:?}", res);
     match res {
         Ok((i, ref o)) => println!("i: {:?} | o: {:?}", str::from_utf8(i), o),

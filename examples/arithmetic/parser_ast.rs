@@ -9,7 +9,6 @@ use winnow::{
     combinator::alt,
     combinator::repeat,
     combinator::{delimited, preceded},
-    unpeek, IResult,
 };
 
 #[derive(Debug)]
@@ -44,63 +43,63 @@ impl Display for Expr {
     }
 }
 
-pub fn expr(i: &str) -> IResult<&str, Expr> {
-    let (i, initial) = term(i)?;
-    let (i, remainder) = repeat(
+pub fn expr(i: &mut &str) -> PResult<Expr> {
+    let initial = term(i)?;
+    let remainder = repeat(
         0..,
         alt((
-            unpeek(|i| {
-                let (i, add) = preceded("+", unpeek(term)).parse_peek(i)?;
-                Ok((i, (Oper::Add, add)))
-            }),
-            unpeek(|i| {
-                let (i, sub) = preceded("-", unpeek(term)).parse_peek(i)?;
-                Ok((i, (Oper::Sub, sub)))
-            }),
+            |i: &mut &str| {
+                let add = preceded("+", term).parse_next(i)?;
+                Ok((Oper::Add, add))
+            },
+            |i: &mut &str| {
+                let sub = preceded("-", term).parse_next(i)?;
+                Ok((Oper::Sub, sub))
+            },
         )),
     )
-    .parse_peek(i)?;
+    .parse_next(i)?;
 
-    Ok((i, fold_exprs(initial, remainder)))
+    Ok(fold_exprs(initial, remainder))
 }
 
-fn term(i: &str) -> IResult<&str, Expr> {
-    let (i, initial) = factor(i)?;
-    let (i, remainder) = repeat(
+fn term(i: &mut &str) -> PResult<Expr> {
+    let initial = factor(i)?;
+    let remainder = repeat(
         0..,
         alt((
-            unpeek(|i| {
-                let (i, mul) = preceded("*", unpeek(factor)).parse_peek(i)?;
-                Ok((i, (Oper::Mul, mul)))
-            }),
-            unpeek(|i| {
-                let (i, div) = preceded("/", unpeek(factor)).parse_peek(i)?;
-                Ok((i, (Oper::Div, div)))
-            }),
+            |i: &mut &str| {
+                let mul = preceded("*", factor).parse_next(i)?;
+                Ok((Oper::Mul, mul))
+            },
+            |i: &mut &str| {
+                let div = preceded("/", factor).parse_next(i)?;
+                Ok((Oper::Div, div))
+            },
         )),
     )
-    .parse_peek(i)?;
+    .parse_next(i)?;
 
-    Ok((i, fold_exprs(initial, remainder)))
+    Ok(fold_exprs(initial, remainder))
 }
 
-fn factor(i: &str) -> IResult<&str, Expr> {
+fn factor(i: &mut &str) -> PResult<Expr> {
     alt((
         delimited(multispace, digit, multispace)
             .try_map(FromStr::from_str)
             .map(Expr::Value),
-        unpeek(parens),
+        parens,
     ))
-    .parse_peek(i)
+    .parse_next(i)
 }
 
-fn parens(i: &str) -> IResult<&str, Expr> {
+fn parens(i: &mut &str) -> PResult<Expr> {
     delimited(
         multispace,
-        delimited("(", unpeek(expr).map(|e| Expr::Paren(Box::new(e))), ")"),
+        delimited("(", expr.map(|e| Expr::Paren(Box::new(e))), ")"),
         multispace,
     )
-    .parse_peek(i)
+    .parse_next(i)
 }
 
 fn fold_exprs(initial: Expr, remainder: Vec<(Oper, Expr)>) -> Expr {
@@ -118,7 +117,9 @@ fn fold_exprs(initial: Expr, remainder: Vec<(Oper, Expr)>) -> Expr {
 #[test]
 fn factor_test() {
     assert_eq!(
-        factor("  3  ").map(|(i, x)| (i, format!("{:?}", x))),
+        factor
+            .parse_peek("  3  ")
+            .map(|(i, x)| (i, format!("{:?}", x))),
         Ok(("", String::from("Value(3)")))
     );
 }
@@ -126,7 +127,8 @@ fn factor_test() {
 #[test]
 fn term_test() {
     assert_eq!(
-        term(" 3 *  5   ").map(|(i, x)| (i, format!("{:?}", x))),
+        term.parse_peek(" 3 *  5   ")
+            .map(|(i, x)| (i, format!("{:?}", x))),
         Ok(("", String::from("Mul(Value(3), Value(5))")))
     );
 }
@@ -134,18 +136,21 @@ fn term_test() {
 #[test]
 fn expr_test() {
     assert_eq!(
-        expr(" 1 + 2 *  3 ").map(|(i, x)| (i, format!("{:?}", x))),
+        expr.parse_peek(" 1 + 2 *  3 ")
+            .map(|(i, x)| (i, format!("{:?}", x))),
         Ok(("", String::from("Add(Value(1), Mul(Value(2), Value(3)))")))
     );
     assert_eq!(
-        expr(" 1 + 2 *  3 / 4 - 5 ").map(|(i, x)| (i, format!("{:?}", x))),
+        expr.parse_peek(" 1 + 2 *  3 / 4 - 5 ")
+            .map(|(i, x)| (i, format!("{:?}", x))),
         Ok((
             "",
             String::from("Sub(Add(Value(1), Div(Mul(Value(2), Value(3)), Value(4))), Value(5))")
         ))
     );
     assert_eq!(
-        expr(" 72 / 2 / 3 ").map(|(i, x)| (i, format!("{:?}", x))),
+        expr.parse_peek(" 72 / 2 / 3 ")
+            .map(|(i, x)| (i, format!("{:?}", x))),
         Ok(("", String::from("Div(Div(Value(72), Value(2)), Value(3))")))
     );
 }
@@ -153,7 +158,8 @@ fn expr_test() {
 #[test]
 fn parens_test() {
     assert_eq!(
-        expr(" ( 1 + 2 ) *  3 ").map(|(i, x)| (i, format!("{:?}", x))),
+        expr.parse_peek(" ( 1 + 2 ) *  3 ")
+            .map(|(i, x)| (i, format!("{:?}", x))),
         Ok((
             "",
             String::from("Mul(Paren(Add(Value(1), Value(2))), Value(3))")
