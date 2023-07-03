@@ -18,7 +18,6 @@ use crate::stream::{AsBytes, Stream, StreamIsPartial};
 use crate::stream::{ToUsize, UpdateSlice};
 use crate::token::take;
 use crate::trace::trace;
-use crate::unpeek;
 use crate::PResult;
 use crate::Parser;
 
@@ -2429,14 +2428,11 @@ where
     F: Parser<I, N, E>,
     E: ParseError<I>,
 {
-    trace(
-        "length_data",
-        unpeek(move |i: I| {
-            let (i, length) = f.parse_peek(i)?;
+    trace("length_data", move |i: &mut I| {
+        let length = f.parse_next(i)?;
 
-            crate::token::take(length).parse_peek(i)
-        }),
-    )
+        crate::token::take(length).parse_next(i)
+    })
 }
 
 /// Gets a number from the first parser,
@@ -2492,16 +2488,13 @@ where
     G: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    trace(
-        "length_value",
-        unpeek(move |i: I| {
-            let (i, data) = length_data(f.by_ref()).parse_peek(i)?;
-            let mut data = I::update_slice(i.clone(), data);
-            let _ = data.complete();
-            let (_, o) = g.by_ref().complete_err().parse_peek(data)?;
-            Ok((i, o))
-        }),
-    )
+    trace("length_value", move |i: &mut I| {
+        let data = length_data(f.by_ref()).parse_next(i)?;
+        let mut data = I::update_slice(i.clone(), data);
+        let _ = data.complete();
+        let o = g.by_ref().complete_err().parse_next(&mut data)?;
+        Ok(o)
+    })
 }
 
 /// Gets a number from the first parser,
@@ -2549,12 +2542,9 @@ where
     G: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    trace(
-        "length_count",
-        unpeek(move |i: I| {
-            let (i, n) = f.parse_peek(i)?;
-            let n = n.to_usize();
-            repeat(n, g.by_ref()).parse_peek(i)
-        }),
-    )
+    trace("length_count", move |i: &mut I| {
+        let n = f.parse_next(i)?;
+        let n = n.to_usize();
+        repeat(n, g.by_ref()).parse_next(i)
+    })
 }
