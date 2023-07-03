@@ -136,6 +136,8 @@
 #![doc = include_str!("../../examples/string/parser.rs")]
 //! ```
 //!
+//! See also [`escaped`] and [`escaped_transform`].
+//!
 //! ### Integers
 //!
 //! The following recipes all return string slices rather than integer values. How to obtain an
@@ -193,6 +195,8 @@
 //!   ).parse_next(input)
 //! }
 //! ```
+//!
+//! See also [`hex_uint`]
 //!
 //! #### Octal
 //!
@@ -258,6 +262,8 @@
 //! }
 //! ```
 //!
+//! See also [`dec_uint`] and [`dec_int`]
+//!
 //! ### Floating Point Numbers
 //!
 //! The following is adapted from [the Python parser by Valentin Lorentz](https://github.com/ProgVal/rust-python-parser/blob/master/src/numbers.rs).
@@ -313,3 +319,13 @@
 //!     .parse_next(input)
 //! }
 //! ```
+//!
+//! See also [`float`]
+
+#![allow(unused_imports)]
+use crate::ascii::dec_int;
+use crate::ascii::dec_uint;
+use crate::ascii::escaped;
+use crate::ascii::escaped_transform;
+use crate::ascii::float;
+use crate::ascii::hex_uint;
