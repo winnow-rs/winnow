@@ -8,7 +8,6 @@ use winnow::{
     combinator::alt,
     combinator::fold_repeat,
     combinator::{delimited, terminated},
-    unpeek,
 };
 
 use std::cell::RefCell;
@@ -23,18 +22,15 @@ fn reset() {
     });
 }
 
-fn incr(i: &str) -> IResult<&str, ()> {
+fn incr(_i: &mut &str) -> PResult<()> {
     LEVEL.with(|l| {
         *l.borrow_mut() += 1;
 
         // limit the number of recursions, the fuzzer keeps running into them
         if *l.borrow() >= 8192 {
-            Err(winnow::error::ErrMode::Cut(winnow::error::Error::new(
-                i,
-                winnow::error::ErrorKind::Many,
-            )))
+            Err(winnow::error::ErrMode::Cut(winnow::error::ErrorKind::Many))
         } else {
-            Ok((i, ()))
+            Ok(())
         }
     })
 }
@@ -45,36 +41,29 @@ fn decr() {
     });
 }
 
-fn parens(i: &str) -> IResult<&str, i64> {
+fn parens(i: &mut &str) -> PResult<i64> {
     delimited(
         space,
-        delimited(
-            terminated("(", unpeek(incr)),
-            unpeek(expr),
-            ")".map(|_| decr()),
-        ),
+        delimited(terminated("(", incr), expr, ")".map(|_| decr())),
         space,
     )
-    .parse_peek(i)
+    .parse_next(i)
 }
 
-fn factor(i: &str) -> IResult<&str, i64> {
-    alt((delimited(space, digit, space).parse_to(), unpeek(parens))).parse_peek(i)
+fn factor(i: &mut &str) -> PResult<i64> {
+    alt((delimited(space, digit, space).parse_to(), parens)).parse_next(i)
 }
 
-fn term(i: &str) -> IResult<&str, i64> {
+fn term(i: &mut &str) -> PResult<i64> {
     incr(i)?;
-    let (i, init) = factor(i).map_err(|e| {
+    let init = factor(i).map_err(|e| {
         decr();
         e
     })?;
 
     let res = fold_repeat(
         0..,
-        alt((
-            ('*', unpeek(factor)),
-            ('/', unpeek(factor).verify(|i| *i != 0)),
-        )),
+        alt((('*', factor), ('/', factor.verify(|i| *i != 0)))),
         || init,
         |acc, (op, val): (char, i64)| {
             if op == '*' {
@@ -89,22 +78,22 @@ fn term(i: &str) -> IResult<&str, i64> {
             }
         },
     )
-    .parse_peek(i);
+    .parse_next(i);
 
     decr();
     res
 }
 
-fn expr(i: &str) -> IResult<&str, i64> {
+fn expr(i: &mut &str) -> PResult<i64> {
     incr(i)?;
-    let (i, init) = term(i).map_err(|e| {
+    let init = term(i).map_err(|e| {
         decr();
         e
     })?;
 
     let res = fold_repeat(
         0..,
-        (alt(('+', '-')), unpeek(term)),
+        (alt(('+', '-')), term),
         || init,
         |acc, (op, val): (char, i64)| {
             if op == '+' {
@@ -114,7 +103,7 @@ fn expr(i: &str) -> IResult<&str, i64> {
             }
         },
     )
-    .parse_peek(i);
+    .parse_next(i);
 
     decr();
     res
@@ -124,10 +113,10 @@ fuzz_target!(|data: &[u8]| {
     reset();
     // fuzzed code goes here
     let _ = match str::from_utf8(data) {
-        Ok(v) => {
+        Ok(mut v) => {
             //println!("v: {}", v);
-            factor(v)
+            factor(&mut v)
         }
-        Err(_) => factor("2"),
+        Err(_) => factor(&mut "2"),
     };
 });
