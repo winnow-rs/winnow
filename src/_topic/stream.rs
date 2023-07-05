@@ -20,8 +20,8 @@
 //! # use winnow::token::tag;
 //! # type MyStream<'i> = &'i str;
 //! # type Output<'i> = &'i str;
-//! fn parser(i: MyStream<'_>) -> IResult<MyStream<'_>, Output<'_>> {
-//!     "test".parse_peek(i)
+//! fn parser<'s>(i: &mut MyStream<'s>) -> PResult<Output<'s>> {
+//!     "test".parse_next(i)
 //! }
 //! ```
 //!
