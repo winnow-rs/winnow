@@ -422,6 +422,11 @@ pub trait Stream: Offset + Clone + crate::lib::std::fmt::Debug {
 
     /// Split off the next token from the input
     fn next_token(&self) -> Option<(Self, Self::Token)>;
+    /// Split off the next token from the input
+    #[inline]
+    fn peek_token(&self) -> Option<(Self, Self::Token)> {
+        self.next_token()
+    }
 
     /// Finds the offset of the next matching token
     fn offset_for<P>(&self, predicate: P) -> Option<usize>
@@ -449,6 +454,11 @@ pub trait Stream: Offset + Clone + crate::lib::std::fmt::Debug {
     ///   sequence boundaries.
     ///
     fn next_slice(&self, offset: usize) -> (Self, Self::Slice);
+    /// Split off a slice of tokens from the input
+    #[inline]
+    fn peek_slice(&self, offset: usize) -> (Self, Self::Slice) {
+        self.next_slice(offset)
+    }
 }
 
 impl<'i, T> Stream for &'i [T]
