@@ -561,7 +561,7 @@ fn alt_test() {
     }
 
     fn work(input: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
-        Ok(input.finish())
+        Ok(input.peek_finish())
     }
 
     #[allow(unused_variables)]

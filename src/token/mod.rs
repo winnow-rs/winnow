@@ -63,7 +63,7 @@ where
     I: StreamIsPartial,
     I: Stream,
 {
-    input.next_token().ok_or_else(|| {
+    input.peek_token().ok_or_else(|| {
         if PARTIAL && input.is_partial() {
             ErrMode::Incomplete(Needed::new(1))
         } else {
@@ -143,7 +143,7 @@ where
 {
     let tag_len = t.slice_len();
     match i.compare(t) {
-        CompareResult::Ok => Ok(i.next_slice(tag_len)),
+        CompareResult::Ok => Ok(i.peek_slice(tag_len)),
         CompareResult::Incomplete if PARTIAL && i.is_partial() => {
             Err(ErrMode::Incomplete(Needed::new(tag_len - i.eof_offset())))
         }
@@ -229,7 +229,7 @@ where
     let tag_len = t.slice_len();
 
     match (i).compare_no_case(t) {
-        CompareResult::Ok => Ok(i.next_slice(tag_len)),
+        CompareResult::Ok => Ok(i.peek_slice(tag_len)),
         CompareResult::Incomplete if PARTIAL && i.is_partial() => {
             Err(ErrMode::Incomplete(Needed::new(tag_len - i.eof_offset())))
         }
@@ -566,7 +566,7 @@ where
     let offset = input
         .offset_for(predicate)
         .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
-    Ok(input.next_slice(offset))
+    Ok(input.peek_slice(offset))
 }
 
 /// Looks for the first element of the input type for which the condition returns true
@@ -589,7 +589,7 @@ where
     if offset == 0 {
         Err(ErrMode::from_error_kind(input.clone(), e))
     } else {
-        Ok(input.next_slice(offset))
+        Ok(input.peek_slice(offset))
     }
 }
 
@@ -607,7 +607,7 @@ where
     let offset = input
         .offset_for(predicate)
         .unwrap_or_else(|| input.eof_offset());
-    Ok(input.next_slice(offset))
+    Ok(input.peek_slice(offset))
 }
 
 /// Looks for the first element of the input type for which the condition returns true
@@ -630,7 +630,7 @@ where
     if offset == 0 {
         Err(ErrMode::from_error_kind(input.clone(), e))
     } else {
-        Ok(input.next_slice(offset))
+        Ok(input.peek_slice(offset))
     }
 }
 
@@ -655,18 +655,18 @@ where
             if processed < m {
                 return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
             } else {
-                return Ok(input.next_slice(offset));
+                return Ok(input.peek_slice(offset));
             }
         } else {
             if processed == n {
-                return Ok(input.next_slice(offset));
+                return Ok(input.peek_slice(offset));
             }
             final_count = processed + 1;
         }
     }
     if PARTIAL && input.is_partial() {
         if final_count == n {
-            Ok(input.finish())
+            Ok(input.peek_finish())
         } else {
             let needed = if m > input.eof_offset() {
                 m - input.eof_offset()
@@ -677,7 +677,7 @@ where
         }
     } else {
         if m <= final_count {
-            Ok(input.finish())
+            Ok(input.peek_finish())
         } else {
             Err(ErrMode::from_error_kind(input, ErrorKind::Slice))
         }
@@ -899,7 +899,7 @@ where
     I: Stream,
 {
     match i.offset_at(c) {
-        Ok(offset) => Ok(i.next_slice(offset)),
+        Ok(offset) => Ok(i.peek_slice(offset)),
         Err(e) if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(e)),
         Err(_needed) => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
     }
@@ -975,7 +975,7 @@ where
     T: SliceLen,
 {
     match i.find_slice(t) {
-        Some(offset) => Ok(i.next_slice(offset)),
+        Some(offset) => Ok(i.peek_slice(offset)),
         None if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
         None => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
     }
@@ -1055,6 +1055,6 @@ where
     match i.find_slice(t) {
         None if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
         None | Some(0) => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
-        Some(offset) => Ok(i.next_slice(offset)),
+        Some(offset) => Ok(i.peek_slice(offset)),
     }
 }
