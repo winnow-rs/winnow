@@ -59,6 +59,14 @@ pub trait Parser<I, O, E> {
     /// This includes advancing the [`Stream`] to the next location.
     fn parse_next(&mut self, input: I) -> IResult<I, O, E>;
 
+    /// Take tokens from the [`Stream`], turning it into the output
+    ///
+    /// This includes advancing the [`Stream`] to the next location.
+    #[inline]
+    fn parse_peek(&mut self, input: I) -> IResult<I, O, E> {
+        self.parse_next(input)
+    }
+
     /// Treat `&mut Self` as a parser
     ///
     /// This helps when needing to move a `Parser` when all you have is a `&mut Parser`.
@@ -835,6 +843,12 @@ impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a> {
     fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
         (**self).parse_next(input)
     }
+}
+
+/// Convert a [`Parser::parse_peek`] style parse function to be a [`Parser`]
+#[inline(always)]
+pub fn unpeek<'a, I, O, E>(peek: impl FnMut(I) -> IResult<I, O, E> + 'a) -> impl Parser<I, O, E> {
+    peek
 }
 
 #[cfg(test)]
