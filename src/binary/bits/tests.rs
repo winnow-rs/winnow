@@ -148,7 +148,7 @@ fn test_tag_partial_err() {
 fn test_bool_0_complete() {
     let input = [0b10000000].as_ref();
 
-    let result: crate::IResult<(&[u8], usize), bool> = bool((input, 0));
+    let result: crate::IResult<(&[u8], usize), bool> = bool.parse_peek((input, 0));
 
     assert_eq!(result, Ok(((input, 1), true)));
 }
@@ -157,7 +157,7 @@ fn test_bool_0_complete() {
 fn test_bool_eof_complete() {
     let input = [0b10000000].as_ref();
 
-    let result: crate::IResult<(&[u8], usize), bool> = bool((input, 8));
+    let result: crate::IResult<(&[u8], usize), bool> = bool.parse_peek((input, 8));
 
     assert_eq!(
         result,
@@ -172,7 +172,7 @@ fn test_bool_eof_complete() {
 fn test_bool_0_partial() {
     let input = Partial::new([0b10000000].as_ref());
 
-    let result: crate::IResult<(Partial<&[u8]>, usize), bool> = bool((input, 0));
+    let result: crate::IResult<(Partial<&[u8]>, usize), bool> = bool.parse_peek((input, 0));
 
     assert_eq!(result, Ok(((input, 1), true)));
 }

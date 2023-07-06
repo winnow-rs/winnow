@@ -69,7 +69,7 @@ proptest! {
 fn partial_any_str() {
     use super::any;
     assert_eq!(
-        any::<_, Error<Partial<&str>>>(Partial::new("Ә")),
+        any::<_, Error<Partial<&str>>>.parse_peek(Partial::new("Ә")),
         Ok((Partial::new(""), 'Ә'))
     );
 }

@@ -5,17 +5,15 @@ use std::str;
 
 use winnow::combinator::delimited;
 use winnow::combinator::fold_repeat;
+use winnow::error::Error;
 use winnow::prelude::*;
 use winnow::token::take_till1;
 use winnow::IResult;
 
-fn atom(_tomb: &mut ()) -> impl for<'a> FnMut(&'a [u8]) -> IResult<&'a [u8], String> {
-    move |input| {
-        take_till1([' ', '\t', '\r', '\n'])
-            .try_map(str::from_utf8)
-            .map(ToString::to_string)
-            .parse_peek(input)
-    }
+fn atom<'a>(_tomb: &mut ()) -> impl Parser<&'a [u8], String, Error<&'a [u8]>> {
+    take_till1([' ', '\t', '\r', '\n'])
+        .try_map(str::from_utf8)
+        .map(ToString::to_string)
 }
 
 // FIXME: should we support the use case of borrowing data mutably in a parser?

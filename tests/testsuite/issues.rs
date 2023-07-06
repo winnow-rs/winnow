@@ -97,10 +97,10 @@ fn take_till0_issue() {
 fn issue_655() {
     use winnow::ascii::{line_ending, not_line_ending};
     fn twolines(i: Partial<&str>) -> IResult<Partial<&str>, (&str, &str)> {
-        let (i, l1) = not_line_ending(i)?;
-        let (i, _) = line_ending(i)?;
-        let (i, l2) = not_line_ending(i)?;
-        let (i, _) = line_ending(i)?;
+        let (i, l1) = not_line_ending.parse_peek(i)?;
+        let (i, _) = line_ending.parse_peek(i)?;
+        let (i, l2) = not_line_ending.parse_peek(i)?;
+        let (i, _) = line_ending.parse_peek(i)?;
 
         Ok((i, (l1, l2)))
     }
@@ -153,7 +153,7 @@ mod issue_647 {
     }
 
     fn data(input: Stream<'_>) -> IResult<Stream<'_>, Data> {
-        let (i, c) = be_f64(input)?;
+        let (i, c) = be_f64.parse_peek(input)?;
         let (i, _) = "\n".parse_peek(i)?;
         let (i, v) = list(i, &c)?;
         Ok((i, Data { c, v }))

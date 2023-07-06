@@ -32,7 +32,7 @@ fn keys_and_values(input: Stream<'_>) -> IResult<Stream<'_>, HashMap<&str, &str>
 }
 
 fn key_value(i: Stream<'_>) -> IResult<Stream<'_>, (&str, &str)> {
-    let (i, key) = alphanumeric(i)?;
+    let (i, key) = alphanumeric.parse_peek(i)?;
     let (i, _) = (opt(space), "=", opt(space)).parse_peek(i)?;
     let (i, val) = take_till0(is_line_ending_or_comment).parse_peek(i)?;
     let (i, _) = opt(space).parse_peek(i)?;

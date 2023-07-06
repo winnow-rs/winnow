@@ -30,7 +30,7 @@ fn eof_on_slices() {
     let not_over: &[u8] = &b"Hello, world!"[..];
     let is_over: &[u8] = &b""[..];
 
-    let res_not_over = eof(not_over);
+    let res_not_over = eof.parse_peek(not_over);
     assert_parse!(
         res_not_over,
         Err(ErrMode::Backtrack(error_position!(
@@ -39,7 +39,7 @@ fn eof_on_slices() {
         )))
     );
 
-    let res_over = eof(is_over);
+    let res_over = eof.parse_peek(is_over);
     assert_parse!(res_over, Ok((is_over, is_over)));
 }
 
@@ -48,7 +48,7 @@ fn eof_on_strs() {
     let not_over: &str = "Hello, world!";
     let is_over: &str = "";
 
-    let res_not_over = eof(not_over);
+    let res_not_over = eof.parse_peek(not_over);
     assert_parse!(
         res_not_over,
         Err(ErrMode::Backtrack(error_position!(
@@ -57,7 +57,7 @@ fn eof_on_strs() {
         )))
     );
 
-    let res_over = eof(is_over);
+    let res_over = eof.parse_peek(is_over);
     assert_parse!(res_over, Ok((is_over, is_over)));
 }
 
@@ -65,20 +65,20 @@ fn eof_on_strs() {
 fn rest_on_slices() {
     let input: &[u8] = &b"Hello, world!"[..];
     let empty: &[u8] = &b""[..];
-    assert_parse!(rest(input), Ok((empty, input)));
+    assert_parse!(rest.parse_peek(input), Ok((empty, input)));
 }
 
 #[test]
 fn rest_on_strs() {
     let input: &str = "Hello, world!";
     let empty: &str = "";
-    assert_parse!(rest(input), Ok((empty, input)));
+    assert_parse!(rest.parse_peek(input), Ok((empty, input)));
 }
 
 #[test]
 fn rest_len_on_slices() {
     let input: &[u8] = &b"Hello, world!"[..];
-    assert_parse!(rest_len(input), Ok((input, input.len())));
+    assert_parse!(rest_len.parse_peek(input), Ok((input, input.len())));
 }
 
 use crate::lib::std::convert::From;
@@ -102,7 +102,7 @@ struct CustomError;
 #[allow(dead_code)]
 fn custom_error(input: &[u8]) -> IResult<&[u8], &[u8], CustomError> {
     //fix_error!(input, CustomError<_>, alphanumeric)
-    crate::ascii::alphanumeric1(input)
+    crate::ascii::alphanumeric1.parse_peek(input)
 }
 
 #[test]
@@ -307,14 +307,14 @@ fn fail_test() {
     let b = "another string";
 
     assert_eq!(
-        fail::<_, &str, _>(a),
+        fail::<_, &str, _>.parse_peek(a),
         Err(ErrMode::Backtrack(Error {
             input: a,
             kind: ErrorKind::Fail
         }))
     );
     assert_eq!(
-        fail::<_, &str, _>(b),
+        fail::<_, &str, _>.parse_peek(b),
         Err(ErrMode::Backtrack(Error {
             input: b,
             kind: ErrorKind::Fail
