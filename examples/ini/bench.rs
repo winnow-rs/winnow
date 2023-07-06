@@ -32,7 +32,7 @@ file=payroll.dat
 \0";
 
     fn acc(i: parser::Stream<'_>) -> IResult<parser::Stream<'_>, Vec<(&str, &str)>> {
-        repeat(0.., parser::key_value).parse_next(i)
+        repeat(0.., parser::key_value).parse_peek(i)
     }
 
     let mut group = c.benchmark_group("ini keys and values");

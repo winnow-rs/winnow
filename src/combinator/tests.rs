@@ -109,7 +109,7 @@ fn custom_error(input: &[u8]) -> IResult<&[u8], &[u8], CustomError> {
 fn test_parser_flat_map() {
     let input: &[u8] = &[3, 100, 101, 102, 103, 104][..];
     assert_parse!(
-        u8.flat_map(take).parse_next(input),
+        u8.flat_map(take).parse_peek(input),
         Ok((&[103, 104][..], &[100, 101, 102][..]))
     );
 }
@@ -117,7 +117,7 @@ fn test_parser_flat_map() {
 #[allow(dead_code)]
 fn test_closure_compiles_195(input: &[u8]) -> IResult<&[u8], ()> {
     u8.flat_map(|num| repeat(num as usize, u16(Endianness::Big)))
-        .parse_next(input)
+        .parse_peek(input)
 }
 
 #[test]
@@ -125,7 +125,7 @@ fn test_parser_verify_map() {
     let input: &[u8] = &[50][..];
     assert_parse!(
         u8.verify_map(|u| if u < 20 { Some(u) } else { None })
-            .parse_next(input),
+            .parse_peek(input),
         Err(ErrMode::Backtrack(Error {
             input: &[50][..],
             kind: ErrorKind::Verify
@@ -133,7 +133,7 @@ fn test_parser_verify_map() {
     );
     assert_parse!(
         u8.verify_map(|u| if u > 20 { Some(u) } else { None })
-            .parse_next(input),
+            .parse_peek(input),
         Ok((&[][..], 50))
     );
 }
@@ -142,7 +142,7 @@ fn test_parser_verify_map() {
 fn test_parser_map_parser() {
     let input: &[u8] = &[100, 101, 102, 103, 104][..];
     assert_parse!(
-        take(4usize).and_then(take(2usize)).parse_next(input),
+        take(4usize).and_then(take(2usize)).parse_peek(input),
         Ok((&[104][..], &[100, 101][..]))
     );
 }
@@ -154,7 +154,7 @@ fn test_parser_into() {
     use crate::token::take;
 
     let mut parser = take::<_, _, Error<_>>(3u8).output_into();
-    let result: IResult<&[u8], Vec<u8>> = parser.parse_next(&b"abcdefg"[..]);
+    let result: IResult<&[u8], Vec<u8>> = parser.parse_peek(&b"abcdefg"[..]);
 
     assert_eq!(result, Ok((&b"defg"[..], vec![97, 98, 99])));
 }
@@ -162,7 +162,7 @@ fn test_parser_into() {
 #[test]
 fn opt_test() {
     fn opt_abcd(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Option<&[u8]>> {
-        opt("abcd").parse_next(i)
+        opt("abcd").parse_peek(i)
     }
 
     let a = &b"abcdef"[..];
@@ -185,7 +185,7 @@ fn opt_test() {
 #[test]
 fn peek_test() {
     fn peek_tag(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        peek("abcd").parse_next(i)
+        peek("abcd").parse_peek(i)
     }
 
     assert_eq!(
@@ -208,7 +208,7 @@ fn peek_test() {
 #[test]
 fn not_test() {
     fn not_aaa(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, ()> {
-        not("aaa").parse_next(i)
+        not("aaa").parse_peek(i)
     }
 
     assert_eq!(
@@ -235,7 +235,7 @@ fn test_parser_verify() {
     fn test(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         take(5u8)
             .verify(|slice: &[u8]| slice[0] == b'a')
-            .parse_next(i)
+            .parse_peek(i)
     }
     assert_eq!(
         test(Partial::new(&b"bcd"[..])),
@@ -262,11 +262,11 @@ fn test_parser_verify_ref() {
     let mut parser1 = take(3u8).verify(|s: &[u8]| s == &b"abc"[..]);
 
     assert_eq!(
-        parser1.parse_next(&b"abcd"[..]),
+        parser1.parse_peek(&b"abcd"[..]),
         Ok((&b"d"[..], &b"abc"[..]))
     );
     assert_eq!(
-        parser1.parse_next(&b"defg"[..]),
+        parser1.parse_peek(&b"defg"[..]),
         Err(ErrMode::Backtrack(Error {
             input: &b"defg"[..],
             kind: ErrorKind::Verify
@@ -276,7 +276,7 @@ fn test_parser_verify_ref() {
     fn parser2(i: &[u8]) -> IResult<&[u8], u32> {
         crate::binary::be_u32
             .verify(|val: &u32| *val < 3)
-            .parse_next(i)
+            .parse_peek(i)
     }
 }
 
@@ -289,11 +289,11 @@ fn test_parser_verify_alloc() {
         .verify(|s: &[u8]| s == &b"abc"[..]);
 
     assert_eq!(
-        parser1.parse_next(&b"abcd"[..]),
+        parser1.parse_peek(&b"abcd"[..]),
         Ok((&b"d"[..], b"abc".to_vec()))
     );
     assert_eq!(
-        parser1.parse_next(&b"defg"[..]),
+        parser1.parse_peek(&b"defg"[..]),
         Err(ErrMode::Backtrack(Error {
             input: &b"defg"[..],
             kind: ErrorKind::Verify
@@ -325,8 +325,8 @@ fn fail_test() {
 #[test]
 fn complete() {
     fn err_test(i: &[u8]) -> IResult<&[u8], &[u8]> {
-        let (i, _) = "ijkl".parse_next(i)?;
-        "mnop".parse_next(i)
+        let (i, _) = "ijkl".parse_peek(i)?;
+        "mnop".parse_peek(i)
     }
     let a = &b"ijklmn"[..];
 
@@ -344,7 +344,7 @@ fn complete() {
 fn separated_pair_test() {
     #[allow(clippy::type_complexity)]
     fn sep_pair_abc_def(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (&[u8], &[u8])> {
-        separated_pair("abc", ",", "def").parse_next(i)
+        separated_pair("abc", ",", "def").parse_peek(i)
     }
 
     assert_eq!(
@@ -385,7 +385,7 @@ fn separated_pair_test() {
 #[test]
 fn preceded_test() {
     fn preceded_abcd_efgh(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        preceded("abcd", "efgh").parse_next(i)
+        preceded("abcd", "efgh").parse_peek(i)
     }
 
     assert_eq!(
@@ -426,7 +426,7 @@ fn preceded_test() {
 #[test]
 fn terminated_test() {
     fn terminated_abcd_efgh(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        terminated("abcd", "efgh").parse_next(i)
+        terminated("abcd", "efgh").parse_peek(i)
     }
 
     assert_eq!(
@@ -467,7 +467,7 @@ fn terminated_test() {
 #[test]
 fn delimited_test() {
     fn delimited_abc_def_ghi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        delimited("abc", "def", "ghi").parse_next(i)
+        delimited("abc", "def", "ghi").parse_peek(i)
     }
 
     assert_eq!(
@@ -574,13 +574,13 @@ fn alt_test() {
     }
 
     fn alt1(i: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
-        alt((dont_work, dont_work)).parse_next(i)
+        alt((dont_work, dont_work)).parse_peek(i)
     }
     fn alt2(i: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
-        alt((dont_work, work)).parse_next(i)
+        alt((dont_work, work)).parse_peek(i)
     }
     fn alt3(i: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
-        alt((dont_work, dont_work, work2, dont_work)).parse_next(i)
+        alt((dont_work, dont_work, work2, dont_work)).parse_peek(i)
     }
     //named!(alt1, alt!(dont_work | dont_work));
     //named!(alt2, alt!(dont_work | work));
@@ -599,7 +599,7 @@ fn alt_test() {
     assert_eq!(alt3(a), Ok((a, &b""[..])));
 
     fn alt4(i: &[u8]) -> IResult<&[u8], &[u8]> {
-        alt(("abcd", "efgh")).parse_next(i)
+        alt(("abcd", "efgh")).parse_peek(i)
     }
     let b = &b"efgh"[..];
     assert_eq!(alt4(a), Ok((&b""[..], a)));
@@ -609,7 +609,7 @@ fn alt_test() {
 #[test]
 fn alt_incomplete() {
     fn alt1(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        alt(("a", "bc", "def")).parse_next(i)
+        alt(("a", "bc", "def")).parse_peek(i)
     }
 
     let a = &b""[..];
@@ -651,7 +651,7 @@ fn alt_incomplete() {
 fn permutation_test() {
     #[allow(clippy::type_complexity)]
     fn perm(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (&[u8], &[u8], &[u8])> {
-        permutation(("abcd", "efg", "hi")).parse_next(i)
+        permutation(("abcd", "efg", "hi")).parse_peek(i)
     }
 
     let expected = (&b"abcd"[..], &b"efg"[..], &b"hi"[..]);
@@ -693,13 +693,13 @@ fn permutation_test() {
 #[cfg(feature = "alloc")]
 fn separated0_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated0("abcd", ",").parse_next(i)
+        separated0("abcd", ",").parse_peek(i)
     }
     fn multi_empty(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated0("", ",").parse_next(i)
+        separated0("", ",").parse_peek(i)
     }
     fn multi_longsep(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated0("abcd", "..").parse_next(i)
+        separated0("abcd", "..").parse_peek(i)
     }
 
     let a = &b"abcdef"[..];
@@ -749,7 +749,7 @@ fn separated0_test() {
 #[cfg_attr(debug_assertions, should_panic)]
 fn separated0_empty_sep_test() {
     fn empty_sep(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated0("abc", "").parse_next(i)
+        separated0("abc", "").parse_peek(i)
     }
 
     let i = &b"abcabc"[..];
@@ -768,10 +768,10 @@ fn separated0_empty_sep_test() {
 #[cfg(feature = "alloc")]
 fn separated1_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated1("abcd", ",").parse_next(i)
+        separated1("abcd", ",").parse_peek(i)
     }
     fn multi_longsep(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated1("abcd", "..").parse_next(i)
+        separated1("abcd", "..").parse_peek(i)
     }
 
     let a = &b"abcdef"[..];
@@ -818,7 +818,7 @@ fn separated1_test() {
 #[cfg(feature = "alloc")]
 fn repeat0_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat(0.., "abcd").parse_next(i)
+        repeat(0.., "abcd").parse_peek(i)
     }
 
     assert_eq!(
@@ -852,7 +852,7 @@ fn repeat0_test() {
 #[cfg_attr(debug_assertions, should_panic)]
 fn repeat0_empty_test() {
     fn multi_empty(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat(0.., "").parse_next(i)
+        repeat(0.., "").parse_peek(i)
     }
 
     assert_eq!(
@@ -868,7 +868,7 @@ fn repeat0_empty_test() {
 #[cfg(feature = "alloc")]
 fn repeat1_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat(1.., "abcd").parse_next(i)
+        repeat(1.., "abcd").parse_peek(i)
     }
 
     let a = &b"abcdef"[..];
@@ -901,7 +901,7 @@ fn repeat1_test() {
 fn repeat_till_test() {
     #[allow(clippy::type_complexity)]
     fn multi(i: &[u8]) -> IResult<&[u8], (Vec<&[u8]>, &[u8])> {
-        repeat_till0("abcd", "efgh").parse_next(i)
+        repeat_till0("abcd", "efgh").parse_peek(i)
     }
 
     let a = b"abcdabcdefghabcd";
@@ -932,13 +932,13 @@ fn infinite_many() {
 
     // should not go into an infinite loop
     fn multi0(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-        repeat(0.., tst).parse_next(i)
+        repeat(0.., tst).parse_peek(i)
     }
     let a = &b"abcdef"[..];
     assert_eq!(multi0(a), Ok((a, Vec::new())));
 
     fn multi1(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-        repeat(1.., tst).parse_next(i)
+        repeat(1.., tst).parse_peek(i)
     }
     let a = &b"abcdef"[..];
     assert_eq!(
@@ -951,7 +951,7 @@ fn infinite_many() {
 #[cfg(feature = "alloc")]
 fn repeat_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat(2..=4, "Abcd").parse_next(i)
+        repeat(2..=4, "Abcd").parse_peek(i)
     }
 
     let a = &b"Abcdef"[..];
@@ -993,7 +993,7 @@ fn repeat_test() {
 fn count_test() {
     const TIMES: usize = 2;
     fn cnt_2(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        repeat(TIMES, "abc").parse_next(i)
+        repeat(TIMES, "abc").parse_peek(i)
     }
 
     assert_eq!(
@@ -1036,7 +1036,7 @@ fn count_test() {
 fn count_zero() {
     const TIMES: usize = 0;
     fn counter_2(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-        repeat(TIMES, "abc").parse_next(i)
+        repeat(TIMES, "abc").parse_peek(i)
     }
 
     let done = &b"abcabcabcdef"[..];
@@ -1096,7 +1096,7 @@ fn fold_repeat0_test() {
         acc
     }
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_repeat(0.., "abcd", Vec::new, fold_into_vec).parse_next(i)
+        fold_repeat(0.., "abcd", Vec::new, fold_into_vec).parse_peek(i)
     }
 
     assert_eq!(
@@ -1134,7 +1134,7 @@ fn fold_repeat0_empty_test() {
         acc
     }
     fn multi_empty(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_repeat(0.., "", Vec::new, fold_into_vec).parse_next(i)
+        fold_repeat(0.., "", Vec::new, fold_into_vec).parse_peek(i)
     }
 
     assert_eq!(
@@ -1154,7 +1154,7 @@ fn fold_repeat1_test() {
         acc
     }
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_repeat(1.., "abcd", Vec::new, fold_into_vec).parse_next(i)
+        fold_repeat(1.., "abcd", Vec::new, fold_into_vec).parse_peek(i)
     }
 
     let a = &b"abcdef"[..];
@@ -1190,7 +1190,7 @@ fn fold_repeat_test() {
         acc
     }
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_repeat(2..=4, "Abcd", Vec::new, fold_into_vec).parse_next(i)
+        fold_repeat(2..=4, "Abcd", Vec::new, fold_into_vec).parse_peek(i)
     }
 
     let a = &b"Abcdef"[..];
@@ -1230,7 +1230,7 @@ fn fold_repeat_test() {
 #[test]
 fn repeat0_count_test() {
     fn count0_nums(i: &[u8]) -> IResult<&[u8], usize> {
-        repeat(0.., (digit, ",")).parse_next(i)
+        repeat(0.., (digit, ",")).parse_peek(i)
     }
 
     assert_eq!(count0_nums(&b"123,junk"[..]), Ok((&b"junk"[..], 1)));
@@ -1248,7 +1248,7 @@ fn repeat0_count_test() {
 #[test]
 fn repeat1_count_test() {
     fn count1_nums(i: &[u8]) -> IResult<&[u8], usize> {
-        repeat(1.., (digit, ",")).parse_next(i)
+        repeat(1.., (digit, ",")).parse_peek(i)
     }
 
     assert_eq!(count1_nums(&b"123,45,junk"[..]), Ok((&b"junk"[..], 2)));

@@ -36,7 +36,18 @@ use crate::Parser;
 ///
 /// [`Parser::parse`] is a top-level operation that can help convert to a `Result` for integrating
 /// with your application's error reporting.
-pub type IResult<I, O, E = Error<I>> = Result<(I, O), ErrMode<E>>;
+pub type IResult<I, O, E = Error<I>> = PResult<(I, O), E>;
+
+/// Holds the result of [`Parser`]
+///
+/// - `Ok(O)` is the parsed value
+/// - [`Err(ErrMode<E>)`][ErrMode] is the error along with how to respond to it
+///
+/// By default, the error type (`E`) is [`ErrorKind`].
+///
+/// [`Parser::parse`] is a top-level operation that can help convert to a `Result` for integrating
+/// with your application's error reporting.
+pub type PResult<O, E = ErrorKind> = Result<O, ErrMode<E>>;
 
 /// Contains information on needed data if a parser returned `Incomplete`
 ///
@@ -674,6 +685,6 @@ mod tests {
     fn convert_error_panic() {
         let input = "";
 
-        let _result: IResult<_, _, VerboseError<&str>> = 'x'.parse_next(input);
+        let _result: IResult<_, _, VerboseError<&str>> = 'x'.parse_peek(input);
     }
 }

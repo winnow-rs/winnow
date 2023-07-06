@@ -45,7 +45,7 @@
 //! parses a string into an unsigned integer.)
 //!
 //! To combine parsers, we need a common way to refer to them which is where the [`Parser`]
-//! trait comes in with [`Parser::parse_next`] being the primary way to drive
+//! trait comes in with [`Parser::parse_peek`] being the primary way to drive
 //! parsing forward.
 //!
 //! # Let's write our first parser!
@@ -72,7 +72,7 @@
 //! fn main() {
 //!     let input = "0x1a2b Hello";
 //!
-//!     let (remainder, output) = do_nothing_parser.parse_next(input).unwrap();
+//!     let (remainder, output) = do_nothing_parser.parse_peek(input).unwrap();
 //!     // Same as:
 //!     // let (remainder, output) = do_nothing_parser(input).unwrap();
 //!

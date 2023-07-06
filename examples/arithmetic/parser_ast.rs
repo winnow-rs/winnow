@@ -50,16 +50,16 @@ pub fn expr(i: &str) -> IResult<&str, Expr> {
         0..,
         alt((
             |i| {
-                let (i, add) = preceded("+", term).parse_next(i)?;
+                let (i, add) = preceded("+", term).parse_peek(i)?;
                 Ok((i, (Oper::Add, add)))
             },
             |i| {
-                let (i, sub) = preceded("-", term).parse_next(i)?;
+                let (i, sub) = preceded("-", term).parse_peek(i)?;
                 Ok((i, (Oper::Sub, sub)))
             },
         )),
     )
-    .parse_next(i)?;
+    .parse_peek(i)?;
 
     Ok((i, fold_exprs(initial, remainder)))
 }
@@ -70,16 +70,16 @@ fn term(i: &str) -> IResult<&str, Expr> {
         0..,
         alt((
             |i| {
-                let (i, mul) = preceded("*", factor).parse_next(i)?;
+                let (i, mul) = preceded("*", factor).parse_peek(i)?;
                 Ok((i, (Oper::Mul, mul)))
             },
             |i| {
-                let (i, div) = preceded("/", factor).parse_next(i)?;
+                let (i, div) = preceded("/", factor).parse_peek(i)?;
                 Ok((i, (Oper::Div, div)))
             },
         )),
     )
-    .parse_next(i)?;
+    .parse_peek(i)?;
 
     Ok((i, fold_exprs(initial, remainder)))
 }
@@ -91,7 +91,7 @@ fn factor(i: &str) -> IResult<&str, Expr> {
             .map(Expr::Value),
         parens,
     ))
-    .parse_next(i)
+    .parse_peek(i)
 }
 
 fn parens(i: &str) -> IResult<&str, Expr> {
@@ -100,7 +100,7 @@ fn parens(i: &str) -> IResult<&str, Expr> {
         delimited("(", expr.map(|e| Expr::Paren(Box::new(e))), ")"),
         multispace,
     )
-    .parse_next(i)
+    .parse_peek(i)
 }
 
 fn fold_exprs(initial: Expr, remainder: Vec<(Oper, Expr)>) -> Expr {

@@ -21,7 +21,7 @@
 //! # type MyStream<'i> = &'i str;
 //! # type Output<'i> = &'i str;
 //! fn parser(i: MyStream<'_>) -> IResult<MyStream<'_>, Output<'_>> {
-//!     "test".parse_next(i)
+//!     "test".parse_peek(i)
 //! }
 //! ```
 //!

@@ -16,7 +16,7 @@
 //! use winnow::combinator::terminated;
 //!
 //! fn parse_list(input: &str) -> IResult<&str, Vec<usize>> {
-//!     repeat(0.., terminated(parse_digits, opt(','))).parse_next(input)
+//!     repeat(0.., terminated(parse_digits, opt(','))).parse_peek(input)
 //! }
 //!
 //! // ...
@@ -27,25 +27,25 @@
 //! #          "0d" => parse_dec_digits.try_map(|s| usize::from_str_radix(s, 10)),
 //! #          "0x" => parse_hex_digits.try_map(|s| usize::from_str_radix(s, 16)),
 //! #          _ => fail,
-//! #      ).parse_next(input)
+//! #      ).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
@@ -53,13 +53,13 @@
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //!
 //! fn main() {
 //!     let input = "0x1a2b,0x3c4d,0x5e6f Hello";
 //!
-//!     let (remainder, digits) = parse_list.parse_next(input).unwrap();
+//!     let (remainder, digits) = parse_list.parse_peek(input).unwrap();
 //!
 //!     assert_eq!(remainder, " Hello");
 //!     assert_eq!(digits, vec![0x1a2b, 0x3c4d, 0x5e6f]);
@@ -80,7 +80,7 @@
 //! use winnow::combinator::separated0;
 //!
 //! fn parse_list(input: &str) -> IResult<&str, Vec<usize>> {
-//!     separated0(parse_digits, ",").parse_next(input)
+//!     separated0(parse_digits, ",").parse_peek(input)
 //! }
 //!
 //! // ...
@@ -91,25 +91,25 @@
 //! #          "0d" => parse_dec_digits.try_map(|s| usize::from_str_radix(s, 10)),
 //! #          "0x" => parse_hex_digits.try_map(|s| usize::from_str_radix(s, 16)),
 //! #          _ => fail,
-//! #      ).parse_next(input)
+//! #      ).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
@@ -117,13 +117,13 @@
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //!
 //! fn main() {
 //!     let input = "0x1a2b,0x3c4d,0x5e6f Hello";
 //!
-//!     let (remainder, digits) = parse_list.parse_next(input).unwrap();
+//!     let (remainder, digits) = parse_list.parse_peek(input).unwrap();
 //!
 //!     assert_eq!(remainder, " Hello");
 //!     assert_eq!(digits, vec![0x1a2b, 0x3c4d, 0x5e6f]);
@@ -145,11 +145,11 @@
 //! # use winnow::combinator::separated0;
 //! #
 //! fn recognize_list(input: &str) -> IResult<&str, &str> {
-//!     parse_list.recognize().parse_next(input)
+//!     parse_list.recognize().parse_peek(input)
 //! }
 //!
 //! fn parse_list(input: &str) -> IResult<&str, ()> {
-//!     separated0(parse_digits, ",").parse_next(input)
+//!     separated0(parse_digits, ",").parse_peek(input)
 //! }
 //!
 //! // ...
@@ -160,25 +160,25 @@
 //! #          "0d" => parse_dec_digits.try_map(|s| usize::from_str_radix(s, 10)),
 //! #          "0x" => parse_hex_digits.try_map(|s| usize::from_str_radix(s, 16)),
 //! #          _ => fail,
-//! #      ).parse_next(input)
+//! #      ).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //! #
 //! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
@@ -186,13 +186,13 @@
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
-//! #     )).parse_next(input)
+//! #     )).parse_peek(input)
 //! # }
 //!
 //! fn main() {
 //!     let input = "0x1a2b,0x3c4d,0x5e6f Hello";
 //!
-//!     let (remainder, digits) = recognize_list.parse_next(input).unwrap();
+//!     let (remainder, digits) = recognize_list.parse_peek(input).unwrap();
 //!
 //!     assert_eq!(remainder, " Hello");
 //!     assert_eq!(digits, "0x1a2b,0x3c4d,0x5e6f");

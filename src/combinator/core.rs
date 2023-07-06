@@ -19,7 +19,7 @@ pub fn rest<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E
 where
     I: Stream,
 {
-    trace("rest", move |input: I| Ok(input.peek_finish())).parse_next(input)
+    trace("rest", move |input: I| Ok(input.peek_finish())).parse_peek(input)
 }
 
 /// Return the length of the remaining input.
@@ -44,7 +44,7 @@ where
         let len = input.eof_offset();
         Ok((input, len))
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Apply a [`Parser`], producing `None` on [`ErrMode::Backtrack`].
@@ -61,7 +61,7 @@ where
 /// # fn main() {
 ///
 /// fn parser(i: &str) -> IResult<&str, Option<&str>> {
-///   opt(alpha1).parse_next(i)
+///   opt(alpha1).parse_peek(i)
 /// }
 ///
 /// assert_eq!(parser("abcd;"), Ok((";", Some("abcd"))));
@@ -74,7 +74,7 @@ where
 {
     trace("opt", move |input: I| {
         let i = input.clone();
-        match f.parse_next(input) {
+        match f.parse_peek(input) {
             Ok((i, o)) => Ok((i, Some(o))),
             Err(ErrMode::Backtrack(_)) => Ok((i, None)),
             Err(e) => Err(e),
@@ -94,7 +94,7 @@ where
 /// # fn main() {
 ///
 /// fn parser(b: bool, i: &str) -> IResult<&str, Option<&str>> {
-///   cond(b, alpha1).parse_next(i)
+///   cond(b, alpha1).parse_peek(i)
 /// }
 ///
 /// assert_eq!(parser(true, "abcd;"), Ok((";", Some("abcd"))));
@@ -110,7 +110,7 @@ where
 {
     trace("cond", move |input: I| {
         if b {
-            match f.parse_next(input) {
+            match f.parse_peek(input) {
                 Ok((i, o)) => Ok((i, Some(o))),
                 Err(e) => Err(e),
             }
@@ -133,8 +133,8 @@ where
 ///
 /// let mut parser = peek(alpha1);
 ///
-/// assert_eq!(parser.parse_next("abcd;"), Ok(("abcd;", "abcd")));
-/// assert_eq!(parser.parse_next("123;"), Err(ErrMode::Backtrack(Error::new("123;", ErrorKind::Slice))));
+/// assert_eq!(parser.parse_peek("abcd;"), Ok(("abcd;", "abcd")));
+/// assert_eq!(parser.parse_peek("123;"), Err(ErrMode::Backtrack(Error::new("123;", ErrorKind::Slice))));
 /// # }
 /// ```
 #[doc(alias = "look_ahead")]
@@ -145,7 +145,7 @@ where
 {
     trace("peek", move |input: I| {
         let i = input.clone();
-        match f.parse_next(input) {
+        match f.parse_peek(input) {
             Ok((_, o)) => Ok((i, o)),
             Err(e) => Err(e),
         }
@@ -165,8 +165,8 @@ where
 /// # use winnow::prelude::*;
 ///
 /// let mut parser = eof;
-/// assert_eq!(parser.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Eof))));
-/// assert_eq!(parser.parse_next(""), Ok(("", "")));
+/// assert_eq!(parser.parse_peek("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Eof))));
+/// assert_eq!(parser.parse_peek(""), Ok(("", "")));
 /// ```
 #[doc(alias = "end")]
 #[doc(alias = "eoi")]
@@ -181,7 +181,7 @@ where
             Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
         }
     })
-    .parse_next(input)
+    .parse_peek(input)
 }
 
 /// Succeeds if the child parser returns an error.
@@ -199,8 +199,8 @@ where
 ///
 /// let mut parser = not(alpha1);
 ///
-/// assert_eq!(parser.parse_next("123"), Ok(("123", ())));
-/// assert_eq!(parser.parse_next("abcd"), Err(ErrMode::Backtrack(Error::new("abcd", ErrorKind::Not))));
+/// assert_eq!(parser.parse_peek("123"), Ok(("123", ())));
+/// assert_eq!(parser.parse_peek("abcd"), Err(ErrMode::Backtrack(Error::new("abcd", ErrorKind::Not))));
 /// # }
 /// ```
 pub fn not<I: Stream, O, E: ParseError<I>, F>(mut parser: F) -> impl Parser<I, (), E>
@@ -209,7 +209,7 @@ where
 {
     trace("not", move |input: I| {
         let i = input.clone();
-        match parser.parse_next(input) {
+        match parser.parse_peek(input) {
             Ok(_) => Err(ErrMode::from_error_kind(i, ErrorKind::Not)),
             Err(ErrMode::Backtrack(_)) => Ok((i, ())),
             Err(e) => Err(e),
@@ -239,7 +239,7 @@ where
 ///   alt((
 ///     preceded(one_of(['+', '-']), digit1),
 ///     rest
-///   )).parse_next(input)
+///   )).parse_peek(input)
 /// }
 ///
 /// assert_eq!(parser("+10 ab"), Ok((" ab", "10")));
@@ -264,7 +264,7 @@ where
 ///   alt((
 ///     preceded(one_of(['+', '-']), cut_err(digit1)),
 ///     rest
-///   )).parse_next(input)
+///   )).parse_peek(input)
 /// }
 ///
 /// assert_eq!(parser("+10 ab"), Ok((" ab", "10")));
@@ -278,7 +278,7 @@ where
     F: Parser<I, O, E>,
 {
     trace("cut_err", move |input: I| {
-        parser.parse_next(input).map_err(|e| e.cut())
+        parser.parse_peek(input).map_err(|e| e.cut())
     })
 }
 
@@ -292,7 +292,7 @@ where
     F: Parser<I, O, E>,
 {
     trace("backtrack_err", move |input: I| {
-        parser.parse_next(input).map_err(|e| e.backtrack())
+        parser.parse_peek(input).map_err(|e| e.backtrack())
     })
 }
 
@@ -320,7 +320,7 @@ where
     I: Stream,
 {
     #![allow(clippy::todo)]
-    trace("todo", move |_input: I| todo!("unimplemented parse")).parse_next(input)
+    trace("todo", move |_input: I| todo!("unimplemented parse")).parse_peek(input)
 }
 
 /// Repeats the embedded parser, lazily returning the results
@@ -397,7 +397,7 @@ where
         if let State::Running = self.state.take().unwrap() {
             let input = self.input.clone();
 
-            match self.parser.parse_next(input) {
+            match self.parser.parse_peek(input) {
                 Ok((i, o)) => {
                     self.input = i;
                     self.state = Some(State::Running);
@@ -445,14 +445,14 @@ enum State<E> {
 /// use winnow::combinator::success;
 ///
 /// let mut parser = success::<_,_,Error<_>>(10);
-/// assert_eq!(parser.parse_next("xyz"), Ok(("xyz", 10)));
+/// assert_eq!(parser.parse_peek("xyz"), Ok(("xyz", 10)));
 ///
 /// fn sign(input: &str) -> IResult<&str, isize> {
 ///     alt((
 ///         '-'.value(-1),
 ///         '+'.value(1),
 ///         success::<_,_,Error<_>>(1)
-///     )).parse_next(input)
+///     )).parse_peek(input)
 /// }
 /// assert_eq!(sign("+10"), Ok(("10", 1)));
 /// assert_eq!(sign("-10"), Ok(("10", -1)));
@@ -483,5 +483,5 @@ pub fn fail<I: Stream, O, E: ParseError<I>>(i: I) -> IResult<I, O, E> {
     trace("fail", |i| {
         Err(ErrMode::from_error_kind(i, ErrorKind::Fail))
     })
-    .parse_next(i)
+    .parse_peek(i)
 }

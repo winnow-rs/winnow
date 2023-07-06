@@ -35,7 +35,7 @@ compile_error!("`debug` requires `std`");
 /// fn short_alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
 ///   trace("short_alpha",
 ///     take_while(3..=6, AsChar::is_alpha)
-///   ).parse_next(s)
+///   ).parse_peek(s)
 /// }
 ///
 /// assert_eq!(short_alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
@@ -59,7 +59,7 @@ pub fn trace<I: Stream, O, E>(
             let original = i.checkpoint();
             internals::start(*depth, &name, call_count, &i);
 
-            let res = parser.parse_next(i);
+            let res = parser.parse_peek(i);
 
             let consumed = res.as_ref().ok().map(|(i, _)| i.offset_from(&original));
             let severity = internals::Severity::with_result(&res);

@@ -14,7 +14,7 @@ fn atom(_tomb: &mut ()) -> impl for<'a> FnMut(&'a [u8]) -> IResult<&'a [u8], Str
         take_till1([' ', '\t', '\r', '\n'])
             .try_map(str::from_utf8)
             .map(ToString::to_string)
-            .parse_next(input)
+            .parse_peek(input)
     }
 }
 
@@ -33,5 +33,5 @@ fn list<'a>(i: &'a [u8], tomb: &mut ()) -> IResult<&'a [u8], String> {
         ),
         ')',
     )
-    .parse_next(i)
+    .parse_peek(i)
 }

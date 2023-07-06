@@ -12,11 +12,11 @@ use winnow::{
 pub type Stream<'i> = &'i str;
 
 pub fn categories(input: Stream<'_>) -> IResult<Stream<'_>, HashMap<&str, HashMap<&str, &str>>> {
-    repeat(0.., category_and_keys).parse_next(input)
+    repeat(0.., category_and_keys).parse_peek(input)
 }
 
 fn category_and_keys(i: Stream<'_>) -> IResult<Stream<'_>, (&str, HashMap<&str, &str>)> {
-    (category, keys_and_values).parse_next(i)
+    (category, keys_and_values).parse_peek(i)
 }
 
 fn category(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
@@ -24,20 +24,20 @@ fn category(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
         delimited('[', take_while(0.., |c| c != ']'), ']'),
         opt(take_while(1.., [' ', '\r', '\n'])),
     )
-    .parse_next(i)
+    .parse_peek(i)
 }
 
 fn keys_and_values(input: Stream<'_>) -> IResult<Stream<'_>, HashMap<&str, &str>> {
-    repeat(0.., key_value).parse_next(input)
+    repeat(0.., key_value).parse_peek(input)
 }
 
 fn key_value(i: Stream<'_>) -> IResult<Stream<'_>, (&str, &str)> {
     let (i, key) = alphanumeric(i)?;
-    let (i, _) = (opt(space), "=", opt(space)).parse_next(i)?;
-    let (i, val) = take_till0(is_line_ending_or_comment).parse_next(i)?;
-    let (i, _) = opt(space).parse_next(i)?;
-    let (i, _) = opt((";", not_line_ending)).parse_next(i)?;
-    let (i, _) = opt(space_or_line_ending).parse_next(i)?;
+    let (i, _) = (opt(space), "=", opt(space)).parse_peek(i)?;
+    let (i, val) = take_till0(is_line_ending_or_comment).parse_peek(i)?;
+    let (i, _) = opt(space).parse_peek(i)?;
+    let (i, _) = opt((";", not_line_ending)).parse_peek(i)?;
+    let (i, _) = opt(space_or_line_ending).parse_peek(i)?;
 
     Ok((i, (key, val)))
 }
@@ -47,11 +47,11 @@ fn is_line_ending_or_comment(chr: char) -> bool {
 }
 
 fn not_line_ending(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
-    take_while(0.., |c| c != '\r' && c != '\n').parse_next(i)
+    take_while(0.., |c| c != '\r' && c != '\n').parse_peek(i)
 }
 
 fn space_or_line_ending(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
-    take_while(1.., [' ', '\r', '\n']).parse_next(i)
+    take_while(1.., [' ', '\r', '\n']).parse_peek(i)
 }
 
 #[test]

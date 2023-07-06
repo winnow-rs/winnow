@@ -11,10 +11,10 @@ fn parse() {
     let res = {
         let mut parser = repeat::<_, _, Vec<_>, (), _>(0.., |i| {
             counter += 1;
-            "abc".parse_next(i)
+            "abc".parse_peek(i)
         });
 
-        parser.parse_next("abcabcabcabc").unwrap()
+        parser.parse_peek("abcabcabcabc").unwrap()
     };
 
     println!("res: {:?}", res);
@@ -27,11 +27,11 @@ fn accumulate() {
 
     let (_, count) = {
         let mut parser = repeat::<_, _, usize, (), _>(0.., |i| {
-            let (i, o) = "abc".parse_next(i)?;
+            let (i, o) = "abc".parse_peek(i)?;
             v.push(o);
             Ok((i, ()))
         });
-        parser.parse_next("abcabcabcabc").unwrap()
+        parser.parse_peek("abcabcabcabc").unwrap()
     };
 
     println!("v: {:?}", v);

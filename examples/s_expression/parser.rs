@@ -73,12 +73,12 @@ fn parse_expr(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
         multispace0,
         alt((parse_constant, parse_application, parse_if, parse_quote)),
     )
-    .parse_next(i)
+    .parse_peek(i)
 }
 
 /// We then add the Expr layer on top
 fn parse_constant(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
-    parse_atom.map(Expr::Constant).parse_next(i)
+    parse_atom.map(Expr::Constant).parse_peek(i)
 }
 
 /// Now we take all these simple parsers and connect them.
@@ -90,7 +90,7 @@ fn parse_atom(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
         parse_builtin.map(Atom::BuiltIn),
         parse_keyword,
     ))
-    .parse_next(i)
+    .parse_peek(i)
 }
 
 /// Next up is number parsing. We're keeping it simple here by accepting any number (> 1)
@@ -100,7 +100,7 @@ fn parse_num(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
         digit1.try_map(|digit_str: &str| digit_str.parse::<i32>().map(Atom::Num)),
         preceded("-", digit1).map(|digit_str: &str| Atom::Num(-digit_str.parse::<i32>().unwrap())),
     ))
-    .parse_next(i)
+    .parse_peek(i)
 }
 
 /// Our boolean values are also constant, so we can do it the same way
@@ -109,7 +109,7 @@ fn parse_bool(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
         "#t".map(|_| Atom::Boolean(true)),
         "#f".map(|_| Atom::Boolean(false)),
     ))
-    .parse_next(i)
+    .parse_peek(i)
 }
 
 fn parse_builtin(i: &str) -> IResult<&str, BuiltIn, VerboseError<&str>> {
@@ -121,14 +121,14 @@ fn parse_builtin(i: &str) -> IResult<&str, BuiltIn, VerboseError<&str>> {
         // so we ignore the input and return the BuiltIn directly
         "not".map(|_| BuiltIn::Not),
     ))
-    .parse_next(i)
+    .parse_peek(i)
 }
 
 /// Continuing the trend of starting from the simplest piece and building up,
 /// we start by creating a parser for the built-in operator functions.
 fn parse_builtin_op(i: &str) -> IResult<&str, BuiltIn, VerboseError<&str>> {
     // one_of matches one of the characters we give it
-    let (i, t) = one_of(['+', '-', '*', '/', '=']).parse_next(i)?;
+    let (i, t) = one_of(['+', '-', '*', '/', '=']).parse_peek(i)?;
 
     // because we are matching single character tokens, we can do the matching logic
     // on the returned value
@@ -155,7 +155,7 @@ fn parse_keyword(i: &str) -> IResult<&str, Atom, VerboseError<&str>> {
     preceded(":", cut_err(alpha1))
         .context("keyword")
         .map(|sym_str: &str| Atom::Keyword(sym_str.to_string()))
-        .parse_next(i)
+        .parse_peek(i)
 }
 
 /// We can now use our new combinator to define the rest of the `Expr`s.
@@ -171,7 +171,7 @@ fn parse_application(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
     let application_inner = (parse_expr, repeat(0.., parse_expr))
         .map(|(head, tail)| Expr::Application(Box::new(head), tail));
     // finally, we wrap it in an s-expression
-    s_exp(application_inner).parse_next(i)
+    s_exp(application_inner).parse_peek(i)
 }
 
 /// Because `Expr::If` and `Expr::IfElse` are so similar (we easily could have
@@ -200,7 +200,7 @@ fn parse_if(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
         }
     })
     .context("if expression");
-    s_exp(if_inner).parse_next(i)
+    s_exp(if_inner).parse_peek(i)
 }
 
 /// A quoted S-expression is list data structure.
@@ -215,14 +215,14 @@ fn parse_quote(i: &str) -> IResult<&str, Expr, VerboseError<&str>> {
     preceded("'", cut_err(s_exp(repeat(0.., parse_expr))))
         .context("quote")
         .map(Expr::Quote)
-        .parse_next(i)
+        .parse_peek(i)
 }
 
 /// Before continuing, we need a helper function to parse lists.
 /// A list starts with `(` and ends with a matching `)`.
 /// By putting whitespace and newline parsing here, we can avoid having to worry about it
 /// in much of the rest of the parser.
-//.parse_next/
+//.parse_peek/
 /// Unlike the previous functions, this function doesn't take or consume input, instead it
 /// takes a parsing function and returns a new parsing function.
 fn s_exp<'a, O1, F>(inner: F) -> impl Parser<&'a str, O1, VerboseError<&'a str>>
