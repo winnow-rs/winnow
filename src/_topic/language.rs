@@ -278,7 +278,7 @@
 //!   token::one_of,
 //! };
 //!
-//! fn float(input: &str) -> IResult<&str, &str> {
+//! fn float<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //!   alt((
 //!     // Case one: .42
 //!     (
@@ -307,16 +307,16 @@
 //!       '.',
 //!       opt(decimal)
 //!     ).recognize()
-//!   )).parse_peek(input)
+//!   )).parse_next(input)
 //! }
 //!
-//! fn decimal(input: &str) -> IResult<&str, &str> {
+//! fn decimal<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //!   repeat(1..,
 //!     terminated(one_of('0'..='9'), repeat(0.., '_').map(|()| ()))
 //!   ).
 //!   map(|()| ())
 //!     .recognize()
-//!     .parse_peek(input)
+//!     .parse_next(input)
 //! }
 //! ```
 //!

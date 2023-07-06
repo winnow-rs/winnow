@@ -1,3 +1,4 @@
+use winnow::unpeek;
 use winnow::{ascii::line_ending, combinator::repeat, token::take_while, IResult, Parser};
 
 pub type Stream<'i> = &'i [u8];
@@ -44,7 +45,7 @@ pub fn parse(data: &[u8]) -> Option<Vec<(Request<'_>, Vec<Header<'_>>)>> {
 
 fn request(input: Stream<'_>) -> IResult<Stream<'_>, (Request<'_>, Vec<Header<'_>>)> {
     let (input, req) = request_line(input)?;
-    let (input, h) = repeat(1.., message_header).parse_peek(input)?;
+    let (input, h) = repeat(1.., unpeek(message_header)).parse_peek(input)?;
     let (input, _) = line_ending.parse_peek(input)?;
 
     Ok((input, (req, h)))
@@ -86,7 +87,7 @@ fn message_header_value(input: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
 fn message_header(input: Stream<'_>) -> IResult<Stream<'_>, Header<'_>> {
     let (input, name) = take_while(1.., is_token).parse_peek(input)?;
     let (input, _) = ':'.parse_peek(input)?;
-    let (input, value) = repeat(1.., message_header_value).parse_peek(input)?;
+    let (input, value) = repeat(1.., unpeek(message_header_value)).parse_peek(input)?;
 
     Ok((input, Header { name, value }))
 }

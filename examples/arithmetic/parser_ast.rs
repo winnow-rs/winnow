@@ -9,7 +9,7 @@ use winnow::{
     combinator::alt,
     combinator::repeat,
     combinator::{delimited, preceded},
-    IResult,
+    unpeek, IResult,
 };
 
 #[derive(Debug)]
@@ -49,14 +49,14 @@ pub fn expr(i: &str) -> IResult<&str, Expr> {
     let (i, remainder) = repeat(
         0..,
         alt((
-            |i| {
-                let (i, add) = preceded("+", term).parse_peek(i)?;
+            unpeek(|i| {
+                let (i, add) = preceded("+", unpeek(term)).parse_peek(i)?;
                 Ok((i, (Oper::Add, add)))
-            },
-            |i| {
-                let (i, sub) = preceded("-", term).parse_peek(i)?;
+            }),
+            unpeek(|i| {
+                let (i, sub) = preceded("-", unpeek(term)).parse_peek(i)?;
                 Ok((i, (Oper::Sub, sub)))
-            },
+            }),
         )),
     )
     .parse_peek(i)?;
@@ -69,14 +69,14 @@ fn term(i: &str) -> IResult<&str, Expr> {
     let (i, remainder) = repeat(
         0..,
         alt((
-            |i| {
-                let (i, mul) = preceded("*", factor).parse_peek(i)?;
+            unpeek(|i| {
+                let (i, mul) = preceded("*", unpeek(factor)).parse_peek(i)?;
                 Ok((i, (Oper::Mul, mul)))
-            },
-            |i| {
-                let (i, div) = preceded("/", factor).parse_peek(i)?;
+            }),
+            unpeek(|i| {
+                let (i, div) = preceded("/", unpeek(factor)).parse_peek(i)?;
                 Ok((i, (Oper::Div, div)))
-            },
+            }),
         )),
     )
     .parse_peek(i)?;
@@ -89,7 +89,7 @@ fn factor(i: &str) -> IResult<&str, Expr> {
         delimited(multispace, digit, multispace)
             .try_map(FromStr::from_str)
             .map(Expr::Value),
-        parens,
+        unpeek(parens),
     ))
     .parse_peek(i)
 }
@@ -97,7 +97,7 @@ fn factor(i: &str) -> IResult<&str, Expr> {
 fn parens(i: &str) -> IResult<&str, Expr> {
     delimited(
         multispace,
-        delimited("(", expr.map(|e| Expr::Paren(Box::new(e))), ")"),
+        delimited("(", unpeek(expr).map(|e| Expr::Paren(Box::new(e))), ")"),
         multispace,
     )
     .parse_peek(i)

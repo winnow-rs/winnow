@@ -7,14 +7,14 @@
 //! ```rust
 //! # use winnow::error::VerboseError;
 //! # use winnow::error::ErrMode;
-//! type IResult<'i, O> = Result<
+//! type PResult<'i, O> = Result<
 //!     (&'i str, O),
 //!     ErrMode<
 //!         VerboseError<&'i str>
 //!     >
 //! >;
 //! ```
-//! 1. We have to decide what to do about the `remainder` of the input.  
+//! 1. We have to decide what to do about the "remainder" of the input.
 //! 2. The error type is not compatible with the rest of the Rust ecosystem
 //!
 //! Normally, Rust applications want errors that are `std::error::Error + Send + Sync + 'static`
@@ -26,7 +26,7 @@
 //!
 //! winnow provides some helpers for this:
 //! ```rust
-//! # use winnow::IResult;
+//! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
 //! # use winnow::combinator::dispatch;
 //! # use winnow::token::take;
@@ -49,40 +49,40 @@
 //! }
 //!
 //! // ...
-//! # fn parse_digits(input: &str) -> IResult<&str, usize> {
+//! # fn parse_digits<'s>(input: &mut &'s str) -> PResult<usize, Error<&'s str>> {
 //! #     dispatch!(take(2usize);
 //! #         "0b" => parse_bin_digits.try_map(|s| usize::from_str_radix(s, 2)),
 //! #         "0o" => parse_oct_digits.try_map(|s| usize::from_str_radix(s, 8)),
 //! #         "0d" => parse_dec_digits.try_map(|s| usize::from_str_radix(s, 10)),
 //! #         "0x" => parse_hex_digits.try_map(|s| usize::from_str_radix(s, 16)),
 //! #         _ => fail,
-//! #     ).parse_peek(input)
+//! #     ).parse_next(input)
 //! # }
 //! #
-//! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //!
 //! fn main() {
@@ -106,6 +106,6 @@ use super::chapter_1;
 use crate::combinator::eof;
 use crate::error::ErrMode;
 use crate::error::Error;
-use crate::IResult;
+use crate::PResult;
 
 pub use super::chapter_6 as previous;

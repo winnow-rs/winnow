@@ -10,6 +10,7 @@ use winnow::{
     combinator::{fold_repeat, separated0},
     error::{ContextError, ParseError},
     token::{any, none_of, take, take_while},
+    unpeek,
 };
 
 use crate::json::JsonValue;
@@ -31,7 +32,7 @@ pub type Stream<'i> = &'i str;
 pub fn json<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
     input: Stream<'i>,
 ) -> IResult<Stream<'i>, JsonValue, E> {
-    delimited(ws, json_value, ws).parse_peek(input)
+    delimited(unpeek(ws), unpeek(json_value), unpeek(ws)).parse_peek(input)
 }
 
 /// `alt` is a combinator that tries multiple parsers one by one, until
@@ -42,12 +43,12 @@ fn json_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static 
     // `alt` combines the each value parser. It returns the result of the first
     // successful parser, or an error
     alt((
-        null.value(JsonValue::Null),
-        boolean.map(JsonValue::Boolean),
-        string.map(JsonValue::Str),
+        unpeek(null).value(JsonValue::Null),
+        unpeek(boolean).map(JsonValue::Boolean),
+        unpeek(string).map(JsonValue::Str),
         float.map(JsonValue::Num),
-        array.map(JsonValue::Array),
-        object.map(JsonValue::Object),
+        unpeek(array).map(JsonValue::Array),
+        unpeek(object).map(JsonValue::Object),
     ))
     .parse_peek(input)
 }
@@ -87,7 +88,7 @@ fn string<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>
         // right branch (since we found the `"` character) but encountered an error when
         // parsing the string
         cut_err(terminated(
-            fold_repeat(0.., character, String::new, |mut string, c| {
+            fold_repeat(0.., unpeek(character), String::new, |mut string, c| {
                 string.push(c);
                 string
             }),
@@ -117,7 +118,7 @@ fn character<'i, E: ParseError<Stream<'i>>>(input: Stream<'i>) -> IResult<Stream
                     _ => return None,
                 })
             }),
-            preceded('u', unicode_escape),
+            preceded('u', unpeek(unicode_escape)),
         ))
         .parse_peek(input)
     } else {
@@ -130,11 +131,11 @@ fn unicode_escape<'i, E: ParseError<Stream<'i>>>(
 ) -> IResult<Stream<'i>, char, E> {
     alt((
         // Not a surrogate
-        u16_hex
+        unpeek(u16_hex)
             .verify(|cp| !(0xD800..0xE000).contains(cp))
             .map(|cp| cp as u32),
         // See https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF for details
-        separated_pair(u16_hex, "\\u", u16_hex)
+        separated_pair(unpeek(u16_hex), "\\u", unpeek(u16_hex))
             .verify(|(high, low)| (0xD800..0xDC00).contains(high) && (0xDC00..0xE000).contains(low))
             .map(|(high, low)| {
                 let high_ten = (high as u32) - 0xD800;
@@ -163,8 +164,11 @@ fn array<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>
     input: Stream<'i>,
 ) -> IResult<Stream<'i>, Vec<JsonValue>, E> {
     preceded(
-        ('[', ws),
-        cut_err(terminated(separated0(json_value, (ws, ',', ws)), (ws, ']'))),
+        ('[', unpeek(ws)),
+        cut_err(terminated(
+            separated0(unpeek(json_value), (unpeek(ws), ',', unpeek(ws))),
+            (unpeek(ws), ']'),
+        )),
     )
     .context("array")
     .parse_peek(input)
@@ -174,8 +178,11 @@ fn object<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>
     input: Stream<'i>,
 ) -> IResult<Stream<'i>, HashMap<String, JsonValue>, E> {
     preceded(
-        ('{', ws),
-        cut_err(terminated(separated0(key_value, (ws, ',', ws)), (ws, '}'))),
+        ('{', unpeek(ws)),
+        cut_err(terminated(
+            separated0(unpeek(key_value), (unpeek(ws), ',', unpeek(ws))),
+            (unpeek(ws), '}'),
+        )),
     )
     .context("object")
     .parse_peek(input)
@@ -184,7 +191,12 @@ fn object<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>
 fn key_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
     input: Stream<'i>,
 ) -> IResult<Stream<'i>, (String, JsonValue), E> {
-    separated_pair(string, cut_err((ws, ':', ws)), json_value).parse_peek(input)
+    separated_pair(
+        unpeek(string),
+        cut_err((unpeek(ws), ':', unpeek(ws))),
+        unpeek(json_value),
+    )
+    .parse_peek(input)
 }
 
 /// Parser combinators are constructed from the bottom up:

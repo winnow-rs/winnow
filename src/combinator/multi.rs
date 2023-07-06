@@ -7,6 +7,7 @@ use crate::stream::Accumulate;
 use crate::stream::Range;
 use crate::stream::Stream;
 use crate::trace::trace;
+use crate::unpeek;
 use crate::IResult;
 use crate::Parser;
 
@@ -126,14 +127,15 @@ where
         start_inclusive,
         end_inclusive,
     } = range.into();
-    trace("repeat", move |i: I| {
-        match (start_inclusive, end_inclusive) {
+    trace(
+        "repeat",
+        unpeek(move |i: I| match (start_inclusive, end_inclusive) {
             (0, None) => repeat0_(&mut f, i),
             (1, None) => repeat1_(&mut f, i),
             (start, end) if Some(start) == end => repeat_n_(start, &mut f, i),
             (start, end) => repeat_m_n_(start, end.unwrap_or(usize::MAX), &mut f, i),
-        }
-    })
+        }),
+    )
 }
 
 fn repeat0_<I, O, C, E, F>(f: &mut F, mut i: I) -> IResult<I, C, E>
@@ -234,33 +236,36 @@ where
     G: Parser<I, P, E>,
     E: ParseError<I>,
 {
-    trace("repeat_till0", move |mut i: I| {
-        let mut res = C::initial(None);
-        loop {
-            let len = i.eof_offset();
-            match g.parse_peek(i.clone()) {
-                Ok((i1, o)) => return Ok((i1, (res, o))),
-                Err(ErrMode::Backtrack(_)) => {
-                    match f.parse_peek(i.clone()) {
-                        Err(e) => return Err(e.append(i, ErrorKind::Many)),
-                        Ok((i1, o)) => {
-                            // infinite loop check: the parser must always consume
-                            if i1.eof_offset() == len {
-                                return Err(ErrMode::assert(
-                                    i,
-                                    "`repeat` parsers must always consume",
-                                ));
-                            }
+    trace(
+        "repeat_till0",
+        unpeek(move |mut i: I| {
+            let mut res = C::initial(None);
+            loop {
+                let len = i.eof_offset();
+                match g.parse_peek(i.clone()) {
+                    Ok((i1, o)) => return Ok((i1, (res, o))),
+                    Err(ErrMode::Backtrack(_)) => {
+                        match f.parse_peek(i.clone()) {
+                            Err(e) => return Err(e.append(i, ErrorKind::Many)),
+                            Ok((i1, o)) => {
+                                // infinite loop check: the parser must always consume
+                                if i1.eof_offset() == len {
+                                    return Err(ErrMode::assert(
+                                        i,
+                                        "`repeat` parsers must always consume",
+                                    ));
+                                }
 
-                            res.accumulate(o);
-                            i = i1;
+                                res.accumulate(o);
+                                i = i1;
+                            }
                         }
                     }
+                    Err(e) => return Err(e),
                 }
-                Err(e) => return Err(e),
             }
-        }
-    })
+        }),
+    )
 }
 
 /// [`Accumulate`] the output of a parser, interleaed with `sep`
@@ -302,41 +307,44 @@ where
     S: Parser<I, O2, E>,
     E: ParseError<I>,
 {
-    trace("separated0", move |mut i: I| {
-        let mut res = C::initial(None);
+    trace(
+        "separated0",
+        unpeek(move |mut i: I| {
+            let mut res = C::initial(None);
 
-        match parser.parse_peek(i.clone()) {
-            Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
-            Err(e) => return Err(e),
-            Ok((i1, o)) => {
-                res.accumulate(o);
-                i = i1;
-            }
-        }
-
-        loop {
-            let len = i.eof_offset();
-            match sep.parse_peek(i.clone()) {
+            match parser.parse_peek(i.clone()) {
                 Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
                 Err(e) => return Err(e),
-                Ok((i1, _)) => {
-                    // infinite loop check: the parser must always consume
-                    if i1.eof_offset() == len {
-                        return Err(ErrMode::assert(i, "sep parsers must always consume"));
-                    }
+                Ok((i1, o)) => {
+                    res.accumulate(o);
+                    i = i1;
+                }
+            }
 
-                    match parser.parse_peek(i1.clone()) {
-                        Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
-                        Err(e) => return Err(e),
-                        Ok((i2, o)) => {
-                            res.accumulate(o);
-                            i = i2;
+            loop {
+                let len = i.eof_offset();
+                match sep.parse_peek(i.clone()) {
+                    Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
+                    Err(e) => return Err(e),
+                    Ok((i1, _)) => {
+                        // infinite loop check: the parser must always consume
+                        if i1.eof_offset() == len {
+                            return Err(ErrMode::assert(i, "sep parsers must always consume"));
+                        }
+
+                        match parser.parse_peek(i1.clone()) {
+                            Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
+                            Err(e) => return Err(e),
+                            Ok((i2, o)) => {
+                                res.accumulate(o);
+                                i = i2;
+                            }
                         }
                     }
                 }
             }
-        }
-    })
+        }),
+    )
 }
 
 /// [`Accumulate`] the output of a parser, interleaed with `sep`
@@ -380,41 +388,44 @@ where
     S: Parser<I, O2, E>,
     E: ParseError<I>,
 {
-    trace("separated1", move |mut i: I| {
-        let mut res = C::initial(None);
+    trace(
+        "separated1",
+        unpeek(move |mut i: I| {
+            let mut res = C::initial(None);
 
-        // Parse the first element
-        match parser.parse_peek(i.clone()) {
-            Err(e) => return Err(e),
-            Ok((i1, o)) => {
-                res.accumulate(o);
-                i = i1;
-            }
-        }
-
-        loop {
-            let len = i.eof_offset();
-            match sep.parse_peek(i.clone()) {
-                Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
+            // Parse the first element
+            match parser.parse_peek(i.clone()) {
                 Err(e) => return Err(e),
-                Ok((i1, _)) => {
-                    // infinite loop check: the parser must always consume
-                    if i1.eof_offset() == len {
-                        return Err(ErrMode::assert(i, "sep parsers must always consume"));
-                    }
+                Ok((i1, o)) => {
+                    res.accumulate(o);
+                    i = i1;
+                }
+            }
 
-                    match parser.parse_peek(i1.clone()) {
-                        Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
-                        Err(e) => return Err(e),
-                        Ok((i2, o)) => {
-                            res.accumulate(o);
-                            i = i2;
+            loop {
+                let len = i.eof_offset();
+                match sep.parse_peek(i.clone()) {
+                    Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
+                    Err(e) => return Err(e),
+                    Ok((i1, _)) => {
+                        // infinite loop check: the parser must always consume
+                        if i1.eof_offset() == len {
+                            return Err(ErrMode::assert(i, "sep parsers must always consume"));
+                        }
+
+                        match parser.parse_peek(i1.clone()) {
+                            Err(ErrMode::Backtrack(_)) => return Ok((i, res)),
+                            Err(e) => return Err(e),
+                            Ok((i2, o)) => {
+                                res.accumulate(o);
+                                i = i2;
+                            }
                         }
                     }
                 }
             }
-        }
-    })
+        }),
+    )
 }
 
 /// Alternates between two parsers, merging the results (left associative)
@@ -450,32 +461,35 @@ where
     E: ParseError<I>,
     Op: Fn(O, O2, O) -> O,
 {
-    trace("separated_foldl1", move |i: I| {
-        let (mut i, mut ol) = parser.parse_peek(i)?;
+    trace(
+        "separated_foldl1",
+        unpeek(move |i: I| {
+            let (mut i, mut ol) = parser.parse_peek(i)?;
 
-        loop {
-            let len = i.eof_offset();
-            match sep.parse_peek(i.clone()) {
-                Err(ErrMode::Backtrack(_)) => return Ok((i, ol)),
-                Err(e) => return Err(e),
-                Ok((i1, s)) => {
-                    // infinite loop check: the parser must always consume
-                    if i1.eof_offset() == len {
-                        return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
-                    }
+            loop {
+                let len = i.eof_offset();
+                match sep.parse_peek(i.clone()) {
+                    Err(ErrMode::Backtrack(_)) => return Ok((i, ol)),
+                    Err(e) => return Err(e),
+                    Ok((i1, s)) => {
+                        // infinite loop check: the parser must always consume
+                        if i1.eof_offset() == len {
+                            return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
+                        }
 
-                    match parser.parse_peek(i1.clone()) {
-                        Err(ErrMode::Backtrack(_)) => return Ok((i, ol)),
-                        Err(e) => return Err(e),
-                        Ok((i2, or)) => {
-                            ol = op(ol, s, or);
-                            i = i2;
+                        match parser.parse_peek(i1.clone()) {
+                            Err(ErrMode::Backtrack(_)) => return Ok((i, ol)),
+                            Err(e) => return Err(e),
+                            Ok((i2, or)) => {
+                                ol = op(ol, s, or);
+                                i = i2;
+                            }
                         }
                     }
                 }
             }
-        }
-    })
+        }),
+    )
 }
 
 /// Alternates between two parsers, merging the results (right associative)
@@ -513,21 +527,24 @@ where
     E: ParseError<I>,
     Op: Fn(O, O2, O) -> O,
 {
-    trace("separated_foldr1", move |i: I| {
-        let (i, ol) = parser.parse_peek(i)?;
-        let (i, all): (_, crate::lib::std::vec::Vec<(O2, O)>) =
-            repeat(0.., (sep.by_ref(), parser.by_ref())).parse_peek(i)?;
-        if let Some((s, or)) = all
-            .into_iter()
-            .rev()
-            .reduce(|(sr, or), (sl, ol)| (sl, op(ol, sr, or)))
-        {
-            let merged = op(ol, s, or);
-            Ok((i, merged))
-        } else {
-            Ok((i, ol))
-        }
-    })
+    trace(
+        "separated_foldr1",
+        unpeek(move |i: I| {
+            let (i, ol) = parser.parse_peek(i)?;
+            let (i, all): (_, crate::lib::std::vec::Vec<(O2, O)>) =
+                repeat(0.., (sep.by_ref(), parser.by_ref())).parse_peek(i)?;
+            if let Some((s, or)) = all
+                .into_iter()
+                .rev()
+                .reduce(|(sr, or), (sl, ol)| (sl, op(ol, sr, or)))
+            {
+                let merged = op(ol, s, or);
+                Ok((i, merged))
+            } else {
+                Ok((i, ol))
+            }
+        }),
+    )
 }
 
 fn repeat_m_n_<I, O, C, E, F>(
@@ -638,24 +655,27 @@ where
     F: Parser<I, O, E> + 'a,
     E: ParseError<I> + 'a,
 {
-    trace("fill", move |i: I| {
-        let mut input = i.clone();
+    trace(
+        "fill",
+        unpeek(move |i: I| {
+            let mut input = i.clone();
 
-        for elem in buf.iter_mut() {
-            let input_ = input.clone();
-            match f.parse_peek(input_) {
-                Ok((i, o)) => {
-                    *elem = o;
-                    input = i;
-                }
-                Err(e) => {
-                    return Err(e.append(i, ErrorKind::Many));
+            for elem in buf.iter_mut() {
+                let input_ = input.clone();
+                match f.parse_peek(input_) {
+                    Ok((i, o)) => {
+                        *elem = o;
+                        input = i;
+                    }
+                    Err(e) => {
+                        return Err(e.append(i, ErrorKind::Many));
+                    }
                 }
             }
-        }
 
-        Ok((input, ()))
-    })
+            Ok((input, ()))
+        }),
+    )
 }
 
 /// Repeats the embedded parser `m..=n` times, calling `g` to gather the results
@@ -773,8 +793,9 @@ where
         start_inclusive,
         end_inclusive,
     } = range.into();
-    trace("fold_repeat", move |i: I| {
-        match (start_inclusive, end_inclusive) {
+    trace(
+        "fold_repeat",
+        unpeek(move |i: I| match (start_inclusive, end_inclusive) {
             (0, None) => fold_repeat0_(&mut f, &mut init, &mut g, i),
             (1, None) => fold_repeat1_(&mut f, &mut init, &mut g, i),
             (start, end) => fold_repeat_m_n_(
@@ -785,8 +806,8 @@ where
                 &mut g,
                 i,
             ),
-        }
-    })
+        }),
+    )
 }
 
 fn fold_repeat0_<I, O, E, F, G, H, R>(f: &mut F, init: &mut H, g: &mut G, i: I) -> IResult<I, R, E>

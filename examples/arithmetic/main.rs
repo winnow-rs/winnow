@@ -1,4 +1,5 @@
 use winnow::prelude::*;
+use winnow::unpeek;
 
 mod parser;
 mod parser_ast;
@@ -10,7 +11,7 @@ fn main() -> Result<(), lexopt::Error> {
 
     println!("{} =", input);
     match args.implementation {
-        Impl::Eval => match parser::expr.parse(input) {
+        Impl::Eval => match unpeek(parser::expr).parse(input) {
             Ok(result) => {
                 println!("  {}", result);
             }
@@ -18,7 +19,7 @@ fn main() -> Result<(), lexopt::Error> {
                 println!("  {}", err);
             }
         },
-        Impl::Ast => match parser_ast::expr.parse(input) {
+        Impl::Ast => match unpeek(parser_ast::expr).parse(input) {
             Ok(result) => {
                 println!("  {:#?}", result);
             }

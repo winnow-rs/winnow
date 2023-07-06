@@ -16,6 +16,7 @@ use winnow::combinator::{delimited, preceded};
 use winnow::error::{FromExternalError, ParseError};
 use winnow::prelude::*;
 use winnow::token::{take_till1, take_while};
+use winnow::unpeek;
 
 /// Parse a string. Use a loop of `parse_fragment` and push all of the fragments
 /// into an output string.
@@ -28,7 +29,7 @@ where
     let build_string = fold_repeat(
         0..,
         // Our parser function – parses a single string fragment
-        parse_fragment,
+        unpeek(parse_fragment),
         // Our init value, an empty string
         String::new,
         // Our folding function. For each fragment, append the fragment to the
@@ -69,9 +70,9 @@ where
     alt((
         // The `map` combinator runs a parser, then applies a function to the output
         // of that parser.
-        parse_literal.map(StringFragment::Literal),
-        parse_escaped_char.map(StringFragment::EscapedChar),
-        parse_escaped_whitespace.value(StringFragment::EscapedWS),
+        unpeek(parse_literal).map(StringFragment::Literal),
+        unpeek(parse_escaped_char).map(StringFragment::EscapedChar),
+        unpeek(parse_escaped_whitespace).value(StringFragment::EscapedWS),
     ))
     .parse_peek(input)
 }
@@ -105,7 +106,7 @@ where
         // `alt` tries each parser in sequence, returning the result of
         // the first successful match
         alt((
-            parse_unicode,
+            unpeek(parse_unicode),
             // The `value` parser returns a fixed value (the first argument) if its
             // parser (the second argument) succeeds. In these cases, it looks for
             // the marker characters (n, r, t, etc) and returns the matching

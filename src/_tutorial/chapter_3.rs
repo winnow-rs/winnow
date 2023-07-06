@@ -10,100 +10,97 @@
 //! Now that we can create more interesting parsers, we can sequence them together, like:
 //!
 //! ```rust
+//! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
-//! # use winnow::Parser;
-//! # use winnow::IResult;
 //! #
-//! fn parse_prefix(input: &str) -> IResult<&str, &str> {
-//!     "0x".parse_peek(input)
+//! fn parse_prefix<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//!     "0x".parse_next(input)
 //! }
 //!
-//! fn parse_digits(input: &str) -> IResult<&str, &str> {
+//! fn parse_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //!     take_while(1.., (
 //!         ('0'..='9'),
 //!         ('A'..='F'),
 //!         ('a'..='f'),
-//!     )).parse_peek(input)
+//!     )).parse_next(input)
 //! }
 //!
 //! fn main()  {
-//!     let input = "0x1a2b Hello";
+//!     let mut input = "0x1a2b Hello";
 //!
-//!     let (remainder, prefix) = parse_prefix.parse_peek(input).unwrap();
-//!     let (remainder, digits) = parse_digits.parse_peek(remainder).unwrap();
+//!     let prefix = parse_prefix.parse_next(&mut input).unwrap();
+//!     let digits = parse_digits.parse_next(&mut input).unwrap();
 //!
 //!     assert_eq!(prefix, "0x");
 //!     assert_eq!(digits, "1a2b");
-//!     assert_eq!(remainder, " Hello");
+//!     assert_eq!(input, " Hello");
 //! }
 //! ```
 //!
 //! To sequence these together, you can just put them in a tuple:
 //! ```rust
+//! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
-//! # use winnow::Parser;
-//! # use winnow::IResult;
 //! #
-//! # fn parse_prefix(input: &str) -> IResult<&str, &str> {
-//! #     "0x".parse_peek(input)
+//! # fn parse_prefix<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     "0x".parse_next(input)
 //! # }
 //! #
-//! # fn parse_digits(input: &str) -> IResult<&str, &str> {
+//! # fn parse_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
 //! //...
 //!
 //! fn main()  {
-//!     let input = "0x1a2b Hello";
+//!     let mut input = "0x1a2b Hello";
 //!
-//!     let (remainder, (prefix, digits)) = (
+//!     let (prefix, digits) = (
 //!         parse_prefix,
 //!         parse_digits
-//!     ).parse_peek(input).unwrap();
+//!     ).parse_next(&mut input).unwrap();
 //!
 //!     assert_eq!(prefix, "0x");
 //!     assert_eq!(digits, "1a2b");
-//!     assert_eq!(remainder, " Hello");
+//!     assert_eq!(input, " Hello");
 //! }
 //! ```
 //!
 //! Frequently, you won't care about the tag and you can instead use one of the provided combinators,
 //! like [`preceded`]:
 //! ```rust
+//! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
-//! # use winnow::Parser;
-//! # use winnow::IResult;
 //! use winnow::combinator::preceded;
 //!
-//! # fn parse_prefix(input: &str) -> IResult<&str, &str> {
-//! #     "0x".parse_peek(input)
+//! # fn parse_prefix<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     "0x".parse_next(input)
 //! # }
 //! #
-//! # fn parse_digits(input: &str) -> IResult<&str, &str> {
+//! # fn parse_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
 //! //...
 //!
 //! fn main() {
-//!     let input = "0x1a2b Hello";
+//!     let mut input = "0x1a2b Hello";
 //!
-//!     let (remainder, digits) = preceded(
+//!     let digits = preceded(
 //!         parse_prefix,
 //!         parse_digits
-//!     ).parse_peek(input).unwrap();
+//!     ).parse_next(&mut input).unwrap();
 //!
 //!     assert_eq!(digits, "1a2b");
-//!     assert_eq!(remainder, " Hello");
+//!     assert_eq!(input, " Hello");
 //! }
 //! ```
 //!
@@ -118,57 +115,56 @@
 //!
 //! We can see a basic example of `alt()` below.
 //! ```rust
-//! # use winnow::IResult;
-//! # use winnow::Parser;
+//! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
 //! use winnow::combinator::alt;
 //!
-//! fn parse_digits(input: &str) -> IResult<&str, (&str, &str)> {
+//! fn parse_digits<'s>(input: &mut &'s str) -> PResult<(&'s str, &'s str)> {
 //!     alt((
 //!         ("0b", parse_bin_digits),
 //!         ("0o", parse_oct_digits),
 //!         ("0d", parse_dec_digits),
 //!         ("0x", parse_hex_digits),
-//!     )).parse_peek(input)
+//!     )).parse_next(input)
 //! }
 //!
 //! // ...
-//! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //!
 //! fn main() {
-//!     let input = "0x1a2b Hello";
+//!     let mut input = "0x1a2b Hello";
 //!
-//!     let (remainder, (prefix, digits)) = parse_digits.parse_peek(input).unwrap();
+//!     let (prefix, digits) = parse_digits.parse_next(&mut input).unwrap();
 //!
-//!     assert_eq!(remainder, " Hello");
+//!     assert_eq!(input, " Hello");
 //!     assert_eq!(prefix, "0x");
 //!     assert_eq!(digits, "1a2b");
 //!
-//!     assert!(parse_digits("ghiWorld").is_err());
+//!     assert!(parse_digits(&mut "ghiWorld").is_err());
 //! }
 //! ```
 //!
@@ -177,59 +173,58 @@
 //! [`dispatch`][crate::combinator::dispatch] macro:
 //!
 //! ```rust
-//! # use winnow::IResult;
-//! # use winnow::Parser;
+//! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
 //! use winnow::combinator::dispatch;
 //! use winnow::token::take;
 //! use winnow::combinator::fail;
 //!
-//! fn parse_digits(input: &str) -> IResult<&str, &str> {
+//! fn parse_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //!     dispatch!(take(2usize);
 //!         "0b" => parse_bin_digits,
 //!         "0o" => parse_oct_digits,
 //!         "0d" => parse_dec_digits,
 //!         "0x" => parse_hex_digits,
 //!         _ => fail,
-//!     ).parse_peek(input)
+//!     ).parse_next(input)
 //! }
 //!
 //! // ...
-//! # fn parse_bin_digits(input: &str) -> IResult<&str, &str> {
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_oct_digits(input: &str) -> IResult<&str, &str> {
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_dec_digits(input: &str) -> IResult<&str, &str> {
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_hex_digits(input: &str) -> IResult<&str, &str> {
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
 //! #         ('a'..='f'),
-//! #     )).parse_peek(input)
+//! #     )).parse_next(input)
 //! # }
 //!
 //! fn main() {
-//!     let input = "0x1a2b Hello";
+//!     let mut input = "0x1a2b Hello";
 //!
-//!     let (remainder, digits) = parse_digits.parse_peek(input).unwrap();
+//!     let digits = parse_digits.parse_next(&mut input).unwrap();
 //!
-//!     assert_eq!(remainder, " Hello");
+//!     assert_eq!(input, " Hello");
 //!     assert_eq!(digits, "1a2b");
 //!
-//!     assert!(parse_digits("ghiWorld").is_err());
+//!     assert!(parse_digits(&mut "ghiWorld").is_err());
 //! }
 //! ```
 

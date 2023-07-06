@@ -8,7 +8,7 @@ use crate::error::{ErrMode, ErrorConvert, ErrorKind, Needed, ParseError};
 use crate::lib::std::ops::{AddAssign, Div, Shl, Shr};
 use crate::stream::{AsBytes, Stream, StreamIsPartial, ToUsize};
 use crate::trace::trace;
-use crate::{IResult, Parser};
+use crate::{unpeek, IResult, PResult, Parser};
 
 /// Converts a byte-level input to a bit-level input
 ///
@@ -50,20 +50,23 @@ where
     I: Stream,
     P: Parser<(I, usize), O, E1>,
 {
-    trace("bits", move |input: I| {
-        match parser.parse_peek((input, 0)) {
-            Ok(((rest, offset), result)) => {
-                // If the next byte has been partially read, it will be sliced away as well.
-                // The parser functions might already slice away all fully read bytes.
-                // That's why `offset / 8` isn't necessarily needed at all times.
-                let remaining_bytes_index = offset / 8 + if offset % 8 == 0 { 0 } else { 1 };
-                let (input, _) = rest.peek_slice(remaining_bytes_index);
-                Ok((input, result))
+    trace(
+        "bits",
+        unpeek(move |input: I| {
+            match parser.parse_peek((input, 0)) {
+                Ok(((rest, offset), result)) => {
+                    // If the next byte has been partially read, it will be sliced away as well.
+                    // The parser functions might already slice away all fully read bytes.
+                    // That's why `offset / 8` isn't necessarily needed at all times.
+                    let remaining_bytes_index = offset / 8 + if offset % 8 == 0 { 0 } else { 1 };
+                    let (input, _) = rest.peek_slice(remaining_bytes_index);
+                    Ok((input, result))
+                }
+                Err(ErrMode::Incomplete(n)) => Err(ErrMode::Incomplete(n.map(|u| u.get() / 8 + 1))),
+                Err(e) => Err(e.convert()),
             }
-            Err(ErrMode::Incomplete(n)) => Err(ErrMode::Incomplete(n.map(|u| u.get() / 8 + 1))),
-            Err(e) => Err(e.convert()),
-        }
-    })
+        }),
+    )
 }
 
 /// Convert a [`bits`] stream back into a byte stream
@@ -103,26 +106,31 @@ where
     I: Stream<Token = u8>,
     P: Parser<I, O, E1>,
 {
-    trace("bytes", move |(input, offset): (I, usize)| {
-        let (inner, _) = if offset % 8 != 0 {
-            input.peek_slice(1 + offset / 8)
-        } else {
-            input.peek_slice(offset / 8)
-        };
-        let i = (input, offset);
-        match parser.parse_peek(inner) {
-            Ok((rest, res)) => Ok(((rest, 0), res)),
-            Err(ErrMode::Incomplete(Needed::Unknown)) => Err(ErrMode::Incomplete(Needed::Unknown)),
-            Err(ErrMode::Incomplete(Needed::Size(sz))) => Err(match sz.get().checked_mul(8) {
-                Some(v) => ErrMode::Incomplete(Needed::new(v)),
-                None => ErrMode::Cut(E2::assert(
-                    i,
-                    "overflow in turning needed bytes into needed bits",
-                )),
-            }),
-            Err(e) => Err(e.convert()),
-        }
-    })
+    trace(
+        "bytes",
+        unpeek(move |(input, offset): (I, usize)| {
+            let (inner, _) = if offset % 8 != 0 {
+                input.peek_slice(1 + offset / 8)
+            } else {
+                input.peek_slice(offset / 8)
+            };
+            let i = (input, offset);
+            match parser.parse_peek(inner) {
+                Ok((rest, res)) => Ok(((rest, 0), res)),
+                Err(ErrMode::Incomplete(Needed::Unknown)) => {
+                    Err(ErrMode::Incomplete(Needed::Unknown))
+                }
+                Err(ErrMode::Incomplete(Needed::Size(sz))) => Err(match sz.get().checked_mul(8) {
+                    Some(v) => ErrMode::Incomplete(Needed::new(v)),
+                    None => ErrMode::Cut(E2::assert(
+                        i,
+                        "overflow in turning needed bytes into needed bits",
+                    )),
+                }),
+                Err(e) => Err(e.convert()),
+            }
+        }),
+    )
 }
 
 /// Parse taking `count` bits
@@ -164,13 +172,16 @@ where
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
     let count = count.to_usize();
-    trace("take", move |input: (I, usize)| {
-        if <I as StreamIsPartial>::is_partial_supported() {
-            take_::<_, _, _, true>(input, count)
-        } else {
-            take_::<_, _, _, false>(input, count)
-        }
-    })
+    trace(
+        "take",
+        unpeek(move |input: (I, usize)| {
+            if <I as StreamIsPartial>::is_partial_supported() {
+                take_::<_, _, _, true>(input, count)
+            } else {
+                take_::<_, _, _, false>(input, count)
+            }
+        }),
+    )
 }
 
 fn take_<I, O, E: ParseError<(I, usize)>, const PARTIAL: bool>(
@@ -293,17 +304,20 @@ where
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
     let count = count.to_usize();
-    trace("tag", move |input: (I, usize)| {
-        let inp = input.clone();
+    trace(
+        "tag",
+        unpeek(move |input: (I, usize)| {
+            let inp = input.clone();
 
-        take(count).parse_peek(input).and_then(|(i, o)| {
-            if pattern == o {
-                Ok((i, o))
-            } else {
-                Err(ErrMode::Backtrack(E::from_error_kind(inp, ErrorKind::Tag)))
-            }
-        })
-    })
+            take(count).parse_peek(input).and_then(|(i, o)| {
+                if pattern == o {
+                    Ok((i, o))
+                } else {
+                    Err(ErrMode::Backtrack(E::from_error_kind(inp, ErrorKind::Tag)))
+                }
+            })
+        }),
+    )
 }
 
 /// Parses one specific bit as a bool.
@@ -330,13 +344,16 @@ where
 /// assert_eq!(parse((stream(&[0b10000000]), 1)), Ok(((stream(&[0b10000000]), 2), false)));
 /// ```
 #[doc(alias = "any")]
-pub fn bool<I, E: ParseError<(I, usize)>>(input: (I, usize)) -> IResult<(I, usize), bool, E>
+pub fn bool<I, E: ParseError<(I, usize)>>(input: &mut (I, usize)) -> PResult<bool, E>
 where
     I: Stream<Token = u8> + AsBytes + StreamIsPartial,
 {
-    trace("bool", |input: (I, usize)| {
-        let (res, bit): (_, u32) = take(1usize).parse_peek(input)?;
-        Ok((res, bit != 0))
-    })
-    .parse_peek(input)
+    trace(
+        "bool",
+        unpeek(|input: (I, usize)| {
+            let (res, bit): (_, u32) = take(1usize).parse_peek(input)?;
+            Ok((res, bit != 0))
+        }),
+    )
+    .parse_next(input)
 }

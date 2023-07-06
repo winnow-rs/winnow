@@ -18,32 +18,26 @@ fn contains_token(c: &mut criterion::Criterion) {
         group.throughput(criterion::Throughput::Bytes(len as u64));
 
         group.bench_with_input(criterion::BenchmarkId::new("slice", name), &len, |b, _| {
-            b.iter(|| black_box(parser_slice.parse_peek(black_box(sample)).unwrap()));
+            b.iter(|| black_box(parser_slice(black_box(sample)).unwrap()));
         });
         group.bench_with_input(criterion::BenchmarkId::new("array", name), &len, |b, _| {
-            b.iter(|| black_box(parser_array.parse_peek(black_box(sample)).unwrap()));
+            b.iter(|| black_box(parser_array(black_box(sample)).unwrap()));
         });
         group.bench_with_input(criterion::BenchmarkId::new("tuple", name), &len, |b, _| {
-            b.iter(|| black_box(parser_tuple.parse_peek(black_box(sample)).unwrap()));
+            b.iter(|| black_box(parser_tuple(black_box(sample)).unwrap()));
         });
         group.bench_with_input(
             criterion::BenchmarkId::new("closure-or", name),
             &len,
             |b, _| {
-                b.iter(|| black_box(parser_closure_or.parse_peek(black_box(sample)).unwrap()));
+                b.iter(|| black_box(parser_closure_or(black_box(sample)).unwrap()));
             },
         );
         group.bench_with_input(
             criterion::BenchmarkId::new("closure-matches", name),
             &len,
             |b, _| {
-                b.iter(|| {
-                    black_box(
-                        parser_closure_matches
-                            .parse_peek(black_box(sample))
-                            .unwrap(),
-                    )
-                });
+                b.iter(|| black_box(parser_closure_matches(black_box(sample)).unwrap()));
             },
         );
     }

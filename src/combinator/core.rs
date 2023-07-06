@@ -16,11 +16,11 @@ use crate::*;
 /// assert_eq!(rest::<_,Error<_>>.parse_peek(""), Ok(("", "")));
 /// ```
 #[inline]
-pub fn rest<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn rest<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: Stream,
 {
-    trace("rest", move |input: I| Ok(input.peek_finish())).parse_peek(input)
+    trace("rest", unpeek(move |input: I| Ok(input.peek_finish()))).parse_next(input)
 }
 
 /// Return the length of the remaining input.
@@ -38,15 +38,18 @@ where
 /// assert_eq!(rest_len::<_,Error<_>>.parse_peek(""), Ok(("", 0)));
 /// ```
 #[inline]
-pub fn rest_len<I, E: ParseError<I>>(input: I) -> IResult<I, usize, E>
+pub fn rest_len<I, E: ParseError<I>>(input: &mut I) -> PResult<usize, E>
 where
     I: Stream,
 {
-    trace("rest_len", move |input: I| {
-        let len = input.eof_offset();
-        Ok((input, len))
-    })
-    .parse_peek(input)
+    trace(
+        "rest_len",
+        unpeek(move |input: I| {
+            let len = input.eof_offset();
+            Ok((input, len))
+        }),
+    )
+    .parse_next(input)
 }
 
 /// Apply a [`Parser`], producing `None` on [`ErrMode::Backtrack`].
@@ -74,14 +77,17 @@ pub fn opt<I: Stream, O, E: ParseError<I>, F>(mut f: F) -> impl Parser<I, Option
 where
     F: Parser<I, O, E>,
 {
-    trace("opt", move |input: I| {
-        let i = input.clone();
-        match f.parse_peek(input) {
-            Ok((i, o)) => Ok((i, Some(o))),
-            Err(ErrMode::Backtrack(_)) => Ok((i, None)),
-            Err(e) => Err(e),
-        }
-    })
+    trace(
+        "opt",
+        unpeek(move |input: I| {
+            let i = input.clone();
+            match f.parse_peek(input) {
+                Ok((i, o)) => Ok((i, Some(o))),
+                Err(ErrMode::Backtrack(_)) => Ok((i, None)),
+                Err(e) => Err(e),
+            }
+        }),
+    )
 }
 
 /// Calls the parser if the condition is met.
@@ -110,16 +116,19 @@ where
     I: Stream,
     F: Parser<I, O, E>,
 {
-    trace("cond", move |input: I| {
-        if b {
-            match f.parse_peek(input) {
-                Ok((i, o)) => Ok((i, Some(o))),
-                Err(e) => Err(e),
+    trace(
+        "cond",
+        unpeek(move |input: I| {
+            if b {
+                match f.parse_peek(input) {
+                    Ok((i, o)) => Ok((i, Some(o))),
+                    Err(e) => Err(e),
+                }
+            } else {
+                Ok((input, None))
             }
-        } else {
-            Ok((input, None))
-        }
-    })
+        }),
+    )
 }
 
 /// Tries to apply its parser without consuming the input.
@@ -145,13 +154,16 @@ pub fn peek<I: Stream, O, E: ParseError<I>, F>(mut f: F) -> impl Parser<I, O, E>
 where
     F: Parser<I, O, E>,
 {
-    trace("peek", move |input: I| {
-        let i = input.clone();
-        match f.parse_peek(input) {
-            Ok((_, o)) => Ok((i, o)),
-            Err(e) => Err(e),
-        }
-    })
+    trace(
+        "peek",
+        unpeek(move |input: I| {
+            let i = input.clone();
+            match f.parse_peek(input) {
+                Ok((_, o)) => Ok((i, o)),
+                Err(e) => Err(e),
+            }
+        }),
+    )
 }
 
 /// Match the end of the [`Stream`]
@@ -172,18 +184,21 @@ where
 /// ```
 #[doc(alias = "end")]
 #[doc(alias = "eoi")]
-pub fn eof<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn eof<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: Stream,
 {
-    trace("eof", move |input: I| {
-        if input.eof_offset() == 0 {
-            Ok(input.peek_slice(0))
-        } else {
-            Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
-        }
-    })
-    .parse_peek(input)
+    trace(
+        "eof",
+        unpeek(move |input: I| {
+            if input.eof_offset() == 0 {
+                Ok(input.peek_slice(0))
+            } else {
+                Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
+            }
+        }),
+    )
+    .parse_next(input)
 }
 
 /// Succeeds if the child parser returns an error.
@@ -209,14 +224,17 @@ pub fn not<I: Stream, O, E: ParseError<I>, F>(mut parser: F) -> impl Parser<I, (
 where
     F: Parser<I, O, E>,
 {
-    trace("not", move |input: I| {
-        let i = input.clone();
-        match parser.parse_peek(input) {
-            Ok(_) => Err(ErrMode::from_error_kind(i, ErrorKind::Not)),
-            Err(ErrMode::Backtrack(_)) => Ok((i, ())),
-            Err(e) => Err(e),
-        }
-    })
+    trace(
+        "not",
+        unpeek(move |input: I| {
+            let i = input.clone();
+            match parser.parse_peek(input) {
+                Ok(_) => Err(ErrMode::from_error_kind(i, ErrorKind::Not)),
+                Err(ErrMode::Backtrack(_)) => Ok((i, ())),
+                Err(e) => Err(e),
+            }
+        }),
+    )
 }
 
 /// Transforms an [`ErrMode::Backtrack`] (recoverable) to [`ErrMode::Cut`] (unrecoverable)
@@ -279,9 +297,10 @@ where
     I: Stream,
     F: Parser<I, O, E>,
 {
-    trace("cut_err", move |input: I| {
-        parser.parse_peek(input).map_err(|e| e.cut())
-    })
+    trace(
+        "cut_err",
+        unpeek(move |input: I| parser.parse_peek(input).map_err(|e| e.cut())),
+    )
 }
 
 /// Transforms an [`ErrMode::Cut`] (unrecoverable) to [`ErrMode::Backtrack`] (recoverable)
@@ -293,9 +312,10 @@ where
     I: Stream,
     F: Parser<I, O, E>,
 {
-    trace("backtrack_err", move |input: I| {
-        parser.parse_peek(input).map_err(|e| e.backtrack())
-    })
+    trace(
+        "backtrack_err",
+        unpeek(move |input: I| parser.parse_peek(input).map_err(|e| e.backtrack())),
+    )
 }
 
 /// A placeholder for a not-yet-implemented [`Parser`]
@@ -312,17 +332,21 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::combinator::todo;
 ///
-/// fn parser(input: &str) -> IResult<&str, u64> {
+/// fn parser(input: &mut &str) -> PResult<u64> {
 ///     todo(input)
 /// }
 /// ```
 #[track_caller]
-pub fn todo<I, O, E>(input: I) -> IResult<I, O, E>
+pub fn todo<I, O, E>(input: &mut I) -> PResult<O, E>
 where
     I: Stream,
 {
     #![allow(clippy::todo)]
-    trace("todo", move |_input: I| todo!("unimplemented parse")).parse_peek(input)
+    trace(
+        "todo",
+        unpeek(move |_input: I| todo!("unimplemented parse")),
+    )
+    .parse_next(input)
 }
 
 /// Repeats the embedded parser, lazily returning the results
@@ -463,7 +487,7 @@ enum State<E> {
 #[doc(alias = "value")]
 #[doc(alias = "empty")]
 pub fn success<I: Stream, O: Clone, E: ParseError<I>>(val: O) -> impl Parser<I, O, E> {
-    trace("success", move |input: I| Ok((input, val.clone())))
+    trace("success", unpeek(move |input: I| Ok((input, val.clone()))))
 }
 
 /// A parser which always fails.
@@ -482,9 +506,10 @@ pub fn success<I: Stream, O: Clone, E: ParseError<I>>(val: O) -> impl Parser<I, 
 /// assert_eq!(fail::<_, &str, _>.parse_peek(s), Err(ErrMode::Backtrack(Error::new(s, ErrorKind::Fail))));
 /// ```
 #[doc(alias = "unexpected")]
-pub fn fail<I: Stream, O, E: ParseError<I>>(i: I) -> IResult<I, O, E> {
-    trace("fail", |i| {
-        Err(ErrMode::from_error_kind(i, ErrorKind::Fail))
-    })
-    .parse_peek(i)
+pub fn fail<I: Stream, O, E: ParseError<I>>(i: &mut I) -> PResult<O, E> {
+    trace(
+        "fail",
+        unpeek(|i| Err(ErrMode::from_error_kind(i, ErrorKind::Fail))),
+    )
+    .parse_next(i)
 }

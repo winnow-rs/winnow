@@ -1,7 +1,6 @@
 use crate::error::{ContextError, ErrMode, ErrorKind, FromExternalError, ParseError};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::ops::Range;
-use crate::parser::parser;
 use crate::stream::StreamIsPartial;
 use crate::stream::{Location, Stream};
 use crate::trace::trace;
@@ -366,15 +365,14 @@ where
 {
     #[inline]
     fn parse_next(&mut self, input: &mut I) -> PResult<O, E> {
-        trace(
-            "complete_err",
-            parser(|input: &mut I| match (self.f).parse_next(input) {
+        trace("complete_err", |input: &mut I| {
+            match (self.f).parse_next(input) {
                 Err(ErrMode::Incomplete(_)) => {
                     Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Complete))
                 }
                 rest => rest,
-            }),
-        )
+            }
+        })
         .parse_next(input)
     }
 }
@@ -834,15 +832,12 @@ where
         let name = format!("context={:?}", self.context);
         #[cfg(not(feature = "debug"))]
         let name = "context";
-        trace(
-            name,
-            parser(move |i: &mut I| {
-                let start = i.clone();
-                (self.parser)
-                    .parse_next(i)
-                    .map_err(|err| err.map(|err| err.add_context(start, self.context.clone())))
-            }),
-        )
+        trace(name, move |i: &mut I| {
+            let start = i.clone();
+            (self.parser)
+                .parse_next(i)
+                .map_err(|err| err.map(|err| err.add_context(start, self.context.clone())))
+        })
         .parse_next(i)
     }
 }

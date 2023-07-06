@@ -18,7 +18,9 @@ use crate::stream::{AsBStr, AsChar, ParseSlice, Stream, StreamIsPartial};
 use crate::stream::{Compare, CompareResult};
 use crate::token::take_while;
 use crate::trace::trace;
+use crate::unpeek;
 use crate::IResult;
+use crate::PResult;
 use crate::Parser;
 
 /// Recognizes the string "\r\n".
@@ -30,33 +32,35 @@ use crate::Parser;
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}};
 /// # use winnow::ascii::crlf;
-/// fn parser(input: &str) -> IResult<&str, &str> {
-///     crlf(input)
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+///     crlf.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser("\r\nc"), Ok(("c", "\r\n")));
-/// assert_eq!(parser("ab\r\nc"), Err(ErrMode::Backtrack(Error::new("ab\r\nc", ErrorKind::Tag))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek("\r\nc"), Ok(("c", "\r\n")));
+/// assert_eq!(parser.parse_peek("ab\r\nc"), Err(ErrMode::Backtrack(Error::new("ab\r\nc", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// ```
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::crlf;
-/// assert_eq!(crlf::<_, Error<_>>(Partial::new("\r\nc")), Ok((Partial::new("c"), "\r\n")));
-/// assert_eq!(crlf::<_, Error<_>>(Partial::new("ab\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("ab\r\nc"), ErrorKind::Tag))));
-/// assert_eq!(crlf::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(crlf::<_, Error<_>>.parse_peek(Partial::new("\r\nc")), Ok((Partial::new("c"), "\r\n")));
+/// assert_eq!(crlf::<_, Error<_>>.parse_peek(Partial::new("ab\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("ab\r\nc"), ErrorKind::Tag))));
+/// assert_eq!(crlf::<_, Error<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn crlf<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn crlf<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
 {
-    trace("crlf", "\r\n").parse_peek(input)
+    trace("crlf", "\r\n").parse_next(input)
 }
 
 /// Recognizes a string of any char except '\r\n' or '\n'.
@@ -68,46 +72,51 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::ascii::not_line_ending;
-/// fn parser(input: &str) -> IResult<&str, &str> {
-///     not_line_ending(input)
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+///     not_line_ending.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser("ab\r\nc"), Ok(("\r\nc", "ab")));
-/// assert_eq!(parser("ab\nc"), Ok(("\nc", "ab")));
-/// assert_eq!(parser("abc"), Ok(("", "abc")));
-/// assert_eq!(parser(""), Ok(("", "")));
-/// assert_eq!(parser("a\rb\nc"), Err(ErrMode::Backtrack(Error { input: "a\rb\nc", kind: ErrorKind::Tag })));
-/// assert_eq!(parser("a\rbc"), Err(ErrMode::Backtrack(Error { input: "a\rbc", kind: ErrorKind::Tag })));
+/// assert_eq!(parser.parse_peek("ab\r\nc"), Ok(("\r\nc", "ab")));
+/// assert_eq!(parser.parse_peek("ab\nc"), Ok(("\nc", "ab")));
+/// assert_eq!(parser.parse_peek("abc"), Ok(("", "abc")));
+/// assert_eq!(parser.parse_peek(""), Ok(("", "")));
+/// assert_eq!(parser.parse_peek("a\rb\nc"), Err(ErrMode::Backtrack(Error { input: "a\rb\nc", kind: ErrorKind::Tag })));
+/// assert_eq!(parser.parse_peek("a\rbc"), Err(ErrMode::Backtrack(Error { input: "a\rbc", kind: ErrorKind::Tag })));
 /// ```
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::not_line_ending;
-/// assert_eq!(not_line_ending::<_, Error<_>>(Partial::new("ab\r\nc")), Ok((Partial::new("\r\nc"), "ab")));
-/// assert_eq!(not_line_ending::<_, Error<_>>(Partial::new("abc")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(not_line_ending::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(not_line_ending::<_, Error<_>>(Partial::new("a\rb\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("a\rb\nc"), ErrorKind::Tag ))));
-/// assert_eq!(not_line_ending::<_, Error<_>>(Partial::new("a\rbc")), Err(ErrMode::Backtrack(Error::new(Partial::new("a\rbc"), ErrorKind::Tag ))));
+/// assert_eq!(not_line_ending::<_, Error<_>>.parse_peek(Partial::new("ab\r\nc")), Ok((Partial::new("\r\nc"), "ab")));
+/// assert_eq!(not_line_ending::<_, Error<_>>.parse_peek(Partial::new("abc")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(not_line_ending::<_, Error<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(not_line_ending::<_, Error<_>>.parse_peek(Partial::new("a\rb\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("a\rb\nc"), ErrorKind::Tag ))));
+/// assert_eq!(not_line_ending::<_, Error<_>>.parse_peek(Partial::new("a\rbc")), Err(ErrMode::Backtrack(Error::new(Partial::new("a\rbc"), ErrorKind::Tag ))));
 /// ```
 #[inline(always)]
-pub fn not_line_ending<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn not_line_ending<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream + AsBStr,
     I: Compare<&'static str>,
     <I as Stream>::Token: AsChar,
 {
-    trace("not_line_ending", move |input: I| {
-        if <I as StreamIsPartial>::is_partial_supported() {
-            not_line_ending_::<_, _, true>(input)
-        } else {
-            not_line_ending_::<_, _, false>(input)
-        }
-    })
-    .parse_peek(input)
+    trace(
+        "not_line_ending",
+        unpeek(move |input: I| {
+            if <I as StreamIsPartial>::is_partial_supported() {
+                not_line_ending_::<_, _, true>(input)
+            } else {
+                not_line_ending_::<_, _, false>(input)
+            }
+        }),
+    )
+    .parse_next(input)
 }
 
 fn not_line_ending_<I, E: ParseError<I>, const PARTIAL: bool>(
@@ -157,33 +166,35 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::ascii::line_ending;
-/// fn parser(input: &str) -> IResult<&str, &str> {
-///     line_ending(input)
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+///     line_ending.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser("\r\nc"), Ok(("c", "\r\n")));
-/// assert_eq!(parser("ab\r\nc"), Err(ErrMode::Backtrack(Error::new("ab\r\nc", ErrorKind::Tag))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek("\r\nc"), Ok(("c", "\r\n")));
+/// assert_eq!(parser.parse_peek("ab\r\nc"), Err(ErrMode::Backtrack(Error::new("ab\r\nc", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
 /// ```
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::line_ending;
-/// assert_eq!(line_ending::<_, Error<_>>(Partial::new("\r\nc")), Ok((Partial::new("c"), "\r\n")));
-/// assert_eq!(line_ending::<_, Error<_>>(Partial::new("ab\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("ab\r\nc"), ErrorKind::Tag))));
-/// assert_eq!(line_ending::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(line_ending::<_, Error<_>>.parse_peek(Partial::new("\r\nc")), Ok((Partial::new("c"), "\r\n")));
+/// assert_eq!(line_ending::<_, Error<_>>.parse_peek(Partial::new("ab\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("ab\r\nc"), ErrorKind::Tag))));
+/// assert_eq!(line_ending::<_, Error<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn line_ending<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn line_ending<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
 {
-    trace("line_ending", alt(("\n", "\r\n"))).parse_peek(input)
+    trace("line_ending", alt(("\n", "\r\n"))).parse_next(input)
 }
 
 /// Matches a newline character '\n'.
@@ -195,33 +206,35 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::ascii::newline;
-/// fn parser(input: &str) -> IResult<&str, char> {
-///     newline(input)
+/// fn parser<'s>(input: &mut &'s str) -> PResult<char, Error<&'s str>> {
+///     newline.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser("\nc"), Ok(("c", '\n')));
-/// assert_eq!(parser("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::Verify))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
+/// assert_eq!(parser.parse_peek("\nc"), Ok(("c", '\n')));
+/// assert_eq!(parser.parse_peek("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::Verify))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
 /// ```
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::newline;
-/// assert_eq!(newline::<_, Error<_>>(Partial::new("\nc")), Ok((Partial::new("c"), '\n')));
-/// assert_eq!(newline::<_, Error<_>>(Partial::new("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("\r\nc"), ErrorKind::Verify))));
-/// assert_eq!(newline::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(newline::<_, Error<_>>.parse_peek(Partial::new("\nc")), Ok((Partial::new("c"), '\n')));
+/// assert_eq!(newline::<_, Error<_>>.parse_peek(Partial::new("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("\r\nc"), ErrorKind::Verify))));
+/// assert_eq!(newline::<_, Error<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn newline<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
+pub fn newline<I, Error: ParseError<I>>(input: &mut I) -> PResult<char, Error>
 where
     I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar + Copy,
 {
-    trace("newline", '\n'.map(|c: <I as Stream>::Token| c.as_char())).parse_peek(input)
+    trace("newline", '\n'.map(|c: <I as Stream>::Token| c.as_char())).parse_next(input)
 }
 
 /// Matches a tab character '\t'.
@@ -233,33 +246,35 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::ascii::tab;
-/// fn parser(input: &str) -> IResult<&str, char> {
-///     tab(input)
+/// fn parser<'s>(input: &mut &'s str) -> PResult<char, Error<&'s str>> {
+///     tab.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser("\tc"), Ok(("c", '\t')));
-/// assert_eq!(parser("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::Verify))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
+/// assert_eq!(parser.parse_peek("\tc"), Ok(("c", '\t')));
+/// assert_eq!(parser.parse_peek("\r\nc"), Err(ErrMode::Backtrack(Error::new("\r\nc", ErrorKind::Verify))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Token))));
 /// ```
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::tab;
-/// assert_eq!(tab::<_, Error<_>>(Partial::new("\tc")), Ok((Partial::new("c"), '\t')));
-/// assert_eq!(tab::<_, Error<_>>(Partial::new("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("\r\nc"), ErrorKind::Verify))));
-/// assert_eq!(tab::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(tab::<_, Error<_>>.parse_peek(Partial::new("\tc")), Ok((Partial::new("c"), '\t')));
+/// assert_eq!(tab::<_, Error<_>>.parse_peek(Partial::new("\r\nc")), Err(ErrMode::Backtrack(Error::new(Partial::new("\r\nc"), ErrorKind::Verify))));
+/// assert_eq!(tab::<_, Error<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn tab<I, Error: ParseError<I>>(input: I) -> IResult<I, char, Error>
+pub fn tab<I, Error: ParseError<I>>(input: &mut I) -> PResult<char, Error>
 where
     I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar + Copy,
 {
-    trace("tab", '\t'.map(|c: <I as Stream>::Token| c.as_char())).parse_peek(input)
+    trace("tab", '\t'.map(|c: <I as Stream>::Token| c.as_char())).parse_next(input)
 }
 
 /// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
@@ -273,27 +288,29 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::ascii::alpha0;
-/// fn parser(input: &str) -> IResult<&str, &str> {
-///     alpha0(input)
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+///     alpha0.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser("ab1c"), Ok(("1c", "ab")));
-/// assert_eq!(parser("1c"), Ok(("1c", "")));
-/// assert_eq!(parser(""), Ok(("", "")));
+/// assert_eq!(parser.parse_peek("ab1c"), Ok(("1c", "ab")));
+/// assert_eq!(parser.parse_peek("1c"), Ok(("1c", "")));
+/// assert_eq!(parser.parse_peek(""), Ok(("", "")));
 /// ```
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::alpha0;
-/// assert_eq!(alpha0::<_, Error<_>>(Partial::new("ab1c")), Ok((Partial::new("1c"), "ab")));
-/// assert_eq!(alpha0::<_, Error<_>>(Partial::new("1c")), Ok((Partial::new("1c"), "")));
-/// assert_eq!(alpha0::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha0::<_, Error<_>>.parse_peek(Partial::new("ab1c")), Ok((Partial::new("1c"), "ab")));
+/// assert_eq!(alpha0::<_, Error<_>>.parse_peek(Partial::new("1c")), Ok((Partial::new("1c"), "")));
+/// assert_eq!(alpha0::<_, Error<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alpha0<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn alpha0<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -303,7 +320,7 @@ where
         "alpha0",
         take_while(0.., |c: <I as Stream>::Token| c.is_alpha()),
     )
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes one or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
@@ -317,27 +334,29 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::ascii::alpha1;
-/// fn parser(input: &str) -> IResult<&str, &str> {
-///     alpha1(input)
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+///     alpha1.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser("aB1c"), Ok(("1c", "aB")));
-/// assert_eq!(parser("1c"), Err(ErrMode::Backtrack(Error::new("1c", ErrorKind::Slice))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
+/// assert_eq!(parser.parse_peek("aB1c"), Ok(("1c", "aB")));
+/// assert_eq!(parser.parse_peek("1c"), Err(ErrMode::Backtrack(Error::new("1c", ErrorKind::Slice))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
 /// ```
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::alpha1;
-/// assert_eq!(alpha1::<_, Error<_>>(Partial::new("aB1c")), Ok((Partial::new("1c"), "aB")));
-/// assert_eq!(alpha1::<_, Error<_>>(Partial::new("1c")), Err(ErrMode::Backtrack(Error::new(Partial::new("1c"), ErrorKind::Slice))));
-/// assert_eq!(alpha1::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha1::<_, Error<_>>.parse_peek(Partial::new("aB1c")), Ok((Partial::new("1c"), "aB")));
+/// assert_eq!(alpha1::<_, Error<_>>.parse_peek(Partial::new("1c")), Err(ErrMode::Backtrack(Error::new(Partial::new("1c"), ErrorKind::Slice))));
+/// assert_eq!(alpha1::<_, Error<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alpha1<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn alpha1<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -347,7 +366,7 @@ where
         "alpha1",
         take_while(1.., |c: <I as Stream>::Token| c.is_alpha()),
     )
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes zero or more ASCII numerical characters: 0-9
@@ -361,28 +380,30 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::ascii::digit0;
-/// fn parser(input: &str) -> IResult<&str, &str> {
-///     digit0(input)
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+///     digit0.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser("21c"), Ok(("c", "21")));
-/// assert_eq!(parser("21"), Ok(("", "21")));
-/// assert_eq!(parser("a21c"), Ok(("a21c", "")));
-/// assert_eq!(parser(""), Ok(("", "")));
+/// assert_eq!(parser.parse_peek("21c"), Ok(("c", "21")));
+/// assert_eq!(parser.parse_peek("21"), Ok(("", "21")));
+/// assert_eq!(parser.parse_peek("a21c"), Ok(("a21c", "")));
+/// assert_eq!(parser.parse_peek(""), Ok(("", "")));
 /// ```
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::digit0;
-/// assert_eq!(digit0::<_, Error<_>>(Partial::new("21c")), Ok((Partial::new("c"), "21")));
-/// assert_eq!(digit0::<_, Error<_>>(Partial::new("a21c")), Ok((Partial::new("a21c"), "")));
-/// assert_eq!(digit0::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(digit0::<_, Error<_>>.parse_peek(Partial::new("21c")), Ok((Partial::new("c"), "21")));
+/// assert_eq!(digit0::<_, Error<_>>.parse_peek(Partial::new("a21c")), Ok((Partial::new("a21c"), "")));
+/// assert_eq!(digit0::<_, Error<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn digit0<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn digit0<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -392,7 +413,7 @@ where
         "digit0",
         take_while(0.., |c: <I as Stream>::Token| c.is_dec_digit()),
     )
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes one or more ASCII numerical characters: 0-9
@@ -406,24 +427,26 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::ascii::digit1;
-/// fn parser(input: &str) -> IResult<&str, &str> {
-///     digit1(input)
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+///     digit1.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser("21c"), Ok(("c", "21")));
-/// assert_eq!(parser("c1"), Err(ErrMode::Backtrack(Error::new("c1", ErrorKind::Slice))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
+/// assert_eq!(parser.parse_peek("21c"), Ok(("c", "21")));
+/// assert_eq!(parser.parse_peek("c1"), Err(ErrMode::Backtrack(Error::new("c1", ErrorKind::Slice))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
 /// ```
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::digit1;
-/// assert_eq!(digit1::<_, Error<_>>(Partial::new("21c")), Ok((Partial::new("c"), "21")));
-/// assert_eq!(digit1::<_, Error<_>>(Partial::new("c1")), Err(ErrMode::Backtrack(Error::new(Partial::new("c1"), ErrorKind::Slice))));
-/// assert_eq!(digit1::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(digit1::<_, Error<_>>.parse_peek(Partial::new("21c")), Ok((Partial::new("c"), "21")));
+/// assert_eq!(digit1::<_, Error<_>>.parse_peek(Partial::new("c1")), Err(ErrMode::Backtrack(Error::new(Partial::new("c1"), ErrorKind::Slice))));
+/// assert_eq!(digit1::<_, Error<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// ## Parsing an integer
@@ -431,18 +454,19 @@ where
 /// You can use `digit1` in combination with [`Parser::try_map`][crate::Parser::try_map] to parse an integer:
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed, Parser};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed, Parser};
 /// # use winnow::ascii::digit1;
-/// fn parser(input: &str) -> IResult<&str, u32> {
-///   digit1.try_map(str::parse).parse_peek(input)
+/// fn parser<'s>(input: &mut &'s str) -> PResult<u32, Error<&'s str>> {
+///   digit1.try_map(str::parse).parse_next(input)
 /// }
 ///
-/// assert_eq!(parser("416"), Ok(("", 416)));
-/// assert_eq!(parser("12b"), Ok(("b", 12)));
-/// assert!(parser("b").is_err());
+/// assert_eq!(parser.parse_peek("416"), Ok(("", 416)));
+/// assert_eq!(parser.parse_peek("12b"), Ok(("b", 12)));
+/// assert!(parser.parse_peek("b").is_err());
 /// ```
 #[inline(always)]
-pub fn digit1<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn digit1<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -452,7 +476,7 @@ where
         "digit1",
         take_while(1.., |c: <I as Stream>::Token| c.is_dec_digit()),
     )
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes zero or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
@@ -465,27 +489,29 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::ascii::hex_digit0;
-/// fn parser(input: &str) -> IResult<&str, &str> {
-///     hex_digit0(input)
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+///     hex_digit0.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser("21cZ"), Ok(("Z", "21c")));
-/// assert_eq!(parser("Z21c"), Ok(("Z21c", "")));
-/// assert_eq!(parser(""), Ok(("", "")));
+/// assert_eq!(parser.parse_peek("21cZ"), Ok(("Z", "21c")));
+/// assert_eq!(parser.parse_peek("Z21c"), Ok(("Z21c", "")));
+/// assert_eq!(parser.parse_peek(""), Ok(("", "")));
 /// ```
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::hex_digit0;
-/// assert_eq!(hex_digit0::<_, Error<_>>(Partial::new("21cZ")), Ok((Partial::new("Z"), "21c")));
-/// assert_eq!(hex_digit0::<_, Error<_>>(Partial::new("Z21c")), Ok((Partial::new("Z21c"), "")));
-/// assert_eq!(hex_digit0::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(hex_digit0::<_, Error<_>>.parse_peek(Partial::new("21cZ")), Ok((Partial::new("Z"), "21c")));
+/// assert_eq!(hex_digit0::<_, Error<_>>.parse_peek(Partial::new("Z21c")), Ok((Partial::new("Z21c"), "")));
+/// assert_eq!(hex_digit0::<_, Error<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn hex_digit0<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn hex_digit0<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -495,7 +521,7 @@ where
         "hex_digit0",
         take_while(0.., |c: <I as Stream>::Token| c.is_hex_digit()),
     )
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes one or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
@@ -509,27 +535,29 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::ascii::hex_digit1;
-/// fn parser(input: &str) -> IResult<&str, &str> {
-///     hex_digit1(input)
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+///     hex_digit1.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser("21cZ"), Ok(("Z", "21c")));
-/// assert_eq!(parser("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::Slice))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
+/// assert_eq!(parser.parse_peek("21cZ"), Ok(("Z", "21c")));
+/// assert_eq!(parser.parse_peek("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::Slice))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
 /// ```
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::hex_digit1;
-/// assert_eq!(hex_digit1::<_, Error<_>>(Partial::new("21cZ")), Ok((Partial::new("Z"), "21c")));
-/// assert_eq!(hex_digit1::<_, Error<_>>(Partial::new("H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("H2"), ErrorKind::Slice))));
-/// assert_eq!(hex_digit1::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(hex_digit1::<_, Error<_>>.parse_peek(Partial::new("21cZ")), Ok((Partial::new("Z"), "21c")));
+/// assert_eq!(hex_digit1::<_, Error<_>>.parse_peek(Partial::new("H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("H2"), ErrorKind::Slice))));
+/// assert_eq!(hex_digit1::<_, Error<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn hex_digit1<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn hex_digit1<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -539,7 +567,7 @@ where
         "hex_digit1",
         take_while(1.., |c: <I as Stream>::Token| c.is_hex_digit()),
     )
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes zero or more octal characters: 0-7
@@ -553,27 +581,29 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::ascii::oct_digit0;
-/// fn parser(input: &str) -> IResult<&str, &str> {
-///     oct_digit0(input)
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+///     oct_digit0.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser("21cZ"), Ok(("cZ", "21")));
-/// assert_eq!(parser("Z21c"), Ok(("Z21c", "")));
-/// assert_eq!(parser(""), Ok(("", "")));
+/// assert_eq!(parser.parse_peek("21cZ"), Ok(("cZ", "21")));
+/// assert_eq!(parser.parse_peek("Z21c"), Ok(("Z21c", "")));
+/// assert_eq!(parser.parse_peek(""), Ok(("", "")));
 /// ```
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::oct_digit0;
-/// assert_eq!(oct_digit0::<_, Error<_>>(Partial::new("21cZ")), Ok((Partial::new("cZ"), "21")));
-/// assert_eq!(oct_digit0::<_, Error<_>>(Partial::new("Z21c")), Ok((Partial::new("Z21c"), "")));
-/// assert_eq!(oct_digit0::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(oct_digit0::<_, Error<_>>.parse_peek(Partial::new("21cZ")), Ok((Partial::new("cZ"), "21")));
+/// assert_eq!(oct_digit0::<_, Error<_>>.parse_peek(Partial::new("Z21c")), Ok((Partial::new("Z21c"), "")));
+/// assert_eq!(oct_digit0::<_, Error<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn oct_digit0<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn oct_digit0<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -583,7 +613,7 @@ where
         "oct_digit0",
         take_while(0.., |c: <I as Stream>::Token| c.is_oct_digit()),
     )
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes one or more octal characters: 0-7
@@ -597,27 +627,29 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::ascii::oct_digit1;
-/// fn parser(input: &str) -> IResult<&str, &str> {
-///     oct_digit1(input)
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+///     oct_digit1.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser("21cZ"), Ok(("cZ", "21")));
-/// assert_eq!(parser("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::Slice))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
+/// assert_eq!(parser.parse_peek("21cZ"), Ok(("cZ", "21")));
+/// assert_eq!(parser.parse_peek("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::Slice))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
 /// ```
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::oct_digit1;
-/// assert_eq!(oct_digit1::<_, Error<_>>(Partial::new("21cZ")), Ok((Partial::new("cZ"), "21")));
-/// assert_eq!(oct_digit1::<_, Error<_>>(Partial::new("H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("H2"), ErrorKind::Slice))));
-/// assert_eq!(oct_digit1::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(oct_digit1::<_, Error<_>>.parse_peek(Partial::new("21cZ")), Ok((Partial::new("cZ"), "21")));
+/// assert_eq!(oct_digit1::<_, Error<_>>.parse_peek(Partial::new("H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("H2"), ErrorKind::Slice))));
+/// assert_eq!(oct_digit1::<_, Error<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn oct_digit1<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn oct_digit1<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -627,7 +659,7 @@ where
         "oct_digit0",
         take_while(1.., |c: <I as Stream>::Token| c.is_oct_digit()),
     )
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes zero or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
@@ -641,27 +673,29 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::ascii::alphanumeric0;
-/// fn parser(input: &str) -> IResult<&str, &str> {
-///     alphanumeric0(input)
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+///     alphanumeric0.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser("21cZ%1"), Ok(("%1", "21cZ")));
-/// assert_eq!(parser("&Z21c"), Ok(("&Z21c", "")));
-/// assert_eq!(parser(""), Ok(("", "")));
+/// assert_eq!(parser.parse_peek("21cZ%1"), Ok(("%1", "21cZ")));
+/// assert_eq!(parser.parse_peek("&Z21c"), Ok(("&Z21c", "")));
+/// assert_eq!(parser.parse_peek(""), Ok(("", "")));
 /// ```
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::alphanumeric0;
-/// assert_eq!(alphanumeric0::<_, Error<_>>(Partial::new("21cZ%1")), Ok((Partial::new("%1"), "21cZ")));
-/// assert_eq!(alphanumeric0::<_, Error<_>>(Partial::new("&Z21c")), Ok((Partial::new("&Z21c"), "")));
-/// assert_eq!(alphanumeric0::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alphanumeric0::<_, Error<_>>.parse_peek(Partial::new("21cZ%1")), Ok((Partial::new("%1"), "21cZ")));
+/// assert_eq!(alphanumeric0::<_, Error<_>>.parse_peek(Partial::new("&Z21c")), Ok((Partial::new("&Z21c"), "")));
+/// assert_eq!(alphanumeric0::<_, Error<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alphanumeric0<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn alphanumeric0<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -671,7 +705,7 @@ where
         "alphanumeric0",
         take_while(0.., |c: <I as Stream>::Token| c.is_alphanum()),
     )
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes one or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
@@ -685,27 +719,29 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::ascii::alphanumeric1;
-/// fn parser(input: &str) -> IResult<&str, &str> {
-///     alphanumeric1(input)
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+///     alphanumeric1.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser("21cZ%1"), Ok(("%1", "21cZ")));
-/// assert_eq!(parser("&H2"), Err(ErrMode::Backtrack(Error::new("&H2", ErrorKind::Slice))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
+/// assert_eq!(parser.parse_peek("21cZ%1"), Ok(("%1", "21cZ")));
+/// assert_eq!(parser.parse_peek("&H2"), Err(ErrMode::Backtrack(Error::new("&H2", ErrorKind::Slice))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
 /// ```
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::alphanumeric1;
-/// assert_eq!(alphanumeric1::<_, Error<_>>(Partial::new("21cZ%1")), Ok((Partial::new("%1"), "21cZ")));
-/// assert_eq!(alphanumeric1::<_, Error<_>>(Partial::new("&H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("&H2"), ErrorKind::Slice))));
-/// assert_eq!(alphanumeric1::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alphanumeric1::<_, Error<_>>.parse_peek(Partial::new("21cZ%1")), Ok((Partial::new("%1"), "21cZ")));
+/// assert_eq!(alphanumeric1::<_, Error<_>>.parse_peek(Partial::new("&H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("&H2"), ErrorKind::Slice))));
+/// assert_eq!(alphanumeric1::<_, Error<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alphanumeric1<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn alphanumeric1<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -715,7 +751,7 @@ where
         "alphanumeric1",
         take_while(1.., |c: <I as Stream>::Token| c.is_alphanum()),
     )
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes zero or more spaces and tabs.
@@ -729,15 +765,16 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::space0;
-/// assert_eq!(space0::<_, Error<_>>(Partial::new(" \t21c")), Ok((Partial::new("21c"), " \t")));
-/// assert_eq!(space0::<_, Error<_>>(Partial::new("Z21c")), Ok((Partial::new("Z21c"), "")));
-/// assert_eq!(space0::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(space0::<_, Error<_>>.parse_peek(Partial::new(" \t21c")), Ok((Partial::new("21c"), " \t")));
+/// assert_eq!(space0::<_, Error<_>>.parse_peek(Partial::new("Z21c")), Ok((Partial::new("Z21c"), "")));
+/// assert_eq!(space0::<_, Error<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn space0<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn space0<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -750,13 +787,13 @@ where
             matches!(ch, ' ' | '\t')
         }),
     )
-    .parse_peek(input)
+    .parse_next(input)
 }
 
-/// Recognizes one or more spaces and tabs.
+/// Recognizes zero or more spaces and tabs.
 ///
-/// *Complete version*: Will return an error if there's not enough input data,
-/// or the whole input if no terminating token is found (a non space character).
+/// *Complete version*: Will return the whole input if no terminating token is found (a non space
+/// character).
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
@@ -764,27 +801,29 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::ascii::space1;
-/// fn parser(input: &str) -> IResult<&str, &str> {
-///     space1(input)
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+///     space1.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser(" \t21c"), Ok(("21c", " \t")));
-/// assert_eq!(parser("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::Slice))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
+/// assert_eq!(parser.parse_peek(" \t21c"), Ok(("21c", " \t")));
+/// assert_eq!(parser.parse_peek("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::Slice))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
 /// ```
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::space1;
-/// assert_eq!(space1::<_, Error<_>>(Partial::new(" \t21c")), Ok((Partial::new("21c"), " \t")));
-/// assert_eq!(space1::<_, Error<_>>(Partial::new("H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("H2"), ErrorKind::Slice))));
-/// assert_eq!(space1::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(space1::<_, Error<_>>.parse_peek(Partial::new(" \t21c")), Ok((Partial::new("21c"), " \t")));
+/// assert_eq!(space1::<_, Error<_>>.parse_peek(Partial::new("H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("H2"), ErrorKind::Slice))));
+/// assert_eq!(space1::<_, Error<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn space1<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn space1<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -797,7 +836,7 @@ where
             matches!(ch, ' ' | '\t')
         }),
     )
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes zero or more spaces, tabs, carriage returns and line feeds.
@@ -811,27 +850,29 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::ascii::multispace0;
-/// fn parser(input: &str) -> IResult<&str, &str> {
-///     multispace0(input)
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+///     multispace0.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser(" \t\n\r21c"), Ok(("21c", " \t\n\r")));
-/// assert_eq!(parser("Z21c"), Ok(("Z21c", "")));
-/// assert_eq!(parser(""), Ok(("", "")));
+/// assert_eq!(parser.parse_peek(" \t\n\r21c"), Ok(("21c", " \t\n\r")));
+/// assert_eq!(parser.parse_peek("Z21c"), Ok(("Z21c", "")));
+/// assert_eq!(parser.parse_peek(""), Ok(("", "")));
 /// ```
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::multispace0;
-/// assert_eq!(multispace0::<_, Error<_>>(Partial::new(" \t\n\r21c")), Ok((Partial::new("21c"), " \t\n\r")));
-/// assert_eq!(multispace0::<_, Error<_>>(Partial::new("Z21c")), Ok((Partial::new("Z21c"), "")));
-/// assert_eq!(multispace0::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(multispace0::<_, Error<_>>.parse_peek(Partial::new(" \t\n\r21c")), Ok((Partial::new("21c"), " \t\n\r")));
+/// assert_eq!(multispace0::<_, Error<_>>.parse_peek(Partial::new("Z21c")), Ok((Partial::new("Z21c"), "")));
+/// assert_eq!(multispace0::<_, Error<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn multispace0<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn multispace0<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -844,7 +885,7 @@ where
             matches!(ch, ' ' | '\t' | '\r' | '\n')
         }),
     )
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Recognizes one or more spaces, tabs, carriage returns and line feeds.
@@ -858,27 +899,29 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
 /// # use winnow::ascii::multispace1;
-/// fn parser(input: &str) -> IResult<&str, &str> {
-///     multispace1(input)
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+///     multispace1.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser(" \t\n\r21c"), Ok(("21c", " \t\n\r")));
-/// assert_eq!(parser("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::Slice))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
+/// assert_eq!(parser.parse_peek(" \t\n\r21c"), Ok(("21c", " \t\n\r")));
+/// assert_eq!(parser.parse_peek("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::Slice))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
 /// ```
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::multispace1;
-/// assert_eq!(multispace1::<_, Error<_>>(Partial::new(" \t\n\r21c")), Ok((Partial::new("21c"), " \t\n\r")));
-/// assert_eq!(multispace1::<_, Error<_>>(Partial::new("H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("H2"), ErrorKind::Slice))));
-/// assert_eq!(multispace1::<_, Error<_>>(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(multispace1::<_, Error<_>>.parse_peek(Partial::new(" \t\n\r21c")), Ok((Partial::new("21c"), " \t\n\r")));
+/// assert_eq!(multispace1::<_, Error<_>>.parse_peek(Partial::new("H2")), Err(ErrMode::Backtrack(Error::new(Partial::new("H2"), ErrorKind::Slice))));
+/// assert_eq!(multispace1::<_, Error<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn multispace1<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+pub fn multispace1<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -891,7 +934,7 @@ where
             matches!(ch, ' ' | '\t' | '\r' | '\n')
         }),
     )
-    .parse_peek(input)
+    .parse_next(input)
 }
 
 /// Decode a decimal unsigned integer
@@ -904,49 +947,52 @@ where
 #[doc(alias = "u32")]
 #[doc(alias = "u64")]
 #[doc(alias = "u128")]
-pub fn dec_uint<I, O, E: ParseError<I>>(input: I) -> IResult<I, O, E>
+pub fn dec_uint<I, O, E: ParseError<I>>(input: &mut I) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar + Copy,
     O: Uint,
 {
-    trace("dec_uint", move |input: I| {
-        if input.eof_offset() == 0 {
-            if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
-                return Err(ErrMode::Incomplete(Needed::new(1)));
-            } else {
-                return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
+    trace(
+        "dec_uint",
+        unpeek(move |input: I| {
+            if input.eof_offset() == 0 {
+                if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
+                    return Err(ErrMode::Incomplete(Needed::new(1)));
+                } else {
+                    return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
+                }
             }
-        }
 
-        let mut value = O::default();
-        for (offset, c) in input.iter_offsets() {
-            match c.as_char().to_digit(10) {
-                Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
-                    let d = d as u8;
-                    v.checked_add(d, sealed::SealedMarker)
-                }) {
-                    None => return Err(ErrMode::from_error_kind(input, ErrorKind::Verify)),
-                    Some(v) => value = v,
-                },
-                None => {
-                    if offset == 0 {
-                        return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
-                    } else {
-                        return Ok((input.peek_slice(offset).0, value));
+            let mut value = O::default();
+            for (offset, c) in input.iter_offsets() {
+                match c.as_char().to_digit(10) {
+                    Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
+                        let d = d as u8;
+                        v.checked_add(d, sealed::SealedMarker)
+                    }) {
+                        None => return Err(ErrMode::from_error_kind(input, ErrorKind::Verify)),
+                        Some(v) => value = v,
+                    },
+                    None => {
+                        if offset == 0 {
+                            return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
+                        } else {
+                            return Ok((input.peek_slice(offset).0, value));
+                        }
                     }
                 }
             }
-        }
 
-        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
-            Err(ErrMode::Incomplete(Needed::new(1)))
-        } else {
-            Ok((input.peek_finish().0, value))
-        }
-    })
-    .parse_peek(input)
+            if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
+                Err(ErrMode::Incomplete(Needed::new(1)))
+            } else {
+                Ok((input.peek_finish().0, value))
+            }
+        }),
+    )
+    .parse_next(input)
 }
 
 /// Metadata for parsing unsigned integers, see [`dec_uint`]
@@ -1057,61 +1103,64 @@ impl Uint for i128 {
 #[doc(alias = "i32")]
 #[doc(alias = "i64")]
 #[doc(alias = "i128")]
-pub fn dec_int<I, O, E: ParseError<I>>(input: I) -> IResult<I, O, E>
+pub fn dec_int<I, O, E: ParseError<I>>(input: &mut I) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar + Copy,
     O: Int,
 {
-    trace("dec_int", move |input: I| {
-        fn sign(token: impl AsChar) -> bool {
-            let token = token.as_char();
-            token == '+' || token == '-'
-        }
-        let (input, sign) = opt(crate::token::one_of(sign).map(AsChar::as_char))
-            .map(|c| c != Some('-'))
-            .parse_peek(input)?;
-
-        if input.eof_offset() == 0 {
-            if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
-                return Err(ErrMode::Incomplete(Needed::new(1)));
-            } else {
-                return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
+    trace(
+        "dec_int",
+        unpeek(move |input: I| {
+            fn sign(token: impl AsChar) -> bool {
+                let token = token.as_char();
+                token == '+' || token == '-'
             }
-        }
+            let (input, sign) = opt(crate::token::one_of(sign).map(AsChar::as_char))
+                .map(|c| c != Some('-'))
+                .parse_peek(input)?;
 
-        let mut value = O::default();
-        for (offset, c) in input.iter_offsets() {
-            match c.as_char().to_digit(10) {
-                Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
-                    let d = d as u8;
-                    if sign {
-                        v.checked_add(d, sealed::SealedMarker)
-                    } else {
-                        v.checked_sub(d, sealed::SealedMarker)
-                    }
-                }) {
-                    None => return Err(ErrMode::from_error_kind(input, ErrorKind::Verify)),
-                    Some(v) => value = v,
-                },
-                None => {
-                    if offset == 0 {
-                        return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
-                    } else {
-                        return Ok((input.peek_slice(offset).0, value));
+            if input.eof_offset() == 0 {
+                if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
+                    return Err(ErrMode::Incomplete(Needed::new(1)));
+                } else {
+                    return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
+                }
+            }
+
+            let mut value = O::default();
+            for (offset, c) in input.iter_offsets() {
+                match c.as_char().to_digit(10) {
+                    Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
+                        let d = d as u8;
+                        if sign {
+                            v.checked_add(d, sealed::SealedMarker)
+                        } else {
+                            v.checked_sub(d, sealed::SealedMarker)
+                        }
+                    }) {
+                        None => return Err(ErrMode::from_error_kind(input, ErrorKind::Verify)),
+                        Some(v) => value = v,
+                    },
+                    None => {
+                        if offset == 0 {
+                            return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
+                        } else {
+                            return Ok((input.peek_slice(offset).0, value));
+                        }
                     }
                 }
             }
-        }
 
-        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
-            Err(ErrMode::Incomplete(Needed::new(1)))
-        } else {
-            Ok((input.peek_finish().0, value))
-        }
-    })
-    .parse_peek(input)
+            if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
+                Err(ErrMode::Incomplete(Needed::new(1)))
+            } else {
+                Ok((input.peek_finish().0, value))
+            }
+        }),
+    )
+    .parse_next(input)
 }
 
 /// Metadata for parsing signed integers, see [`dec_int`]
@@ -1165,13 +1214,13 @@ impl Int for i128 {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// use winnow::ascii::hex_uint;
 ///
-/// fn parser(s: &[u8]) -> IResult<&[u8], u32> {
+/// fn parser<'s>(s: &mut &'s [u8]) -> PResult<u32, Error<&'s [u8]>> {
 ///   hex_uint(s)
 /// }
 ///
-/// assert_eq!(parser(&b"01AE"[..]), Ok((&b""[..], 0x01AE)));
-/// assert_eq!(parser(&b"abc"[..]), Ok((&b""[..], 0x0ABC)));
-/// assert_eq!(parser(&b"ggg"[..]), Err(ErrMode::Backtrack(Error::new(&b"ggg"[..], ErrorKind::Slice))));
+/// assert_eq!(parser.parse_peek(&b"01AE"[..]), Ok((&b""[..], 0x01AE)));
+/// assert_eq!(parser.parse_peek(&b"abc"[..]), Ok((&b""[..], 0x0ABC)));
+/// assert_eq!(parser.parse_peek(&b"ggg"[..]), Err(ErrMode::Backtrack(Error::new(&b"ggg"[..], ErrorKind::Slice))));
 /// ```
 ///
 /// ```rust
@@ -1180,16 +1229,16 @@ impl Int for i128 {
 /// # use winnow::Partial;
 /// use winnow::ascii::hex_uint;
 ///
-/// fn parser(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
+/// fn parser<'s>(s: &mut Partial<&'s [u8]>) -> PResult<u32, Error<Partial<&'s [u8]>>> {
 ///   hex_uint(s)
 /// }
 ///
-/// assert_eq!(parser(Partial::new(&b"01AE;"[..])), Ok((Partial::new(&b";"[..]), 0x01AE)));
-/// assert_eq!(parser(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(parser(Partial::new(&b"ggg"[..])), Err(ErrMode::Backtrack(Error::new(Partial::new(&b"ggg"[..]), ErrorKind::Slice))));
+/// assert_eq!(parser.parse_peek(Partial::new(&b"01AE;"[..])), Ok((Partial::new(&b";"[..]), 0x01AE)));
+/// assert_eq!(parser.parse_peek(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser.parse_peek(Partial::new(&b"ggg"[..])), Err(ErrMode::Backtrack(Error::new(Partial::new(&b"ggg"[..]), ErrorKind::Slice))));
 /// ```
 #[inline]
-pub fn hex_uint<I, O, E: ParseError<I>>(input: I) -> IResult<I, O, E>
+pub fn hex_uint<I, O, E: ParseError<I>>(input: &mut I) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -1197,53 +1246,56 @@ where
     <I as Stream>::Token: AsChar,
     <I as Stream>::Slice: AsBStr,
 {
-    trace("hex_uint", move |input: I| {
-        let invalid_offset = input
-            .offset_for(|c| {
-                let c = c.as_char();
-                !"0123456789abcdefABCDEF".contains(c)
-            })
-            .unwrap_or_else(|| input.eof_offset());
-        let max_nibbles = O::max_nibbles(sealed::SealedMarker);
-        let max_offset = input.offset_at(max_nibbles);
-        let offset = match max_offset {
-            Ok(max_offset) => {
-                if max_offset < invalid_offset {
-                    // Overflow
-                    return Err(ErrMode::from_error_kind(input, ErrorKind::Verify));
-                } else {
-                    invalid_offset
+    trace(
+        "hex_uint",
+        unpeek(move |input: I| {
+            let invalid_offset = input
+                .offset_for(|c| {
+                    let c = c.as_char();
+                    !"0123456789abcdefABCDEF".contains(c)
+                })
+                .unwrap_or_else(|| input.eof_offset());
+            let max_nibbles = O::max_nibbles(sealed::SealedMarker);
+            let max_offset = input.offset_at(max_nibbles);
+            let offset = match max_offset {
+                Ok(max_offset) => {
+                    if max_offset < invalid_offset {
+                        // Overflow
+                        return Err(ErrMode::from_error_kind(input, ErrorKind::Verify));
+                    } else {
+                        invalid_offset
+                    }
                 }
-            }
-            Err(_) => {
-                if <I as StreamIsPartial>::is_partial_supported()
-                    && input.is_partial()
-                    && invalid_offset == input.eof_offset()
-                {
-                    // Only the next byte is guaranteed required
-                    return Err(ErrMode::Incomplete(Needed::new(1)));
-                } else {
-                    invalid_offset
+                Err(_) => {
+                    if <I as StreamIsPartial>::is_partial_supported()
+                        && input.is_partial()
+                        && invalid_offset == input.eof_offset()
+                    {
+                        // Only the next byte is guaranteed required
+                        return Err(ErrMode::Incomplete(Needed::new(1)));
+                    } else {
+                        invalid_offset
+                    }
                 }
+            };
+            if offset == 0 {
+                // Must be at least one digit
+                return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
             }
-        };
-        if offset == 0 {
-            // Must be at least one digit
-            return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
-        }
-        let (remaining, parsed) = input.peek_slice(offset);
+            let (remaining, parsed) = input.peek_slice(offset);
 
-        let mut res = O::default();
-        for c in parsed.as_bstr() {
-            let nibble = *c as char;
-            let nibble = nibble.to_digit(16).unwrap_or(0) as u8;
-            let nibble = O::from(nibble);
-            res = (res << O::from(4)) + nibble;
-        }
+            let mut res = O::default();
+            for c in parsed.as_bstr() {
+                let nibble = *c as char;
+                let nibble = nibble.to_digit(16).unwrap_or(0) as u8;
+                let nibble = O::from(nibble);
+                res = (res << O::from(4)) + nibble;
+            }
 
-        Ok((remaining, res))
-    })
-    .parse_peek(input)
+            Ok((remaining, res))
+        }),
+    )
+    .parse_next(input)
 }
 
 /// Metadata for parsing hex numbers, see [`hex_uint`]
@@ -1303,14 +1355,14 @@ impl HexUint for u128 {
 /// # use winnow::error::Needed::Size;
 /// use winnow::ascii::float;
 ///
-/// fn parser(s: &str) -> IResult<&str, f64> {
+/// fn parser<'s>(s: &mut &'s str) -> PResult<f64, Error<&'s str>> {
 ///   float(s)
 /// }
 ///
-/// assert_eq!(parser("11e-1"), Ok(("", 1.1)));
-/// assert_eq!(parser("123E-02"), Ok(("", 1.23)));
-/// assert_eq!(parser("123K-01"), Ok(("K-01", 123.0)));
-/// assert_eq!(parser("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek("11e-1"), Ok(("", 1.1)));
+/// assert_eq!(parser.parse_peek("123E-02"), Ok(("", 1.23)));
+/// assert_eq!(parser.parse_peek("123K-01"), Ok(("K-01", 123.0)));
+/// assert_eq!(parser.parse_peek("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Tag))));
 /// ```
 ///
 /// ```rust
@@ -1320,20 +1372,20 @@ impl HexUint for u128 {
 /// # use winnow::Partial;
 /// use winnow::ascii::float;
 ///
-/// fn parser(s: Partial<&str>) -> IResult<Partial<&str>, f64> {
+/// fn parser<'s>(s: &mut Partial<&'s str>) -> PResult<f64, Error<Partial<&'s str>>> {
 ///   float(s)
 /// }
 ///
-/// assert_eq!(parser(Partial::new("11e-1 ")), Ok((Partial::new(" "), 1.1)));
-/// assert_eq!(parser(Partial::new("11e-1")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(parser(Partial::new("123E-02")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(parser(Partial::new("123K-01")), Ok((Partial::new("K-01"), 123.0)));
-/// assert_eq!(parser(Partial::new("abc")), Err(ErrMode::Backtrack(Error::new(Partial::new("abc"), ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek(Partial::new("11e-1 ")), Ok((Partial::new(" "), 1.1)));
+/// assert_eq!(parser.parse_peek(Partial::new("11e-1")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser.parse_peek(Partial::new("123E-02")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser.parse_peek(Partial::new("123K-01")), Ok((Partial::new("K-01"), 123.0)));
+/// assert_eq!(parser.parse_peek(Partial::new("abc")), Err(ErrMode::Backtrack(Error::new(Partial::new("abc"), ErrorKind::Tag))));
 /// ```
 #[inline(always)]
 #[doc(alias = "f32")]
 #[doc(alias = "double")]
-pub fn float<I, O, E: ParseError<I>>(input: I) -> IResult<I, O, E>
+pub fn float<I, O, E: ParseError<I>>(input: &mut I) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -1343,14 +1395,17 @@ where
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
-    trace("float", move |input: I| {
-        let (i, s) = recognize_float_or_exceptions(input)?;
-        match s.parse_slice() {
-            Some(f) => Ok((i, f)),
-            None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
-        }
-    })
-    .parse_peek(input)
+    trace(
+        "float",
+        unpeek(move |input: I| {
+            let (i, s) = recognize_float_or_exceptions(input)?;
+            match s.parse_slice() {
+                Some(f) => Ok((i, f)),
+                None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
+            }
+        }),
+    )
+    .parse_next(input)
 }
 
 fn recognize_float_or_exceptions<I, E: ParseError<I>>(
@@ -1373,7 +1428,7 @@ where
     .parse_peek(input)
 }
 
-fn recognize_float<I, E: ParseError<I>>(input: I) -> IResult<I, <I as Stream>::Slice, E>
+fn recognize_float<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -1391,7 +1446,7 @@ where
         opt((one_of(['e', 'E']), opt(one_of(['+', '-'])), cut_err(digit1))),
     )
         .recognize()
-        .parse_peek(input)
+        .parse_next(input)
 }
 
 /// Matches a byte string with escaped characters.
@@ -1403,6 +1458,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// # use winnow::ascii::digit1;
 /// # use winnow::prelude::*;
@@ -1418,6 +1474,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed, IResult};
 /// # use winnow::ascii::digit1;
 /// # use winnow::prelude::*;
@@ -1446,13 +1503,16 @@ where
     G: Parser<I, O2, Error>,
     Error: ParseError<I>,
 {
-    trace("escaped", move |input: I| {
-        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
-            streaming_escaped_internal(input, &mut normal, control_char, &mut escapable)
-        } else {
-            complete_escaped_internal(input, &mut normal, control_char, &mut escapable)
-        }
-    })
+    trace(
+        "escaped",
+        unpeek(move |input: I| {
+            if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
+                streaming_escaped_internal(input, &mut normal, control_char, &mut escapable)
+            } else {
+                complete_escaped_internal(input, &mut normal, control_char, &mut escapable)
+            }
+        }),
+    )
 }
 
 fn streaming_escaped_internal<I, Error, F, G, O1, O2>(
@@ -1588,7 +1648,7 @@ where
 /// use winnow::ascii::alpha1;
 /// use winnow::combinator::alt;
 ///
-/// fn parser(input: &str) -> IResult<&str, String> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<String, Error<&'s str>> {
 ///   escaped_transform(
 ///     alpha1,
 ///     '\\',
@@ -1597,11 +1657,11 @@ where
 ///       "\"".value("\""),
 ///       "n".value("\n"),
 ///     ))
-///   ).parse_peek(input)
+///   ).parse_next(input)
 /// }
 ///
-/// assert_eq!(parser("ab\\\"cd"), Ok(("", String::from("ab\"cd"))));
-/// assert_eq!(parser("ab\\ncd"), Ok(("", String::from("ab\ncd"))));
+/// assert_eq!(parser.parse_peek("ab\\\"cd"), Ok(("", String::from("ab\"cd"))));
+/// assert_eq!(parser.parse_peek("ab\\ncd"), Ok(("", String::from("ab\ncd"))));
 /// ```
 ///
 /// ```
@@ -1614,7 +1674,7 @@ where
 /// use winnow::ascii::alpha1;
 /// use winnow::combinator::alt;
 ///
-/// fn parser(input: Partial<&str>) -> IResult<Partial<&str>, String> {
+/// fn parser<'s>(input: &mut Partial<&'s str>) -> PResult<String, Error<Partial<&'s str>>> {
 ///   escaped_transform(
 ///     alpha1,
 ///     '\\',
@@ -1623,10 +1683,10 @@ where
 ///       "\"".value("\""),
 ///       "n".value("\n"),
 ///     ))
-///   ).parse_peek(input)
+///   ).parse_next(input)
 /// }
 ///
-/// assert_eq!(parser(Partial::new("ab\\\"cd\"")), Ok((Partial::new("\""), String::from("ab\"cd"))));
+/// assert_eq!(parser.parse_peek(Partial::new("ab\\\"cd\"")), Ok((Partial::new("\""), String::from("ab\"cd"))));
 /// ```
 #[inline(always)]
 pub fn escaped_transform<I, Error, F, G, Output>(
@@ -1643,13 +1703,26 @@ where
     G: Parser<I, <I as Stream>::Slice, Error>,
     Error: ParseError<I>,
 {
-    trace("escaped_transform", move |input: I| {
-        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
-            streaming_escaped_transform_internal(input, &mut normal, control_char, &mut transform)
-        } else {
-            complete_escaped_transform_internal(input, &mut normal, control_char, &mut transform)
-        }
-    })
+    trace(
+        "escaped_transform",
+        unpeek(move |input: I| {
+            if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
+                streaming_escaped_transform_internal(
+                    input,
+                    &mut normal,
+                    control_char,
+                    &mut transform,
+                )
+            } else {
+                complete_escaped_transform_internal(
+                    input,
+                    &mut normal,
+                    control_char,
+                    &mut transform,
+                )
+            }
+        }),
+    )
 }
 
 fn streaming_escaped_transform_internal<I, Error, F, G, Output>(

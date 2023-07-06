@@ -11,6 +11,7 @@ use crate::error::ErrorKind;
 use crate::error::Needed;
 use crate::stream::AsChar;
 use crate::token::tag;
+use crate::unpeek;
 use crate::IResult;
 use crate::Parser;
 use crate::Partial;
@@ -556,7 +557,7 @@ fn partial_recognize_take_while0() {
         take_while(0.., AsChar::is_alphanum).parse_peek(i)
     }
     fn y(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        x.recognize().parse_peek(i)
+        unpeek(x).recognize().parse_peek(i)
     }
     assert_eq!(
         x(Partial::new(&b"ab."[..])),
