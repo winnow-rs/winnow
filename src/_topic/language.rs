@@ -247,7 +247,6 @@
 //! ```rust
 //! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   combinator::{repeat},
 //!   combinator::terminated,
 //!   token::one_of,

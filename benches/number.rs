@@ -13,16 +13,18 @@ use winnow::stream::ParseSlice;
 
 type Stream<'i> = &'i [u8];
 
-fn parser(i: Stream<'_>) -> IResult<Stream<'_>, u64> {
-    be_u64.parse_peek(i)
+fn parser(i: &mut Stream<'_>) -> PResult<u64> {
+    be_u64.parse_next(i)
 }
 
 fn number(c: &mut Criterion) {
     let data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
-    parser(&data[..]).expect("should parse correctly");
+    parser
+        .parse_peek(&data[..])
+        .expect("should parse correctly");
     c.bench_function("number", move |b| {
-        b.iter(|| parser(&data[..]).unwrap());
+        b.iter(|| parser.parse_peek(&data[..]).unwrap());
     });
 }
 
@@ -46,23 +48,20 @@ fn float_str(c: &mut Criterion) {
     });
 }
 
-fn std_float(input: &[u8]) -> IResult<&[u8], f64, Error<&[u8]>> {
+fn std_float(input: &mut &[u8]) -> PResult<f64> {
     match input.parse_slice() {
-        Some(n) => Ok((&[], n)),
-        None => Err(ErrMode::Backtrack(Error {
-            input,
-            kind: ErrorKind::Slice,
-        })),
+        Some(n) => Ok(n),
+        None => Err(ErrMode::Backtrack(ErrorKind::Slice)),
     }
 }
 
 fn std_float_bytes(c: &mut Criterion) {
     println!(
         "std_float_bytes result: {:?}",
-        std_float(&b"-1.234E-12"[..])
+        std_float.parse_peek(&b"-1.234E-12"[..])
     );
     c.bench_function("std_float bytes", |b| {
-        b.iter(|| std_float(&b"-1.234E-12"[..]));
+        b.iter(|| std_float.parse_peek(&b"-1.234E-12"[..]));
     });
 }
 

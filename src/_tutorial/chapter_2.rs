@@ -93,7 +93,7 @@
 //! > If you have not programmed in a language where functions are values, the type signature of the
 //! > [`one_of`] function might be a surprise.
 //! > The function [`one_of`] *returns a function*. The function it returns is a
-//! > `Parser`, taking a `&str` and returning an `IResult`. This is a common pattern in winnow for
+//! > `Parser`, taking a `&str` and returning an `PResult`. This is a common pattern in winnow for
 //! > configurable or stateful parsers.
 //!
 //! Some of character classes are common enough that a named parser is provided, like with:

@@ -13,7 +13,7 @@
 //! ## Implementing a custom stream
 //!
 //! Let's assume we have an input type we'll call `MyStream`. `MyStream` is a sequence of `MyItem` type.
-//! The goal is to define parsers with this signature: `MyStream -> IResult<MyStream, Output>`.
+//! The goal is to define parsers with this signature: `&mut MyStream -> PResult<Output>`.
 //!
 //! ```rust
 //! # use winnow::prelude::*;

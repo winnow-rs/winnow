@@ -20,8 +20,8 @@ pub type Stream<'i> = Partial<&'i str>;
 /// The root element of a JSON parser is any value
 ///
 /// A parser has the following signature:
-/// `Stream -> IResult<Stream, Output, Error>`, with `IResult` defined as:
-/// `type IResult<I, O, E = (I, ErrorKind)> = Result<(I, O), Err<E>>;`
+/// `&mut Stream -> PResult<Output, Error>`, with `PResult` defined as:
+/// `type PResult<O, E = ErrorKind> = Result<O, ErrMode<E>>;`
 ///
 /// most of the times you can ignore the error type and use the default (but this
 /// examples shows custom error types later on!)

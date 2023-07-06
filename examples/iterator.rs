@@ -66,7 +66,7 @@ fn main() {
         .map(|(k, v)| (k.to_uppercase(), v))
         .collect::<HashMap<_, _>>();
 
-    let parser_result: IResult<_, _> = winnow_it.finish();
+    let parser_result: PResult<(_, _), ()> = winnow_it.finish();
     let (remaining_input, ()) = parser_result.unwrap();
 
     // will print "iterator returned {"key1": "value1", "key3": "value3", "key2": "value2"}, remaining input is ';'"
