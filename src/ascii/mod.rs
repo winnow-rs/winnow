@@ -56,7 +56,7 @@ where
     I: Stream,
     I: Compare<&'static str>,
 {
-    trace("crlf", move |input: I| "\r\n".parse_peek(input)).parse_peek(input)
+    trace("crlf", "\r\n").parse_peek(input)
 }
 
 /// Recognizes a string of any char except '\r\n' or '\n'.
@@ -183,10 +183,7 @@ where
     I: Stream,
     I: Compare<&'static str>,
 {
-    trace("line_ending", move |input: I| {
-        alt(("\n", "\r\n")).parse_peek(input)
-    })
-    .parse_peek(input)
+    trace("line_ending", alt(("\n", "\r\n"))).parse_peek(input)
 }
 
 /// Matches a newline character '\n'.
@@ -224,11 +221,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar + Copy,
 {
-    trace("newline", move |input: I| {
-        '\n'.map(|c: <I as Stream>::Token| c.as_char())
-            .parse_peek(input)
-    })
-    .parse_peek(input)
+    trace("newline", '\n'.map(|c: <I as Stream>::Token| c.as_char())).parse_peek(input)
 }
 
 /// Matches a tab character '\t'.
@@ -266,11 +259,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar + Copy,
 {
-    trace("tab", move |input: I| {
-        '\t'.map(|c: <I as Stream>::Token| c.as_char())
-            .parse_peek(input)
-    })
-    .parse_peek(input)
+    trace("tab", '\t'.map(|c: <I as Stream>::Token| c.as_char())).parse_peek(input)
 }
 
 /// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
@@ -310,9 +299,10 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("alpha0", move |input: I| {
-        take_while(0.., |c: <I as Stream>::Token| c.is_alpha()).parse_peek(input)
-    })
+    trace(
+        "alpha0",
+        take_while(0.., |c: <I as Stream>::Token| c.is_alpha()),
+    )
     .parse_peek(input)
 }
 
@@ -353,9 +343,10 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("alpha1", move |input: I| {
-        take_while(1.., |c: <I as Stream>::Token| c.is_alpha()).parse_peek(input)
-    })
+    trace(
+        "alpha1",
+        take_while(1.., |c: <I as Stream>::Token| c.is_alpha()),
+    )
     .parse_peek(input)
 }
 
@@ -397,9 +388,10 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("digit0", move |input: I| {
-        take_while(0.., |c: <I as Stream>::Token| c.is_dec_digit()).parse_peek(input)
-    })
+    trace(
+        "digit0",
+        take_while(0.., |c: <I as Stream>::Token| c.is_dec_digit()),
+    )
     .parse_peek(input)
 }
 
@@ -456,9 +448,10 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("digit1", move |input: I| {
-        take_while(1.., |c: <I as Stream>::Token| c.is_dec_digit()).parse_peek(input)
-    })
+    trace(
+        "digit1",
+        take_while(1.., |c: <I as Stream>::Token| c.is_dec_digit()),
+    )
     .parse_peek(input)
 }
 
@@ -498,9 +491,10 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("hex_digit0", move |input: I| {
-        take_while(0.., |c: <I as Stream>::Token| c.is_hex_digit()).parse_peek(input)
-    })
+    trace(
+        "hex_digit0",
+        take_while(0.., |c: <I as Stream>::Token| c.is_hex_digit()),
+    )
     .parse_peek(input)
 }
 
@@ -541,9 +535,10 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("hex_digit1", move |input: I| {
-        take_while(1.., |c: <I as Stream>::Token| c.is_hex_digit()).parse_peek(input)
-    })
+    trace(
+        "hex_digit1",
+        take_while(1.., |c: <I as Stream>::Token| c.is_hex_digit()),
+    )
     .parse_peek(input)
 }
 
@@ -584,9 +579,10 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("oct_digit0", move |input: I| {
-        take_while(0.., |c: <I as Stream>::Token| c.is_oct_digit()).parse_peek(input)
-    })
+    trace(
+        "oct_digit0",
+        take_while(0.., |c: <I as Stream>::Token| c.is_oct_digit()),
+    )
     .parse_peek(input)
 }
 
@@ -627,9 +623,10 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("oct_digit0", move |input: I| {
-        take_while(1.., |c: <I as Stream>::Token| c.is_oct_digit()).parse_peek(input)
-    })
+    trace(
+        "oct_digit0",
+        take_while(1.., |c: <I as Stream>::Token| c.is_oct_digit()),
+    )
     .parse_peek(input)
 }
 
@@ -670,9 +667,10 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("alphanumeric0", move |input: I| {
-        take_while(0.., |c: <I as Stream>::Token| c.is_alphanum()).parse_peek(input)
-    })
+    trace(
+        "alphanumeric0",
+        take_while(0.., |c: <I as Stream>::Token| c.is_alphanum()),
+    )
     .parse_peek(input)
 }
 
@@ -713,9 +711,10 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace("alphanumeric1", move |input: I| {
-        take_while(1.., |c: <I as Stream>::Token| c.is_alphanum()).parse_peek(input)
-    })
+    trace(
+        "alphanumeric1",
+        take_while(1.., |c: <I as Stream>::Token| c.is_alphanum()),
+    )
     .parse_peek(input)
 }
 
@@ -744,13 +743,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar + Copy,
 {
-    trace("space0", move |input: I| {
+    trace(
+        "space0",
         take_while(0.., |c: <I as Stream>::Token| {
             let ch = c.as_char();
             matches!(ch, ' ' | '\t')
-        })
-        .parse_peek(input)
-    })
+        }),
+    )
     .parse_peek(input)
 }
 
@@ -791,13 +790,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar + Copy,
 {
-    trace("space1", move |input: I| {
+    trace(
+        "space1",
         take_while(1.., |c: <I as Stream>::Token| {
             let ch = c.as_char();
             matches!(ch, ' ' | '\t')
-        })
-        .parse_peek(input)
-    })
+        }),
+    )
     .parse_peek(input)
 }
 
@@ -838,13 +837,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar + Copy,
 {
-    trace("multispace0", move |input: I| {
+    trace(
+        "multispace0",
         take_while(0.., |c: <I as Stream>::Token| {
             let ch = c.as_char();
             matches!(ch, ' ' | '\t' | '\r' | '\n')
-        })
-        .parse_peek(input)
-    })
+        }),
+    )
     .parse_peek(input)
 }
 
@@ -885,13 +884,13 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar + Copy,
 {
-    trace("multispace1", move |input: I| {
+    trace(
+        "multispace1",
         take_while(1.., |c: <I as Stream>::Token| {
             let ch = c.as_char();
             matches!(ch, ' ' | '\t' | '\r' | '\n')
-        })
-        .parse_peek(input)
-    })
+        }),
+    )
     .parse_peek(input)
 }
 

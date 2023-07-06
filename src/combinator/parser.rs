@@ -1,6 +1,7 @@
 use crate::error::{ContextError, ErrMode, ErrorKind, FromExternalError, ParseError};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::ops::Range;
+use crate::parser::parser;
 use crate::stream::StreamIsPartial;
 use crate::stream::{Location, Stream};
 use crate::trace::trace;
@@ -20,8 +21,9 @@ impl<'p, P> ByRef<'p, P> {
 }
 
 impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for ByRef<'p, P> {
-    fn parse_peek(&mut self, i: I) -> IResult<I, O, E> {
-        self.p.parse_peek(i)
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
+        self.p.parse_next(i)
     }
 }
 
@@ -62,10 +64,11 @@ where
     F: Parser<I, O, E>,
     G: Fn(O) -> O2,
 {
-    fn parse_peek(&mut self, i: I) -> IResult<I, O2, E> {
-        match self.parser.parse_peek(i) {
+    #[inline]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O2, E> {
+        match self.parser.parse_next(i) {
             Err(e) => Err(e),
-            Ok((i, o)) => Ok((i, (self.map)(o))),
+            Ok(o) => Ok((self.map)(o)),
         }
     }
 }
@@ -76,7 +79,7 @@ pub struct TryMap<F, G, I, O, O2, E, E2>
 where
     F: Parser<I, O, E>,
     G: FnMut(O) -> Result<O2, E2>,
-    I: Clone,
+    I: Stream,
     E: FromExternalError<I, E2>,
 {
     parser: F,
@@ -92,7 +95,7 @@ impl<F, G, I, O, O2, E, E2> TryMap<F, G, I, O, O2, E, E2>
 where
     F: Parser<I, O, E>,
     G: FnMut(O) -> Result<O2, E2>,
-    I: Clone,
+    I: Stream,
     E: FromExternalError<I, E2>,
 {
     pub(crate) fn new(parser: F, map: G) -> Self {
@@ -112,16 +115,17 @@ impl<F, G, I, O, O2, E, E2> Parser<I, O2, E> for TryMap<F, G, I, O, O2, E, E2>
 where
     F: Parser<I, O, E>,
     G: FnMut(O) -> Result<O2, E2>,
-    I: Clone,
+    I: Stream,
     E: FromExternalError<I, E2>,
 {
-    fn parse_peek(&mut self, input: I) -> IResult<I, O2, E> {
-        let i = input.clone();
-        let (input, o) = self.parser.parse_peek(input)?;
-        let res = match (self.map)(o) {
-            Ok(o2) => Ok((input, o2)),
-            Err(e) => Err(ErrMode::from_external_error(i, ErrorKind::Verify, e)),
-        };
+    #[inline]
+    fn parse_next(&mut self, input: &mut I) -> PResult<O2, E> {
+        let start = input.checkpoint();
+        let o = self.parser.parse_next(input)?;
+        let res = (self.map)(o).map_err(|err| {
+            input.reset(start);
+            ErrMode::from_external_error(input.clone(), ErrorKind::Verify, err)
+        });
         trace_result("verify", &res);
         res
     }
@@ -133,7 +137,7 @@ pub struct VerifyMap<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
     G: FnMut(O) -> Option<O2>,
-    I: Clone,
+    I: Stream,
     E: ParseError<I>,
 {
     parser: F,
@@ -148,7 +152,7 @@ impl<F, G, I, O, O2, E> VerifyMap<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
     G: FnMut(O) -> Option<O2>,
-    I: Clone,
+    I: Stream,
     E: ParseError<I>,
 {
     pub(crate) fn new(parser: F, map: G) -> Self {
@@ -167,16 +171,17 @@ impl<F, G, I, O, O2, E> Parser<I, O2, E> for VerifyMap<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
     G: FnMut(O) -> Option<O2>,
-    I: Clone,
+    I: Stream,
     E: ParseError<I>,
 {
-    fn parse_peek(&mut self, input: I) -> IResult<I, O2, E> {
-        let i = input.clone();
-        let (input, o) = self.parser.parse_peek(input)?;
-        let res = match (self.map)(o) {
-            Some(o2) => Ok((input, o2)),
-            None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
-        };
+    #[inline]
+    fn parse_next(&mut self, input: &mut I) -> PResult<O2, E> {
+        let start = input.checkpoint();
+        let o = self.parser.parse_next(input)?;
+        let res = (self.map)(o).ok_or_else(|| {
+            input.reset(start);
+            ErrMode::from_error_kind(input.clone(), ErrorKind::Verify)
+        });
         trace_result("verify", &res);
         res
     }
@@ -189,6 +194,7 @@ where
     F: Parser<I, O, E>,
     G: Parser<O, O2, E>,
     O: StreamIsPartial,
+    I: Stream,
 {
     outer: F,
     inner: G,
@@ -203,6 +209,7 @@ where
     F: Parser<I, O, E>,
     G: Parser<O, O2, E>,
     O: StreamIsPartial,
+    I: Stream,
 {
     pub(crate) fn new(outer: F, inner: G) -> Self {
         Self {
@@ -221,12 +228,18 @@ where
     F: Parser<I, O, E>,
     G: Parser<O, O2, E>,
     O: StreamIsPartial,
+    I: Stream,
 {
-    fn parse_peek(&mut self, i: I) -> IResult<I, O2, E> {
-        let (i, mut o) = self.outer.parse_peek(i)?;
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O2, E> {
+        let start = i.checkpoint();
+        let mut o = self.outer.parse_next(i)?;
         let _ = o.complete();
-        let (_, o2) = self.inner.parse_peek(o)?;
-        Ok((i, o2))
+        let o2 = self.inner.parse_next(&mut o).map_err(|err| {
+            i.reset(start);
+            err
+        })?;
+        Ok(o2)
     }
 }
 
@@ -271,15 +284,16 @@ where
     O: crate::stream::ParseSlice<O2>,
     E: ParseError<I>,
 {
-    fn parse_peek(&mut self, i: I) -> IResult<I, O2, E> {
-        let input = i.clone();
-        let (i, o) = self.p.parse_peek(i)?;
-
-        let res = o
-            .parse_slice()
-            .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::Verify));
+    #[inline]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O2, E> {
+        let start = i.checkpoint();
+        let o = self.p.parse_next(i)?;
+        let res = o.parse_slice().ok_or_else(|| {
+            i.reset(start);
+            ErrMode::from_error_kind(i.clone(), ErrorKind::Verify)
+        });
         trace_result("verify", &res);
-        Ok((i, res?))
+        res
     }
 }
 
@@ -325,9 +339,10 @@ where
     G: FnMut(O) -> H,
     H: Parser<I, O2, E>,
 {
-    fn parse_peek(&mut self, i: I) -> IResult<I, O2, E> {
-        let (i, o) = self.f.parse_peek(i)?;
-        (self.g)(o).parse_peek(i)
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O2, E> {
+        let o = self.f.parse_next(i)?;
+        (self.g)(o).parse_next(i)
     }
 }
 
@@ -349,17 +364,18 @@ where
     F: Parser<I, O, E>,
     E: ParseError<I>,
 {
-    fn parse_peek(&mut self, input: I) -> IResult<I, O, E> {
-        trace("complete_err", |input: I| {
-            let i = input.clone();
-            match (self.f).parse_peek(input) {
+    #[inline]
+    fn parse_next(&mut self, input: &mut I) -> PResult<O, E> {
+        trace(
+            "complete_err",
+            parser(|input: &mut I| match (self.f).parse_next(input) {
                 Err(ErrMode::Incomplete(_)) => {
-                    Err(ErrMode::from_error_kind(i, ErrorKind::Complete))
+                    Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Complete))
                 }
                 rest => rest,
-            }
-        })
-        .parse_peek(input)
+            }),
+        )
+        .parse_next(input)
     }
 }
 
@@ -369,7 +385,7 @@ pub struct Verify<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
     G: Fn(&O2) -> bool,
-    I: Clone,
+    I: Stream,
     O: Borrow<O2>,
     O2: ?Sized,
     E: ParseError<I>,
@@ -386,7 +402,7 @@ impl<F, G, I, O, O2, E> Verify<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
     G: Fn(&O2) -> bool,
-    I: Clone,
+    I: Stream,
     O: Borrow<O2>,
     O2: ?Sized,
     E: ParseError<I>,
@@ -407,20 +423,19 @@ impl<F, G, I, O, O2, E> Parser<I, O, E> for Verify<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
     G: Fn(&O2) -> bool,
-    I: Clone,
+    I: Stream,
     O: Borrow<O2>,
     O2: ?Sized,
     E: ParseError<I>,
 {
-    fn parse_peek(&mut self, input: I) -> IResult<I, O, E> {
-        let i = input.clone();
-        let (input, o) = self.parser.parse_peek(input)?;
-
-        let res = if (self.filter)(o.borrow()) {
-            Ok((input, o))
-        } else {
-            Err(ErrMode::from_error_kind(i, ErrorKind::Verify))
-        };
+    #[inline]
+    fn parse_next(&mut self, input: &mut I) -> PResult<O, E> {
+        let start = input.checkpoint();
+        let o = self.parser.parse_next(input)?;
+        let res = (self.filter)(o.borrow()).then_some(o).ok_or_else(|| {
+            input.reset(start);
+            ErrMode::from_error_kind(input.clone(), ErrorKind::Verify)
+        });
         trace_result("verify", &res);
         res
     }
@@ -461,10 +476,9 @@ where
     F: Parser<I, O, E>,
     O2: Clone,
 {
-    fn parse_peek(&mut self, input: I) -> IResult<I, O2, E> {
-        (self.parser)
-            .parse_peek(input)
-            .map(|(i, _)| (i, self.val.clone()))
+    #[inline]
+    fn parse_next(&mut self, input: &mut I) -> PResult<O2, E> {
+        (self.parser).parse_next(input).map(|_| self.val.clone())
     }
 }
 
@@ -498,8 +512,9 @@ impl<F, I, O, E> Parser<I, (), E> for Void<F, I, O, E>
 where
     F: Parser<I, O, E>,
 {
-    fn parse_peek(&mut self, input: I) -> IResult<I, (), E> {
-        (self.parser).parse_peek(input).map(|(i, _)| (i, ()))
+    #[inline(always)]
+    fn parse_next(&mut self, input: &mut I) -> PResult<(), E> {
+        (self.parser).parse_next(input).map(|_| ())
     }
 }
 
@@ -536,14 +551,15 @@ where
     F: Parser<I, O, E>,
     I: Stream,
 {
-    fn parse_peek(&mut self, input: I) -> IResult<I, <I as Stream>::Slice, E> {
+    #[inline]
+    fn parse_next(&mut self, input: &mut I) -> PResult<<I as Stream>::Slice, E> {
         let checkpoint = input.checkpoint();
-        match (self.parser).parse_peek(input) {
-            Ok((mut input, _)) => {
+        match (self.parser).parse_next(input) {
+            Ok(_) => {
                 let offset = input.offset_from(&checkpoint);
                 input.reset(checkpoint);
-                let (input, recognized) = input.peek_slice(offset);
-                Ok((input, recognized))
+                let recognized = input.next_slice(offset);
+                Ok(recognized)
             }
             Err(e) => Err(e),
         }
@@ -583,14 +599,15 @@ where
     F: Parser<I, O, E>,
     I: Stream,
 {
-    fn parse_peek(&mut self, input: I) -> IResult<I, (O, <I as Stream>::Slice), E> {
+    #[inline]
+    fn parse_next(&mut self, input: &mut I) -> PResult<(O, <I as Stream>::Slice), E> {
         let checkpoint = input.checkpoint();
-        match (self.parser).parse_peek(input) {
-            Ok((mut input, result)) => {
+        match (self.parser).parse_next(input) {
+            Ok(result) => {
                 let offset = input.offset_from(&checkpoint);
                 input.reset(checkpoint);
-                let (input, recognized) = input.peek_slice(offset);
-                Ok((input, (result, recognized)))
+                let recognized = input.next_slice(offset);
+                Ok((result, recognized))
             }
             Err(e) => Err(e),
         }
@@ -630,11 +647,12 @@ where
     F: Parser<I, O, E>,
     I: Clone + Location,
 {
-    fn parse_peek(&mut self, input: I) -> IResult<I, Range<usize>, E> {
+    #[inline]
+    fn parse_next(&mut self, input: &mut I) -> PResult<Range<usize>, E> {
         let start = input.location();
-        self.parser.parse_peek(input).map(move |(remaining, _)| {
-            let end = remaining.location();
-            (remaining, (start..end))
+        self.parser.parse_next(input).map(move |_| {
+            let end = input.location();
+            start..end
         })
     }
 }
@@ -672,14 +690,13 @@ where
     F: Parser<I, O, E>,
     I: Clone + Location,
 {
-    fn parse_peek(&mut self, input: I) -> IResult<I, (O, Range<usize>), E> {
+    #[inline]
+    fn parse_next(&mut self, input: &mut I) -> PResult<(O, Range<usize>), E> {
         let start = input.location();
-        self.parser
-            .parse_peek(input)
-            .map(move |(remaining, output)| {
-                let end = remaining.location();
-                (remaining, (output, (start..end)))
-            })
+        self.parser.parse_next(input).map(move |output| {
+            let end = input.location();
+            (output, (start..end))
+        })
     }
 }
 
@@ -718,11 +735,9 @@ where
     F: Parser<I, O, E>,
     O: Into<O2>,
 {
-    fn parse_peek(&mut self, i: I) -> IResult<I, O2, E> {
-        match self.parser.parse_peek(i) {
-            Ok((i, o)) => Ok((i, o.into())),
-            Err(err) => Err(err),
-        }
+    #[inline]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O2, E> {
+        self.parser.parse_next(i).map(|o| o.into())
     }
 }
 
@@ -761,8 +776,9 @@ where
     F: Parser<I, O, E>,
     E: Into<E2>,
 {
-    fn parse_peek(&mut self, i: I) -> IResult<I, O, E2> {
-        match self.parser.parse_peek(i) {
+    #[inline]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O, E2> {
+        match self.parser.parse_next(i) {
             Ok(ok) => Ok(ok),
             Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.into())),
             Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.into())),
@@ -812,16 +828,21 @@ where
     E: ContextError<I, C>,
     C: Clone + crate::lib::std::fmt::Debug,
 {
-    fn parse_peek(&mut self, i: I) -> IResult<I, O, E> {
+    #[inline]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
         #[cfg(feature = "debug")]
         let name = format!("context={:?}", self.context);
         #[cfg(not(feature = "debug"))]
         let name = "context";
-        trace(name, move |i: I| {
-            (self.parser)
-                .parse_peek(i.clone())
-                .map_err(|err| err.map(|err| err.add_context(i, self.context.clone())))
-        })
-        .parse_peek(i)
+        trace(
+            name,
+            parser(move |i: &mut I| {
+                let start = i.clone();
+                (self.parser)
+                    .parse_next(i)
+                    .map_err(|err| err.map(|err| err.add_context(start, self.context.clone())))
+            }),
+        )
+        .parse_next(i)
     }
 }
