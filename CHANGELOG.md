@@ -3,6 +3,21 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add aliases for renamed APIs in v0.5
+  - `Parser::parse_peek` which wraps `Parser::parse_next`
+  - `Stream::peek_token` which wraps `Stream::next_token`
+  - `Stream::peek_slice` which wraps `Stream::next_slice`
+  - `Offset::offset_from` which wraps `Offset::offset_to`
+- Add `unpeek` which is a no-op function in prep for v0.5
+
+### Fixes
+
+- Allow `ascii::escaped_transform` on `core`
+- Update `ascii::float` to correct parse `infinity`
+- Update special topics to link out to relevant parsers they re-implement
+
 ## [0.4.7] - 2023-06-14
 
 ### Performance
