@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.4.8] - 2023-07-06
+
 ### Features
 
 - Add aliases for renamed APIs in v0.5
@@ -1813,7 +1815,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.4.7...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.4.8...HEAD
+[0.4.8]: https://github.com/winnow-rs/winnow/compare/v0.4.7...v0.4.8
 [0.4.7]: https://github.com/winnow-rs/winnow/compare/v0.4.6...v0.4.7
 [0.4.6]: https://github.com/winnow-rs/winnow/compare/v0.4.5...v0.4.6
 [0.4.5]: https://github.com/winnow-rs/winnow/compare/v0.4.4...v0.4.5
