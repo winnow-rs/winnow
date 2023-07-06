@@ -2422,13 +2422,13 @@ impl<'a> AsChar for &'a char {
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
 /// # use winnow::token::take_while;
-/// fn hex_digit1(input: &str) -> IResult<&str, &str> {
-///     take_while(1.., ('a'..='f', 'A'..='F', '0'..='9')).parse_peek(input)
+/// fn hex_digit1<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+///     take_while(1.., ('a'..='f', 'A'..='F', '0'..='9')).parse_next(input)
 /// }
 ///
-/// assert_eq!(hex_digit1("21cZ"), Ok(("Z", "21c")));
-/// assert_eq!(hex_digit1("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::Slice))));
-/// assert_eq!(hex_digit1(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
+/// assert_eq!(hex_digit1.parse_peek("21cZ"), Ok(("Z", "21c")));
+/// assert_eq!(hex_digit1.parse_peek("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::Slice))));
+/// assert_eq!(hex_digit1.parse_peek(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
 /// ```
 pub trait ContainsToken<T> {
     /// Returns true if self contains the token

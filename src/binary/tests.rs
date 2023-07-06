@@ -1,4 +1,5 @@
 use super::*;
+use crate::unpeek;
 use crate::IResult;
 
 mod complete {

@@ -65,11 +65,11 @@
 //!   token::take_till1,
 //! };
 //!
-//! pub fn peol_comment<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, (), E>
+//! pub fn peol_comment<'a, E: ParseError<&'a str>>(i: &mut &'a str) -> PResult<(), E>
 //! {
 //!   ('%', take_till1(['\n', '\r']))
 //!     .void() // Output is thrown away.
-//!     .parse_peek(i)
+//!     .parse_next(i)
 //! }
 //! ```
 //!
@@ -85,14 +85,14 @@
 //!   token::{tag, take_until0},
 //! };
 //!
-//! pub fn pinline_comment<'a, E: ParseError<&'a str>>(i: &'a str) -> IResult<&'a str, (), E> {
+//! pub fn pinline_comment<'a, E: ParseError<&'a str>>(i: &mut &'a str) -> PResult<(), E> {
 //!   (
 //!     "(*",
 //!     take_until0("*)"),
 //!     "*)"
 //!   )
 //!     .void() // Output is thrown away.
-//!     .parse_peek(i)
+//!     .parse_next(i)
 //! }
 //! ```
 //!
@@ -111,13 +111,13 @@
 //!   token::one_of,
 //! };
 //!
-//! pub fn identifier(input: &str) -> IResult<&str, &str> {
+//! pub fn identifier<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //!   (
 //!       one_of(|c: char| c.is_alpha() || c == '_'),
 //!       take_while(0.., |c: char| c.is_alphanum() || c == '_')
 //!   )
 //!   .recognize()
-//!   .parse_peek(input)
+//!   .parse_next(input)
 //! }
 //! ```
 //!
@@ -162,13 +162,13 @@
 //!   token::tag,
 //! };
 //!
-//! fn hexadecimal(input: &str) -> IResult<&str, &str> { // <'a, E: ParseError<&'a str>>
+//! fn hexadecimal<'s>(input: &mut &'s str) -> PResult<&'s str> { // <'a, E: ParseError<&'a str>>
 //!   preceded(
 //!     alt(("0x", "0X")),
 //!     repeat(1..,
 //!       terminated(one_of(('0'..='9', 'a'..='f', 'A'..='F')), repeat(0.., '_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
-//!   ).parse_peek(input)
+//!   ).parse_next(input)
 //! }
 //! ```
 //!
@@ -184,7 +184,7 @@
 //!   token::tag,
 //! };
 //!
-//! fn hexadecimal_value(input: &str) -> IResult<&str, i64> {
+//! fn hexadecimal_value(input: &mut &str) -> PResult<i64> {
 //!   preceded(
 //!     alt(("0x", "0X")),
 //!     repeat(1..,
@@ -192,7 +192,7 @@
 //!     ).map(|()| ()).recognize()
 //!   ).try_map(
 //!     |out: &str| i64::from_str_radix(&str::replace(&out, "_", ""), 16)
-//!   ).parse_peek(input)
+//!   ).parse_next(input)
 //! }
 //! ```
 //!
@@ -210,13 +210,13 @@
 //!   token::tag,
 //! };
 //!
-//! fn octal(input: &str) -> IResult<&str, &str> {
+//! fn octal<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //!   preceded(
 //!     alt(("0o", "0O")),
 //!     repeat(1..,
 //!       terminated(one_of('0'..='7'), repeat(0.., '_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
-//!   ).parse_peek(input)
+//!   ).parse_next(input)
 //! }
 //! ```
 //!
@@ -232,13 +232,13 @@
 //!   token::tag,
 //! };
 //!
-//! fn binary(input: &str) -> IResult<&str, &str> {
+//! fn binary<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //!   preceded(
 //!     alt(("0b", "0B")),
 //!     repeat(1..,
 //!       terminated(one_of('0'..='1'), repeat(0.., '_').map(|()| ()))
 //!     ).map(|()| ()).recognize()
-//!   ).parse_peek(input)
+//!   ).parse_next(input)
 //! }
 //! ```
 //!
@@ -247,18 +247,17 @@
 //! ```rust
 //! use winnow::prelude::*;
 //! use winnow::{
-//!   IResult,
 //!   combinator::{repeat},
 //!   combinator::terminated,
 //!   token::one_of,
 //! };
 //!
-//! fn decimal(input: &str) -> IResult<&str, &str> {
+//! fn decimal<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //!   repeat(1..,
 //!     terminated(one_of('0'..='9'), repeat(0.., '_').map(|()| ()))
 //!   ).map(|()| ())
 //!     .recognize()
-//!     .parse_peek(input)
+//!     .parse_next(input)
 //! }
 //! ```
 //!

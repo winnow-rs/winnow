@@ -35,13 +35,10 @@ where
     F: Parser<I, O1, E>,
     G: Parser<I, O2, E>,
 {
-    trace(
-        "preceded",
-        unpeek(move |input: I| {
-            let (input, _) = first.parse_peek(input)?;
-            second.parse_peek(input)
-        }),
-    )
+    trace("preceded", move |input: &mut I| {
+        let _ = first.parse_next(input)?;
+        second.parse_next(input)
+    })
 }
 
 /// Sequence two parsers, only returning the output of the first.
@@ -76,13 +73,10 @@ where
     F: Parser<I, O1, E>,
     G: Parser<I, O2, E>,
 {
-    trace(
-        "terminated",
-        unpeek(move |input: I| {
-            let (input, o1) = first.parse_peek(input)?;
-            second.parse_peek(input).map(|(i, _)| (i, o1))
-        }),
-    )
+    trace("terminated", move |input: &mut I| {
+        let o1 = first.parse_next(input)?;
+        second.parse_next(input).map(|_| o1)
+    })
 }
 
 /// Sequence three parsers, only returning the values of the first and third.
@@ -119,14 +113,11 @@ where
     G: Parser<I, O2, E>,
     H: Parser<I, O3, E>,
 {
-    trace(
-        "separated_pair",
-        unpeek(move |input: I| {
-            let (input, o1) = first.parse_peek(input)?;
-            let (input, _) = sep.parse_peek(input)?;
-            second.parse_peek(input).map(|(i, o2)| (i, (o1, o2)))
-        }),
-    )
+    trace("separated_pair", move |input: &mut I| {
+        let o1 = first.parse_next(input)?;
+        let _ = sep.parse_next(input)?;
+        second.parse_next(input).map(|o2| (o1, o2))
+    })
 }
 
 /// Sequence three parsers, only returning the output of the second.
@@ -165,12 +156,9 @@ where
     G: Parser<I, O2, E>,
     H: Parser<I, O3, E>,
 {
-    trace(
-        "delimited",
-        unpeek(move |input: I| {
-            let (input, _) = first.parse_peek(input)?;
-            let (input, o2) = second.parse_peek(input)?;
-            third.parse_peek(input).map(|(i, _)| (i, o2))
-        }),
-    )
+    trace("delimited", move |input: &mut I| {
+        let _ = first.parse_next(input)?;
+        let o2 = second.parse_next(input)?;
+        third.parse_next(input).map(|_| o2)
+    })
 }

@@ -304,20 +304,21 @@ where
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
     let count = count.to_usize();
-    trace(
-        "tag",
-        unpeek(move |input: (I, usize)| {
-            let inp = input.clone();
+    trace("tag", move |input: &mut (I, usize)| {
+        let start = input.checkpoint();
 
-            take(count).parse_peek(input).and_then(|(i, o)| {
-                if pattern == o {
-                    Ok((i, o))
-                } else {
-                    Err(ErrMode::Backtrack(E::from_error_kind(inp, ErrorKind::Tag)))
-                }
-            })
-        }),
-    )
+        take(count).parse_next(input).and_then(|o| {
+            if pattern == o {
+                Ok(o)
+            } else {
+                input.reset(start);
+                Err(ErrMode::Backtrack(E::from_error_kind(
+                    input.clone(),
+                    ErrorKind::Tag,
+                )))
+            }
+        })
+    })
 }
 
 /// Parses one specific bit as a bool.
@@ -348,12 +349,9 @@ pub fn bool<I, E: ParseError<(I, usize)>>(input: &mut (I, usize)) -> PResult<boo
 where
     I: Stream<Token = u8> + AsBytes + StreamIsPartial,
 {
-    trace(
-        "bool",
-        unpeek(|input: (I, usize)| {
-            let (res, bit): (_, u32) = take(1usize).parse_peek(input)?;
-            Ok((res, bit != 0))
-        }),
-    )
+    trace("bool", |input: &mut (I, usize)| {
+        let bit: u32 = take(1usize).parse_next(input)?;
+        Ok(bit != 0)
+    })
     .parse_next(input)
 }

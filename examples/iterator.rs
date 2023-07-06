@@ -9,22 +9,19 @@ use winnow::prelude::*;
 fn main() {
     let mut data = "abcabcabcabc";
 
-    fn parser(i: &str) -> IResult<&str, &str> {
-        "abc".parse_peek(i)
+    fn parser<'s>(i: &mut &'s str) -> PResult<&'s str> {
+        "abc".parse_next(i)
     }
 
     // `from_fn` (available from Rust 1.34) can create an iterator
     // from a closure
     let it = std::iter::from_fn(move || {
-        match parser(data) {
+        match parser.parse_next(&mut data) {
             // when successful, a parser returns a tuple of
             // the remaining input and the output value.
             // So we replace the captured input data with the
             // remaining input, to be parsed on the next call
-            Ok((i, o)) => {
-                data = i;
-                Some(o)
-            }
+            Ok(o) => Some(o),
             _ => None,
         }
     });
@@ -35,19 +32,18 @@ fn main() {
 
     println!("\n********************\n");
 
-    let data = "abcabcabcabc";
+    let mut data = "abcabcabcabc";
 
     // if `from_fn` is not available, it is possible to fold
     // over an iterator of functions
-    let res = std::iter::repeat(parser).take(3).try_fold(
-        (data, Vec::new()),
-        |(data, mut acc), parser| {
-            parser(data).map(|(i, o)| {
+    let res = std::iter::repeat(parser)
+        .take(3)
+        .try_fold(Vec::new(), |mut acc, mut parser| {
+            parser.parse_next(&mut data).map(|o| {
                 acc.push(o);
-                (i, acc)
+                acc
             })
-        },
-    );
+        });
 
     // will print "parser iterator returned: Ok(("abc", ["abc", "abc", "abc"]))"
     println!("\nparser iterator returned: {:?}", res);
@@ -70,7 +66,7 @@ fn main() {
         .map(|(k, v)| (k.to_uppercase(), v))
         .collect::<HashMap<_, _>>();
 
-    let parser_result: IResult<_, _> = winnow_it.finish();
+    let parser_result: PResult<(_, _), ()> = winnow_it.finish();
     let (remaining_input, ()) = parser_result.unwrap();
 
     // will print "iterator returned {"key1": "value1", "key3": "value3", "key2": "value2"}, remaining input is ';'"

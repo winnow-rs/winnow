@@ -40,16 +40,16 @@
 #[macro_export]
 macro_rules! dispatch {
     ($match_parser: expr; $( $pat:pat $(if $pred:expr)? => $expr: expr ),+ $(,)? ) => {
-        $crate::trace::trace("dispatch", $crate::unpeek(move |i|
+        $crate::trace::trace("dispatch", move |i: &mut _|
         {
             use $crate::Parser;
-            let (i, initial) = $match_parser.parse_peek(i)?;
+            let initial = $match_parser.parse_next(i)?;
             match initial {
                 $(
-                    $pat $(if $pred)? => $expr.parse_peek(i),
+                    $pat $(if $pred)? => $expr.parse_next(i),
                 )*
             }
-        }))
+        })
     }
 }
 

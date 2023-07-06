@@ -1,4 +1,5 @@
 use super::*;
+use crate::prelude::*;
 
 mod complete {
     use super::*;
@@ -241,7 +242,7 @@ mod complete {
         let f = "βèƒôřè\rÂßÇáƒƭèř";
         assert_eq!(
             not_line_ending.parse_peek(f),
-            Err(ErrMode::Backtrack(Error::new(f, ErrorKind::Tag)))
+            Err(ErrMode::Backtrack(Error::new(&f[12..], ErrorKind::Tag)))
         );
 
         let g2: &str = "ab12cd";
@@ -570,7 +571,7 @@ mod complete {
 
     #[cfg(feature = "std")]
     fn parse_f64(i: &str) -> IResult<&str, f64, ()> {
-        match super::recognize_float_or_exceptions(i) {
+        match super::recognize_float_or_exceptions.parse_peek(i) {
             Err(e) => Err(e),
             Ok((i, s)) => {
                 if s.is_empty() {
@@ -1213,7 +1214,7 @@ mod partial {
         assert_eq!(
             not_line_ending.parse_peek(Partial::new(f)),
             Err(ErrMode::Backtrack(Error::new(
-                Partial::new(f),
+                Partial::new(&f[12..]),
                 ErrorKind::Tag
             )))
         );

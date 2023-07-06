@@ -7,52 +7,53 @@ use winnow::{
     combinator::repeat,
     combinator::{delimited, terminated},
     token::{take_till0, take_while},
-    unpeek,
 };
 
 pub type Stream<'i> = &'i str;
 
-pub fn categories(input: Stream<'_>) -> IResult<Stream<'_>, HashMap<&str, HashMap<&str, &str>>> {
-    repeat(0.., unpeek(category_and_keys)).parse_peek(input)
+pub fn categories<'s>(
+    input: &mut Stream<'s>,
+) -> PResult<HashMap<&'s str, HashMap<&'s str, &'s str>>> {
+    repeat(0.., category_and_keys).parse_next(input)
 }
 
-fn category_and_keys(i: Stream<'_>) -> IResult<Stream<'_>, (&str, HashMap<&str, &str>)> {
-    (unpeek(category), unpeek(keys_and_values)).parse_peek(i)
+fn category_and_keys<'s>(i: &mut Stream<'s>) -> PResult<(&'s str, HashMap<&'s str, &'s str>)> {
+    (category, keys_and_values).parse_next(i)
 }
 
-fn category(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
+fn category<'s>(i: &mut Stream<'s>) -> PResult<&'s str> {
     terminated(
         delimited('[', take_while(0.., |c| c != ']'), ']'),
         opt(take_while(1.., [' ', '\r', '\n'])),
     )
-    .parse_peek(i)
+    .parse_next(i)
 }
 
-fn keys_and_values(input: Stream<'_>) -> IResult<Stream<'_>, HashMap<&str, &str>> {
-    repeat(0.., unpeek(key_value)).parse_peek(input)
+fn keys_and_values<'s>(input: &mut Stream<'s>) -> PResult<HashMap<&'s str, &'s str>> {
+    repeat(0.., key_value).parse_next(input)
 }
 
-fn key_value(i: Stream<'_>) -> IResult<Stream<'_>, (&str, &str)> {
-    let (i, key) = alphanumeric.parse_peek(i)?;
-    let (i, _) = (opt(space), "=", opt(space)).parse_peek(i)?;
-    let (i, val) = take_till0(is_line_ending_or_comment).parse_peek(i)?;
-    let (i, _) = opt(space).parse_peek(i)?;
-    let (i, _) = opt((";", unpeek(not_line_ending))).parse_peek(i)?;
-    let (i, _) = opt(unpeek(space_or_line_ending)).parse_peek(i)?;
+fn key_value<'s>(i: &mut Stream<'s>) -> PResult<(&'s str, &'s str)> {
+    let key = alphanumeric.parse_next(i)?;
+    let _ = (opt(space), "=", opt(space)).parse_next(i)?;
+    let val = take_till0(is_line_ending_or_comment).parse_next(i)?;
+    let _ = opt(space).parse_next(i)?;
+    let _ = opt((";", not_line_ending)).parse_next(i)?;
+    let _ = opt(space_or_line_ending).parse_next(i)?;
 
-    Ok((i, (key, val)))
+    Ok((key, val))
 }
 
 fn is_line_ending_or_comment(chr: char) -> bool {
     chr == ';' || chr == '\n'
 }
 
-fn not_line_ending(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
-    take_while(0.., |c| c != '\r' && c != '\n').parse_peek(i)
+fn not_line_ending<'s>(i: &mut Stream<'s>) -> PResult<&'s str> {
+    take_while(0.., |c| c != '\r' && c != '\n').parse_next(i)
 }
 
-fn space_or_line_ending(i: Stream<'_>) -> IResult<Stream<'_>, &str> {
-    take_while(1.., [' ', '\r', '\n']).parse_peek(i)
+fn space_or_line_ending<'s>(i: &mut Stream<'s>) -> PResult<&'s str> {
+    take_while(1.., [' ', '\r', '\n']).parse_next(i)
 }
 
 #[test]
@@ -65,7 +66,7 @@ key = value2";
     let ini_without_category = "parameter=value
 key = value2";
 
-    let res = category(ini_file);
+    let res = category.parse_peek(ini_file);
     println!("{:?}", res);
     match res {
         Ok((i, o)) => println!("i: {} | o: {:?}", i, o),
@@ -82,7 +83,7 @@ key = value2";
 
     let ini_without_key_value = "key = value2";
 
-    let res = key_value(ini_file);
+    let res = key_value.parse_peek(ini_file);
     println!("{:?}", res);
     match res {
         Ok((i, (o1, o2))) => println!("i: {} | o: ({:?},{:?})", i, o1, o2),
@@ -99,7 +100,7 @@ key = value2";
 
     let ini_without_key_value = "key = value2";
 
-    let res = key_value(ini_file);
+    let res = key_value.parse_peek(ini_file);
     println!("{:?}", res);
     match res {
         Ok((i, (o1, o2))) => println!("i: {} | o: ({:?},{:?})", i, o1, o2),
@@ -116,7 +117,7 @@ key = value2";
 
     let ini_without_key_value = "key = value2";
 
-    let res = key_value(ini_file);
+    let res = key_value.parse_peek(ini_file);
     println!("{:?}", res);
     match res {
         Ok((i, (o1, o2))) => println!("i: {} | o: ({:?},{:?})", i, o1, o2),
@@ -136,7 +137,7 @@ key = value2
 
     let ini_without_key_value = "[category]";
 
-    let res = keys_and_values(ini_file);
+    let res = keys_and_values.parse_peek(ini_file);
     println!("{:?}", res);
     match res {
         Ok((i, ref o)) => println!("i: {} | o: {:?}", i, o),
@@ -161,7 +162,7 @@ key = value2
 
     let ini_after_parser = "[category]";
 
-    let res = category_and_keys(ini_file);
+    let res = category_and_keys.parse_peek(ini_file);
     println!("{:?}", res);
     match res {
         Ok((i, ref o)) => println!("i: {} | o: {:?}", i, o),
@@ -187,7 +188,7 @@ parameter3=value3
 key4 = value4
 ";
 
-    let res = categories(ini_file);
+    let res = categories.parse_peek(ini_file);
     //println!("{:?}", res);
     match res {
         Ok((i, ref o)) => println!("i: {} | o: {:?}", i, o),
