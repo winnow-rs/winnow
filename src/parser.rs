@@ -845,6 +845,12 @@ impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a> {
     }
 }
 
+/// Convert a [`Parser::parse_peek`] style parse function to be a [`Parser`]
+#[inline(always)]
+pub fn unpeek<'a, I, O, E>(peek: impl FnMut(I) -> IResult<I, O, E> + 'a) -> impl Parser<I, O, E> {
+    peek
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
