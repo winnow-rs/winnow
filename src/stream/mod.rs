@@ -1132,6 +1132,11 @@ where
 pub trait Offset {
     /// Offset between the first byte of self and the first byte of the argument
     fn offset_to(&self, second: &Self) -> usize;
+    /// Offset between the first byte of the argument and the first byte of the self
+    #[inline]
+    fn offset_from(&self, second: &Self) -> usize {
+        second.offset_to(self)
+    }
 }
 
 impl<'a, T> Offset for &'a [T] {
