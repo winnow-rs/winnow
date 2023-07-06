@@ -18,48 +18,54 @@ fn contains_token(c: &mut criterion::Criterion) {
         group.throughput(criterion::Throughput::Bytes(len as u64));
 
         group.bench_with_input(criterion::BenchmarkId::new("slice", name), &len, |b, _| {
-            b.iter(|| black_box(parser_slice(black_box(sample)).unwrap()));
+            b.iter(|| black_box(parser_slice.parse_peek(black_box(sample)).unwrap()));
         });
         group.bench_with_input(criterion::BenchmarkId::new("array", name), &len, |b, _| {
-            b.iter(|| black_box(parser_array(black_box(sample)).unwrap()));
+            b.iter(|| black_box(parser_array.parse_peek(black_box(sample)).unwrap()));
         });
         group.bench_with_input(criterion::BenchmarkId::new("tuple", name), &len, |b, _| {
-            b.iter(|| black_box(parser_tuple(black_box(sample)).unwrap()));
+            b.iter(|| black_box(parser_tuple.parse_peek(black_box(sample)).unwrap()));
         });
         group.bench_with_input(
             criterion::BenchmarkId::new("closure-or", name),
             &len,
             |b, _| {
-                b.iter(|| black_box(parser_closure_or(black_box(sample)).unwrap()));
+                b.iter(|| black_box(parser_closure_or.parse_peek(black_box(sample)).unwrap()));
             },
         );
         group.bench_with_input(
             criterion::BenchmarkId::new("closure-matches", name),
             &len,
             |b, _| {
-                b.iter(|| black_box(parser_closure_matches(black_box(sample)).unwrap()));
+                b.iter(|| {
+                    black_box(
+                        parser_closure_matches
+                            .parse_peek(black_box(sample))
+                            .unwrap(),
+                    )
+                });
             },
         );
     }
     group.finish();
 }
 
-fn parser_slice(input: &str) -> IResult<&str, usize> {
+fn parser_slice(input: &mut &str) -> PResult<usize> {
     let contains = &['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'][..];
-    repeat(0.., alt((take_while(1.., contains), take_till1(contains)))).parse_peek(input)
+    repeat(0.., alt((take_while(1.., contains), take_till1(contains)))).parse_next(input)
 }
 
-fn parser_array(input: &str) -> IResult<&str, usize> {
+fn parser_array(input: &mut &str) -> PResult<usize> {
     let contains = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-    repeat(0.., alt((take_while(1.., contains), take_till1(contains)))).parse_peek(input)
+    repeat(0.., alt((take_while(1.., contains), take_till1(contains)))).parse_next(input)
 }
 
-fn parser_tuple(input: &str) -> IResult<&str, usize> {
+fn parser_tuple(input: &mut &str) -> PResult<usize> {
     let contains = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
-    repeat(0.., alt((take_while(1.., contains), take_till1(contains)))).parse_peek(input)
+    repeat(0.., alt((take_while(1.., contains), take_till1(contains)))).parse_next(input)
 }
 
-fn parser_closure_or(input: &str) -> IResult<&str, usize> {
+fn parser_closure_or(input: &mut &str) -> PResult<usize> {
     let contains = |c: char| {
         c == '0'
             || c == '1'
@@ -72,12 +78,12 @@ fn parser_closure_or(input: &str) -> IResult<&str, usize> {
             || c == '8'
             || c == '9'
     };
-    repeat(0.., alt((take_while(1.., contains), take_till1(contains)))).parse_peek(input)
+    repeat(0.., alt((take_while(1.., contains), take_till1(contains)))).parse_next(input)
 }
 
-fn parser_closure_matches(input: &str) -> IResult<&str, usize> {
+fn parser_closure_matches(input: &mut &str) -> PResult<usize> {
     let contains = |c: char| matches!(c, '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9');
-    repeat(0.., alt((take_while(1.., contains), take_till1(contains)))).parse_peek(input)
+    repeat(0.., alt((take_while(1.., contains), take_till1(contains)))).parse_next(input)
 }
 
 const CONTIGUOUS: &str = "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";

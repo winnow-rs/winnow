@@ -8,7 +8,7 @@
 //! - Can be modified according to the user's needs, because some languages need a lot more information
 //! - Help thread-through the [stream][crate::stream]
 //!
-//! To abstract these needs away from the user, generally `winnow` parsers use the [`IResult`]
+//! To abstract these needs away from the user, generally `winnow` parsers use the [`PResult`]
 //! alias, rather than [`Result`][std::result::Result].  [`Parser::parse`] is a top-level operation
 //! that can help convert to a `Result` for integrating with your application's error reporting.
 //!
