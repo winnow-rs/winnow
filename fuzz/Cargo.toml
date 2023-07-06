@@ -13,7 +13,7 @@ cargo-fuzz = true
 release = false
 
 [dependencies]
-libfuzzer-sys = "0.4.0"
+libfuzzer-sys = "0.4.6"
 
 [dependencies.winnow]
 path = ".."

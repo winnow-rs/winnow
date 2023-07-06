@@ -1371,8 +1371,8 @@ where
     alt((
         recognize_float,
         crate::token::tag_no_case("nan"),
-        crate::token::tag_no_case("inf"),
         crate::token::tag_no_case("infinity"),
+        crate::token::tag_no_case("inf"),
     ))
     .parse_next(input)
 }
@@ -1635,7 +1635,6 @@ where
 ///
 /// assert_eq!(parser(Partial::new("ab\\\"cd\"")), Ok((Partial::new("\""), String::from("ab\"cd"))));
 /// ```
-#[cfg(feature = "alloc")]
 #[inline(always)]
 pub fn escaped_transform<I, Error, F, G, Output>(
     mut normal: F,
@@ -1660,7 +1659,6 @@ where
     })
 }
 
-#[cfg(feature = "alloc")]
 fn streaming_escaped_transform_internal<I, Error, F, G, Output>(
     input: I,
     normal: &mut F,
@@ -1719,7 +1717,6 @@ where
     Err(ErrMode::Incomplete(Needed::Unknown))
 }
 
-#[cfg(feature = "alloc")]
 fn complete_escaped_transform_internal<I, Error, F, G, Output>(
     input: I,
     normal: &mut F,
