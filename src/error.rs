@@ -14,6 +14,7 @@
 //!
 //! Error types include:
 //! - `()`
+//! - [`ErrorKind`]
 //! - [`Error`]
 //! - [`VerboseError`]
 //! - [Custom errors][crate::_topic::error]
