@@ -354,6 +354,7 @@ pub trait ContextError<I, C = &'static str>: Sized {
     ///
     /// This is used mainly by [`Parser::context`], to add user friendly information
     /// to errors when backtracking through a parse tree
+    #[inline]
     fn add_context(self, _input: I, _ctx: C) -> Self {
         self
     }
@@ -394,6 +395,7 @@ pub use Error as InputError;
 
 impl<I> Error<I> {
     /// Creates a new basic error
+    #[inline]
     pub fn new(input: I, kind: ErrorKind) -> Error<I> {
         Error { input, kind }
     }
@@ -411,10 +413,12 @@ impl<'i, I: ToOwned + ?Sized> Error<&'i I> {
 }
 
 impl<I> ParseError<I> for Error<I> {
+    #[inline]
     fn from_error_kind(input: I, kind: ErrorKind) -> Self {
         Error { input, kind }
     }
 
+    #[inline]
     fn append(self, _: I, _: ErrorKind) -> Self {
         self
     }
@@ -424,12 +428,14 @@ impl<I, C> ContextError<I, C> for Error<I> {}
 
 impl<I, E> FromExternalError<I, E> for Error<I> {
     /// Create a new error from an input position and an external error
+    #[inline]
     fn from_external_error(input: I, kind: ErrorKind, _e: E) -> Self {
         Error { input, kind }
     }
 }
 
 impl<I> ErrorConvert<Error<(I, usize)>> for Error<I> {
+    #[inline]
     fn convert(self) -> Error<(I, usize)> {
         Error {
             input: (self.input, 0),
@@ -439,6 +445,7 @@ impl<I> ErrorConvert<Error<(I, usize)>> for Error<I> {
 }
 
 impl<I> ErrorConvert<Error<I>> for Error<(I, usize)> {
+    #[inline]
     fn convert(self) -> Error<I> {
         Error {
             input: self.input.0,
@@ -458,18 +465,22 @@ impl<I: fmt::Display> fmt::Display for Error<I> {
 impl<I: fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::Error for Error<I> {}
 
 impl<I> ParseError<I> for () {
+    #[inline]
     fn from_error_kind(_: I, _: ErrorKind) -> Self {}
 
+    #[inline]
     fn append(self, _: I, _: ErrorKind) -> Self {}
 }
 
 impl<I, C> ContextError<I, C> for () {}
 
 impl<I, E> FromExternalError<I, E> for () {
+    #[inline]
     fn from_external_error(_input: I, _kind: ErrorKind, _e: E) -> Self {}
 }
 
 impl ErrorConvert<()> for () {
+    #[inline]
     fn convert(self) {}
 }
 
