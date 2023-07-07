@@ -388,7 +388,7 @@ impl<I> ErrorConvert<InputError<I>> for InputError<(I, usize)> {
 /// The Display implementation allows the `std::error::Error` implementation
 impl<I: fmt::Display> fmt::Display for InputError<I> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "error {:?} at: {}", self.kind, self.input)
+        write!(f, "{} error starting at: {}", self.kind, self.input)
     }
 }
 
