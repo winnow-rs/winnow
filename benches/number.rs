@@ -8,6 +8,7 @@ use winnow::binary::be_u64;
 use winnow::error::ErrMode;
 use winnow::error::ErrorKind;
 use winnow::error::InputError;
+use winnow::error::ParseError;
 use winnow::prelude::*;
 use winnow::stream::ParseSlice;
 
@@ -51,7 +52,7 @@ fn float_str(c: &mut Criterion) {
 fn std_float(input: &mut &[u8]) -> PResult<f64> {
     match input.parse_slice() {
         Some(n) => Ok(n),
-        None => Err(ErrMode::Backtrack(ErrorKind::Slice)),
+        None => Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Slice)),
     }
 }
 

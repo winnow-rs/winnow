@@ -8,6 +8,7 @@ use winnow::{
     combinator::separated0,
     combinator::{preceded, separated_pair, terminated},
     error::ParseError,
+    error::StrContext,
     stream::Offset,
     token::one_of,
     token::{tag, take_while},
@@ -220,7 +221,7 @@ fn parse_str<'a, E: ParseError<&'a str>>(i: &mut &'a str) -> PResult<&'a str, E>
 
 fn string<'s>(i: &mut &'s str) -> PResult<&'s str> {
     preceded('\"', cut_err(terminated(parse_str, '\"')))
-        .context("string")
+        .context(StrContext::Label("string"))
         .parse_next(i)
 }
 
@@ -236,7 +237,7 @@ fn array(i: &mut &str) -> PResult<()> {
             preceded(sp, ']'),
         )),
     )
-    .context("array")
+    .context(StrContext::Label("array"))
     .parse_next(i)
 }
 
@@ -252,7 +253,7 @@ fn hash(i: &mut &str) -> PResult<()> {
             preceded(sp, '}'),
         )),
     )
-    .context("map")
+    .context(StrContext::Label("map"))
     .parse_next(i)
 }
 

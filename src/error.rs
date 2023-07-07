@@ -49,7 +49,7 @@ pub type IResult<I, O, E = InputError<I>> = PResult<(I, O), E>;
 ///
 /// [`Parser::parse`] is a top-level operation that can help convert to a `Result` for integrating
 /// with your application's error reporting.
-pub type PResult<O, E = ErrorKind> = Result<O, ErrMode<E>>;
+pub type PResult<O, E = ContextError> = Result<O, ErrMode<E>>;
 
 /// Contains information on needed data if a parser returned `Incomplete`
 ///
