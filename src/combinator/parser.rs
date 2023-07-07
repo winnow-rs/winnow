@@ -1,4 +1,4 @@
-use crate::error::{ContextError, ErrMode, ErrorKind, FromExternalError, ParseError};
+use crate::error::{AddContext, ErrMode, ErrorKind, FromExternalError, ParseError};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::ops::Range;
 use crate::stream::StreamIsPartial;
@@ -791,7 +791,7 @@ pub struct Context<F, I, O, E, C>
 where
     F: Parser<I, O, E>,
     I: Stream,
-    E: ContextError<I, C>,
+    E: AddContext<I, C>,
     C: Clone + crate::lib::std::fmt::Debug,
 {
     parser: F,
@@ -805,7 +805,7 @@ impl<F, I, O, E, C> Context<F, I, O, E, C>
 where
     F: Parser<I, O, E>,
     I: Stream,
-    E: ContextError<I, C>,
+    E: AddContext<I, C>,
     C: Clone + crate::lib::std::fmt::Debug,
 {
     pub(crate) fn new(parser: F, context: C) -> Self {
@@ -823,7 +823,7 @@ impl<F, I, O, E, C> Parser<I, O, E> for Context<F, I, O, E, C>
 where
     F: Parser<I, O, E>,
     I: Stream,
-    E: ContextError<I, C>,
+    E: AddContext<I, C>,
     C: Clone + crate::lib::std::fmt::Debug,
 {
     #[inline]

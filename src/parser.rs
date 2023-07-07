@@ -1,7 +1,7 @@
 //! Basic types to build the parsers
 
 use crate::combinator::*;
-use crate::error::{ContextError, FromExternalError, IResult, PResult, ParseError};
+use crate::error::{AddContext, FromExternalError, IResult, PResult, ParseError};
 use crate::stream::{AsChar, Compare, Location, ParseSlice, Stream, StreamIsPartial};
 
 /// Core trait for parsing
@@ -581,7 +581,7 @@ pub trait Parser<I, O, E> {
     where
         Self: core::marker::Sized,
         I: Stream,
-        E: ContextError<I, C>,
+        E: AddContext<I, C>,
         C: Clone + crate::lib::std::fmt::Debug,
     {
         Context::new(self, context)

@@ -3,7 +3,7 @@
 //! The most basic error type is [`ParseError`][crate::error::ParseError]
 //!
 //! Optional traits include:
-//! - [`ContextError`][crate::error::ContextError]
+//! - [`AddContext`][crate::error::AddContext]
 //! - [`FromExternalError`][crate::error::FromExternalError]
 //!
 //! # Example

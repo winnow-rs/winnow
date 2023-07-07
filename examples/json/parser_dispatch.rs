@@ -11,7 +11,7 @@ use winnow::{
     combinator::{alt, dispatch},
     combinator::{delimited, preceded, separated_pair, terminated},
     combinator::{fold_repeat, separated0},
-    error::{ContextError, ParseError},
+    error::{AddContext, ParseError},
     token::{any, none_of, take, take_while},
 };
 
@@ -31,7 +31,7 @@ pub type Stream<'i> = &'i str;
 /// Here we use `&str` as input type, but parsers can be generic over
 /// the input type, work directly with `&[u8]`, or any other type that
 /// implements the required traits.
-pub fn json<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
+pub fn json<'i, E: ParseError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
     input: &mut Stream<'i>,
 ) -> PResult<JsonValue, E> {
     delimited(ws, json_value, ws).parse_next(input)
@@ -39,7 +39,7 @@ pub fn json<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static st
 
 /// `alt` is a combinator that tries multiple parsers one by one, until
 /// one of them succeeds
-fn json_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
+fn json_value<'i, E: ParseError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
     input: &mut Stream<'i>,
 ) -> PResult<JsonValue, E> {
     // `dispatch` gives you `match`-like behavior compared to `alt` successively trying different
@@ -86,7 +86,7 @@ fn false_<'i, E: ParseError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<bool
 
 /// This parser gathers all `char`s up into a `String`with a parse to recognize the double quote
 /// character, before the string (using `preceded`) and after the string (using `terminated`).
-fn string<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
+fn string<'i, E: ParseError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
     input: &mut Stream<'i>,
 ) -> PResult<String, E> {
     preceded(
@@ -164,7 +164,7 @@ fn u16_hex<'i, E: ParseError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<u16
 /// accumulating results in a `Vec`, until it encounters an error.
 /// If you want more control on the parser application, check out the `iterator`
 /// combinator (cf `examples/iterator.rs`)
-fn array<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
+fn array<'i, E: ParseError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
     input: &mut Stream<'i>,
 ) -> PResult<Vec<JsonValue>, E> {
     preceded(
@@ -175,7 +175,7 @@ fn array<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>
     .parse_next(input)
 }
 
-fn object<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
+fn object<'i, E: ParseError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
     input: &mut Stream<'i>,
 ) -> PResult<HashMap<String, JsonValue>, E> {
     preceded(
@@ -186,7 +186,7 @@ fn object<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>
     .parse_next(input)
 }
 
-fn key_value<'i, E: ParseError<Stream<'i>> + ContextError<Stream<'i>, &'static str>>(
+fn key_value<'i, E: ParseError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
     input: &mut Stream<'i>,
 ) -> PResult<(String, JsonValue), E> {
     separated_pair(string, cut_err((ws, ':', ws)), json_value).parse_next(input)

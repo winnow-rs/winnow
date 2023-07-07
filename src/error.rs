@@ -283,7 +283,7 @@ pub trait ParseError<I>: Sized {
 /// Used by [`Parser::context`] to add custom data to error while backtracking
 ///
 /// May be implemented multiple times for different kinds of context.
-pub trait ContextError<I, C = &'static str>: Sized {
+pub trait AddContext<I, C = &'static str>: Sized {
     /// Append to an existing error custom data
     ///
     /// This is used mainly by [`Parser::context`], to add user friendly information
@@ -350,7 +350,7 @@ impl<I> ParseError<I> for InputError<I> {
     }
 }
 
-impl<I, C> ContextError<I, C> for InputError<I> {}
+impl<I, C> AddContext<I, C> for InputError<I> {}
 
 impl<I, E> FromExternalError<I, E> for InputError<I> {
     /// Create a new error from an input position and an external error
@@ -393,7 +393,7 @@ impl<I> ParseError<I> for () {
     fn append(self, _: I, _: ErrorKind) -> Self {}
 }
 
-impl<I, C> ContextError<I, C> for () {}
+impl<I, C> AddContext<I, C> for () {}
 
 impl<I, E> FromExternalError<I, E> for () {
     fn from_external_error(_input: I, _kind: ErrorKind, _e: E) -> Self {}
@@ -458,7 +458,7 @@ impl<I> ParseError<I> for VerboseError<I> {
 }
 
 #[cfg(feature = "alloc")]
-impl<I> ContextError<I, &'static str> for VerboseError<I> {
+impl<I> AddContext<I, &'static str> for VerboseError<I> {
     fn add_context(mut self, input: I, ctx: &'static str) -> Self {
         self.errors.push((input, VerboseErrorKind::Context(ctx)));
         self
@@ -642,7 +642,7 @@ impl<I> ParseError<I> for ErrorKind {
     }
 }
 
-impl<I, C> ContextError<I, C> for ErrorKind {}
+impl<I, C> AddContext<I, C> for ErrorKind {}
 
 impl<I, E> FromExternalError<I, E> for ErrorKind {
     /// Create a new error from an input position and an external error
