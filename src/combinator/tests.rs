@@ -8,7 +8,7 @@ use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::InputError;
 use crate::error::Needed;
-use crate::error::ParseError;
+use crate::error::ParserError;
 use crate::stream::Stream;
 use crate::token::take;
 use crate::unpeek;
@@ -89,7 +89,7 @@ impl From<u32> for CustomError {
     }
 }
 
-impl<I> ParseError<I> for CustomError {
+impl<I> ParserError<I> for CustomError {
     fn from_error_kind(_: I, _: ErrorKind) -> Self {
         CustomError
     }
@@ -516,7 +516,7 @@ fn delimited_test() {
 fn alt_test() {
     #[cfg(feature = "alloc")]
     use crate::{
-        error::ParseError,
+        error::ParserError,
         lib::std::{
             fmt::Debug,
             string::{String, ToString},
@@ -542,7 +542,7 @@ fn alt_test() {
     }
 
     #[cfg(feature = "alloc")]
-    impl<I: Debug> ParseError<I> for ErrorStr {
+    impl<I: Debug> ParserError<I> for ErrorStr {
         fn from_error_kind(input: I, kind: ErrorKind) -> Self {
             ErrorStr(format!("custom error message: ({:?}, {:?})", input, kind))
         }
@@ -1080,7 +1080,7 @@ impl<I> From<(I, ErrorKind)> for NilError {
     }
 }
 
-impl<I> ParseError<I> for NilError {
+impl<I> ParserError<I> for NilError {
     fn from_error_kind(_: I, _: ErrorKind) -> NilError {
         NilError
     }

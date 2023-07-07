@@ -1,7 +1,7 @@
 //! Basic types to build the parsers
 
 use crate::combinator::*;
-use crate::error::{AddContext, FromExternalError, IResult, PResult, ParseError};
+use crate::error::{AddContext, FromExternalError, IResult, PResult, ParserError};
 use crate::stream::{AsChar, Compare, Location, ParseSlice, Stream, StreamIsPartial};
 
 /// Core trait for parsing
@@ -48,7 +48,7 @@ pub trait Parser<I, O, E> {
         // Force users to deal with `Incomplete` when `StreamIsPartial<true>`
         I: StreamIsPartial,
         I: Clone,
-        E: ParseError<I>,
+        E: ParserError<I>,
     {
         debug_assert!(
             !I::is_partial_supported(),
@@ -94,9 +94,9 @@ pub trait Parser<I, O, E> {
     /// ```rust,compile_fail
     /// # use winnow::prelude::*;
     /// # use winnow::Parser;
-    /// # use winnow::error::ParseError;
+    /// # use winnow::error::ParserError;
     /// # use winnow::binary::length_data;
-    /// pub fn length_value<'i, O, E: ParseError<&'i [u8]>>(
+    /// pub fn length_value<'i, O, E: ParserError<&'i [u8]>>(
     ///     mut f: impl Parser<&'i [u8], usize, E>,
     ///     mut g: impl Parser<&'i [u8], O, E>
     /// ) -> impl Parser<&'i [u8], O, E> {
@@ -112,9 +112,9 @@ pub trait Parser<I, O, E> {
     /// ```rust
     /// # use winnow::prelude::*;
     /// # use winnow::Parser;
-    /// # use winnow::error::ParseError;
+    /// # use winnow::error::ParserError;
     /// # use winnow::binary::length_data;
-    /// pub fn length_value<'i, O, E: ParseError<&'i [u8]>>(
+    /// pub fn length_value<'i, O, E: ParserError<&'i [u8]>>(
     ///     mut f: impl Parser<&'i [u8], usize, E>,
     ///     mut g: impl Parser<&'i [u8], O, E>
     /// ) -> impl Parser<&'i [u8], O, E> {
@@ -435,7 +435,7 @@ pub trait Parser<I, O, E> {
         Self: core::marker::Sized,
         G: FnMut(O) -> Option<O2>,
         I: Stream,
-        E: ParseError<I>,
+        E: ParserError<I>,
     {
         VerifyMap::new(self, map)
     }
@@ -533,7 +533,7 @@ pub trait Parser<I, O, E> {
         Self: core::marker::Sized,
         I: Stream,
         O: ParseSlice<O2>,
-        E: ParseError<I>,
+        E: ParserError<I>,
     {
         ParseTo::new(self)
     }
@@ -566,7 +566,7 @@ pub trait Parser<I, O, E> {
         I: Stream,
         O: crate::lib::std::borrow::Borrow<O2>,
         O2: ?Sized,
-        E: ParseError<I>,
+        E: ParserError<I>,
     {
         Verify::new(self, filter)
     }
@@ -648,7 +648,7 @@ impl<I, E> Parser<I, u8, E> for u8
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     #[inline(always)]
     fn parse_next(&mut self, i: &mut I) -> PResult<u8, E> {
@@ -676,7 +676,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar + Copy,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     #[inline(always)]
     fn parse_next(&mut self, i: &mut I) -> PResult<<I as Stream>::Token, E> {
@@ -702,7 +702,7 @@ where
 /// assert_eq!(parser.parse_peek(&b"Some"[..]), Err(ErrMode::Backtrack(InputError::new(&b"Some"[..], ErrorKind::Slice))));
 /// assert_eq!(parser.parse_peek(&b""[..]), Err(ErrMode::Backtrack(InputError::new(&b""[..], ErrorKind::Slice))));
 /// ```
-impl<'s, I, E: ParseError<I>> Parser<I, <I as Stream>::Slice, E> for &'s [u8]
+impl<'s, I, E: ParserError<I>> Parser<I, <I as Stream>::Slice, E> for &'s [u8]
 where
     I: Compare<&'s [u8]> + StreamIsPartial,
     I: Stream,
@@ -731,7 +731,7 @@ where
 /// assert_eq!(parser.parse_peek(&b"Some"[..]), Err(ErrMode::Backtrack(InputError::new(&b"Some"[..], ErrorKind::Slice))));
 /// assert_eq!(parser.parse_peek(&b""[..]), Err(ErrMode::Backtrack(InputError::new(&b""[..], ErrorKind::Slice))));
 /// ```
-impl<'s, I, E: ParseError<I>, const N: usize> Parser<I, <I as Stream>::Slice, E> for &'s [u8; N]
+impl<'s, I, E: ParserError<I>, const N: usize> Parser<I, <I as Stream>::Slice, E> for &'s [u8; N]
 where
     I: Compare<&'s [u8; N]> + StreamIsPartial,
     I: Stream,
@@ -760,7 +760,7 @@ where
 /// assert_eq!(parser.parse_peek("Some"), Err(ErrMode::Backtrack(InputError::new("Some", ErrorKind::Slice))));
 /// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Slice))));
 /// ```
-impl<'s, I, E: ParseError<I>> Parser<I, <I as Stream>::Slice, E> for &'s str
+impl<'s, I, E: ParserError<I>> Parser<I, <I as Stream>::Slice, E> for &'s str
 where
     I: Compare<&'s str> + StreamIsPartial,
     I: Stream,
@@ -771,7 +771,7 @@ where
     }
 }
 
-impl<I, E: ParseError<I>> Parser<I, (), E> for () {
+impl<I, E: ParserError<I>> Parser<I, (), E> for () {
     #[inline(always)]
     fn parse_next(&mut self, _i: &mut I) -> PResult<(), E> {
         Ok(())
@@ -781,7 +781,7 @@ impl<I, E: ParseError<I>> Parser<I, (), E> for () {
 macro_rules! impl_parser_for_tuple {
   ($($parser:ident $output:ident),+) => (
     #[allow(non_snake_case)]
-    impl<I, $($output),+, E: ParseError<I>, $($parser),+> Parser<I, ($($output),+,), E> for ($($parser),+,)
+    impl<I, $($output),+, E: ParserError<I>, $($parser),+> Parser<I, ($($output),+,), E> for ($($parser),+,)
     where
       $($parser: Parser<I, $output, E>),+
     {

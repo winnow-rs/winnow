@@ -12,7 +12,7 @@ use crate::token::one_of;
 
 use crate::combinator::cut_err;
 use crate::combinator::opt;
-use crate::error::ParseError;
+use crate::error::ParserError;
 use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::stream::{AsBStr, AsChar, ParseSlice, Stream, StreamIsPartial};
 use crate::stream::{Compare, CompareResult};
@@ -52,7 +52,7 @@ use crate::Parser;
 /// assert_eq!(crlf::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn crlf<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+pub fn crlf<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -97,7 +97,7 @@ where
 /// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("a\rbc")), Err(ErrMode::Backtrack(InputError::new(Partial::new("\rbc"), ErrorKind::Tag ))));
 /// ```
 #[inline(always)]
-pub fn not_line_ending<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+pub fn not_line_ending<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream + AsBStr,
@@ -114,7 +114,7 @@ where
     .parse_next(input)
 }
 
-fn not_line_ending_<I, E: ParseError<I>, const PARTIAL: bool>(
+fn not_line_ending_<I, E: ParserError<I>, const PARTIAL: bool>(
     input: &mut I,
 ) -> PResult<<I as Stream>::Slice, E>
 where
@@ -183,7 +183,7 @@ where
 /// assert_eq!(line_ending::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn line_ending<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+pub fn line_ending<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -223,7 +223,7 @@ where
 /// assert_eq!(newline::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn newline<I, Error: ParseError<I>>(input: &mut I) -> PResult<char, Error>
+pub fn newline<I, Error: ParserError<I>>(input: &mut I) -> PResult<char, Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -263,7 +263,7 @@ where
 /// assert_eq!(tab::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn tab<I, Error: ParseError<I>>(input: &mut I) -> PResult<char, Error>
+pub fn tab<I, Error: ParserError<I>>(input: &mut I) -> PResult<char, Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -305,7 +305,7 @@ where
 /// assert_eq!(alpha0::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alpha0<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+pub fn alpha0<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -351,7 +351,7 @@ where
 /// assert_eq!(alpha1::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alpha1<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+pub fn alpha1<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -398,7 +398,7 @@ where
 /// assert_eq!(digit0::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn digit0<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+pub fn digit0<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -461,7 +461,7 @@ where
 /// assert!(parser.parse_peek("b").is_err());
 /// ```
 #[inline(always)]
-pub fn digit1<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+pub fn digit1<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -506,7 +506,7 @@ where
 /// assert_eq!(hex_digit0::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn hex_digit0<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+pub fn hex_digit0<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -552,7 +552,7 @@ where
 /// assert_eq!(hex_digit1::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn hex_digit1<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+pub fn hex_digit1<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -598,7 +598,7 @@ where
 /// assert_eq!(oct_digit0::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn oct_digit0<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+pub fn oct_digit0<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -644,7 +644,7 @@ where
 /// assert_eq!(oct_digit1::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn oct_digit1<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+pub fn oct_digit1<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -690,7 +690,7 @@ where
 /// assert_eq!(alphanumeric0::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alphanumeric0<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+pub fn alphanumeric0<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -736,7 +736,7 @@ where
 /// assert_eq!(alphanumeric1::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alphanumeric1<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+pub fn alphanumeric1<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -769,7 +769,7 @@ where
 /// assert_eq!(space0::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn space0<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+pub fn space0<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -818,7 +818,7 @@ where
 /// assert_eq!(space1::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn space1<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+pub fn space1<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -867,7 +867,7 @@ where
 /// assert_eq!(multispace0::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn multispace0<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+pub fn multispace0<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -916,7 +916,7 @@ where
 /// assert_eq!(multispace1::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn multispace1<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+pub fn multispace1<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -942,7 +942,7 @@ where
 #[doc(alias = "u32")]
 #[doc(alias = "u64")]
 #[doc(alias = "u128")]
-pub fn dec_uint<I, O, E: ParseError<I>>(input: &mut I) -> PResult<O, E>
+pub fn dec_uint<I, O, E: ParserError<I>>(input: &mut I) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -1097,7 +1097,7 @@ impl Uint for i128 {
 #[doc(alias = "i32")]
 #[doc(alias = "i64")]
 #[doc(alias = "i128")]
-pub fn dec_int<I, O, E: ParseError<I>>(input: &mut I) -> PResult<O, E>
+pub fn dec_int<I, O, E: ParserError<I>>(input: &mut I) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -1231,7 +1231,7 @@ impl Int for i128 {
 /// assert_eq!(parser.parse_peek(Partial::new(&b"ggg"[..])), Err(ErrMode::Backtrack(InputError::new(Partial::new(&b"ggg"[..]), ErrorKind::Slice))));
 /// ```
 #[inline]
-pub fn hex_uint<I, O, E: ParseError<I>>(input: &mut I) -> PResult<O, E>
+pub fn hex_uint<I, O, E: ParserError<I>>(input: &mut I) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -1375,7 +1375,7 @@ impl HexUint for u128 {
 #[inline(always)]
 #[doc(alias = "f32")]
 #[doc(alias = "double")]
-pub fn float<I, O, E: ParseError<I>>(input: &mut I) -> PResult<O, E>
+pub fn float<I, O, E: ParserError<I>>(input: &mut I) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -1393,7 +1393,7 @@ where
     .parse_next(input)
 }
 
-fn recognize_float_or_exceptions<I, E: ParseError<I>>(
+fn recognize_float_or_exceptions<I, E: ParserError<I>>(
     input: &mut I,
 ) -> PResult<<I as Stream>::Slice, E>
 where
@@ -1413,7 +1413,7 @@ where
     .parse_next(input)
 }
 
-fn recognize_float<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+fn recognize_float<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -1486,7 +1486,7 @@ where
     <I as Stream>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
-    Error: ParseError<I>,
+    Error: ParserError<I>,
 {
     trace("escaped", move |input: &mut I| {
         if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
@@ -1509,7 +1509,7 @@ where
     <I as Stream>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
-    Error: ParseError<I>,
+    Error: ParserError<I>,
 {
     let start = input.checkpoint();
 
@@ -1561,7 +1561,7 @@ where
     <I as Stream>::Token: crate::stream::AsChar,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
-    Error: ParseError<I>,
+    Error: ParserError<I>,
 {
     let start = input.checkpoint();
 
@@ -1677,7 +1677,7 @@ where
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
     G: Parser<I, <I as Stream>::Slice, Error>,
-    Error: ParseError<I>,
+    Error: ParserError<I>,
 {
     trace("escaped_transform", move |input: &mut I| {
         if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
@@ -1701,7 +1701,7 @@ where
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
     G: Parser<I, <I as Stream>::Slice, Error>,
-    Error: ParseError<I>,
+    Error: ParserError<I>,
 {
     let mut res = Output::initial(Some(input.eof_offset()));
 
@@ -1748,7 +1748,7 @@ where
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
     G: Parser<I, <I as Stream>::Slice, Error>,
-    Error: ParseError<I>,
+    Error: ParserError<I>,
 {
     let mut res = Output::initial(Some(input.eof_offset()));
 

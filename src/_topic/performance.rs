@@ -24,7 +24,7 @@
 //! # where
 //! #    I: winnow::stream::Stream<Token=O>,
 //! #    I: winnow::stream::StreamIsPartial,
-//! #    E: winnow::error::ParseError<I>,
+//! #    E: winnow::error::ParserError<I>,
 //! {
 //!     // ...some chained combinators...
 //! # winnow::token::any
@@ -38,7 +38,7 @@
 //! # where
 //! #    I: winnow::stream::Stream<Token=O>,
 //! #    I: winnow::stream::StreamIsPartial,
-//! #    E: winnow::error::ParseError<I>,
+//! #    E: winnow::error::ParserError<I>,
 //! {
 //!     move |input: &mut I| {
 //!         // ...some chained combinators...

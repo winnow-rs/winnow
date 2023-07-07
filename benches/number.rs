@@ -8,7 +8,7 @@ use winnow::binary::be_u64;
 use winnow::error::ErrMode;
 use winnow::error::ErrorKind;
 use winnow::error::InputError;
-use winnow::error::ParseError;
+use winnow::error::ParserError;
 use winnow::prelude::*;
 use winnow::stream::ParseSlice;
 

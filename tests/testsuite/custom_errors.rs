@@ -4,7 +4,7 @@ use winnow::ascii::digit1 as digit;
 #[cfg(feature = "alloc")]
 use winnow::combinator::repeat;
 use winnow::combinator::terminated;
-use winnow::error::{ErrorKind, ParseError};
+use winnow::error::{ErrorKind, ParserError};
 use winnow::prelude::*;
 use winnow::unpeek;
 use winnow::IResult;
@@ -19,7 +19,7 @@ impl<'a> From<(&'a str, ErrorKind)> for CustomError {
     }
 }
 
-impl<'a> ParseError<Partial<&'a str>> for CustomError {
+impl<'a> ParserError<Partial<&'a str>> for CustomError {
     fn from_error_kind(_: Partial<&'a str>, kind: ErrorKind) -> Self {
         CustomError(format!("error code was: {:?}", kind))
     }

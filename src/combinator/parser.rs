@@ -1,4 +1,4 @@
-use crate::error::{AddContext, ErrMode, ErrorKind, FromExternalError, ParseError};
+use crate::error::{AddContext, ErrMode, ErrorKind, FromExternalError, ParserError};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::ops::Range;
 use crate::stream::StreamIsPartial;
@@ -137,7 +137,7 @@ where
     F: Parser<I, O, E>,
     G: FnMut(O) -> Option<O2>,
     I: Stream,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     parser: F,
     map: G,
@@ -152,7 +152,7 @@ where
     F: Parser<I, O, E>,
     G: FnMut(O) -> Option<O2>,
     I: Stream,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     pub(crate) fn new(parser: F, map: G) -> Self {
         Self {
@@ -171,7 +171,7 @@ where
     F: Parser<I, O, E>,
     G: FnMut(O) -> Option<O2>,
     I: Stream,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     #[inline]
     fn parse_next(&mut self, input: &mut I) -> PResult<O2, E> {
@@ -249,7 +249,7 @@ where
     P: Parser<I, O, E>,
     I: Stream,
     O: crate::stream::ParseSlice<O2>,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     p: P,
     i: core::marker::PhantomData<I>,
@@ -263,7 +263,7 @@ where
     P: Parser<I, O, E>,
     I: Stream,
     O: crate::stream::ParseSlice<O2>,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     pub(crate) fn new(p: P) -> Self {
         Self {
@@ -281,7 +281,7 @@ where
     P: Parser<I, O, E>,
     I: Stream,
     O: crate::stream::ParseSlice<O2>,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     #[inline]
     fn parse_next(&mut self, i: &mut I) -> PResult<O2, E> {
@@ -361,7 +361,7 @@ impl<F, I, O, E> Parser<I, O, E> for CompleteErr<F>
 where
     I: Stream,
     F: Parser<I, O, E>,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     #[inline]
     fn parse_next(&mut self, input: &mut I) -> PResult<O, E> {
@@ -386,7 +386,7 @@ where
     I: Stream,
     O: Borrow<O2>,
     O2: ?Sized,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     parser: F,
     filter: G,
@@ -403,7 +403,7 @@ where
     I: Stream,
     O: Borrow<O2>,
     O2: ?Sized,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     pub(crate) fn new(parser: F, filter: G) -> Self {
         Self {
@@ -424,7 +424,7 @@ where
     I: Stream,
     O: Borrow<O2>,
     O2: ?Sized,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     #[inline]
     fn parse_next(&mut self, input: &mut I) -> PResult<O, E> {

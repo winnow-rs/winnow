@@ -6,7 +6,7 @@ mod tests;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::Needed;
-use crate::error::ParseError;
+use crate::error::ParserError;
 use crate::lib::std::result::Result::Ok;
 use crate::stream::Range;
 use crate::stream::{Compare, CompareResult, ContainsToken, FindSlice, SliceLen, Stream};
@@ -43,7 +43,7 @@ use crate::Parser;
 /// ```
 #[inline(always)]
 #[doc(alias = "token")]
-pub fn any<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Token, E>
+pub fn any<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Token, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -58,7 +58,9 @@ where
     .parse_next(input)
 }
 
-fn any_<I, E: ParseError<I>, const PARTIAL: bool>(input: &mut I) -> PResult<<I as Stream>::Token, E>
+fn any_<I, E: ParserError<I>, const PARTIAL: bool>(
+    input: &mut I,
+) -> PResult<<I as Stream>::Token, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -116,7 +118,7 @@ where
 #[doc(alias = "literal")]
 #[doc(alias = "bytes")]
 #[doc(alias = "just")]
-pub fn tag<T, I, Error: ParseError<I>>(tag: T) -> impl Parser<I, <I as Stream>::Slice, Error>
+pub fn tag<T, I, Error: ParserError<I>>(tag: T) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream + Compare<T>,
@@ -132,7 +134,7 @@ where
     })
 }
 
-fn tag_<T, I, Error: ParseError<I>, const PARTIAL: bool>(
+fn tag_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     i: &mut I,
     t: T,
 ) -> PResult<<I as Stream>::Slice, Error>
@@ -199,7 +201,7 @@ where
 #[doc(alias = "literal")]
 #[doc(alias = "bytes")]
 #[doc(alias = "just")]
-pub fn tag_no_case<T, I, Error: ParseError<I>>(
+pub fn tag_no_case<T, I, Error: ParserError<I>>(
     tag: T,
 ) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
@@ -217,7 +219,7 @@ where
     })
 }
 
-fn tag_no_case_<T, I, Error: ParseError<I>, const PARTIAL: bool>(
+fn tag_no_case_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     i: &mut I,
     t: T,
 ) -> PResult<<I as Stream>::Slice, Error>
@@ -289,7 +291,7 @@ where
 #[doc(alias = "char")]
 #[doc(alias = "token")]
 #[doc(alias = "satisfy")]
-pub fn one_of<I, T, Error: ParseError<I>>(list: T) -> impl Parser<I, <I as Stream>::Token, Error>
+pub fn one_of<I, T, Error: ParserError<I>>(list: T) -> impl Parser<I, <I as Stream>::Token, Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -329,7 +331,7 @@ where
 /// assert_eq!(none_of::<_, _, InputError<_>>('a').parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn none_of<I, T, Error: ParseError<I>>(list: T) -> impl Parser<I, <I as Stream>::Token, Error>
+pub fn none_of<I, T, Error: ParserError<I>>(list: T) -> impl Parser<I, <I as Stream>::Token, Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -478,7 +480,7 @@ where
 #[doc(alias = "is_a")]
 #[doc(alias = "take_while0")]
 #[doc(alias = "take_while1")]
-pub fn take_while<T, I, Error: ParseError<I>>(
+pub fn take_while<T, I, Error: ParserError<I>>(
     range: impl Into<Range>,
     list: T,
 ) -> impl Parser<I, <I as Stream>::Slice, Error>
@@ -519,7 +521,7 @@ where
     })
 }
 
-fn take_while0_<T, I, Error: ParseError<I>, const PARTIAL: bool>(
+fn take_while0_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     input: &mut I,
     list: &T,
 ) -> PResult<<I as Stream>::Slice, Error>
@@ -535,7 +537,7 @@ where
     }
 }
 
-fn take_while1_<T, I, Error: ParseError<I>, const PARTIAL: bool>(
+fn take_while1_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     input: &mut I,
     list: &T,
 ) -> PResult<<I as Stream>::Slice, Error>
@@ -556,7 +558,7 @@ where
 /// and returns the input up to this position.
 ///
 /// *Partial version*: If no element is found matching the condition, this will return `Incomplete`
-fn take_till0_partial<P, I: Stream, E: ParseError<I>>(
+fn take_till0_partial<P, I: Stream, E: ParserError<I>>(
     input: &mut I,
     predicate: P,
 ) -> PResult<<I as Stream>::Slice, E>
@@ -575,7 +577,7 @@ where
 /// Fails if the produced slice is empty.
 ///
 /// *Partial version*: If no element is found matching the condition, this will return `Incomplete`
-fn take_till1_partial<P, I: Stream, E: ParseError<I>>(
+fn take_till1_partial<P, I: Stream, E: ParserError<I>>(
     input: &mut I,
     predicate: P,
     e: ErrorKind,
@@ -597,7 +599,7 @@ where
 /// and returns the input up to this position.
 ///
 /// *Complete version*: If no element is found matching the condition, this will return the whole input
-fn take_till0_complete<P, I: Stream, E: ParseError<I>>(
+fn take_till0_complete<P, I: Stream, E: ParserError<I>>(
     input: &mut I,
     predicate: P,
 ) -> PResult<<I as Stream>::Slice, E>
@@ -616,7 +618,7 @@ where
 /// Fails if the produced slice is empty.
 ///
 /// *Complete version*: If no element is found matching the condition, this will return the whole input
-fn take_till1_complete<P, I: Stream, E: ParseError<I>>(
+fn take_till1_complete<P, I: Stream, E: ParserError<I>>(
     input: &mut I,
     predicate: P,
     e: ErrorKind,
@@ -634,7 +636,7 @@ where
     }
 }
 
-fn take_while_m_n_<T, I, Error: ParseError<I>, const PARTIAL: bool>(
+fn take_while_m_n_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     input: &mut I,
     m: usize,
     n: usize,
@@ -722,7 +724,7 @@ where
 /// assert_eq!(till_colon(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn take_till0<T, I, Error: ParseError<I>>(
+pub fn take_till0<T, I, Error: ParserError<I>>(
     list: T,
 ) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
@@ -799,7 +801,7 @@ where
 /// ```
 #[inline(always)]
 #[doc(alias = "is_not")]
-pub fn take_till1<T, I, Error: ParseError<I>>(
+pub fn take_till1<T, I, Error: ParserError<I>>(
     list: T,
 ) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
@@ -874,7 +876,7 @@ where
 /// assert_eq!(take6(Partial::new("short")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// ```
 #[inline(always)]
-pub fn take<C, I, Error: ParseError<I>>(count: C) -> impl Parser<I, <I as Stream>::Slice, Error>
+pub fn take<C, I, Error: ParserError<I>>(count: C) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -890,7 +892,7 @@ where
     })
 }
 
-fn take_<I, Error: ParseError<I>, const PARTIAL: bool>(
+fn take_<I, Error: ParserError<I>, const PARTIAL: bool>(
     i: &mut I,
     c: usize,
 ) -> PResult<<I as Stream>::Slice, Error>
@@ -948,7 +950,7 @@ where
 /// assert_eq!(until_eof(Partial::new("1eof2eof")), Ok((Partial::new("eof2eof"), "1")));
 /// ```
 #[inline(always)]
-pub fn take_until0<T, I, Error: ParseError<I>>(
+pub fn take_until0<T, I, Error: ParserError<I>>(
     tag: T,
 ) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
@@ -965,7 +967,7 @@ where
     })
 }
 
-fn take_until0_<T, I, Error: ParseError<I>, const PARTIAL: bool>(
+fn take_until0_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     i: &mut I,
     t: T,
 ) -> PResult<<I as Stream>::Slice, Error>
@@ -1026,7 +1028,7 @@ where
 /// assert_eq!(until_eof(Partial::new("eof")),  Err(ErrMode::Backtrack(InputError::new(Partial::new("eof"), ErrorKind::Slice))));
 /// ```
 #[inline(always)]
-pub fn take_until1<T, I, Error: ParseError<I>>(
+pub fn take_until1<T, I, Error: ParserError<I>>(
     tag: T,
 ) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
@@ -1043,7 +1045,7 @@ where
     })
 }
 
-fn take_until1_<T, I, Error: ParseError<I>, const PARTIAL: bool>(
+fn take_until1_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     i: &mut I,
     t: T,
 ) -> PResult<<I as Stream>::Slice, Error>

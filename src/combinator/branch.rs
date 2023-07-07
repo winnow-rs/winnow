@@ -1,4 +1,4 @@
-use crate::error::{ErrMode, ErrorKind, ParseError};
+use crate::error::{ErrMode, ErrorKind, ParserError};
 use crate::stream::Stream;
 use crate::trace::trace;
 use crate::*;
@@ -45,7 +45,7 @@ pub trait Alt<I, O, E> {
 /// # }
 /// ```
 #[doc(alias = "choice")]
-pub fn alt<I: Stream, O, E: ParseError<I>, List: Alt<I, O, E>>(
+pub fn alt<I: Stream, O, E: ParserError<I>, List: Alt<I, O, E>>(
     mut l: List,
 ) -> impl Parser<I, O, E> {
     trace("alt", move |i: &mut I| l.choice(i))
@@ -106,7 +106,7 @@ pub trait Permutation<I, O, E> {
 /// assert_eq!(parser("ab"), Err(ErrMode::Backtrack(InputError::new("b", ErrorKind::Verify))));
 /// ```
 ///
-pub fn permutation<I: Stream, O, E: ParseError<I>, List: Permutation<I, O, E>>(
+pub fn permutation<I: Stream, O, E: ParserError<I>, List: Permutation<I, O, E>>(
     mut l: List,
 ) -> impl Parser<I, O, E> {
     trace("permutation", move |i: &mut I| l.permutation(i))
@@ -130,7 +130,7 @@ macro_rules! alt_trait(
 macro_rules! alt_trait_impl(
   ($($id:ident)+) => (
     impl<
-      I: Stream, Output, Error: ParseError<I>,
+      I: Stream, Output, Error: ParserError<I>,
       $($id: Parser<I, Output, Error>),+
     > Alt<I, Output, Error> for ( $($id),+ ) {
 
@@ -165,7 +165,7 @@ macro_rules! alt_trait_inner(
 alt_trait!(Alt2 Alt3 Alt4 Alt5 Alt6 Alt7 Alt8 Alt9 Alt10 Alt11 Alt12 Alt13 Alt14 Alt15 Alt16 Alt17 Alt18 Alt19 Alt20 Alt21 Alt22);
 
 // Manually implement Alt for (A,), the 1-tuple type
-impl<I, O, E: ParseError<I>, A: Parser<I, O, E>> Alt<I, O, E> for (A,) {
+impl<I, O, E: ParserError<I>, A: Parser<I, O, E>> Alt<I, O, E> for (A,) {
     fn choice(&mut self, input: &mut I) -> PResult<O, E> {
         self.0.parse_next(input)
     }
@@ -194,7 +194,7 @@ macro_rules! permutation_trait(
 macro_rules! permutation_trait_impl(
   ($($name:ident $ty:ident $item:ident),+) => (
     impl<
-      I: Stream, $($ty),+ , Error: ParseError<I>,
+      I: Stream, $($ty),+ , Error: ParserError<I>,
       $($name: Parser<I, $ty, Error>),+
     > Permutation<I, ( $($ty),+ ), Error> for ( $($name),+ ) {
 

@@ -11,7 +11,7 @@ use crate::combinator::repeat;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::Needed;
-use crate::error::ParseError;
+use crate::error::ParserError;
 use crate::lib::std::ops::{Add, Shl};
 use crate::stream::Accumulate;
 use crate::stream::{AsBytes, Stream, StreamIsPartial};
@@ -68,7 +68,7 @@ pub enum Endianness {
 /// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn be_u8<I, E: ParseError<I>>(input: &mut I) -> PResult<u8, E>
+pub fn be_u8<I, E: ParserError<I>>(input: &mut I) -> PResult<u8, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -112,7 +112,7 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn be_u16<I, E: ParseError<I>>(input: &mut I) -> PResult<u16, E>
+pub fn be_u16<I, E: ParserError<I>>(input: &mut I) -> PResult<u16, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -157,7 +157,7 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn be_u24<I, E: ParseError<I>>(input: &mut I) -> PResult<u32, E>
+pub fn be_u24<I, E: ParserError<I>>(input: &mut I) -> PResult<u32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -202,7 +202,7 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn be_u32<I, E: ParseError<I>>(input: &mut I) -> PResult<u32, E>
+pub fn be_u32<I, E: ParserError<I>>(input: &mut I) -> PResult<u32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -247,7 +247,7 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn be_u64<I, E: ParseError<I>>(input: &mut I) -> PResult<u64, E>
+pub fn be_u64<I, E: ParserError<I>>(input: &mut I) -> PResult<u64, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -292,7 +292,7 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn be_u128<I, E: ParseError<I>>(input: &mut I) -> PResult<u128, E>
+pub fn be_u128<I, E: ParserError<I>>(input: &mut I) -> PResult<u128, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -302,7 +302,7 @@ where
 }
 
 #[inline]
-fn be_uint<I, Uint, E: ParseError<I>>(input: &mut I, bound: usize) -> PResult<Uint, E>
+fn be_uint<I, Uint, E: ParserError<I>>(input: &mut I, bound: usize) -> PResult<Uint, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -364,7 +364,7 @@ where
 /// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn be_i8<I, E: ParseError<I>>(input: &mut I) -> PResult<i8, E>
+pub fn be_i8<I, E: ParserError<I>>(input: &mut I) -> PResult<i8, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -408,7 +408,7 @@ where
 /// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn be_i16<I, E: ParseError<I>>(input: &mut I) -> PResult<i16, E>
+pub fn be_i16<I, E: ParserError<I>>(input: &mut I) -> PResult<i16, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -456,7 +456,7 @@ where
 /// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn be_i24<I, E: ParseError<I>>(input: &mut I) -> PResult<i32, E>
+pub fn be_i24<I, E: ParserError<I>>(input: &mut I) -> PResult<i32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -512,7 +512,7 @@ where
 /// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(4))));
 /// ```
 #[inline(always)]
-pub fn be_i32<I, E: ParseError<I>>(input: &mut I) -> PResult<i32, E>
+pub fn be_i32<I, E: ParserError<I>>(input: &mut I) -> PResult<i32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -560,7 +560,7 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn be_i64<I, E: ParseError<I>>(input: &mut I) -> PResult<i64, E>
+pub fn be_i64<I, E: ParserError<I>>(input: &mut I) -> PResult<i64, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -608,7 +608,7 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn be_i128<I, E: ParseError<I>>(input: &mut I) -> PResult<i128, E>
+pub fn be_i128<I, E: ParserError<I>>(input: &mut I) -> PResult<i128, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -656,7 +656,7 @@ where
 /// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn le_u8<I, E: ParseError<I>>(input: &mut I) -> PResult<u8, E>
+pub fn le_u8<I, E: ParserError<I>>(input: &mut I) -> PResult<u8, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -700,7 +700,7 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn le_u16<I, E: ParseError<I>>(input: &mut I) -> PResult<u16, E>
+pub fn le_u16<I, E: ParserError<I>>(input: &mut I) -> PResult<u16, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -745,7 +745,7 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn le_u24<I, E: ParseError<I>>(input: &mut I) -> PResult<u32, E>
+pub fn le_u24<I, E: ParserError<I>>(input: &mut I) -> PResult<u32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -790,7 +790,7 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn le_u32<I, E: ParseError<I>>(input: &mut I) -> PResult<u32, E>
+pub fn le_u32<I, E: ParserError<I>>(input: &mut I) -> PResult<u32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -835,7 +835,7 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn le_u64<I, E: ParseError<I>>(input: &mut I) -> PResult<u64, E>
+pub fn le_u64<I, E: ParserError<I>>(input: &mut I) -> PResult<u64, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -880,7 +880,7 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn le_u128<I, E: ParseError<I>>(input: &mut I) -> PResult<u128, E>
+pub fn le_u128<I, E: ParserError<I>>(input: &mut I) -> PResult<u128, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -890,7 +890,7 @@ where
 }
 
 #[inline]
-fn le_uint<I, Uint, E: ParseError<I>>(input: &mut I, bound: usize) -> PResult<Uint, E>
+fn le_uint<I, Uint, E: ParserError<I>>(input: &mut I, bound: usize) -> PResult<Uint, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -951,7 +951,7 @@ where
 /// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn le_i8<I, E: ParseError<I>>(input: &mut I) -> PResult<i8, E>
+pub fn le_i8<I, E: ParserError<I>>(input: &mut I) -> PResult<i8, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -995,7 +995,7 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn le_i16<I, E: ParseError<I>>(input: &mut I) -> PResult<i16, E>
+pub fn le_i16<I, E: ParserError<I>>(input: &mut I) -> PResult<i16, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1043,7 +1043,7 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn le_i24<I, E: ParseError<I>>(input: &mut I) -> PResult<i32, E>
+pub fn le_i24<I, E: ParserError<I>>(input: &mut I) -> PResult<i32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1099,7 +1099,7 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn le_i32<I, E: ParseError<I>>(input: &mut I) -> PResult<i32, E>
+pub fn le_i32<I, E: ParserError<I>>(input: &mut I) -> PResult<i32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1147,7 +1147,7 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn le_i64<I, E: ParseError<I>>(input: &mut I) -> PResult<i64, E>
+pub fn le_i64<I, E: ParserError<I>>(input: &mut I) -> PResult<i64, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1195,7 +1195,7 @@ where
 /// assert_eq!(parser(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn le_i128<I, E: ParseError<I>>(input: &mut I) -> PResult<i128, E>
+pub fn le_i128<I, E: ParserError<I>>(input: &mut I) -> PResult<i128, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1246,7 +1246,7 @@ where
 /// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn u8<I, E: ParseError<I>>(input: &mut I) -> PResult<u8, E>
+pub fn u8<I, E: ParserError<I>>(input: &mut I) -> PResult<u8, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1261,7 +1261,7 @@ where
     .parse_next(input)
 }
 
-fn u8_<I, E: ParseError<I>, const PARTIAL: bool>(input: &mut I) -> PResult<u8, E>
+fn u8_<I, E: ParserError<I>, const PARTIAL: bool>(input: &mut I) -> PResult<u8, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1329,7 +1329,7 @@ where
 /// assert_eq!(le_u16(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn u16<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, u16, E>
+pub fn u16<I, E: ParserError<I>>(endian: Endianness) -> impl Parser<I, u16, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1401,7 +1401,7 @@ where
 /// assert_eq!(le_u24(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn u24<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, u32, E>
+pub fn u24<I, E: ParserError<I>>(endian: Endianness) -> impl Parser<I, u32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1473,7 +1473,7 @@ where
 /// assert_eq!(le_u32(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn u32<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, u32, E>
+pub fn u32<I, E: ParserError<I>>(endian: Endianness) -> impl Parser<I, u32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1545,7 +1545,7 @@ where
 /// assert_eq!(le_u64(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn u64<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, u64, E>
+pub fn u64<I, E: ParserError<I>>(endian: Endianness) -> impl Parser<I, u64, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1617,7 +1617,7 @@ where
 /// assert_eq!(le_u128(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn u128<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, u128, E>
+pub fn u128<I, E: ParserError<I>>(endian: Endianness) -> impl Parser<I, u128, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1674,7 +1674,7 @@ where
 /// assert_eq!(parser(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn i8<I, E: ParseError<I>>(input: &mut I) -> PResult<i8, E>
+pub fn i8<I, E: ParserError<I>>(input: &mut I) -> PResult<i8, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1744,7 +1744,7 @@ where
 /// assert_eq!(le_i16(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn i16<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, i16, E>
+pub fn i16<I, E: ParserError<I>>(endian: Endianness) -> impl Parser<I, i16, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1816,7 +1816,7 @@ where
 /// assert_eq!(le_i24(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn i24<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, i32, E>
+pub fn i24<I, E: ParserError<I>>(endian: Endianness) -> impl Parser<I, i32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1888,7 +1888,7 @@ where
 /// assert_eq!(le_i32(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn i32<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, i32, E>
+pub fn i32<I, E: ParserError<I>>(endian: Endianness) -> impl Parser<I, i32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -1960,7 +1960,7 @@ where
 /// assert_eq!(le_i64(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn i64<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, i64, E>
+pub fn i64<I, E: ParserError<I>>(endian: Endianness) -> impl Parser<I, i64, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -2032,7 +2032,7 @@ where
 /// assert_eq!(le_i128(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn i128<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, i128, E>
+pub fn i128<I, E: ParserError<I>>(endian: Endianness) -> impl Parser<I, i128, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -2087,7 +2087,7 @@ where
 /// assert_eq!(parser(Partial::new(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn be_f32<I, E: ParseError<I>>(input: &mut I) -> PResult<f32, E>
+pub fn be_f32<I, E: ParserError<I>>(input: &mut I) -> PResult<f32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -2135,7 +2135,7 @@ where
 /// assert_eq!(parser(Partial::new(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn be_f64<I, E: ParseError<I>>(input: &mut I) -> PResult<f64, E>
+pub fn be_f64<I, E: ParserError<I>>(input: &mut I) -> PResult<f64, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -2183,7 +2183,7 @@ where
 /// assert_eq!(parser(Partial::new(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn le_f32<I, E: ParseError<I>>(input: &mut I) -> PResult<f32, E>
+pub fn le_f32<I, E: ParserError<I>>(input: &mut I) -> PResult<f32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -2231,7 +2231,7 @@ where
 /// assert_eq!(parser(Partial::new(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn le_f64<I, E: ParseError<I>>(input: &mut I) -> PResult<f64, E>
+pub fn le_f64<I, E: ParserError<I>>(input: &mut I) -> PResult<f64, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -2297,7 +2297,7 @@ where
 /// assert_eq!(le_f32(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn f32<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, f32, E>
+pub fn f32<I, E: ParserError<I>>(endian: Endianness) -> impl Parser<I, f32, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -2369,7 +2369,7 @@ where
 /// assert_eq!(le_f64(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(5))));
 /// ```
 #[inline(always)]
-pub fn f64<I, E: ParseError<I>>(endian: Endianness) -> impl Parser<I, f64, E>
+pub fn f64<I, E: ParserError<I>>(endian: Endianness) -> impl Parser<I, f64, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8>,
@@ -2426,7 +2426,7 @@ where
     I: Stream,
     N: ToUsize,
     F: Parser<I, N, E>,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     trace("length_data", move |i: &mut I| {
         let length = f.parse_next(i)?;
@@ -2486,7 +2486,7 @@ where
     N: ToUsize,
     F: Parser<I, N, E>,
     G: Parser<I, O, E>,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     trace("length_value", move |i: &mut I| {
         let data = length_data(f.by_ref()).parse_next(i)?;
@@ -2540,7 +2540,7 @@ where
     C: Accumulate<O>,
     F: Parser<I, N, E>,
     G: Parser<I, O, E>,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     trace("length_count", move |i: &mut I| {
         let n = f.parse_next(i)?;

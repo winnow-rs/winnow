@@ -172,7 +172,7 @@ impl<E> ErrMode<E> {
     }
 }
 
-impl<I, E: ParseError<I>> ParseError<I> for ErrMode<E> {
+impl<I, E: ParserError<I>> ParserError<I> for ErrMode<E> {
     fn from_error_kind(input: I, kind: ErrorKind) -> Self {
         ErrMode::Backtrack(E::from_error_kind(input, kind))
     }
@@ -250,7 +250,7 @@ where
 ///
 /// It provides methods to create an error from some combinators,
 /// and combine existing errors in combinators like `alt`.
-pub trait ParseError<I>: Sized {
+pub trait ParserError<I>: Sized {
     /// Creates an error from the input position and an [`ErrorKind`]
     fn from_error_kind(input: I, kind: ErrorKind) -> Self;
 
@@ -266,7 +266,7 @@ pub trait ParseError<I>: Sized {
         Self::from_error_kind(input, ErrorKind::Assert)
     }
 
-    /// Like [`ParseError::from_error_kind`] but merges it with the existing error.
+    /// Like [`ParserError::from_error_kind`] but merges it with the existing error.
     ///
     /// This is useful when backtracking through a parse tree, accumulating error context on the
     /// way.
@@ -299,7 +299,7 @@ pub trait AddContext<I, C = &'static str>: Sized {
 ///
 /// This trait is required by the [`Parser::try_map`] combinator.
 pub trait FromExternalError<I, E> {
-    /// Like [`ParseError::from_error_kind`] but also include an external error.
+    /// Like [`ParserError::from_error_kind`] but also include an external error.
     fn from_external_error(input: I, kind: ErrorKind, e: E) -> Self;
 }
 
@@ -343,7 +343,7 @@ impl<'i, I: ToOwned + ?Sized> InputError<&'i I> {
     }
 }
 
-impl<I> ParseError<I> for InputError<I> {
+impl<I> ParserError<I> for InputError<I> {
     #[inline]
     fn from_error_kind(input: I, kind: ErrorKind) -> Self {
         Self { input, kind }
@@ -395,7 +395,7 @@ impl<I: fmt::Display> fmt::Display for InputError<I> {
 #[cfg(feature = "std")]
 impl<I: fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::Error for InputError<I> {}
 
-impl<I> ParseError<I> for () {
+impl<I> ParserError<I> for () {
     #[inline]
     fn from_error_kind(_: I, _: ErrorKind) -> Self {}
 
@@ -456,7 +456,7 @@ pub enum VerboseErrorKind {
 }
 
 #[cfg(feature = "alloc")]
-impl<I> ParseError<I> for VerboseError<I> {
+impl<I> ParserError<I> for VerboseError<I> {
     fn from_error_kind(input: I, kind: ErrorKind) -> Self {
         VerboseError {
             errors: vec![(input, VerboseErrorKind::Winnow(kind))],
@@ -643,7 +643,7 @@ impl<C> ContextError<C> {
     }
 }
 
-impl<I, C> ParseError<I> for ContextError<C> {
+impl<I, C> ParserError<I> for ContextError<C> {
     #[inline]
     fn from_error_kind(_input: I, _kind: ErrorKind) -> Self {
         Self::new()
@@ -855,7 +855,7 @@ impl ErrorKind {
   }
 }
 
-impl<I> ParseError<I> for ErrorKind {
+impl<I> ParserError<I> for ErrorKind {
     fn from_error_kind(_input: I, kind: ErrorKind) -> Self {
         kind
     }
@@ -889,14 +889,14 @@ impl std::error::Error for ErrorKind {}
 #[cfg(test)]
 macro_rules! error_position(
   ($input:expr, $code:expr) => ({
-    $crate::error::ParseError::from_error_kind($input, $code)
+    $crate::error::ParserError::from_error_kind($input, $code)
   });
 );
 
 #[cfg(test)]
 macro_rules! error_node_position(
   ($input:expr, $code:expr, $next:expr) => ({
-    $crate::error::ParseError::append($next, $input, $code)
+    $crate::error::ParserError::append($next, $input, $code)
   });
 );
 

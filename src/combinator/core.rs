@@ -1,4 +1,4 @@
-use crate::error::{ErrMode, ErrorKind, Needed, ParseError};
+use crate::error::{ErrMode, ErrorKind, Needed, ParserError};
 use crate::stream::Stream;
 use crate::trace::trace;
 use crate::*;
@@ -16,7 +16,7 @@ use crate::*;
 /// assert_eq!(rest::<_,InputError<_>>.parse_peek(""), Ok(("", "")));
 /// ```
 #[inline]
-pub fn rest<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+pub fn rest<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: Stream,
 {
@@ -38,7 +38,7 @@ where
 /// assert_eq!(rest_len::<_,InputError<_>>.parse_peek(""), Ok(("", 0)));
 /// ```
 #[inline]
-pub fn rest_len<I, E: ParseError<I>>(input: &mut I) -> PResult<usize, E>
+pub fn rest_len<I, E: ParserError<I>>(input: &mut I) -> PResult<usize, E>
 where
     I: Stream,
 {
@@ -70,7 +70,7 @@ where
 /// assert_eq!(parser("123;"), Ok(("123;", None)));
 /// # }
 /// ```
-pub fn opt<I: Stream, O, E: ParseError<I>, F>(mut f: F) -> impl Parser<I, Option<O>, E>
+pub fn opt<I: Stream, O, E: ParserError<I>, F>(mut f: F) -> impl Parser<I, Option<O>, E>
 where
     F: Parser<I, O, E>,
 {
@@ -108,7 +108,7 @@ where
 /// assert_eq!(parser(false, "123;"), Ok(("123;", None)));
 /// # }
 /// ```
-pub fn cond<I, O, E: ParseError<I>, F>(b: bool, mut f: F) -> impl Parser<I, Option<O>, E>
+pub fn cond<I, O, E: ParserError<I>, F>(b: bool, mut f: F) -> impl Parser<I, Option<O>, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -141,7 +141,7 @@ where
 /// ```
 #[doc(alias = "look_ahead")]
 #[doc(alias = "rewind")]
-pub fn peek<I: Stream, O, E: ParseError<I>, F>(mut f: F) -> impl Parser<I, O, E>
+pub fn peek<I: Stream, O, E: ParserError<I>, F>(mut f: F) -> impl Parser<I, O, E>
 where
     F: Parser<I, O, E>,
 {
@@ -169,7 +169,7 @@ where
 /// ```
 #[doc(alias = "end")]
 #[doc(alias = "eoi")]
-pub fn eof<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+pub fn eof<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: Stream,
 {
@@ -202,7 +202,7 @@ where
 /// assert_eq!(parser.parse_peek("abcd"), Err(ErrMode::Backtrack(InputError::new("abcd", ErrorKind::Not))));
 /// # }
 /// ```
-pub fn not<I: Stream, O, E: ParseError<I>, F>(mut parser: F) -> impl Parser<I, (), E>
+pub fn not<I: Stream, O, E: ParserError<I>, F>(mut parser: F) -> impl Parser<I, (), E>
 where
     F: Parser<I, O, E>,
 {
@@ -271,7 +271,7 @@ where
 /// assert_eq!(parser("+"), Err(ErrMode::Cut(InputError::new("", ErrorKind::Slice ))));
 /// # }
 /// ```
-pub fn cut_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl Parser<I, O, E>
+pub fn cut_err<I, O, E: ParserError<I>, F>(mut parser: F) -> impl Parser<I, O, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -285,7 +285,7 @@ where
 ///
 /// This attempts the parse, allowing other parsers to be tried on failure, like with
 /// [`winnow::combinator::alt`][crate::combinator::alt].
-pub fn backtrack_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl Parser<I, O, E>
+pub fn backtrack_err<I, O, E: ParserError<I>, F>(mut parser: F) -> impl Parser<I, O, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -348,7 +348,7 @@ pub fn iterator<I, O, E, F>(input: I, parser: F) -> ParserIterator<F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     ParserIterator {
         parser,
@@ -459,7 +459,7 @@ enum State<E> {
 /// ```
 #[doc(alias = "value")]
 #[doc(alias = "empty")]
-pub fn success<I: Stream, O: Clone, E: ParseError<I>>(val: O) -> impl Parser<I, O, E> {
+pub fn success<I: Stream, O: Clone, E: ParserError<I>>(val: O) -> impl Parser<I, O, E> {
     trace("success", move |_input: &mut I| Ok(val.clone()))
 }
 
@@ -479,7 +479,7 @@ pub fn success<I: Stream, O: Clone, E: ParseError<I>>(val: O) -> impl Parser<I, 
 /// assert_eq!(fail::<_, &str, _>.parse_peek(s), Err(ErrMode::Backtrack(InputError::new(s, ErrorKind::Fail))));
 /// ```
 #[doc(alias = "unexpected")]
-pub fn fail<I: Stream, O, E: ParseError<I>>(i: &mut I) -> PResult<O, E> {
+pub fn fail<I: Stream, O, E: ParserError<I>>(i: &mut I) -> PResult<O, E> {
     trace("fail", |i: &mut I| {
         Err(ErrMode::from_error_kind(i.clone(), ErrorKind::Fail))
     })

@@ -1,4 +1,4 @@
-use crate::error::ParseError;
+use crate::error::ParserError;
 use crate::stream::Stream;
 use crate::trace::trace;
 use crate::*;
@@ -26,7 +26,7 @@ use crate::*;
 /// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Tag))));
 /// ```
 #[doc(alias = "ignore_then")]
-pub fn preceded<I, O1, O2, E: ParseError<I>, F, G>(
+pub fn preceded<I, O1, O2, E: ParserError<I>, F, G>(
     mut first: F,
     mut second: G,
 ) -> impl Parser<I, O2, E>
@@ -64,7 +64,7 @@ where
 /// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Tag))));
 /// ```
 #[doc(alias = "then_ignore")]
-pub fn terminated<I, O1, O2, E: ParseError<I>, F, G>(
+pub fn terminated<I, O1, O2, E: ParserError<I>, F, G>(
     mut first: F,
     mut second: G,
 ) -> impl Parser<I, O1, E>
@@ -102,7 +102,7 @@ where
 /// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
 /// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Tag))));
 /// ```
-pub fn separated_pair<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
+pub fn separated_pair<I, O1, O2, O3, E: ParserError<I>, F, G, H>(
     mut first: F,
     mut sep: G,
     mut second: H,
@@ -145,7 +145,7 @@ where
 /// ```
 #[doc(alias = "between")]
 #[doc(alias = "padded")]
-pub fn delimited<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
+pub fn delimited<I, O1, O2, O3, E: ParserError<I>, F, G, H>(
     mut first: F,
     mut second: G,
     mut third: H,

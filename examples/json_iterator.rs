@@ -7,7 +7,7 @@ use winnow::{
     combinator::cut_err,
     combinator::separated0,
     combinator::{preceded, separated_pair, terminated},
-    error::ParseError,
+    error::ParserError,
     error::StrContext,
     stream::Offset,
     token::one_of,
@@ -209,13 +209,13 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
     }
 }
 
-fn sp<'a, E: ParseError<&'a str>>(i: &mut &'a str) -> PResult<&'a str, E> {
+fn sp<'a, E: ParserError<&'a str>>(i: &mut &'a str) -> PResult<&'a str, E> {
     let chars = " \t\r\n";
 
     take_while(0.., move |c| chars.contains(c)).parse_next(i)
 }
 
-fn parse_str<'a, E: ParseError<&'a str>>(i: &mut &'a str) -> PResult<&'a str, E> {
+fn parse_str<'a, E: ParserError<&'a str>>(i: &mut &'a str) -> PResult<&'a str, E> {
     escaped(alphanumeric, '\\', one_of(['"', 'n', '\\'])).parse_next(i)
 }
 

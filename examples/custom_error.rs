@@ -1,6 +1,6 @@
 use winnow::error::ErrMode;
 use winnow::error::ErrorKind;
-use winnow::error::ParseError;
+use winnow::error::ParserError;
 use winnow::prelude::*;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -9,7 +9,7 @@ pub enum CustomError<I> {
     Nom(I, ErrorKind),
 }
 
-impl<I> ParseError<I> for CustomError<I> {
+impl<I> ParserError<I> for CustomError<I> {
     fn from_error_kind(input: I, kind: ErrorKind) -> Self {
         CustomError::Nom(input, kind)
     }

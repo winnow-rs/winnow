@@ -1,7 +1,7 @@
 #![no_main]
 use libfuzzer_sys::fuzz_target;
 use std::str;
-use winnow::error::ParseError;
+use winnow::error::ParserError;
 
 use winnow::prelude::*;
 use winnow::{

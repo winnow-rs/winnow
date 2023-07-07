@@ -2,7 +2,7 @@
 
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
-use crate::error::ParseError;
+use crate::error::ParserError;
 use crate::stream::Accumulate;
 use crate::stream::Range;
 use crate::stream::Stream;
@@ -120,7 +120,7 @@ where
     I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     let Range {
         start_inclusive,
@@ -141,7 +141,7 @@ where
     I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     let mut acc = C::initial(None);
     loop {
@@ -173,7 +173,7 @@ where
     I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     match f.parse_next(i) {
         Err(e) => Err(e.append(i.clone(), ErrorKind::Many)),
@@ -243,7 +243,7 @@ where
     C: Accumulate<O>,
     F: Parser<I, O, E>,
     G: Parser<I, P, E>,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     trace("repeat_till0", move |i: &mut I| {
         let mut res = C::initial(None);
@@ -312,7 +312,7 @@ where
     C: Accumulate<O>,
     P: Parser<I, O, E>,
     S: Parser<I, O2, E>,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     trace("separated0", move |i: &mut I| {
         let mut res = C::initial(None);
@@ -402,7 +402,7 @@ where
     C: Accumulate<O>,
     P: Parser<I, O, E>,
     S: Parser<I, O2, E>,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     trace("separated1", move |i: &mut I| {
         let mut res = C::initial(None);
@@ -479,7 +479,7 @@ where
     I: Stream,
     P: Parser<I, O, E>,
     S: Parser<I, O2, E>,
-    E: ParseError<I>,
+    E: ParserError<I>,
     Op: Fn(O, O2, O) -> O,
 {
     trace("separated_foldl1", move |i: &mut I| {
@@ -551,7 +551,7 @@ where
     I: Stream,
     P: Parser<I, O, E>,
     S: Parser<I, O2, E>,
-    E: ParseError<I>,
+    E: ParserError<I>,
     Op: Fn(O, O2, O) -> O,
 {
     trace("separated_foldr1", move |i: &mut I| {
@@ -576,7 +576,7 @@ where
     I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     if min > max {
         return Err(ErrMode::Cut(E::from_error_kind(
@@ -623,7 +623,7 @@ where
     I: Stream,
     C: Accumulate<O>,
     F: Parser<I, O, E>,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     let mut res = C::initial(Some(count));
 
@@ -673,7 +673,7 @@ pub fn fill<'a, I, O, E, F>(mut f: F, buf: &'a mut [O]) -> impl Parser<I, (), E>
 where
     I: Stream + 'a,
     F: Parser<I, O, E> + 'a,
-    E: ParseError<I> + 'a,
+    E: ParserError<I> + 'a,
 {
     trace("fill", move |i: &mut I| {
         for elem in buf.iter_mut() {
@@ -800,7 +800,7 @@ where
     F: Parser<I, O, E>,
     G: FnMut(R, O) -> R,
     H: FnMut() -> R,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     let Range {
         start_inclusive,
@@ -833,7 +833,7 @@ where
     F: Parser<I, O, E>,
     G: FnMut(R, O) -> R,
     H: FnMut() -> R,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     let mut res = init();
 
@@ -874,7 +874,7 @@ where
     F: Parser<I, O, E>,
     G: FnMut(R, O) -> R,
     H: FnMut() -> R,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     let init = init();
     match f.parse_next(input) {
@@ -924,7 +924,7 @@ where
     F: Parser<I, O, E>,
     G: FnMut(R, O) -> R,
     H: FnMut() -> R,
-    E: ParseError<I>,
+    E: ParserError<I>,
 {
     if min > max {
         return Err(ErrMode::Cut(E::from_error_kind(

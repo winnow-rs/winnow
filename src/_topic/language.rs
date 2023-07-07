@@ -27,14 +27,14 @@
 //! ```rust
 //! use winnow::prelude::*;
 //! use winnow::{
-//!   error::ParseError,
+//!   error::ParserError,
 //!   combinator::delimited,
 //!   ascii::multispace0,
 //! };
 //!
 //! /// A combinator that takes a parser `inner` and produces a parser that also consumes both leading and
 //! /// trailing whitespace, returning the output of `inner`.
-//! fn ws<'a, F, O, E: ParseError<&'a str>>(inner: F) -> impl Parser<&'a str, O, E>
+//! fn ws<'a, F, O, E: ParserError<&'a str>>(inner: F) -> impl Parser<&'a str, O, E>
 //!   where
 //!   F: Parser<&'a str, O, E>,
 //! {
@@ -61,11 +61,11 @@
 //! ```rust
 //! use winnow::prelude::*;
 //! use winnow::{
-//!   error::ParseError,
+//!   error::ParserError,
 //!   token::take_till1,
 //! };
 //!
-//! pub fn peol_comment<'a, E: ParseError<&'a str>>(i: &mut &'a str) -> PResult<(), E>
+//! pub fn peol_comment<'a, E: ParserError<&'a str>>(i: &mut &'a str) -> PResult<(), E>
 //! {
 //!   ('%', take_till1(['\n', '\r']))
 //!     .void() // Output is thrown away.
@@ -81,11 +81,11 @@
 //! ```rust
 //! use winnow::prelude::*;
 //! use winnow::{
-//!   error::ParseError,
+//!   error::ParserError,
 //!   token::{tag, take_until0},
 //! };
 //!
-//! pub fn pinline_comment<'a, E: ParseError<&'a str>>(i: &mut &'a str) -> PResult<(), E> {
+//! pub fn pinline_comment<'a, E: ParserError<&'a str>>(i: &mut &'a str) -> PResult<(), E> {
 //!   (
 //!     "(*",
 //!     take_until0("*)"),
@@ -162,7 +162,7 @@
 //!   token::tag,
 //! };
 //!
-//! fn hexadecimal<'s>(input: &mut &'s str) -> PResult<&'s str> { // <'a, E: ParseError<&'a str>>
+//! fn hexadecimal<'s>(input: &mut &'s str) -> PResult<&'s str> { // <'a, E: ParserError<&'a str>>
 //!   preceded(
 //!     alt(("0x", "0X")),
 //!     repeat(1..,

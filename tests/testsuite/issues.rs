@@ -183,8 +183,8 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
 
 #[test]
 fn issue_942() {
-    use winnow::error::{AddContext, ParseError};
-    pub fn parser<'a, E: ParseError<&'a str> + AddContext<&'a str, &'static str>>(
+    use winnow::error::{AddContext, ParserError};
+    pub fn parser<'a, E: ParserError<&'a str> + AddContext<&'a str, &'static str>>(
         i: &'a str,
     ) -> IResult<&'a str, usize, E> {
         use winnow::combinator::repeat;

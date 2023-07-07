@@ -1,6 +1,6 @@
 //! # Custom Errors
 //!
-//! The most basic error type is [`ParseError`][crate::error::ParseError]
+//! The most basic error type is [`ParserError`][crate::error::ParserError]
 //!
 //! Optional traits include:
 //! - [`AddContext`][crate::error::AddContext]
