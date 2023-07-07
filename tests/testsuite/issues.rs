@@ -174,10 +174,10 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
     }
     assert_eq!(
         parser(Partial::new(&b""[..])),
-        Err(ErrMode::Cut(InputError {
-            input: Partial::new(&b""[..]),
-            kind: ErrorKind::Assert
-        }))
+        Err(ErrMode::Cut(InputError::new(
+            Partial::new(&b""[..]),
+            ErrorKind::Assert
+        )))
     );
 }
 
@@ -253,10 +253,10 @@ fn issue_x_looser_fill_bounds() {
     );
     assert_eq!(
         fill_pair(b"123,,"),
-        Err(ErrMode::Backtrack(InputError {
-            input: &b","[..],
-            kind: ErrorKind::Slice
-        }))
+        Err(ErrMode::Backtrack(InputError::new(
+            &b","[..],
+            ErrorKind::Slice
+        )))
     );
 }
 

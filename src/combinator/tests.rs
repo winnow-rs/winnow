@@ -127,10 +127,10 @@ fn test_parser_verify_map() {
     assert_parse!(
         u8.verify_map(|u| if u < 20 { Some(u) } else { None })
             .parse_peek(input),
-        Err(ErrMode::Backtrack(InputError {
-            input: &[50][..],
-            kind: ErrorKind::Verify
-        }))
+        Err(ErrMode::Backtrack(InputError::new(
+            &[50][..],
+            ErrorKind::Verify
+        )))
     );
     assert_parse!(
         u8.verify_map(|u| if u > 20 { Some(u) } else { None })
@@ -268,10 +268,10 @@ fn test_parser_verify_ref() {
     );
     assert_eq!(
         parser1.parse_peek(&b"defg"[..]),
-        Err(ErrMode::Backtrack(InputError {
-            input: &b"defg"[..],
-            kind: ErrorKind::Verify
-        }))
+        Err(ErrMode::Backtrack(InputError::new(
+            &b"defg"[..],
+            ErrorKind::Verify
+        )))
     );
 
     fn parser2(i: &[u8]) -> IResult<&[u8], u32> {
@@ -295,10 +295,10 @@ fn test_parser_verify_alloc() {
     );
     assert_eq!(
         parser1.parse_peek(&b"defg"[..]),
-        Err(ErrMode::Backtrack(InputError {
-            input: &b"defg"[..],
-            kind: ErrorKind::Verify
-        }))
+        Err(ErrMode::Backtrack(InputError::new(
+            &b"defg"[..],
+            ErrorKind::Verify
+        )))
     );
 }
 
@@ -309,17 +309,11 @@ fn fail_test() {
 
     assert_eq!(
         fail::<_, &str, _>.parse_peek(a),
-        Err(ErrMode::Backtrack(InputError {
-            input: a,
-            kind: ErrorKind::Fail
-        }))
+        Err(ErrMode::Backtrack(InputError::new(a, ErrorKind::Fail)))
     );
     assert_eq!(
         fail::<_, &str, _>.parse_peek(b),
-        Err(ErrMode::Backtrack(InputError {
-            input: b,
-            kind: ErrorKind::Fail
-        }))
+        Err(ErrMode::Backtrack(InputError::new(b, ErrorKind::Fail)))
     );
 }
 

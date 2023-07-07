@@ -162,7 +162,7 @@ where
 /// assert_eq!(parser((stream(&[0b00010010]), 4), 4), Ok(((stream(&[]), 0), 0b00000010)));
 ///
 /// // Tries to consume 12 bits but only 8 are available
-/// assert_eq!(parser((stream(&[0b00010010]), 0), 12), Err(winnow::error::ErrMode::Backtrack(InputError{input: (stream(&[0b00010010]), 0), kind: ErrorKind::Eof })));
+/// assert_eq!(parser((stream(&[0b00010010]), 0), 12), Err(winnow::error::ErrMode::Backtrack(InputError::new((stream(&[0b00010010]), 0), ErrorKind::Eof))));
 /// ```
 #[inline(always)]
 pub fn take<I, O, C, E: ParseError<(I, usize)>>(count: C) -> impl Parser<(I, usize), O, E>
@@ -276,19 +276,19 @@ where
 /// // The lowest 2 bits of 0b11111111 and 0b00000001 are different.
 /// assert_eq!(
 ///     parser(0b000000_01, 2, (stream(&[0b111111_11]), 0)),
-///     Err(winnow::error::ErrMode::Backtrack(InputError {
-///         input: (stream(&[0b11111111]), 0),
-///         kind: ErrorKind::Tag
-///     }))
+///     Err(winnow::error::ErrMode::Backtrack(InputError::new(
+///         (stream(&[0b11111111]), 0),
+///         ErrorKind::Tag
+///     )))
 /// );
 ///
 /// // The lowest 8 bits of 0b11111111 and 0b11111110 are different.
 /// assert_eq!(
 ///     parser(0b11111110, 8, (stream(&[0b11111111]), 0)),
-///     Err(winnow::error::ErrMode::Backtrack(InputError {
-///         input: (stream(&[0b11111111]), 0),
-///         kind: ErrorKind::Tag
-///     }))
+///     Err(winnow::error::ErrMode::Backtrack(InputError::new(
+///         (stream(&[0b11111111]), 0),
+///         ErrorKind::Tag
+///     )))
 /// );
 /// ```
 #[inline(always)]

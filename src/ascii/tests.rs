@@ -572,10 +572,7 @@ mod complete {
         let remaining_exponent = "-1.234E-";
         assert_parse!(
             float::<_, f64, _>.parse_peek(remaining_exponent),
-            Err(ErrMode::Cut(InputError {
-                input: "",
-                kind: ErrorKind::Slice
-            }))
+            Err(ErrMode::Cut(InputError::new("", ErrorKind::Slice)))
         );
 
         let (i, nan) = float::<_, f32, ()>.parse_peek("NaN").unwrap();

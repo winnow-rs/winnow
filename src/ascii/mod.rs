@@ -81,8 +81,8 @@ where
 /// assert_eq!(parser.parse_peek("ab\nc"), Ok(("\nc", "ab")));
 /// assert_eq!(parser.parse_peek("abc"), Ok(("", "abc")));
 /// assert_eq!(parser.parse_peek(""), Ok(("", "")));
-/// assert_eq!(parser.parse_peek("a\rb\nc"), Err(ErrMode::Backtrack(InputError { input: "\rb\nc", kind: ErrorKind::Tag })));
-/// assert_eq!(parser.parse_peek("a\rbc"), Err(ErrMode::Backtrack(InputError { input: "\rbc", kind: ErrorKind::Tag })));
+/// assert_eq!(parser.parse_peek("a\rb\nc"), Err(ErrMode::Backtrack(InputError::new("\rb\nc", ErrorKind::Tag ))));
+/// assert_eq!(parser.parse_peek("a\rbc"), Err(ErrMode::Backtrack(InputError::new("\rbc", ErrorKind::Tag ))));
 /// ```
 ///
 /// ```

@@ -268,7 +268,7 @@ where
 ///
 /// assert_eq!(parser("+10 ab"), Ok((" ab", "10")));
 /// assert_eq!(parser("ab"), Ok(("", "ab")));
-/// assert_eq!(parser("+"), Err(ErrMode::Cut(InputError { input: "", kind: ErrorKind::Slice })));
+/// assert_eq!(parser("+"), Err(ErrMode::Cut(InputError::new("", ErrorKind::Slice ))));
 /// # }
 /// ```
 pub fn cut_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl Parser<I, O, E>

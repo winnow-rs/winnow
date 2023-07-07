@@ -907,10 +907,10 @@ mod tests {
         assert_eq!(parser.parse_peek("abc123def"), Ok(("123def", ("abc",))));
         assert_eq!(
             parser.parse_peek("123def"),
-            Err(ErrMode::Backtrack(InputError {
-                input: "123def",
-                kind: ErrorKind::Slice
-            }))
+            Err(ErrMode::Backtrack(InputError::new(
+                "123def",
+                ErrorKind::Slice
+            )))
         );
     }
 

@@ -306,10 +306,10 @@ mod test {
         assert_eq!(f(Partial::new(c)), Ok((Partial::new("123"), b)));
         assert_eq!(
             f(Partial::new(d)),
-            Err(ErrMode::Backtrack(InputError {
-                input: Partial::new(d),
-                kind: ErrorKind::Slice
-            }))
+            Err(ErrMode::Backtrack(InputError::new(
+                Partial::new(d),
+                ErrorKind::Slice
+            )))
         );
     }
 
