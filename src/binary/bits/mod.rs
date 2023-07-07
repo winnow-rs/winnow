@@ -4,7 +4,7 @@
 #[cfg(test)]
 mod tests;
 
-use crate::error::{ErrMode, ErrorConvert, ErrorKind, Needed, ParseError};
+use crate::error::{ErrMode, ErrorConvert, ErrorKind, Needed, ParserError};
 use crate::lib::std::ops::{AddAssign, Div, Shl, Shr};
 use crate::stream::{AsBytes, Stream, StreamIsPartial, ToUsize};
 use crate::trace::trace;
@@ -19,7 +19,7 @@ use crate::{unpeek, IResult, PResult, Parser};
 /// use winnow::prelude::*;
 /// use winnow::Bytes;
 /// use winnow::binary::bits::{bits, take};
-/// use winnow::error::Error;
+/// use winnow::error::InputError;
 ///
 /// type Stream<'i> = &'i Bytes;
 ///
@@ -28,7 +28,7 @@ use crate::{unpeek, IResult, PResult, Parser};
 /// }
 ///
 /// fn parse(input: Stream<'_>) -> IResult<Stream<'_>, (u8, u8)> {
-///     bits::<_, _, Error<(_, usize)>, _, _>((take(4usize), take(8usize))).parse_peek(input)
+///     bits::<_, _, InputError<(_, usize)>, _, _>((take(4usize), take(8usize))).parse_peek(input)
 /// }
 ///
 /// let input = stream(&[0x12, 0x34, 0xff, 0xff]);
@@ -45,8 +45,8 @@ use crate::{unpeek, IResult, PResult, Parser};
 /// ```
 pub fn bits<I, O, E1, E2, P>(mut parser: P) -> impl Parser<I, O, E2>
 where
-    E1: ParseError<(I, usize)> + ErrorConvert<E2>,
-    E2: ParseError<I>,
+    E1: ParserError<(I, usize)> + ErrorConvert<E2>,
+    E2: ParserError<I>,
     I: Stream,
     P: Parser<(I, usize), O, E1>,
 {
@@ -79,7 +79,7 @@ where
 /// use winnow::Bytes;
 /// use winnow::binary::bits::{bits, bytes, take};
 /// use winnow::combinator::rest;
-/// use winnow::error::Error;
+/// use winnow::error::InputError;
 ///
 /// type Stream<'i> = &'i Bytes;
 ///
@@ -88,10 +88,10 @@ where
 /// }
 ///
 /// fn parse(input: Stream<'_>) -> IResult<Stream<'_>, (u8, u8, &[u8])> {
-///   bits::<_, _, Error<(_, usize)>, _, _>((
+///   bits::<_, _, InputError<(_, usize)>, _, _>((
 ///     take(4usize),
 ///     take(8usize),
-///     bytes::<_, _, Error<_>, _, _>(rest)
+///     bytes::<_, _, InputError<_>, _, _>(rest)
 ///   )).parse_peek(input)
 /// }
 ///
@@ -101,8 +101,8 @@ where
 /// ```
 pub fn bytes<I, O, E1, E2, P>(mut parser: P) -> impl Parser<(I, usize), O, E2>
 where
-    E1: ParseError<I> + ErrorConvert<E2>,
-    E2: ParseError<(I, usize)>,
+    E1: ParserError<I> + ErrorConvert<E2>,
+    E2: ParserError<(I, usize)>,
     I: Stream<Token = u8>,
     P: Parser<I, O, E1>,
 {
@@ -139,7 +139,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
-/// # use winnow::error::{Error, ErrorKind};
+/// # use winnow::error::{InputError, ErrorKind};
 /// use winnow::binary::bits::take;
 ///
 /// type Stream<'i> = &'i Bytes;
@@ -162,10 +162,10 @@ where
 /// assert_eq!(parser((stream(&[0b00010010]), 4), 4), Ok(((stream(&[]), 0), 0b00000010)));
 ///
 /// // Tries to consume 12 bits but only 8 are available
-/// assert_eq!(parser((stream(&[0b00010010]), 0), 12), Err(winnow::error::ErrMode::Backtrack(Error{input: (stream(&[0b00010010]), 0), kind: ErrorKind::Eof })));
+/// assert_eq!(parser((stream(&[0b00010010]), 0), 12), Err(winnow::error::ErrMode::Backtrack(InputError::new((stream(&[0b00010010]), 0), ErrorKind::Eof))));
 /// ```
 #[inline(always)]
-pub fn take<I, O, C, E: ParseError<(I, usize)>>(count: C) -> impl Parser<(I, usize), O, E>
+pub fn take<I, O, C, E: ParserError<(I, usize)>>(count: C) -> impl Parser<(I, usize), O, E>
 where
     I: Stream<Token = u8> + AsBytes + StreamIsPartial,
     C: ToUsize,
@@ -184,7 +184,7 @@ where
     )
 }
 
-fn take_<I, O, E: ParseError<(I, usize)>, const PARTIAL: bool>(
+fn take_<I, O, E: ParserError<(I, usize)>, const PARTIAL: bool>(
     (input, bit_offset): (I, usize),
     count: usize,
 ) -> IResult<(I, usize), O, E>
@@ -245,7 +245,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
-/// # use winnow::error::{Error, ErrorKind};
+/// # use winnow::error::{InputError, ErrorKind};
 /// use winnow::binary::bits::tag;
 ///
 /// type Stream<'i> = &'i Bytes;
@@ -276,25 +276,25 @@ where
 /// // The lowest 2 bits of 0b11111111 and 0b00000001 are different.
 /// assert_eq!(
 ///     parser(0b000000_01, 2, (stream(&[0b111111_11]), 0)),
-///     Err(winnow::error::ErrMode::Backtrack(Error {
-///         input: (stream(&[0b11111111]), 0),
-///         kind: ErrorKind::Tag
-///     }))
+///     Err(winnow::error::ErrMode::Backtrack(InputError::new(
+///         (stream(&[0b11111111]), 0),
+///         ErrorKind::Tag
+///     )))
 /// );
 ///
 /// // The lowest 8 bits of 0b11111111 and 0b11111110 are different.
 /// assert_eq!(
 ///     parser(0b11111110, 8, (stream(&[0b11111111]), 0)),
-///     Err(winnow::error::ErrMode::Backtrack(Error {
-///         input: (stream(&[0b11111111]), 0),
-///         kind: ErrorKind::Tag
-///     }))
+///     Err(winnow::error::ErrMode::Backtrack(InputError::new(
+///         (stream(&[0b11111111]), 0),
+///         ErrorKind::Tag
+///     )))
 /// );
 /// ```
 #[inline(always)]
 #[doc(alias = "literal")]
 #[doc(alias = "just")]
-pub fn tag<I, O, C, E: ParseError<(I, usize)>>(
+pub fn tag<I, O, C, E: ParserError<(I, usize)>>(
     pattern: O,
     count: C,
 ) -> impl Parser<(I, usize), O, E>
@@ -328,7 +328,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
-/// # use winnow::error::{Error, ErrorKind};
+/// # use winnow::error::{InputError, ErrorKind};
 /// use winnow::binary::bits::bool;
 ///
 /// type Stream<'i> = &'i Bytes;
@@ -345,7 +345,7 @@ where
 /// assert_eq!(parse((stream(&[0b10000000]), 1)), Ok(((stream(&[0b10000000]), 2), false)));
 /// ```
 #[doc(alias = "any")]
-pub fn bool<I, E: ParseError<(I, usize)>>(input: &mut (I, usize)) -> PResult<bool, E>
+pub fn bool<I, E: ParserError<(I, usize)>>(input: &mut (I, usize)) -> PResult<bool, E>
 where
     I: Stream<Token = u8> + AsBytes + StreamIsPartial,
 {

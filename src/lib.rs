@@ -137,7 +137,7 @@
 #![allow(clippy::unnested_or_patterns)]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 #[cfg(feature = "alloc")]
-#[macro_use]
+#[cfg_attr(test, macro_use)]
 extern crate alloc;
 #[cfg(doctest)]
 extern crate doc_comment;

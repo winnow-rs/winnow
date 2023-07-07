@@ -221,14 +221,14 @@ impl<I: crate::lib::std::fmt::Display, S> crate::lib::std::fmt::Display for Stat
 /// Here is how it works in practice:
 ///
 /// ```rust
-/// # use winnow::{PResult, error::ErrMode, error::Needed, error::{Error, ErrorKind}, token, ascii, stream::Partial};
+/// # use winnow::{PResult, error::ErrMode, error::Needed, error::{InputError, ErrorKind}, token, ascii, stream::Partial};
 /// # use winnow::prelude::*;
 ///
-/// fn take_partial<'s>(i: &mut Partial<&'s [u8]>) -> PResult<&'s [u8], Error<Partial<&'s [u8]>>> {
+/// fn take_partial<'s>(i: &mut Partial<&'s [u8]>) -> PResult<&'s [u8], InputError<Partial<&'s [u8]>>> {
 ///   token::take(4u8).parse_next(i)
 /// }
 ///
-/// fn take_complete<'s>(i: &mut &'s [u8]) -> PResult<&'s [u8], Error<&'s [u8]>> {
+/// fn take_complete<'s>(i: &mut &'s [u8]) -> PResult<&'s [u8], InputError<&'s [u8]>> {
 ///   token::take(4u8).parse_next(i)
 /// }
 ///
@@ -241,14 +241,14 @@ impl<I: crate::lib::std::fmt::Display, S> crate::lib::std::fmt::Display for Stat
 /// assert_eq!(take_partial.parse_peek(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// // but the complete parser will return an error
-/// assert_eq!(take_complete.parse_peek(&b"abc"[..]), Err(ErrMode::Backtrack(Error::new(&b"abc"[..], ErrorKind::Slice))));
+/// assert_eq!(take_complete.parse_peek(&b"abc"[..]), Err(ErrMode::Backtrack(InputError::new(&b"abc"[..], ErrorKind::Slice))));
 ///
 /// // the alpha0 function recognizes 0 or more alphabetic characters
-/// fn alpha0_partial<'s>(i: &mut Partial<&'s str>) -> PResult<&'s str, Error<Partial<&'s str>>> {
+/// fn alpha0_partial<'s>(i: &mut Partial<&'s str>) -> PResult<&'s str, InputError<Partial<&'s str>>> {
 ///   ascii::alpha0.parse_next(i)
 /// }
 ///
-/// fn alpha0_complete<'s>(i: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+/// fn alpha0_complete<'s>(i: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
 ///   ascii::alpha0.parse_next(i)
 /// }
 ///
@@ -2420,15 +2420,15 @@ impl<'a> AsChar for &'a char {
 /// For example, you could implement `hex_digit0` as:
 /// ```
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::token::take_while;
-/// fn hex_digit1<'s>(input: &mut &'s str) -> PResult<&'s str, Error<&'s str>> {
+/// fn hex_digit1<'s>(input: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
 ///     take_while(1.., ('a'..='f', 'A'..='F', '0'..='9')).parse_next(input)
 /// }
 ///
 /// assert_eq!(hex_digit1.parse_peek("21cZ"), Ok(("Z", "21c")));
-/// assert_eq!(hex_digit1.parse_peek("H2"), Err(ErrMode::Backtrack(Error::new("H2", ErrorKind::Slice))));
-/// assert_eq!(hex_digit1.parse_peek(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
+/// assert_eq!(hex_digit1.parse_peek("H2"), Err(ErrMode::Backtrack(InputError::new("H2", ErrorKind::Slice))));
+/// assert_eq!(hex_digit1.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Slice))));
 /// ```
 pub trait ContainsToken<T> {
     /// Returns true if self contains the token

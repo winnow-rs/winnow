@@ -6,7 +6,7 @@ mod test {
     use winnow::{combinator::alt, combinator::repeat, token::tag_no_case};
     use winnow::{
         error::ErrMode,
-        error::{self, Error, ErrorKind},
+        error::{ErrorKind, InputError},
         token::{take, take_till0, take_till1, take_until0, take_while},
         IResult,
     };
@@ -41,7 +41,7 @@ mod test {
     fn tag_incomplete_str() {
         const INPUT: &str = "Hello";
 
-        let res: IResult<_, _, error::Error<_>> = "Hello World!".parse_peek(Partial::new(INPUT));
+        let res: IResult<_, _, InputError<_>> = "Hello World!".parse_peek(Partial::new(INPUT));
         match res {
             Err(ErrMode::Incomplete(_)) => (),
             other => {
@@ -58,7 +58,7 @@ mod test {
     fn tag_error_str() {
         const INPUT: &str = "Hello World!";
 
-        let res: IResult<_, _, error::Error<_>> = "Random".parse_peek(INPUT);
+        let res: IResult<_, _, InputError<_>> = "Random".parse_peek(INPUT);
         match res {
             Err(ErrMode::Backtrack(_)) => (),
             other => {
@@ -87,7 +87,7 @@ mod test {
         const CONSUMED: &str = "βèƒôřèÂßÇ";
         const LEFTOVER: &str = "áƒƭèř";
 
-        let res: IResult<_, _, error::Error<_>> = take(9_usize).parse_peek(INPUT);
+        let res: IResult<_, _, InputError<_>> = take(9_usize).parse_peek(INPUT);
         match res {
             Ok((extra, output)) => {
                 assert!(
@@ -116,7 +116,7 @@ mod test {
 
         const INPUT: &str = "βèƒôřèÂßÇá";
 
-        let res: IResult<_, _, Error<_>> = take(13_usize).parse_peek(Partial::new(INPUT));
+        let res: IResult<_, _, InputError<_>> = take(13_usize).parse_peek(Partial::new(INPUT));
         match res {
             Err(ErrMode::Incomplete(_)) => (),
             other => panic!(
@@ -134,7 +134,7 @@ mod test {
         const CONSUMED: &str = "βèƒôřè";
         const LEFTOVER: &str = "ÂßÇ∂áƒƭèř";
 
-        let res: IResult<_, _, Error<_>> = take_until0(FIND).parse_peek(INPUT);
+        let res: IResult<_, _, InputError<_>> = take_until0(FIND).parse_peek(INPUT);
         match res {
             Ok((extra, output)) => {
                 assert!(
@@ -166,7 +166,7 @@ mod test {
         const INPUT: &str = "βèƒôřè";
         const FIND: &str = "βèƒôřèÂßÇ";
 
-        let res: IResult<_, _, Error<_>> = take_until0(FIND).parse_peek(Partial::new(INPUT));
+        let res: IResult<_, _, InputError<_>> = take_until0(FIND).parse_peek(Partial::new(INPUT));
         match res {
             Err(ErrMode::Incomplete(_)) => (),
             other => panic!(
@@ -184,7 +184,7 @@ mod test {
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
         const FIND: &str = "Ráñδô₥";
 
-        let res: IResult<_, _, Error<_>> = take_until0(FIND).parse_peek(Partial::new(INPUT));
+        let res: IResult<_, _, InputError<_>> = take_until0(FIND).parse_peek(Partial::new(INPUT));
         match res {
             Err(ErrMode::Incomplete(_)) => (),
             other => panic!(
@@ -306,10 +306,10 @@ mod test {
         assert_eq!(f(Partial::new(c)), Ok((Partial::new("123"), b)));
         assert_eq!(
             f(Partial::new(d)),
-            Err(ErrMode::Backtrack(winnow::error::Error {
-                input: Partial::new(d),
-                kind: ErrorKind::Slice
-            }))
+            Err(ErrMode::Backtrack(InputError::new(
+                Partial::new(d),
+                ErrorKind::Slice
+            )))
         );
     }
 

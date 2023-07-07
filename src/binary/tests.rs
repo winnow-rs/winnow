@@ -4,11 +4,11 @@ use crate::IResult;
 
 mod complete {
     use super::*;
-    use crate::error::Error;
+    use crate::error::InputError;
 
     macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
-      let res: $crate::IResult<_, _, Error<_>> = $left;
+      let res: $crate::IResult<_, _, InputError<_>> = $left;
       assert_eq!(res, $right);
     };
   );
@@ -436,7 +436,7 @@ mod complete {
 mod partial {
     use super::*;
     use crate::error::ErrMode;
-    use crate::error::Error;
+    use crate::error::InputError;
     use crate::error::Needed;
     #[cfg(feature = "alloc")]
     use crate::lib::std::vec::Vec;
@@ -451,7 +451,7 @@ mod partial {
 
     macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
-      let res: $crate::IResult<_, _, Error<_>> = $left;
+      let res: $crate::IResult<_, _, InputError<_>> = $left;
       assert_eq!(res, $right);
     };
   );

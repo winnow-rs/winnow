@@ -10,10 +10,10 @@ pub struct Color {
 
 impl std::str::FromStr for Color {
     // The error must be owned
-    type Err = winnow::error::ErrorKind;
+    type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        hex_color.parse(s)
+        hex_color.parse(s).map_err(|e| e.to_string())
     }
 }
 

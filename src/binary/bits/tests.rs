@@ -1,5 +1,5 @@
 use super::*;
-use crate::error::Error;
+use crate::error::InputError;
 use crate::Partial;
 
 #[test]
@@ -10,7 +10,7 @@ fn test_complete_byte_consumption_bits() {
 
     // Take 3 bit slices with sizes [4, 8, 4].
     let result: IResult<&[u8], (u8, u8, u8)> =
-        bits::<_, _, Error<(&[u8], usize)>, _, _>((take(4usize), take(8usize), take(4usize)))
+        bits::<_, _, InputError<(&[u8], usize)>, _, _>((take(4usize), take(8usize), take(4usize)))
             .parse_peek(input);
 
     let output = result.expect("We take 2 bytes and the input is longer than 2 bytes");
@@ -34,7 +34,8 @@ fn test_partial_byte_consumption_bits() {
 
     // Take bit slices with sizes [4, 8].
     let result: IResult<&[u8], (u8, u8)> =
-        bits::<_, _, Error<(&[u8], usize)>, _, _>((take(4usize), take(8usize))).parse_peek(input);
+        bits::<_, _, InputError<(&[u8], usize)>, _, _>((take(4usize), take(8usize)))
+            .parse_peek(input);
 
     let output = result.expect("We take 1.5 bytes and the input is longer than 2 bytes");
 
@@ -54,7 +55,7 @@ fn test_incomplete_bits() {
 
     // Take bit slices with sizes [4, 8].
     let result: IResult<_, (u8, u8)> =
-        bits::<_, _, Error<(_, usize)>, _, _>((take(4usize), take(8usize))).parse_peek(input);
+        bits::<_, _, InputError<(_, usize)>, _, _>((take(4usize), take(8usize))).parse_peek(input);
 
     assert!(result.is_err());
     let error = result.err().unwrap();
@@ -81,10 +82,10 @@ fn test_take_complete_eof() {
 
     assert_eq!(
         result,
-        Err(crate::error::ErrMode::Backtrack(crate::error::Error {
-            input: (input, 8),
-            kind: ErrorKind::Eof
-        }))
+        Err(crate::error::ErrMode::Backtrack(InputError::new(
+            (input, 8),
+            ErrorKind::Eof
+        )))
     );
 }
 
@@ -137,10 +138,10 @@ fn test_tag_partial_err() {
 
     assert_eq!(
         result,
-        Err(crate::error::ErrMode::Backtrack(crate::error::Error {
-            input: (input, offset),
-            kind: ErrorKind::Tag
-        }))
+        Err(crate::error::ErrMode::Backtrack(InputError::new(
+            (input, offset),
+            ErrorKind::Tag
+        )))
     );
 }
 
@@ -161,10 +162,10 @@ fn test_bool_eof_complete() {
 
     assert_eq!(
         result,
-        Err(crate::error::ErrMode::Backtrack(crate::error::Error {
-            input: (input, 8),
-            kind: ErrorKind::Eof
-        }))
+        Err(crate::error::ErrMode::Backtrack(InputError::new(
+            (input, 8),
+            ErrorKind::Eof
+        )))
     );
 }
 

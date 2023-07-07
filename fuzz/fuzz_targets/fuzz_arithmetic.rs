@@ -1,6 +1,7 @@
 #![no_main]
 use libfuzzer_sys::fuzz_target;
 use std::str;
+use winnow::error::ParserError;
 
 use winnow::prelude::*;
 use winnow::{
@@ -22,13 +23,16 @@ fn reset() {
     });
 }
 
-fn incr(_i: &mut &str) -> PResult<()> {
+fn incr(i: &mut &str) -> PResult<()> {
     LEVEL.with(|l| {
         *l.borrow_mut() += 1;
 
         // limit the number of recursions, the fuzzer keeps running into them
         if *l.borrow() >= 8192 {
-            Err(winnow::error::ErrMode::Cut(winnow::error::ErrorKind::Many))
+            Err(winnow::error::ErrMode::from_error_kind(
+                <&str>::clone(i),
+                winnow::error::ErrorKind::Many,
+            ))
         } else {
             Ok(())
         }

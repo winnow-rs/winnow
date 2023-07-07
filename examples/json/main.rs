@@ -4,9 +4,7 @@ mod parser_dispatch;
 #[allow(dead_code)]
 mod parser_partial;
 
-use winnow::error::convert_error;
-use winnow::error::Error;
-use winnow::error::VerboseError;
+use winnow::error::ErrorKind;
 use winnow::prelude::*;
 
 fn main() -> Result<(), lexopt::Error> {
@@ -26,30 +24,19 @@ fn main() -> Result<(), lexopt::Error> {
   } "
     });
 
-    if args.verbose {
-        match parser::json::<VerboseError<&str>>.parse(data) {
-            Ok(json) => {
-                println!("{:#?}", json);
-            }
-            Err(err) => {
-                if args.pretty {
-                    println!("{}", convert_error(data, err));
-                } else {
-                    println!("{:#?}", err);
-                }
-            }
+    let result = match args.implementation {
+        Impl::Naive => parser::json::<ErrorKind>.parse(data),
+        Impl::Dispatch => parser_dispatch::json::<ErrorKind>.parse(data),
+    };
+    match result {
+        Ok(json) => {
+            println!("{:#?}", json);
         }
-    } else {
-        let result = match args.implementation {
-            Impl::Naive => parser::json::<Error<&str>>.parse(data),
-            Impl::Dispatch => parser_dispatch::json::<Error<&str>>.parse(data),
-        };
-        match result {
-            Ok(json) => {
-                println!("{:#?}", json);
-            }
-            Err(err) => {
-                println!("{:?}", err);
+        Err(err) => {
+            if args.pretty {
+                println!("{}", err);
+            } else {
+                println!("{:#?}", err);
             }
         }
     }
@@ -61,7 +48,6 @@ fn main() -> Result<(), lexopt::Error> {
 struct Args {
     input: Option<String>,
     invalid: bool,
-    verbose: bool,
     pretty: bool,
     implementation: Impl,
 }
@@ -89,13 +75,7 @@ impl Args {
                 Long("invalid") => {
                     res.invalid = true;
                 }
-                Long("verbose") => {
-                    res.verbose = true;
-                    // Only case where verbose matters
-                    res.invalid = true;
-                }
                 Long("pretty") => {
-                    res.verbose = true;
                     // Only case where pretty matters
                     res.pretty = true;
                     res.invalid = true;

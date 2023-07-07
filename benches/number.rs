@@ -6,8 +6,9 @@ use criterion::Criterion;
 use winnow::ascii::float;
 use winnow::binary::be_u64;
 use winnow::error::ErrMode;
-use winnow::error::Error;
 use winnow::error::ErrorKind;
+use winnow::error::InputError;
+use winnow::error::ParserError;
 use winnow::prelude::*;
 use winnow::stream::ParseSlice;
 
@@ -31,27 +32,30 @@ fn number(c: &mut Criterion) {
 fn float_bytes(c: &mut Criterion) {
     println!(
         "float_bytes result: {:?}",
-        float::<_, f64, Error<_>>.parse_peek(&b"-1.234E-12"[..])
+        float::<_, f64, InputError<_>>.parse_peek(&b"-1.234E-12"[..])
     );
     c.bench_function("float bytes", |b| {
-        b.iter(|| float::<_, f64, Error<_>>.parse_peek(&b"-1.234E-12"[..]));
+        b.iter(|| float::<_, f64, InputError<_>>.parse_peek(&b"-1.234E-12"[..]));
     });
 }
 
 fn float_str(c: &mut Criterion) {
     println!(
         "float_str result: {:?}",
-        float::<_, f64, Error<_>>.parse_peek("-1.234E-12")
+        float::<_, f64, InputError<_>>.parse_peek("-1.234E-12")
     );
     c.bench_function("float str", |b| {
-        b.iter(|| float::<_, f64, Error<_>>.parse_peek("-1.234E-12"));
+        b.iter(|| float::<_, f64, InputError<_>>.parse_peek("-1.234E-12"));
     });
 }
 
 fn std_float(input: &mut &[u8]) -> PResult<f64> {
     match input.parse_slice() {
         Some(n) => Ok(n),
-        None => Err(ErrMode::Backtrack(ErrorKind::Slice)),
+        None => Err(ErrMode::from_error_kind(
+            <&[u8]>::clone(input),
+            ErrorKind::Slice,
+        )),
     }
 }
 

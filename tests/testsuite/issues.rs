@@ -4,7 +4,7 @@
 
 use winnow::prelude::*;
 use winnow::Partial;
-use winnow::{error::ErrMode, error::ErrorKind, error::Needed, unpeek, IResult};
+use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed, unpeek, IResult};
 
 #[allow(dead_code)]
 struct Range {
@@ -132,10 +132,10 @@ fn issue_717(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
 }
 
 mod issue_647 {
+    use super::*;
     use winnow::combinator::separated0;
-    use winnow::prelude::*;
     use winnow::token::tag;
-    use winnow::{binary::be_f64, error::ErrMode, error::Error, IResult};
+    use winnow::{binary::be_f64, error::ErrMode, IResult};
     pub type Stream<'a> = winnow::Partial<&'a [u8]>;
 
     #[derive(PartialEq, Debug, Clone)]
@@ -148,7 +148,7 @@ mod issue_647 {
     fn list<'a>(
         input: Stream<'a>,
         _cs: &f64,
-    ) -> Result<(Stream<'a>, Vec<f64>), ErrMode<Error<Stream<'a>>>> {
+    ) -> Result<(Stream<'a>, Vec<f64>), ErrMode<InputError<Stream<'a>>>> {
         separated0(be_f64.complete_err(), tag(",").complete_err()).parse_peek(input)
     }
 
@@ -174,17 +174,17 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
     }
     assert_eq!(
         parser(Partial::new(&b""[..])),
-        Err(ErrMode::Cut(winnow::error::Error {
-            input: Partial::new(&b""[..]),
-            kind: ErrorKind::Assert
-        }))
+        Err(ErrMode::Cut(InputError::new(
+            Partial::new(&b""[..]),
+            ErrorKind::Assert
+        )))
     );
 }
 
 #[test]
 fn issue_942() {
-    use winnow::error::{ContextError, ParseError};
-    pub fn parser<'a, E: ParseError<&'a str> + ContextError<&'a str, &'static str>>(
+    use winnow::error::{AddContext, ParserError};
+    pub fn parser<'a, E: ParserError<&'a str> + AddContext<&'a str, &'static str>>(
         i: &'a str,
     ) -> IResult<&'a str, usize, E> {
         use winnow::combinator::repeat;
@@ -202,36 +202,18 @@ fn issue_many_m_n_with_zeros() {
 }
 
 #[test]
-fn issue_1027_convert_error_panic_nonempty() {
-    use winnow::error::{convert_error, VerboseError};
-
-    let input = "a";
-
-    let result: IResult<_, _, VerboseError<&str>> = ('a', 'b').parse_peek(input);
-    let err = match result.unwrap_err() {
-        ErrMode::Backtrack(e) => e,
-        _ => unreachable!(),
-    };
-
-    let msg = convert_error(input, err);
-    assert_eq!(msg, "0: at line 1, in Token:\na\n ^\n\n",);
-}
-
-#[test]
 fn issue_1231_bits_expect_fn_closure() {
     use winnow::binary::bits::{bits, take};
-    use winnow::error::Error;
     pub fn example(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
-        bits::<_, _, Error<_>, _, _>((take(1usize), take(1usize))).parse_peek(input)
+        bits::<_, _, InputError<_>, _, _>((take(1usize), take(1usize))).parse_peek(input)
     }
     assert_eq!(example(&[0xff]), Ok((&b""[..], (1, 1))));
 }
 
 #[test]
 fn issue_1282_findtoken_char() {
-    use winnow::error::Error;
     use winnow::token::one_of;
-    let mut parser = one_of::<_, _, Error<_>>(&['a', 'b', 'c'][..]);
+    let mut parser = one_of::<_, _, InputError<_>>(&['a', 'b', 'c'][..]);
     assert_eq!(parser.parse_peek("aaa"), Ok(("aa", 'a')));
 }
 
@@ -255,10 +237,10 @@ fn issue_x_looser_fill_bounds() {
     );
     assert_eq!(
         fill_pair(b"123,,"),
-        Err(ErrMode::Backtrack(winnow::error::Error {
-            input: &b","[..],
-            kind: ErrorKind::Slice
-        }))
+        Err(ErrMode::Backtrack(InputError::new(
+            &b","[..],
+            ErrorKind::Slice
+        )))
     );
 }
 
@@ -282,10 +264,10 @@ fn issue_1459_clamp_capacity() {
 
 #[test]
 fn issue_1617_count_parser_returning_zero_size() {
-    use winnow::{combinator::repeat, error::Error, token::tag};
+    use winnow::{combinator::repeat, token::tag};
 
     // previously, `repeat()` panicked if the parser had type `O = ()`
-    let parser = tag::<_, _, Error<&str>>("abc").map(|_| ());
+    let parser = tag::<_, _, InputError<&str>>("abc").map(|_| ());
     // shouldn't panic
     let result = repeat(3, parser)
         .parse_peek("abcabcabcdef")

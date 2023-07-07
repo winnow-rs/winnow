@@ -5,10 +5,10 @@ use crate::binary::u16;
 use crate::binary::u8;
 use crate::binary::Endianness;
 use crate::error::ErrMode;
-use crate::error::Error;
 use crate::error::ErrorKind;
+use crate::error::InputError;
 use crate::error::Needed;
-use crate::error::ParseError;
+use crate::error::ParserError;
 use crate::stream::Stream;
 use crate::token::take;
 use crate::unpeek;
@@ -21,7 +21,7 @@ use crate::lib::std::vec::Vec;
 
 macro_rules! assert_parse(
   ($left: expr, $right: expr) => {
-    let res: $crate::IResult<_, _, Error<_>> = $left;
+    let res: $crate::IResult<_, _, InputError<_>> = $left;
     assert_eq!(res, $right);
   };
 );
@@ -89,7 +89,7 @@ impl From<u32> for CustomError {
     }
 }
 
-impl<I> ParseError<I> for CustomError {
+impl<I> ParserError<I> for CustomError {
     fn from_error_kind(_: I, _: ErrorKind) -> Self {
         CustomError
     }
@@ -127,10 +127,10 @@ fn test_parser_verify_map() {
     assert_parse!(
         u8.verify_map(|u| if u < 20 { Some(u) } else { None })
             .parse_peek(input),
-        Err(ErrMode::Backtrack(Error {
-            input: &[50][..],
-            kind: ErrorKind::Verify
-        }))
+        Err(ErrMode::Backtrack(InputError::new(
+            &[50][..],
+            ErrorKind::Verify
+        )))
     );
     assert_parse!(
         u8.verify_map(|u| if u > 20 { Some(u) } else { None })
@@ -151,10 +151,10 @@ fn test_parser_map_parser() {
 #[test]
 #[cfg(feature = "std")]
 fn test_parser_into() {
-    use crate::error::Error;
+    use crate::error::InputError;
     use crate::token::take;
 
-    let mut parser = take::<_, _, Error<_>>(3u8).output_into();
+    let mut parser = take::<_, _, InputError<_>>(3u8).output_into();
     let result: IResult<&[u8], Vec<u8>> = parser.parse_peek(&b"abcdefg"[..]);
 
     assert_eq!(result, Ok((&b"defg"[..], vec![97, 98, 99])));
@@ -268,10 +268,10 @@ fn test_parser_verify_ref() {
     );
     assert_eq!(
         parser1.parse_peek(&b"defg"[..]),
-        Err(ErrMode::Backtrack(Error {
-            input: &b"defg"[..],
-            kind: ErrorKind::Verify
-        }))
+        Err(ErrMode::Backtrack(InputError::new(
+            &b"defg"[..],
+            ErrorKind::Verify
+        )))
     );
 
     fn parser2(i: &[u8]) -> IResult<&[u8], u32> {
@@ -295,10 +295,10 @@ fn test_parser_verify_alloc() {
     );
     assert_eq!(
         parser1.parse_peek(&b"defg"[..]),
-        Err(ErrMode::Backtrack(Error {
-            input: &b"defg"[..],
-            kind: ErrorKind::Verify
-        }))
+        Err(ErrMode::Backtrack(InputError::new(
+            &b"defg"[..],
+            ErrorKind::Verify
+        )))
     );
 }
 
@@ -309,17 +309,11 @@ fn fail_test() {
 
     assert_eq!(
         fail::<_, &str, _>.parse_peek(a),
-        Err(ErrMode::Backtrack(Error {
-            input: a,
-            kind: ErrorKind::Fail
-        }))
+        Err(ErrMode::Backtrack(InputError::new(a, ErrorKind::Fail)))
     );
     assert_eq!(
         fail::<_, &str, _>.parse_peek(b),
-        Err(ErrMode::Backtrack(Error {
-            input: b,
-            kind: ErrorKind::Fail
-        }))
+        Err(ErrMode::Backtrack(InputError::new(b, ErrorKind::Fail)))
     );
 }
 
@@ -522,7 +516,7 @@ fn delimited_test() {
 fn alt_test() {
     #[cfg(feature = "alloc")]
     use crate::{
-        error::ParseError,
+        error::ParserError,
         lib::std::{
             fmt::Debug,
             string::{String, ToString},
@@ -548,7 +542,7 @@ fn alt_test() {
     }
 
     #[cfg(feature = "alloc")]
-    impl<I: Debug> ParseError<I> for ErrorStr {
+    impl<I: Debug> ParserError<I> for ErrorStr {
         fn from_error_kind(input: I, kind: ErrorKind) -> Self {
             ErrorStr(format!("custom error message: ({:?}, {:?})", input, kind))
         }
@@ -1086,7 +1080,7 @@ impl<I> From<(I, ErrorKind)> for NilError {
     }
 }
 
-impl<I> ParseError<I> for NilError {
+impl<I> ParserError<I> for NilError {
     fn from_error_kind(_: I, _: ErrorKind) -> NilError {
         NilError
     }

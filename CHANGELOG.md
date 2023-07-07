@@ -245,7 +245,7 @@ MSRV was raised to 1.60 (#158, #160, #167)
 - `satisfy` with `one_of` thanks to new `FindToken` impls (#44)
 - `Parser::and`, `Parser::or` in favor of `impl Parser for <tuples>` and `alt` (#37)
 - `tuple`, `pair` parser in favor of using tuples (#42, #46)
-- `ParseError::from_char` in favor of `ContextError` (#45)
+- `ParserError::from_char` in favor of `ContextError` (#45)
 - `error::make_error` and `error::append_error` (#55)
 - `error::Finish` in favor of `FinishIResult` (#21)
 - `error::error_position!` and `error::error_mode_position!` (#92)
@@ -290,7 +290,7 @@ MSRV was raised to 1.60 (#158, #160, #167)
 - Treat all slices as input, regardless of token type (#111, rust-bakery/nom#1482)
 - `FinishIResult::finish` for dropping the `remainder` (#30)
 - `FindSlice` now also finds tokens, making `take_until0` and friends more flexible (#105)
-- Implement `ParseError` and `FromExternalError` for `ErrMode`, making it easier to create the right kind of error (#120, #124)
+- Implement `ParserError` and `FromExternalError` for `ErrMode`, making it easier to create the right kind of error (#120, #124)
 
 ### Fixes
 
@@ -647,7 +647,7 @@ containing example patterns.
 - the minimal Rust version is now 1.44 (1.37 if building without the `alloc` or `std` features)
 - streaming parsers return the number of additional bytes they need, not the total. This was supposed to be the case everywhere, but some parsers were forgotten
 - removed the `regexp_macros` cargo feature
-- the `context` combinator is not linked to `ParseError` anymore, instead it come with its own `ContextError` trait
+- the `context` combinator is not linked to `ParserError` anymore, instead it come with its own `ContextError` trait
 - `Needed::Size` now contains a `NonZeroUsize`, so we can reduce the structure's size by 8 bytes. When upgrading, `Needed::Size(number)` can be replaced with `Needed::new(number)`
 - there is now a more general `Parser` trait, so parsers can be something else than a function. This trait also comes with combinator methods like `map`, `flat_map`, `or`. Since it is implemented on `Fn*` traits, it should not affect existing code too much
 - combinators that returned a `impl Fn` now return a `impl FnMut` to allow parser closures that capture some mutable value from the context
