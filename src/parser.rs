@@ -43,6 +43,7 @@ pub trait Parser<I, O, E> {
     #[inline]
     fn parse(&mut self, mut input: I) -> Result<O, E>
     where
+        Self: core::marker::Sized,
         I: Stream,
         // Force users to deal with `Incomplete` when `StreamIsPartial<true>`
         I: StreamIsPartial,
@@ -54,14 +55,12 @@ pub trait Parser<I, O, E> {
             "partial streams need to handle `ErrMode::Incomplete`"
         );
 
-        let o = self.parse_next(&mut input).map_err(|e| {
-            e.into_inner()
-                .expect("complete parsers should not report `ErrMode::Incomplete(_)`")
-        })?;
-        let _ = crate::combinator::eof.parse_next(&mut input).map_err(|e| {
-            e.into_inner()
-                .expect("complete parsers should not report `ErrMode::Incomplete(_)`")
-        })?;
+        let (o, _) = (self.by_ref(), crate::combinator::eof)
+            .parse_next(&mut input)
+            .map_err(|e| {
+                e.into_inner()
+                    .expect("complete parsers should not report `ErrMode::Incomplete(_)`")
+            })?;
         Ok(o)
     }
 
