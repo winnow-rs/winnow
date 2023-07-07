@@ -33,6 +33,15 @@ fn json_bench(c: &mut criterion::Criterion) {
             },
         );
         group.bench_with_input(
+            criterion::BenchmarkId::new("context", name),
+            &len,
+            |b, _| {
+                type Error<'i> = winnow::error::ContextError<parser::Stream<'i>>;
+
+                b.iter(|| parser::json::<Error>.parse_peek(sample).unwrap());
+            },
+        );
+        group.bench_with_input(
             criterion::BenchmarkId::new("dispatch", name),
             &len,
             |b, _| {

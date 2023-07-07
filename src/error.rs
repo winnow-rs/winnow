@@ -17,6 +17,7 @@
 //! - [`ErrorKind`]
 //! - [`InputError`] (mostly for testing)
 //! - [`VerboseError`]
+//! - [`ContextError`]
 //! - [Custom errors][crate::_topic::error]
 
 #[cfg(feature = "alloc")]
@@ -603,6 +604,217 @@ pub fn convert_error<I: Stream + core::ops::Deref<Target = str>>(
     }
 
     result
+}
+
+/// Accumulate context while backtracking errors
+#[derive(Debug)]
+pub struct ContextError<C = StrContext> {
+    #[cfg(feature = "alloc")]
+    context: crate::lib::std::vec::Vec<C>,
+    #[cfg(not(feature = "alloc"))]
+    context: core::marker::PhantomData<C>,
+    #[cfg(feature = "std")]
+    cause: Option<Box<dyn std::error::Error + Send + Sync + 'static>>,
+}
+
+impl<C> ContextError<C> {
+    /// Create an empty error
+    #[inline]
+    pub fn new() -> Self {
+        Self {
+            context: Default::default(),
+            #[cfg(feature = "std")]
+            cause: None,
+        }
+    }
+
+    /// Access context from [`Parser::context`]
+    #[inline]
+    #[cfg(feature = "alloc")]
+    pub fn context(&self) -> impl Iterator<Item = &C> {
+        self.context.iter()
+    }
+
+    /// Originating [`std::error::Error`]
+    #[inline]
+    #[cfg(feature = "std")]
+    pub fn cause(&self) -> Option<&(dyn std::error::Error + Send + Sync + 'static)> {
+        self.cause.as_deref()
+    }
+}
+
+impl<I, C> ParseError<I> for ContextError<C> {
+    #[inline]
+    fn from_error_kind(_input: I, _kind: ErrorKind) -> Self {
+        Self::new()
+    }
+
+    #[inline]
+    fn append(self, _input: I, _kind: ErrorKind) -> Self {
+        self
+    }
+
+    #[inline]
+    fn or(self, other: Self) -> Self {
+        other
+    }
+}
+
+impl<C, I> AddContext<I, C> for ContextError<C> {
+    #[inline]
+    fn add_context(mut self, _input: I, ctx: C) -> Self {
+        #[cfg(feature = "alloc")]
+        self.context.push(ctx);
+        self
+    }
+}
+
+#[cfg(feature = "std")]
+impl<C, I, E: std::error::Error + Send + Sync + 'static> FromExternalError<I, E>
+    for ContextError<C>
+{
+    #[inline]
+    fn from_external_error(_input: I, _kind: ErrorKind, e: E) -> Self {
+        let mut err = Self::new();
+        {
+            err.cause = Some(Box::new(e));
+        }
+        err
+    }
+}
+
+// HACK: This is more general than `std`, making the features non-additive
+#[cfg(not(feature = "std"))]
+impl<C, I, E: Send + Sync + 'static> FromExternalError<I, E> for ContextError<C> {
+    #[inline]
+    fn from_external_error(_input: I, _kind: ErrorKind, _e: E) -> Self {
+        let err = Self::new();
+        err
+    }
+}
+
+// For tests
+impl<C: core::cmp::PartialEq> core::cmp::PartialEq for ContextError<C> {
+    fn eq(&self, other: &Self) -> bool {
+        #[cfg(feature = "alloc")]
+        {
+            if self.context != other.context {
+                return false;
+            }
+        }
+        #[cfg(feature = "std")]
+        {
+            if self.cause.as_ref().map(ToString::to_string)
+                != other.cause.as_ref().map(ToString::to_string)
+            {
+                return false;
+            }
+        }
+
+        true
+    }
+}
+
+impl crate::lib::std::fmt::Display for ContextError<StrContext> {
+    fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
+        #[cfg(feature = "alloc")]
+        {
+            let expression = self.context().find_map(|c| match c {
+                StrContext::Label(c) => Some(c),
+                _ => None,
+            });
+            let expected = self
+                .context()
+                .filter_map(|c| match c {
+                    StrContext::Expected(c) => Some(c),
+                    _ => None,
+                })
+                .collect::<crate::lib::std::vec::Vec<_>>();
+
+            let mut newline = false;
+
+            if let Some(expression) = expression {
+                newline = true;
+
+                write!(f, "invalid {}", expression)?;
+            }
+
+            if !expected.is_empty() {
+                if newline {
+                    writeln!(f)?;
+                }
+                newline = true;
+
+                write!(f, "expected ")?;
+                for (i, expected) in expected.iter().enumerate() {
+                    if i != 0 {
+                        write!(f, ", ")?;
+                    }
+                    write!(f, "{}", expected)?;
+                }
+            }
+            #[cfg(feature = "std")]
+            {
+                if let Some(cause) = self.cause() {
+                    if newline {
+                        writeln!(f)?;
+                    }
+                    write!(f, "{}", cause)?;
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
+
+/// Additional parse context for [`ContextError`] added via [`Parser::context`]
+#[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
+pub enum StrContext {
+    /// Description of what is currently being parsed
+    Label(&'static str),
+    /// Grammar item that was expected
+    Expected(StrContextValue),
+}
+
+/// See [`StrContext`]
+#[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
+pub enum StrContextValue {
+    /// A [`char`] token
+    CharLiteral(char),
+    /// A [`&str`] token
+    StringLiteral(&'static str),
+    /// A description of what was being parsed
+    Description(&'static str),
+}
+
+impl From<char> for StrContextValue {
+    fn from(inner: char) -> Self {
+        Self::CharLiteral(inner)
+    }
+}
+
+impl From<&'static str> for StrContextValue {
+    fn from(inner: &'static str) -> Self {
+        Self::StringLiteral(inner)
+    }
+}
+
+impl crate::lib::std::fmt::Display for StrContextValue {
+    fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
+        match self {
+            Self::CharLiteral('\n') => "newline".fmt(f),
+            Self::CharLiteral('`') => "'`'".fmt(f),
+            Self::CharLiteral(c) if c.is_ascii_control() => {
+                write!(f, "`{}`", c.escape_debug())
+            }
+            Self::CharLiteral(c) => write!(f, "`{}`", c),
+            Self::StringLiteral(c) => write!(f, "`{}`", c),
+            Self::Description(c) => write!(f, "{}", c),
+        }
+    }
 }
 
 /// Provide some minor debug context for errors
