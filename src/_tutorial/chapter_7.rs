@@ -38,13 +38,13 @@
 //! pub struct Hex(usize);
 //!
 //! impl std::str::FromStr for Hex {
-//!     type Err = InputError<String>;
+//!     type Err = String;
 //!
 //!     fn from_str(input: &str) -> Result<Self, Self::Err> {
 //!         parse_digits
 //!             .map(Hex)
 //!             .parse(input)
-//!             .map_err(|e| e.into_owned())
+//!             .map_err(|e| e.to_string())
 //!     }
 //! }
 //!

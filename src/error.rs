@@ -25,6 +25,7 @@ use crate::lib::std::borrow::ToOwned;
 use crate::lib::std::fmt;
 use core::num::NonZeroUsize;
 
+use crate::stream::AsBStr;
 use crate::stream::Stream;
 #[allow(unused_imports)] // Here for intra-doc links
 use crate::Parser;
@@ -883,6 +884,214 @@ impl fmt::Display for ErrorKind {
 
 #[cfg(feature = "std")]
 impl std::error::Error for ErrorKind {}
+
+/// See [`Parser::parse`]
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ParseError<I, E> {
+    input: I,
+    offset: usize,
+    inner: E,
+}
+
+impl<I: Stream, E: ParserError<I>> ParseError<I, E> {
+    pub(crate) fn new(mut input: I, start: I::Checkpoint, inner: E) -> Self {
+        let offset = input.offset_from(&start);
+        input.reset(start);
+        Self {
+            input,
+            offset,
+            inner,
+        }
+    }
+}
+
+impl<I, E> ParseError<I, E> {
+    /// The [`Stream`] at the initial location when parsing started
+    #[inline]
+    pub fn input(&self) -> &I {
+        &self.input
+    }
+
+    /// The location in [`ParseError::input`] where parsing failed
+    #[inline]
+    pub fn offset(&self) -> usize {
+        self.offset
+    }
+
+    /// The original [`ParserError`]
+    #[inline]
+    pub fn inner(&self) -> &E {
+        &self.inner
+    }
+}
+
+impl<I, E> core::fmt::Display for ParseError<I, E>
+where
+    I: AsBStr,
+    E: core::fmt::Display,
+{
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let input = self.input.as_bstr();
+        let span_start = self.offset;
+        let span_end = span_start;
+        #[cfg(feature = "std")]
+        if input.contains(&b'\n') {
+            let (line_idx, col_idx) = translate_position(input, span_start);
+            let line_num = line_idx + 1;
+            let col_num = col_idx + 1;
+            let gutter = line_num.to_string().len();
+            let content = input
+                .split(|c| *c == b'\n')
+                .nth(line_idx)
+                .expect("valid line number");
+
+            writeln!(f, "parse error at line {}, column {}", line_num, col_num)?;
+            //   |
+            for _ in 0..=gutter {
+                write!(f, " ")?;
+            }
+            writeln!(f, "|")?;
+
+            // 1 | 00:32:00.a999999
+            write!(f, "{} | ", line_num)?;
+            writeln!(f, "{}", String::from_utf8_lossy(content))?;
+
+            //   |          ^
+            for _ in 0..=gutter {
+                write!(f, " ")?;
+            }
+            write!(f, "|")?;
+            for _ in 0..=col_idx {
+                write!(f, " ")?;
+            }
+            // The span will be empty at eof, so we need to make sure we always print at least
+            // one `^`
+            write!(f, "^")?;
+            for _ in (span_start + 1)..(span_end.min(span_start + content.len())) {
+                write!(f, "^")?;
+            }
+            writeln!(f)?;
+        } else {
+            let content = input;
+            writeln!(f, "{}", String::from_utf8_lossy(content))?;
+            for _ in 0..=span_start {
+                write!(f, " ")?;
+            }
+            // The span will be empty at eof, so we need to make sure we always print at least
+            // one `^`
+            write!(f, "^")?;
+            for _ in (span_start + 1)..(span_end.min(span_start + content.len())) {
+                write!(f, "^")?;
+            }
+            writeln!(f)?;
+        }
+        write!(f, "{}", self.inner)?;
+
+        Ok(())
+    }
+}
+
+#[cfg(feature = "std")]
+fn translate_position(input: &[u8], index: usize) -> (usize, usize) {
+    if input.is_empty() {
+        return (0, index);
+    }
+
+    let safe_index = index.min(input.len() - 1);
+    let column_offset = index - safe_index;
+    let index = safe_index;
+
+    let nl = input[0..index]
+        .iter()
+        .rev()
+        .enumerate()
+        .find(|(_, b)| **b == b'\n')
+        .map(|(nl, _)| index - nl - 1);
+    let line_start = match nl {
+        Some(nl) => nl + 1,
+        None => 0,
+    };
+    let line = input[0..line_start].iter().filter(|b| **b == b'\n').count();
+    let line = line;
+
+    // HACK: This treats byte offset and column offsets the same
+    let column = std::str::from_utf8(&input[line_start..=index])
+        .map(|s| s.chars().count() - 1)
+        .unwrap_or_else(|_| index - line_start);
+    let column = column + column_offset;
+
+    (line, column)
+}
+
+#[cfg(test)]
+#[cfg(feature = "std")]
+mod test_translate_position {
+    use super::*;
+
+    #[test]
+    fn empty() {
+        let input = b"";
+        let index = 0;
+        let position = translate_position(&input[..], index);
+        assert_eq!(position, (0, 0));
+    }
+
+    #[test]
+    fn start() {
+        let input = b"Hello";
+        let index = 0;
+        let position = translate_position(&input[..], index);
+        assert_eq!(position, (0, 0));
+    }
+
+    #[test]
+    fn end() {
+        let input = b"Hello";
+        let index = input.len() - 1;
+        let position = translate_position(&input[..], index);
+        assert_eq!(position, (0, input.len() - 1));
+    }
+
+    #[test]
+    fn after() {
+        let input = b"Hello";
+        let index = input.len();
+        let position = translate_position(&input[..], index);
+        assert_eq!(position, (0, input.len()));
+    }
+
+    #[test]
+    fn first_line() {
+        let input = b"Hello\nWorld\n";
+        let index = 2;
+        let position = translate_position(&input[..], index);
+        assert_eq!(position, (0, 2));
+    }
+
+    #[test]
+    fn end_of_line() {
+        let input = b"Hello\nWorld\n";
+        let index = 5;
+        let position = translate_position(&input[..], index);
+        assert_eq!(position, (0, 5));
+    }
+
+    #[test]
+    fn start_of_second_line() {
+        let input = b"Hello\nWorld\n";
+        let index = 6;
+        let position = translate_position(&input[..], index);
+        assert_eq!(position, (1, 0));
+    }
+
+    #[test]
+    fn second_line() {
+        let input = b"Hello\nWorld\n";
+        let index = 8;
+        let position = translate_position(&input[..], index);
+        assert_eq!(position, (1, 2));
+    }
+}
 
 /// Creates a parse error from a [`ErrorKind`]
 /// and the position in the input

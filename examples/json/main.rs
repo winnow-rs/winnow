@@ -4,7 +4,6 @@ mod parser_dispatch;
 #[allow(dead_code)]
 mod parser_partial;
 
-use winnow::error::convert_error;
 use winnow::error::InputError;
 use winnow::error::VerboseError;
 use winnow::prelude::*;
@@ -33,7 +32,7 @@ fn main() -> Result<(), lexopt::Error> {
             }
             Err(err) => {
                 if args.pretty {
-                    println!("{}", convert_error(data, err));
+                    println!("{}", err);
                 } else {
                     println!("{:#?}", err);
                 }
@@ -49,7 +48,11 @@ fn main() -> Result<(), lexopt::Error> {
                 println!("{:#?}", json);
             }
             Err(err) => {
-                println!("{:?}", err);
+                if args.pretty {
+                    println!("{}", err);
+                } else {
+                    println!("{:#?}", err);
+                }
             }
         }
     }

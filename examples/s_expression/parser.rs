@@ -18,7 +18,7 @@ use winnow::{
 pub fn eval_from_str(src: &str) -> Result<Expr, String> {
     parse_expr
         .parse(src)
-        .map_err(|e: VerboseError<&str>| format!("{:#?}", e))
+        .map_err(|e| e.to_string())
         .and_then(|exp| eval_expression(exp).ok_or_else(|| "Eval failed".to_string()))
 }
 

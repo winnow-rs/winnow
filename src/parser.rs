@@ -1,7 +1,7 @@
 //! Basic types to build the parsers
 
 use crate::combinator::*;
-use crate::error::{AddContext, FromExternalError, IResult, PResult, ParserError};
+use crate::error::{AddContext, FromExternalError, IResult, PResult, ParseError, ParserError};
 use crate::stream::{AsChar, Compare, Location, ParseSlice, Stream, StreamIsPartial};
 
 /// Core trait for parsing
@@ -41,7 +41,7 @@ use crate::stream::{AsChar, Compare, Location, ParseSlice, Stream, StreamIsParti
 pub trait Parser<I, O, E> {
     /// Parse all of `input`, generating `O` from it
     #[inline]
-    fn parse(&mut self, mut input: I) -> Result<O, E>
+    fn parse(&mut self, mut input: I) -> Result<O, ParseError<I, E>>
     where
         Self: core::marker::Sized,
         I: Stream,
@@ -55,11 +55,14 @@ pub trait Parser<I, O, E> {
             "partial streams need to handle `ErrMode::Incomplete`"
         );
 
+        let start = input.checkpoint();
         let (o, _) = (self.by_ref(), crate::combinator::eof)
             .parse_next(&mut input)
             .map_err(|e| {
-                e.into_inner()
-                    .expect("complete parsers should not report `ErrMode::Incomplete(_)`")
+                let e = e
+                    .into_inner()
+                    .expect("complete parsers should not report `ErrMode::Incomplete(_)`");
+                ParseError::new(input, start, e)
             })?;
         Ok(o)
     }
