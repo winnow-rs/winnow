@@ -5,13 +5,11 @@
 //!
 //! The type we've been working with looks like:
 //! ```rust
-//! # use winnow::error::VerboseError;
+//! # use winnow::error::ContextError;
 //! # use winnow::error::ErrMode;
 //! type PResult<'i, O> = Result<
-//!     (&'i str, O),
-//!     ErrMode<
-//!         VerboseError<&'i str>
-//!     >
+//!     O,
+//!     ErrMode<ContextError>
 //! >;
 //! ```
 //! 1. We have to decide what to do about the "remainder" of the input.

@@ -202,22 +202,6 @@ fn issue_many_m_n_with_zeros() {
 }
 
 #[test]
-fn issue_1027_convert_error_panic_nonempty() {
-    use winnow::error::{convert_error, VerboseError};
-
-    let input = "a";
-
-    let result: IResult<_, _, VerboseError<&str>> = ('a', 'b').parse_peek(input);
-    let err = match result.unwrap_err() {
-        ErrMode::Backtrack(e) => e,
-        _ => unreachable!(),
-    };
-
-    let msg = convert_error(input, err);
-    assert_eq!(msg, "0: at line 1, in Token:\na\n ^\n\n",);
-}
-
-#[test]
 fn issue_1231_bits_expect_fn_closure() {
     use winnow::binary::bits::{bits, take};
     pub fn example(input: &[u8]) -> IResult<&[u8], (u8, u8)> {

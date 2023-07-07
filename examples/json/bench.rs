@@ -24,15 +24,6 @@ fn json_bench(c: &mut criterion::Criterion) {
             b.iter(|| parser::json::<Error>.parse_peek(sample).unwrap());
         });
         group.bench_with_input(
-            criterion::BenchmarkId::new("verbose", name),
-            &len,
-            |b, _| {
-                type Error<'i> = winnow::error::VerboseError<parser::Stream<'i>>;
-
-                b.iter(|| parser::json::<Error>.parse_peek(sample).unwrap());
-            },
-        );
-        group.bench_with_input(
             criterion::BenchmarkId::new("context", name),
             &len,
             |b, _| {
