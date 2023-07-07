@@ -82,10 +82,10 @@
 //! > Let's look at it more closely as its used above (resolving all generic parameters):
 //! > ```rust
 //! > # use winnow::prelude::*;
-//! > # use winnow::error::Error;
+//! > # use winnow::error::InputError;
 //! > pub fn one_of<'i>(
 //! >     list: &'static [char]
-//! > ) -> impl Parser<&'i str, char, Error<&'i str>> {
+//! > ) -> impl Parser<&'i str, char, InputError<&'i str>> {
 //! >     // ...
 //! > #    winnow::token::one_of(list)
 //! > }

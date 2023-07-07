@@ -12,7 +12,7 @@ use crate::*;
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// use winnow::combinator::preceded;
@@ -22,8 +22,8 @@ use crate::*;
 ///
 /// assert_eq!(parser.parse_peek("abcefg"), Ok(("", "efg")));
 /// assert_eq!(parser.parse_peek("abcefghij"), Ok(("hij", "efg")));
-/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
-/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Tag))));
 /// ```
 #[doc(alias = "ignore_then")]
 pub fn preceded<I, O1, O2, E: ParseError<I>, F, G>(
@@ -50,7 +50,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// use winnow::combinator::terminated;
@@ -60,8 +60,8 @@ where
 ///
 /// assert_eq!(parser.parse_peek("abcefg"), Ok(("", "abc")));
 /// assert_eq!(parser.parse_peek("abcefghij"), Ok(("hij", "abc")));
-/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
-/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Tag))));
 /// ```
 #[doc(alias = "then_ignore")]
 pub fn terminated<I, O1, O2, E: ParseError<I>, F, G>(
@@ -89,7 +89,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::error::Needed::Size;
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated_pair;
@@ -99,8 +99,8 @@ where
 ///
 /// assert_eq!(parser.parse_peek("abc|efg"), Ok(("", ("abc", "efg"))));
 /// assert_eq!(parser.parse_peek("abc|efghij"), Ok(("hij", ("abc", "efg"))));
-/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
-/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Tag))));
 /// ```
 pub fn separated_pair<I, O1, O2, O3, E: ParseError<I>, F, G, H>(
     mut first: F,
@@ -130,7 +130,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::error::Needed::Size;
 /// # use winnow::prelude::*;
 /// use winnow::combinator::delimited;
@@ -140,8 +140,8 @@ where
 ///
 /// assert_eq!(parser.parse_peek("(abc)"), Ok(("", "abc")));
 /// assert_eq!(parser.parse_peek("(abc)def"), Ok(("def", "abc")));
-/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
-/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Tag))));
 /// ```
 #[doc(alias = "between")]
 #[doc(alias = "padded")]

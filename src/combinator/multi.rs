@@ -50,7 +50,7 @@ use crate::Parser;
 /// One or more reptitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
 /// use winnow::token::tag;
@@ -61,15 +61,15 @@ use crate::Parser;
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
 /// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Tag))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
 /// # }
 /// ```
 ///
 /// Fixed number of repeitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
 /// use winnow::token::tag;
@@ -79,9 +79,9 @@ use crate::Parser;
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
-/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Tag))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("abc123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
 /// # }
 /// ```
@@ -220,7 +220,7 @@ where
 ///
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat_till0;
 /// use winnow::token::tag;
@@ -230,9 +230,9 @@ where
 /// };
 ///
 /// assert_eq!(parser("abcabcend"), Ok(("", (vec!["abc", "abc"], "end"))));
-/// assert_eq!(parser("abc123end"), Err(ErrMode::Backtrack(Error::new("123end", ErrorKind::Tag))));
-/// assert_eq!(parser("123123end"), Err(ErrMode::Backtrack(Error::new("123123end", ErrorKind::Tag))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("abc123end"), Err(ErrMode::Backtrack(InputError::new("123end", ErrorKind::Tag))));
+/// assert_eq!(parser("123123end"), Err(ErrMode::Backtrack(InputError::new("123123end", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("abcendefg"), Ok(("efg", (vec!["abc"], "end"))));
 /// # }
 /// ```
@@ -378,7 +378,7 @@ where
 ///
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated1;
 /// use winnow::token::tag;
@@ -390,8 +390,8 @@ where
 /// assert_eq!(parser("abc|abc|abc"), Ok(("", vec!["abc", "abc", "abc"])));
 /// assert_eq!(parser("abc123abc"), Ok(("123abc", vec!["abc"])));
 /// assert_eq!(parser("abc|def"), Ok(("|def", vec!["abc"])));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
-/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(Error::new("def|abc", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(InputError::new("def|abc", ErrorKind::Tag))));
 /// # }
 /// ```
 #[doc(alias = "sep_by1")]
@@ -457,7 +457,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated_foldl1;
 /// use winnow::ascii::dec_int;
@@ -467,8 +467,8 @@ where
 /// }
 ///
 /// assert_eq!(parser("9-3-5"), Ok(("", 1)));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
-/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(Error::new("def|abc", ErrorKind::Slice))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Slice))));
+/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(InputError::new("def|abc", ErrorKind::Slice))));
 /// ```
 pub fn separated_foldl1<I, O, O2, E, P, S, Op>(
     mut parser: P,
@@ -527,7 +527,7 @@ where
 /// # Example
 ///
 /// ```
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated_foldr1;
 /// use winnow::ascii::dec_uint;
@@ -538,8 +538,8 @@ where
 ///
 /// assert_eq!(parser("2^3^2"), Ok(("", 512)));
 /// assert_eq!(parser("2"), Ok(("", 2)));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Slice))));
-/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(Error::new("def|abc", ErrorKind::Slice))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Slice))));
+/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(InputError::new("def|abc", ErrorKind::Slice))));
 /// ```
 #[cfg(feature = "alloc")]
 pub fn separated_foldr1<I, O, O2, E, P, S, Op>(
@@ -652,7 +652,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::fill;
 /// use winnow::token::tag;
@@ -664,9 +664,9 @@ where
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", ["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Tag))));
-/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Tag))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("abc123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", ["abc", "abc"])));
 /// ```
 pub fn fill<'a, I, O, E, F>(mut f: F, buf: &'a mut [O]) -> impl Parser<I, (), E> + 'a
@@ -737,7 +737,7 @@ where
 ///
 /// One or more repetitions:
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::fold_repeat;
 /// use winnow::token::tag;
@@ -756,8 +756,8 @@ where
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
 /// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(Error::new("123123", ErrorKind::Many))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(Error::new("", ErrorKind::Many))));
+/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Many))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Many))));
 /// ```
 ///
 /// Arbitrary number of repetitions:

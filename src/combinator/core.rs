@@ -10,10 +10,10 @@ use crate::*;
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::error::ErrorKind;
-/// # use winnow::error::Error;
+/// # use winnow::error::InputError;
 /// use winnow::combinator::rest;
-/// assert_eq!(rest::<_,Error<_>>.parse_peek("abc"), Ok(("", "abc")));
-/// assert_eq!(rest::<_,Error<_>>.parse_peek(""), Ok(("", "")));
+/// assert_eq!(rest::<_,InputError<_>>.parse_peek("abc"), Ok(("", "abc")));
+/// assert_eq!(rest::<_,InputError<_>>.parse_peek(""), Ok(("", "")));
 /// ```
 #[inline]
 pub fn rest<I, E: ParseError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
@@ -32,10 +32,10 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::error::ErrorKind;
-/// # use winnow::error::Error;
+/// # use winnow::error::InputError;
 /// use winnow::combinator::rest_len;
-/// assert_eq!(rest_len::<_,Error<_>>.parse_peek("abc"), Ok(("abc", 3)));
-/// assert_eq!(rest_len::<_,Error<_>>.parse_peek(""), Ok(("", 0)));
+/// assert_eq!(rest_len::<_,InputError<_>>.parse_peek("abc"), Ok(("abc", 3)));
+/// assert_eq!(rest_len::<_,InputError<_>>.parse_peek(""), Ok(("", 0)));
 /// ```
 #[inline]
 pub fn rest_len<I, E: ParseError<I>>(input: &mut I) -> PResult<usize, E>
@@ -56,7 +56,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::opt;
 /// use winnow::ascii::alpha1;
@@ -92,7 +92,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{Error, ErrorKind}, IResult};
+/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, IResult};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::cond;
 /// use winnow::ascii::alpha1;
@@ -104,7 +104,7 @@ where
 ///
 /// assert_eq!(parser(true, "abcd;"), Ok((";", Some("abcd"))));
 /// assert_eq!(parser(false, "abcd;"), Ok(("abcd;", None)));
-/// assert_eq!(parser(true, "123;"), Err(ErrMode::Backtrack(Error::new("123;", ErrorKind::Slice))));
+/// assert_eq!(parser(true, "123;"), Err(ErrMode::Backtrack(InputError::new("123;", ErrorKind::Slice))));
 /// assert_eq!(parser(false, "123;"), Ok(("123;", None)));
 /// # }
 /// ```
@@ -127,7 +127,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, IResult};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::peek;
 /// use winnow::ascii::alpha1;
@@ -136,7 +136,7 @@ where
 /// let mut parser = peek(alpha1);
 ///
 /// assert_eq!(parser.parse_peek("abcd;"), Ok(("abcd;", "abcd")));
-/// assert_eq!(parser.parse_peek("123;"), Err(ErrMode::Backtrack(Error::new("123;", ErrorKind::Slice))));
+/// assert_eq!(parser.parse_peek("123;"), Err(ErrMode::Backtrack(InputError::new("123;", ErrorKind::Slice))));
 /// # }
 /// ```
 #[doc(alias = "look_ahead")]
@@ -159,12 +159,12 @@ where
 ///
 /// ```rust
 /// # use std::str;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::combinator::eof;
 /// # use winnow::prelude::*;
 ///
 /// let mut parser = eof;
-/// assert_eq!(parser.parse_peek("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Eof))));
+/// assert_eq!(parser.parse_peek("abc"), Err(ErrMode::Backtrack(InputError::new("abc", ErrorKind::Eof))));
 /// assert_eq!(parser.parse_peek(""), Ok(("", "")));
 /// ```
 #[doc(alias = "end")]
@@ -190,7 +190,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, IResult};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::not;
 /// use winnow::ascii::alpha1;
@@ -199,7 +199,7 @@ where
 /// let mut parser = not(alpha1);
 ///
 /// assert_eq!(parser.parse_peek("123"), Ok(("123", ())));
-/// assert_eq!(parser.parse_peek("abcd"), Err(ErrMode::Backtrack(Error::new("abcd", ErrorKind::Not))));
+/// assert_eq!(parser.parse_peek("abcd"), Err(ErrMode::Backtrack(InputError::new("abcd", ErrorKind::Not))));
 /// # }
 /// ```
 pub fn not<I: Stream, O, E: ParseError<I>, F>(mut parser: F) -> impl Parser<I, (), E>
@@ -225,7 +225,7 @@ where
 ///
 /// Without `cut_err`:
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::token::one_of;
 /// # use winnow::ascii::digit1;
 /// # use winnow::combinator::rest;
@@ -249,7 +249,7 @@ where
 ///
 /// With `cut_err`:
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::prelude::*;
 /// # use winnow::token::one_of;
 /// # use winnow::ascii::digit1;
@@ -268,7 +268,7 @@ where
 ///
 /// assert_eq!(parser("+10 ab"), Ok((" ab", "10")));
 /// assert_eq!(parser("ab"), Ok(("", "ab")));
-/// assert_eq!(parser("+"), Err(ErrMode::Cut(Error { input: "", kind: ErrorKind::Slice })));
+/// assert_eq!(parser("+"), Err(ErrMode::Cut(InputError { input: "", kind: ErrorKind::Slice })));
 /// # }
 /// ```
 pub fn cut_err<I, O, E: ParseError<I>, F>(mut parser: F) -> impl Parser<I, O, E>
@@ -438,19 +438,19 @@ enum State<E> {
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::alt;
 /// use winnow::combinator::success;
 ///
-/// let mut parser = success::<_,_,Error<_>>(10);
+/// let mut parser = success::<_,_,InputError<_>>(10);
 /// assert_eq!(parser.parse_peek("xyz"), Ok(("xyz", 10)));
 ///
 /// fn sign(input: &str) -> IResult<&str, isize> {
 ///     alt((
 ///         '-'.value(-1),
 ///         '+'.value(1),
-///         success::<_,_,Error<_>>(1)
+///         success::<_,_,InputError<_>>(1)
 ///     )).parse_peek(input)
 /// }
 /// assert_eq!(sign("+10"), Ok(("10", 1)));
@@ -471,12 +471,12 @@ pub fn success<I: Stream, O: Clone, E: ParseError<I>>(val: O) -> impl Parser<I, 
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Error, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, IResult};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::fail;
 ///
 /// let s = "string";
-/// assert_eq!(fail::<_, &str, _>.parse_peek(s), Err(ErrMode::Backtrack(Error::new(s, ErrorKind::Fail))));
+/// assert_eq!(fail::<_, &str, _>.parse_peek(s), Err(ErrMode::Backtrack(InputError::new(s, ErrorKind::Fail))));
 /// ```
 #[doc(alias = "unexpected")]
 pub fn fail<I: Stream, O, E: ParseError<I>>(i: &mut I) -> PResult<O, E> {

@@ -19,7 +19,7 @@ pub type Stream<'i> = &'i str;
 /// The root element of a JSON parser is any value
 ///
 /// A parser has the following signature:
-/// `&mut Stream -> PResult<Output, Error>`, with `PResult` defined as:
+/// `&mut Stream -> PResult<Output, InputError>`, with `PResult` defined as:
 /// `type PResult<O, E = (I, ErrorKind)> = Result<O, Err<E>>;`
 ///
 /// most of the times you can ignore the error type and use the default (but this
@@ -204,7 +204,7 @@ mod test {
 
     #[allow(clippy::useless_attribute)]
     #[allow(dead_code)] // its dead for benches
-    type Error<'i> = winnow::error::Error<&'i str>;
+    type Error<'i> = winnow::error::InputError<&'i str>;
 
     #[test]
     fn json_string() {

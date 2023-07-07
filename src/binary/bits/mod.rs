@@ -19,7 +19,7 @@ use crate::{unpeek, IResult, PResult, Parser};
 /// use winnow::prelude::*;
 /// use winnow::Bytes;
 /// use winnow::binary::bits::{bits, take};
-/// use winnow::error::Error;
+/// use winnow::error::InputError;
 ///
 /// type Stream<'i> = &'i Bytes;
 ///
@@ -28,7 +28,7 @@ use crate::{unpeek, IResult, PResult, Parser};
 /// }
 ///
 /// fn parse(input: Stream<'_>) -> IResult<Stream<'_>, (u8, u8)> {
-///     bits::<_, _, Error<(_, usize)>, _, _>((take(4usize), take(8usize))).parse_peek(input)
+///     bits::<_, _, InputError<(_, usize)>, _, _>((take(4usize), take(8usize))).parse_peek(input)
 /// }
 ///
 /// let input = stream(&[0x12, 0x34, 0xff, 0xff]);
@@ -79,7 +79,7 @@ where
 /// use winnow::Bytes;
 /// use winnow::binary::bits::{bits, bytes, take};
 /// use winnow::combinator::rest;
-/// use winnow::error::Error;
+/// use winnow::error::InputError;
 ///
 /// type Stream<'i> = &'i Bytes;
 ///
@@ -88,10 +88,10 @@ where
 /// }
 ///
 /// fn parse(input: Stream<'_>) -> IResult<Stream<'_>, (u8, u8, &[u8])> {
-///   bits::<_, _, Error<(_, usize)>, _, _>((
+///   bits::<_, _, InputError<(_, usize)>, _, _>((
 ///     take(4usize),
 ///     take(8usize),
-///     bytes::<_, _, Error<_>, _, _>(rest)
+///     bytes::<_, _, InputError<_>, _, _>(rest)
 ///   )).parse_peek(input)
 /// }
 ///
@@ -139,7 +139,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
-/// # use winnow::error::{Error, ErrorKind};
+/// # use winnow::error::{InputError, ErrorKind};
 /// use winnow::binary::bits::take;
 ///
 /// type Stream<'i> = &'i Bytes;
@@ -162,7 +162,7 @@ where
 /// assert_eq!(parser((stream(&[0b00010010]), 4), 4), Ok(((stream(&[]), 0), 0b00000010)));
 ///
 /// // Tries to consume 12 bits but only 8 are available
-/// assert_eq!(parser((stream(&[0b00010010]), 0), 12), Err(winnow::error::ErrMode::Backtrack(Error{input: (stream(&[0b00010010]), 0), kind: ErrorKind::Eof })));
+/// assert_eq!(parser((stream(&[0b00010010]), 0), 12), Err(winnow::error::ErrMode::Backtrack(InputError{input: (stream(&[0b00010010]), 0), kind: ErrorKind::Eof })));
 /// ```
 #[inline(always)]
 pub fn take<I, O, C, E: ParseError<(I, usize)>>(count: C) -> impl Parser<(I, usize), O, E>
@@ -245,7 +245,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
-/// # use winnow::error::{Error, ErrorKind};
+/// # use winnow::error::{InputError, ErrorKind};
 /// use winnow::binary::bits::tag;
 ///
 /// type Stream<'i> = &'i Bytes;
@@ -276,7 +276,7 @@ where
 /// // The lowest 2 bits of 0b11111111 and 0b00000001 are different.
 /// assert_eq!(
 ///     parser(0b000000_01, 2, (stream(&[0b111111_11]), 0)),
-///     Err(winnow::error::ErrMode::Backtrack(Error {
+///     Err(winnow::error::ErrMode::Backtrack(InputError {
 ///         input: (stream(&[0b11111111]), 0),
 ///         kind: ErrorKind::Tag
 ///     }))
@@ -285,7 +285,7 @@ where
 /// // The lowest 8 bits of 0b11111111 and 0b11111110 are different.
 /// assert_eq!(
 ///     parser(0b11111110, 8, (stream(&[0b11111111]), 0)),
-///     Err(winnow::error::ErrMode::Backtrack(Error {
+///     Err(winnow::error::ErrMode::Backtrack(InputError {
 ///         input: (stream(&[0b11111111]), 0),
 ///         kind: ErrorKind::Tag
 ///     }))
@@ -328,7 +328,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
-/// # use winnow::error::{Error, ErrorKind};
+/// # use winnow::error::{InputError, ErrorKind};
 /// use winnow::binary::bits::bool;
 ///
 /// type Stream<'i> = &'i Bytes;

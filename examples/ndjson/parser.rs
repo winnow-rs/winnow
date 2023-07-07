@@ -209,7 +209,7 @@ mod test {
 
     #[allow(clippy::useless_attribute)]
     #[allow(dead_code)] // its dead for benches
-    type Error<'i> = winnow::error::Error<Partial<&'i str>>;
+    type Error<'i> = winnow::error::InputError<Partial<&'i str>>;
 
     #[test]
     fn json_string() {

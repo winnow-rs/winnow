@@ -5,8 +5,8 @@ use crate::binary::u16;
 use crate::binary::u8;
 use crate::binary::Endianness;
 use crate::error::ErrMode;
-use crate::error::Error;
 use crate::error::ErrorKind;
+use crate::error::InputError;
 use crate::error::Needed;
 use crate::error::ParseError;
 use crate::stream::Stream;
@@ -21,7 +21,7 @@ use crate::lib::std::vec::Vec;
 
 macro_rules! assert_parse(
   ($left: expr, $right: expr) => {
-    let res: $crate::IResult<_, _, Error<_>> = $left;
+    let res: $crate::IResult<_, _, InputError<_>> = $left;
     assert_eq!(res, $right);
   };
 );
@@ -127,7 +127,7 @@ fn test_parser_verify_map() {
     assert_parse!(
         u8.verify_map(|u| if u < 20 { Some(u) } else { None })
             .parse_peek(input),
-        Err(ErrMode::Backtrack(Error {
+        Err(ErrMode::Backtrack(InputError {
             input: &[50][..],
             kind: ErrorKind::Verify
         }))
@@ -151,10 +151,10 @@ fn test_parser_map_parser() {
 #[test]
 #[cfg(feature = "std")]
 fn test_parser_into() {
-    use crate::error::Error;
+    use crate::error::InputError;
     use crate::token::take;
 
-    let mut parser = take::<_, _, Error<_>>(3u8).output_into();
+    let mut parser = take::<_, _, InputError<_>>(3u8).output_into();
     let result: IResult<&[u8], Vec<u8>> = parser.parse_peek(&b"abcdefg"[..]);
 
     assert_eq!(result, Ok((&b"defg"[..], vec![97, 98, 99])));
@@ -268,7 +268,7 @@ fn test_parser_verify_ref() {
     );
     assert_eq!(
         parser1.parse_peek(&b"defg"[..]),
-        Err(ErrMode::Backtrack(Error {
+        Err(ErrMode::Backtrack(InputError {
             input: &b"defg"[..],
             kind: ErrorKind::Verify
         }))
@@ -295,7 +295,7 @@ fn test_parser_verify_alloc() {
     );
     assert_eq!(
         parser1.parse_peek(&b"defg"[..]),
-        Err(ErrMode::Backtrack(Error {
+        Err(ErrMode::Backtrack(InputError {
             input: &b"defg"[..],
             kind: ErrorKind::Verify
         }))
@@ -309,14 +309,14 @@ fn fail_test() {
 
     assert_eq!(
         fail::<_, &str, _>.parse_peek(a),
-        Err(ErrMode::Backtrack(Error {
+        Err(ErrMode::Backtrack(InputError {
             input: a,
             kind: ErrorKind::Fail
         }))
     );
     assert_eq!(
         fail::<_, &str, _>.parse_peek(b),
-        Err(ErrMode::Backtrack(Error {
+        Err(ErrMode::Backtrack(InputError {
             input: b,
             kind: ErrorKind::Fail
         }))

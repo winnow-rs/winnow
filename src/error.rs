@@ -15,7 +15,7 @@
 //! Error types include:
 //! - `()`
 //! - [`ErrorKind`]
-//! - [`Error`]
+//! - [`InputError`] (mostly for testing)
 //! - [`VerboseError`]
 //! - [Custom errors][crate::_topic::error]
 
@@ -33,11 +33,11 @@ use crate::Parser;
 /// - `Ok((I, O))` is the remaining [input][crate::stream] and the parsed value
 /// - [`Err(ErrMode<E>)`][ErrMode] is the error along with how to respond to it
 ///
-/// By default, the error type (`E`) is [`Error`]
+/// By default, the error type (`E`) is [`InputError`]
 ///
 /// [`Parser::parse`] is a top-level operation that can help convert to a `Result` for integrating
 /// with your application's error reporting.
-pub type IResult<I, O, E = Error<I>> = PResult<(I, O), E>;
+pub type IResult<I, O, E = InputError<I>> = PResult<(I, O), E>;
 
 /// Holds the result of [`Parser`]
 ///
@@ -209,19 +209,19 @@ where
     }
 }
 
-impl<T> ErrMode<Error<T>> {
-    /// Maps `ErrMode<Error<T>>` to `ErrMode<Error<U>>` with the given `F: T -> U`
-    pub fn map_input<U, F>(self, f: F) -> ErrMode<Error<U>>
+impl<T> ErrMode<InputError<T>> {
+    /// Maps `ErrMode<InputError<T>>` to `ErrMode<InputError<U>>` with the given `F: T -> U`
+    pub fn map_input<U, F>(self, f: F) -> ErrMode<InputError<U>>
     where
         F: FnOnce(T) -> U,
     {
         match self {
             ErrMode::Incomplete(n) => ErrMode::Incomplete(n),
-            ErrMode::Cut(Error { input, kind }) => ErrMode::Cut(Error {
+            ErrMode::Cut(InputError { input, kind }) => ErrMode::Cut(InputError {
                 input: f(input),
                 kind,
             }),
-            ErrMode::Backtrack(Error { input, kind }) => ErrMode::Backtrack(Error {
+            ErrMode::Backtrack(InputError { input, kind }) => ErrMode::Backtrack(InputError {
                 input: f(input),
                 kind,
             }),
@@ -307,42 +307,42 @@ pub trait ErrorConvert<E> {
     fn convert(self) -> E;
 }
 
-/// Default error type, only contains the error' location and kind
+/// Capture input on error
 ///
-/// This is a low-overhead error that only provides basic information.  For less overhead, see
-/// `()`.  Fore more information, see [`VerboseError`].
-///:w
+/// This is useful for testing of generic parsers to ensure the error happens at the right
+/// location.
+///
 /// **Note:** [context][Parser::context] and inner errors (like from [`Parser::try_map`]) will be
 /// dropped.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct Error<I> {
+pub struct InputError<I> {
     /// The input stream, pointing to the location where the error occurred
     pub input: I,
     /// A rudimentary error kind
     pub kind: ErrorKind,
 }
 
-impl<I> Error<I> {
+impl<I> InputError<I> {
     /// Creates a new basic error
-    pub fn new(input: I, kind: ErrorKind) -> Error<I> {
-        Error { input, kind }
+    pub fn new(input: I, kind: ErrorKind) -> Self {
+        Self { input, kind }
     }
 }
 
 #[cfg(feature = "alloc")]
-impl<'i, I: ToOwned + ?Sized> Error<&'i I> {
+impl<'i, I: ToOwned + ?Sized> InputError<&'i I> {
     /// Obtaining ownership
-    pub fn into_owned(self) -> Error<<I as ToOwned>::Owned> {
-        Error {
+    pub fn into_owned(self) -> InputError<<I as ToOwned>::Owned> {
+        InputError {
             input: self.input.to_owned(),
             kind: self.kind,
         }
     }
 }
 
-impl<I> ParseError<I> for Error<I> {
+impl<I> ParseError<I> for InputError<I> {
     fn from_error_kind(input: I, kind: ErrorKind) -> Self {
-        Error { input, kind }
+        Self { input, kind }
     }
 
     fn append(self, _: I, _: ErrorKind) -> Self {
@@ -350,27 +350,27 @@ impl<I> ParseError<I> for Error<I> {
     }
 }
 
-impl<I, C> ContextError<I, C> for Error<I> {}
+impl<I, C> ContextError<I, C> for InputError<I> {}
 
-impl<I, E> FromExternalError<I, E> for Error<I> {
+impl<I, E> FromExternalError<I, E> for InputError<I> {
     /// Create a new error from an input position and an external error
     fn from_external_error(input: I, kind: ErrorKind, _e: E) -> Self {
-        Error { input, kind }
+        Self { input, kind }
     }
 }
 
-impl<I> ErrorConvert<Error<(I, usize)>> for Error<I> {
-    fn convert(self) -> Error<(I, usize)> {
-        Error {
+impl<I> ErrorConvert<InputError<(I, usize)>> for InputError<I> {
+    fn convert(self) -> InputError<(I, usize)> {
+        InputError {
             input: (self.input, 0),
             kind: self.kind,
         }
     }
 }
 
-impl<I> ErrorConvert<Error<I>> for Error<(I, usize)> {
-    fn convert(self) -> Error<I> {
-        Error {
+impl<I> ErrorConvert<InputError<I>> for InputError<(I, usize)> {
+    fn convert(self) -> InputError<I> {
+        InputError {
             input: self.input.0,
             kind: self.kind,
         }
@@ -378,14 +378,14 @@ impl<I> ErrorConvert<Error<I>> for Error<(I, usize)> {
 }
 
 /// The Display implementation allows the `std::error::Error` implementation
-impl<I: fmt::Display> fmt::Display for Error<I> {
+impl<I: fmt::Display> fmt::Display for InputError<I> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "error {:?} at: {}", self.kind, self.input)
     }
 }
 
 #[cfg(feature = "std")]
-impl<I: fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::Error for Error<I> {}
+impl<I: fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::Error for InputError<I> {}
 
 impl<I> ParseError<I> for () {
     fn from_error_kind(_: I, _: ErrorKind) -> Self {}
@@ -405,7 +405,7 @@ impl ErrorConvert<()> for () {
 
 /// Accumulates error information while backtracking
 ///
-/// For less overhead (and information), see [`Error`].
+/// For less overhead (and information), see [`InputError`].
 ///
 /// [`convert_error`] provides an example of how to render this for end-users.
 ///

@@ -6,8 +6,8 @@ use proptest::prelude::*;
 use crate::binary::length_data;
 use crate::combinator::delimited;
 use crate::error::ErrMode;
-use crate::error::Error;
 use crate::error::ErrorKind;
+use crate::error::InputError;
 use crate::error::Needed;
 use crate::stream::AsChar;
 use crate::token::tag;
@@ -70,7 +70,7 @@ proptest! {
 fn partial_any_str() {
     use super::any;
     assert_eq!(
-        any::<_, Error<Partial<&str>>>.parse_peek(Partial::new("Ә")),
+        any::<_, InputError<Partial<&str>>>.parse_peek(Partial::new("Ә")),
         Ok((Partial::new(""), 'Ә'))
     );
 }

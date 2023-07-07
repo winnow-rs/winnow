@@ -5,7 +5,7 @@ mod parser_dispatch;
 mod parser_partial;
 
 use winnow::error::convert_error;
-use winnow::error::Error;
+use winnow::error::InputError;
 use winnow::error::VerboseError;
 use winnow::prelude::*;
 
@@ -41,8 +41,8 @@ fn main() -> Result<(), lexopt::Error> {
         }
     } else {
         let result = match args.implementation {
-            Impl::Naive => parser::json::<Error<&str>>.parse(data),
-            Impl::Dispatch => parser_dispatch::json::<Error<&str>>.parse(data),
+            Impl::Naive => parser::json::<InputError<&str>>.parse(data),
+            Impl::Dispatch => parser_dispatch::json::<InputError<&str>>.parse(data),
         };
         match result {
             Ok(json) => {
