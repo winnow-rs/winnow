@@ -452,6 +452,13 @@ impl<C> ContextError<C> {
     }
 }
 
+impl<C> Default for ContextError<C> {
+    #[inline]
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<I, C> ParserError<I> for ContextError<C> {
     #[inline]
     fn from_error_kind(_input: I, _kind: ErrorKind) -> Self {
@@ -578,7 +585,7 @@ impl crate::lib::std::fmt::Display for ContextError<StrContext> {
 }
 
 /// Additional parse context for [`ContextError`] added via [`Parser::context`]
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum StrContext {
     /// Description of what is currently being parsed
@@ -588,7 +595,7 @@ pub enum StrContext {
 }
 
 /// See [`StrContext`]
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum StrContextValue {
     /// A [`char`] token
