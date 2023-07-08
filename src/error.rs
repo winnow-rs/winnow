@@ -385,6 +385,8 @@ pub struct Error<I> {
     pub kind: ErrorKind,
 }
 
+pub use Error as InputError;
+
 impl<I> Error<I> {
     /// Creates a new basic error
     pub fn new(input: I, kind: ErrorKind) -> Error<I> {
