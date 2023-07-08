@@ -357,6 +357,8 @@ pub trait ContextError<I, C = &'static str>: Sized {
     }
 }
 
+pub use ContextError as AddContext;
+
 /// Create a new error with an external error, from [`std::str::FromStr`]
 ///
 /// This trait is required by the [`Parser::try_map`] combinator.
