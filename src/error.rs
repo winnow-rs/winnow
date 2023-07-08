@@ -14,6 +14,7 @@
 //!
 //! Error types include:
 //! - `()`
+//! - [`ErrorKind`]
 //! - [`Error`]
 //! - [`VerboseError`]
 //! - [Custom errors][crate::_topic::error]
@@ -343,6 +344,8 @@ pub trait ParseError<I>: Sized {
     }
 }
 
+pub use ParseError as ParserError;
+
 /// Used by [`Parser::context`] to add custom data to error while backtracking
 ///
 /// May be implemented multiple times for different kinds of context.
@@ -355,6 +358,8 @@ pub trait ContextError<I, C = &'static str>: Sized {
         self
     }
 }
+
+pub use ContextError as AddContext;
 
 /// Create a new error with an external error, from [`std::str::FromStr`]
 ///
@@ -384,6 +389,8 @@ pub struct Error<I> {
     /// A rudimentary error kind
     pub kind: ErrorKind,
 }
+
+pub use Error as InputError;
 
 impl<I> Error<I> {
     /// Creates a new basic error
