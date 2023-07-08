@@ -344,6 +344,8 @@ pub trait ParseError<I>: Sized {
     }
 }
 
+pub use ParseError as ParserError;
+
 /// Used by [`Parser::context`] to add custom data to error while backtracking
 ///
 /// May be implemented multiple times for different kinds of context.
