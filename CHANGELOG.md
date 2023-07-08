@@ -3,6 +3,13 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add alises for renamed APIs in v0.5
+  - `error::AddContext` which wraps `error::ContextError`
+  - `error::ParserError` which wraps `error::ParseError`
+  - `error::InputError` which wraps `error::Error`
+
 ## [0.4.8] - 2023-07-06
 
 ### Features
