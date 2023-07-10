@@ -87,13 +87,9 @@ pub fn start<I: Stream>(
     };
     let call_column = format!("{:depth$}> {name}{count}", "");
 
-    let eof_offset = input.eof_offset();
-    let offset = input.offset_at(input_width).unwrap_or(eof_offset);
-    let (_, slice) = input.peek_slice(offset);
-
     // The debug version of `slice` might be wider, either due to rendering one byte as two nibbles or
     // escaping in strings.
-    let mut debug_slice = format!("{:#?}", slice);
+    let mut debug_slice = format!("{:#?}", input.raw());
     let (debug_slice, eof) = if let Some(debug_offset) = debug_slice
         .char_indices()
         .enumerate()
