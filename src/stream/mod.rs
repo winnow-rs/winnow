@@ -493,6 +493,9 @@ pub trait Stream:
     ///
     /// May panic if an invalid [`Self::Checkpoint`] is provided
     fn reset(&mut self, checkpoint: Self::Checkpoint);
+
+    /// Return the inner-most stream
+    fn raw(&self) -> &dyn crate::lib::std::fmt::Debug;
 }
 
 impl<'i, T> Stream for &'i [T]
@@ -551,6 +554,11 @@ where
     #[inline(always)]
     fn reset(&mut self, checkpoint: Self::Checkpoint) {
         *self = checkpoint.0;
+    }
+
+    #[inline(always)]
+    fn raw(&self) -> &dyn crate::lib::std::fmt::Debug {
+        self
     }
 }
 
@@ -622,6 +630,11 @@ impl<'i> Stream for &'i str {
     fn reset(&mut self, checkpoint: Self::Checkpoint) {
         *self = checkpoint.0;
     }
+
+    #[inline(always)]
+    fn raw(&self) -> &dyn crate::lib::std::fmt::Debug {
+        self
+    }
 }
 
 impl<'i> Stream for &'i Bytes {
@@ -682,6 +695,11 @@ impl<'i> Stream for &'i Bytes {
     fn reset(&mut self, checkpoint: Self::Checkpoint) {
         *self = checkpoint.0;
     }
+
+    #[inline(always)]
+    fn raw(&self) -> &dyn crate::lib::std::fmt::Debug {
+        self
+    }
 }
 
 impl<'i> Stream for &'i BStr {
@@ -741,6 +759,11 @@ impl<'i> Stream for &'i BStr {
     #[inline(always)]
     fn reset(&mut self, checkpoint: Self::Checkpoint) {
         *self = checkpoint.0;
+    }
+
+    #[inline(always)]
+    fn raw(&self) -> &dyn crate::lib::std::fmt::Debug {
+        self
     }
 }
 
@@ -814,6 +837,11 @@ where
     fn reset(&mut self, checkpoint: Self::Checkpoint) {
         self.0.reset(checkpoint.0 .0);
         self.1 = checkpoint.0 .1;
+    }
+
+    #[inline(always)]
+    fn raw(&self) -> &dyn crate::lib::std::fmt::Debug {
+        &self.0
     }
 }
 
@@ -908,6 +936,11 @@ impl<I: Stream> Stream for Located<I> {
     fn reset(&mut self, checkpoint: Self::Checkpoint) {
         self.input.reset(checkpoint.0);
     }
+
+    #[inline(always)]
+    fn raw(&self) -> &dyn crate::lib::std::fmt::Debug {
+        &self.input
+    }
 }
 
 impl<I: Stream, S: Clone + crate::lib::std::fmt::Debug> Stream for Stateful<I, S> {
@@ -956,6 +989,11 @@ impl<I: Stream, S: Clone + crate::lib::std::fmt::Debug> Stream for Stateful<I, S
     fn reset(&mut self, checkpoint: Self::Checkpoint) {
         self.input.reset(checkpoint.0);
     }
+
+    #[inline(always)]
+    fn raw(&self) -> &dyn crate::lib::std::fmt::Debug {
+        &self.input
+    }
 }
 
 impl<I: Stream> Stream for Partial<I> {
@@ -1003,6 +1041,11 @@ impl<I: Stream> Stream for Partial<I> {
     #[inline(always)]
     fn reset(&mut self, checkpoint: Self::Checkpoint) {
         self.input.reset(checkpoint.0);
+    }
+
+    #[inline(always)]
+    fn raw(&self) -> &dyn crate::lib::std::fmt::Debug {
+        &self.input
     }
 }
 
