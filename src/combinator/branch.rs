@@ -157,7 +157,6 @@ macro_rules! alt_trait_inner(
     }
   });
   ($it:tt, $self:expr, $input:expr, $start:ident, $err:expr, $head:ident) => ({
-    $input.reset($start);
     Err(ErrMode::Backtrack($err.append($input.clone(), ErrorKind::Alt)))
   });
 );
