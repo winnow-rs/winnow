@@ -4,15 +4,24 @@
 //!
 //! ## Tokens
 //!
-//! Matching a single token literal is common enough that `Parser` is implemented for
-//! `char`.
-//!
+//! [`Stream`] provides some core operations to help with parsing.  For example, to process a
+//! single token, you can do:
 //! ```rust
 //! # use winnow::Parser;
 //! # use winnow::PResult;
-//! #
+//! use winnow::stream::Stream;
+//! use winnow::error::ParserError;
+//! use winnow::error::ErrorKind;
+//! use winnow::error::ErrMode;
+//!
 //! fn parse_prefix(input: &mut &str) -> PResult<char> {
-//!     '0'.parse_next(input)
+//!     let c = input.next_token().ok_or_else(|| {
+//!         ErrMode::from_error_kind(input.clone(), ErrorKind::Token)
+//!     })?;
+//!     if c != '0' {
+//!         return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Verify));
+//!     }
+//!     Ok(c)
 //! }
 //!
 //! fn main()  {
@@ -27,17 +36,72 @@
 //! }
 //! ```
 //!
+//! [`any`] and [`Parser::verify`] are [`Parser`] building blocks on top of [`Stream`]:
+//! ```rust
+//! # use winnow::PResult;
+//! use winnow::Parser;
+//! use winnow::token::any;
+//!
+//! fn parse_prefix(input: &mut &str) -> PResult<char> {
+//!     any.verify(|c| *c == '0').parse_next(input)
+//! }
+//! #
+//! # fn main()  {
+//! #     let mut input = "0x1a2b Hello";
+//! #
+//! #     let output = parse_prefix.parse_next(&mut input).unwrap();
+//! #
+//! #     assert_eq!(input, "x1a2b Hello");
+//! #     assert_eq!(output, '0');
+//! #
+//! #     assert!(parse_prefix.parse_next(&mut "d").is_err());
+//! # }
+//! ```
+//!
+//! Matching a single token literal is common enough that [`Parser`] is implemented for
+//! `char`.
+//!
+//! ```rust
+//! # use winnow::PResult;
+//! use winnow::Parser;
+//!
+//! fn parse_prefix(input: &mut &str) -> PResult<char> {
+//!     '0'.parse_next(input)
+//! }
+//! #
+//! # fn main()  {
+//! #     let mut input = "0x1a2b Hello";
+//! #
+//! #     let output = parse_prefix.parse_next(&mut input).unwrap();
+//! #
+//! #     assert_eq!(input, "x1a2b Hello");
+//! #     assert_eq!(output, '0');
+//! #
+//! #     assert!(parse_prefix.parse_next(&mut "d").is_err());
+//! # }
+//! ```
+//!
 //! ## Tags
 //!
-//! One of the most frequent way of matching a token is when they are combined into a string.
-//! Again, this is common enough that `Parser` is implemented for `&str`:
-//!
+//! [`Stream`] also supports processing slices of tokens:
 //! ```rust
 //! # use winnow::Parser;
 //! # use winnow::PResult;
-//! #
+//! use winnow::stream::Stream;
+//! use winnow::error::ParserError;
+//! use winnow::error::ErrorKind;
+//! use winnow::error::ErrMode;
+//!
 //! fn parse_prefix<'s>(input: &mut &'s str) -> PResult<&'s str> {
-//!     "0x".parse_next(input)
+//!     let expected = "0x";
+//!     if input.len() < expected.len() {
+//!         return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Slice));
+//!     }
+//!     let actual = input.next_slice(expected.len());
+//!     if actual != expected {
+//!         return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Verify));
+//!     }
+//!     Ok(actual)
 //! }
 //!
 //! fn main()  {
@@ -51,7 +115,28 @@
 //! }
 //! ```
 //!
-//! In `winnow`, we call this type of parser a [`tag`].
+//! Again, matching a literal is common enough that [`Parser`] is implemented for `&str`:
+//! ```rust
+//! # use winnow::PResult;
+//! use winnow::Parser;
+//!
+//! fn parse_prefix<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//!     "0x".parse_next(input)
+//! }
+//! #
+//! # fn main()  {
+//! #     let mut input = "0x1a2b Hello";
+//! #
+//! #     let output = parse_prefix.parse_next(&mut input).unwrap();
+//! #     assert_eq!(input, "1a2b Hello");
+//! #     assert_eq!(output, "0x");
+//! #
+//! #     assert!(parse_prefix.parse_next(&mut "0o123").is_err());
+//! # }
+//! ```
+//!
+//! In `winnow`, we call this type of parser a [`tag`].  See [`token`] for additional individual
+//! and token-slice parsers.
 //!
 //! ## Character Classes
 //!
@@ -142,10 +227,16 @@
 //!     assert!(parse_digits.parse_next(&mut "Z").is_err());
 //! }
 //! ```
+//!
+//! See [`ascii`] for more text-based parsers.
 
 #![allow(unused_imports)]
+use crate::ascii;
 use crate::ascii::hex_digit1;
 use crate::stream::ContainsToken;
+use crate::stream::Stream;
+use crate::token;
+use crate::token::any;
 use crate::token::one_of;
 use crate::token::tag;
 use crate::token::take_while;

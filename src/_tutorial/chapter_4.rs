@@ -97,6 +97,8 @@
 //!     assert!(parse_digits(&mut "ghiWorld").is_err());
 //! }
 //! ```
+//!
+//! See also [`Parser`] for more output-modifying parsers.
 
 #![allow(unused_imports)]
 use crate::PResult;
