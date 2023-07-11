@@ -21,7 +21,7 @@ use crate::trace::trace;
 use crate::PResult;
 use crate::Parser;
 
-/// Recognizes the string "\r\n".
+/// Recognizes the string `"\r\n"`.
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
@@ -61,7 +61,7 @@ where
     trace("crlf", "\r\n").parse_next(input)
 }
 
-/// Recognizes a string of any char except '\r\n' or '\n'.
+/// Recognizes a string of any char except `"\r\n"` or `"\n"`.
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
@@ -152,7 +152,7 @@ where
     }
 }
 
-/// Recognizes an end of line (both '\n' and '\r\n').
+/// Recognizes an end of line (both `"\n"` and `"\r\n"`).
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
@@ -192,7 +192,7 @@ where
     trace("line_ending", alt(("\n", "\r\n"))).parse_next(input)
 }
 
-/// Matches a newline character '\n'.
+/// Matches a newline character `'\n'`.
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
@@ -232,7 +232,7 @@ where
     trace("newline", '\n'.map(|c: <I as Stream>::Token| c.as_char())).parse_next(input)
 }
 
-/// Matches a tab character '\t'.
+/// Matches a tab character `'\t'`.
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
@@ -272,7 +272,7 @@ where
     trace("tab", '\t'.map(|c: <I as Stream>::Token| c.as_char())).parse_next(input)
 }
 
-/// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
+/// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: `'a'..='z'`, `'A'..='Z'`
 ///
 /// *Complete version*: Will return the whole input if no terminating token is found (a non
 /// alphabetic character).
@@ -318,7 +318,7 @@ where
     .parse_next(input)
 }
 
-/// Recognizes one or more lowercase and uppercase ASCII alphabetic characters: a-z, A-Z
+/// Recognizes one or more lowercase and uppercase ASCII alphabetic characters: `'a'..='z'`, `'A'..='Z'`
 ///
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found  (a non alphabetic character).
@@ -364,7 +364,7 @@ where
     .parse_next(input)
 }
 
-/// Recognizes zero or more ASCII numerical characters: 0-9
+/// Recognizes zero or more ASCII numerical characters: `'0'..='9'`
 ///
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non digit character).
@@ -411,7 +411,7 @@ where
     .parse_next(input)
 }
 
-/// Recognizes one or more ASCII numerical characters: 0-9
+/// Recognizes one or more ASCII numerical characters: `'0'..='9'`
 ///
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non digit character).
@@ -474,7 +474,8 @@ where
     .parse_next(input)
 }
 
-/// Recognizes zero or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
+/// Recognizes zero or more ASCII hexadecimal numerical characters: `'0'..='9'`, `'A'..='F'`,
+/// `'a'..='f'`
 ///
 /// *Complete version*: Will return the whole input if no terminating token is found (a non hexadecimal digit character).
 ///
@@ -519,7 +520,8 @@ where
     .parse_next(input)
 }
 
-/// Recognizes one or more ASCII hexadecimal numerical characters: 0-9, A-F, a-f
+/// Recognizes one or more ASCII hexadecimal numerical characters: `'0'..='9'`, `'A'..='F'`,
+/// `'a'..='f'`
 ///
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non hexadecimal digit character).
@@ -565,7 +567,7 @@ where
     .parse_next(input)
 }
 
-/// Recognizes zero or more octal characters: 0-7
+/// Recognizes zero or more octal characters: `'0'..='7'`
 ///
 /// *Complete version*: Will return the whole input if no terminating token is found (a non octal
 /// digit character).
@@ -611,7 +613,7 @@ where
     .parse_next(input)
 }
 
-/// Recognizes one or more octal characters: 0-7
+/// Recognizes one or more octal characters: `'0'..='7'`
 ///
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non octal digit character).
@@ -657,7 +659,7 @@ where
     .parse_next(input)
 }
 
-/// Recognizes zero or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
+/// Recognizes zero or more ASCII numerical and alphabetic characters: `'a'..='z'`, `'A'..='Z'`, `'0'..='9'`
 ///
 /// *Complete version*: Will return the whole input if no terminating token is found (a non
 /// alphanumerical character).
@@ -703,7 +705,7 @@ where
     .parse_next(input)
 }
 
-/// Recognizes one or more ASCII numerical and alphabetic characters: 0-9, a-z, A-Z
+/// Recognizes one or more ASCII numerical and alphabetic characters: `'a'..='z'`, `'A'..='Z'`, `'0'..='9'`
 ///
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non alphanumerical character).
@@ -932,7 +934,7 @@ where
     .parse_next(input)
 }
 
-/// Decode a decimal unsigned integer
+/// Decode a decimal unsigned integer (e.g. [`u32`])
 ///
 /// *Complete version*: can parse until the end of input.
 ///
@@ -1087,7 +1089,7 @@ impl Uint for i128 {
     }
 }
 
-/// Decode a decimal signed integer
+/// Decode a decimal signed integer (e.g. [`i32`])
 ///
 /// *Complete version*: can parse until the end of input.
 ///
@@ -1192,7 +1194,7 @@ impl Int for i128 {
     }
 }
 
-/// Decode a variable-width hexadecimal integer.
+/// Decode a variable-width hexadecimal integer (e.g. [`u32`])
 ///
 /// *Complete version*: Will parse until the end of input if it has fewer characters than the type
 /// supports.
@@ -1331,7 +1333,7 @@ impl HexUint for u128 {
     }
 }
 
-/// Recognizes floating point number in text format and returns a f32 or f64.
+/// Recognizes floating point number in text format and returns a [`f32`] or [`f64`].
 ///
 /// *Complete version*: Can parse until the end of input.
 ///
