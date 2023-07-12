@@ -38,7 +38,7 @@ fn model_complete_take_while_m_n(
 ) -> IResult<&str, &str> {
     if n < m {
         Err(crate::error::ErrMode::from_error_kind(
-            input,
+            &input,
             crate::error::ErrorKind::Slice,
         ))
     } else if m <= valid {
@@ -46,7 +46,7 @@ fn model_complete_take_while_m_n(
         Ok((&input[offset..], &input[0..offset]))
     } else {
         Err(crate::error::ErrMode::from_error_kind(
-            input,
+            &input,
             crate::error::ErrorKind::Slice,
         ))
     }
@@ -88,7 +88,7 @@ fn partial_one_of_test() {
     assert_eq!(
         f(Partial::new(b)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(b),
+            &Partial::new(b),
             ErrorKind::Verify
         )))
     );
@@ -111,7 +111,7 @@ fn char_byteslice() {
     assert_eq!(
         f(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(a),
+            &Partial::new(a),
             ErrorKind::Verify
         )))
     );
@@ -130,7 +130,7 @@ fn char_str() {
     assert_eq!(
         f(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(a),
+            &Partial::new(a),
             ErrorKind::Verify
         )))
     );
@@ -149,7 +149,7 @@ fn partial_none_of_test() {
     assert_eq!(
         f(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(a),
+            &Partial::new(a),
             ErrorKind::Verify
         )))
     );
@@ -173,7 +173,7 @@ fn partial_is_a() {
     let c = Partial::new(&b"cdef"[..]);
     assert_eq!(
         a_or_b(c),
-        Err(ErrMode::Backtrack(error_position!(c, ErrorKind::Slice)))
+        Err(ErrMode::Backtrack(error_position!(&c, ErrorKind::Slice)))
     );
 
     let d = Partial::new(&b"bacdef"[..]);
@@ -195,7 +195,7 @@ fn partial_is_not() {
     let c = Partial::new(&b"abab"[..]);
     assert_eq!(
         a_or_b(c),
-        Err(ErrMode::Backtrack(error_position!(c, ErrorKind::Slice)))
+        Err(ErrMode::Backtrack(error_position!(&c, ErrorKind::Slice)))
     );
 
     let d = Partial::new(&b"cdefba"[..]);
@@ -327,7 +327,7 @@ fn partial_take_while1() {
     assert_eq!(
         f(Partial::new(d)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(d),
+            &Partial::new(d),
             ErrorKind::Slice
         )))
     );
@@ -356,7 +356,7 @@ fn partial_take_while_m_n() {
     assert_eq!(
         x(Partial::new(f)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(f),
+            &Partial::new(f),
             ErrorKind::Slice
         )))
     );
@@ -398,7 +398,7 @@ fn partial_take_till1() {
     assert_eq!(
         f(Partial::new(b)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(b),
+            &Partial::new(b),
             ErrorKind::Slice
         )))
     );
@@ -640,14 +640,14 @@ fn partial_case_insensitive() {
     assert_eq!(
         test(Partial::new(&b"Hello"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"Hello"[..]),
+            &Partial::new(&b"Hello"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
         test(Partial::new(&b"Hel"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"Hel"[..]),
+            &Partial::new(&b"Hel"[..]),
             ErrorKind::Tag
         )))
     );
@@ -674,14 +674,14 @@ fn partial_case_insensitive() {
     assert_eq!(
         test2(Partial::new("Hello")),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new("Hello"),
+            &Partial::new("Hello"),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
         test2(Partial::new("Hel")),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new("Hel"),
+            &Partial::new("Hel"),
             ErrorKind::Tag
         )))
     );

@@ -146,8 +146,10 @@ where
     F: Parser<I, O, E>,
 {
     trace("peek", move |input: &mut I| {
-        let mut i = input.clone();
-        f.parse_next(&mut i)
+        let start = input.checkpoint();
+        let res = f.parse_next(input);
+        input.reset(start);
+        res
     })
 }
 
@@ -177,7 +179,7 @@ where
         if input.eof_offset() == 0 {
             Ok(input.next_slice(0))
         } else {
-            Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Eof))
+            Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
         }
     })
     .parse_next(input)
@@ -207,9 +209,11 @@ where
     F: Parser<I, O, E>,
 {
     trace("not", move |input: &mut I| {
-        let mut i = input.clone();
-        match parser.parse_next(&mut i) {
-            Ok(_) => Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Not)),
+        let start = input.checkpoint();
+        let res = parser.parse_next(input);
+        input.reset(start);
+        match res {
+            Ok(_) => Err(ErrMode::from_error_kind(input, ErrorKind::Not)),
             Err(ErrMode::Backtrack(_)) => Ok(()),
             Err(e) => Err(e),
         }
@@ -481,7 +485,7 @@ pub fn success<I: Stream, O: Clone, E: ParserError<I>>(val: O) -> impl Parser<I,
 #[doc(alias = "unexpected")]
 pub fn fail<I: Stream, O, E: ParserError<I>>(i: &mut I) -> PResult<O, E> {
     trace("fail", |i: &mut I| {
-        Err(ErrMode::from_error_kind(i.clone(), ErrorKind::Fail))
+        Err(ErrMode::from_error_kind(i, ErrorKind::Fail))
     })
     .parse_next(i)
 }

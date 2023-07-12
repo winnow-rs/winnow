@@ -405,9 +405,7 @@ where
 }
 
 /// Core definition for parser input state
-pub trait Stream:
-    Offset<<Self as Stream>::Checkpoint> + Offset + Clone + crate::lib::std::fmt::Debug
-{
+pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::Debug {
     /// The smallest unit being parsed
     ///
     /// Example: `u8` for `&[u8]` or `char` for `&str`
@@ -432,7 +430,10 @@ pub trait Stream:
     fn next_token(&mut self) -> Option<Self::Token>;
     /// Split off the next token from the input
     #[inline(always)]
-    fn peek_token(&self) -> Option<(Self, Self::Token)> {
+    fn peek_token(&self) -> Option<(Self, Self::Token)>
+    where
+        Self: Clone,
+    {
         let mut peek = self.clone();
         let token = peek.next_token()?;
         Some((peek, token))
@@ -466,7 +467,10 @@ pub trait Stream:
     fn next_slice(&mut self, offset: usize) -> Self::Slice;
     /// Split off a slice of tokens from the input
     #[inline(always)]
-    fn peek_slice(&self, offset: usize) -> (Self, Self::Slice) {
+    fn peek_slice(&self, offset: usize) -> (Self, Self::Slice)
+    where
+        Self: Clone,
+    {
         let mut peek = self.clone();
         let slice = peek.next_slice(offset);
         (peek, slice)
@@ -479,7 +483,10 @@ pub trait Stream:
     }
     /// Advance to the end of the stream
     #[inline(always)]
-    fn peek_finish(&self) -> (Self, Self::Slice) {
+    fn peek_finish(&self) -> (Self, Self::Slice)
+    where
+        Self: Clone,
+    {
         let mut peek = self.clone();
         let slice = peek.finish();
         (peek, slice)
@@ -769,7 +776,7 @@ impl<'i> Stream for &'i BStr {
 
 impl<I> Stream for (I, usize)
 where
-    I: Stream<Token = u8>,
+    I: Stream<Token = u8> + Clone,
 {
     type Token = bool;
     type Slice = (I::Slice, usize, usize);
@@ -853,7 +860,7 @@ pub struct BitOffsets<I> {
 
 impl<I> Iterator for BitOffsets<I>
 where
-    I: Stream<Token = u8>,
+    I: Stream<Token = u8> + Clone,
 {
     type Item = (usize, bool);
     fn next(&mut self) -> Option<Self::Item> {
@@ -868,7 +875,7 @@ where
 
 fn next_bit<I>(i: &mut (I, usize)) -> Option<bool>
 where
-    I: Stream<Token = u8>,
+    I: Stream<Token = u8> + Clone,
 {
     if i.eof_offset() == 0 {
         return None;
@@ -1351,7 +1358,7 @@ where
 
 impl<I> Offset<<(I, usize) as Stream>::Checkpoint> for (I, usize)
 where
-    I: Stream<Token = u8>,
+    I: Stream<Token = u8> + Clone,
 {
     #[inline(always)]
     fn offset_from(&self, other: &<(I, usize) as Stream>::Checkpoint) -> usize {

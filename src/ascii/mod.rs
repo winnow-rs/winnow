@@ -8,14 +8,13 @@ mod tests;
 use crate::lib::std::ops::{Add, Shl};
 
 use crate::combinator::alt;
-use crate::token::one_of;
-
 use crate::combinator::cut_err;
 use crate::combinator::opt;
 use crate::error::ParserError;
 use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::stream::{AsBStr, AsChar, ParseSlice, Stream, StreamIsPartial};
 use crate::stream::{Compare, CompareResult};
+use crate::token::one_of;
 use crate::token::take_while;
 use crate::trace::trace;
 use crate::PResult;
@@ -143,7 +142,7 @@ where
                     }
                     CompareResult::Incomplete | CompareResult::Error => {
                         let e: ErrorKind = ErrorKind::Tag;
-                        return Err(ErrMode::from_error_kind(input.clone(), e));
+                        return Err(ErrMode::from_error_kind(input, e));
                     }
                 }
             }
@@ -956,7 +955,7 @@ where
             if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
                 return Err(ErrMode::Incomplete(Needed::new(1)));
             } else {
-                return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Slice));
+                return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
             }
         }
 
@@ -967,12 +966,12 @@ where
                     let d = d as u8;
                     v.checked_add(d, sealed::SealedMarker)
                 }) {
-                    None => return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Verify)),
+                    None => return Err(ErrMode::from_error_kind(input, ErrorKind::Verify)),
                     Some(v) => value = v,
                 },
                 None => {
                     if offset == 0 {
-                        return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Slice));
+                        return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
                     } else {
                         let _ = input.next_slice(offset);
                         return Ok(value);
@@ -1119,7 +1118,7 @@ where
             if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
                 return Err(ErrMode::Incomplete(Needed::new(1)));
             } else {
-                return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Slice));
+                return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
             }
         }
 
@@ -1134,12 +1133,12 @@ where
                         v.checked_sub(d, sealed::SealedMarker)
                     }
                 }) {
-                    None => return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Verify)),
+                    None => return Err(ErrMode::from_error_kind(input, ErrorKind::Verify)),
                     Some(v) => value = v,
                 },
                 None => {
                     if offset == 0 {
-                        return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Slice));
+                        return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
                     } else {
                         let _ = input.next_slice(offset);
                         return Ok(value);
@@ -1254,7 +1253,7 @@ where
             Ok(max_offset) => {
                 if max_offset < invalid_offset {
                     // Overflow
-                    return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Verify));
+                    return Err(ErrMode::from_error_kind(input, ErrorKind::Verify));
                 } else {
                     invalid_offset
                 }
@@ -1273,7 +1272,7 @@ where
         };
         if offset == 0 {
             // Must be at least one digit
-            return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Slice));
+            return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
         }
         let parsed = input.next_slice(offset);
 
@@ -1390,7 +1389,7 @@ where
     trace("float", move |input: &mut I| {
         let s = recognize_float_or_exceptions(input)?;
         s.parse_slice()
-            .ok_or_else(|| ErrMode::from_error_kind(input.clone(), ErrorKind::Verify))
+            .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::Verify))
     })
     .parse_next(input)
 }
@@ -1485,7 +1484,7 @@ pub fn escaped<'a, I: 'a, Error, F, G, O1, O2>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar,
+    <I as Stream>::Token: AsChar + Copy,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParserError<I>,
@@ -1508,7 +1507,7 @@ fn streaming_escaped_internal<I, Error, F, G, O1, O2>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar,
+    <I as Stream>::Token: AsChar + Copy,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParserError<I>,
@@ -1518,32 +1517,27 @@ where
     while input.eof_offset() > 0 {
         let current_len = input.eof_offset();
 
-        match normal.parse_next(input) {
-            Ok(_) => {
-                if input.eof_offset() == 0 {
-                    return Err(ErrMode::Incomplete(Needed::Unknown));
-                } else if input.eof_offset() == current_len {
+        match opt(normal.by_ref()).parse_next(input)? {
+            Some(_) => {
+                if input.eof_offset() == current_len {
                     let offset = input.offset_from(&start);
                     input.reset(start);
                     return Ok(input.next_slice(offset));
                 }
             }
-            Err(ErrMode::Backtrack(_)) => {
-                if input.peek_token().expect("eof_offset > 0").1.as_char() == control_char {
-                    let next = control_char.len_utf8();
-                    let _ = input.next_slice(next);
+            None => {
+                if opt(one_of(|t: <I as Stream>::Token| {
+                    t.as_char() == control_char
+                }))
+                .parse_next(input)?
+                .is_some()
+                {
                     let _ = escapable.parse_next(input)?;
-                    if input.eof_offset() == 0 {
-                        return Err(ErrMode::Incomplete(Needed::Unknown));
-                    }
                 } else {
                     let offset = input.offset_from(&start);
                     input.reset(start);
                     return Ok(input.next_slice(offset));
                 }
-            }
-            Err(e) => {
-                return Err(e);
             }
         }
     }
@@ -1560,7 +1554,7 @@ fn complete_escaped_internal<'a, I: 'a, Error, F, G, O1, O2>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar,
+    <I as Stream>::Token: crate::stream::AsChar + Copy,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParserError<I>,
@@ -1570,40 +1564,32 @@ where
     while input.eof_offset() > 0 {
         let current_len = input.eof_offset();
 
-        match normal.parse_next(input) {
-            Ok(_) => {
-                // return if we consumed everything or if the normal parser
-                // does not consume anything
-                if input.eof_offset() == 0 {
-                    input.reset(start);
-                    return Ok(input.finish());
-                } else if input.eof_offset() == current_len {
+        match opt(normal.by_ref()).parse_next(input)? {
+            Some(_) => {
+                if input.eof_offset() == current_len {
                     let offset = input.offset_from(&start);
                     input.reset(start);
                     return Ok(input.next_slice(offset));
                 }
             }
-            Err(ErrMode::Backtrack(_)) => {
-                if input.peek_token().expect("eof_offset > 0").1.as_char() == control_char {
-                    let next = control_char.len_utf8();
-                    let _ = input.next_slice(next);
+            None => {
+                if opt(one_of(|t: <I as Stream>::Token| {
+                    t.as_char() == control_char
+                }))
+                .parse_next(input)?
+                .is_some()
+                {
                     let _ = escapable.parse_next(input)?;
-                    if input.eof_offset() == 0 {
-                        input.reset(start);
-                        return Ok(input.finish());
-                    }
                 } else {
                     let offset = input.offset_from(&start);
                     input.reset(start);
                     return Ok(input.next_slice(offset));
                 }
             }
-            Err(e) => {
-                return Err(e);
-            }
         }
     }
 
+    input.reset(start);
     Ok(input.finish())
 }
 
@@ -1675,7 +1661,7 @@ pub fn escaped_transform<I, Error, F, G, Output>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar,
+    <I as Stream>::Token: crate::stream::AsChar + Copy,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
     G: Parser<I, <I as Stream>::Slice, Error>,
@@ -1699,7 +1685,7 @@ fn streaming_escaped_transform_internal<I, Error, F, G, Output>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar,
+    <I as Stream>::Token: crate::stream::AsChar + Copy,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
     G: Parser<I, <I as Stream>::Slice, Error>,
@@ -1709,29 +1695,26 @@ where
 
     while input.eof_offset() > 0 {
         let current_len = input.eof_offset();
-        match normal.parse_next(input) {
-            Ok(o) => {
+        match opt(normal.by_ref()).parse_next(input)? {
+            Some(o) => {
                 res.accumulate(o);
-                if input.eof_offset() == 0 {
-                    return Err(ErrMode::Incomplete(Needed::Unknown));
-                } else if input.eof_offset() == current_len {
+                if input.eof_offset() == current_len {
                     return Ok(res);
                 }
             }
-            Err(ErrMode::Backtrack(_)) => {
-                if input.peek_token().expect("eof_offset > 0").1.as_char() == control_char {
-                    let next = control_char.len_utf8();
-                    let _ = input.next_slice(next);
+            None => {
+                if opt(one_of(|t: <I as Stream>::Token| {
+                    t.as_char() == control_char
+                }))
+                .parse_next(input)?
+                .is_some()
+                {
                     let o = transform.parse_next(input)?;
                     res.accumulate(o);
-                    if input.eof_offset() == 0 {
-                        return Err(ErrMode::Incomplete(Needed::Unknown));
-                    }
                 } else {
                     return Ok(res);
                 }
             }
-            Err(e) => return Err(e),
         }
     }
     Err(ErrMode::Incomplete(Needed::Unknown))
@@ -1746,7 +1729,7 @@ fn complete_escaped_transform_internal<I, Error, F, G, Output>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar,
+    <I as Stream>::Token: crate::stream::AsChar + Copy,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
     G: Parser<I, <I as Stream>::Slice, Error>,
@@ -1757,29 +1740,26 @@ where
     while input.eof_offset() > 0 {
         let current_len = input.eof_offset();
 
-        match normal.parse_next(input) {
-            Ok(o) => {
+        match opt(normal.by_ref()).parse_next(input)? {
+            Some(o) => {
                 res.accumulate(o);
-                if input.eof_offset() == 0 {
-                    return Ok(res);
-                } else if input.eof_offset() == current_len {
+                if input.eof_offset() == current_len {
                     return Ok(res);
                 }
             }
-            Err(ErrMode::Backtrack(_)) => {
-                if input.peek_token().expect("eof_offset > 0").1.as_char() == control_char {
-                    let next = control_char.len_utf8();
-                    let _ = input.next_slice(next);
+            None => {
+                if opt(one_of(|t: <I as Stream>::Token| {
+                    t.as_char() == control_char
+                }))
+                .parse_next(input)?
+                .is_some()
+                {
                     let o = transform.parse_next(input)?;
                     res.accumulate(o);
-                    if input.eof_offset() == 0 {
-                        return Ok(res);
-                    }
                 } else {
                     return Ok(res);
                 }
             }
-            Err(e) => return Err(e),
         }
     }
     Ok(res)

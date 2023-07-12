@@ -9,12 +9,12 @@ pub enum CustomError<I> {
     Nom(I, ErrorKind),
 }
 
-impl<I> ParserError<I> for CustomError<I> {
-    fn from_error_kind(input: I, kind: ErrorKind) -> Self {
-        CustomError::Nom(input, kind)
+impl<I: Clone> ParserError<I> for CustomError<I> {
+    fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
+        CustomError::Nom(input.clone(), kind)
     }
 
-    fn append(self, _: I, _: ErrorKind) -> Self {
+    fn append(self, _: &I, _: ErrorKind) -> Self {
         self
     }
 }

@@ -157,7 +157,7 @@ macro_rules! alt_trait_inner(
     }
   });
   ($it:tt, $self:expr, $input:expr, $start:ident, $err:expr, $head:ident) => ({
-    Err(ErrMode::Backtrack($err.append($input.clone(), ErrorKind::Alt)))
+    Err(ErrMode::Backtrack($err.append($input, ErrorKind::Alt)))
   });
 );
 
@@ -209,8 +209,8 @@ macro_rules! permutation_trait_impl(
           // or errored on the remaining input
           if let Some(err) = err {
             // There are remaining parsers, and all errored on the remaining input
-            input.reset(start);
-            return Err(ErrMode::Backtrack(err.append(input.clone(), ErrorKind::Alt)));
+            input.reset(start.clone());
+            return Err(ErrMode::Backtrack(err.append(input, ErrorKind::Alt)));
           }
 
           // All parsers were applied

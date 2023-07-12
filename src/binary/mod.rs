@@ -1270,7 +1270,7 @@ where
         if PARTIAL && input.is_partial() {
             ErrMode::Incomplete(Needed::new(1))
         } else {
-            ErrMode::Backtrack(E::from_error_kind(input.clone(), ErrorKind::Token))
+            ErrMode::Backtrack(E::from_error_kind(input, ErrorKind::Token))
         }
     })
 }
@@ -2482,7 +2482,7 @@ where
 pub fn length_value<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, O, E>
 where
     I: StreamIsPartial,
-    I: Stream + UpdateSlice,
+    I: Stream + UpdateSlice + Clone,
     N: ToUsize,
     F: Parser<I, N, E>,
     G: Parser<I, O, E>,

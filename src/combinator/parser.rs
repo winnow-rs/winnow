@@ -123,7 +123,7 @@ where
         let o = self.parser.parse_next(input)?;
         let res = (self.map)(o).map_err(|err| {
             input.reset(start);
-            ErrMode::from_external_error(input.clone(), ErrorKind::Verify, err)
+            ErrMode::from_external_error(input, ErrorKind::Verify, err)
         });
         trace_result("verify", &res);
         res
@@ -179,7 +179,7 @@ where
         let o = self.parser.parse_next(input)?;
         let res = (self.map)(o).ok_or_else(|| {
             input.reset(start);
-            ErrMode::from_error_kind(input.clone(), ErrorKind::Verify)
+            ErrMode::from_error_kind(input, ErrorKind::Verify)
         });
         trace_result("verify", &res);
         res
@@ -289,7 +289,7 @@ where
         let o = self.p.parse_next(i)?;
         let res = o.parse_slice().ok_or_else(|| {
             i.reset(start);
-            ErrMode::from_error_kind(i.clone(), ErrorKind::Verify)
+            ErrMode::from_error_kind(i, ErrorKind::Verify)
         });
         trace_result("verify", &res);
         res
@@ -368,7 +368,7 @@ where
         trace("complete_err", |input: &mut I| {
             match (self.f).parse_next(input) {
                 Err(ErrMode::Incomplete(_)) => {
-                    Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Complete))
+                    Err(ErrMode::from_error_kind(input, ErrorKind::Complete))
                 }
                 rest => rest,
             }
@@ -432,7 +432,7 @@ where
         let o = self.parser.parse_next(input)?;
         let res = (self.filter)(o.borrow()).then_some(o).ok_or_else(|| {
             input.reset(start);
-            ErrMode::from_error_kind(input.clone(), ErrorKind::Verify)
+            ErrMode::from_error_kind(input, ErrorKind::Verify)
         });
         trace_result("verify", &res);
         res
@@ -617,7 +617,7 @@ where
 pub struct Span<F, I, O, E>
 where
     F: Parser<I, O, E>,
-    I: Clone + Location,
+    I: Stream + Location,
 {
     parser: F,
     i: core::marker::PhantomData<I>,
@@ -628,7 +628,7 @@ where
 impl<F, I, O, E> Span<F, I, O, E>
 where
     F: Parser<I, O, E>,
-    I: Clone + Location,
+    I: Stream + Location,
 {
     pub(crate) fn new(parser: F) -> Self {
         Self {
@@ -643,7 +643,7 @@ where
 impl<I, O, E, F> Parser<I, Range<usize>, E> for Span<F, I, O, E>
 where
     F: Parser<I, O, E>,
-    I: Clone + Location,
+    I: Stream + Location,
 {
     #[inline]
     fn parse_next(&mut self, input: &mut I) -> PResult<Range<usize>, E> {
@@ -660,7 +660,7 @@ where
 pub struct WithSpan<F, I, O, E>
 where
     F: Parser<I, O, E>,
-    I: Clone + Location,
+    I: Stream + Location,
 {
     parser: F,
     i: core::marker::PhantomData<I>,
@@ -671,7 +671,7 @@ where
 impl<F, I, O, E> WithSpan<F, I, O, E>
 where
     F: Parser<I, O, E>,
-    I: Clone + Location,
+    I: Stream + Location,
 {
     pub(crate) fn new(parser: F) -> Self {
         Self {
@@ -686,7 +686,7 @@ where
 impl<F, I, O, E> Parser<I, (O, Range<usize>), E> for WithSpan<F, I, O, E>
 where
     F: Parser<I, O, E>,
-    I: Clone + Location,
+    I: Stream + Location,
 {
     #[inline]
     fn parse_next(&mut self, input: &mut I) -> PResult<(O, Range<usize>), E> {
@@ -833,10 +833,9 @@ where
         #[cfg(not(feature = "debug"))]
         let name = "context";
         trace(name, move |i: &mut I| {
-            let start = i.clone();
             (self.parser)
                 .parse_next(i)
-                .map_err(|err| err.map(|err| err.add_context(start, self.context.clone())))
+                .map_err(|err| err.map(|err| err.add_context(i, self.context.clone())))
         })
         .parse_next(i)
     }
