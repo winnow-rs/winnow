@@ -6,7 +6,7 @@
 //!
 //! Tips
 //! - When enough cases of an [`alt`] have unique prefixes, prefer [`dispatch`]
-//! - When parsing text, try to parse is as bytes (`u8`) rather than `char`s ([`BStr`] can make
+//! - When parsing text, try to parse as bytes (`u8`) rather than `char`s ([`BStr`] can make
 //!   debugging easier)
 //! - Find simplified subsets of the grammar to parse, falling back to the full grammar when it
 //!   doesn't work. For example, when parsing json strings, parse them without support for escapes,
@@ -14,7 +14,7 @@
 //! - Watch for large return types.  A surprising place these can show up is when chaining parsers
 //!   with a tuple.
 //!
-//! ## Built-time Performance
+//! ## Build-time Performance
 //!
 //! Returning complex types as `impl Trait` can negatively impact build times.  This can hit in
 //! surprising cases like:
