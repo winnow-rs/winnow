@@ -406,7 +406,7 @@ where
 
 /// Core definition for parser input state
 pub trait Stream:
-    Offset<<Self as Stream>::Checkpoint> + Offset + crate::lib::std::fmt::Debug + Sized
+    Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::Debug + Sized
 {
     /// The smallest unit being parsed
     ///
