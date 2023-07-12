@@ -617,7 +617,7 @@ where
 pub struct Span<F, I, O, E>
 where
     F: Parser<I, O, E>,
-    I: Clone + Location,
+    I: Stream + Location,
 {
     parser: F,
     i: core::marker::PhantomData<I>,
@@ -628,7 +628,7 @@ where
 impl<F, I, O, E> Span<F, I, O, E>
 where
     F: Parser<I, O, E>,
-    I: Clone + Location,
+    I: Stream + Location,
 {
     pub(crate) fn new(parser: F) -> Self {
         Self {
@@ -643,7 +643,7 @@ where
 impl<I, O, E, F> Parser<I, Range<usize>, E> for Span<F, I, O, E>
 where
     F: Parser<I, O, E>,
-    I: Clone + Location,
+    I: Stream + Location,
 {
     #[inline]
     fn parse_next(&mut self, input: &mut I) -> PResult<Range<usize>, E> {
@@ -660,7 +660,7 @@ where
 pub struct WithSpan<F, I, O, E>
 where
     F: Parser<I, O, E>,
-    I: Clone + Location,
+    I: Stream + Location,
 {
     parser: F,
     i: core::marker::PhantomData<I>,
@@ -671,7 +671,7 @@ where
 impl<F, I, O, E> WithSpan<F, I, O, E>
 where
     F: Parser<I, O, E>,
-    I: Clone + Location,
+    I: Stream + Location,
 {
     pub(crate) fn new(parser: F) -> Self {
         Self {
@@ -686,7 +686,7 @@ where
 impl<F, I, O, E> Parser<I, (O, Range<usize>), E> for WithSpan<F, I, O, E>
 where
     F: Parser<I, O, E>,
-    I: Clone + Location,
+    I: Stream + Location,
 {
     #[inline]
     fn parse_next(&mut self, input: &mut I) -> PResult<(O, Range<usize>), E> {

@@ -624,7 +624,7 @@ pub trait Parser<I, O, E> {
 impl<'a, I, O, E, F> Parser<I, O, E> for F
 where
     F: FnMut(&mut I) -> PResult<O, E> + 'a,
-    I: Clone,
+    I: Stream,
 {
     #[inline(always)]
     fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
