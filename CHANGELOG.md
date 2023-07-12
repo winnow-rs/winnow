@@ -44,6 +44,15 @@ Maintain pure-functional APIs
 Example: `toml_edit`:
 - [Pre-upgrade steps](https://github.com/toml-rs/toml/pull/579)
 
+Example: `winnow`:
+- Maintaining pure-functional API
+  - [making pure-functional `Stream` code to still work](https://github.com/winnow-rs/winnow/pull/274)
+  - [making pure-functional `impl Parser` code to still work](https://github.com/winnow-rs/winnow/pull/275)
+  - [making pure-functional `FnMut` code to still work](https://github.com/winnow-rs/winnow/pull/278)
+- Switch to new, imperative APIs from pure-functional API
+  - [porting to new `Parser::parse_next`](https://github.com/winnow-rs/winnow/pull/276/commits/edd851466aa145003f3da538b9c212cf61e8be81)
+  - [porting to new `FnMut`](https://github.com/winnow-rs/winnow/pull/279/commits)
+
 ### Compatibility
 
 - `Parser::parse_next` (and the `impl Parser for FnMut`) now take `&mut I` and return `PResult`
