@@ -1589,6 +1589,7 @@ where
         }
     }
 
+    input.reset(start);
     Ok(input.finish())
 }
 
