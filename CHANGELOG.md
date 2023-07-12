@@ -3,11 +3,110 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Migration
+
+Preparation:
+0. Upgrade to the latest 0.4 release
+1. Process all deprecation warnings
+2. Replace not-quite deprecated items:
+  - Replace `winnow::branch` with `winnow::combinator`
+  - Replace `winnow::bytes` with `winnow::token`
+  - Replace `Offset::offset_to` with `Offset::offset_from`
+  - Replace `ParseError` with `ParserError`
+  - Replace `ContextError` with `AddContext`
+  - Replace `Error` with `InputError`
+3. Ensure parsers return `impl Parser` over `impl FnMut` to reduce the size of the upgrade commit since the `FnMut` signature will change
+4. When creating errors within your parser,s switch from doing so directly to using `ErrMode`s trait impls to make the code more independent of the current error type
+5. Instrument your parser with `winnow::trace::trace` to make it easier to debug problems on upgrade
+6. Merge the above
+
+For the actual upgrade, there are two approaches that can be mixed.
+
+Switch to new, imperative APIs
+1. Upgrade to 0.5
+2. Replace `IResult<I, O, E>` with `PResult<O, E>` (`E` is still defaulted but to `ContextError`)
+3. Replace your parsers `I` parameter with `&mut I`
+  - For `fn(&mut &str) -> PResult<&str>`, a lifetime will be needed: `fn<'i>(&mut &'i str) -> PResult<&'i str>`
+  - For embedded closures, `move |input|` might need to be updated to `move |input: &mut _|`
+4. Update imperative parsers from expecting `parse_next` to return `(input, output)` to `output`
+  - When matching against `ErrMode::Backtrace`, you might need to `input.reset(checkpoint)` to revert the parser state
+5. Update error reporting for new error type returned from `Parser::parse`
+
+Maintain pure-functional APIs
+1. Upgrade to 0.5
+2. Switch to new names for the old APIs
+  - Replace `Parser::parse_next` with `Parser::parse_peek`
+  - Replace `Stream::next_token` with `Stream::peek_token`
+  - Replace `Stream::next_slice` with `Stream::peek_slice`
+3. Wrap calls to `FnMut(I) -> IResult<I, O, E>` parsers with `winnow::unpeek`
+4. Update error reporting for new error type returned from `Parser::parse`
+
+Example: `toml_edit`:
+- [Pre-upgrade steps](https://github.com/toml-rs/toml/pull/579)
+
+### Compatibility
+
+- `Parser::parse_next` (and the `impl Parser for FnMut`) now take `&mut I` and return `PResult`
+  - e.g. [porting to new `Parser::parse_next`](https://github.com/winnow-rs/winnow/pull/276/commits/edd851466aa145003f3da538b9c212cf61e8be81)
+  - e.g. [porting to new `FnMut`](https://github.com/winnow-rs/winnow/pull/279/commits)
+  - e.g. [making pure-functional `Stream` code to still work](https://github.com/winnow-rs/winnow/pull/274)
+  - e.g. [making pure-functional `impl Parser` code to still work](https://github.com/winnow-rs/winnow/pull/275)
+  - e.g. [making pure-functional `FnMut` code to still work](https://github.com/winnow-rs/winnow/pull/278)
+- Changed error type for `Parser::parse` to allow quality errors without requiring `E` to carry `I`
+- Removed `impl ContainsToken for &str` (e.g. `one_of("abc"`) since it takes 5x more time leading to easily avoidable slow downs
+  - Instead use `['a', 'b', 'c']` or `'a'..='c'` (see [`08b3e57`](https://github.com/winnow-rs/winnow/pull/252/commits/08b3e57ad321a79615fa0c516b818af449c38076) for examples)
+- Renamed `ParseError` to `ParserError`
+- Renamed `ContextError` to `AddContext`
+- Renamed `Error` to `InputError`
+- Removed `Offset::offset_to` in favor of `Offset_offset_from`
+- Removed hack from `trace` that allowed parsers to change `input` to point to
+  a different string (this wasn't present in other parsers relying on
+  `Offset::offset_from`)
+- Removed some `Offset` bounds, requiring changing `a.offset_from(b)` to `a.offset_from(&b)`
+- Renamed `bytes` to `token` to clarify its scope
+- Renamed `character` to `ascii` to make it agnostic of `char` tokens
+- Moved all binary-related parsing combinators into the `binary` module
+  - `bits` -> `binary::bits`
+  - `number`
+  - `multi::length_*`
+- Moved all generic combinators into `combinator`
+  - `sequence`
+  - `branch`
+  - `multi`
+- Deprecated parsers were removed
+- `Stream` trait changed
+  - `Stream::raw` added
+  - `Stream::next_token` renamed to `Stream::peek_token`
+  - `Stream::next_slice` renamed to `Stream::peek_slice`
+  - New `Stream::next_token` and `Stream::next_slice` added
+  - Added `Stream::finish` and `Stream::peek_finish`
+  - `Stream::Checkpoint`, `Stream::checkpoint`, and `Stream::reset` added
+  - `Offset<Stream::Checkpoint>` is a new super trait
+
+### Features
+
+- Added `ContextError`, a lightweight `ParserError` that supports `AddContext` (default for `PResult`)
+- Added `Stream::finish` and `Stream::peek_finish` for making it easier to capture all remaining content
+- Added `ErrMode::into_inner` for unifying `Cut` and `Backtrack`
+- Allow `ErrorKind` as a `ParserError`
+
+### Fixes
+
+- Correctly show `BStr` and `Byte`s `Debug` impl, rather than `&[u8]`
+
+### Performance
+
+- Removed `impl ContainsToken for &str` (e.g. `one_of("abc"`) since it takes 5x more time leading to easily avoidable slow downs
+- Walk the `Stream` imperatively with `&mut I` rather than requiring returning the updating error location
+  - i.e. switched parsing from `parser(I) -> (I, O)` to `parser(&mut I) -> O`
+  - Gains are around 10% in select benchmarks
+  - It is believed that this reduced the size of the return type, allowing values to be returned through registers more often (as opposed to the stack), and this gain only shows up in parsers that return large data types, like format preserving parsers
+
 ## [0.4.9] - 2023-07-08
 
 ### Features
 
-- Add alises for renamed APIs in v0.5
+- Add aliases for renamed APIs in v0.5
   - `error::AddContext` which wraps `error::ContextError`
   - `error::ParserError` which wraps `error::ParseError`
   - `error::InputError` which wraps `error::Error`
