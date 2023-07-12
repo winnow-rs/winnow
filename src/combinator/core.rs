@@ -146,8 +146,10 @@ where
     F: Parser<I, O, E>,
 {
     trace("peek", move |input: &mut I| {
-        let mut i = input.clone();
-        f.parse_next(&mut i)
+        let start = input.checkpoint();
+        let res = f.parse_next(input);
+        input.reset(start);
+        res
     })
 }
 
@@ -207,8 +209,10 @@ where
     F: Parser<I, O, E>,
 {
     trace("not", move |input: &mut I| {
-        let mut i = input.clone();
-        match parser.parse_next(&mut i) {
+        let start = input.checkpoint();
+        let res = parser.parse_next(input);
+        input.reset(start);
+        match res {
             Ok(_) => Err(ErrMode::from_error_kind(input, ErrorKind::Not)),
             Err(ErrMode::Backtrack(_)) => Ok(()),
             Err(e) => Err(e),
