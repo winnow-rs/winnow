@@ -35,7 +35,7 @@ fn eof_on_slices() {
     assert_parse!(
         res_not_over,
         Err(ErrMode::Backtrack(error_position!(
-            not_over,
+            &not_over,
             ErrorKind::Eof
         )))
     );
@@ -53,7 +53,7 @@ fn eof_on_strs() {
     assert_parse!(
         res_not_over,
         Err(ErrMode::Backtrack(error_position!(
-            not_over,
+            &not_over,
             ErrorKind::Eof
         )))
     );
@@ -90,11 +90,11 @@ impl From<u32> for CustomError {
 }
 
 impl<I> ParserError<I> for CustomError {
-    fn from_error_kind(_: I, _: ErrorKind) -> Self {
+    fn from_error_kind(_: &I, _: ErrorKind) -> Self {
         CustomError
     }
 
-    fn append(self, _: I, _: ErrorKind) -> Self {
+    fn append(self, _: &I, _: ErrorKind) -> Self {
         CustomError
     }
 }
@@ -200,7 +200,7 @@ fn peek_test() {
     assert_eq!(
         peek_tag(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"xxx"[..]),
+            &Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
@@ -215,7 +215,7 @@ fn not_test() {
     assert_eq!(
         not_aaa(Partial::new(&b"aaa"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"aaa"[..]),
+            &Partial::new(&b"aaa"[..]),
             ErrorKind::Not
         )))
     );
@@ -245,7 +245,7 @@ fn test_parser_verify() {
     assert_eq!(
         test(Partial::new(&b"bcdefg"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"bcdefg"[..]),
+            &Partial::new(&b"bcdefg"[..]),
             ErrorKind::Verify
         )))
     );
@@ -329,7 +329,7 @@ fn complete() {
     assert_eq!(
         res_a,
         Err(ErrMode::Backtrack(error_position!(
-            &b"mn"[..],
+            &&b"mn"[..],
             ErrorKind::Tag
         )))
     );
@@ -357,21 +357,21 @@ fn separated_pair_test() {
     assert_eq!(
         sep_pair_abc_def(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"xxx"[..]),
+            &Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
         sep_pair_abc_def(Partial::new(&b"xxx,def"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"xxx,def"[..]),
+            &Partial::new(&b"xxx,def"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
         sep_pair_abc_def(Partial::new(&b"abc,xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"xxx"[..]),
+            &Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
@@ -398,21 +398,21 @@ fn preceded_test() {
     assert_eq!(
         preceded_abcd_efgh(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"xxx"[..]),
+            &Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
         preceded_abcd_efgh(Partial::new(&b"xxxxdef"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"xxxxdef"[..]),
+            &Partial::new(&b"xxxxdef"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
         preceded_abcd_efgh(Partial::new(&b"abcdxxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"xxx"[..]),
+            &Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
@@ -439,21 +439,21 @@ fn terminated_test() {
     assert_eq!(
         terminated_abcd_efgh(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"xxx"[..]),
+            &Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
         terminated_abcd_efgh(Partial::new(&b"xxxxdef"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"xxxxdef"[..]),
+            &Partial::new(&b"xxxxdef"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
         terminated_abcd_efgh(Partial::new(&b"abcdxxxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"xxxx"[..]),
+            &Partial::new(&b"xxxx"[..]),
             ErrorKind::Tag
         )))
     );
@@ -484,28 +484,28 @@ fn delimited_test() {
     assert_eq!(
         delimited_abc_def_ghi(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"xxx"[..]),
+            &Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
         delimited_abc_def_ghi(Partial::new(&b"xxxdefghi"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"xxxdefghi"[..]),
+            &Partial::new(&b"xxxdefghi"[..]),
             ErrorKind::Tag
         ),))
     );
     assert_eq!(
         delimited_abc_def_ghi(Partial::new(&b"abcxxxghi"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"xxxghi"[..]),
+            &Partial::new(&b"xxxghi"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
         delimited_abc_def_ghi(Partial::new(&b"abcdefxxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"xxx"[..]),
+            &Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
@@ -543,11 +543,11 @@ fn alt_test() {
 
     #[cfg(feature = "alloc")]
     impl<I: Debug> ParserError<I> for ErrorStr {
-        fn from_error_kind(input: I, kind: ErrorKind) -> Self {
+        fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
             ErrorStr(format!("custom error message: ({:?}, {:?})", input, kind))
         }
 
-        fn append(self, input: I, kind: ErrorKind) -> Self {
+        fn append(self, input: &I, kind: ErrorKind) -> Self {
             ErrorStr(format!(
                 "custom error message: ({:?}, {:?}) - {:?}",
                 input, kind, self
@@ -591,7 +591,7 @@ fn alt_test() {
     assert_eq!(
         alt1(a),
         Err(ErrMode::Backtrack(error_node_position!(
-            a,
+            &a,
             ErrorKind::Alt,
             ErrorStr("abcd".to_string())
         )))
@@ -632,7 +632,7 @@ fn alt_incomplete() {
     assert_eq!(
         alt1(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(a),
+            &Partial::new(a),
             ErrorKind::Tag
         )))
     );
@@ -677,9 +677,9 @@ fn permutation_test() {
     assert_eq!(
         perm(Partial::new(d)),
         Err(ErrMode::Backtrack(error_node_position!(
-            Partial::new(&b"efgxyzabcdefghi"[..]),
+            &Partial::new(&b"efgxyzabcdefghi"[..]),
             ErrorKind::Alt,
-            error_position!(Partial::new(&b"xyzabcdefghi"[..]), ErrorKind::Tag)
+            error_position!(&Partial::new(&b"xyzabcdefghi"[..]), ErrorKind::Tag)
         )))
     );
 
@@ -759,7 +759,7 @@ fn separated0_empty_sep_test() {
     assert_eq!(
         empty_sep(Partial::new(i)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(i_err_pos),
+            &Partial::new(i_err_pos),
             ErrorKind::Assert
         )))
     );
@@ -791,7 +791,7 @@ fn separated1_test() {
     assert_eq!(
         multi(Partial::new(c)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(c),
+            &Partial::new(c),
             ErrorKind::Tag
         )))
     );
@@ -859,7 +859,7 @@ fn repeat0_empty_test() {
     assert_eq!(
         multi_empty(Partial::new(&b"abcdef"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"abcdef"[..]),
+            &Partial::new(&b"abcdef"[..]),
             ErrorKind::Assert
         )))
     );
@@ -887,7 +887,7 @@ fn repeat1_test() {
     assert_eq!(
         multi(Partial::new(c)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(c),
+            &Partial::new(c),
             ErrorKind::Tag
         )))
     );
@@ -916,9 +916,9 @@ fn repeat_till_test() {
     assert_eq!(
         multi(&c[..]),
         Err(ErrMode::Backtrack(error_node_position!(
-            &c[..],
+            &&c[..],
             ErrorKind::Many,
-            error_position!(&c[..], ErrorKind::Tag)
+            error_position!(&&c[..], ErrorKind::Tag)
         )))
     );
 }
@@ -928,7 +928,7 @@ fn repeat_till_test() {
 fn infinite_many() {
     fn tst(input: &[u8]) -> IResult<&[u8], &[u8]> {
         println!("input: {:?}", input);
-        Err(ErrMode::Backtrack(error_position!(input, ErrorKind::Tag)))
+        Err(ErrMode::Backtrack(error_position!(&input, ErrorKind::Tag)))
     }
 
     // should not go into an infinite loop
@@ -944,7 +944,7 @@ fn infinite_many() {
     let a = &b"abcdef"[..];
     assert_eq!(
         multi1(a),
-        Err(ErrMode::Backtrack(error_position!(a, ErrorKind::Tag)))
+        Err(ErrMode::Backtrack(error_position!(&a, ErrorKind::Tag)))
     );
 }
 
@@ -964,7 +964,7 @@ fn repeat_test() {
     assert_eq!(
         multi(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"ef"[..]),
+            &Partial::new(&b"ef"[..]),
             ErrorKind::Tag
         )))
     );
@@ -1012,21 +1012,21 @@ fn count_test() {
     assert_eq!(
         cnt_2(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"xxx"[..]),
+            &Partial::new(&b"xxx"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
         cnt_2(Partial::new(&b"xxxabcabcdef"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"xxxabcabcdef"[..]),
+            &Partial::new(&b"xxxabcabcdef"[..]),
             ErrorKind::Tag
         )))
     );
     assert_eq!(
         cnt_2(Partial::new(&b"abcxxxabcdef"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"xxxabcdef"[..]),
+            &Partial::new(&b"xxxabcdef"[..]),
             ErrorKind::Tag
         )))
     );
@@ -1081,10 +1081,10 @@ impl<I> From<(I, ErrorKind)> for NilError {
 }
 
 impl<I> ParserError<I> for NilError {
-    fn from_error_kind(_: I, _: ErrorKind) -> NilError {
+    fn from_error_kind(_: &I, _: ErrorKind) -> NilError {
         NilError
     }
-    fn append(self, _: I, _: ErrorKind) -> NilError {
+    fn append(self, _: &I, _: ErrorKind) -> NilError {
         NilError
     }
 }
@@ -1141,7 +1141,7 @@ fn fold_repeat0_empty_test() {
     assert_eq!(
         multi_empty(Partial::new(&b"abcdef"[..])),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"abcdef"[..]),
+            &Partial::new(&b"abcdef"[..]),
             ErrorKind::Assert
         )))
     );
@@ -1173,7 +1173,7 @@ fn fold_repeat1_test() {
     assert_eq!(
         multi(Partial::new(c)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(c),
+            &Partial::new(c),
             ErrorKind::Many
         )))
     );
@@ -1203,7 +1203,7 @@ fn fold_repeat_test() {
     assert_eq!(
         multi(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
-            Partial::new(&b"ef"[..]),
+            &Partial::new(&b"ef"[..]),
             ErrorKind::Tag
         )))
     );
@@ -1262,7 +1262,7 @@ fn repeat1_count_test() {
     assert_eq!(
         count1_nums(&b"hello"[..]),
         Err(ErrMode::Backtrack(error_position!(
-            &b"hello"[..],
+            &&b"hello"[..],
             ErrorKind::Slice
         )))
     );

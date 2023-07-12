@@ -278,13 +278,13 @@ mod complete {
         let i = &b"g"[..];
         assert_parse!(
             hex_digit1.parse_peek(i),
-            Err(ErrMode::Backtrack(error_position!(i, ErrorKind::Slice)))
+            Err(ErrMode::Backtrack(error_position!(&i, ErrorKind::Slice)))
         );
 
         let i = &b"G"[..];
         assert_parse!(
             hex_digit1.parse_peek(i),
-            Err(ErrMode::Backtrack(error_position!(i, ErrorKind::Slice)))
+            Err(ErrMode::Backtrack(error_position!(&i, ErrorKind::Slice)))
         );
 
         assert!(AsChar::is_hex_digit(b'0'));
@@ -309,7 +309,7 @@ mod complete {
         let i = &b"8"[..];
         assert_parse!(
             oct_digit1.parse_peek(i),
-            Err(ErrMode::Backtrack(error_position!(i, ErrorKind::Slice)))
+            Err(ErrMode::Backtrack(error_position!(&i, ErrorKind::Slice)))
         );
 
         assert!(AsChar::is_oct_digit(b'0'));
@@ -367,14 +367,14 @@ mod complete {
         assert_parse!(
             crlf.parse_peek(&b"\r"[..]),
             Err(ErrMode::Backtrack(error_position!(
-                &b"\r"[..],
+                &&b"\r"[..],
                 ErrorKind::Tag
             )))
         );
         assert_parse!(
             crlf.parse_peek(&b"\ra"[..]),
             Err(ErrMode::Backtrack(error_position!(
-                &b"\ra"[..],
+                &&b"\ra"[..],
                 ErrorKind::Tag
             )))
         );
@@ -382,11 +382,11 @@ mod complete {
         assert_parse!(crlf.parse_peek("\r\na"), Ok(("a", "\r\n")));
         assert_parse!(
             crlf.parse_peek("\r"),
-            Err(ErrMode::Backtrack(error_position!("\r", ErrorKind::Tag)))
+            Err(ErrMode::Backtrack(error_position!(&"\r", ErrorKind::Tag)))
         );
         assert_parse!(
             crlf.parse_peek("\ra"),
-            Err(ErrMode::Backtrack(error_position!("\ra", ErrorKind::Tag)))
+            Err(ErrMode::Backtrack(error_position!(&"\ra", ErrorKind::Tag)))
         );
     }
 
@@ -403,14 +403,14 @@ mod complete {
         assert_parse!(
             line_ending.parse_peek(&b"\r"[..]),
             Err(ErrMode::Backtrack(error_position!(
-                &b"\r"[..],
+                &&b"\r"[..],
                 ErrorKind::Tag
             )))
         );
         assert_parse!(
             line_ending.parse_peek(&b"\ra"[..]),
             Err(ErrMode::Backtrack(error_position!(
-                &b"\ra"[..],
+                &&b"\ra"[..],
                 ErrorKind::Tag
             )))
         );
@@ -419,11 +419,11 @@ mod complete {
         assert_parse!(line_ending.parse_peek("\r\na"), Ok(("a", "\r\n")));
         assert_parse!(
             line_ending.parse_peek("\r"),
-            Err(ErrMode::Backtrack(error_position!("\r", ErrorKind::Tag)))
+            Err(ErrMode::Backtrack(error_position!(&"\r", ErrorKind::Tag)))
         );
         assert_parse!(
             line_ending.parse_peek("\ra"),
-            Err(ErrMode::Backtrack(error_position!("\ra", ErrorKind::Tag)))
+            Err(ErrMode::Backtrack(error_position!(&"\ra", ErrorKind::Tag)))
         );
     }
 
@@ -445,7 +445,7 @@ mod complete {
                     Ok((i, -n))
                 }
             }
-            None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
+            None => Err(ErrMode::from_error_kind(&i, ErrorKind::Verify)),
         }
     }
 
@@ -453,7 +453,7 @@ mod complete {
         let (i, s) = digit1.parse_peek(i)?;
         match s.parse_slice() {
             Some(n) => Ok((i, n)),
-            None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
+            None => Err(ErrMode::from_error_kind(&i, ErrorKind::Verify)),
         }
     }
 
@@ -484,7 +484,7 @@ mod complete {
         assert_parse!(
             hex_u32(&b";"[..]),
             Err(ErrMode::Backtrack(error_position!(
-                &b";"[..],
+                &&b";"[..],
                 ErrorKind::Slice
             )))
         );
@@ -495,14 +495,14 @@ mod complete {
         assert_parse!(
             hex_u32(&b"00c5a31be2;"[..]), // overflow
             Err(ErrMode::Backtrack(error_position!(
-                &b"00c5a31be2;"[..],
+                &&b"00c5a31be2;"[..],
                 ErrorKind::Verify
             )))
         );
         assert_parse!(
             hex_u32(&b"c5a31be201;"[..]), // overflow
             Err(ErrMode::Backtrack(error_position!(
-                &b"c5a31be201;"[..],
+                &&b"c5a31be201;"[..],
                 ErrorKind::Verify
             )))
         );
@@ -510,14 +510,14 @@ mod complete {
         assert_parse!(
             hex_u32(&b"ffffffffffffffff;"[..]), // overflow
             Err(ErrMode::Backtrack(error_position!(
-                &b"ffffffffffffffff;"[..],
+                &&b"ffffffffffffffff;"[..],
                 ErrorKind::Verify
             )))
         );
         assert_parse!(
             hex_u32(&b"ffffffffffffffff"[..]), // overflow
             Err(ErrMode::Backtrack(error_position!(
-                &b"ffffffffffffffff"[..],
+                &&b"ffffffffffffffff"[..],
                 ErrorKind::Verify
             )))
         );
@@ -670,16 +670,16 @@ mod complete {
         assert_eq!(
             esc(&b"AB\\"[..]),
             Err(ErrMode::Backtrack(error_position!(
-                &b""[..],
+                &&b""[..],
                 ErrorKind::Token
             )))
         );
         assert_eq!(
             esc(&b"AB\\A"[..]),
             Err(ErrMode::Backtrack(error_node_position!(
-                &b"AB\\A"[..],
+                &&b"AB\\A"[..],
                 ErrorKind::Token,
-                error_position!(&b"A"[..], ErrorKind::Verify)
+                error_position!(&&b"A"[..], ErrorKind::Verify)
             )))
         );
 
@@ -705,14 +705,14 @@ mod complete {
         assert_eq!(esc("ab\\\"12"), Ok(("12", "ab\\\"")));
         assert_eq!(
             esc("AB\\"),
-            Err(ErrMode::Backtrack(error_position!("", ErrorKind::Token)))
+            Err(ErrMode::Backtrack(error_position!(&"", ErrorKind::Token)))
         );
         assert_eq!(
             esc("AB\\A"),
             Err(ErrMode::Backtrack(error_node_position!(
-                "AB\\A",
+                &"AB\\A",
                 ErrorKind::Token,
-                error_position!("A", ErrorKind::Verify)
+                error_position!(&"A", ErrorKind::Verify)
             )))
         );
 
@@ -778,16 +778,16 @@ mod complete {
         assert_eq!(
             esc(&b"AB\\"[..]),
             Err(ErrMode::Backtrack(error_position!(
-                &b""[..],
+                &&b""[..],
                 ErrorKind::Tag
             )))
         );
         assert_eq!(
             esc(&b"AB\\A"[..]),
             Err(ErrMode::Backtrack(error_node_position!(
-                &b"AB\\A"[..],
+                &&b"AB\\A"[..],
                 ErrorKind::Eof,
-                error_position!(&b"A"[..], ErrorKind::Tag)
+                error_position!(&&b"A"[..], ErrorKind::Tag)
             )))
         );
 
@@ -834,14 +834,14 @@ mod complete {
         assert_eq!(esc("ab\\\"12"), Ok(("12", String::from("ab\""))));
         assert_eq!(
             esc("AB\\"),
-            Err(ErrMode::Backtrack(error_position!("", ErrorKind::Tag)))
+            Err(ErrMode::Backtrack(error_position!(&"", ErrorKind::Tag)))
         );
         assert_eq!(
             esc("AB\\A"),
             Err(ErrMode::Backtrack(error_node_position!(
-                "AB\\A",
+                &"AB\\A",
                 ErrorKind::Eof,
-                error_position!("A", ErrorKind::Tag)
+                error_position!(&"A", ErrorKind::Tag)
             )))
         );
 
@@ -1256,7 +1256,7 @@ mod partial {
         assert_parse!(
             hex_digit1.parse_peek(Partial::new(i)),
             Err(ErrMode::Backtrack(error_position!(
-                Partial::new(i),
+                &Partial::new(i),
                 ErrorKind::Slice
             )))
         );
@@ -1265,7 +1265,7 @@ mod partial {
         assert_parse!(
             hex_digit1.parse_peek(Partial::new(i)),
             Err(ErrMode::Backtrack(error_position!(
-                Partial::new(i),
+                &Partial::new(i),
                 ErrorKind::Slice
             )))
         );
@@ -1296,7 +1296,7 @@ mod partial {
         assert_parse!(
             oct_digit1.parse_peek(Partial::new(i)),
             Err(ErrMode::Backtrack(error_position!(
-                Partial::new(i),
+                &Partial::new(i),
                 ErrorKind::Slice
             )))
         );
@@ -1368,7 +1368,7 @@ mod partial {
         assert_parse!(
             crlf.parse_peek(Partial::new(&b"\ra"[..])),
             Err(ErrMode::Backtrack(error_position!(
-                Partial::new(&b"\ra"[..]),
+                &Partial::new(&b"\ra"[..]),
                 ErrorKind::Tag
             )))
         );
@@ -1384,7 +1384,7 @@ mod partial {
         assert_parse!(
             crlf.parse_peek(Partial::new("\ra")),
             Err(ErrMode::Backtrack(error_position!(
-                Partial::new("\ra"),
+                &Partial::new("\ra"),
                 ErrorKind::Tag
             )))
         );
@@ -1407,7 +1407,7 @@ mod partial {
         assert_parse!(
             line_ending.parse_peek(Partial::new(&b"\ra"[..])),
             Err(ErrMode::Backtrack(error_position!(
-                Partial::new(&b"\ra"[..]),
+                &Partial::new(&b"\ra"[..]),
                 ErrorKind::Tag
             )))
         );
@@ -1427,7 +1427,7 @@ mod partial {
         assert_parse!(
             line_ending.parse_peek(Partial::new("\ra")),
             Err(ErrMode::Backtrack(error_position!(
-                Partial::new("\ra"),
+                &Partial::new("\ra"),
                 ErrorKind::Tag
             )))
         );
@@ -1451,7 +1451,7 @@ mod partial {
                     Ok((i, -n))
                 }
             }
-            None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
+            None => Err(ErrMode::from_error_kind(&i, ErrorKind::Verify)),
         }
     }
 
@@ -1459,7 +1459,7 @@ mod partial {
         let (i, s) = digit1.parse_peek(i)?;
         match s.parse_slice() {
             Some(n) => Ok((i, n)),
-            None => Err(ErrMode::from_error_kind(i, ErrorKind::Verify)),
+            None => Err(ErrMode::from_error_kind(&i, ErrorKind::Verify)),
         }
     }
 
@@ -1490,7 +1490,7 @@ mod partial {
         assert_parse!(
             hex_u32(Partial::new(&b";"[..])),
             Err(ErrMode::Backtrack(error_position!(
-                Partial::new(&b";"[..]),
+                &Partial::new(&b";"[..]),
                 ErrorKind::Slice
             )))
         );
@@ -1513,14 +1513,14 @@ mod partial {
         assert_parse!(
             hex_u32(Partial::new(&b"00c5a31be2;"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
-                Partial::new(&b"00c5a31be2;"[..]),
+                &Partial::new(&b"00c5a31be2;"[..]),
                 ErrorKind::Verify
             )))
         );
         assert_parse!(
             hex_u32(Partial::new(&b"c5a31be201;"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
-                Partial::new(&b"c5a31be201;"[..]),
+                &Partial::new(&b"c5a31be201;"[..]),
                 ErrorKind::Verify
             )))
         );
@@ -1531,14 +1531,14 @@ mod partial {
         assert_parse!(
             hex_u32(Partial::new(&b"ffffffffffffffff;"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
-                Partial::new(&b"ffffffffffffffff;"[..]),
+                &Partial::new(&b"ffffffffffffffff;"[..]),
                 ErrorKind::Verify
             )))
         );
         assert_parse!(
             hex_u32(Partial::new(&b"ffffffffffffffff"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
-                Partial::new(&b"ffffffffffffffff"[..]),
+                &Partial::new(&b"ffffffffffffffff"[..]),
                 ErrorKind::Verify
             )))
         );

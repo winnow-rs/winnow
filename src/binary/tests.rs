@@ -1150,14 +1150,14 @@ mod partial {
         assert_eq!(
             cnt(Partial::new(&b"xxx"[..])),
             Err(ErrMode::Backtrack(error_position!(
-                Partial::new(&b"xxx"[..]),
+                &Partial::new(&b"xxx"[..]),
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
             cnt(Partial::new(&b"2abcxxx"[..])),
             Err(ErrMode::Backtrack(error_position!(
-                Partial::new(&b"xxx"[..]),
+                &Partial::new(&b"xxx"[..]),
                 ErrorKind::Tag
             )))
         );
@@ -1187,7 +1187,7 @@ mod partial {
         assert_eq!(
             take(Partial::new(&b"xxx"[..])),
             Err(ErrMode::Backtrack(error_position!(
-                Partial::new(&b"xxx"[..]),
+                &Partial::new(&b"xxx"[..]),
                 ErrorKind::Slice
             )))
         );
@@ -1215,14 +1215,14 @@ mod partial {
         assert_eq!(
             length_value_1(Partial::new(&i1)),
             Err(ErrMode::Backtrack(error_position!(
-                empty_complete,
+                &empty_complete,
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
             length_value_2(Partial::new(&i1)),
             Err(ErrMode::Backtrack(error_position!(
-                empty_complete,
+                &empty_complete,
                 ErrorKind::Token
             )))
         );
@@ -1234,14 +1234,14 @@ mod partial {
             assert_eq!(
                 length_value_1(Partial::new(&i2)),
                 Err(ErrMode::Backtrack(error_position!(
-                    middle_complete,
+                    &middle_complete,
                     ErrorKind::Slice
                 )))
             );
             assert_eq!(
                 length_value_2(Partial::new(&i2)),
                 Err(ErrMode::Backtrack(error_position!(
-                    empty_complete,
+                    &empty_complete,
                     ErrorKind::Token
                 )))
             );

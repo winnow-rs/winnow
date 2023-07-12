@@ -123,7 +123,7 @@ where
                 Err(ErrMode::Incomplete(Needed::Size(sz))) => Err(match sz.get().checked_mul(8) {
                     Some(v) => ErrMode::Incomplete(Needed::new(v)),
                     None => ErrMode::Cut(E2::assert(
-                        i,
+                        &i,
                         "overflow in turning needed bytes into needed bits",
                     )),
                 }),
@@ -202,7 +202,7 @@ where
                 Err(ErrMode::Incomplete(Needed::new(count)))
             } else {
                 Err(ErrMode::from_error_kind(
-                    (input, bit_offset),
+                    &(input, bit_offset),
                     ErrorKind::Eof,
                 ))
             }
@@ -313,7 +313,7 @@ where
             } else {
                 input.reset(start);
                 Err(ErrMode::Backtrack(E::from_error_kind(
-                    input.clone(),
+                    input,
                     ErrorKind::Tag,
                 )))
             }

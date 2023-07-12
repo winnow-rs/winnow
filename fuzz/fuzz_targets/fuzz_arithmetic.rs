@@ -30,7 +30,7 @@ fn incr(i: &mut &str) -> PResult<()> {
         // limit the number of recursions, the fuzzer keeps running into them
         if *l.borrow() >= 8192 {
             Err(winnow::error::ErrMode::from_error_kind(
-                <&str>::clone(i),
+                i,
                 winnow::error::ErrorKind::Many,
             ))
         } else {

@@ -143,7 +143,7 @@ where
                     }
                     CompareResult::Incomplete | CompareResult::Error => {
                         let e: ErrorKind = ErrorKind::Tag;
-                        return Err(ErrMode::from_error_kind(input.clone(), e));
+                        return Err(ErrMode::from_error_kind(input, e));
                     }
                 }
             }
@@ -956,7 +956,7 @@ where
             if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
                 return Err(ErrMode::Incomplete(Needed::new(1)));
             } else {
-                return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Slice));
+                return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
             }
         }
 
@@ -967,12 +967,12 @@ where
                     let d = d as u8;
                     v.checked_add(d, sealed::SealedMarker)
                 }) {
-                    None => return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Verify)),
+                    None => return Err(ErrMode::from_error_kind(input, ErrorKind::Verify)),
                     Some(v) => value = v,
                 },
                 None => {
                     if offset == 0 {
-                        return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Slice));
+                        return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
                     } else {
                         let _ = input.next_slice(offset);
                         return Ok(value);
@@ -1119,7 +1119,7 @@ where
             if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
                 return Err(ErrMode::Incomplete(Needed::new(1)));
             } else {
-                return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Slice));
+                return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
             }
         }
 
@@ -1134,12 +1134,12 @@ where
                         v.checked_sub(d, sealed::SealedMarker)
                     }
                 }) {
-                    None => return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Verify)),
+                    None => return Err(ErrMode::from_error_kind(input, ErrorKind::Verify)),
                     Some(v) => value = v,
                 },
                 None => {
                     if offset == 0 {
-                        return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Slice));
+                        return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
                     } else {
                         let _ = input.next_slice(offset);
                         return Ok(value);
@@ -1254,7 +1254,7 @@ where
             Ok(max_offset) => {
                 if max_offset < invalid_offset {
                     // Overflow
-                    return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Verify));
+                    return Err(ErrMode::from_error_kind(input, ErrorKind::Verify));
                 } else {
                     invalid_offset
                 }
@@ -1273,7 +1273,7 @@ where
         };
         if offset == 0 {
             // Must be at least one digit
-            return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Slice));
+            return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
         }
         let parsed = input.next_slice(offset);
 
@@ -1390,7 +1390,7 @@ where
     trace("float", move |input: &mut I| {
         let s = recognize_float_or_exceptions(input)?;
         s.parse_slice()
-            .ok_or_else(|| ErrMode::from_error_kind(input.clone(), ErrorKind::Verify))
+            .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::Verify))
     })
     .parse_next(input)
 }

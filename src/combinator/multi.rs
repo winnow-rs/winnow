@@ -156,10 +156,7 @@ where
             Ok(o) => {
                 // infinite loop check: the parser must always consume
                 if i.eof_offset() == len {
-                    return Err(ErrMode::assert(
-                        i.clone(),
-                        "`repeat` parsers must always consume",
-                    ));
+                    return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
                 }
 
                 acc.accumulate(o);
@@ -176,7 +173,7 @@ where
     E: ParserError<I>,
 {
     match f.parse_next(i) {
-        Err(e) => Err(e.append(i.clone(), ErrorKind::Many)),
+        Err(e) => Err(e.append(i, ErrorKind::Many)),
         Ok(o) => {
             let mut acc = C::initial(None);
             acc.accumulate(o);
@@ -193,10 +190,7 @@ where
                     Ok(o) => {
                         // infinite loop check: the parser must always consume
                         if i.eof_offset() == len {
-                            return Err(ErrMode::assert(
-                                i.clone(),
-                                "`repeat` parsers must always consume",
-                            ));
+                            return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
                         }
 
                         acc.accumulate(o);
@@ -255,12 +249,12 @@ where
                 Err(ErrMode::Backtrack(_)) => {
                     i.reset(start);
                     match f.parse_next(i) {
-                        Err(e) => return Err(e.append(i.clone(), ErrorKind::Many)),
+                        Err(e) => return Err(e.append(i, ErrorKind::Many)),
                         Ok(o) => {
                             // infinite loop check: the parser must always consume
                             if i.eof_offset() == len {
                                 return Err(ErrMode::assert(
-                                    i.clone(),
+                                    i,
                                     "`repeat` parsers must always consume",
                                 ));
                             }
@@ -341,10 +335,7 @@ where
                 Ok(_) => {
                     // infinite loop check: the parser must always consume
                     if i.eof_offset() == len {
-                        return Err(ErrMode::assert(
-                            i.clone(),
-                            "sep parsers must always consume",
-                        ));
+                        return Err(ErrMode::assert(i, "sep parsers must always consume"));
                     }
 
                     match parser.parse_next(i) {
@@ -427,10 +418,7 @@ where
                 Ok(_) => {
                     // infinite loop check: the parser must always consume
                     if i.eof_offset() == len {
-                        return Err(ErrMode::assert(
-                            i.clone(),
-                            "sep parsers must always consume",
-                        ));
+                        return Err(ErrMode::assert(i, "sep parsers must always consume"));
                     }
 
                     match parser.parse_next(i) {
@@ -497,10 +485,7 @@ where
                 Ok(s) => {
                     // infinite loop check: the parser must always consume
                     if i.eof_offset() == len {
-                        return Err(ErrMode::assert(
-                            i.clone(),
-                            "`repeat` parsers must always consume",
-                        ));
+                        return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
                     }
 
                     match parser.parse_next(i) {
@@ -579,10 +564,7 @@ where
     E: ParserError<I>,
 {
     if min > max {
-        return Err(ErrMode::Cut(E::from_error_kind(
-            input.clone(),
-            ErrorKind::Many,
-        )));
+        return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::Many)));
     }
 
     let mut res = C::initial(Some(min));
@@ -594,7 +576,7 @@ where
                 // infinite loop check: the parser must always consume
                 if input.eof_offset() == len {
                     return Err(ErrMode::assert(
-                        input.clone(),
+                        input,
                         "`repeat` parsers must always consume",
                     ));
                 }
@@ -603,7 +585,7 @@ where
             }
             Err(ErrMode::Backtrack(e)) => {
                 if count < min {
-                    return Err(ErrMode::Backtrack(e.append(input.clone(), ErrorKind::Many)));
+                    return Err(ErrMode::Backtrack(e.append(input, ErrorKind::Many)));
                 } else {
                     input.reset(start);
                     return Ok(res);
@@ -633,7 +615,7 @@ where
                 res.accumulate(o);
             }
             Err(e) => {
-                return Err(e.append(i.clone(), ErrorKind::Many));
+                return Err(e.append(i, ErrorKind::Many));
             }
         }
     }
@@ -682,7 +664,7 @@ where
                     *elem = o;
                 }
                 Err(e) => {
-                    return Err(e.append(i.clone(), ErrorKind::Many));
+                    return Err(e.append(i, ErrorKind::Many));
                 }
             }
         }
@@ -845,7 +827,7 @@ where
                 // infinite loop check: the parser must always consume
                 if input.eof_offset() == len {
                     return Err(ErrMode::assert(
-                        input.clone(),
+                        input,
                         "`repeat` parsers must always consume",
                     ));
                 }
@@ -878,7 +860,7 @@ where
 {
     let init = init();
     match f.parse_next(input) {
-        Err(ErrMode::Backtrack(_)) => Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Many)),
+        Err(ErrMode::Backtrack(_)) => Err(ErrMode::from_error_kind(input, ErrorKind::Many)),
         Err(e) => Err(e),
         Ok(o1) => {
             let mut acc = g(init, o1);
@@ -896,7 +878,7 @@ where
                         // infinite loop check: the parser must always consume
                         if input.eof_offset() == len {
                             return Err(ErrMode::assert(
-                                input.clone(),
+                                input,
                                 "`repeat` parsers must always consume",
                             ));
                         }
@@ -927,10 +909,7 @@ where
     E: ParserError<I>,
 {
     if min > max {
-        return Err(ErrMode::Cut(E::from_error_kind(
-            input.clone(),
-            ErrorKind::Many,
-        )));
+        return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::Many)));
     }
 
     let mut acc = init();
@@ -942,7 +921,7 @@ where
                 // infinite loop check: the parser must always consume
                 if input.eof_offset() == len {
                     return Err(ErrMode::assert(
-                        input.clone(),
+                        input,
                         "`repeat` parsers must always consume",
                     ));
                 }
@@ -952,9 +931,7 @@ where
             //FInputXMError: handle failure properly
             Err(ErrMode::Backtrack(err)) => {
                 if count < min {
-                    return Err(ErrMode::Backtrack(
-                        err.append(input.clone(), ErrorKind::Many),
-                    ));
+                    return Err(ErrMode::Backtrack(err.append(input, ErrorKind::Many)));
                 } else {
                     input.reset(start);
                     break;

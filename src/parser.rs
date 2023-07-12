@@ -941,7 +941,7 @@ mod tests {
         assert_eq!(
             tuple_3(Partial::new(&b"abcdejk"[..])),
             Err(ErrMode::Backtrack(error_position!(
-                Partial::new(&b"jk"[..]),
+                &Partial::new(&b"jk"[..]),
                 ErrorKind::Tag
             )))
         );

@@ -173,19 +173,19 @@ impl<E> ErrMode<E> {
 }
 
 impl<I, E: ParserError<I>> ParserError<I> for ErrMode<E> {
-    fn from_error_kind(input: I, kind: ErrorKind) -> Self {
+    fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
         ErrMode::Backtrack(E::from_error_kind(input, kind))
     }
 
     #[cfg_attr(debug_assertions, track_caller)]
-    fn assert(input: I, message: &'static str) -> Self
+    fn assert(input: &I, message: &'static str) -> Self
     where
         I: crate::lib::std::fmt::Debug,
     {
         ErrMode::Backtrack(E::assert(input, message))
     }
 
-    fn append(self, input: I, kind: ErrorKind) -> Self {
+    fn append(self, input: &I, kind: ErrorKind) -> Self {
         match self {
             ErrMode::Backtrack(e) => ErrMode::Backtrack(e.append(input, kind)),
             e => e,
@@ -205,14 +205,14 @@ impl<I, EXT, E> FromExternalError<I, EXT> for ErrMode<E>
 where
     E: FromExternalError<I, EXT>,
 {
-    fn from_external_error(input: I, kind: ErrorKind, e: EXT) -> Self {
+    fn from_external_error(input: &I, kind: ErrorKind, e: EXT) -> Self {
         ErrMode::Backtrack(E::from_external_error(input, kind, e))
     }
 }
 
-impl<T> ErrMode<InputError<T>> {
+impl<T: Clone> ErrMode<InputError<T>> {
     /// Maps `ErrMode<InputError<T>>` to `ErrMode<InputError<U>>` with the given `F: T -> U`
-    pub fn map_input<U, F>(self, f: F) -> ErrMode<InputError<U>>
+    pub fn map_input<U: Clone, F>(self, f: F) -> ErrMode<InputError<U>>
     where
         F: FnOnce(T) -> U,
     {
@@ -252,11 +252,11 @@ where
 /// and combine existing errors in combinators like `alt`.
 pub trait ParserError<I>: Sized {
     /// Creates an error from the input position and an [`ErrorKind`]
-    fn from_error_kind(input: I, kind: ErrorKind) -> Self;
+    fn from_error_kind(input: &I, kind: ErrorKind) -> Self;
 
     /// Process a parser assertion
     #[cfg_attr(debug_assertions, track_caller)]
-    fn assert(input: I, _message: &'static str) -> Self
+    fn assert(input: &I, _message: &'static str) -> Self
     where
         I: crate::lib::std::fmt::Debug,
     {
@@ -270,7 +270,7 @@ pub trait ParserError<I>: Sized {
     ///
     /// This is useful when backtracking through a parse tree, accumulating error context on the
     /// way.
-    fn append(self, input: I, kind: ErrorKind) -> Self;
+    fn append(self, input: &I, kind: ErrorKind) -> Self;
 
     /// Combines errors from two different parse branches.
     ///
@@ -290,7 +290,7 @@ pub trait AddContext<I, C = &'static str>: Sized {
     /// This is used mainly by [`Parser::context`], to add user friendly information
     /// to errors when backtracking through a parse tree
     #[inline]
-    fn add_context(self, _input: I, _ctx: C) -> Self {
+    fn add_context(self, _input: &I, _ctx: C) -> Self {
         self
     }
 }
@@ -300,7 +300,7 @@ pub trait AddContext<I, C = &'static str>: Sized {
 /// This trait is required by the [`Parser::try_map`] combinator.
 pub trait FromExternalError<I, E> {
     /// Like [`ParserError::from_error_kind`] but also include an external error.
-    fn from_external_error(input: I, kind: ErrorKind, e: E) -> Self;
+    fn from_external_error(input: &I, kind: ErrorKind, e: E) -> Self;
 }
 
 /// Equivalent of `From` implementation to avoid orphan rules in bits parsers
@@ -317,14 +317,14 @@ pub trait ErrorConvert<E> {
 /// **Note:** [context][Parser::context] and inner errors (like from [`Parser::try_map`]) will be
 /// dropped.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-pub struct InputError<I> {
+pub struct InputError<I: Clone> {
     /// The input stream, pointing to the location where the error occurred
     pub input: I,
     /// A rudimentary error kind
     pub kind: ErrorKind,
 }
 
-impl<I> InputError<I> {
+impl<I: Clone> InputError<I> {
     /// Creates a new basic error
     #[inline]
     pub fn new(input: I, kind: ErrorKind) -> Self {
@@ -333,7 +333,10 @@ impl<I> InputError<I> {
 }
 
 #[cfg(feature = "alloc")]
-impl<'i, I: ToOwned + ?Sized> InputError<&'i I> {
+impl<'i, I: Clone + ToOwned + ?Sized> InputError<&'i I>
+where
+    <I as ToOwned>::Owned: Clone,
+{
     /// Obtaining ownership
     pub fn into_owned(self) -> InputError<<I as ToOwned>::Owned> {
         InputError {
@@ -343,29 +346,35 @@ impl<'i, I: ToOwned + ?Sized> InputError<&'i I> {
     }
 }
 
-impl<I> ParserError<I> for InputError<I> {
+impl<I: Clone> ParserError<I> for InputError<I> {
     #[inline]
-    fn from_error_kind(input: I, kind: ErrorKind) -> Self {
-        Self { input, kind }
+    fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
+        Self {
+            input: input.clone(),
+            kind,
+        }
     }
 
     #[inline]
-    fn append(self, _: I, _: ErrorKind) -> Self {
+    fn append(self, _: &I, _: ErrorKind) -> Self {
         self
     }
 }
 
-impl<I, C> AddContext<I, C> for InputError<I> {}
+impl<I: Clone, C> AddContext<I, C> for InputError<I> {}
 
-impl<I, E> FromExternalError<I, E> for InputError<I> {
+impl<I: Clone, E> FromExternalError<I, E> for InputError<I> {
     /// Create a new error from an input position and an external error
     #[inline]
-    fn from_external_error(input: I, kind: ErrorKind, _e: E) -> Self {
-        Self { input, kind }
+    fn from_external_error(input: &I, kind: ErrorKind, _e: E) -> Self {
+        Self {
+            input: input.clone(),
+            kind,
+        }
     }
 }
 
-impl<I> ErrorConvert<InputError<(I, usize)>> for InputError<I> {
+impl<I: Clone> ErrorConvert<InputError<(I, usize)>> for InputError<I> {
     #[inline]
     fn convert(self) -> InputError<(I, usize)> {
         InputError {
@@ -375,7 +384,7 @@ impl<I> ErrorConvert<InputError<(I, usize)>> for InputError<I> {
     }
 }
 
-impl<I> ErrorConvert<InputError<I>> for InputError<(I, usize)> {
+impl<I: Clone> ErrorConvert<InputError<I>> for InputError<(I, usize)> {
     #[inline]
     fn convert(self) -> InputError<I> {
         InputError {
@@ -386,28 +395,31 @@ impl<I> ErrorConvert<InputError<I>> for InputError<(I, usize)> {
 }
 
 /// The Display implementation allows the `std::error::Error` implementation
-impl<I: fmt::Display> fmt::Display for InputError<I> {
+impl<I: Clone + fmt::Display> fmt::Display for InputError<I> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{} error starting at: {}", self.kind, self.input)
     }
 }
 
 #[cfg(feature = "std")]
-impl<I: fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::Error for InputError<I> {}
+impl<I: Clone + fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::Error
+    for InputError<I>
+{
+}
 
 impl<I> ParserError<I> for () {
     #[inline]
-    fn from_error_kind(_: I, _: ErrorKind) -> Self {}
+    fn from_error_kind(_: &I, _: ErrorKind) -> Self {}
 
     #[inline]
-    fn append(self, _: I, _: ErrorKind) -> Self {}
+    fn append(self, _: &I, _: ErrorKind) -> Self {}
 }
 
 impl<I, C> AddContext<I, C> for () {}
 
 impl<I, E> FromExternalError<I, E> for () {
     #[inline]
-    fn from_external_error(_input: I, _kind: ErrorKind, _e: E) -> Self {}
+    fn from_external_error(_input: &I, _kind: ErrorKind, _e: E) -> Self {}
 }
 
 impl ErrorConvert<()> for () {
@@ -461,12 +473,12 @@ impl<C> Default for ContextError<C> {
 
 impl<I, C> ParserError<I> for ContextError<C> {
     #[inline]
-    fn from_error_kind(_input: I, _kind: ErrorKind) -> Self {
+    fn from_error_kind(_input: &I, _kind: ErrorKind) -> Self {
         Self::new()
     }
 
     #[inline]
-    fn append(self, _input: I, _kind: ErrorKind) -> Self {
+    fn append(self, _input: &I, _kind: ErrorKind) -> Self {
         self
     }
 
@@ -478,7 +490,7 @@ impl<I, C> ParserError<I> for ContextError<C> {
 
 impl<C, I> AddContext<I, C> for ContextError<C> {
     #[inline]
-    fn add_context(mut self, _input: I, ctx: C) -> Self {
+    fn add_context(mut self, _input: &I, ctx: C) -> Self {
         #[cfg(feature = "alloc")]
         self.context.push(ctx);
         self
@@ -490,7 +502,7 @@ impl<C, I, E: std::error::Error + Send + Sync + 'static> FromExternalError<I, E>
     for ContextError<C>
 {
     #[inline]
-    fn from_external_error(_input: I, _kind: ErrorKind, e: E) -> Self {
+    fn from_external_error(_input: &I, _kind: ErrorKind, e: E) -> Self {
         let mut err = Self::new();
         {
             err.cause = Some(Box::new(e));
@@ -503,7 +515,7 @@ impl<C, I, E: std::error::Error + Send + Sync + 'static> FromExternalError<I, E>
 #[cfg(not(feature = "std"))]
 impl<C, I, E: Send + Sync + 'static> FromExternalError<I, E> for ContextError<C> {
     #[inline]
-    fn from_external_error(_input: I, _kind: ErrorKind, _e: E) -> Self {
+    fn from_external_error(_input: &I, _kind: ErrorKind, _e: E) -> Self {
         let err = Self::new();
         err
     }
@@ -672,11 +684,11 @@ impl ErrorKind {
 }
 
 impl<I> ParserError<I> for ErrorKind {
-    fn from_error_kind(_input: I, kind: ErrorKind) -> Self {
+    fn from_error_kind(_input: &I, kind: ErrorKind) -> Self {
         kind
     }
 
-    fn append(self, _: I, _: ErrorKind) -> Self {
+    fn append(self, _: &I, _: ErrorKind) -> Self {
         self
     }
 }
@@ -685,7 +697,7 @@ impl<I, C> AddContext<I, C> for ErrorKind {}
 
 impl<I, E> FromExternalError<I, E> for ErrorKind {
     /// Create a new error from an input position and an external error
-    fn from_external_error(_input: I, kind: ErrorKind, _e: E) -> Self {
+    fn from_external_error(_input: &I, kind: ErrorKind, _e: E) -> Self {
         kind
     }
 }

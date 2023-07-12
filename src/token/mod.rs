@@ -69,7 +69,7 @@ where
         if PARTIAL && input.is_partial() {
             ErrMode::Incomplete(Needed::new(1))
         } else {
-            ErrMode::from_error_kind(input.clone(), ErrorKind::Token)
+            ErrMode::from_error_kind(input, ErrorKind::Token)
         }
     })
 }
@@ -151,7 +151,7 @@ where
         }
         CompareResult::Incomplete | CompareResult::Error => {
             let e: ErrorKind = ErrorKind::Tag;
-            Err(ErrMode::from_error_kind(i.clone(), e))
+            Err(ErrMode::from_error_kind(i, e))
         }
     }
 }
@@ -237,7 +237,7 @@ where
         }
         CompareResult::Incomplete | CompareResult::Error => {
             let e: ErrorKind = ErrorKind::Tag;
-            Err(ErrMode::from_error_kind(i.clone(), e))
+            Err(ErrMode::from_error_kind(i, e))
         }
     }
 }
@@ -589,7 +589,7 @@ where
         .offset_for(predicate)
         .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
     if offset == 0 {
-        Err(ErrMode::from_error_kind(input.clone(), e))
+        Err(ErrMode::from_error_kind(input, e))
     } else {
         Ok(input.next_slice(offset))
     }
@@ -630,7 +630,7 @@ where
         .offset_for(predicate)
         .unwrap_or_else(|| input.eof_offset());
     if offset == 0 {
-        Err(ErrMode::from_error_kind(input.clone(), e))
+        Err(ErrMode::from_error_kind(input, e))
     } else {
         Ok(input.next_slice(offset))
     }
@@ -648,14 +648,14 @@ where
     T: ContainsToken<<I as Stream>::Token>,
 {
     if n < m {
-        return Err(ErrMode::assert(input.clone(), "`m` should be <= `n`"));
+        return Err(ErrMode::assert(input, "`m` should be <= `n`"));
     }
 
     let mut final_count = 0;
     for (processed, (offset, token)) in input.iter_offsets().enumerate() {
         if !list.contains_token(token) {
             if processed < m {
-                return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Slice));
+                return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
             } else {
                 return Ok(input.next_slice(offset));
             }
@@ -681,7 +681,7 @@ where
         if m <= final_count {
             Ok(input.finish())
         } else {
-            Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Slice))
+            Err(ErrMode::from_error_kind(input, ErrorKind::Slice))
         }
     }
 }
@@ -903,7 +903,7 @@ where
     match i.offset_at(c) {
         Ok(offset) => Ok(i.next_slice(offset)),
         Err(e) if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(e)),
-        Err(_needed) => Err(ErrMode::from_error_kind(i.clone(), ErrorKind::Slice)),
+        Err(_needed) => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
     }
 }
 
@@ -979,7 +979,7 @@ where
     match i.find_slice(t) {
         Some(offset) => Ok(i.next_slice(offset)),
         None if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
-        None => Err(ErrMode::from_error_kind(i.clone(), ErrorKind::Slice)),
+        None => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
     }
 }
 
@@ -1056,7 +1056,7 @@ where
 {
     match i.find_slice(t) {
         None if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
-        None | Some(0) => Err(ErrMode::from_error_kind(i.clone(), ErrorKind::Slice)),
+        None | Some(0) => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
         Some(offset) => Ok(i.next_slice(offset)),
     }
 }

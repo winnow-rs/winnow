@@ -16,10 +16,10 @@
 //!
 //! fn parse_prefix(input: &mut &str) -> PResult<char> {
 //!     let c = input.next_token().ok_or_else(|| {
-//!         ErrMode::from_error_kind(input.clone(), ErrorKind::Token)
+//!         ErrMode::from_error_kind(input, ErrorKind::Token)
 //!     })?;
 //!     if c != '0' {
-//!         return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Verify));
+//!         return Err(ErrMode::from_error_kind(input, ErrorKind::Verify));
 //!     }
 //!     Ok(c)
 //! }
@@ -95,11 +95,11 @@
 //! fn parse_prefix<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //!     let expected = "0x";
 //!     if input.len() < expected.len() {
-//!         return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Slice));
+//!         return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
 //!     }
 //!     let actual = input.next_slice(expected.len());
 //!     if actual != expected {
-//!         return Err(ErrMode::from_error_kind(input.clone(), ErrorKind::Verify));
+//!         return Err(ErrMode::from_error_kind(input, ErrorKind::Verify));
 //!     }
 //!     Ok(actual)
 //! }

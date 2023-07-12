@@ -64,6 +64,7 @@ Example: `winnow`:
 - Changed error type for `Parser::parse` to allow quality errors without requiring `E` to carry `I`
 - Removed `impl ContainsToken for &str` (e.g. `one_of("abc"`) since it takes 5x more time leading to easily avoidable slow downs
   - Instead use `['a', 'b', 'c']` or `'a'..='c'` (see [`08b3e57`](https://github.com/winnow-rs/winnow/pull/252/commits/08b3e57ad321a79615fa0c516b818af449c38076) for examples)
+- Changed `ParserError` and `FromExternalError` from accepting `I` to `&I`
 - Renamed `ParseError` to `ParserError`
 - Renamed `ContextError` to `AddContext`
 - Renamed `Error` to `InputError`

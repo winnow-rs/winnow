@@ -1270,7 +1270,7 @@ where
         if PARTIAL && input.is_partial() {
             ErrMode::Incomplete(Needed::new(1))
         } else {
-            ErrMode::Backtrack(E::from_error_kind(input.clone(), ErrorKind::Token))
+            ErrMode::Backtrack(E::from_error_kind(input, ErrorKind::Token))
         }
     })
 }
