@@ -1518,8 +1518,8 @@ where
     while input.eof_offset() > 0 {
         let current_len = input.eof_offset();
 
-        match normal.parse_next(input) {
-            Ok(_) => {
+        match opt(normal.by_ref()).parse_next(input)? {
+            Some(_) => {
                 if input.eof_offset() == 0 {
                     return Err(ErrMode::Incomplete(Needed::Unknown));
                 } else if input.eof_offset() == current_len {
@@ -1528,7 +1528,7 @@ where
                     return Ok(input.next_slice(offset));
                 }
             }
-            Err(ErrMode::Backtrack(_)) => {
+            None => {
                 if input.peek_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = control_char.len_utf8();
                     let _ = input.next_slice(next);
@@ -1541,9 +1541,6 @@ where
                     input.reset(start);
                     return Ok(input.next_slice(offset));
                 }
-            }
-            Err(e) => {
-                return Err(e);
             }
         }
     }
@@ -1570,8 +1567,8 @@ where
     while input.eof_offset() > 0 {
         let current_len = input.eof_offset();
 
-        match normal.parse_next(input) {
-            Ok(_) => {
+        match opt(normal.by_ref()).parse_next(input)? {
+            Some(_) => {
                 // return if we consumed everything or if the normal parser
                 // does not consume anything
                 if input.eof_offset() == 0 {
@@ -1583,7 +1580,7 @@ where
                     return Ok(input.next_slice(offset));
                 }
             }
-            Err(ErrMode::Backtrack(_)) => {
+            None => {
                 if input.peek_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = control_char.len_utf8();
                     let _ = input.next_slice(next);
@@ -1597,9 +1594,6 @@ where
                     input.reset(start);
                     return Ok(input.next_slice(offset));
                 }
-            }
-            Err(e) => {
-                return Err(e);
             }
         }
     }
@@ -1709,8 +1703,8 @@ where
 
     while input.eof_offset() > 0 {
         let current_len = input.eof_offset();
-        match normal.parse_next(input) {
-            Ok(o) => {
+        match opt(normal.by_ref()).parse_next(input)? {
+            Some(o) => {
                 res.accumulate(o);
                 if input.eof_offset() == 0 {
                     return Err(ErrMode::Incomplete(Needed::Unknown));
@@ -1718,7 +1712,7 @@ where
                     return Ok(res);
                 }
             }
-            Err(ErrMode::Backtrack(_)) => {
+            None => {
                 if input.peek_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = control_char.len_utf8();
                     let _ = input.next_slice(next);
@@ -1731,7 +1725,6 @@ where
                     return Ok(res);
                 }
             }
-            Err(e) => return Err(e),
         }
     }
     Err(ErrMode::Incomplete(Needed::Unknown))
@@ -1757,8 +1750,8 @@ where
     while input.eof_offset() > 0 {
         let current_len = input.eof_offset();
 
-        match normal.parse_next(input) {
-            Ok(o) => {
+        match opt(normal.by_ref()).parse_next(input)? {
+            Some(o) => {
                 res.accumulate(o);
                 if input.eof_offset() == 0 {
                     return Ok(res);
@@ -1766,7 +1759,7 @@ where
                     return Ok(res);
                 }
             }
-            Err(ErrMode::Backtrack(_)) => {
+            None => {
                 if input.peek_token().expect("eof_offset > 0").1.as_char() == control_char {
                     let next = control_char.len_utf8();
                     let _ = input.next_slice(next);
@@ -1779,7 +1772,6 @@ where
                     return Ok(res);
                 }
             }
-            Err(e) => return Err(e),
         }
     }
     Ok(res)
