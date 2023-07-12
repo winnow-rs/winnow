@@ -1519,9 +1519,7 @@ where
 
         match opt(normal.by_ref()).parse_next(input)? {
             Some(_) => {
-                if input.eof_offset() == 0 {
-                    return Err(ErrMode::Incomplete(Needed::Unknown));
-                } else if input.eof_offset() == current_len {
+                if input.eof_offset() == current_len {
                     let offset = input.offset_from(&start);
                     input.reset(start);
                     return Ok(input.next_slice(offset));
@@ -1535,9 +1533,6 @@ where
                 .is_some()
                 {
                     let _ = escapable.parse_next(input)?;
-                    if input.eof_offset() == 0 {
-                        return Err(ErrMode::Incomplete(Needed::Unknown));
-                    }
                 } else {
                     let offset = input.offset_from(&start);
                     input.reset(start);
@@ -1571,12 +1566,7 @@ where
 
         match opt(normal.by_ref()).parse_next(input)? {
             Some(_) => {
-                // return if we consumed everything or if the normal parser
-                // does not consume anything
-                if input.eof_offset() == 0 {
-                    input.reset(start);
-                    return Ok(input.finish());
-                } else if input.eof_offset() == current_len {
+                if input.eof_offset() == current_len {
                     let offset = input.offset_from(&start);
                     input.reset(start);
                     return Ok(input.next_slice(offset));
@@ -1590,10 +1580,6 @@ where
                 .is_some()
                 {
                     let _ = escapable.parse_next(input)?;
-                    if input.eof_offset() == 0 {
-                        input.reset(start);
-                        return Ok(input.finish());
-                    }
                 } else {
                     let offset = input.offset_from(&start);
                     input.reset(start);
@@ -1711,9 +1697,7 @@ where
         match opt(normal.by_ref()).parse_next(input)? {
             Some(o) => {
                 res.accumulate(o);
-                if input.eof_offset() == 0 {
-                    return Err(ErrMode::Incomplete(Needed::Unknown));
-                } else if input.eof_offset() == current_len {
+                if input.eof_offset() == current_len {
                     return Ok(res);
                 }
             }
@@ -1726,9 +1710,6 @@ where
                 {
                     let o = transform.parse_next(input)?;
                     res.accumulate(o);
-                    if input.eof_offset() == 0 {
-                        return Err(ErrMode::Incomplete(Needed::Unknown));
-                    }
                 } else {
                     return Ok(res);
                 }
@@ -1761,9 +1742,7 @@ where
         match opt(normal.by_ref()).parse_next(input)? {
             Some(o) => {
                 res.accumulate(o);
-                if input.eof_offset() == 0 {
-                    return Ok(res);
-                } else if input.eof_offset() == current_len {
+                if input.eof_offset() == current_len {
                     return Ok(res);
                 }
             }
@@ -1776,9 +1755,6 @@ where
                 {
                     let o = transform.parse_next(input)?;
                     res.accumulate(o);
-                    if input.eof_offset() == 0 {
-                        return Ok(res);
-                    }
                 } else {
                     return Ok(res);
                 }
