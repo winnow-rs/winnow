@@ -405,9 +405,7 @@ where
 }
 
 /// Core definition for parser input state
-pub trait Stream:
-    Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::Debug + Sized
-{
+pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::Debug {
     /// The smallest unit being parsed
     ///
     /// Example: `u8` for `&[u8]` or `char` for `&str`
