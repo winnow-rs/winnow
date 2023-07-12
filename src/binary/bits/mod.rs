@@ -47,7 +47,7 @@ pub fn bits<I, O, E1, E2, P>(mut parser: P) -> impl Parser<I, O, E2>
 where
     E1: ParserError<(I, usize)> + ErrorConvert<E2>,
     E2: ParserError<I>,
-    I: Stream,
+    I: Stream + Clone,
     P: Parser<(I, usize), O, E1>,
 {
     trace(
@@ -103,7 +103,7 @@ pub fn bytes<I, O, E1, E2, P>(mut parser: P) -> impl Parser<(I, usize), O, E2>
 where
     E1: ParserError<I> + ErrorConvert<E2>,
     E2: ParserError<(I, usize)>,
-    I: Stream<Token = u8>,
+    I: Stream<Token = u8> + Clone,
     P: Parser<I, O, E1>,
 {
     trace(
@@ -167,7 +167,7 @@ where
 #[inline(always)]
 pub fn take<I, O, C, E: ParserError<(I, usize)>>(count: C) -> impl Parser<(I, usize), O, E>
 where
-    I: Stream<Token = u8> + AsBytes + StreamIsPartial,
+    I: Stream<Token = u8> + AsBytes + StreamIsPartial + Clone,
     C: ToUsize,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
@@ -190,7 +190,7 @@ fn take_<I, O, E: ParserError<(I, usize)>, const PARTIAL: bool>(
 ) -> IResult<(I, usize), O, E>
 where
     I: StreamIsPartial,
-    I: Stream<Token = u8> + AsBytes,
+    I: Stream<Token = u8> + AsBytes + Clone,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
     if count == 0 {
@@ -299,7 +299,7 @@ pub fn tag<I, O, C, E: ParserError<(I, usize)>>(
     count: C,
 ) -> impl Parser<(I, usize), O, E>
 where
-    I: Stream<Token = u8> + AsBytes + StreamIsPartial,
+    I: Stream<Token = u8> + AsBytes + StreamIsPartial + Clone,
     C: ToUsize,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
@@ -347,7 +347,7 @@ where
 #[doc(alias = "any")]
 pub fn bool<I, E: ParserError<(I, usize)>>(input: &mut (I, usize)) -> PResult<bool, E>
 where
-    I: Stream<Token = u8> + AsBytes + StreamIsPartial,
+    I: Stream<Token = u8> + AsBytes + StreamIsPartial + Clone,
 {
     trace("bool", |input: &mut (I, usize)| {
         let bit: u32 = take(1usize).parse_next(input)?;

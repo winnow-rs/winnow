@@ -2482,7 +2482,7 @@ where
 pub fn length_value<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, O, E>
 where
     I: StreamIsPartial,
-    I: Stream + UpdateSlice,
+    I: Stream + UpdateSlice + Clone,
     N: ToUsize,
     F: Parser<I, N, E>,
     G: Parser<I, O, E>,
