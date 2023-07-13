@@ -45,6 +45,7 @@ Maintain pure-functional APIs
 
 Example: `toml_edit`:
 - [Pre-upgrade steps](https://github.com/toml-rs/toml/pull/579)
+- [Upgrade](https://github.com/toml-rs/toml/pull/583)
 
 Example: `winnow`:
 - Maintaining pure-functional API
@@ -54,6 +55,10 @@ Example: `winnow`:
 - Switch to new, imperative APIs from pure-functional API
   - [porting to new `Parser::parse_next`](https://github.com/winnow-rs/winnow/pull/276/commits/edd851466aa145003f3da538b9c212cf61e8be81)
   - [porting to new `FnMut`](https://github.com/winnow-rs/winnow/pull/279/commits)
+
+Example: `chumsky`s json bench:
+- [Pre-upgrade steps](https://github.com/zesterer/chumsky/pull/475)
+- [Upgrade](https://github.com/zesterer/chumsky/pull/477)
 
 ### Compatibility
 
