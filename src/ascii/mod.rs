@@ -228,7 +228,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar + Clone,
 {
-    trace("newline", '\n'.map(|c: <I as Stream>::Token| c.as_char())).parse_next(input)
+    trace("newline", '\n'.map(AsChar::as_char)).parse_next(input)
 }
 
 /// Matches a tab character `'\t'`.
@@ -268,7 +268,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar + Clone,
 {
-    trace("tab", '\t'.map(|c: <I as Stream>::Token| c.as_char())).parse_next(input)
+    trace("tab", '\t'.map(AsChar::as_char)).parse_next(input)
 }
 
 /// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: `'a'..='z'`, `'A'..='Z'`
@@ -310,11 +310,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "alpha0",
-        take_while(0.., |c: <I as Stream>::Token| c.is_alpha()),
-    )
-    .parse_next(input)
+    trace("alpha0", take_while(0.., AsChar::is_alpha)).parse_next(input)
 }
 
 /// Recognizes one or more lowercase and uppercase ASCII alphabetic characters: `'a'..='z'`, `'A'..='Z'`
@@ -356,11 +352,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "alpha1",
-        take_while(1.., |c: <I as Stream>::Token| c.is_alpha()),
-    )
-    .parse_next(input)
+    trace("alpha1", take_while(1.., AsChar::is_alpha)).parse_next(input)
 }
 
 /// Recognizes zero or more ASCII numerical characters: `'0'..='9'`
@@ -403,11 +395,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "digit0",
-        take_while(0.., |c: <I as Stream>::Token| c.is_dec_digit()),
-    )
-    .parse_next(input)
+    trace("digit0", take_while(0.., AsChar::is_dec_digit)).parse_next(input)
 }
 
 /// Recognizes one or more ASCII numerical characters: `'0'..='9'`
@@ -466,11 +454,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "digit1",
-        take_while(1.., |c: <I as Stream>::Token| c.is_dec_digit()),
-    )
-    .parse_next(input)
+    trace("digit1", take_while(1.., AsChar::is_dec_digit)).parse_next(input)
 }
 
 /// Recognizes zero or more ASCII hexadecimal numerical characters: `'0'..='9'`, `'A'..='F'`,
@@ -512,11 +496,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "hex_digit0",
-        take_while(0.., |c: <I as Stream>::Token| c.is_hex_digit()),
-    )
-    .parse_next(input)
+    trace("hex_digit0", take_while(0.., AsChar::is_hex_digit)).parse_next(input)
 }
 
 /// Recognizes one or more ASCII hexadecimal numerical characters: `'0'..='9'`, `'A'..='F'`,
@@ -559,11 +539,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "hex_digit1",
-        take_while(1.., |c: <I as Stream>::Token| c.is_hex_digit()),
-    )
-    .parse_next(input)
+    trace("hex_digit1", take_while(1.., AsChar::is_hex_digit)).parse_next(input)
 }
 
 /// Recognizes zero or more octal characters: `'0'..='7'`
@@ -605,11 +581,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "oct_digit0",
-        take_while(0.., |c: <I as Stream>::Token| c.is_oct_digit()),
-    )
-    .parse_next(input)
+    trace("oct_digit0", take_while(0.., AsChar::is_oct_digit)).parse_next(input)
 }
 
 /// Recognizes one or more octal characters: `'0'..='7'`
@@ -651,11 +623,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "oct_digit0",
-        take_while(1.., |c: <I as Stream>::Token| c.is_oct_digit()),
-    )
-    .parse_next(input)
+    trace("oct_digit0", take_while(1.., AsChar::is_oct_digit)).parse_next(input)
 }
 
 /// Recognizes zero or more ASCII numerical and alphabetic characters: `'a'..='z'`, `'A'..='Z'`, `'0'..='9'`
@@ -697,11 +665,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "alphanumeric0",
-        take_while(0.., |c: <I as Stream>::Token| c.is_alphanum()),
-    )
-    .parse_next(input)
+    trace("alphanumeric0", take_while(0.., AsChar::is_alphanum)).parse_next(input)
 }
 
 /// Recognizes one or more ASCII numerical and alphabetic characters: `'a'..='z'`, `'A'..='Z'`, `'0'..='9'`
@@ -743,11 +707,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "alphanumeric1",
-        take_while(1.., |c: <I as Stream>::Token| c.is_alphanum()),
-    )
-    .parse_next(input)
+    trace("alphanumeric1", take_while(1.., AsChar::is_alphanum)).parse_next(input)
 }
 
 /// Recognizes zero or more spaces and tabs.
@@ -776,14 +736,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar + Clone,
 {
-    trace(
-        "space0",
-        take_while(0.., |c: <I as Stream>::Token| {
-            let ch = c.as_char();
-            matches!(ch, ' ' | '\t')
-        }),
-    )
-    .parse_next(input)
+    trace("space0", take_while(0.., AsChar::is_space)).parse_next(input)
 }
 
 /// Recognizes zero or more spaces and tabs.
@@ -825,14 +778,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar + Clone,
 {
-    trace(
-        "space1",
-        take_while(1.., |c: <I as Stream>::Token| {
-            let ch = c.as_char();
-            matches!(ch, ' ' | '\t')
-        }),
-    )
-    .parse_next(input)
+    trace("space1", take_while(1.., AsChar::is_space)).parse_next(input)
 }
 
 /// Recognizes zero or more spaces, tabs, carriage returns and line feeds.
@@ -874,14 +820,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar + Clone,
 {
-    trace(
-        "multispace0",
-        take_while(0.., |c: <I as Stream>::Token| {
-            let ch = c.as_char();
-            matches!(ch, ' ' | '\t' | '\r' | '\n')
-        }),
-    )
-    .parse_next(input)
+    trace("multispace0", take_while(0.., (' ', '\t', '\r', '\n'))).parse_next(input)
 }
 
 /// Recognizes one or more spaces, tabs, carriage returns and line feeds.
@@ -923,14 +862,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar + Clone,
 {
-    trace(
-        "multispace1",
-        take_while(1.., |c: <I as Stream>::Token| {
-            let ch = c.as_char();
-            matches!(ch, ' ' | '\t' | '\r' | '\n')
-        }),
-    )
-    .parse_next(input)
+    trace("multispace1", take_while(1.., (' ', '\t', '\r', '\n'))).parse_next(input)
 }
 
 /// Decode a decimal unsigned integer (e.g. [`u32`])
@@ -1529,12 +1461,7 @@ where
                 }
             }
             None => {
-                if opt(one_of(|t: <I as Stream>::Token| {
-                    t.as_char() == control_char
-                }))
-                .parse_next(input)?
-                .is_some()
-                {
+                if opt(control_char).parse_next(input)?.is_some() {
                     let _ = escapable.parse_next(input)?;
                 } else {
                     let offset = input.offset_from(&start);
@@ -1576,12 +1503,7 @@ where
                 }
             }
             None => {
-                if opt(one_of(|t: <I as Stream>::Token| {
-                    t.as_char() == control_char
-                }))
-                .parse_next(input)?
-                .is_some()
-                {
+                if opt(control_char).parse_next(input)?.is_some() {
                     let _ = escapable.parse_next(input)?;
                 } else {
                     let offset = input.offset_from(&start);
@@ -1706,12 +1628,7 @@ where
                 }
             }
             None => {
-                if opt(one_of(|t: <I as Stream>::Token| {
-                    t.as_char() == control_char
-                }))
-                .parse_next(input)?
-                .is_some()
-                {
+                if opt(control_char).parse_next(input)?.is_some() {
                     let o = transform.parse_next(input)?;
                     res.accumulate(o);
                 } else {
@@ -1751,12 +1668,7 @@ where
                 }
             }
             None => {
-                if opt(one_of(|t: <I as Stream>::Token| {
-                    t.as_char() == control_char
-                }))
-                .parse_next(input)?
-                .is_some()
-                {
+                if opt(control_char).parse_next(input)?.is_some() {
                     let o = transform.parse_next(input)?;
                     res.accumulate(o);
                 } else {
