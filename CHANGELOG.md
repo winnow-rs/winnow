@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.0] - 2023-07-13
+
 ### Migration
 
 Preparation:
@@ -1933,7 +1935,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.4.9...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/winnow-rs/winnow/compare/v0.4.9...v0.5.0
 [0.4.9]: https://github.com/winnow-rs/winnow/compare/v0.4.8...v0.4.9
 [0.4.8]: https://github.com/winnow-rs/winnow/compare/v0.4.7...v0.4.8
 [0.4.7]: https://github.com/winnow-rs/winnow/compare/v0.4.6...v0.4.7
