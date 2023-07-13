@@ -226,7 +226,7 @@ pub fn newline<I, Error: ParserError<I>>(input: &mut I) -> PResult<char, Error>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
 {
     trace("newline", '\n'.map(|c: <I as Stream>::Token| c.as_char())).parse_next(input)
 }
@@ -266,7 +266,7 @@ pub fn tab<I, Error: ParserError<I>>(input: &mut I) -> PResult<char, Error>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
 {
     trace("tab", '\t'.map(|c: <I as Stream>::Token| c.as_char())).parse_next(input)
 }
@@ -774,7 +774,7 @@ pub fn space0<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Sli
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
 {
     trace(
         "space0",
@@ -823,7 +823,7 @@ pub fn space1<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Sli
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
 {
     trace(
         "space1",
@@ -872,7 +872,7 @@ pub fn multispace0<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
 {
     trace(
         "multispace0",
@@ -921,7 +921,7 @@ pub fn multispace1<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
 {
     trace(
         "multispace1",
@@ -947,7 +947,7 @@ pub fn dec_uint<I, O, E: ParserError<I>>(input: &mut I) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
     O: Uint,
 {
     trace("dec_uint", move |input: &mut I| {
@@ -1102,7 +1102,7 @@ pub fn dec_int<I, O, E: ParserError<I>>(input: &mut I) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
     O: Int,
 {
     trace("dec_int", move |input: &mut I| {
@@ -1376,13 +1376,14 @@ impl HexUint for u128 {
 #[inline(always)]
 #[doc(alias = "f32")]
 #[doc(alias = "double")]
+#[allow(clippy::trait_duplication_in_bounds)] // HACK: clippy 1.64.0 bug
 pub fn float<I, O, E: ParserError<I>>(input: &mut I) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
     <I as Stream>::Slice: ParseSlice<O>,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
@@ -1394,6 +1395,7 @@ where
     .parse_next(input)
 }
 
+#[allow(clippy::trait_duplication_in_bounds)] // HACK: clippy 1.64.0 bug
 fn recognize_float_or_exceptions<I, E: ParserError<I>>(
     input: &mut I,
 ) -> PResult<<I as Stream>::Slice, E>
@@ -1401,7 +1403,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
@@ -1414,12 +1416,13 @@ where
     .parse_next(input)
 }
 
+#[allow(clippy::trait_duplication_in_bounds)] // HACK: clippy 1.64.0 bug
 fn recognize_float<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
@@ -1484,7 +1487,7 @@ pub fn escaped<'a, I: 'a, Error, F, G, O1, O2>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParserError<I>,
@@ -1507,7 +1510,7 @@ fn streaming_escaped_internal<I, Error, F, G, O1, O2>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParserError<I>,
@@ -1554,7 +1557,7 @@ fn complete_escaped_internal<'a, I: 'a, Error, F, G, O1, O2>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar + Copy,
+    <I as Stream>::Token: crate::stream::AsChar + Clone,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParserError<I>,
@@ -1661,7 +1664,7 @@ pub fn escaped_transform<I, Error, F, G, Output>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar + Copy,
+    <I as Stream>::Token: crate::stream::AsChar + Clone,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
     G: Parser<I, <I as Stream>::Slice, Error>,
@@ -1685,7 +1688,7 @@ fn streaming_escaped_transform_internal<I, Error, F, G, Output>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar + Copy,
+    <I as Stream>::Token: crate::stream::AsChar + Clone,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
     G: Parser<I, <I as Stream>::Slice, Error>,
@@ -1729,7 +1732,7 @@ fn complete_escaped_transform_internal<I, Error, F, G, Output>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar + Copy,
+    <I as Stream>::Token: crate::stream::AsChar + Clone,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
     G: Parser<I, <I as Stream>::Slice, Error>,
