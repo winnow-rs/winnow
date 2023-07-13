@@ -1222,7 +1222,7 @@ mod partial {
         let d: &[u8] = b"ab12cd";
         assert_eq!(
             not_line_ending::<_, InputError<_>>.parse_peek(Partial::new(d)),
-            Err(ErrMode::Incomplete(Needed::Unknown))
+            Err(ErrMode::Incomplete(Needed::new(1)))
         );
     }
 
@@ -1240,7 +1240,7 @@ mod partial {
         let g2: &str = "ab12cd";
         assert_eq!(
             not_line_ending::<_, InputError<_>>.parse_peek(Partial::new(g2)),
-            Err(ErrMode::Incomplete(Needed::Unknown))
+            Err(ErrMode::Incomplete(Needed::new(1)))
         );
     }
 

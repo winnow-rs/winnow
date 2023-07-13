@@ -295,12 +295,12 @@ pub fn one_of<I, T, Error: ParserError<I>>(list: T) -> impl Parser<I, <I as Stre
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: Copy,
+    <I as Stream>::Token: Clone,
     T: ContainsToken<<I as Stream>::Token>,
 {
     trace(
         "one_of",
-        any.verify(move |t: &<I as Stream>::Token| list.contains_token(*t)),
+        any.verify(move |t: &<I as Stream>::Token| list.contains_token(t.clone())),
     )
 }
 
@@ -335,12 +335,12 @@ pub fn none_of<I, T, Error: ParserError<I>>(list: T) -> impl Parser<I, <I as Str
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: Copy,
+    <I as Stream>::Token: Clone,
     T: ContainsToken<<I as Stream>::Token>,
 {
     trace(
         "none_of",
-        any.verify(move |t: &<I as Stream>::Token| !list.contains_token(*t)),
+        any.verify(move |t: &<I as Stream>::Token| !list.contains_token(t.clone())),
     )
 }
 

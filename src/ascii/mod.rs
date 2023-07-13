@@ -15,6 +15,7 @@ use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::stream::{AsBStr, AsChar, ParseSlice, Stream, StreamIsPartial};
 use crate::stream::{Compare, CompareResult};
 use crate::token::one_of;
+use crate::token::take_till0;
 use crate::token::take_while;
 use crate::trace::trace;
 use crate::PResult;
@@ -90,8 +91,8 @@ where
 /// # use winnow::Partial;
 /// # use winnow::ascii::not_line_ending;
 /// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("ab\r\nc")), Ok((Partial::new("\r\nc"), "ab")));
-/// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("abc")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("abc")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("a\rb\nc")), Err(ErrMode::Backtrack(InputError::new(Partial::new("\rb\nc"), ErrorKind::Tag ))));
 /// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("a\rbc")), Err(ErrMode::Backtrack(InputError::new(Partial::new("\rbc"), ErrorKind::Tag ))));
 /// ```
@@ -99,9 +100,9 @@ where
 pub fn not_line_ending<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
-    I: Stream + AsBStr,
+    I: Stream,
     I: Compare<&'static str>,
-    <I as Stream>::Token: AsChar,
+    <I as Stream>::Token: AsChar + Clone,
 {
     trace("not_line_ending", move |input: &mut I| {
         if <I as StreamIsPartial>::is_partial_supported() {
@@ -118,37 +119,26 @@ fn not_line_ending_<I, E: ParserError<I>, const PARTIAL: bool>(
 ) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
-    I: Stream + AsBStr,
+    I: Stream,
     I: Compare<&'static str>,
-    <I as Stream>::Token: AsChar,
+    <I as Stream>::Token: AsChar + Clone,
 {
-    match input.offset_for(|item| {
-        let c = item.as_char();
-        c == '\r' || c == '\n'
-    }) {
-        None if PARTIAL && input.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
-        None => Ok(input.finish()),
-        Some(offset) => {
-            let res = input.next_slice(offset);
-            let bytes = input.as_bstr();
-            let nth = bytes[0];
-            if nth == b'\r' {
-                let comp = input.compare("\r\n");
-                match comp {
-                    //FIXME: calculate the right index
-                    CompareResult::Ok => {}
-                    CompareResult::Incomplete if PARTIAL && input.is_partial() => {
-                        return Err(ErrMode::Incomplete(Needed::Unknown));
-                    }
-                    CompareResult::Incomplete | CompareResult::Error => {
-                        let e: ErrorKind = ErrorKind::Tag;
-                        return Err(ErrMode::from_error_kind(input, e));
-                    }
-                }
+    let res = take_till0(('\r', '\n')).parse_next(input)?;
+    if input.compare("\r") == CompareResult::Ok {
+        let comp = input.compare("\r\n");
+        match comp {
+            //FIXME: calculate the right index
+            CompareResult::Ok => {}
+            CompareResult::Incomplete if PARTIAL && input.is_partial() => {
+                return Err(ErrMode::Incomplete(Needed::Unknown));
             }
-            Ok(res)
+            CompareResult::Incomplete | CompareResult::Error => {
+                let e: ErrorKind = ErrorKind::Tag;
+                return Err(ErrMode::from_error_kind(input, e));
+            }
         }
     }
+    Ok(res)
 }
 
 /// Recognizes an end of line (both `"\n"` and `"\r\n"`).
@@ -226,9 +216,9 @@ pub fn newline<I, Error: ParserError<I>>(input: &mut I) -> PResult<char, Error>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
 {
-    trace("newline", '\n'.map(|c: <I as Stream>::Token| c.as_char())).parse_next(input)
+    trace("newline", '\n'.map(AsChar::as_char)).parse_next(input)
 }
 
 /// Matches a tab character `'\t'`.
@@ -266,9 +256,9 @@ pub fn tab<I, Error: ParserError<I>>(input: &mut I) -> PResult<char, Error>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
 {
-    trace("tab", '\t'.map(|c: <I as Stream>::Token| c.as_char())).parse_next(input)
+    trace("tab", '\t'.map(AsChar::as_char)).parse_next(input)
 }
 
 /// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: `'a'..='z'`, `'A'..='Z'`
@@ -310,11 +300,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "alpha0",
-        take_while(0.., |c: <I as Stream>::Token| c.is_alpha()),
-    )
-    .parse_next(input)
+    trace("alpha0", take_while(0.., AsChar::is_alpha)).parse_next(input)
 }
 
 /// Recognizes one or more lowercase and uppercase ASCII alphabetic characters: `'a'..='z'`, `'A'..='Z'`
@@ -356,11 +342,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "alpha1",
-        take_while(1.., |c: <I as Stream>::Token| c.is_alpha()),
-    )
-    .parse_next(input)
+    trace("alpha1", take_while(1.., AsChar::is_alpha)).parse_next(input)
 }
 
 /// Recognizes zero or more ASCII numerical characters: `'0'..='9'`
@@ -403,11 +385,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "digit0",
-        take_while(0.., |c: <I as Stream>::Token| c.is_dec_digit()),
-    )
-    .parse_next(input)
+    trace("digit0", take_while(0.., AsChar::is_dec_digit)).parse_next(input)
 }
 
 /// Recognizes one or more ASCII numerical characters: `'0'..='9'`
@@ -466,11 +444,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "digit1",
-        take_while(1.., |c: <I as Stream>::Token| c.is_dec_digit()),
-    )
-    .parse_next(input)
+    trace("digit1", take_while(1.., AsChar::is_dec_digit)).parse_next(input)
 }
 
 /// Recognizes zero or more ASCII hexadecimal numerical characters: `'0'..='9'`, `'A'..='F'`,
@@ -512,11 +486,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "hex_digit0",
-        take_while(0.., |c: <I as Stream>::Token| c.is_hex_digit()),
-    )
-    .parse_next(input)
+    trace("hex_digit0", take_while(0.., AsChar::is_hex_digit)).parse_next(input)
 }
 
 /// Recognizes one or more ASCII hexadecimal numerical characters: `'0'..='9'`, `'A'..='F'`,
@@ -559,11 +529,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "hex_digit1",
-        take_while(1.., |c: <I as Stream>::Token| c.is_hex_digit()),
-    )
-    .parse_next(input)
+    trace("hex_digit1", take_while(1.., AsChar::is_hex_digit)).parse_next(input)
 }
 
 /// Recognizes zero or more octal characters: `'0'..='7'`
@@ -605,11 +571,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "oct_digit0",
-        take_while(0.., |c: <I as Stream>::Token| c.is_oct_digit()),
-    )
-    .parse_next(input)
+    trace("oct_digit0", take_while(0.., AsChar::is_oct_digit)).parse_next(input)
 }
 
 /// Recognizes one or more octal characters: `'0'..='7'`
@@ -651,11 +613,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "oct_digit0",
-        take_while(1.., |c: <I as Stream>::Token| c.is_oct_digit()),
-    )
-    .parse_next(input)
+    trace("oct_digit0", take_while(1.., AsChar::is_oct_digit)).parse_next(input)
 }
 
 /// Recognizes zero or more ASCII numerical and alphabetic characters: `'a'..='z'`, `'A'..='Z'`, `'0'..='9'`
@@ -697,11 +655,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "alphanumeric0",
-        take_while(0.., |c: <I as Stream>::Token| c.is_alphanum()),
-    )
-    .parse_next(input)
+    trace("alphanumeric0", take_while(0.., AsChar::is_alphanum)).parse_next(input)
 }
 
 /// Recognizes one or more ASCII numerical and alphabetic characters: `'a'..='z'`, `'A'..='Z'`, `'0'..='9'`
@@ -743,11 +697,7 @@ where
     I: Stream,
     <I as Stream>::Token: AsChar,
 {
-    trace(
-        "alphanumeric1",
-        take_while(1.., |c: <I as Stream>::Token| c.is_alphanum()),
-    )
-    .parse_next(input)
+    trace("alphanumeric1", take_while(1.., AsChar::is_alphanum)).parse_next(input)
 }
 
 /// Recognizes zero or more spaces and tabs.
@@ -774,16 +724,9 @@ pub fn space0<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Sli
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
 {
-    trace(
-        "space0",
-        take_while(0.., |c: <I as Stream>::Token| {
-            let ch = c.as_char();
-            matches!(ch, ' ' | '\t')
-        }),
-    )
-    .parse_next(input)
+    trace("space0", take_while(0.., AsChar::is_space)).parse_next(input)
 }
 
 /// Recognizes zero or more spaces and tabs.
@@ -823,16 +766,9 @@ pub fn space1<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Sli
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
 {
-    trace(
-        "space1",
-        take_while(1.., |c: <I as Stream>::Token| {
-            let ch = c.as_char();
-            matches!(ch, ' ' | '\t')
-        }),
-    )
-    .parse_next(input)
+    trace("space1", take_while(1.., AsChar::is_space)).parse_next(input)
 }
 
 /// Recognizes zero or more spaces, tabs, carriage returns and line feeds.
@@ -872,16 +808,9 @@ pub fn multispace0<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
 {
-    trace(
-        "multispace0",
-        take_while(0.., |c: <I as Stream>::Token| {
-            let ch = c.as_char();
-            matches!(ch, ' ' | '\t' | '\r' | '\n')
-        }),
-    )
-    .parse_next(input)
+    trace("multispace0", take_while(0.., (' ', '\t', '\r', '\n'))).parse_next(input)
 }
 
 /// Recognizes one or more spaces, tabs, carriage returns and line feeds.
@@ -921,16 +850,9 @@ pub fn multispace1<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
 {
-    trace(
-        "multispace1",
-        take_while(1.., |c: <I as Stream>::Token| {
-            let ch = c.as_char();
-            matches!(ch, ' ' | '\t' | '\r' | '\n')
-        }),
-    )
-    .parse_next(input)
+    trace("multispace1", take_while(1.., (' ', '\t', '\r', '\n'))).parse_next(input)
 }
 
 /// Decode a decimal unsigned integer (e.g. [`u32`])
@@ -947,7 +869,7 @@ pub fn dec_uint<I, O, E: ParserError<I>>(input: &mut I) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
     O: Uint,
 {
     trace("dec_uint", move |input: &mut I| {
@@ -1102,7 +1024,7 @@ pub fn dec_int<I, O, E: ParserError<I>>(input: &mut I) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
     O: Int,
 {
     trace("dec_int", move |input: &mut I| {
@@ -1376,13 +1298,14 @@ impl HexUint for u128 {
 #[inline(always)]
 #[doc(alias = "f32")]
 #[doc(alias = "double")]
+#[allow(clippy::trait_duplication_in_bounds)] // HACK: clippy 1.64.0 bug
 pub fn float<I, O, E: ParserError<I>>(input: &mut I) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
     <I as Stream>::Slice: ParseSlice<O>,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
@@ -1394,6 +1317,7 @@ where
     .parse_next(input)
 }
 
+#[allow(clippy::trait_duplication_in_bounds)] // HACK: clippy 1.64.0 bug
 fn recognize_float_or_exceptions<I, E: ParserError<I>>(
     input: &mut I,
 ) -> PResult<<I as Stream>::Slice, E>
@@ -1401,7 +1325,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
@@ -1414,12 +1338,13 @@ where
     .parse_next(input)
 }
 
+#[allow(clippy::trait_duplication_in_bounds)] // HACK: clippy 1.64.0 bug
 fn recognize_float<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
@@ -1484,7 +1409,7 @@ pub fn escaped<'a, I: 'a, Error, F, G, O1, O2>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParserError<I>,
@@ -1507,7 +1432,7 @@ fn streaming_escaped_internal<I, Error, F, G, O1, O2>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Copy,
+    <I as Stream>::Token: AsChar + Clone,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParserError<I>,
@@ -1526,12 +1451,7 @@ where
                 }
             }
             None => {
-                if opt(one_of(|t: <I as Stream>::Token| {
-                    t.as_char() == control_char
-                }))
-                .parse_next(input)?
-                .is_some()
-                {
+                if opt(control_char).parse_next(input)?.is_some() {
                     let _ = escapable.parse_next(input)?;
                 } else {
                     let offset = input.offset_from(&start);
@@ -1554,7 +1474,7 @@ fn complete_escaped_internal<'a, I: 'a, Error, F, G, O1, O2>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar + Copy,
+    <I as Stream>::Token: crate::stream::AsChar + Clone,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParserError<I>,
@@ -1573,12 +1493,7 @@ where
                 }
             }
             None => {
-                if opt(one_of(|t: <I as Stream>::Token| {
-                    t.as_char() == control_char
-                }))
-                .parse_next(input)?
-                .is_some()
-                {
+                if opt(control_char).parse_next(input)?.is_some() {
                     let _ = escapable.parse_next(input)?;
                 } else {
                     let offset = input.offset_from(&start);
@@ -1661,7 +1576,7 @@ pub fn escaped_transform<I, Error, F, G, Output>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar + Copy,
+    <I as Stream>::Token: crate::stream::AsChar + Clone,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
     G: Parser<I, <I as Stream>::Slice, Error>,
@@ -1685,7 +1600,7 @@ fn streaming_escaped_transform_internal<I, Error, F, G, Output>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar + Copy,
+    <I as Stream>::Token: crate::stream::AsChar + Clone,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
     G: Parser<I, <I as Stream>::Slice, Error>,
@@ -1703,12 +1618,7 @@ where
                 }
             }
             None => {
-                if opt(one_of(|t: <I as Stream>::Token| {
-                    t.as_char() == control_char
-                }))
-                .parse_next(input)?
-                .is_some()
-                {
+                if opt(control_char).parse_next(input)?.is_some() {
                     let o = transform.parse_next(input)?;
                     res.accumulate(o);
                 } else {
@@ -1729,7 +1639,7 @@ fn complete_escaped_transform_internal<I, Error, F, G, Output>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar + Copy,
+    <I as Stream>::Token: crate::stream::AsChar + Clone,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
     G: Parser<I, <I as Stream>::Slice, Error>,
@@ -1748,12 +1658,7 @@ where
                 }
             }
             None => {
-                if opt(one_of(|t: <I as Stream>::Token| {
-                    t.as_char() == control_char
-                }))
-                .parse_next(input)?
-                .is_some()
-                {
+                if opt(control_char).parse_next(input)?.is_some() {
                     let o = transform.parse_next(input)?;
                     res.accumulate(o);
                 } else {
