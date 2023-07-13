@@ -15,6 +15,7 @@ use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::stream::{AsBStr, AsChar, ParseSlice, Stream, StreamIsPartial};
 use crate::stream::{Compare, CompareResult};
 use crate::token::one_of;
+use crate::token::take_till0;
 use crate::token::take_while;
 use crate::trace::trace;
 use crate::PResult;
@@ -90,8 +91,8 @@ where
 /// # use winnow::Partial;
 /// # use winnow::ascii::not_line_ending;
 /// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("ab\r\nc")), Ok((Partial::new("\r\nc"), "ab")));
-/// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("abc")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("abc")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("a\rb\nc")), Err(ErrMode::Backtrack(InputError::new(Partial::new("\rb\nc"), ErrorKind::Tag ))));
 /// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("a\rbc")), Err(ErrMode::Backtrack(InputError::new(Partial::new("\rbc"), ErrorKind::Tag ))));
 /// ```
@@ -99,9 +100,9 @@ where
 pub fn not_line_ending<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
-    I: Stream + AsBStr,
+    I: Stream,
     I: Compare<&'static str>,
-    <I as Stream>::Token: AsChar,
+    <I as Stream>::Token: AsChar + Clone,
 {
     trace("not_line_ending", move |input: &mut I| {
         if <I as StreamIsPartial>::is_partial_supported() {
@@ -118,37 +119,26 @@ fn not_line_ending_<I, E: ParserError<I>, const PARTIAL: bool>(
 ) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
-    I: Stream + AsBStr,
+    I: Stream,
     I: Compare<&'static str>,
-    <I as Stream>::Token: AsChar,
+    <I as Stream>::Token: AsChar + Clone,
 {
-    match input.offset_for(|item| {
-        let c = item.as_char();
-        c == '\r' || c == '\n'
-    }) {
-        None if PARTIAL && input.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
-        None => Ok(input.finish()),
-        Some(offset) => {
-            let res = input.next_slice(offset);
-            let bytes = input.as_bstr();
-            let nth = bytes[0];
-            if nth == b'\r' {
-                let comp = input.compare("\r\n");
-                match comp {
-                    //FIXME: calculate the right index
-                    CompareResult::Ok => {}
-                    CompareResult::Incomplete if PARTIAL && input.is_partial() => {
-                        return Err(ErrMode::Incomplete(Needed::Unknown));
-                    }
-                    CompareResult::Incomplete | CompareResult::Error => {
-                        let e: ErrorKind = ErrorKind::Tag;
-                        return Err(ErrMode::from_error_kind(input, e));
-                    }
-                }
+    let res = take_till0(('\r', '\n')).parse_next(input)?;
+    if input.compare("\r") == CompareResult::Ok {
+        let comp = input.compare("\r\n");
+        match comp {
+            //FIXME: calculate the right index
+            CompareResult::Ok => {}
+            CompareResult::Incomplete if PARTIAL && input.is_partial() => {
+                return Err(ErrMode::Incomplete(Needed::Unknown));
             }
-            Ok(res)
+            CompareResult::Incomplete | CompareResult::Error => {
+                let e: ErrorKind = ErrorKind::Tag;
+                return Err(ErrMode::from_error_kind(input, e));
+            }
         }
     }
+    Ok(res)
 }
 
 /// Recognizes an end of line (both `"\n"` and `"\r\n"`).
