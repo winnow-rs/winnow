@@ -52,7 +52,7 @@
 //!
 //! This works well for:
 //! - Prototyping for what will be a hand-written parser
-//! - When you to minimize the work to evolve your format
+//! - When you want to minimize the work to evolve your format
 //! - When you don't have contributors focused solely on parsing and your grammar is large enough
 //!   to be unwieldy to hand write.
 //!
