@@ -19,7 +19,10 @@ impl<'p, P> ByRef<'p, P> {
     }
 }
 
-impl<'p, I, O, E, P: Parser<I, O, E>> Parser<I, O, E> for ByRef<'p, P> {
+impl<'p, I, O, E, P> Parser<I, O, E> for ByRef<'p, P>
+where
+    P: Parser<I, O, E>,
+{
     #[inline(always)]
     fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
         self.p.parse_next(i)
