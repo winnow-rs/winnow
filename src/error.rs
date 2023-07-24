@@ -750,6 +750,12 @@ impl<I, E> ParseError<I, E> {
     pub fn inner(&self) -> &E {
         &self.inner
     }
+
+    /// The original [`ParserError`]
+    #[inline]
+    pub fn into_inner(self) -> E {
+        self.inner
+    }
 }
 
 impl<I, E> core::fmt::Display for ParseError<I, E>
