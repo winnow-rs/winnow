@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Added `ParseError::into_inner`
+
 ## [0.5.0] - 2023-07-13
 
 ### Migration
