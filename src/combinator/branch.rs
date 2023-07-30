@@ -112,6 +112,26 @@ pub fn permutation<I: Stream, O, E: ParserError<I>, List: Permutation<I, O, E>>(
     trace("permutation", move |i: &mut I| l.permutation(i))
 }
 
+impl<const N: usize, I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I, O, E> for [P; N] {
+    fn choice(&mut self, input: &mut I) -> PResult<O, E> {
+        let mut error = None;
+
+        let start = input.checkpoint();
+        for branch in self {
+            input.reset(start.clone());
+            match branch.parse_next(input) {
+                Err(ErrMode::Backtrack(e)) => error = Some(e),
+                res => return res,
+            }
+        }
+
+        match error {
+            Some(e) => Err(ErrMode::Backtrack(e.append(input, ErrorKind::Alt))),
+            None => Err(ErrMode::assert(input, "`alt` needs at least one parser")),
+        }
+    }
+}
+
 macro_rules! alt_trait(
   ($first:ident $second:ident $($id: ident)+) => (
     alt_trait!(__impl $first $second; $($id)+);
