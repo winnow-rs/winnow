@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.2] - 2023-07-30
+
 ### Features
 
 - Allow `[P; N]` arrays within `alt`
@@ -1950,7 +1952,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.2...HEAD
+[0.5.2]: https://github.com/winnow-rs/winnow/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/winnow-rs/winnow/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/winnow-rs/winnow/compare/v0.4.9...v0.5.0
 [0.4.9]: https://github.com/winnow-rs/winnow/compare/v0.4.8...v0.4.9
