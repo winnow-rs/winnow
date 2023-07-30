@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Allow `[P; N]` arrays within `alt`
+
 ## [0.5.1] - 2023-07-24
 
 ### Features
