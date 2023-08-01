@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- implement `AddContext` for `ErrMode` for easier direct construction
+
 ## [0.5.2] - 2023-07-30
 
 ### Features
