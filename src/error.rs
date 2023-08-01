@@ -210,6 +210,13 @@ where
     }
 }
 
+impl<I, C, E: AddContext<I, C>> AddContext<I, C> for ErrMode<E> {
+    #[inline]
+    fn add_context(self, input: &I, ctx: C) -> Self {
+        self.map(|err| err.add_context(input, ctx))
+    }
+}
+
 impl<T: Clone> ErrMode<InputError<T>> {
     /// Maps `ErrMode<InputError<T>>` to `ErrMode<InputError<U>>` with the given `F: T -> U`
     pub fn map_input<U: Clone, F>(self, f: F) -> ErrMode<InputError<U>>
