@@ -838,7 +838,7 @@ where
         trace(name, move |i: &mut I| {
             (self.parser)
                 .parse_next(i)
-                .map_err(|err| err.map(|err| err.add_context(i, self.context.clone())))
+                .map_err(|err| err.add_context(i, self.context.clone()))
         })
         .parse_next(i)
     }
