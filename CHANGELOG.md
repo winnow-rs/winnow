@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.3] - 2023-08-01
+
 ### Features
 
 - implement `AddContext` for `ErrMode` for easier direct construction
@@ -1956,7 +1958,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.3...HEAD
+[0.5.3]: https://github.com/winnow-rs/winnow/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/winnow-rs/winnow/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/winnow-rs/winnow/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/winnow-rs/winnow/compare/v0.4.9...v0.5.0
