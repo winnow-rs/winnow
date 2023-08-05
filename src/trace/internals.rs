@@ -107,7 +107,7 @@ pub fn start<I: Stream>(
         (debug_slice, eof)
     };
 
-    let writer = anstyle_stream::stderr();
+    let writer = anstream::stderr();
     let mut writer = writer.lock();
     let _ = writeln!(
         writer,
@@ -159,7 +159,7 @@ pub fn end(
         ),
     };
 
-    let writer = anstyle_stream::stderr();
+    let writer = anstream::stderr();
     let mut writer = writer.lock();
     let _ = writeln!(
         writer,
@@ -197,7 +197,7 @@ pub fn result(depth: usize, name: &dyn crate::lib::std::fmt::Display, severity: 
         ),
     };
 
-    let writer = anstyle_stream::stderr();
+    let writer = anstream::stderr();
     let mut writer = writer.lock();
     let _ = writeln!(
         writer,
