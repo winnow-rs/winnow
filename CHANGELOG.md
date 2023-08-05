@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Internal
+
+- Update dependencies
+
 ## [0.5.3] - 2023-08-01
 
 ### Features
