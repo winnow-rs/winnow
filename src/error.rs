@@ -89,7 +89,7 @@ impl Needed {
     }
 }
 
-/// The `Err` enum indicates the parser was not successful
+/// Add parse error state to [`ParserError`]s
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub enum ErrMode<E> {
