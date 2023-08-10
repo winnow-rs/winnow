@@ -834,6 +834,98 @@ where
     }
 }
 
+#[cfg(feature = "std")]
+impl<I, C> TreeError<I, C>
+where
+    I: Clone + std::fmt::Display,
+    C: fmt::Display,
+{
+    fn write(&self, f: &mut fmt::Formatter<'_>, indent: usize) -> fmt::Result {
+        let child_indent = indent + 2;
+        match self {
+            TreeError::Base(base) => {
+                writeln!(f, "{:indent$}{base}", "")?;
+            }
+            TreeError::Stack { base, stack } => {
+                base.write(f, indent)?;
+                for (level, frame) in stack.iter().enumerate() {
+                    match frame {
+                        TreeErrorFrame::Kind(frame) => {
+                            writeln!(f, "{:child_indent$}{level}: {frame}", "")?;
+                        }
+                        TreeErrorFrame::Context(frame) => {
+                            writeln!(f, "{:child_indent$}{level}: {frame}", "")?;
+                        }
+                    }
+                }
+            }
+            TreeError::Alt(alt) => {
+                writeln!(f, "{:indent$}during one of:", "")?;
+                for child in alt {
+                    child.write(f, child_indent)?;
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
+
+#[cfg(feature = "std")]
+impl<I: Clone + fmt::Display> fmt::Display for TreeErrorBase<I> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(cause) = self.cause.as_ref() {
+            write!(f, "caused by {cause}")?;
+        } else {
+            let kind = self.kind;
+            write!(f, "in {kind}")?;
+        }
+        let input = abbreviate(self.input.to_string());
+        write!(f, " at '{input}'")?;
+        Ok(())
+    }
+}
+
+#[cfg(feature = "std")]
+impl<I: Clone + fmt::Display, C: fmt::Display> fmt::Display for TreeErrorContext<I, C> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let context = &self.context;
+        let input = abbreviate(self.input.to_string());
+        write!(f, "{context} at '{input}'")?;
+        Ok(())
+    }
+}
+
+#[cfg(feature = "std")]
+fn abbreviate(input: String) -> String {
+    let mut abbrev = None;
+
+    if let Some((line, _)) = input.split_once('\n') {
+        abbrev = Some(line);
+    }
+
+    let max_len = 20;
+    let current = abbrev.unwrap_or(&input);
+    if max_len < current.len() {
+        if let Some((index, _)) = current.char_indices().nth(max_len) {
+            abbrev = Some(&current[..index]);
+        }
+    }
+
+    if let Some(abbrev) = abbrev {
+        format!("{abbrev}...")
+    } else {
+        input
+    }
+}
+
+#[cfg(feature = "std")]
+impl<I: Clone + fmt::Display, C: fmt::Display> fmt::Display for TreeError<I, C> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.write(f, 0)
+    }
+}
+
 /// Provide some minor debug context for errors
 #[rustfmt::skip]
 #[derive(Debug,PartialEq,Eq,Hash,Clone,Copy)]
