@@ -114,13 +114,18 @@ pub fn permutation<I: Stream, O, E: ParserError<I>, List: Permutation<I, O, E>>(
 
 impl<const N: usize, I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I, O, E> for [P; N] {
     fn choice(&mut self, input: &mut I) -> PResult<O, E> {
-        let mut error = None;
+        let mut error: Option<E> = None;
 
         let start = input.checkpoint();
         for branch in self {
             input.reset(start.clone());
             match branch.parse_next(input) {
-                Err(ErrMode::Backtrack(e)) => error = Some(e),
+                Err(ErrMode::Backtrack(e)) => {
+                    error = match error {
+                        Some(error) => Some(error.or(e)),
+                        None => Some(e),
+                    };
+                }
                 res => return res,
             }
         }
