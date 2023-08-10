@@ -17,6 +17,7 @@
 //! - [`ErrorKind`]
 //! - [`InputError`] (mostly for testing)
 //! - [`ContextError`]
+//! - [`TreeError`] (mostly for testing)
 //! - [Custom errors][crate::_topic::error]
 
 #[cfg(feature = "alloc")]
@@ -88,7 +89,7 @@ impl Needed {
     }
 }
 
-/// The `Err` enum indicates the parser was not successful
+/// Add parse error state to [`ParserError`]s
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub enum ErrMode<E> {
@@ -336,6 +337,15 @@ impl<I: Clone> InputError<I> {
     #[inline]
     pub fn new(input: I, kind: ErrorKind) -> Self {
         Self { input, kind }
+    }
+
+    /// Translate the input type
+    #[inline]
+    pub fn map_input<I2: Clone, O: Fn(I) -> I2>(self, op: O) -> InputError<I2> {
+        InputError {
+            input: op(self.input),
+            kind: self.kind,
+        }
     }
 }
 
@@ -649,6 +659,178 @@ impl crate::lib::std::fmt::Display for StrContextValue {
             Self::StringLiteral(c) => write!(f, "`{}`", c),
             Self::Description(c) => write!(f, "{}", c),
         }
+    }
+}
+
+/// Trace all error paths, particularly for tests
+#[derive(Debug)]
+#[cfg(feature = "std")]
+pub enum TreeError<I, C = StrContext> {
+    /// Initial error that kicked things off
+    Base(TreeErrorBase<I>),
+    /// Traces added to the error while walking back up the stack
+    Stack {
+        /// Initial error that kicked things off
+        base: Box<Self>,
+        /// Traces added to the error while walking back up the stack
+        stack: Vec<TreeErrorFrame<I, C>>,
+    },
+    /// All failed branches of an `alt`
+    Alt(Vec<Self>),
+}
+
+/// See [`TreeError::Stack`]
+#[derive(Debug)]
+#[cfg(feature = "std")]
+pub enum TreeErrorFrame<I, C = StrContext> {
+    /// See [`ParserError::append`]
+    Kind(TreeErrorBase<I>),
+    /// See [`AddContext::add_context`]
+    Context(TreeErrorContext<I, C>),
+}
+
+/// See [`TreeErrorFrame::Kind`], [`ParserError::append`]
+#[derive(Debug)]
+#[cfg(feature = "std")]
+pub struct TreeErrorBase<I> {
+    /// Parsed input, at the location where the error occurred
+    pub input: I,
+    /// Debug context
+    pub kind: ErrorKind,
+    /// See [`FromExternalError::from_external_error`]
+    pub cause: Option<Box<dyn std::error::Error + Send + Sync + 'static>>,
+}
+
+/// See [`TreeErrorFrame::Context`], [`AddContext::add_context`]
+#[derive(Debug)]
+#[cfg(feature = "std")]
+pub struct TreeErrorContext<I, C = StrContext> {
+    /// Parsed input, at the location where the error occurred
+    pub input: I,
+    /// See [`AddContext::add_context`]
+    pub context: C,
+}
+
+#[cfg(feature = "std")]
+impl<I, C> TreeError<I, C>
+where
+    I: Clone,
+{
+    /// Translate the input type
+    #[inline]
+    pub fn map_input<I2: Clone, O: Clone + Fn(I) -> I2>(self, op: O) -> TreeError<I2, C> {
+        match self {
+            TreeError::Base(base) => TreeError::Base(TreeErrorBase {
+                input: op(base.input),
+                kind: base.kind,
+                cause: base.cause,
+            }),
+            TreeError::Stack { base, stack } => {
+                let base = Box::new(base.map_input(op.clone()));
+                let stack = stack
+                    .into_iter()
+                    .map(|frame| match frame {
+                        TreeErrorFrame::Kind(kind) => TreeErrorFrame::Kind(TreeErrorBase {
+                            input: op(kind.input),
+                            kind: kind.kind,
+                            cause: kind.cause,
+                        }),
+                        TreeErrorFrame::Context(context) => {
+                            TreeErrorFrame::Context(TreeErrorContext {
+                                input: op(context.input),
+                                context: context.context,
+                            })
+                        }
+                    })
+                    .collect();
+                TreeError::Stack { base, stack }
+            }
+            TreeError::Alt(alt) => {
+                TreeError::Alt(alt.into_iter().map(|e| e.map_input(op.clone())).collect())
+            }
+        }
+    }
+
+    fn append_frame(self, frame: TreeErrorFrame<I, C>) -> Self {
+        match self {
+            TreeError::Stack { base, mut stack } => {
+                stack.push(frame);
+                TreeError::Stack { base, stack }
+            }
+            base => TreeError::Stack {
+                base: Box::new(base),
+                stack: vec![frame],
+            },
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl<I, C> ParserError<I> for TreeError<I, C>
+where
+    I: Clone,
+{
+    fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
+        TreeError::Base(TreeErrorBase {
+            input: input.clone(),
+            kind,
+            cause: None,
+        })
+    }
+
+    fn append(self, input: &I, kind: ErrorKind) -> Self {
+        let frame = TreeErrorFrame::Kind(TreeErrorBase {
+            input: input.clone(),
+            kind,
+            cause: None,
+        });
+        self.append_frame(frame)
+    }
+
+    fn or(self, other: Self) -> Self {
+        match (self, other) {
+            (TreeError::Alt(mut first), TreeError::Alt(second)) => {
+                // Just in case an implementation does a divide-and-conquer algorithm
+                //
+                // To prevent mixing `alt`s at different levels, parsers should
+                // `alt_err.append(input, ErrorKind::Alt)`.
+                first.extend(second);
+                TreeError::Alt(first)
+            }
+            (TreeError::Alt(mut alt), new) | (new, TreeError::Alt(mut alt)) => {
+                alt.push(new);
+                TreeError::Alt(alt)
+            }
+            (first, second) => TreeError::Alt(vec![first, second]),
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl<I, C> AddContext<I, C> for TreeError<I, C>
+where
+    I: Clone,
+{
+    fn add_context(self, input: &I, context: C) -> Self {
+        let frame = TreeErrorFrame::Context(TreeErrorContext {
+            input: input.clone(),
+            context,
+        });
+        self.append_frame(frame)
+    }
+}
+
+#[cfg(feature = "std")]
+impl<I, C, E: std::error::Error + Send + Sync + 'static> FromExternalError<I, E> for TreeError<I, C>
+where
+    I: Clone,
+{
+    fn from_external_error(input: &I, kind: ErrorKind, e: E) -> Self {
+        TreeError::Base(TreeErrorBase {
+            input: input.clone(),
+            kind,
+            cause: Some(Box::new(e)),
+        })
     }
 }
 
