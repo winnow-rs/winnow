@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- `alt([...])` fails, `or` the errors together, like `alt((...))`
+
 ## [0.5.4] - 2023-08-05
 
 ### Internal
