@@ -3,6 +3,11 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- New `TreeError` for showing full error path in tests
+- `InputError::map_input` for making input types nicer for test failures
+
 ## [0.5.5] - 2023-08-10
 
 ### Fixes
