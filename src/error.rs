@@ -338,6 +338,15 @@ impl<I: Clone> InputError<I> {
     pub fn new(input: I, kind: ErrorKind) -> Self {
         Self { input, kind }
     }
+
+    /// Translate the input type
+    #[inline]
+    pub fn map_input<I2: Clone, O: Fn(I) -> I2>(self, op: O) -> InputError<I2> {
+        InputError {
+            input: op(self.input),
+            kind: self.kind,
+        }
+    }
 }
 
 #[cfg(feature = "alloc")]
@@ -707,6 +716,41 @@ impl<I, C> TreeError<I, C>
 where
     I: Clone,
 {
+    /// Translate the input type
+    #[inline]
+    pub fn map_input<I2: Clone, O: Clone + Fn(I) -> I2>(self, op: O) -> TreeError<I2, C> {
+        match self {
+            TreeError::Base(base) => TreeError::Base(TreeErrorBase {
+                input: op(base.input),
+                kind: base.kind,
+                cause: base.cause,
+            }),
+            TreeError::Stack { base, stack } => {
+                let base = Box::new(base.map_input(op.clone()));
+                let stack = stack
+                    .into_iter()
+                    .map(|frame| match frame {
+                        TreeErrorFrame::Kind(kind) => TreeErrorFrame::Kind(TreeErrorBase {
+                            input: op(kind.input),
+                            kind: kind.kind,
+                            cause: kind.cause,
+                        }),
+                        TreeErrorFrame::Context(context) => {
+                            TreeErrorFrame::Context(TreeErrorContext {
+                                input: op(context.input),
+                                context: context.context,
+                            })
+                        }
+                    })
+                    .collect();
+                TreeError::Stack { base, stack }
+            }
+            TreeError::Alt(alt) => {
+                TreeError::Alt(alt.into_iter().map(|e| e.map_input(op.clone())).collect())
+            }
+        }
+    }
+
     fn append_frame(self, frame: TreeErrorFrame<I, C>) -> Self {
         match self {
             TreeError::Stack { base, mut stack } => {
