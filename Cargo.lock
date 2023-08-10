@@ -1420,7 +1420,7 @@ checksum = "1a515f5799fe4961cb532f983ce2b23082366b898e52ffbce459c86f67c8378a"
 
 [[package]]
 name = "winnow"
-version = "0.5.4"
+version = "0.5.5"
 dependencies = [
  "anstream",
  "anstyle",
