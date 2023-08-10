@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Support `Display` for `TreeError`
+
 ## [0.5.6] - 2023-08-10
 
 ### Features
