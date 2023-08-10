@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.7] - 2023-08-10
+
 ### Features
 
 - Support `Display` for `TreeError`
@@ -1981,7 +1983,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.6...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.7...HEAD
+[0.5.7]: https://github.com/winnow-rs/winnow/compare/v0.5.6...v0.5.7
 [0.5.6]: https://github.com/winnow-rs/winnow/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/winnow-rs/winnow/compare/v0.5.4...v0.5.5
 [0.5.4]: https://github.com/winnow-rs/winnow/compare/v0.5.3...v0.5.4
