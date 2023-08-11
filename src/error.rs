@@ -411,7 +411,12 @@ impl<I: Clone> ErrorConvert<InputError<I>> for InputError<(I, usize)> {
 /// The Display implementation allows the `std::error::Error` implementation
 impl<I: Clone + fmt::Display> fmt::Display for InputError<I> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{} error starting at: {}", self.kind, self.input)
+        write!(
+            f,
+            "{} error starting at: {}",
+            self.kind.description(),
+            self.input
+        )
     }
 }
 
@@ -884,7 +889,7 @@ impl<I: Clone + fmt::Display> fmt::Display for TreeErrorBase<I> {
         if let Some(cause) = self.cause.as_ref() {
             write!(f, "caused by {cause}")?;
         } else {
-            let kind = self.kind;
+            let kind = self.kind.description();
             write!(f, "in {kind}")?;
         }
         let input = abbreviate(self.input.to_string());
@@ -1030,7 +1035,7 @@ impl<I: Clone + fmt::Display, C: fmt::Display> fmt::Display for VerboseError<I, 
         writeln!(f, "Parse error:")?;
         for (input, error) in &self.errors {
             match error {
-                VerboseErrorKind::Winnow(e) => writeln!(f, "{:?} at: {}", e, input)?,
+                VerboseErrorKind::Winnow(e) => writeln!(f, "{} at: {}", e.description(), input)?,
                 VerboseErrorKind::Context(s) => writeln!(f, "in section '{}', at: {}", s, input)?,
             }
         }
