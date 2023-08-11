@@ -625,6 +625,15 @@ pub enum StrContext {
     Expected(StrContextValue),
 }
 
+impl crate::lib::std::fmt::Display for StrContext {
+    fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
+        match self {
+            Self::Label(name) => write!(f, "invalid {name}"),
+            Self::Expected(value) => write!(f, "expected {value}"),
+        }
+    }
+}
+
 /// See [`StrContext`]
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[non_exhaustive]
