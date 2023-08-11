@@ -709,6 +709,17 @@ pub struct TreeErrorContext<I, C = StrContext> {
 }
 
 #[cfg(feature = "std")]
+impl<'i, I: ToOwned, C> TreeError<&'i I, C>
+where
+    <I as ToOwned>::Owned: Clone,
+{
+    /// Obtaining ownership
+    pub fn into_owned(self) -> TreeError<<I as ToOwned>::Owned, C> {
+        self.map_input(ToOwned::to_owned)
+    }
+}
+
+#[cfg(feature = "std")]
 impl<I, C> TreeError<I, C>
 where
     I: Clone,
