@@ -350,16 +350,13 @@ impl<I: Clone> InputError<I> {
 }
 
 #[cfg(feature = "alloc")]
-impl<'i, I: Clone + ToOwned + ?Sized> InputError<&'i I>
+impl<'i, I: ToOwned> InputError<&'i I>
 where
     <I as ToOwned>::Owned: Clone,
 {
     /// Obtaining ownership
     pub fn into_owned(self) -> InputError<<I as ToOwned>::Owned> {
-        InputError {
-            input: self.input.to_owned(),
-            kind: self.kind,
-        }
+        self.map_input(ToOwned::to_owned)
     }
 }
 
@@ -717,7 +714,6 @@ where
     I: Clone,
 {
     /// Translate the input type
-    #[inline]
     pub fn map_input<I2: Clone, O: Clone + Fn(I) -> I2>(self, op: O) -> TreeError<I2, C> {
         match self {
             TreeError::Base(base) => TreeError::Base(TreeErrorBase {
