@@ -904,6 +904,14 @@ impl<I: Clone + fmt::Display, C: fmt::Display> fmt::Display for TreeErrorContext
 }
 
 #[cfg(feature = "std")]
+impl<
+        I: Clone + fmt::Debug + fmt::Display + Sync + Send + 'static,
+        C: fmt::Display + fmt::Debug,
+    > std::error::Error for TreeError<I, C>
+{
+}
+
+#[cfg(feature = "std")]
 fn abbreviate(input: String) -> String {
     let mut abbrev = None;
 
