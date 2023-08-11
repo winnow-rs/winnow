@@ -941,6 +941,113 @@ impl<I: Clone + fmt::Display, C: fmt::Display> fmt::Display for TreeError<I, C> 
     }
 }
 
+/// Deprecated, replaced with [`ContextError`]
+#[cfg(feature = "std")]
+#[allow(deprecated)]
+#[deprecated(since = "0.5.8", note = "Replaced with `ContextError`")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct VerboseError<I: Clone, C = &'static str> {
+    /// Accumulated error information
+    pub errors: crate::lib::std::vec::Vec<(I, VerboseErrorKind<C>)>,
+}
+
+#[cfg(feature = "std")]
+#[allow(deprecated)]
+impl<'i, I: ToOwned, C> VerboseError<&'i I, C>
+where
+    <I as ToOwned>::Owned: Clone,
+{
+    /// Obtaining ownership
+    pub fn into_owned(self) -> VerboseError<<I as ToOwned>::Owned, C> {
+        self.map_input(ToOwned::to_owned)
+    }
+}
+
+#[cfg(feature = "std")]
+#[allow(deprecated)]
+impl<I: Clone, C> VerboseError<I, C> {
+    /// Translate the input type
+    pub fn map_input<I2: Clone, O>(self, op: O) -> VerboseError<I2, C>
+    where
+        O: Fn(I) -> I2,
+    {
+        VerboseError {
+            errors: self.errors.into_iter().map(|(i, k)| (op(i), k)).collect(),
+        }
+    }
+}
+
+/// Deprecated, replaced with [`ContextError`]
+#[cfg(feature = "std")]
+#[deprecated(since = "0.5.8", note = "Replaced with `ContextError`")]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum VerboseErrorKind<C = &'static str> {
+    /// Static string added by the `context` function
+    Context(C),
+    /// Error kind given by various parsers
+    Winnow(ErrorKind),
+}
+
+#[cfg(feature = "std")]
+#[allow(deprecated)]
+impl<I: Clone, C> ParserError<I> for VerboseError<I, C> {
+    fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
+        VerboseError {
+            errors: vec![(input.clone(), VerboseErrorKind::Winnow(kind))],
+        }
+    }
+
+    fn append(mut self, input: &I, kind: ErrorKind) -> Self {
+        self.errors
+            .push((input.clone(), VerboseErrorKind::Winnow(kind)));
+        self
+    }
+}
+
+#[cfg(feature = "std")]
+#[allow(deprecated)]
+impl<I: Clone, C> AddContext<I, C> for VerboseError<I, C> {
+    fn add_context(mut self, input: &I, ctx: C) -> Self {
+        self.errors
+            .push((input.clone(), VerboseErrorKind::Context(ctx)));
+        self
+    }
+}
+
+#[cfg(feature = "std")]
+#[allow(deprecated)]
+impl<I: Clone, C, E> FromExternalError<I, E> for VerboseError<I, C> {
+    /// Create a new error from an input position and an external error
+    fn from_external_error(input: &I, kind: ErrorKind, _e: E) -> Self {
+        Self::from_error_kind(input, kind)
+    }
+}
+
+#[cfg(feature = "std")]
+#[allow(deprecated)]
+impl<I: Clone + fmt::Display, C: fmt::Display> fmt::Display for VerboseError<I, C> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "Parse error:")?;
+        for (input, error) in &self.errors {
+            match error {
+                VerboseErrorKind::Winnow(e) => writeln!(f, "{:?} at: {}", e, input)?,
+                VerboseErrorKind::Context(s) => writeln!(f, "in section '{}', at: {}", s, input)?,
+            }
+        }
+
+        Ok(())
+    }
+}
+
+#[cfg(feature = "std")]
+#[allow(deprecated)]
+impl<
+        I: Clone + fmt::Debug + fmt::Display + Sync + Send + 'static,
+        C: fmt::Display + fmt::Debug,
+    > std::error::Error for VerboseError<I, C>
+{
+}
+
 /// Provide some minor debug context for errors
 #[rustfmt::skip]
 #[derive(Debug,PartialEq,Eq,Hash,Clone,Copy)]
