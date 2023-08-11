@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.8] - 2023-08-11
+
 ### Features
 
 - Add `TreeError::into_owned`
@@ -1989,7 +1991,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.7...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.8...HEAD
+[0.5.8]: https://github.com/winnow-rs/winnow/compare/v0.5.7...v0.5.8
 [0.5.7]: https://github.com/winnow-rs/winnow/compare/v0.5.6...v0.5.7
 [0.5.6]: https://github.com/winnow-rs/winnow/compare/v0.5.5...v0.5.6
 [0.5.5]: https://github.com/winnow-rs/winnow/compare/v0.5.4...v0.5.5
