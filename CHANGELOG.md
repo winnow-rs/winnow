@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Impl `Display` for `StrContext`
+
 ## [0.5.9] - 2023-08-11
 
 ### Fixes
