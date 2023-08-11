@@ -3,6 +3,12 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `TreeError::into_owned`
+- impl `Error` for `TreeError`
+- Add back in `VerboseError` to help with migrations
+
 ## [0.5.7] - 2023-08-10
 
 ### Features
