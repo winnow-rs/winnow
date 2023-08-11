@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Improve rendering of `ErrorKind` in other errors
+
 ## [0.5.8] - 2023-08-11
 
 ### Features
