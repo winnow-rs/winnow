@@ -1,26 +1,34 @@
 [workspace]
+resolver = "2"
 members = ["fuzz"]
 
-[package]
-name = "winnow"
-version = "0.5.10"
-description = "A byte-oriented, zero-copy, parser combinators library"
+[workspace.package]
 license = "MIT"
-repository = "https://github.com/winnow-rs/winnow"
-categories = ["parsing"]
-keywords = ["parser", "parser-combinators", "parsing", "streaming", "bit"]
 edition = "2021"
 rust-version = "1.64.0"  # MSRV
 include = [
   "build.rs",
   "src/**/*",
   "Cargo.toml",
+  "Cargo.lock",
   "LICENSE*",
   "README.md",
   "benches/**/*",
   "examples/**/*"
 ]
+
+[package]
+name = "winnow"
+version = "0.5.10"
+description = "A byte-oriented, zero-copy, parser combinators library"
+repository = "https://github.com/winnow-rs/winnow"
+categories = ["parsing"]
+keywords = ["parser", "parser-combinators", "parsing", "streaming", "bit"]
 autoexamples = false
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+include.workspace = true
 
 [package.metadata.docs.rs]
 features = ["unstable-doc"]

@@ -5,7 +5,7 @@ permissions:
 
 on:
   schedule:
-  - cron: '1 1 1 * *'
+  - cron: '3 3 3 * *'
 
 env:
   RUST_BACKTRACE: 1
@@ -47,42 +47,18 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
     - name: Install Rust
-      uses: actions-rs/toolchain@v1
+      uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: nightly
-        profile: minimal
-        override: true
         components: miri
     - uses: Swatinem/rust-cache@v2
     # no-default features is a subset, not needed
     # all-features is `debug` which is extremely slow
     - name: Default features
       run: cargo miri test --workspace
-  rustfmt:
-    name: rustfmt
-    strategy:
-      matrix:
-        rust:
-        - stable
-        - beta
-    continue-on-error: ${{ matrix.rust != 'stable' }}
+  latest:
+    name: "Check latest dependencies"
     runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: ${{ matrix.rust }}
-        components: rustfmt
-    - uses: Swatinem/rust-cache@v2
-    - name: Check formatting
-      run: cargo fmt --all -- --check
-  clippy:
-    name: clippy
-    runs-on: ubuntu-latest
-    permissions:
-      security-events: write # to upload sarif results
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -90,19 +66,12 @@ jobs:
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
-        components: clippy
     - uses: Swatinem/rust-cache@v2
-    - name: Install SARIF tools
-      run: cargo install clippy-sarif sarif-fmt
-    - name: Check
-      run: >
-        cargo clippy --workspace --all-features --all-targets --message-format=json -- -D warnings --allow deprecated
-        | clippy-sarif
-        | tee clippy-results.sarif
-        | sarif-fmt
-      continue-on-error: true
-    - name: Upload
-      uses: github/codeql-action/upload-sarif@v2
-      with:
-        sarif_file: clippy-results.sarif
-        wait-for-processing: true
+    - name: Update dependencues
+      run: cargo update
+    - name: Default features
+      run: cargo test --workspace --all-targets
+    - name: All features
+      run: cargo test --workspace --all-targets --all-features
+    - name: No-default features
+      run: cargo test --workspace --all-targets --no-default-features
