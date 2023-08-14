@@ -10,6 +10,9 @@ use crate::stream::{AsBytes, Stream, StreamIsPartial, ToUsize};
 use crate::trace::trace;
 use crate::{unpeek, IResult, PResult, Parser};
 
+/// Number of bits in a byte
+const BYTE: usize = u8::BITS as usize;
+
 /// Converts a byte-level input to a bit-level input
 ///
 /// See [`bytes`] to convert it back.
@@ -57,12 +60,15 @@ where
                 Ok(((rest, offset), result)) => {
                     // If the next byte has been partially read, it will be sliced away as well.
                     // The parser functions might already slice away all fully read bytes.
-                    // That's why `offset / 8` isn't necessarily needed at all times.
-                    let remaining_bytes_index = offset / 8 + if offset % 8 == 0 { 0 } else { 1 };
+                    // That's why `offset / BYTE` isn't necessarily needed at all times.
+                    let remaining_bytes_index =
+                        offset / BYTE + if offset % BYTE == 0 { 0 } else { 1 };
                     let (input, _) = rest.peek_slice(remaining_bytes_index);
                     Ok((input, result))
                 }
-                Err(ErrMode::Incomplete(n)) => Err(ErrMode::Incomplete(n.map(|u| u.get() / 8 + 1))),
+                Err(ErrMode::Incomplete(n)) => {
+                    Err(ErrMode::Incomplete(n.map(|u| u.get() / BYTE + 1)))
+                }
                 Err(e) => Err(e.convert()),
             }
         }),
@@ -109,10 +115,10 @@ where
     trace(
         "bytes",
         unpeek(move |(input, offset): (I, usize)| {
-            let (inner, _) = if offset % 8 != 0 {
-                input.peek_slice(1 + offset / 8)
+            let (inner, _) = if offset % BYTE != 0 {
+                input.peek_slice(1 + offset / BYTE)
             } else {
-                input.peek_slice(offset / 8)
+                input.peek_slice(offset / BYTE)
             };
             let i = (input, offset);
             match parser.parse_peek(inner) {
@@ -120,13 +126,15 @@ where
                 Err(ErrMode::Incomplete(Needed::Unknown)) => {
                     Err(ErrMode::Incomplete(Needed::Unknown))
                 }
-                Err(ErrMode::Incomplete(Needed::Size(sz))) => Err(match sz.get().checked_mul(8) {
-                    Some(v) => ErrMode::Incomplete(Needed::new(v)),
-                    None => ErrMode::Cut(E2::assert(
-                        &i,
-                        "overflow in turning needed bytes into needed bits",
-                    )),
-                }),
+                Err(ErrMode::Incomplete(Needed::Size(sz))) => {
+                    Err(match sz.get().checked_mul(BYTE) {
+                        Some(v) => ErrMode::Incomplete(Needed::new(v)),
+                        None => ErrMode::Cut(E2::assert(
+                            &i,
+                            "overflow in turning needed bytes into needed bits",
+                        )),
+                    })
+                }
                 Err(e) => Err(e.convert()),
             }
         }),
@@ -196,8 +204,8 @@ where
     if count == 0 {
         Ok(((input, bit_offset), 0u8.into()))
     } else {
-        let cnt = (count + bit_offset).div(8);
-        if input.eof_offset() * 8 < count + bit_offset {
+        let cnt = (count + bit_offset).div(BYTE);
+        if input.eof_offset() * BYTE < count + bit_offset {
             if PARTIAL && input.is_partial() {
                 Err(ErrMode::Incomplete(Needed::new(count)))
             } else {
@@ -222,13 +230,13 @@ where
                     (byte << offset >> offset).into()
                 };
 
-                if remaining < 8 - offset {
-                    acc += val >> (8 - offset - remaining);
+                if remaining < BYTE - offset {
+                    acc += val >> (BYTE - offset - remaining);
                     end_offset = remaining + offset;
                     break;
                 } else {
-                    acc += val << (remaining - (8 - offset));
-                    remaining -= 8 - offset;
+                    acc += val << (remaining - (BYTE - offset));
+                    remaining -= BYTE - offset;
                     offset = 0;
                 }
             }
