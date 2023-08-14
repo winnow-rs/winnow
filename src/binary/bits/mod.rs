@@ -204,7 +204,6 @@ where
     if count == 0 {
         Ok(((input, bit_offset), 0u8.into()))
     } else {
-        let cnt = (count + bit_offset).div(BYTE);
         if input.eof_offset() * BYTE < count + bit_offset {
             if PARTIAL && input.is_partial() {
                 Err(ErrMode::Incomplete(Needed::new(count)))
@@ -215,6 +214,7 @@ where
                 ))
             }
         } else {
+            let cnt = (count + bit_offset).div(BYTE);
             let mut acc: O = 0_u8.into();
             let mut offset: usize = bit_offset;
             let mut remaining: usize = count;
