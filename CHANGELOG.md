@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Impl `Clone` for `ContextError`
+
 ## [0.5.10] - 2023-08-11
 
 ### Features
