@@ -483,6 +483,16 @@ impl<C> ContextError<C> {
     }
 }
 
+impl<C: Clone> Clone for ContextError<C> {
+    fn clone(&self) -> Self {
+        Self {
+            context: self.context.clone(),
+            #[cfg(feature = "std")]
+            cause: self.cause.as_ref().map(|e| e.to_string().into()),
+        }
+    }
+}
+
 impl<C> Default for ContextError<C> {
     #[inline]
     fn default() -> Self {
