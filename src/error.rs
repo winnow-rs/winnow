@@ -217,6 +217,7 @@ pub enum ErrMode<E> {
 
 impl<E> ErrMode<E> {
     /// Tests if the result is Incomplete
+    #[inline]
     pub fn is_incomplete(&self) -> bool {
         matches!(self, ErrMode::Incomplete(_))
     }
@@ -259,11 +260,13 @@ impl<E> ErrMode<E> {
 }
 
 impl<I, E: ParseError<I>> ParseError<I> for ErrMode<E> {
+    #[inline]
     fn from_error_kind(input: I, kind: ErrorKind) -> Self {
         ErrMode::Backtrack(E::from_error_kind(input, kind))
     }
 
     #[cfg_attr(debug_assertions, track_caller)]
+    #[inline]
     fn assert(input: I, message: &'static str) -> Self
     where
         I: crate::lib::std::fmt::Debug,
@@ -271,6 +274,7 @@ impl<I, E: ParseError<I>> ParseError<I> for ErrMode<E> {
         ErrMode::Backtrack(E::assert(input, message))
     }
 
+    #[inline]
     fn append(self, input: I, kind: ErrorKind) -> Self {
         match self {
             ErrMode::Backtrack(e) => ErrMode::Backtrack(e.append(input, kind)),
@@ -291,6 +295,7 @@ impl<I, EXT, E> FromExternalError<I, EXT> for ErrMode<E>
 where
     E: FromExternalError<I, EXT>,
 {
+    #[inline]
     fn from_external_error(input: I, kind: ErrorKind, e: EXT) -> Self {
         ErrMode::Backtrack(E::from_external_error(input, kind, e))
     }
@@ -389,6 +394,7 @@ pub trait ParseError<I>: Sized {
     ///
     /// For example, this would be used by [`alt`][crate::branch::alt] to report the error from
     /// each case.
+    #[inline]
     fn or(self, other: Self) -> Self {
         other
     }
