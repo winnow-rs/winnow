@@ -14,6 +14,7 @@ pub struct ByRef<'p, P> {
 }
 
 impl<'p, P> ByRef<'p, P> {
+    #[inline(always)]
     pub(crate) fn new(p: &'p mut P) -> Self {
         Self { p }
     }
@@ -49,6 +50,7 @@ where
     F: Parser<I, O, E>,
     G: Fn(O) -> O2,
 {
+    #[inline(always)]
     pub(crate) fn new(parser: F, map: G) -> Self {
         Self {
             parser,
@@ -100,6 +102,7 @@ where
     I: Stream,
     E: FromExternalError<I, E2>,
 {
+    #[inline(always)]
     pub(crate) fn new(parser: F, map: G) -> Self {
         Self {
             parser,
@@ -157,6 +160,7 @@ where
     I: Stream,
     E: ParserError<I>,
 {
+    #[inline(always)]
     pub(crate) fn new(parser: F, map: G) -> Self {
         Self {
             parser,
@@ -213,6 +217,7 @@ where
     O: StreamIsPartial,
     I: Stream,
 {
+    #[inline(always)]
     pub(crate) fn new(outer: F, inner: G) -> Self {
         Self {
             outer,
@@ -268,6 +273,7 @@ where
     O: crate::stream::ParseSlice<O2>,
     E: ParserError<I>,
 {
+    #[inline(always)]
     pub(crate) fn new(p: P) -> Self {
         Self {
             p,
@@ -322,6 +328,7 @@ where
     G: FnMut(O) -> H,
     H: Parser<I, O2, E>,
 {
+    #[inline(always)]
     pub(crate) fn new(f: F, g: G) -> Self {
         Self {
             f,
@@ -355,6 +362,7 @@ pub struct CompleteErr<F> {
 }
 
 impl<F> CompleteErr<F> {
+    #[inline(always)]
     pub(crate) fn new(f: F) -> Self {
         Self { f }
     }
@@ -408,6 +416,7 @@ where
     O2: ?Sized,
     E: ParserError<I>,
 {
+    #[inline(always)]
     pub(crate) fn new(parser: F, filter: G) -> Self {
         Self {
             parser,
@@ -461,6 +470,7 @@ where
     F: Parser<I, O, E>,
     O2: Clone,
 {
+    #[inline(always)]
     pub(crate) fn new(parser: F, val: O2) -> Self {
         Self {
             parser,
@@ -499,6 +509,7 @@ impl<F, I, O, E> Void<F, I, O, E>
 where
     F: Parser<I, O, E>,
 {
+    #[inline(always)]
     pub(crate) fn new(parser: F) -> Self {
         Self {
             parser,
@@ -537,6 +548,7 @@ where
     F: Parser<I, O, E>,
     I: Stream,
 {
+    #[inline(always)]
     pub(crate) fn new(parser: F) -> Self {
         Self {
             parser,
@@ -585,6 +597,7 @@ where
     F: Parser<I, O, E>,
     I: Stream,
 {
+    #[inline(always)]
     pub(crate) fn new(parser: F) -> Self {
         Self {
             parser,
@@ -633,6 +646,7 @@ where
     F: Parser<I, O, E>,
     I: Stream + Location,
 {
+    #[inline(always)]
     pub(crate) fn new(parser: F) -> Self {
         Self {
             parser,
@@ -676,6 +690,7 @@ where
     F: Parser<I, O, E>,
     I: Stream + Location,
 {
+    #[inline(always)]
     pub(crate) fn new(parser: F) -> Self {
         Self {
             parser,
@@ -720,6 +735,7 @@ where
     F: Parser<I, O, E>,
     O: Into<O2>,
 {
+    #[inline(always)]
     pub(crate) fn new(parser: F) -> Self {
         Self {
             parser,
@@ -761,6 +777,7 @@ where
     F: Parser<I, O, E>,
     E: Into<E2>,
 {
+    #[inline(always)]
     pub(crate) fn new(parser: F) -> Self {
         Self {
             parser,
@@ -811,6 +828,7 @@ where
     E: AddContext<I, C>,
     C: Clone + crate::lib::std::fmt::Debug,
 {
+    #[inline(always)]
     pub(crate) fn new(parser: F, context: C) -> Self {
         Self {
             parser,

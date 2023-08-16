@@ -128,6 +128,7 @@ pub trait Parser<I, O, E> {
     ///   }
     /// }
     /// ```
+    #[inline(always)]
     fn by_ref(&mut self) -> ByRef<'_, Self>
     where
         Self: core::marker::Sized,
@@ -151,6 +152,7 @@ pub trait Parser<I, O, E> {
     /// # }
     /// ```
     #[doc(alias = "to")]
+    #[inline(always)]
     fn value<O2>(self, val: O2) -> Value<Self, I, O, O2, E>
     where
         Self: core::marker::Sized,
@@ -174,6 +176,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_peek("123abcd;"), Err(ErrMode::Backtrack(InputError::new("123abcd;", ErrorKind::Slice))));
     /// # }
     /// ```
+    #[inline(always)]
     fn void(self) -> Void<Self, I, O, E>
     where
         Self: core::marker::Sized,
@@ -202,6 +205,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(bytes, Ok(("", vec![97, 98, 99, 100])));
     /// # }
     /// ```
+    #[inline(always)]
     fn output_into<O2>(self) -> OutputInto<Self, I, O, O2, E>
     where
         Self: core::marker::Sized,
@@ -227,6 +231,7 @@ pub trait Parser<I, O, E> {
     /// # }
     /// ```
     #[doc(alias = "concat")]
+    #[inline(always)]
     fn recognize(self) -> Recognize<Self, I, O, E>
     where
         Self: core::marker::Sized,
@@ -272,6 +277,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(recognize_parser.parse_peek("abcd"), consumed_parser.parse_peek("abcd"));
     /// ```
     #[doc(alias = "consumed")]
+    #[inline(always)]
     fn with_recognized(self) -> WithRecognized<Self, I, O, E>
     where
         Self: core::marker::Sized,
@@ -296,6 +302,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse(Located::new("abcd,efgh")), Ok((0..4, 5..9)));
     /// assert_eq!(parser.parse_peek(Located::new("abcd;")),Err(ErrMode::Backtrack(InputError::new(Located::new("abcd;").peek_slice(4).0, ErrorKind::Verify))));
     /// ```
+    #[inline(always)]
     fn span(self) -> Span<Self, I, O, E>
     where
         Self: core::marker::Sized,
@@ -344,6 +351,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(recognize_parser.parse_peek(Located::new("abcd")), consumed_parser.parse_peek(Located::new("abcd")));
     /// # }
     /// ```
+    #[inline(always)]
     fn with_span(self) -> WithSpan<Self, I, O, E>
     where
         Self: core::marker::Sized,
@@ -370,6 +378,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_peek("abc"), Err(ErrMode::Backtrack(InputError::new("abc", ErrorKind::Slice))));
     /// # }
     /// ```
+    #[inline(always)]
     fn map<G, O2>(self, map: G) -> Map<Self, G, I, O, O2, E>
     where
         G: Fn(O) -> O2,
@@ -399,6 +408,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parse.parse_peek("123456"), Err(ErrMode::Backtrack(InputError::new("123456", ErrorKind::Verify))));
     /// # }
     /// ```
+    #[inline(always)]
     fn try_map<G, O2, E2>(self, map: G) -> TryMap<Self, G, I, O, O2, E, E2>
     where
         Self: core::marker::Sized,
@@ -433,6 +443,7 @@ pub trait Parser<I, O, E> {
     #[doc(alias = "satisfy_map")]
     #[doc(alias = "filter_map")]
     #[doc(alias = "map_opt")]
+    #[inline(always)]
     fn verify_map<G, O2>(self, map: G) -> VerifyMap<Self, G, I, O, O2, E>
     where
         Self: core::marker::Sized,
@@ -475,6 +486,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(length_data.parse_peek(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
     /// assert_eq!(length_data.parse_peek(&[4, 0, 1, 2][..]), Err(ErrMode::Backtrack(InputError::new(&[0, 1, 2][..], ErrorKind::Slice))));
     /// ```
+    #[inline(always)]
     fn flat_map<G, H, O2>(self, map: G) -> FlatMap<Self, G, H, I, O, O2, E>
     where
         Self: core::marker::Sized,
@@ -501,6 +513,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(digits.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Slice))));
     /// # }
     /// ```
+    #[inline(always)]
     fn and_then<G, O2>(self, inner: G) -> AndThen<Self, G, I, O, O2, E>
     where
         Self: core::marker::Sized,
@@ -531,6 +544,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_peek("abc"), Err(ErrMode::Backtrack(InputError::new("abc", ErrorKind::Slice))));
     /// ```
     #[doc(alias = "from_str")]
+    #[inline(always)]
     fn parse_to<O2>(self) -> ParseTo<Self, I, O, O2, E>
     where
         Self: core::marker::Sized,
@@ -562,6 +576,7 @@ pub trait Parser<I, O, E> {
     /// ```
     #[doc(alias = "satisfy")]
     #[doc(alias = "filter")]
+    #[inline(always)]
     fn verify<G, O2>(self, filter: G) -> Verify<Self, G, I, O, O2, E>
     where
         Self: core::marker::Sized,
@@ -579,6 +594,7 @@ pub trait Parser<I, O, E> {
     /// This is used mainly to add user friendly information
     /// to errors when backtracking through a parse tree.
     #[doc(alias = "labelled")]
+    #[inline(always)]
     fn context<C>(self, context: C) -> Context<Self, I, O, E, C>
     where
         Self: core::marker::Sized,
@@ -604,6 +620,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_peek(Partial::new("abcd")), Err(ErrMode::Backtrack(InputError::new(Partial::new("abcd"), ErrorKind::Complete))));
     /// # }
     /// ```
+    #[inline(always)]
     fn complete_err(self) -> CompleteErr<Self>
     where
         Self: core::marker::Sized,
@@ -612,6 +629,7 @@ pub trait Parser<I, O, E> {
     }
 
     /// Convert the parser's error to another type using [`std::convert::From`]
+    #[inline(always)]
     fn err_into<E2>(self) -> ErrInto<Self, I, O, E, E2>
     where
         Self: core::marker::Sized,
