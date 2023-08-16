@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Try inlining more wrapper functions
+
 ## [0.5.11] - 2023-08-15
 
 ### Features
