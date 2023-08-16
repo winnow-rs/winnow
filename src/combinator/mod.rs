@@ -221,6 +221,7 @@ pub struct ByRef<'p, P> {
 }
 
 impl<'p, P> ByRef<'p, P> {
+    #[inline(always)]
     pub(crate) fn new(p: &'p mut P) -> Self {
         Self { p }
     }
@@ -273,6 +274,7 @@ pub struct Map<F, G, O1> {
 }
 
 impl<F, G, O1> Map<F, G, O1> {
+    #[inline(always)]
     pub(crate) fn new(f: F, g: G) -> Self {
         Self {
             f,
@@ -342,6 +344,7 @@ pub struct MapRes<F, G, O1> {
 }
 
 impl<F, G, O1> MapRes<F, G, O1> {
+    #[inline(always)]
     pub(crate) fn new(f: F, g: G) -> Self {
         Self {
             f,
@@ -421,6 +424,7 @@ pub struct VerifyMap<F, G, O1> {
 }
 
 impl<F, G, O1> VerifyMap<F, G, O1> {
+    #[inline(always)]
     pub(crate) fn new(f: F, g: G) -> Self {
         Self {
             f,
@@ -496,6 +500,7 @@ impl<F, G, O1> AndThen<F, G, O1>
 where
     O1: StreamIsPartial,
 {
+    #[inline(always)]
     pub(crate) fn new(f: F, g: G) -> Self {
         Self {
             f,
@@ -526,6 +531,7 @@ pub struct ParseTo<P, O1, O2> {
 }
 
 impl<P, O1, O2> ParseTo<P, O1, O2> {
+    #[inline(always)]
     pub(crate) fn new(p: P) -> Self {
         Self {
             p,
@@ -596,6 +602,7 @@ pub struct FlatMap<F, G, O1> {
 }
 
 impl<F, G, O1> FlatMap<F, G, O1> {
+    #[inline(always)]
     pub(crate) fn new(f: F, g: G) -> Self {
         Self {
             f,
@@ -656,6 +663,7 @@ pub struct And<F, G> {
 }
 
 impl<F, G> And<F, G> {
+    #[inline(always)]
     pub(crate) fn new(f: F, g: G) -> Self {
         Self { f, g }
     }
@@ -677,6 +685,7 @@ pub struct Or<F, G> {
 }
 
 impl<F, G> Or<F, G> {
+    #[inline(always)]
     pub(crate) fn new(f: F, g: G) -> Self {
         Self { f, g }
     }
@@ -837,6 +846,7 @@ pub struct CompleteErr<F> {
 }
 
 impl<F> CompleteErr<F> {
+    #[inline(always)]
     pub(crate) fn new(f: F) -> Self {
         Self { f }
     }
@@ -952,6 +962,7 @@ pub struct Verify<F, G, O2: ?Sized> {
 }
 
 impl<F, G, O2: ?Sized> Verify<F, G, O2> {
+    #[inline(always)]
     pub(crate) fn new(first: F, second: G) -> Self {
         Self {
             first,
@@ -1021,6 +1032,7 @@ pub struct Value<F, O1, O2> {
 }
 
 impl<F, O1, O2> Value<F, O1, O2> {
+    #[inline(always)]
     pub(crate) fn new(parser: F, val: O2) -> Self {
         Self {
             parser,
@@ -1048,6 +1060,7 @@ pub struct Void<F, O> {
 }
 
 impl<F, O> Void<F, O> {
+    #[inline(always)]
     pub(crate) fn new(parser: F) -> Self {
         Self {
             parser,
@@ -1140,6 +1153,7 @@ pub struct Recognize<F, O> {
 }
 
 impl<F, O> Recognize<F, O> {
+    #[inline(always)]
     pub(crate) fn new(parser: F) -> Self {
         Self {
             parser,
@@ -1240,6 +1254,7 @@ pub struct WithRecognized<F, O> {
 }
 
 impl<F, O> WithRecognized<F, O> {
+    #[inline(always)]
     pub(crate) fn new(parser: F) -> Self {
         Self {
             parser,
@@ -1275,6 +1290,7 @@ pub struct Span<F, O> {
 }
 
 impl<F, O> Span<F, O> {
+    #[inline(always)]
     pub(crate) fn new(parser: F) -> Self {
         Self {
             parser,
@@ -1306,6 +1322,7 @@ pub struct WithSpan<F, O> {
 }
 
 impl<F, O> WithSpan<F, O> {
+    #[inline(always)]
     pub(crate) fn new(parser: F) -> Self {
         Self {
             parser,
@@ -1507,6 +1524,7 @@ impl<F, O1, O2> OutputInto<F, O1, O2>
 where
     O1: Into<O2>,
 {
+    #[inline(always)]
     pub(crate) fn new(f: F) -> Self {
         Self {
             f,
@@ -1543,6 +1561,7 @@ impl<F, E1, E2> ErrInto<F, E1, E2>
 where
     E1: Into<E2>,
 {
+    #[inline(always)]
     pub(crate) fn new(f: F) -> Self {
         Self {
             f,
@@ -1724,6 +1743,7 @@ pub struct Context<F, O, C: Clone + crate::lib::std::fmt::Debug> {
 }
 
 impl<F, O, C: Clone + crate::lib::std::fmt::Debug> Context<F, O, C> {
+    #[inline(always)]
     pub(crate) fn new(f: F, context: C) -> Self {
         Self {
             f,
