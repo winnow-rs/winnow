@@ -5,6 +5,7 @@
 //! See also the general Rust [Performance Book](https://nnethercote.github.io/perf-book/)
 //!
 //! Tips
+//! - Try `cargo add winnow -F simd`.  For some it offers significant performance improvements
 //! - When enough cases of an [`alt`] have unique prefixes, prefer [`dispatch`]
 //! - When parsing text, try to parse as bytes (`u8`) rather than `char`s ([`BStr`] can make
 //!   debugging easier)
