@@ -2636,7 +2636,35 @@ fn memchr(token: u8, slice: &[u8]) -> Option<usize> {
 #[cfg(feature = "simd")]
 #[inline(always)]
 fn memmem(slice: &[u8], tag: &[u8]) -> Option<usize> {
-    memchr::memmem::find(slice, tag)
+    if tag.len() > slice.len() {
+        return None;
+    }
+
+    let (&substr_first, substr_rest) = match tag.split_first() {
+        Some(split) => split,
+        // an empty substring is found at position 0
+        // This matches the behavior of str.find("").
+        None => return Some(0),
+    };
+
+    if substr_rest.is_empty() {
+        return memchr::memchr(substr_first, slice);
+    }
+
+    let mut offset = 0;
+    let haystack = &slice[..slice.len() - substr_rest.len()];
+
+    while let Some(position) = memchr::memchr(substr_first, &haystack[offset..]) {
+        offset += position;
+        let next_offset = offset + 1;
+        if &slice[next_offset..][..substr_rest.len()] == substr_rest {
+            return Some(offset);
+        }
+
+        offset = next_offset;
+    }
+
+    None
 }
 
 #[cfg(not(feature = "simd"))]
