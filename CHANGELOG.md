@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Additional inlining to make v0.4 and v0.5 performance differences focus on architecture and not additional changes.
+
 ## [0.4.9] - 2023-07-08
 
 ### Features
