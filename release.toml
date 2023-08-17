@@ -1,1 +1,1 @@
-allow-branch = ["main"]
+allow-branch = ["main", "v0.3-main"]
