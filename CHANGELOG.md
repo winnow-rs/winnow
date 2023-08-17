@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.13] - 2023-08-17
+
 ### Performance
 
 - `ErrMode` inlining for improving gitoxide
@@ -2019,7 +2021,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.12...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.13...HEAD
+[0.5.13]: https://github.com/winnow-rs/winnow/compare/v0.5.12...v0.5.13
 [0.5.12]: https://github.com/winnow-rs/winnow/compare/v0.5.11...v0.5.12
 [0.5.11]: https://github.com/winnow-rs/winnow/compare/v0.5.10...v0.5.11
 [0.5.10]: https://github.com/winnow-rs/winnow/compare/v0.5.9...v0.5.10
