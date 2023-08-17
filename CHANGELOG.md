@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- `ErrMode` inlining for improving gitoxide
+
 ## [0.5.12] - 2023-08-16
 
 ### Performance
