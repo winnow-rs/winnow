@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+Backport v0.4 and v0.5 inlining changes for more even comparison across architectures
+
 ## [0.3.6] - 2023-03-14
 
 ### Features
