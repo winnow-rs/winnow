@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.3.8] - 2023-08-17
+
 ### Performance
 
 - Backport v0.5 performance improvements
@@ -1704,7 +1706,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.3.7...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.3.8...HEAD
+[0.3.8]: https://github.com/winnow-rs/winnow/compare/v0.3.7...v0.3.8
 [0.3.7]: https://github.com/winnow-rs/winnow/compare/v0.3.6...v0.3.7
 [0.3.6]: https://github.com/winnow-rs/winnow/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/winnow-rs/winnow/compare/v0.3.4...v0.3.5
