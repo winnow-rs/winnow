@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Speed up `take_until` when `simd` is enabled
+
 ## [0.5.13] - 2023-08-17
 
 ### Performance
