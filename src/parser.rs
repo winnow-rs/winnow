@@ -43,6 +43,7 @@ pub trait Parser<I, O, E> {
     /// either the remaining input and the output value, or an error
     #[deprecated(since = "0.3.0", note = "Replaced with `Parser::parse_next`")]
     #[cfg_attr(feature = "unstable-doc", doc(hidden))]
+    #[inline(always)]
     fn parse(&mut self, input: I) -> IResult<I, O, E> {
         self.parse_next(input)
     }
@@ -97,6 +98,7 @@ pub trait Parser<I, O, E> {
     ///   }
     /// }
     /// ```
+    #[inline(always)]
     fn by_ref(&mut self) -> ByRef<'_, Self>
     where
         Self: core::marker::Sized,
@@ -120,6 +122,7 @@ pub trait Parser<I, O, E> {
     /// # }
     /// ```
     #[doc(alias = "to")]
+    #[inline(always)]
     fn value<O2>(self, val: O2) -> Value<Self, O, O2>
     where
         Self: core::marker::Sized,
@@ -143,6 +146,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_next("123abcd;"), Err(ErrMode::Backtrack(Error::new("123abcd;", ErrorKind::Alpha))));
     /// # }
     /// ```
+    #[inline(always)]
     fn void(self) -> Void<Self, O>
     where
         Self: core::marker::Sized,
@@ -171,6 +175,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(bytes, Ok(("", vec![97, 98, 99, 100])));
     /// # }
     /// ```
+    #[inline(always)]
     fn output_into<O2>(self) -> OutputInto<Self, O, O2>
     where
         Self: core::marker::Sized,
@@ -196,6 +201,7 @@ pub trait Parser<I, O, E> {
     /// # }
     /// ```
     #[doc(alias = "concat")]
+    #[inline(always)]
     fn recognize(self) -> Recognize<Self, O>
     where
         Self: core::marker::Sized,
@@ -243,6 +249,7 @@ pub trait Parser<I, O, E> {
     /// # }
     /// ```
     #[doc(alias = "consumed")]
+    #[inline(always)]
     fn with_recognized(self) -> WithRecognized<Self, O>
     where
         Self: core::marker::Sized,
@@ -266,6 +273,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_next(Located::new("abcd,efgh")).finish(), Ok((0..4, 5..9)));
     /// assert_eq!(parser.parse_next(Located::new("abcd;")),Err(ErrMode::Backtrack(Error::new(Located::new("abcd;").next_slice(4).0, ErrorKind::OneOf))));
     /// ```
+    #[inline(always)]
     fn span(self) -> Span<Self, O>
     where
         Self: core::marker::Sized,
@@ -314,6 +322,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(recognize_parser.parse_next(Located::new("abcd")), consumed_parser.parse_next(Located::new("abcd")));
     /// # }
     /// ```
+    #[inline(always)]
     fn with_span(self) -> WithSpan<Self, O>
     where
         Self: core::marker::Sized,
@@ -340,6 +349,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
     /// # }
     /// ```
+    #[inline(always)]
     fn map<G, O2>(self, g: G) -> Map<Self, G, O>
     where
         G: Fn(O) -> O2,
@@ -369,6 +379,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parse.parse_next("123456"), Err(ErrMode::Backtrack(Error::new("123456", ErrorKind::MapRes))));
     /// # }
     /// ```
+    #[inline(always)]
     fn map_res<G, O2, E2>(self, g: G) -> MapRes<Self, G, O>
     where
         Self: core::marker::Sized,
@@ -401,6 +412,7 @@ pub trait Parser<I, O, E> {
     #[doc(alias = "satisfy_map")]
     #[doc(alias = "filter_map")]
     #[doc(alias = "map_opt")]
+    #[inline(always)]
     fn verify_map<G, O2>(self, g: G) -> VerifyMap<Self, G, O>
     where
         Self: core::marker::Sized,
@@ -441,6 +453,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(length_data.parse_next(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
     /// assert_eq!(length_data.parse_next(&[4, 0, 1, 2][..]), Err(ErrMode::Backtrack(Error::new(&[0, 1, 2][..], ErrorKind::Eof))));
     /// ```
+    #[inline(always)]
     fn flat_map<G, H, O2>(self, g: G) -> FlatMap<Self, G, O>
     where
         G: FnMut(O) -> H,
@@ -467,6 +480,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(digits.parse_next("123"), Err(ErrMode::Backtrack(Error::new("123", ErrorKind::Eof))));
     /// # }
     /// ```
+    #[inline(always)]
     fn and_then<G, O2>(self, g: G) -> AndThen<Self, G, O>
     where
         O: StreamIsPartial,
@@ -496,6 +510,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_next("abc"), Err(ErrMode::Backtrack(Error::new("abc", ErrorKind::Digit))));
     /// ```
     #[doc(alias = "from_str")]
+    #[inline(always)]
     fn parse_to<O2>(self) -> ParseTo<Self, O, O2>
     where
         Self: core::marker::Sized,
@@ -525,6 +540,7 @@ pub trait Parser<I, O, E> {
     /// ```
     #[doc(alias = "satisfy")]
     #[doc(alias = "filter")]
+    #[inline(always)]
     fn verify<G, O2: ?Sized>(self, second: G) -> Verify<Self, G, O2>
     where
         Self: core::marker::Sized,
@@ -538,6 +554,7 @@ pub trait Parser<I, O, E> {
     /// This is used mainly to add user friendly information
     /// to errors when backtracking through a parse tree.
     #[doc(alias = "labelled")]
+    #[inline(always)]
     fn context<C>(self, context: C) -> Context<Self, O, C>
     where
         Self: core::marker::Sized,
@@ -562,6 +579,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_next(Partial::new("abcd")), Err(ErrMode::Backtrack(Error::new(Partial::new("abcd"), ErrorKind::Complete))));
     /// # }
     /// ```
+    #[inline(always)]
     fn complete_err(self) -> CompleteErr<Self>
     where
         Self: core::marker::Sized,
@@ -570,6 +588,7 @@ pub trait Parser<I, O, E> {
     }
 
     /// Convert the parser's error to another type using [`std::convert::From`]
+    #[inline(always)]
     fn err_into<E2>(self) -> ErrInto<Self, E, E2>
     where
         Self: core::marker::Sized,
@@ -583,6 +602,7 @@ pub trait Parser<I, O, E> {
     /// **WARNING:** Deprecated, replaced with [`winnow::sequence::tuple`][crate::sequence::tuple]
     #[deprecated(since = "0.1.0", note = "Replaced with `winnow::sequence::tuple")]
     #[cfg_attr(feature = "unstable-doc", doc(hidden))]
+    #[inline(always)]
     fn and<G, O2>(self, g: G) -> And<Self, G>
     where
         G: Parser<I, O2, E>,
@@ -596,6 +616,7 @@ pub trait Parser<I, O, E> {
     /// **WARNING:** Deprecated, replaced with [`winnow::branch::alt`][crate::branch::alt]
     #[deprecated(since = "0.1.0", note = "Replaced with `winnow::branch::alt")]
     #[cfg_attr(feature = "unstable-doc", doc(hidden))]
+    #[inline(always)]
     fn or<G>(self, g: G) -> Or<Self, G>
     where
         G: Parser<I, O, E>,
@@ -609,6 +630,7 @@ impl<'a, I, O, E, F> Parser<I, O, E> for F
 where
     F: FnMut(I) -> IResult<I, O, E> + 'a,
 {
+    #[inline(always)]
     fn parse_next(&mut self, i: I) -> IResult<I, O, E> {
         self(i)
     }
@@ -635,6 +657,7 @@ where
     I: Stream<Token = u8>,
     E: ParseError<I>,
 {
+    #[inline(always)]
     fn parse_next(&mut self, i: I) -> IResult<I, u8, E> {
         crate::bytes::one_of(*self).parse_next(i)
     }
@@ -662,6 +685,7 @@ where
     <I as Stream>::Token: AsChar + Copy,
     E: ParseError<I>,
 {
+    #[inline(always)]
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Stream>::Token, E> {
         crate::bytes::one_of(*self).parse_next(i)
     }
@@ -690,6 +714,7 @@ where
     I: Compare<&'s [u8]> + StreamIsPartial,
     I: Stream,
 {
+    #[inline(always)]
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Stream>::Slice, E> {
         crate::bytes::tag(*self).parse_next(i)
     }
@@ -718,6 +743,7 @@ where
     I: Compare<&'s [u8; N]> + StreamIsPartial,
     I: Stream,
 {
+    #[inline(always)]
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Stream>::Slice, E> {
         crate::bytes::tag(*self).parse_next(i)
     }
@@ -746,12 +772,14 @@ where
     I: Compare<&'s str> + StreamIsPartial,
     I: Stream,
 {
+    #[inline(always)]
     fn parse_next(&mut self, i: I) -> IResult<I, <I as Stream>::Slice, E> {
         crate::bytes::tag(*self).parse_next(i)
     }
 }
 
 impl<I, E: ParseError<I>> Parser<I, (), E> for () {
+    #[inline(always)]
     fn parse_next(&mut self, i: I) -> IResult<I, (), E> {
         Ok((i, ()))
     }
@@ -764,6 +792,7 @@ macro_rules! impl_parser_for_tuple {
     where
       $($parser: Parser<I, $output, E>),+
     {
+      #[inline(always)]
       fn parse_next(&mut self, i: I) -> IResult<I, ($($output),+,), E> {
         let ($(ref mut $parser),+,) = *self;
 
@@ -817,6 +846,7 @@ use alloc::boxed::Box;
 
 #[cfg(feature = "alloc")]
 impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a> {
+    #[inline(always)]
     fn parse_next(&mut self, input: I) -> IResult<I, O, E> {
         (**self).parse_next(input)
     }
