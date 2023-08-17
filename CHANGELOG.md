@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Backport v0.5 performance improvements
+
 ## [0.4.10] - 2023-08-17
 
 ### Performance
