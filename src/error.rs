@@ -166,6 +166,7 @@ impl<E> ErrMode<E> {
     ///
     /// Returns `None` for [`ErrMode::Incomplete`]
     #[cfg_attr(debug_assertions, track_caller)]
+    #[inline(always)]
     pub fn into_inner(self) -> Option<E> {
         match self {
             ErrMode::Backtrack(e) | ErrMode::Cut(e) => Some(e),
@@ -175,13 +176,13 @@ impl<E> ErrMode<E> {
 }
 
 impl<I, E: ParserError<I>> ParserError<I> for ErrMode<E> {
-    #[inline]
+    #[inline(always)]
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
         ErrMode::Backtrack(E::from_error_kind(input, kind))
     }
 
     #[cfg_attr(debug_assertions, track_caller)]
-    #[inline]
+    #[inline(always)]
     fn assert(input: &I, message: &'static str) -> Self
     where
         I: crate::lib::std::fmt::Debug,
@@ -210,14 +211,14 @@ impl<I, EXT, E> FromExternalError<I, EXT> for ErrMode<E>
 where
     E: FromExternalError<I, EXT>,
 {
-    #[inline]
+    #[inline(always)]
     fn from_external_error(input: &I, kind: ErrorKind, e: EXT) -> Self {
         ErrMode::Backtrack(E::from_external_error(input, kind, e))
     }
 }
 
 impl<I, C, E: AddContext<I, C>> AddContext<I, C> for ErrMode<E> {
-    #[inline]
+    #[inline(always)]
     fn add_context(self, input: &I, ctx: C) -> Self {
         self.map(|err| err.add_context(input, ctx))
     }
