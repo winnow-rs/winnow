@@ -237,13 +237,13 @@ impl<E> ErrMode<E> {
 }
 
 impl<I, E: ParseError<I>> ParseError<I> for ErrMode<E> {
-    #[inline]
+    #[inline(always)]
     fn from_error_kind(input: I, kind: ErrorKind) -> Self {
         ErrMode::Backtrack(E::from_error_kind(input, kind))
     }
 
     #[cfg_attr(debug_assertions, track_caller)]
-    #[inline]
+    #[inline(always)]
     fn assert(input: I, message: &'static str) -> Self
     where
         I: crate::lib::std::fmt::Debug,
@@ -272,7 +272,7 @@ impl<I, EXT, E> FromExternalError<I, EXT> for ErrMode<E>
 where
     E: FromExternalError<I, EXT>,
 {
-    #[inline]
+    #[inline(always)]
     fn from_external_error(input: I, kind: ErrorKind, e: EXT) -> Self {
         ErrMode::Backtrack(E::from_external_error(input, kind, e))
     }
