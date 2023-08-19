@@ -151,6 +151,4 @@ use crate::PResult;
 use crate::Parser;
 use crate::_topic;
 
-pub use super::chapter_5 as previous;
-pub use super::chapter_7 as next;
-pub use crate::_tutorial as table_of_content;
+super::tutorial_links![previous: chapter_5, next: chapter_7];

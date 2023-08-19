@@ -35,5 +35,4 @@
 use crate::_topic;
 use std::iter::Iterator;
 
-pub use super::chapter_1 as next;
-pub use crate::_tutorial as table_of_content;
+super::tutorial_links![next: chapter_1];

@@ -277,6 +277,4 @@ use crate::stream::Accumulate;
 use crate::Parser;
 use std::vec::Vec;
 
-pub use super::chapter_4 as previous;
-pub use super::chapter_6 as next;
-pub use crate::_tutorial as table_of_content;
+super::tutorial_links![previous: chapter_4, next: chapter_6];

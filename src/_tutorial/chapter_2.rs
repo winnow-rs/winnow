@@ -243,6 +243,4 @@ use crate::token::take_while;
 use crate::Parser;
 use std::ops::RangeInclusive;
 
-pub use super::chapter_1 as previous;
-pub use super::chapter_3 as next;
-pub use crate::_tutorial as table_of_content;
+super::tutorial_links![previous: chapter_1, next: chapter_3];

@@ -105,6 +105,4 @@ use crate::PResult;
 use crate::Parser;
 use std::str::FromStr;
 
-pub use super::chapter_3 as previous;
-pub use super::chapter_5 as next;
-pub use crate::_tutorial as table_of_content;
+super::tutorial_links![previous: chapter_3, next: chapter_5];
