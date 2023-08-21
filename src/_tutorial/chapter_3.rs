@@ -373,4 +373,4 @@ use crate::stream::Stream;
 
 pub use super::chapter_2 as previous;
 pub use super::chapter_4 as next;
-pub use crate::_tutorial as table_of_content;
+pub use crate::_tutorial as table_of_contents;

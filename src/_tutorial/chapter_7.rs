@@ -115,4 +115,4 @@ use crate::PResult;
 use crate::Parser;
 
 pub use super::chapter_6 as previous;
-pub use crate::_tutorial as table_of_content;
+pub use crate::_tutorial as table_of_contents;

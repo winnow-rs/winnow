@@ -245,4 +245,4 @@ use std::ops::RangeInclusive;
 
 pub use super::chapter_1 as previous;
 pub use super::chapter_3 as next;
-pub use crate::_tutorial as table_of_content;
+pub use crate::_tutorial as table_of_contents;
