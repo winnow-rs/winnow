@@ -134,6 +134,10 @@ name = "contains_token"
 harness = false
 
 [[bench]]
+name = "iter"
+harness = false
+
+[[bench]]
 name = "number"
 harness = false
 
