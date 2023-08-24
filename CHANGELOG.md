@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Improve build times with `debug` when closures are used
+
 ## [0.5.14] - 2023-08-17
 
 ### Performance
