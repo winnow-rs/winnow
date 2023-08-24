@@ -49,25 +49,11 @@ compile_error!("`debug` requires `std`");
 #[cfg_attr(not(feature = "debug"), inline(always))]
 pub fn trace<I: Stream, O, E>(
     name: impl crate::lib::std::fmt::Display,
-    mut parser: impl Parser<I, O, E>,
+    parser: impl Parser<I, O, E>,
 ) -> impl Parser<I, O, E> {
     #[cfg(feature = "debug")]
     {
-        let mut call_count = 0;
-        move |i: &mut I| {
-            let depth = internals::Depth::new();
-            let original = i.checkpoint();
-            internals::start(*depth, &name, call_count, i);
-
-            let res = parser.parse_next(i);
-
-            let consumed = i.offset_from(&original);
-            let severity = internals::Severity::with_result(&res);
-            internals::end(*depth, &name, call_count, consumed, severity);
-            call_count += 1;
-
-            res
-        }
+        internals::Trace::new(parser, name)
     }
     #[cfg(not(feature = "debug"))]
     {
