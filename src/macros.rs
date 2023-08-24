@@ -38,6 +38,7 @@
 /// assert_eq!(escaped.parse_peek("\\nHello"), Ok(("Hello", '\n')));
 /// ```
 #[macro_export]
+#[doc(hidden)] // forced to be visible in intended location
 macro_rules! dispatch {
     ($match_parser: expr; $( $pat:pat $(if $pred:expr)? => $expr: expr ),+ $(,)? ) => {
         $crate::trace::trace("dispatch", move |i: &mut _|
