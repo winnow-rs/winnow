@@ -4,6 +4,63 @@ use std::io::Write;
 
 use crate::error::ErrMode;
 use crate::stream::Stream;
+use crate::*;
+
+pub struct Trace<P, D, I, O, E>
+where
+    P: Parser<I, O, E>,
+    I: Stream,
+    D: std::fmt::Display,
+{
+    parser: P,
+    name: D,
+    call_count: usize,
+    i: core::marker::PhantomData<I>,
+    o: core::marker::PhantomData<O>,
+    e: core::marker::PhantomData<E>,
+}
+
+impl<P, D, I, O, E> Trace<P, D, I, O, E>
+where
+    P: Parser<I, O, E>,
+    I: Stream,
+    D: std::fmt::Display,
+{
+    #[inline(always)]
+    pub fn new(parser: P, name: D) -> Self {
+        Self {
+            parser,
+            name,
+            call_count: 0,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
+    }
+}
+
+impl<P, D, I, O, E> Parser<I, O, E> for Trace<P, D, I, O, E>
+where
+    P: Parser<I, O, E>,
+    I: Stream,
+    D: std::fmt::Display,
+{
+    #[inline]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
+        let depth = Depth::new();
+        let original = i.checkpoint();
+        start(*depth, &self.name, self.call_count, i);
+
+        let res = self.parser.parse_next(i);
+
+        let consumed = i.offset_from(&original);
+        let severity = Severity::with_result(&res);
+        end(*depth, &self.name, self.call_count, consumed, severity);
+        self.call_count += 1;
+
+        res
+    }
+}
 
 pub struct Depth {
     depth: usize,
