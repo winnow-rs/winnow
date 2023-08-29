@@ -1,6 +1,7 @@
 //! # Tutorial
 //!
 //! Table of Contents
+#![allow(clippy::std_instead_of_core)]
 
 pub mod chapter_0;
 pub mod chapter_1;

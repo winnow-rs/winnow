@@ -877,7 +877,7 @@ where
 #[cfg(feature = "std")]
 impl<I, C> TreeError<I, C>
 where
-    I: Clone + std::fmt::Display,
+    I: Clone + crate::lib::std::fmt::Display,
     C: fmt::Display,
 {
     fn write(&self, f: &mut fmt::Formatter<'_>, indent: usize) -> fmt::Result {
@@ -1287,7 +1287,7 @@ fn translate_position(input: &[u8], index: usize) -> (usize, usize) {
     let line = line;
 
     // HACK: This treats byte offset and column offsets the same
-    let column = std::str::from_utf8(&input[line_start..=index])
+    let column = crate::lib::std::str::from_utf8(&input[line_start..=index])
         .map(|s| s.chars().count() - 1)
         .unwrap_or_else(|_| index - line_start);
     let column = column + column_offset;

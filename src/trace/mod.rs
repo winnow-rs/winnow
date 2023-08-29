@@ -6,6 +6,7 @@
 //! # Example
 //!
 //!![Trace output from string example](https://raw.githubusercontent.com/winnow-rs/winnow/main/assets/trace.svg "Example output")
+#![cfg_attr(feature = "debug", allow(clippy::std_instead_of_core))]
 
 #[cfg(feature = "debug")]
 mod internals;
