@@ -19,7 +19,7 @@ compile_error!("`debug` requires `std`");
 
 /// Trace the execution of the parser
 ///
-/// Note that [`Parser::context` also provides high level trace information.
+/// Note that [`Parser::context`] also provides high level trace information.
 ///
 /// See [`trace` module][self] for more details.
 ///
