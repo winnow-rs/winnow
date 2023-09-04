@@ -423,7 +423,8 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
 
     /// Iterate with the offset from the current location
     fn iter_offsets(&self) -> Self::IterOffsets;
-    /// Returns the offaet to the end of the input
+
+    /// Returns the offset to the end of the input
     fn eof_offset(&self) -> usize;
 
     /// Split off the next token from the input
