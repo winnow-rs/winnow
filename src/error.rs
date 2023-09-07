@@ -30,26 +30,29 @@ use crate::stream::Stream;
 #[allow(unused_imports)] // Here for intra-doc links
 use crate::Parser;
 
-/// Holds the result of [`Parser`]
+/// For use with [`Parser::parse_peek`] which allows the input stream to be threaded through a
+/// parser.
 ///
 /// - `Ok((I, O))` is the remaining [input][crate::stream] and the parsed value
 /// - [`Err(ErrMode<E>)`][ErrMode] is the error along with how to respond to it
 ///
 /// By default, the error type (`E`) is [`InputError`]
 ///
-/// [`Parser::parse`] is a top-level operation that can help convert to a `Result` for integrating
-/// with your application's error reporting.
+/// When integrating into the result of the application, see
+/// - [`Parser::parse`]
+/// - [`ErrMode::into_inner`]
 pub type IResult<I, O, E = InputError<I>> = PResult<(I, O), E>;
 
-/// Holds the result of [`Parser`]
+/// For use with [`Parser::parse_next`]
 ///
 /// - `Ok(O)` is the parsed value
 /// - [`Err(ErrMode<E>)`][ErrMode] is the error along with how to respond to it
 ///
-/// By default, the error type (`E`) is [`ErrorKind`].
+/// By default, the error type (`E`) is [`ContextError`].
 ///
-/// [`Parser::parse`] is a top-level operation that can help convert to a `Result` for integrating
-/// with your application's error reporting.
+/// When integrating into the result of the application, see
+/// - [`Parser::parse`]
+/// - [`ErrMode::into_inner`]
 pub type PResult<O, E = ContextError> = Result<O, ErrMode<E>>;
 
 /// Contains information on needed data if a parser returned `Incomplete`
