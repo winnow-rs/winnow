@@ -88,6 +88,8 @@ impl BStr {
 
 /// Allow collecting the span of a parsed token
 ///
+/// Spans are tracked as a [`Range<usize>`] of byte offsets.
+///
 /// See [`Parser::span`][crate::Parser::span] and [`Parser::with_span`][crate::Parser::with_span] for more details
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Located<I> {
