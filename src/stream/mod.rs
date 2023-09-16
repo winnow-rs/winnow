@@ -90,6 +90,13 @@ impl BStr {
 ///
 /// Spans are tracked as a [`Range<usize>`] of byte offsets.
 ///
+/// Converting byte offsets to line or column numbers is left up to the user, as computing column
+/// numbers requires domain knowledge (are columns byte-based, codepoint-based, or grapheme-based?)
+/// and O(n) iteration over the input to determine codepoint and line boundaries.
+///
+/// [The `line-span` crate](https://docs.rs/line-span/latest/line_span/) can help with converting
+/// byte offsets to line numbers.
+///
 /// See [`Parser::span`][crate::Parser::span] and [`Parser::with_span`][crate::Parser::with_span] for more details
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Located<I> {
