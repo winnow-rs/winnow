@@ -180,7 +180,7 @@ jobs:
     - name: Install cargo-tarpaulin
       run: cargo install cargo-tarpaulin
     - name: Run cargo tarpaulin
-      run: cargo tarpaulin --output-dir coverage --out Lcov
+      run: cargo tarpaulin --output-dir coverage --out lcov
     - name: Publish to Coveralls
       uses: coverallsapp/github-action@master
       with:
