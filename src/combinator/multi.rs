@@ -269,7 +269,7 @@ where
     })
 }
 
-/// [`Accumulate`] the output of a parser, interleaed with `sep`
+/// [`Accumulate`] the output of a parser, interleaved with `sep`
 ///
 /// This stops when either parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
@@ -354,7 +354,7 @@ where
     })
 }
 
-/// [`Accumulate`] the output of a parser, interleaed with `sep`
+/// [`Accumulate`] the output of a parser, interleaved with `sep`
 ///
 /// Fails if the element parser does not produce at least one element.$
 ///
