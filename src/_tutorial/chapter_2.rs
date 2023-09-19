@@ -207,7 +207,7 @@
 //! }
 //! ```
 //!
-//! We could simplify this further with by using one of the built-in character classes, [`hex_digit1`]:
+//! We could simplify this further by using one of the built-in character classes, [`hex_digit1`]:
 //! ```rust
 //! # use winnow::Parser;
 //! # use winnow::PResult;
