@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Correctly calculate `offset_from` for non-byte slices
+
 ## [0.5.15] - 2023-08-24
 
 ### Performance
