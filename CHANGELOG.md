@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.16] - 2023-10-06
+
 ### Fixes
 
 - Correctly calculate `offset_from` for non-byte slices
@@ -2037,7 +2039,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.15...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.16...HEAD
+[0.5.16]: https://github.com/winnow-rs/winnow/compare/v0.5.15...v0.5.16
 [0.5.15]: https://github.com/winnow-rs/winnow/compare/v0.5.14...v0.5.15
 [0.5.14]: https://github.com/winnow-rs/winnow/compare/v0.5.13...v0.5.14
 [0.5.13]: https://github.com/winnow-rs/winnow/compare/v0.5.12...v0.5.13
