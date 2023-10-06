@@ -7,7 +7,7 @@ use crate::trace::trace;
 use crate::trace::trace_result;
 use crate::*;
 
-/// Implementation of [`Parser::by_ref`][Parser::by_ref]
+/// Implementation of [`Parser::by_ref`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct ByRef<'p, P> {
     p: &'p mut P,
