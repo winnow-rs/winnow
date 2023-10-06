@@ -1289,7 +1289,7 @@ pub trait Offset<Start = Self> {
     /// Offset between the first byte of `start` and the first byte of `self`a
     ///
     /// **Note:** This is an offset, not an index, and may point to the end of input
-    /// (`start.len() + 1`) when `self` is exhausted.
+    /// (`start.len()`) when `self` is exhausted.
     fn offset_from(&self, start: &Start) -> usize;
 }
 
