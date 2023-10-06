@@ -1182,6 +1182,9 @@ impl<I, E> ParseError<I, E> {
     }
 
     /// The location in [`ParseError::input`] where parsing failed
+    ///
+    /// **Note:** This is an offset, not an index, and may point to the end of input
+    /// (`input.len() + 1`) on eof errors.
     #[inline]
     pub fn offset(&self) -> usize {
         self.offset
