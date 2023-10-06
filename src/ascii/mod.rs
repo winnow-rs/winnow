@@ -423,7 +423,7 @@ where
 ///
 /// ## Parsing an integer
 ///
-/// You can use `digit1` in combination with [`Parser::try_map`][crate::Parser::try_map] to parse an integer:
+/// You can use `digit1` in combination with [`Parser::try_map`] to parse an integer:
 ///
 /// ```
 /// # use winnow::prelude::*;

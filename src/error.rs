@@ -9,7 +9,7 @@
 //! - Help thread-through the [stream][crate::stream]
 //!
 //! To abstract these needs away from the user, generally `winnow` parsers use the [`PResult`]
-//! alias, rather than [`Result`][std::result::Result].  [`Parser::parse`] is a top-level operation
+//! alias, rather than [`Result`].  [`Parser::parse`] is a top-level operation
 //! that can help convert to a `Result` for integrating with your application's error reporting.
 //!
 //! Error types include:
@@ -100,7 +100,7 @@ pub enum ErrMode<E> {
     ///
     /// More data needs to be buffered before retrying the parse.
     ///
-    /// This must only be set when the [`Stream`][crate::stream::Stream] is [partial][`crate::stream::StreamIsPartial`], like with
+    /// This must only be set when the [`Stream`] is [partial][`crate::stream::StreamIsPartial`], like with
     /// [`Partial`][crate::Partial]
     ///
     /// Convert this into an `Backtrack` with [`Parser::complete_err`]

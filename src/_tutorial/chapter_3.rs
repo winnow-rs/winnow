@@ -297,7 +297,7 @@
 //!
 //! Sometimes a giant if/else-if ladder can be slow and you'd rather have a `match` statement for
 //! branches of your parser that have unique prefixes.  In this case, you can use the
-//! [`dispatch`][crate::combinator::dispatch] macro:
+//! [`dispatch`] macro:
 //!
 //! ```rust
 //! # use winnow::prelude::*;

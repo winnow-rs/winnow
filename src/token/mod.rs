@@ -81,7 +81,7 @@ where
 ///
 /// It will return `Err(ErrMode::Backtrack(InputError::new(_, ErrorKind::Tag)))` if the input doesn't match the pattern
 ///
-/// **Note:** [`Parser`][crate::Parser] is implemented for strings and byte strings as a convenience (complete
+/// **Note:** [`Parser`] is implemented for strings and byte strings as a convenience (complete
 /// only)
 ///
 /// # Example
@@ -244,7 +244,7 @@ where
 
 /// Recognize a token that matches the [pattern][ContainsToken]
 ///
-/// **Note:** [`Parser`][crate::Parser] is implemented as a convenience (complete
+/// **Note:** [`Parser`] is implemented as a convenience (complete
 /// only) for
 /// - `u8`
 /// - `char`
@@ -351,7 +351,7 @@ where
 ///
 /// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))`  if the pattern reaches the end of the input or is too short.
 ///
-/// To recognize a series of tokens, use [`repeat`][crate::combinator::repeat] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`][crate::Parser::recognize].
+/// To recognize a series of tokens, use [`repeat`][crate::combinator::repeat] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`].
 ///
 /// # Example
 ///
