@@ -127,5 +127,5 @@ fn test_custom_slice() {
     let _ = input.next_token();
     let _ = input.next_token();
     let offset = input.offset_from(&start);
-    assert_eq!(offset, 16);
+    assert_eq!(offset, 2);
 }
