@@ -1300,7 +1300,7 @@ impl<'a, T> Offset for &'a [T] {
             fst <= snd,
             "`Offset::offset_to` only accepts slices of `self`"
         );
-        snd as usize - fst as usize
+        (snd as usize - fst as usize) / crate::lib::std::mem::size_of::<T>()
     }
 }
 

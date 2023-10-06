@@ -114,3 +114,18 @@ fn test_partial_complete() {
     i.restore_partial(incomplete_state);
     assert!(i.is_partial(), "incomplete stream state should be restored");
 }
+
+#[test]
+fn test_custom_slice() {
+    type Token = usize;
+    type TokenSlice<'i> = &'i [Token];
+
+    let mut tokens: TokenSlice<'_> = &[1, 2, 3, 4];
+
+    let input = &mut tokens;
+    let start = input.checkpoint();
+    let _ = input.next_token();
+    let _ = input.next_token();
+    let offset = input.offset_from(&start);
+    assert_eq!(offset, 2);
+}
