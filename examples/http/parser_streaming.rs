@@ -119,7 +119,7 @@ fn is_token(c: u8) -> bool {
 }
 
 fn is_version(c: u8) -> bool {
-    (b'0'..=b'9').contains(&c) || c == b'.'
+    c.is_ascii_digit() || c == b'.'
 }
 
 fn not_line_ending(c: u8) -> bool {

@@ -238,14 +238,14 @@ mod bytes {
     impl PartialOrd for Bytes {
         #[inline]
         fn partial_cmp(&self, other: &Bytes) -> Option<Ordering> {
-            PartialOrd::partial_cmp(self.as_bytes(), other.as_bytes())
+            Some(self.cmp(other))
         }
     }
 
     impl Ord for Bytes {
         #[inline]
         fn cmp(&self, other: &Bytes) -> Ordering {
-            self.partial_cmp(other).unwrap()
+            Ord::cmp(self.as_bytes(), other.as_bytes())
         }
     }
 
@@ -485,14 +485,14 @@ mod bstr {
     impl PartialOrd for BStr {
         #[inline]
         fn partial_cmp(&self, other: &BStr) -> Option<Ordering> {
-            PartialOrd::partial_cmp(self.as_bytes(), other.as_bytes())
+            Some(self.cmp(other))
         }
     }
 
     impl Ord for BStr {
         #[inline]
         fn cmp(&self, other: &BStr) -> Ordering {
-            self.partial_cmp(other).unwrap()
+            Ord::cmp(self.as_bytes(), other.as_bytes())
         }
     }
 
