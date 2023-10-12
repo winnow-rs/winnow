@@ -1290,7 +1290,6 @@ fn translate_position(input: &[u8], index: usize) -> (usize, usize) {
         None => 0,
     };
     let line = input[0..line_start].iter().filter(|b| **b == b'\n').count();
-    let line = line;
 
     // HACK: This treats byte offset and column offsets the same
     let column = crate::lib::std::str::from_utf8(&input[line_start..=index])
