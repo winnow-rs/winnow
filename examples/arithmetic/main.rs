@@ -7,27 +7,28 @@ fn main() -> Result<(), lexopt::Error> {
     let args = Args::parse()?;
 
     let input = args.input.as_deref().unwrap_or("1 + 1");
-
-    println!("{} =", input);
-    match args.implementation {
-        Impl::Eval => match parser::expr.parse(input) {
-            Ok(result) => {
-                println!("  {}", result);
-            }
-            Err(err) => {
-                println!("  {}", err);
-            }
-        },
-        Impl::Ast => match parser_ast::expr.parse(input) {
-            Ok(result) => {
-                println!("  {:#?}={}", result, result.eval());
-            }
-            Err(err) => {
-                println!("  {}", err);
-            }
-        },
+    if let Err(err) = calc(input, args.implementation) {
+        println!("  {}", err);
     }
 
+    Ok(())
+}
+
+fn calc(
+    input: &str,
+    imp: Impl,
+) -> Result<(), winnow::error::ParseError<&str, winnow::error::ContextError>> {
+    println!("{} =", input);
+    match imp {
+        Impl::Eval => {
+            let result = parser::expr.parse(input)?;
+            println!("  {}", result);
+        }
+        Impl::Ast => {
+            let result = parser_ast::expr.parse(input)?;
+            println!("  {:#?}={}", result, result.eval());
+        }
+    }
     Ok(())
 }
 
