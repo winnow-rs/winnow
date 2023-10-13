@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Documentation
+
+- Provide lexer/parser example with details on handling of custom tokens
+
 ## [0.5.16] - 2023-10-06
 
 ### Fixes
