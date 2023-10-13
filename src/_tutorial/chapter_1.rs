@@ -53,7 +53,7 @@
 //!
 //! This parser function should take in a `&str`:
 //!
-//!  - Since it is supposed to succeed, we know it will return the Ok Variant.
+//!  - Since it is supposed to succeed, we know it will return the `Ok` variant.
 //!  - Since it does nothing to our input, the remaining input is the same as the input.
 //!  - Since it doesn't parse anything, it also should just return an empty string.
 //!
