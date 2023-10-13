@@ -8,13 +8,11 @@ use winnow::{
     ascii::{digit1 as digits, multispace0 as multispaces},
     combinator::alt,
     combinator::delimited,
-    combinator::dispatch,
-    combinator::fail,
-    combinator::repeat,
-    token::any,
+    combinator::fold_repeat,
+    token::one_of,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Expr {
     Value(i64),
     Add(Box<Expr>, Box<Expr>),
@@ -37,14 +35,6 @@ impl Expr {
     }
 }
 
-#[derive(Debug)]
-pub enum Oper {
-    Add,
-    Sub,
-    Mul,
-    Div,
-}
-
 impl Display for Expr {
     fn fmt(&self, format: &mut Formatter<'_>) -> fmt::Result {
         use Expr::{Add, Div, Mul, Paren, Sub, Value};
@@ -60,33 +50,39 @@ impl Display for Expr {
 }
 
 pub fn expr(i: &mut &str) -> PResult<Expr> {
-    let initial = term(i)?;
-    let remainder = repeat(
+    let init = term.parse_next(i)?;
+
+    fold_repeat(
         0..,
-        dispatch! {any;
-            '+' => term.map(|expr| (Oper::Add, expr)),
-            '-' => term.map(|expr| (Oper::Sub, expr)),
-            _ => fail,
+        (one_of(['+', '-']), term),
+        move || init.clone(),
+        |acc, (op, val): (char, Expr)| {
+            if op == '+' {
+                Expr::Add(Box::new(acc), Box::new(val))
+            } else {
+                Expr::Sub(Box::new(acc), Box::new(val))
+            }
         },
     )
-    .parse_next(i)?;
-
-    Ok(fold_exprs(initial, remainder))
+    .parse_next(i)
 }
 
 fn term(i: &mut &str) -> PResult<Expr> {
-    let initial = factor.parse_next(i)?;
-    let remainder = repeat(
+    let init = factor.parse_next(i)?;
+
+    fold_repeat(
         0..,
-        dispatch! {any;
-            '*' => factor.map(|expr| (Oper::Mul, expr)),
-            '/' => factor.map(|expr| (Oper::Div, expr)),
-            _ => fail,
+        (one_of(['*', '/']), factor),
+        move || init.clone(),
+        |acc, (op, val): (char, Expr)| {
+            if op == '*' {
+                Expr::Mul(Box::new(acc), Box::new(val))
+            } else {
+                Expr::Div(Box::new(acc), Box::new(val))
+            }
         },
     )
-    .parse_next(i)?;
-
-    Ok(fold_exprs(initial, remainder))
+    .parse_next(i)
 }
 
 fn factor(i: &mut &str) -> PResult<Expr> {
@@ -102,18 +98,6 @@ fn parens(i: &mut &str) -> PResult<Expr> {
     delimited("(", expr, ")")
         .map(|e| Expr::Paren(Box::new(e)))
         .parse_next(i)
-}
-
-fn fold_exprs(initial: Expr, remainder: Vec<(Oper, Expr)>) -> Expr {
-    remainder.into_iter().fold(initial, |acc, pair| {
-        let (oper, expr) = pair;
-        match oper {
-            Oper::Add => Expr::Add(Box::new(acc), Box::new(expr)),
-            Oper::Sub => Expr::Sub(Box::new(acc), Box::new(expr)),
-            Oper::Mul => Expr::Mul(Box::new(acc), Box::new(expr)),
-            Oper::Div => Expr::Div(Box::new(acc), Box::new(expr)),
-        }
-    })
 }
 
 #[test]
