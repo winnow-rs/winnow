@@ -10,7 +10,7 @@
 //! ## About
 //!
 //! `winnow` is a parser-combinator library. In other words, it gives you tools to define:
-//! - "parsers", or functions that takes an input and gives back an output
+//! - "parsers", or functions that take an input and give back an output
 //! - "combinators", or functions that take parsers and _combine_ them together!
 //!
 //! While "combinator" might be an unfamiliar word, you are likely using them in your rust code
