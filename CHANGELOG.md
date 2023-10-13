@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.17] - 2023-10-13
+
 ### Documentation
 
 - Provide lexer/parser example with details on handling of custom tokens
@@ -2043,7 +2045,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.16...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.17...HEAD
+[0.5.17]: https://github.com/winnow-rs/winnow/compare/v0.5.16...v0.5.17
 [0.5.16]: https://github.com/winnow-rs/winnow/compare/v0.5.15...v0.5.16
 [0.5.15]: https://github.com/winnow-rs/winnow/compare/v0.5.14...v0.5.15
 [0.5.14]: https://github.com/winnow-rs/winnow/compare/v0.5.13...v0.5.14
