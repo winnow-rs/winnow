@@ -5,13 +5,14 @@ use std::str::FromStr;
 
 use winnow::prelude::*;
 use winnow::{
-    ascii::{digit1 as digit, multispace0 as multispace},
+    ascii::{digit1 as digits, multispace0 as multispaces},
     combinator::alt,
-    combinator::repeat,
-    combinator::{delimited, preceded},
+    combinator::delimited,
+    combinator::fold_repeat,
+    token::one_of,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Expr {
     Value(i64),
     Add(Box<Expr>, Box<Expr>),
@@ -21,12 +22,17 @@ pub enum Expr {
     Paren(Box<Expr>),
 }
 
-#[derive(Debug)]
-pub enum Oper {
-    Add,
-    Sub,
-    Mul,
-    Div,
+impl Expr {
+    pub fn eval(&self) -> i64 {
+        match self {
+            Self::Value(v) => *v,
+            Self::Add(lhs, rhs) => lhs.eval() + rhs.eval(),
+            Self::Sub(lhs, rhs) => lhs.eval() - rhs.eval(),
+            Self::Mul(lhs, rhs) => lhs.eval() * rhs.eval(),
+            Self::Div(lhs, rhs) => lhs.eval() / rhs.eval(),
+            Self::Paren(expr) => expr.eval(),
+        }
+    }
 }
 
 impl Display for Expr {
@@ -44,125 +50,135 @@ impl Display for Expr {
 }
 
 pub fn expr(i: &mut &str) -> PResult<Expr> {
-    let initial = term(i)?;
-    let remainder = repeat(
-        0..,
-        alt((
-            |i: &mut &str| {
-                let add = preceded("+", term).parse_next(i)?;
-                Ok((Oper::Add, add))
-            },
-            |i: &mut &str| {
-                let sub = preceded("-", term).parse_next(i)?;
-                Ok((Oper::Sub, sub))
-            },
-        )),
-    )
-    .parse_next(i)?;
+    let init = term.parse_next(i)?;
 
-    Ok(fold_exprs(initial, remainder))
+    fold_repeat(
+        0..,
+        (one_of(['+', '-']), term),
+        move || init.clone(),
+        |acc, (op, val): (char, Expr)| {
+            if op == '+' {
+                Expr::Add(Box::new(acc), Box::new(val))
+            } else {
+                Expr::Sub(Box::new(acc), Box::new(val))
+            }
+        },
+    )
+    .parse_next(i)
 }
 
 fn term(i: &mut &str) -> PResult<Expr> {
-    let initial = factor(i)?;
-    let remainder = repeat(
-        0..,
-        alt((
-            |i: &mut &str| {
-                let mul = preceded("*", factor).parse_next(i)?;
-                Ok((Oper::Mul, mul))
-            },
-            |i: &mut &str| {
-                let div = preceded("/", factor).parse_next(i)?;
-                Ok((Oper::Div, div))
-            },
-        )),
-    )
-    .parse_next(i)?;
+    let init = factor.parse_next(i)?;
 
-    Ok(fold_exprs(initial, remainder))
+    fold_repeat(
+        0..,
+        (one_of(['*', '/']), factor),
+        move || init.clone(),
+        |acc, (op, val): (char, Expr)| {
+            if op == '*' {
+                Expr::Mul(Box::new(acc), Box::new(val))
+            } else {
+                Expr::Div(Box::new(acc), Box::new(val))
+            }
+        },
+    )
+    .parse_next(i)
 }
 
 fn factor(i: &mut &str) -> PResult<Expr> {
-    alt((
-        delimited(multispace, digit, multispace)
-            .try_map(FromStr::from_str)
-            .map(Expr::Value),
-        parens,
-    ))
+    delimited(
+        multispaces,
+        alt((digits.try_map(FromStr::from_str).map(Expr::Value), parens)),
+        multispaces,
+    )
     .parse_next(i)
 }
 
 fn parens(i: &mut &str) -> PResult<Expr> {
-    delimited(
-        multispace,
-        delimited("(", expr.map(|e| Expr::Paren(Box::new(e))), ")"),
-        multispace,
-    )
-    .parse_next(i)
-}
-
-fn fold_exprs(initial: Expr, remainder: Vec<(Oper, Expr)>) -> Expr {
-    remainder.into_iter().fold(initial, |acc, pair| {
-        let (oper, expr) = pair;
-        match oper {
-            Oper::Add => Expr::Add(Box::new(acc), Box::new(expr)),
-            Oper::Sub => Expr::Sub(Box::new(acc), Box::new(expr)),
-            Oper::Mul => Expr::Mul(Box::new(acc), Box::new(expr)),
-            Oper::Div => Expr::Div(Box::new(acc), Box::new(expr)),
-        }
-    })
+    delimited("(", expr, ")")
+        .map(|e| Expr::Paren(Box::new(e)))
+        .parse_next(i)
 }
 
 #[test]
 fn factor_test() {
-    assert_eq!(
-        factor
-            .parse_peek("  3  ")
-            .map(|(i, x)| (i, format!("{:?}", x))),
-        Ok(("", String::from("Value(3)")))
-    );
+    let input = "3";
+    let expected = Ok(("", String::from("Value(3)")));
+    assert_eq!(factor.map(|e| format!("{e:?}")).parse_peek(input), expected);
+
+    let input = " 12";
+    let expected = Ok(("", String::from("Value(12)")));
+    assert_eq!(factor.map(|e| format!("{e:?}")).parse_peek(input), expected);
+
+    let input = "537 ";
+    let expected = Ok(("", String::from("Value(537)")));
+    assert_eq!(factor.map(|e| format!("{e:?}")).parse_peek(input), expected);
+
+    let input = "  24     ";
+    let expected = Ok(("", String::from("Value(24)")));
+    assert_eq!(factor.map(|e| format!("{e:?}")).parse_peek(input), expected);
 }
 
 #[test]
 fn term_test() {
-    assert_eq!(
-        term.parse_peek(" 3 *  5   ")
-            .map(|(i, x)| (i, format!("{:?}", x))),
-        Ok(("", String::from("Mul(Value(3), Value(5))")))
-    );
+    let input = " 12 *2 /  3";
+    let expected = Ok(("", String::from("Div(Mul(Value(12), Value(2)), Value(3))")));
+    assert_eq!(term.map(|e| format!("{e:?}")).parse_peek(input), expected);
+
+    let input = " 12 *2 /  3";
+    let expected = Ok(("", String::from("Div(Mul(Value(12), Value(2)), Value(3))")));
+    assert_eq!(term.map(|e| format!("{e:?}")).parse_peek(input), expected);
+
+    let input = " 2* 3  *2 *2 /  3";
+    let expected = Ok((
+        "",
+        String::from("Div(Mul(Mul(Mul(Value(2), Value(3)), Value(2)), Value(2)), Value(3))"),
+    ));
+    assert_eq!(term.map(|e| format!("{e:?}")).parse_peek(input), expected);
+
+    let input = " 48 /  3/2";
+    let expected = Ok(("", String::from("Div(Div(Value(48), Value(3)), Value(2))")));
+    assert_eq!(term.map(|e| format!("{e:?}")).parse_peek(input), expected);
 }
 
 #[test]
 fn expr_test() {
-    assert_eq!(
-        expr.parse_peek(" 1 + 2 *  3 ")
-            .map(|(i, x)| (i, format!("{:?}", x))),
-        Ok(("", String::from("Add(Value(1), Mul(Value(2), Value(3)))")))
-    );
-    assert_eq!(
-        expr.parse_peek(" 1 + 2 *  3 / 4 - 5 ")
-            .map(|(i, x)| (i, format!("{:?}", x))),
-        Ok((
-            "",
-            String::from("Sub(Add(Value(1), Div(Mul(Value(2), Value(3)), Value(4))), Value(5))")
-        ))
-    );
-    assert_eq!(
-        expr.parse_peek(" 72 / 2 / 3 ")
-            .map(|(i, x)| (i, format!("{:?}", x))),
-        Ok(("", String::from("Div(Div(Value(72), Value(2)), Value(3))")))
-    );
+    let input = " 1 +  2 ";
+    let expected = Ok(("", String::from("Add(Value(1), Value(2))")));
+    assert_eq!(expr.map(|e| format!("{e:?}")).parse_peek(input), expected);
+
+    let input = " 12 + 6 - 4+  3";
+    let expected = Ok((
+        "",
+        String::from("Add(Sub(Add(Value(12), Value(6)), Value(4)), Value(3))"),
+    ));
+    assert_eq!(expr.map(|e| format!("{e:?}")).parse_peek(input), expected);
+
+    let input = " 1 + 2*3 + 4";
+    let expected = Ok((
+        "",
+        String::from("Add(Add(Value(1), Mul(Value(2), Value(3))), Value(4))"),
+    ));
+    assert_eq!(expr.map(|e| format!("{e:?}")).parse_peek(input), expected);
 }
 
 #[test]
 fn parens_test() {
-    assert_eq!(
-        expr.parse_peek(" ( 1 + 2 ) *  3 ")
-            .map(|(i, x)| (i, format!("{:?}", x))),
-        Ok((
-            "",
-            String::from("Mul(Paren(Add(Value(1), Value(2))), Value(3))")
-        ))
-    );
+    let input = " (  2 )";
+    let expected = Ok(("", String::from("Paren(Value(2))")));
+    assert_eq!(expr.map(|e| format!("{e:?}")).parse_peek(input), expected);
+
+    let input = " 2* (  3 + 4 ) ";
+    let expected = Ok((
+        "",
+        String::from("Mul(Value(2), Paren(Add(Value(3), Value(4))))"),
+    ));
+    assert_eq!(expr.map(|e| format!("{e:?}")).parse_peek(input), expected);
+
+    let input = "  2*2 / ( 5 - 1) + 3";
+    let expected = Ok((
+        "",
+        String::from("Add(Div(Mul(Value(2), Value(2)), Paren(Sub(Value(5), Value(1)))), Value(3))"),
+    ));
+    assert_eq!(expr.map(|e| format!("{e:?}")).parse_peek(input), expected);
 }
