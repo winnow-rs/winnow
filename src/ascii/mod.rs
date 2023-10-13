@@ -102,7 +102,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
-    <I as Stream>::Token: AsChar + Clone,
+    for<'t> &'t <I as Stream>::Token: AsChar,
 {
     trace("not_line_ending", move |input: &mut I| {
         if <I as StreamIsPartial>::is_partial_supported() {
@@ -121,7 +121,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
-    <I as Stream>::Token: AsChar + Clone,
+    for<'t> &'t <I as Stream>::Token: AsChar,
 {
     let res = take_till0(('\r', '\n')).parse_next(input)?;
     if input.compare("\r") == CompareResult::Ok {
@@ -216,7 +216,8 @@ pub fn newline<I, Error: ParserError<I>>(input: &mut I) -> PResult<char, Error>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Clone,
+    <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
 {
     trace("newline", '\n'.map(AsChar::as_char)).parse_next(input)
 }
@@ -256,7 +257,8 @@ pub fn tab<I, Error: ParserError<I>>(input: &mut I) -> PResult<char, Error>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Clone,
+    <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
 {
     trace("tab", '\t'.map(AsChar::as_char)).parse_next(input)
 }
@@ -299,6 +301,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
 {
     trace("alpha0", take_while(0.., AsChar::is_alpha)).parse_next(input)
 }
@@ -341,6 +344,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
 {
     trace("alpha1", take_while(1.., AsChar::is_alpha)).parse_next(input)
 }
@@ -384,6 +388,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
 {
     trace("digit0", take_while(0.., AsChar::is_dec_digit)).parse_next(input)
 }
@@ -443,6 +448,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
 {
     trace("digit1", take_while(1.., AsChar::is_dec_digit)).parse_next(input)
 }
@@ -485,6 +491,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
 {
     trace("hex_digit0", take_while(0.., AsChar::is_hex_digit)).parse_next(input)
 }
@@ -528,6 +535,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
 {
     trace("hex_digit1", take_while(1.., AsChar::is_hex_digit)).parse_next(input)
 }
@@ -570,6 +578,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
 {
     trace("oct_digit0", take_while(0.., AsChar::is_oct_digit)).parse_next(input)
 }
@@ -612,6 +621,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
 {
     trace("oct_digit0", take_while(1.., AsChar::is_oct_digit)).parse_next(input)
 }
@@ -654,6 +664,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
 {
     trace("alphanumeric0", take_while(0.., AsChar::is_alphanum)).parse_next(input)
 }
@@ -696,6 +707,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
 {
     trace("alphanumeric1", take_while(1.., AsChar::is_alphanum)).parse_next(input)
 }
@@ -724,7 +736,8 @@ pub fn space0<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Sli
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Clone,
+    <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
 {
     trace("space0", take_while(0.., AsChar::is_space)).parse_next(input)
 }
@@ -766,7 +779,8 @@ pub fn space1<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Sli
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Clone,
+    <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
 {
     trace("space1", take_while(1.., AsChar::is_space)).parse_next(input)
 }
@@ -808,7 +822,8 @@ pub fn multispace0<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Clone,
+    <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
 {
     trace("multispace0", take_while(0.., (' ', '\t', '\r', '\n'))).parse_next(input)
 }
@@ -850,7 +865,8 @@ pub fn multispace1<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Clone,
+    <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
 {
     trace("multispace1", take_while(1.., (' ', '\t', '\r', '\n'))).parse_next(input)
 }
@@ -869,7 +885,7 @@ pub fn dec_uint<I, O, E: ParserError<I>>(input: &mut I) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Clone,
+    for<'t> &'t <I as Stream>::Token: AsChar,
     O: Uint,
 {
     trace("dec_uint", move |input: &mut I| {
@@ -1024,7 +1040,8 @@ pub fn dec_int<I, O, E: ParserError<I>>(input: &mut I) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Clone,
+    <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
     O: Int,
 {
     trace("dec_int", move |input: &mut I| {
@@ -1160,6 +1177,7 @@ where
     I: Stream,
     O: HexUint,
     <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
     <I as Stream>::Slice: AsBStr,
 {
     trace("hex_uint", move |input: &mut I| {
@@ -1305,7 +1323,8 @@ where
     I: Stream,
     I: Compare<&'static str>,
     <I as Stream>::Slice: ParseSlice<O>,
-    <I as Stream>::Token: AsChar + Clone,
+    <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
@@ -1325,7 +1344,8 @@ where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
-    <I as Stream>::Token: AsChar + Clone,
+    <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
@@ -1344,7 +1364,8 @@ where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
-    <I as Stream>::Token: AsChar + Clone,
+    <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
@@ -1409,7 +1430,8 @@ pub fn escaped<'a, I: 'a, Error, F, G, O1, O2>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Clone,
+    <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParserError<I>,
@@ -1432,7 +1454,8 @@ fn streaming_escaped_internal<I, Error, F, G, O1, O2>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Clone,
+    <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParserError<I>,
@@ -1474,7 +1497,8 @@ fn complete_escaped_internal<'a, I: 'a, Error, F, G, O1, O2>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar + Clone,
+    <I as Stream>::Token: AsChar,
+    for<'t> &'t <I as Stream>::Token: AsChar,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParserError<I>,
@@ -1576,7 +1600,7 @@ pub fn escaped_transform<I, Error, F, G, Output>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar + Clone,
+    for<'t> &'t <I as Stream>::Token: AsChar,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
     G: Parser<I, <I as Stream>::Slice, Error>,
@@ -1600,7 +1624,7 @@ fn streaming_escaped_transform_internal<I, Error, F, G, Output>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar + Clone,
+    for<'t> &'t <I as Stream>::Token: AsChar,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
     G: Parser<I, <I as Stream>::Slice, Error>,
@@ -1639,7 +1663,7 @@ fn complete_escaped_transform_internal<I, Error, F, G, Output>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar + Clone,
+    for<'t> &'t <I as Stream>::Token: AsChar,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
     G: Parser<I, <I as Stream>::Slice, Error>,

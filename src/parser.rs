@@ -696,7 +696,7 @@ impl<I, E> Parser<I, <I as Stream>::Token, E> for char
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Clone,
+    for<'t> &'t <I as Stream>::Token: AsChar,
     E: ParserError<I>,
 {
     #[inline(always)]

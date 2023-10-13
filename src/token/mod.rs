@@ -295,12 +295,11 @@ pub fn one_of<I, T, Error: ParserError<I>>(list: T) -> impl Parser<I, <I as Stre
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: Clone,
-    T: ContainsToken<<I as Stream>::Token>,
+    T: for<'t> ContainsToken<&'t <I as Stream>::Token>,
 {
     trace(
         "one_of",
-        any.verify(move |t: &<I as Stream>::Token| list.contains_token(t.clone())),
+        any.verify(move |t: &<I as Stream>::Token| list.contains_token(t)),
     )
 }
 
@@ -335,12 +334,11 @@ pub fn none_of<I, T, Error: ParserError<I>>(list: T) -> impl Parser<I, <I as Str
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: Clone,
-    T: ContainsToken<<I as Stream>::Token>,
+    for<'t> T: ContainsToken<&'t <I as Stream>::Token>,
 {
     trace(
         "none_of",
-        any.verify(move |t: &<I as Stream>::Token| !list.contains_token(t.clone())),
+        any.verify(move |t: &<I as Stream>::Token| !list.contains_token(t)),
     )
 }
 
@@ -487,7 +485,7 @@ pub fn take_while<T, I, Error: ParserError<I>>(
 where
     I: StreamIsPartial,
     I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
+    T: for<'t> ContainsToken<&'t <I as Stream>::Token>,
 {
     let Range {
         start_inclusive,
@@ -528,7 +526,7 @@ fn take_while0_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
 where
     I: StreamIsPartial,
     I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
+    T: for<'t> ContainsToken<&'t <I as Stream>::Token>,
 {
     if PARTIAL && input.is_partial() {
         take_till0_partial(input, |c| !list.contains_token(c))
@@ -544,7 +542,7 @@ fn take_while1_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
 where
     I: StreamIsPartial,
     I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
+    T: for<'t> ContainsToken<&'t <I as Stream>::Token>,
 {
     let e: ErrorKind = ErrorKind::Slice;
     if PARTIAL && input.is_partial() {
@@ -563,7 +561,7 @@ fn take_till0_partial<P, I: Stream, E: ParserError<I>>(
     predicate: P,
 ) -> PResult<<I as Stream>::Slice, E>
 where
-    P: Fn(I::Token) -> bool,
+    P: for<'t> Fn(&'t I::Token) -> bool,
 {
     let offset = input
         .offset_for(predicate)
@@ -583,7 +581,7 @@ fn take_till1_partial<P, I: Stream, E: ParserError<I>>(
     e: ErrorKind,
 ) -> PResult<<I as Stream>::Slice, E>
 where
-    P: Fn(I::Token) -> bool,
+    P: for<'t> Fn(&'t I::Token) -> bool,
 {
     let offset = input
         .offset_for(predicate)
@@ -604,7 +602,7 @@ fn take_till0_complete<P, I: Stream, E: ParserError<I>>(
     predicate: P,
 ) -> PResult<<I as Stream>::Slice, E>
 where
-    P: Fn(I::Token) -> bool,
+    P: for<'t> Fn(&'t I::Token) -> bool,
 {
     let offset = input
         .offset_for(predicate)
@@ -624,7 +622,7 @@ fn take_till1_complete<P, I: Stream, E: ParserError<I>>(
     e: ErrorKind,
 ) -> PResult<<I as Stream>::Slice, E>
 where
-    P: Fn(I::Token) -> bool,
+    P: for<'t> Fn(&'t I::Token) -> bool,
 {
     let offset = input
         .offset_for(predicate)
@@ -645,7 +643,7 @@ fn take_while_m_n_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
 where
     I: StreamIsPartial,
     I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
+    T: for<'t> ContainsToken<&'t <I as Stream>::Token>,
 {
     if n < m {
         return Err(ErrMode::assert(input, "`m` should be <= `n`"));
@@ -653,7 +651,7 @@ where
 
     let mut final_count = 0;
     for (processed, (offset, token)) in input.iter_offsets().enumerate() {
-        if !list.contains_token(token) {
+        if !list.contains_token(&token) {
             if processed < m {
                 return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
             } else {
@@ -730,7 +728,7 @@ pub fn take_till0<T, I, Error: ParserError<I>>(
 where
     I: StreamIsPartial,
     I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
+    T: for<'t> ContainsToken<&'t <I as Stream>::Token>,
 {
     trace("take_till0", move |i: &mut I| {
         if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
@@ -807,7 +805,7 @@ pub fn take_till1<T, I, Error: ParserError<I>>(
 where
     I: StreamIsPartial,
     I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
+    T: for<'t> ContainsToken<&'t <I as Stream>::Token>,
 {
     trace("take_till1", move |i: &mut I| {
         let e: ErrorKind = ErrorKind::Slice;
