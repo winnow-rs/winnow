@@ -14,10 +14,10 @@ fn arithmetic(c: &mut criterion::Criterion) {
         Ok(expected)
     );
     c.bench_function("direct", |b| {
-        b.iter(|| parser::expr.parse_peek(data).unwrap());
+        b.iter(|| parser::expr.parse(data).unwrap());
     });
     c.bench_function("ast", |b| {
-        b.iter(|| parser_ast::expr.parse_peek(data).unwrap());
+        b.iter(|| parser_ast::expr.parse(data).unwrap().eval());
     });
 }
 
