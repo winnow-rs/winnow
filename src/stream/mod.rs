@@ -2533,7 +2533,7 @@ impl<C: AsChar> ContainsToken<C> for char {
     }
 }
 
-impl<C: AsChar, F: Fn(C) -> bool> ContainsToken<C> for F {
+impl<C, F: Fn(C) -> bool> ContainsToken<C> for F {
     #[inline(always)]
     fn contains_token(&self, token: C) -> bool {
         self(token)

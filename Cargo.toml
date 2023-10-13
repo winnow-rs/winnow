@@ -128,6 +128,7 @@ required-features = ["alloc"]
 name = "arithmetic"
 path = "examples/arithmetic/bench.rs"
 harness = false
+required-features = ["alloc"]
 
 [[bench]]
 name = "contains_token"
