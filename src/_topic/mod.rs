@@ -14,7 +14,7 @@
 //!   - [Implementing `FromStr`][fromstr]
 //!   - [Performance][performance]
 //!   - [Parsing Partial Input][partial]
-//!   - [Custom stream][stream]
+//!   - [Custom stream or token][stream]
 //!   - [Custom errors][error]
 //!
 //! See also parsers written with `winnow`:
