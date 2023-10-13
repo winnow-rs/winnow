@@ -1,5 +1,6 @@
 mod parser;
 mod parser_ast;
+mod parser_lexer;
 
 use winnow::prelude::*;
 
@@ -13,11 +14,18 @@ fn arithmetic(c: &mut criterion::Criterion) {
         parser_ast::expr.parse(data).map(|ast| ast.eval()),
         Ok(expected)
     );
+    assert_eq!(
+        parser_lexer::expr2.parse(data).map(|ast| ast.eval()),
+        Ok(expected)
+    );
     c.bench_function("direct", |b| {
         b.iter(|| parser::expr.parse(data).unwrap());
     });
     c.bench_function("ast", |b| {
         b.iter(|| parser_ast::expr.parse(data).unwrap().eval());
+    });
+    c.bench_function("lexer", |b| {
+        b.iter(|| parser_lexer::expr2.parse_peek(data).unwrap());
     });
 }
 
