@@ -21,6 +21,19 @@ pub enum Expr {
     Paren(Box<Expr>),
 }
 
+impl Expr {
+    pub fn eval(&self) -> i64 {
+        match self {
+            Self::Value(v) => *v,
+            Self::Add(lhs, rhs) => lhs.eval() + rhs.eval(),
+            Self::Sub(lhs, rhs) => lhs.eval() - rhs.eval(),
+            Self::Mul(lhs, rhs) => lhs.eval() * rhs.eval(),
+            Self::Div(lhs, rhs) => lhs.eval() / rhs.eval(),
+            Self::Paren(expr) => expr.eval(),
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum Oper {
     Add,

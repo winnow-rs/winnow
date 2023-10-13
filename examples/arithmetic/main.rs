@@ -20,7 +20,7 @@ fn main() -> Result<(), lexopt::Error> {
         },
         Impl::Ast => match parser_ast::expr.parse(input) {
             Ok(result) => {
-                println!("  {:#?}", result);
+                println!("  {:#?}={}", result, result.eval());
             }
             Err(err) => {
                 println!("  {}", err);
