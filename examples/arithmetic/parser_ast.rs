@@ -5,10 +5,13 @@ use std::str::FromStr;
 
 use winnow::prelude::*;
 use winnow::{
-    ascii::{digit1 as digit, multispace0 as multispace},
+    ascii::{digit1 as digits, multispace0 as multispaces},
     combinator::alt,
+    combinator::delimited,
+    combinator::dispatch,
+    combinator::fail,
     combinator::repeat,
-    combinator::{delimited, preceded},
+    token::any,
 };
 
 #[derive(Debug)]
@@ -60,16 +63,11 @@ pub fn expr(i: &mut &str) -> PResult<Expr> {
     let initial = term(i)?;
     let remainder = repeat(
         0..,
-        alt((
-            |i: &mut &str| {
-                let add = preceded("+", term).parse_next(i)?;
-                Ok((Oper::Add, add))
-            },
-            |i: &mut &str| {
-                let sub = preceded("-", term).parse_next(i)?;
-                Ok((Oper::Sub, sub))
-            },
-        )),
+        dispatch! {any;
+            '+' => term.map(|expr| (Oper::Add, expr)),
+            '-' => term.map(|expr| (Oper::Sub, expr)),
+            _ => fail,
+        },
     )
     .parse_next(i)?;
 
@@ -77,19 +75,14 @@ pub fn expr(i: &mut &str) -> PResult<Expr> {
 }
 
 fn term(i: &mut &str) -> PResult<Expr> {
-    let initial = factor(i)?;
+    let initial = factor.parse_next(i)?;
     let remainder = repeat(
         0..,
-        alt((
-            |i: &mut &str| {
-                let mul = preceded("*", factor).parse_next(i)?;
-                Ok((Oper::Mul, mul))
-            },
-            |i: &mut &str| {
-                let div = preceded("/", factor).parse_next(i)?;
-                Ok((Oper::Div, div))
-            },
-        )),
+        dispatch! {any;
+            '*' => factor.map(|expr| (Oper::Mul, expr)),
+            '/' => factor.map(|expr| (Oper::Div, expr)),
+            _ => fail,
+        },
     )
     .parse_next(i)?;
 
@@ -97,22 +90,18 @@ fn term(i: &mut &str) -> PResult<Expr> {
 }
 
 fn factor(i: &mut &str) -> PResult<Expr> {
-    alt((
-        delimited(multispace, digit, multispace)
-            .try_map(FromStr::from_str)
-            .map(Expr::Value),
-        parens,
-    ))
+    delimited(
+        multispaces,
+        alt((digits.try_map(FromStr::from_str).map(Expr::Value), parens)),
+        multispaces,
+    )
     .parse_next(i)
 }
 
 fn parens(i: &mut &str) -> PResult<Expr> {
-    delimited(
-        multispace,
-        delimited("(", expr.map(|e| Expr::Paren(Box::new(e))), ")"),
-        multispace,
-    )
-    .parse_next(i)
+    delimited("(", expr, ")")
+        .map(|e| Expr::Paren(Box::new(e)))
+        .parse_next(i)
 }
 
 fn fold_exprs(initial: Expr, remainder: Vec<(Oper, Expr)>) -> Expr {

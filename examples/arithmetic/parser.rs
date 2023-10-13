@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use winnow::prelude::*;
 use winnow::{
-    ascii::{digit1 as digits, space0 as spaces},
+    ascii::{digit1 as digits, multispace0 as multispaces},
     combinator::alt,
     combinator::delimited,
     combinator::fold_repeat,
@@ -56,13 +56,9 @@ fn term(i: &mut &str) -> PResult<i64> {
 // we fallback to the parens parser defined above
 fn factor(i: &mut &str) -> PResult<i64> {
     delimited(
-        spaces,
-        alt((
-            digits.try_map(FromStr::from_str),
-            delimited('(', expr, ')'),
-            parens,
-        )),
-        spaces,
+        multispaces,
+        alt((digits.try_map(FromStr::from_str), parens)),
+        multispaces,
     )
     .parse_next(i)
 }
