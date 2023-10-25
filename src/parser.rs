@@ -91,7 +91,7 @@ pub trait Parser<I, O, E> {
     ///
     /// # Example
     ///
-    /// Because parsers are `FnMut`, they can be called multiple times.  This prevents moving `f`
+    /// Because parsers are `FnMut`, they can be called multiple times. This prevents moving `f`
     /// into [`length_data`][crate::binary::length_data] and `g` into
     /// [`Parser::complete_err`]:
     /// ```rust,compile_fail

@@ -136,7 +136,7 @@
 //! # }
 //! ```
 //!
-//! You'll notice that the above allows trailing `,` when we intended to not support that.  We can
+//! You'll notice that the above allows trailing `,` when we intended to not support that. We can
 //! easily fix this by using [`separated0`]:
 //! ```rust
 //! # use winnow::prelude::*;
@@ -200,7 +200,7 @@
 //! ```
 //!
 //! If you look closely at [`repeat`], it isn't collecting directly into a [`Vec`] but
-//! [`Accumulate`] to gather the results.  This lets us make more complex parsers than we did in
+//! [`Accumulate`] to gather the results. This lets us make more complex parsers than we did in
 //! [`chapter_2`] by accumulating the results into a `()` and [`recognize`][Parser::recognize]-ing the captured input:
 //! ```rust
 //! # use winnow::prelude::*;

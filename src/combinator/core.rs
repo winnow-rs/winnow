@@ -331,7 +331,7 @@ where
 /// Call the iterator's [`ParserIterator::finish`] method to get the remaining input if successful,
 /// or the error value if we encountered an error.
 ///
-/// On [`ErrMode::Backtrack`], iteration will stop.  To instead chain an error up, see [`cut_err`].
+/// On [`ErrMode::Backtrack`], iteration will stop. To instead chain an error up, see [`cut_err`].
 ///
 /// # Example
 ///

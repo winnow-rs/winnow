@@ -4,7 +4,7 @@
 //!
 //! ## Tokens
 //!
-//! [`Stream`] provides some core operations to help with parsing.  For example, to process a
+//! [`Stream`] provides some core operations to help with parsing. For example, to process a
 //! single token, you can do:
 //! ```rust
 //! # use winnow::Parser;
@@ -135,12 +135,12 @@
 //! # }
 //! ```
 //!
-//! In `winnow`, we call this type of parser a [`tag`].  See [`token`] for additional individual
+//! In `winnow`, we call this type of parser a [`tag`]. See [`token`] for additional individual
 //! and token-slice parsers.
 //!
 //! ## Character Classes
 //!
-//! Selecting a single `char` or a [`tag`] is fairly limited.  Sometimes, you will want to select one of several
+//! Selecting a single `char` or a [`tag`] is fairly limited. Sometimes, you will want to select one of several
 //! `chars` of a specific class, like digits. For this, we use the [`one_of`] parer:
 //!
 //! ```rust

@@ -179,7 +179,7 @@
 //! ```
 //!
 //! > **Warning:** the above example is for illustrative purposes and relying on `Result::Ok` or
-//! > `Result::Err` can lead to incorrect behavior.  This will be clarified in later when covering
+//! > `Result::Err` can lead to incorrect behavior. This will be clarified in later when covering
 //! > [error handling][`chapter_6`#errmode]
 //!
 //! [`opt`] is a basic building block for correctly handling retrying parsing:
@@ -296,7 +296,7 @@
 //! > **Note:** [`success`] and [`fail`] are parsers that might be useful in the `else` case.
 //!
 //! Sometimes a giant if/else-if ladder can be slow and you'd rather have a `match` statement for
-//! branches of your parser that have unique prefixes.  In this case, you can use the
+//! branches of your parser that have unique prefixes. In this case, you can use the
 //! [`dispatch`] macro:
 //!
 //! ```rust

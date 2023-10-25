@@ -395,7 +395,7 @@ Other
 v0.3.0 changes are relative to nom v7.1.3
 
 Versioning starts at v0.3.0 due to the historical nature of how `winnow` was
-forked from `nom`.  See also the
+forked from `nom`. See also the
 [`nom8` changelog](https://github.com/winnow-rs/winnow/discussions/186).
 
 ### `nom` Migration Guide
@@ -1219,7 +1219,7 @@ Special thanks to @corkami for the logo :)
 - the `IResult` type now becomes a `Result` from the standard library
 - `Incomplete` now returns the additional data size needed, not the total data size needed
 - verbose-errors is now a superset of basic errors
-- all the errors now include  the related input slice
+- all the errors now include the related input slice
 - the arguments from `error_position` and other such macros were swapped to be more consistent with the rest of nom
 - automatic error conversion: to fix error type inference issues, a custom error type must now implement `std::convert::From<u32>`
 - the `not!` combinator returns unit `()`

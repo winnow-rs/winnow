@@ -2,7 +2,7 @@
 //!
 //! To answer this question, it will be useful to contrast this with other approaches to parsing.
 //!
-//! **Note:** This will focus on principles and priorities.  For a deeper and wider wider
+//! **Note:** This will focus on principles and priorities. For a deeper and wider wider
 //! comparison with other Rust parser libraries, see
 //! [parse-rosetta-rs](https://github.com/rosetta-rs/parse-rosetta-rs).
 //!
@@ -58,7 +58,7 @@
 //!
 //! ## `nom`
 //!
-//! `winnow` is a fork of the venerable [`nom`](https://crates.io/crates/nom).  The difference
+//! `winnow` is a fork of the venerable [`nom`](https://crates.io/crates/nom). The difference
 //! between them is largely in priorities.  `nom` prioritizes:
 //! - Lower churn for existing users while `winnow` is trying to find ways to make things better
 //!   for the parsers yet to be written.
@@ -78,10 +78,10 @@
 //! > "If you need to implement either `Parser` or `Strategy` by hand, that's a problem that needs fixing".
 //!
 //! This is under "batteries included" but it also ties into the feeling that `chumksy` acts more like
-//! a framework.  Instead of composing together helpers, you are expected to do everything through
+//! a framework. Instead of composing together helpers, you are expected to do everything through
 //! their system to the point that it is non-trivial to implement their `Parser` trait and are
 //! encouraged to use the
-//! [`custom`](https://docs.rs/chumsky/0.9.0/chumsky/primitive/fn.custom.html) helper.  This
+//! [`custom`](https://docs.rs/chumsky/0.9.0/chumsky/primitive/fn.custom.html) helper. This
 //! requires re-framing everything to fit within their model and makes the code harder to understand
 //! and debug as you are working with abstract operations that will eventually be applied
 //! rather than directly with the parsers.
@@ -90,7 +90,7 @@
 //! Probably the biggest thing that `winnow` loses out on is optimizations from ["parse modes" via
 //! GATs](https://github.com/zesterer/chumsky/pull/82) which allows downstream parsers to tell
 //! upstream parsers when information will be discarded, allowing bypassing expensive operations,
-//! like allocations.  This requires a lot more complex interaction with parsers that isn't as
+//! like allocations. This requires a lot more complex interaction with parsers that isn't as
 //! trivial to do with bare functions which would lose out on any of that side-band information.
 //! Instead, we work around this with things like the [`Accumulate`] trait.
 

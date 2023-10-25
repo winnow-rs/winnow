@@ -11,7 +11,7 @@ case its already being talked about.
 ## Bug Reports
 
 Please let us know about what problems you run into, whether in behavior or
-ergonomics of API.  You can do this by opening an [issue][new issue]. It's
+ergonomics of API. You can do this by opening an [issue][new issue]. It's
 helpful to look through [all issues][all issues] in case its already being
 talked about.
 
@@ -41,15 +41,15 @@ Design guidelines
 ### Process
 
 When you first post a PR, we request that the the commit history get cleaned
-up.  We recommend avoiding this during the PR to make it easier to review how
+up. We recommend avoiding this during the PR to make it easier to review how
 feedback was handled. Once the commit is ready, we'll ask you to clean up the
-commit history.  Once you let us know this is done, we can move forward with
+commit history. Once you let us know this is done, we can move forward with
 merging!  If you are uncomfortable with these parts of git, let us know and we
 can help.
 
 For commit messages, we use [Conventional](https://www.conventionalcommits.org)
-style.  If you already wrote your commits and don't feel comfortable changing
-them, don't worry and go ahead and create your PR.  We'll work with you on the
+style. If you already wrote your commits and don't feel comfortable changing
+them, don't worry and go ahead and create your PR. We'll work with you on the
 best route forward. You can check your branch locally with
 [`committed`](https://github.com/crate-ci/committed).
 
