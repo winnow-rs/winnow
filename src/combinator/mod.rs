@@ -6,43 +6,43 @@
 //!
 //! Those are used to recognize the lowest level elements of your grammar, like, "here is a dot", or "here is an big endian integer".
 //!
-//! | combinator | usage | input | output | comment |
+//! | combinator | usage | input | new input | output | comment |
 //! |---|---|---|---|---|
-//! | [`one_of`][crate::token::one_of] | `one_of(['a', 'b', 'c'])` |  `"abc"` | `Ok(("bc", 'a'))` |Matches one of the provided characters (works with non ASCII characters too)|
-//! | [`none_of`][crate::token::none_of] | `none_of(['a', 'b', 'c'])` |  `"xyab"` | `Ok(("yab", 'x'))` |Matches anything but the provided characters|
-//! | [`tag`][crate::token::tag] | `"hello"` |  `"hello world"` | `Ok((" world", "hello"))` |Recognizes a specific suite of characters or bytes|
-//! | [`tag_no_case`][crate::token::tag_no_case] | `tag_no_case("hello")` |  `"HeLLo World"` | `Ok((" World", "HeLLo"))` |Case insensitive comparison. Note that case insensitive comparison is not well defined for unicode, and that you might have bad surprises|
-//! | [`take`][crate::token::take] | `take(4)` |  `"hello"` | `Ok(("o", "hell"))` |Takes a specific number of bytes or characters|
-//! | [`take_while`][crate::token::take_while] | `take_while(0.., is_alphabetic)` |  `"abc123"` | `Ok(("123", "abc"))` |Returns the longest list of bytes for which the provided pattern matches.|
-//! | [`take_till0`][crate::token::take_till0] | `take_till0(is_alphabetic)` |  `"123abc"` | `Ok(("abc", "123"))` |Returns the longest list of bytes or characters until the provided pattern matches. `take_till1` does the same, but must return at least one character. This is the reverse behaviour from `take_while`: `take_till(f)` is equivalent to `take_while(0.., \|c\| !f(c))`|
-//! | [`take_until0`][crate::token::take_until0] | `take_until0("world")` |  `"Hello world"` | `Ok(("world", "Hello "))` |Returns the longest list of bytes or characters until the provided tag is found. `take_until1` does the same, but must return at least one character|
+//! | [`one_of`][crate::token::one_of] | `one_of(['a', 'b', 'c'])` |  `"abc"` |  `"bc"` | `Ok('a')` |Matches one of the provided characters (works with non ASCII characters too)|
+//! | [`none_of`][crate::token::none_of] | `none_of(['a', 'b', 'c'])` |  `"xyab"` |  `"yab"` | `Ok('x')` |Matches anything but the provided characters|
+//! | [`tag`][crate::token::tag] | `"hello"` |  `"hello world"` |  `" world"` | `Ok("hello")` |Recognizes a specific suite of characters or bytes|
+//! | [`tag_no_case`][crate::token::tag_no_case] | `tag_no_case("hello")` |  `"HeLLo World"` |  `" World"` | `Ok("HeLLo")` |Case insensitive comparison. Note that case insensitive comparison is not well defined for unicode, and that you might have bad surprises|
+//! | [`take`][crate::token::take] | `take(4)` |  `"hello"` |  `"o"` | `Ok("hell")` |Takes a specific number of bytes or characters|
+//! | [`take_while`][crate::token::take_while] | `take_while(0.., is_alphabetic)` |  `"abc123"` |  `"123"` | `Ok("abc")` |Returns the longest list of bytes for which the provided pattern matches.|
+//! | [`take_till0`][crate::token::take_till0] | `take_till0(is_alphabetic)` |  `"123abc"` |  `"abc"` | `Ok("123")` |Returns the longest list of bytes or characters until the provided pattern matches. `take_till1` does the same, but must return at least one character. This is the reverse behaviour from `take_while`: `take_till(f)` is equivalent to `take_while(0.., \|c\| !f(c))`|
+//! | [`take_until0`][crate::token::take_until0] | `take_until0("world")` |  `"Hello world"` |  `"world"` | `Ok("Hello ")` |Returns the longest list of bytes or characters until the provided tag is found. `take_until1` does the same, but must return at least one character|
 //!
 //! ## Choice combinators
 //!
-//! | combinator | usage | input | output | comment |
+//! | combinator | usage | input | new input | output | comment |
 //! |---|---|---|---|---|
-//! | [`alt`] | `alt(("ab", "cd"))` |  `"cdef"` | `Ok(("ef", "cd"))` |Try a list of parsers and return the result of the first successful one|
-//! | [`dispatch`] | \- | \- | \- | `match` for parsers |
-//! | [`permutation`] | `permutation(("ab", "cd", "12"))` | `"cd12abc"` | `Ok(("c", ("ab", "cd", "12"))` |Succeeds when all its child parser have succeeded, whatever the order|
+//! | [`alt`] | `alt(("ab", "cd"))` |  `"cdef"` |  `"ef"` | `Ok("cd")` |Try a list of parsers and return the result of the first successful one|
+//! | [`dispatch`] | \- | \- | \- | \- | `match` for parsers |
+//! | [`permutation`] | `permutation(("ab", "cd", "12"))` | `"cd12abc"` | `"c"` | `Ok(("ab", "cd", "12"))` |Succeeds when all its child parser have succeeded, whatever the order|
 //!
 //! ## Sequence combinators
 //!
-//! | combinator | usage | input | output | comment |
+//! | combinator | usage | input | new input | output | comment |
 //! |---|---|---|---|---|
-//! | [`(...)` (tuples)][crate::Parser] | `("ab", "XY", take(1))` | `"abXYZ!"` | `Ok(("!", ("ab", "XY", "Z")))` |Chains parsers and assemble the sub results in a tuple. You can use as many child parsers as you can put elements in a tuple|
-//! | [`delimited`] | `delimited(char('('), take(2), char(')'))` | `"(ab)cd"` | `Ok(("cd", "ab"))` ||
-//! | [`preceded`] | `preceded("ab", "XY")` | `"abXYZ"` | `Ok(("Z", "XY"))` ||
-//! | [`terminated`] | `terminated("ab", "XY")` | `"abXYZ"` | `Ok(("Z", "ab"))` ||
-//! | [`separated_pair`] | `separated_pair("hello", char(','), "world")` | `"hello,world!"` | `Ok(("!", ("hello", "world")))` ||
+//! | [`(...)` (tuples)][crate::Parser] | `("ab", "XY", take(1))` | `"abXYZ!"` | `"!"` | `Ok(("ab", "XY", "Z"))` |Chains parsers and assemble the sub results in a tuple. You can use as many child parsers as you can put elements in a tuple|
+//! | [`delimited`] | `delimited(char('('), take(2), char(')'))` | `"(ab)cd"` | `"cd"` | `Ok("ab")` ||
+//! | [`preceded`] | `preceded("ab", "XY")` | `"abXYZ"` | `"Z"` | `Ok("XY")` ||
+//! | [`terminated`] | `terminated("ab", "XY")` | `"abXYZ"` | `"Z"` | `Ok("ab")` ||
+//! | [`separated_pair`] | `separated_pair("hello", char(','), "world")` | `"hello,world!"` | `"!"` | `Ok(("hello", "world"))` ||
 //!
 //! ## Applying a parser multiple times
 //!
-//! | combinator | usage | input | output | comment |
+//! | combinator | usage | input | new input | output | comment |
 //! |---|---|---|---|---|
-//! | [`repeat`] | `repeat(1..=3, "ab")` | `"ababc"` | `Ok(("c", vec!["ab", "ab"]))` |Applies the parser between m and n times (n included) and returns the list of results in a Vec|
-//! | [`repeat_till0`] | `repeat_till0(tag( "ab" ), tag( "ef" ))` | `"ababefg"` | `Ok(("g", (vec!["ab", "ab"], "ef")))` |Applies the first parser until the second applies. Returns a tuple containing the list of results from the first in a Vec and the result of the second|
-//! | [`separated0`] | `separated0("ab", ",")` | `"ab,ab,ab."` | `Ok((".", vec!["ab", "ab", "ab"]))` |`separated1` works like `separated0` but must returns at least one element|
-//! | [`fold_repeat`] | `fold_repeat(1..=2, be_u8, \|\| 0, \|acc, item\| acc + item)` | `[1, 2, 3]` | `Ok(([3], 3))` |Applies the parser between m and n times (n included) and folds the list of return value|
+//! | [`repeat`] | `repeat(1..=3, "ab")` | `"ababc"` | `"c"` | `Ok(vec!["ab", "ab"])` |Applies the parser between m and n times (n included) and returns the list of results in a Vec|
+//! | [`repeat_till0`] | `repeat_till0(tag( "ab" ), tag( "ef" ))` | `"ababefg"` | `"g"` | `Ok((vec!["ab", "ab"], "ef"))` |Applies the first parser until the second applies. Returns a tuple containing the list of results from the first in a Vec and the result of the second|
+//! | [`separated0`] | `separated0("ab", ",")` | `"ab,ab,ab."` | `"."` | `Ok(vec!["ab", "ab", "ab"])` |`separated1` works like `separated0` but must returns at least one element|
+//! | [`fold_repeat`] | `fold_repeat(1..=2, be_u8, \|\| 0, \|acc, item\| acc + item)` | `[1, 2, 3]` | `[3]` | `Ok(3)` |Applies the parser between m and n times (n included) and folds the list of return value|
 //!
 //! ## Partial related
 //!
