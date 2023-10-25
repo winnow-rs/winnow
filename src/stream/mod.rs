@@ -211,7 +211,7 @@ impl<I: crate::lib::std::fmt::Display, S> crate::lib::std::fmt::Display for Stat
 
 /// Mark the input as a partial buffer for streaming input.
 ///
-/// Complete input means that we already have all of the data.  This will be the common case with
+/// Complete input means that we already have all of the data. This will be the common case with
 /// small files that can be read entirely to memory.
 ///
 /// In contrast, streaming input assumes that we might not have all of the data.
@@ -460,7 +460,7 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
     /// Split off a slice of tokens from the input
     ///
     /// **NOTE:** For inputs with variable width tokens, like `&str`'s `char`, `offset` might not correspond
-    /// with the number of tokens.  To get a valid offset, use:
+    /// with the number of tokens. To get a valid offset, use:
     /// - [`Stream::eof_offset`]
     /// - [`Stream::iter_offsets`]
     /// - [`Stream::offset_for`]
@@ -1966,7 +1966,7 @@ where
     }
 }
 
-/// Ensure checkpoint details are kept privazte
+/// Ensure checkpoint details are kept private
 #[derive(Copy, Clone, Debug)]
 pub struct Checkpoint<T>(T);
 

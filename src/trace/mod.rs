@@ -1,6 +1,6 @@
 //! Parser execution tracing
 //!
-//! By default, nothing happens and tracing gets compiled away as a no-op.  To enable tracing, use
+//! By default, nothing happens and tracing gets compiled away as a no-op. To enable tracing, use
 //! `--features debug`.
 //!
 //! # Example

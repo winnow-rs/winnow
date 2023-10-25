@@ -12,7 +12,7 @@ use crate::Parser;
 
 /// [`Accumulate`] the output of a parser into a container, like `Vec`
 ///
-/// This stops before `n` when the parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
+/// This stops before `n` when the parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
@@ -28,7 +28,7 @@ use crate::Parser;
 ///
 /// # Example
 ///
-/// Zero or more reptitions:
+/// Zero or more repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
@@ -47,7 +47,7 @@ use crate::Parser;
 /// # }
 /// ```
 ///
-/// One or more reptitions:
+/// One or more repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
@@ -66,7 +66,7 @@ use crate::Parser;
 /// # }
 /// ```
 ///
-/// Fixed number of repeitions:
+/// Fixed number of repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
@@ -86,7 +86,7 @@ use crate::Parser;
 /// # }
 /// ```
 ///
-/// Arbitrary reptitions:
+/// Arbitrary repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
@@ -271,7 +271,7 @@ where
 
 /// [`Accumulate`] the output of a parser, interleaved with `sep`
 ///
-/// This stops when either parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
+/// This stops when either parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
@@ -358,7 +358,7 @@ where
 ///
 /// Fails if the element parser does not produce at least one element.$
 ///
-/// This stops when either parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
+/// This stops when either parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
@@ -439,7 +439,7 @@ where
 
 /// Alternates between two parsers, merging the results (left associative)
 ///
-/// This stops when either parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
+/// This stops when either parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Example
@@ -506,7 +506,7 @@ where
 
 /// Alternates between two parsers, merging the results (right associative)
 ///
-/// This stops when either parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
+/// This stops when either parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Example
@@ -675,7 +675,7 @@ where
 
 /// Repeats the embedded parser `m..=n` times, calling `g` to gather the results
 ///
-/// This stops before `n` when the parser returns [`ErrMode::Backtrack`].  To instead chain an error up, see
+/// This stops before `n` when the parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments

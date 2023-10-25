@@ -58,7 +58,7 @@ pub enum Atom {
     BuiltIn(BuiltIn),
 }
 
-/// Now, the most basic type.  We define some built-in functions that our lisp has
+/// Now, the most basic type. We define some built-in functions that our lisp has
 #[derive(Debug, Eq, PartialEq, Clone, Copy)]
 pub enum BuiltIn {
     Plus,

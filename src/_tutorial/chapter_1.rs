@@ -10,17 +10,17 @@
 //!  - `Err` indicates the parser could not find what it was looking for.
 //!
 //! Parsers do more than just return a binary "success"/"failure" code.
-//! On success, the parser will return the processed data.  The input will be left pointing to
+//! On success, the parser will return the processed data. The input will be left pointing to
 //! data that still needs processing
 //!
 //! If the parser failed, then there are multiple errors that could be returned.
 //! For simplicity, however, in the next chapters we will leave these unexplored.
 //!
 //! ```text
-//!                                    ┌─► Ok(what matched the parser)
-//!              ┌─────────┐           │
-//!  my input───►│my parser├──►either──┤
-//!              └─────────┘           └─► Err(...)
+//!                                   ┌─► Ok(what matched the parser)
+//!             ┌─────────┐           │
+//! my input───►│my parser├──►either──┤
+//!             └─────────┘           └─► Err(...)
 //! ```
 //!
 //!

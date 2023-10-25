@@ -109,7 +109,7 @@ pub enum ErrMode<E> {
     ///
     /// For example, a parser for json values might include a
     /// [`dec_uint`][crate::ascii::dec_uint] as one case in an [`alt`][crate::combinator::alt]
-    /// combiantor.  If it fails, the next case should be tried.
+    /// combinator. If it fails, the next case should be tried.
     Backtrack(E),
     /// The parser had an unrecoverable error.
     ///

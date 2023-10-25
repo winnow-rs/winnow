@@ -19,7 +19,7 @@ For more details, see:
 # Contributors
 
 winnow is the fruit of the work of many contributors over the years, many
-thanks for your help!  In particular, thanks to [Geal](https://github.com/Geal)
+thanks for your help! In particular, thanks to [Geal](https://github.com/Geal)
 for the original [`nom` crate](https://crates.io/crates/nom).
 
 <a href="https://github.com/winnow-rs/winnow/graphs/contributors">

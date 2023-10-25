@@ -71,7 +71,7 @@
 //! ## Error management and debugging
 //!
 //! - [`cut_err`]: Commit the parse result, disallowing alternative parsers from being attempted
-//! - [`backtrack_err`]: Attemmpts a parse, allowing alternative parsers to be attempted despite
+//! - [`backtrack_err`]: Attempts a parse, allowing alternative parsers to be attempted despite
 //!   use of `cut_err`
 //! - [`Parser::context`]: Add context to the error if the parser fails
 //! - [`trace`][crate::trace::trace]: Print the parse state with the `debug` feature flag
