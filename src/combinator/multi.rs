@@ -28,7 +28,7 @@ use crate::Parser;
 ///
 /// # Example
 ///
-/// Zero or more reptitions:
+/// Zero or more repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
@@ -47,7 +47,7 @@ use crate::Parser;
 /// # }
 /// ```
 ///
-/// One or more reptitions:
+/// One or more repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
@@ -66,7 +66,7 @@ use crate::Parser;
 /// # }
 /// ```
 ///
-/// Fixed number of repeitions:
+/// Fixed number of repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
@@ -86,7 +86,7 @@ use crate::Parser;
 /// # }
 /// ```
 ///
-/// Arbitrary reptitions:
+/// Arbitrary repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
