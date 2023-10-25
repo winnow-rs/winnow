@@ -10,10 +10,7 @@
 //! All we need to do for our parser to return a different type is to change
 //! the type parameter of [`PResult`] to the desired return type.
 //! For example, to return a `usize`, return a `PResult<usize>`.
-//! Recall that the type parameter of the `PResult` is the input
-//! type, so even if you're returning something different, if your input
-//! is a `&str`, the type argument of `PResult` should be also.
-//!
+//! 
 //! One winnow-native way of doing a type conversion is to use the
 //! [`Parser::parse_to`] combinator
 //! to convert from a successful parse to a particular type using [`FromStr`].
