@@ -72,7 +72,7 @@
 //! ```rust
 //! # use winnow::error::ErrorKind;
 //! # use winnow::error::ErrMode;
-//! pub type OResult<O, E = ErrorKind> = Result<O, ErrMode<E>>;
+//! pub type PResult<O, E = ErrorKind> = Result<O, ErrMode<E>>;
 //! ```
 //! [`PResult`] is just a fancy wrapper around `Result` that wraps our error in an [`ErrMode`]
 //! type.
