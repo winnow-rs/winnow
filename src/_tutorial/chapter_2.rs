@@ -141,7 +141,7 @@
 //! ## Character Classes
 //!
 //! Selecting a single `char` or a [`tag`] is fairly limited. Sometimes, you will want to select one of several
-//! `chars` of a specific class, like digits. For this, we use the [`one_of`] parer:
+//! `chars` of a specific class, like digits. For this, we use the [`one_of`] parser:
 //!
 //! ```rust
 //! # use winnow::Parser;
