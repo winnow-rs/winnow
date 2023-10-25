@@ -17,10 +17,10 @@
 //! For simplicity, however, in the next chapters we will leave these unexplored.
 //!
 //! ```text
-//!                                    ┌─► Ok(what matched the parser)
-//!              ┌─────────┐           │
+//!                                   ┌─► Ok(what matched the parser)
+//!             ┌─────────┐           │
 //! my input───►│my parser├──►either──┤
-//!              └─────────┘           └─► Err(...)
+//!             └─────────┘           └─► Err(...)
 //! ```
 //!
 //!
