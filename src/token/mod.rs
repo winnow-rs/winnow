@@ -349,7 +349,7 @@ where
 /// It will return an `ErrMode::Backtrack(InputError::new(_, ErrorKind::Slice))` if the pattern wasn't met or is out
 /// of range (m <= len <= n).
 ///
-/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))`  if the pattern reaches the end of the input or is too short.
+/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if the pattern reaches the end of the input or is too short.
 ///
 /// To recognize a series of tokens, use [`repeat`][crate::combinator::repeat] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`].
 ///
@@ -1025,7 +1025,7 @@ where
 /// assert_eq!(until_eof(Partial::new("hello, world")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// assert_eq!(until_eof(Partial::new("hello, worldeo")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// assert_eq!(until_eof(Partial::new("1eof2eof")), Ok((Partial::new("eof2eof"), "1")));
-/// assert_eq!(until_eof(Partial::new("eof")),  Err(ErrMode::Backtrack(InputError::new(Partial::new("eof"), ErrorKind::Slice))));
+/// assert_eq!(until_eof(Partial::new("eof")), Err(ErrMode::Backtrack(InputError::new(Partial::new("eof"), ErrorKind::Slice))));
 /// ```
 #[inline(always)]
 pub fn take_until1<T, I, Error: ParserError<I>>(

@@ -157,7 +157,7 @@ where
 /// }
 ///
 /// fn parser(input: (Stream<'_>, usize), count: usize)-> IResult<(Stream<'_>, usize), u8> {
-///  take(count).parse_peek(input)
+///   take(count).parse_peek(input)
 /// }
 ///
 /// // Consumes 0 bits, returns 0

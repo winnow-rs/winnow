@@ -19,7 +19,7 @@
 //! ```text
 //!                                    ┌─► Ok(what matched the parser)
 //!              ┌─────────┐           │
-//!  my input───►│my parser├──►either──┤
+//! my input───►│my parser├──►either──┤
 //!              └─────────┘           └─► Err(...)
 //! ```
 //!

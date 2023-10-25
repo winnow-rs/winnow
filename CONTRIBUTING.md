@@ -4,7 +4,7 @@ appreciate any level you're willing to do.
 
 ## Feature Requests
 
-Need some new functionality to help?  You can let us know by opening an
+Need some new functionality to help? You can let us know by opening an
 [issue][new issue]. It's helpful to look through [all issues][all issues] in
 case its already being talked about.
 
@@ -22,7 +22,7 @@ it is probably best to post on the issue how you are thinking of resolving the
 issue so you can get feedback early in the process. We want you to be
 successful and it can be discouraging to find out a lot of re-work is needed.
 
-Already have an idea?  It might be good to first [create an issue][new issue]
+Already have an idea? It might be good to first [create an issue][new issue]
 to propose it so we can make sure we are aligned and lower the risk of having
 to re-work some of it and the discouragement that goes along with that.
 
@@ -44,7 +44,7 @@ When you first post a PR, we request that the the commit history get cleaned
 up. We recommend avoiding this during the PR to make it easier to review how
 feedback was handled. Once the commit is ready, we'll ask you to clean up the
 commit history. Once you let us know this is done, we can move forward with
-merging!  If you are uncomfortable with these parts of git, let us know and we
+merging! If you are uncomfortable with these parts of git, let us know and we
 can help.
 
 For commit messages, we use [Conventional](https://www.conventionalcommits.org)

@@ -194,11 +194,11 @@ pub trait Parser<I, O, E> {
     /// use winnow::ascii::alpha1;
     /// # fn main() {
     ///
-    ///  fn parser1<'s>(i: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
-    ///    alpha1(i)
-    ///  }
+    /// fn parser1<'s>(i: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+    ///   alpha1(i)
+    /// }
     ///
-    ///  let mut parser2 = parser1.output_into();
+    /// let mut parser2 = parser1.output_into();
     ///
     /// // the parser converts the &str output of the child parser into a Vec<u8>
     /// let bytes: IResult<&str, Vec<u8>> = parser2.parse_peek("abcd");
