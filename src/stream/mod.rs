@@ -1966,7 +1966,7 @@ where
     }
 }
 
-/// Ensure checkpoint details are kept privazte
+/// Ensure checkpoint details are kept private
 #[derive(Copy, Clone, Debug)]
 pub struct Checkpoint<T>(T);
 
