@@ -50,7 +50,7 @@ fn term(i: &mut &str) -> PResult<i64> {
     .parse_next(i)
 }
 
-// We transform an integer string into a i64, ignoring surrounding whitespaces
+// We transform an integer string into a i64, ignoring surrounding whitespace
 // We look for a digit suite, and try to convert it.
 // If either str::from_utf8 or FromStr::from_str fail,
 // we fallback to the parens parser defined above
@@ -63,7 +63,7 @@ fn factor(i: &mut &str) -> PResult<i64> {
     .parse_next(i)
 }
 
-// We parse any expr surrounded by parens, ignoring all whitespaces around those
+// We parse any expr surrounded by parens, ignoring all whitespace around those
 fn parens(i: &mut &str) -> PResult<i64> {
     delimited('(', expr, ')').parse_next(i)
 }
