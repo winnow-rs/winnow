@@ -3,6 +3,14 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Support `Accumulate` for `HashMap` with custom hashers
+
+### Compatibility
+
+- Deprecated `Uint` impls for signed numbers
+
 ## [0.5.17] - 2023-10-13
 
 ### Documentation
