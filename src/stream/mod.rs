@@ -9,6 +9,7 @@
 //! - [`Partial`] can mark an input as partial buffer that is being streamed into
 //! - [Custom stream types][crate::_topic::stream]
 
+use core::hash::BuildHasher;
 use core::num::NonZeroUsize;
 
 use crate::error::Needed;
@@ -2190,15 +2191,19 @@ where
 }
 
 #[cfg(feature = "std")]
-impl<K, V> Accumulate<(K, V)> for HashMap<K, V>
+impl<K, V, S> Accumulate<(K, V)> for HashMap<K, V, S>
 where
     K: crate::lib::std::cmp::Eq + crate::lib::std::hash::Hash,
+    S: BuildHasher + Default,
 {
     #[inline(always)]
     fn initial(capacity: Option<usize>) -> Self {
+        let h = S::default();
         match capacity {
-            Some(capacity) => HashMap::with_capacity(clamp_capacity::<(K, V)>(capacity)),
-            None => HashMap::new(),
+            Some(capacity) => {
+                HashMap::with_capacity_and_hasher(clamp_capacity::<(K, V)>(capacity), h)
+            }
+            None => HashMap::with_hasher(h),
         }
     }
     #[inline(always)]
