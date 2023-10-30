@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.18] - 2023-10-30
+
 ### Fixes
 
 - Support `Accumulate` for `HashMap` with custom hashers
@@ -2053,7 +2055,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.17...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.18...HEAD
+[0.5.18]: https://github.com/winnow-rs/winnow/compare/v0.5.17...v0.5.18
 [0.5.17]: https://github.com/winnow-rs/winnow/compare/v0.5.16...v0.5.17
 [0.5.16]: https://github.com/winnow-rs/winnow/compare/v0.5.15...v0.5.16
 [0.5.15]: https://github.com/winnow-rs/winnow/compare/v0.5.14...v0.5.15
