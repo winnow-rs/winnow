@@ -1,7 +1,24 @@
 #[cfg(feature = "std")]
 use proptest::prelude::*;
 
+use crate::{
+    combinator::{separated0, separated_pair},
+    PResult, Parser,
+};
+
 use super::*;
+
+#[cfg(feature = "std")]
+#[test]
+fn test_fxhashmap_compiles() {
+    let input = "a=b";
+    fn pair(i: &mut &str) -> PResult<(char, char)> {
+        let out = separated_pair('a', '=', 'b').parse_next(i)?;
+        Ok(out)
+    }
+
+    let _: rustc_hash::FxHashMap<char, char> = separated0(pair, ',').parse(input).unwrap();
+}
 
 #[test]
 fn test_offset_u8() {

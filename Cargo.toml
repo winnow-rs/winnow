@@ -69,6 +69,7 @@ term-transcript = "0.2.0"
 escargot = "0.5.7"
 snapbox = { version = "0.4.11", features = ["examples"] }
 circular = "0.3.0"
+rustc-hash = "1.1.0"
 
 [profile.bench]
 debug = true
