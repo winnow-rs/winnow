@@ -7,7 +7,7 @@
 //! Those are used to recognize the lowest level elements of your grammar, like, "here is a dot", or "here is an big endian integer".
 //!
 //! | combinator | usage | input | new input | output | comment |
-//! |---|---|---|---|---|
+//! |---|---|---|---|---|---|
 //! | [`one_of`][crate::token::one_of] | `one_of(['a', 'b', 'c'])` |  `"abc"` |  `"bc"` | `Ok('a')` |Matches one of the provided characters (works with non ASCII characters too)|
 //! | [`none_of`][crate::token::none_of] | `none_of(['a', 'b', 'c'])` |  `"xyab"` |  `"yab"` | `Ok('x')` |Matches anything but the provided characters|
 //! | [`tag`][crate::token::tag] | `"hello"` |  `"hello world"` |  `" world"` | `Ok("hello")` |Recognizes a specific suite of characters or bytes|
@@ -20,7 +20,7 @@
 //! ## Choice combinators
 //!
 //! | combinator | usage | input | new input | output | comment |
-//! |---|---|---|---|---|
+//! |---|---|---|---|---|---|
 //! | [`alt`] | `alt(("ab", "cd"))` |  `"cdef"` |  `"ef"` | `Ok("cd")` |Try a list of parsers and return the result of the first successful one|
 //! | [`dispatch`] | \- | \- | \- | \- | `match` for parsers |
 //! | [`permutation`] | `permutation(("ab", "cd", "12"))` | `"cd12abc"` | `"c"` | `Ok(("ab", "cd", "12"))` |Succeeds when all its child parser have succeeded, whatever the order|
@@ -28,7 +28,7 @@
 //! ## Sequence combinators
 //!
 //! | combinator | usage | input | new input | output | comment |
-//! |---|---|---|---|---|
+//! |---|---|---|---|---|---|
 //! | [`(...)` (tuples)][crate::Parser] | `("ab", "XY", take(1))` | `"abXYZ!"` | `"!"` | `Ok(("ab", "XY", "Z"))` |Chains parsers and assemble the sub results in a tuple. You can use as many child parsers as you can put elements in a tuple|
 //! | [`delimited`] | `delimited(char('('), take(2), char(')'))` | `"(ab)cd"` | `"cd"` | `Ok("ab")` ||
 //! | [`preceded`] | `preceded("ab", "XY")` | `"abXYZ"` | `"Z"` | `Ok("XY")` ||
@@ -38,7 +38,7 @@
 //! ## Applying a parser multiple times
 //!
 //! | combinator | usage | input | new input | output | comment |
-//! |---|---|---|---|---|
+//! |---|---|---|---|---|---|
 //! | [`repeat`] | `repeat(1..=3, "ab")` | `"ababc"` | `"c"` | `Ok(vec!["ab", "ab"])` |Applies the parser between m and n times (n included) and returns the list of results in a Vec|
 //! | [`repeat_till0`] | `repeat_till0(tag( "ab" ), tag( "ef" ))` | `"ababefg"` | `"g"` | `Ok((vec!["ab", "ab"], "ef"))` |Applies the first parser until the second applies. Returns a tuple containing the list of results from the first in a Vec and the result of the second|
 //! | [`separated0`] | `separated0("ab", ",")` | `"ab,ab,ab."` | `"."` | `Ok(vec!["ab", "ab", "ab"])` |`separated1` works like `separated0` but must returns at least one element|
