@@ -2,7 +2,7 @@
 use proptest::prelude::*;
 
 use crate::{
-    combinator::{separated0, separated_pair},
+    combinator::{separated, separated_pair},
     PResult, Parser,
 };
 
@@ -17,7 +17,7 @@ fn test_fxhashmap_compiles() {
         Ok(out)
     }
 
-    let _: rustc_hash::FxHashMap<char, char> = separated0(pair, ',').parse(input).unwrap();
+    let _: rustc_hash::FxHashMap<char, char> = separated(0.., pair, ',').parse(input).unwrap();
 }
 
 #[test]

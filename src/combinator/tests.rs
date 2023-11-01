@@ -717,13 +717,13 @@ fn permutation_test() {
 #[cfg(feature = "alloc")]
 fn separated0_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated0("abcd", ",").parse_peek(i)
+        separated(0.., "abcd", ",").parse_peek(i)
     }
     fn multi_empty(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated0("", ",").parse_peek(i)
+        separated(0.., "", ",").parse_peek(i)
     }
     fn multi_longsep(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated0("abcd", "..").parse_peek(i)
+        separated(0.., "abcd", "..").parse_peek(i)
     }
 
     let a = &b"abcdef"[..];
@@ -773,7 +773,7 @@ fn separated0_test() {
 #[cfg_attr(debug_assertions, should_panic)]
 fn separated0_empty_sep_test() {
     fn empty_sep(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated0("abc", "").parse_peek(i)
+        separated(0.., "abc", "").parse_peek(i)
     }
 
     let i = &b"abcabc"[..];
@@ -792,10 +792,10 @@ fn separated0_empty_sep_test() {
 #[cfg(feature = "alloc")]
 fn separated1_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated1("abcd", ",").parse_peek(i)
+        separated(1.., "abcd", ",").parse_peek(i)
     }
     fn multi_longsep(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated1("abcd", "..").parse_peek(i)
+        separated(1.., "abcd", "..").parse_peek(i)
     }
 
     let a = &b"abcdef"[..];

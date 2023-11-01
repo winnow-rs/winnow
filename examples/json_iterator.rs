@@ -5,7 +5,7 @@ use winnow::{
     ascii::{alphanumeric1 as alphanumeric, escaped, float},
     combinator::alt,
     combinator::cut_err,
-    combinator::separated0,
+    combinator::separated,
     combinator::{preceded, separated_pair, terminated},
     error::ParserError,
     error::StrContext,
@@ -233,7 +233,7 @@ fn array(i: &mut &str) -> PResult<()> {
     preceded(
         '[',
         cut_err(terminated(
-            separated0(value, preceded(sp, ',')),
+            separated(0.., value, preceded(sp, ',')),
             preceded(sp, ']'),
         )),
     )
@@ -249,7 +249,7 @@ fn hash(i: &mut &str) -> PResult<()> {
     preceded(
         '{',
         cut_err(terminated(
-            separated0(key_value, preceded(sp, ',')),
+            separated(0.., key_value, preceded(sp, ',')),
             preceded(sp, '}'),
         )),
     )

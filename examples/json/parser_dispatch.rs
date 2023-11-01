@@ -10,7 +10,7 @@ use winnow::{
     combinator::success,
     combinator::{alt, dispatch},
     combinator::{delimited, preceded, separated_pair, terminated},
-    combinator::{fold_repeat, separated0},
+    combinator::{fold_repeat, separated},
     error::{AddContext, ParserError},
     token::{any, none_of, take, take_while},
 };
@@ -160,7 +160,7 @@ fn u16_hex<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<u1
         .parse_next(input)
 }
 
-/// Some combinators, like `separated0` or `repeat`, will call a parser repeatedly,
+/// Some combinators, like `separated` or `repeat`, will call a parser repeatedly,
 /// accumulating results in a `Vec`, until it encounters an error.
 /// If you want more control on the parser application, check out the `iterator`
 /// combinator (cf `examples/iterator.rs`)
@@ -169,7 +169,10 @@ fn array<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
 ) -> PResult<Vec<JsonValue>, E> {
     preceded(
         ('[', ws),
-        cut_err(terminated(separated0(json_value, (ws, ',', ws)), (ws, ']'))),
+        cut_err(terminated(
+            separated(0.., json_value, (ws, ',', ws)),
+            (ws, ']'),
+        )),
     )
     .context("array")
     .parse_next(input)
@@ -180,7 +183,10 @@ fn object<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>
 ) -> PResult<HashMap<String, JsonValue>, E> {
     preceded(
         ('{', ws),
-        cut_err(terminated(separated0(key_value, (ws, ',', ws)), (ws, '}'))),
+        cut_err(terminated(
+            separated(0.., key_value, (ws, ',', ws)),
+            (ws, '}'),
+        )),
     )
     .context("object")
     .parse_next(input)
