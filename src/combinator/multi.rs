@@ -513,7 +513,11 @@ where
     })
 }
 
-fn separated0_<I, O, C, O2, E, P, S>(parser: &mut P, sep: &mut S, i: &mut I) -> PResult<C, E>
+fn separated0_<I, O, C, O2, E, P, S>(
+    parser: &mut P,
+    separator: &mut S,
+    input: &mut I,
+) -> PResult<C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -521,46 +525,46 @@ where
     S: Parser<I, O2, E>,
     E: ParserError<I>,
 {
-    let mut res = C::initial(None);
+    let mut acc = C::initial(None);
 
-    let start = i.checkpoint();
-    match parser.parse_next(i) {
+    let start = input.checkpoint();
+    match parser.parse_next(input) {
         Err(ErrMode::Backtrack(_)) => {
-            i.reset(start);
-            return Ok(res);
+            input.reset(start);
+            return Ok(acc);
         }
         Err(e) => return Err(e),
         Ok(o) => {
-            res.accumulate(o);
+            acc.accumulate(o);
         }
     }
 
     loop {
-        let start = i.checkpoint();
-        let len = i.eof_offset();
-        match sep.parse_next(i) {
+        let start = input.checkpoint();
+        let len = input.eof_offset();
+        match separator.parse_next(input) {
             Err(ErrMode::Backtrack(_)) => {
-                i.reset(start);
-                return Ok(res);
+                input.reset(start);
+                return Ok(acc);
             }
             Err(e) => return Err(e),
             Ok(_) => {
                 // infinite loop check
-                if i.eof_offset() == len {
+                if input.eof_offset() == len {
                     return Err(ErrMode::assert(
-                        i,
+                        input,
                         "`separated` separator parser must always consume",
                     ));
                 }
 
-                match parser.parse_next(i) {
+                match parser.parse_next(input) {
                     Err(ErrMode::Backtrack(_)) => {
-                        i.reset(start);
-                        return Ok(res);
+                        input.reset(start);
+                        return Ok(acc);
                     }
                     Err(e) => return Err(e),
                     Ok(o) => {
-                        res.accumulate(o);
+                        acc.accumulate(o);
                     }
                 }
             }
@@ -615,7 +619,11 @@ where
     })
 }
 
-fn separated1_<I, O, C, O2, E, P, S>(parser: &mut P, sep: &mut S, i: &mut I) -> PResult<C, E>
+fn separated1_<I, O, C, O2, E, P, S>(
+    parser: &mut P,
+    separator: &mut S,
+    input: &mut I,
+) -> PResult<C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -623,42 +631,42 @@ where
     S: Parser<I, O2, E>,
     E: ParserError<I>,
 {
-    let mut res = C::initial(None);
+    let mut acc = C::initial(None);
 
     // Parse the first element
-    match parser.parse_next(i) {
+    match parser.parse_next(input) {
         Err(e) => return Err(e),
         Ok(o) => {
-            res.accumulate(o);
+            acc.accumulate(o);
         }
     }
 
     loop {
-        let start = i.checkpoint();
-        let len = i.eof_offset();
-        match sep.parse_next(i) {
+        let start = input.checkpoint();
+        let len = input.eof_offset();
+        match separator.parse_next(input) {
             Err(ErrMode::Backtrack(_)) => {
-                i.reset(start);
-                return Ok(res);
+                input.reset(start);
+                return Ok(acc);
             }
             Err(e) => return Err(e),
             Ok(_) => {
                 // infinite loop check
-                if i.eof_offset() == len {
+                if input.eof_offset() == len {
                     return Err(ErrMode::assert(
-                        i,
+                        input,
                         "`separated` separator parser must always consume",
                     ));
                 }
 
-                match parser.parse_next(i) {
+                match parser.parse_next(input) {
                     Err(ErrMode::Backtrack(_)) => {
-                        i.reset(start);
-                        return Ok(res);
+                        input.reset(start);
+                        return Ok(acc);
                     }
                     Err(e) => return Err(e),
                     Ok(o) => {
-                        res.accumulate(o);
+                        acc.accumulate(o);
                     }
                 }
             }
