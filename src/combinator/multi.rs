@@ -703,29 +703,18 @@ where
     }
 
     for _ in 1..count {
-        let len = input.eof_offset();
         match separator.parse_next(input) {
             Err(e) => {
                 return Err(e.append(input, ErrorKind::Many));
             }
-            Ok(_) => {
-                // infinite loop check
-                if input.eof_offset() == len {
-                    return Err(ErrMode::assert(
-                        input,
-                        "`separated` separator parser must always consume",
-                    ));
+            Ok(_) => match parser.parse_next(input) {
+                Err(e) => {
+                    return Err(e.append(input, ErrorKind::Many));
                 }
-
-                match parser.parse_next(input) {
-                    Err(e) => {
-                        return Err(e.append(input, ErrorKind::Many));
-                    }
-                    Ok(o) => {
-                        acc.accumulate(o);
-                    }
+                Ok(o) => {
+                    acc.accumulate(o);
                 }
-            }
+            },
         }
     }
 
