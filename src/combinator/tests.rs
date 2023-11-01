@@ -840,6 +840,47 @@ fn separated1_test() {
 
 #[test]
 #[cfg(feature = "alloc")]
+fn separated_test() {
+    fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
+        separated(2..=4, "abcd", ",").parse_peek(i)
+    }
+
+    let a = &b"abcd,ef"[..];
+    let b = &b"abcd,abcd,efgh"[..];
+    let c = &b"abcd,abcd,abcd,abcd,efgh"[..];
+    let d = &b"abcd,abcd,abcd,abcd,abcd,efgh"[..];
+    let e = &b"abcd,ab"[..];
+
+    assert_eq!(
+        multi(Partial::new(a)),
+        Err(ErrMode::Backtrack(error_position!(
+            &Partial::new(&b"ef"[..]),
+            ErrorKind::Tag
+        )))
+    );
+    let res1 = vec![&b"abcd"[..], &b"abcd"[..]];
+    assert_eq!(
+        multi(Partial::new(b)),
+        Ok((Partial::new(&b",efgh"[..]), res1))
+    );
+    let res2 = vec![&b"abcd"[..], &b"abcd"[..], &b"abcd"[..], &b"abcd"[..]];
+    assert_eq!(
+        multi(Partial::new(c)),
+        Ok((Partial::new(&b",efgh"[..]), res2))
+    );
+    let res3 = vec![&b"abcd"[..], &b"abcd"[..], &b"abcd"[..], &b"abcd"[..]];
+    assert_eq!(
+        multi(Partial::new(d)),
+        Ok((Partial::new(&b",abcd,efgh"[..]), res3))
+    );
+    assert_eq!(
+        multi(Partial::new(e)),
+        Err(ErrMode::Incomplete(Needed::new(2)))
+    );
+}
+
+#[test]
+#[cfg(feature = "alloc")]
 fn repeat0_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
         repeat(0.., "abcd").parse_peek(i)
