@@ -4,7 +4,7 @@
 //! - Accumulate more [context][Parser::context] as the error goes up the parser chain
 //! - Distinguish between [recoverable errors,
 //!   unrecoverable errors, and more data is needed][ErrMode]
-//! - Have a very low overhead, as errors are often discarded by the calling parser (examples: `many0`, `alt`)
+//! - Have a very low overhead, as errors are often discarded by the calling parser (examples: `repeat`, `alt`)
 //! - Can be modified according to the user's needs, because some languages need a lot more information
 //! - Help thread-through the [stream][crate::stream]
 //!

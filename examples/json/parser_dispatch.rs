@@ -160,7 +160,7 @@ fn u16_hex<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<u1
         .parse_next(input)
 }
 
-/// Some combinators, like `separated0` or `many0`, will call a parser repeatedly,
+/// Some combinators, like `separated0` or `repeat`, will call a parser repeatedly,
 /// accumulating results in a `Vec`, until it encounters an error.
 /// If you want more control on the parser application, check out the `iterator`
 /// combinator (cf `examples/iterator.rs`)
