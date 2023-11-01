@@ -201,6 +201,73 @@ where
     }
 }
 
+fn repeat_n_<I, O, C, E, F>(count: usize, f: &mut F, i: &mut I) -> PResult<C, E>
+where
+    I: Stream,
+    C: Accumulate<O>,
+    F: Parser<I, O, E>,
+    E: ParserError<I>,
+{
+    let mut res = C::initial(Some(count));
+
+    for _ in 0..count {
+        match f.parse_next(i) {
+            Ok(o) => {
+                res.accumulate(o);
+            }
+            Err(e) => {
+                return Err(e.append(i, ErrorKind::Many));
+            }
+        }
+    }
+
+    Ok(res)
+}
+
+fn repeat_m_n_<I, O, C, E, F>(min: usize, max: usize, parse: &mut F, input: &mut I) -> PResult<C, E>
+where
+    I: Stream,
+    C: Accumulate<O>,
+    F: Parser<I, O, E>,
+    E: ParserError<I>,
+{
+    if min > max {
+        return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::Many)));
+    }
+
+    let mut res = C::initial(Some(min));
+    for count in 0..max {
+        let start = input.checkpoint();
+        let len = input.eof_offset();
+        match parse.parse_next(input) {
+            Ok(value) => {
+                // infinite loop check: the parser must always consume
+                if input.eof_offset() == len {
+                    return Err(ErrMode::assert(
+                        input,
+                        "`repeat` parsers must always consume",
+                    ));
+                }
+
+                res.accumulate(value);
+            }
+            Err(ErrMode::Backtrack(e)) => {
+                if count < min {
+                    return Err(ErrMode::Backtrack(e.append(input, ErrorKind::Many)));
+                } else {
+                    input.reset(start);
+                    return Ok(res);
+                }
+            }
+            Err(e) => {
+                return Err(e);
+            }
+        }
+    }
+
+    Ok(res)
+}
+
 /// [`Accumulate`] the output of parser `f` into a container, like `Vec`, until the parser `g`
 /// produces a result.
 ///
@@ -554,73 +621,6 @@ where
             Ok(ol)
         }
     })
-}
-
-fn repeat_m_n_<I, O, C, E, F>(min: usize, max: usize, parse: &mut F, input: &mut I) -> PResult<C, E>
-where
-    I: Stream,
-    C: Accumulate<O>,
-    F: Parser<I, O, E>,
-    E: ParserError<I>,
-{
-    if min > max {
-        return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::Many)));
-    }
-
-    let mut res = C::initial(Some(min));
-    for count in 0..max {
-        let start = input.checkpoint();
-        let len = input.eof_offset();
-        match parse.parse_next(input) {
-            Ok(value) => {
-                // infinite loop check: the parser must always consume
-                if input.eof_offset() == len {
-                    return Err(ErrMode::assert(
-                        input,
-                        "`repeat` parsers must always consume",
-                    ));
-                }
-
-                res.accumulate(value);
-            }
-            Err(ErrMode::Backtrack(e)) => {
-                if count < min {
-                    return Err(ErrMode::Backtrack(e.append(input, ErrorKind::Many)));
-                } else {
-                    input.reset(start);
-                    return Ok(res);
-                }
-            }
-            Err(e) => {
-                return Err(e);
-            }
-        }
-    }
-
-    Ok(res)
-}
-
-fn repeat_n_<I, O, C, E, F>(count: usize, f: &mut F, i: &mut I) -> PResult<C, E>
-where
-    I: Stream,
-    C: Accumulate<O>,
-    F: Parser<I, O, E>,
-    E: ParserError<I>,
-{
-    let mut res = C::initial(Some(count));
-
-    for _ in 0..count {
-        match f.parse_next(i) {
-            Ok(o) => {
-                res.accumulate(o);
-            }
-            Err(e) => {
-                return Err(e.append(i, ErrorKind::Many));
-            }
-        }
-    }
-
-    Ok(res)
 }
 
 /// Repeats the embedded parser, filling the given slice with results.
