@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.19] - 2023-11-03
+
 ### Features
 
 - Add `separated` combiantor
@@ -2063,7 +2065,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.18...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.19...HEAD
+[0.5.19]: https://github.com/winnow-rs/winnow/compare/v0.5.18...v0.5.19
 [0.5.18]: https://github.com/winnow-rs/winnow/compare/v0.5.17...v0.5.18
 [0.5.17]: https://github.com/winnow-rs/winnow/compare/v0.5.16...v0.5.17
 [0.5.16]: https://github.com/winnow-rs/winnow/compare/v0.5.15...v0.5.16
