@@ -3,6 +3,14 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `separated` combiantor
+
+### Compatibility
+
+- Deprecated `separated0` and `separated1` in favor of `separated`
+
 ## [0.5.18] - 2023-10-30
 
 ### Fixes
