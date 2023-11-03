@@ -125,15 +125,15 @@ fn issue_655() {
 
 #[cfg(feature = "alloc")]
 fn issue_717(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-    use winnow::combinator::separated0;
+    use winnow::combinator::separated;
     use winnow::token::{tag, take_till1};
 
-    separated0(take_till1([0x0u8]), tag([0x0])).parse_peek(i)
+    separated(0.., take_till1([0x0u8]), tag([0x0])).parse_peek(i)
 }
 
 mod issue_647 {
     use super::*;
-    use winnow::combinator::separated0;
+    use winnow::combinator::separated;
     use winnow::token::tag;
     use winnow::{binary::be_f64, error::ErrMode, IResult};
     pub type Stream<'a> = winnow::Partial<&'a [u8]>;
@@ -149,7 +149,7 @@ mod issue_647 {
         input: Stream<'a>,
         _cs: &f64,
     ) -> Result<(Stream<'a>, Vec<f64>), ErrMode<InputError<Stream<'a>>>> {
-        separated0(be_f64.complete_err(), tag(",").complete_err()).parse_peek(input)
+        separated(0.., be_f64.complete_err(), tag(",").complete_err()).parse_peek(input)
     }
 
     fn data(input: Stream<'_>) -> IResult<Stream<'_>, Data> {

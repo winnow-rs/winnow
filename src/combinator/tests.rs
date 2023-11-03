@@ -717,13 +717,13 @@ fn permutation_test() {
 #[cfg(feature = "alloc")]
 fn separated0_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated0("abcd", ",").parse_peek(i)
+        separated(0.., "abcd", ",").parse_peek(i)
     }
     fn multi_empty(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated0("", ",").parse_peek(i)
+        separated(0.., "", ",").parse_peek(i)
     }
     fn multi_longsep(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated0("abcd", "..").parse_peek(i)
+        separated(0.., "abcd", "..").parse_peek(i)
     }
 
     let a = &b"abcdef"[..];
@@ -773,7 +773,7 @@ fn separated0_test() {
 #[cfg_attr(debug_assertions, should_panic)]
 fn separated0_empty_sep_test() {
     fn empty_sep(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated0("abc", "").parse_peek(i)
+        separated(0.., "abc", "").parse_peek(i)
     }
 
     let i = &b"abcabc"[..];
@@ -792,10 +792,10 @@ fn separated0_empty_sep_test() {
 #[cfg(feature = "alloc")]
 fn separated1_test() {
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated1("abcd", ",").parse_peek(i)
+        separated(1.., "abcd", ",").parse_peek(i)
     }
     fn multi_longsep(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        separated1("abcd", "..").parse_peek(i)
+        separated(1.., "abcd", "..").parse_peek(i)
     }
 
     let a = &b"abcdef"[..];
@@ -835,6 +835,47 @@ fn separated1_test() {
     assert_eq!(
         multi(Partial::new(h)),
         Err(ErrMode::Incomplete(Needed::new(1)))
+    );
+}
+
+#[test]
+#[cfg(feature = "alloc")]
+fn separated_test() {
+    fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
+        separated(2..=4, "abcd", ",").parse_peek(i)
+    }
+
+    let a = &b"abcd,ef"[..];
+    let b = &b"abcd,abcd,efgh"[..];
+    let c = &b"abcd,abcd,abcd,abcd,efgh"[..];
+    let d = &b"abcd,abcd,abcd,abcd,abcd,efgh"[..];
+    let e = &b"abcd,ab"[..];
+
+    assert_eq!(
+        multi(Partial::new(a)),
+        Err(ErrMode::Backtrack(error_position!(
+            &Partial::new(&b"ef"[..]),
+            ErrorKind::Tag
+        )))
+    );
+    let res1 = vec![&b"abcd"[..], &b"abcd"[..]];
+    assert_eq!(
+        multi(Partial::new(b)),
+        Ok((Partial::new(&b",efgh"[..]), res1))
+    );
+    let res2 = vec![&b"abcd"[..], &b"abcd"[..], &b"abcd"[..], &b"abcd"[..]];
+    assert_eq!(
+        multi(Partial::new(c)),
+        Ok((Partial::new(&b",efgh"[..]), res2))
+    );
+    let res3 = vec![&b"abcd"[..], &b"abcd"[..], &b"abcd"[..], &b"abcd"[..]];
+    assert_eq!(
+        multi(Partial::new(d)),
+        Ok((Partial::new(&b",abcd,efgh"[..]), res3))
+    );
+    assert_eq!(
+        multi(Partial::new(e)),
+        Err(ErrMode::Incomplete(Needed::new(2)))
     );
 }
 
