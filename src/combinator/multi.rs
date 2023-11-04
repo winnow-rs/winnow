@@ -347,6 +347,10 @@ where
 /// * `parser` The parser that parses the elements of the list.
 /// * `sep` The parser that parses the separator between list elements.
 ///
+/// **Warning:** If the separator parser accepts empty inputs
+/// (like `alpha0` or `digit0`), `separated` will return an error,
+/// to prevent going into an infinite loop.
+///
 /// # Example
 ///
 /// Zero or more repetitions:
