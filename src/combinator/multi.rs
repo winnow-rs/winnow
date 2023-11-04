@@ -211,8 +211,14 @@ where
     let mut res = C::initial(Some(count));
 
     for _ in 0..count {
+        let len = i.eof_offset();
         match f.parse_next(i) {
             Ok(o) => {
+                // infinite loop check: the parser must always consume
+                if i.eof_offset() == len {
+                    return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
+                }
+
                 res.accumulate(o);
             }
             Err(e) => {
