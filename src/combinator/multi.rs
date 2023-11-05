@@ -342,8 +342,7 @@ where
 /// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Arguments
-/// * `m` The minimum number of iterations.
-/// * `n` The maximum number of iterations.
+/// * `range` The minimum and maximum number of iterations.
 /// * `parser` The parser that parses the elements of the list.
 /// * `sep` The parser that parses the separator between list elements.
 ///
