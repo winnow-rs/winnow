@@ -21,6 +21,27 @@ use crate::trace::trace;
 use crate::PResult;
 use crate::Parser;
 
+/// Mark a value as case-insensitive for ASCII characters
+///
+/// # Example
+/// ```rust
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}};
+/// # use winnow::ascii::Caseless;
+///
+/// fn parser<'s>(s: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+///   Caseless("hello").parse_next(s)
+/// }
+///
+/// assert_eq!(parser.parse_peek("Hello, World!"), Ok((", World!", "Hello")));
+/// assert_eq!(parser.parse_peek("hello, World!"), Ok((", World!", "hello")));
+/// assert_eq!(parser.parse_peek("HeLlo, World!"), Ok((", World!", "HeLlo")));
+/// assert_eq!(parser.parse_peek("Some"), Err(ErrMode::Backtrack(InputError::new("Some", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
+/// ```
+#[derive(Copy, Clone, Debug)]
+pub struct Caseless<T>(pub T);
+
 /// Recognizes the string `"\r\n"`.
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
