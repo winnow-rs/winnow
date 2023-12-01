@@ -218,6 +218,7 @@ where
 #[doc(alias = "literal")]
 #[doc(alias = "bytes")]
 #[doc(alias = "just")]
+#[deprecated(since = "0.5.20", note = "Replaced with `tag(ascii::Caseless(_))`")]
 pub fn tag_no_case<T, I, Error: ParserError<I>>(
     tag: T,
 ) -> impl Parser<I, <I as Stream>::Slice, Error>
@@ -236,6 +237,7 @@ where
     })
 }
 
+#[allow(deprecated)]
 fn tag_no_case_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     i: &mut I,
     t: T,

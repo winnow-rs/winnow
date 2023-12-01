@@ -1,9 +1,10 @@
 #[cfg(test)]
 mod test {
+    use winnow::ascii::Caseless;
     use winnow::Parser;
     use winnow::Partial;
     #[cfg(feature = "alloc")]
-    use winnow::{combinator::alt, combinator::repeat, token::tag_no_case};
+    use winnow::{combinator::alt, combinator::repeat, token::tag};
     use winnow::{
         error::ErrMode,
         error::{ErrorKind, InputError},
@@ -74,7 +75,7 @@ mod test {
     #[test]
     fn tag_case_insensitive_str() {
         fn test(i: &str) -> IResult<&str, &str> {
-            tag_no_case("ABcd").parse_peek(i)
+            tag(Caseless("ABcd")).parse_peek(i)
         }
         assert_eq!(test("aBCdefgh"), Ok(("efgh", "aBCd")));
         assert_eq!(test("abcdefgh"), Ok(("efgh", "abcd")));

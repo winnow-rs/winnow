@@ -1589,6 +1589,7 @@ pub trait Compare<T> {
     /// by lowercasing both strings and comparing
     /// the result. This is a temporary solution until
     /// a better one appears
+    #[deprecated(since = "0.5.20", note = "Replaced with `compare(ascii::Caseless(_))`")]
     fn compare_no_case(&self, t: T) -> CompareResult;
 }
 
@@ -1617,6 +1618,7 @@ impl<'a, 'b> Compare<&'b [u8]> for &'a [u8] {
     }
 
     #[inline(always)]
+    #[allow(deprecated)]
     fn compare_no_case(&self, t: &'b [u8]) -> CompareResult {
         self.compare(AsciiCaseless(t))
     }
@@ -1639,6 +1641,7 @@ impl<'a, 'b> Compare<AsciiCaseless<&'b [u8]>> for &'a [u8] {
     }
 
     #[inline(always)]
+    #[allow(deprecated)]
     fn compare_no_case(&self, t: AsciiCaseless<&'b [u8]>) -> CompareResult {
         self.compare(t)
     }
@@ -1651,6 +1654,7 @@ impl<'a, const LEN: usize> Compare<[u8; LEN]> for &'a [u8] {
     }
 
     #[inline(always)]
+    #[allow(deprecated)]
     fn compare_no_case(&self, t: [u8; LEN]) -> CompareResult {
         self.compare_no_case(&t[..])
     }
@@ -1663,6 +1667,7 @@ impl<'a, const LEN: usize> Compare<AsciiCaseless<[u8; LEN]>> for &'a [u8] {
     }
 
     #[inline(always)]
+    #[allow(deprecated)]
     fn compare_no_case(&self, t: AsciiCaseless<[u8; LEN]>) -> CompareResult {
         self.compare_no_case(AsciiCaseless(&t.0[..]))
     }
@@ -1675,6 +1680,7 @@ impl<'a, 'b, const LEN: usize> Compare<&'b [u8; LEN]> for &'a [u8] {
     }
 
     #[inline(always)]
+    #[allow(deprecated)]
     fn compare_no_case(&self, t: &'b [u8; LEN]) -> CompareResult {
         self.compare_no_case(&t[..])
     }
@@ -1687,6 +1693,7 @@ impl<'a, 'b, const LEN: usize> Compare<AsciiCaseless<&'b [u8; LEN]>> for &'a [u8
     }
 
     #[inline(always)]
+    #[allow(deprecated)]
     fn compare_no_case(&self, t: AsciiCaseless<&'b [u8; LEN]>) -> CompareResult {
         self.compare_no_case(AsciiCaseless(&t.0[..]))
     }
@@ -1698,6 +1705,7 @@ impl<'a, 'b> Compare<&'b str> for &'a [u8] {
         self.compare(t.as_bytes())
     }
     #[inline(always)]
+    #[allow(deprecated)]
     fn compare_no_case(&self, t: &'b str) -> CompareResult {
         self.compare_no_case(t.as_bytes())
     }
@@ -1709,6 +1717,7 @@ impl<'a, 'b> Compare<AsciiCaseless<&'b str>> for &'a [u8] {
         self.compare(AsciiCaseless(t.0.as_bytes()))
     }
     #[inline(always)]
+    #[allow(deprecated)]
     fn compare_no_case(&self, t: AsciiCaseless<&'b str>) -> CompareResult {
         self.compare_no_case(AsciiCaseless(t.0.as_bytes()))
     }
@@ -1721,6 +1730,7 @@ impl<'a, 'b> Compare<&'b str> for &'a str {
     }
 
     #[inline]
+    #[allow(deprecated)]
     fn compare_no_case(&self, t: &'b str) -> CompareResult {
         self.compare(AsciiCaseless(t))
     }
@@ -1747,6 +1757,7 @@ impl<'a, 'b> Compare<AsciiCaseless<&'b str>> for &'a str {
     }
 
     #[inline(always)]
+    #[allow(deprecated)]
     fn compare_no_case(&self, t: AsciiCaseless<&'b str>) -> CompareResult {
         self.compare(t)
     }
@@ -1758,6 +1769,7 @@ impl<'a, 'b> Compare<&'b [u8]> for &'a str {
         AsBStr::as_bstr(self).compare(t)
     }
     #[inline(always)]
+    #[allow(deprecated)]
     fn compare_no_case(&self, t: &'b [u8]) -> CompareResult {
         AsBStr::as_bstr(self).compare_no_case(t)
     }
@@ -1769,6 +1781,7 @@ impl<'a, 'b> Compare<AsciiCaseless<&'b [u8]>> for &'a str {
         AsBStr::as_bstr(self).compare(t)
     }
     #[inline(always)]
+    #[allow(deprecated)]
     fn compare_no_case(&self, t: AsciiCaseless<&'b [u8]>) -> CompareResult {
         AsBStr::as_bstr(self).compare_no_case(t)
     }
@@ -1785,6 +1798,7 @@ where
     }
 
     #[inline(always)]
+    #[allow(deprecated)]
     fn compare_no_case(&self, t: T) -> CompareResult {
         let bytes = (*self).as_bytes();
         bytes.compare_no_case(t)
@@ -1802,6 +1816,7 @@ where
     }
 
     #[inline(always)]
+    #[allow(deprecated)]
     fn compare_no_case(&self, t: T) -> CompareResult {
         let bytes = (*self).as_bytes();
         bytes.compare_no_case(t)
@@ -1818,6 +1833,7 @@ where
     }
 
     #[inline(always)]
+    #[allow(deprecated)]
     fn compare_no_case(&self, other: U) -> CompareResult {
         self.input.compare_no_case(other)
     }
@@ -1833,6 +1849,7 @@ where
     }
 
     #[inline(always)]
+    #[allow(deprecated)]
     fn compare_no_case(&self, other: U) -> CompareResult {
         self.input.compare_no_case(other)
     }
@@ -1848,6 +1865,7 @@ where
     }
 
     #[inline(always)]
+    #[allow(deprecated)]
     fn compare_no_case(&self, t: T) -> CompareResult {
         self.input.compare_no_case(t)
     }
