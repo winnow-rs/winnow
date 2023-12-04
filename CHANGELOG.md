@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.21] - 2023-12-04
+
 ### Features
 
 - Add `take_till` ranged parser
@@ -2083,7 +2085,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.20...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.21...HEAD
+[0.5.21]: https://github.com/winnow-rs/winnow/compare/v0.5.20...v0.5.21
 [0.5.20]: https://github.com/winnow-rs/winnow/compare/v0.5.19...v0.5.20
 [0.5.19]: https://github.com/winnow-rs/winnow/compare/v0.5.18...v0.5.19
 [0.5.18]: https://github.com/winnow-rs/winnow/compare/v0.5.17...v0.5.18
