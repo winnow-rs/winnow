@@ -2796,42 +2796,33 @@ fn memchr(token: u8, slice: &[u8]) -> Option<usize> {
     slice.iter().position(|t| *t == token)
 }
 
-#[cfg(feature = "simd")]
 #[inline(always)]
 fn memmem(slice: &[u8], tag: &[u8]) -> Option<usize> {
-    if tag.len() > slice.len() {
-        return None;
+    if tag.len() == 1 {
+        memchr(tag[0], slice)
+    } else {
+        memmem_(slice, tag)
     }
+}
 
-    let (&substr_first, substr_rest) = match tag.split_first() {
-        Some(split) => split,
-        // an empty substring is found at position 0
-        // This matches the behavior of str.find("").
+#[cfg(feature = "simd")]
+#[inline(always)]
+fn memmem_(slice: &[u8], tag: &[u8]) -> Option<usize> {
+    let &prefix = match tag.first() {
+        Some(x) => x,
         None => return Some(0),
     };
-
-    if substr_rest.is_empty() {
-        return memchr::memchr(substr_first, slice);
-    }
-
-    let mut offset = 0;
-    let haystack = &slice[..slice.len() - substr_rest.len()];
-
-    while let Some(position) = memchr::memchr(substr_first, &haystack[offset..]) {
-        offset += position;
-        let next_offset = offset + 1;
-        if &slice[next_offset..][..substr_rest.len()] == substr_rest {
-            return Some(offset);
+    #[allow(clippy::manual_find)] // faster this way
+    for i in memchr::memchr_iter(prefix, slice) {
+        if slice[i..].starts_with(tag) {
+            return Some(i);
         }
-
-        offset = next_offset;
     }
-
     None
 }
 
 #[cfg(not(feature = "simd"))]
-fn memmem(slice: &[u8], tag: &[u8]) -> Option<usize> {
+fn memmem_(slice: &[u8], tag: &[u8]) -> Option<usize> {
     for i in 0..slice.len() {
         let subslice = &slice[i..];
         if subslice.starts_with(tag) {
