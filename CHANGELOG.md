@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Optimize `take_until*` when parsing `&str`
+
 ## [0.5.21] - 2023-12-04
 
 ### Features
