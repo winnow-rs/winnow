@@ -728,6 +728,85 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
+/// use winnow::token::take_till;
+///
+/// fn till_colon(s: &str) -> IResult<&str, &str> {
+///   take_till(0.., |c| c == ':').parse_peek(s)
+/// }
+///
+/// assert_eq!(till_colon("latin:123"), Ok((":123", "latin")));
+/// assert_eq!(till_colon(":empty matched"), Ok((":empty matched", ""))); //allowed
+/// assert_eq!(till_colon("12345"), Ok(("", "12345")));
+/// assert_eq!(till_colon(""), Ok(("", "")));
+/// ```
+///
+/// ```rust
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::Partial;
+/// use winnow::token::take_till;
+///
+/// fn till_colon(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
+///   take_till(0.., |c| c == ':').parse_peek(s)
+/// }
+///
+/// assert_eq!(till_colon(Partial::new("latin:123")), Ok((Partial::new(":123"), "latin")));
+/// assert_eq!(till_colon(Partial::new(":empty matched")), Ok((Partial::new(":empty matched"), ""))); //allowed
+/// assert_eq!(till_colon(Partial::new("12345")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(till_colon(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// ```
+#[inline(always)]
+pub fn take_till<T, I, Error: ParserError<I>>(
+    range: impl Into<Range>,
+    list: T,
+) -> impl Parser<I, <I as Stream>::Slice, Error>
+where
+    I: StreamIsPartial,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
+{
+    let Range {
+        start_inclusive,
+        end_inclusive,
+    } = range.into();
+    trace("take_till", move |i: &mut I| {
+        match (start_inclusive, end_inclusive) {
+            (0, None) => {
+                if <I as StreamIsPartial>::is_partial_supported() {
+                    take_till0_partial(i, |c| list.contains_token(c))
+                } else {
+                    take_till0_complete(i, |c| list.contains_token(c))
+                }
+            }
+            (1, None) => {
+                if <I as StreamIsPartial>::is_partial_supported() {
+                    take_till1_partial(i, |c| list.contains_token(c))
+                } else {
+                    take_till1_complete(i, |c| list.contains_token(c))
+                }
+            }
+            (start, end) => {
+                let end = end.unwrap_or(usize::MAX);
+                if <I as StreamIsPartial>::is_partial_supported() {
+                    take_till_m_n::<_, _, _, true>(i, start, end, |c| list.contains_token(c))
+                } else {
+                    take_till_m_n::<_, _, _, false>(i, start, end, |c| list.contains_token(c))
+                }
+            }
+        }
+    })
+}
+
+/// Recognize the longest input slice (if any) till a [pattern][ContainsToken] is met.
+///
+/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if the match reaches the
+/// end of input or if there was not match.
+///
+/// # Example
+///
+/// ```rust
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::prelude::*;
 /// use winnow::token::take_till0;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
