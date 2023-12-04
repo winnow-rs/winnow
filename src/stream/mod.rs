@@ -1593,13 +1593,6 @@ pub trait Compare<T> {
     fn compare_no_case(&self, t: T) -> CompareResult;
 }
 
-fn lowercase_byte(c: u8) -> u8 {
-    match c {
-        b'A'..=b'Z' => c - b'A' + b'a',
-        _ => c,
-    }
-}
-
 impl<'a, 'b> Compare<&'b [u8]> for &'a [u8] {
     #[inline]
     fn compare(&self, t: &'b [u8]) -> CompareResult {
@@ -1630,7 +1623,7 @@ impl<'a, 'b> Compare<AsciiCaseless<&'b [u8]>> for &'a [u8] {
         if self
             .iter()
             .zip(t.0)
-            .any(|(a, b)| lowercase_byte(*a) != lowercase_byte(*b))
+            .any(|(a, b)| !a.eq_ignore_ascii_case(b))
         {
             CompareResult::Error
         } else if self.len() < t.0.len() {
