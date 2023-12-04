@@ -3,7 +3,7 @@ use criterion::black_box;
 use winnow::combinator::alt;
 use winnow::combinator::repeat;
 use winnow::prelude::*;
-use winnow::token::take_till1;
+use winnow::token::take_till;
 use winnow::token::take_while;
 
 fn contains_token(c: &mut criterion::Criterion) {
@@ -52,17 +52,29 @@ fn contains_token(c: &mut criterion::Criterion) {
 
 fn parser_slice(input: &mut &str) -> PResult<usize> {
     let contains = &['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'][..];
-    repeat(0.., alt((take_while(1.., contains), take_till1(contains)))).parse_next(input)
+    repeat(
+        0..,
+        alt((take_while(1.., contains), take_till(1.., contains))),
+    )
+    .parse_next(input)
 }
 
 fn parser_array(input: &mut &str) -> PResult<usize> {
     let contains = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-    repeat(0.., alt((take_while(1.., contains), take_till1(contains)))).parse_next(input)
+    repeat(
+        0..,
+        alt((take_while(1.., contains), take_till(1.., contains))),
+    )
+    .parse_next(input)
 }
 
 fn parser_tuple(input: &mut &str) -> PResult<usize> {
     let contains = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
-    repeat(0.., alt((take_while(1.., contains), take_till1(contains)))).parse_next(input)
+    repeat(
+        0..,
+        alt((take_while(1.., contains), take_till(1.., contains))),
+    )
+    .parse_next(input)
 }
 
 fn parser_closure_or(input: &mut &str) -> PResult<usize> {
@@ -78,12 +90,20 @@ fn parser_closure_or(input: &mut &str) -> PResult<usize> {
             || c == '8'
             || c == '9'
     };
-    repeat(0.., alt((take_while(1.., contains), take_till1(contains)))).parse_next(input)
+    repeat(
+        0..,
+        alt((take_while(1.., contains), take_till(1.., contains))),
+    )
+    .parse_next(input)
 }
 
 fn parser_closure_matches(input: &mut &str) -> PResult<usize> {
     let contains = |c: char| matches!(c, '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9');
-    repeat(0.., alt((take_while(1.., contains), take_till1(contains)))).parse_next(input)
+    repeat(
+        0..,
+        alt((take_while(1.., contains), take_till(1.., contains))),
+    )
+    .parse_next(input)
 }
 
 const CONTIGUOUS: &str = "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";

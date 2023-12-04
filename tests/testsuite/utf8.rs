@@ -8,7 +8,7 @@ mod test {
     use winnow::{
         error::ErrMode,
         error::{ErrorKind, InputError},
-        token::{take, take_till0, take_till1, take_until0, take_while},
+        token::{take, take_till, take_until0, take_while},
         IResult,
     };
 
@@ -426,7 +426,7 @@ mod test {
             c == 'á'
         }
         fn test(input: &str) -> IResult<&str, &str> {
-            take_till0(till_s).parse_peek(input)
+            take_till(0.., till_s).parse_peek(input)
         }
         match test(INPUT) {
             Ok((extra, output)) => {
@@ -457,7 +457,7 @@ mod test {
         const CONSUMED: &str = "βèƒôřèÂßÇ";
         const LEFTOVER: &str = "áƒƭèř";
         fn test(input: &str) -> IResult<&str, &str> {
-            take_till1(AVOID).parse_peek(input)
+            take_till(1.., AVOID).parse_peek(input)
         }
         match test(INPUT) {
             Ok((extra, output)) => {
@@ -486,7 +486,7 @@ mod test {
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
         const AVOID: &[char] = &['β', 'ú', 'ç', 'ƙ', '¥'];
         fn test(input: &str) -> IResult<&str, &str> {
-            take_till1(AVOID).parse_peek(input)
+            take_till(1.., AVOID).parse_peek(input)
         }
         match test(INPUT) {
             Err(ErrMode::Backtrack(_)) => (),

@@ -77,10 +77,10 @@ fn usize_length_bytes_issue() {
 
 #[test]
 fn take_till0_issue() {
-    use winnow::token::take_till0;
+    use winnow::token::take_till;
 
     fn nothing(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_till0(|_| true).parse_peek(i)
+        take_till(0.., |_| true).parse_peek(i)
     }
 
     assert_eq!(
@@ -126,9 +126,9 @@ fn issue_655() {
 #[cfg(feature = "alloc")]
 fn issue_717(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
     use winnow::combinator::separated;
-    use winnow::token::{tag, take_till1};
+    use winnow::token::{tag, take_till};
 
-    separated(0.., take_till1([0x0u8]), tag([0x0])).parse_peek(i)
+    separated(0.., take_till(1.., [0x0u8]), tag([0x0])).parse_peek(i)
 }
 
 mod issue_647 {

@@ -756,6 +756,7 @@ where
 /// assert_eq!(till_colon(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
+#[doc(alias = "is_not")]
 pub fn take_till<T, I, Error: ParserError<I>>(
     range: impl Into<Range>,
     list: T,
@@ -834,6 +835,7 @@ where
 /// assert_eq!(till_colon(Partial::new("12345")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// assert_eq!(till_colon(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
+#[deprecated(since = "0.5.21", note = "Replaced with `take_till(0.., ...)`")]
 #[inline(always)]
 pub fn take_till0<T, I, Error: ParserError<I>>(
     list: T,
@@ -911,7 +913,7 @@ where
 /// assert_eq!(not_space(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-#[doc(alias = "is_not")]
+#[deprecated(since = "0.5.21", note = "Replaced with `take_till(1.., ...)`")]
 pub fn take_till1<T, I, Error: ParserError<I>>(
     list: T,
 ) -> impl Parser<I, <I as Stream>::Slice, Error>

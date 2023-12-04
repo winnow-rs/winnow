@@ -15,7 +15,7 @@ use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::stream::{AsBStr, AsChar, ParseSlice, Stream, StreamIsPartial};
 use crate::stream::{Compare, CompareResult};
 use crate::token::one_of;
-use crate::token::take_till0;
+use crate::token::take_till;
 use crate::token::take_while;
 use crate::trace::trace;
 use crate::PResult;
@@ -144,7 +144,7 @@ where
     I: Compare<&'static str>,
     <I as Stream>::Token: AsChar + Clone,
 {
-    let res = take_till0(('\r', '\n')).parse_next(input)?;
+    let res = take_till(0.., ('\r', '\n')).parse_next(input)?;
     if input.compare("\r") == CompareResult::Ok {
         let comp = input.compare("\r\n");
         match comp {

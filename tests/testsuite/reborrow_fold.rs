@@ -7,11 +7,11 @@ use winnow::combinator::delimited;
 use winnow::combinator::fold_repeat;
 use winnow::error::InputError;
 use winnow::prelude::*;
-use winnow::token::take_till1;
+use winnow::token::take_till;
 use winnow::IResult;
 
 fn atom<'a>(_tomb: &mut ()) -> impl Parser<&'a [u8], String, InputError<&'a [u8]>> {
-    take_till1([' ', '\t', '\r', '\n'])
+    take_till(1.., [' ', '\t', '\r', '\n'])
         .try_map(str::from_utf8)
         .map(ToString::to_string)
 }
