@@ -1912,6 +1912,27 @@ impl<'i> FindSlice<u8> for &'i [u8] {
     }
 }
 
+impl<'i> FindSlice<(u8,)> for &'i [u8] {
+    #[inline(always)]
+    fn find_slice(&self, substr: (u8,)) -> Option<usize> {
+        memchr(substr.0, self)
+    }
+}
+
+impl<'i> FindSlice<(u8, u8)> for &'i [u8] {
+    #[inline(always)]
+    fn find_slice(&self, substr: (u8, u8)) -> Option<usize> {
+        memchr2(substr, self)
+    }
+}
+
+impl<'i> FindSlice<(u8, u8, u8)> for &'i [u8] {
+    #[inline(always)]
+    fn find_slice(&self, substr: (u8, u8, u8)) -> Option<usize> {
+        memchr3(substr, self)
+    }
+}
+
 impl<'i, 's> FindSlice<&'s str> for &'i [u8] {
     #[inline(always)]
     fn find_slice(&self, substr: &'s str) -> Option<usize> {
@@ -2021,6 +2042,27 @@ impl<'i> FindSlice<u8> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: u8) -> Option<usize> {
         self.find_slice(substr.as_char())
+    }
+}
+
+impl<'i> FindSlice<(u8,)> for &'i str {
+    #[inline(always)]
+    fn find_slice(&self, substr: (u8,)) -> Option<usize> {
+        self.find_slice((substr.0.as_char(),))
+    }
+}
+
+impl<'i> FindSlice<(u8, u8)> for &'i str {
+    #[inline(always)]
+    fn find_slice(&self, substr: (u8, u8)) -> Option<usize> {
+        self.find_slice((substr.0.as_char(), substr.1.as_char()))
+    }
+}
+
+impl<'i> FindSlice<(u8, u8, u8)> for &'i str {
+    #[inline(always)]
+    fn find_slice(&self, substr: (u8, u8, u8)) -> Option<usize> {
+        self.find_slice((substr.0.as_char(), substr.1.as_char(), substr.2.as_char()))
     }
 }
 
