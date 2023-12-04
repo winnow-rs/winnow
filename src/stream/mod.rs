@@ -1739,21 +1739,7 @@ impl<'a, 'b> Compare<&'b str> for &'a str {
 impl<'a, 'b> Compare<AsciiCaseless<&'b str>> for &'a str {
     #[inline(always)]
     fn compare(&self, t: AsciiCaseless<&'b str>) -> CompareResult {
-        let pos = self
-            .chars()
-            .zip(t.0.chars())
-            .position(|(a, b)| a.to_lowercase().ne(b.to_lowercase()));
-
-        match pos {
-            Some(_) => CompareResult::Error,
-            None => {
-                if self.len() >= t.0.len() {
-                    CompareResult::Ok
-                } else {
-                    CompareResult::Incomplete
-                }
-            }
-        }
+        self.as_bytes().compare(AsciiCaseless(t.0.as_bytes()))
     }
 
     #[inline(always)]
