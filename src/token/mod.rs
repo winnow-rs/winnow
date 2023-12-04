@@ -573,6 +573,20 @@ where
     }
 }
 
+fn take_while_m_n_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
+    input: &mut I,
+    m: usize,
+    n: usize,
+    list: &T,
+) -> PResult<<I as Stream>::Slice, Error>
+where
+    I: StreamIsPartial,
+    I: Stream,
+    T: ContainsToken<<I as Stream>::Token>,
+{
+    take_while_m_n__::<_, _, _, PARTIAL>(input, m, n, |c| list.contains_token(c))
+}
+
 /// Looks for the first element of the input type for which the condition returns true,
 /// and returns the input up to this position.
 ///
@@ -655,16 +669,16 @@ where
     }
 }
 
-fn take_while_m_n_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
+fn take_while_m_n__<P, I, Error: ParserError<I>, const PARTIAL: bool>(
     input: &mut I,
     m: usize,
     n: usize,
-    list: &T,
+    predicate: P,
 ) -> PResult<<I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
+    P: Fn(I::Token) -> bool,
 {
     if n < m {
         return Err(ErrMode::assert(input, "`m` should be <= `n`"));
@@ -672,7 +686,7 @@ where
 
     let mut final_count = 0;
     for (processed, (offset, token)) in input.iter_offsets().enumerate() {
-        if !list.contains_token(token) {
+        if !predicate(token) {
             if processed < m {
                 return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
             } else {
