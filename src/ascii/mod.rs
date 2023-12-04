@@ -42,6 +42,14 @@ use crate::Parser;
 #[derive(Copy, Clone, Debug)]
 pub struct Caseless<T>(pub T);
 
+impl Caseless<&str> {
+    /// Get the byte-representation of this case-insensitive value
+    #[inline(always)]
+    pub fn as_bytes(&self) -> Caseless<&[u8]> {
+        Caseless(self.0.as_bytes())
+    }
+}
+
 /// Recognizes the string `"\r\n"`.
 ///
 /// *Complete version*: Will return an error if there's not enough input data.

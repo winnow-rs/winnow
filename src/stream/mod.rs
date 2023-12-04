@@ -1739,7 +1739,7 @@ impl<'a, 'b> Compare<&'b str> for &'a str {
 impl<'a, 'b> Compare<AsciiCaseless<&'b str>> for &'a str {
     #[inline(always)]
     fn compare(&self, t: AsciiCaseless<&'b str>) -> CompareResult {
-        self.as_bytes().compare(AsciiCaseless(t.0.as_bytes()))
+        self.as_bytes().compare(t.as_bytes())
     }
 
     #[inline(always)]
