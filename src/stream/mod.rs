@@ -2017,6 +2017,13 @@ impl<'i> FindSlice<(char, char, char)> for &'i str {
     }
 }
 
+impl<'i> FindSlice<u8> for &'i str {
+    #[inline(always)]
+    fn find_slice(&self, substr: u8) -> Option<usize> {
+        self.find_slice(substr.as_char())
+    }
+}
+
 impl<'i, S> FindSlice<S> for &'i Bytes
 where
     &'i [u8]: FindSlice<S>,
