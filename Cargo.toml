@@ -136,6 +136,10 @@ name = "contains_token"
 harness = false
 
 [[bench]]
+name = "find_slice"
+harness = false
+
+[[bench]]
 name = "iter"
 harness = false
 
