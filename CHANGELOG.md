@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.23] - 2023-12-04
+
 ### Features
 
 - Add more patterns for `token::take_until[01]`
@@ -2095,7 +2097,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.22...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.23...HEAD
+[0.5.23]: https://github.com/winnow-rs/winnow/compare/v0.5.22...v0.5.23
 [0.5.22]: https://github.com/winnow-rs/winnow/compare/v0.5.21...v0.5.22
 [0.5.21]: https://github.com/winnow-rs/winnow/compare/v0.5.20...v0.5.21
 [0.5.20]: https://github.com/winnow-rs/winnow/compare/v0.5.19...v0.5.20
