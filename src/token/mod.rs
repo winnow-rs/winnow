@@ -114,6 +114,23 @@ where
 /// assert_eq!(parser(Partial::new("S")), Err(ErrMode::Backtrack(InputError::new(Partial::new("S"), ErrorKind::Tag))));
 /// assert_eq!(parser(Partial::new("H")), Err(ErrMode::Incomplete(Needed::new(4))));
 /// ```
+///
+/// ```rust
+/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
+/// use winnow::token::tag;
+/// use winnow::ascii::Caseless;
+///
+/// fn parser(s: &str) -> IResult<&str, &str> {
+///   tag(Caseless("hello")).parse_peek(s)
+/// }
+///
+/// assert_eq!(parser("Hello, World!"), Ok((", World!", "Hello")));
+/// assert_eq!(parser("hello, World!"), Ok((", World!", "hello")));
+/// assert_eq!(parser("HeLlO, World!"), Ok((", World!", "HeLlO")));
+/// assert_eq!(parser("Something"), Err(ErrMode::Backtrack(InputError::new("Something", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
+/// ```
 #[inline(always)]
 #[doc(alias = "literal")]
 #[doc(alias = "bytes")]
@@ -201,6 +218,7 @@ where
 #[doc(alias = "literal")]
 #[doc(alias = "bytes")]
 #[doc(alias = "just")]
+#[deprecated(since = "0.5.20", note = "Replaced with `tag(ascii::Caseless(_))`")]
 pub fn tag_no_case<T, I, Error: ParserError<I>>(
     tag: T,
 ) -> impl Parser<I, <I as Stream>::Slice, Error>
@@ -219,6 +237,7 @@ where
     })
 }
 
+#[allow(deprecated)]
 fn tag_no_case_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     i: &mut I,
     t: T,

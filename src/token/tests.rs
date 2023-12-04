@@ -3,6 +3,7 @@ use super::*;
 #[cfg(feature = "std")]
 use proptest::prelude::*;
 
+use crate::ascii::Caseless;
 use crate::binary::length_data;
 use crate::combinator::delimited;
 use crate::error::ErrMode;
@@ -619,7 +620,7 @@ fn partial_length_bytes() {
 #[test]
 fn partial_case_insensitive() {
     fn test(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        tag_no_case("ABcd").parse_peek(i)
+        tag(Caseless("ABcd")).parse_peek(i)
     }
     assert_eq!(
         test(Partial::new(&b"aBCdefgh"[..])),
@@ -653,7 +654,7 @@ fn partial_case_insensitive() {
     );
 
     fn test2(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        tag_no_case("ABcd").parse_peek(i)
+        tag(Caseless("ABcd")).parse_peek(i)
     }
     assert_eq!(
         test2(Partial::new("aBCdefgh")),
