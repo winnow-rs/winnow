@@ -1901,14 +1901,16 @@ impl<'i, 's> FindSlice<&'s str> for &'i [u8] {
 impl<'i, 's> FindSlice<&'s str> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: &'s str) -> Option<usize> {
-        self.find(substr)
+        self.as_bytes().find_slice(substr.as_bytes())
     }
 }
 
 impl<'i> FindSlice<char> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: char) -> Option<usize> {
-        self.find(substr)
+        let mut b = [0; 4];
+        let substr = substr.encode_utf8(&mut b);
+        self.find_slice(&*substr)
     }
 }
 
