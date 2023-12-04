@@ -15,7 +15,7 @@ use winnow::combinator::fold_repeat;
 use winnow::combinator::{delimited, preceded};
 use winnow::error::{FromExternalError, ParserError};
 use winnow::prelude::*;
-use winnow::token::{take_till1, take_while};
+use winnow::token::{take_till, take_while};
 
 /// Parse a string. Use a loop of `parse_fragment` and push all of the fragments
 /// into an output string.
@@ -78,13 +78,13 @@ where
 
 /// Parse a non-empty block of text that doesn't include \ or "
 fn parse_literal<'a, E: ParserError<&'a str>>(input: &mut &'a str) -> PResult<&'a str, E> {
-    // `take_till1` parses a string of 0 or more characters that aren't one of the
+    // `take_till` parses a string of 0 or more characters that aren't one of the
     // given characters.
-    let not_quote_slash = take_till1(['"', '\\']);
+    let not_quote_slash = take_till(1.., ['"', '\\']);
 
     // `verify` runs a parser, then runs a verification function on the output of
     // the parser. The verification function accepts the output only if it
-    // returns true. In this case, we want to ensure that the output of take_till1
+    // returns true. In this case, we want to ensure that the output of take_till
     // is non-empty.
     not_quote_slash
         .verify(|s: &str| !s.is_empty())

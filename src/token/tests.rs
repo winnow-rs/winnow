@@ -184,7 +184,7 @@ fn partial_is_a() {
 #[test]
 fn partial_is_not() {
     fn a_or_b(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_till1(['a', 'b']).parse_peek(i)
+        take_till(1.., ['a', 'b']).parse_peek(i)
     }
 
     let a = Partial::new(&b"cdab"[..]);
@@ -366,7 +366,7 @@ fn partial_take_while_m_n() {
 #[test]
 fn partial_take_till0() {
     fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_till0(AsChar::is_alpha).parse_peek(i)
+        take_till(0.., AsChar::is_alpha).parse_peek(i)
     }
     let a = &b""[..];
     let b = &b"abcd"[..];
@@ -388,7 +388,7 @@ fn partial_take_till0() {
 #[test]
 fn partial_take_till1() {
     fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_till1(AsChar::is_alpha).parse_peek(i)
+        take_till(1.., AsChar::is_alpha).parse_peek(i)
     }
     let a = &b""[..];
     let b = &b"abcd"[..];
@@ -448,7 +448,7 @@ fn partial_take_while_utf8() {
 #[test]
 fn partial_take_till0_utf8() {
     fn f(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_till0(|c| c == '點').parse_peek(i)
+        take_till(0.., |c| c == '點').parse_peek(i)
     }
 
     assert_eq!(
@@ -466,7 +466,7 @@ fn partial_take_till0_utf8() {
     );
 
     fn g(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_till0(|c| c != '點').parse_peek(i)
+        take_till(0.., |c| c != '點').parse_peek(i)
     }
 
     assert_eq!(
