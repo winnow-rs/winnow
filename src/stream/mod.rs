@@ -1919,10 +1919,59 @@ impl<'i, 's> FindSlice<&'s str> for &'i [u8] {
     }
 }
 
+impl<'i, 's> FindSlice<(&'s str,)> for &'i [u8] {
+    #[inline(always)]
+    fn find_slice(&self, substr: (&'s str,)) -> Option<usize> {
+        memmem(self, substr.0.as_bytes())
+    }
+}
+
+impl<'i, 's> FindSlice<(&'s str, &'s str)> for &'i [u8] {
+    #[inline(always)]
+    fn find_slice(&self, substr: (&'s str, &'s str)) -> Option<usize> {
+        memmem2(self, (substr.0.as_bytes(), substr.1.as_bytes()))
+    }
+}
+
+impl<'i, 's> FindSlice<(&'s str, &'s str, &'s str)> for &'i [u8] {
+    #[inline(always)]
+    fn find_slice(&self, substr: (&'s str, &'s str, &'s str)) -> Option<usize> {
+        memmem3(
+            self,
+            (
+                substr.0.as_bytes(),
+                substr.1.as_bytes(),
+                substr.2.as_bytes(),
+            ),
+        )
+    }
+}
+
 impl<'i, 's> FindSlice<&'s str> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: &'s str) -> Option<usize> {
         self.as_bytes().find_slice(substr.as_bytes())
+    }
+}
+
+impl<'i, 's> FindSlice<(&'s str,)> for &'i str {
+    #[inline(always)]
+    fn find_slice(&self, substr: (&'s str,)) -> Option<usize> {
+        self.as_bytes().find_slice(substr)
+    }
+}
+
+impl<'i, 's> FindSlice<(&'s str, &'s str)> for &'i str {
+    #[inline(always)]
+    fn find_slice(&self, substr: (&'s str, &'s str)) -> Option<usize> {
+        self.as_bytes().find_slice(substr)
+    }
+}
+
+impl<'i, 's> FindSlice<(&'s str, &'s str, &'s str)> for &'i str {
+    #[inline(always)]
+    fn find_slice(&self, substr: (&'s str, &'s str, &'s str)) -> Option<usize> {
+        self.as_bytes().find_slice(substr)
     }
 }
 
