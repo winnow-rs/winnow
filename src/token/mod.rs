@@ -584,7 +584,7 @@ where
     I: Stream,
     T: ContainsToken<<I as Stream>::Token>,
 {
-    take_while_m_n__::<_, _, _, PARTIAL>(input, m, n, |c| list.contains_token(c))
+    take_till_m_n::<_, _, _, PARTIAL>(input, m, n, |c| !list.contains_token(c))
 }
 
 /// Looks for the first element of the input type for which the condition returns true,
@@ -669,7 +669,7 @@ where
     }
 }
 
-fn take_while_m_n__<P, I, Error: ParserError<I>, const PARTIAL: bool>(
+fn take_till_m_n<P, I, Error: ParserError<I>, const PARTIAL: bool>(
     input: &mut I,
     m: usize,
     n: usize,
@@ -686,7 +686,7 @@ where
 
     let mut final_count = 0;
     for (processed, (offset, token)) in input.iter_offsets().enumerate() {
-        if !predicate(token) {
+        if predicate(token) {
             if processed < m {
                 return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
             } else {
