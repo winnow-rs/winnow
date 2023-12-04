@@ -3,6 +3,14 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `take_till` ranged parser
+
+### Compatibility
+
+- Deprecated `take_till0`, `take_till1` in favor of `take_till`
+
 ## [0.5.20] - 2023-12-04
 
 ### Features
