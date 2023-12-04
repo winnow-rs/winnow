@@ -1984,6 +1984,39 @@ impl<'i> FindSlice<char> for &'i str {
     }
 }
 
+impl<'i> FindSlice<(char,)> for &'i str {
+    #[inline(always)]
+    fn find_slice(&self, substr: (char,)) -> Option<usize> {
+        let mut b = [0; 4];
+        let substr0 = substr.0.encode_utf8(&mut b);
+        self.find_slice((&*substr0,))
+    }
+}
+
+impl<'i> FindSlice<(char, char)> for &'i str {
+    #[inline(always)]
+    fn find_slice(&self, substr: (char, char)) -> Option<usize> {
+        let mut b = [0; 4];
+        let substr0 = substr.0.encode_utf8(&mut b);
+        let mut b = [0; 4];
+        let substr1 = substr.1.encode_utf8(&mut b);
+        self.find_slice((&*substr0, &*substr1))
+    }
+}
+
+impl<'i> FindSlice<(char, char, char)> for &'i str {
+    #[inline(always)]
+    fn find_slice(&self, substr: (char, char, char)) -> Option<usize> {
+        let mut b = [0; 4];
+        let substr0 = substr.0.encode_utf8(&mut b);
+        let mut b = [0; 4];
+        let substr1 = substr.1.encode_utf8(&mut b);
+        let mut b = [0; 4];
+        let substr2 = substr.2.encode_utf8(&mut b);
+        self.find_slice((&*substr0, &*substr1, &*substr2))
+    }
+}
+
 impl<'i, S> FindSlice<S> for &'i Bytes
 where
     &'i [u8]: FindSlice<S>,
