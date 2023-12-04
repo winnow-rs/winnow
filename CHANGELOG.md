@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add more patterns for `token::take_until[01]`
+
 ## [0.5.22] - 2023-12-04
 
 ### Performance
