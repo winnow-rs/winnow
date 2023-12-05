@@ -26,8 +26,12 @@ use crate::error::ErrMode;
 
 #[cfg(feature = "alloc")]
 use crate::lib::std::collections::BTreeMap;
+#[cfg(feature = "alloc")]
+use crate::lib::std::collections::BTreeSet;
 #[cfg(feature = "std")]
 use crate::lib::std::collections::HashMap;
+#[cfg(feature = "std")]
+use crate::lib::std::collections::HashSet;
 #[cfg(feature = "alloc")]
 use crate::lib::std::string::String;
 #[cfg(feature = "alloc")]
@@ -2432,6 +2436,41 @@ where
     #[inline(always)]
     fn accumulate(&mut self, (key, value): (K, V)) {
         self.insert(key, value);
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl<K> Accumulate<K> for BTreeSet<K>
+where
+    K: crate::lib::std::cmp::Ord,
+{
+    #[inline(always)]
+    fn initial(_capacity: Option<usize>) -> Self {
+        BTreeSet::new()
+    }
+    #[inline(always)]
+    fn accumulate(&mut self, key: K) {
+        self.insert(key);
+    }
+}
+
+#[cfg(feature = "std")]
+impl<K, S> Accumulate<K> for HashSet<K, S>
+where
+    K: crate::lib::std::cmp::Eq + crate::lib::std::hash::Hash,
+    S: BuildHasher + Default,
+{
+    #[inline(always)]
+    fn initial(capacity: Option<usize>) -> Self {
+        let h = S::default();
+        match capacity {
+            Some(capacity) => HashSet::with_capacity_and_hasher(clamp_capacity::<K>(capacity), h),
+            None => HashSet::with_hasher(h),
+        }
+    }
+    #[inline(always)]
+    fn accumulate(&mut self, key: K) {
+        self.insert(key);
     }
 }
 
