@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Support `Accumulate` for `BTreeSet` and `HashSet`
+
 ## [0.5.23] - 2023-12-04
 
 ### Features
