@@ -1302,6 +1302,27 @@ fn translate_position(input: &[u8], index: usize) -> (usize, usize) {
 
 #[cfg(test)]
 #[cfg(feature = "std")]
+mod test_parse_error {
+    use super::*;
+
+    #[test]
+    fn single_line() {
+        let mut input = "0xZ123";
+        let start = input.checkpoint();
+        let _ = input.next_token().unwrap();
+        let _ = input.next_token().unwrap();
+        let inner = InputError::new(input, ErrorKind::Slice);
+        let error = ParseError::new(input, start, inner);
+        let expected = "\
+0xZ123
+   ^
+slice error starting at: Z123";
+        assert_eq!(error.to_string(), expected);
+    }
+}
+
+#[cfg(test)]
+#[cfg(feature = "std")]
 mod test_translate_position {
     use super::*;
 
