@@ -1596,7 +1596,7 @@ pub trait Compare<T> {
 impl<'a, 'b> Compare<&'b [u8]> for &'a [u8] {
     #[inline]
     fn compare(&self, t: &'b [u8]) -> CompareResult {
-        if self.iter().zip(t).any(|(a, b)| a != b) {
+        if t.iter().zip(*self).any(|(a, b)| a != b) {
             CompareResult::Error
         } else if self.len() < t.slice_len() {
             CompareResult::Incomplete
@@ -1615,9 +1615,9 @@ impl<'a, 'b> Compare<&'b [u8]> for &'a [u8] {
 impl<'a, 'b> Compare<AsciiCaseless<&'b [u8]>> for &'a [u8] {
     #[inline]
     fn compare(&self, t: AsciiCaseless<&'b [u8]>) -> CompareResult {
-        if self
+        if t.0
             .iter()
-            .zip(t.0)
+            .zip(*self)
             .any(|(a, b)| !a.eq_ignore_ascii_case(b))
         {
             CompareResult::Error
