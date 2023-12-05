@@ -1225,21 +1225,21 @@ where
 
             writeln!(f, "parse error at line {}, column {}", line_num, col_num)?;
             //   |
-            for _ in 0..=gutter {
+            for _ in 0..gutter {
                 write!(f, " ")?;
             }
-            writeln!(f, "|")?;
+            writeln!(f, " |")?;
 
             // 1 | 00:32:00.a999999
             write!(f, "{} | ", line_num)?;
             writeln!(f, "{}", String::from_utf8_lossy(content))?;
 
             //   |          ^
-            for _ in 0..=gutter {
+            for _ in 0..gutter {
                 write!(f, " ")?;
             }
-            write!(f, "|")?;
-            for _ in 0..=col_idx {
+            write!(f, " | ")?;
+            for _ in 0..col_idx {
                 write!(f, " ")?;
             }
             // The span will be empty at eof, so we need to make sure we always print at least
