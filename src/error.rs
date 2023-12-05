@@ -1225,21 +1225,21 @@ where
 
             writeln!(f, "parse error at line {}, column {}", line_num, col_num)?;
             //   |
-            for _ in 0..=gutter {
+            for _ in 0..gutter {
                 write!(f, " ")?;
             }
-            writeln!(f, "|")?;
+            writeln!(f, " |")?;
 
             // 1 | 00:32:00.a999999
             write!(f, "{} | ", line_num)?;
             writeln!(f, "{}", String::from_utf8_lossy(content))?;
 
             //   |          ^
-            for _ in 0..=gutter {
+            for _ in 0..gutter {
                 write!(f, " ")?;
             }
-            write!(f, "|")?;
-            for _ in 0..=col_idx {
+            write!(f, " | ")?;
+            for _ in 0..col_idx {
                 write!(f, " ")?;
             }
             // The span will be empty at eof, so we need to make sure we always print at least
@@ -1252,7 +1252,7 @@ where
         } else {
             let content = input;
             writeln!(f, "{}", String::from_utf8_lossy(content))?;
-            for _ in 0..=span_start {
+            for _ in 0..span_start {
                 write!(f, " ")?;
             }
             // The span will be empty at eof, so we need to make sure we always print at least
@@ -1298,6 +1298,27 @@ fn translate_position(input: &[u8], index: usize) -> (usize, usize) {
     let column = column + column_offset;
 
     (line, column)
+}
+
+#[cfg(test)]
+#[cfg(feature = "std")]
+mod test_parse_error {
+    use super::*;
+
+    #[test]
+    fn single_line() {
+        let mut input = "0xZ123";
+        let start = input.checkpoint();
+        let _ = input.next_token().unwrap();
+        let _ = input.next_token().unwrap();
+        let inner = InputError::new(input, ErrorKind::Slice);
+        let error = ParseError::new(input, start, inner);
+        let expected = "\
+0xZ123
+  ^
+slice error starting at: Z123";
+        assert_eq!(error.to_string(), expected);
+    }
 }
 
 #[cfg(test)]

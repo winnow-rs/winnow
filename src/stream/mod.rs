@@ -1314,7 +1314,7 @@ impl<'a, T> Offset for &'a [T] {
 
         debug_assert!(
             fst <= snd,
-            "`Offset::offset_to` only accepts slices of `self`"
+            "`Offset::offset_from({snd:?}, {fst:?})` only accepts slices of `self`"
         );
         (snd as usize - fst as usize) / crate::lib::std::mem::size_of::<T>()
     }
