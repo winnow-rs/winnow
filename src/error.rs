@@ -1252,7 +1252,7 @@ where
         } else {
             let content = input;
             writeln!(f, "{}", String::from_utf8_lossy(content))?;
-            for _ in 0..=span_start {
+            for _ in 0..span_start {
                 write!(f, " ")?;
             }
             // The span will be empty at eof, so we need to make sure we always print at least
@@ -1315,7 +1315,7 @@ mod test_parse_error {
         let error = ParseError::new(input, start, inner);
         let expected = "\
 0xZ123
-   ^
+  ^
 slice error starting at: Z123";
         assert_eq!(error.to_string(), expected);
     }
