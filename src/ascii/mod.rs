@@ -994,7 +994,7 @@ impl Uint for u128 {
     }
 }
 
-/// Deprecated since v0.15.17
+/// Deprecated since v0.5.17
 impl Uint for i8 {
     fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
         self.checked_mul(by as Self)
@@ -1004,7 +1004,7 @@ impl Uint for i8 {
     }
 }
 
-/// Deprecated since v0.15.17
+/// Deprecated since v0.5.17
 impl Uint for i16 {
     fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
         self.checked_mul(by as Self)
@@ -1014,7 +1014,7 @@ impl Uint for i16 {
     }
 }
 
-/// Deprecated since v0.15.17
+/// Deprecated since v0.5.17
 impl Uint for i32 {
     fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
         self.checked_mul(by as Self)
@@ -1024,7 +1024,7 @@ impl Uint for i32 {
     }
 }
 
-/// Deprecated since v0.15.17
+/// Deprecated since v0.5.17
 impl Uint for i64 {
     fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
         self.checked_mul(by as Self)
@@ -1034,7 +1034,7 @@ impl Uint for i64 {
     }
 }
 
-/// Deprecated since v0.15.17
+/// Deprecated since v0.5.17
 impl Uint for i128 {
     fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
         self.checked_mul(by as Self)
