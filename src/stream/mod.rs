@@ -1596,17 +1596,12 @@ pub trait Compare<T> {
 impl<'a, 'b> Compare<&'b [u8]> for &'a [u8] {
     #[inline]
     fn compare(&self, t: &'b [u8]) -> CompareResult {
-        let pos = self.iter().zip(t.iter()).position(|(a, b)| a != b);
-
-        match pos {
-            Some(_) => CompareResult::Error,
-            None => {
-                if self.len() >= t.len() {
-                    CompareResult::Ok
-                } else {
-                    CompareResult::Incomplete
-                }
-            }
+        if self.iter().zip(t).any(|(a, b)| a != b) {
+            CompareResult::Error
+        } else if self.len() < t.slice_len() {
+            CompareResult::Incomplete
+        } else {
+            CompareResult::Ok
         }
     }
 
@@ -1626,7 +1621,7 @@ impl<'a, 'b> Compare<AsciiCaseless<&'b [u8]>> for &'a [u8] {
             .any(|(a, b)| !a.eq_ignore_ascii_case(b))
         {
             CompareResult::Error
-        } else if self.len() < t.0.len() {
+        } else if self.len() < t.slice_len() {
             CompareResult::Incomplete
         } else {
             CompareResult::Ok
