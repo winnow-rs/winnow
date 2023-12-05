@@ -1593,27 +1593,15 @@ pub trait Compare<T> {
     fn compare_no_case(&self, t: T) -> CompareResult;
 }
 
-fn lowercase_byte(c: u8) -> u8 {
-    match c {
-        b'A'..=b'Z' => c - b'A' + b'a',
-        _ => c,
-    }
-}
-
 impl<'a, 'b> Compare<&'b [u8]> for &'a [u8] {
     #[inline]
     fn compare(&self, t: &'b [u8]) -> CompareResult {
-        let pos = self.iter().zip(t.iter()).position(|(a, b)| a != b);
-
-        match pos {
-            Some(_) => CompareResult::Error,
-            None => {
-                if self.len() >= t.len() {
-                    CompareResult::Ok
-                } else {
-                    CompareResult::Incomplete
-                }
-            }
+        if t.iter().zip(*self).any(|(a, b)| a != b) {
+            CompareResult::Error
+        } else if self.len() < t.slice_len() {
+            CompareResult::Incomplete
+        } else {
+            CompareResult::Ok
         }
     }
 
@@ -1627,13 +1615,13 @@ impl<'a, 'b> Compare<&'b [u8]> for &'a [u8] {
 impl<'a, 'b> Compare<AsciiCaseless<&'b [u8]>> for &'a [u8] {
     #[inline]
     fn compare(&self, t: AsciiCaseless<&'b [u8]>) -> CompareResult {
-        if self
+        if t.0
             .iter()
-            .zip(t.0)
-            .any(|(a, b)| lowercase_byte(*a) != lowercase_byte(*b))
+            .zip(*self)
+            .any(|(a, b)| !a.eq_ignore_ascii_case(b))
         {
             CompareResult::Error
-        } else if self.len() < t.0.len() {
+        } else if self.len() < t.slice_len() {
             CompareResult::Incomplete
         } else {
             CompareResult::Ok
@@ -1739,21 +1727,7 @@ impl<'a, 'b> Compare<&'b str> for &'a str {
 impl<'a, 'b> Compare<AsciiCaseless<&'b str>> for &'a str {
     #[inline(always)]
     fn compare(&self, t: AsciiCaseless<&'b str>) -> CompareResult {
-        let pos = self
-            .chars()
-            .zip(t.0.chars())
-            .position(|(a, b)| a.to_lowercase().ne(b.to_lowercase()));
-
-        match pos {
-            Some(_) => CompareResult::Error,
-            None => {
-                if self.len() >= t.0.len() {
-                    CompareResult::Ok
-                } else {
-                    CompareResult::Incomplete
-                }
-            }
-        }
+        self.as_bytes().compare(t.as_bytes())
     }
 
     #[inline(always)]
