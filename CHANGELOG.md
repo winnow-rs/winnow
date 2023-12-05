@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Correctly point to error location in `InputError`s `Display` for single-line input
+
 ## [0.5.24] - 2023-12-05
 
 ### Features
