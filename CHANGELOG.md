@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.24] - 2023-12-05
+
 ### Features
 
 - Support `Accumulate` for `BTreeSet` and `HashSet`
@@ -2101,7 +2103,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.23...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.24...HEAD
+[0.5.24]: https://github.com/winnow-rs/winnow/compare/v0.5.23...v0.5.24
 [0.5.23]: https://github.com/winnow-rs/winnow/compare/v0.5.22...v0.5.23
 [0.5.22]: https://github.com/winnow-rs/winnow/compare/v0.5.21...v0.5.22
 [0.5.21]: https://github.com/winnow-rs/winnow/compare/v0.5.20...v0.5.21
