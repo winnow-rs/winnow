@@ -7,6 +7,8 @@
 //! - [Tutorial][_tutorial::chapter_0]
 //! - [Special Topics][_topic]
 //! - [Discussions](https://github.com/winnow-rs/winnow/discussions)
+//! - [CHANGELOG](https://github.com/winnow-rs/winnow/blob/v0.5.25/CHANGELOG.md) (includes major version migration
+//!   guides)
 //!
 //! ## Aspirations
 //!
