@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Documentation
+
+- Add `nom` migration guide
+
 ## [0.5.25] - 2023-12-05
 
 ### Fixes
