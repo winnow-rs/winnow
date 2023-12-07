@@ -313,6 +313,17 @@ pub trait AddContext<I, C = &'static str>: Sized {
     }
 }
 
+/// Capture context from when an error was recovered
+pub trait FromRecoverableError<I: Stream, E> {
+    /// Capture context from when an error was recovered
+    fn from_recoverable_error(
+        token_start: &<I as Stream>::Checkpoint,
+        err_start: &<I as Stream>::Checkpoint,
+        input: &I,
+        e: E,
+    ) -> Self;
+}
+
 /// Create a new error with an external error, from [`std::str::FromStr`]
 ///
 /// This trait is required by the [`Parser::try_map`] combinator.
@@ -387,6 +398,18 @@ impl<I: Clone> ParserError<I> for InputError<I> {
 
 impl<I: Clone, C> AddContext<I, C> for InputError<I> {}
 
+impl<I: Clone + Stream> FromRecoverableError<I, Self> for InputError<I> {
+    #[inline]
+    fn from_recoverable_error(
+        _token_start: &<I as Stream>::Checkpoint,
+        _err_start: &<I as Stream>::Checkpoint,
+        _input: &I,
+        e: Self,
+    ) -> Self {
+        e
+    }
+}
+
 impl<I: Clone, E> FromExternalError<I, E> for InputError<I> {
     /// Create a new error from an input position and an external error
     #[inline]
@@ -445,6 +468,17 @@ impl<I> ParserError<I> for () {
 }
 
 impl<I, C> AddContext<I, C> for () {}
+
+impl<I: Stream> FromRecoverableError<I, Self> for () {
+    #[inline]
+    fn from_recoverable_error(
+        _token_start: &<I as Stream>::Checkpoint,
+        _err_start: &<I as Stream>::Checkpoint,
+        _input: &I,
+        (): Self,
+    ) -> Self {
+    }
+}
 
 impl<I, E> FromExternalError<I, E> for () {
     #[inline]
@@ -533,6 +567,18 @@ impl<C, I> AddContext<I, C> for ContextError<C> {
         #[cfg(feature = "alloc")]
         self.context.push(ctx);
         self
+    }
+}
+
+impl<I: Stream, C> FromRecoverableError<I, Self> for ContextError<C> {
+    #[inline]
+    fn from_recoverable_error(
+        _token_start: &<I as Stream>::Checkpoint,
+        _err_start: &<I as Stream>::Checkpoint,
+        _input: &I,
+        e: Self,
+    ) -> Self {
+        e
     }
 }
 
@@ -860,6 +906,19 @@ where
             context,
         });
         self.append_frame(frame)
+    }
+}
+
+#[cfg(feature = "std")]
+impl<I: Clone + Stream, C> FromRecoverableError<I, Self> for TreeError<I, C> {
+    #[inline]
+    fn from_recoverable_error(
+        _token_start: &<I as Stream>::Checkpoint,
+        _err_start: &<I as Stream>::Checkpoint,
+        _input: &I,
+        e: Self,
+    ) -> Self {
+        e
     }
 }
 
