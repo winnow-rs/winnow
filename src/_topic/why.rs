@@ -77,7 +77,7 @@
 //!
 //! > "If you need to implement either `Parser` or `Strategy` by hand, that's a problem that needs fixing".
 //!
-//! This is under "batteries included" but it also ties into the feeling that `chumksy` acts more like
+//! This is under "batteries included" but it also ties into the feeling that `chumsky` acts more like
 //! a framework. Instead of composing together helpers, you are expected to do everything through
 //! their system to the point that it is non-trivial to implement their `Parser` trait and are
 //! encouraged to use the
