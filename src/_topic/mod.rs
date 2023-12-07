@@ -3,6 +3,7 @@
 //! These are short recipes for accomplishing common tasks.
 //!
 //! - [Why `winnow`?][why]
+//! - [Migrating from `nom`][nom]
 //! - Formats:
 //!   - [Elements of Programming Languages][language]
 //!   - [Arithmetic][arithmetic]
@@ -30,6 +31,7 @@ pub mod http;
 pub mod ini;
 pub mod json;
 pub mod language;
+pub mod nom;
 pub mod partial;
 pub mod performance;
 pub mod s_expression;

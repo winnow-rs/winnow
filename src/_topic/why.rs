@@ -68,6 +68,8 @@
 //!   and to not block users on new features being merged while `winnow` aims to include all the
 //!   fundamentals for parsing to ensure the experience is cohesive and high quality.
 //!
+//! See also our [nom migration guide][super::nom]
+//!
 //! ## `chumsky`
 //!
 //! [`chumsky`](https://crates.io/crates/chumsky) is an up and coming parser-combinator library
