@@ -105,6 +105,7 @@ impl BStr {
 ///
 /// See [`Parser::span`][crate::Parser::span] and [`Parser::with_span`][crate::Parser::with_span] for more details
 #[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[doc(alias = "LocatedSpan")]
 pub struct Located<I> {
     initial: I,
     input: I,
@@ -186,6 +187,7 @@ impl<I: crate::lib::std::fmt::Display> crate::lib::std::fmt::Display for Located
 /// assert_eq!(state.get(), 1);
 /// ```
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[doc(alias = "LocatedSpan")]
 pub struct Stateful<I, S> {
     /// Inner input being wrapped in state
     pub input: I,
