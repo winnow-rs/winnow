@@ -17,13 +17,13 @@
 //! The workflow goes something like:
 //! 1. Run `cargo rm nom && cargo add winnow@0.3`
 //! 1. Ensure everything compiles and tests pass, ignoring deprecation messages (see [migration
-//!    notes](https://github.com/winnow-rs/winnow/blob/v0.3.0/CHANGELOG.md))
+//!    notes](https://github.com/winnow-rs/winnow/blob/v0.3-main/CHANGELOG.md#nom-migration-guide))
 //! 1. Commit
 //! 1. Switch any `impl FnMut(I) -> IResult<I, O, E>` to `impl Parser<I, O, E>`
 //! 1. Resolve deprecation messages
 //! 1. Commit
 //! 1. Run `cargo add winnow@0.4`
-//! 1. Ensure everything compiles and tests pass, ignoring deprecation messages (see [changelog](https://github.com/winnow-rs/winnow/blob/v0.4.0/CHANGELOG.md) for more details)
+//! 1. Ensure everything compiles and tests pass, ignoring deprecation messages (see [changelog](https://github.com/winnow-rs/winnow/blob/v0.4-main/CHANGELOG.md#compatibility-2) for more details)
 //! 1. Commit
 //! 1. Resolve deprecation messages
 //! 1. Commit
