@@ -16,19 +16,22 @@
 //!
 //! The workflow goes something like:
 //! 1. Run `cargo rm nom && cargo add winnow@0.3`
-//! 2. Ensure everything compiles and tests pass, ignoring deprecation messages (see [migration
+//! 1. Ensure everything compiles and tests pass, ignoring deprecation messages (see [migration
 //!    notes](https://github.com/winnow-rs/winnow/blob/v0.3.0/CHANGELOG.md))
-//! 3. Commit
-//! 4. Resolve deprecation messages
-//! 5. Run `cargo add winnow@0.4`
-//! 6. Ensure everything compiles and tests pass, ignoring deprecation messages (see [changelog](https://github.com/winnow-rs/winnow/blob/v0.4.0/CHANGELOG.md) for more details)
-//! 7. Commit
-//! 8. Resolve deprecation messages
-//! 9. Run `cargo add winnow@0.5`
-//! 10. Ensure everything compiles and tests pass, ignoring deprecation messages (see [migration
+//! 1. Commit
+//! 1. Resolve deprecation messages
+//! 1. Commit
+//! 1. Run `cargo add winnow@0.4`
+//! 1. Ensure everything compiles and tests pass, ignoring deprecation messages (see [changelog](https://github.com/winnow-rs/winnow/blob/v0.4.0/CHANGELOG.md) for more details)
+//! 1. Commit
+//! 1. Resolve deprecation messages
+//! 1. Commit
+//! 1. Run `cargo add winnow@0.5`
+//! 1. Ensure everything compiles and tests pass, ignoring deprecation messages (see [migration
 //!     notes](https://github.com/winnow-rs/winnow/blob/v0.5.0/CHANGELOG.md))
-//! 11. Commit
-//! 12. Resolve deprecation messagess
+//! 1. Commit
+//! 1. Resolve deprecation messagess
+//! 1. Commit
 //!
 //! For example migrations, see
 //! - [git-config-env](https://github.com/gitext-rs/git-config-env/pull/11) (nom to winnow 0.3)
