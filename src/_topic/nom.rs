@@ -19,6 +19,7 @@
 //! 1. Ensure everything compiles and tests pass, ignoring deprecation messages (see [migration
 //!    notes](https://github.com/winnow-rs/winnow/blob/v0.3.0/CHANGELOG.md))
 //! 1. Commit
+//! 1. Switch any `impl FnMut(I) -> IResult<I, O, E>` to `impl Parser<I, O, E>`
 //! 1. Resolve deprecation messages
 //! 1. Commit
 //! 1. Run `cargo add winnow@0.4`
