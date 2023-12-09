@@ -148,8 +148,8 @@
 //!
 //! - [`bits`][crate::binary::bits::bits]: Transforms the current input type (byte slice `&[u8]`) to a bit stream on which bit specific parsers and more general combinators can be applied
 //! - [`bytes`][crate::binary::bits::bytes]: Transforms its bits stream input back into a byte slice for the underlying parser
-//! - [`take`][crate::binary::bits::take]: Take a set number of its
-//! - [`tag`][crate::binary::bits::tag]: Check if a set number of bis matches a pattern
+//! - [`take`][crate::binary::bits::take]: Take a set number of bits
+//! - [`tag`][crate::binary::bits::tag]: Check if a set number of bits matches a pattern
 //! - [`bool`][crate::binary::bits::bool]: Match any one bit
 
 mod branch;
