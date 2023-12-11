@@ -132,12 +132,12 @@ fn overflow_incomplete_count() {
 
 #[test]
 #[cfg(feature = "alloc")]
-fn overflow_incomplete_length_count() {
+fn overflow_incomplete_length_repeat() {
     use winnow::binary::be_u8;
-    use winnow::binary::length_count;
+    use winnow::binary::length_repeat;
 
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        length_count(be_u8, length_take(be_u64)).parse_peek(i)
+        length_repeat(be_u8, length_take(be_u64)).parse_peek(i)
     }
 
     assert_eq!(

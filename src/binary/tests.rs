@@ -1123,7 +1123,7 @@ mod partial {
 
     #[test]
     #[cfg(feature = "alloc")]
-    fn length_count_test() {
+    fn length_repeat_test() {
         fn number(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
             digit
                 .try_map(str::from_utf8)
@@ -1132,7 +1132,7 @@ mod partial {
         }
 
         fn cnt(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-            length_count(unpeek(number), "abc").parse_peek(i)
+            length_repeat(unpeek(number), "abc").parse_peek(i)
         }
 
         assert_eq!(

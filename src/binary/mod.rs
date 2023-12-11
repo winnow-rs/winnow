@@ -2560,7 +2560,7 @@ where
 /// assert_eq!(parser(stream(b"\x03123123123")), Err(ErrMode::Backtrack(InputError::new(stream(b"123123123"), ErrorKind::Tag))));
 /// # }
 /// ```
-pub fn length_count<I, O, C, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, C, E>
+pub fn length_repeat<I, O, C, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, C, E>
 where
     I: Stream,
     N: ToUsize,
@@ -2569,9 +2569,23 @@ where
     G: Parser<I, O, E>,
     E: ParserError<I>,
 {
-    trace("length_count", move |i: &mut I| {
+    trace("length_repeat", move |i: &mut I| {
         let n = f.parse_next(i)?;
         let n = n.to_usize();
         repeat(n, g.by_ref()).parse_next(i)
     })
+}
+
+/// Deprecated since 0.5.27, replaced with [`length_repeat`]
+#[deprecated(since = "0.5.27", note = "Replaced with `length_repeat`")]
+pub fn length_count<I, O, C, N, E, F, G>(f: F, g: G) -> impl Parser<I, C, E>
+where
+    I: Stream,
+    N: ToUsize,
+    C: Accumulate<O>,
+    F: Parser<I, N, E>,
+    G: Parser<I, O, E>,
+    E: ParserError<I>,
+{
+    length_repeat(f, g)
 }
