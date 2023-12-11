@@ -382,7 +382,7 @@ pub trait Parser<I, O, E> {
     #[inline(always)]
     fn map<G, O2>(self, map: G) -> Map<Self, G, I, O, O2, E>
     where
-        G: Fn(O) -> O2,
+        G: FnMut(O) -> O2,
         Self: core::marker::Sized,
     {
         Map::new(self, map)
@@ -581,7 +581,7 @@ pub trait Parser<I, O, E> {
     fn verify<G, O2>(self, filter: G) -> Verify<Self, G, I, O, O2, E>
     where
         Self: core::marker::Sized,
-        G: Fn(&O2) -> bool,
+        G: FnMut(&O2) -> bool,
         I: Stream,
         O: crate::lib::std::borrow::Borrow<O2>,
         O2: ?Sized,
