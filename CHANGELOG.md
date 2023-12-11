@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.27] - 2023-12-11
+
 ### Fixes
 
 - Consistently support `FnMut` for predicates, not just `Fn`
@@ -2123,7 +2125,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.26...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.27...HEAD
+[0.5.27]: https://github.com/winnow-rs/winnow/compare/v0.5.26...v0.5.27
 [0.5.26]: https://github.com/winnow-rs/winnow/compare/v0.5.25...v0.5.26
 [0.5.25]: https://github.com/winnow-rs/winnow/compare/v0.5.24...v0.5.25
 [0.5.24]: https://github.com/winnow-rs/winnow/compare/v0.5.23...v0.5.24
