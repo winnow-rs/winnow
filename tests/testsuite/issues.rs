@@ -70,9 +70,9 @@ mod parse_int {
 #[test]
 fn usize_length_bytes_issue() {
     use winnow::binary::be_u16;
-    use winnow::binary::length_data;
+    use winnow::binary::length_take;
     #[allow(clippy::type_complexity)]
-    let _: IResult<Partial<&[u8]>, &[u8]> = length_data(be_u16).parse_peek(Partial::new(b"012346"));
+    let _: IResult<Partial<&[u8]>, &[u8]> = length_take(be_u16).parse_peek(Partial::new(b"012346"));
 }
 
 #[test]

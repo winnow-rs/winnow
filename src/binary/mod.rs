@@ -2387,7 +2387,7 @@ where
     }(input)
 }
 
-/// Gets a number from the parser and returns a
+/// Gets a token-count from the parser and returns a
 /// subslice of the input of that size.
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
@@ -2404,7 +2404,7 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::Bytes;
 /// use winnow::binary::be_u16;
-/// use winnow::binary::length_data;
+/// use winnow::binary::length_take;
 /// use winnow::token::tag;
 ///
 /// type Stream<'i> = Partial<&'i Bytes>;
@@ -2414,13 +2414,13 @@ where
 /// }
 ///
 /// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
-///   length_data(be_u16).parse_peek(s)
+///   length_take(be_u16).parse_peek(s)
 /// }
 ///
 /// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), &b"abc"[..])));
 /// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
-pub fn length_data<I, N, E, F>(mut f: F) -> impl Parser<I, <I as Stream>::Slice, E>
+pub fn length_take<I, N, E, F>(mut f: F) -> impl Parser<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -2428,11 +2428,24 @@ where
     F: Parser<I, N, E>,
     E: ParserError<I>,
 {
-    trace("length_data", move |i: &mut I| {
+    trace("length_take", move |i: &mut I| {
         let length = f.parse_next(i)?;
 
         crate::token::take(length).parse_next(i)
     })
+}
+
+/// Deprecated since 0.5.27, replaced with [`length_take`]
+#[deprecated(since = "0.5.27", note = "Replaced with `length_take`")]
+pub fn length_data<I, N, E, F>(f: F) -> impl Parser<I, <I as Stream>::Slice, E>
+where
+    I: StreamIsPartial,
+    I: Stream,
+    N: ToUsize,
+    F: Parser<I, N, E>,
+    E: ParserError<I>,
+{
+    length_take(f)
 }
 
 /// Gets a number from the first parser,
@@ -2489,7 +2502,7 @@ where
     E: ParserError<I>,
 {
     trace("length_value", move |i: &mut I| {
-        let data = length_data(f.by_ref()).parse_next(i)?;
+        let data = length_take(f.by_ref()).parse_next(i)?;
         let mut data = I::update_slice(i.clone(), data);
         let _ = data.complete();
         let o = g.by_ref().complete_err().parse_next(&mut data)?;

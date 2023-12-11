@@ -1164,7 +1164,53 @@ mod partial {
     }
 
     #[test]
-    fn length_data_test() {
+    fn partial_length_bytes() {
+        use crate::binary::le_u8;
+
+        fn x(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
+            length_take(le_u8).parse_peek(i)
+        }
+        assert_eq!(
+            x(Partial::new(b"\x02..>>")),
+            Ok((Partial::new(&b">>"[..]), &b".."[..]))
+        );
+        assert_eq!(
+            x(Partial::new(b"\x02..")),
+            Ok((Partial::new(&[][..]), &b".."[..]))
+        );
+        assert_eq!(
+            x(Partial::new(b"\x02.")),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+        assert_eq!(
+            x(Partial::new(b"\x02")),
+            Err(ErrMode::Incomplete(Needed::new(2)))
+        );
+
+        fn y(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
+            let (i, _) = "magic".parse_peek(i)?;
+            length_take(le_u8).parse_peek(i)
+        }
+        assert_eq!(
+            y(Partial::new(b"magic\x02..>>")),
+            Ok((Partial::new(&b">>"[..]), &b".."[..]))
+        );
+        assert_eq!(
+            y(Partial::new(b"magic\x02..")),
+            Ok((Partial::new(&[][..]), &b".."[..]))
+        );
+        assert_eq!(
+            y(Partial::new(b"magic\x02.")),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+        assert_eq!(
+            y(Partial::new(b"magic\x02")),
+            Err(ErrMode::Incomplete(Needed::new(2)))
+        );
+    }
+
+    #[test]
+    fn length_take_test() {
         fn number(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
             digit
                 .try_map(str::from_utf8)
@@ -1173,7 +1219,7 @@ mod partial {
         }
 
         fn take(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-            length_data(unpeek(number)).parse_peek(i)
+            length_take(unpeek(number)).parse_peek(i)
         }
 
         assert_eq!(
