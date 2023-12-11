@@ -3,6 +3,14 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Consistently support `FnMut` for predicates, not just `Fn`
+
+### Documentation
+
+- Improve `nom` migration experience
+
 ## [0.5.26] - 2023-12-07
 
 ### Documentation
