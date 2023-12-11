@@ -2387,8 +2387,11 @@ where
     }(input)
 }
 
-/// Gets a token-count from the parser and returns a
-/// subslice of the input of that size.
+/// Get a length-prefixed slice ([TLV](https://en.wikipedia.org/wiki/Type-length-value))
+///
+/// To apply a parser to the returned slice, see [`length_and_then`].
+///
+/// If the count is for something besides tokens, see [`length_repeat`].
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
@@ -2448,11 +2451,7 @@ where
     length_take(f)
 }
 
-/// Gets a number from the first parser,
-/// takes a subslice of the input of that size,
-/// then applies the second parser on that subslice.
-/// If the second parser returns `Incomplete`,
-/// `length_and_then` will return an error.
+/// Parse a length-prefixed slice ([TLV](https://en.wikipedia.org/wiki/Type-length-value))
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
@@ -2524,8 +2523,9 @@ where
     length_and_then(f, g)
 }
 
-/// Gets a number from the first parser,
-/// then applies the second parser that many times.
+/// [`Accumulate`] a length-prefixed sequence of values ([TLV](https://en.wikipedia.org/wiki/Type-length-value))
+///
+/// If the length represents token counts, see instead [`length_take`]
 ///
 /// # Arguments
 /// * `f` The parser to apply to obtain the count.
