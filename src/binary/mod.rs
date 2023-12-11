@@ -2452,7 +2452,7 @@ where
 /// takes a subslice of the input of that size,
 /// then applies the second parser on that subslice.
 /// If the second parser returns `Incomplete`,
-/// `length_value` will return an error.
+/// `length_and_then` will return an error.
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
@@ -2469,7 +2469,7 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::Bytes;
 /// use winnow::binary::be_u16;
-/// use winnow::binary::length_value;
+/// use winnow::binary::length_and_then;
 /// use winnow::token::tag;
 ///
 /// type Stream<'i> = Partial<&'i Bytes>;
@@ -2485,14 +2485,14 @@ where
 /// }
 ///
 /// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
-///   length_value(be_u16, "abc").parse_peek(s)
+///   length_and_then(be_u16, "abc").parse_peek(s)
 /// }
 ///
 /// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), &b"abc"[..])));
 /// assert_eq!(parser(stream(b"\x00\x03123123")), Err(ErrMode::Backtrack(InputError::new(complete_stream(&b"123"[..]), ErrorKind::Tag))));
 /// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
-pub fn length_value<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, O, E>
+pub fn length_and_then<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, O, E>
 where
     I: StreamIsPartial,
     I: Stream + UpdateSlice + Clone,
@@ -2501,13 +2501,27 @@ where
     G: Parser<I, O, E>,
     E: ParserError<I>,
 {
-    trace("length_value", move |i: &mut I| {
+    trace("length_and_then", move |i: &mut I| {
         let data = length_take(f.by_ref()).parse_next(i)?;
         let mut data = I::update_slice(i.clone(), data);
         let _ = data.complete();
         let o = g.by_ref().complete_err().parse_next(&mut data)?;
         Ok(o)
     })
+}
+
+/// Deprecated since 0.5.27, replaced with [`length_and_then`]
+#[deprecated(since = "0.5.27", note = "Replaced with `length_and_then`")]
+pub fn length_value<I, O, N, E, F, G>(f: F, g: G) -> impl Parser<I, O, E>
+where
+    I: StreamIsPartial,
+    I: Stream + UpdateSlice + Clone,
+    N: ToUsize,
+    F: Parser<I, N, E>,
+    G: Parser<I, O, E>,
+    E: ParserError<I>,
+{
+    length_and_then(f, g)
 }
 
 /// Gets a number from the first parser,
