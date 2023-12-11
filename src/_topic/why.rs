@@ -42,7 +42,7 @@
 //!
 //! For binary formats, `winnow` includes:
 //! - [A hexadecimal view][crate::Bytes] in [traces][crate::trace]
-//! - [TLV](https://en.wikipedia.org/wiki/Type-length-value)
+//! - [TLV](https://en.wikipedia.org/wiki/Type-length-value) (e.g. [`length_take`])
 //! - Some common parsers to help get started, like numbers
 //!
 //! For text formats, `winnow` includes:
@@ -97,4 +97,5 @@
 //! Instead, we work around this with things like the [`Accumulate`] trait.
 
 #![allow(unused_imports)]
+use crate::binary::length_take;
 use crate::stream::Accumulate;

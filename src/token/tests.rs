@@ -4,7 +4,6 @@ use super::*;
 use proptest::prelude::*;
 
 use crate::ascii::Caseless;
-use crate::binary::length_data;
 use crate::combinator::delimited;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
@@ -567,52 +566,6 @@ fn partial_recognize_take_while0() {
     assert_eq!(
         y(Partial::new(&b"ab."[..])),
         Ok((Partial::new(&b"."[..]), &b"ab"[..]))
-    );
-}
-
-#[test]
-fn partial_length_bytes() {
-    use crate::binary::le_u8;
-
-    fn x(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        length_data(le_u8).parse_peek(i)
-    }
-    assert_eq!(
-        x(Partial::new(b"\x02..>>")),
-        Ok((Partial::new(&b">>"[..]), &b".."[..]))
-    );
-    assert_eq!(
-        x(Partial::new(b"\x02..")),
-        Ok((Partial::new(&[][..]), &b".."[..]))
-    );
-    assert_eq!(
-        x(Partial::new(b"\x02.")),
-        Err(ErrMode::Incomplete(Needed::new(1)))
-    );
-    assert_eq!(
-        x(Partial::new(b"\x02")),
-        Err(ErrMode::Incomplete(Needed::new(2)))
-    );
-
-    fn y(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        let (i, _) = "magic".parse_peek(i)?;
-        length_data(le_u8).parse_peek(i)
-    }
-    assert_eq!(
-        y(Partial::new(b"magic\x02..>>")),
-        Ok((Partial::new(&b">>"[..]), &b".."[..]))
-    );
-    assert_eq!(
-        y(Partial::new(b"magic\x02..")),
-        Ok((Partial::new(&[][..]), &b".."[..]))
-    );
-    assert_eq!(
-        y(Partial::new(b"magic\x02.")),
-        Err(ErrMode::Incomplete(Needed::new(1)))
-    );
-    assert_eq!(
-        y(Partial::new(b"magic\x02")),
-        Err(ErrMode::Incomplete(Needed::new(2)))
     );
 }
 

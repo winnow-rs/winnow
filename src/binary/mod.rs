@@ -2387,8 +2387,11 @@ where
     }(input)
 }
 
-/// Gets a number from the parser and returns a
-/// subslice of the input of that size.
+/// Get a length-prefixed slice ([TLV](https://en.wikipedia.org/wiki/Type-length-value))
+///
+/// To apply a parser to the returned slice, see [`length_and_then`].
+///
+/// If the count is for something besides tokens, see [`length_repeat`].
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
@@ -2404,7 +2407,7 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::Bytes;
 /// use winnow::binary::be_u16;
-/// use winnow::binary::length_data;
+/// use winnow::binary::length_take;
 /// use winnow::token::tag;
 ///
 /// type Stream<'i> = Partial<&'i Bytes>;
@@ -2414,13 +2417,13 @@ where
 /// }
 ///
 /// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
-///   length_data(be_u16).parse_peek(s)
+///   length_take(be_u16).parse_peek(s)
 /// }
 ///
 /// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), &b"abc"[..])));
 /// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
-pub fn length_data<I, N, E, F>(mut f: F) -> impl Parser<I, <I as Stream>::Slice, E>
+pub fn length_take<I, N, E, F>(mut f: F) -> impl Parser<I, <I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -2428,18 +2431,27 @@ where
     F: Parser<I, N, E>,
     E: ParserError<I>,
 {
-    trace("length_data", move |i: &mut I| {
+    trace("length_take", move |i: &mut I| {
         let length = f.parse_next(i)?;
 
         crate::token::take(length).parse_next(i)
     })
 }
 
-/// Gets a number from the first parser,
-/// takes a subslice of the input of that size,
-/// then applies the second parser on that subslice.
-/// If the second parser returns `Incomplete`,
-/// `length_value` will return an error.
+/// Deprecated since 0.5.27, replaced with [`length_take`]
+#[deprecated(since = "0.5.27", note = "Replaced with `length_take`")]
+pub fn length_data<I, N, E, F>(f: F) -> impl Parser<I, <I as Stream>::Slice, E>
+where
+    I: StreamIsPartial,
+    I: Stream,
+    N: ToUsize,
+    F: Parser<I, N, E>,
+    E: ParserError<I>,
+{
+    length_take(f)
+}
+
+/// Parse a length-prefixed slice ([TLV](https://en.wikipedia.org/wiki/Type-length-value))
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
 ///
@@ -2456,7 +2468,7 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::Bytes;
 /// use winnow::binary::be_u16;
-/// use winnow::binary::length_value;
+/// use winnow::binary::length_and_then;
 /// use winnow::token::tag;
 ///
 /// type Stream<'i> = Partial<&'i Bytes>;
@@ -2472,14 +2484,14 @@ where
 /// }
 ///
 /// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, &[u8]> {
-///   length_value(be_u16, "abc").parse_peek(s)
+///   length_and_then(be_u16, "abc").parse_peek(s)
 /// }
 ///
 /// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), &b"abc"[..])));
 /// assert_eq!(parser(stream(b"\x00\x03123123")), Err(ErrMode::Backtrack(InputError::new(complete_stream(&b"123"[..]), ErrorKind::Tag))));
 /// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
-pub fn length_value<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, O, E>
+pub fn length_and_then<I, O, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, O, E>
 where
     I: StreamIsPartial,
     I: Stream + UpdateSlice + Clone,
@@ -2488,8 +2500,8 @@ where
     G: Parser<I, O, E>,
     E: ParserError<I>,
 {
-    trace("length_value", move |i: &mut I| {
-        let data = length_data(f.by_ref()).parse_next(i)?;
+    trace("length_and_then", move |i: &mut I| {
+        let data = length_take(f.by_ref()).parse_next(i)?;
         let mut data = I::update_slice(i.clone(), data);
         let _ = data.complete();
         let o = g.by_ref().complete_err().parse_next(&mut data)?;
@@ -2497,8 +2509,23 @@ where
     })
 }
 
-/// Gets a number from the first parser,
-/// then applies the second parser that many times.
+/// Deprecated since 0.5.27, replaced with [`length_and_then`]
+#[deprecated(since = "0.5.27", note = "Replaced with `length_and_then`")]
+pub fn length_value<I, O, N, E, F, G>(f: F, g: G) -> impl Parser<I, O, E>
+where
+    I: StreamIsPartial,
+    I: Stream + UpdateSlice + Clone,
+    N: ToUsize,
+    F: Parser<I, N, E>,
+    G: Parser<I, O, E>,
+    E: ParserError<I>,
+{
+    length_and_then(f, g)
+}
+
+/// [`Accumulate`] a length-prefixed sequence of values ([TLV](https://en.wikipedia.org/wiki/Type-length-value))
+///
+/// If the length represents token counts, see instead [`length_take`]
 ///
 /// # Arguments
 /// * `f` The parser to apply to obtain the count.
@@ -2533,7 +2560,7 @@ where
 /// assert_eq!(parser(stream(b"\x03123123123")), Err(ErrMode::Backtrack(InputError::new(stream(b"123123123"), ErrorKind::Tag))));
 /// # }
 /// ```
-pub fn length_count<I, O, C, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, C, E>
+pub fn length_repeat<I, O, C, N, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, C, E>
 where
     I: Stream,
     N: ToUsize,
@@ -2542,9 +2569,23 @@ where
     G: Parser<I, O, E>,
     E: ParserError<I>,
 {
-    trace("length_count", move |i: &mut I| {
+    trace("length_repeat", move |i: &mut I| {
         let n = f.parse_next(i)?;
         let n = n.to_usize();
         repeat(n, g.by_ref()).parse_next(i)
     })
+}
+
+/// Deprecated since 0.5.27, replaced with [`length_repeat`]
+#[deprecated(since = "0.5.27", note = "Replaced with `length_repeat`")]
+pub fn length_count<I, O, C, N, E, F, G>(f: F, g: G) -> impl Parser<I, C, E>
+where
+    I: Stream,
+    N: ToUsize,
+    C: Accumulate<O>,
+    F: Parser<I, N, E>,
+    G: Parser<I, O, E>,
+    E: ParserError<I>,
+{
+    length_repeat(f, g)
 }

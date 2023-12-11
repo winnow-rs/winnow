@@ -1123,7 +1123,7 @@ mod partial {
 
     #[test]
     #[cfg(feature = "alloc")]
-    fn length_count_test() {
+    fn length_repeat_test() {
         fn number(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
             digit
                 .try_map(str::from_utf8)
@@ -1132,7 +1132,7 @@ mod partial {
         }
 
         fn cnt(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-            length_count(unpeek(number), "abc").parse_peek(i)
+            length_repeat(unpeek(number), "abc").parse_peek(i)
         }
 
         assert_eq!(
@@ -1164,7 +1164,53 @@ mod partial {
     }
 
     #[test]
-    fn length_data_test() {
+    fn partial_length_bytes() {
+        use crate::binary::le_u8;
+
+        fn x(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
+            length_take(le_u8).parse_peek(i)
+        }
+        assert_eq!(
+            x(Partial::new(b"\x02..>>")),
+            Ok((Partial::new(&b">>"[..]), &b".."[..]))
+        );
+        assert_eq!(
+            x(Partial::new(b"\x02..")),
+            Ok((Partial::new(&[][..]), &b".."[..]))
+        );
+        assert_eq!(
+            x(Partial::new(b"\x02.")),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+        assert_eq!(
+            x(Partial::new(b"\x02")),
+            Err(ErrMode::Incomplete(Needed::new(2)))
+        );
+
+        fn y(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
+            let (i, _) = "magic".parse_peek(i)?;
+            length_take(le_u8).parse_peek(i)
+        }
+        assert_eq!(
+            y(Partial::new(b"magic\x02..>>")),
+            Ok((Partial::new(&b">>"[..]), &b".."[..]))
+        );
+        assert_eq!(
+            y(Partial::new(b"magic\x02..")),
+            Ok((Partial::new(&[][..]), &b".."[..]))
+        );
+        assert_eq!(
+            y(Partial::new(b"magic\x02.")),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+        assert_eq!(
+            y(Partial::new(b"magic\x02")),
+            Err(ErrMode::Incomplete(Needed::new(2)))
+        );
+    }
+
+    #[test]
+    fn length_take_test() {
         fn number(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
             digit
                 .try_map(str::from_utf8)
@@ -1173,7 +1219,7 @@ mod partial {
         }
 
         fn take(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-            length_data(unpeek(number)).parse_peek(i)
+            length_take(unpeek(number)).parse_peek(i)
         }
 
         assert_eq!(
@@ -1198,14 +1244,14 @@ mod partial {
     }
 
     #[test]
-    fn length_value_test() {
+    fn length_and_then_test() {
         use crate::stream::StreamIsPartial;
 
-        fn length_value_1(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u16> {
-            length_value(be_u8, be_u16).parse_peek(i)
+        fn length_and_then_1(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u16> {
+            length_and_then(be_u8, be_u16).parse_peek(i)
         }
-        fn length_value_2(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (u8, u8)> {
-            length_value(be_u8, (be_u8, be_u8)).parse_peek(i)
+        fn length_and_then_2(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (u8, u8)> {
+            length_and_then(be_u8, (be_u8, be_u8)).parse_peek(i)
         }
 
         let mut empty_complete = Partial::new(&b""[..]);
@@ -1213,14 +1259,14 @@ mod partial {
 
         let i1 = [0, 5, 6];
         assert_eq!(
-            length_value_1(Partial::new(&i1)),
+            length_and_then_1(Partial::new(&i1)),
             Err(ErrMode::Backtrack(error_position!(
                 &empty_complete,
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            length_value_2(Partial::new(&i1)),
+            length_and_then_2(Partial::new(&i1)),
             Err(ErrMode::Backtrack(error_position!(
                 &empty_complete,
                 ErrorKind::Token
@@ -1232,14 +1278,14 @@ mod partial {
             let mut middle_complete = Partial::new(&i2[1..2]);
             let _ = middle_complete.complete();
             assert_eq!(
-                length_value_1(Partial::new(&i2)),
+                length_and_then_1(Partial::new(&i2)),
                 Err(ErrMode::Backtrack(error_position!(
                     &middle_complete,
                     ErrorKind::Slice
                 )))
             );
             assert_eq!(
-                length_value_2(Partial::new(&i2)),
+                length_and_then_2(Partial::new(&i2)),
                 Err(ErrMode::Backtrack(error_position!(
                     &empty_complete,
                     ErrorKind::Token
@@ -1249,21 +1295,21 @@ mod partial {
 
         let i3 = [2, 5, 6, 3, 4, 5, 7];
         assert_eq!(
-            length_value_1(Partial::new(&i3)),
+            length_and_then_1(Partial::new(&i3)),
             Ok((Partial::new(&i3[3..]), 1286))
         );
         assert_eq!(
-            length_value_2(Partial::new(&i3)),
+            length_and_then_2(Partial::new(&i3)),
             Ok((Partial::new(&i3[3..]), (5, 6)))
         );
 
         let i4 = [3, 5, 6, 3, 4, 5];
         assert_eq!(
-            length_value_1(Partial::new(&i4)),
+            length_and_then_1(Partial::new(&i4)),
             Ok((Partial::new(&i4[4..]), 1286))
         );
         assert_eq!(
-            length_value_2(Partial::new(&i4)),
+            length_and_then_2(Partial::new(&i4)),
             Ok((Partial::new(&i4[4..]), (5, 6)))
         );
     }
