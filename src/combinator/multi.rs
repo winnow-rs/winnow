@@ -842,14 +842,14 @@ where
 pub fn separated_foldl1<I, O, O2, E, P, S, Op>(
     mut parser: P,
     mut sep: S,
-    op: Op,
+    mut op: Op,
 ) -> impl Parser<I, O, E>
 where
     I: Stream,
     P: Parser<I, O, E>,
     S: Parser<I, O2, E>,
     E: ParserError<I>,
-    Op: Fn(O, O2, O) -> O,
+    Op: FnMut(O, O2, O) -> O,
 {
     trace("separated_foldl1", move |i: &mut I| {
         let mut ol = parser.parse_next(i)?;
@@ -911,14 +911,14 @@ where
 pub fn separated_foldr1<I, O, O2, E, P, S, Op>(
     mut parser: P,
     mut sep: S,
-    op: Op,
+    mut op: Op,
 ) -> impl Parser<I, O, E>
 where
     I: Stream,
     P: Parser<I, O, E>,
     S: Parser<I, O2, E>,
     E: ParserError<I>,
-    Op: Fn(O, O2, O) -> O,
+    Op: FnMut(O, O2, O) -> O,
 {
     trace("separated_foldr1", move |i: &mut I| {
         let ol = parser.parse_next(i)?;
