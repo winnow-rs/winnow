@@ -3,6 +3,12 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+- Deprecate `length_data` in favor of `length_take`
+- Deprecate `length_value` in favor of `length_and_then`
+- Deprecate `length_count` in favor of `length_repeat`
+
 ## [0.5.27] - 2023-12-11
 
 ### Fixes
