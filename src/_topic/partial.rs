@@ -9,7 +9,7 @@
 //! to be parsed. The data is then parsed a chunk at a time.
 //!
 //! Chunks are typically defined by either:
-//! - A header reporting the number of bytes, like with [`length_value`]
+//! - A header reporting the number of bytes, like with [`length_and_then`]
 //!   - [`Partial`] can explicitly be changed to being complete once the specified bytes are
 //!     acquired via [`StreamIsPartial::complete`].
 //! - A delimiter, like with [ndjson](http://ndjson.org/)
@@ -38,7 +38,7 @@
 
 #![allow(unused_imports)] // Used for intra-doc links
 
-use crate::binary::length_value;
+use crate::binary::length_and_then;
 use crate::combinator::repeat;
 use crate::error::ErrMode::Incomplete;
 use crate::error::Needed;
