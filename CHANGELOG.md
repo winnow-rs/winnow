@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `Parser::default_value`
+
 ## [0.5.29] - 2023-12-18
 
 ### Features
