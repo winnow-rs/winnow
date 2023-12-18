@@ -1,3 +1,4 @@
+use winnow::combinator::seq;
 use winnow::prelude::*;
 use winnow::token::take_while;
 
@@ -18,10 +19,13 @@ impl std::str::FromStr for Color {
 }
 
 pub fn hex_color(input: &mut &str) -> PResult<Color> {
-    let _ = "#".parse_next(input)?;
-    let (red, green, blue) = (hex_primary, hex_primary, hex_primary).parse_next(input)?;
-
-    Ok(Color { red, green, blue })
+    seq!(Color {
+        _: '#',
+        red: hex_primary,
+        green: hex_primary,
+        blue: hex_primary
+    })
+    .parse_next(input)
 }
 
 fn hex_primary(input: &mut &str) -> PResult<u8> {
