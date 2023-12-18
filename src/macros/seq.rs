@@ -1,4 +1,4 @@
-/// Sequences multiple parsers and builds a struct out of them.
+/// Initialize a struct or tuple out of a sequences of parsers
 ///
 ///# Example
 ///
@@ -6,36 +6,50 @@
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::{alphanumeric1, dec_uint, space0};
 /// # use winnow::combinator::delimited;
+/// # use winnow::combinator::success;
 /// # use winnow::error::ContextError;
 /// use winnow::combinator::seq;
 ///
-/// #[derive(Debug, PartialEq)]
+/// #[derive(Default, Debug, PartialEq)]
 /// struct Field {
+///     namespace: u32,
 ///     name: Vec<u8>,
 ///     value: Vec<u8>,
 ///     point: (u32, u32),
+///     metadata: Vec<u8>,
 /// }
 ///
-/// let num = dec_uint::<_, u32, ContextError>;
-/// let spaced = |b| delimited(space0, b, space0);
-/// let mut parser = seq!{
-///     Field {
+/// // Parse into structs / tuple-structs
+/// fn field(input: &mut &[u8]) -> PResult<Field> {
+///     seq!{Field {
+///         namespace: success(5),
 ///         name: alphanumeric1.map(|s: &[u8]| s.to_owned()),
 ///         // `_` fields are ignored when building the struct
-///         _: spaced(b':'),
+///         _: (space0, b':', space0),
 ///         value: alphanumeric1.map(|s: &[u8]| s.to_owned()),
-///         _: spaced(b':'),
-///         point: seq!(num, _: spaced(b','), num),
-///     }
-/// };
+///         _: (space0, b':', space0),
+///         point: point,
+///         // default initialization also works
+///         ..Default::default()
+///     }}.parse_next(input)
+/// }
+///
+/// // Or parse into tuples
+/// fn point(input: &mut &[u8]) -> PResult<(u32, u32)> {
+///     let num = dec_uint::<_, u32, ContextError>;
+///     seq!(num, _: (space0, b',', space0), num).parse_next(input)
+/// }
+///
 /// assert_eq!(
-///     parser.parse_peek(&b"test: data: 123 , 4"[..]),
+///     field.parse_peek(&b"test: data: 123 , 4"[..]),
 ///     Ok((
 ///         &b""[..],
 ///         Field {
+///             namespace: 5,
 ///             name: b"test"[..].to_owned(),
 ///             value: b"data"[..].to_owned(),
 ///             point: (123, 4),
+///             metadata: Default::default(),
 ///         },
 ///     )),
 /// );
