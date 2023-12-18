@@ -162,6 +162,30 @@ pub trait Parser<I, O, E> {
         Value::new(self, val)
     }
 
+    /// Produce a type's default value
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use winnow::{error::ErrMode,error::ErrorKind, error::InputError, Parser};
+    /// use winnow::ascii::alpha1;
+    /// # fn main() {
+    ///
+    /// let mut parser = alpha1.default_value::<u32>();
+    ///
+    /// assert_eq!(parser.parse_peek("abcd"), Ok(("", 0)));
+    /// assert_eq!(parser.parse_peek("123abcd;"), Err(ErrMode::Backtrack(InputError::new("123abcd;", ErrorKind::Slice))));
+    /// # }
+    /// ```
+    #[inline(always)]
+    fn default_value<O2>(self) -> DefaultValue<Self, I, O, O2, E>
+    where
+        Self: core::marker::Sized,
+        O2: core::default::Default,
+    {
+        DefaultValue::new(self)
+    }
+
     /// Discards the output of the `Parser`
     ///
     /// # Example

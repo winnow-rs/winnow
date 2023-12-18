@@ -493,6 +493,48 @@ where
     }
 }
 
+/// Implementation of [`Parser::default_value`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct DefaultValue<F, I, O, O2, E>
+where
+    F: Parser<I, O, E>,
+    O2: core::default::Default,
+{
+    parser: F,
+    o2: core::marker::PhantomData<O2>,
+    i: core::marker::PhantomData<I>,
+    o: core::marker::PhantomData<O>,
+    e: core::marker::PhantomData<E>,
+}
+
+impl<F, I, O, O2, E> DefaultValue<F, I, O, O2, E>
+where
+    F: Parser<I, O, E>,
+    O2: core::default::Default,
+{
+    #[inline(always)]
+    pub(crate) fn new(parser: F) -> Self {
+        Self {
+            parser,
+            o2: Default::default(),
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
+    }
+}
+
+impl<F, I, O, O2, E> Parser<I, O2, E> for DefaultValue<F, I, O, O2, E>
+where
+    F: Parser<I, O, E>,
+    O2: core::default::Default,
+{
+    #[inline]
+    fn parse_next(&mut self, input: &mut I) -> PResult<O2, E> {
+        (self.parser).parse_next(input).map(|_| O2::default())
+    }
+}
+
 /// Implementation of [`Parser::void`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Void<F, I, O, E>

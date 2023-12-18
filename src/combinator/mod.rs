@@ -54,6 +54,7 @@
 //! - [`cond`]: Conditional combinator. Wraps another parser and calls it if the condition is met
 //! - [`Parser::flat_map`]: method to map a new parser from the output of the first parser, then apply that parser over the rest of the input
 //! - [`Parser::value`]: method to replace the result of a parser
+//! - [`Parser::default_value`]: method to replace the result of a parser
 //! - [`Parser::void`]: method to discard the result of a parser
 //! - [`Parser::map`]: method to map a function on the result of a parser
 //! - [`Parser::and_then`]: Applies a second parser over the output of the first one
