@@ -80,6 +80,46 @@ fn seq_struct_basics() {
 }
 
 #[test]
+fn seq_struct_default_init() {
+    #[derive(Debug, PartialEq, Default)]
+    struct Point {
+        x: u32,
+        y: u32,
+        z: u32,
+    }
+
+    fn parser(input: &mut &str) -> PResult<Point> {
+        seq! {
+            Point {
+                x: dec_uint,
+                _: ',',
+                y: dec_uint,
+                ..Default::default()
+            }
+        }
+        .parse_next(input)
+    }
+    assert_eq!(
+        parser.parse_peek("123,4 remaining"),
+        Ok((" remaining", Point { x: 123, y: 4, z: 0 },)),
+    );
+    assert_eq!(
+        parser.parse_peek("123, remaining"),
+        Err(ErrMode::Backtrack(ParserError::from_error_kind(
+            &" remaining",
+            ErrorKind::Fail
+        )))
+    );
+    assert_eq!(
+        parser.parse_peek(""),
+        Err(ErrMode::Backtrack(ParserError::from_error_kind(
+            &"",
+            ErrorKind::Fail
+        )))
+    );
+}
+
+#[test]
 fn seq_struct_trailing_comma_elided() {
     #![allow(dead_code)]
 

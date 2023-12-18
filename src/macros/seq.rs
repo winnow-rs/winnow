@@ -117,6 +117,10 @@ macro_rules! seq_parse_struct_fields {
     };
     (
         $input: expr;
+        .. $update: expr
+    ) => {};
+    (
+        $input: expr;
         $(,)?
     ) => {};
 }
@@ -187,6 +191,13 @@ macro_rules! seq_init_struct_fields {
         $($inits: tt)*
     ) => {
         $crate::seq_init_struct_fields!( (); $name ; $($inits)* $head_field: $head_field,)
+    };
+    (
+        (.. $update: expr);
+        $name: ident;
+        $($inits: tt)*
+    ) => {
+        $name { $($inits)* ..$update }
     };
     (
         ($(,)?);
