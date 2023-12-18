@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.30] - 2023-12-18
+
 ### Features
 
 - Add `Parser::default_value`
@@ -2143,7 +2145,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.29...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.30...HEAD
+[0.5.30]: https://github.com/winnow-rs/winnow/compare/v0.5.29...v0.5.30
 [0.5.29]: https://github.com/winnow-rs/winnow/compare/v0.5.28...v0.5.29
 [0.5.28]: https://github.com/winnow-rs/winnow/compare/v0.5.27...v0.5.28
 [0.5.27]: https://github.com/winnow-rs/winnow/compare/v0.5.26...v0.5.27
