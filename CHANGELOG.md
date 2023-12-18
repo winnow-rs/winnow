@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- New `combinator::seq!` for easier initialization of structs/tuples
+
 ## [0.5.28] - 2023-12-11
 
 ### Compatibility
