@@ -25,7 +25,7 @@
 ///         _: spaced(b':'),
 ///         value: alphanumeric1.map(|s: &[u8]| s.to_owned()),
 ///         _: spaced(b':'),
-///         point: seq!((num, _: spaced(b','), num)),
+///         point: seq!(num, _: spaced(b','), num),
 ///     }
 /// };
 /// assert_eq!(
@@ -80,6 +80,9 @@ macro_rules! seq {
                 )
             }).parse_next(input)
         })
+    };
+    ($($elements: tt)*) => {
+        $crate::seq!(($($elements)*))
     };
 }
 

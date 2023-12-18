@@ -322,3 +322,17 @@ fn seq_tuple_no_trailing_comma_elided() {
         .parse_next(input)
     }
 }
+
+#[test]
+fn seq_tuple_no_parens() {
+    #![allow(dead_code)]
+
+    fn parser(input: &mut &str) -> PResult<(u32, u32)> {
+        seq! (
+            dec_uint,
+            _: ',',
+            dec_uint,
+        )
+        .parse_next(input)
+    }
+}

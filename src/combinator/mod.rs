@@ -29,6 +29,7 @@
 //! | combinator | usage | input | new input | output | comment |
 //! |---|---|---|---|---|---|
 //! | [`(...)` (tuples)][crate::Parser] | `("ab", "XY", take(1))` | `"abXYZ!"` | `"!"` | `Ok(("ab", "XY", "Z"))` |Chains parsers and assemble the sub results in a tuple. You can use as many child parsers as you can put elements in a tuple|
+//! | [`seq!`] | `seq!(_: char('('), take(2), _: char(')'))` | `"(ab)cd"` | `"cd"` | `Ok("ab")` ||
 //! | [`delimited`] | `delimited(char('('), take(2), char(')'))` | `"(ab)cd"` | `"cd"` | `Ok("ab")` ||
 //! | [`preceded`] | `preceded("ab", "XY")` | `"abXYZ"` | `"Z"` | `Ok("XY")` ||
 //! | [`terminated`] | `terminated("ab", "XY")` | `"abXYZ"` | `"Z"` | `Ok("ab")` ||
