@@ -12,6 +12,8 @@ pub use crate::seq;
 /// * `first` The opening parser.
 /// * `second` The second parser to get object.
 ///
+/// See also [`seq`] to generalize this across any number of fields.
+///
 /// # Example
 ///
 /// ```rust
@@ -49,6 +51,8 @@ where
 /// # Arguments
 /// * `first` The first parser to apply.
 /// * `second` The second parser to match an object.
+///
+/// See also [`seq`] to generalize this across any number of fields.
 ///
 /// # Example
 ///
@@ -88,6 +92,8 @@ where
 /// * `first` The first parser to apply.
 /// * `sep` The separator parser to apply.
 /// * `second` The second parser to apply.
+///
+/// See also [`seq`] to generalize this across any number of fields.
 ///
 /// # Example
 ///
@@ -129,6 +135,8 @@ where
 /// * `first` The first parser to apply and discard.
 /// * `second` The second parser to apply.
 /// * `third` The third parser to apply and discard.
+///
+/// See also [`seq`] to generalize this across any number of fields.
 ///
 /// # Example
 ///

@@ -10,13 +10,10 @@
 /// use winnow::combinator::seq;
 ///
 /// #[derive(Debug, PartialEq)]
-/// struct Point(u32, u32);
-///
-/// #[derive(Debug, PartialEq)]
 /// struct Field {
 ///     name: Vec<u8>,
 ///     value: Vec<u8>,
-///     point: Point,
+///     point: (u32, u32),
 /// }
 ///
 /// let num = dec_uint::<_, u32, ContextError>;
@@ -28,7 +25,7 @@
 ///         _: spaced(b':'),
 ///         value: alphanumeric1.map(|s: &[u8]| s.to_owned()),
 ///         _: spaced(b':'),
-///         point: seq!(Point(num, _: spaced(b','), num)),
+///         point: seq!((num, _: spaced(b','), num)),
 ///     }
 /// };
 /// assert_eq!(
@@ -38,7 +35,7 @@
 ///         Field {
 ///             name: b"test"[..].to_owned(),
 ///             value: b"data"[..].to_owned(),
-///             point: Point(123, 4),
+///             point: (123, 4),
 ///         },
 ///     )),
 /// );
@@ -68,6 +65,18 @@ macro_rules! seq {
                     ($($elements)*);
                     (t.0, t.1, t.2, t.3, t.4, t.5, t.6, t.7, t.8, t.9, t.10, t.11, t.12, t.13, t.14, t.15, t.16, t.17, t.18, t.19, t.20);
                     $name;
+                )
+            }).parse_next(input)
+        })
+    };
+    (( $($elements: tt)* )) => {
+        $crate::trace::trace("tuple", move |input: &mut _| {
+            use $crate::Parser;
+            $crate::seq_parse_tuple_fields!( ($($elements)*) ; ).map(|t| {
+                $crate::seq_init_tuple_fields!(
+                    ($($elements)*);
+                    (t.0, t.1, t.2, t.3, t.4, t.5, t.6, t.7, t.8, t.9, t.10, t.11, t.12, t.13, t.14, t.15, t.16, t.17, t.18, t.19, t.20);
+                    ;
                 )
             }).parse_next(input)
         })
@@ -191,41 +200,41 @@ macro_rules! seq_init_tuple_fields {
     (
         (_ : $head_parser: expr, $($fields: tt)*);
         ($head_arg: expr, $($args: expr),*);
-        $name: ident;
+        $($name: ident)?;
         $($inits: tt)*
     ) => {
-        $crate::seq_init_tuple_fields!( ( $($fields)* ); ( $($args),* ) ; $name ; $($inits)* )
+        $crate::seq_init_tuple_fields!( ( $($fields)* ); ( $($args),* ) ; $($name)? ; $($inits)* )
     };
     (
         (_ : $head_parser: expr);
         ($head_arg: expr, $($args: expr),*);
-        $name: ident;
+        $($name: ident)?;
         $($inits: tt)*
     ) => {
-        $crate::seq_init_tuple_fields!((); ( $($args),* ); $name ; $($inits)*)
+        $crate::seq_init_tuple_fields!((); ( $($args),* ); $($name)? ; $($inits)*)
     };
     (
         ($head_parser: expr, $($fields: tt)*);
         ($head_arg: expr, $($args: expr),*);
-        $name: ident;
+        $($name: ident)?;
         $($inits: tt)*
     ) => {
-        $crate::seq_init_tuple_fields!( ( $($fields)* ) ; ( $($args),* ) ; $name ; $($inits)* $head_arg, )
+        $crate::seq_init_tuple_fields!( ( $($fields)* ) ; ( $($args),* ) ; $($name)? ; $($inits)* $head_arg, )
     };
     (
         ($head_parser: expr);
         ($head_arg: expr, $($args: expr),*);
-        $name: ident;
+        $($name: ident)?;
         $($inits: tt)*
     ) => {
-        $crate::seq_init_tuple_fields!((); ( $($args),* ); $name ; $($inits)* $head_arg)
+        $crate::seq_init_tuple_fields!((); ( $($args),* ); $($name)? ; $($inits)* $head_arg)
     };
     (
         ();
         ($($args: expr),*);
-        $name: ident;
+        $($name: ident)?;
         $($inits: expr),* $(,)?
     ) => {
-        $name( $($inits,)* )
+        $($name)?( $($inits,)* )
     };
 }

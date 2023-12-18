@@ -148,7 +148,7 @@ fn seq_struct_no_trailing_comma_elided() {
 }
 
 #[test]
-fn seq_tuple_basics() {
+fn seq_tuple_struct_basics() {
     #[derive(Debug, PartialEq)]
     struct Point(u32, u32);
 
@@ -183,7 +183,7 @@ fn seq_tuple_basics() {
 }
 
 #[test]
-fn seq_tuple_trailing_comma_elided() {
+fn seq_tuple_struct_trailing_comma_elided() {
     #![allow(dead_code)]
 
     #[derive(Debug, PartialEq)]
@@ -203,7 +203,7 @@ fn seq_tuple_trailing_comma_elided() {
 }
 
 #[test]
-fn seq_tuple_no_trailing_comma() {
+fn seq_tuple_struct_no_trailing_comma() {
     #![allow(dead_code)]
 
     #[derive(Debug, PartialEq)]
@@ -222,7 +222,7 @@ fn seq_tuple_no_trailing_comma() {
 }
 
 #[test]
-fn seq_tuple_no_trailing_comma_elided() {
+fn seq_tuple_struct_no_trailing_comma_elided() {
     #![allow(dead_code)]
 
     #[derive(Debug, PartialEq)]
@@ -231,6 +231,88 @@ fn seq_tuple_no_trailing_comma_elided() {
     fn parser(input: &mut &str) -> PResult<Point> {
         seq! {
             Point(
+                dec_uint,
+                _: ',',
+                dec_uint,
+                _: success(())
+            )
+        }
+        .parse_next(input)
+    }
+}
+
+#[test]
+fn seq_tuple_basics() {
+    fn parser(input: &mut &str) -> PResult<(u32, u32)> {
+        seq! {
+            (
+                dec_uint,
+                _: ',',
+                dec_uint,
+            )
+        }
+        .parse_next(input)
+    }
+    assert_eq!(
+        parser.parse_peek("123,4 remaining"),
+        Ok((" remaining", (123, 4),)),
+    );
+    assert_eq!(
+        parser.parse_peek("123, remaining"),
+        Err(ErrMode::Backtrack(ParserError::from_error_kind(
+            &" remaining",
+            ErrorKind::Fail
+        )))
+    );
+    assert_eq!(
+        parser.parse_peek(""),
+        Err(ErrMode::Backtrack(ParserError::from_error_kind(
+            &"",
+            ErrorKind::Fail
+        )))
+    );
+}
+
+#[test]
+fn seq_tuple_trailing_comma_elided() {
+    #![allow(dead_code)]
+
+    fn parser(input: &mut &str) -> PResult<(u32, u32)> {
+        seq! {
+            (
+                dec_uint,
+                _: ',',
+                dec_uint,
+                _: success(()),
+            )
+        }
+        .parse_next(input)
+    }
+}
+
+#[test]
+fn seq_tuple_no_trailing_comma() {
+    #![allow(dead_code)]
+
+    fn parser(input: &mut &str) -> PResult<(u32, u32)> {
+        seq! {
+            (
+                dec_uint,
+                _: ',',
+                dec_uint
+            )
+        }
+        .parse_next(input)
+    }
+}
+
+#[test]
+fn seq_tuple_no_trailing_comma_elided() {
+    #![allow(dead_code)]
+
+    fn parser(input: &mut &str) -> PResult<(u32, u32)> {
+        seq! {
+            (
                 dec_uint,
                 _: ',',
                 dec_uint,
