@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.29] - 2023-12-18
+
 ### Features
 
 - New `combinator::seq!` for easier initialization of structs/tuples
@@ -2137,7 +2139,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.28...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.29...HEAD
+[0.5.29]: https://github.com/winnow-rs/winnow/compare/v0.5.28...v0.5.29
 [0.5.28]: https://github.com/winnow-rs/winnow/compare/v0.5.27...v0.5.28
 [0.5.27]: https://github.com/winnow-rs/winnow/compare/v0.5.26...v0.5.27
 [0.5.26]: https://github.com/winnow-rs/winnow/compare/v0.5.25...v0.5.26
