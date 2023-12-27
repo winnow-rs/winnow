@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- Help the optimizer trim unused instructions in `any` when parsing a complete buffer
+
 ## [0.5.30] - 2023-12-18
 
 ### Features
