@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.31] - 2023-12-27
+
 ### Performance
 
 - Help the optimizer trim unused instructions in `any` when parsing a complete buffer
@@ -2149,7 +2151,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.30...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.31...HEAD
+[0.5.31]: https://github.com/winnow-rs/winnow/compare/v0.5.30...v0.5.31
 [0.5.30]: https://github.com/winnow-rs/winnow/compare/v0.5.29...v0.5.30
 [0.5.29]: https://github.com/winnow-rs/winnow/compare/v0.5.28...v0.5.29
 [0.5.28]: https://github.com/winnow-rs/winnow/compare/v0.5.27...v0.5.28
