@@ -52,7 +52,7 @@ where
         if <I as StreamIsPartial>::is_partial_supported() {
             any_::<_, _, true>(input)
         } else {
-            any_::<_, _, true>(input)
+            any_::<_, _, false>(input)
         }
     })
     .parse_next(input)
