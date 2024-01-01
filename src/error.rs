@@ -17,12 +17,14 @@
 //! - [`ErrorKind`]
 //! - [`InputError`] (mostly for testing)
 //! - [`ContextError`]
+//! - [`LocationContextError`] collect context from longest match
 //! - [`TreeError`] (mostly for testing)
 //! - [Custom errors][crate::_topic::error]
 
 #[cfg(feature = "alloc")]
 use crate::lib::std::borrow::ToOwned;
 use crate::lib::std::fmt;
+use crate::stream::Location;
 use core::num::NonZeroUsize;
 
 use crate::stream::AsBStr;
@@ -465,6 +467,8 @@ pub struct ContextError<C = StrContext> {
     context: core::marker::PhantomData<C>,
     #[cfg(feature = "std")]
     cause: Option<Box<dyn std::error::Error + Send + Sync + 'static>>,
+    #[cfg(not(feature = "std"))]
+    cause: (),
 }
 
 impl<C> ContextError<C> {
@@ -629,6 +633,249 @@ impl crate::lib::std::fmt::Display for ContextError<StrContext> {
                     write!(f, "{}", cause)?;
                 }
             }
+        }
+
+        Ok(())
+    }
+}
+
+/// Location aware context error.
+/// The context error tracks the rightmost position of the error.
+/// In presence of backtracking new contexts in "lower" positions are ignored.
+#[derive(Debug)]
+pub struct LocationContextError<L = usize, C = StrContext> {
+    pos: L,
+
+    #[cfg(feature = "alloc")]
+    context: crate::lib::std::vec::Vec<C>,
+    #[cfg(not(feature = "alloc"))]
+    context: core::marker::PhantomData<C>,
+    #[cfg(feature = "std")]
+    cause: Option<Box<dyn std::error::Error + Send + Sync + 'static>>,
+    #[cfg(not(feature = "std"))]
+    cause: (),
+}
+
+impl<L: Default, C> LocationContextError<L, C> {
+    /// Create an empty error
+    #[inline]
+    pub fn new() -> Self {
+        Self::new_at(L::default())
+    }
+
+    /// Create an empty error at the given position
+    #[inline]
+    pub fn new_at(pos: L) -> Self {
+        Self {
+            pos,
+            context: Default::default(),
+            #[cfg(feature = "std")]
+            cause: None,
+        }
+    }
+
+    /// Access context from [`Parser::context`]
+    #[inline]
+    #[cfg(feature = "alloc")]
+    pub fn context(&self) -> impl Iterator<Item = &C> {
+        self.context.iter()
+    }
+
+    /// Originating [`std::error::Error`]
+    #[inline]
+    #[cfg(feature = "std")]
+    pub fn cause(&self) -> Option<&(dyn std::error::Error + Send + Sync + 'static)> {
+        self.cause.as_deref()
+    }
+}
+
+impl<L: Clone, C: Clone> Clone for LocationContextError<L, C> {
+    fn clone(&self) -> Self {
+        Self {
+            pos: self.pos.clone(),
+            context: self.context.clone(),
+            #[cfg(feature = "std")]
+            cause: self.cause.as_ref().map(|e| e.to_string().into()),
+            #[cfg(not(feature = "std"))]
+            cause: (),
+        }
+    }
+}
+
+impl<L: Default, C> Default for LocationContextError<L, C> {
+    #[inline]
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<I: Location, C> ParserError<I> for LocationContextError<usize, C> {
+    #[inline]
+    fn from_error_kind(input: &I, _kind: ErrorKind) -> Self {
+        Self::new_at(input.location())
+    }
+
+    #[inline]
+    fn append(self, _input: &I, _kind: ErrorKind) -> Self {
+        self
+    }
+
+    fn or(self, other: Self) -> Self {
+        // rightmost context wins
+        match self.pos.cmp(&other.pos) {
+            core::cmp::Ordering::Less => other,
+            core::cmp::Ordering::Greater => self,
+            core::cmp::Ordering::Equal => {
+                #[cfg(feature = "std")]
+                let cause = self.cause.or(other.cause);
+                #[cfg(not(feature = "std"))]
+                let cause = ();
+
+                #[cfg(feature = "alloc")]
+                let context = {
+                    let (mut context, other) = if self.context.capacity() > other.context.capacity()
+                    {
+                        (self.context, other.context)
+                    } else {
+                        (other.context, self.context)
+                    };
+                    context.extend(other);
+                    context
+                };
+                #[cfg(not(feature = "alloc"))]
+                let context = self.context;
+
+                Self {
+                    pos: self.pos,
+                    context,
+                    cause,
+                }
+            }
+        }
+    }
+}
+
+impl<I: Location, C> AddContext<I, C> for LocationContextError<usize, C> {
+    #[inline]
+    fn add_context(mut self, input: &I, ctx: C) -> Self {
+        #[cfg(feature = "alloc")]
+        {
+            let pos = input.location();
+            match pos.cmp(&self.pos) {
+                core::cmp::Ordering::Less => {}
+                core::cmp::Ordering::Greater => {
+                    self.pos = pos;
+                    self.context.clear();
+                    self.context.push(ctx);
+                }
+                core::cmp::Ordering::Equal => {
+                    self.context.push(ctx);
+                }
+            }
+        }
+        self
+    }
+}
+
+#[cfg(feature = "std")]
+impl<C, I: Location, E: std::error::Error + Send + Sync + 'static> FromExternalError<I, E>
+    for LocationContextError<usize, C>
+{
+    #[inline]
+    fn from_external_error(input: &I, _kind: ErrorKind, e: E) -> Self {
+        let mut err = Self::new_at(input.location());
+        {
+            err.cause = Some(Box::new(e));
+        }
+        err
+    }
+}
+
+// HACK: This is more general than `std`, making the features non-additive
+#[cfg(not(feature = "std"))]
+impl<C, I: Location, E: Send + Sync + 'static> FromExternalError<usize, E>
+    for LocationContextError<usize, C>
+{
+    #[inline]
+    fn from_external_error(input: &I, _kind: ErrorKind, _e: E) -> Self {
+        let err = Self::new_at(input.location());
+        err
+    }
+}
+
+// For tests
+impl<L: core::cmp::PartialEq, C: core::cmp::PartialEq> core::cmp::PartialEq
+    for LocationContextError<L, C>
+{
+    fn eq(&self, other: &Self) -> bool {
+        #[cfg(feature = "alloc")]
+        {
+            if self.context != other.context {
+                return false;
+            }
+        }
+        #[cfg(feature = "std")]
+        {
+            if self.cause.as_ref().map(ToString::to_string)
+                != other.cause.as_ref().map(ToString::to_string)
+            {
+                return false;
+            }
+        }
+
+        true
+    }
+}
+
+impl crate::lib::std::fmt::Display for LocationContextError<usize, StrContext> {
+    fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
+        #[cfg(feature = "alloc")]
+        {
+            let expression = self.context().find_map(|c| match c {
+                StrContext::Label(c) => Some(c),
+                _ => None,
+            });
+            let expected = self
+                .context()
+                .filter_map(|c| match c {
+                    StrContext::Expected(c) => Some(c),
+                    _ => None,
+                })
+                .collect::<crate::lib::std::vec::Vec<_>>();
+
+            let mut newline = false;
+
+            if let Some(expression) = expression {
+                newline = true;
+
+                write!(f, "invalid {}", expression)?;
+            }
+
+            if !expected.is_empty() {
+                if newline {
+                    writeln!(f)?;
+                }
+                newline = true;
+
+                write!(f, "expected ")?;
+                for (i, expected) in expected.iter().enumerate() {
+                    if i != 0 {
+                        write!(f, ", ")?;
+                    }
+                    write!(f, "{}", expected)?;
+                }
+            }
+            #[cfg(feature = "std")]
+            {
+                if let Some(cause) = self.cause() {
+                    if newline {
+                        writeln!(f)?;
+                    }
+                    write!(f, "{}", cause)?;
+                }
+            }
+
+            write!(f, " at position {}", self.pos)?;
         }
 
         Ok(())
