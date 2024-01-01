@@ -643,8 +643,8 @@ impl crate::lib::std::fmt::Display for ContextError<StrContext> {
 /// The context error tracks the rightmost position of the error.
 /// In presence of backtracking new contexts in "lower" positions are ignored.
 #[derive(Debug)]
-pub struct LocationContextError<L = usize, C = StrContext> {
-    pos: L,
+pub struct LocationContextError<C = StrContext> {
+    pos: usize,
 
     #[cfg(feature = "alloc")]
     context: crate::lib::std::vec::Vec<C>,
@@ -656,24 +656,27 @@ pub struct LocationContextError<L = usize, C = StrContext> {
     cause: (),
 }
 
-impl<L: Default, C> LocationContextError<L, C> {
+impl<C> LocationContextError<C> {
     /// Create an empty error
     #[inline]
     pub fn new() -> Self {
-        Self::new_at(L::default())
+        Self::new_at(0)
     }
-}
 
-impl<L, C> LocationContextError<L, C> {
     /// Create an empty error at the given position
     #[inline]
-    pub fn new_at(pos: L) -> Self {
+    pub fn new_at(pos: usize) -> Self {
         Self {
             pos,
             context: Default::default(),
             #[cfg(feature = "std")]
             cause: None,
         }
+    }
+
+    /// Access the error position
+    pub fn pos(&self) -> usize {
+        self.pos
     }
 
     /// Access context from [`Parser::context`]
@@ -691,7 +694,7 @@ impl<L, C> LocationContextError<L, C> {
     }
 }
 
-impl<L: Clone, C: Clone> Clone for LocationContextError<L, C> {
+impl<C: Clone> Clone for LocationContextError<C> {
     fn clone(&self) -> Self {
         Self {
             pos: self.pos.clone(),
@@ -704,14 +707,14 @@ impl<L: Clone, C: Clone> Clone for LocationContextError<L, C> {
     }
 }
 
-impl<L: Default, C> Default for LocationContextError<L, C> {
+impl<C> Default for LocationContextError<C> {
     #[inline]
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<I: Location, C> ParserError<I> for LocationContextError<usize, C> {
+impl<I: Location, C> ParserError<I> for LocationContextError<C> {
     #[inline]
     fn from_error_kind(input: &I, _kind: ErrorKind) -> Self {
         Self::new_at(input.location())
@@ -723,13 +726,6 @@ impl<I: Location, C> ParserError<I> for LocationContextError<usize, C> {
     }
 
     fn or(self, other: Self) -> Self {
-        self.merge_contexts(other)
-    }
-}
-
-impl<L: Ord, C> LocationContextError<L, C> {
-    /// Combine with another error context
-    pub fn merge_contexts(self, other: Self) -> Self {
         // rightmost context wins
         match self.pos.cmp(&other.pos) {
             core::cmp::Ordering::Less => other,
@@ -764,19 +760,12 @@ impl<L: Ord, C> LocationContextError<L, C> {
     }
 }
 
-impl<I: Location, C> AddContext<I, C> for LocationContextError<usize, C> {
+impl<I: Location, C> AddContext<I, C> for LocationContextError<C> {
     #[inline]
     fn add_context(mut self, input: &I, ctx: C) -> Self {
-        self.add_context_at(input.location(), ctx)
-    }
-}
-
-impl<L: Ord, C> LocationContextError<L, C> {
-    /// Location aware append to an existing error custom data
-    #[inline]
-    pub fn add_context_at(mut self, pos: L, ctx: C) -> Self {
         #[cfg(feature = "alloc")]
         {
+            let pos = input.location();
             match pos.cmp(&self.pos) {
                 core::cmp::Ordering::Less => {}
                 core::cmp::Ordering::Greater => {
@@ -795,7 +784,7 @@ impl<L: Ord, C> LocationContextError<L, C> {
 
 #[cfg(feature = "std")]
 impl<C, I: Location, E: std::error::Error + Send + Sync + 'static> FromExternalError<I, E>
-    for LocationContextError<usize, C>
+    for LocationContextError<C>
 {
     #[inline]
     fn from_external_error(input: &I, _kind: ErrorKind, e: E) -> Self {
@@ -810,7 +799,7 @@ impl<C, I: Location, E: std::error::Error + Send + Sync + 'static> FromExternalE
 // HACK: This is more general than `std`, making the features non-additive
 #[cfg(not(feature = "std"))]
 impl<C, I: Location, E: Send + Sync + 'static> FromExternalError<usize, E>
-    for LocationContextError<usize, C>
+    for LocationContextError<C>
 {
     #[inline]
     fn from_external_error(input: &I, _kind: ErrorKind, _e: E) -> Self {
@@ -820,9 +809,7 @@ impl<C, I: Location, E: Send + Sync + 'static> FromExternalError<usize, E>
 }
 
 // For tests
-impl<L: core::cmp::PartialEq, C: core::cmp::PartialEq> core::cmp::PartialEq
-    for LocationContextError<L, C>
-{
+impl<C: core::cmp::PartialEq> core::cmp::PartialEq for LocationContextError<C> {
     fn eq(&self, other: &Self) -> bool {
         #[cfg(feature = "alloc")]
         {
@@ -843,10 +830,7 @@ impl<L: core::cmp::PartialEq, C: core::cmp::PartialEq> core::cmp::PartialEq
     }
 }
 
-impl<L> crate::lib::std::fmt::Display for LocationContextError<L, StrContext>
-where
-    L: crate::lib::std::fmt::Display,
-{
+impl crate::lib::std::fmt::Display for LocationContextError<StrContext> {
     fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
         #[cfg(feature = "alloc")]
         {
