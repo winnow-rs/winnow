@@ -662,7 +662,9 @@ impl<L: Default, C> LocationContextError<L, C> {
     pub fn new() -> Self {
         Self::new_at(L::default())
     }
+}
 
+impl<L, C> LocationContextError<L, C> {
     /// Create an empty error at the given position
     #[inline]
     pub fn new_at(pos: L) -> Self {
@@ -721,6 +723,13 @@ impl<I: Location, C> ParserError<I> for LocationContextError<usize, C> {
     }
 
     fn or(self, other: Self) -> Self {
+        self.merge_contexts(other)
+    }
+}
+
+impl<L: Ord, C> LocationContextError<L, C> {
+    /// Combine with another error context
+    pub fn merge_contexts(self, other: Self) -> Self {
         // rightmost context wins
         match self.pos.cmp(&other.pos) {
             core::cmp::Ordering::Less => other,
@@ -758,9 +767,16 @@ impl<I: Location, C> ParserError<I> for LocationContextError<usize, C> {
 impl<I: Location, C> AddContext<I, C> for LocationContextError<usize, C> {
     #[inline]
     fn add_context(mut self, input: &I, ctx: C) -> Self {
+        self.add_context_at(input.location(), ctx)
+    }
+}
+
+impl<L: Ord, C> LocationContextError<L, C> {
+    /// Location aware append to an existing error custom data
+    #[inline]
+    pub fn add_context_at(mut self, pos: L, ctx: C) -> Self {
         #[cfg(feature = "alloc")]
         {
-            let pos = input.location();
             match pos.cmp(&self.pos) {
                 core::cmp::Ordering::Less => {}
                 core::cmp::Ordering::Greater => {
@@ -827,7 +843,10 @@ impl<L: core::cmp::PartialEq, C: core::cmp::PartialEq> core::cmp::PartialEq
     }
 }
 
-impl crate::lib::std::fmt::Display for LocationContextError<usize, StrContext> {
+impl<L> crate::lib::std::fmt::Display for LocationContextError<L, StrContext>
+where
+    L: crate::lib::std::fmt::Display,
+{
     fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
         #[cfg(feature = "alloc")]
         {
