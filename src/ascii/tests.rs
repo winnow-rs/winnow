@@ -566,24 +566,17 @@ mod complete {
 
             println!("now parsing: {} -> {}", test, expected32);
 
-            if (test.starts_with('-') || test.starts_with('+')) && expected32.is_infinite() {
-                assert!(float::<_, f32, ()>.parse_peek(test.as_bytes()).is_err());
-                assert!(float::<_, f32, ()>.parse_peek(test).is_err());
-                assert!(float::<_, f64, ()>.parse_peek(test.as_bytes()).is_err());
-                assert!(float::<_, f64, ()>.parse_peek(test).is_err());
-            } else {
-                assert_parse!(
-                    float.parse_peek(test.as_bytes()),
-                    Ok((&b""[..], expected32))
-                );
-                assert_parse!(float.parse_peek(test), Ok(("", expected32)));
+            assert_parse!(
+                float.parse_peek(test.as_bytes()),
+                Ok((&b""[..], expected32))
+            );
+            assert_parse!(float.parse_peek(test), Ok(("", expected32)));
 
-                assert_parse!(
-                    float.parse_peek(test.as_bytes()),
-                    Ok((&b""[..], expected64))
-                );
-                assert_parse!(float.parse_peek(test), Ok(("", expected64)));
-            }
+            assert_parse!(
+                float.parse_peek(test.as_bytes()),
+                Ok((&b""[..], expected64))
+            );
+            assert_parse!(float.parse_peek(test), Ok(("", expected64)));
         }
 
         let remaining_exponent = "-1.234E-";

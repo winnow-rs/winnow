@@ -1367,8 +1367,12 @@ where
     alt((
         recognize_float,
         crate::token::tag_no_case("nan"),
-        crate::token::tag_no_case("infinity"),
-        crate::token::tag_no_case("inf"),
+        (
+            opt(one_of(['+', '-'])),
+            crate::token::tag_no_case("infinity"),
+        )
+            .recognize(),
+        (opt(one_of(['+', '-'])), crate::token::tag_no_case("inf")).recognize(),
     ))
     .parse_next(input)
 }
