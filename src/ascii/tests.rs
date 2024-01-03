@@ -528,7 +528,7 @@ mod complete {
     #[test]
     #[cfg(feature = "std")]
     fn float_test() {
-        let mut test_cases = vec![
+        let test_cases = [
             "+3.14",
             "3.14",
             "-3.14",
@@ -546,27 +546,37 @@ mod complete {
             "-1.234E-12",
             "-1.234e-12",
             "0.00000000000000000087",
+            "inf",
+            "Inf",
+            "infinity",
+            "Infinity",
+            "-inf",
+            "-Inf",
+            "-infinity",
+            "-Infinity",
+            "+inf",
+            "+Inf",
+            "+infinity",
+            "+Infinity",
         ];
 
-        for test in test_cases.drain(..) {
+        for test in test_cases {
             let expected32 = str::parse::<f32>(test).unwrap();
             let expected64 = str::parse::<f64>(test).unwrap();
 
             println!("now parsing: {} -> {}", test, expected32);
 
-            let larger = test.to_string();
-
             assert_parse!(
-                float.parse_peek(larger.as_bytes()),
+                float.parse_peek(test.as_bytes()),
                 Ok((&b""[..], expected32))
             );
-            assert_parse!(float.parse_peek(&larger[..]), Ok(("", expected32)));
+            assert_parse!(float.parse_peek(test), Ok(("", expected32)));
 
             assert_parse!(
-                float.parse_peek(larger.as_bytes()),
+                float.parse_peek(test.as_bytes()),
                 Ok((&b""[..], expected64))
             );
-            assert_parse!(float.parse_peek(&larger[..]), Ok(("", expected64)));
+            assert_parse!(float.parse_peek(test), Ok(("", expected64)));
         }
 
         let remaining_exponent = "-1.234E-";
@@ -575,16 +585,27 @@ mod complete {
             Err(ErrMode::Cut(InputError::new("", ErrorKind::Slice)))
         );
 
-        let (i, nan) = float::<_, f32, ()>.parse_peek("NaN").unwrap();
-        assert!(nan.is_nan());
-        assert_eq!(i, "");
+        let nan_test_cases = ["nan", "NaN", "NAN"];
 
-        let (i, inf) = float::<_, f32, ()>.parse_peek("inf").unwrap();
-        assert!(inf.is_infinite());
-        assert_eq!(i, "");
-        let (i, inf) = float::<_, f32, ()>.parse_peek("infinity").unwrap();
-        assert!(inf.is_infinite());
-        assert_eq!(i, "");
+        for test in nan_test_cases {
+            println!("now parsing: {}", test);
+
+            let (remaining, parsed) = float::<_, f32, ()>.parse_peek(test.as_bytes()).unwrap();
+            assert!(parsed.is_nan());
+            assert!(remaining.is_empty());
+
+            let (remaining, parsed) = float::<_, f32, ()>.parse_peek(test).unwrap();
+            assert!(parsed.is_nan());
+            assert!(remaining.is_empty());
+
+            let (remaining, parsed) = float::<_, f64, ()>.parse_peek(test.as_bytes()).unwrap();
+            assert!(parsed.is_nan());
+            assert!(remaining.is_empty());
+
+            let (remaining, parsed) = float::<_, f64, ()>.parse_peek(test).unwrap();
+            assert!(parsed.is_nan());
+            assert!(remaining.is_empty());
+        }
     }
 
     #[cfg(feature = "std")]
