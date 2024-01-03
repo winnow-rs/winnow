@@ -592,9 +592,27 @@ mod complete {
             Err(ErrMode::Cut(InputError::new("", ErrorKind::Slice)))
         );
 
-        let (i, nan) = float::<_, f32, ()>.parse_peek("NaN").unwrap();
-        assert!(nan.is_nan());
-        assert_eq!(i, "");
+        let nan_test_cases = ["nan", "NaN", "NAN"];
+
+        for test in nan_test_cases {
+            println!("now parsing: {}", test);
+
+            let (remaining, parsed) = float::<_, f32, ()>.parse_peek(test.as_bytes()).unwrap();
+            assert!(parsed.is_nan());
+            assert!(remaining.is_empty());
+
+            let (remaining, parsed) = float::<_, f32, ()>.parse_peek(test).unwrap();
+            assert!(parsed.is_nan());
+            assert!(remaining.is_empty());
+
+            let (remaining, parsed) = float::<_, f64, ()>.parse_peek(test.as_bytes()).unwrap();
+            assert!(parsed.is_nan());
+            assert!(remaining.is_empty());
+
+            let (remaining, parsed) = float::<_, f64, ()>.parse_peek(test).unwrap();
+            assert!(parsed.is_nan());
+            assert!(remaining.is_empty());
+        }
     }
 
     #[cfg(feature = "std")]
