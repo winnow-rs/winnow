@@ -227,6 +227,21 @@ impl<I, C, E: AddContext<I, C>> AddContext<I, C> for ErrMode<E> {
     }
 }
 
+impl<E: MergeContext> MergeContext for ErrMode<E> {
+    #[inline(always)]
+    fn merge_context(self, other: Self) -> Self {
+        match other.into_inner() {
+            Some(other) => self.map(|err| err.merge_context(other)),
+            None => self,
+        }
+    }
+
+    #[inline]
+    fn clear_context(self) -> Self {
+        self.map(MergeContext::clear_context)
+    }
+}
+
 impl<T: Clone> ErrMode<InputError<T>> {
     /// Maps `ErrMode<InputError<T>>` to `ErrMode<InputError<U>>` with the given `F: T -> U`
     pub fn map_input<U: Clone, F>(self, f: F) -> ErrMode<InputError<U>>
@@ -311,6 +326,15 @@ pub trait AddContext<I, C = &'static str>: Sized {
     fn add_context(self, _input: &I, _ctx: C) -> Self {
         self
     }
+}
+
+/// Merge contexts while backtracking.
+pub trait MergeContext: Sized {
+    /// Apply the context from `other` into `self`
+    fn merge_context(self, _other: Self) -> Self;
+
+    /// Remove all context
+    fn clear_context(self) -> Self;
 }
 
 /// Create a new error with an external error, from [`std::str::FromStr`]
@@ -532,6 +556,32 @@ impl<C, I> AddContext<I, C> for ContextError<C> {
     fn add_context(mut self, _input: &I, ctx: C) -> Self {
         #[cfg(feature = "alloc")]
         self.context.push(ctx);
+        self
+    }
+}
+
+impl<C> MergeContext for ContextError<C> {
+    #[inline]
+    fn merge_context(mut self, other: Self) -> Self {
+        // self and other get consumed to produce the new Context error.
+        // We choose the vector with the larger capacity to reduce the chance of reallocations.
+        #[cfg(feature = "alloc")]
+        {
+            let (mut context, other) = if self.context.capacity() >= other.context.capacity() {
+                (self.context, other.context)
+            } else {
+                (other.context, self.context)
+            };
+            context.extend(other);
+            self.context = context;
+        }
+        self
+    }
+
+    #[inline]
+    fn clear_context(mut self) -> Self {
+        #[cfg(feature = "alloc")]
+        self.context.clear();
         self
     }
 }
