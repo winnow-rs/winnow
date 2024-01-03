@@ -225,6 +225,14 @@ impl<I, C, E: AddContext<I, C>> AddContext<I, C> for ErrMode<E> {
     fn add_context(self, input: &I, ctx: C) -> Self {
         self.map(|err| err.add_context(input, ctx))
     }
+
+    #[inline(always)]
+    fn merge_context(self, other: Self) -> Self {
+        match other.into_inner() {
+            Some(other) => self.map(|err| err.merge_context(other)),
+            None => self,
+        }
+    }
 }
 
 impl<T: Clone> ErrMode<InputError<T>> {
@@ -309,6 +317,12 @@ pub trait AddContext<I, C = &'static str>: Sized {
     /// to errors when backtracking through a parse tree
     #[inline]
     fn add_context(self, _input: &I, _ctx: C) -> Self {
+        self
+    }
+
+    /// Apply the context from `other` into `self`
+    #[inline]
+    fn merge_context(self, _other: Self) -> Self {
         self
     }
 }
@@ -532,6 +546,13 @@ impl<C, I> AddContext<I, C> for ContextError<C> {
     fn add_context(mut self, _input: &I, ctx: C) -> Self {
         #[cfg(feature = "alloc")]
         self.context.push(ctx);
+        self
+    }
+
+    #[inline]
+    fn merge_context(mut self, other: Self) -> Self {
+        #[cfg(feature = "alloc")]
+        self.context.extend(other.context);
         self
     }
 }
