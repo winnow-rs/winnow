@@ -528,7 +528,7 @@ mod complete {
     #[test]
     #[cfg(feature = "std")]
     fn float_test() {
-        let mut test_cases = vec![
+        let test_cases = [
             "+3.14",
             "3.14",
             "-3.14",
@@ -548,7 +548,7 @@ mod complete {
             "0.00000000000000000087",
         ];
 
-        for test in test_cases.drain(..) {
+        for test in test_cases {
             let expected32 = str::parse::<f32>(test).unwrap();
             let expected64 = str::parse::<f64>(test).unwrap();
 
