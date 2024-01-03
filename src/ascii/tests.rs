@@ -554,19 +554,17 @@ mod complete {
 
             println!("now parsing: {} -> {}", test, expected32);
 
-            let larger = test.to_string();
-
             assert_parse!(
-                float.parse_peek(larger.as_bytes()),
+                float.parse_peek(test.as_bytes()),
                 Ok((&b""[..], expected32))
             );
-            assert_parse!(float.parse_peek(&larger[..]), Ok(("", expected32)));
+            assert_parse!(float.parse_peek(test), Ok(("", expected32)));
 
             assert_parse!(
-                float.parse_peek(larger.as_bytes()),
+                float.parse_peek(test.as_bytes()),
                 Ok((&b""[..], expected64))
             );
-            assert_parse!(float.parse_peek(&larger[..]), Ok(("", expected64)));
+            assert_parse!(float.parse_peek(test), Ok(("", expected64)));
         }
 
         let remaining_exponent = "-1.234E-";
