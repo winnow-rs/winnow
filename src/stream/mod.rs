@@ -2225,6 +2225,22 @@ where
 #[derive(Copy, Clone, Debug)]
 pub struct Checkpoint<T>(T);
 
+impl<T: PartialEq> PartialEq for Checkpoint<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.eq(&other.0)
+    }
+}
+
+impl<T: Eq> Eq for Checkpoint<T> {}
+
+impl<T: AsOrd> AsOrd for Checkpoint<T> {
+    type Ord = T::Ord;
+
+    fn as_ord(&self) -> Self::Ord {
+        self.0.as_ord()
+    }
+}
+
 /// A range bounded inclusively for counting parses performed
 #[derive(PartialEq, Eq)]
 pub struct Range {
