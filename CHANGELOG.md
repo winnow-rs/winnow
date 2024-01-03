@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Parse `+`/`-` inf/nan with `ascii::float`
+
 ## [0.5.31] - 2023-12-27
 
 ### Performance
