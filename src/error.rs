@@ -233,6 +233,14 @@ impl<I, C, E: AddContext<I, C>> AddContext<I, C> for ErrMode<E> {
             None => self,
         }
     }
+
+    #[inline]
+    fn clear_context(&mut self) {
+        match self {
+            ErrMode::Incomplete(_) => {}
+            ErrMode::Cut(t) | ErrMode::Backtrack(t) => t.clear_context(),
+        }
+    }
 }
 
 impl<T: Clone> ErrMode<InputError<T>> {
@@ -325,6 +333,10 @@ pub trait AddContext<I, C = &'static str>: Sized {
     fn merge_context(self, _other: Self) -> Self {
         self
     }
+
+    /// Remove all context
+    #[inline]
+    fn clear_context(&mut self) {}
 }
 
 /// Create a new error with an external error, from [`std::str::FromStr`]
@@ -554,6 +566,12 @@ impl<C, I> AddContext<I, C> for ContextError<C> {
         #[cfg(feature = "alloc")]
         self.context.extend(other.context);
         self
+    }
+
+    #[inline]
+    fn clear_context(&mut self) {
+        #[cfg(feature = "alloc")]
+        self.context.clear();
     }
 }
 
