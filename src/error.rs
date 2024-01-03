@@ -734,6 +734,160 @@ impl crate::lib::std::fmt::Display for StrContextValue {
     }
 }
 
+#[derive(Clone, Debug)]
+pub struct LongestMatch<I, E>
+where
+    I: Stream,
+    <I as Stream>::Checkpoint: Ord,
+{
+    checkpoint: I::Checkpoint,
+    inner: E,
+}
+
+impl<I, E> LongestMatch<I, E>
+where
+    I: Stream,
+    <I as Stream>::Checkpoint: Ord,
+{
+    #[inline]
+    pub fn into_inner(self) -> E {
+        self.inner
+    }
+}
+
+impl<I, E> ParserError<I> for LongestMatch<I, E>
+where
+    I: Stream,
+    <I as Stream>::Checkpoint: Ord,
+    E: ParserError<I>,
+{
+    #[inline]
+    fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
+        Self {
+            checkpoint: input.checkpoint(),
+            inner: E::from_error_kind(input, kind),
+        }
+    }
+
+    #[inline]
+    fn append(mut self, input: &I, kind: ErrorKind) -> Self {
+        self.inner.append(input, kind)
+    }
+
+    #[inline]
+    fn or(self, other: Self) -> Self {
+        other
+    }
+}
+
+impl<I, E, C> AddContext<I, C> for LongestMatch<I, E>
+where
+    I: Stream,
+    <I as Stream>::Checkpoint: Ord,
+    E: AddContext<I, C>,
+{
+    #[inline]
+    fn add_context(mut self, input: &I, ctx: C) -> Self {
+        let checkpoint = input.checkpoint();
+        match checkpoint.cmp(self.checkpoint) {
+            core::cmp::Ordering::Less => {}
+            core::cmp::Ordering::Greater => {
+                self.checkpoint = checkpoint;
+                self.inner.clear_context();
+                self.inner = self.inner.add_context(input, ctx);
+            }
+            core::cmp::Ordering::Equal => {
+                self.inner = self.inner.add_context(input, ctx);
+            }
+        }
+    }
+
+    #[inline]
+    fn merge_context(mut self, other: Self) -> Self {
+        match other.checkpoint.cmp(self.checkpoint) {
+            core::cmp::Ordering::Less => self,
+            core::cmp::Ordering::Greater => other,
+            core::cmp::Ordering::Equal => {
+                self.inner.clear_context();
+                self.inner = self.inner.merge_context(other.inner);
+            }
+        }
+    }
+}
+
+impl<I, E, EX> FromExternalError<I, EX> for LongestMatch<I, E>
+where
+    I: Stream,
+    <I as Stream>::Checkpoint: Ord,
+    E: FromExternalError<I, EX>,
+{
+    #[inline]
+    fn from_external_error(input: &I, kind: ErrorKind, e: EX) -> Self {
+        Self {
+            checkpoint: input.checkpoint(),
+            inner: E::from_external_error(input, kind, e),
+        }
+    }
+}
+
+impl<I> crate::lib::std::fmt::Display for LongestMatch<I, ContextError<StrContext>>
+where
+    I: Stream,
+    <I as Stream>::Checkpoint: Ord,
+{
+    fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
+        #[cfg(feature = "alloc")]
+        {
+            let expression = self.inner.context().find_map(|c| match c {
+                StrContext::Label(c) => Some(c),
+                _ => None,
+            });
+            let expected = self
+                .inner
+                .context()
+                .filter_map(|c| match c {
+                    StrContext::Expected(c) => Some(c),
+                    _ => None,
+                })
+                .collect::<crate::lib::std::vec::Vec<_>>();
+
+            let mut newline = false;
+
+            if let Some(expression) = expression {
+                newline = true;
+
+                write!(f, "invalid {}", expression)?;
+            }
+
+            if !expected.is_empty() {
+                if newline {
+                    writeln!(f)?;
+                }
+                newline = true;
+
+                write!(f, "expected ")?;
+                for (i, expected) in expected.iter().enumerate() {
+                    if i != 0 {
+                        write!(f, ", ")?;
+                    }
+                    write!(f, "{}", expected)?;
+                }
+            }
+            #[cfg(feature = "std")]
+            {
+                if let Some(cause) = self.inner.cause() {
+                    if newline {
+                        writeln!(f)?;
+                    }
+                    write!(f, "{}", cause)?;
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
+
 /// Trace all error paths, particularly for tests
 #[derive(Debug)]
 #[cfg(feature = "std")]
