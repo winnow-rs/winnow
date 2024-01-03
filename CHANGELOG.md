@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.32] - 2024-01-03
+
 ### Fixes
 
 - Parse `+`/`-` inf/nan with `ascii::float`
@@ -2155,7 +2157,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.31...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.32...HEAD
+[0.5.32]: https://github.com/winnow-rs/winnow/compare/v0.5.31...v0.5.32
 [0.5.31]: https://github.com/winnow-rs/winnow/compare/v0.5.30...v0.5.31
 [0.5.30]: https://github.com/winnow-rs/winnow/compare/v0.5.29...v0.5.30
 [0.5.29]: https://github.com/winnow-rs/winnow/compare/v0.5.28...v0.5.29
