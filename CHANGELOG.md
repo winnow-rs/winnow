@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Support `char` with `tag` parser which is faster than using `one_of`
+
 ## [0.5.32] - 2024-01-03
 
 ### Fixes
