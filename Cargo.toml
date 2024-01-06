@@ -145,6 +145,10 @@ name = "iter"
 harness = false
 
 [[bench]]
+name = "next_slice"
+harness = false
+
+[[bench]]
 name = "number"
 harness = false
 

@@ -374,6 +374,13 @@ impl<'a> SliceLen for &'a str {
     }
 }
 
+impl SliceLen for char {
+    #[inline]
+    fn slice_len(&self) -> usize {
+        self.len_utf8()
+    }
+}
+
 impl<'a> SliceLen for &'a Bytes {
     #[inline]
     fn slice_len(&self) -> usize {
@@ -1717,6 +1724,32 @@ impl<'a, 'b> Compare<AsciiCaseless<&'b str>> for &'a [u8] {
     }
 }
 
+impl<'a> Compare<char> for &'a [u8] {
+    #[inline(always)]
+    fn compare(&self, t: char) -> CompareResult {
+        self.compare(t.encode_utf8(&mut [0; 4]).as_bytes())
+    }
+
+    #[inline(always)]
+    #[allow(deprecated)]
+    fn compare_no_case(&self, t: char) -> CompareResult {
+        self.compare_no_case(t.encode_utf8(&mut [0; 4]).as_bytes())
+    }
+}
+
+impl<'a> Compare<AsciiCaseless<char>> for &'a [u8] {
+    #[inline]
+    fn compare(&self, t: AsciiCaseless<char>) -> CompareResult {
+        self.compare(AsciiCaseless(t.0.encode_utf8(&mut [0; 4]).as_bytes()))
+    }
+
+    #[inline(always)]
+    #[allow(deprecated)]
+    fn compare_no_case(&self, t: AsciiCaseless<char>) -> CompareResult {
+        self.compare_no_case(AsciiCaseless(t.0.encode_utf8(&mut [0; 4]).as_bytes()))
+    }
+}
+
 impl<'a, 'b> Compare<&'b str> for &'a str {
     #[inline(always)]
     fn compare(&self, t: &'b str) -> CompareResult {
@@ -1740,6 +1773,32 @@ impl<'a, 'b> Compare<AsciiCaseless<&'b str>> for &'a str {
     #[allow(deprecated)]
     fn compare_no_case(&self, t: AsciiCaseless<&'b str>) -> CompareResult {
         self.compare(t)
+    }
+}
+
+impl<'a> Compare<char> for &'a str {
+    #[inline(always)]
+    fn compare(&self, t: char) -> CompareResult {
+        self.compare(t.encode_utf8(&mut [0; 4]).as_bytes())
+    }
+
+    #[inline(always)]
+    #[allow(deprecated)]
+    fn compare_no_case(&self, t: char) -> CompareResult {
+        self.compare_no_case(t.encode_utf8(&mut [0; 4]).as_bytes())
+    }
+}
+
+impl<'a> Compare<AsciiCaseless<char>> for &'a str {
+    #[inline]
+    fn compare(&self, t: AsciiCaseless<char>) -> CompareResult {
+        self.compare(AsciiCaseless(t.0.encode_utf8(&mut [0; 4]).as_bytes()))
+    }
+
+    #[inline(always)]
+    #[allow(deprecated)]
+    fn compare_no_case(&self, t: AsciiCaseless<char>) -> CompareResult {
+        self.compare_no_case(AsciiCaseless(t.0.encode_utf8(&mut [0; 4]).as_bytes()))
     }
 }
 
@@ -2620,6 +2679,7 @@ impl AsChar for u8 {
         self == b'\n'
     }
 }
+
 impl<'a> AsChar for &'a u8 {
     #[inline(always)]
     fn as_char(self) -> char {
