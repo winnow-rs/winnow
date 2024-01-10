@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.34] - 2024-01-10
+
 ### Fixes
 
 - Don't require `Stateful`s `State` to be clone (a leftover from pre `&mut` input)
@@ -2167,7 +2169,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.33...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.34...HEAD
+[0.5.34]: https://github.com/winnow-rs/winnow/compare/v0.5.33...v0.5.34
 [0.5.33]: https://github.com/winnow-rs/winnow/compare/v0.5.32...v0.5.33
 [0.5.32]: https://github.com/winnow-rs/winnow/compare/v0.5.31...v0.5.32
 [0.5.31]: https://github.com/winnow-rs/winnow/compare/v0.5.30...v0.5.31
