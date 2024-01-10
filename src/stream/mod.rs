@@ -982,7 +982,7 @@ impl<I: Stream> Stream for Located<I> {
     }
 }
 
-impl<I: Stream, S: Clone + crate::lib::std::fmt::Debug> Stream for Stateful<I, S> {
+impl<I: Stream, S: crate::lib::std::fmt::Debug> Stream for Stateful<I, S> {
     type Token = <I as Stream>::Token;
     type Slice = <I as Stream>::Slice;
 
@@ -1435,7 +1435,7 @@ where
 impl<I, S> Offset<<Stateful<I, S> as Stream>::Checkpoint> for Stateful<I, S>
 where
     I: Stream,
-    S: Clone + crate::lib::std::fmt::Debug,
+    S: crate::lib::std::fmt::Debug,
 {
     #[inline(always)]
     fn offset_from(&self, other: &<Stateful<I, S> as Stream>::Checkpoint) -> usize {
