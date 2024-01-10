@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Don't require `Stateful`s `State` to be clone (a leftover from pre `&mut` input)
+
 ## [0.5.33] - 2024-01-06
 
 ### Features
