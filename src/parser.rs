@@ -698,7 +698,7 @@ where
 {
     #[inline(always)]
     fn parse_next(&mut self, i: &mut I) -> PResult<u8, E> {
-        crate::token::tag([*self])
+        crate::token::tag([*self; 1])
             .map(|x: &[u8]| x[0])
             .parse_next(i)
     }
