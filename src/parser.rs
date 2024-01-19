@@ -686,19 +686,21 @@ where
 ///     b'a'.parse_next(i)
 /// }
 /// assert_eq!(parser.parse_peek(&b"abc"[..]), Ok((&b"bc"[..], b'a')));
-/// assert_eq!(parser.parse_peek(&b" abc"[..]), Err(ErrMode::Backtrack(InputError::new(&b" abc"[..], ErrorKind::Verify))));
-/// assert_eq!(parser.parse_peek(&b"bc"[..]), Err(ErrMode::Backtrack(InputError::new(&b"bc"[..], ErrorKind::Verify))));
-/// assert_eq!(parser.parse_peek(&b""[..]), Err(ErrMode::Backtrack(InputError::new(&b""[..], ErrorKind::Token))));
+/// assert_eq!(parser.parse_peek(&b" abc"[..]), Err(ErrMode::Backtrack(InputError::new(&b" abc"[..], ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek(&b"bc"[..]), Err(ErrMode::Backtrack(InputError::new(&b"bc"[..], ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek(&b""[..]), Err(ErrMode::Backtrack(InputError::new(&b""[..], ErrorKind::Tag))));
 /// ```
-impl<I, E> Parser<I, u8, E> for u8
+impl<'a, I, E> Parser<I, u8, E> for u8
 where
-    I: StreamIsPartial,
-    I: Stream<Token = u8>,
+    I: StreamIsPartial + Compare<[u8; 1]>,
+    I: Stream<Slice = &'a [u8]>,
     E: ParserError<I>,
 {
     #[inline(always)]
     fn parse_next(&mut self, i: &mut I) -> PResult<u8, E> {
-        crate::token::one_of(*self).parse_next(i)
+        crate::token::tag([*self])
+            .map(|x: &[u8]| x[0])
+            .parse_next(i)
     }
 }
 
@@ -1051,7 +1053,7 @@ mod tests {
             parser.parse_peek("123def"),
             Err(ErrMode::Backtrack(InputError::new(
                 "123def",
-                ErrorKind::Slice
+                ErrorKind::Slice,
             )))
         );
     }

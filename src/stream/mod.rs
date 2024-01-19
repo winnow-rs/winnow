@@ -381,6 +381,13 @@ impl SliceLen for char {
     }
 }
 
+impl SliceLen for u8 {
+    #[inline]
+    fn slice_len(&self) -> usize {
+        self.len()
+    }
+}
+
 impl<'a> SliceLen for &'a Bytes {
     #[inline]
     fn slice_len(&self) -> usize {
@@ -1684,6 +1691,19 @@ impl<'a, 'b, const LEN: usize> Compare<&'b [u8; LEN]> for &'a [u8] {
     #[allow(deprecated)]
     fn compare_no_case(&self, t: &'b [u8; LEN]) -> CompareResult {
         self.compare_no_case(&t[..])
+    }
+}
+
+impl<'a> Compare<u8> for &'a [u8] {
+    #[inline(always)]
+    fn compare(&self, t: u8) -> CompareResult {
+        self.compare([t; 1])
+    }
+
+    #[inline(always)]
+    #[allow(deprecated)]
+    fn compare_no_case(&self, t: u8) -> CompareResult {
+        self.compare_no_case([t; 1])
     }
 }
 
