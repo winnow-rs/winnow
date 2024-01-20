@@ -104,7 +104,7 @@
 //! - [`oct_digit0`][crate::ascii::oct_digit0]: Recognizes zero or more octal characters: `[0-7]`. [`oct_digit1`][crate::ascii::oct_digit1] does the same but returns at least one character
 //!
 //! - [`float`][crate::ascii::float]: Parse a floating point number in a byte string
-//! - [`dec_int`][crate::ascii::dec_uint]: Decode a variable-width, decimal signed integer
+//! - [`dec_int`][crate::ascii::dec_int]: Decode a variable-width, decimal signed integer
 //! - [`dec_uint`][crate::ascii::dec_uint]: Decode a variable-width, decimal unsigned integer
 //! - [`hex_uint`][crate::ascii::hex_uint]: Decode a variable-width, hexadecimal integer
 //!
