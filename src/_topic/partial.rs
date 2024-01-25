@@ -13,7 +13,7 @@
 //!   - [`Partial`] can explicitly be changed to being complete once the specified bytes are
 //!     acquired via [`StreamIsPartial::complete`].
 //! - A delimiter, like with [ndjson](http://ndjson.org/)
-//!   - You can parse up-to the delimiter or do a `take_until0(delim).and_then(parser)`
+//!   - You can parse up-to the delimiter or do a `take_until(0.., delim).and_then(parser)`
 //!
 //! If the chunks are not homogeneous, a state machine will be needed to track what the expected
 //! parser is for the next chunk.

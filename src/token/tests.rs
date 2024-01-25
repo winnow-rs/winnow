@@ -239,7 +239,7 @@ fn partial_is_not() {
 #[test]
 fn partial_take_until_incomplete() {
     fn y(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_until0("end").parse_peek(i)
+        take_until(0.., "end").parse_peek(i)
     }
     assert_eq!(
         y(Partial::new(&b"nd"[..])),
@@ -258,7 +258,7 @@ fn partial_take_until_incomplete() {
 #[test]
 fn partial_take_until_incomplete_s() {
     fn ys(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_until0("end").parse_peek(i)
+        take_until(0.., "end").parse_peek(i)
     }
     assert_eq!(
         ys(Partial::new("123en")),
