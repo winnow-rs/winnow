@@ -67,6 +67,37 @@ proptest! {
 }
 
 #[test]
+fn complete_take_until() {
+    fn take_until_5_10(i: &str) -> IResult<&str, &str> {
+        take_until(5..=8, "end").parse_peek(i)
+    }
+    assert_eq!(
+        take_until_5_10("end"),
+        Err(ErrMode::Backtrack(error_position!(
+            &"end",
+            ErrorKind::Slice
+        )))
+    );
+    assert_eq!(
+        take_until_5_10("1234end"),
+        Err(ErrMode::Backtrack(error_position!(
+            &"1234end",
+            ErrorKind::Slice
+        )))
+    );
+    assert_eq!(take_until_5_10("12345end"), Ok(("end", "12345")));
+    assert_eq!(take_until_5_10("123456end"), Ok(("end", "123456")));
+    assert_eq!(take_until_5_10("12345678end"), Ok(("end", "12345678")));
+    assert_eq!(
+        take_until_5_10("123456789end"),
+        Err(ErrMode::Backtrack(error_position!(
+            &"123456789end",
+            ErrorKind::Slice
+        )))
+    );
+}
+
+#[test]
 fn partial_any_str() {
     use super::any;
     assert_eq!(
