@@ -5,11 +5,11 @@
 //! ![Trace output from string example](https://raw.githubusercontent.com/winnow-rs/winnow/main/assets/trace.svg "Example output")
 //!
 //! You can extend your own parsers to show up by wrapping their body with
-//! [`trace`][crate::trace::trace].  Going back to [`do_nothing_parser`][super::chapter_1].
+//! [`trace`][crate::combinator::trace].  Going back to [`do_nothing_parser`][super::chapter_1].
 //! ```rust
 //! # use winnow::PResult;
 //! # use winnow::Parser;
-//! use winnow::trace::trace;
+//! use winnow::combinator::trace;
 //!
 //! pub fn do_nothing_parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //!     trace(

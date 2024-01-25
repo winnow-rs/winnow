@@ -1,4 +1,3 @@
-//! Parser execution tracing
 #![cfg_attr(feature = "debug", allow(clippy::std_instead_of_core))]
 
 #[cfg(feature = "debug")]

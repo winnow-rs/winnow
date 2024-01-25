@@ -157,6 +157,7 @@
 
 mod branch;
 mod core;
+mod debug;
 mod multi;
 mod parser;
 mod sequence;
@@ -166,6 +167,7 @@ mod tests;
 
 pub use self::branch::*;
 pub use self::core::*;
+pub use self::debug::*;
 pub use self::multi::*;
 pub use self::parser::*;
 pub use self::sequence::*;
