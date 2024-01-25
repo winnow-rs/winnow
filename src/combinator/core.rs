@@ -225,6 +225,8 @@ where
 /// This commits the parse result, preventing alternative branch paths like with
 /// [`winnow::combinator::alt`][crate::combinator::alt].
 ///
+/// See the [tutorial][crate::_tutorial::chapter_6] for more details.
+///
 /// # Example
 ///
 /// Without `cut_err`:
