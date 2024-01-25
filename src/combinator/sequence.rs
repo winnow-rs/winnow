@@ -1,6 +1,6 @@
+use crate::combinator::trace;
 use crate::error::ParserError;
 use crate::stream::Stream;
-use crate::trace::trace;
 use crate::*;
 
 #[doc(inline)]

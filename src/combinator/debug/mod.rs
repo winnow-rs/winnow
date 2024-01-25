@@ -1,11 +1,3 @@
-//! Parser execution tracing
-//!
-//! By default, nothing happens and tracing gets compiled away as a no-op. To enable tracing, use
-//! `--features debug`.
-//!
-//! # Example
-//!
-//!![Trace output from string example](https://raw.githubusercontent.com/winnow-rs/winnow/main/assets/trace.svg "Example output")
 #![cfg_attr(feature = "debug", allow(clippy::std_instead_of_core))]
 
 #[cfg(feature = "debug")]
@@ -22,7 +14,7 @@ compile_error!("`debug` requires `std`");
 ///
 /// Note that [`Parser::context`] also provides high level trace information.
 ///
-/// See [`trace` module][self] for more details.
+/// See [tutorial][crate::_tutorial::chapter_8] for more details.
 ///
 /// # Example
 ///
@@ -31,7 +23,7 @@ compile_error!("`debug` requires `std`");
 /// # use winnow::token::take_while;
 /// # use winnow::stream::AsChar;
 /// # use winnow::prelude::*;
-/// use winnow::trace::trace;
+/// use winnow::combinator::trace;
 ///
 /// fn short_alpha<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8], InputError<&'s [u8]>> {
 ///   trace("short_alpha",

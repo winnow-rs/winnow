@@ -1,6 +1,6 @@
+use crate::combinator::trace;
 use crate::error::{ErrMode, ErrorKind, ParserError};
 use crate::stream::Stream;
-use crate::trace::trace;
 use crate::*;
 
 #[doc(inline)]
@@ -16,7 +16,10 @@ pub trait Alt<I, O, E> {
 
 /// Pick the first successful parser
 ///
-/// For tight control over the error, add a final case using [`fail`][crate::combinator::fail].
+/// To stop on an error, rather than trying further cases, see
+/// [`cut_err`][crate::combinator::cut_err] ([example][crate::_tutorial::chapter_6]).
+///
+/// For tight control over the error when no match is found, add a final case using [`fail`][crate::combinator::fail].
 /// Alternatively, with a [custom error type][crate::_topic::error], it is possible to track all
 /// errors or return the error of the parser that went the farthest in the input data.
 ///
@@ -64,6 +67,11 @@ pub trait Permutation<I, O, E> {
 /// Permutation will succeed if all of the child parsers succeeded.
 /// It takes as argument a tuple of parsers, and returns a
 /// tuple of the parser results.
+///
+/// To stop on an error, rather than trying further permutations, see
+/// [`cut_err`][crate::combinator::cut_err] ([example][crate::_tutorial::chapter_6]).
+///
+/// # Example
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode,error::{InputError, ErrorKind}, error::Needed};

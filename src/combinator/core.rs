@@ -1,6 +1,6 @@
+use crate::combinator::trace;
 use crate::error::{ErrMode, ErrorKind, Needed, ParserError};
 use crate::stream::Stream;
-use crate::trace::trace;
 use crate::*;
 
 /// Return the remaining input.
@@ -224,6 +224,8 @@ where
 ///
 /// This commits the parse result, preventing alternative branch paths like with
 /// [`winnow::combinator::alt`][crate::combinator::alt].
+///
+/// See the [tutorial][crate::_tutorial::chapter_6] for more details.
 ///
 /// # Example
 ///

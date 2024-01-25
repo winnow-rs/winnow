@@ -17,6 +17,7 @@
 //!   - [Parsing Partial Input][partial]
 //!   - [Custom stream or token][stream]
 //!   - [Custom errors][error]
+//!   - [Debugging][crate::_tutorial::chapter_8]
 //!
 //! See also parsers written with `winnow`:
 //!

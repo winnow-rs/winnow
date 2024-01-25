@@ -1,12 +1,12 @@
 //! Combinators applying their child parser multiple times
 
+use crate::combinator::trace;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParserError;
 use crate::stream::Accumulate;
 use crate::stream::Range;
 use crate::stream::Stream;
-use crate::trace::trace;
 use crate::PResult;
 use crate::Parser;
 

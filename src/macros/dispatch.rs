@@ -41,7 +41,7 @@
 #[doc(hidden)] // forced to be visible in intended location
 macro_rules! dispatch {
     ($match_parser: expr; $( $pat:pat $(if $pred:expr)? => $expr: expr ),+ $(,)? ) => {
-        $crate::trace::trace("dispatch", move |i: &mut _|
+        $crate::combinator::trace("dispatch", move |i: &mut _|
         {
             use $crate::Parser;
             let initial = $match_parser.parse_next(i)?;
