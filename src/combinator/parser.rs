@@ -1,10 +1,10 @@
+use crate::combinator::trace;
 use crate::combinator::trace_result;
 use crate::error::{AddContext, ErrMode, ErrorKind, FromExternalError, ParserError};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::ops::Range;
 use crate::stream::StreamIsPartial;
 use crate::stream::{Location, Stream};
-use crate::trace::trace;
 use crate::*;
 
 /// Implementation of [`Parser::by_ref`]

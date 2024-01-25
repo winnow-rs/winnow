@@ -3,6 +3,7 @@
 #[cfg(test)]
 mod tests;
 
+use crate::combinator::trace;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::Needed;
@@ -11,7 +12,6 @@ use crate::lib::std::result::Result::Ok;
 use crate::stream::Range;
 use crate::stream::{Compare, CompareResult, ContainsToken, FindSlice, SliceLen, Stream};
 use crate::stream::{StreamIsPartial, ToUsize};
-use crate::trace::trace;
 use crate::PResult;
 use crate::Parser;
 

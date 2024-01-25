@@ -64,7 +64,7 @@
 #[doc(alias = "struct_parser")]
 macro_rules! seq {
     ($name: ident { $($fields: tt)* }) => {
-        $crate::trace::trace(stringify!($name), move |input: &mut _| {
+        $crate::combinator::trace(stringify!($name), move |input: &mut _| {
             use $crate::Parser;
             $crate::seq_parse_struct_fields!(input; $($fields)*);
             #[allow(clippy::redundant_field_names)]
@@ -72,7 +72,7 @@ macro_rules! seq {
         })
     };
     ($name: ident ( $($elements: tt)* )) => {
-        $crate::trace::trace(stringify!($name), move |input: &mut _| {
+        $crate::combinator::trace(stringify!($name), move |input: &mut _| {
             use $crate::Parser;
             $crate::seq_parse_tuple_fields!( ($($elements)*) ; ).map(|t| {
                 $crate::seq_init_tuple_fields!(
@@ -84,7 +84,7 @@ macro_rules! seq {
         })
     };
     (( $($elements: tt)* )) => {
-        $crate::trace::trace("tuple", move |input: &mut _| {
+        $crate::combinator::trace("tuple", move |input: &mut _| {
             use $crate::Parser;
             $crate::seq_parse_tuple_fields!( ($($elements)*) ; ).map(|t| {
                 $crate::seq_init_tuple_fields!(

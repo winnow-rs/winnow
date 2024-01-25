@@ -23,7 +23,7 @@ compile_error!("`debug` requires `std`");
 /// # use winnow::token::take_while;
 /// # use winnow::stream::AsChar;
 /// # use winnow::prelude::*;
-/// use winnow::trace::trace;
+/// use winnow::combinator::trace;
 ///
 /// fn short_alpha<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8], InputError<&'s [u8]>> {
 ///   trace("short_alpha",

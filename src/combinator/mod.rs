@@ -76,7 +76,7 @@
 //! - [`backtrack_err`]: Attempts a parse, allowing alternative parsers to be attempted despite
 //!   use of `cut_err`
 //! - [`Parser::context`]: Add context to the error if the parser fails
-//! - [`trace`][crate::trace::trace]: Print the parse state with the `debug` feature flag
+//! - [`trace`]: Print the parse state with the `debug` feature flag
 //! - [`todo()`]: Placeholder parser
 //!
 //! ## Remaining combinators

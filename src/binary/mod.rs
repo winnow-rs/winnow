@@ -8,6 +8,7 @@ pub mod bits;
 mod tests;
 
 use crate::combinator::repeat;
+use crate::combinator::trace;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::Needed;
@@ -17,7 +18,6 @@ use crate::stream::Accumulate;
 use crate::stream::{AsBytes, Stream, StreamIsPartial};
 use crate::stream::{ToUsize, UpdateSlice};
 use crate::token::take;
-use crate::trace::trace;
 use crate::PResult;
 use crate::Parser;
 

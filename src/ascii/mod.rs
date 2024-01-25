@@ -10,6 +10,7 @@ use crate::lib::std::ops::{Add, Shl};
 use crate::combinator::alt;
 use crate::combinator::cut_err;
 use crate::combinator::opt;
+use crate::combinator::trace;
 use crate::error::ParserError;
 use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::stream::{AsBStr, AsChar, ParseSlice, Stream, StreamIsPartial};
@@ -17,7 +18,6 @@ use crate::stream::{Compare, CompareResult};
 use crate::token::one_of;
 use crate::token::take_till;
 use crate::token::take_while;
-use crate::trace::trace;
 use crate::PResult;
 use crate::Parser;
 

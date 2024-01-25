@@ -4,10 +4,10 @@
 #[cfg(test)]
 mod tests;
 
+use crate::combinator::trace;
 use crate::error::{ErrMode, ErrorConvert, ErrorKind, Needed, ParserError};
 use crate::lib::std::ops::{AddAssign, Div, Shl, Shr};
 use crate::stream::{AsBytes, Stream, StreamIsPartial, ToUsize};
-use crate::trace::trace;
 use crate::{unpeek, IResult, PResult, Parser};
 
 /// Number of bits in a byte
