@@ -988,6 +988,46 @@ fn repeat_till_test() {
 }
 
 #[test]
+#[cfg(feature = "alloc")]
+fn repeat_till_range_test() {
+    #[allow(clippy::type_complexity)]
+    fn multi(i: &str) -> IResult<&str, (Vec<&str>, &str)> {
+        repeat_till(2..=4, "ab", "cd").parse_peek(i)
+    }
+
+    assert_eq!(
+        multi("cd"),
+        Err(ErrMode::Backtrack(error_node_position!(
+            &"cd",
+            ErrorKind::Many,
+            error_position!(&"cd", ErrorKind::Tag)
+        )))
+    );
+    assert_eq!(
+        multi("abcd"),
+        Err(ErrMode::Backtrack(error_node_position!(
+            &"cd",
+            ErrorKind::Many,
+            error_position!(&"cd", ErrorKind::Tag)
+        )))
+    );
+    assert_eq!(multi("ababcd"), Ok(("", (vec!["ab", "ab"], "cd"))));
+    assert_eq!(multi("abababcd"), Ok(("", (vec!["ab", "ab", "ab"], "cd"))));
+    assert_eq!(
+        multi("ababababcd"),
+        Ok(("", (vec!["ab", "ab", "ab", "ab"], "cd")))
+    );
+    assert_eq!(
+        multi("abababababcd"),
+        Err(ErrMode::Backtrack(error_node_position!(
+            &"cd",
+            ErrorKind::Many,
+            error_position!(&"abcd", ErrorKind::Tag)
+        )))
+    );
+}
+
+#[test]
 #[cfg(feature = "std")]
 fn infinite_many() {
     fn tst(input: &[u8]) -> IResult<&[u8], &[u8]> {

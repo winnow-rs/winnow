@@ -283,11 +283,11 @@ where
 /// # #[cfg(feature = "std")] {
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::combinator::repeat_till0;
+/// use winnow::combinator::repeat_till;
 /// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, (Vec<&str>, &str)> {
-///   repeat_till0("abc", "end").parse_peek(s)
+///   repeat_till(0.., "abc", "end").parse_peek(s)
 /// };
 ///
 /// assert_eq!(parser("abcabcend"), Ok(("", (vec!["abc", "abc"], "end"))));
@@ -298,7 +298,11 @@ where
 /// # }
 /// ```
 #[doc(alias = "many_till0")]
-pub fn repeat_till0<I, O, C, P, E, F, G>(mut f: F, mut g: G) -> impl Parser<I, (C, P), E>
+pub fn repeat_till<I, O, C, P, E, F, G>(
+    range: impl Into<Range>,
+    mut f: F,
+    mut g: G,
+) -> impl Parser<I, (C, P), E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -306,34 +310,122 @@ where
     G: Parser<I, P, E>,
     E: ParserError<I>,
 {
-    trace("repeat_till0", move |i: &mut I| {
-        let mut res = C::initial(None);
-        loop {
-            let start = i.checkpoint();
-            let len = i.eof_offset();
-            match g.parse_next(i) {
-                Ok(o) => return Ok((res, o)),
-                Err(ErrMode::Backtrack(_)) => {
-                    i.reset(start);
-                    match f.parse_next(i) {
-                        Err(e) => return Err(e.append(i, ErrorKind::Many)),
-                        Ok(o) => {
-                            // infinite loop check: the parser must always consume
-                            if i.eof_offset() == len {
-                                return Err(ErrMode::assert(
-                                    i,
-                                    "`repeat` parsers must always consume",
-                                ));
-                            }
-
-                            res.accumulate(o);
-                        }
-                    }
-                }
-                Err(e) => return Err(e),
-            }
+    let Range {
+        start_inclusive,
+        end_inclusive,
+    } = range.into();
+    trace("repeat_till", move |i: &mut I| {
+        match (start_inclusive, end_inclusive) {
+            (0, None) => repeat_till0_(&mut f, &mut g, i),
+            (start, end) => repeat_till_m_n_(start, end.unwrap_or(usize::MAX), &mut f, &mut g, i),
         }
     })
+}
+
+/// Deprecated, replaced with [`repeat_till`]
+#[deprecated(since = "0.5.35", note = "Replaced with `repeat_till`")]
+#[inline(always)]
+pub fn repeat_till0<I, O, C, P, E, F, G>(f: F, g: G) -> impl Parser<I, (C, P), E>
+where
+    I: Stream,
+    C: Accumulate<O>,
+    F: Parser<I, O, E>,
+    G: Parser<I, P, E>,
+    E: ParserError<I>,
+{
+    repeat_till(0.., f, g)
+}
+
+fn repeat_till0_<I, O, C, P, E, F, G>(f: &mut F, g: &mut G, i: &mut I) -> PResult<(C, P), E>
+where
+    I: Stream,
+    C: Accumulate<O>,
+    F: Parser<I, O, E>,
+    G: Parser<I, P, E>,
+    E: ParserError<I>,
+{
+    let mut res = C::initial(None);
+    loop {
+        let start = i.checkpoint();
+        let len = i.eof_offset();
+        match g.parse_next(i) {
+            Ok(o) => return Ok((res, o)),
+            Err(ErrMode::Backtrack(_)) => {
+                i.reset(start);
+                match f.parse_next(i) {
+                    Err(e) => return Err(e.append(i, ErrorKind::Many)),
+                    Ok(o) => {
+                        // infinite loop check: the parser must always consume
+                        if i.eof_offset() == len {
+                            return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
+                        }
+
+                        res.accumulate(o);
+                    }
+                }
+            }
+            Err(e) => return Err(e),
+        }
+    }
+}
+
+fn repeat_till_m_n_<I, O, C, P, E, F, G>(
+    min: usize,
+    max: usize,
+    f: &mut F,
+    g: &mut G,
+    i: &mut I,
+) -> PResult<(C, P), E>
+where
+    I: Stream,
+    C: Accumulate<O>,
+    F: Parser<I, O, E>,
+    G: Parser<I, P, E>,
+    E: ParserError<I>,
+{
+    if min > max {
+        return Err(ErrMode::Cut(E::from_error_kind(i, ErrorKind::Many)));
+    }
+
+    let mut res = C::initial(Some(min));
+    for _ in 0..min {
+        match f.parse_next(i) {
+            Ok(o) => {
+                res.accumulate(o);
+            }
+            Err(e) => {
+                return Err(e.append(i, ErrorKind::Many));
+            }
+        }
+    }
+    for count in min..=max {
+        let start = i.checkpoint();
+        let len = i.eof_offset();
+        match g.parse_next(i) {
+            Ok(o) => return Ok((res, o)),
+            Err(ErrMode::Backtrack(err)) => {
+                if count == max {
+                    return Err(ErrMode::Backtrack(err));
+                }
+                i.reset(start);
+                match f.parse_next(i) {
+                    Err(e) => {
+                        return Err(e.append(i, ErrorKind::Many));
+                    }
+                    Ok(o) => {
+                        // infinite loop check: the parser must always consume
+                        if i.eof_offset() == len {
+                            return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
+                        }
+
+                        res.accumulate(o);
+                    }
+                }
+            }
+            Err(e) => return Err(e),
+        }
+    }
+    unreachable!()
 }
 
 /// [`Accumulate`] the output of a parser, interleaved with `sep`
