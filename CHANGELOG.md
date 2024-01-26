@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.35] - 2024-01-26
+
 ### Compatibility
 
 - Deprecate `success(value)` in favor of `empty.value(value)`
@@ -2188,7 +2190,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.34...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.35...HEAD
+[0.5.35]: https://github.com/winnow-rs/winnow/compare/v0.5.34...v0.5.35
 [0.5.34]: https://github.com/winnow-rs/winnow/compare/v0.5.33...v0.5.34
 [0.5.33]: https://github.com/winnow-rs/winnow/compare/v0.5.32...v0.5.33
 [0.5.32]: https://github.com/winnow-rs/winnow/compare/v0.5.31...v0.5.32
