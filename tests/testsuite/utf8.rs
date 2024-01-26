@@ -8,7 +8,7 @@ mod test {
     use winnow::{
         error::ErrMode,
         error::{ErrorKind, InputError},
-        token::{take, take_till, take_until0, take_while},
+        token::{take, take_till, take_until, take_while},
         IResult,
     };
 
@@ -135,25 +135,25 @@ mod test {
         const CONSUMED: &str = "βèƒôřè";
         const LEFTOVER: &str = "ÂßÇ∂áƒƭèř";
 
-        let res: IResult<_, _, InputError<_>> = take_until0(FIND).parse_peek(INPUT);
+        let res: IResult<_, _, InputError<_>> = take_until(0.., FIND).parse_peek(INPUT);
         match res {
             Ok((extra, output)) => {
                 assert!(
                     extra == LEFTOVER,
-                    "Parser `take_until0`\
+                    "Parser `take_until`\
            consumed leftover input. Leftover `{}`.",
                     extra
                 );
                 assert!(
                     output == CONSUMED,
-                    "Parser `take_until0`\
+                    "Parser `take_until`\
            doesn't return the string it consumed on success. Expected `{}`, got `{}`.",
                     CONSUMED,
                     output
                 );
             }
             other => panic!(
-                "Parser `take_until0` didn't succeed when it should have. \
+                "Parser `take_until` didn't succeed when it should have. \
          Got `{:?}`.",
                 other
             ),
@@ -162,16 +162,17 @@ mod test {
 
     #[test]
     fn take_until_incomplete_str() {
-        use winnow::token::take_until0;
+        use winnow::token::take_until;
 
         const INPUT: &str = "βèƒôřè";
         const FIND: &str = "βèƒôřèÂßÇ";
 
-        let res: IResult<_, _, InputError<_>> = take_until0(FIND).parse_peek(Partial::new(INPUT));
+        let res: IResult<_, _, InputError<_>> =
+            take_until(0.., FIND).parse_peek(Partial::new(INPUT));
         match res {
             Err(ErrMode::Incomplete(_)) => (),
             other => panic!(
-                "Parser `take_until0` didn't require more input when it should have. \
+                "Parser `take_until` didn't require more input when it should have. \
          Got `{:?}`.",
                 other
             ),
@@ -180,16 +181,17 @@ mod test {
 
     #[test]
     fn take_until_error_str() {
-        use winnow::token::take_until0;
+        use winnow::token::take_until;
 
         const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
         const FIND: &str = "Ráñδô₥";
 
-        let res: IResult<_, _, InputError<_>> = take_until0(FIND).parse_peek(Partial::new(INPUT));
+        let res: IResult<_, _, InputError<_>> =
+            take_until(0.., FIND).parse_peek(Partial::new(INPUT));
         match res {
             Err(ErrMode::Incomplete(_)) => (),
             other => panic!(
-                "Parser `take_until0` didn't fail when it should have. \
+                "Parser `take_until` didn't fail when it should have. \
          Got `{:?}`.",
                 other
             ),

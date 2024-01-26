@@ -82,13 +82,13 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   error::ParserError,
-//!   token::{tag, take_until0},
+//!   token::{tag, take_until},
 //! };
 //!
 //! pub fn pinline_comment<'a, E: ParserError<&'a str>>(i: &mut &'a str) -> PResult<(), E> {
 //!   (
 //!     "(*",
-//!     take_until0("*)"),
+//!     take_until(0.., "*)"),
 //!     "*)"
 //!   )
 //!     .void() // Output is thrown away.

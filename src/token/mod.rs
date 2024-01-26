@@ -1034,10 +1034,10 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::token::take_until0;
+/// use winnow::token::take_until;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
-///   take_until0("eof").parse_peek(s)
+///   take_until(0.., "eof").parse_peek(s)
 /// }
 ///
 /// assert_eq!(until_eof("hello, worldeof"), Ok(("eof", "hello, world")));
@@ -1050,10 +1050,10 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::token::take_until0;
+/// use winnow::token::take_until;
 ///
 /// fn until_eof(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take_until0("eof").parse_peek(s)
+///   take_until(0.., "eof").parse_peek(s)
 /// }
 ///
 /// assert_eq!(until_eof(Partial::new("hello, worldeof")), Ok((Partial::new("eof"), "hello, world")));
@@ -1061,7 +1061,83 @@ where
 /// assert_eq!(until_eof(Partial::new("hello, worldeo")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// assert_eq!(until_eof(Partial::new("1eof2eof")), Ok((Partial::new("eof2eof"), "1")));
 /// ```
+///
+/// ```rust
+/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
+/// use winnow::token::take_until;
+///
+/// fn until_eof(s: &str) -> IResult<&str, &str> {
+///   take_until(1.., "eof").parse_peek(s)
+/// }
+///
+/// assert_eq!(until_eof("hello, worldeof"), Ok(("eof", "hello, world")));
+/// assert_eq!(until_eof("hello, world"), Err(ErrMode::Backtrack(InputError::new("hello, world", ErrorKind::Slice))));
+/// assert_eq!(until_eof(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Slice))));
+/// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
+/// assert_eq!(until_eof("eof"), Err(ErrMode::Backtrack(InputError::new("eof", ErrorKind::Slice))));
+/// ```
+///
+/// ```rust
+/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::prelude::*;
+/// # use winnow::Partial;
+/// use winnow::token::take_until;
+///
+/// fn until_eof(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
+///   take_until(1.., "eof").parse_peek(s)
+/// }
+///
+/// assert_eq!(until_eof(Partial::new("hello, worldeof")), Ok((Partial::new("eof"), "hello, world")));
+/// assert_eq!(until_eof(Partial::new("hello, world")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(until_eof(Partial::new("hello, worldeo")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(until_eof(Partial::new("1eof2eof")), Ok((Partial::new("eof2eof"), "1")));
+/// assert_eq!(until_eof(Partial::new("eof")), Err(ErrMode::Backtrack(InputError::new(Partial::new("eof"), ErrorKind::Slice))));
+/// ```
 #[inline(always)]
+pub fn take_until<T, I, Error: ParserError<I>>(
+    range: impl Into<Range>,
+    tag: T,
+) -> impl Parser<I, <I as Stream>::Slice, Error>
+where
+    I: StreamIsPartial,
+    I: Stream + FindSlice<T>,
+    T: SliceLen + Clone,
+{
+    let Range {
+        start_inclusive,
+        end_inclusive,
+    } = range.into();
+    trace("take_until", move |i: &mut I| {
+        match (start_inclusive, end_inclusive) {
+            (0, None) => {
+                if <I as StreamIsPartial>::is_partial_supported() {
+                    take_until0_::<_, _, _, true>(i, tag.clone())
+                } else {
+                    take_until0_::<_, _, _, false>(i, tag.clone())
+                }
+            }
+            (1, None) => {
+                if <I as StreamIsPartial>::is_partial_supported() {
+                    take_until1_::<_, _, _, true>(i, tag.clone())
+                } else {
+                    take_until1_::<_, _, _, false>(i, tag.clone())
+                }
+            }
+            (start, end) => {
+                let end = end.unwrap_or(usize::MAX);
+                if <I as StreamIsPartial>::is_partial_supported() {
+                    take_until_m_n_::<_, _, _, true>(i, start, end, tag.clone())
+                } else {
+                    take_until_m_n_::<_, _, _, false>(i, start, end, tag.clone())
+                }
+            }
+        }
+    })
+}
+
+/// Deprecated, see [`take_until`]
+#[deprecated(since = "0.5.35", note = "Replaced with `take_until`")]
 pub fn take_until0<T, I, Error: ParserError<I>>(
     tag: T,
 ) -> impl Parser<I, <I as Stream>::Slice, Error>
@@ -1070,13 +1146,7 @@ where
     I: Stream + FindSlice<T>,
     T: SliceLen + Clone,
 {
-    trace("take_until0", move |i: &mut I| {
-        if <I as StreamIsPartial>::is_partial_supported() {
-            take_until0_::<_, _, _, true>(i, tag.clone())
-        } else {
-            take_until0_::<_, _, _, false>(i, tag.clone())
-        }
-    })
+    take_until(0.., tag)
 }
 
 fn take_until0_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
@@ -1095,50 +1165,8 @@ where
     }
 }
 
-/// Recognize the non empty input slice up to the first occurrence of the literal.
-///
-/// It doesn't consume the pattern.
-///
-/// *Complete version*: It will return `Err(ErrMode::Backtrack(InputError::new(_, ErrorKind::Slice)))`
-/// if the pattern wasn't met.
-///
-/// *Partial version*: will return a `ErrMode::Incomplete(Needed::new(N))` if the input doesn't
-/// contain the pattern or if the input is smaller than the pattern.
-///
-/// # Example
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::token::take_until1;
-///
-/// fn until_eof(s: &str) -> IResult<&str, &str> {
-///   take_until1("eof").parse_peek(s)
-/// }
-///
-/// assert_eq!(until_eof("hello, worldeof"), Ok(("eof", "hello, world")));
-/// assert_eq!(until_eof("hello, world"), Err(ErrMode::Backtrack(InputError::new("hello, world", ErrorKind::Slice))));
-/// assert_eq!(until_eof(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Slice))));
-/// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
-/// assert_eq!(until_eof("eof"), Err(ErrMode::Backtrack(InputError::new("eof", ErrorKind::Slice))));
-/// ```
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
-/// # use winnow::prelude::*;
-/// # use winnow::Partial;
-/// use winnow::token::take_until1;
-///
-/// fn until_eof(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take_until1("eof").parse_peek(s)
-/// }
-///
-/// assert_eq!(until_eof(Partial::new("hello, worldeof")), Ok((Partial::new("eof"), "hello, world")));
-/// assert_eq!(until_eof(Partial::new("hello, world")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(until_eof(Partial::new("hello, worldeo")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(until_eof(Partial::new("1eof2eof")), Ok((Partial::new("eof2eof"), "1")));
-/// assert_eq!(until_eof(Partial::new("eof")), Err(ErrMode::Backtrack(InputError::new(Partial::new("eof"), ErrorKind::Slice))));
-/// ```
+/// Deprecated, see [`take_until`]
+#[deprecated(since = "0.5.35", note = "Replaced with `take_until`")]
 #[inline(always)]
 pub fn take_until1<T, I, Error: ParserError<I>>(
     tag: T,
@@ -1148,13 +1176,7 @@ where
     I: Stream + FindSlice<T>,
     T: SliceLen + Clone,
 {
-    trace("take_until1", move |i: &mut I| {
-        if <I as StreamIsPartial>::is_partial_supported() {
-            take_until1_::<_, _, _, true>(i, tag.clone())
-        } else {
-            take_until1_::<_, _, _, false>(i, tag.clone())
-        }
-    })
+    take_until(1.., tag)
 }
 
 fn take_until1_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
@@ -1170,5 +1192,41 @@ where
         None if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
         None | Some(0) => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
         Some(offset) => Ok(i.next_slice(offset)),
+    }
+}
+
+fn take_until_m_n_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
+    i: &mut I,
+    start: usize,
+    end: usize,
+    t: T,
+) -> PResult<<I as Stream>::Slice, Error>
+where
+    I: StreamIsPartial,
+    I: Stream + FindSlice<T>,
+    T: SliceLen,
+{
+    if end < start {
+        return Err(ErrMode::assert(i, "`start` should be <= `end`"));
+    }
+
+    match i.find_slice(t) {
+        Some(offset) => {
+            let start_offset = i.offset_at(start);
+            let end_offset = i.offset_at(end).unwrap_or_else(|_err| i.eof_offset());
+            if start_offset.map(|s| offset < s).unwrap_or(true) {
+                if PARTIAL && i.is_partial() {
+                    return Err(ErrMode::Incomplete(Needed::Unknown));
+                } else {
+                    return Err(ErrMode::from_error_kind(i, ErrorKind::Slice));
+                }
+            }
+            if end_offset < offset {
+                return Err(ErrMode::from_error_kind(i, ErrorKind::Slice));
+            }
+            Ok(i.next_slice(offset))
+        }
+        None if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
+        None => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
     }
 }

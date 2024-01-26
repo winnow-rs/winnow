@@ -2,7 +2,7 @@ use criterion::black_box;
 
 use winnow::combinator::repeat;
 use winnow::prelude::*;
-use winnow::token::take_until0;
+use winnow::token::take_until;
 
 fn find_slice(c: &mut criterion::Criterion) {
     let empty = "";
@@ -39,11 +39,11 @@ fn find_slice(c: &mut criterion::Criterion) {
 }
 
 fn parser_byte(input: &mut &str) -> PResult<usize> {
-    repeat(0.., (take_until0("\r"), "\r")).parse_next(input)
+    repeat(0.., (take_until(0.., "\r"), "\r")).parse_next(input)
 }
 
 fn parser_slice(input: &mut &str) -> PResult<usize> {
-    repeat(0.., (take_until0("\r\n"), "\r\n")).parse_next(input)
+    repeat(0.., (take_until(0.., "\r\n"), "\r\n")).parse_next(input)
 }
 
 criterion::criterion_group!(benches, find_slice);
