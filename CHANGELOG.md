@@ -3,6 +3,25 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+- Deprecate `success(value)` in favor of `empty.value(value)`
+- Deprecated `winnow::trace::trace` in favor of the more centrally located `winnow::combinator::trace`
+- Deprecated `take_until0` / `take_until1` in favor of `take_until`
+- Deprecated `repeat_till0` in favor of `repeat_till`
+- Deprecated `not_line_ending` in favor of `till_line_ending`
+
+### Features
+
+- Add more general `empty` combinator
+- Added `take_until` that can handle any range of tokens to consume
+- Added `repeat_till` that can handle any range of parsers to repeat
+
+### Documentation
+
+- Made it easier to discover `cut_err` and how to use it
+- Move `trace` documentation into the tutorial
+
 ## [0.5.34] - 2024-01-10
 
 ### Fixes
