@@ -81,14 +81,14 @@ fn overflow_incomplete_many1() {
 #[test]
 #[cfg(feature = "alloc")]
 fn overflow_incomplete_many_till0() {
-    use winnow::combinator::repeat_till0;
+    use winnow::combinator::repeat_till;
 
     #[allow(clippy::type_complexity)]
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (Vec<&[u8]>, &[u8])> {
-        repeat_till0(length_take(be_u64), "abc").parse_peek(i)
+        repeat_till(0.., length_take(be_u64), "abc").parse_peek(i)
     }
 
-    // Trigger an overflow in repeat_till0
+    // Trigger an overflow in repeat_till
     assert_eq!(
         multi(Partial::new(
             &b"\x00\x00\x00\x00\x00\x00\x00\x01\xaa\xff\xff\xff\xff\xff\xff\xff\xef"[..]

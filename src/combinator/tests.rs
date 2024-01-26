@@ -966,7 +966,7 @@ fn repeat1_test() {
 fn repeat_till_test() {
     #[allow(clippy::type_complexity)]
     fn multi(i: &[u8]) -> IResult<&[u8], (Vec<&[u8]>, &[u8])> {
-        repeat_till0("abcd", "efgh").parse_peek(i)
+        repeat_till(0.., "abcd", "efgh").parse_peek(i)
     }
 
     let a = b"abcdabcdefghabcd";
