@@ -966,7 +966,7 @@ fn repeat1_test() {
 fn repeat_till_test() {
     #[allow(clippy::type_complexity)]
     fn multi(i: &[u8]) -> IResult<&[u8], (Vec<&[u8]>, &[u8])> {
-        repeat_till0("abcd", "efgh").parse_peek(i)
+        repeat_till(0.., "abcd", "efgh").parse_peek(i)
     }
 
     let a = b"abcdabcdefghabcd";
@@ -983,6 +983,46 @@ fn repeat_till_test() {
             &&c[..],
             ErrorKind::Many,
             error_position!(&&c[..], ErrorKind::Tag)
+        )))
+    );
+}
+
+#[test]
+#[cfg(feature = "alloc")]
+fn repeat_till_range_test() {
+    #[allow(clippy::type_complexity)]
+    fn multi(i: &str) -> IResult<&str, (Vec<&str>, &str)> {
+        repeat_till(2..=4, "ab", "cd").parse_peek(i)
+    }
+
+    assert_eq!(
+        multi("cd"),
+        Err(ErrMode::Backtrack(error_node_position!(
+            &"cd",
+            ErrorKind::Many,
+            error_position!(&"cd", ErrorKind::Tag)
+        )))
+    );
+    assert_eq!(
+        multi("abcd"),
+        Err(ErrMode::Backtrack(error_node_position!(
+            &"cd",
+            ErrorKind::Many,
+            error_position!(&"cd", ErrorKind::Tag)
+        )))
+    );
+    assert_eq!(multi("ababcd"), Ok(("", (vec!["ab", "ab"], "cd"))));
+    assert_eq!(multi("abababcd"), Ok(("", (vec!["ab", "ab", "ab"], "cd"))));
+    assert_eq!(
+        multi("ababababcd"),
+        Ok(("", (vec!["ab", "ab", "ab", "ab"], "cd")))
+    );
+    assert_eq!(
+        multi("abababababcd"),
+        Err(ErrMode::Backtrack(error_node_position!(
+            &"cd",
+            ErrorKind::Many,
+            error_position!(&"abcd", ErrorKind::Tag)
         )))
     );
 }
