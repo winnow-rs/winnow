@@ -101,9 +101,9 @@ where
 /// ```
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
-/// # use winnow::ascii::not_line_ending;
+/// # use winnow::ascii::till_line_ending;
 /// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
-///     not_line_ending.parse_next(input)
+///     till_line_ending.parse_next(input)
 /// }
 ///
 /// assert_eq!(parser.parse_peek("ab\r\nc"), Ok(("\r\nc", "ab")));
@@ -118,13 +118,33 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::Partial;
-/// # use winnow::ascii::not_line_ending;
-/// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("ab\r\nc")), Ok((Partial::new("\r\nc"), "ab")));
-/// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("abc")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("a\rb\nc")), Err(ErrMode::Backtrack(InputError::new(Partial::new("\rb\nc"), ErrorKind::Tag ))));
-/// assert_eq!(not_line_ending::<_, InputError<_>>.parse_peek(Partial::new("a\rbc")), Err(ErrMode::Backtrack(InputError::new(Partial::new("\rbc"), ErrorKind::Tag ))));
+/// # use winnow::ascii::till_line_ending;
+/// assert_eq!(till_line_ending::<_, InputError<_>>.parse_peek(Partial::new("ab\r\nc")), Ok((Partial::new("\r\nc"), "ab")));
+/// assert_eq!(till_line_ending::<_, InputError<_>>.parse_peek(Partial::new("abc")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(till_line_ending::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(till_line_ending::<_, InputError<_>>.parse_peek(Partial::new("a\rb\nc")), Err(ErrMode::Backtrack(InputError::new(Partial::new("\rb\nc"), ErrorKind::Tag ))));
+/// assert_eq!(till_line_ending::<_, InputError<_>>.parse_peek(Partial::new("a\rbc")), Err(ErrMode::Backtrack(InputError::new(Partial::new("\rbc"), ErrorKind::Tag ))));
 /// ```
+#[inline(always)]
+pub fn till_line_ending<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+where
+    I: StreamIsPartial,
+    I: Stream,
+    I: Compare<&'static str>,
+    <I as Stream>::Token: AsChar + Clone,
+{
+    trace("till_line_ending", move |input: &mut I| {
+        if <I as StreamIsPartial>::is_partial_supported() {
+            till_line_ending_::<_, _, true>(input)
+        } else {
+            till_line_ending_::<_, _, false>(input)
+        }
+    })
+    .parse_next(input)
+}
+
+/// Deprecated, replaced with [`till_line_ending`]
+#[deprecated(since = "0.5.35", note = "Replaced with `till_line_ending`")]
 #[inline(always)]
 pub fn not_line_ending<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
@@ -133,17 +153,10 @@ where
     I: Compare<&'static str>,
     <I as Stream>::Token: AsChar + Clone,
 {
-    trace("not_line_ending", move |input: &mut I| {
-        if <I as StreamIsPartial>::is_partial_supported() {
-            not_line_ending_::<_, _, true>(input)
-        } else {
-            not_line_ending_::<_, _, false>(input)
-        }
-    })
-    .parse_next(input)
+    till_line_ending(input)
 }
 
-fn not_line_ending_<I, E: ParserError<I>, const PARTIAL: bool>(
+fn till_line_ending_<I, E: ParserError<I>, const PARTIAL: bool>(
     input: &mut I,
 ) -> PResult<<I as Stream>::Slice, E>
 where
