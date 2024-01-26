@@ -293,7 +293,7 @@
 //! # }
 //! ```
 //!
-//! > **Note:** [`success`] and [`fail`] are parsers that might be useful in the `else` case.
+//! > **Note:** [`empty`] and [`fail`] are parsers that might be useful in the `else` case.
 //!
 //! Sometimes a giant if/else-if ladder can be slow and you'd rather have a `match` statement for
 //! branches of your parser that have unique prefixes. In this case, you can use the
@@ -364,11 +364,11 @@ use super::chapter_6;
 use crate::combinator;
 use crate::combinator::alt;
 use crate::combinator::dispatch;
+use crate::combinator::empty;
 use crate::combinator::fail;
 use crate::combinator::opt;
 use crate::combinator::peek;
 use crate::combinator::preceded;
-use crate::combinator::success;
 use crate::stream::Stream;
 
 pub use super::chapter_2 as previous;

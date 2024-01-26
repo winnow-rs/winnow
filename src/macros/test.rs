@@ -1,8 +1,8 @@
 use crate::ascii::dec_uint;
 use crate::combinator::dispatch;
+use crate::combinator::empty;
 use crate::combinator::fail;
 use crate::combinator::seq;
-use crate::combinator::success;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::ParserError;
@@ -13,13 +13,13 @@ use crate::token::any;
 fn dispatch_basics() {
     fn escape_seq_char(input: &mut &str) -> PResult<char> {
         dispatch! {any;
-            'b' => success('\u{8}'),
-            'f' => success('\u{c}'),
-            'n' => success('\n'),
-            'r' => success('\r'),
-            't' => success('\t'),
-            '\\' => success('\\'),
-            '"' => success('"'),
+            'b' => empty.value('\u{8}'),
+            'f' => empty.value('\u{c}'),
+            'n' => empty.value('\n'),
+            'r' => empty.value('\r'),
+            't' => empty.value('\t'),
+            '\\' => empty.value('\\'),
+            '"' => empty.value('"'),
             _ => fail::<_, char, _>,
         }
         .parse_next(input)
@@ -135,7 +135,7 @@ fn seq_struct_trailing_comma_elided() {
                 x: dec_uint,
                 _: ',',
                 y: dec_uint,
-                _: success(()),
+                _: empty,
             }
         }
         .parse_next(input)
@@ -180,7 +180,7 @@ fn seq_struct_no_trailing_comma_elided() {
                 x: dec_uint,
                 _: ',',
                 y: dec_uint,
-                _: success(())
+                _: empty
             }
         }
         .parse_next(input)
@@ -235,7 +235,7 @@ fn seq_tuple_struct_trailing_comma_elided() {
                 dec_uint,
                 _: ',',
                 dec_uint,
-                _: success(()),
+                _: empty,
             )
         }
         .parse_next(input)
@@ -274,7 +274,7 @@ fn seq_tuple_struct_no_trailing_comma_elided() {
                 dec_uint,
                 _: ',',
                 dec_uint,
-                _: success(())
+                _: empty
             )
         }
         .parse_next(input)
@@ -323,7 +323,7 @@ fn seq_tuple_trailing_comma_elided() {
                 dec_uint,
                 _: ',',
                 dec_uint,
-                _: success(()),
+                _: empty,
             )
         }
         .parse_next(input)
@@ -356,7 +356,7 @@ fn seq_tuple_no_trailing_comma_elided() {
                 dec_uint,
                 _: ',',
                 dec_uint,
-                _: success(())
+                _: empty
             )
         }
         .parse_next(input)
