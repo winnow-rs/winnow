@@ -92,7 +92,7 @@
 //! - [`crlf`][crate::ascii::crlf]: Recognizes the string `\r\n`
 //! - [`line_ending`][crate::ascii::line_ending]: Recognizes an end of line (both `\n` and `\r\n`)
 //! - [`newline`][crate::ascii::newline]: Matches a newline character `\n`
-//! - [`not_line_ending`][crate::ascii::not_line_ending]: Recognizes a string of any char except `\r` or `\n`
+//! - [`till_line_ending`][crate::ascii::till_line_ending]: Recognizes a string of any char except `\r` or `\n`
 //! - [`rest`]: Return the remaining input
 //!
 //! - [`alpha0`][crate::ascii::alpha0]: Recognizes zero or more lowercase and uppercase alphabetic characters: `[a-zA-Z]`. [`alpha1`][crate::ascii::alpha1] does the same but returns at least one character

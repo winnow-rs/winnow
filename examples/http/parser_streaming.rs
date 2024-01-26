@@ -73,7 +73,7 @@ fn http_version<'s>(input: &mut Stream<'s>) -> PResult<&'s [u8]> {
 
 fn message_header_value<'s>(input: &mut Stream<'s>) -> PResult<&'s [u8]> {
     let _ = take_while(1.., is_horizontal_space).parse_next(input)?;
-    let data = take_while(1.., not_line_ending).parse_next(input)?;
+    let data = take_while(1.., till_line_ending).parse_next(input)?;
     let _ = line_ending.parse_next(input)?;
 
     Ok(data)
@@ -121,7 +121,7 @@ fn is_version(c: u8) -> bool {
     c.is_ascii_digit() || c == b'.'
 }
 
-fn not_line_ending(c: u8) -> bool {
+fn till_line_ending(c: u8) -> bool {
     c != b'\r' && c != b'\n'
 }
 
