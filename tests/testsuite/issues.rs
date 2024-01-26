@@ -95,11 +95,11 @@ fn take_till0_issue() {
 
 #[test]
 fn issue_655() {
-    use winnow::ascii::{line_ending, not_line_ending};
+    use winnow::ascii::{line_ending, till_line_ending};
     fn twolines(i: Partial<&str>) -> IResult<Partial<&str>, (&str, &str)> {
-        let (i, l1) = not_line_ending.parse_peek(i)?;
+        let (i, l1) = till_line_ending.parse_peek(i)?;
         let (i, _) = line_ending.parse_peek(i)?;
-        let (i, l2) = not_line_ending.parse_peek(i)?;
+        let (i, l2) = till_line_ending.parse_peek(i)?;
         let (i, _) = line_ending.parse_peek(i)?;
 
         Ok((i, (l1, l2)))
