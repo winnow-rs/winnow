@@ -11,12 +11,12 @@ use crate::stream::{AsChar, Compare, Location, ParseSlice, Stream, StreamIsParti
 /// ```rust
 /// use winnow::prelude::*;
 ///
-/// fn success(input: &mut &str) -> PResult<()> {
+/// fn empty(input: &mut &str) -> PResult<()> {
 ///     let output = ();
 ///     Ok(output)
 /// }
 ///
-/// let (input, output) = success.parse_peek("Hello").unwrap();
+/// let (input, output) = empty.parse_peek("Hello").unwrap();
 /// assert_eq!(input, "Hello");  // We didn't consume any input
 /// ```
 ///
@@ -24,14 +24,14 @@ use crate::stream::{AsChar, Compare, Location, ParseSlice, Stream, StreamIsParti
 /// ```rust
 /// use winnow::prelude::*;
 ///
-/// fn success<O: Clone>(output: O) -> impl FnMut(&mut &str) -> PResult<O> {
+/// fn empty<O: Clone>(output: O) -> impl FnMut(&mut &str) -> PResult<O> {
 ///     move |input: &mut &str| {
 ///         let output = output.clone();
 ///         Ok(output)
 ///     }
 /// }
 ///
-/// let (input, output) = success("World").parse_peek("Hello").unwrap();
+/// let (input, output) = empty("World").parse_peek("Hello").unwrap();
 /// assert_eq!(input, "Hello");  // We didn't consume any input
 /// assert_eq!(output, "World");
 /// ```

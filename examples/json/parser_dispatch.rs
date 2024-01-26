@@ -5,9 +5,9 @@ use winnow::prelude::*;
 use winnow::{
     ascii::float,
     combinator::cut_err,
+    combinator::empty,
     combinator::fail,
     combinator::peek,
-    combinator::success,
     combinator::{alt, dispatch},
     combinator::{delimited, preceded, separated_pair, terminated},
     combinator::{fold_repeat, separated},
@@ -115,14 +115,14 @@ fn character<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<
     let c = none_of('\"').parse_next(input)?;
     if c == '\\' {
         dispatch!(any;
-          '"' => success('"'),
-          '\\' => success('\\'),
-          '/'  => success('/'),
-          'b' => success('\x08'),
-          'f' => success('\x0C'),
-          'n' => success('\n'),
-          'r' => success('\r'),
-          't' => success('\t'),
+          '"' => empty.value('"'),
+          '\\' => empty.value('\\'),
+          '/'  => empty.value('/'),
+          'b' => empty.value('\x08'),
+          'f' => empty.value('\x0C'),
+          'n' => empty.value('\n'),
+          'r' => empty.value('\r'),
+          't' => empty.value('\t'),
           'u' => unicode_escape,
           _ => fail,
         )

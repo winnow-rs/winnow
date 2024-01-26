@@ -6,7 +6,7 @@
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::{alphanumeric1, dec_uint, space0};
 /// # use winnow::combinator::delimited;
-/// # use winnow::combinator::success;
+/// # use winnow::combinator::empty;
 /// # use winnow::error::ContextError;
 /// use winnow::combinator::seq;
 ///
@@ -22,7 +22,7 @@
 /// // Parse into structs / tuple-structs
 /// fn field(input: &mut &[u8]) -> PResult<Field> {
 ///     seq!{Field {
-///         namespace: success(5),
+///         namespace: empty.value(5),
 ///         name: alphanumeric1.map(|s: &[u8]| s.to_owned()),
 ///         // `_` fields are ignored when building the struct
 ///         _: (space0, b':', space0),
