@@ -8,7 +8,7 @@ use winnow::{
     ascii::{digit1 as digits, multispace0 as multispaces},
     combinator::alt,
     combinator::delimited,
-    combinator::fold_repeat,
+    combinator::repeat,
     token::one_of,
 };
 
@@ -52,37 +52,35 @@ impl Display for Expr {
 pub fn expr(i: &mut &str) -> PResult<Expr> {
     let init = term.parse_next(i)?;
 
-    fold_repeat(
-        0..,
-        (one_of(['+', '-']), term),
-        move || init.clone(),
-        |acc, (op, val): (char, Expr)| {
-            if op == '+' {
-                Expr::Add(Box::new(acc), Box::new(val))
-            } else {
-                Expr::Sub(Box::new(acc), Box::new(val))
-            }
-        },
-    )
-    .parse_next(i)
+    repeat(0.., (one_of(['+', '-']), term))
+        .fold(
+            move || init.clone(),
+            |acc, (op, val): (char, Expr)| {
+                if op == '+' {
+                    Expr::Add(Box::new(acc), Box::new(val))
+                } else {
+                    Expr::Sub(Box::new(acc), Box::new(val))
+                }
+            },
+        )
+        .parse_next(i)
 }
 
 fn term(i: &mut &str) -> PResult<Expr> {
     let init = factor.parse_next(i)?;
 
-    fold_repeat(
-        0..,
-        (one_of(['*', '/']), factor),
-        move || init.clone(),
-        |acc, (op, val): (char, Expr)| {
-            if op == '*' {
-                Expr::Mul(Box::new(acc), Box::new(val))
-            } else {
-                Expr::Div(Box::new(acc), Box::new(val))
-            }
-        },
-    )
-    .parse_next(i)
+    repeat(0.., (one_of(['*', '/']), factor))
+        .fold(
+            move || init.clone(),
+            |acc, (op, val): (char, Expr)| {
+                if op == '*' {
+                    Expr::Mul(Box::new(acc), Box::new(val))
+                } else {
+                    Expr::Div(Box::new(acc), Box::new(val))
+                }
+            },
+        )
+        .parse_next(i)
 }
 
 fn factor(i: &mut &str) -> PResult<Expr> {

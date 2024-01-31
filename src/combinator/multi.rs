@@ -249,6 +249,10 @@ where
     /// assert_eq!(parser(""), Ok(("", vec![])));
     /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
     /// ```
+    #[doc(alias = "fold_many0")]
+    #[doc(alias = "fold_many1")]
+    #[doc(alias = "fold_many_m_n")]
+    #[doc(alias = "fold_repeat")]
     #[inline(always)]
     pub fn fold<H, G, R>(mut self, mut init: H, mut g: G) -> impl Parser<I, R, E>
     where
@@ -1244,103 +1248,8 @@ where
     })
 }
 
-/// Repeats the embedded parser `m..=n` times, calling `g` to gather the results
-///
-/// This stops before `n` when the parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
-/// [`cut_err`][crate::combinator::cut_err].
-///
-/// # Arguments
-/// * `m` The minimum number of iterations.
-/// * `n` The maximum number of iterations.
-/// * `f` The parser to apply.
-/// * `init` A function returning the initial value.
-/// * `g` The function that combines a result of `f` with
-///       the current accumulator.
-///
-/// **Warning:** If the parser passed to `fold_repeat` accepts empty inputs
-/// (like `alpha0` or `digit0`), `fold_repeat` will return an error,
-/// to prevent going into an infinite loop.
-///
-/// # Example
-///
-/// Zero or more repetitions:
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::combinator::fold_repeat;
-/// use winnow::token::tag;
-///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   fold_repeat(
-///     0..,
-///     "abc",
-///     Vec::new,
-///     |mut acc: Vec<_>, item| {
-///       acc.push(item);
-///       acc
-///     }
-///   ).parse_peek(s)
-/// }
-///
-/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Ok(("123123", vec![])));
-/// assert_eq!(parser(""), Ok(("", vec![])));
-/// ```
-///
-/// One or more repetitions:
-/// ```rust
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::combinator::fold_repeat;
-/// use winnow::token::tag;
-///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   fold_repeat(
-///     1..,
-///     "abc",
-///     Vec::new,
-///     |mut acc: Vec<_>, item| {
-///       acc.push(item);
-///       acc
-///     }
-///   ).parse_peek(s)
-/// }
-///
-/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Many))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Many))));
-/// ```
-///
-/// Arbitrary number of repetitions:
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::combinator::fold_repeat;
-/// use winnow::token::tag;
-///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   fold_repeat(
-///     0..=2,
-///     "abc",
-///     Vec::new,
-///     |mut acc: Vec<_>, item| {
-///       acc.push(item);
-///       acc
-///     }
-///   ).parse_peek(s)
-/// }
-///
-/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Ok(("123123", vec![])));
-/// assert_eq!(parser(""), Ok(("", vec![])));
-/// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
-/// ```
-#[doc(alias = "fold_many0")]
-#[doc(alias = "fold_many1")]
-#[doc(alias = "fold_many_m_n")]
+/// Deprecated, replaced with [`Repeat::fold`]
+#[deprecated(since = "0.5.36", note = "Replaced with `repeat(...).fold(...)`")]
 #[inline(always)]
 pub fn fold_repeat<I, O, E, F, G, H, R>(
     range: impl Into<Range>,

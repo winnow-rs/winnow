@@ -9,7 +9,6 @@ use winnow::{
     combinator::alt,
     combinator::dispatch,
     combinator::fail,
-    combinator::fold_repeat,
     combinator::peek,
     combinator::repeat,
     combinator::{delimited, preceded, terminated},
@@ -125,12 +124,14 @@ fn token(i: &mut &str) -> PResult<Token> {
 pub fn expr(i: &mut &[Token]) -> PResult<Expr> {
     let init = term.parse_next(i)?;
 
-    fold_repeat(
+    repeat(
         0..,
         (
             one_of([Token::Oper(Oper::Add), Token::Oper(Oper::Sub)]),
             term,
         ),
+    )
+    .fold(
         move || init.clone(),
         |acc, (op, val): (Token, Expr)| {
             if op == Token::Oper(Oper::Add) {
@@ -146,12 +147,14 @@ pub fn expr(i: &mut &[Token]) -> PResult<Expr> {
 fn term(i: &mut &[Token]) -> PResult<Expr> {
     let init = factor.parse_next(i)?;
 
-    fold_repeat(
+    repeat(
         0..,
         (
             one_of([Token::Oper(Oper::Mul), Token::Oper(Oper::Div)]),
             factor,
         ),
+    )
+    .fold(
         move || init.clone(),
         |acc, (op, val): (Token, Expr)| {
             if op == Token::Oper(Oper::Mul) {

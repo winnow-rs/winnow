@@ -11,7 +11,7 @@
 
 use winnow::ascii::multispace1;
 use winnow::combinator::alt;
-use winnow::combinator::fold_repeat;
+use winnow::combinator::repeat;
 use winnow::combinator::{delimited, preceded};
 use winnow::error::{FromExternalError, ParserError};
 use winnow::prelude::*;
@@ -23,12 +23,14 @@ pub fn parse_string<'a, E>(input: &mut &'a str) -> PResult<String, E>
 where
     E: ParserError<&'a str> + FromExternalError<&'a str, std::num::ParseIntError>,
 {
-    // fold_repeat is the equivalent of iterator::fold. It runs a parser in a loop,
+    // Repeat::fold is the equivalent of iterator::fold. It runs a parser in a loop,
     // and for each output value, calls a folding function on each output value.
-    let build_string = fold_repeat(
+    let build_string = repeat(
         0..,
         // Our parser function – parses a single string fragment
         parse_fragment,
+    )
+    .fold(
         // Our init value, an empty string
         String::new,
         // Our folding function. For each fragment, append the fragment to the
@@ -45,7 +47,7 @@ where
 
     // Finally, parse the string. Note that, if `build_string` could accept a raw
     // " character, the closing delimiter " would never match. When using
-    // `delimited` with a looping parser (like fold_repeat), be sure that the
+    // `delimited` with a looping parser (like Repeat::fold), be sure that the
     // loop won't accidentally match your closing delimiter!
     delimited('"', build_string, '"').parse_next(input)
 }

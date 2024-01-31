@@ -5,7 +5,7 @@ use winnow::{
     ascii::{digit1 as digits, multispace0 as multispaces},
     combinator::alt,
     combinator::delimited,
-    combinator::fold_repeat,
+    combinator::repeat,
     token::one_of,
 };
 
@@ -14,19 +14,18 @@ use winnow::{
 pub fn expr(i: &mut &str) -> PResult<i64> {
     let init = term.parse_next(i)?;
 
-    fold_repeat(
-        0..,
-        (one_of(['+', '-']), term),
-        move || init,
-        |acc, (op, val): (char, i64)| {
-            if op == '+' {
-                acc + val
-            } else {
-                acc - val
-            }
-        },
-    )
-    .parse_next(i)
+    repeat(0.., (one_of(['+', '-']), term))
+        .fold(
+            move || init,
+            |acc, (op, val): (char, i64)| {
+                if op == '+' {
+                    acc + val
+                } else {
+                    acc - val
+                }
+            },
+        )
+        .parse_next(i)
 }
 
 // We read an initial factor and for each time we find
@@ -35,19 +34,18 @@ pub fn expr(i: &mut &str) -> PResult<i64> {
 fn term(i: &mut &str) -> PResult<i64> {
     let init = factor.parse_next(i)?;
 
-    fold_repeat(
-        0..,
-        (one_of(['*', '/']), factor),
-        move || init,
-        |acc, (op, val): (char, i64)| {
-            if op == '*' {
-                acc * val
-            } else {
-                acc / val
-            }
-        },
-    )
-    .parse_next(i)
+    repeat(0.., (one_of(['*', '/']), factor))
+        .fold(
+            move || init,
+            |acc, (op, val): (char, i64)| {
+                if op == '*' {
+                    acc * val
+                } else {
+                    acc / val
+                }
+            },
+        )
+        .parse_next(i)
 }
 
 // We transform an integer string into a i64, ignoring surrounding whitespace
