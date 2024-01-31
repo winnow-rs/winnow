@@ -115,25 +115,194 @@ use crate::Parser;
 #[doc(alias = "skip_many")]
 #[doc(alias = "skip_many1")]
 #[inline(always)]
-pub fn repeat<I, O, C, E, F>(range: impl Into<Range>, mut f: F) -> impl Parser<I, C, E>
+pub fn repeat<I, O, C, E, P>(range: impl Into<Range>, parser: P) -> Repeat<P, I, O, C, E>
 where
     I: Stream,
     C: Accumulate<O>,
-    F: Parser<I, O, E>,
+    P: Parser<I, O, E>,
     E: ParserError<I>,
 {
-    let Range {
-        start_inclusive,
-        end_inclusive,
-    } = range.into();
-    trace("repeat", move |i: &mut I| {
-        match (start_inclusive, end_inclusive) {
-            (0, None) => repeat0_(&mut f, i),
-            (1, None) => repeat1_(&mut f, i),
-            (start, end) if Some(start) == end => repeat_n_(start, &mut f, i),
-            (start, end) => repeat_m_n_(start, end.unwrap_or(usize::MAX), &mut f, i),
-        }
-    })
+    Repeat {
+        range: range.into(),
+        parser,
+        i: Default::default(),
+        o: Default::default(),
+        c: Default::default(),
+        e: Default::default(),
+    }
+}
+
+/// Implementation of [`repeat`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct Repeat<P, I, O, C, E>
+where
+    P: Parser<I, O, E>,
+    I: Stream,
+    C: Accumulate<O>,
+    E: ParserError<I>,
+{
+    range: Range,
+    parser: P,
+    i: core::marker::PhantomData<I>,
+    o: core::marker::PhantomData<O>,
+    c: core::marker::PhantomData<C>,
+    e: core::marker::PhantomData<E>,
+}
+
+impl<P, I, O, E> Repeat<P, I, O, (), E>
+where
+    P: Parser<I, O, E>,
+    I: Stream,
+    E: ParserError<I>,
+{
+    /// Repeats the embedded parser, calling `g` to gather the results
+    ///
+    /// This stops before `n` when the parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
+    /// [`cut_err`][crate::combinator::cut_err].
+    ///
+    /// # Arguments
+    /// * `init` A function returning the initial value.
+    /// * `g` The function that combines a result of `f` with
+    ///       the current accumulator.
+    ///
+    /// **Warning:** If the parser passed to `fold` accepts empty inputs
+    /// (like `alpha0` or `digit0`), `fold_repeat` will return an error,
+    /// to prevent going into an infinite loop.
+    ///
+    /// # Example
+    ///
+    /// Zero or more repetitions:
+    /// ```rust
+    /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+    /// # use winnow::prelude::*;
+    /// use winnow::combinator::repeat;
+    /// use winnow::token::tag;
+    ///
+    /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
+    ///   repeat(
+    ///     0..,
+    ///     "abc"
+    ///   ).fold(
+    ///     Vec::new,
+    ///     |mut acc: Vec<_>, item| {
+    ///       acc.push(item);
+    ///       acc
+    ///     }
+    ///   ).parse_peek(s)
+    /// }
+    ///
+    /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
+    /// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
+    /// assert_eq!(parser("123123"), Ok(("123123", vec![])));
+    /// assert_eq!(parser(""), Ok(("", vec![])));
+    /// ```
+    ///
+    /// One or more repetitions:
+    /// ```rust
+    /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+    /// # use winnow::prelude::*;
+    /// use winnow::combinator::repeat;
+    /// use winnow::token::tag;
+    ///
+    /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
+    ///   repeat(
+    ///     1..,
+    ///     "abc",
+    ///   ).fold(
+    ///     Vec::new,
+    ///     |mut acc: Vec<_>, item| {
+    ///       acc.push(item);
+    ///       acc
+    ///     }
+    ///   ).parse_peek(s)
+    /// }
+    ///
+    /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
+    /// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
+    /// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Many))));
+    /// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Many))));
+    /// ```
+    ///
+    /// Arbitrary number of repetitions:
+    /// ```rust
+    /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+    /// # use winnow::prelude::*;
+    /// use winnow::combinator::repeat;
+    /// use winnow::token::tag;
+    ///
+    /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
+    ///   repeat(
+    ///     0..=2,
+    ///     "abc",
+    ///   ).fold(
+    ///     Vec::new,
+    ///     |mut acc: Vec<_>, item| {
+    ///       acc.push(item);
+    ///       acc
+    ///     }
+    ///   ).parse_peek(s)
+    /// }
+    ///
+    /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
+    /// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
+    /// assert_eq!(parser("123123"), Ok(("123123", vec![])));
+    /// assert_eq!(parser(""), Ok(("", vec![])));
+    /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
+    /// ```
+    #[doc(alias = "fold_many0")]
+    #[doc(alias = "fold_many1")]
+    #[doc(alias = "fold_many_m_n")]
+    #[doc(alias = "fold_repeat")]
+    #[inline(always)]
+    pub fn fold<H, G, R>(mut self, mut init: H, mut g: G) -> impl Parser<I, R, E>
+    where
+        G: FnMut(R, O) -> R,
+        H: FnMut() -> R,
+    {
+        let Range {
+            start_inclusive,
+            end_inclusive,
+        } = self.range;
+        trace("repeat_fold", move |i: &mut I| {
+            match (start_inclusive, end_inclusive) {
+                (0, None) => fold_repeat0_(&mut self.parser, &mut init, &mut g, i),
+                (1, None) => fold_repeat1_(&mut self.parser, &mut init, &mut g, i),
+                (start, end) => fold_repeat_m_n_(
+                    start,
+                    end.unwrap_or(usize::MAX),
+                    &mut self.parser,
+                    &mut init,
+                    &mut g,
+                    i,
+                ),
+            }
+        })
+    }
+}
+
+impl<P, I, O, C, E> Parser<I, C, E> for Repeat<P, I, O, C, E>
+where
+    P: Parser<I, O, E>,
+    I: Stream,
+    C: Accumulate<O>,
+    E: ParserError<I>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<C, E> {
+        let Range {
+            start_inclusive,
+            end_inclusive,
+        } = self.range;
+        trace("repeat", move |i: &mut I| {
+            match (start_inclusive, end_inclusive) {
+                (0, None) => repeat0_(&mut self.parser, i),
+                (1, None) => repeat1_(&mut self.parser, i),
+                (start, end) if Some(start) == end => repeat_n_(start, &mut self.parser, i),
+                (start, end) => repeat_m_n_(start, end.unwrap_or(usize::MAX), &mut self.parser, i),
+            }
+        })
+        .parse_next(i)
+    }
 }
 
 fn repeat0_<I, O, C, E, F>(f: &mut F, i: &mut I) -> PResult<C, E>
@@ -1079,109 +1248,14 @@ where
     })
 }
 
-/// Repeats the embedded parser `m..=n` times, calling `g` to gather the results
-///
-/// This stops before `n` when the parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
-/// [`cut_err`][crate::combinator::cut_err].
-///
-/// # Arguments
-/// * `m` The minimum number of iterations.
-/// * `n` The maximum number of iterations.
-/// * `f` The parser to apply.
-/// * `init` A function returning the initial value.
-/// * `g` The function that combines a result of `f` with
-///       the current accumulator.
-///
-/// **Warning:** If the parser passed to `fold_repeat` accepts empty inputs
-/// (like `alpha0` or `digit0`), `fold_repeat` will return an error,
-/// to prevent going into an infinite loop.
-///
-/// # Example
-///
-/// Zero or more repetitions:
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::combinator::fold_repeat;
-/// use winnow::token::tag;
-///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   fold_repeat(
-///     0..,
-///     "abc",
-///     Vec::new,
-///     |mut acc: Vec<_>, item| {
-///       acc.push(item);
-///       acc
-///     }
-///   ).parse_peek(s)
-/// }
-///
-/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Ok(("123123", vec![])));
-/// assert_eq!(parser(""), Ok(("", vec![])));
-/// ```
-///
-/// One or more repetitions:
-/// ```rust
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::combinator::fold_repeat;
-/// use winnow::token::tag;
-///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   fold_repeat(
-///     1..,
-///     "abc",
-///     Vec::new,
-///     |mut acc: Vec<_>, item| {
-///       acc.push(item);
-///       acc
-///     }
-///   ).parse_peek(s)
-/// }
-///
-/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Many))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Many))));
-/// ```
-///
-/// Arbitrary number of repetitions:
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::combinator::fold_repeat;
-/// use winnow::token::tag;
-///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   fold_repeat(
-///     0..=2,
-///     "abc",
-///     Vec::new,
-///     |mut acc: Vec<_>, item| {
-///       acc.push(item);
-///       acc
-///     }
-///   ).parse_peek(s)
-/// }
-///
-/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Ok(("123123", vec![])));
-/// assert_eq!(parser(""), Ok(("", vec![])));
-/// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
-/// ```
-#[doc(alias = "fold_many0")]
-#[doc(alias = "fold_many1")]
-#[doc(alias = "fold_many_m_n")]
+/// Deprecated, replaced with [`Repeat::fold`]
+#[deprecated(since = "0.5.36", note = "Replaced with `repeat(...).fold(...)`")]
 #[inline(always)]
 pub fn fold_repeat<I, O, E, F, G, H, R>(
     range: impl Into<Range>,
-    mut f: F,
-    mut init: H,
-    mut g: G,
+    f: F,
+    init: H,
+    g: G,
 ) -> impl Parser<I, R, E>
 where
     I: Stream,
@@ -1190,24 +1264,7 @@ where
     H: FnMut() -> R,
     E: ParserError<I>,
 {
-    let Range {
-        start_inclusive,
-        end_inclusive,
-    } = range.into();
-    trace("fold_repeat", move |i: &mut I| {
-        match (start_inclusive, end_inclusive) {
-            (0, None) => fold_repeat0_(&mut f, &mut init, &mut g, i),
-            (1, None) => fold_repeat1_(&mut f, &mut init, &mut g, i),
-            (start, end) => fold_repeat_m_n_(
-                start,
-                end.unwrap_or(usize::MAX),
-                &mut f,
-                &mut init,
-                &mut g,
-                i,
-            ),
-        }
-    })
+    repeat(range, f).fold(init, g)
 }
 
 fn fold_repeat0_<I, O, E, F, G, H, R>(

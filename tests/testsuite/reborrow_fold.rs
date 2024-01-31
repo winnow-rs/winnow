@@ -4,7 +4,7 @@
 use std::str;
 
 use winnow::combinator::delimited;
-use winnow::combinator::fold_repeat;
+use winnow::combinator::repeat;
 use winnow::error::InputError;
 use winnow::prelude::*;
 use winnow::token::take_till;
@@ -20,15 +20,10 @@ fn atom<'a>(_tomb: &mut ()) -> impl Parser<&'a [u8], String, InputError<&'a [u8]
 fn list<'a>(i: &'a [u8], tomb: &mut ()) -> IResult<&'a [u8], String> {
     delimited(
         '(',
-        fold_repeat(
-            0..,
-            atom(tomb),
-            String::new,
-            |mut acc: String, next: String| {
-                acc.push_str(next.as_str());
-                acc
-            },
-        ),
+        repeat(0.., atom(tomb)).fold(String::new, |mut acc: String, next: String| {
+            acc.push_str(next.as_str());
+            acc
+        }),
         ')',
     )
     .parse_peek(i)

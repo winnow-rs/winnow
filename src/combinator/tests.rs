@@ -1201,7 +1201,9 @@ fn fold_repeat0_test() {
         acc
     }
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_repeat(0.., "abcd", Vec::new, fold_into_vec).parse_peek(i)
+        repeat(0.., "abcd")
+            .fold(Vec::new, fold_into_vec)
+            .parse_peek(i)
     }
 
     assert_eq!(
@@ -1239,7 +1241,7 @@ fn fold_repeat0_empty_test() {
         acc
     }
     fn multi_empty(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_repeat(0.., "", Vec::new, fold_into_vec).parse_peek(i)
+        repeat(0.., "").fold(Vec::new, fold_into_vec).parse_peek(i)
     }
 
     assert_eq!(
@@ -1259,7 +1261,9 @@ fn fold_repeat1_test() {
         acc
     }
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_repeat(1.., "abcd", Vec::new, fold_into_vec).parse_peek(i)
+        repeat(1.., "abcd")
+            .fold(Vec::new, fold_into_vec)
+            .parse_peek(i)
     }
 
     let a = &b"abcdef"[..];
@@ -1295,7 +1299,9 @@ fn fold_repeat_test() {
         acc
     }
     fn multi(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-        fold_repeat(2..=4, "Abcd", Vec::new, fold_into_vec).parse_peek(i)
+        repeat(2..=4, "Abcd")
+            .fold(Vec::new, fold_into_vec)
+            .parse_peek(i)
     }
 
     let a = &b"Abcdef"[..];

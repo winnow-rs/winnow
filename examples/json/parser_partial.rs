@@ -7,7 +7,7 @@ use winnow::{
     combinator::alt,
     combinator::{cut_err, rest},
     combinator::{delimited, preceded, separated_pair, terminated},
-    combinator::{fold_repeat, separated},
+    combinator::{repeat, separated},
     error::{AddContext, ParserError},
     stream::Partial,
     token::{any, none_of, take, take_while},
@@ -88,7 +88,7 @@ fn string<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>
         // right branch (since we found the `"` character) but encountered an error when
         // parsing the string
         cut_err(terminated(
-            fold_repeat(0.., character, String::new, |mut string, c| {
+            repeat(0.., character).fold(String::new, |mut string, c| {
                 string.push(c);
                 string
             }),
