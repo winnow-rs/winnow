@@ -115,25 +115,63 @@ use crate::Parser;
 #[doc(alias = "skip_many")]
 #[doc(alias = "skip_many1")]
 #[inline(always)]
-pub fn repeat<I, O, C, E, F>(range: impl Into<Range>, mut f: F) -> impl Parser<I, C, E>
+pub fn repeat<I, O, C, E, P>(range: impl Into<Range>, parser: P) -> Repeat<P, I, O, C, E>
 where
     I: Stream,
     C: Accumulate<O>,
-    F: Parser<I, O, E>,
+    P: Parser<I, O, E>,
     E: ParserError<I>,
 {
-    let Range {
-        start_inclusive,
-        end_inclusive,
-    } = range.into();
-    trace("repeat", move |i: &mut I| {
-        match (start_inclusive, end_inclusive) {
-            (0, None) => repeat0_(&mut f, i),
-            (1, None) => repeat1_(&mut f, i),
-            (start, end) if Some(start) == end => repeat_n_(start, &mut f, i),
-            (start, end) => repeat_m_n_(start, end.unwrap_or(usize::MAX), &mut f, i),
-        }
-    })
+    Repeat {
+        range: range.into(),
+        parser,
+        i: Default::default(),
+        o: Default::default(),
+        c: Default::default(),
+        e: Default::default(),
+    }
+}
+
+/// Implementation of [`repeat`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct Repeat<P, I, O, C, E>
+where
+    P: Parser<I, O, E>,
+    I: Stream,
+    C: Accumulate<O>,
+    E: ParserError<I>,
+{
+    range: Range,
+    parser: P,
+    i: core::marker::PhantomData<I>,
+    o: core::marker::PhantomData<O>,
+    c: core::marker::PhantomData<C>,
+    e: core::marker::PhantomData<E>,
+}
+
+impl<P, I, O, C, E> Parser<I, C, E> for Repeat<P, I, O, C, E>
+where
+    P: Parser<I, O, E>,
+    I: Stream,
+    C: Accumulate<O>,
+    E: ParserError<I>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<C, E> {
+        let Range {
+            start_inclusive,
+            end_inclusive,
+        } = self.range;
+        trace("repeat", move |i: &mut I| {
+            match (start_inclusive, end_inclusive) {
+                (0, None) => repeat0_(&mut self.parser, i),
+                (1, None) => repeat1_(&mut self.parser, i),
+                (start, end) if Some(start) == end => repeat_n_(start, &mut self.parser, i),
+                (start, end) => repeat_m_n_(start, end.unwrap_or(usize::MAX), &mut self.parser, i),
+            }
+        })
+        .parse_next(i)
+    }
 }
 
 fn repeat0_<I, O, C, E, F>(f: &mut F, i: &mut I) -> PResult<C, E>
