@@ -1089,6 +1089,8 @@ impl<I: Stream> Stream for Partial<I> {
 }
 
 /// Number of indices input has advanced since start of parsing
+///
+/// See [`Located`] for adding location tracking to your [`Stream`]
 pub trait Location {
     /// Number of indices input has advanced since start of parsing
     fn location(&self) -> usize;
