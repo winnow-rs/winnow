@@ -3,6 +3,14 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+- Deprecate `fold_repeat` in favor of `repeat().fold()`
+
+### Features
+
+- Add `repeat().fold()`
+
 ## [0.5.35] - 2024-01-26
 
 ### Compatibility
