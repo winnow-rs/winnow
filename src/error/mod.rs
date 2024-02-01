@@ -26,9 +26,13 @@ use crate::lib::std::fmt;
 use core::num::NonZeroUsize;
 
 use crate::stream::AsBStr;
+use crate::stream::AsOrd;
 use crate::stream::Stream;
 #[allow(unused_imports)] // Here for intra-doc links
 use crate::Parser;
+
+#[cfg(test)]
+mod tests;
 
 /// For use with [`Parser::parse_peek`] which allows the input stream to be threaded through a
 /// parser.
@@ -227,6 +231,21 @@ impl<I, C, E: AddContext<I, C>> AddContext<I, C> for ErrMode<E> {
     }
 }
 
+impl<E: MergeContext> MergeContext for ErrMode<E> {
+    #[inline(always)]
+    fn merge_context(self, other: Self) -> Self {
+        match other.into_inner() {
+            Some(other) => self.map(|err| err.merge_context(other)),
+            None => self,
+        }
+    }
+
+    #[inline]
+    fn clear_context(self) -> Self {
+        self.map(MergeContext::clear_context)
+    }
+}
+
 impl<T: Clone> ErrMode<InputError<T>> {
     /// Maps `ErrMode<InputError<T>>` to `ErrMode<InputError<U>>` with the given `F: T -> U`
     pub fn map_input<U: Clone, F>(self, f: F) -> ErrMode<InputError<U>>
@@ -311,6 +330,15 @@ pub trait AddContext<I, C = &'static str>: Sized {
     fn add_context(self, _input: &I, _ctx: C) -> Self {
         self
     }
+}
+
+/// Merge contexts while backtracking.
+pub trait MergeContext: Sized {
+    /// Apply the context from `other` into `self`
+    fn merge_context(self, _other: Self) -> Self;
+
+    /// Remove all context
+    fn clear_context(self) -> Self;
 }
 
 /// Create a new error with an external error, from [`std::str::FromStr`]
@@ -536,6 +564,32 @@ impl<C, I> AddContext<I, C> for ContextError<C> {
     }
 }
 
+impl<C> MergeContext for ContextError<C> {
+    #[inline]
+    fn merge_context(mut self, other: Self) -> Self {
+        // self and other get consumed to produce the new Context error.
+        // We choose the vector with the larger capacity to reduce the chance of reallocations.
+        #[cfg(feature = "alloc")]
+        {
+            let (mut context, other) = if self.context.capacity() >= other.context.capacity() {
+                (self.context, other.context)
+            } else {
+                (other.context, self.context)
+            };
+            context.extend(other);
+            self.context = context;
+        }
+        self
+    }
+
+    #[inline]
+    fn clear_context(mut self) -> Self {
+        #[cfg(feature = "alloc")]
+        self.context.clear();
+        self
+    }
+}
+
 #[cfg(feature = "std")]
 impl<C, I, E: std::error::Error + Send + Sync + 'static> FromExternalError<I, E>
     for ContextError<C>
@@ -692,6 +746,194 @@ impl crate::lib::std::fmt::Display for StrContextValue {
             Self::StringLiteral(c) => write!(f, "`{}`", c),
             Self::Description(c) => write!(f, "{}", c),
         }
+    }
+}
+
+/// Collect context of the longest matching parser while backtracking on errors
+#[derive(Clone, Debug)]
+pub struct LongestMatch<I, E>
+where
+    I: Stream,
+    <I as Stream>::Checkpoint: AsOrd,
+    E: MergeContext,
+{
+    checkpoint: Option<<I as Stream>::Checkpoint>,
+    inner: E,
+}
+
+impl<I, E> LongestMatch<I, E>
+where
+    I: Stream,
+    <I as Stream>::Checkpoint: AsOrd,
+    E: MergeContext + Default,
+{
+    /// Create an empty error
+    pub fn new() -> Self {
+        Self {
+            checkpoint: None,
+            inner: Default::default(),
+        }
+    }
+}
+
+// For tests
+impl<I, E> core::cmp::PartialEq for LongestMatch<I, E>
+where
+    I: Stream,
+    <I as Stream>::Checkpoint: AsOrd + core::cmp::PartialEq,
+    E: MergeContext + core::cmp::PartialEq,
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.checkpoint == other.checkpoint && self.inner == other.inner
+    }
+}
+
+impl<I, E> LongestMatch<I, E>
+where
+    I: Stream,
+    <I as Stream>::Checkpoint: AsOrd,
+    E: MergeContext,
+{
+    /// Extract the error for the longest matching parser
+    #[inline]
+    pub fn into_inner(self) -> E {
+        self.inner
+    }
+
+    #[inline]
+    fn cmp_checkpoints(&self, other: &Self) -> core::cmp::Ordering {
+        let a = self.checkpoint.as_ref().map(|c| c.as_ord());
+        let b = other.checkpoint.as_ref().map(|c| c.as_ord());
+        a.cmp(&b)
+    }
+
+    #[inline]
+    fn cmp_with_checkpoint(&self, other: &<I as Stream>::Checkpoint) -> core::cmp::Ordering {
+        match self.checkpoint {
+            None => core::cmp::Ordering::Less,
+            Some(ref c) => c.as_ord().cmp(&other.as_ord()),
+        }
+    }
+}
+
+impl<I, E> Default for LongestMatch<I, E>
+where
+    I: Stream,
+    <I as Stream>::Checkpoint: AsOrd,
+    E: MergeContext + Default,
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<I, E> ParserError<I> for LongestMatch<I, E>
+where
+    I: Stream,
+    <I as Stream>::Checkpoint: AsOrd,
+    E: ParserError<I> + MergeContext,
+{
+    #[inline]
+    fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
+        Self {
+            checkpoint: Some(input.checkpoint()),
+            inner: E::from_error_kind(input, kind),
+        }
+    }
+
+    #[inline]
+    fn append(mut self, input: &I, kind: ErrorKind) -> Self {
+        let checkpoint = input.checkpoint();
+        match self.cmp_with_checkpoint(&checkpoint) {
+            core::cmp::Ordering::Less => {
+                self.checkpoint = Some(checkpoint);
+                self.inner = self.inner.clear_context().append(input, kind);
+            }
+            core::cmp::Ordering::Equal => {
+                self.inner = self.inner.append(input, kind);
+            }
+            core::cmp::Ordering::Greater => {}
+        }
+        self
+    }
+
+    #[inline]
+    fn or(self, other: Self) -> Self {
+        self.merge_context(other)
+    }
+}
+
+impl<I, E, C> AddContext<I, C> for LongestMatch<I, E>
+where
+    I: Stream,
+    <I as Stream>::Checkpoint: AsOrd,
+    E: AddContext<I, C> + MergeContext,
+{
+    #[inline]
+    fn add_context(mut self, input: &I, ctx: C) -> Self {
+        let checkpoint = input.checkpoint();
+        match self.cmp_with_checkpoint(&checkpoint) {
+            core::cmp::Ordering::Less => {
+                self.checkpoint = Some(checkpoint);
+                self.inner = self.inner.clear_context().add_context(input, ctx);
+            }
+            core::cmp::Ordering::Equal => {
+                self.inner = self.inner.add_context(input, ctx);
+            }
+            core::cmp::Ordering::Greater => {}
+        }
+        self
+    }
+}
+
+impl<I, E: MergeContext> MergeContext for LongestMatch<I, E>
+where
+    I: Stream,
+    <I as Stream>::Checkpoint: AsOrd,
+{
+    #[inline]
+    fn merge_context(mut self, other: Self) -> Self {
+        match self.cmp_checkpoints(&other) {
+            core::cmp::Ordering::Less => other,
+            core::cmp::Ordering::Greater => self,
+            core::cmp::Ordering::Equal => {
+                self.inner = self.inner.merge_context(other.inner);
+                self
+            }
+        }
+    }
+
+    fn clear_context(self) -> Self {
+        Self {
+            checkpoint: None,
+            inner: self.inner.clear_context(),
+        }
+    }
+}
+
+impl<I, E, EX> FromExternalError<I, EX> for LongestMatch<I, E>
+where
+    I: Stream,
+    <I as Stream>::Checkpoint: AsOrd,
+    E: FromExternalError<I, EX> + MergeContext,
+{
+    #[inline]
+    fn from_external_error(input: &I, kind: ErrorKind, e: EX) -> Self {
+        Self {
+            checkpoint: Some(input.checkpoint()),
+            inner: E::from_external_error(input, kind, e),
+        }
+    }
+}
+
+impl<I, E> crate::lib::std::fmt::Display for LongestMatch<I, E>
+where
+    I: Stream,
+    <I as Stream>::Checkpoint: AsOrd,
+    E: crate::lib::std::fmt::Display + MergeContext,
+{
+    fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
+        self.inner.fmt(f)
     }
 }
 

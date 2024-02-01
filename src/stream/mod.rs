@@ -1475,6 +1475,31 @@ where
     }
 }
 
+/// Used to compare checkpoints
+pub trait AsOrd {
+    /// The type used to compare checkpoint positions
+    type Ord: Ord + Clone + core::cmp::Ord + crate::lib::std::fmt::Debug;
+
+    /// Get comparable value
+    fn as_ord(&self) -> Self::Ord;
+}
+
+impl<'a, T> AsOrd for &'a [T] {
+    type Ord = *const T;
+
+    fn as_ord(&self) -> Self::Ord {
+        self.as_ptr()
+    }
+}
+
+impl<'a> AsOrd for &'a str {
+    type Ord = *const u8;
+
+    fn as_ord(&self) -> Self::Ord {
+        self.as_ptr()
+    }
+}
+
 /// Helper trait for types that can be viewed as a byte slice
 pub trait AsBytes {
     /// Casts the input type to a byte slice
@@ -2260,6 +2285,22 @@ where
 /// Ensure checkpoint details are kept private
 #[derive(Copy, Clone, Debug)]
 pub struct Checkpoint<T>(T);
+
+impl<T: PartialEq> PartialEq for Checkpoint<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.eq(&other.0)
+    }
+}
+
+impl<T: Eq> Eq for Checkpoint<T> {}
+
+impl<T: AsOrd> AsOrd for Checkpoint<T> {
+    type Ord = T::Ord;
+
+    fn as_ord(&self) -> Self::Ord {
+        self.0.as_ord()
+    }
+}
 
 /// A range bounded inclusively for counting parses performed
 #[derive(PartialEq, Eq)]
