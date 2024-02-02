@@ -2258,7 +2258,7 @@ where
 }
 
 /// Ensure checkpoint details are kept private
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Checkpoint<T>(T);
 
 /// A range bounded inclusively for counting parses performed
