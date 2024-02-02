@@ -638,7 +638,7 @@ where
 
     type IterOffsets = Enumerate<Cloned<Iter<'i, T>>>;
 
-    type Checkpoint = Checkpoint<Self>;
+    type Checkpoint = Checkpoint<Self, Self>;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
@@ -680,11 +680,11 @@ where
 
     #[inline(always)]
     fn checkpoint(&self) -> Self::Checkpoint {
-        Checkpoint(*self)
+        Checkpoint::<_, Self>::new(*self)
     }
     #[inline(always)]
     fn reset(&mut self, checkpoint: Self::Checkpoint) {
-        *self = checkpoint.0;
+        *self = checkpoint.inner;
     }
 
     #[inline(always)]
@@ -699,7 +699,7 @@ impl<'i> Stream for &'i str {
 
     type IterOffsets = CharIndices<'i>;
 
-    type Checkpoint = Checkpoint<Self>;
+    type Checkpoint = Checkpoint<Self, Self>;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
@@ -755,11 +755,11 @@ impl<'i> Stream for &'i str {
 
     #[inline(always)]
     fn checkpoint(&self) -> Self::Checkpoint {
-        Checkpoint(*self)
+        Checkpoint::<_, Self>::new(*self)
     }
     #[inline(always)]
     fn reset(&mut self, checkpoint: Self::Checkpoint) {
-        *self = checkpoint.0;
+        *self = checkpoint.inner;
     }
 
     #[inline(always)]
@@ -774,7 +774,7 @@ impl<'i> Stream for &'i Bytes {
 
     type IterOffsets = Enumerate<Cloned<Iter<'i, u8>>>;
 
-    type Checkpoint = Checkpoint<Self>;
+    type Checkpoint = Checkpoint<Self, Self>;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
@@ -820,11 +820,11 @@ impl<'i> Stream for &'i Bytes {
 
     #[inline(always)]
     fn checkpoint(&self) -> Self::Checkpoint {
-        Checkpoint(*self)
+        Checkpoint::<_, Self>::new(*self)
     }
     #[inline(always)]
     fn reset(&mut self, checkpoint: Self::Checkpoint) {
-        *self = checkpoint.0;
+        *self = checkpoint.inner;
     }
 
     #[inline(always)]
@@ -839,7 +839,7 @@ impl<'i> Stream for &'i BStr {
 
     type IterOffsets = Enumerate<Cloned<Iter<'i, u8>>>;
 
-    type Checkpoint = Checkpoint<Self>;
+    type Checkpoint = Checkpoint<Self, Self>;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
@@ -885,11 +885,11 @@ impl<'i> Stream for &'i BStr {
 
     #[inline(always)]
     fn checkpoint(&self) -> Self::Checkpoint {
-        Checkpoint(*self)
+        Checkpoint::<_, Self>::new(*self)
     }
     #[inline(always)]
     fn reset(&mut self, checkpoint: Self::Checkpoint) {
-        *self = checkpoint.0;
+        *self = checkpoint.inner;
     }
 
     #[inline(always)]
@@ -907,7 +907,7 @@ where
 
     type IterOffsets = BitOffsets<I>;
 
-    type Checkpoint = Checkpoint<(I::Checkpoint, usize)>;
+    type Checkpoint = Checkpoint<(I::Checkpoint, usize), Self>;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
@@ -962,12 +962,12 @@ where
 
     #[inline(always)]
     fn checkpoint(&self) -> Self::Checkpoint {
-        Checkpoint((self.0.checkpoint(), self.1))
+        Checkpoint::<_, Self>::new((self.0.checkpoint(), self.1))
     }
     #[inline(always)]
     fn reset(&mut self, checkpoint: Self::Checkpoint) {
-        self.0.reset(checkpoint.0 .0);
-        self.1 = checkpoint.0 .1;
+        self.0.reset(checkpoint.inner.0);
+        self.1 = checkpoint.inner.1;
     }
 
     #[inline(always)]
@@ -1027,7 +1027,7 @@ impl<I: Stream> Stream for Located<I> {
 
     type IterOffsets = <I as Stream>::IterOffsets;
 
-    type Checkpoint = Checkpoint<I::Checkpoint>;
+    type Checkpoint = Checkpoint<I::Checkpoint, Self>;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
@@ -1061,11 +1061,11 @@ impl<I: Stream> Stream for Located<I> {
 
     #[inline(always)]
     fn checkpoint(&self) -> Self::Checkpoint {
-        Checkpoint(self.input.checkpoint())
+        Checkpoint::<_, Self>::new(self.input.checkpoint())
     }
     #[inline(always)]
     fn reset(&mut self, checkpoint: Self::Checkpoint) {
-        self.input.reset(checkpoint.0);
+        self.input.reset(checkpoint.inner);
     }
 
     #[inline(always)]
@@ -1084,7 +1084,7 @@ where
 
     type IterOffsets = <I as Stream>::IterOffsets;
 
-    type Checkpoint = Checkpoint<I::Checkpoint>;
+    type Checkpoint = Checkpoint<I::Checkpoint, Self>;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
@@ -1118,11 +1118,11 @@ where
 
     #[inline(always)]
     fn checkpoint(&self) -> Self::Checkpoint {
-        Checkpoint(self.input.checkpoint())
+        Checkpoint::<_, Self>::new(self.input.checkpoint())
     }
     #[inline(always)]
     fn reset(&mut self, checkpoint: Self::Checkpoint) {
-        self.input.reset(checkpoint.0);
+        self.input.reset(checkpoint.inner);
     }
 
     #[inline(always)]
@@ -1137,7 +1137,7 @@ impl<I: Stream, S: crate::lib::std::fmt::Debug> Stream for Stateful<I, S> {
 
     type IterOffsets = <I as Stream>::IterOffsets;
 
-    type Checkpoint = Checkpoint<I::Checkpoint>;
+    type Checkpoint = Checkpoint<I::Checkpoint, Self>;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
@@ -1171,11 +1171,11 @@ impl<I: Stream, S: crate::lib::std::fmt::Debug> Stream for Stateful<I, S> {
 
     #[inline(always)]
     fn checkpoint(&self) -> Self::Checkpoint {
-        Checkpoint(self.input.checkpoint())
+        Checkpoint::<_, Self>::new(self.input.checkpoint())
     }
     #[inline(always)]
     fn reset(&mut self, checkpoint: Self::Checkpoint) {
-        self.input.reset(checkpoint.0);
+        self.input.reset(checkpoint.inner);
     }
 
     #[inline(always)]
@@ -1190,7 +1190,7 @@ impl<I: Stream> Stream for Partial<I> {
 
     type IterOffsets = <I as Stream>::IterOffsets;
 
-    type Checkpoint = Checkpoint<I::Checkpoint>;
+    type Checkpoint = Checkpoint<I::Checkpoint, Self>;
 
     #[inline(always)]
     fn iter_offsets(&self) -> Self::IterOffsets {
@@ -1224,11 +1224,11 @@ impl<I: Stream> Stream for Partial<I> {
 
     #[inline(always)]
     fn checkpoint(&self) -> Self::Checkpoint {
-        Checkpoint(self.input.checkpoint())
+        Checkpoint::<_, Self>::new(self.input.checkpoint())
     }
     #[inline(always)]
     fn reset(&mut self, checkpoint: Self::Checkpoint) {
-        self.input.reset(checkpoint.0);
+        self.input.reset(checkpoint.inner);
     }
 
     #[inline(always)]
@@ -1903,13 +1903,13 @@ where
     }
 }
 
-impl<I> Offset for Checkpoint<I>
+impl<I, S> Offset for Checkpoint<I, S>
 where
     I: Offset,
 {
     #[inline(always)]
     fn offset_from(&self, start: &Self) -> usize {
-        self.0.offset_from(&start.0)
+        self.inner.offset_from(&start.inner)
     }
 }
 
@@ -2764,8 +2764,36 @@ where
 }
 
 /// Ensure checkpoint details are kept private
-#[derive(Copy, Clone, Debug)]
-pub struct Checkpoint<T>(T);
+pub struct Checkpoint<T, S> {
+    inner: T,
+    stream: core::marker::PhantomData<S>,
+}
+
+impl<T, S> Checkpoint<T, S> {
+    fn new(inner: T) -> Self {
+        Self {
+            inner,
+            stream: Default::default(),
+        }
+    }
+}
+
+impl<T: Copy, S> Copy for Checkpoint<T, S> {}
+
+impl<T: Clone, S> Clone for Checkpoint<T, S> {
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+            stream: Default::default(),
+        }
+    }
+}
+
+impl<T: crate::lib::std::fmt::Debug, S> crate::lib::std::fmt::Debug for Checkpoint<T, S> {
+    fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
+        self.inner.fmt(f)
+    }
+}
 
 /// A range bounded inclusively for counting parses performed
 #[derive(PartialEq, Eq)]
