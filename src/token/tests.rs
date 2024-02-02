@@ -256,7 +256,7 @@ fn partial_one_of_test() {
 
 #[test]
 fn char_byteslice() {
-    fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u8> {
+    fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, char> {
         'c'.parse_peek(i)
     }
 
@@ -265,12 +265,12 @@ fn char_byteslice() {
         f(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(a),
-            ErrorKind::Verify
+            ErrorKind::Tag
         )))
     );
 
     let b = &b"cde"[..];
-    assert_eq!(f(Partial::new(b)), Ok((Partial::new(&b"de"[..]), b'c')));
+    assert_eq!(f(Partial::new(b)), Ok((Partial::new(&b"de"[..]), 'c')));
 }
 
 #[test]
@@ -284,7 +284,7 @@ fn char_str() {
         f(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(a),
-            ErrorKind::Verify
+            ErrorKind::Tag
         )))
     );
 
