@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.37] - 2024-02-02
+
 ### Features
 
 - Initial support for error recovery behind `unstable-recover` feature
@@ -2204,7 +2206,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.36...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.37...HEAD
+[0.5.37]: https://github.com/winnow-rs/winnow/compare/v0.5.36...v0.5.37
 [0.5.36]: https://github.com/winnow-rs/winnow/compare/v0.5.35...v0.5.36
 [0.5.35]: https://github.com/winnow-rs/winnow/compare/v0.5.34...v0.5.35
 [0.5.34]: https://github.com/winnow-rs/winnow/compare/v0.5.33...v0.5.34
