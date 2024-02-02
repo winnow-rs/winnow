@@ -7,7 +7,7 @@ use winnow::prelude::*;
 use winnow::{
     ascii::{digit1 as digit, space0 as space},
     combinator::alt,
-    combinator::fold_repeat,
+    combinator::repeat,
     combinator::{delimited, terminated},
 };
 
@@ -65,24 +65,23 @@ fn term(i: &mut &str) -> PResult<i64> {
         e
     })?;
 
-    let res = fold_repeat(
-        0..,
-        alt((('*', factor), ('/', factor.verify(|i| *i != 0)))),
-        || init,
-        |acc, (op, val): (char, i64)| {
-            if op == '*' {
-                acc.saturating_mul(val)
-            } else {
-                match acc.checked_div(val) {
-                    Some(v) => v,
-                    // we get a division with overflow because we can get acc = i64::MIN and val = -1
-                    // the division by zero is already checked earlier by verify
-                    None => i64::MAX,
+    let res = repeat(0.., alt((('*', factor), ('/', factor.verify(|i| *i != 0)))))
+        .fold(
+            || init,
+            |acc, (op, val): (char, i64)| {
+                if op == '*' {
+                    acc.saturating_mul(val)
+                } else {
+                    match acc.checked_div(val) {
+                        Some(v) => v,
+                        // we get a division with overflow because we can get acc = i64::MIN and val = -1
+                        // the division by zero is already checked earlier by verify
+                        None => i64::MAX,
+                    }
                 }
-            }
-        },
-    )
-    .parse_next(i);
+            },
+        )
+        .parse_next(i);
 
     decr();
     res
@@ -95,19 +94,18 @@ fn expr(i: &mut &str) -> PResult<i64> {
         e
     })?;
 
-    let res = fold_repeat(
-        0..,
-        (alt(('+', '-')), term),
-        || init,
-        |acc, (op, val): (char, i64)| {
-            if op == '+' {
-                acc.saturating_add(val)
-            } else {
-                acc.saturating_sub(val)
-            }
-        },
-    )
-    .parse_next(i);
+    let res = repeat(0.., (alt(('+', '-')), term))
+        .fold(
+            || init,
+            |acc, (op, val): (char, i64)| {
+                if op == '+' {
+                    acc.saturating_add(val)
+                } else {
+                    acc.saturating_sub(val)
+                }
+            },
+        )
+        .parse_next(i);
 
     decr();
     res

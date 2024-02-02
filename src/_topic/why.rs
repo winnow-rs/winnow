@@ -36,18 +36,18 @@
 //!
 //! `winnow` includes support for:
 //! - Zero-copy parsing
-//! - [Parse traces][crate::trace] for easier debugging
+//! - [Parse traces] for easier debugging
 //! - [Streaming parsing][crate::Partial] for network communication or large file
 //! - [Stateful][crate::Stateful] parsers
 //!
 //! For binary formats, `winnow` includes:
-//! - [A hexadecimal view][crate::Bytes] in [traces][crate::trace]
+//! - [A hexadecimal view][crate::Bytes] in [trace]
 //! - [TLV](https://en.wikipedia.org/wiki/Type-length-value) (e.g. [`length_take`])
 //! - Some common parsers to help get started, like numbers
 //!
 //! For text formats, `winnow` includes:
 //! - [Tracking of spans][crate::Located]
-//! - [A textual view when parsing as bytes][crate::BStr] in [traces][crate::trace]
+//! - [A textual view when parsing as bytes][crate::BStr] in [trace]
 //! - Ability to evaluate directly, parse to an AST, or lex and parse the format
 //!
 //! This works well for:
@@ -98,4 +98,5 @@
 
 #![allow(unused_imports)]
 use crate::binary::length_take;
+use crate::combinator::trace;
 use crate::stream::Accumulate;

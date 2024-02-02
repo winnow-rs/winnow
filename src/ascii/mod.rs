@@ -143,19 +143,6 @@ where
     .parse_next(input)
 }
 
-/// Deprecated, replaced with [`till_line_ending`]
-#[deprecated(since = "0.5.35", note = "Replaced with `till_line_ending`")]
-#[inline(always)]
-pub fn not_line_ending<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
-where
-    I: StreamIsPartial,
-    I: Stream,
-    I: Compare<&'static str>,
-    <I as Stream>::Token: AsChar + Clone,
-{
-    till_line_ending(input)
-}
-
 fn till_line_ending_<I, E: ParserError<I>, const PARTIAL: bool>(
     input: &mut I,
 ) -> PResult<<I as Stream>::Slice, E>
@@ -1351,6 +1338,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
+    I: Compare<Caseless<&'static str>>,
     <I as Stream>::Slice: ParseSlice<O>,
     <I as Stream>::Token: AsChar + Clone,
     <I as Stream>::IterOffsets: Clone,
@@ -1365,7 +1353,6 @@ where
 }
 
 #[allow(clippy::trait_duplication_in_bounds)] // HACK: clippy 1.64.0 bug
-#[allow(deprecated)]
 fn recognize_float_or_exceptions<I, E: ParserError<I>>(
     input: &mut I,
 ) -> PResult<<I as Stream>::Slice, E>
@@ -1373,19 +1360,20 @@ where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
+    I: Compare<Caseless<&'static str>>,
     <I as Stream>::Token: AsChar + Clone,
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
     alt((
         recognize_float,
-        crate::token::tag_no_case("nan"),
+        crate::token::tag(Caseless("nan")),
         (
             opt(one_of(['+', '-'])),
-            crate::token::tag_no_case("infinity"),
+            crate::token::tag(Caseless("infinity")),
         )
             .recognize(),
-        (opt(one_of(['+', '-'])), crate::token::tag_no_case("inf")).recognize(),
+        (opt(one_of(['+', '-'])), crate::token::tag(Caseless("inf"))).recognize(),
     ))
     .parse_next(input)
 }
