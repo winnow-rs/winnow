@@ -1,8 +1,12 @@
 use crate::combinator::trace;
 use crate::combinator::trace_result;
+#[cfg(feature = "unstable-recover")]
+use crate::error::FromRecoverableError;
 use crate::error::{AddContext, ErrMode, ErrorKind, FromExternalError, ParserError};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::ops::Range;
+#[cfg(feature = "unstable-recover")]
+use crate::stream::Recover;
 use crate::stream::StreamIsPartial;
 use crate::stream::{Location, Stream};
 use crate::*;
@@ -902,4 +906,192 @@ where
         })
         .parse_next(i)
     }
+}
+
+/// Implementation of [`Parser::retry_after`]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+#[cfg(feature = "unstable-recover")]
+pub struct RetryAfter<P, R, I, O, E>
+where
+    P: Parser<I, O, E>,
+    R: Parser<I, (), E>,
+    I: Stream,
+    I: Recover<E>,
+    E: FromRecoverableError<I, E>,
+{
+    parser: P,
+    recover: R,
+    i: core::marker::PhantomData<I>,
+    o: core::marker::PhantomData<O>,
+    e: core::marker::PhantomData<E>,
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<P, R, I, O, E> RetryAfter<P, R, I, O, E>
+where
+    P: Parser<I, O, E>,
+    R: Parser<I, (), E>,
+    I: Stream,
+    I: Recover<E>,
+    E: FromRecoverableError<I, E>,
+{
+    #[inline(always)]
+    pub(crate) fn new(parser: P, recover: R) -> Self {
+        Self {
+            parser,
+            recover,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<P, R, I, O, E> Parser<I, O, E> for RetryAfter<P, R, I, O, E>
+where
+    P: Parser<I, O, E>,
+    R: Parser<I, (), E>,
+    I: Stream,
+    I: Recover<E>,
+    E: FromRecoverableError<I, E>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
+        if I::is_recovery_supported() {
+            retry_after_inner(&mut self.parser, &mut self.recover, i)
+        } else {
+            self.parser.parse_next(i)
+        }
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+fn retry_after_inner<P, R, I, O, E>(parser: &mut P, recover: &mut R, i: &mut I) -> PResult<O, E>
+where
+    P: Parser<I, O, E>,
+    R: Parser<I, (), E>,
+    I: Stream,
+    I: Recover<E>,
+    E: FromRecoverableError<I, E>,
+{
+    loop {
+        let token_start = i.checkpoint();
+        let mut err = match parser.parse_next(i) {
+            Ok(o) => {
+                return Ok(o);
+            }
+            Err(ErrMode::Incomplete(e)) => return Err(ErrMode::Incomplete(e)),
+            Err(err) => err,
+        };
+        let err_start = i.checkpoint();
+        let err_start_eof_offset = i.eof_offset();
+        if recover.parse_next(i).is_ok() {
+            let i_eof_offset = i.eof_offset();
+            if err_start_eof_offset == i_eof_offset {
+                // Didn't advance so bubble the error up
+            } else if let Err(err_) = i.record_err(&token_start, &err_start, err) {
+                err = err_;
+            } else {
+                continue;
+            }
+        }
+
+        i.reset(err_start.clone());
+        err = err.map(|err| E::from_recoverable_error(&token_start, &err_start, i, err));
+        return Err(err);
+    }
+}
+
+/// Implementation of [`Parser::resume_after`]
+#[cfg(feature = "unstable-recover")]
+#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
+pub struct ResumeAfter<P, R, I, O, E>
+where
+    P: Parser<I, O, E>,
+    R: Parser<I, (), E>,
+    I: Stream,
+    I: Recover<E>,
+    E: FromRecoverableError<I, E>,
+{
+    parser: P,
+    recover: R,
+    i: core::marker::PhantomData<I>,
+    o: core::marker::PhantomData<O>,
+    e: core::marker::PhantomData<E>,
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<P, R, I, O, E> ResumeAfter<P, R, I, O, E>
+where
+    P: Parser<I, O, E>,
+    R: Parser<I, (), E>,
+    I: Stream,
+    I: Recover<E>,
+    E: FromRecoverableError<I, E>,
+{
+    #[inline(always)]
+    pub(crate) fn new(parser: P, recover: R) -> Self {
+        Self {
+            parser,
+            recover,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<P, R, I, O, E> Parser<I, Option<O>, E> for ResumeAfter<P, R, I, O, E>
+where
+    P: Parser<I, O, E>,
+    R: Parser<I, (), E>,
+    I: Stream,
+    I: Recover<E>,
+    E: FromRecoverableError<I, E>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<Option<O>, E> {
+        if I::is_recovery_supported() {
+            resume_after_inner(&mut self.parser, &mut self.recover, i)
+        } else {
+            self.parser.parse_next(i).map(Some)
+        }
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+fn resume_after_inner<P, R, I, O, E>(
+    parser: &mut P,
+    recover: &mut R,
+    i: &mut I,
+) -> PResult<Option<O>, E>
+where
+    P: Parser<I, O, E>,
+    R: Parser<I, (), E>,
+    I: Stream,
+    I: Recover<E>,
+    E: FromRecoverableError<I, E>,
+{
+    let token_start = i.checkpoint();
+    let mut err = match parser.parse_next(i) {
+        Ok(o) => {
+            return Ok(Some(o));
+        }
+        Err(ErrMode::Incomplete(e)) => return Err(ErrMode::Incomplete(e)),
+        Err(err) => err,
+    };
+    let err_start = i.checkpoint();
+    if recover.parse_next(i).is_ok() {
+        if let Err(err_) = i.record_err(&token_start, &err_start, err) {
+            err = err_;
+        } else {
+            return Ok(None);
+        }
+    }
+
+    i.reset(err_start.clone());
+    err = err.map(|err| E::from_recoverable_error(&token_start, &err_start, i, err));
+    Err(err)
 }

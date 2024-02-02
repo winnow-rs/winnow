@@ -240,6 +240,8 @@ pub mod prelude {
     pub use crate::IResult;
     pub use crate::PResult;
     pub use crate::Parser;
+    #[cfg(feature = "unstable-recover")]
+    pub use crate::RecoverableParser as _;
 }
 
 pub use error::IResult;

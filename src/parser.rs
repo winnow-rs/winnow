@@ -2,8 +2,12 @@
 
 use crate::ascii::Caseless as AsciiCaseless;
 use crate::combinator::*;
+#[cfg(feature = "unstable-recover")]
+use crate::error::FromRecoverableError;
 use crate::error::{AddContext, FromExternalError, IResult, PResult, ParseError, ParserError};
 use crate::stream::{AsChar, Compare, Location, ParseSlice, Stream, StreamIsPartial};
+#[cfg(feature = "unstable-recover")]
+use crate::stream::{Recover, Recoverable};
 
 /// Core trait for parsing
 ///
@@ -662,6 +666,43 @@ pub trait Parser<I, O, E> {
     {
         ErrInto::new(self)
     }
+
+    /// Recover from an error by skipping everything `recover` consumes and trying again
+    ///
+    /// If `recover` consumes nothing, the error is returned, allowing an alternative recovery
+    /// method.
+    ///
+    /// This commits the parse result, preventing alternative branch paths like with
+    /// [`winnow::combinator::alt`][crate::combinator::alt].
+    #[inline(always)]
+    #[cfg(feature = "unstable-recover")]
+    fn retry_after<R>(self, recover: R) -> RetryAfter<Self, R, I, O, E>
+    where
+        Self: core::marker::Sized,
+        R: Parser<I, (), E>,
+        I: Stream,
+        I: Recover<E>,
+        E: FromRecoverableError<I, E>,
+    {
+        RetryAfter::new(self, recover)
+    }
+
+    /// Recover from an error by skipping this parse and everything `recover` consumes
+    ///
+    /// This commits the parse result, preventing alternative branch paths like with
+    /// [`winnow::combinator::alt`][crate::combinator::alt].
+    #[inline(always)]
+    #[cfg(feature = "unstable-recover")]
+    fn resume_after<R>(self, recover: R) -> ResumeAfter<Self, R, I, O, E>
+    where
+        Self: core::marker::Sized,
+        R: Parser<I, (), E>,
+        I: Stream,
+        I: Recover<E>,
+        E: FromRecoverableError<I, E>,
+    {
+        ResumeAfter::new(self, recover)
+    }
 }
 
 impl<'a, I, O, E, F> Parser<I, O, E> for F
@@ -950,6 +991,71 @@ macro_rules! impl_parser_for_tuples {
     };
     (__impl $($parser:ident $output:ident),+;) => {
         impl_parser_for_tuple!($($parser $output),+);
+    }
+}
+
+/// Collect all errors when parsing the input
+///
+/// [`Parser`]s will need to use [`Recoverable<I, _>`] for their input.
+#[cfg(feature = "unstable-recover")]
+pub trait RecoverableParser<I, O, R, E> {
+    /// Collect all errors when parsing the input
+    ///
+    /// If `self` fails, this acts like [`Parser::resume_after`] and returns `Ok(None)`.
+    /// Generally, this should be avoided by using
+    /// [`Parser::retry_after`] and [`Parser::resume_after`] throughout your parser.
+    ///
+    /// The empty `input` is returned to allow turning the errors into [`ParserError`]s.
+    fn recoverable_parse(&mut self, input: I) -> (I, Option<O>, Vec<R>);
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<P, I, O, R, E> RecoverableParser<I, O, R, E> for P
+where
+    P: Parser<Recoverable<I, R>, O, E>,
+    I: Stream,
+    I: StreamIsPartial,
+    R: FromRecoverableError<Recoverable<I, R>, E>,
+    R: crate::lib::std::fmt::Debug,
+    E: FromRecoverableError<Recoverable<I, R>, E>,
+    E: ParserError<Recoverable<I, R>>,
+    E: crate::lib::std::fmt::Debug,
+{
+    #[inline]
+    fn recoverable_parse(&mut self, input: I) -> (I, Option<O>, Vec<R>) {
+        debug_assert!(
+            !I::is_partial_supported(),
+            "partial streams need to handle `ErrMode::Incomplete`"
+        );
+
+        let start = input.checkpoint();
+        let mut input = Recoverable::new(input);
+        let start_token = input.checkpoint();
+        let result = (
+            self.by_ref(),
+            crate::combinator::eof.resume_after(rest.void()),
+        )
+            .parse_next(&mut input);
+
+        let (o, err) = match result {
+            Ok((o, _)) => (Some(o), None),
+            Err(err) => {
+                let err = err
+                    .into_inner()
+                    .expect("complete parsers should not report `ErrMode::Incomplete(_)`");
+                let err_start = input.checkpoint();
+                let err = R::from_recoverable_error(&start_token, &err_start, &input, err);
+                (None, Some(err))
+            }
+        };
+
+        let (mut input, mut errs) = input.into_parts();
+        input.reset(start);
+        if let Some(err) = err {
+            errs.push(err);
+        }
+
+        (input, o, errs)
     }
 }
 

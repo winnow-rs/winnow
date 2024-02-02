@@ -13,6 +13,8 @@ use core::hash::BuildHasher;
 use core::num::NonZeroUsize;
 
 use crate::ascii::Caseless as AsciiCaseless;
+#[cfg(feature = "unstable-recover")]
+use crate::error::FromRecoverableError;
 use crate::error::Needed;
 use crate::lib::std::iter::{Cloned, Enumerate};
 use crate::lib::std::slice::Iter;
@@ -21,7 +23,7 @@ use crate::lib::std::str::CharIndices;
 use crate::lib::std::str::FromStr;
 
 #[allow(unused_imports)]
-#[cfg(feature = "unstable-doc")]
+#[cfg(any(feature = "unstable-doc", feature = "unstable-recover"))]
 use crate::error::ErrMode;
 
 #[cfg(feature = "alloc")]
@@ -145,6 +147,84 @@ impl<I> crate::lib::std::ops::Deref for Located<I> {
 impl<I: crate::lib::std::fmt::Display> crate::lib::std::fmt::Display for Located<I> {
     fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
         self.input.fmt(f)
+    }
+}
+
+/// Allow recovering from parse errors, capturing them as the parser continues
+///
+/// Generally, this will be used indirectly via
+/// [`RecoverableParser::recoverable_parse`][crate::RecoverableParser::recoverable_parse].
+#[cfg(feature = "unstable-recover")]
+#[derive(Clone, Debug)]
+pub struct Recoverable<I, E>
+where
+    I: Stream,
+{
+    input: I,
+    errors: Vec<E>,
+    is_recoverable: bool,
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<I, E> Recoverable<I, E>
+where
+    I: Stream,
+{
+    /// Track recoverable errors with the stream
+    pub fn new(input: I) -> Self {
+        Self {
+            input,
+            errors: Default::default(),
+            is_recoverable: true,
+        }
+    }
+
+    /// Act as a normal stream
+    pub fn unrecoverable(input: I) -> Self {
+        Self {
+            input,
+            errors: Default::default(),
+            is_recoverable: false,
+        }
+    }
+
+    /// Access the current input and errors
+    pub fn into_parts(self) -> (I, Vec<E>) {
+        (self.input, self.errors)
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<I, E> AsRef<I> for Recoverable<I, E>
+where
+    I: Stream,
+{
+    #[inline(always)]
+    fn as_ref(&self) -> &I {
+        &self.input
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<I, E> crate::lib::std::ops::Deref for Recoverable<I, E>
+where
+    I: Stream,
+{
+    type Target = I;
+
+    #[inline(always)]
+    fn deref(&self) -> &Self::Target {
+        &self.input
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<I: crate::lib::std::fmt::Display, E> crate::lib::std::fmt::Display for Recoverable<I, E>
+where
+    I: Stream,
+{
+    fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
+        crate::lib::std::fmt::Display::fmt(&self.input, f)
     }
 }
 
@@ -408,6 +488,18 @@ where
 impl<I> SliceLen for Located<I>
 where
     I: SliceLen,
+{
+    #[inline(always)]
+    fn slice_len(&self) -> usize {
+        self.input.slice_len()
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<I, E> SliceLen for Recoverable<I, E>
+where
+    I: SliceLen,
+    I: Stream,
 {
     #[inline(always)]
     fn slice_len(&self) -> usize {
@@ -982,6 +1074,63 @@ impl<I: Stream> Stream for Located<I> {
     }
 }
 
+#[cfg(feature = "unstable-recover")]
+impl<I, E: crate::lib::std::fmt::Debug> Stream for Recoverable<I, E>
+where
+    I: Stream,
+{
+    type Token = <I as Stream>::Token;
+    type Slice = <I as Stream>::Slice;
+
+    type IterOffsets = <I as Stream>::IterOffsets;
+
+    type Checkpoint = Checkpoint<I::Checkpoint>;
+
+    #[inline(always)]
+    fn iter_offsets(&self) -> Self::IterOffsets {
+        self.input.iter_offsets()
+    }
+    #[inline(always)]
+    fn eof_offset(&self) -> usize {
+        self.input.eof_offset()
+    }
+
+    #[inline(always)]
+    fn next_token(&mut self) -> Option<Self::Token> {
+        self.input.next_token()
+    }
+
+    #[inline(always)]
+    fn offset_for<P>(&self, predicate: P) -> Option<usize>
+    where
+        P: Fn(Self::Token) -> bool,
+    {
+        self.input.offset_for(predicate)
+    }
+    #[inline(always)]
+    fn offset_at(&self, tokens: usize) -> Result<usize, Needed> {
+        self.input.offset_at(tokens)
+    }
+    #[inline(always)]
+    fn next_slice(&mut self, offset: usize) -> Self::Slice {
+        self.input.next_slice(offset)
+    }
+
+    #[inline(always)]
+    fn checkpoint(&self) -> Self::Checkpoint {
+        Checkpoint(self.input.checkpoint())
+    }
+    #[inline(always)]
+    fn reset(&mut self, checkpoint: Self::Checkpoint) {
+        self.input.reset(checkpoint.0);
+    }
+
+    #[inline(always)]
+    fn raw(&self) -> &dyn crate::lib::std::fmt::Debug {
+        &self.input
+    }
+}
+
 impl<I: Stream, S: crate::lib::std::fmt::Debug> Stream for Stateful<I, S> {
     type Token = <I as Stream>::Token;
     type Slice = <I as Stream>::Slice;
@@ -1106,6 +1255,18 @@ where
     }
 }
 
+#[cfg(feature = "unstable-recover")]
+impl<I, E> Location for Recoverable<I, E>
+where
+    I: Location,
+    I: Stream,
+{
+    #[inline(always)]
+    fn location(&self) -> usize {
+        self.input.location()
+    }
+}
+
 impl<I, S> Location for Stateful<I, S>
 where
     I: Location,
@@ -1123,6 +1284,232 @@ where
     #[inline(always)]
     fn location(&self) -> usize {
         self.input.location()
+    }
+}
+
+/// Capture top-level errors in the middle of parsing so parsing can resume
+///
+/// See [`Recoverable`] for adding error recovery tracking to your [`Stream`]
+#[cfg(feature = "unstable-recover")]
+pub trait Recover<E>: Stream {
+    /// Capture a top-level error
+    ///
+    /// May return `Err(err)` if recovery is not possible (e.g. if [`Recover::is_recovery_supported`]
+    /// returns `false`).
+    fn record_err(
+        &mut self,
+        token_start: &Self::Checkpoint,
+        err_start: &Self::Checkpoint,
+        err: ErrMode<E>,
+    ) -> Result<(), ErrMode<E>>;
+
+    /// Report whether the [`Stream`] can save off errors for recovery
+    fn is_recovery_supported() -> bool;
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<'a, T, E> Recover<E> for &'a [T]
+where
+    &'a [T]: Stream,
+{
+    #[inline(always)]
+    fn record_err(
+        &mut self,
+        _token_start: &Self::Checkpoint,
+        _err_start: &Self::Checkpoint,
+        err: ErrMode<E>,
+    ) -> Result<(), ErrMode<E>> {
+        Err(err)
+    }
+
+    /// Report whether the [`Stream`] can save off errors for recovery
+    #[inline(always)]
+    fn is_recovery_supported() -> bool {
+        false
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<'a, E> Recover<E> for &'a str {
+    #[inline(always)]
+    fn record_err(
+        &mut self,
+        _token_start: &Self::Checkpoint,
+        _err_start: &Self::Checkpoint,
+        err: ErrMode<E>,
+    ) -> Result<(), ErrMode<E>> {
+        Err(err)
+    }
+
+    /// Report whether the [`Stream`] can save off errors for recovery
+    #[inline(always)]
+    fn is_recovery_supported() -> bool {
+        false
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<'a, E> Recover<E> for &'a Bytes {
+    #[inline(always)]
+    fn record_err(
+        &mut self,
+        _token_start: &Self::Checkpoint,
+        _err_start: &Self::Checkpoint,
+        err: ErrMode<E>,
+    ) -> Result<(), ErrMode<E>> {
+        Err(err)
+    }
+
+    /// Report whether the [`Stream`] can save off errors for recovery
+    #[inline(always)]
+    fn is_recovery_supported() -> bool {
+        false
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<'a, E> Recover<E> for &'a BStr {
+    #[inline(always)]
+    fn record_err(
+        &mut self,
+        _token_start: &Self::Checkpoint,
+        _err_start: &Self::Checkpoint,
+        err: ErrMode<E>,
+    ) -> Result<(), ErrMode<E>> {
+        Err(err)
+    }
+
+    /// Report whether the [`Stream`] can save off errors for recovery
+    #[inline(always)]
+    fn is_recovery_supported() -> bool {
+        false
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<I, E> Recover<E> for (I, usize)
+where
+    I: Recover<E>,
+    I: Stream<Token = u8> + Clone,
+{
+    #[inline(always)]
+    fn record_err(
+        &mut self,
+        _token_start: &Self::Checkpoint,
+        _err_start: &Self::Checkpoint,
+        err: ErrMode<E>,
+    ) -> Result<(), ErrMode<E>> {
+        Err(err)
+    }
+
+    /// Report whether the [`Stream`] can save off errors for recovery
+    #[inline(always)]
+    fn is_recovery_supported() -> bool {
+        false
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<I, E> Recover<E> for Located<I>
+where
+    I: Recover<E>,
+    I: Stream,
+{
+    #[inline(always)]
+    fn record_err(
+        &mut self,
+        _token_start: &Self::Checkpoint,
+        _err_start: &Self::Checkpoint,
+        err: ErrMode<E>,
+    ) -> Result<(), ErrMode<E>> {
+        Err(err)
+    }
+
+    /// Report whether the [`Stream`] can save off errors for recovery
+    #[inline(always)]
+    fn is_recovery_supported() -> bool {
+        false
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<I, E, R> Recover<E> for Recoverable<I, R>
+where
+    I: Stream,
+    R: FromRecoverableError<Self, E>,
+    R: crate::lib::std::fmt::Debug,
+{
+    fn record_err(
+        &mut self,
+        token_start: &Self::Checkpoint,
+        err_start: &Self::Checkpoint,
+        err: ErrMode<E>,
+    ) -> Result<(), ErrMode<E>> {
+        if self.is_recoverable {
+            match err {
+                ErrMode::Incomplete(need) => Err(ErrMode::Incomplete(need)),
+                ErrMode::Backtrack(err) | ErrMode::Cut(err) => {
+                    self.errors
+                        .push(R::from_recoverable_error(token_start, err_start, self, err));
+                    Ok(())
+                }
+            }
+        } else {
+            Err(err)
+        }
+    }
+
+    /// Report whether the [`Stream`] can save off errors for recovery
+    #[inline(always)]
+    fn is_recovery_supported() -> bool {
+        true
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<I, E, S> Recover<E> for Stateful<I, S>
+where
+    I: Recover<E>,
+    I: Stream,
+    S: Clone + crate::lib::std::fmt::Debug,
+{
+    #[inline(always)]
+    fn record_err(
+        &mut self,
+        _token_start: &Self::Checkpoint,
+        _err_start: &Self::Checkpoint,
+        err: ErrMode<E>,
+    ) -> Result<(), ErrMode<E>> {
+        Err(err)
+    }
+
+    /// Report whether the [`Stream`] can save off errors for recovery
+    #[inline(always)]
+    fn is_recovery_supported() -> bool {
+        false
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<I, E> Recover<E> for Partial<I>
+where
+    I: Recover<E>,
+    I: Stream,
+{
+    #[inline(always)]
+    fn record_err(
+        &mut self,
+        _token_start: &Self::Checkpoint,
+        _err_start: &Self::Checkpoint,
+        err: ErrMode<E>,
+    ) -> Result<(), ErrMode<E>> {
+        Err(err)
+    }
+
+    /// Report whether the [`Stream`] can save off errors for recovery
+    #[inline(always)]
+    fn is_recovery_supported() -> bool {
+        false
     }
 }
 
@@ -1236,6 +1623,33 @@ where
 impl<I> StreamIsPartial for Located<I>
 where
     I: StreamIsPartial,
+{
+    type PartialState = I::PartialState;
+
+    fn complete(&mut self) -> Self::PartialState {
+        self.input.complete()
+    }
+
+    fn restore_partial(&mut self, state: Self::PartialState) {
+        self.input.restore_partial(state);
+    }
+
+    #[inline(always)]
+    fn is_partial_supported() -> bool {
+        I::is_partial_supported()
+    }
+
+    #[inline(always)]
+    fn is_partial(&self) -> bool {
+        self.input.is_partial()
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<I, E> StreamIsPartial for Recoverable<I, E>
+where
+    I: StreamIsPartial,
+    I: Stream,
 {
     type PartialState = I::PartialState;
 
@@ -1423,6 +1837,30 @@ where
     }
 }
 
+#[cfg(feature = "unstable-recover")]
+impl<I, E> Offset for Recoverable<I, E>
+where
+    I: Stream,
+    E: crate::lib::std::fmt::Debug,
+{
+    #[inline(always)]
+    fn offset_from(&self, other: &Self) -> usize {
+        self.offset_from(&other.checkpoint())
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<I, E> Offset<<Recoverable<I, E> as Stream>::Checkpoint> for Recoverable<I, E>
+where
+    I: Stream,
+    E: crate::lib::std::fmt::Debug,
+{
+    #[inline(always)]
+    fn offset_from(&self, other: &<Recoverable<I, E> as Stream>::Checkpoint) -> usize {
+        self.checkpoint().offset_from(other)
+    }
+}
+
 impl<I, S> Offset for Stateful<I, S>
 where
     I: Stream,
@@ -1505,6 +1943,18 @@ where
     }
 }
 
+#[cfg(feature = "unstable-recover")]
+impl<I, E> AsBytes for Recoverable<I, E>
+where
+    I: Stream,
+    I: AsBytes,
+{
+    #[inline(always)]
+    fn as_bytes(&self) -> &[u8] {
+        self.input.as_bytes()
+    }
+}
+
 impl<I, S> AsBytes for Stateful<I, S>
 where
     I: AsBytes,
@@ -1554,6 +2004,18 @@ impl<'a> AsBStr for &'a str {
 
 impl<I> AsBStr for Located<I>
 where
+    I: AsBStr,
+{
+    #[inline(always)]
+    fn as_bstr(&self) -> &[u8] {
+        self.input.as_bstr()
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<I, E> AsBStr for Recoverable<I, E>
+where
+    I: Stream,
     I: AsBStr,
 {
     #[inline(always)]
@@ -1880,6 +2342,24 @@ where
     }
 }
 
+#[cfg(feature = "unstable-recover")]
+impl<I, E, U> Compare<U> for Recoverable<I, E>
+where
+    I: Stream,
+    I: Compare<U>,
+{
+    #[inline(always)]
+    fn compare(&self, other: U) -> CompareResult {
+        self.input.compare(other)
+    }
+
+    #[inline(always)]
+    #[allow(deprecated)]
+    fn compare_no_case(&self, other: U) -> CompareResult {
+        self.input.compare_no_case(other)
+    }
+}
+
 impl<I, S, U> Compare<U> for Stateful<I, S>
 where
     I: Compare<U>,
@@ -2141,6 +2621,18 @@ where
     }
 }
 
+#[cfg(feature = "unstable-recover")]
+impl<I, E, T> FindSlice<T> for Recoverable<I, E>
+where
+    I: Stream,
+    I: FindSlice<T>,
+{
+    #[inline(always)]
+    fn find_slice(&self, substr: T) -> Option<usize> {
+        self.input.find_slice(substr)
+    }
+}
+
 impl<I, S, T> FindSlice<T> for Stateful<I, S>
 where
     I: FindSlice<T>,
@@ -2224,6 +2716,20 @@ impl<'a> UpdateSlice for &'a BStr {
 impl<I> UpdateSlice for Located<I>
 where
     I: UpdateSlice,
+{
+    #[inline(always)]
+    fn update_slice(mut self, inner: Self::Slice) -> Self {
+        self.input = I::update_slice(self.input, inner);
+        self
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+impl<I, E> UpdateSlice for Recoverable<I, E>
+where
+    I: Stream,
+    I: UpdateSlice,
+    E: crate::lib::std::fmt::Debug,
 {
     #[inline(always)]
     fn update_slice(mut self, inner: Self::Slice) -> Self {
