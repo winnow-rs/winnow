@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Initial support for error recovery behind `unstable-recover` feature
+
 ## [0.5.36] - 2024-01-31
 
 ### Compatibility
