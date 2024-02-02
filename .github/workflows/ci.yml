@@ -8,6 +8,7 @@ on:
   push:
     branches:
     - main
+    - v*-main
 
 env:
   RUST_BACKTRACE: 1

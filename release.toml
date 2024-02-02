@@ -1,2 +1,2 @@
 dependent-version = "fix"
-allow-branch = ["main"]
+allow-branch = ["main", "v0.5-main"]
