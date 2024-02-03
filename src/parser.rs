@@ -97,19 +97,19 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// Because parsers are `FnMut`, they can be called multiple times. This prevents moving `f`
-    /// into [`length_data`][crate::binary::length_data] and `g` into
+    /// into [`length_take`][crate::binary::length_take] and `g` into
     /// [`Parser::complete_err`]:
     /// ```rust,compile_fail
     /// # use winnow::prelude::*;
     /// # use winnow::Parser;
     /// # use winnow::error::ParserError;
-    /// # use winnow::binary::length_data;
+    /// # use winnow::binary::length_take;
     /// pub fn length_value<'i, O, E: ParserError<&'i [u8]>>(
     ///     mut f: impl Parser<&'i [u8], usize, E>,
     ///     mut g: impl Parser<&'i [u8], O, E>
     /// ) -> impl Parser<&'i [u8], O, E> {
     ///   move |i: &mut &'i [u8]| {
-    ///     let mut data = length_data(f).parse_next(i)?;
+    ///     let mut data = length_take(f).parse_next(i)?;
     ///     let o = g.complete_err().parse_next(&mut data)?;
     ///     Ok(o)
     ///   }
@@ -121,13 +121,13 @@ pub trait Parser<I, O, E> {
     /// # use winnow::prelude::*;
     /// # use winnow::Parser;
     /// # use winnow::error::ParserError;
-    /// # use winnow::binary::length_data;
+    /// # use winnow::binary::length_take;
     /// pub fn length_value<'i, O, E: ParserError<&'i [u8]>>(
     ///     mut f: impl Parser<&'i [u8], usize, E>,
     ///     mut g: impl Parser<&'i [u8], O, E>
     /// ) -> impl Parser<&'i [u8], O, E> {
     ///   move |i: &mut &'i [u8]| {
-    ///     let mut data = length_data(f.by_ref()).parse_next(i)?;
+    ///     let mut data = length_take(f.by_ref()).parse_next(i)?;
     ///     let o = g.by_ref().complete_err().parse_next(&mut data)?;
     ///     Ok(o)
     ///   }
@@ -492,12 +492,12 @@ pub trait Parser<I, O, E> {
     /// use winnow::token::take;
     /// use winnow::binary::u8;
     ///
-    /// fn length_data<'s>(input: &mut &'s [u8]) -> PResult<&'s [u8], InputError<&'s [u8]>> {
+    /// fn length_take<'s>(input: &mut &'s [u8]) -> PResult<&'s [u8], InputError<&'s [u8]>> {
     ///     u8.flat_map(take).parse_next(input)
     /// }
     ///
-    /// assert_eq!(length_data.parse_peek(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
-    /// assert_eq!(length_data.parse_peek(&[4, 0, 1, 2][..]), Err(ErrMode::Backtrack(InputError::new(&[0, 1, 2][..], ErrorKind::Slice))));
+    /// assert_eq!(length_take.parse_peek(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
+    /// assert_eq!(length_take.parse_peek(&[4, 0, 1, 2][..]), Err(ErrMode::Backtrack(InputError::new(&[0, 1, 2][..], ErrorKind::Slice))));
     /// ```
     ///
     /// which is the same as
@@ -506,14 +506,14 @@ pub trait Parser<I, O, E> {
     /// use winnow::token::take;
     /// use winnow::binary::u8;
     ///
-    /// fn length_data<'s>(input: &mut &'s [u8]) -> PResult<&'s [u8], InputError<&'s [u8]>> {
+    /// fn length_take<'s>(input: &mut &'s [u8]) -> PResult<&'s [u8], InputError<&'s [u8]>> {
     ///     let length = u8.parse_next(input)?;
     ///     let data = take(length).parse_next(input)?;
     ///     Ok(data)
     /// }
     ///
-    /// assert_eq!(length_data.parse_peek(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
-    /// assert_eq!(length_data.parse_peek(&[4, 0, 1, 2][..]), Err(ErrMode::Backtrack(InputError::new(&[0, 1, 2][..], ErrorKind::Slice))));
+    /// assert_eq!(length_take.parse_peek(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
+    /// assert_eq!(length_take.parse_peek(&[4, 0, 1, 2][..]), Err(ErrMode::Backtrack(InputError::new(&[0, 1, 2][..], ErrorKind::Slice))));
     /// ```
     #[inline(always)]
     fn flat_map<G, H, O2>(self, map: G) -> FlatMap<Self, G, H, I, O, O2, E>

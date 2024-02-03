@@ -471,12 +471,6 @@ pub fn empty<I: Stream, E: ParserError<I>>(_input: &mut I) -> PResult<(), E> {
     Ok(())
 }
 
-/// Deprecated, replaced with [`empty`] + [`Parser::value`]
-#[deprecated(since = "0.5.35", note = "Replaced with empty.value(...)`")]
-pub fn success<I: Stream, O: Clone, E: ParserError<I>>(val: O) -> impl Parser<I, O, E> {
-    trace("success", move |_input: &mut I| Ok(val.clone()))
-}
-
 /// A parser which always fails.
 ///
 /// For example, it can be used as the last alternative in `alt` to

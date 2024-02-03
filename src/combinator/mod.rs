@@ -42,7 +42,7 @@
 //! | [`repeat`] | `repeat(1..=3, "ab")` | `"ababc"` | `"c"` | `Ok(vec!["ab", "ab"])` |Applies the parser between m and n times (n included) and returns the list of results in a Vec|
 //! | [`repeat_till`] | `repeat_till(0.., tag( "ab" ), tag( "ef" ))` | `"ababefg"` | `"g"` | `Ok((vec!["ab", "ab"], "ef"))` |Applies the first parser until the second applies. Returns a tuple containing the list of results from the first in a Vec and the result of the second|
 //! | [`separated`] | `separated(1..=3, "ab", ",")` | `"ab,ab,ab."` | `"."` | `Ok(vec!["ab", "ab", "ab"])` |Applies the parser and separator between m and n times (n included) and returns the list of results in a Vec|
-//! | [`fold_repeat`] | `fold_repeat(1..=2, be_u8, \|\| 0, \|acc, item\| acc + item)` | `[1, 2, 3]` | `[3]` | `Ok(3)` |Applies the parser between m and n times (n included) and folds the list of return value|
+//! | [`Repeat::fold`] | `repeat(1..=2, be_u8).fold(\|\| 0, \|acc, item\| acc + item)` | `[1, 2, 3]` | `[3]` | `Ok(3)` |Applies the parser between m and n times (n included) and folds the list of return value|
 //!
 //! ## Partial related
 //!
@@ -81,7 +81,7 @@
 //!
 //! ## Remaining combinators
 //!
-//! - [`success`]: Returns a value without consuming any input, always succeeds
+//! - [`empty`]: Returns a value without consuming any input, always succeeds
 //! - [`fail`]: Inversion of `success`. Always fails.
 //! - [`Parser::by_ref`]: Allow moving `&mut impl Parser` into other parsers
 //!
@@ -125,9 +125,9 @@
 //!
 //! ## Binary format parsing
 //!
-//! - [`length_count`][crate::binary::length_count] Gets a number from the first parser, then applies the second parser that many times
-//! - [`length_data`][crate::binary::length_data]: Gets a number from the first parser, then takes a subslice of the input of that size, and returns that subslice
-//! - [`length_value`][crate::binary::length_value]: Gets a number from the first parser, takes a subslice of the input of that size, then applies the second parser on that subslice. If the second parser returns `Incomplete`, `length_value` will return an error
+//! - [`length_repeat`][crate::binary::length_repeat] Gets a number from the first parser, then applies the second parser that many times
+//! - [`length_take`][crate::binary::length_take]: Gets a number from the first parser, then takes a subslice of the input of that size, and returns that subslice
+//! - [`length_and_then`][crate::binary::length_and_then]: Gets a number from the first parser, takes a subslice of the input of that size, then applies the second parser on that subslice. If the second parser returns `Incomplete`, `length_value` will return an error
 //!
 //! ### Integers
 //!

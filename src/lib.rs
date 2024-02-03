@@ -207,7 +207,6 @@ pub mod ascii;
 pub mod binary;
 pub mod combinator;
 pub mod token;
-pub mod trace;
 
 #[cfg(feature = "unstable-doc")]
 pub mod _topic;

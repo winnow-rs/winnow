@@ -491,20 +491,6 @@ where
     })
 }
 
-/// Deprecated, replaced with [`repeat_till`]
-#[deprecated(since = "0.5.35", note = "Replaced with `repeat_till`")]
-#[inline(always)]
-pub fn repeat_till0<I, O, C, P, E, F, G>(f: F, g: G) -> impl Parser<I, (C, P), E>
-where
-    I: Stream,
-    C: Accumulate<O>,
-    F: Parser<I, O, E>,
-    G: Parser<I, P, E>,
-    E: ParserError<I>,
-{
-    repeat_till(0.., f, g)
-}
-
 fn repeat_till0_<I, O, C, P, E, F, G>(f: &mut F, g: &mut G, i: &mut I) -> PResult<(C, P), E>
 where
     I: Stream,
@@ -732,51 +718,6 @@ where
     })
 }
 
-/// [`Accumulate`] the output of a parser, interleaved with `sep`
-///
-/// This stops when either parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
-/// [`cut_err`][crate::combinator::cut_err].
-///
-/// # Arguments
-/// * `parser` Parses the elements of the list.
-/// * `sep` Parses the separator between list elements.
-///
-/// # Example
-///
-/// ```rust
-/// # #[cfg(feature = "std")] {
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::combinator::separated0;
-/// use winnow::token::tag;
-///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   separated0("abc", "|").parse_peek(s)
-/// }
-///
-/// assert_eq!(parser("abc|abc|abc"), Ok(("", vec!["abc", "abc", "abc"])));
-/// assert_eq!(parser("abc123abc"), Ok(("123abc", vec!["abc"])));
-/// assert_eq!(parser("abc|def"), Ok(("|def", vec!["abc"])));
-/// assert_eq!(parser(""), Ok(("", vec![])));
-/// assert_eq!(parser("def|abc"), Ok(("def|abc", vec![])));
-/// # }
-/// ```
-#[doc(alias = "sep_by")]
-#[doc(alias = "separated_list0")]
-#[deprecated(since = "0.5.19", note = "Replaced with `combinator::separated`")]
-pub fn separated0<I, O, C, O2, E, P, S>(mut parser: P, mut sep: S) -> impl Parser<I, C, E>
-where
-    I: Stream,
-    C: Accumulate<O>,
-    P: Parser<I, O, E>,
-    S: Parser<I, O2, E>,
-    E: ParserError<I>,
-{
-    trace("separated0", move |i: &mut I| {
-        separated0_(&mut parser, &mut sep, i)
-    })
-}
-
 fn separated0_<I, O, C, O2, E, P, S>(
     parser: &mut P,
     separator: &mut S,
@@ -834,53 +775,6 @@ where
             }
         }
     }
-}
-
-/// [`Accumulate`] the output of a parser, interleaved with `sep`
-///
-/// Fails if the element parser does not produce at least one element.$
-///
-/// This stops when either parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
-/// [`cut_err`][crate::combinator::cut_err].
-///
-/// # Arguments
-/// * `sep` Parses the separator between list elements.
-/// * `f` Parses the elements of the list.
-///
-/// # Example
-///
-/// ```rust
-/// # #[cfg(feature = "std")] {
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::combinator::separated1;
-/// use winnow::token::tag;
-///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   separated1("abc", "|").parse_peek(s)
-/// }
-///
-/// assert_eq!(parser("abc|abc|abc"), Ok(("", vec!["abc", "abc", "abc"])));
-/// assert_eq!(parser("abc123abc"), Ok(("123abc", vec!["abc"])));
-/// assert_eq!(parser("abc|def"), Ok(("|def", vec!["abc"])));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
-/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(InputError::new("def|abc", ErrorKind::Tag))));
-/// # }
-/// ```
-#[doc(alias = "sep_by1")]
-#[doc(alias = "separated_list1")]
-#[deprecated(since = "0.5.19", note = "Replaced with `combinator::separated`")]
-pub fn separated1<I, O, C, O2, E, P, S>(mut parser: P, mut sep: S) -> impl Parser<I, C, E>
-where
-    I: Stream,
-    C: Accumulate<O>,
-    P: Parser<I, O, E>,
-    S: Parser<I, O2, E>,
-    E: ParserError<I>,
-{
-    trace("separated1", move |i: &mut I| {
-        separated1_(&mut parser, &mut sep, i)
-    })
 }
 
 fn separated1_<I, O, C, O2, E, P, S>(
@@ -1246,25 +1140,6 @@ where
 
         Ok(())
     })
-}
-
-/// Deprecated, replaced with [`Repeat::fold`]
-#[deprecated(since = "0.5.36", note = "Replaced with `repeat(...).fold(...)`")]
-#[inline(always)]
-pub fn fold_repeat<I, O, E, F, G, H, R>(
-    range: impl Into<Range>,
-    f: F,
-    init: H,
-    g: G,
-) -> impl Parser<I, R, E>
-where
-    I: Stream,
-    F: Parser<I, O, E>,
-    G: FnMut(R, O) -> R,
-    H: FnMut() -> R,
-    E: ParserError<I>,
-{
-    repeat(range, f).fold(init, g)
 }
 
 fn fold_repeat0_<I, O, E, F, G, H, R>(

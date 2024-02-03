@@ -2438,19 +2438,6 @@ where
     })
 }
 
-/// Deprecated since 0.5.27, replaced with [`length_take`]
-#[deprecated(since = "0.5.27", note = "Replaced with `length_take`")]
-pub fn length_data<I, N, E, F>(f: F) -> impl Parser<I, <I as Stream>::Slice, E>
-where
-    I: StreamIsPartial,
-    I: Stream,
-    N: ToUsize,
-    F: Parser<I, N, E>,
-    E: ParserError<I>,
-{
-    length_take(f)
-}
-
 /// Parse a length-prefixed slice ([TLV](https://en.wikipedia.org/wiki/Type-length-value))
 ///
 /// *Complete version*: Returns an error if there is not enough input data.
@@ -2509,20 +2496,6 @@ where
     })
 }
 
-/// Deprecated since 0.5.27, replaced with [`length_and_then`]
-#[deprecated(since = "0.5.27", note = "Replaced with `length_and_then`")]
-pub fn length_value<I, O, N, E, F, G>(f: F, g: G) -> impl Parser<I, O, E>
-where
-    I: StreamIsPartial,
-    I: Stream + UpdateSlice + Clone,
-    N: ToUsize,
-    F: Parser<I, N, E>,
-    G: Parser<I, O, E>,
-    E: ParserError<I>,
-{
-    length_and_then(f, g)
-}
-
 /// [`Accumulate`] a length-prefixed sequence of values ([TLV](https://en.wikipedia.org/wiki/Type-length-value))
 ///
 /// If the length represents token counts, see instead [`length_take`]
@@ -2540,7 +2513,7 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::Bytes;
 /// use winnow::binary::u8;
-/// use winnow::binary::length_count;
+/// use winnow::binary::length_repeat;
 /// use winnow::token::tag;
 ///
 /// type Stream<'i> = &'i Bytes;
@@ -2550,7 +2523,7 @@ where
 /// }
 ///
 /// fn parser(s: Stream<'_>) -> IResult<Stream<'_>, Vec<&[u8]>> {
-///   length_count(u8.map(|i| {
+///   length_repeat(u8.map(|i| {
 ///      println!("got number: {}", i);
 ///      i
 ///   }), "abc").parse_peek(s)
@@ -2574,18 +2547,4 @@ where
         let n = n.to_usize();
         repeat(n, g.by_ref()).parse_next(i)
     })
-}
-
-/// Deprecated since 0.5.27, replaced with [`length_repeat`]
-#[deprecated(since = "0.5.27", note = "Replaced with `length_repeat`")]
-pub fn length_count<I, O, C, N, E, F, G>(f: F, g: G) -> impl Parser<I, C, E>
-where
-    I: Stream,
-    N: ToUsize,
-    C: Accumulate<O>,
-    F: Parser<I, N, E>,
-    G: Parser<I, O, E>,
-    E: ParserError<I>,
-{
-    length_repeat(f, g)
 }
