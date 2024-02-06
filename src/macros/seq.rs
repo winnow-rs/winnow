@@ -62,6 +62,7 @@
 #[doc(alias = "pair")]
 #[doc(alias = "separated_pair")]
 #[doc(alias = "struct_parser")]
+#[doc(hidden)] // forced to be visible in intended location
 macro_rules! seq {
     ($name: ident { $($fields: tt)* }) => {
         $crate::combinator::trace(stringify!($name), move |input: &mut _| {
