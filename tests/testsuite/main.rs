@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 mod custom_errors;
 mod float;
 mod fnmut;

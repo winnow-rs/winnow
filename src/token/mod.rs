@@ -152,6 +152,7 @@ where
 }
 
 /// Deprecated, replaced with [`literal`]
+#[deprecated(since = "0.5.38", note = "Replaced with `literal`")]
 pub fn tag<T, I, Error: ParserError<I>>(tag: T) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
