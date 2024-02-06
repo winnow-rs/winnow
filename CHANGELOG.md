@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.38] - 2024-02-06
+
 ### Compatibility
 
 - Deprecate `token::tag` for `token::literal`
@@ -2220,7 +2222,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.37...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.38...HEAD
+[0.5.38]: https://github.com/winnow-rs/winnow/compare/v0.5.37...v0.5.38
 [0.5.37]: https://github.com/winnow-rs/winnow/compare/v0.5.36...v0.5.37
 [0.5.36]: https://github.com/winnow-rs/winnow/compare/v0.5.35...v0.5.36
 [0.5.35]: https://github.com/winnow-rs/winnow/compare/v0.5.34...v0.5.35
