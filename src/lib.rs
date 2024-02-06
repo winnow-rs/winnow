@@ -138,6 +138,7 @@
 #![allow(clippy::single_match_else)]
 #![allow(clippy::single_match)]
 #![allow(clippy::unnested_or_patterns)]
+#![allow(deprecated)]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 #[cfg(feature = "alloc")]
 #[cfg_attr(test, macro_use)]

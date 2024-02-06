@@ -132,10 +132,10 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
 /// ```
 #[inline(always)]
-#[doc(alias = "literal")]
+#[doc(alias = "tag")]
 #[doc(alias = "bytes")]
 #[doc(alias = "just")]
-pub fn tag<T, I, Error: ParserError<I>>(tag: T) -> impl Parser<I, <I as Stream>::Slice, Error>
+pub fn literal<T, I, Error: ParserError<I>>(tag: T) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream + Compare<T>,
@@ -144,14 +144,25 @@ where
     trace("tag", move |i: &mut I| {
         let t = tag.clone();
         if <I as StreamIsPartial>::is_partial_supported() {
-            tag_::<_, _, _, true>(i, t)
+            literal_::<_, _, _, true>(i, t)
         } else {
-            tag_::<_, _, _, false>(i, t)
+            literal_::<_, _, _, false>(i, t)
         }
     })
 }
 
-fn tag_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
+/// Deprecated, replaced with [`literal`]
+#[deprecated(since = "0.5.38", note = "Replaced with `literal`")]
+pub fn tag<T, I, Error: ParserError<I>>(tag: T) -> impl Parser<I, <I as Stream>::Slice, Error>
+where
+    I: StreamIsPartial,
+    I: Stream + Compare<T>,
+    T: SliceLen + Clone,
+{
+    literal(tag)
+}
+
+fn literal_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     i: &mut I,
     t: T,
 ) -> PResult<<I as Stream>::Slice, Error>
