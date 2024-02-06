@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.39] - 2024-02-06
+
 ### Fixes
 
 - Be consistent about inlining `slice_len`
@@ -2226,7 +2228,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.38...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.39...HEAD
+[0.5.39]: https://github.com/winnow-rs/winnow/compare/v0.5.38...v0.5.39
 [0.5.38]: https://github.com/winnow-rs/winnow/compare/v0.5.37...v0.5.38
 [0.5.37]: https://github.com/winnow-rs/winnow/compare/v0.5.36...v0.5.37
 [0.5.36]: https://github.com/winnow-rs/winnow/compare/v0.5.35...v0.5.36
