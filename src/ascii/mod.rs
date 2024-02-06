@@ -13,10 +13,11 @@ use crate::combinator::opt;
 use crate::combinator::trace;
 use crate::error::ParserError;
 use crate::error::{ErrMode, ErrorKind, Needed};
+use crate::stream::FindSlice;
 use crate::stream::{AsBStr, AsChar, ParseSlice, Stream, StreamIsPartial};
 use crate::stream::{Compare, CompareResult};
 use crate::token::one_of;
-use crate::token::take_till;
+use crate::token::take_until;
 use crate::token::take_while;
 use crate::PResult;
 use crate::Parser;
@@ -120,8 +121,8 @@ where
 /// # use winnow::Partial;
 /// # use winnow::ascii::till_line_ending;
 /// assert_eq!(till_line_ending::<_, InputError<_>>.parse_peek(Partial::new("ab\r\nc")), Ok((Partial::new("\r\nc"), "ab")));
-/// assert_eq!(till_line_ending::<_, InputError<_>>.parse_peek(Partial::new("abc")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(till_line_ending::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(till_line_ending::<_, InputError<_>>.parse_peek(Partial::new("abc")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(till_line_ending::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// assert_eq!(till_line_ending::<_, InputError<_>>.parse_peek(Partial::new("a\rb\nc")), Err(ErrMode::Backtrack(InputError::new(Partial::new("\rb\nc"), ErrorKind::Tag ))));
 /// assert_eq!(till_line_ending::<_, InputError<_>>.parse_peek(Partial::new("a\rbc")), Err(ErrMode::Backtrack(InputError::new(Partial::new("\rbc"), ErrorKind::Tag ))));
 /// ```
@@ -131,6 +132,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
+    I: FindSlice<(u8, u8)>,
     <I as Stream>::Token: AsChar + Clone,
 {
     trace("till_line_ending", move |input: &mut I| {
@@ -150,9 +152,16 @@ where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
+    I: FindSlice<(u8, u8)>,
     <I as Stream>::Token: AsChar + Clone,
 {
-    let res = take_till(0.., ('\r', '\n')).parse_next(input)?;
+    let res = match take_until::<_, _, ()>(0.., (b'\r', b'\n')).parse_next(input) {
+        Ok(slice) => slice,
+        Err(ErrMode::Incomplete(err)) => {
+            return Err(ErrMode::Incomplete(err));
+        }
+        Err(_) => input.finish(),
+    };
     if input.compare("\r") == CompareResult::Ok {
         let comp = input.compare("\r\n");
         match comp {

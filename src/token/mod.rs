@@ -713,139 +713,6 @@ where
     })
 }
 
-/// Recognize the longest input slice (if any) till a [pattern][ContainsToken] is met.
-///
-/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if the match reaches the
-/// end of input or if there was not match.
-///
-/// # Example
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::token::take_till0;
-///
-/// fn till_colon(s: &str) -> IResult<&str, &str> {
-///   take_till0(|c| c == ':').parse_peek(s)
-/// }
-///
-/// assert_eq!(till_colon("latin:123"), Ok((":123", "latin")));
-/// assert_eq!(till_colon(":empty matched"), Ok((":empty matched", ""))); //allowed
-/// assert_eq!(till_colon("12345"), Ok(("", "12345")));
-/// assert_eq!(till_colon(""), Ok(("", "")));
-/// ```
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
-/// # use winnow::prelude::*;
-/// # use winnow::Partial;
-/// use winnow::token::take_till0;
-///
-/// fn till_colon(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take_till0(|c| c == ':').parse_peek(s)
-/// }
-///
-/// assert_eq!(till_colon(Partial::new("latin:123")), Ok((Partial::new(":123"), "latin")));
-/// assert_eq!(till_colon(Partial::new(":empty matched")), Ok((Partial::new(":empty matched"), ""))); //allowed
-/// assert_eq!(till_colon(Partial::new("12345")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(till_colon(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// ```
-#[deprecated(since = "0.5.21", note = "Replaced with `take_till(0.., ...)`")]
-#[inline(always)]
-pub fn take_till0<T, I, Error: ParserError<I>>(
-    list: T,
-) -> impl Parser<I, <I as Stream>::Slice, Error>
-where
-    I: StreamIsPartial,
-    I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    trace("take_till0", move |i: &mut I| {
-        if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
-            take_till0_partial(i, |c| list.contains_token(c))
-        } else {
-            take_till0_complete(i, |c| list.contains_token(c))
-        }
-    })
-}
-
-/// Recognize the longest (at least 1) input slice till a [pattern][ContainsToken] is met.
-///
-/// It will return `Err(ErrMode::Backtrack(InputError::new(_, ErrorKind::Slice)))` if the input is empty or the
-/// predicate matches the first input.
-///
-/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if the match reaches the
-/// end of input or if there was not match.
-///
-/// # Example
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
-/// # use winnow::prelude::*;
-/// use winnow::token::take_till1;
-///
-/// fn till_colon(s: &str) -> IResult<&str, &str> {
-///   take_till1(|c| c == ':').parse_peek(s)
-/// }
-///
-/// assert_eq!(till_colon("latin:123"), Ok((":123", "latin")));
-/// assert_eq!(till_colon(":empty matched"), Err(ErrMode::Backtrack(InputError::new(":empty matched", ErrorKind::Slice))));
-/// assert_eq!(till_colon("12345"), Ok(("", "12345")));
-/// assert_eq!(till_colon(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Slice))));
-///
-/// fn not_space(s: &str) -> IResult<&str, &str> {
-///   take_till1([' ', '\t', '\r', '\n']).parse_peek(s)
-/// }
-///
-/// assert_eq!(not_space("Hello, World!"), Ok((" World!", "Hello,")));
-/// assert_eq!(not_space("Sometimes\t"), Ok(("\t", "Sometimes")));
-/// assert_eq!(not_space("Nospace"), Ok(("", "Nospace")));
-/// assert_eq!(not_space(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Slice))));
-/// ```
-///
-/// ```rust
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
-/// # use winnow::prelude::*;
-/// # use winnow::Partial;
-/// use winnow::token::take_till1;
-///
-/// fn till_colon(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take_till1(|c| c == ':').parse_peek(s)
-/// }
-///
-/// assert_eq!(till_colon(Partial::new("latin:123")), Ok((Partial::new(":123"), "latin")));
-/// assert_eq!(till_colon(Partial::new(":empty matched")), Err(ErrMode::Backtrack(InputError::new(Partial::new(":empty matched"), ErrorKind::Slice))));
-/// assert_eq!(till_colon(Partial::new("12345")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(till_colon(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
-///
-/// fn not_space(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take_till1([' ', '\t', '\r', '\n']).parse_peek(s)
-/// }
-///
-/// assert_eq!(not_space(Partial::new("Hello, World!")), Ok((Partial::new(" World!"), "Hello,")));
-/// assert_eq!(not_space(Partial::new("Sometimes\t")), Ok((Partial::new("\t"), "Sometimes")));
-/// assert_eq!(not_space(Partial::new("Nospace")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(not_space(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// ```
-#[inline(always)]
-#[deprecated(since = "0.5.21", note = "Replaced with `take_till(1.., ...)`")]
-pub fn take_till1<T, I, Error: ParserError<I>>(
-    list: T,
-) -> impl Parser<I, <I as Stream>::Slice, Error>
-where
-    I: StreamIsPartial,
-    I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    trace("take_till1", move |i: &mut I| {
-        if <I as StreamIsPartial>::is_partial_supported() && i.is_partial() {
-            take_till1_partial(i, |c| list.contains_token(c))
-        } else {
-            take_till1_complete(i, |c| list.contains_token(c))
-        }
-    })
-}
-
 /// Recognize an input slice containing the first N input elements (I[..N]).
 ///
 /// *Complete version*: It will return `Err(ErrMode::Backtrack(InputError::new(_, ErrorKind::Slice)))` if the input is shorter than the argument.
@@ -1017,7 +884,7 @@ pub fn take_until<T, I, Error: ParserError<I>>(
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,
-    T: SliceLen + Clone,
+    T: Clone,
 {
     let Range {
         start_inclusive,
@@ -1051,19 +918,6 @@ where
     })
 }
 
-/// Deprecated, see [`take_until`]
-#[deprecated(since = "0.5.35", note = "Replaced with `take_until`")]
-pub fn take_until0<T, I, Error: ParserError<I>>(
-    tag: T,
-) -> impl Parser<I, <I as Stream>::Slice, Error>
-where
-    I: StreamIsPartial,
-    I: Stream + FindSlice<T>,
-    T: SliceLen + Clone,
-{
-    take_until(0.., tag)
-}
-
 fn take_until0_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     i: &mut I,
     t: T,
@@ -1071,27 +925,12 @@ fn take_until0_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,
-    T: SliceLen,
 {
     match i.find_slice(t) {
         Some(offset) => Ok(i.next_slice(offset)),
         None if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
         None => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
     }
-}
-
-/// Deprecated, see [`take_until`]
-#[deprecated(since = "0.5.35", note = "Replaced with `take_until`")]
-#[inline(always)]
-pub fn take_until1<T, I, Error: ParserError<I>>(
-    tag: T,
-) -> impl Parser<I, <I as Stream>::Slice, Error>
-where
-    I: StreamIsPartial,
-    I: Stream + FindSlice<T>,
-    T: SliceLen + Clone,
-{
-    take_until(1.., tag)
 }
 
 fn take_until1_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
@@ -1101,7 +940,6 @@ fn take_until1_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,
-    T: SliceLen,
 {
     match i.find_slice(t) {
         None if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
@@ -1119,7 +957,6 @@ fn take_until_m_n_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,
-    T: SliceLen,
 {
     if end < start {
         return Err(ErrMode::assert(

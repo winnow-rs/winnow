@@ -62,12 +62,12 @@
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   error::ParserError,
-//!   token::take_till1,
+//!   token::take_till,
 //! };
 //!
 //! pub fn peol_comment<'a, E: ParserError<&'a str>>(i: &mut &'a str) -> PResult<(), E>
 //! {
-//!   ('%', take_till1(['\n', '\r']))
+//!   ('%', take_till(1.., ['\n', '\r']))
 //!     .void() // Output is thrown away.
 //!     .parse_next(i)
 //! }
