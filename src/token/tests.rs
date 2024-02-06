@@ -98,6 +98,90 @@ fn complete_take_until() {
 }
 
 #[test]
+fn complete_tag_case_insensitive() {
+    fn test(i: &[u8]) -> IResult<&[u8], &[u8]> {
+        tag(Caseless("ABcd")).parse_peek(i)
+    }
+    assert_eq!(test(&b"aBCdefgh"[..]), Ok((&b"efgh"[..], &b"aBCd"[..])));
+    assert_eq!(test(&b"abcdefgh"[..]), Ok((&b"efgh"[..], &b"abcd"[..])));
+    assert_eq!(test(&b"ABCDefgh"[..]), Ok((&b"efgh"[..], &b"ABCD"[..])));
+    assert_eq!(
+        test(&b"ab"[..]),
+        Err(ErrMode::Backtrack(error_position!(
+            &&b"ab"[..],
+            ErrorKind::Tag
+        )))
+    );
+    assert_eq!(
+        test(&b"Hello"[..]),
+        Err(ErrMode::Backtrack(error_position!(
+            &&b"Hello"[..],
+            ErrorKind::Tag
+        )))
+    );
+    assert_eq!(
+        test(&b"Hel"[..]),
+        Err(ErrMode::Backtrack(error_position!(
+            &&b"Hel"[..],
+            ErrorKind::Tag
+        )))
+    );
+
+    fn test2(i: &str) -> IResult<&str, &str> {
+        tag(Caseless("ABcd")).parse_peek(i)
+    }
+    assert_eq!(test2("aBCdefgh"), Ok(("efgh", "aBCd")));
+    assert_eq!(test2("abcdefgh"), Ok(("efgh", "abcd")));
+    assert_eq!(test2("ABCDefgh"), Ok(("efgh", "ABCD")));
+    assert_eq!(
+        test2("ab"),
+        Err(ErrMode::Backtrack(error_position!(&"ab", ErrorKind::Tag)))
+    );
+    assert_eq!(
+        test2("Hello"),
+        Err(ErrMode::Backtrack(error_position!(
+            &"Hello",
+            ErrorKind::Tag
+        )))
+    );
+    assert_eq!(
+        test2("Hel"),
+        Err(ErrMode::Backtrack(error_position!(&"Hel", ErrorKind::Tag)))
+    );
+
+    fn test3(i: &str) -> IResult<&str, &str> {
+        tag(Caseless("k")).parse_peek(i)
+    }
+
+    assert_eq!(
+        test3("K"),
+        Err(ErrMode::Backtrack(error_position!(&"K", ErrorKind::Tag)))
+    );
+
+    fn test4(i: &str) -> IResult<&str, &str> {
+        tag(Caseless("K")).parse_peek(i)
+    }
+
+    assert_eq!(
+        test4("k"),
+        Err(ErrMode::Backtrack(error_position!(&"k", ErrorKind::Tag)))
+    );
+}
+
+#[test]
+fn complete_tag_fixed_size_array() {
+    fn test(i: &[u8]) -> IResult<&[u8], &[u8]> {
+        tag([0x42]).parse_peek(i)
+    }
+    fn test2(i: &[u8]) -> IResult<&[u8], &[u8]> {
+        tag(&[0x42]).parse_peek(i)
+    }
+    let input = &[0x42, 0x00][..];
+    assert_eq!(test(input), Ok((&b"\x00"[..], &b"\x42"[..])));
+    assert_eq!(test2(input), Ok((&b"\x00"[..], &b"\x42"[..])));
+}
+
+#[test]
 fn partial_any_str() {
     use super::any;
     assert_eq!(
@@ -601,7 +685,7 @@ fn partial_recognize_take_while0() {
 }
 
 #[test]
-fn partial_case_insensitive() {
+fn partial_tag_case_insensitive() {
     fn test(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         tag(Caseless("ABcd")).parse_peek(i)
     }
