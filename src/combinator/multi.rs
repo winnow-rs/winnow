@@ -380,8 +380,14 @@ where
     let mut res = C::initial(Some(count));
 
     for _ in 0..count {
+        let len = i.eof_offset();
         match f.parse_next(i) {
             Ok(o) => {
+                // infinite loop check: the parser must always consume
+                if i.eof_offset() == len {
+                    return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
+                }
+
                 res.accumulate(o);
             }
             Err(e) => {
@@ -401,7 +407,10 @@ where
     E: ParserError<I>,
 {
     if min > max {
-        return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::Many)));
+        return Err(ErrMode::assert(
+            input,
+            "range should be ascending, rather than descending",
+        ));
     }
 
     let mut res = C::initial(Some(min));
@@ -539,7 +548,10 @@ where
     E: ParserError<I>,
 {
     if min > max {
-        return Err(ErrMode::Cut(E::from_error_kind(i, ErrorKind::Many)));
+        return Err(ErrMode::assert(
+            i,
+            "range should be ascending, rather than descending",
+        ));
     }
 
     let mut res = C::initial(Some(min));
@@ -905,7 +917,10 @@ where
     E: ParserError<I>,
 {
     if min > max {
-        return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::Many)));
+        return Err(ErrMode::assert(
+            input,
+            "range should be ascending, rather than descending",
+        ));
     }
 
     let mut acc = C::initial(Some(min));
@@ -1247,7 +1262,10 @@ where
     E: ParserError<I>,
 {
     if min > max {
-        return Err(ErrMode::Cut(E::from_error_kind(input, ErrorKind::Many)));
+        return Err(ErrMode::assert(
+            input,
+            "range should be ascending, rather than descending",
+        ));
     }
 
     let mut acc = init();

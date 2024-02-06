@@ -190,7 +190,7 @@ impl<I, E: ParserError<I>> ParserError<I> for ErrMode<E> {
     where
         I: crate::lib::std::fmt::Debug,
     {
-        ErrMode::Backtrack(E::assert(input, message))
+        ErrMode::Cut(E::assert(input, message))
     }
 
     #[inline]
