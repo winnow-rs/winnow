@@ -4,7 +4,7 @@ mod test {
     use winnow::Parser;
     use winnow::Partial;
     #[cfg(feature = "alloc")]
-    use winnow::{combinator::alt, combinator::repeat, token::tag};
+    use winnow::{combinator::alt, combinator::repeat, token::literal};
     use winnow::{
         error::ErrMode,
         error::{ErrorKind, InputError},
@@ -13,7 +13,7 @@ mod test {
     };
 
     #[test]
-    fn tag_succeed_str() {
+    fn literal_succeed_str() {
         const INPUT: &str = "Hello World!";
         fn test(input: &str) -> IResult<&str, &str> {
             "Hello".parse_peek(input)
@@ -21,17 +21,20 @@ mod test {
 
         match test(INPUT) {
             Ok((extra, output)) => {
-                assert!(extra == " World!", "Parser `tag` consumed leftover input.");
+                assert!(
+                    extra == " World!",
+                    "Parser `literal` consumed leftover input."
+                );
                 assert!(
                     output == "Hello",
-                    "Parser `tag` doesn't return the tag it matched on success. \
+                    "Parser `literal` doesn't return the literal it matched on success. \
            Expected `{}`, got `{}`.",
                     "Hello",
                     output
                 );
             }
             other => panic!(
-                "Parser `tag` didn't succeed when it should have. \
+                "Parser `literal` didn't succeed when it should have. \
          Got `{:?}`.",
                 other
             ),
@@ -39,7 +42,7 @@ mod test {
     }
 
     #[test]
-    fn tag_incomplete_str() {
+    fn literal_incomplete_str() {
         const INPUT: &str = "Hello";
 
         let res: IResult<_, _, InputError<_>> = "Hello World!".parse_peek(Partial::new(INPUT));
@@ -47,7 +50,7 @@ mod test {
             Err(ErrMode::Incomplete(_)) => (),
             other => {
                 panic!(
-                    "Parser `tag` didn't require more input when it should have. \
+                    "Parser `literal` didn't require more input when it should have. \
            Got `{:?}`.",
                     other
                 );
@@ -56,7 +59,7 @@ mod test {
     }
 
     #[test]
-    fn tag_error_str() {
+    fn literal_error_str() {
         const INPUT: &str = "Hello World!";
 
         let res: IResult<_, _, InputError<_>> = "Random".parse_peek(INPUT);
@@ -64,7 +67,7 @@ mod test {
             Err(ErrMode::Backtrack(_)) => (),
             other => {
                 panic!(
-                    "Parser `tag` didn't fail when it should have. Got `{:?}`.`",
+                    "Parser `literal` didn't fail when it should have. Got `{:?}`.`",
                     other
                 );
             }
@@ -73,9 +76,9 @@ mod test {
 
     #[cfg(feature = "alloc")]
     #[test]
-    fn tag_case_insensitive_str() {
+    fn literal_case_insensitive_str() {
         fn test(i: &str) -> IResult<&str, &str> {
-            tag(Caseless("ABcd")).parse_peek(i)
+            literal(Caseless("ABcd")).parse_peek(i)
         }
         assert_eq!(test("aBCdefgh"), Ok(("efgh", "aBCd")));
         assert_eq!(test("abcdefgh"), Ok(("efgh", "abcd")));

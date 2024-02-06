@@ -254,7 +254,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
 /// # use winnow::error::{InputError, ErrorKind};
-/// use winnow::binary::bits::tag;
+/// use winnow::binary::bits::pattern;
 ///
 /// type Stream<'i> = &'i Bytes;
 ///
@@ -265,8 +265,8 @@ where
 /// /// Compare the lowest `count` bits of `input` against the lowest `count` bits of `pattern`.
 /// /// Return Ok and the matching section of `input` if there's a match.
 /// /// Return Err if there's no match.
-/// fn parser(pattern: u8, count: u8, input: (Stream<'_>, usize)) -> IResult<(Stream<'_>, usize), u8> {
-///     tag(pattern, count).parse_peek(input)
+/// fn parser(bits: u8, count: u8, input: (Stream<'_>, usize)) -> IResult<(Stream<'_>, usize), u8> {
+///     pattern(bits, count).parse_peek(input)
 /// }
 ///
 /// // The lowest 4 bits of 0b00001111 match the lowest 4 bits of 0b11111111.
@@ -302,7 +302,8 @@ where
 #[inline(always)]
 #[doc(alias = "literal")]
 #[doc(alias = "just")]
-pub fn tag<I, O, C, E: ParserError<(I, usize)>>(
+#[doc(alias = "tag")]
+pub fn pattern<I, O, C, E: ParserError<(I, usize)>>(
     pattern: O,
     count: C,
 ) -> impl Parser<(I, usize), O, E>
@@ -312,7 +313,7 @@ where
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
 {
     let count = count.to_usize();
-    trace("tag", move |input: &mut (I, usize)| {
+    trace("pattern", move |input: &mut (I, usize)| {
         let start = input.checkpoint();
 
         take(count).parse_next(input).and_then(|o| {
@@ -327,6 +328,17 @@ where
             }
         })
     })
+}
+
+/// Deprecated, replaced with [`pattern`]
+#[deprecated(since = "0.5.38", note = "Replaced with `pattern`")]
+pub fn tag<I, O, C, E: ParserError<(I, usize)>>(p: O, count: C) -> impl Parser<(I, usize), O, E>
+where
+    I: Stream<Token = u8> + AsBytes + StreamIsPartial + Clone,
+    C: ToUsize,
+    O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
+{
+    pattern(p, count)
 }
 
 /// Parses one specific bit as a bool.

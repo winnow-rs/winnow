@@ -126,15 +126,15 @@ fn issue_655() {
 #[cfg(feature = "alloc")]
 fn issue_717(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
     use winnow::combinator::separated;
-    use winnow::token::{tag, take_till};
+    use winnow::token::{literal, take_till};
 
-    separated(0.., take_till(1.., [0x0u8]), tag([0x0])).parse_peek(i)
+    separated(0.., take_till(1.., [0x0u8]), literal([0x0])).parse_peek(i)
 }
 
 mod issue_647 {
     use super::*;
     use winnow::combinator::separated;
-    use winnow::token::tag;
+    use winnow::token::literal;
     use winnow::{binary::be_f64, error::ErrMode, IResult};
     pub type Stream<'a> = winnow::Partial<&'a [u8]>;
 
@@ -149,7 +149,7 @@ mod issue_647 {
         input: Stream<'a>,
         _cs: &f64,
     ) -> Result<(Stream<'a>, Vec<f64>), ErrMode<InputError<Stream<'a>>>> {
-        separated(0.., be_f64.complete_err(), tag(",").complete_err()).parse_peek(input)
+        separated(0.., be_f64.complete_err(), literal(",").complete_err()).parse_peek(input)
     }
 
     fn data(input: Stream<'_>) -> IResult<Stream<'_>, Data> {
@@ -264,10 +264,10 @@ fn issue_1459_clamp_capacity() {
 
 #[test]
 fn issue_1617_count_parser_returning_zero_size() {
-    use winnow::{combinator::repeat, token::tag};
+    use winnow::{combinator::repeat, token::literal};
 
     // previously, `repeat()` panicked if the parser had type `O = ()`
-    let parser = tag::<_, _, InputError<&str>>("abc").map(|_| ());
+    let parser = literal::<_, _, InputError<&str>>("abc").map(|_| ());
     // shouldn't panic
     let result = repeat(3, parser)
         .parse_peek("abcabcabcdef")

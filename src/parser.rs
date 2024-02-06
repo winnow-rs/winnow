@@ -42,7 +42,7 @@ use crate::stream::{Recover, Recoverable};
 ///
 /// Additionally, some basic types implement `Parser` as well, including
 /// - `u8` and `char`, see [`winnow::token::one_of`][crate::token::one_of]
-/// - `&[u8]` and `&str`, see [`winnow::token::tag`][crate::token::tag]
+/// - `&[u8]` and `&str`, see [`winnow::token::literal`][crate::token::literal]
 pub trait Parser<I, O, E> {
     /// Parse all of `input`, generating `O` from it
     #[inline]
@@ -285,7 +285,7 @@ pub trait Parser<I, O, E> {
     /// # use winnow::prelude::*;
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::InputError};
     /// use winnow::ascii::{alpha1};
-    /// use winnow::token::tag;
+    /// use winnow::token::literal;
     /// use winnow::combinator::separated_pair;
     ///
     /// fn inner_parser<'s>(input: &mut &'s str) -> PResult<bool, InputError<&'s str>> {
@@ -357,7 +357,7 @@ pub trait Parser<I, O, E> {
     /// # use winnow::{error::ErrMode,error::ErrorKind, error::InputError, stream::Stream};
     /// use winnow::stream::Located;
     /// use winnow::ascii::alpha1;
-    /// use winnow::token::tag;
+    /// use winnow::token::literal;
     /// use winnow::combinator::separated_pair;
     ///
     /// fn inner_parser<'s>(input: &mut Located<&'s str>) -> PResult<bool, InputError<Located<&'s str>>> {
@@ -771,7 +771,7 @@ where
     }
 }
 
-/// This is a shortcut for [`tag`][crate::token::tag].
+/// This is a shortcut for [`literal`][crate::token::literal].
 ///
 /// # Example
 /// ```rust
@@ -796,11 +796,11 @@ where
 {
     #[inline(always)]
     fn parse_next(&mut self, i: &mut I) -> PResult<<I as Stream>::Slice, E> {
-        crate::token::tag(*self).parse_next(i)
+        crate::token::literal(*self).parse_next(i)
     }
 }
 
-/// This is a shortcut for [`tag`][crate::token::tag].
+/// This is a shortcut for [`literal`][crate::token::literal].
 ///
 /// # Example
 /// ```rust
@@ -828,11 +828,11 @@ where
 {
     #[inline(always)]
     fn parse_next(&mut self, i: &mut I) -> PResult<<I as Stream>::Slice, E> {
-        crate::token::tag(*self).parse_next(i)
+        crate::token::literal(*self).parse_next(i)
     }
 }
 
-/// This is a shortcut for [`tag`][crate::token::tag].
+/// This is a shortcut for [`literal`][crate::token::literal].
 ///
 /// # Example
 /// ```rust
@@ -857,11 +857,11 @@ where
 {
     #[inline(always)]
     fn parse_next(&mut self, i: &mut I) -> PResult<<I as Stream>::Slice, E> {
-        crate::token::tag(*self).parse_next(i)
+        crate::token::literal(*self).parse_next(i)
     }
 }
 
-/// This is a shortcut for [`tag`][crate::token::tag].
+/// This is a shortcut for [`literal`][crate::token::literal].
 ///
 /// # Example
 /// ```rust
@@ -890,11 +890,11 @@ where
 {
     #[inline(always)]
     fn parse_next(&mut self, i: &mut I) -> PResult<<I as Stream>::Slice, E> {
-        crate::token::tag(*self).parse_next(i)
+        crate::token::literal(*self).parse_next(i)
     }
 }
 
-/// This is a shortcut for [`tag`][crate::token::tag].
+/// This is a shortcut for [`literal`][crate::token::literal].
 ///
 /// # Example
 /// ```rust
@@ -919,11 +919,11 @@ where
 {
     #[inline(always)]
     fn parse_next(&mut self, i: &mut I) -> PResult<<I as Stream>::Slice, E> {
-        crate::token::tag(*self).parse_next(i)
+        crate::token::literal(*self).parse_next(i)
     }
 }
 
-/// This is a shortcut for [`tag`][crate::token::tag].
+/// This is a shortcut for [`literal`][crate::token::literal].
 ///
 /// # Example
 /// ```rust
@@ -951,7 +951,7 @@ where
 {
     #[inline(always)]
     fn parse_next(&mut self, i: &mut I) -> PResult<<I as Stream>::Slice, E> {
-        crate::token::tag(*self).parse_next(i)
+        crate::token::literal(*self).parse_next(i)
     }
 }
 

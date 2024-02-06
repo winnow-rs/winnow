@@ -3494,42 +3494,42 @@ fn memchr3(token: (u8, u8, u8), slice: &[u8]) -> Option<usize> {
 }
 
 #[inline(always)]
-fn memmem(slice: &[u8], tag: &[u8]) -> Option<usize> {
-    if tag.len() == 1 {
-        memchr(tag[0], slice)
+fn memmem(slice: &[u8], literal: &[u8]) -> Option<usize> {
+    if literal.len() == 1 {
+        memchr(literal[0], slice)
     } else {
-        memmem_(slice, tag)
+        memmem_(slice, literal)
     }
 }
 
 #[inline(always)]
-fn memmem2(slice: &[u8], tag: (&[u8], &[u8])) -> Option<usize> {
-    if tag.0.len() == 1 && tag.1.len() == 1 {
-        memchr2((tag.0[0], tag.1[0]), slice)
+fn memmem2(slice: &[u8], literal: (&[u8], &[u8])) -> Option<usize> {
+    if literal.0.len() == 1 && literal.1.len() == 1 {
+        memchr2((literal.0[0], literal.1[0]), slice)
     } else {
-        memmem2_(slice, tag)
+        memmem2_(slice, literal)
     }
 }
 
 #[inline(always)]
-fn memmem3(slice: &[u8], tag: (&[u8], &[u8], &[u8])) -> Option<usize> {
-    if tag.0.len() == 1 && tag.1.len() == 1 && tag.2.len() == 1 {
-        memchr3((tag.0[0], tag.1[0], tag.2[0]), slice)
+fn memmem3(slice: &[u8], literal: (&[u8], &[u8], &[u8])) -> Option<usize> {
+    if literal.0.len() == 1 && literal.1.len() == 1 && literal.2.len() == 1 {
+        memchr3((literal.0[0], literal.1[0], literal.2[0]), slice)
     } else {
-        memmem3_(slice, tag)
+        memmem3_(slice, literal)
     }
 }
 
 #[cfg(feature = "simd")]
 #[inline(always)]
-fn memmem_(slice: &[u8], tag: &[u8]) -> Option<usize> {
-    let &prefix = match tag.first() {
+fn memmem_(slice: &[u8], literal: &[u8]) -> Option<usize> {
+    let &prefix = match literal.first() {
         Some(x) => x,
         None => return Some(0),
     };
     #[allow(clippy::manual_find)] // faster this way
     for i in memchr::memchr_iter(prefix, slice) {
-        if slice[i..].starts_with(tag) {
+        if slice[i..].starts_with(literal) {
             return Some(i);
         }
     }
@@ -3537,18 +3537,18 @@ fn memmem_(slice: &[u8], tag: &[u8]) -> Option<usize> {
 }
 
 #[cfg(feature = "simd")]
-fn memmem2_(slice: &[u8], tag: (&[u8], &[u8])) -> Option<usize> {
-    let prefix = match (tag.0.first(), tag.1.first()) {
+fn memmem2_(slice: &[u8], literal: (&[u8], &[u8])) -> Option<usize> {
+    let prefix = match (literal.0.first(), literal.1.first()) {
         (Some(&a), Some(&b)) => (a, b),
         _ => return Some(0),
     };
     #[allow(clippy::manual_find)] // faster this way
     for i in memchr::memchr2_iter(prefix.0, prefix.1, slice) {
         let subslice = &slice[i..];
-        if subslice.starts_with(tag.0) {
+        if subslice.starts_with(literal.0) {
             return Some(i);
         }
-        if subslice.starts_with(tag.1) {
+        if subslice.starts_with(literal.1) {
             return Some(i);
         }
     }
@@ -3556,32 +3556,21 @@ fn memmem2_(slice: &[u8], tag: (&[u8], &[u8])) -> Option<usize> {
 }
 
 #[cfg(feature = "simd")]
-fn memmem3_(slice: &[u8], tag: (&[u8], &[u8], &[u8])) -> Option<usize> {
-    let prefix = match (tag.0.first(), tag.1.first(), tag.2.first()) {
+fn memmem3_(slice: &[u8], literal: (&[u8], &[u8], &[u8])) -> Option<usize> {
+    let prefix = match (literal.0.first(), literal.1.first(), literal.2.first()) {
         (Some(&a), Some(&b), Some(&c)) => (a, b, c),
         _ => return Some(0),
     };
     #[allow(clippy::manual_find)] // faster this way
     for i in memchr::memchr3_iter(prefix.0, prefix.1, prefix.2, slice) {
         let subslice = &slice[i..];
-        if subslice.starts_with(tag.0) {
+        if subslice.starts_with(literal.0) {
             return Some(i);
         }
-        if subslice.starts_with(tag.1) {
+        if subslice.starts_with(literal.1) {
             return Some(i);
         }
-        if subslice.starts_with(tag.2) {
-            return Some(i);
-        }
-    }
-    None
-}
-
-#[cfg(not(feature = "simd"))]
-fn memmem_(slice: &[u8], tag: &[u8]) -> Option<usize> {
-    for i in 0..slice.len() {
-        let subslice = &slice[i..];
-        if subslice.starts_with(tag) {
+        if subslice.starts_with(literal.2) {
             return Some(i);
         }
     }
@@ -3589,13 +3578,10 @@ fn memmem_(slice: &[u8], tag: &[u8]) -> Option<usize> {
 }
 
 #[cfg(not(feature = "simd"))]
-fn memmem2_(slice: &[u8], tag: (&[u8], &[u8])) -> Option<usize> {
+fn memmem_(slice: &[u8], literal: &[u8]) -> Option<usize> {
     for i in 0..slice.len() {
         let subslice = &slice[i..];
-        if subslice.starts_with(tag.0) {
-            return Some(i);
-        }
-        if subslice.starts_with(tag.1) {
+        if subslice.starts_with(literal) {
             return Some(i);
         }
     }
@@ -3603,16 +3589,30 @@ fn memmem2_(slice: &[u8], tag: (&[u8], &[u8])) -> Option<usize> {
 }
 
 #[cfg(not(feature = "simd"))]
-fn memmem3_(slice: &[u8], tag: (&[u8], &[u8], &[u8])) -> Option<usize> {
+fn memmem2_(slice: &[u8], literal: (&[u8], &[u8])) -> Option<usize> {
     for i in 0..slice.len() {
         let subslice = &slice[i..];
-        if subslice.starts_with(tag.0) {
+        if subslice.starts_with(literal.0) {
             return Some(i);
         }
-        if subslice.starts_with(tag.1) {
+        if subslice.starts_with(literal.1) {
             return Some(i);
         }
-        if subslice.starts_with(tag.2) {
+    }
+    None
+}
+
+#[cfg(not(feature = "simd"))]
+fn memmem3_(slice: &[u8], literal: (&[u8], &[u8], &[u8])) -> Option<usize> {
+    for i in 0..slice.len() {
+        let subslice = &slice[i..];
+        if subslice.starts_with(literal.0) {
+            return Some(i);
+        }
+        if subslice.starts_with(literal.1) {
+            return Some(i);
+        }
+        if subslice.starts_with(literal.2) {
             return Some(i);
         }
     }

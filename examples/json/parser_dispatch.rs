@@ -59,7 +59,7 @@ fn json_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static s
     .parse_next(input)
 }
 
-/// `tag(string)` generates a parser that recognizes the argument string.
+/// `literal(string)` generates a parser that recognizes the argument string.
 ///
 /// This also shows returning a sub-slice of the original input
 fn null<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<&'i str, E> {

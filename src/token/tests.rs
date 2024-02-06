@@ -10,7 +10,7 @@ use crate::error::ErrorKind;
 use crate::error::InputError;
 use crate::error::Needed;
 use crate::stream::AsChar;
-use crate::token::tag;
+use crate::token::literal;
 use crate::unpeek;
 use crate::IResult;
 use crate::Parser;
@@ -98,9 +98,9 @@ fn complete_take_until() {
 }
 
 #[test]
-fn complete_tag_case_insensitive() {
+fn complete_literal_case_insensitive() {
     fn caseless_bytes(i: &[u8]) -> IResult<&[u8], &[u8]> {
-        tag(Caseless("ABcd")).parse_peek(i)
+        literal(Caseless("ABcd")).parse_peek(i)
     }
     assert_eq!(
         caseless_bytes(&b"aBCdefgh"[..]),
@@ -137,7 +137,7 @@ fn complete_tag_case_insensitive() {
     );
 
     fn caseless_str(i: &str) -> IResult<&str, &str> {
-        tag(Caseless("ABcd")).parse_peek(i)
+        literal(Caseless("ABcd")).parse_peek(i)
     }
     assert_eq!(caseless_str("aBCdefgh"), Ok(("efgh", "aBCd")));
     assert_eq!(caseless_str("abcdefgh"), Ok(("efgh", "abcd")));
@@ -159,7 +159,7 @@ fn complete_tag_case_insensitive() {
     );
 
     fn matches_kelvin(i: &str) -> IResult<&str, &str> {
-        tag(Caseless("k")).parse_peek(i)
+        literal(Caseless("k")).parse_peek(i)
     }
     assert_eq!(
         matches_kelvin("K"),
@@ -167,7 +167,7 @@ fn complete_tag_case_insensitive() {
     );
 
     fn is_kelvin(i: &str) -> IResult<&str, &str> {
-        tag(Caseless("K")).parse_peek(i)
+        literal(Caseless("K")).parse_peek(i)
     }
     assert_eq!(
         is_kelvin("k"),
@@ -176,12 +176,12 @@ fn complete_tag_case_insensitive() {
 }
 
 #[test]
-fn complete_tag_fixed_size_array() {
+fn complete_literal_fixed_size_array() {
     fn test(i: &[u8]) -> IResult<&[u8], &[u8]> {
-        tag([0x42]).parse_peek(i)
+        literal([0x42]).parse_peek(i)
     }
     fn test2(i: &[u8]) -> IResult<&[u8], &[u8]> {
-        tag(&[0x42]).parse_peek(i)
+        literal(&[0x42]).parse_peek(i)
     }
 
     let input = &[0x42, 0x00][..];
@@ -190,9 +190,9 @@ fn complete_tag_fixed_size_array() {
 }
 
 #[test]
-fn complete_tag_char() {
+fn complete_literal_char() {
     fn test(i: &[u8]) -> IResult<&[u8], &[u8]> {
-        tag('B').parse_peek(i)
+        literal('B').parse_peek(i)
     }
     assert_eq!(test(&[0x42, 0x00][..]), Ok((&b"\x00"[..], &b"\x42"[..])));
     assert_eq!(
@@ -205,9 +205,9 @@ fn complete_tag_char() {
 }
 
 #[test]
-fn complete_tag_byte() {
+fn complete_literal_byte() {
     fn test(i: &[u8]) -> IResult<&[u8], &[u8]> {
-        tag(b'B').parse_peek(i)
+        literal(b'B').parse_peek(i)
     }
     assert_eq!(test(&[0x42, 0x00][..]), Ok((&b"\x00"[..], &b"\x42"[..])));
     assert_eq!(
@@ -723,9 +723,9 @@ fn partial_recognize_take_while0() {
 }
 
 #[test]
-fn partial_tag_case_insensitive() {
+fn partial_literal_case_insensitive() {
     fn caseless_bytes(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        tag(Caseless("ABcd")).parse_peek(i)
+        literal(Caseless("ABcd")).parse_peek(i)
     }
     assert_eq!(
         caseless_bytes(Partial::new(&b"aBCdefgh"[..])),
@@ -759,7 +759,7 @@ fn partial_tag_case_insensitive() {
     );
 
     fn caseless_str(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        tag(Caseless("ABcd")).parse_peek(i)
+        literal(Caseless("ABcd")).parse_peek(i)
     }
     assert_eq!(
         caseless_str(Partial::new("aBCdefgh")),
@@ -793,7 +793,7 @@ fn partial_tag_case_insensitive() {
     );
 
     fn matches_kelvin(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        tag(Caseless("k")).parse_peek(i)
+        literal(Caseless("k")).parse_peek(i)
     }
     assert_eq!(
         matches_kelvin(Partial::new("K")),
@@ -804,7 +804,7 @@ fn partial_tag_case_insensitive() {
     );
 
     fn is_kelvin(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        tag(Caseless("K")).parse_peek(i)
+        literal(Caseless("K")).parse_peek(i)
     }
     assert_eq!(
         is_kelvin(Partial::new("k")),
@@ -816,12 +816,12 @@ fn partial_tag_case_insensitive() {
 }
 
 #[test]
-fn partial_tag_fixed_size_array() {
+fn partial_literal_fixed_size_array() {
     fn test(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        tag([0x42]).parse_peek(i)
+        literal([0x42]).parse_peek(i)
     }
     fn test2(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        tag(&[0x42]).parse_peek(i)
+        literal(&[0x42]).parse_peek(i)
     }
     let input = Partial::new(&[0x42, 0x00][..]);
     assert_eq!(test(input), Ok((Partial::new(&b"\x00"[..]), &b"\x42"[..])));

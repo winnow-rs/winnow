@@ -34,7 +34,6 @@ use crate::Parser;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
-/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   repeat(0.., "abc").parse_peek(s)
@@ -53,7 +52,6 @@ use crate::Parser;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
-/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   repeat(1.., "abc").parse_peek(s)
@@ -72,7 +70,6 @@ use crate::Parser;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
-/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   repeat(2, "abc").parse_peek(s)
@@ -92,7 +89,6 @@ use crate::Parser;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
-/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   repeat(0..=2, "abc").parse_peek(s)
@@ -176,7 +172,6 @@ where
     /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
     /// # use winnow::prelude::*;
     /// use winnow::combinator::repeat;
-    /// use winnow::token::tag;
     ///
     /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
     ///   repeat(
@@ -202,7 +197,6 @@ where
     /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
     /// # use winnow::prelude::*;
     /// use winnow::combinator::repeat;
-    /// use winnow::token::tag;
     ///
     /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
     ///   repeat(
@@ -228,7 +222,6 @@ where
     /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
     /// # use winnow::prelude::*;
     /// use winnow::combinator::repeat;
-    /// use winnow::token::tag;
     ///
     /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
     ///   repeat(
@@ -462,7 +455,6 @@ where
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat_till;
-/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, (Vec<&str>, &str)> {
 ///   repeat_till(0.., "abc", "end").parse_peek(s)
@@ -617,7 +609,6 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
-/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   separated(0.., "abc", "|").parse_peek(s)
@@ -637,7 +628,6 @@ where
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
-/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   separated(1.., "abc", "|").parse_peek(s)
@@ -657,7 +647,6 @@ where
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
-/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   separated(2, "abc", "|").parse_peek(s)
@@ -677,7 +666,6 @@ where
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
-/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
 ///   separated(0..=2, "abc", "|").parse_peek(s)
@@ -1121,7 +1109,6 @@ where
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::fill;
-/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, [&str; 2]> {
 ///   let mut buf = ["", ""];

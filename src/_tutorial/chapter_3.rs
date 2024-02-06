@@ -70,7 +70,7 @@
 //! }
 //! ```
 //!
-//! Frequently, you won't care about the tag and you can instead use one of the provided combinators,
+//! Frequently, you won't care about the literal and you can instead use one of the provided combinators,
 //! like [`preceded`]:
 //! ```rust
 //! # use winnow::prelude::*;

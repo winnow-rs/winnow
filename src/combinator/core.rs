@@ -338,7 +338,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// use winnow::{combinator::iterator, IResult, token::tag, ascii::alpha1, combinator::terminated};
+/// use winnow::{combinator::iterator, IResult, ascii::alpha1, combinator::terminated};
 /// use std::collections::HashMap;
 ///
 /// let data = "abc|defg|hijkl|mnopqr|123";

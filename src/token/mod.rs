@@ -76,7 +76,7 @@ where
 
 /// Recognizes a literal
 ///
-/// The input data will be compared to the tag combinator's argument and will return the part of
+/// The input data will be compared to the literal combinator's argument and will return the part of
 /// the input that matches the argument
 ///
 /// It will return `Err(ErrMode::Backtrack(InputError::new(_, ErrorKind::Tag)))` if the input doesn't match the pattern
@@ -88,7 +88,6 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
-/// use winnow::token::tag;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
 ///   "Hello".parse_peek(s)
@@ -103,7 +102,6 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::Partial;
-/// use winnow::token::tag;
 ///
 /// fn parser(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   "Hello".parse_peek(s)
@@ -118,11 +116,11 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::token::tag;
+/// use winnow::token::literal;
 /// use winnow::ascii::Caseless;
 ///
 /// fn parser(s: &str) -> IResult<&str, &str> {
-///   tag(Caseless("hello")).parse_peek(s)
+///   literal(Caseless("hello")).parse_peek(s)
 /// }
 ///
 /// assert_eq!(parser("Hello, World!"), Ok((", World!", "Hello")));
@@ -132,10 +130,10 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
 /// ```
 #[inline(always)]
-#[doc(alias = "literal")]
+#[doc(alias = "tag")]
 #[doc(alias = "bytes")]
 #[doc(alias = "just")]
-pub fn tag<T, I, Error: ParserError<I>>(tag: T) -> impl Parser<I, <I as Stream>::Slice, Error>
+pub fn literal<T, I, Error: ParserError<I>>(tag: T) -> impl Parser<I, <I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream + Compare<T>,
@@ -144,14 +142,25 @@ where
     trace("tag", move |i: &mut I| {
         let t = tag.clone();
         if <I as StreamIsPartial>::is_partial_supported() {
-            tag_::<_, _, _, true>(i, t)
+            literal_::<_, _, _, true>(i, t)
         } else {
-            tag_::<_, _, _, false>(i, t)
+            literal_::<_, _, _, false>(i, t)
         }
     })
 }
 
-fn tag_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
+/// Deprecated, replaced with [`literal`]
+#[deprecated(since = "0.5.38", note = "Replaced with `literal`")]
+pub fn tag<T, I, Error: ParserError<I>>(tag: T) -> impl Parser<I, <I as Stream>::Slice, Error>
+where
+    I: StreamIsPartial,
+    I: Stream + Compare<T>,
+    T: SliceLen + Clone,
+{
+    literal(tag)
+}
+
+fn literal_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     i: &mut I,
     t: T,
 ) -> PResult<<I as Stream>::Slice, Error>
@@ -160,12 +169,12 @@ where
     I: Stream + Compare<T>,
     T: SliceLen,
 {
-    let tag_len = t.slice_len();
+    let literal_len = t.slice_len();
     match i.compare(t) {
         CompareResult::Ok(len) => Ok(i.next_slice(len)),
-        CompareResult::Incomplete if PARTIAL && i.is_partial() => {
-            Err(ErrMode::Incomplete(Needed::new(tag_len - i.eof_offset())))
-        }
+        CompareResult::Incomplete if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(
+            Needed::new(literal_len - i.eof_offset()),
+        )),
         CompareResult::Incomplete | CompareResult::Error => {
             let e: ErrorKind = ErrorKind::Tag;
             Err(ErrMode::from_error_kind(i, e))

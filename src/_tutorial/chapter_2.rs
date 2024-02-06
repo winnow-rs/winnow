@@ -135,12 +135,12 @@
 //! # }
 //! ```
 //!
-//! In `winnow`, we call this type of parser a [`tag`]. See [`token`] for additional individual
+//! In `winnow`, we call this type of parser a [`literal`]. See [`token`] for additional individual
 //! and token-slice parsers.
 //!
 //! ## Character Classes
 //!
-//! Selecting a single `char` or a [`tag`] is fairly limited. Sometimes, you will want to select one of several
+//! Selecting a single `char` or a [`literal`] is fairly limited. Sometimes, you will want to select one of several
 //! `chars` of a specific class, like digits. For this, we use the [`one_of`] parser:
 //!
 //! ```rust
@@ -237,8 +237,8 @@ use crate::stream::ContainsToken;
 use crate::stream::Stream;
 use crate::token;
 use crate::token::any;
+use crate::token::literal;
 use crate::token::one_of;
-use crate::token::tag;
 use crate::token::take_while;
 use crate::Parser;
 use std::ops::RangeInclusive;
