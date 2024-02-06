@@ -455,7 +455,7 @@ impl<'a> SliceLen for &'a str {
 }
 
 impl SliceLen for u8 {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         1
     }
