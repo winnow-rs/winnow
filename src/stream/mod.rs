@@ -47,6 +47,7 @@ mod tests;
 /// UTF-8 Stream
 pub type Str<'i> = &'i str;
 
+pub use crate::A;
 pub use ascii::AsciiChar;
 
 /// Improved `Debug` experience for `&[u8]` byte streams

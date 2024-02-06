@@ -93,3 +93,50 @@ impl crate::lib::std::fmt::Debug for AsciiChar {
         self.to_char().fmt(f)
     }
 }
+
+/// Create an [`AsciiChar`] with compile-time validation
+#[macro_export]
+#[doc(hidden)] // forced to be visible in intended location
+macro_rules! A {
+    ($byte: literal) => {{
+        #![allow(clippy::unnecessary_cast)] // not always the same type
+
+        const BYTE: char = $byte as char;
+        const MAX: char = 127 as char;
+        const C: $crate::stream::AsciiChar = if BYTE <= MAX {
+            unsafe { $crate::stream::AsciiChar::from_u8_unchecked(BYTE as u8) }
+        } else {
+            panic!()
+        };
+        C
+    }};
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn const_number() {
+        const fn gen() -> AsciiChar {
+            crate::stream::A!(97)
+        }
+        assert_eq!(gen(), AsciiChar::from_u8(b'a').unwrap());
+    }
+
+    #[test]
+    fn const_u8() {
+        const fn gen() -> AsciiChar {
+            crate::stream::A!(b'a')
+        }
+        assert_eq!(gen(), AsciiChar::from_u8(b'a').unwrap());
+    }
+
+    #[test]
+    fn const_char() {
+        const fn gen() -> AsciiChar {
+            crate::stream::A!('a')
+        }
+        assert_eq!(gen(), AsciiChar::from_u8(b'a').unwrap());
+    }
+}
