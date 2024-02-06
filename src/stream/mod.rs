@@ -2145,7 +2145,7 @@ impl<'a> Compare<char> for &'a [u8] {
 }
 
 impl<'a> Compare<AsciiCaseless<char>> for &'a [u8] {
-    #[inline]
+    #[inline(always)]
     fn compare(&self, t: AsciiCaseless<char>) -> CompareResult {
         self.compare(AsciiCaseless(t.0.encode_utf8(&mut [0; 4]).as_bytes()))
     }
@@ -2173,7 +2173,7 @@ impl<'a> Compare<char> for &'a str {
 }
 
 impl<'a> Compare<AsciiCaseless<char>> for &'a str {
-    #[inline]
+    #[inline(always)]
     fn compare(&self, t: AsciiCaseless<char>) -> CompareResult {
         self.compare(AsciiCaseless(t.0.encode_utf8(&mut [0; 4]).as_bytes()))
     }
