@@ -3,6 +3,20 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+- Deprecate `token::tag` for `token::literal`
+- Deprecate `binary::bits::tag` for `binary::bits::pattern`
+
+### Features
+
+- Allow a byte (`u8`) to be a tag
+
+### Fixes
+
+- Clarify name of `token::tag` as `token::literal`
+- Clarify name of `binary::bits::tag` as `binary::bits::pattern`
+
 ## [0.5.37] - 2024-02-02
 
 ### Features
