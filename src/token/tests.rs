@@ -670,6 +670,30 @@ fn partial_case_insensitive() {
             ErrorKind::Tag
         )))
     );
+
+    fn test3(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
+        tag(Caseless("k")).parse_peek(i)
+    }
+
+    assert_eq!(
+        test3(Partial::new("K")),
+        Err(ErrMode::Backtrack(error_position!(
+            &Partial::new("K"),
+            ErrorKind::Tag
+        )))
+    );
+
+    fn test4(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
+        tag(Caseless("K")).parse_peek(i)
+    }
+
+    assert_eq!(
+        test4(Partial::new("k")),
+        Err(ErrMode::Backtrack(error_position!(
+            &Partial::new("k"),
+            ErrorKind::Tag
+        )))
+    );
 }
 
 #[test]
