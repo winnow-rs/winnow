@@ -75,9 +75,15 @@ impl AsciiChar {
         Self(b)
     }
 
+    /// Gets this ASCII character as a byte.
+    #[inline(always)]
+    pub const fn to_u8(self) -> u8 {
+        self.0 as u8
+    }
+
     /// Gets this ASCII character as a `char` Unicode Scalar Value.
     #[inline(always)]
-    const fn to_char(self) -> char {
+    pub const fn to_char(self) -> char {
         self.0 as char
     }
 }

@@ -465,6 +465,13 @@ impl SliceLen for u8 {
     }
 }
 
+impl SliceLen for AsciiChar {
+    #[inline(always)]
+    fn slice_len(&self) -> usize {
+        1
+    }
+}
+
 impl SliceLen for char {
     #[inline(always)]
     fn slice_len(&self) -> usize {
@@ -2170,6 +2177,20 @@ impl<'a> Compare<AsciiCaseless<u8>> for &'a [u8] {
     }
 }
 
+impl<'a> Compare<AsciiChar> for &'a [u8] {
+    #[inline(always)]
+    fn compare(&self, t: AsciiChar) -> CompareResult {
+        self.compare(t.to_u8())
+    }
+}
+
+impl<'a> Compare<AsciiCaseless<AsciiChar>> for &'a [u8] {
+    #[inline(always)]
+    fn compare(&self, t: AsciiCaseless<AsciiChar>) -> CompareResult {
+        self.compare(AsciiCaseless(t.0.to_u8()))
+    }
+}
+
 impl<'a> Compare<char> for &'a [u8] {
     #[inline(always)]
     fn compare(&self, t: char) -> CompareResult {
@@ -2208,6 +2229,20 @@ impl<'a> Compare<u8> for &'a str {
 impl<'a> Compare<AsciiCaseless<u8>> for &'a str {
     #[inline(always)]
     fn compare(&self, t: AsciiCaseless<u8>) -> CompareResult {
+        self.as_bytes().compare(t)
+    }
+}
+
+impl<'a> Compare<AsciiChar> for &'a str {
+    #[inline(always)]
+    fn compare(&self, t: AsciiChar) -> CompareResult {
+        self.as_bytes().compare(t)
+    }
+}
+
+impl<'a> Compare<AsciiCaseless<AsciiChar>> for &'a str {
+    #[inline(always)]
+    fn compare(&self, t: AsciiCaseless<AsciiChar>) -> CompareResult {
         self.as_bytes().compare(t)
     }
 }
@@ -2366,6 +2401,34 @@ impl<'i> FindSlice<(u8, u8, u8)> for &'i [u8] {
     }
 }
 
+impl<'i> FindSlice<AsciiChar> for &'i [u8] {
+    #[inline(always)]
+    fn find_slice(&self, substr: AsciiChar) -> Option<usize> {
+        self.find_slice(substr.to_u8())
+    }
+}
+
+impl<'i> FindSlice<(AsciiChar,)> for &'i [u8] {
+    #[inline(always)]
+    fn find_slice(&self, substr: (AsciiChar,)) -> Option<usize> {
+        self.find_slice(substr.0.to_u8())
+    }
+}
+
+impl<'i> FindSlice<(AsciiChar, AsciiChar)> for &'i [u8] {
+    #[inline(always)]
+    fn find_slice(&self, substr: (AsciiChar, AsciiChar)) -> Option<usize> {
+        self.find_slice((substr.0.to_u8(), substr.1.to_u8()))
+    }
+}
+
+impl<'i> FindSlice<(AsciiChar, AsciiChar, AsciiChar)> for &'i [u8] {
+    #[inline(always)]
+    fn find_slice(&self, substr: (AsciiChar, AsciiChar, AsciiChar)) -> Option<usize> {
+        self.find_slice((substr.0.to_u8(), substr.1.to_u8(), substr.2.to_u8()))
+    }
+}
+
 impl<'i, 's> FindSlice<&'s str> for &'i [u8] {
     #[inline(always)]
     fn find_slice(&self, substr: &'s str) -> Option<usize> {
@@ -2425,6 +2488,34 @@ impl<'i, 's> FindSlice<(&'s str, &'s str)> for &'i str {
 impl<'i, 's> FindSlice<(&'s str, &'s str, &'s str)> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: (&'s str, &'s str, &'s str)) -> Option<usize> {
+        self.as_bytes().find_slice(substr)
+    }
+}
+
+impl<'i> FindSlice<AsciiChar> for &'i str {
+    #[inline(always)]
+    fn find_slice(&self, substr: AsciiChar) -> Option<usize> {
+        self.as_bytes().find_slice(substr)
+    }
+}
+
+impl<'i> FindSlice<(AsciiChar,)> for &'i str {
+    #[inline(always)]
+    fn find_slice(&self, substr: (AsciiChar,)) -> Option<usize> {
+        self.as_bytes().find_slice(substr)
+    }
+}
+
+impl<'i> FindSlice<(AsciiChar, AsciiChar)> for &'i str {
+    #[inline(always)]
+    fn find_slice(&self, substr: (AsciiChar, AsciiChar)) -> Option<usize> {
+        self.as_bytes().find_slice(substr)
+    }
+}
+
+impl<'i> FindSlice<(AsciiChar, AsciiChar, AsciiChar)> for &'i str {
+    #[inline(always)]
+    fn find_slice(&self, substr: (AsciiChar, AsciiChar, AsciiChar)) -> Option<usize> {
         self.as_bytes().find_slice(substr)
     }
 }
@@ -2882,6 +2973,21 @@ impl<'i, T: Clone> Accumulate<&'i [T]> for Vec<T> {
 }
 
 #[cfg(feature = "alloc")]
+impl Accumulate<AsciiChar> for String {
+    #[inline(always)]
+    fn initial(capacity: Option<usize>) -> Self {
+        match capacity {
+            Some(capacity) => String::with_capacity(clamp_capacity::<char>(capacity)),
+            None => String::new(),
+        }
+    }
+    #[inline(always)]
+    fn accumulate(&mut self, acc: AsciiChar) {
+        self.push(acc.to_char());
+    }
+}
+
+#[cfg(feature = "alloc")]
 impl Accumulate<char> for String {
     #[inline(always)]
     fn initial(capacity: Option<usize>) -> Self {
@@ -3167,6 +3273,84 @@ impl<'a> AsChar for &'a u8 {
     }
 }
 
+impl AsChar for AsciiChar {
+    #[inline(always)]
+    fn as_char(self) -> char {
+        self.to_char()
+    }
+    #[inline(always)]
+    fn is_alpha(self) -> bool {
+        self.to_u8().is_alpha()
+    }
+    #[inline(always)]
+    fn is_alphanum(self) -> bool {
+        self.to_u8().is_alphanum()
+    }
+    #[inline(always)]
+    fn is_dec_digit(self) -> bool {
+        self.to_u8().is_dec_digit()
+    }
+    #[inline(always)]
+    fn is_hex_digit(self) -> bool {
+        self.to_u8().is_hex_digit()
+    }
+    #[inline(always)]
+    fn is_oct_digit(self) -> bool {
+        self.to_u8().is_oct_digit()
+    }
+    #[inline(always)]
+    fn len(self) -> usize {
+        self.to_u8().len()
+    }
+    #[inline(always)]
+    fn is_space(self) -> bool {
+        self.to_u8().is_space()
+    }
+    #[inline(always)]
+    fn is_newline(self) -> bool {
+        self.to_u8().is_newline()
+    }
+}
+
+impl<'a> AsChar for &'a AsciiChar {
+    #[inline(always)]
+    fn as_char(self) -> char {
+        (*self).as_char()
+    }
+    #[inline(always)]
+    fn is_alpha(self) -> bool {
+        (*self).is_alpha()
+    }
+    #[inline(always)]
+    fn is_alphanum(self) -> bool {
+        (*self).is_alphanum()
+    }
+    #[inline(always)]
+    fn is_dec_digit(self) -> bool {
+        (*self).is_dec_digit()
+    }
+    #[inline(always)]
+    fn is_hex_digit(self) -> bool {
+        (*self).is_hex_digit()
+    }
+    #[inline(always)]
+    fn is_oct_digit(self) -> bool {
+        (*self).is_oct_digit()
+    }
+    #[inline(always)]
+    fn len(self) -> usize {
+        (*self).len()
+    }
+    #[inline(always)]
+    fn is_space(self) -> bool {
+        (*self).is_space()
+    }
+    #[inline(always)]
+    fn is_newline(self) -> bool {
+        (*self).is_newline()
+    }
+}
+
 impl AsChar for char {
     #[inline(always)]
     fn as_char(self) -> char {
@@ -3303,6 +3487,13 @@ impl<'a> ContainsToken<&'a char> for u8 {
     }
 }
 
+impl<C: AsChar> ContainsToken<C> for AsciiChar {
+    #[inline(always)]
+    fn contains_token(&self, token: C) -> bool {
+        self.to_char() == token.as_char()
+    }
+}
+
 impl<C: AsChar> ContainsToken<C> for char {
     #[inline(always)]
     fn contains_token(&self, token: C) -> bool {
@@ -3378,6 +3569,14 @@ impl<C: AsChar> ContainsToken<C> for &'_ [u8] {
     }
 }
 
+impl<C: AsChar> ContainsToken<C> for &'_ [AsciiChar] {
+    #[inline]
+    fn contains_token(&self, token: C) -> bool {
+        let token = token.as_char();
+        self.iter().any(|t| t.to_char() == token)
+    }
+}
+
 impl<C: AsChar> ContainsToken<C> for &'_ [char] {
     #[inline]
     fn contains_token(&self, token: C) -> bool {
@@ -3394,6 +3593,14 @@ impl<const LEN: usize, C: AsChar> ContainsToken<C> for &'_ [u8; LEN] {
     }
 }
 
+impl<const LEN: usize, C: AsChar> ContainsToken<C> for &'_ [AsciiChar; LEN] {
+    #[inline]
+    fn contains_token(&self, token: C) -> bool {
+        let token = token.as_char();
+        self.iter().any(|t| t.to_char() == token)
+    }
+}
+
 impl<const LEN: usize, C: AsChar> ContainsToken<C> for &'_ [char; LEN] {
     #[inline]
     fn contains_token(&self, token: C) -> bool {
@@ -3407,6 +3614,14 @@ impl<const LEN: usize, C: AsChar> ContainsToken<C> for [u8; LEN] {
     fn contains_token(&self, token: C) -> bool {
         let token = token.as_char();
         self.iter().any(|t| t.as_char() == token)
+    }
+}
+
+impl<const LEN: usize, C: AsChar> ContainsToken<C> for [AsciiChar; LEN] {
+    #[inline]
+    fn contains_token(&self, token: C) -> bool {
+        let token = token.as_char();
+        self.iter().any(|t| t.to_char() == token)
     }
 }
 
