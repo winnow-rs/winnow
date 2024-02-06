@@ -592,7 +592,10 @@ where
     P: Fn(I::Token) -> bool,
 {
     if n < m {
-        return Err(ErrMode::assert(input, "`m` should be <= `n`"));
+        return Err(ErrMode::assert(
+            input,
+            "range should be ascending, rather than descending",
+        ));
     }
 
     let mut final_count = 0;
@@ -1119,7 +1122,10 @@ where
     T: SliceLen,
 {
     if end < start {
-        return Err(ErrMode::assert(i, "`start` should be <= `end`"));
+        return Err(ErrMode::assert(
+            i,
+            "range should be ascending, rather than descending",
+        ));
     }
 
     match i.find_slice(t) {
