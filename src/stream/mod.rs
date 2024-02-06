@@ -3127,39 +3127,39 @@ impl AsChar for u8 {
 impl<'a> AsChar for &'a u8 {
     #[inline(always)]
     fn as_char(self) -> char {
-        *self as char
+        (*self).as_char()
     }
-    #[inline]
+    #[inline(always)]
     fn is_alpha(self) -> bool {
-        matches!(*self, 0x41..=0x5A | 0x61..=0x7A)
+        (*self).is_alpha()
     }
-    #[inline]
+    #[inline(always)]
     fn is_alphanum(self) -> bool {
-        self.is_alpha() || self.is_dec_digit()
+        (*self).is_alphanum()
     }
-    #[inline]
+    #[inline(always)]
     fn is_dec_digit(self) -> bool {
-        matches!(*self, 0x30..=0x39)
+        (*self).is_dec_digit()
     }
-    #[inline]
+    #[inline(always)]
     fn is_hex_digit(self) -> bool {
-        matches!(*self, 0x30..=0x39 | 0x41..=0x46 | 0x61..=0x66)
+        (*self).is_hex_digit()
     }
-    #[inline]
+    #[inline(always)]
     fn is_oct_digit(self) -> bool {
-        matches!(*self, 0x30..=0x37)
+        (*self).is_oct_digit()
     }
-    #[inline]
+    #[inline(always)]
     fn len(self) -> usize {
-        1
+        (*self).len()
     }
-    #[inline]
+    #[inline(always)]
     fn is_space(self) -> bool {
-        *self == b' ' || *self == b'\t'
+        (*self).is_space()
     }
-    #[inline]
+    #[inline(always)]
     fn is_newline(self) -> bool {
-        *self == b'\n'
+        (*self).is_newline()
     }
 }
 
@@ -3205,39 +3205,39 @@ impl AsChar for char {
 impl<'a> AsChar for &'a char {
     #[inline(always)]
     fn as_char(self) -> char {
-        *self
+        (*self).as_char()
     }
-    #[inline]
+    #[inline(always)]
     fn is_alpha(self) -> bool {
-        self.is_ascii_alphabetic()
+        (*self).is_alpha()
     }
-    #[inline]
+    #[inline(always)]
     fn is_alphanum(self) -> bool {
-        self.is_alpha() || self.is_dec_digit()
+        (*self).is_alphanum()
     }
-    #[inline]
+    #[inline(always)]
     fn is_dec_digit(self) -> bool {
-        self.is_ascii_digit()
+        (*self).is_dec_digit()
     }
-    #[inline]
+    #[inline(always)]
     fn is_hex_digit(self) -> bool {
-        self.is_ascii_hexdigit()
+        (*self).is_hex_digit()
     }
-    #[inline]
+    #[inline(always)]
     fn is_oct_digit(self) -> bool {
-        self.is_digit(8)
+        (*self).is_oct_digit()
     }
-    #[inline]
+    #[inline(always)]
     fn len(self) -> usize {
-        self.len_utf8()
+        (*self).len()
     }
-    #[inline]
+    #[inline(always)]
     fn is_space(self) -> bool {
-        *self == ' ' || *self == '\t'
+        (*self).is_space()
     }
-    #[inline]
+    #[inline(always)]
     fn is_newline(self) -> bool {
-        *self == '\n'
+        (*self).is_newline()
     }
 }
 
