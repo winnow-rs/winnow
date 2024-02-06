@@ -205,6 +205,21 @@ fn complete_tag_char() {
 }
 
 #[test]
+fn complete_tag_byte() {
+    fn test(i: &[u8]) -> IResult<&[u8], &[u8]> {
+        tag(b'B').parse_peek(i)
+    }
+    assert_eq!(test(&[0x42, 0x00][..]), Ok((&b"\x00"[..], &b"\x42"[..])));
+    assert_eq!(
+        test(&[b'A', b'\0'][..]),
+        Err(ErrMode::Backtrack(error_position!(
+            &&b"A\0"[..],
+            ErrorKind::Tag
+        )))
+    );
+}
+
+#[test]
 fn partial_any_str() {
     use super::any;
     assert_eq!(
