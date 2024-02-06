@@ -1017,7 +1017,7 @@ pub fn take_until<T, I, Error: ParserError<I>>(
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,
-    T: SliceLen + Clone,
+    T: Clone,
 {
     let Range {
         start_inclusive,
@@ -1059,7 +1059,7 @@ pub fn take_until0<T, I, Error: ParserError<I>>(
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,
-    T: SliceLen + Clone,
+    T: Clone,
 {
     take_until(0.., tag)
 }
@@ -1071,7 +1071,6 @@ fn take_until0_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,
-    T: SliceLen,
 {
     match i.find_slice(t) {
         Some(offset) => Ok(i.next_slice(offset)),
@@ -1089,7 +1088,7 @@ pub fn take_until1<T, I, Error: ParserError<I>>(
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,
-    T: SliceLen + Clone,
+    T: Clone,
 {
     take_until(1.., tag)
 }
@@ -1101,7 +1100,6 @@ fn take_until1_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,
-    T: SliceLen,
 {
     match i.find_slice(t) {
         None if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
@@ -1119,7 +1117,6 @@ fn take_until_m_n_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,
-    T: SliceLen,
 {
     if end < start {
         return Err(ErrMode::assert(
