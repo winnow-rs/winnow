@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Be consistent about inlining `slice_len`
+
 ## [0.5.38] - 2024-02-06
 
 ### Compatibility
