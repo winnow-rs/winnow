@@ -2168,28 +2168,28 @@ impl<'a, 'b> Compare<AsciiCaseless<&'b str>> for &'a str {
 impl<'a> Compare<char> for &'a str {
     #[inline(always)]
     fn compare(&self, t: char) -> CompareResult {
-        self.compare(t.encode_utf8(&mut [0; 4]).as_bytes())
+        self.as_bytes().compare(t)
     }
 }
 
 impl<'a> Compare<AsciiCaseless<char>> for &'a str {
     #[inline(always)]
     fn compare(&self, t: AsciiCaseless<char>) -> CompareResult {
-        self.compare(AsciiCaseless(t.0.encode_utf8(&mut [0; 4]).as_bytes()))
+        self.as_bytes().compare(t)
     }
 }
 
 impl<'a, 'b> Compare<&'b [u8]> for &'a str {
     #[inline(always)]
     fn compare(&self, t: &'b [u8]) -> CompareResult {
-        AsBStr::as_bstr(self).compare(t)
+        self.as_bytes().compare(t)
     }
 }
 
 impl<'a, 'b> Compare<AsciiCaseless<&'b [u8]>> for &'a str {
     #[inline(always)]
     fn compare(&self, t: AsciiCaseless<&'b [u8]>) -> CompareResult {
-        AsBStr::as_bstr(self).compare(t)
+        self.as_bytes().compare(t)
     }
 }
 
