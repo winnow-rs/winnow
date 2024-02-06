@@ -427,49 +427,56 @@ impl<S: SliceLen> SliceLen for AsciiCaseless<S> {
 }
 
 impl<'a, T> SliceLen for &'a [T] {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
 }
 
 impl<T, const LEN: usize> SliceLen for [T; LEN] {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
 }
 
 impl<'a, T, const LEN: usize> SliceLen for &'a [T; LEN] {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
 }
 
 impl<'a> SliceLen for &'a str {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
 }
 
-impl SliceLen for char {
+impl SliceLen for u8 {
     #[inline]
+    fn slice_len(&self) -> usize {
+        1
+    }
+}
+
+impl SliceLen for char {
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len_utf8()
     }
 }
 
 impl<'a> SliceLen for &'a Bytes {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
 }
 
 impl<'a> SliceLen for &'a BStr {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
@@ -2137,6 +2144,28 @@ impl<'a, 'b> Compare<AsciiCaseless<&'b str>> for &'a [u8] {
     }
 }
 
+impl<'a> Compare<u8> for &'a [u8] {
+    #[inline]
+    fn compare(&self, t: u8) -> CompareResult {
+        match self.first().copied() {
+            Some(c) if t == c => CompareResult::Ok(t.slice_len()),
+            Some(_) => CompareResult::Error,
+            None => CompareResult::Incomplete,
+        }
+    }
+}
+
+impl<'a> Compare<AsciiCaseless<u8>> for &'a [u8] {
+    #[inline]
+    fn compare(&self, t: AsciiCaseless<u8>) -> CompareResult {
+        match self.first() {
+            Some(c) if t.0.eq_ignore_ascii_case(c) => CompareResult::Ok(t.slice_len()),
+            Some(_) => CompareResult::Error,
+            None => CompareResult::Incomplete,
+        }
+    }
+}
+
 impl<'a> Compare<char> for &'a [u8] {
     #[inline(always)]
     fn compare(&self, t: char) -> CompareResult {
@@ -2145,7 +2174,7 @@ impl<'a> Compare<char> for &'a [u8] {
 }
 
 impl<'a> Compare<AsciiCaseless<char>> for &'a [u8] {
-    #[inline]
+    #[inline(always)]
     fn compare(&self, t: AsciiCaseless<char>) -> CompareResult {
         self.compare(AsciiCaseless(t.0.encode_utf8(&mut [0; 4]).as_bytes()))
     }
@@ -2165,31 +2194,45 @@ impl<'a, 'b> Compare<AsciiCaseless<&'b str>> for &'a str {
     }
 }
 
+impl<'a> Compare<u8> for &'a str {
+    #[inline(always)]
+    fn compare(&self, t: u8) -> CompareResult {
+        self.as_bytes().compare(t)
+    }
+}
+
+impl<'a> Compare<AsciiCaseless<u8>> for &'a str {
+    #[inline(always)]
+    fn compare(&self, t: AsciiCaseless<u8>) -> CompareResult {
+        self.as_bytes().compare(t)
+    }
+}
+
 impl<'a> Compare<char> for &'a str {
     #[inline(always)]
     fn compare(&self, t: char) -> CompareResult {
-        self.compare(t.encode_utf8(&mut [0; 4]).as_bytes())
+        self.as_bytes().compare(t)
     }
 }
 
 impl<'a> Compare<AsciiCaseless<char>> for &'a str {
-    #[inline]
+    #[inline(always)]
     fn compare(&self, t: AsciiCaseless<char>) -> CompareResult {
-        self.compare(AsciiCaseless(t.0.encode_utf8(&mut [0; 4]).as_bytes()))
+        self.as_bytes().compare(t)
     }
 }
 
 impl<'a, 'b> Compare<&'b [u8]> for &'a str {
     #[inline(always)]
     fn compare(&self, t: &'b [u8]) -> CompareResult {
-        AsBStr::as_bstr(self).compare(t)
+        self.as_bytes().compare(t)
     }
 }
 
 impl<'a, 'b> Compare<AsciiCaseless<&'b [u8]>> for &'a str {
     #[inline(always)]
     fn compare(&self, t: AsciiCaseless<&'b [u8]>) -> CompareResult {
-        AsBStr::as_bstr(self).compare(t)
+        self.as_bytes().compare(t)
     }
 }
 
