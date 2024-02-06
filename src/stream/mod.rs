@@ -2048,7 +2048,11 @@ where
 #[derive(Debug, Eq, PartialEq)]
 pub enum CompareResult {
     /// Comparison was successful
-    Ok,
+    ///
+    /// `usize` is the end of the successful match within the buffer.
+    /// This is most relevant for caseless UTF-8 where `Compare::compare`'s parameter might be a different
+    /// length than the match within the buffer.
+    Ok(usize),
     /// We need more data to be sure
     Incomplete,
     /// Comparison failed
@@ -2069,7 +2073,7 @@ impl<'a, 'b> Compare<&'b [u8]> for &'a [u8] {
         } else if self.len() < t.slice_len() {
             CompareResult::Incomplete
         } else {
-            CompareResult::Ok
+            CompareResult::Ok(t.slice_len())
         }
     }
 }
@@ -2086,7 +2090,7 @@ impl<'a, 'b> Compare<AsciiCaseless<&'b [u8]>> for &'a [u8] {
         } else if self.len() < t.slice_len() {
             CompareResult::Incomplete
         } else {
-            CompareResult::Ok
+            CompareResult::Ok(t.slice_len())
         }
     }
 }

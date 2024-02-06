@@ -162,7 +162,7 @@ where
 {
     let tag_len = t.slice_len();
     match i.compare(t) {
-        CompareResult::Ok => Ok(i.next_slice(tag_len)),
+        CompareResult::Ok(len) => Ok(i.next_slice(len)),
         CompareResult::Incomplete if PARTIAL && i.is_partial() => {
             Err(ErrMode::Incomplete(Needed::new(tag_len - i.eof_offset())))
         }

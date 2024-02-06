@@ -162,11 +162,10 @@ where
         }
         Err(_) => input.finish(),
     };
-    if input.compare("\r") == CompareResult::Ok {
+    if matches!(input.compare("\r"), CompareResult::Ok(_)) {
         let comp = input.compare("\r\n");
         match comp {
-            //FIXME: calculate the right index
-            CompareResult::Ok => {}
+            CompareResult::Ok(_) => {}
             CompareResult::Incomplete if PARTIAL && input.is_partial() => {
                 return Err(ErrMode::Incomplete(Needed::Unknown));
             }
