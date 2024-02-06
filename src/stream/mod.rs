@@ -39,12 +39,15 @@ use crate::lib::std::string::String;
 #[cfg(feature = "alloc")]
 use crate::lib::std::vec::Vec;
 
+mod ascii;
 mod impls;
 #[cfg(test)]
 mod tests;
 
 /// UTF-8 Stream
 pub type Str<'i> = &'i str;
+
+pub use ascii::AsciiChar;
 
 /// Improved `Debug` experience for `&[u8]` byte streams
 #[allow(clippy::derive_hash_xor_eq)]
