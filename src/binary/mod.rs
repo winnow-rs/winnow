@@ -2408,7 +2408,6 @@ where
 /// use winnow::Bytes;
 /// use winnow::binary::be_u16;
 /// use winnow::binary::length_take;
-/// use winnow::token::tag;
 ///
 /// type Stream<'i> = Partial<&'i Bytes>;
 ///
@@ -2456,7 +2455,6 @@ where
 /// use winnow::Bytes;
 /// use winnow::binary::be_u16;
 /// use winnow::binary::length_and_then;
-/// use winnow::token::tag;
 ///
 /// type Stream<'i> = Partial<&'i Bytes>;
 ///
@@ -2514,7 +2512,6 @@ where
 /// use winnow::Bytes;
 /// use winnow::binary::u8;
 /// use winnow::binary::length_repeat;
-/// use winnow::token::tag;
 ///
 /// type Stream<'i> = &'i Bytes;
 ///

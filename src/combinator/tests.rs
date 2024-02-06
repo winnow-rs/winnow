@@ -186,20 +186,20 @@ fn opt_test() {
 
 #[test]
 fn peek_test() {
-    fn peek_tag(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
+    fn peek_literal(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         peek("abcd").parse_peek(i)
     }
 
     assert_eq!(
-        peek_tag(Partial::new(&b"abcdef"[..])),
+        peek_literal(Partial::new(&b"abcdef"[..])),
         Ok((Partial::new(&b"abcdef"[..]), &b"abcd"[..]))
     );
     assert_eq!(
-        peek_tag(Partial::new(&b"ab"[..])),
+        peek_literal(Partial::new(&b"ab"[..])),
         Err(ErrMode::Incomplete(Needed::new(2)))
     );
     assert_eq!(
-        peek_tag(Partial::new(&b"xxx"[..])),
+        peek_literal(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"xxx"[..]),
             ErrorKind::Tag

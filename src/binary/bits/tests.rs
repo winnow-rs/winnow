@@ -114,27 +114,27 @@ fn test_take_partial_0() {
 }
 
 #[test]
-fn test_tag_partial_ok() {
+fn test_pattern_partial_ok() {
     let input = Partial::new(&[0b00011111][..]);
     let offset = 0usize;
     let bits_to_take = 4usize;
-    let value_to_tag = 0b0001;
+    let value_to_pattern = 0b0001;
 
     let result: crate::IResult<(_, usize), usize> =
-        tag(value_to_tag, bits_to_take).parse_peek((input, offset));
+        pattern(value_to_pattern, bits_to_take).parse_peek((input, offset));
 
-    assert_eq!(result, Ok(((input, bits_to_take), value_to_tag)));
+    assert_eq!(result, Ok(((input, bits_to_take), value_to_pattern)));
 }
 
 #[test]
-fn test_tag_partial_err() {
+fn test_pattern_partial_err() {
     let input = Partial::new(&[0b00011111][..]);
     let offset = 0usize;
     let bits_to_take = 4usize;
-    let value_to_tag = 0b1111;
+    let value_to_pattern = 0b1111;
 
     let result: crate::IResult<(_, usize), usize> =
-        tag(value_to_tag, bits_to_take).parse_peek((input, offset));
+        pattern(value_to_pattern, bits_to_take).parse_peek((input, offset));
 
     assert_eq!(
         result,

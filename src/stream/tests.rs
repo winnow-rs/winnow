@@ -3,7 +3,7 @@ use proptest::prelude::*;
 
 use crate::error::ErrMode::Backtrack;
 use crate::error::{ErrorKind, InputError};
-use crate::token::tag;
+use crate::token::literal;
 use crate::{
     combinator::{separated, separated_pair},
     PResult, Parser,
@@ -151,78 +151,78 @@ fn test_custom_slice() {
 }
 
 #[test]
-fn test_tag_support_char() {
+fn test_literal_support_char() {
     assert_eq!(
-        tag::<_, _, InputError<_>>('π').parse_peek("π"),
+        literal::<_, _, InputError<_>>('π').parse_peek("π"),
         Ok(("", "π"))
     );
     assert_eq!(
-        tag::<_, _, InputError<_>>('π').parse_peek("π3.14"),
+        literal::<_, _, InputError<_>>('π').parse_peek("π3.14"),
         Ok(("3.14", "π"))
     );
 
     assert_eq!(
-        tag::<_, _, InputError<_>>("π").parse_peek("π3.14"),
+        literal::<_, _, InputError<_>>("π").parse_peek("π3.14"),
         Ok(("3.14", "π"))
     );
 
     assert_eq!(
-        tag::<_, _, InputError<_>>('-').parse_peek("π"),
+        literal::<_, _, InputError<_>>('-').parse_peek("π"),
         Err(Backtrack(InputError::new("π", ErrorKind::Tag)))
     );
 
     assert_eq!(
-        tag::<_, Partial<&[u8]>, InputError<_>>('π').parse_peek(Partial::new(b"\xCF\x80")),
+        literal::<_, Partial<&[u8]>, InputError<_>>('π').parse_peek(Partial::new(b"\xCF\x80")),
         Ok((Partial::new(Default::default()), "π".as_bytes()))
     );
     assert_eq!(
-        tag::<_, &[u8], InputError<_>>('π').parse_peek(b"\xCF\x80"),
+        literal::<_, &[u8], InputError<_>>('π').parse_peek(b"\xCF\x80"),
         Ok((Default::default(), "π".as_bytes()))
     );
 
     assert_eq!(
-        tag::<_, Partial<&[u8]>, InputError<_>>('π').parse_peek(Partial::new(b"\xCF\x803.14")),
+        literal::<_, Partial<&[u8]>, InputError<_>>('π').parse_peek(Partial::new(b"\xCF\x803.14")),
         Ok((Partial::new(&b"3.14"[..]), "π".as_bytes()))
     );
     assert_eq!(
-        tag::<_, &[u8], InputError<_>>('π').parse_peek(b"\xCF\x80"),
+        literal::<_, &[u8], InputError<_>>('π').parse_peek(b"\xCF\x80"),
         Ok((Default::default(), "π".as_bytes()))
     );
 
     assert_eq!(
-        tag::<_, &[u8], InputError<_>>('π').parse_peek(b"\xCF\x803.14"),
+        literal::<_, &[u8], InputError<_>>('π').parse_peek(b"\xCF\x803.14"),
         Ok((&b"3.14"[..], "π".as_bytes()))
     );
 
     assert_eq!(
-        tag::<_, &[u8], InputError<_>>(AsciiCaseless('a')).parse_peek(b"ABCxyz"),
+        literal::<_, &[u8], InputError<_>>(AsciiCaseless('a')).parse_peek(b"ABCxyz"),
         Ok((&b"BCxyz"[..], &b"A"[..]))
     );
 
     assert_eq!(
-        tag::<_, &[u8], InputError<_>>('a').parse_peek(b"ABCxyz"),
+        literal::<_, &[u8], InputError<_>>('a').parse_peek(b"ABCxyz"),
         Err(Backtrack(InputError::new(&b"ABCxyz"[..], ErrorKind::Tag)))
     );
 
     assert_eq!(
-        tag::<_, &[u8], InputError<_>>(AsciiCaseless('π')).parse_peek(b"\xCF\x803.14"),
+        literal::<_, &[u8], InputError<_>>(AsciiCaseless('π')).parse_peek(b"\xCF\x803.14"),
         Ok((&b"3.14"[..], "π".as_bytes()))
     );
 
     assert_eq!(
-        tag::<_, _, InputError<_>>(AsciiCaseless('🧑')).parse_peek("🧑你好"),
+        literal::<_, _, InputError<_>>(AsciiCaseless('🧑')).parse_peek("🧑你好"),
         Ok(("你好", "🧑"))
     );
 
     let mut buffer = [0; 4];
     let input = '\u{241b}'.encode_utf8(&mut buffer);
     assert_eq!(
-        tag::<_, &[u8], InputError<_>>(AsciiCaseless('␛')).parse_peek(input.as_bytes()),
+        literal::<_, &[u8], InputError<_>>(AsciiCaseless('␛')).parse_peek(input.as_bytes()),
         Ok((&b""[..], [226, 144, 155].as_slice()))
     );
 
     assert_eq!(
-        tag::<_, &[u8], InputError<_>>('-').parse_peek(b"\xCF\x80"),
+        literal::<_, &[u8], InputError<_>>('-').parse_peek(b"\xCF\x80"),
         Err(Backtrack(InputError::new(&b"\xCF\x80"[..], ErrorKind::Tag)))
     );
 }

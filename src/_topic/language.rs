@@ -75,14 +75,14 @@
 //!
 //! ### `/* C-style comments */`
 //!
-//! Inline comments surrounded with sentinel tags `(*` and `*)`. This version returns an output of `()`
+//! Inline comments surrounded with sentinel literals `(*` and `*)`. This version returns an output of `()`
 //! and does not handle nested comments.
 //!
 //! ```rust
 //! use winnow::prelude::*;
 //! use winnow::{
 //!   error::ParserError,
-//!   token::{tag, take_until},
+//!   token::take_until,
 //! };
 //!
 //! pub fn pinline_comment<'a, E: ParserError<&'a str>>(i: &mut &'a str) -> PResult<(), E> {
@@ -159,7 +159,6 @@
 //!   combinator::{repeat},
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
-//!   token::tag,
 //! };
 //!
 //! fn hexadecimal<'s>(input: &mut &'s str) -> PResult<&'s str> { // <'a, E: ParserError<&'a str>>
@@ -181,7 +180,6 @@
 //!   combinator::{repeat},
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
-//!   token::tag,
 //! };
 //!
 //! fn hexadecimal_value(input: &mut &str) -> PResult<i64> {
@@ -207,7 +205,6 @@
 //!   combinator::{repeat},
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
-//!   token::tag,
 //! };
 //!
 //! fn octal<'s>(input: &mut &'s str) -> PResult<&'s str> {
@@ -229,7 +226,6 @@
 //!   combinator::{repeat},
 //!   combinator::{preceded, terminated},
 //!   token::one_of,
-//!   token::tag,
 //! };
 //!
 //! fn binary<'s>(input: &mut &'s str) -> PResult<&'s str> {

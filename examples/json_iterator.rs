@@ -11,7 +11,7 @@ use winnow::{
     error::StrContext,
     stream::Offset,
     token::one_of,
-    token::{tag, take_while},
+    token::{literal, take_while},
 };
 
 use std::cell::Cell;
@@ -80,7 +80,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
         println!("array()");
 
         let mut data = self.data();
-        match tag::<_, _, ()>("[").parse_next(&mut data) {
+        match literal::<_, _, ()>("[").parse_next(&mut data) {
             Err(_) => None,
             Ok(_) => {
                 println!("[");
@@ -104,7 +104,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
                         }
                     }
 
-                    if tag::<_, _, ()>("]").parse_next(&mut data).is_ok() {
+                    if literal::<_, _, ()>("]").parse_next(&mut data).is_ok() {
                         println!("]");
                         v.offset(data);
                         done = true;
@@ -114,7 +114,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
                     if first {
                         first = false;
                     } else {
-                        match tag::<_, _, ()>(",").parse_next(&mut data) {
+                        match literal::<_, _, ()>(",").parse_next(&mut data) {
                             Ok(_) => {
                                 println!(",");
                                 v.offset(data);
@@ -137,7 +137,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
     pub fn object(&self) -> Option<impl Iterator<Item = (&'a str, JsonValue<'a, 'b>)>> {
         println!("object()");
         let mut data = self.data();
-        match tag::<_, _, ()>("{").parse_next(&mut data) {
+        match literal::<_, _, ()>("{").parse_next(&mut data) {
             Err(_) => None,
             Ok(_) => {
                 self.offset(data);
@@ -163,7 +163,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
                         }
                     }
 
-                    if tag::<_, _, ()>("}").parse_next(&mut data).is_ok() {
+                    if literal::<_, _, ()>("}").parse_next(&mut data).is_ok() {
                         println!("}}");
                         v.offset(data);
                         done = true;
@@ -173,7 +173,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
                     if first {
                         first = false;
                     } else {
-                        match tag::<_, _, ()>(",").parse_next(&mut data) {
+                        match literal::<_, _, ()>(",").parse_next(&mut data) {
                             Ok(_) => {
                                 println!(",");
                                 v.offset(data);
@@ -189,7 +189,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
                         Ok(key) => {
                             v.offset(data);
 
-                            match tag::<_, _, ()>(":").parse_next(&mut data) {
+                            match literal::<_, _, ()>(":").parse_next(&mut data) {
                                 Err(_) => None,
                                 Ok(_) => {
                                     v.offset(data);

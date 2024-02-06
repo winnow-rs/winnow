@@ -1375,13 +1375,17 @@ where
 {
     alt((
         recognize_float,
-        crate::token::tag(Caseless("nan")),
+        crate::token::literal(Caseless("nan")),
         (
             opt(one_of(['+', '-'])),
-            crate::token::tag(Caseless("infinity")),
+            crate::token::literal(Caseless("infinity")),
         )
             .recognize(),
-        (opt(one_of(['+', '-'])), crate::token::tag(Caseless("inf"))).recognize(),
+        (
+            opt(one_of(['+', '-'])),
+            crate::token::literal(Caseless("inf")),
+        )
+            .recognize(),
     ))
     .parse_next(input)
 }
@@ -1570,7 +1574,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use std::str::from_utf8;
-/// use winnow::token::tag;
+/// use winnow::token::literal;
 /// use winnow::ascii::escaped_transform;
 /// use winnow::ascii::alpha1;
 /// use winnow::combinator::alt;
@@ -1596,7 +1600,7 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use std::str::from_utf8;
 /// # use winnow::Partial;
-/// use winnow::token::tag;
+/// use winnow::token::literal;
 /// use winnow::ascii::escaped_transform;
 /// use winnow::ascii::alpha1;
 /// use winnow::combinator::alt;

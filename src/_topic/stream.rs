@@ -18,7 +18,6 @@
 //! The goal is to define parsers with this signature: `&mut MyStream -> PResult<Output>`.
 //! ```rust
 //! # use winnow::prelude::*;
-//! # use winnow::token::tag;
 //! # type MyStream<'i> = &'i str;
 //! # type Output<'i> = &'i str;
 //! fn parser<'s>(i: &mut MyStream<'s>) -> PResult<Output<'s>> {
