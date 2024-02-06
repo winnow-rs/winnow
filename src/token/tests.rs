@@ -600,7 +600,6 @@ fn partial_recognize_take_while0() {
     );
 }
 
-#[cfg(feature = "alloc")]
 #[test]
 fn partial_case_insensitive() {
     fn test(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
