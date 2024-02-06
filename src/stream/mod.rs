@@ -427,49 +427,49 @@ impl<S: SliceLen> SliceLen for AsciiCaseless<S> {
 }
 
 impl<'a, T> SliceLen for &'a [T] {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
 }
 
 impl<T, const LEN: usize> SliceLen for [T; LEN] {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
 }
 
 impl<'a, T, const LEN: usize> SliceLen for &'a [T; LEN] {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
 }
 
 impl<'a> SliceLen for &'a str {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
 }
 
 impl SliceLen for char {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len_utf8()
     }
 }
 
 impl<'a> SliceLen for &'a Bytes {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
 }
 
 impl<'a> SliceLen for &'a BStr {
-    #[inline]
+    #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
