@@ -2303,89 +2303,98 @@ where
 /// Look for a slice in self
 pub trait FindSlice<T> {
     /// Returns the offset of the slice if it is found
-    fn find_slice(&self, substr: T) -> Option<usize>;
+    fn find_slice(&self, substr: T) -> Option<crate::lib::std::ops::Range<usize>>;
 }
 
 impl<'i, 's> FindSlice<&'s [u8]> for &'i [u8] {
     #[inline(always)]
-    fn find_slice(&self, substr: &'s [u8]) -> Option<usize> {
+    fn find_slice(&self, substr: &'s [u8]) -> Option<crate::lib::std::ops::Range<usize>> {
         memmem(self, substr)
     }
 }
 
 impl<'i, 's> FindSlice<(&'s [u8],)> for &'i [u8] {
     #[inline(always)]
-    fn find_slice(&self, substr: (&'s [u8],)) -> Option<usize> {
+    fn find_slice(&self, substr: (&'s [u8],)) -> Option<crate::lib::std::ops::Range<usize>> {
         memmem(self, substr.0)
     }
 }
 
 impl<'i, 's> FindSlice<(&'s [u8], &'s [u8])> for &'i [u8] {
     #[inline(always)]
-    fn find_slice(&self, substr: (&'s [u8], &'s [u8])) -> Option<usize> {
+    fn find_slice(
+        &self,
+        substr: (&'s [u8], &'s [u8]),
+    ) -> Option<crate::lib::std::ops::Range<usize>> {
         memmem2(self, substr)
     }
 }
 
 impl<'i, 's> FindSlice<(&'s [u8], &'s [u8], &'s [u8])> for &'i [u8] {
     #[inline(always)]
-    fn find_slice(&self, substr: (&'s [u8], &'s [u8], &'s [u8])) -> Option<usize> {
+    fn find_slice(
+        &self,
+        substr: (&'s [u8], &'s [u8], &'s [u8]),
+    ) -> Option<crate::lib::std::ops::Range<usize>> {
         memmem3(self, substr)
     }
 }
 
 impl<'i> FindSlice<u8> for &'i [u8] {
     #[inline(always)]
-    fn find_slice(&self, substr: u8) -> Option<usize> {
-        memchr(substr, self)
+    fn find_slice(&self, substr: u8) -> Option<crate::lib::std::ops::Range<usize>> {
+        memchr(substr, self).map(|i| i..i + 1)
     }
 }
 
 impl<'i> FindSlice<(u8,)> for &'i [u8] {
     #[inline(always)]
-    fn find_slice(&self, substr: (u8,)) -> Option<usize> {
-        memchr(substr.0, self)
+    fn find_slice(&self, substr: (u8,)) -> Option<crate::lib::std::ops::Range<usize>> {
+        memchr(substr.0, self).map(|i| i..i + 1)
     }
 }
 
 impl<'i> FindSlice<(u8, u8)> for &'i [u8] {
     #[inline(always)]
-    fn find_slice(&self, substr: (u8, u8)) -> Option<usize> {
-        memchr2(substr, self)
+    fn find_slice(&self, substr: (u8, u8)) -> Option<crate::lib::std::ops::Range<usize>> {
+        memchr2(substr, self).map(|i| i..i + 1)
     }
 }
 
 impl<'i> FindSlice<(u8, u8, u8)> for &'i [u8] {
     #[inline(always)]
-    fn find_slice(&self, substr: (u8, u8, u8)) -> Option<usize> {
-        memchr3(substr, self)
+    fn find_slice(&self, substr: (u8, u8, u8)) -> Option<crate::lib::std::ops::Range<usize>> {
+        memchr3(substr, self).map(|i| i..i + 1)
     }
 }
 
 impl<'i, 's> FindSlice<&'s str> for &'i [u8] {
     #[inline(always)]
-    fn find_slice(&self, substr: &'s str) -> Option<usize> {
+    fn find_slice(&self, substr: &'s str) -> Option<crate::lib::std::ops::Range<usize>> {
         self.find_slice(substr.as_bytes())
     }
 }
 
 impl<'i, 's> FindSlice<(&'s str,)> for &'i [u8] {
     #[inline(always)]
-    fn find_slice(&self, substr: (&'s str,)) -> Option<usize> {
+    fn find_slice(&self, substr: (&'s str,)) -> Option<crate::lib::std::ops::Range<usize>> {
         memmem(self, substr.0.as_bytes())
     }
 }
 
 impl<'i, 's> FindSlice<(&'s str, &'s str)> for &'i [u8] {
     #[inline(always)]
-    fn find_slice(&self, substr: (&'s str, &'s str)) -> Option<usize> {
+    fn find_slice(&self, substr: (&'s str, &'s str)) -> Option<crate::lib::std::ops::Range<usize>> {
         memmem2(self, (substr.0.as_bytes(), substr.1.as_bytes()))
     }
 }
 
 impl<'i, 's> FindSlice<(&'s str, &'s str, &'s str)> for &'i [u8] {
     #[inline(always)]
-    fn find_slice(&self, substr: (&'s str, &'s str, &'s str)) -> Option<usize> {
+    fn find_slice(
+        &self,
+        substr: (&'s str, &'s str, &'s str),
+    ) -> Option<crate::lib::std::ops::Range<usize>> {
         memmem3(
             self,
             (
@@ -2399,35 +2408,38 @@ impl<'i, 's> FindSlice<(&'s str, &'s str, &'s str)> for &'i [u8] {
 
 impl<'i, 's> FindSlice<&'s str> for &'i str {
     #[inline(always)]
-    fn find_slice(&self, substr: &'s str) -> Option<usize> {
+    fn find_slice(&self, substr: &'s str) -> Option<crate::lib::std::ops::Range<usize>> {
         self.as_bytes().find_slice(substr.as_bytes())
     }
 }
 
 impl<'i, 's> FindSlice<(&'s str,)> for &'i str {
     #[inline(always)]
-    fn find_slice(&self, substr: (&'s str,)) -> Option<usize> {
+    fn find_slice(&self, substr: (&'s str,)) -> Option<crate::lib::std::ops::Range<usize>> {
         self.as_bytes().find_slice(substr)
     }
 }
 
 impl<'i, 's> FindSlice<(&'s str, &'s str)> for &'i str {
     #[inline(always)]
-    fn find_slice(&self, substr: (&'s str, &'s str)) -> Option<usize> {
+    fn find_slice(&self, substr: (&'s str, &'s str)) -> Option<crate::lib::std::ops::Range<usize>> {
         self.as_bytes().find_slice(substr)
     }
 }
 
 impl<'i, 's> FindSlice<(&'s str, &'s str, &'s str)> for &'i str {
     #[inline(always)]
-    fn find_slice(&self, substr: (&'s str, &'s str, &'s str)) -> Option<usize> {
+    fn find_slice(
+        &self,
+        substr: (&'s str, &'s str, &'s str),
+    ) -> Option<crate::lib::std::ops::Range<usize>> {
         self.as_bytes().find_slice(substr)
     }
 }
 
 impl<'i> FindSlice<char> for &'i str {
     #[inline(always)]
-    fn find_slice(&self, substr: char) -> Option<usize> {
+    fn find_slice(&self, substr: char) -> Option<crate::lib::std::ops::Range<usize>> {
         let mut b = [0; 4];
         let substr = substr.encode_utf8(&mut b);
         self.find_slice(&*substr)
@@ -2436,7 +2448,7 @@ impl<'i> FindSlice<char> for &'i str {
 
 impl<'i> FindSlice<(char,)> for &'i str {
     #[inline(always)]
-    fn find_slice(&self, substr: (char,)) -> Option<usize> {
+    fn find_slice(&self, substr: (char,)) -> Option<crate::lib::std::ops::Range<usize>> {
         let mut b = [0; 4];
         let substr0 = substr.0.encode_utf8(&mut b);
         self.find_slice((&*substr0,))
@@ -2445,7 +2457,7 @@ impl<'i> FindSlice<(char,)> for &'i str {
 
 impl<'i> FindSlice<(char, char)> for &'i str {
     #[inline(always)]
-    fn find_slice(&self, substr: (char, char)) -> Option<usize> {
+    fn find_slice(&self, substr: (char, char)) -> Option<crate::lib::std::ops::Range<usize>> {
         let mut b = [0; 4];
         let substr0 = substr.0.encode_utf8(&mut b);
         let mut b = [0; 4];
@@ -2456,7 +2468,7 @@ impl<'i> FindSlice<(char, char)> for &'i str {
 
 impl<'i> FindSlice<(char, char, char)> for &'i str {
     #[inline(always)]
-    fn find_slice(&self, substr: (char, char, char)) -> Option<usize> {
+    fn find_slice(&self, substr: (char, char, char)) -> Option<crate::lib::std::ops::Range<usize>> {
         let mut b = [0; 4];
         let substr0 = substr.0.encode_utf8(&mut b);
         let mut b = [0; 4];
@@ -2469,28 +2481,28 @@ impl<'i> FindSlice<(char, char, char)> for &'i str {
 
 impl<'i> FindSlice<u8> for &'i str {
     #[inline(always)]
-    fn find_slice(&self, substr: u8) -> Option<usize> {
+    fn find_slice(&self, substr: u8) -> Option<crate::lib::std::ops::Range<usize>> {
         self.find_slice(substr.as_char())
     }
 }
 
 impl<'i> FindSlice<(u8,)> for &'i str {
     #[inline(always)]
-    fn find_slice(&self, substr: (u8,)) -> Option<usize> {
+    fn find_slice(&self, substr: (u8,)) -> Option<crate::lib::std::ops::Range<usize>> {
         self.find_slice((substr.0.as_char(),))
     }
 }
 
 impl<'i> FindSlice<(u8, u8)> for &'i str {
     #[inline(always)]
-    fn find_slice(&self, substr: (u8, u8)) -> Option<usize> {
+    fn find_slice(&self, substr: (u8, u8)) -> Option<crate::lib::std::ops::Range<usize>> {
         self.find_slice((substr.0.as_char(), substr.1.as_char()))
     }
 }
 
 impl<'i> FindSlice<(u8, u8, u8)> for &'i str {
     #[inline(always)]
-    fn find_slice(&self, substr: (u8, u8, u8)) -> Option<usize> {
+    fn find_slice(&self, substr: (u8, u8, u8)) -> Option<crate::lib::std::ops::Range<usize>> {
         self.find_slice((substr.0.as_char(), substr.1.as_char(), substr.2.as_char()))
     }
 }
@@ -2500,7 +2512,7 @@ where
     &'i [u8]: FindSlice<S>,
 {
     #[inline(always)]
-    fn find_slice(&self, substr: S) -> Option<usize> {
+    fn find_slice(&self, substr: S) -> Option<crate::lib::std::ops::Range<usize>> {
         let bytes = (*self).as_bytes();
         let offset = bytes.find_slice(substr);
         offset
@@ -2512,7 +2524,7 @@ where
     &'i [u8]: FindSlice<S>,
 {
     #[inline(always)]
-    fn find_slice(&self, substr: S) -> Option<usize> {
+    fn find_slice(&self, substr: S) -> Option<crate::lib::std::ops::Range<usize>> {
         let bytes = (*self).as_bytes();
         let offset = bytes.find_slice(substr);
         offset
@@ -2524,7 +2536,7 @@ where
     I: FindSlice<T>,
 {
     #[inline(always)]
-    fn find_slice(&self, substr: T) -> Option<usize> {
+    fn find_slice(&self, substr: T) -> Option<crate::lib::std::ops::Range<usize>> {
         self.input.find_slice(substr)
     }
 }
@@ -2536,7 +2548,7 @@ where
     I: FindSlice<T>,
 {
     #[inline(always)]
-    fn find_slice(&self, substr: T) -> Option<usize> {
+    fn find_slice(&self, substr: T) -> Option<crate::lib::std::ops::Range<usize>> {
         self.input.find_slice(substr)
     }
 }
@@ -2546,7 +2558,7 @@ where
     I: FindSlice<T>,
 {
     #[inline(always)]
-    fn find_slice(&self, substr: T) -> Option<usize> {
+    fn find_slice(&self, substr: T) -> Option<crate::lib::std::ops::Range<usize>> {
         self.input.find_slice(substr)
     }
 }
@@ -2556,7 +2568,7 @@ where
     I: FindSlice<T>,
 {
     #[inline(always)]
-    fn find_slice(&self, substr: T) -> Option<usize> {
+    fn find_slice(&self, substr: T) -> Option<crate::lib::std::ops::Range<usize>> {
         self.input.find_slice(substr)
     }
 }
@@ -3494,27 +3506,30 @@ fn memchr3(token: (u8, u8, u8), slice: &[u8]) -> Option<usize> {
 }
 
 #[inline(always)]
-fn memmem(slice: &[u8], literal: &[u8]) -> Option<usize> {
+fn memmem(slice: &[u8], literal: &[u8]) -> Option<crate::lib::std::ops::Range<usize>> {
     if literal.len() == 1 {
-        memchr(literal[0], slice)
+        memchr(literal[0], slice).map(|i| i..i + 1)
     } else {
         memmem_(slice, literal)
     }
 }
 
 #[inline(always)]
-fn memmem2(slice: &[u8], literal: (&[u8], &[u8])) -> Option<usize> {
+fn memmem2(slice: &[u8], literal: (&[u8], &[u8])) -> Option<crate::lib::std::ops::Range<usize>> {
     if literal.0.len() == 1 && literal.1.len() == 1 {
-        memchr2((literal.0[0], literal.1[0]), slice)
+        memchr2((literal.0[0], literal.1[0]), slice).map(|i| i..i + 1)
     } else {
         memmem2_(slice, literal)
     }
 }
 
 #[inline(always)]
-fn memmem3(slice: &[u8], literal: (&[u8], &[u8], &[u8])) -> Option<usize> {
+fn memmem3(
+    slice: &[u8],
+    literal: (&[u8], &[u8], &[u8]),
+) -> Option<crate::lib::std::ops::Range<usize>> {
     if literal.0.len() == 1 && literal.1.len() == 1 && literal.2.len() == 1 {
-        memchr3((literal.0[0], literal.1[0], literal.2[0]), slice)
+        memchr3((literal.0[0], literal.1[0], literal.2[0]), slice).map(|i| i..i + 1)
     } else {
         memmem3_(slice, literal)
     }
@@ -3522,98 +3537,116 @@ fn memmem3(slice: &[u8], literal: (&[u8], &[u8], &[u8])) -> Option<usize> {
 
 #[cfg(feature = "simd")]
 #[inline(always)]
-fn memmem_(slice: &[u8], literal: &[u8]) -> Option<usize> {
+fn memmem_(slice: &[u8], literal: &[u8]) -> Option<crate::lib::std::ops::Range<usize>> {
     let &prefix = match literal.first() {
         Some(x) => x,
-        None => return Some(0),
+        None => return Some(0..0),
     };
     #[allow(clippy::manual_find)] // faster this way
     for i in memchr::memchr_iter(prefix, slice) {
         if slice[i..].starts_with(literal) {
-            return Some(i);
+            let i_end = i + literal.len();
+            return Some(i..i_end);
         }
     }
     None
 }
 
 #[cfg(feature = "simd")]
-fn memmem2_(slice: &[u8], literal: (&[u8], &[u8])) -> Option<usize> {
+fn memmem2_(slice: &[u8], literal: (&[u8], &[u8])) -> Option<crate::lib::std::ops::Range<usize>> {
     let prefix = match (literal.0.first(), literal.1.first()) {
         (Some(&a), Some(&b)) => (a, b),
-        _ => return Some(0),
+        _ => return Some(0..0),
     };
     #[allow(clippy::manual_find)] // faster this way
     for i in memchr::memchr2_iter(prefix.0, prefix.1, slice) {
         let subslice = &slice[i..];
         if subslice.starts_with(literal.0) {
-            return Some(i);
+            let i_end = i + literal.0.len();
+            return Some(i..i_end);
         }
         if subslice.starts_with(literal.1) {
-            return Some(i);
+            let i_end = i + literal.1.len();
+            return Some(i..i_end);
         }
     }
     None
 }
 
 #[cfg(feature = "simd")]
-fn memmem3_(slice: &[u8], literal: (&[u8], &[u8], &[u8])) -> Option<usize> {
+fn memmem3_(
+    slice: &[u8],
+    literal: (&[u8], &[u8], &[u8]),
+) -> Option<crate::lib::std::ops::Range<usize>> {
     let prefix = match (literal.0.first(), literal.1.first(), literal.2.first()) {
         (Some(&a), Some(&b), Some(&c)) => (a, b, c),
-        _ => return Some(0),
+        _ => return Some(0..0),
     };
     #[allow(clippy::manual_find)] // faster this way
     for i in memchr::memchr3_iter(prefix.0, prefix.1, prefix.2, slice) {
         let subslice = &slice[i..];
         if subslice.starts_with(literal.0) {
-            return Some(i);
+            let i_end = i + literal.0.len();
+            return Some(i..i_end);
         }
         if subslice.starts_with(literal.1) {
-            return Some(i);
+            let i_end = i + literal.1.len();
+            return Some(i..i_end);
         }
         if subslice.starts_with(literal.2) {
-            return Some(i);
+            let i_end = i + literal.2.len();
+            return Some(i..i_end);
         }
     }
     None
 }
 
 #[cfg(not(feature = "simd"))]
-fn memmem_(slice: &[u8], literal: &[u8]) -> Option<usize> {
+fn memmem_(slice: &[u8], literal: &[u8]) -> Option<crate::lib::std::ops::Range<usize>> {
     for i in 0..slice.len() {
         let subslice = &slice[i..];
         if subslice.starts_with(literal) {
-            return Some(i);
+            let i_end = i + literal.len();
+            return Some(i..i_end);
         }
     }
     None
 }
 
 #[cfg(not(feature = "simd"))]
-fn memmem2_(slice: &[u8], literal: (&[u8], &[u8])) -> Option<usize> {
+fn memmem2_(slice: &[u8], literal: (&[u8], &[u8])) -> Option<crate::lib::std::ops::Range<usize>> {
     for i in 0..slice.len() {
         let subslice = &slice[i..];
         if subslice.starts_with(literal.0) {
-            return Some(i);
+            let i_end = i + literal.0.len();
+            return Some(i..i_end);
         }
         if subslice.starts_with(literal.1) {
-            return Some(i);
+            let i_end = i + literal.1.len();
+            return Some(i..i_end);
         }
     }
     None
 }
 
 #[cfg(not(feature = "simd"))]
-fn memmem3_(slice: &[u8], literal: (&[u8], &[u8], &[u8])) -> Option<usize> {
+fn memmem3_(
+    slice: &[u8],
+    literal: (&[u8], &[u8], &[u8]),
+) -> Option<crate::lib::std::ops::Range<usize>> {
     for i in 0..slice.len() {
         let subslice = &slice[i..];
         if subslice.starts_with(literal.0) {
-            return Some(i);
+            let i_end = i + literal.0.len();
+            return Some(i..i_end);
         }
         if subslice.starts_with(literal.1) {
-            return Some(i);
+            let i_end = i + literal.1.len();
+            return Some(i..i_end);
         }
         if subslice.starts_with(literal.2) {
-            return Some(i);
+            let i_end = i + literal.2.len();
+            return Some(i..i_end);
         }
     }
     None
