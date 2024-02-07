@@ -1,5 +1,5 @@
 <!-- Created with term-transcript v0.2.0 (https://github.com/slowli/term-transcript) -->
-<svg viewBox="0 0 720 768" width="720" height="768" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 720 552" width="720" height="552" xmlns="http://www.w3.org/2000/svg">
   <style>
     :root {
       --black: #1c1c1c; --i-black: #666666;
@@ -65,16 +65,13 @@
     .fg15 { color: var(--i-white); } .bg15 { background: var(--i-white); }
   </style>
   <rect width="100%" height="100%" y="0" rx="4.5" style="fill: var(--black);" />
-  <svg x="0" y="10" width="720" height="748" viewBox="0 0 720 748">
-    <foreignObject width="720" height="748">
+  <svg x="0" y="10" width="720" height="532" viewBox="0 0 720 532">
+    <foreignObject width="720" height="532">
       <div xmlns="http://www.w3.org/1999/xhtml" class="container">
         <div class="user-input"><pre><span class="prompt">$</span> ./string</pre></div>
         <div class="term-output"><pre>&gt; delimited                                         <span class="bold">|</span> <span class="underline">"\"abc\""</span><span class="fg6">∅</span>
- &gt; one_of                                           <span class="bold">|</span> <span class="underline">"\"abc\""</span><span class="fg6">∅</span>
-  &gt; any                                             <span class="bold">|</span> <span class="underline">"\"abc\""</span><span class="fg6">∅</span>
-<span class="fg2">  &lt; any                                            </span> <span class="bold">|</span> <span class="fg2">+1</span>
-<span class="fg2">  | verify                                         </span> <span class="bold">|</span> 
-<span class="fg2"> &lt; one_of                                          </span> <span class="bold">|</span> <span class="fg2">+1</span>
+ &gt; tag                                              <span class="bold">|</span> <span class="underline">"\"abc\""</span><span class="fg6">∅</span>
+<span class="fg2"> &lt; tag                                             </span> <span class="bold">|</span> <span class="fg2">+1</span>
  &gt; repeat_fold                                      <span class="bold">|</span> <span class="underline">"abc\""</span><span class="fg6">∅</span>
   &gt; alt                                             <span class="bold">|</span> <span class="underline">"abc\""</span><span class="fg6">∅</span>
    &gt; take_till                                      <span class="bold">|</span> <span class="underline">"abc\""</span><span class="fg6">∅</span>
@@ -85,26 +82,17 @@
    &gt; take_till                                      <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
 <span class="fg3">   &lt; take_till                                     </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
    &gt; preceded                                       <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
-    &gt; one_of                                        <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
-     &gt; any                                          <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
-<span class="fg2">     &lt; any                                         </span> <span class="bold">|</span> <span class="fg2">+1</span>
-<span class="fg3">     | verify                                      </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
-<span class="fg3">    &lt; one_of                                       </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
+    &gt; tag                                           <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
+<span class="fg3">    &lt; tag                                          </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
 <span class="fg3">   &lt; preceded                                      </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
    &gt; preceded                                       <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
-    &gt; one_of                                        <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
-     &gt; any                                          <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
-<span class="fg2">     &lt; any                                         </span> <span class="bold">|</span> <span class="fg2">+1</span>
-<span class="fg3">     | verify                                      </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
-<span class="fg3">    &lt; one_of                                       </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
+    &gt; tag                                           <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
+<span class="fg3">    &lt; tag                                          </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
 <span class="fg3">   &lt; preceded                                      </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
 <span class="fg3">  &lt; alt                                            </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
 <span class="fg2"> &lt; repeat_fold                                     </span> <span class="bold">|</span> <span class="fg2">+3</span>
- &gt; one_of                                           <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
-  &gt; any                                             <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
-<span class="fg2">  &lt; any                                            </span> <span class="bold">|</span> <span class="fg2">+1</span>
-<span class="fg2">  | verify                                         </span> <span class="bold">|</span> 
-<span class="fg2"> &lt; one_of                                          </span> <span class="bold">|</span> <span class="fg2">+1</span>
+ &gt; tag                                              <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
+<span class="fg2"> &lt; tag                                             </span> <span class="bold">|</span> <span class="fg2">+1</span>
 <span class="fg2">&lt; delimited                                        </span> <span class="bold">|</span> <span class="fg2">+5</span>
 &gt; eof                                               <span class="bold">|</span> <span class="underline">""</span><span class="fg6">∅</span>
 <span class="fg2">&lt; eof                                              </span> <span class="bold">|</span> <span class="fg2">+0</span>

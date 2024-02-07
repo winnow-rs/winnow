@@ -235,8 +235,8 @@ where
 /// }
 ///
 /// assert_eq!(parser.parse_peek("\nc"), Ok(("c", '\n')));
-/// assert_eq!(parser.parse_peek("\r\nc"), Err(ErrMode::Backtrack(InputError::new("\r\nc", ErrorKind::Verify))));
-/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Token))));
+/// assert_eq!(parser.parse_peek("\r\nc"), Err(ErrMode::Backtrack(InputError::new("\r\nc", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
 /// ```
 ///
 /// ```
@@ -245,7 +245,7 @@ where
 /// # use winnow::Partial;
 /// # use winnow::ascii::newline;
 /// assert_eq!(newline::<_, InputError<_>>.parse_peek(Partial::new("\nc")), Ok((Partial::new("c"), '\n')));
-/// assert_eq!(newline::<_, InputError<_>>.parse_peek(Partial::new("\r\nc")), Err(ErrMode::Backtrack(InputError::new(Partial::new("\r\nc"), ErrorKind::Verify))));
+/// assert_eq!(newline::<_, InputError<_>>.parse_peek(Partial::new("\r\nc")), Err(ErrMode::Backtrack(InputError::new(Partial::new("\r\nc"), ErrorKind::Tag))));
 /// assert_eq!(newline::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
@@ -253,9 +253,9 @@ pub fn newline<I, Error: ParserError<I>>(input: &mut I) -> PResult<char, Error>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Clone,
+    I: Compare<char>,
 {
-    trace("newline", '\n'.map(AsChar::as_char)).parse_next(input)
+    trace("newline", '\n').parse_next(input)
 }
 
 /// Matches a tab character `'\t'`.
@@ -275,8 +275,8 @@ where
 /// }
 ///
 /// assert_eq!(parser.parse_peek("\tc"), Ok(("c", '\t')));
-/// assert_eq!(parser.parse_peek("\r\nc"), Err(ErrMode::Backtrack(InputError::new("\r\nc", ErrorKind::Verify))));
-/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Token))));
+/// assert_eq!(parser.parse_peek("\r\nc"), Err(ErrMode::Backtrack(InputError::new("\r\nc", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
 /// ```
 ///
 /// ```
@@ -285,7 +285,7 @@ where
 /// # use winnow::Partial;
 /// # use winnow::ascii::tab;
 /// assert_eq!(tab::<_, InputError<_>>.parse_peek(Partial::new("\tc")), Ok((Partial::new("c"), '\t')));
-/// assert_eq!(tab::<_, InputError<_>>.parse_peek(Partial::new("\r\nc")), Err(ErrMode::Backtrack(InputError::new(Partial::new("\r\nc"), ErrorKind::Verify))));
+/// assert_eq!(tab::<_, InputError<_>>.parse_peek(Partial::new("\r\nc")), Err(ErrMode::Backtrack(InputError::new(Partial::new("\r\nc"), ErrorKind::Tag))));
 /// assert_eq!(tab::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
@@ -293,9 +293,9 @@ pub fn tab<I, Error: ParserError<I>>(input: &mut I) -> PResult<char, Error>
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Clone,
+    I: Compare<char>,
 {
-    trace("tab", '\t'.map(AsChar::as_char)).parse_next(input)
+    trace("tab", '\t').parse_next(input)
 }
 
 /// Recognizes zero or more lowercase and uppercase ASCII alphabetic characters: `'a'..='z'`, `'A'..='Z'`
@@ -1346,6 +1346,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<Caseless<&'static str>>,
+    I: Compare<char>,
     <I as Stream>::Slice: ParseSlice<O>,
     <I as Stream>::Token: AsChar + Clone,
     <I as Stream>::IterOffsets: Clone,
@@ -1367,6 +1368,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<Caseless<&'static str>>,
+    I: Compare<char>,
     <I as Stream>::Token: AsChar + Clone,
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
@@ -1393,6 +1395,7 @@ fn recognize_float<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>
 where
     I: StreamIsPartial,
     I: Stream,
+    I: Compare<char>,
     <I as Stream>::Token: AsChar + Clone,
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
@@ -1458,7 +1461,7 @@ pub fn escaped<'a, I: 'a, Error, F, G, O1, O2>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Clone,
+    I: Compare<char>,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParserError<I>,
@@ -1481,7 +1484,7 @@ fn streaming_escaped_internal<I, Error, F, G, O1, O2>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: AsChar + Clone,
+    I: Compare<char>,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParserError<I>,
@@ -1523,7 +1526,7 @@ fn complete_escaped_internal<'a, I: 'a, Error, F, G, O1, O2>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar + Clone,
+    I: Compare<char>,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParserError<I>,
@@ -1625,7 +1628,7 @@ pub fn escaped_transform<I, Error, F, G, Output>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar + Clone,
+    I: Compare<char>,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
     G: Parser<I, <I as Stream>::Slice, Error>,
@@ -1649,7 +1652,7 @@ fn streaming_escaped_transform_internal<I, Error, F, G, Output>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar + Clone,
+    I: Compare<char>,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
     G: Parser<I, <I as Stream>::Slice, Error>,
@@ -1688,7 +1691,7 @@ fn complete_escaped_transform_internal<I, Error, F, G, Output>(
 where
     I: StreamIsPartial,
     I: Stream,
-    <I as Stream>::Token: crate::stream::AsChar + Clone,
+    I: Compare<char>,
     Output: crate::stream::Accumulate<<I as Stream>::Slice>,
     F: Parser<I, <I as Stream>::Slice, Error>,
     G: Parser<I, <I as Stream>::Slice, Error>,

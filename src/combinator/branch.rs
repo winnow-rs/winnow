@@ -111,7 +111,7 @@ pub trait Permutation<I, O, E> {
 ///
 /// // any parses 'a', then char('a') fails on 'b',
 /// // even though char('a') followed by any would succeed
-/// assert_eq!(parser("ab"), Err(ErrMode::Backtrack(InputError::new("b", ErrorKind::Verify))));
+/// assert_eq!(parser("ab"), Err(ErrMode::Backtrack(InputError::new("b", ErrorKind::Tag))));
 /// ```
 ///
 pub fn permutation<I: Stream, O, E: ParserError<I>, List: Permutation<I, O, E>>(
