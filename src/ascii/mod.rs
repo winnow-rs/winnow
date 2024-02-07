@@ -1345,7 +1345,6 @@ pub fn float<I, O, E: ParserError<I>>(input: &mut I) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream,
-    I: Compare<&'static str>,
     I: Compare<Caseless<&'static str>>,
     <I as Stream>::Slice: ParseSlice<O>,
     <I as Stream>::Token: AsChar + Clone,
@@ -1367,7 +1366,6 @@ fn recognize_float_or_exceptions<I, E: ParserError<I>>(
 where
     I: StreamIsPartial,
     I: Stream,
-    I: Compare<&'static str>,
     I: Compare<Caseless<&'static str>>,
     <I as Stream>::Token: AsChar + Clone,
     <I as Stream>::IterOffsets: Clone,
@@ -1395,7 +1393,6 @@ fn recognize_float<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>
 where
     I: StreamIsPartial,
     I: Stream,
-    I: Compare<&'static str>,
     <I as Stream>::Token: AsChar + Clone,
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
