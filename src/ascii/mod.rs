@@ -1403,8 +1403,8 @@ where
     (
         opt(one_of(['+', '-'])),
         alt((
-            (digit1, opt(('.', opt(digit1)))).map(|_| ()),
-            ('.', digit1).map(|_| ()),
+            (digit1, opt(('.', opt(digit1)))).void(),
+            ('.', digit1).void(),
         )),
         opt((one_of(['e', 'E']), opt(one_of(['+', '-'])), cut_err(digit1))),
     )
