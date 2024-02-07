@@ -118,6 +118,29 @@ macro_rules! A {
     }};
 }
 
+/// Create an [`&[AsciiChar]`] with compile-time validation
+#[macro_export]
+#[doc(hidden)] // forced to be visible in intended location
+macro_rules! AS {
+    ($s: literal) => {{
+        #![allow(clippy::unnecessary_cast)] // not always the same type
+
+        const S: &'static str = $s;
+        const BYTES: &'static [u8] = unsafe { core::mem::transmute(S) };
+        let mut i = 0;
+        while i < BYTES.len() {
+            let byte = BYTES[0];
+            if byte <= 127 {
+            } else {
+                panic!()
+            };
+            i += 1;
+        }
+        const AS: &'static [$crate::stream::AsciiChar] = unsafe { core::mem::transmute(BYTES) };
+        AS
+    }};
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -144,5 +167,14 @@ mod test {
             crate::stream::A!('a')
         }
         assert_eq!(gen(), AsciiChar::from_u8(b'a').unwrap());
+    }
+
+    #[test]
+    fn const_str() {
+        const fn gen() -> &'static [AsciiChar] {
+            crate::stream::AS!("a")
+        }
+        const S: &'static [AsciiChar] = gen();
+        dbg!(S);
     }
 }

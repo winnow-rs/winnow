@@ -48,6 +48,7 @@ mod tests;
 pub type Str<'i> = &'i str;
 
 pub use crate::A;
+pub use crate::AS;
 pub use ascii::AsciiChar;
 
 /// Improved `Debug` experience for `&[u8]` byte streams
