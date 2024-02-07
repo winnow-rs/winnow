@@ -5,6 +5,7 @@ use crate::combinator::*;
 #[cfg(feature = "unstable-recover")]
 use crate::error::FromRecoverableError;
 use crate::error::{AddContext, FromExternalError, IResult, PResult, ParseError, ParserError};
+use crate::stream::AsciiChar;
 use crate::stream::{AsChar, Compare, Location, ParseSlice, Stream, StreamIsPartial};
 #[cfg(feature = "unstable-recover")]
 use crate::stream::{Recover, Recoverable};
@@ -739,6 +740,34 @@ where
 {
     #[inline(always)]
     fn parse_next(&mut self, i: &mut I) -> PResult<u8, E> {
+        crate::token::one_of(*self).parse_next(i)
+    }
+}
+
+/// This is a shortcut for [`one_of`][crate::token::one_of].
+///
+/// # Example
+///
+/// ```
+/// # use winnow::prelude::*;
+/// # use winnow::{error::ErrMode, error::{ErrorKind, InputError}};
+/// fn parser<'s>(i: &mut &'s str) -> PResult<char, InputError<&'s str>> {
+///     A!('a').parse_next(i)
+/// }
+/// assert_eq!(parser.parse_peek("abc"), Ok(("bc", 'a')));
+/// assert_eq!(parser.parse_peek(" abc"), Err(ErrMode::Backtrack(InputError::new(" abc", ErrorKind::Verify))));
+/// assert_eq!(parser.parse_peek("bc"), Err(ErrMode::Backtrack(InputError::new("bc", ErrorKind::Verify))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Token))));
+/// ```
+impl<I, E> Parser<I, <I as Stream>::Token, E> for AsciiChar
+where
+    I: StreamIsPartial,
+    I: Stream,
+    <I as Stream>::Token: AsChar + Clone,
+    E: ParserError<I>,
+{
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<<I as Stream>::Token, E> {
         crate::token::one_of(*self).parse_next(i)
     }
 }

@@ -236,6 +236,7 @@ pub mod _tutorial;
 /// ```
 pub mod prelude {
     pub use crate::stream::StreamIsPartial as _;
+    pub use crate::stream::A;
     pub use crate::IResult;
     pub use crate::PResult;
     pub use crate::Parser;

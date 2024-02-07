@@ -10,6 +10,7 @@ use crate::error::ErrorKind;
 use crate::error::InputError;
 use crate::error::Needed;
 use crate::stream::AsChar;
+use crate::stream::A;
 use crate::token::literal;
 use crate::unpeek;
 use crate::IResult;
@@ -190,9 +191,9 @@ fn complete_literal_fixed_size_array() {
 }
 
 #[test]
-fn complete_literal_char() {
+fn complete_literal_byte() {
     fn test(i: &[u8]) -> IResult<&[u8], &[u8]> {
-        literal('B').parse_peek(i)
+        literal(b'B').parse_peek(i)
     }
     assert_eq!(test(&[0x42, 0x00][..]), Ok((&b"\x00"[..], &b"\x42"[..])));
     assert_eq!(
@@ -205,9 +206,24 @@ fn complete_literal_char() {
 }
 
 #[test]
-fn complete_literal_byte() {
+fn complete_literal_ascii_char() {
     fn test(i: &[u8]) -> IResult<&[u8], &[u8]> {
-        literal(b'B').parse_peek(i)
+        literal(A!('B')).parse_peek(i)
+    }
+    assert_eq!(test(&[0x42, 0x00][..]), Ok((&b"\x00"[..], &b"\x42"[..])));
+    assert_eq!(
+        test(&[b'A', b'\0'][..]),
+        Err(ErrMode::Backtrack(error_position!(
+            &&b"A\0"[..],
+            ErrorKind::Tag
+        )))
+    );
+}
+
+#[test]
+fn complete_literal_char() {
+    fn test(i: &[u8]) -> IResult<&[u8], &[u8]> {
+        literal('B').parse_peek(i)
     }
     assert_eq!(test(&[0x42, 0x00][..]), Ok((&b"\x00"[..], &b"\x42"[..])));
     assert_eq!(
