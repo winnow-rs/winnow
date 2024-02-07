@@ -936,7 +936,7 @@ where
     I: Stream + FindSlice<T>,
 {
     match i.find_slice(t) {
-        Some(offset) => Ok(i.next_slice(offset)),
+        Some(range) => Ok(i.next_slice(range.start)),
         None if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
         None => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
     }
@@ -952,8 +952,14 @@ where
 {
     match i.find_slice(t) {
         None if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
-        None | Some(0) => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
-        Some(offset) => Ok(i.next_slice(offset)),
+        None => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
+        Some(range) => {
+            if range.start == 0 {
+                Err(ErrMode::from_error_kind(i, ErrorKind::Slice))
+            } else {
+                Ok(i.next_slice(range.start))
+            }
+        }
     }
 }
 
@@ -975,20 +981,20 @@ where
     }
 
     match i.find_slice(t) {
-        Some(offset) => {
+        Some(range) => {
             let start_offset = i.offset_at(start);
             let end_offset = i.offset_at(end).unwrap_or_else(|_err| i.eof_offset());
-            if start_offset.map(|s| offset < s).unwrap_or(true) {
+            if start_offset.map(|s| range.start < s).unwrap_or(true) {
                 if PARTIAL && i.is_partial() {
                     return Err(ErrMode::Incomplete(Needed::Unknown));
                 } else {
                     return Err(ErrMode::from_error_kind(i, ErrorKind::Slice));
                 }
             }
-            if end_offset < offset {
+            if end_offset < range.start {
                 return Err(ErrMode::from_error_kind(i, ErrorKind::Slice));
             }
-            Ok(i.next_slice(offset))
+            Ok(i.next_slice(range.start))
         }
         None if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
         None => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
