@@ -70,8 +70,8 @@
       <div xmlns="http://www.w3.org/1999/xhtml" class="container">
         <div class="user-input"><pre><span class="prompt">$</span> ./string</pre></div>
         <div class="term-output"><pre>&gt; delimited                                         <span class="bold">|</span> <span class="underline">"\"abc\""</span><span class="fg6">∅</span>
- &gt; tag                                              <span class="bold">|</span> <span class="underline">"\"abc\""</span><span class="fg6">∅</span>
-<span class="fg2"> &lt; tag                                             </span> <span class="bold">|</span> <span class="fg2">+1</span>
+ &gt; literal                                          <span class="bold">|</span> <span class="underline">"\"abc\""</span><span class="fg6">∅</span>
+<span class="fg2"> &lt; literal                                         </span> <span class="bold">|</span> <span class="fg2">+1</span>
  &gt; repeat_fold                                      <span class="bold">|</span> <span class="underline">"abc\""</span><span class="fg6">∅</span>
   &gt; alt                                             <span class="bold">|</span> <span class="underline">"abc\""</span><span class="fg6">∅</span>
    &gt; take_till                                      <span class="bold">|</span> <span class="underline">"abc\""</span><span class="fg6">∅</span>
@@ -82,17 +82,17 @@
    &gt; take_till                                      <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
 <span class="fg3">   &lt; take_till                                     </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
    &gt; preceded                                       <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
-    &gt; tag                                           <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
-<span class="fg3">    &lt; tag                                          </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
+    &gt; literal                                       <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
+<span class="fg3">    &lt; literal                                      </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
 <span class="fg3">   &lt; preceded                                      </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
    &gt; preceded                                       <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
-    &gt; tag                                           <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
-<span class="fg3">    &lt; tag                                          </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
+    &gt; literal                                       <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
+<span class="fg3">    &lt; literal                                      </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
 <span class="fg3">   &lt; preceded                                      </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
 <span class="fg3">  &lt; alt                                            </span> <span class="bold">|</span> <span class="fg3">backtrack</span>
 <span class="fg2"> &lt; repeat_fold                                     </span> <span class="bold">|</span> <span class="fg2">+3</span>
- &gt; tag                                              <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
-<span class="fg2"> &lt; tag                                             </span> <span class="bold">|</span> <span class="fg2">+1</span>
+ &gt; literal                                          <span class="bold">|</span> <span class="underline">"\""</span><span class="fg6">∅</span>
+<span class="fg2"> &lt; literal                                         </span> <span class="bold">|</span> <span class="fg2">+1</span>
 <span class="fg2">&lt; delimited                                        </span> <span class="bold">|</span> <span class="fg2">+5</span>
 &gt; eof                                               <span class="bold">|</span> <span class="underline">""</span><span class="fg6">∅</span>
 <span class="fg2">&lt; eof                                              </span> <span class="bold">|</span> <span class="fg2">+0</span>
