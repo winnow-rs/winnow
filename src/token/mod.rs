@@ -139,7 +139,7 @@ where
     I: Stream + Compare<T>,
     T: SliceLen + Clone,
 {
-    trace("tag", move |i: &mut I| {
+    trace("literal", move |i: &mut I| {
         let t = tag.clone();
         if <I as StreamIsPartial>::is_partial_supported() {
             literal_::<_, _, _, true>(i, t)
