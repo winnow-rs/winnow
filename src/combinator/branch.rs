@@ -126,7 +126,7 @@ impl<const N: usize, I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I,
 
         let start = input.checkpoint();
         for branch in self {
-            input.reset(start.clone());
+            input.reset(&start);
             match branch.parse_next(input) {
                 Err(ErrMode::Backtrack(e)) => {
                     error = match error {
@@ -204,7 +204,7 @@ macro_rules! succ (
 
 macro_rules! alt_trait_inner(
   ($it:tt, $self:expr, $input:expr, $start:ident, $err:expr, $head:ident $($id:ident)+) => ({
-    $input.reset($start.clone());
+    $input.reset(&$start);
     match $self.$it.parse_next($input) {
       Err(ErrMode::Backtrack(e)) => {
         let err = $err.or(e);
@@ -266,7 +266,7 @@ macro_rules! permutation_trait_impl(
           // or errored on the remaining input
           if let Some(err) = err {
             // There are remaining parsers, and all errored on the remaining input
-            input.reset(start.clone());
+            input.reset(&start);
             return Err(ErrMode::Backtrack(err.append(input, ErrorKind::Alt)));
           }
 
@@ -284,7 +284,7 @@ macro_rules! permutation_trait_impl(
 macro_rules! permutation_trait_inner(
   ($it:tt, $self:expr, $input:ident, $start:ident, $res:expr, $err:expr, $head:ident $($id:ident)*) => (
     if $res.$it.is_none() {
-      $input.reset($start.clone());
+      $input.reset(&$start);
       match $self.$it.parse_next($input) {
         Ok(o) => {
           $res.$it = Some(o);

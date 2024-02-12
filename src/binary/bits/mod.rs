@@ -320,7 +320,7 @@ where
             if pattern == o {
                 Ok(o)
             } else {
-                input.reset(start);
+                input.reset(&start);
                 Err(ErrMode::Backtrack(E::from_error_kind(
                     input,
                     ErrorKind::Tag,

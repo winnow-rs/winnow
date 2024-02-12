@@ -1498,7 +1498,7 @@ where
             Some(_) => {
                 if input.eof_offset() == current_len {
                     let offset = input.offset_from(&start);
-                    input.reset(start);
+                    input.reset(&start);
                     return Ok(input.next_slice(offset));
                 }
             }
@@ -1507,7 +1507,7 @@ where
                     let _ = escapable.parse_next(input)?;
                 } else {
                     let offset = input.offset_from(&start);
-                    input.reset(start);
+                    input.reset(&start);
                     return Ok(input.next_slice(offset));
                 }
             }
@@ -1540,7 +1540,7 @@ where
             Some(_) => {
                 if input.eof_offset() == current_len {
                     let offset = input.offset_from(&start);
-                    input.reset(start);
+                    input.reset(&start);
                     return Ok(input.next_slice(offset));
                 }
             }
@@ -1549,14 +1549,14 @@ where
                     let _ = escapable.parse_next(input)?;
                 } else {
                     let offset = input.offset_from(&start);
-                    input.reset(start);
+                    input.reset(&start);
                     return Ok(input.next_slice(offset));
                 }
             }
         }
     }
 
-    input.reset(start);
+    input.reset(&start);
     Ok(input.finish())
 }
 

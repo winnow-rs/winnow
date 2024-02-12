@@ -79,7 +79,7 @@ where
         match f.parse_next(input) {
             Ok(o) => Ok(Some(o)),
             Err(ErrMode::Backtrack(_)) => {
-                input.reset(start);
+                input.reset(&start);
                 Ok(None)
             }
             Err(e) => Err(e),
@@ -148,7 +148,7 @@ where
     trace("peek", move |input: &mut I| {
         let start = input.checkpoint();
         let res = f.parse_next(input);
-        input.reset(start);
+        input.reset(&start);
         res
     })
 }
@@ -211,7 +211,7 @@ where
     trace("not", move |input: &mut I| {
         let start = input.checkpoint();
         let res = parser.parse_next(input);
-        input.reset(start);
+        input.reset(&start);
         match res {
             Ok(_) => Err(ErrMode::from_error_kind(input, ErrorKind::Not)),
             Err(ErrMode::Backtrack(_)) => Ok(()),
@@ -408,7 +408,7 @@ where
                     Some(o)
                 }
                 Err(ErrMode::Backtrack(_)) => {
-                    self.input.reset(start);
+                    self.input.reset(&start);
                     self.state = Some(State::Done);
                     None
                 }

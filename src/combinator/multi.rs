@@ -311,7 +311,7 @@ where
         let len = i.eof_offset();
         match f.parse_next(i) {
             Err(ErrMode::Backtrack(_)) => {
-                i.reset(start);
+                i.reset(&start);
                 return Ok(acc);
             }
             Err(e) => return Err(e),
@@ -345,7 +345,7 @@ where
                 let len = i.eof_offset();
                 match f.parse_next(i) {
                     Err(ErrMode::Backtrack(_)) => {
-                        i.reset(start);
+                        i.reset(&start);
                         return Ok(acc);
                     }
                     Err(e) => return Err(e),
@@ -426,7 +426,7 @@ where
                 if count < min {
                     return Err(ErrMode::Backtrack(e.append(input, ErrorKind::Many)));
                 } else {
-                    input.reset(start);
+                    input.reset(&start);
                     return Ok(res);
                 }
             }
@@ -507,7 +507,7 @@ where
         match g.parse_next(i) {
             Ok(o) => return Ok((res, o)),
             Err(ErrMode::Backtrack(_)) => {
-                i.reset(start);
+                i.reset(&start);
                 match f.parse_next(i) {
                     Err(e) => return Err(e.append(i, ErrorKind::Many)),
                     Ok(o) => {
@@ -566,7 +566,7 @@ where
                 if count == max {
                     return Err(ErrMode::Backtrack(err));
                 }
-                i.reset(start);
+                i.reset(&start);
                 match f.parse_next(i) {
                     Err(e) => {
                         return Err(e.append(i, ErrorKind::Many));
@@ -735,7 +735,7 @@ where
     let start = input.checkpoint();
     match parser.parse_next(input) {
         Err(ErrMode::Backtrack(_)) => {
-            input.reset(start);
+            input.reset(&start);
             return Ok(acc);
         }
         Err(e) => return Err(e),
@@ -749,7 +749,7 @@ where
         let len = input.eof_offset();
         match separator.parse_next(input) {
             Err(ErrMode::Backtrack(_)) => {
-                input.reset(start);
+                input.reset(&start);
                 return Ok(acc);
             }
             Err(e) => return Err(e),
@@ -764,7 +764,7 @@ where
 
                 match parser.parse_next(input) {
                     Err(ErrMode::Backtrack(_)) => {
-                        input.reset(start);
+                        input.reset(&start);
                         return Ok(acc);
                     }
                     Err(e) => return Err(e),
@@ -804,7 +804,7 @@ where
         let len = input.eof_offset();
         match separator.parse_next(input) {
             Err(ErrMode::Backtrack(_)) => {
-                input.reset(start);
+                input.reset(&start);
                 return Ok(acc);
             }
             Err(e) => return Err(e),
@@ -819,7 +819,7 @@ where
 
                 match parser.parse_next(input) {
                     Err(ErrMode::Backtrack(_)) => {
-                        input.reset(start);
+                        input.reset(&start);
                         return Ok(acc);
                     }
                     Err(e) => return Err(e),
@@ -917,7 +917,7 @@ where
     match parser.parse_next(input) {
         Err(ErrMode::Backtrack(e)) => {
             if min == 0 {
-                input.reset(start);
+                input.reset(&start);
                 return Ok(acc);
             } else {
                 return Err(ErrMode::Backtrack(e.append(input, ErrorKind::Many)));
@@ -937,7 +937,7 @@ where
                 if index < min {
                     return Err(ErrMode::Backtrack(e.append(input, ErrorKind::Many)));
                 } else {
-                    input.reset(start);
+                    input.reset(&start);
                     return Ok(acc);
                 }
             }
@@ -958,7 +958,7 @@ where
                         if index < min {
                             return Err(ErrMode::Backtrack(e.append(input, ErrorKind::Many)));
                         } else {
-                            input.reset(start);
+                            input.reset(&start);
                             return Ok(acc);
                         }
                     }
@@ -1017,7 +1017,7 @@ where
             let len = i.eof_offset();
             match sep.parse_next(i) {
                 Err(ErrMode::Backtrack(_)) => {
-                    i.reset(start);
+                    i.reset(&start);
                     return Ok(ol);
                 }
                 Err(e) => return Err(e),
@@ -1029,7 +1029,7 @@ where
 
                     match parser.parse_next(i) {
                         Err(ErrMode::Backtrack(_)) => {
-                            i.reset(start);
+                            i.reset(&start);
                             return Ok(ol);
                         }
                         Err(e) => return Err(e),
@@ -1175,7 +1175,7 @@ where
                 res = g(res, o);
             }
             Err(ErrMode::Backtrack(_)) => {
-                input.reset(start);
+                input.reset(&start);
                 return Ok(res);
             }
             Err(e) => {
@@ -1210,7 +1210,7 @@ where
                 let len = input.eof_offset();
                 match f.parse_next(input) {
                     Err(ErrMode::Backtrack(_)) => {
-                        input.reset(start);
+                        input.reset(&start);
                         break;
                     }
                     Err(e) => return Err(e),
@@ -1276,7 +1276,7 @@ where
                 if count < min {
                     return Err(ErrMode::Backtrack(err.append(input, ErrorKind::Many)));
                 } else {
-                    input.reset(start);
+                    input.reset(&start);
                     break;
                 }
             }

@@ -132,7 +132,7 @@ where
         let start = input.checkpoint();
         let o = self.parser.parse_next(input)?;
         let res = (self.map)(o).map_err(|err| {
-            input.reset(start);
+            input.reset(&start);
             ErrMode::from_external_error(input, ErrorKind::Verify, err)
         });
         trace_result("verify", &res);
@@ -189,7 +189,7 @@ where
         let start = input.checkpoint();
         let o = self.parser.parse_next(input)?;
         let res = (self.map)(o).ok_or_else(|| {
-            input.reset(start);
+            input.reset(&start);
             ErrMode::from_error_kind(input, ErrorKind::Verify)
         });
         trace_result("verify", &res);
@@ -247,7 +247,7 @@ where
         let mut o = self.outer.parse_next(i)?;
         let _ = o.complete();
         let o2 = self.inner.parse_next(&mut o).map_err(|err| {
-            i.reset(start);
+            i.reset(&start);
             err
         })?;
         Ok(o2)
@@ -301,7 +301,7 @@ where
         let start = i.checkpoint();
         let o = self.p.parse_next(i)?;
         let res = o.parse_slice().ok_or_else(|| {
-            i.reset(start);
+            i.reset(&start);
             ErrMode::from_error_kind(i, ErrorKind::Verify)
         });
         trace_result("verify", &res);
@@ -447,7 +447,7 @@ where
         let start = input.checkpoint();
         let o = self.parser.parse_next(input)?;
         let res = (self.filter)(o.borrow()).then_some(o).ok_or_else(|| {
-            input.reset(start);
+            input.reset(&start);
             ErrMode::from_error_kind(input, ErrorKind::Verify)
         });
         trace_result("verify", &res);
@@ -616,7 +616,7 @@ where
         match (self.parser).parse_next(input) {
             Ok(_) => {
                 let offset = input.offset_from(&checkpoint);
-                input.reset(checkpoint);
+                input.reset(&checkpoint);
                 let recognized = input.next_slice(offset);
                 Ok(recognized)
             }
@@ -665,7 +665,7 @@ where
         match (self.parser).parse_next(input) {
             Ok(result) => {
                 let offset = input.offset_from(&checkpoint);
-                input.reset(checkpoint);
+                input.reset(&checkpoint);
                 let recognized = input.next_slice(offset);
                 Ok((result, recognized))
             }
@@ -997,7 +997,7 @@ where
             }
         }
 
-        i.reset(err_start.clone());
+        i.reset(&err_start);
         err = err.map(|err| E::from_recoverable_error(&token_start, &err_start, i, err));
         return Err(err);
     }
@@ -1091,7 +1091,7 @@ where
         }
     }
 
-    i.reset(err_start.clone());
+    i.reset(&err_start);
     err = err.map(|err| E::from_recoverable_error(&token_start, &err_start, i, err));
     Err(err)
 }

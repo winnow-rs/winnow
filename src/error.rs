@@ -1117,7 +1117,7 @@ pub struct ParseError<I, E> {
 impl<I: Stream, E: ParserError<I>> ParseError<I, E> {
     pub(crate) fn new(mut input: I, start: I::Checkpoint, inner: E) -> Self {
         let offset = input.offset_from(&start);
-        input.reset(start);
+        input.reset(&start);
         Self {
             input,
             offset,

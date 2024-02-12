@@ -630,7 +630,7 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
     /// # Panic
     ///
     /// May panic if an invalid [`Self::Checkpoint`] is provided
-    fn reset(&mut self, checkpoint: Self::Checkpoint);
+    fn reset(&mut self, checkpoint: &Self::Checkpoint);
 
     /// Return the inner-most stream
     fn raw(&self) -> &dyn crate::lib::std::fmt::Debug;
@@ -690,7 +690,7 @@ where
         Checkpoint::<_, Self>::new(*self)
     }
     #[inline(always)]
-    fn reset(&mut self, checkpoint: Self::Checkpoint) {
+    fn reset(&mut self, checkpoint: &Self::Checkpoint) {
         *self = checkpoint.inner;
     }
 
@@ -765,7 +765,7 @@ impl<'i> Stream for &'i str {
         Checkpoint::<_, Self>::new(*self)
     }
     #[inline(always)]
-    fn reset(&mut self, checkpoint: Self::Checkpoint) {
+    fn reset(&mut self, checkpoint: &Self::Checkpoint) {
         *self = checkpoint.inner;
     }
 
@@ -830,7 +830,7 @@ impl<'i> Stream for &'i Bytes {
         Checkpoint::<_, Self>::new(*self)
     }
     #[inline(always)]
-    fn reset(&mut self, checkpoint: Self::Checkpoint) {
+    fn reset(&mut self, checkpoint: &Self::Checkpoint) {
         *self = checkpoint.inner;
     }
 
@@ -895,7 +895,7 @@ impl<'i> Stream for &'i BStr {
         Checkpoint::<_, Self>::new(*self)
     }
     #[inline(always)]
-    fn reset(&mut self, checkpoint: Self::Checkpoint) {
+    fn reset(&mut self, checkpoint: &Self::Checkpoint) {
         *self = checkpoint.inner;
     }
 
@@ -972,8 +972,8 @@ where
         Checkpoint::<_, Self>::new((self.0.checkpoint(), self.1))
     }
     #[inline(always)]
-    fn reset(&mut self, checkpoint: Self::Checkpoint) {
-        self.0.reset(checkpoint.inner.0);
+    fn reset(&mut self, checkpoint: &Self::Checkpoint) {
+        self.0.reset(&checkpoint.inner.0);
         self.1 = checkpoint.inner.1;
     }
 
@@ -1071,8 +1071,8 @@ impl<I: Stream> Stream for Located<I> {
         Checkpoint::<_, Self>::new(self.input.checkpoint())
     }
     #[inline(always)]
-    fn reset(&mut self, checkpoint: Self::Checkpoint) {
-        self.input.reset(checkpoint.inner);
+    fn reset(&mut self, checkpoint: &Self::Checkpoint) {
+        self.input.reset(&checkpoint.inner);
     }
 
     #[inline(always)]
@@ -1128,8 +1128,8 @@ where
         Checkpoint::<_, Self>::new(self.input.checkpoint())
     }
     #[inline(always)]
-    fn reset(&mut self, checkpoint: Self::Checkpoint) {
-        self.input.reset(checkpoint.inner);
+    fn reset(&mut self, checkpoint: &Self::Checkpoint) {
+        self.input.reset(&checkpoint.inner);
     }
 
     #[inline(always)]
@@ -1181,8 +1181,8 @@ impl<I: Stream, S: crate::lib::std::fmt::Debug> Stream for Stateful<I, S> {
         Checkpoint::<_, Self>::new(self.input.checkpoint())
     }
     #[inline(always)]
-    fn reset(&mut self, checkpoint: Self::Checkpoint) {
-        self.input.reset(checkpoint.inner);
+    fn reset(&mut self, checkpoint: &Self::Checkpoint) {
+        self.input.reset(&checkpoint.inner);
     }
 
     #[inline(always)]
@@ -1234,8 +1234,8 @@ impl<I: Stream> Stream for Partial<I> {
         Checkpoint::<_, Self>::new(self.input.checkpoint())
     }
     #[inline(always)]
-    fn reset(&mut self, checkpoint: Self::Checkpoint) {
-        self.input.reset(checkpoint.inner);
+    fn reset(&mut self, checkpoint: &Self::Checkpoint) {
+        self.input.reset(&checkpoint.inner);
     }
 
     #[inline(always)]

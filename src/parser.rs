@@ -1051,7 +1051,7 @@ where
         };
 
         let (mut input, mut errs) = input.into_parts();
-        input.reset(start);
+        input.reset(&start);
         if let Some(err) = err {
             errs.push(err);
         }
