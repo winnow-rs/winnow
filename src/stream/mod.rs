@@ -2409,7 +2409,7 @@ impl<'i, 's> FindSlice<(&'s str, &'s str, &'s str)> for &'i [u8] {
 impl<'i, 's> FindSlice<&'s str> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: &'s str) -> Option<crate::lib::std::ops::Range<usize>> {
-        self.as_bytes().find_slice(substr.as_bytes())
+        self.as_bytes().find_slice(substr)
     }
 }
 
@@ -2482,28 +2482,28 @@ impl<'i> FindSlice<(char, char, char)> for &'i str {
 impl<'i> FindSlice<u8> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: u8) -> Option<crate::lib::std::ops::Range<usize>> {
-        self.find_slice(substr.as_char())
+        self.as_bytes().find_slice(substr)
     }
 }
 
 impl<'i> FindSlice<(u8,)> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: (u8,)) -> Option<crate::lib::std::ops::Range<usize>> {
-        self.find_slice((substr.0.as_char(),))
+        self.as_bytes().find_slice(substr)
     }
 }
 
 impl<'i> FindSlice<(u8, u8)> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: (u8, u8)) -> Option<crate::lib::std::ops::Range<usize>> {
-        self.find_slice((substr.0.as_char(), substr.1.as_char()))
+        self.as_bytes().find_slice(substr)
     }
 }
 
 impl<'i> FindSlice<(u8, u8, u8)> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: (u8, u8, u8)) -> Option<crate::lib::std::ops::Range<usize>> {
-        self.find_slice((substr.0.as_char(), substr.1.as_char(), substr.2.as_char()))
+        self.as_bytes().find_slice(substr)
     }
 }
 
