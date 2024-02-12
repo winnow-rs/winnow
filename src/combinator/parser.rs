@@ -1,5 +1,6 @@
 use crate::combinator::trace;
 use crate::combinator::trace_result;
+use crate::combinator::DisplayDebug;
 #[cfg(feature = "unstable-recover")]
 use crate::error::FromRecoverableError;
 use crate::error::{AddContext, ErrMode, ErrorKind, FromExternalError, ParserError};
@@ -895,14 +896,11 @@ where
 {
     #[inline]
     fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
-        #[cfg(feature = "debug")]
-        let name = format!("context={:?}", self.context);
-        #[cfg(not(feature = "debug"))]
-        let name = "context";
-        trace(name, move |i: &mut I| {
+        let context = self.context.clone();
+        trace(DisplayDebug(self.context.clone()), move |i: &mut I| {
             (self.parser)
                 .parse_next(i)
-                .map_err(|err| err.add_context(i, self.context.clone()))
+                .map_err(|err| err.add_context(i, context.clone()))
         })
         .parse_next(i)
     }
