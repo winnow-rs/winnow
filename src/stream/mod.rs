@@ -2340,6 +2340,48 @@ impl<'i, 's> FindSlice<(&'s [u8], &'s [u8], &'s [u8])> for &'i [u8] {
     }
 }
 
+impl<'i> FindSlice<char> for &'i [u8] {
+    #[inline(always)]
+    fn find_slice(&self, substr: char) -> Option<crate::lib::std::ops::Range<usize>> {
+        let mut b = [0; 4];
+        let substr = substr.encode_utf8(&mut b);
+        self.find_slice(&*substr)
+    }
+}
+
+impl<'i> FindSlice<(char,)> for &'i [u8] {
+    #[inline(always)]
+    fn find_slice(&self, substr: (char,)) -> Option<crate::lib::std::ops::Range<usize>> {
+        let mut b = [0; 4];
+        let substr0 = substr.0.encode_utf8(&mut b);
+        self.find_slice((&*substr0,))
+    }
+}
+
+impl<'i> FindSlice<(char, char)> for &'i [u8] {
+    #[inline(always)]
+    fn find_slice(&self, substr: (char, char)) -> Option<crate::lib::std::ops::Range<usize>> {
+        let mut b = [0; 4];
+        let substr0 = substr.0.encode_utf8(&mut b);
+        let mut b = [0; 4];
+        let substr1 = substr.1.encode_utf8(&mut b);
+        self.find_slice((&*substr0, &*substr1))
+    }
+}
+
+impl<'i> FindSlice<(char, char, char)> for &'i [u8] {
+    #[inline(always)]
+    fn find_slice(&self, substr: (char, char, char)) -> Option<crate::lib::std::ops::Range<usize>> {
+        let mut b = [0; 4];
+        let substr0 = substr.0.encode_utf8(&mut b);
+        let mut b = [0; 4];
+        let substr1 = substr.1.encode_utf8(&mut b);
+        let mut b = [0; 4];
+        let substr2 = substr.2.encode_utf8(&mut b);
+        self.find_slice((&*substr0, &*substr1, &*substr2))
+    }
+}
+
 impl<'i> FindSlice<u8> for &'i [u8] {
     #[inline(always)]
     fn find_slice(&self, substr: u8) -> Option<crate::lib::std::ops::Range<usize>> {
@@ -2440,42 +2482,28 @@ impl<'i, 's> FindSlice<(&'s str, &'s str, &'s str)> for &'i str {
 impl<'i> FindSlice<char> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: char) -> Option<crate::lib::std::ops::Range<usize>> {
-        let mut b = [0; 4];
-        let substr = substr.encode_utf8(&mut b);
-        self.find_slice(&*substr)
+        self.as_bytes().find_slice(substr)
     }
 }
 
 impl<'i> FindSlice<(char,)> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: (char,)) -> Option<crate::lib::std::ops::Range<usize>> {
-        let mut b = [0; 4];
-        let substr0 = substr.0.encode_utf8(&mut b);
-        self.find_slice((&*substr0,))
+        self.as_bytes().find_slice(substr)
     }
 }
 
 impl<'i> FindSlice<(char, char)> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: (char, char)) -> Option<crate::lib::std::ops::Range<usize>> {
-        let mut b = [0; 4];
-        let substr0 = substr.0.encode_utf8(&mut b);
-        let mut b = [0; 4];
-        let substr1 = substr.1.encode_utf8(&mut b);
-        self.find_slice((&*substr0, &*substr1))
+        self.as_bytes().find_slice(substr)
     }
 }
 
 impl<'i> FindSlice<(char, char, char)> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: (char, char, char)) -> Option<crate::lib::std::ops::Range<usize>> {
-        let mut b = [0; 4];
-        let substr0 = substr.0.encode_utf8(&mut b);
-        let mut b = [0; 4];
-        let substr1 = substr.1.encode_utf8(&mut b);
-        let mut b = [0; 4];
-        let substr2 = substr.2.encode_utf8(&mut b);
-        self.find_slice((&*substr0, &*substr1, &*substr2))
+        self.as_bytes().find_slice(substr)
     }
 }
 
