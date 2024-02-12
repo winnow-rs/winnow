@@ -314,6 +314,7 @@ pub trait AddContext<I, C = &'static str>: Sized {
 }
 
 /// Capture context from when an error was recovered
+#[cfg(feature = "unstable-recover")]
 pub trait FromRecoverableError<I: Stream, E> {
     /// Capture context from when an error was recovered
     fn from_recoverable_error(
@@ -398,6 +399,7 @@ impl<I: Clone> ParserError<I> for InputError<I> {
 
 impl<I: Clone, C> AddContext<I, C> for InputError<I> {}
 
+#[cfg(feature = "unstable-recover")]
 impl<I: Clone + Stream> FromRecoverableError<I, Self> for InputError<I> {
     #[inline]
     fn from_recoverable_error(
@@ -469,6 +471,7 @@ impl<I> ParserError<I> for () {
 
 impl<I, C> AddContext<I, C> for () {}
 
+#[cfg(feature = "unstable-recover")]
 impl<I: Stream> FromRecoverableError<I, Self> for () {
     #[inline]
     fn from_recoverable_error(
@@ -570,6 +573,7 @@ impl<C, I> AddContext<I, C> for ContextError<C> {
     }
 }
 
+#[cfg(feature = "unstable-recover")]
 impl<I: Stream, C> FromRecoverableError<I, Self> for ContextError<C> {
     #[inline]
     fn from_recoverable_error(
@@ -910,6 +914,7 @@ where
 }
 
 #[cfg(feature = "std")]
+#[cfg(feature = "unstable-recover")]
 impl<I: Clone + Stream, C> FromRecoverableError<I, Self> for TreeError<I, C> {
     #[inline]
     fn from_recoverable_error(
