@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add support to `take_until` for `char` needles on `&[u8]` haystacks
+
 ## [0.5.39] - 2024-02-06
 
 ### Fixes
