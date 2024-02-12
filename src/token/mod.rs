@@ -4,6 +4,7 @@
 mod tests;
 
 use crate::combinator::trace;
+use crate::combinator::DisplayDebug;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::Needed;
@@ -137,9 +138,9 @@ pub fn literal<T, I, Error: ParserError<I>>(tag: T) -> impl Parser<I, <I as Stre
 where
     I: StreamIsPartial,
     I: Stream + Compare<T>,
-    T: SliceLen + Clone,
+    T: SliceLen + Clone + crate::lib::std::fmt::Debug,
 {
-    trace("literal", move |i: &mut I| {
+    trace(DisplayDebug(tag.clone()), move |i: &mut I| {
         let t = tag.clone();
         if <I as StreamIsPartial>::is_partial_supported() {
             literal_::<_, _, _, true>(i, t)
@@ -155,7 +156,7 @@ pub fn tag<T, I, Error: ParserError<I>>(tag: T) -> impl Parser<I, <I as Stream>:
 where
     I: StreamIsPartial,
     I: Stream + Compare<T>,
-    T: SliceLen + Clone,
+    T: SliceLen + Clone + crate::lib::std::fmt::Debug,
 {
     literal(tag)
 }
@@ -167,7 +168,7 @@ fn literal_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
 where
     I: StreamIsPartial,
     I: Stream + Compare<T>,
-    T: SliceLen,
+    T: SliceLen + crate::lib::std::fmt::Debug,
 {
     let literal_len = t.slice_len();
     match i.compare(t) {

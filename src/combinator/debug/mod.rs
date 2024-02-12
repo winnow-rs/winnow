@@ -67,6 +67,14 @@ pub(crate) fn trace_result<T, E>(
     }
 }
 
+pub(crate) struct DisplayDebug<D>(pub(crate) D);
+
+impl<D: crate::lib::std::fmt::Debug> crate::lib::std::fmt::Display for DisplayDebug<D> {
+    fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
+        write!(f, "{:?}", self.0)
+    }
+}
+
 #[test]
 #[cfg(feature = "std")]
 #[cfg_attr(miri, ignore)]
