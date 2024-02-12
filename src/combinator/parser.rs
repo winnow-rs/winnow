@@ -898,9 +898,10 @@ where
     fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
         let context = self.context.clone();
         trace(DisplayDebug(self.context.clone()), move |i: &mut I| {
+            let start = i.checkpoint();
             (self.parser)
                 .parse_next(i)
-                .map_err(|err| err.add_context(i, context.clone()))
+                .map_err(|err| err.add_context(i, &start, context.clone()))
         })
         .parse_next(i)
     }
