@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.5.40] - 2024-02-12
+
 ### Features
 
 - Add support to `take_until` for `char` needles on `&[u8]` haystacks
@@ -2232,7 +2234,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.39...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.40...HEAD
+[0.5.40]: https://github.com/winnow-rs/winnow/compare/v0.5.39...v0.5.40
 [0.5.39]: https://github.com/winnow-rs/winnow/compare/v0.5.38...v0.5.39
 [0.5.38]: https://github.com/winnow-rs/winnow/compare/v0.5.37...v0.5.38
 [0.5.37]: https://github.com/winnow-rs/winnow/compare/v0.5.36...v0.5.37
