@@ -2194,20 +2194,6 @@ impl<'a, 'b> Compare<AsciiCaseless<&'b str>> for &'a str {
     }
 }
 
-impl<'a> Compare<u8> for &'a str {
-    #[inline(always)]
-    fn compare(&self, t: u8) -> CompareResult {
-        self.as_bytes().compare(t)
-    }
-}
-
-impl<'a> Compare<AsciiCaseless<u8>> for &'a str {
-    #[inline(always)]
-    fn compare(&self, t: AsciiCaseless<u8>) -> CompareResult {
-        self.as_bytes().compare(t)
-    }
-}
-
 impl<'a> Compare<char> for &'a str {
     #[inline(always)]
     fn compare(&self, t: char) -> CompareResult {
@@ -2218,20 +2204,6 @@ impl<'a> Compare<char> for &'a str {
 impl<'a> Compare<AsciiCaseless<char>> for &'a str {
     #[inline(always)]
     fn compare(&self, t: AsciiCaseless<char>) -> CompareResult {
-        self.as_bytes().compare(t)
-    }
-}
-
-impl<'a, 'b> Compare<&'b [u8]> for &'a str {
-    #[inline(always)]
-    fn compare(&self, t: &'b [u8]) -> CompareResult {
-        self.as_bytes().compare(t)
-    }
-}
-
-impl<'a, 'b> Compare<AsciiCaseless<&'b [u8]>> for &'a str {
-    #[inline(always)]
-    fn compare(&self, t: AsciiCaseless<&'b [u8]>) -> CompareResult {
         self.as_bytes().compare(t)
     }
 }
@@ -2503,34 +2475,6 @@ impl<'i> FindSlice<(char, char)> for &'i str {
 impl<'i> FindSlice<(char, char, char)> for &'i str {
     #[inline(always)]
     fn find_slice(&self, substr: (char, char, char)) -> Option<crate::lib::std::ops::Range<usize>> {
-        self.as_bytes().find_slice(substr)
-    }
-}
-
-impl<'i> FindSlice<u8> for &'i str {
-    #[inline(always)]
-    fn find_slice(&self, substr: u8) -> Option<crate::lib::std::ops::Range<usize>> {
-        self.as_bytes().find_slice(substr)
-    }
-}
-
-impl<'i> FindSlice<(u8,)> for &'i str {
-    #[inline(always)]
-    fn find_slice(&self, substr: (u8,)) -> Option<crate::lib::std::ops::Range<usize>> {
-        self.as_bytes().find_slice(substr)
-    }
-}
-
-impl<'i> FindSlice<(u8, u8)> for &'i str {
-    #[inline(always)]
-    fn find_slice(&self, substr: (u8, u8)) -> Option<crate::lib::std::ops::Range<usize>> {
-        self.as_bytes().find_slice(substr)
-    }
-}
-
-impl<'i> FindSlice<(u8, u8, u8)> for &'i str {
-    #[inline(always)]
-    fn find_slice(&self, substr: (u8, u8, u8)) -> Option<crate::lib::std::ops::Range<usize>> {
         self.as_bytes().find_slice(substr)
     }
 }
