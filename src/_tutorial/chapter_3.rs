@@ -124,17 +124,17 @@
 //!         return Ok(output);
 //!     }
 //!
-//!     input.reset(start);
+//!     input.reset(&start);
 //!     if let Ok(output) = ("0o", parse_oct_digits).parse_next(input) {
 //!         return Ok(output);
 //!     }
 //!
-//!     input.reset(start);
+//!     input.reset(&start);
 //!     if let Ok(output) = ("0d", parse_dec_digits).parse_next(input) {
 //!         return Ok(output);
 //!     }
 //!
-//!     input.reset(start);
+//!     input.reset(&start);
 //!     ("0x", parse_hex_digits).parse_next(input)
 //! }
 //!

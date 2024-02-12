@@ -50,6 +50,7 @@ pub fn bits<I, O, E1, E2, P>(mut parser: P) -> impl Parser<I, O, E2>
 where
     E1: ParserError<(I, usize)> + ErrorConvert<E2>,
     E2: ParserError<I>,
+    (I, usize): Stream,
     I: Stream + Clone,
     P: Parser<(I, usize), O, E1>,
 {
@@ -320,7 +321,7 @@ where
             if pattern == o {
                 Ok(o)
             } else {
-                input.reset(start);
+                input.reset(&start);
                 Err(ErrMode::Backtrack(E::from_error_kind(
                     input,
                     ErrorKind::Tag,

@@ -956,7 +956,7 @@ where
     }
 }
 
-impl<I, E: ParserError<I>> Parser<I, (), E> for () {
+impl<I: Stream, E: ParserError<I>> Parser<I, (), E> for () {
     #[inline(always)]
     fn parse_next(&mut self, _i: &mut I) -> PResult<(), E> {
         Ok(())
@@ -966,7 +966,7 @@ impl<I, E: ParserError<I>> Parser<I, (), E> for () {
 macro_rules! impl_parser_for_tuple {
   ($($parser:ident $output:ident),+) => (
     #[allow(non_snake_case)]
-    impl<I, $($output),+, E: ParserError<I>, $($parser),+> Parser<I, ($($output),+,), E> for ($($parser),+,)
+    impl<I: Stream, $($output),+, E: ParserError<I>, $($parser),+> Parser<I, ($($output),+,), E> for ($($parser),+,)
     where
       $($parser: Parser<I, $output, E>),+
     {
@@ -1051,7 +1051,7 @@ where
         };
 
         let (mut input, mut errs) = input.into_parts();
-        input.reset(start);
+        input.reset(&start);
         if let Some(err) = err {
             errs.push(err);
         }
