@@ -132,7 +132,7 @@ where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
-    I: FindSlice<(u8, u8)>,
+    I: FindSlice<(char, char)>,
     <I as Stream>::Token: AsChar + Clone,
 {
     trace("till_line_ending", move |input: &mut I| {
@@ -152,10 +152,10 @@ where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<&'static str>,
-    I: FindSlice<(u8, u8)>,
+    I: FindSlice<(char, char)>,
     <I as Stream>::Token: AsChar + Clone,
 {
-    let res = match take_until::<_, _, ()>(0.., (b'\r', b'\n')).parse_next(input) {
+    let res = match take_until::<_, _, ()>(0.., ('\r', '\n')).parse_next(input) {
         Ok(slice) => slice,
         Err(ErrMode::Incomplete(err)) => {
             return Err(ErrMode::Incomplete(err));
