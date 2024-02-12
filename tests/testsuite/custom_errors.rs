@@ -6,6 +6,7 @@ use winnow::combinator::repeat;
 use winnow::combinator::terminated;
 use winnow::error::{ErrorKind, ParserError};
 use winnow::prelude::*;
+use winnow::stream::Stream;
 use winnow::unpeek;
 use winnow::IResult;
 use winnow::Partial;
@@ -24,7 +25,12 @@ impl<'a> ParserError<Partial<&'a str>> for CustomError {
         CustomError(format!("error code was: {:?}", kind))
     }
 
-    fn append(self, _: &Partial<&'a str>, kind: ErrorKind) -> Self {
+    fn append(
+        self,
+        _: &Partial<&'a str>,
+        _: &<Partial<&'a str> as Stream>::Checkpoint,
+        kind: ErrorKind,
+    ) -> Self {
         CustomError(format!("{:?}\nerror code was: {:?}", self, kind))
     }
 }

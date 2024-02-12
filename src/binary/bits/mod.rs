@@ -50,6 +50,7 @@ pub fn bits<I, O, E1, E2, P>(mut parser: P) -> impl Parser<I, O, E2>
 where
     E1: ParserError<(I, usize)> + ErrorConvert<E2>,
     E2: ParserError<I>,
+    (I, usize): Stream,
     I: Stream + Clone,
     P: Parser<(I, usize), O, E1>,
 {

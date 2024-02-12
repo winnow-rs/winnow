@@ -2,6 +2,7 @@ use winnow::error::ErrMode;
 use winnow::error::ErrorKind;
 use winnow::error::ParserError;
 use winnow::prelude::*;
+use winnow::stream::Stream;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum CustomError<I> {
@@ -9,12 +10,12 @@ pub enum CustomError<I> {
     Nom(I, ErrorKind),
 }
 
-impl<I: Clone> ParserError<I> for CustomError<I> {
+impl<I: Stream + Clone> ParserError<I> for CustomError<I> {
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
         CustomError::Nom(input.clone(), kind)
     }
 
-    fn append(self, _: &I, _: ErrorKind) -> Self {
+    fn append(self, _: &I, _: &<I as Stream>::Checkpoint, _: ErrorKind) -> Self {
         self
     }
 }

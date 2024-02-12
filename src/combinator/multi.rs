@@ -334,8 +334,9 @@ where
     F: Parser<I, O, E>,
     E: ParserError<I>,
 {
+    let start = i.checkpoint();
     match f.parse_next(i) {
-        Err(e) => Err(e.append(i, ErrorKind::Many)),
+        Err(e) => Err(e.append(i, &start, ErrorKind::Many)),
         Ok(o) => {
             let mut acc = C::initial(None);
             acc.accumulate(o);
@@ -373,6 +374,7 @@ where
     let mut res = C::initial(Some(count));
 
     for _ in 0..count {
+        let start = i.checkpoint();
         let len = i.eof_offset();
         match f.parse_next(i) {
             Ok(o) => {
@@ -384,7 +386,7 @@ where
                 res.accumulate(o);
             }
             Err(e) => {
-                return Err(e.append(i, ErrorKind::Many));
+                return Err(e.append(i, &start, ErrorKind::Many));
             }
         }
     }
@@ -424,7 +426,7 @@ where
             }
             Err(ErrMode::Backtrack(e)) => {
                 if count < min {
-                    return Err(ErrMode::Backtrack(e.append(input, ErrorKind::Many)));
+                    return Err(ErrMode::Backtrack(e.append(input, &start, ErrorKind::Many)));
                 } else {
                     input.reset(&start);
                     return Ok(res);
@@ -509,7 +511,7 @@ where
             Err(ErrMode::Backtrack(_)) => {
                 i.reset(&start);
                 match f.parse_next(i) {
-                    Err(e) => return Err(e.append(i, ErrorKind::Many)),
+                    Err(e) => return Err(e.append(i, &start, ErrorKind::Many)),
                     Ok(o) => {
                         // infinite loop check: the parser must always consume
                         if i.eof_offset() == len {
@@ -547,13 +549,15 @@ where
     }
 
     let mut res = C::initial(Some(min));
+
+    let start = i.checkpoint();
     for _ in 0..min {
         match f.parse_next(i) {
             Ok(o) => {
                 res.accumulate(o);
             }
             Err(e) => {
-                return Err(e.append(i, ErrorKind::Many));
+                return Err(e.append(i, &start, ErrorKind::Many));
             }
         }
     }
@@ -569,7 +573,7 @@ where
                 i.reset(&start);
                 match f.parse_next(i) {
                     Err(e) => {
-                        return Err(e.append(i, ErrorKind::Many));
+                        return Err(e.append(i, &start, ErrorKind::Many));
                     }
                     Ok(o) => {
                         // infinite loop check: the parser must always consume
@@ -851,9 +855,10 @@ where
         return Ok(acc);
     }
 
+    let start = input.checkpoint();
     match parser.parse_next(input) {
         Err(e) => {
-            return Err(e.append(input, ErrorKind::Many));
+            return Err(e.append(input, &start, ErrorKind::Many));
         }
         Ok(o) => {
             acc.accumulate(o);
@@ -861,10 +866,11 @@ where
     }
 
     for _ in 1..count {
+        let start = input.checkpoint();
         let len = input.eof_offset();
         match separator.parse_next(input) {
             Err(e) => {
-                return Err(e.append(input, ErrorKind::Many));
+                return Err(e.append(input, &start, ErrorKind::Many));
             }
             Ok(_) => {
                 // infinite loop check
@@ -877,7 +883,7 @@ where
 
                 match parser.parse_next(input) {
                     Err(e) => {
-                        return Err(e.append(input, ErrorKind::Many));
+                        return Err(e.append(input, &start, ErrorKind::Many));
                     }
                     Ok(o) => {
                         acc.accumulate(o);
@@ -920,7 +926,7 @@ where
                 input.reset(&start);
                 return Ok(acc);
             } else {
-                return Err(ErrMode::Backtrack(e.append(input, ErrorKind::Many)));
+                return Err(ErrMode::Backtrack(e.append(input, &start, ErrorKind::Many)));
             }
         }
         Err(e) => return Err(e),
@@ -935,7 +941,7 @@ where
         match separator.parse_next(input) {
             Err(ErrMode::Backtrack(e)) => {
                 if index < min {
-                    return Err(ErrMode::Backtrack(e.append(input, ErrorKind::Many)));
+                    return Err(ErrMode::Backtrack(e.append(input, &start, ErrorKind::Many)));
                 } else {
                     input.reset(&start);
                     return Ok(acc);
@@ -956,7 +962,11 @@ where
                 match parser.parse_next(input) {
                     Err(ErrMode::Backtrack(e)) => {
                         if index < min {
-                            return Err(ErrMode::Backtrack(e.append(input, ErrorKind::Many)));
+                            return Err(ErrMode::Backtrack(e.append(
+                                input,
+                                &start,
+                                ErrorKind::Many,
+                            )));
                         } else {
                             input.reset(&start);
                             return Ok(acc);
@@ -1130,12 +1140,13 @@ where
 {
     trace("fill", move |i: &mut I| {
         for elem in buf.iter_mut() {
+            let start = i.checkpoint();
             match f.parse_next(i) {
                 Ok(o) => {
                     *elem = o;
                 }
                 Err(e) => {
-                    return Err(e.append(i, ErrorKind::Many));
+                    return Err(e.append(i, &start, ErrorKind::Many));
                 }
             }
         }
@@ -1274,7 +1285,11 @@ where
             //FInputXMError: handle failure properly
             Err(ErrMode::Backtrack(err)) => {
                 if count < min {
-                    return Err(ErrMode::Backtrack(err.append(input, ErrorKind::Many)));
+                    return Err(ErrMode::Backtrack(err.append(
+                        input,
+                        &start,
+                        ErrorKind::Many,
+                    )));
                 } else {
                     input.reset(&start);
                     break;

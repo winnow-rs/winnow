@@ -178,7 +178,7 @@ impl<E> ErrMode<E> {
     }
 }
 
-impl<I, E: ParserError<I>> ParserError<I> for ErrMode<E> {
+impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
     #[inline(always)]
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
         ErrMode::Backtrack(E::from_error_kind(input, kind))
@@ -194,9 +194,9 @@ impl<I, E: ParserError<I>> ParserError<I> for ErrMode<E> {
     }
 
     #[inline]
-    fn append(self, input: &I, kind: ErrorKind) -> Self {
+    fn append(self, input: &I, token_start: &<I as Stream>::Checkpoint, kind: ErrorKind) -> Self {
         match self {
-            ErrMode::Backtrack(e) => ErrMode::Backtrack(e.append(input, kind)),
+            ErrMode::Backtrack(e) => ErrMode::Backtrack(e.append(input, token_start, kind)),
             e => e,
         }
     }
@@ -267,7 +267,7 @@ where
 ///
 /// It provides methods to create an error from some combinators,
 /// and combine existing errors in combinators like `alt`.
-pub trait ParserError<I>: Sized {
+pub trait ParserError<I: Stream>: Sized {
     /// Creates an error from the input position and an [`ErrorKind`]
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self;
 
@@ -287,7 +287,7 @@ pub trait ParserError<I>: Sized {
     ///
     /// This is useful when backtracking through a parse tree, accumulating error context on the
     /// way.
-    fn append(self, input: &I, kind: ErrorKind) -> Self;
+    fn append(self, input: &I, token_start: &<I as Stream>::Checkpoint, kind: ErrorKind) -> Self;
 
     /// Combines errors from two different parse branches.
     ///
@@ -387,7 +387,7 @@ where
     }
 }
 
-impl<I: Clone> ParserError<I> for InputError<I> {
+impl<I: Stream + Clone> ParserError<I> for InputError<I> {
     #[inline]
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
         Self {
@@ -397,7 +397,12 @@ impl<I: Clone> ParserError<I> for InputError<I> {
     }
 
     #[inline]
-    fn append(self, _: &I, _: ErrorKind) -> Self {
+    fn append(
+        self,
+        _input: &I,
+        _token_start: &<I as Stream>::Checkpoint,
+        _kind: ErrorKind,
+    ) -> Self {
         self
     }
 }
@@ -466,12 +471,18 @@ impl<I: Clone + fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::E
 {
 }
 
-impl<I> ParserError<I> for () {
+impl<I: Stream> ParserError<I> for () {
     #[inline]
     fn from_error_kind(_: &I, _: ErrorKind) -> Self {}
 
     #[inline]
-    fn append(self, _: &I, _: ErrorKind) -> Self {}
+    fn append(
+        self,
+        _input: &I,
+        _token_start: &<I as Stream>::Checkpoint,
+        _kind: ErrorKind,
+    ) -> Self {
+    }
 }
 
 impl<I: Stream, C> AddContext<I, C> for () {}
@@ -552,14 +563,19 @@ impl<C> Default for ContextError<C> {
     }
 }
 
-impl<I, C> ParserError<I> for ContextError<C> {
+impl<I: Stream, C> ParserError<I> for ContextError<C> {
     #[inline]
     fn from_error_kind(_input: &I, _kind: ErrorKind) -> Self {
         Self::new()
     }
 
     #[inline]
-    fn append(self, _input: &I, _kind: ErrorKind) -> Self {
+    fn append(
+        self,
+        _input: &I,
+        _token_start: &<I as Stream>::Checkpoint,
+        _kind: ErrorKind,
+    ) -> Self {
         self
     }
 
@@ -882,9 +898,11 @@ where
         })
     }
 
-    fn append(self, input: &I, kind: ErrorKind) -> Self {
+    fn append(self, input: &I, token_start: &<I as Stream>::Checkpoint, kind: ErrorKind) -> Self {
+        let mut input = input.clone();
+        input.reset(token_start);
         let frame = TreeErrorFrame::Kind(TreeErrorBase {
-            input: input.clone(),
+            input,
             kind,
             cause: None,
         });
@@ -1089,14 +1107,19 @@ impl ErrorKind {
   }
 }
 
-impl<I> ParserError<I> for ErrorKind {
+impl<I: Stream> ParserError<I> for ErrorKind {
     #[inline]
     fn from_error_kind(_input: &I, kind: ErrorKind) -> Self {
         kind
     }
 
     #[inline]
-    fn append(self, _: &I, _: ErrorKind) -> Self {
+    fn append(
+        self,
+        _input: &I,
+        _token_start: &<I as Stream>::Checkpoint,
+        _kind: ErrorKind,
+    ) -> Self {
         self
     }
 }
@@ -1370,6 +1393,7 @@ macro_rules! error_position(
 #[cfg(test)]
 macro_rules! error_node_position(
   ($input:expr, $code:expr, $next:expr) => ({
-    $crate::error::ParserError::append($next, $input, $code)
+    let start = $input.checkpoint();
+    $crate::error::ParserError::append($next, $input, &start, $code)
   });
 );

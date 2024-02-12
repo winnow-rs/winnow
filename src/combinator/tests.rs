@@ -90,12 +90,12 @@ impl From<u32> for CustomError {
     }
 }
 
-impl<I> ParserError<I> for CustomError {
+impl<I: Stream> ParserError<I> for CustomError {
     fn from_error_kind(_: &I, _: ErrorKind) -> Self {
         CustomError
     }
 
-    fn append(self, _: &I, _: ErrorKind) -> Self {
+    fn append(self, _: &I, _: &<I as Stream>::Checkpoint, _: ErrorKind) -> Self {
         CustomError
     }
 }
@@ -543,12 +543,12 @@ fn alt_test() {
     }
 
     #[cfg(feature = "alloc")]
-    impl<I: Debug> ParserError<I> for ErrorStr {
+    impl<I: Stream + Debug> ParserError<I> for ErrorStr {
         fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
             ErrorStr(format!("custom error message: ({:?}, {:?})", input, kind))
         }
 
-        fn append(self, input: &I, kind: ErrorKind) -> Self {
+        fn append(self, input: &I, _: &<I as Stream>::Checkpoint, kind: ErrorKind) -> Self {
             ErrorStr(format!(
                 "custom error message: ({:?}, {:?}) - {:?}",
                 input, kind, self
@@ -1184,11 +1184,11 @@ impl<I> From<(I, ErrorKind)> for NilError {
     }
 }
 
-impl<I> ParserError<I> for NilError {
+impl<I: Stream> ParserError<I> for NilError {
     fn from_error_kind(_: &I, _: ErrorKind) -> NilError {
         NilError
     }
-    fn append(self, _: &I, _: ErrorKind) -> NilError {
+    fn append(self, _: &I, _: &<I as Stream>::Checkpoint, _: ErrorKind) -> NilError {
         NilError
     }
 }
