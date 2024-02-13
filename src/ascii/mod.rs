@@ -964,41 +964,6 @@ impl Uint for u128 {
     }
 }
 
-/// Deprecated since v0.5.17
-impl Uint for i8 {
-    fn try_from_dec_uint(slice: &str) -> Option<Self> {
-        slice.parse().ok()
-    }
-}
-
-/// Deprecated since v0.5.17
-impl Uint for i16 {
-    fn try_from_dec_uint(slice: &str) -> Option<Self> {
-        slice.parse().ok()
-    }
-}
-
-/// Deprecated since v0.5.17
-impl Uint for i32 {
-    fn try_from_dec_uint(slice: &str) -> Option<Self> {
-        slice.parse().ok()
-    }
-}
-
-/// Deprecated since v0.5.17
-impl Uint for i64 {
-    fn try_from_dec_uint(slice: &str) -> Option<Self> {
-        slice.parse().ok()
-    }
-}
-
-/// Deprecated since v0.5.17
-impl Uint for i128 {
-    fn try_from_dec_uint(slice: &str) -> Option<Self> {
-        slice.parse().ok()
-    }
-}
-
 /// Decode a decimal signed integer (e.g. [`i32`])
 ///
 /// *Complete version*: can parse until the end of input.
