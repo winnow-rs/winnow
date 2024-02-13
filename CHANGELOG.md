@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.6.0] - 2024-02-13
+
 ## Migration to v0.6
 
 1. Ensure you've migrated to 0.5
@@ -2277,7 +2279,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.5.40...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/winnow-rs/winnow/compare/v0.5.40...v0.6.0
 [0.5.40]: https://github.com/winnow-rs/winnow/compare/v0.5.39...v0.5.40
 [0.5.39]: https://github.com/winnow-rs/winnow/compare/v0.5.38...v0.5.39
 [0.5.38]: https://github.com/winnow-rs/winnow/compare/v0.5.37...v0.5.38
