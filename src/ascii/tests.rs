@@ -4,7 +4,6 @@ use crate::prelude::*;
 mod complete {
     use super::*;
     use crate::combinator::alt;
-    use crate::combinator::opt;
     use crate::error::ErrMode;
     use crate::error::ErrorKind;
     use crate::error::InputError;
@@ -425,54 +424,6 @@ mod complete {
             line_ending.parse_peek("\ra"),
             Err(ErrMode::Backtrack(error_position!(&"\ra", ErrorKind::Tag)))
         );
-    }
-
-    fn digit_to_i16(input: &str) -> IResult<&str, i16> {
-        let i = input;
-        let (i, opt_sign) = opt(alt(('+', '-'))).parse_peek(i)?;
-        let sign = match opt_sign {
-            Some('+') | None => true,
-            Some('-') => false,
-            _ => unreachable!(),
-        };
-
-        let (i, s) = digit1::<_, InputError<_>>.parse_peek(i)?;
-        match s.parse_slice() {
-            Some(n) => {
-                if sign {
-                    Ok((i, n))
-                } else {
-                    Ok((i, -n))
-                }
-            }
-            None => Err(ErrMode::from_error_kind(&i, ErrorKind::Verify)),
-        }
-    }
-
-    fn digit_to_u32(i: &str) -> IResult<&str, u32> {
-        let (i, s) = digit1.parse_peek(i)?;
-        match s.parse_slice() {
-            Some(n) => Ok((i, n)),
-            None => Err(ErrMode::from_error_kind(&i, ErrorKind::Verify)),
-        }
-    }
-
-    proptest! {
-      #[test]
-      #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
-      fn ints(s in "\\PC*") {
-          let res1 = digit_to_i16(&s);
-          let res2 = dec_int.parse_peek(s.as_str());
-          assert_eq!(res1, res2);
-      }
-
-      #[test]
-      #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
-      fn uints(s in "\\PC*") {
-          let res1 = digit_to_u32(&s);
-          let res2 = dec_uint.parse_peek(s.as_str());
-          assert_eq!(res1, res2);
-      }
     }
 
     #[test]
@@ -900,14 +851,11 @@ mod complete {
 
 mod partial {
     use super::*;
-    use crate::combinator::opt;
     use crate::error::ErrorKind;
     use crate::error::InputError;
     use crate::error::{ErrMode, Needed};
-    use crate::stream::ParseSlice;
     use crate::IResult;
     use crate::Partial;
-    use proptest::prelude::*;
 
     macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
@@ -1452,54 +1400,6 @@ mod partial {
                 ErrorKind::Tag
             )))
         );
-    }
-
-    fn digit_to_i16(input: Partial<&str>) -> IResult<Partial<&str>, i16> {
-        let i = input;
-        let (i, opt_sign) = opt(one_of(['+', '-'])).parse_peek(i)?;
-        let sign = match opt_sign {
-            Some('+') | None => true,
-            Some('-') => false,
-            _ => unreachable!(),
-        };
-
-        let (i, s) = digit1::<_, InputError<_>>.parse_peek(i)?;
-        match s.parse_slice() {
-            Some(n) => {
-                if sign {
-                    Ok((i, n))
-                } else {
-                    Ok((i, -n))
-                }
-            }
-            None => Err(ErrMode::from_error_kind(&i, ErrorKind::Verify)),
-        }
-    }
-
-    fn digit_to_u32(i: Partial<&str>) -> IResult<Partial<&str>, u32> {
-        let (i, s) = digit1.parse_peek(i)?;
-        match s.parse_slice() {
-            Some(n) => Ok((i, n)),
-            None => Err(ErrMode::from_error_kind(&i, ErrorKind::Verify)),
-        }
-    }
-
-    proptest! {
-      #[test]
-      #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
-      fn ints(s in "\\PC*") {
-          let res1 = digit_to_i16(Partial::new(&s));
-          let res2 = dec_int.parse_peek(Partial::new(s.as_str()));
-          assert_eq!(res1, res2);
-      }
-
-      #[test]
-      #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
-      fn uints(s in "\\PC*") {
-          let res1 = digit_to_u32(Partial::new(&s));
-          let res2 = dec_uint.parse_peek(Partial::new(s.as_str()));
-          assert_eq!(res1, res2);
-      }
     }
 
     #[test]
