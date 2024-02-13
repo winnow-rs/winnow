@@ -331,17 +331,6 @@ where
     })
 }
 
-/// Deprecated, replaced with [`pattern`]
-#[deprecated(since = "0.5.38", note = "Replaced with `pattern`")]
-pub fn tag<I, O, C, E: ParserError<(I, usize)>>(p: O, count: C) -> impl Parser<(I, usize), O, E>
-where
-    I: Stream<Token = u8> + AsBytes + StreamIsPartial + Clone,
-    C: ToUsize,
-    O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O> + PartialEq,
-{
-    pattern(p, count)
-}
-
 /// Parses one specific bit as a bool.
 ///
 /// # Example
