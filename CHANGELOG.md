@@ -3,6 +3,49 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## Migration to v0.6
+
+1. Ensure you've migrated to 0.5
+2. Upgrade to latest 0.5 release
+3. Resolve all deprecations
+4. Upgrade to 0.6
+5. See "Breaking Changes" for help with any remaining issues
+
+### Performance
+
+- Use simd for `till_line_ending`
+
+### Features
+
+- Added `isize` support for `dec_int`
+- Added `usize` support for `dec_uint`
+
+### Fixes
+
+- Prevent panic from slicing a `&str` on a non-UTF8 boundary
+- Removed unused trait bounds
+- *(debug)* Improved traces for `char`, `u8` literal parsers by using `literal` instead of `one_of`
+- *(debug)* Improved traces by having `literal` output the literal
+
+### Breaking Change
+
+Most common breaking changes:
+- `Stream::reset` now accepts a checkpoint by reference, rather than by value
+- `ParserError::append` now takes a `start: &Checkpoint` parameter for capturing the start of the current parse operation
+- `AddContext::add_context` now takes a `start: &Checkpoint` parameter for capturing the start of the current parse operation
+- `FindSlice::find_slice` now returns a range
+- `CompareResult::Ok` now carries a `usize`
+- `Checkpoint` gained a generic parameter, limiting it to the stream type it came from
+
+All others
+- Deprecated functionality was removed
+- `dec_int` / `dec_uint` continue don't stop capturing tokens once the data type is saturated
+- Trait bounds changed for `char`, `u8` literal parsers
+- `literal` requires the tag to impl `Debug`
+- Asserts in release build now `Cut` rather than `Backtrack`
+- Added "no progress" asserts to repeating combinators to prevent infinite loops
+- Added "min is lower than max" asserts to ranged parsers
+
 ## [0.5.40] - 2024-02-12
 
 ### Features
