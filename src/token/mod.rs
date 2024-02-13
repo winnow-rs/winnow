@@ -150,17 +150,6 @@ where
     })
 }
 
-/// Deprecated, replaced with [`literal`]
-#[deprecated(since = "0.5.38", note = "Replaced with `literal`")]
-pub fn tag<T, I, Error: ParserError<I>>(tag: T) -> impl Parser<I, <I as Stream>::Slice, Error>
-where
-    I: StreamIsPartial,
-    I: Stream + Compare<T>,
-    T: SliceLen + Clone + crate::lib::std::fmt::Debug,
-{
-    literal(tag)
-}
-
 fn literal_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     i: &mut I,
     t: T,
