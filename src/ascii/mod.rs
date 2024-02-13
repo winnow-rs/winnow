@@ -9,6 +9,9 @@ use crate::lib::std::ops::{Add, Shl};
 
 use crate::combinator::alt;
 use crate::combinator::cut_err;
+use crate::combinator::dispatch;
+use crate::combinator::empty;
+use crate::combinator::fail;
 use crate::combinator::opt;
 use crate::combinator::trace;
 use crate::error::ParserError;
@@ -16,6 +19,7 @@ use crate::error::{ErrMode, ErrorKind, Needed};
 use crate::stream::FindSlice;
 use crate::stream::{AsBStr, AsChar, ParseSlice, Stream, StreamIsPartial};
 use crate::stream::{Compare, CompareResult};
+use crate::token::any;
 use crate::token::one_of;
 use crate::token::take_until;
 use crate::token::take_while;
@@ -906,149 +910,92 @@ pub fn dec_uint<I, O, E: ParserError<I>>(input: &mut I) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream,
+    <I as Stream>::Slice: AsBStr,
     <I as Stream>::Token: AsChar + Clone,
     O: Uint,
 {
     trace("dec_uint", move |input: &mut I| {
-        if input.eof_offset() == 0 {
-            if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
-                return Err(ErrMode::Incomplete(Needed::new(1)));
-            } else {
-                return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
-            }
-        }
-
-        let mut value = O::default();
-        for (offset, c) in input.iter_offsets() {
-            match c.as_char().to_digit(10) {
-                Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
-                    let d = d as u8;
-                    v.checked_add(d, sealed::SealedMarker)
-                }) {
-                    None => return Err(ErrMode::from_error_kind(input, ErrorKind::Verify)),
-                    Some(v) => value = v,
-                },
-                None => {
-                    if offset == 0 {
-                        return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
-                    } else {
-                        let _ = input.next_slice(offset);
-                        return Ok(value);
-                    }
-                }
-            }
-        }
-
-        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
-            Err(ErrMode::Incomplete(Needed::new(1)))
-        } else {
-            let _ = input.finish();
-            Ok(value)
-        }
+        (one_of('1'..='9'), digit0)
+            .recognize()
+            .verify_map(|s: <I as Stream>::Slice| {
+                let s = s.as_bstr();
+                // SAFETY: Only 7-bit ASCII characters are parsed
+                let s = unsafe { crate::lib::std::str::from_utf8_unchecked(s) };
+                O::try_from_dec_uint(s)
+            })
+            .parse_next(input)
     })
     .parse_next(input)
 }
 
 /// Metadata for parsing unsigned integers, see [`dec_uint`]
-pub trait Uint: Default {
+pub trait Uint: Sized {
     #[doc(hidden)]
-    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self>;
-    #[doc(hidden)]
-    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self>;
+    fn try_from_dec_uint(slice: &str) -> Option<Self>;
 }
 
 impl Uint for u8 {
-    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_mul(by as Self)
-    }
-    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_add(by as Self)
+    fn try_from_dec_uint(slice: &str) -> Option<Self> {
+        slice.parse().ok()
     }
 }
 
 impl Uint for u16 {
-    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_mul(by as Self)
-    }
-    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_add(by as Self)
+    fn try_from_dec_uint(slice: &str) -> Option<Self> {
+        slice.parse().ok()
     }
 }
 
 impl Uint for u32 {
-    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_mul(by as Self)
-    }
-    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_add(by as Self)
+    fn try_from_dec_uint(slice: &str) -> Option<Self> {
+        slice.parse().ok()
     }
 }
 
 impl Uint for u64 {
-    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_mul(by as Self)
-    }
-    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_add(by as Self)
+    fn try_from_dec_uint(slice: &str) -> Option<Self> {
+        slice.parse().ok()
     }
 }
 
 impl Uint for u128 {
-    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_mul(by as Self)
-    }
-    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_add(by as Self)
+    fn try_from_dec_uint(slice: &str) -> Option<Self> {
+        slice.parse().ok()
     }
 }
 
 /// Deprecated since v0.5.17
 impl Uint for i8 {
-    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_mul(by as Self)
-    }
-    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_add(by as Self)
+    fn try_from_dec_uint(slice: &str) -> Option<Self> {
+        slice.parse().ok()
     }
 }
 
 /// Deprecated since v0.5.17
 impl Uint for i16 {
-    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_mul(by as Self)
-    }
-    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_add(by as Self)
+    fn try_from_dec_uint(slice: &str) -> Option<Self> {
+        slice.parse().ok()
     }
 }
 
 /// Deprecated since v0.5.17
 impl Uint for i32 {
-    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_mul(by as Self)
-    }
-    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_add(by as Self)
+    fn try_from_dec_uint(slice: &str) -> Option<Self> {
+        slice.parse().ok()
     }
 }
 
 /// Deprecated since v0.5.17
 impl Uint for i64 {
-    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_mul(by as Self)
-    }
-    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_add(by as Self)
+    fn try_from_dec_uint(slice: &str) -> Option<Self> {
+        slice.parse().ok()
     }
 }
 
 /// Deprecated since v0.5.17
 impl Uint for i128 {
-    fn checked_mul(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_mul(by as Self)
-    }
-    fn checked_add(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_add(by as Self)
+    fn try_from_dec_uint(slice: &str) -> Option<Self> {
+        slice.parse().ok()
     }
 }
 
@@ -1066,94 +1013,62 @@ pub fn dec_int<I, O, E: ParserError<I>>(input: &mut I) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream,
+    <I as Stream>::Slice: AsBStr,
     <I as Stream>::Token: AsChar + Clone,
     O: Int,
 {
     trace("dec_int", move |input: &mut I| {
-        fn sign(token: impl AsChar) -> bool {
-            let token = token.as_char();
-            token == '+' || token == '-'
-        }
-        let sign = opt(crate::token::one_of(sign).map(AsChar::as_char))
-            .map(|c| c != Some('-'))
-            .parse_next(input)?;
-
-        if input.eof_offset() == 0 {
-            if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
-                return Err(ErrMode::Incomplete(Needed::new(1)));
-            } else {
-                return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
-            }
-        }
-
-        let mut value = O::default();
-        for (offset, c) in input.iter_offsets() {
-            match c.as_char().to_digit(10) {
-                Some(d) => match value.checked_mul(10, sealed::SealedMarker).and_then(|v| {
-                    let d = d as u8;
-                    if sign {
-                        v.checked_add(d, sealed::SealedMarker)
-                    } else {
-                        v.checked_sub(d, sealed::SealedMarker)
-                    }
-                }) {
-                    None => return Err(ErrMode::from_error_kind(input, ErrorKind::Verify)),
-                    Some(v) => value = v,
-                },
-                None => {
-                    if offset == 0 {
-                        return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
-                    } else {
-                        let _ = input.next_slice(offset);
-                        return Ok(value);
-                    }
-                }
-            }
-        }
-
-        if <I as StreamIsPartial>::is_partial_supported() && input.is_partial() {
-            Err(ErrMode::Incomplete(Needed::new(1)))
-        } else {
-            let _ = input.finish();
-            Ok(value)
-        }
+        let sign = opt(dispatch! {any.map(AsChar::as_char);
+            '+' => empty.value(true),
+            '-' => empty.value(false),
+            _ => fail,
+        });
+        (sign, one_of('1'..='9'), digit0)
+            .recognize()
+            .verify_map(|s: <I as Stream>::Slice| {
+                let s = s.as_bstr();
+                // SAFETY: Only 7-bit ASCII characters are parsed
+                let s = unsafe { crate::lib::std::str::from_utf8_unchecked(s) };
+                O::try_from_dec_int(s)
+            })
+            .parse_next(input)
     })
     .parse_next(input)
 }
 
 /// Metadata for parsing signed integers, see [`dec_int`]
-pub trait Int: Uint {
+pub trait Int: Sized {
     #[doc(hidden)]
-    fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self>;
+    fn try_from_dec_int(slice: &str) -> Option<Self>;
 }
 
 impl Int for i8 {
-    fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_sub(by as Self)
+    fn try_from_dec_int(slice: &str) -> Option<Self> {
+        slice.parse().ok()
     }
 }
 
 impl Int for i16 {
-    fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_sub(by as Self)
+    fn try_from_dec_int(slice: &str) -> Option<Self> {
+        slice.parse().ok()
     }
 }
 
 impl Int for i32 {
-    fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_sub(by as Self)
+    fn try_from_dec_int(slice: &str) -> Option<Self> {
+        slice.parse().ok()
     }
 }
 
 impl Int for i64 {
-    fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_sub(by as Self)
+    fn try_from_dec_int(slice: &str) -> Option<Self> {
+        slice.parse().ok()
     }
 }
 
 impl Int for i128 {
-    fn checked_sub(self, by: u8, _: sealed::SealedMarker) -> Option<Self> {
-        self.checked_sub(by as Self)
+    fn try_from_dec_int(slice: &str) -> Option<Self> {
+        slice.parse().ok()
     }
 }
 
