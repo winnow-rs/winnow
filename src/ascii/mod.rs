@@ -964,6 +964,12 @@ impl Uint for u128 {
     }
 }
 
+impl Uint for usize {
+    fn try_from_dec_uint(slice: &str) -> Option<Self> {
+        slice.parse().ok()
+    }
+}
+
 /// Decode a decimal signed integer (e.g. [`i32`])
 ///
 /// *Complete version*: can parse until the end of input.
@@ -1032,6 +1038,12 @@ impl Int for i64 {
 }
 
 impl Int for i128 {
+    fn try_from_dec_int(slice: &str) -> Option<Self> {
+        slice.parse().ok()
+    }
+}
+
+impl Int for isize {
     fn try_from_dec_int(slice: &str) -> Option<Self> {
         slice.parse().ok()
     }
