@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Fix regression where `dec_int` / `dec_uint` didn't parse `0`
+
 ## [0.6.0] - 2024-02-13
 
 ## Migration to v0.6
