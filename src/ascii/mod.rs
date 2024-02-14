@@ -915,7 +915,7 @@ where
     O: Uint,
 {
     trace("dec_uint", move |input: &mut I| {
-        (one_of('1'..='9'), digit0)
+        alt(((one_of('1'..='9'), digit0).void(), one_of('0').void()))
             .recognize()
             .verify_map(|s: <I as Stream>::Slice| {
                 let s = s.as_bstr();
@@ -994,7 +994,7 @@ where
             '-' => empty.value(false),
             _ => fail,
         });
-        (sign, one_of('1'..='9'), digit0)
+        alt(((sign, one_of('1'..='9'), digit0).void(), one_of('0').void()))
             .recognize()
             .verify_map(|s: <I as Stream>::Slice| {
                 let s = s.as_bstr();

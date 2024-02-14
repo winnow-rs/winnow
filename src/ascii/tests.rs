@@ -439,7 +439,7 @@ mod complete {
                 ErrorKind::Verify
             )))
         );
-        //assert_parse!(dec_u32(&b"0;"[..]), Ok((&b";"[..], 0)));
+        assert_parse!(dec_u32(&b"0;"[..]), Ok((&b";"[..], 0)));
         assert_parse!(dec_u32(&b"1;"[..]), Ok((&b";"[..], 1)));
         assert_parse!(dec_u32(&b"32;"[..]), Ok((&b";"[..], 32)));
         assert_parse!(
@@ -464,10 +464,16 @@ mod complete {
                 ErrorKind::Verify
             )))
         );
-        //assert_parse!(dec_i32(&b"0;"[..]), Ok((&b";"[..], 0)));
+        assert_parse!(dec_i32(&b"0;"[..]), Ok((&b";"[..], 0)));
         assert_parse!(dec_i32(&b"1;"[..]), Ok((&b";"[..], 1)));
         assert_parse!(dec_i32(&b"32;"[..]), Ok((&b";"[..], 32)));
-        //assert_parse!(dec_i32(&b"-0;"[..]), Ok((&b";"[..], 0)));
+        assert_parse!(
+            dec_i32(&b"-0;"[..]),
+            Err(ErrMode::Backtrack(error_position!(
+                &&b"-0;"[..],
+                ErrorKind::Verify
+            )))
+        );
         assert_parse!(dec_i32(&b"-1;"[..]), Ok((&b";"[..], -1)));
         assert_parse!(dec_i32(&b"-32;"[..]), Ok((&b";"[..], -32)));
         assert_parse!(
