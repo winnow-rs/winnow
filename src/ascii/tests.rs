@@ -427,6 +427,59 @@ mod complete {
     }
 
     #[test]
+    fn dec_uint_tests() {
+        fn dec_u32(input: &[u8]) -> IResult<&[u8], u32> {
+            dec_uint.parse_peek(input)
+        }
+
+        assert_parse!(
+            dec_u32(&b";"[..]),
+            Err(ErrMode::Backtrack(error_position!(
+                &&b";"[..],
+                ErrorKind::Verify
+            )))
+        );
+        //assert_parse!(dec_u32(&b"0;"[..]), Ok((&b";"[..], 0)));
+        assert_parse!(dec_u32(&b"1;"[..]), Ok((&b";"[..], 1)));
+        assert_parse!(dec_u32(&b"32;"[..]), Ok((&b";"[..], 32)));
+        assert_parse!(
+            dec_u32(&b"1000000000000000000000;"[..]), // overflow
+            Err(ErrMode::Backtrack(error_position!(
+                &&b"1000000000000000000000;"[..],
+                ErrorKind::Verify
+            )))
+        );
+    }
+
+    #[test]
+    fn dec_int_tests() {
+        fn dec_i32(input: &[u8]) -> IResult<&[u8], i32> {
+            dec_int.parse_peek(input)
+        }
+
+        assert_parse!(
+            dec_i32(&b";"[..]),
+            Err(ErrMode::Backtrack(error_position!(
+                &&b";"[..],
+                ErrorKind::Verify
+            )))
+        );
+        //assert_parse!(dec_i32(&b"0;"[..]), Ok((&b";"[..], 0)));
+        assert_parse!(dec_i32(&b"1;"[..]), Ok((&b";"[..], 1)));
+        assert_parse!(dec_i32(&b"32;"[..]), Ok((&b";"[..], 32)));
+        //assert_parse!(dec_i32(&b"-0;"[..]), Ok((&b";"[..], 0)));
+        assert_parse!(dec_i32(&b"-1;"[..]), Ok((&b";"[..], -1)));
+        assert_parse!(dec_i32(&b"-32;"[..]), Ok((&b";"[..], -32)));
+        assert_parse!(
+            dec_i32(&b"1000000000000000000000;"[..]), // overflow
+            Err(ErrMode::Backtrack(error_position!(
+                &&b"1000000000000000000000;"[..],
+                ErrorKind::Verify
+            )))
+        );
+    }
+
+    #[test]
     fn hex_uint_tests() {
         fn hex_u32(input: &[u8]) -> IResult<&[u8], u32> {
             hex_uint.parse_peek(input)
