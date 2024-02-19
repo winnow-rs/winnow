@@ -781,7 +781,7 @@ fn separated0_empty_sep_test() {
     let i_err_pos = &i[3..];
     assert_eq!(
         empty_sep(Partial::new(i)),
-        Err(ErrMode::Backtrack(error_position!(
+        Err(ErrMode::Cut(error_position!(
             &Partial::new(i_err_pos),
             ErrorKind::Assert
         )))
@@ -922,7 +922,7 @@ fn repeat0_empty_test() {
 
     assert_eq!(
         multi_empty(Partial::new(&b"abcdef"[..])),
-        Err(ErrMode::Backtrack(error_position!(
+        Err(ErrMode::Cut(error_position!(
             &Partial::new(&b"abcdef"[..]),
             ErrorKind::Assert
         )))
@@ -1246,7 +1246,7 @@ fn fold_repeat0_empty_test() {
 
     assert_eq!(
         multi_empty(Partial::new(&b"abcdef"[..])),
-        Err(ErrMode::Backtrack(error_position!(
+        Err(ErrMode::Cut(error_position!(
             &Partial::new(&b"abcdef"[..]),
             ErrorKind::Assert
         )))
