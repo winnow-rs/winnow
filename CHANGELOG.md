@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.6.2] - 2024-02-19
+
 ## [0.6.1] - 2024-02-14
 
 ### Fixes
@@ -2285,7 +2287,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.2...HEAD
+[0.6.2]: https://github.com/winnow-rs/winnow/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/winnow-rs/winnow/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/winnow-rs/winnow/compare/v0.5.40...v0.6.0
 [0.5.40]: https://github.com/winnow-rs/winnow/compare/v0.5.39...v0.5.40
