@@ -2547,7 +2547,7 @@ where
 
 /// Used to integrate `str`'s `parse()` method
 pub trait ParseSlice<R> {
-    /// Succeeds if `parse()` succeededThe
+    /// Succeeds if `parse()` succeeded
     ///
     /// The byte slice implementation will first convert it to a `&str`, then apply the `parse()`
     /// function
@@ -3225,7 +3225,7 @@ impl<'a> AsChar for &'a char {
     }
 }
 
-/// Check if a token in in a set of possible tokens
+/// Check if a token is in a set of possible tokens
 ///
 /// This is generally implemented on patterns that a token may match and supports `u8` and `char`
 /// tokens along with the following patterns
