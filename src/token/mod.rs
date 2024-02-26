@@ -634,6 +634,8 @@ where
 
 /// Recognize the longest input slice (if any) till a [pattern][ContainsToken] is met.
 ///
+/// It doesn't consume the pattern.
+///
 /// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if the match reaches the
 /// end of input or if there was not match.
 ///
