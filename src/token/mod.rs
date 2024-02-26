@@ -80,7 +80,7 @@ where
 /// The input data will be compared to the literal combinator's argument and will return the part of
 /// the input that matches the argument
 ///
-/// It will return `Err(ErrMode::Backtrack(InputError::new(_, ErrorKind::Tag)))` if the input doesn't match the pattern
+/// It will return `Err(ErrMode::Backtrack(InputError::new(_, ErrorKind::Tag)))` if the input doesn't match the literal
 ///
 /// **Note:** [`Parser`] is implemented for strings and byte strings as a convenience (complete
 /// only)
@@ -172,7 +172,7 @@ where
     }
 }
 
-/// Recognize a token that matches the [pattern][ContainsToken]
+/// Recognize a token that matches a [set of tokens][ContainsToken]
 ///
 /// **Note:** [`Parser`] is implemented as a convenience (complete
 /// only) for
@@ -234,7 +234,7 @@ where
     )
 }
 
-/// Recognize a token that does not match the [pattern][ContainsToken]
+/// Recognize a token that does not match a [set of tokens][ContainsToken]
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
@@ -274,12 +274,12 @@ where
     )
 }
 
-/// Recognize the longest (m <= len <= n) input slice that matches the [pattern][ContainsToken]
+/// Recognize the longest (m <= len <= n) input slice that matches a [set of tokens][ContainsToken]
 ///
-/// It will return an `ErrMode::Backtrack(InputError::new(_, ErrorKind::Slice))` if the pattern wasn't met or is out
+/// It will return an `ErrMode::Backtrack(InputError::new(_, ErrorKind::Slice))` if the set of tokens wasn't met or is out
 /// of range (m <= len <= n).
 ///
-/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if the pattern reaches the end of the input or is too short.
+/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if a member of the set of tokens reaches the end of the input or is too short.
 ///
 /// To recognize a series of tokens, use [`repeat`][crate::combinator::repeat] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`].
 ///
@@ -632,9 +632,9 @@ where
     }
 }
 
-/// Recognize the longest input slice (if any) till a [pattern][ContainsToken] is met.
+/// Recognize the longest input slice (if any) till a member of a [set of tokens][ContainsToken] is found.
 ///
-/// It doesn't consume the pattern.
+/// It doesn't consume the terminating token from the set.
 ///
 /// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if the match reaches the
 /// end of input or if there was not match.
@@ -811,13 +811,13 @@ where
 /// It doesn't consume the literal.
 ///
 /// *Complete version*: It will return `Err(ErrMode::Backtrack(InputError::new(_, ErrorKind::Slice)))`
-/// if the pattern wasn't met.
+/// if the literal wasn't met.
 ///
 /// *Partial version*: will return a `ErrMode::Incomplete(Needed::new(N))` if the input doesn't
-/// contain the pattern or if the input is smaller than the pattern.
+/// contain the literal or if the input is smaller than the literal.
 ///
 /// See also
-/// - [`take_till`] for recognizing up-to a [pattern][ContainsToken]
+/// - [`take_till`] for recognizing up-to a [set of tokens][ContainsToken]
 /// - [`repeat_till`][crate::combinator::repeat_till] with [`Parser::recognize`] for recognizing up to a [`Parser`]
 ///
 /// # Example

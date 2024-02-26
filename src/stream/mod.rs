@@ -3227,13 +3227,12 @@ impl<'a> AsChar for &'a char {
 
 /// Check if a token is in a set of possible tokens
 ///
-/// This is generally implemented on patterns that a token may match and supports `u8` and `char`
-/// tokens along with the following patterns
+/// While this can be implemented manually, you can also build up sets using:
 /// - `b'c'` and `'c'`
-/// - `b""` and `""`
+/// - `b""`
 /// - `|c| true`
 /// - `b'a'..=b'z'`, `'a'..='z'` (etc for each [range type][std::ops])
-/// - `(pattern1, pattern2, ...)`
+/// - `(set1, set2, ...)`
 ///
 /// # Example
 ///
