@@ -639,6 +639,10 @@ where
 /// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if the match reaches the
 /// end of input or if there was not match.
 ///
+/// See also
+/// - [`take_until`] for recognizing up-to a [`literal`] (w/ optional simd optimizations)
+/// - [`repeat_till`][crate::combinator::repeat_till] with [`Parser::recognize`] for recognizing up to a [`Parser`]
+///
 /// # Example
 ///
 /// ```rust
@@ -811,6 +815,10 @@ where
 ///
 /// *Partial version*: will return a `ErrMode::Incomplete(Needed::new(N))` if the input doesn't
 /// contain the pattern or if the input is smaller than the pattern.
+///
+/// See also
+/// - [`take_till`] for recognizing up-to a [pattern][ContainsToken]
+/// - [`repeat_till`][crate::combinator::repeat_till] with [`Parser::recognize`] for recognizing up to a [`Parser`]
 ///
 /// # Example
 ///

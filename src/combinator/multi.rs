@@ -450,6 +450,10 @@ where
 ///
 /// To recognize a series of tokens, [`Accumulate`] into a `()` and then [`Parser::recognize`].
 ///
+/// See also
+/// - [`take_till`][crate::token::take_till] for recognizing up-to a [pattern][crate::stream::ContainsToken]
+/// - [`take_until`][crate::token::take_until] for recognizing up-to a [`literal`][crate::token::literal] (w/ optional simd optimizations)
+///
 /// # Example
 ///
 /// ```rust
