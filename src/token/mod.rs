@@ -800,9 +800,9 @@ where
     }
 }
 
-/// Recognize the input slice up to the first occurrence of the literal.
+/// Recognize the input slice up to the first occurrence of a [literal].
 ///
-/// It doesn't consume the pattern.
+/// It doesn't consume the literal.
 ///
 /// *Complete version*: It will return `Err(ErrMode::Backtrack(InputError::new(_, ErrorKind::Slice)))`
 /// if the pattern wasn't met.
