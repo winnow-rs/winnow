@@ -1,17 +1,17 @@
 //! # Chapter 1: The Winnow Way
 //!
 //! First of all, we need to understand the way that winnow thinks about parsing.
-//! As discussed in the introduction, winnow lets us build simple parsers, and
-//! then combine them (using "combinators").
+//! As discussed in the introduction, winnow lets us compose more complex parsers from more simple
+//! ones (using "combinators").
 //!
-//! Let's discuss what a "parser" actually does. A parser takes an input and returns
+//! Let's discuss what a "parser" actually does. A parser takes an input and advances it until it returns
 //! a result, where:
 //!  - `Ok` indicates the parser successfully found what it was looking for; or
 //!  - `Err` indicates the parser could not find what it was looking for.
 //!
 //! Parsers do more than just return a binary "success"/"failure" code.
-//! On success, the parser will return the processed data. The input will be left pointing to
-//! data that still needs processing
+//! On success, the parser will return the processed data. The input will be advanced to the end of
+//! what was processed, pointing to what will be parsed next.
 //!
 //! If the parser failed, then there are multiple errors that could be returned.
 //! For simplicity, however, in the next chapters we will leave these unexplored.
@@ -43,7 +43,6 @@
 //! have to be the same type (consider the simple example where `I = &str`, and `O = u64` -- this
 //! parses a string into an unsigned integer.)
 //!
-//!
 //! # Let's write our first parser!
 //!
 //! The simplest parser we can write is one which successfully does nothing.
@@ -54,7 +53,7 @@
 //! This parser function should take in a `&str`:
 //!
 //!  - Since it is supposed to succeed, we know it will return the `Ok` variant.
-//!  - Since it does nothing to our input, the remaining input is the same as the input.
+//!  - Since it does nothing to our input, the input will be left where it started.
 //!  - Since it doesn't parse anything, it also should just return an empty string.
 //!
 //! ```rust
