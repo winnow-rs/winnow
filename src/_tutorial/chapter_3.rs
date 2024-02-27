@@ -1,9 +1,9 @@
 //! # Chapter 3: Sequencing and Alternatives
 //!
-//! In the last chapter, we saw how to create simple parsers using prebuilt parsers.
+//! In the last chapter, we saw how to create parsers using prebuilt parsers.
 //!
 //! In this chapter, we explore two other widely used features:
-//! alternatives and composition.
+//! sequencing and alternatives.
 //!
 //! ## Sequencing
 //!
@@ -111,7 +111,8 @@
 //! Sometimes, we might want to choose between two parsers; and we're happy with
 //! either being used.
 //!
-//! [`Stream::checkpoint`] helps us to retry parsing:
+//! To retry a parse result, we can save off a [`Stream::checkpoint`] and later restore the parser
+//! back to that position with [`Stream::reset`]:
 //! ```rust
 //! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
@@ -119,7 +120,6 @@
 //!
 //! fn parse_digits<'s>(input: &mut &'s str) -> PResult<(&'s str, &'s str)> {
 //!     let start = input.checkpoint();
-//!
 //!     if let Ok(output) = ("0b", parse_bin_digits).parse_next(input) {
 //!         return Ok(output);
 //!     }
@@ -182,7 +182,7 @@
 //! > `Result::Err` can lead to incorrect behavior. This will be clarified in later when covering
 //! > [error handling][`chapter_6`#errmode]
 //!
-//! [`opt`] is a basic building block for correctly handling retrying parsing:
+//! [`opt`] is a parser that encapsulates this pattern of "retry on failure":
 //! ```rust
 //! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
@@ -239,7 +239,7 @@
 //! # }
 //! ```
 //!
-//! [`alt`] encapsulates this if/else-if ladder pattern, with the last case being the `else`:
+//! [`alt`] encapsulates this if/else-if ladder pattern, with the last case being the "else":
 //! ```rust
 //! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
@@ -293,7 +293,7 @@
 //! # }
 //! ```
 //!
-//! > **Note:** [`empty`] and [`fail`] are parsers that might be useful in the `else` case.
+//! > **Note:** [`empty`] and [`fail`] are parsers that might be useful in the "else" case.
 //!
 //! Sometimes a giant if/else-if ladder can be slow and you'd rather have a `match` statement for
 //! branches of your parser that have unique prefixes. In this case, you can use the
@@ -315,8 +315,7 @@
 //!         _ => fail,
 //!     ).parse_next(input)
 //! }
-//!
-//! // ...
+//! #
 //! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
@@ -342,17 +341,17 @@
 //! #         ('a'..='f'),
 //! #     )).parse_next(input)
 //! # }
-//!
-//! fn main() {
-//!     let mut input = "0x1a2b Hello";
-//!
-//!     let digits = parse_digits.parse_next(&mut input).unwrap();
-//!
-//!     assert_eq!(input, " Hello");
-//!     assert_eq!(digits, "1a2b");
-//!
-//!     assert!(parse_digits(&mut "ghiWorld").is_err());
-//! }
+//! #
+//! # fn main() {
+//! #     let mut input = "0x1a2b Hello";
+//! #
+//! #     let digits = parse_digits.parse_next(&mut input).unwrap();
+//! #
+//! #     assert_eq!(input, " Hello");
+//! #     assert_eq!(digits, "1a2b");
+//! #
+//! #     assert!(parse_digits(&mut "ghiWorld").is_err());
+//! # }
 //! ```
 //!
 //! > **Note:** [`peek`] may be useful when [`dispatch`]ing from hints from each case's parser.
