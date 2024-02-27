@@ -44,13 +44,13 @@ use crate::Parser;
 /// ```
 #[inline(always)]
 #[doc(alias = "token")]
-pub fn any<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Token, E>
+pub fn any<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Token, Error>
 where
-    I: StreamIsPartial,
-    I: Stream,
+    Input: StreamIsPartial + Stream,
+    Error: ParserError<Input>,
 {
-    trace("any", move |input: &mut I| {
-        if <I as StreamIsPartial>::is_partial_supported() {
+    trace("any", move |input: &mut Input| {
+        if <Input as StreamIsPartial>::is_partial_supported() {
             any_::<_, _, true>(input)
         } else {
             any_::<_, _, false>(input)
@@ -134,15 +134,17 @@ where
 #[doc(alias = "tag")]
 #[doc(alias = "bytes")]
 #[doc(alias = "just")]
-pub fn literal<T, I, Error: ParserError<I>>(tag: T) -> impl Parser<I, <I as Stream>::Slice, Error>
+pub fn literal<Literal, Input, Error>(
+    literal: Literal,
+) -> impl Parser<Input, <Input as Stream>::Slice, Error>
 where
-    I: StreamIsPartial,
-    I: Stream + Compare<T>,
-    T: SliceLen + Clone + crate::lib::std::fmt::Debug,
+    Input: StreamIsPartial + Stream + Compare<Literal>,
+    Literal: SliceLen + Clone + crate::lib::std::fmt::Debug,
+    Error: ParserError<Input>,
 {
-    trace(DisplayDebug(tag.clone()), move |i: &mut I| {
-        let t = tag.clone();
-        if <I as StreamIsPartial>::is_partial_supported() {
+    trace(DisplayDebug(literal.clone()), move |i: &mut Input| {
+        let t = literal.clone();
+        if <Input as StreamIsPartial>::is_partial_supported() {
             literal_::<_, _, _, true>(i, t)
         } else {
             literal_::<_, _, _, false>(i, t)
@@ -221,16 +223,16 @@ where
 #[doc(alias = "char")]
 #[doc(alias = "token")]
 #[doc(alias = "satisfy")]
-pub fn one_of<I, T, Error: ParserError<I>>(list: T) -> impl Parser<I, <I as Stream>::Token, Error>
+pub fn one_of<Input, Set, Error>(set: Set) -> impl Parser<Input, <Input as Stream>::Token, Error>
 where
-    I: StreamIsPartial,
-    I: Stream,
-    <I as Stream>::Token: Clone,
-    T: ContainsToken<<I as Stream>::Token>,
+    Input: StreamIsPartial + Stream,
+    <Input as Stream>::Token: Clone,
+    Set: ContainsToken<<Input as Stream>::Token>,
+    Error: ParserError<Input>,
 {
     trace(
         "one_of",
-        any.verify(move |t: &<I as Stream>::Token| list.contains_token(t.clone())),
+        any.verify(move |t: &<Input as Stream>::Token| set.contains_token(t.clone())),
     )
 }
 
@@ -261,16 +263,16 @@ where
 /// assert_eq!(none_of::<_, _, InputError<_>>('a').parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn none_of<I, T, Error: ParserError<I>>(list: T) -> impl Parser<I, <I as Stream>::Token, Error>
+pub fn none_of<Input, Set, Error>(set: Set) -> impl Parser<Input, <Input as Stream>::Token, Error>
 where
-    I: StreamIsPartial,
-    I: Stream,
-    <I as Stream>::Token: Clone,
-    T: ContainsToken<<I as Stream>::Token>,
+    Input: StreamIsPartial + Stream,
+    <Input as Stream>::Token: Clone,
+    Set: ContainsToken<<Input as Stream>::Token>,
+    Error: ParserError<Input>,
 {
     trace(
         "none_of",
-        any.verify(move |t: &<I as Stream>::Token| !list.contains_token(t.clone())),
+        any.verify(move |t: &<Input as Stream>::Token| !set.contains_token(t.clone())),
     )
 }
 
@@ -410,41 +412,41 @@ where
 #[doc(alias = "is_a")]
 #[doc(alias = "take_while0")]
 #[doc(alias = "take_while1")]
-pub fn take_while<T, I, Error: ParserError<I>>(
-    range: impl Into<Range>,
-    list: T,
-) -> impl Parser<I, <I as Stream>::Slice, Error>
+pub fn take_while<Set, Input, Error>(
+    occurrences: impl Into<Range>,
+    set: Set,
+) -> impl Parser<Input, <Input as Stream>::Slice, Error>
 where
-    I: StreamIsPartial,
-    I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
+    Input: StreamIsPartial + Stream,
+    Set: ContainsToken<<Input as Stream>::Token>,
+    Error: ParserError<Input>,
 {
     let Range {
         start_inclusive,
         end_inclusive,
-    } = range.into();
-    trace("take_while", move |i: &mut I| {
+    } = occurrences.into();
+    trace("take_while", move |i: &mut Input| {
         match (start_inclusive, end_inclusive) {
             (0, None) => {
-                if <I as StreamIsPartial>::is_partial_supported() {
-                    take_while0_::<_, _, _, true>(i, &list)
+                if <Input as StreamIsPartial>::is_partial_supported() {
+                    take_while0_::<_, _, _, true>(i, &set)
                 } else {
-                    take_while0_::<_, _, _, false>(i, &list)
+                    take_while0_::<_, _, _, false>(i, &set)
                 }
             }
             (1, None) => {
-                if <I as StreamIsPartial>::is_partial_supported() {
-                    take_while1_::<_, _, _, true>(i, &list)
+                if <Input as StreamIsPartial>::is_partial_supported() {
+                    take_while1_::<_, _, _, true>(i, &set)
                 } else {
-                    take_while1_::<_, _, _, false>(i, &list)
+                    take_while1_::<_, _, _, false>(i, &set)
                 }
             }
             (start, end) => {
                 let end = end.unwrap_or(usize::MAX);
-                if <I as StreamIsPartial>::is_partial_supported() {
-                    take_while_m_n_::<_, _, _, true>(i, start, end, &list)
+                if <Input as StreamIsPartial>::is_partial_supported() {
+                    take_while_m_n_::<_, _, _, true>(i, start, end, &set)
                 } else {
-                    take_while_m_n_::<_, _, _, false>(i, start, end, &list)
+                    take_while_m_n_::<_, _, _, false>(i, start, end, &set)
                 }
             }
         }
@@ -593,7 +595,7 @@ where
     if n < m {
         return Err(ErrMode::assert(
             input,
-            "range should be ascending, rather than descending",
+            "`occurrences` should be ascending, rather than descending",
         ));
     }
 
@@ -677,41 +679,41 @@ where
 /// ```
 #[inline(always)]
 #[doc(alias = "is_not")]
-pub fn take_till<T, I, Error: ParserError<I>>(
-    range: impl Into<Range>,
-    list: T,
-) -> impl Parser<I, <I as Stream>::Slice, Error>
+pub fn take_till<Set, Input, Error>(
+    occurrences: impl Into<Range>,
+    set: Set,
+) -> impl Parser<Input, <Input as Stream>::Slice, Error>
 where
-    I: StreamIsPartial,
-    I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
+    Input: StreamIsPartial + Stream,
+    Set: ContainsToken<<Input as Stream>::Token>,
+    Error: ParserError<Input>,
 {
     let Range {
         start_inclusive,
         end_inclusive,
-    } = range.into();
-    trace("take_till", move |i: &mut I| {
+    } = occurrences.into();
+    trace("take_till", move |i: &mut Input| {
         match (start_inclusive, end_inclusive) {
             (0, None) => {
-                if <I as StreamIsPartial>::is_partial_supported() {
-                    take_till0_partial(i, |c| list.contains_token(c))
+                if <Input as StreamIsPartial>::is_partial_supported() {
+                    take_till0_partial(i, |c| set.contains_token(c))
                 } else {
-                    take_till0_complete(i, |c| list.contains_token(c))
+                    take_till0_complete(i, |c| set.contains_token(c))
                 }
             }
             (1, None) => {
-                if <I as StreamIsPartial>::is_partial_supported() {
-                    take_till1_partial(i, |c| list.contains_token(c))
+                if <Input as StreamIsPartial>::is_partial_supported() {
+                    take_till1_partial(i, |c| set.contains_token(c))
                 } else {
-                    take_till1_complete(i, |c| list.contains_token(c))
+                    take_till1_complete(i, |c| set.contains_token(c))
                 }
             }
             (start, end) => {
                 let end = end.unwrap_or(usize::MAX);
-                if <I as StreamIsPartial>::is_partial_supported() {
-                    take_till_m_n::<_, _, _, true>(i, start, end, |c| list.contains_token(c))
+                if <Input as StreamIsPartial>::is_partial_supported() {
+                    take_till_m_n::<_, _, _, true>(i, start, end, |c| set.contains_token(c))
                 } else {
-                    take_till_m_n::<_, _, _, false>(i, start, end, |c| list.contains_token(c))
+                    take_till_m_n::<_, _, _, false>(i, start, end, |c| set.contains_token(c))
                 }
             }
         }
@@ -775,15 +777,17 @@ where
 /// assert_eq!(take6(Partial::new("short")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// ```
 #[inline(always)]
-pub fn take<C, I, Error: ParserError<I>>(count: C) -> impl Parser<I, <I as Stream>::Slice, Error>
+pub fn take<UsizeLike, Input, Error>(
+    count: UsizeLike,
+) -> impl Parser<Input, <Input as Stream>::Slice, Error>
 where
-    I: StreamIsPartial,
-    I: Stream,
-    C: ToUsize,
+    Input: StreamIsPartial + Stream,
+    UsizeLike: ToUsize,
+    Error: ParserError<Input>,
 {
     let c = count.to_usize();
-    trace("take", move |i: &mut I| {
-        if <I as StreamIsPartial>::is_partial_supported() {
+    trace("take", move |i: &mut Input| {
+        if <Input as StreamIsPartial>::is_partial_supported() {
             take_::<_, _, true>(i, c)
         } else {
             take_::<_, _, false>(i, c)
@@ -888,41 +892,41 @@ where
 /// assert_eq!(until_eof(Partial::new("eof")), Err(ErrMode::Backtrack(InputError::new(Partial::new("eof"), ErrorKind::Slice))));
 /// ```
 #[inline(always)]
-pub fn take_until<T, I, Error: ParserError<I>>(
-    range: impl Into<Range>,
-    tag: T,
-) -> impl Parser<I, <I as Stream>::Slice, Error>
+pub fn take_until<Literal, Input, Error>(
+    occurrences: impl Into<Range>,
+    literal: Literal,
+) -> impl Parser<Input, <Input as Stream>::Slice, Error>
 where
-    I: StreamIsPartial,
-    I: Stream + FindSlice<T>,
-    T: Clone,
+    Input: StreamIsPartial + Stream + FindSlice<Literal>,
+    Literal: Clone,
+    Error: ParserError<Input>,
 {
     let Range {
         start_inclusive,
         end_inclusive,
-    } = range.into();
-    trace("take_until", move |i: &mut I| {
+    } = occurrences.into();
+    trace("take_until", move |i: &mut Input| {
         match (start_inclusive, end_inclusive) {
             (0, None) => {
-                if <I as StreamIsPartial>::is_partial_supported() {
-                    take_until0_::<_, _, _, true>(i, tag.clone())
+                if <Input as StreamIsPartial>::is_partial_supported() {
+                    take_until0_::<_, _, _, true>(i, literal.clone())
                 } else {
-                    take_until0_::<_, _, _, false>(i, tag.clone())
+                    take_until0_::<_, _, _, false>(i, literal.clone())
                 }
             }
             (1, None) => {
-                if <I as StreamIsPartial>::is_partial_supported() {
-                    take_until1_::<_, _, _, true>(i, tag.clone())
+                if <Input as StreamIsPartial>::is_partial_supported() {
+                    take_until1_::<_, _, _, true>(i, literal.clone())
                 } else {
-                    take_until1_::<_, _, _, false>(i, tag.clone())
+                    take_until1_::<_, _, _, false>(i, literal.clone())
                 }
             }
             (start, end) => {
                 let end = end.unwrap_or(usize::MAX);
-                if <I as StreamIsPartial>::is_partial_supported() {
-                    take_until_m_n_::<_, _, _, true>(i, start, end, tag.clone())
+                if <Input as StreamIsPartial>::is_partial_supported() {
+                    take_until_m_n_::<_, _, _, true>(i, start, end, literal.clone())
                 } else {
-                    take_until_m_n_::<_, _, _, false>(i, start, end, tag.clone())
+                    take_until_m_n_::<_, _, _, false>(i, start, end, literal.clone())
                 }
             }
         }
@@ -978,7 +982,7 @@ where
     if end < start {
         return Err(ErrMode::assert(
             i,
-            "range should be ascending, rather than descending",
+            "`occurrences` should be ascending, rather than descending",
         ));
     }
 
