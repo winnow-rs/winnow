@@ -36,14 +36,48 @@
 //! }
 //! ```
 //!
-//! [`any`] and [`Parser::verify`] are [`Parser`] building blocks on top of [`Stream`]:
+//! This extraction of a token is encapsulated in the [`any`] parser:
+//! ```rust
+//! # use winnow::PResult;
+//! # use winnow::error::ParserError;
+//! # use winnow::error::ErrorKind;
+//! # use winnow::error::ErrMode;
+//! use winnow::Parser;
+//! use winnow::token::any;
+//!
+//! fn parse_prefix(input: &mut &str) -> PResult<char> {
+//!     let c = any
+//!         .parse_next(input)?;
+//!     if c != '0' {
+//!         return Err(ErrMode::from_error_kind(input, ErrorKind::Verify));
+//!     }
+//!     Ok(c)
+//! }
+//! #
+//! # fn main()  {
+//! #     let mut input = "0x1a2b Hello";
+//! #
+//! #     let output = parse_prefix.parse_next(&mut input).unwrap();
+//! #
+//! #     assert_eq!(input, "x1a2b Hello");
+//! #     assert_eq!(output, '0');
+//! #
+//! #     assert!(parse_prefix.parse_next(&mut "d").is_err());
+//! # }
+//! ```
+//!
+//! Using the higher level [`any`] parser opens `parse_prefix` to the helpers on the [`Parser`] trait,
+//! like [`Parser::verify`] which fails a parse if a condition isn't met, like our check above:
 //! ```rust
 //! # use winnow::PResult;
 //! use winnow::Parser;
 //! use winnow::token::any;
 //!
 //! fn parse_prefix(input: &mut &str) -> PResult<char> {
-//!     any.verify(|c| *c == '0').parse_next(input)
+//!     let c = any
+//!         .verify(|c| *c == '0')
+//!         .parse_next(input)?;
+//!     Ok(c)
 //! }
 //! #
 //! # fn main()  {
@@ -59,14 +93,14 @@
 //! ```
 //!
 //! Matching a single token literal is common enough that [`Parser`] is implemented for
-//! `char`.
-//!
+//! the `char` type, encapsulating both [`any`] and [`Parser::verify`]:
 //! ```rust
 //! # use winnow::PResult;
 //! use winnow::Parser;
 //!
 //! fn parse_prefix(input: &mut &str) -> PResult<char> {
-//!     '0'.parse_next(input)
+//!     let c = '0'.parse_next(input)?;
+//!     Ok(c)
 //! }
 //! #
 //! # fn main()  {
@@ -115,13 +149,16 @@
 //! }
 //! ```
 //!
-//! Again, matching a literal is common enough that [`Parser`] is implemented for `&str`:
+//! Matching the input position against a string literal is encapsulated in the [`literal`] parser:
 //! ```rust
 //! # use winnow::PResult;
-//! use winnow::Parser;
+//! # use winnow::Parser;
+//! use winnow::token::literal;
 //!
 //! fn parse_prefix<'s>(input: &mut &'s str) -> PResult<&'s str> {
-//!     "0x".parse_next(input)
+//!     let expected = "0x";
+//!     let actual = literal(expected).parse_next(input)?;
+//!     Ok(actual)
 //! }
 //! #
 //! # fn main()  {
@@ -135,8 +172,28 @@
 //! # }
 //! ```
 //!
-//! In `winnow`, we call this type of parser a [`literal`]. See [`token`] for additional individual
-//! and token-slice parsers.
+//! Like for a single token, matching a string literal is common enough that [`Parser`] is implemented for the `&str` type:
+//! ```rust
+//! # use winnow::PResult;
+//! use winnow::Parser;
+//!
+//! fn parse_prefix<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//!     let actual = "0x".parse_next(input)?;
+//!     Ok(actual)
+//! }
+//! #
+//! # fn main()  {
+//! #     let mut input = "0x1a2b Hello";
+//! #
+//! #     let output = parse_prefix.parse_next(&mut input).unwrap();
+//! #     assert_eq!(input, "1a2b Hello");
+//! #     assert_eq!(output, "0x");
+//! #
+//! #     assert!(parse_prefix.parse_next(&mut "0o123").is_err());
+//! # }
+//! ```
+//!
+//! See [`token`] for additional individual and token-slice parsers.
 //!
 //! ## Character Classes
 //!
