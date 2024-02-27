@@ -808,6 +808,8 @@ where
 
 /// Recognize the input slice up to the first occurrence of a [literal].
 ///
+/// Feature `simd` will enable the use of [`memchr`](https://docs.rs/memchr/latest/memchr/).
+///
 /// It doesn't consume the literal.
 ///
 /// *Complete version*: It will return `Err(ErrMode::Backtrack(InputError::new(_, ErrorKind::Slice)))`
