@@ -8,10 +8,6 @@ pub use crate::seq;
 
 /// Sequence two parsers, only returning the output from the second.
 ///
-/// # Arguments
-/// * `first` The opening parser.
-/// * `second` The second parser to get object.
-///
 /// See also [`seq`] to generalize this across any number of fields.
 ///
 /// # Example
@@ -30,26 +26,23 @@ pub use crate::seq;
 /// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Tag))));
 /// ```
 #[doc(alias = "ignore_then")]
-pub fn preceded<I, O1, O2, E: ParserError<I>, F, G>(
-    mut first: F,
-    mut second: G,
-) -> impl Parser<I, O2, E>
+pub fn preceded<Input, Ignored, Output, Error, IgnoredParser, ParseNext>(
+    mut ignored: IgnoredParser,
+    mut parser: ParseNext,
+) -> impl Parser<Input, Output, Error>
 where
-    I: Stream,
-    F: Parser<I, O1, E>,
-    G: Parser<I, O2, E>,
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser: Parser<Input, Ignored, Error>,
+    ParseNext: Parser<Input, Output, Error>,
 {
-    trace("preceded", move |input: &mut I| {
-        let _ = first.parse_next(input)?;
-        second.parse_next(input)
+    trace("preceded", move |input: &mut Input| {
+        let _ = ignored.parse_next(input)?;
+        parser.parse_next(input)
     })
 }
 
 /// Sequence two parsers, only returning the output of the first.
-///
-/// # Arguments
-/// * `first` The first parser to apply.
-/// * `second` The second parser to match an object.
 ///
 /// See also [`seq`] to generalize this across any number of fields.
 ///
@@ -69,27 +62,23 @@ where
 /// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Tag))));
 /// ```
 #[doc(alias = "then_ignore")]
-pub fn terminated<I, O1, O2, E: ParserError<I>, F, G>(
-    mut first: F,
-    mut second: G,
-) -> impl Parser<I, O1, E>
+pub fn terminated<Input, Output, Ignored, Error, ParseNext, IgnoredParser>(
+    mut parser: ParseNext,
+    mut ignored: IgnoredParser,
+) -> impl Parser<Input, Output, Error>
 where
-    I: Stream,
-    F: Parser<I, O1, E>,
-    G: Parser<I, O2, E>,
+    Input: Stream,
+    Error: ParserError<Input>,
+    ParseNext: Parser<Input, Output, Error>,
+    IgnoredParser: Parser<Input, Ignored, Error>,
 {
-    trace("terminated", move |input: &mut I| {
-        let o1 = first.parse_next(input)?;
-        second.parse_next(input).map(|_| o1)
+    trace("terminated", move |input: &mut Input| {
+        let o = parser.parse_next(input)?;
+        ignored.parse_next(input).map(|_| o)
     })
 }
 
 /// Sequence three parsers, only returning the values of the first and third.
-///
-/// # Arguments
-/// * `first` The first parser to apply.
-/// * `sep` The separator parser to apply.
-/// * `second` The second parser to apply.
 ///
 /// See also [`seq`] to generalize this across any number of fields.
 ///
@@ -108,18 +97,19 @@ where
 /// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
 /// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Tag))));
 /// ```
-pub fn separated_pair<I, O1, O2, O3, E: ParserError<I>, F, G, H>(
-    mut first: F,
-    mut sep: G,
-    mut second: H,
-) -> impl Parser<I, (O1, O3), E>
+pub fn separated_pair<Input, O1, Sep, O2, Error, P1, SepParser, P2>(
+    mut first: P1,
+    mut sep: SepParser,
+    mut second: P2,
+) -> impl Parser<Input, (O1, O2), Error>
 where
-    I: Stream,
-    F: Parser<I, O1, E>,
-    G: Parser<I, O2, E>,
-    H: Parser<I, O3, E>,
+    Input: Stream,
+    Error: ParserError<Input>,
+    P1: Parser<Input, O1, Error>,
+    SepParser: Parser<Input, Sep, Error>,
+    P2: Parser<Input, O2, Error>,
 {
-    trace("separated_pair", move |input: &mut I| {
+    trace("separated_pair", move |input: &mut Input| {
         let o1 = first.parse_next(input)?;
         let _ = sep.parse_next(input)?;
         second.parse_next(input).map(|o2| (o1, o2))
@@ -127,11 +117,6 @@ where
 }
 
 /// Sequence three parsers, only returning the output of the second.
-///
-/// # Arguments
-/// * `first` The first parser to apply and discard.
-/// * `second` The second parser to apply.
-/// * `third` The third parser to apply and discard.
 ///
 /// See also [`seq`] to generalize this across any number of fields.
 ///
@@ -152,20 +137,30 @@ where
 /// ```
 #[doc(alias = "between")]
 #[doc(alias = "padded")]
-pub fn delimited<I, O1, O2, O3, E: ParserError<I>, F, G, H>(
-    mut first: F,
-    mut second: G,
-    mut third: H,
-) -> impl Parser<I, O2, E>
+pub fn delimited<
+    Input,
+    Ignored1,
+    Output,
+    Ignored2,
+    Error,
+    IgnoredParser1,
+    ParseNext,
+    IgnoredParser2,
+>(
+    mut ignored1: IgnoredParser1,
+    mut parser: ParseNext,
+    mut ignored2: IgnoredParser2,
+) -> impl Parser<Input, Output, Error>
 where
-    I: Stream,
-    F: Parser<I, O1, E>,
-    G: Parser<I, O2, E>,
-    H: Parser<I, O3, E>,
+    Input: Stream,
+    Error: ParserError<Input>,
+    IgnoredParser1: Parser<Input, Ignored1, Error>,
+    ParseNext: Parser<Input, Output, Error>,
+    IgnoredParser2: Parser<Input, Ignored2, Error>,
 {
-    trace("delimited", move |input: &mut I| {
-        let _ = first.parse_next(input)?;
-        let o2 = second.parse_next(input)?;
-        third.parse_next(input).map(|_| o2)
+    trace("delimited", move |input: &mut Input| {
+        let _ = ignored1.parse_next(input)?;
+        let o2 = parser.parse_next(input)?;
+        ignored2.parse_next(input).map(|_| o2)
     })
 }

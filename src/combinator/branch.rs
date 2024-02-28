@@ -48,10 +48,14 @@ pub trait Alt<I, O, E> {
 /// # }
 /// ```
 #[doc(alias = "choice")]
-pub fn alt<I: Stream, O, E: ParserError<I>, List: Alt<I, O, E>>(
-    mut l: List,
-) -> impl Parser<I, O, E> {
-    trace("alt", move |i: &mut I| l.choice(i))
+pub fn alt<Input: Stream, Output, Error, Alternatives>(
+    mut alternatives: Alternatives,
+) -> impl Parser<Input, Output, Error>
+where
+    Alternatives: Alt<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    trace("alt", move |i: &mut Input| alternatives.choice(i))
 }
 
 /// Helper trait for the [permutation()] combinator.

@@ -8,13 +8,13 @@
 //!
 //! | combinator | usage | input | new input | output | comment |
 //! |---|---|---|---|---|---|
-//! | [`one_of`][crate::token::one_of] | `one_of(['a', 'b', 'c'])` |  `"abc"` |  `"bc"` | `Ok('a')` |Matches one of the provided characters (works with non ASCII characters too)|
-//! | [`none_of`][crate::token::none_of] | `none_of(['a', 'b', 'c'])` |  `"xyab"` |  `"yab"` | `Ok('x')` |Matches anything but the provided characters|
+//! | [`one_of`][crate::token::one_of] | `one_of(['a', 'b', 'c'])` |  `"abc"` |  `"bc"` | `Ok('a')` |Matches one of the provided [set of tokens][crate::stream::ContainsToken] (works with non ASCII characters too)|
+//! | [`none_of`][crate::token::none_of] | `none_of(['a', 'b', 'c'])` |  `"xyab"` |  `"yab"` | `Ok('x')` |Matches anything but one of the provided [set of tokens][crate::stream::ContainsToken]|
 //! | [`literal`][crate::token::literal] | `"hello"` |  `"hello world"` |  `" world"` | `Ok("hello")` |Recognizes a specific suite of characters or bytes (see also [`Caseless`][crate::ascii::Caseless])|
 //! | [`take`][crate::token::take] | `take(4)` |  `"hello"` |  `"o"` | `Ok("hell")` |Takes a specific number of bytes or characters|
-//! | [`take_while`][crate::token::take_while] | `take_while(0.., is_alphabetic)` |  `"abc123"` |  `"123"` | `Ok("abc")` |Returns the longest list of bytes for which the provided pattern matches.|
-//! | [`take_till`][crate::token::take_till] | `take_till(0.., is_alphabetic)` |  `"123abc"` |  `"abc"` | `Ok("123")` |Returns the longest list of bytes or characters until the provided pattern matches. This is the reverse behaviour from `take_while`: `take_till(f)` is equivalent to `take_while(0.., \|c\| !f(c))`|
-//! | [`take_until`][crate::token::take_until] | `take_until(0.., "world")` |  `"Hello world"` |  `"world"` | `Ok("Hello ")` |Returns the longest list of bytes or characters until the provided literal is found.|
+//! | [`take_while`][crate::token::take_while] | `take_while(0.., is_alphabetic)` |  `"abc123"` |  `"123"` | `Ok("abc")` |Returns the longest slice of bytes or characters for which the provided [set of tokens][crate::stream::ContainsToken] matches.|
+//! | [`take_till`][crate::token::take_till] | `take_till(0.., is_alphabetic)` |  `"123abc"` |  `"abc"` | `Ok("123")` |Returns a slice of bytes or characters until the provided [set of tokens][crate::stream::ContainsToken] matches. This is the reverse behaviour from `take_while`: `take_till(f)` is equivalent to `take_while(0.., \|c\| !f(c))`|
+//! | [`take_until`][crate::token::take_until] | `take_until(0.., "world")` |  `"Hello world"` |  `"world"` | `Ok("Hello ")` |Returns a slice of bytes or characters until the provided [literal][crate::token::literal] is found.|
 //!
 //! ## Choice combinators
 //!

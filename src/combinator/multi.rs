@@ -15,11 +15,6 @@ use crate::Parser;
 /// This stops before `n` when the parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
 ///
-/// # Arguments
-/// * `m` The minimum number of iterations.
-/// * `n` The maximum number of iterations.
-/// * `f` The parser to apply.
-///
 /// To recognize a series of tokens, [`Accumulate`] into a `()` and then [`Parser::recognize`].
 ///
 /// **Warning:** If the parser passed to `repeat` accepts empty inputs
@@ -111,15 +106,18 @@ use crate::Parser;
 #[doc(alias = "skip_many")]
 #[doc(alias = "skip_many1")]
 #[inline(always)]
-pub fn repeat<I, O, C, E, P>(range: impl Into<Range>, parser: P) -> Repeat<P, I, O, C, E>
+pub fn repeat<Input, Output, Accumulator, Error, ParseNext>(
+    occurrences: impl Into<Range>,
+    parser: ParseNext,
+) -> Repeat<ParseNext, Input, Output, Accumulator, Error>
 where
-    I: Stream,
-    C: Accumulate<O>,
-    P: Parser<I, O, E>,
-    E: ParserError<I>,
+    Input: Stream,
+    Accumulator: Accumulate<Output>,
+    ParseNext: Parser<Input, Output, Error>,
+    Error: ParserError<Input>,
 {
     Repeat {
-        range: range.into(),
+        occurrences: occurrences.into(),
         parser,
         i: Default::default(),
         o: Default::default(),
@@ -137,7 +135,7 @@ where
     C: Accumulate<O>,
     E: ParserError<I>,
 {
-    range: Range,
+    occurrences: Range,
     parser: P,
     i: core::marker::PhantomData<I>,
     o: core::marker::PhantomData<O>,
@@ -145,11 +143,11 @@ where
     e: core::marker::PhantomData<E>,
 }
 
-impl<P, I, O, E> Repeat<P, I, O, (), E>
+impl<ParseNext, Input, Output, Error> Repeat<ParseNext, Input, Output, (), Error>
 where
-    P: Parser<I, O, E>,
-    I: Stream,
-    E: ParserError<I>,
+    ParseNext: Parser<Input, Output, Error>,
+    Input: Stream,
+    Error: ParserError<Input>,
 {
     /// Repeats the embedded parser, calling `g` to gather the results
     ///
@@ -247,25 +245,29 @@ where
     #[doc(alias = "fold_many_m_n")]
     #[doc(alias = "fold_repeat")]
     #[inline(always)]
-    pub fn fold<H, G, R>(mut self, mut init: H, mut g: G) -> impl Parser<I, R, E>
+    pub fn fold<Init, Op, Result>(
+        mut self,
+        mut init: Init,
+        mut op: Op,
+    ) -> impl Parser<Input, Result, Error>
     where
-        G: FnMut(R, O) -> R,
-        H: FnMut() -> R,
+        Init: FnMut() -> Result,
+        Op: FnMut(Result, Output) -> Result,
     {
         let Range {
             start_inclusive,
             end_inclusive,
-        } = self.range;
-        trace("repeat_fold", move |i: &mut I| {
+        } = self.occurrences;
+        trace("repeat_fold", move |i: &mut Input| {
             match (start_inclusive, end_inclusive) {
-                (0, None) => fold_repeat0_(&mut self.parser, &mut init, &mut g, i),
-                (1, None) => fold_repeat1_(&mut self.parser, &mut init, &mut g, i),
+                (0, None) => fold_repeat0_(&mut self.parser, &mut init, &mut op, i),
+                (1, None) => fold_repeat1_(&mut self.parser, &mut init, &mut op, i),
                 (start, end) => fold_repeat_m_n_(
                     start,
                     end.unwrap_or(usize::MAX),
                     &mut self.parser,
                     &mut init,
-                    &mut g,
+                    &mut op,
                     i,
                 ),
             }
@@ -285,7 +287,7 @@ where
         let Range {
             start_inclusive,
             end_inclusive,
-        } = self.range;
+        } = self.occurrences;
         trace("repeat", move |i: &mut I| {
             match (start_inclusive, end_inclusive) {
                 (0, None) => repeat0_(&mut self.parser, i),
@@ -450,6 +452,10 @@ where
 ///
 /// To recognize a series of tokens, [`Accumulate`] into a `()` and then [`Parser::recognize`].
 ///
+/// See also
+/// - [`take_till`][crate::token::take_till] for recognizing up-to a member of a [set of tokens][crate::stream::ContainsToken]
+/// - [`take_until`][crate::token::take_until] for recognizing up-to a [`literal`][crate::token::literal] (w/ optional simd optimizations)
+///
 /// # Example
 ///
 /// ```rust
@@ -470,26 +476,32 @@ where
 /// # }
 /// ```
 #[doc(alias = "many_till0")]
-pub fn repeat_till<I, O, C, P, E, F, G>(
-    range: impl Into<Range>,
-    mut f: F,
-    mut g: G,
-) -> impl Parser<I, (C, P), E>
+pub fn repeat_till<Input, Output, Accumulator, Terminator, Error, ParseNext, TerminatorParser>(
+    occurrences: impl Into<Range>,
+    mut parse: ParseNext,
+    mut terminator: TerminatorParser,
+) -> impl Parser<Input, (Accumulator, Terminator), Error>
 where
-    I: Stream,
-    C: Accumulate<O>,
-    F: Parser<I, O, E>,
-    G: Parser<I, P, E>,
-    E: ParserError<I>,
+    Input: Stream,
+    Accumulator: Accumulate<Output>,
+    ParseNext: Parser<Input, Output, Error>,
+    TerminatorParser: Parser<Input, Terminator, Error>,
+    Error: ParserError<Input>,
 {
     let Range {
         start_inclusive,
         end_inclusive,
-    } = range.into();
-    trace("repeat_till", move |i: &mut I| {
+    } = occurrences.into();
+    trace("repeat_till", move |i: &mut Input| {
         match (start_inclusive, end_inclusive) {
-            (0, None) => repeat_till0_(&mut f, &mut g, i),
-            (start, end) => repeat_till_m_n_(start, end.unwrap_or(usize::MAX), &mut f, &mut g, i),
+            (0, None) => repeat_till0_(&mut parse, &mut terminator, i),
+            (start, end) => repeat_till_m_n_(
+                start,
+                end.unwrap_or(usize::MAX),
+                &mut parse,
+                &mut terminator,
+                i,
+            ),
         }
     })
 }
@@ -596,11 +608,6 @@ where
 /// This stops when either parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
 ///
-/// # Arguments
-/// * `range` The minimum and maximum number of iterations.
-/// * `parser` The parser that parses the elements of the list.
-/// * `sep` The parser that parses the separator between list elements.
-///
 /// **Warning:** If the separator parser accepts empty inputs
 /// (like `alpha0` or `digit0`), `separated` will return an error,
 /// to prevent going into an infinite loop.
@@ -688,23 +695,23 @@ where
 #[doc(alias = "separated_list1")]
 #[doc(alias = "separated_m_n")]
 #[inline(always)]
-pub fn separated<I, O, C, O2, E, P, S>(
-    range: impl Into<Range>,
-    mut parser: P,
-    mut separator: S,
-) -> impl Parser<I, C, E>
+pub fn separated<Input, Output, Accumulator, Sep, Error, ParseNext, SepParser>(
+    occurrences: impl Into<Range>,
+    mut parser: ParseNext,
+    mut separator: SepParser,
+) -> impl Parser<Input, Accumulator, Error>
 where
-    I: Stream,
-    C: Accumulate<O>,
-    P: Parser<I, O, E>,
-    S: Parser<I, O2, E>,
-    E: ParserError<I>,
+    Input: Stream,
+    Accumulator: Accumulate<Output>,
+    ParseNext: Parser<Input, Output, Error>,
+    SepParser: Parser<Input, Sep, Error>,
+    Error: ParserError<Input>,
 {
     let Range {
         start_inclusive,
         end_inclusive,
-    } = range.into();
-    trace("separated", move |input: &mut I| {
+    } = occurrences.into();
+    trace("separated", move |input: &mut Input| {
         match (start_inclusive, end_inclusive) {
             (0, None) => separated0_(&mut parser, &mut separator, input),
             (1, None) => separated1_(&mut parser, &mut separator, input),
@@ -1007,19 +1014,19 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Token))));
 /// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(InputError::new("def|abc", ErrorKind::Verify))));
 /// ```
-pub fn separated_foldl1<I, O, O2, E, P, S, Op>(
-    mut parser: P,
-    mut sep: S,
+pub fn separated_foldl1<Input, Output, Sep, Error, ParseNext, SepParser, Op>(
+    mut parser: ParseNext,
+    mut sep: SepParser,
     mut op: Op,
-) -> impl Parser<I, O, E>
+) -> impl Parser<Input, Output, Error>
 where
-    I: Stream,
-    P: Parser<I, O, E>,
-    S: Parser<I, O2, E>,
-    E: ParserError<I>,
-    Op: FnMut(O, O2, O) -> O,
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    SepParser: Parser<Input, Sep, Error>,
+    Error: ParserError<Input>,
+    Op: FnMut(Output, Sep, Output) -> Output,
 {
-    trace("separated_foldl1", move |i: &mut I| {
+    trace("separated_foldl1", move |i: &mut Input| {
         let mut ol = parser.parse_next(i)?;
 
         loop {
@@ -1076,21 +1083,21 @@ where
 /// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(InputError::new("def|abc", ErrorKind::Verify))));
 /// ```
 #[cfg(feature = "alloc")]
-pub fn separated_foldr1<I, O, O2, E, P, S, Op>(
-    mut parser: P,
-    mut sep: S,
+pub fn separated_foldr1<Input, Output, Sep, Error, ParseNext, SepParser, Op>(
+    mut parser: ParseNext,
+    mut sep: SepParser,
     mut op: Op,
-) -> impl Parser<I, O, E>
+) -> impl Parser<Input, Output, Error>
 where
-    I: Stream,
-    P: Parser<I, O, E>,
-    S: Parser<I, O2, E>,
-    E: ParserError<I>,
-    Op: FnMut(O, O2, O) -> O,
+    Input: Stream,
+    ParseNext: Parser<Input, Output, Error>,
+    SepParser: Parser<Input, Sep, Error>,
+    Error: ParserError<Input>,
+    Op: FnMut(Output, Sep, Output) -> Output,
 {
-    trace("separated_foldr1", move |i: &mut I| {
+    trace("separated_foldr1", move |i: &mut Input| {
         let ol = parser.parse_next(i)?;
-        let all: crate::lib::std::vec::Vec<(O2, O)> =
+        let all: crate::lib::std::vec::Vec<(Sep, Output)> =
             repeat(0.., (sep.by_ref(), parser.by_ref())).parse_next(i)?;
         if let Some((s, or)) = all
             .into_iter()
@@ -1108,10 +1115,6 @@ where
 /// Repeats the embedded parser, filling the given slice with results.
 ///
 /// This parser fails if the input runs out before the given slice is full.
-///
-/// # Arguments
-/// * `f` The parser to apply.
-/// * `buf` The slice to fill
 ///
 /// # Example
 ///
@@ -1132,16 +1135,19 @@ where
 /// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", ["abc", "abc"])));
 /// ```
-pub fn fill<'a, I, O, E, F>(mut f: F, buf: &'a mut [O]) -> impl Parser<I, (), E> + 'a
+pub fn fill<'i, Input, Output, Error, ParseNext>(
+    mut parser: ParseNext,
+    buf: &'i mut [Output],
+) -> impl Parser<Input, (), Error> + 'i
 where
-    I: Stream + 'a,
-    F: Parser<I, O, E> + 'a,
-    E: ParserError<I> + 'a,
+    Input: Stream + 'i,
+    ParseNext: Parser<Input, Output, Error> + 'i,
+    Error: ParserError<Input> + 'i,
 {
-    trace("fill", move |i: &mut I| {
+    trace("fill", move |i: &mut Input| {
         for elem in buf.iter_mut() {
             let start = i.checkpoint();
-            match f.parse_next(i) {
+            match parser.parse_next(i) {
                 Ok(o) => {
                     *elem = o;
                 }
