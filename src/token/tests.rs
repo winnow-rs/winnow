@@ -98,6 +98,15 @@ fn complete_take_until() {
 }
 
 #[test]
+fn complete_take_until_empty() {
+    fn take_until_empty(i: &str) -> IResult<&str, &str> {
+        take_until(0, "").parse_peek(i)
+    }
+    assert_eq!(take_until_empty(""), Ok(("", "")));
+    assert_eq!(take_until_empty("end"), Ok(("end", "")));
+}
+
+#[test]
 fn complete_literal_case_insensitive() {
     fn caseless_bytes(i: &[u8]) -> IResult<&[u8], &[u8]> {
         literal(Caseless("ABcd")).parse_peek(i)
