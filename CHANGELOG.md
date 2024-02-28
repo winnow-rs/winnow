@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.6.3] - 2024-02-28
+
 ### Fixes
 
 - Make `take_until("")` consistent between `simd` or not, with or without empty buffer
@@ -2297,7 +2299,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.2...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.3...HEAD
+[0.6.3]: https://github.com/winnow-rs/winnow/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/winnow-rs/winnow/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/winnow-rs/winnow/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/winnow-rs/winnow/compare/v0.5.40...v0.6.0
