@@ -3,6 +3,16 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Make `take_until("")` consistent between `simd` or not, with or without empty buffer
+
+### Documentation
+
+- Clarify generic and value parameters
+- Cross reference `*until` and `*till` parsers
+- *(tutorial)* Step through parts more slowly
+
 ## [0.6.2] - 2024-02-19
 
 ## [0.6.1] - 2024-02-14
