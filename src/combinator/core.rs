@@ -5,6 +5,17 @@ use crate::*;
 
 /// Return the remaining input.
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn rest<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::combinator::rest.parse_next(input)
+/// # }
+/// ```
+///
 /// # Example
 ///
 /// ```rust
@@ -27,6 +38,17 @@ where
 /// Return the length of the remaining input.
 ///
 /// Note: this does not advance the [`Stream`]
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn rest_len(input: &mut &str) -> PResult<usize>
+/// # {
+/// #     winnow::combinator::rest_len.parse_next(input)
+/// # }
+/// ```
 ///
 /// # Example
 ///
@@ -169,6 +191,17 @@ where
 /// Match the end of the [`Stream`]
 ///
 /// Otherwise, it will error.
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn eof<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::combinator::eof.parse_next(input)
+/// # }
+/// ```
 ///
 /// # Example
 ///

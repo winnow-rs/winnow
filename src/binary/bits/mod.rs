@@ -148,6 +148,18 @@ where
 
 /// Parse taking `count` bits
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// # use winnow::error::ContextError;
+/// pub fn take<'i>(count: usize) -> impl Parser<(&'i [u8], usize), u8, ContextError>
+/// # {
+/// #     winnow::binary::bits::take(count)
+/// # }
+/// ```
+///
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
@@ -254,6 +266,18 @@ where
 
 /// Parse taking `count` bits and comparing them to `pattern`
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// # use winnow::error::ContextError;
+/// pub fn pattern<'i>(pattern: u8, count: usize) -> impl Parser<(&'i [u8], usize), u8, ContextError>
+/// # {
+/// #     winnow::binary::bits::pattern(pattern, count)
+/// # }
+/// ```
+///
 /// # Example
 ///
 /// ```rust
@@ -341,6 +365,18 @@ where
 }
 
 /// Parses one specific bit as a bool.
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// # use winnow::error::ContextError;
+/// pub fn bool(input: &mut (&[u8], usize)) -> PResult<bool>
+/// # {
+/// #     winnow::binary::bits::bool.parse_next(input)
+/// # }
+/// ```
 ///
 /// # Example
 ///

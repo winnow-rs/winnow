@@ -22,6 +22,17 @@ use crate::Parser;
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn any(input: &mut &str) -> PResult<char>
+/// # {
+/// #     winnow::token::any.parse_next(input)
+/// # }
+/// ```
+///
 /// # Example
 ///
 /// ```rust
@@ -85,11 +96,23 @@ where
 /// **Note:** [`Parser`] is implemented for strings and byte strings as a convenience (complete
 /// only)
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// # use winnow::error::ContextError;
+/// pub fn literal(literal: &str) -> impl Parser<&str, &str, ContextError>
+/// # {
+/// #     winnow::token::literal(literal)
+/// # }
+/// ```
+///
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
-///
+/// #
 /// fn parser(s: &str) -> IResult<&str, &str> {
 ///   "Hello".parse_peek(s)
 /// }
@@ -185,6 +208,19 @@ where
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// # use winnow::stream::ContainsToken;
+/// # use winnow::error::ContextError;
+/// pub fn one_of<'i>(set: impl ContainsToken<char>) -> impl Parser<&'i str, char, ContextError>
+/// # {
+/// #     winnow::token::one_of(set)
+/// # }
+/// ```
+///
 /// # Example
 ///
 /// ```rust
@@ -242,6 +278,19 @@ where
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// # use winnow::stream::ContainsToken;
+/// # use winnow::error::ContextError;
+/// pub fn none_of<'i>(set: impl ContainsToken<char>) -> impl Parser<&'i str, char, ContextError>
+/// # {
+/// #     winnow::token::none_of(set)
+/// # }
+/// ```
+///
 /// # Example
 ///
 /// ```rust
@@ -284,6 +333,20 @@ where
 /// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if a member of the set of tokens reaches the end of the input or is too short.
 ///
 /// To recognize a series of tokens, use [`repeat`][crate::combinator::repeat] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`].
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str` with `0..` or `1..` ranges:
+/// ```rust
+/// # use std::ops::RangeFrom;
+/// # use winnow::prelude::*;
+/// # use winnow::stream::ContainsToken;
+/// # use winnow::error::ContextError;
+/// pub fn take_while<'i>(occurrences: RangeFrom<usize>, set: impl ContainsToken<char>) -> impl Parser<&'i str, &'i str, ContextError>
+/// # {
+/// #     winnow::token::take_while(occurrences, set)
+/// # }
+/// ```
 ///
 /// # Example
 ///
@@ -645,6 +708,20 @@ where
 /// - [`take_until`] for recognizing up-to a [`literal`] (w/ optional simd optimizations)
 /// - [`repeat_till`][crate::combinator::repeat_till] with [`Parser::recognize`] for recognizing up to a [`Parser`]
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str` with `0..` or `1..` [ranges][Range]:
+/// ```rust
+/// # use std::ops::RangeFrom;
+/// # use winnow::prelude::*;
+/// # use winnow::stream::ContainsToken;
+/// # use winnow::error::ContextError;
+/// pub fn take_till<'i>(occurrences: RangeFrom<usize>, set: impl ContainsToken<char>) -> impl Parser<&'i str, &'i str, ContextError>
+/// # {
+/// #     winnow::token::take_till(occurrences, set)
+/// # }
+/// ```
+///
 /// # Example
 ///
 /// ```rust
@@ -731,6 +808,20 @@ where
 /// but for types like `&str`, we cannot know how many bytes correspond for
 /// the next few chars, so the result will be `ErrMode::Incomplete(Needed::Unknown)`
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str` with `0..` or `1..` ranges:
+/// ```rust
+/// # use std::ops::RangeFrom;
+/// # use winnow::prelude::*;
+/// # use winnow::stream::ContainsToken;
+/// # use winnow::error::ContextError;
+/// pub fn take<'i>(token_count: usize) -> impl Parser<&'i str, &'i str, ContextError>
+/// # {
+/// #     winnow::token::take(token_count)
+/// # }
+/// ```
+///
 /// # Example
 ///
 /// ```rust
@@ -778,14 +869,14 @@ where
 /// ```
 #[inline(always)]
 pub fn take<UsizeLike, Input, Error>(
-    count: UsizeLike,
+    token_count: UsizeLike,
 ) -> impl Parser<Input, <Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream,
     UsizeLike: ToUsize,
     Error: ParserError<Input>,
 {
-    let c = count.to_usize();
+    let c = token_count.to_usize();
     trace("take", move |i: &mut Input| {
         if <Input as StreamIsPartial>::is_partial_supported() {
             take_::<_, _, true>(i, c)
@@ -825,6 +916,19 @@ where
 /// See also
 /// - [`take_till`] for recognizing up-to a [set of tokens][ContainsToken]
 /// - [`repeat_till`][crate::combinator::repeat_till] with [`Parser::recognize`] for recognizing up to a [`Parser`]
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str` with `0..` or `1..` ranges:
+/// ```rust
+/// # use std::ops::RangeFrom;
+/// # use winnow::prelude::*;;
+/// # use winnow::error::ContextError;
+/// pub fn take_until(occurrences: RangeFrom<usize>, literal: &str) -> impl Parser<&str, &str, ContextError>
+/// # {
+/// #     winnow::token::take_until(occurrences, literal)
+/// # }
+/// ```
 ///
 /// # Example
 ///
