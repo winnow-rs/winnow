@@ -3478,19 +3478,17 @@ fn memchr3(token: (u8, u8, u8), slice: &[u8]) -> Option<usize> {
 
 #[inline(always)]
 fn memmem(slice: &[u8], literal: &[u8]) -> Option<crate::lib::std::ops::Range<usize>> {
-    if literal.len() == 1 {
-        memchr(literal[0], slice).map(|i| i..i + 1)
-    } else {
-        memmem_(slice, literal)
+    match literal.len() {
+        1 => memchr(literal[0], slice).map(|i| i..i + 1),
+        _ => memmem_(slice, literal),
     }
 }
 
 #[inline(always)]
 fn memmem2(slice: &[u8], literal: (&[u8], &[u8])) -> Option<crate::lib::std::ops::Range<usize>> {
-    if literal.0.len() == 1 && literal.1.len() == 1 {
-        memchr2((literal.0[0], literal.1[0]), slice).map(|i| i..i + 1)
-    } else {
-        memmem2_(slice, literal)
+    match (literal.0.len(), literal.1.len()) {
+        (1, 1) => memchr2((literal.0[0], literal.1[0]), slice).map(|i| i..i + 1),
+        _ => memmem2_(slice, literal),
     }
 }
 
@@ -3499,10 +3497,9 @@ fn memmem3(
     slice: &[u8],
     literal: (&[u8], &[u8], &[u8]),
 ) -> Option<crate::lib::std::ops::Range<usize>> {
-    if literal.0.len() == 1 && literal.1.len() == 1 && literal.2.len() == 1 {
-        memchr3((literal.0[0], literal.1[0], literal.2[0]), slice).map(|i| i..i + 1)
-    } else {
-        memmem3_(slice, literal)
+    match (literal.0.len(), literal.1.len(), literal.2.len()) {
+        (1, 1, 1) => memchr3((literal.0[0], literal.1[0], literal.2[0]), slice).map(|i| i..i + 1),
+        _ => memmem3_(slice, literal),
     }
 }
 
