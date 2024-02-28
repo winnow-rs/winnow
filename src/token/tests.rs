@@ -102,12 +102,6 @@ fn complete_take_until_empty() {
     fn take_until_empty(i: &str) -> IResult<&str, &str> {
         take_until(0, "").parse_peek(i)
     }
-    #[cfg(not(feature = "simd"))]
-    assert_eq!(
-        take_until_empty(""),
-        Err(ErrMode::Backtrack(error_position!(&"", ErrorKind::Slice)))
-    );
-    #[cfg(feature = "simd")]
     assert_eq!(take_until_empty(""), Ok(("", "")));
     assert_eq!(take_until_empty("end"), Ok(("end", "")));
 }
