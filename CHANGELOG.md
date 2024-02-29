@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.6.4] - 2024-02-29
+
 ### Documentation
 
 - Provide examples of concrete signatures
@@ -2303,7 +2305,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.3...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.4...HEAD
+[0.6.4]: https://github.com/winnow-rs/winnow/compare/v0.6.3...v0.6.4
 [0.6.3]: https://github.com/winnow-rs/winnow/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/winnow-rs/winnow/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/winnow-rs/winnow/compare/v0.6.0...v0.6.1
