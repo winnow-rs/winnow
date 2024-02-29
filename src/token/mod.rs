@@ -20,7 +20,7 @@ use crate::Parser;
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Effective Signature
 ///
@@ -206,7 +206,7 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Effective Signature
 ///
@@ -276,7 +276,7 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Effective Signature
 ///
@@ -330,7 +330,7 @@ where
 /// It will return an `ErrMode::Backtrack(InputError::new(_, ErrorKind::Slice))` if the set of tokens wasn't met or is out
 /// of range (m <= len <= n).
 ///
-/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if a member of the set of tokens reaches the end of the input or is too short.
+/// *[Partial version][crate::_topic::partial]* will return a `ErrMode::Incomplete(Needed::new(1))` if a member of the set of tokens reaches the end of the input or is too short.
 ///
 /// To recognize a series of tokens, use [`repeat`][crate::combinator::repeat] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`].
 ///
@@ -681,7 +681,7 @@ where
 ///
 /// It doesn't consume the terminating token from the set.
 ///
-/// *Partial version* will return a `ErrMode::Incomplete(Needed::new(1))` if the match reaches the
+/// *[Partial version][crate::_topic::partial]* will return a `ErrMode::Incomplete(Needed::new(1))` if the match reaches the
 /// end of input or if there was not match.
 ///
 /// See also
@@ -781,7 +781,7 @@ where
 ///
 /// *Complete version*: It will return `Err(ErrMode::Backtrack(InputError::new(_, ErrorKind::Slice)))` if the input is shorter than the argument.
 ///
-/// *Partial version*: if the input has less than N elements, `take` will
+/// *[Partial version][crate::_topic::partial]*: if the input has less than N elements, `take` will
 /// return a `ErrMode::Incomplete(Needed::new(M))` where M is the number of
 /// additional bytes the parser would need to succeed.
 /// It is well defined for `&[u8]` as the number of elements is the byte size,
@@ -890,7 +890,7 @@ where
 /// *Complete version*: It will return `Err(ErrMode::Backtrack(InputError::new(_, ErrorKind::Slice)))`
 /// if the literal wasn't met.
 ///
-/// *Partial version*: will return a `ErrMode::Incomplete(Needed::new(N))` if the input doesn't
+/// *[Partial version][crate::_topic::partial]*: will return a `ErrMode::Incomplete(Needed::new(N))` if the input doesn't
 /// contain the literal or if the input is smaller than the literal.
 ///
 /// See also
