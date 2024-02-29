@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Documentation
+
+- Provide examples of concrete signatures
+
 ## [0.6.3] - 2024-02-28
 
 ### Fixes
