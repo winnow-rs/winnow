@@ -61,6 +61,17 @@ impl Caseless<&str> {
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn crlf<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::ascii::crlf.parse_next(input)
+/// # }
+/// ```
+///
 /// # Example
 ///
 /// ```
@@ -99,6 +110,17 @@ where
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn till_line_ending<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::ascii::till_line_ending.parse_next(input)
+/// # }
+/// ```
 ///
 /// # Example
 ///
@@ -185,6 +207,17 @@ where
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn line_ending<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::ascii::line_ending.parse_next(input)
+/// # }
+/// ```
+///
 /// # Example
 ///
 /// ```
@@ -223,6 +256,17 @@ where
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn newline(input: &mut &str) -> PResult<char>
+/// # {
+/// #     winnow::ascii::newline.parse_next(input)
+/// # }
+/// ```
 ///
 /// # Example
 ///
@@ -264,6 +308,17 @@ where
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn tab(input: &mut &str) -> PResult<char>
+/// # {
+/// #     winnow::ascii::tab.parse_next(input)
+/// # }
+/// ```
+///
 /// # Example
 ///
 /// ```
@@ -304,6 +359,17 @@ where
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphabetic character).
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn alpha0<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::ascii::alpha0.parse_next(input)
+/// # }
+/// ```
 ///
 /// # Example
 ///
@@ -347,6 +413,17 @@ where
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphabetic character).
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn alpha1<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::ascii::alpha1.parse_next(input)
+/// # }
+/// ```
+///
 /// # Example
 ///
 /// ```
@@ -388,6 +465,17 @@ where
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non digit character).
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn digit0<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::ascii::digit0.parse_next(input)
+/// # }
+/// ```
 ///
 /// # Example
 ///
@@ -431,6 +519,17 @@ where
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non digit character).
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn digit1<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::ascii::digit1.parse_next(input)
+/// # }
+/// ```
 ///
 /// # Example
 ///
@@ -491,6 +590,17 @@ where
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non hexadecimal digit character).
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn hex_digit0<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::ascii::hex_digit0.parse_next(input)
+/// # }
+/// ```
+///
 /// # Example
 ///
 /// ```
@@ -534,6 +644,17 @@ where
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non hexadecimal digit character).
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn hex_digit1<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::ascii::hex_digit1.parse_next(input)
+/// # }
+/// ```
+///
 /// # Example
 ///
 /// ```
@@ -575,6 +696,17 @@ where
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non octal digit character).
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn oct_digit0<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::ascii::oct_digit0.parse_next(input)
+/// # }
+/// ```
 ///
 /// # Example
 ///
@@ -619,6 +751,17 @@ where
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non octal digit character).
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn oct_digit1<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::ascii::oct_digit1.parse_next(input)
+/// # }
+/// ```
+///
 /// # Example
 ///
 /// ```
@@ -660,6 +803,17 @@ where
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphanumerical character).
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn alphanumeric0<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::ascii::alphanumeric0.parse_next(input)
+/// # }
+/// ```
 ///
 /// # Example
 ///
@@ -703,6 +857,17 @@ where
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphanumerical character).
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn alphanumeric1<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::ascii::alphanumeric1.parse_next(input)
+/// # }
+/// ```
+///
 /// # Example
 ///
 /// ```
@@ -745,6 +910,17 @@ where
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn space0<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::ascii::space0.parse_next(input)
+/// # }
+/// ```
+///
 /// # Example
 ///
 /// ```
@@ -773,6 +949,17 @@ where
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn space1<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::ascii::space1.parse_next(input)
+/// # }
+/// ```
 ///
 /// # Example
 ///
@@ -816,6 +1003,17 @@ where
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn multispace0<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::ascii::multispace0.parse_next(input)
+/// # }
+/// ```
+///
 /// # Example
 ///
 /// ```
@@ -858,6 +1056,17 @@ where
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 ///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn multispace1<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::ascii::multispace1.parse_next(input)
+/// # }
+/// ```
+///
 /// # Example
 ///
 /// ```
@@ -897,6 +1106,17 @@ where
 /// *Complete version*: can parse until the end of input.
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str` into a `u32`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn dec_uint(input: &mut &str) -> PResult<u32>
+/// # {
+/// #     winnow::ascii::dec_uint.parse_next(input)
+/// # }
+/// ```
 #[doc(alias = "u8")]
 #[doc(alias = "u16")]
 #[doc(alias = "u32")]
@@ -971,6 +1191,17 @@ impl Uint for usize {
 /// *Complete version*: can parse until the end of input.
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str` into an `i32`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn dec_int(input: &mut &str) -> PResult<i32>
+/// # {
+/// #     winnow::ascii::dec_int.parse_next(input)
+/// # }
+/// ```
 #[doc(alias = "i8")]
 #[doc(alias = "i16")]
 #[doc(alias = "i32")]
@@ -1052,6 +1283,17 @@ impl Int for isize {
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if end-of-input
 /// is hit before a hard boundary (non-hex character, more characters than supported).
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str` into a `u32`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn hex_uint(input: &mut &str) -> PResult<u32>
+/// # {
+/// #     winnow::ascii::hex_uint.parse_next(input)
+/// # }
+/// ```
 ///
 /// # Example
 ///
@@ -1189,6 +1431,17 @@ impl HexUint for u128 {
 /// *Complete version*: Can parse until the end of input.
 ///
 /// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing `&str` into an `f64`:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn float(input: &mut &str) -> PResult<f64>
+/// # {
+/// #     winnow::ascii::float.parse_next(input)
+/// # }
+/// ```
 ///
 /// # Example
 ///

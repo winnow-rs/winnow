@@ -2688,6 +2688,31 @@ impl<T: crate::lib::std::fmt::Debug, S> crate::lib::std::fmt::Debug for Checkpoi
 }
 
 /// A range bounded inclusively for counting parses performed
+///
+/// This is flexible in what can be converted to a [Range]:
+/// ```rust
+/// # use winnow::prelude::*;
+/// # use winnow::token::any;
+/// # use winnow::combinator::repeat;
+/// # fn inner(input: &mut &str) -> PResult<char> {
+/// #     any.parse_next(input)
+/// # }
+/// # let mut input = "0123456789012345678901234567890123456789";
+/// # let input = &mut input;
+/// let parser: Vec<_> = repeat(5, inner).parse_next(input).unwrap();
+/// # let mut input = "0123456789012345678901234567890123456789";
+/// # let input = &mut input;
+/// let parser: Vec<_> = repeat(.., inner).parse_next(input).unwrap();
+/// # let mut input = "0123456789012345678901234567890123456789";
+/// # let input = &mut input;
+/// let parser: Vec<_> = repeat(1.., inner).parse_next(input).unwrap();
+/// # let mut input = "0123456789012345678901234567890123456789";
+/// # let input = &mut input;
+/// let parser: Vec<_> = repeat(5..8, inner).parse_next(input).unwrap();
+/// # let mut input = "0123456789012345678901234567890123456789";
+/// # let input = &mut input;
+/// let parser: Vec<_> = repeat(5..=8, inner).parse_next(input).unwrap();
+/// ```
 #[derive(PartialEq, Eq)]
 pub struct Range {
     pub(crate) start_inclusive: usize,
