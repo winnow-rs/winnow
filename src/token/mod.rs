@@ -562,10 +562,6 @@ where
     take_till_m_n::<_, _, _, PARTIAL>(input, m, n, |c| !list.contains_token(c))
 }
 
-/// Looks for the first element of the input type for which the condition returns true,
-/// and returns the input up to this position.
-///
-/// *Partial version*: If no element is found matching the condition, this will return `Incomplete`
 fn take_till0_partial<P, I: Stream, E: ParserError<I>>(
     input: &mut I,
     predicate: P,
@@ -579,12 +575,6 @@ where
     Ok(input.next_slice(offset))
 }
 
-/// Looks for the first element of the input type for which the condition returns true
-/// and returns the input up to this position.
-///
-/// Fails if the produced slice is empty.
-///
-/// *Partial version*: If no element is found matching the condition, this will return `Incomplete`
 fn take_till1_partial<P, I: Stream, E: ParserError<I>>(
     input: &mut I,
     predicate: P,
@@ -603,10 +593,6 @@ where
     }
 }
 
-/// Looks for the first element of the input type for which the condition returns true,
-/// and returns the input up to this position.
-///
-/// *Complete version*: If no element is found matching the condition, this will return the whole input
 fn take_till0_complete<P, I: Stream, E: ParserError<I>>(
     input: &mut I,
     predicate: P,
@@ -620,12 +606,6 @@ where
     Ok(input.next_slice(offset))
 }
 
-/// Looks for the first element of the input type for which the condition returns true
-/// and returns the input up to this position.
-///
-/// Fails if the produced slice is empty.
-///
-/// *Complete version*: If no element is found matching the condition, this will return the whole input
 fn take_till1_complete<P, I: Stream, E: ParserError<I>>(
     input: &mut I,
     predicate: P,
