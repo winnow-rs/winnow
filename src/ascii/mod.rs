@@ -63,7 +63,7 @@ impl Caseless<&str> {
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn crlf<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -113,7 +113,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn till_line_ending<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -209,7 +209,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn line_ending<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -259,7 +259,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn newline(input: &mut &str) -> PResult<char>
@@ -310,7 +310,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn tab(input: &mut &str) -> PResult<char>
@@ -362,7 +362,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn alpha0<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -415,7 +415,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn alpha1<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -468,7 +468,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn digit0<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -522,7 +522,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn digit1<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -592,7 +592,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn hex_digit0<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -646,7 +646,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn hex_digit1<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -699,7 +699,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn oct_digit0<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -753,7 +753,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn oct_digit1<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -806,7 +806,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn alphanumeric0<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -859,7 +859,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn alphanumeric1<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -912,7 +912,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn space0<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -952,7 +952,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn space1<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -1005,7 +1005,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn multispace0<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -1058,7 +1058,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn multispace1<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -1109,7 +1109,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str` into a `u32`:
+/// Assuming you are parsing a `&str` [Stream] into a `u32`:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn dec_uint(input: &mut &str) -> PResult<u32>
@@ -1194,7 +1194,7 @@ impl Uint for usize {
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str` into an `i32`:
+/// Assuming you are parsing a `&str` [Stream] into an `i32`:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn dec_int(input: &mut &str) -> PResult<i32>
@@ -1286,7 +1286,7 @@ impl Int for isize {
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str` into a `u32`:
+/// Assuming you are parsing a `&str` [Stream] into a `u32`:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn hex_uint(input: &mut &str) -> PResult<u32>
@@ -1434,7 +1434,7 @@ impl HexUint for u128 {
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str` into an `f64`:
+/// Assuming you are parsing a `&str` [Stream] into an `f64`:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn float(input: &mut &str) -> PResult<f64>

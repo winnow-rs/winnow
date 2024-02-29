@@ -24,7 +24,7 @@ use crate::Parser;
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn any(input: &mut &str) -> PResult<char>
@@ -98,7 +98,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// # use winnow::error::ContextError;
@@ -210,7 +210,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// # use winnow::stream::ContainsToken;
@@ -280,7 +280,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// # use winnow::stream::ContainsToken;
@@ -336,7 +336,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str` with `0..` or `1..` ranges:
+/// Assuming you are parsing a `&str` [Stream] with `0..` or `1..` [ranges][Range]:
 /// ```rust
 /// # use std::ops::RangeFrom;
 /// # use winnow::prelude::*;
@@ -710,7 +710,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str` with `0..` or `1..` [ranges][Range]:
+/// Assuming you are parsing a `&str` [Stream] with `0..` or `1..` [ranges][Range]:
 /// ```rust
 /// # use std::ops::RangeFrom;
 /// # use winnow::prelude::*;
@@ -810,7 +810,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str` with `0..` or `1..` ranges:
+/// Assuming you are parsing a `&str` [Stream] with `0..` or `1..` ranges:
 /// ```rust
 /// # use std::ops::RangeFrom;
 /// # use winnow::prelude::*;
@@ -919,7 +919,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str` with `0..` or `1..` ranges:
+/// Assuming you are parsing a `&str` [Stream] with `0..` or `1..` [ranges][Range]:
 /// ```rust
 /// # use std::ops::RangeFrom;
 /// # use winnow::prelude::*;;
