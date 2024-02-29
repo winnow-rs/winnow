@@ -3,6 +3,16 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+- Deprecated `escaped` in favor of `take_escaped` (rename)
+
+### Documentation
+
+- Fix some bugs in concrete signatures
+- Explain what "Partial version" means
+- When discussing the signature, highlight the most relevant trait for `input`
+
 ## [0.6.4] - 2024-02-29
 
 ### Documentation
