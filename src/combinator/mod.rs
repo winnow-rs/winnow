@@ -108,8 +108,8 @@
 //! - [`dec_uint`][crate::ascii::dec_uint]: Decode a variable-width, decimal unsigned integer
 //! - [`hex_uint`][crate::ascii::hex_uint]: Decode a variable-width, hexadecimal integer
 //!
-//! - [`escaped`][crate::ascii::escaped]: Matches a byte string with escaped characters
-//! - [`escaped_transform`][crate::ascii::escaped_transform]: Matches a byte string with escaped characters, and returns a new string with the escaped characters replaced
+//! - [`take_escaped`][crate::ascii::take_escaped]: Recognize the input slice with escaped characters
+//! - [`escaped_transform`][crate::ascii::escaped_transform]: Parse escaped characters, unescaping them
 //!
 //! ### Character test functions
 //!

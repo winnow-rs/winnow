@@ -646,14 +646,14 @@ mod complete {
       }
     }
 
-    // issue #1336 "escaped hangs if normal parser accepts empty"
+    // issue #1336 "take_escaped hangs if normal parser accepts empty"
     #[test]
-    fn complete_escaped_hang() {
-        // issue #1336 "escaped hangs if normal parser accepts empty"
+    fn complete_take_escaped_hang() {
+        // issue #1336 "take_escaped hangs if normal parser accepts empty"
         fn escaped_string(input: &str) -> IResult<&str, &str> {
             use crate::ascii::alpha0;
             use crate::token::one_of;
-            escaped(alpha0, '\\', one_of(['n'])).parse_peek(input)
+            take_escaped(alpha0, '\\', one_of(['n'])).parse_peek(input)
         }
 
         escaped_string("7").unwrap();
@@ -661,8 +661,8 @@ mod complete {
     }
 
     #[test]
-    fn complete_escaped_hang_1118() {
-        // issue ##1118 escaped does not work with empty string
+    fn complete_take_escaped_hang_1118() {
+        // issue ##1118 take_escaped does not work with empty string
         fn unquote(input: &str) -> IResult<&str, &str> {
             use crate::combinator::delimited;
             use crate::combinator::opt;
@@ -670,7 +670,7 @@ mod complete {
 
             delimited(
                 '"',
-                escaped(
+                take_escaped(
                     opt(none_of(['\\', '"'])),
                     '\\',
                     one_of(['\\', '"', 'r', 'n', 't']),
@@ -691,7 +691,7 @@ mod complete {
         use crate::token::one_of;
 
         fn esc(i: &[u8]) -> IResult<&[u8], &[u8]> {
-            escaped(alpha, '\\', one_of(['\"', 'n', '\\'])).parse_peek(i)
+            take_escaped(alpha, '\\', one_of(['\"', 'n', '\\'])).parse_peek(i)
         }
         assert_eq!(esc(&b"abcd;"[..]), Ok((&b";"[..], &b"abcd"[..])));
         assert_eq!(esc(&b"ab\\\"cd;"[..]), Ok((&b";"[..], &b"ab\\\"cd"[..])));
@@ -715,7 +715,7 @@ mod complete {
         );
 
         fn esc2(i: &[u8]) -> IResult<&[u8], &[u8]> {
-            escaped(digit, '\\', one_of(['\"', 'n', '\\'])).parse_peek(i)
+            take_escaped(digit, '\\', one_of(['\"', 'n', '\\'])).parse_peek(i)
         }
         assert_eq!(esc2(&b"12\\nnn34"[..]), Ok((&b"nn34"[..], &b"12\\n"[..])));
     }
@@ -727,7 +727,7 @@ mod complete {
         use crate::token::one_of;
 
         fn esc(i: &str) -> IResult<&str, &str> {
-            escaped(alpha, '\\', one_of(['\"', 'n', '\\'])).parse_peek(i)
+            take_escaped(alpha, '\\', one_of(['\"', 'n', '\\'])).parse_peek(i)
         }
         assert_eq!(esc("abcd;"), Ok((";", "abcd")));
         assert_eq!(esc("ab\\\"cd;"), Ok((";", "ab\\\"cd")));
@@ -748,12 +748,12 @@ mod complete {
         );
 
         fn esc2(i: &str) -> IResult<&str, &str> {
-            escaped(digit, '\\', one_of(['\"', 'n', '\\'])).parse_peek(i)
+            take_escaped(digit, '\\', one_of(['\"', 'n', '\\'])).parse_peek(i)
         }
         assert_eq!(esc2("12\\nnn34"), Ok(("nn34", "12\\n")));
 
         fn esc3(i: &str) -> IResult<&str, &str> {
-            escaped(alpha, '\u{241b}', one_of(['\"', 'n'])).parse_peek(i)
+            take_escaped(alpha, '\u{241b}', one_of(['\"', 'n'])).parse_peek(i)
         }
         assert_eq!(esc3("ab␛ncd;"), Ok((";", "ab␛ncd")));
     }
@@ -762,7 +762,7 @@ mod complete {
     fn test_escaped_error() {
         fn esc(s: &str) -> IResult<&str, &str> {
             use crate::ascii::digit1;
-            escaped(digit1, '\\', one_of(['\"', 'n', '\\'])).parse_peek(s)
+            take_escaped(digit1, '\\', one_of(['\"', 'n', '\\'])).parse_peek(s)
         }
 
         assert_eq!(esc("abcd"), Ok(("abcd", "")));

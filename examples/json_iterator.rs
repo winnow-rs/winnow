@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use winnow::prelude::*;
 use winnow::{
-    ascii::{alphanumeric1 as alphanumeric, escaped, float},
+    ascii::{alphanumeric1 as alphanumeric, float, take_escaped},
     combinator::alt,
     combinator::cut_err,
     combinator::separated,
@@ -216,7 +216,7 @@ fn sp<'a, E: ParserError<&'a str>>(i: &mut &'a str) -> PResult<&'a str, E> {
 }
 
 fn parse_str<'a, E: ParserError<&'a str>>(i: &mut &'a str) -> PResult<&'a str, E> {
-    escaped(alphanumeric, '\\', one_of(['"', 'n', '\\'])).parse_next(i)
+    take_escaped(alphanumeric, '\\', one_of(['"', 'n', '\\'])).parse_next(i)
 }
 
 fn string<'s>(i: &mut &'s str) -> PResult<&'s str> {

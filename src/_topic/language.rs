@@ -136,7 +136,7 @@
 #![doc = include_str!("../../examples/string/parser.rs")]
 //! ```
 //!
-//! See also [`escaped`] and [`escaped_transform`].
+//! See also [`take_escaped`] and [`escaped_transform`].
 //!
 //! ### Integers
 //!
@@ -320,7 +320,7 @@
 #![allow(unused_imports)]
 use crate::ascii::dec_int;
 use crate::ascii::dec_uint;
-use crate::ascii::escaped;
 use crate::ascii::escaped_transform;
 use crate::ascii::float;
 use crate::ascii::hex_uint;
+use crate::ascii::take_escaped;

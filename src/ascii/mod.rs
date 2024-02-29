@@ -1550,11 +1550,9 @@ where
         .parse_next(input)
 }
 
-/// Matches a byte string with escaped characters.
+/// Recognize the input slice with escaped characters.
 ///
-/// * The first argument matches the normal characters (it must not accept the control character)
-/// * The second argument is the control character (like `\` in most languages)
-/// * The third argument matches the escaped characters
+/// See also [`escaped_transform`]
 ///
 /// # Example
 ///
@@ -1563,11 +1561,11 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed, IResult};
 /// # use winnow::ascii::digit1;
 /// # use winnow::prelude::*;
-/// use winnow::ascii::escaped;
+/// use winnow::ascii::take_escaped;
 /// use winnow::token::one_of;
 ///
 /// fn esc(s: &str) -> IResult<&str, &str> {
-///   escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_peek(s)
+///   take_escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_peek(s)
 /// }
 ///
 /// assert_eq!(esc("123;"), Ok((";", "123")));
@@ -1580,18 +1578,18 @@ where
 /// # use winnow::ascii::digit1;
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::ascii::escaped;
+/// use winnow::ascii::take_escaped;
 /// use winnow::token::one_of;
 ///
 /// fn esc(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_peek(s)
+///   take_escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_peek(s)
 /// }
 ///
 /// assert_eq!(esc(Partial::new("123;")), Ok((Partial::new(";"), "123")));
 /// assert_eq!(esc(Partial::new("12\\\"34;")), Ok((Partial::new(";"), "12\\\"34")));
 /// ```
 #[inline(always)]
-pub fn escaped<'i, Input: 'i, Error, Normal, Escapable, NormalOutput, EscapableOutput>(
+pub fn take_escaped<'i, Input: 'i, Error, Normal, Escapable, NormalOutput, EscapableOutput>(
     mut normal: Normal,
     control_char: char,
     mut escapable: Escapable,
@@ -1602,13 +1600,30 @@ where
     Escapable: Parser<Input, EscapableOutput, Error>,
     Error: ParserError<Input>,
 {
-    trace("escaped", move |input: &mut Input| {
+    trace("take_escaped", move |input: &mut Input| {
         if <Input as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             streaming_escaped_internal(input, &mut normal, control_char, &mut escapable)
         } else {
             complete_escaped_internal(input, &mut normal, control_char, &mut escapable)
         }
     })
+}
+
+/// Deprecated, replaced with [`take_escaped`]
+#[deprecated(since = "0.6.4", note = "Replaced with `take_escaped`")]
+#[inline(always)]
+pub fn escaped<'i, Input: 'i, Error, Normal, Escapable, NormalOutput, EscapableOutput>(
+    normal: Normal,
+    control_char: char,
+    escapable: Escapable,
+) -> impl Parser<Input, <Input as Stream>::Slice, Error>
+where
+    Input: StreamIsPartial + Stream + Compare<char>,
+    Normal: Parser<Input, NormalOutput, Error>,
+    Escapable: Parser<Input, EscapableOutput, Error>,
+    Error: ParserError<Input>,
+{
+    take_escaped(normal, control_char, escapable)
 }
 
 fn streaming_escaped_internal<I, Error, F, G, O1, O2>(
@@ -1696,11 +1711,7 @@ where
     Ok(input.finish())
 }
 
-/// Matches a byte string with escaped characters.
-///
-/// * The first argument matches the normal characters (it must not match the control character)
-/// * The second argument is the control character (like `\` in most languages)
-/// * The third argument matches the escaped characters and transforms them
+/// Parse escaped characters, unescaping them
 ///
 /// As an example, the chain `abc\tdef` could be `abc    def` (it also consumes the control character)
 ///
