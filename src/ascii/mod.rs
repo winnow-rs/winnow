@@ -59,11 +59,11 @@ impl Caseless<&str> {
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn crlf<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -109,11 +109,11 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn till_line_ending<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -205,11 +205,11 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn line_ending<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -255,11 +255,11 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn newline(input: &mut &str) -> PResult<char>
@@ -306,11 +306,11 @@ where
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn tab(input: &mut &str) -> PResult<char>
@@ -357,12 +357,12 @@ where
 /// *Complete version*: Will return the whole input if no terminating token is found (a non
 /// alphabetic character).
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphabetic character).
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn alpha0<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -410,12 +410,12 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found  (a non alphabetic character).
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphabetic character).
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn alpha1<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -463,12 +463,12 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non digit character).
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non digit character).
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn digit0<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -517,12 +517,12 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non digit character).
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non digit character).
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn digit1<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -587,12 +587,12 @@ where
 ///
 /// *Complete version*: Will return the whole input if no terminating token is found (a non hexadecimal digit character).
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non hexadecimal digit character).
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn hex_digit0<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -641,12 +641,12 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non hexadecimal digit character).
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non hexadecimal digit character).
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn hex_digit1<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -694,12 +694,12 @@ where
 /// *Complete version*: Will return the whole input if no terminating token is found (a non octal
 /// digit character).
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non octal digit character).
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn oct_digit0<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -748,12 +748,12 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non octal digit character).
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non octal digit character).
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn oct_digit1<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -801,12 +801,12 @@ where
 /// *Complete version*: Will return the whole input if no terminating token is found (a non
 /// alphanumerical character).
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphanumerical character).
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn alphanumeric0<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -854,12 +854,12 @@ where
 /// *Complete version*: Will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non alphanumerical character).
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non alphanumerical character).
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn alphanumeric1<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -907,12 +907,12 @@ where
 /// *Complete version*: Will return the whole input if no terminating token is found (a non space
 /// character).
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn space0<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -947,12 +947,12 @@ where
 /// *Complete version*: Will return the whole input if no terminating token is found (a non space
 /// character).
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn space1<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -1000,12 +1000,12 @@ where
 /// *Complete version*: will return the whole input if no terminating token is found (a non space
 /// character).
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn multispace0<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -1053,12 +1053,12 @@ where
 /// *Complete version*: will return an error if there's not enough input data,
 /// or the whole input if no terminating token is found (a non space character).
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data,
 /// or if no terminating token is found (a non space character).
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn multispace1<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -1105,11 +1105,11 @@ where
 ///
 /// *Complete version*: can parse until the end of input.
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str` into a `u32`:
+/// Assuming you are parsing a `&str` [Stream] into a `u32`:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn dec_uint(input: &mut &str) -> PResult<u32>
@@ -1190,11 +1190,11 @@ impl Uint for usize {
 ///
 /// *Complete version*: can parse until the end of input.
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there's not enough input data.
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str` into an `i32`:
+/// Assuming you are parsing a `&str` [Stream] into an `i32`:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn dec_int(input: &mut &str) -> PResult<i32>
@@ -1281,12 +1281,12 @@ impl Int for isize {
 /// *Complete version*: Will parse until the end of input if it has fewer characters than the type
 /// supports.
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if end-of-input
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if end-of-input
 /// is hit before a hard boundary (non-hex character, more characters than supported).
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str` into a `u32`:
+/// Assuming you are parsing a `&str` [Stream] into a `u32`:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn hex_uint(input: &mut &str) -> PResult<u32>
@@ -1430,11 +1430,11 @@ impl HexUint for u128 {
 ///
 /// *Complete version*: Can parse until the end of input.
 ///
-/// *Partial version*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
+/// *[Partial version][crate::_topic::partial]*: Will return `Err(winnow::error::ErrMode::Incomplete(_))` if there is not enough data.
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str` into an `f64`:
+/// Assuming you are parsing a `&str` [Stream] into an `f64`:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn float(input: &mut &str) -> PResult<f64>
@@ -1550,11 +1550,9 @@ where
         .parse_next(input)
 }
 
-/// Matches a byte string with escaped characters.
+/// Recognize the input slice with escaped characters.
 ///
-/// * The first argument matches the normal characters (it must not accept the control character)
-/// * The second argument is the control character (like `\` in most languages)
-/// * The third argument matches the escaped characters
+/// See also [`escaped_transform`]
 ///
 /// # Example
 ///
@@ -1563,11 +1561,11 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed, IResult};
 /// # use winnow::ascii::digit1;
 /// # use winnow::prelude::*;
-/// use winnow::ascii::escaped;
+/// use winnow::ascii::take_escaped;
 /// use winnow::token::one_of;
 ///
 /// fn esc(s: &str) -> IResult<&str, &str> {
-///   escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_peek(s)
+///   take_escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_peek(s)
 /// }
 ///
 /// assert_eq!(esc("123;"), Ok((";", "123")));
@@ -1580,18 +1578,18 @@ where
 /// # use winnow::ascii::digit1;
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// use winnow::ascii::escaped;
+/// use winnow::ascii::take_escaped;
 /// use winnow::token::one_of;
 ///
 /// fn esc(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_peek(s)
+///   take_escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_peek(s)
 /// }
 ///
 /// assert_eq!(esc(Partial::new("123;")), Ok((Partial::new(";"), "123")));
 /// assert_eq!(esc(Partial::new("12\\\"34;")), Ok((Partial::new(";"), "12\\\"34")));
 /// ```
 #[inline(always)]
-pub fn escaped<'i, Input: 'i, Error, Normal, Escapable, NormalOutput, EscapableOutput>(
+pub fn take_escaped<'i, Input: 'i, Error, Normal, Escapable, NormalOutput, EscapableOutput>(
     mut normal: Normal,
     control_char: char,
     mut escapable: Escapable,
@@ -1602,13 +1600,30 @@ where
     Escapable: Parser<Input, EscapableOutput, Error>,
     Error: ParserError<Input>,
 {
-    trace("escaped", move |input: &mut Input| {
+    trace("take_escaped", move |input: &mut Input| {
         if <Input as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             streaming_escaped_internal(input, &mut normal, control_char, &mut escapable)
         } else {
             complete_escaped_internal(input, &mut normal, control_char, &mut escapable)
         }
     })
+}
+
+/// Deprecated, replaced with [`take_escaped`]
+#[deprecated(since = "0.6.4", note = "Replaced with `take_escaped`")]
+#[inline(always)]
+pub fn escaped<'i, Input: 'i, Error, Normal, Escapable, NormalOutput, EscapableOutput>(
+    normal: Normal,
+    control_char: char,
+    escapable: Escapable,
+) -> impl Parser<Input, <Input as Stream>::Slice, Error>
+where
+    Input: StreamIsPartial + Stream + Compare<char>,
+    Normal: Parser<Input, NormalOutput, Error>,
+    Escapable: Parser<Input, EscapableOutput, Error>,
+    Error: ParserError<Input>,
+{
+    take_escaped(normal, control_char, escapable)
 }
 
 fn streaming_escaped_internal<I, Error, F, G, O1, O2>(
@@ -1696,11 +1711,7 @@ where
     Ok(input.finish())
 }
 
-/// Matches a byte string with escaped characters.
-///
-/// * The first argument matches the normal characters (it must not match the control character)
-/// * The second argument is the control character (like `\` in most languages)
-/// * The third argument matches the escaped characters and transforms them
+/// Parse escaped characters, unescaping them
 ///
 /// As an example, the chain `abc\tdef` could be `abc    def` (it also consumes the control character)
 ///

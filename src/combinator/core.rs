@@ -7,7 +7,7 @@ use crate::*;
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn rest<'i>(input: &mut &'i str) -> PResult<&'i str>
@@ -41,7 +41,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn rest_len(input: &mut &str) -> PResult<usize>
@@ -194,7 +194,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// pub fn eof<'i>(input: &mut &'i str) -> PResult<&'i str>

@@ -150,7 +150,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `(&[u8], usize)` bit [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// # use winnow::error::ContextError;
@@ -268,7 +268,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `(&[u8], usize)` bit [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// # use winnow::error::ContextError;
@@ -368,7 +368,7 @@ where
 ///
 /// # Effective Signature
 ///
-/// Assuming you are parsing `&str`:
+/// Assuming you are parsing a `(&[u8], usize)` bit [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
 /// # use winnow::error::ContextError;
