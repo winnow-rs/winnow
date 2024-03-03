@@ -1435,6 +1435,7 @@ dependencies = [
  "doc-comment",
  "escargot",
  "is-terminal",
+ "lazy_static",
  "lexopt",
  "memchr",
  "proptest",

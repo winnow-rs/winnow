@@ -6,6 +6,8 @@ mod internals;
 use crate::error::ErrMode;
 use crate::stream::Stream;
 use crate::Parser;
+#[cfg(feature = "debug-wasm")]
+pub use internals::debug_wasm::{get_trace, reset_trace};
 
 #[cfg(all(feature = "debug", not(feature = "std")))]
 compile_error!("`debug` requires `std`");

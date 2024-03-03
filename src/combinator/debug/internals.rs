@@ -164,18 +164,46 @@ pub fn start<I: Stream>(
         (debug_slice, eof)
     };
 
-    let writer = anstream::stderr();
-    let mut writer = writer.lock();
-    let _ = writeln!(
-        writer,
-        "{call_column:call_width$} {gutter_style}|{gutter_reset} {input_style}{debug_slice}{input_reset}{eof_style}{eof}{eof_reset}",
-        gutter_style=gutter_style.render(),
-        gutter_reset=gutter_style.render_reset(),
-        input_style=input_style.render(),
-        input_reset=input_style.render_reset(),
-        eof_style=eof_style.render(),
-        eof_reset=eof_style.render_reset(),
+    writer_in(
+        format!("{call_column:call_width$} {gutter_style}|{gutter_reset} {input_style}{debug_slice}{input_reset}{eof_style}{eof}{eof_reset}",
+                gutter_style = gutter_style.render(),
+                gutter_reset = gutter_style.render_reset(),
+                input_style = input_style.render(),
+                input_reset = input_style.render_reset(),
+                eof_style = eof_style.render(),
+                eof_reset = eof_style.render_reset(), )
     );
+}
+
+#[cfg(feature = "debug-wasm")]
+pub mod debug_wasm {
+    use lazy_static::lazy_static;
+    use std::sync::Mutex;
+    lazy_static! {
+        pub static ref TRACE_LOG: Mutex<Vec<String>> = Mutex::new(Default::default());
+    }
+
+    pub fn reset_trace() {
+        TRACE_LOG.lock().unwrap().clear();
+    }
+
+    pub fn get_trace() -> Vec<String> {
+        TRACE_LOG.lock().unwrap().clone()
+    }
+}
+
+fn writer_in(f: String) {
+    #[cfg(feature = "debug-wasm")]
+    {
+        let mut writer = debug_wasm::TRACE_LOG.lock().unwrap();
+        writer.push(f)
+    }
+    #[cfg(feature = "debug-terminal")]
+    {
+        let writer = anstream::stderr();
+        let mut writer = writer.lock();
+        let _ = writeln!(writer, "{}", f);
+    }
 }
 
 pub fn end(
@@ -216,16 +244,13 @@ pub fn end(
         ),
     };
 
-    let writer = anstream::stderr();
-    let mut writer = writer.lock();
-    let _ = writeln!(
-        writer,
+    writer_in(format!(
         "{status_style}{call_column:call_width$}{status_reset} {gutter_style}|{gutter_reset} {status_style}{status}{status_reset}",
-        gutter_style=gutter_style.render(),
-        gutter_reset=gutter_style.render_reset(),
-        status_style=status_style.render(),
-        status_reset=status_style.render_reset(),
-    );
+        gutter_style = gutter_style.render(),
+        gutter_reset = gutter_style.render_reset(),
+        status_style = status_style.render(),
+        status_reset = status_style.render_reset(),
+    ));
 }
 
 pub fn result(depth: usize, name: &dyn crate::lib::std::fmt::Display, severity: Severity) {
@@ -256,14 +281,14 @@ pub fn result(depth: usize, name: &dyn crate::lib::std::fmt::Display, severity: 
 
     let writer = anstream::stderr();
     let mut writer = writer.lock();
-    let _ = writeln!(
-        writer,
+
+    let _ = writer_in(format!(
         "{status_style}{call_column:call_width$}{status_reset} {gutter_style}|{gutter_reset} {status_style}{status}{status_reset}",
-        gutter_style=gutter_style.render(),
-        gutter_reset=gutter_style.render_reset(),
-        status_style=status_style.render(),
-        status_reset=status_style.render_reset(),
-    );
+        gutter_style = gutter_style.render(),
+        gutter_reset = gutter_style.render_reset(),
+        status_style = status_style.render(),
+        status_reset = status_style.render_reset(),
+    ));
 }
 
 fn column_widths() -> (usize, usize) {
@@ -287,11 +312,13 @@ fn term_width() -> usize {
 
 fn query_width() -> Option<usize> {
     use is_terminal::IsTerminal;
-    if std::io::stderr().is_terminal() {
-        terminal_size::terminal_size().map(|(w, _h)| w.0.into())
-    } else {
-        None
+    #[cfg(feature = "debug-terminal")]
+    {
+        if std::io::stderr().is_terminal() {
+            return terminal_size::terminal_size().map(|(w, _h)| w.0.into());
+        }
     }
+    None
 }
 
 fn columns_env() -> Option<usize> {
