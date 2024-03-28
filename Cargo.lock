@@ -1433,7 +1433,6 @@ dependencies = [
  "circular",
  "criterion",
  "doc-comment",
- "escargot",
  "is-terminal",
  "lexopt",
  "memchr",
