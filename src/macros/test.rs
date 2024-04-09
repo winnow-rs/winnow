@@ -401,3 +401,19 @@ fn seq_tuple_no_parens() {
         .parse_next(input)
     }
 }
+
+#[test]
+fn seq_tuple_borrow() {
+    #![allow(dead_code)]
+
+    fn parser(input: &mut &str) -> PResult<(u32, u32)> {
+        let mut dec_uint0 = digit0.parse_to();
+        let mut dec_uint1 = digit0.parse_to();
+        seq! {
+            dec_uint0,
+            _: ',',
+            dec_uint1,
+        }
+        .parse_next(input)
+    }
+}
