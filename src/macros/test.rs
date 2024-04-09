@@ -1,4 +1,5 @@
 use crate::ascii::dec_uint;
+use crate::ascii::digit0;
 use crate::combinator::dispatch;
 use crate::combinator::empty;
 use crate::combinator::fail;
@@ -222,6 +223,30 @@ fn seq_enum_struct_variant() {
         mul.parse_peek(&b"3 * 4"[..]),
         Ok((&b""[..], Expr::Mul(3, 4))),
     );
+}
+
+#[test]
+fn seq_struct_borrow() {
+    #![allow(dead_code)]
+
+    #[derive(Debug, PartialEq)]
+    struct Point {
+        x: u32,
+        y: u32,
+    }
+
+    fn parser(input: &mut &str) -> PResult<Point> {
+        let mut dec_uint = digit0.parse_to();
+        seq! {
+            Point {
+                x: dec_uint,
+                _: ',',
+                y: dec_uint,
+                _: empty
+            }
+        }
+        .parse_next(input)
+    }
 }
 
 #[test]
