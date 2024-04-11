@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Add impl `ErrorConvert` for `ContextError` so it can be used with bit parsing
+
 ## [0.6.5] - 2024-02-29
 
 ### Compatibility
