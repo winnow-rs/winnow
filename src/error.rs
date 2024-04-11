@@ -711,6 +711,13 @@ impl crate::lib::std::fmt::Display for ContextError<StrContext> {
     }
 }
 
+impl<C> ErrorConvert<ContextError<C>> for ContextError<C> {
+    #[inline]
+    fn convert(self) -> ContextError<C> {
+        self
+    }
+}
+
 /// Additional parse context for [`ContextError`] added via [`Parser::context`]
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[non_exhaustive]
