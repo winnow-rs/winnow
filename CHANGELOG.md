@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.6.6] - 2024-04-11
+
 ### Fixes
 
 - Add impl `ErrorConvert` for `ContextError` so it can be used with bit parsing
@@ -2321,7 +2323,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.5...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.6...HEAD
+[0.6.6]: https://github.com/winnow-rs/winnow/compare/v0.6.5...v0.6.6
 [0.6.5]: https://github.com/winnow-rs/winnow/compare/v0.6.4...v0.6.5
 [0.6.4]: https://github.com/winnow-rs/winnow/compare/v0.6.3...v0.6.4
 [0.6.3]: https://github.com/winnow-rs/winnow/compare/v0.6.2...v0.6.3
