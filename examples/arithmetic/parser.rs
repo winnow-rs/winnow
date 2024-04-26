@@ -11,7 +11,7 @@ use winnow::{
 
 // Parser definition
 
-pub fn expr(i: &mut &str) -> PResult<i64> {
+pub(crate) fn expr(i: &mut &str) -> PResult<i64> {
     let init = term.parse_next(i)?;
 
     repeat(0.., (one_of(['+', '-']), term))

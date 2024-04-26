@@ -21,7 +21,7 @@ file=payroll.dat
         b.iter(|| parser::categories.parse_peek(str.as_bytes()).unwrap());
     });
     group.bench_function(criterion::BenchmarkId::new("str", str.len()), |b| {
-        b.iter(|| parser_str::categories.parse_peek(str).unwrap())
+        b.iter(|| parser_str::categories.parse_peek(str).unwrap());
     });
 }
 

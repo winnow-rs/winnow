@@ -3,10 +3,10 @@ use winnow::prelude::*;
 use winnow::token::take_while;
 
 #[derive(Debug, Eq, PartialEq)]
-pub struct Color {
-    pub red: u8,
-    pub green: u8,
-    pub blue: u8,
+pub(crate) struct Color {
+    pub(crate) red: u8,
+    pub(crate) green: u8,
+    pub(crate) blue: u8,
 }
 
 impl std::str::FromStr for Color {
@@ -18,7 +18,7 @@ impl std::str::FromStr for Color {
     }
 }
 
-pub fn hex_color(input: &mut &str) -> PResult<Color> {
+pub(crate) fn hex_color(input: &mut &str) -> PResult<Color> {
     seq!(Color {
         _: '#',
         red: hex_primary,

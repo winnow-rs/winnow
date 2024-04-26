@@ -9,6 +9,8 @@ use crate::error::ErrorKind;
 use crate::error::InputError;
 use crate::error::Needed;
 use crate::error::ParserError;
+#[cfg(feature = "alloc")]
+use crate::lib::std::borrow::ToOwned;
 use crate::stream::Stream;
 use crate::token::take;
 use crate::unpeek;
@@ -518,15 +520,12 @@ fn alt_test() {
     #[cfg(feature = "alloc")]
     use crate::{
         error::ParserError,
-        lib::std::{
-            fmt::Debug,
-            string::{String, ToString},
-        },
+        lib::std::{fmt::Debug, string::String},
     };
 
     #[cfg(feature = "alloc")]
     #[derive(Debug, Clone, Eq, PartialEq)]
-    pub struct ErrorStr(String);
+    struct ErrorStr(String);
 
     #[cfg(feature = "alloc")]
     impl From<u32> for ErrorStr {
@@ -562,7 +561,7 @@ fn alt_test() {
 
     #[allow(unused_variables)]
     fn dont_work(input: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
-        Err(ErrMode::Backtrack(ErrorStr("abcd".to_string())))
+        Err(ErrMode::Backtrack(ErrorStr("abcd".to_owned())))
     }
 
     fn work2(input: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
@@ -594,7 +593,7 @@ fn alt_test() {
         Err(ErrMode::Backtrack(error_node_position!(
             &a,
             ErrorKind::Alt,
-            ErrorStr("abcd".to_string())
+            ErrorStr("abcd".to_owned())
         )))
     );
     assert_eq!(alt2(a), Ok((&b""[..], a)));
@@ -1176,7 +1175,7 @@ fn count_zero() {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct NilError;
+struct NilError;
 
 impl<I> From<(I, ErrorKind)> for NilError {
     fn from(_: (I, ErrorKind)) -> Self {

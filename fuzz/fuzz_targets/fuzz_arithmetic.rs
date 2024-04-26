@@ -14,7 +14,7 @@ use winnow::{
 use std::cell::RefCell;
 
 thread_local! {
-    pub static LEVEL: RefCell<u32> = RefCell::new(0);
+    pub static LEVEL: RefCell<u32> = const { RefCell::new(0) };
 }
 
 fn reset() {

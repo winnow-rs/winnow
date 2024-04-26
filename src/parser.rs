@@ -3,10 +3,12 @@
 use crate::ascii::Caseless as AsciiCaseless;
 use crate::combinator::*;
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 use crate::error::FromRecoverableError;
 use crate::error::{AddContext, FromExternalError, IResult, PResult, ParseError, ParserError};
 use crate::stream::{Compare, Location, ParseSlice, Stream, StreamIsPartial};
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 use crate::stream::{Recover, Recoverable};
 
 /// Core trait for parsing
@@ -676,6 +678,7 @@ pub trait Parser<I, O, E> {
     /// [`winnow::combinator::alt`][crate::combinator::alt].
     #[inline(always)]
     #[cfg(feature = "unstable-recover")]
+    #[cfg(feature = "std")]
     fn retry_after<R>(self, recover: R) -> RetryAfter<Self, R, I, O, E>
     where
         Self: core::marker::Sized,
@@ -693,6 +696,7 @@ pub trait Parser<I, O, E> {
     /// [`winnow::combinator::alt`][crate::combinator::alt].
     #[inline(always)]
     #[cfg(feature = "unstable-recover")]
+    #[cfg(feature = "std")]
     fn resume_after<R>(self, recover: R) -> ResumeAfter<Self, R, I, O, E>
     where
         Self: core::marker::Sized,
@@ -999,6 +1003,7 @@ macro_rules! impl_parser_for_tuples {
 ///
 /// [`Parser`]s will need to use [`Recoverable<I, _>`] for their input.
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 pub trait RecoverableParser<I, O, R, E> {
     /// Collect all errors when parsing the input
     ///
@@ -1011,6 +1016,7 @@ pub trait RecoverableParser<I, O, R, E> {
 }
 
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 impl<P, I, O, R, E> RecoverableParser<I, O, R, E> for P
 where
     P: Parser<Recoverable<I, R>, O, E>,
@@ -1085,7 +1091,7 @@ impl_parser_for_tuples!(
 );
 
 #[cfg(feature = "alloc")]
-use alloc::boxed::Box;
+use crate::lib::std::boxed::Box;
 
 #[cfg(feature = "alloc")]
 impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a> {

@@ -12,12 +12,16 @@ env:
   CARGO_TERM_COLOR: always
   CLICOLOR: 1
 
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
 jobs:
   test:
     name: Test
     strategy:
       matrix:
-        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
+        os: ["ubuntu-latest", "windows-latest", "macos-latest", "macos-14"]
         rust: ["stable", "beta"]
         include:
         - os: ubuntu-latest
@@ -32,28 +36,11 @@ jobs:
       with:
         toolchain: ${{ matrix.rust }}
     - uses: Swatinem/rust-cache@v2
-    - name: Default features
-      run: cargo test --workspace
-    - name: All features
-      run: cargo test --workspace --all-features
-    - name: No-default features
-      run: cargo test --workspace --no-default-features
-  miri:
-    name: Miri
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    - name: Install Rust
-      uses: dtolnay/rust-toolchain@stable
-      with:
-        toolchain: nightly
-        components: miri
-    - uses: Swatinem/rust-cache@v2
-    # no-default features is a subset, not needed
-    # all-features is `debug` which is extremely slow
-    - name: Default features
-      run: cargo miri test --workspace
+    - uses: taiki-e/install-action@cargo-hack
+    - name: Build
+      run: cargo test --workspace --no-run
+    - name: Test
+      run: cargo hack test --feature-powerset --workspace
   latest:
     name: "Check latest dependencies"
     runs-on: ubuntu-latest
@@ -65,11 +52,10 @@ jobs:
       with:
         toolchain: stable
     - uses: Swatinem/rust-cache@v2
+    - uses: taiki-e/install-action@cargo-hack
     - name: Update dependencues
       run: cargo update
-    - name: Default features
-      run: cargo test --workspace
-    - name: All features
-      run: cargo test --workspace --all-features
-    - name: No-default features
-      run: cargo test --workspace --no-default-features
+    - name: Build
+      run: cargo test --workspace --no-run
+    - name: Test
+      run: cargo hack test --feature-powerset --workspace

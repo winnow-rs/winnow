@@ -2,12 +2,12 @@ use winnow::combinator::seq;
 use winnow::prelude::*;
 use winnow::{ascii::line_ending, combinator::repeat, token::take_while};
 
-pub type Stream<'i> = &'i [u8];
+pub(crate) type Stream<'i> = &'i [u8];
 
 #[rustfmt::skip]
 #[derive(Debug)]
 #[allow(dead_code)]
-pub struct Request<'a> {
+pub(crate) struct Request<'a> {
   method:  &'a [u8],
   uri:     &'a [u8],
   version: &'a [u8],
@@ -15,12 +15,12 @@ pub struct Request<'a> {
 
 #[derive(Debug)]
 #[allow(dead_code)]
-pub struct Header<'a> {
+pub(crate) struct Header<'a> {
     name: &'a [u8],
     value: Vec<&'a [u8]>,
 }
 
-pub fn parse(data: &[u8]) -> Option<Vec<(Request<'_>, Vec<Header<'_>>)>> {
+pub(crate) fn parse(data: &[u8]) -> Option<Vec<(Request<'_>, Vec<Header<'_>>)>> {
     let mut buf = data;
     let mut v = Vec::new();
     loop {

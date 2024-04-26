@@ -6,7 +6,7 @@ use crate::*;
 #[doc(inline)]
 pub use crate::dispatch;
 
-/// Helper trait for the [alt()] combinator.
+/// Helper trait for the [`alt()`] combinator.
 ///
 /// This trait is implemented for tuples of up to 21 elements
 pub trait Alt<I, O, E> {
@@ -58,7 +58,7 @@ where
     trace("alt", move |i: &mut Input| alternatives.choice(i))
 }
 
-/// Helper trait for the [permutation()] combinator.
+/// Helper trait for the [`permutation()`] combinator.
 ///
 /// This trait is implemented for tuples of up to 21 elements
 pub trait Permutation<I, O, E> {

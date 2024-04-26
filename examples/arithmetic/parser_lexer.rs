@@ -17,7 +17,7 @@ use winnow::{
 };
 
 #[derive(Debug, Clone)]
-pub enum Expr {
+pub(crate) enum Expr {
     Value(i64),
     Add(Box<Expr>, Box<Expr>),
     Sub(Box<Expr>, Box<Expr>),
@@ -27,7 +27,7 @@ pub enum Expr {
 }
 
 impl Expr {
-    pub fn eval(&self) -> i64 {
+    pub(crate) fn eval(&self) -> i64 {
         match self {
             Self::Value(v) => *v,
             Self::Add(lhs, rhs) => lhs.eval() + rhs.eval(),
@@ -98,12 +98,12 @@ impl<const LEN: usize> winnow::stream::ContainsToken<Token> for [Token; LEN] {
 }
 
 #[allow(dead_code)]
-pub fn expr2(i: &mut &str) -> PResult<Expr> {
+pub(crate) fn expr2(i: &mut &str) -> PResult<Expr> {
     let tokens = lex.parse_next(i)?;
     expr.parse_next(&mut tokens.as_slice())
 }
 
-pub fn lex(i: &mut &str) -> PResult<Vec<Token>> {
+pub(crate) fn lex(i: &mut &str) -> PResult<Vec<Token>> {
     preceded(multispaces, repeat(1.., terminated(token, multispaces))).parse_next(i)
 }
 
@@ -121,7 +121,7 @@ fn token(i: &mut &str) -> PResult<Token> {
     .parse_next(i)
 }
 
-pub fn expr(i: &mut &[Token]) -> PResult<Expr> {
+pub(crate) fn expr(i: &mut &[Token]) -> PResult<Expr> {
     let init = term.parse_next(i)?;
 
     repeat(

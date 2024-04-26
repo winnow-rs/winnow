@@ -16,11 +16,11 @@ use winnow::{
 
 /// We start with a top-level function to tie everything together, letting
 /// us call eval on a string directly
-pub fn eval_from_str(src: &str) -> Result<Expr, String> {
+pub(crate) fn eval_from_str(src: &str) -> Result<Expr, String> {
     parse_expr
         .parse(src)
         .map_err(|e| e.to_string())
-        .and_then(|exp| eval_expression(exp).ok_or_else(|| "Eval failed".to_string()))
+        .and_then(|exp| eval_expression(exp).ok_or_else(|| "Eval failed".to_owned()))
 }
 
 /// For parsing, we start by defining the types that define the shape of data that we want.
@@ -36,7 +36,7 @@ pub fn eval_from_str(src: &str) -> Result<Expr, String> {
 /// structure that we can deal with programmatically. Thus any valid expression
 /// is also a valid data structure in Lisp itself.
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub enum Expr {
+pub(crate) enum Expr {
     Constant(Atom),
     /// (func-name arg1 arg2)
     Application(Box<Expr>, Vec<Expr>),
@@ -51,7 +51,7 @@ pub enum Expr {
 /// We now wrap this type and a few other primitives into our Atom type.
 /// Remember from before that Atoms form one half of our language.
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub enum Atom {
+pub(crate) enum Atom {
     Num(i32),
     Keyword(String),
     Boolean(bool),
@@ -60,7 +60,7 @@ pub enum Atom {
 
 /// Now, the most basic type. We define some built-in functions that our lisp has
 #[derive(Debug, Eq, PartialEq, Clone, Copy)]
-pub enum BuiltIn {
+pub(crate) enum BuiltIn {
     Plus,
     Minus,
     Times,
@@ -153,7 +153,7 @@ fn parse_builtin_op(i: &mut &'_ str) -> PResult<BuiltIn> {
 fn parse_keyword(i: &mut &'_ str) -> PResult<Atom> {
     preceded(":", cut_err(alpha1))
         .context(StrContext::Label("keyword"))
-        .map(|sym_str: &str| Atom::Keyword(sym_str.to_string()))
+        .map(|sym_str: &str| Atom::Keyword(sym_str.to_owned()))
         .parse_next(i)
 }
 

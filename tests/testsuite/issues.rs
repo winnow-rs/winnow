@@ -12,7 +12,7 @@ struct Range {
     end: char,
 }
 
-pub fn take_char(input: &[u8]) -> IResult<&[u8], char> {
+pub(crate) fn take_char(input: &[u8]) -> IResult<&[u8], char> {
     if !input.is_empty() {
         Ok((&input[1..], input[0] as char))
     } else {
@@ -136,7 +136,7 @@ mod issue_647 {
     use winnow::combinator::separated;
     use winnow::token::literal;
     use winnow::{binary::be_f64, error::ErrMode, IResult};
-    pub type Stream<'a> = winnow::Partial<&'a [u8]>;
+    pub(crate) type Stream<'a> = Partial<&'a [u8]>;
 
     #[derive(PartialEq, Debug, Clone)]
     struct Data {
@@ -184,7 +184,7 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
 #[test]
 fn issue_942() {
     use winnow::error::{AddContext, ParserError};
-    pub fn parser<'a, E: ParserError<&'a str> + AddContext<&'a str, &'static str>>(
+    pub(crate) fn parser<'a, E: ParserError<&'a str> + AddContext<&'a str, &'static str>>(
         i: &'a str,
     ) -> IResult<&'a str, usize, E> {
         use winnow::combinator::repeat;
@@ -204,7 +204,7 @@ fn issue_many_m_n_with_zeros() {
 #[test]
 fn issue_1231_bits_expect_fn_closure() {
     use winnow::binary::bits::{bits, take};
-    pub fn example(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
+    pub(crate) fn example(input: &[u8]) -> IResult<&[u8], (u8, u8)> {
         bits::<_, _, InputError<_>, _, _>((take(1usize), take(1usize))).parse_peek(input)
     }
     assert_eq!(example(&[0xff]), Ok((&b""[..], (1, 1))));

@@ -2,11 +2,13 @@ use crate::combinator::trace;
 use crate::combinator::trace_result;
 use crate::combinator::DisplayDebug;
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 use crate::error::FromRecoverableError;
 use crate::error::{AddContext, ErrMode, ErrorKind, FromExternalError, ParserError};
 use crate::lib::std::borrow::Borrow;
 use crate::lib::std::ops::Range;
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 use crate::stream::Recover;
 use crate::stream::StreamIsPartial;
 use crate::stream::{Location, Stream};
@@ -910,6 +912,7 @@ where
 /// Implementation of [`Parser::retry_after`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 pub struct RetryAfter<P, R, I, O, E>
 where
     P: Parser<I, O, E>,
@@ -926,6 +929,7 @@ where
 }
 
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 impl<P, R, I, O, E> RetryAfter<P, R, I, O, E>
 where
     P: Parser<I, O, E>,
@@ -947,6 +951,7 @@ where
 }
 
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 impl<P, R, I, O, E> Parser<I, O, E> for RetryAfter<P, R, I, O, E>
 where
     P: Parser<I, O, E>,
@@ -966,6 +971,7 @@ where
 }
 
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 fn retry_after_inner<P, R, I, O, E>(parser: &mut P, recover: &mut R, i: &mut I) -> PResult<O, E>
 where
     P: Parser<I, O, E>,
@@ -1004,6 +1010,7 @@ where
 
 /// Implementation of [`Parser::resume_after`]
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct ResumeAfter<P, R, I, O, E>
 where
@@ -1021,6 +1028,7 @@ where
 }
 
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 impl<P, R, I, O, E> ResumeAfter<P, R, I, O, E>
 where
     P: Parser<I, O, E>,
@@ -1042,6 +1050,7 @@ where
 }
 
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 impl<P, R, I, O, E> Parser<I, Option<O>, E> for ResumeAfter<P, R, I, O, E>
 where
     P: Parser<I, O, E>,
@@ -1061,6 +1070,7 @@ where
 }
 
 #[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 fn resume_after_inner<P, R, I, O, E>(
     parser: &mut P,
     recover: &mut R,

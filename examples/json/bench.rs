@@ -16,12 +16,12 @@ fn json_bench(c: &mut criterion::Criterion) {
         group.bench_with_input(criterion::BenchmarkId::new("basic", name), &len, |b, _| {
             type Error<'i> = winnow::error::InputError<parser::Stream<'i>>;
 
-            b.iter(|| parser::json::<Error>.parse_peek(sample).unwrap());
+            b.iter(|| parser::json::<Error<'_>>.parse_peek(sample).unwrap());
         });
         group.bench_with_input(criterion::BenchmarkId::new("unit", name), &len, |b, _| {
             type Error<'i> = ();
 
-            b.iter(|| parser::json::<Error>.parse_peek(sample).unwrap());
+            b.iter(|| parser::json::<Error<'_>>.parse_peek(sample).unwrap());
         });
         group.bench_with_input(
             criterion::BenchmarkId::new("context", name),
@@ -29,7 +29,7 @@ fn json_bench(c: &mut criterion::Criterion) {
             |b, _| {
                 type Error<'i> = winnow::error::ContextError<parser::Stream<'i>>;
 
-                b.iter(|| parser::json::<Error>.parse_peek(sample).unwrap());
+                b.iter(|| parser::json::<Error<'_>>.parse_peek(sample).unwrap());
             },
         );
         group.bench_with_input(
@@ -38,7 +38,11 @@ fn json_bench(c: &mut criterion::Criterion) {
             |b, _| {
                 type Error<'i> = winnow::error::InputError<parser_dispatch::Stream<'i>>;
 
-                b.iter(|| parser_dispatch::json::<Error>.parse_peek(sample).unwrap());
+                b.iter(|| {
+                    parser_dispatch::json::<Error<'_>>
+                        .parse_peek(sample)
+                        .unwrap()
+                });
             },
         );
         group.bench_with_input(
@@ -48,7 +52,7 @@ fn json_bench(c: &mut criterion::Criterion) {
                 type Error<'i> = winnow::error::InputError<parser_partial::Stream<'i>>;
 
                 b.iter(|| {
-                    parser_partial::json::<Error>
+                    parser_partial::json::<Error<'_>>
                         .parse_peek(Partial::new(sample))
                         .unwrap()
                 });
