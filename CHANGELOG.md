@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Improve debug traces when Input wrapper types are used
+
 ## [0.6.6] - 2024-04-11
 
 ### Fixes
