@@ -1718,6 +1718,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # #[cfg(feature = "std")] {
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use std::str::from_utf8;
@@ -1740,9 +1741,11 @@ where
 ///
 /// assert_eq!(parser.parse_peek("ab\\\"cd"), Ok(("", String::from("ab\"cd"))));
 /// assert_eq!(parser.parse_peek("ab\\ncd"), Ok(("", String::from("ab\ncd"))));
+/// # }
 /// ```
 ///
 /// ```
+/// # #[cfg(feature = "std")] {
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use std::str::from_utf8;
@@ -1765,6 +1768,7 @@ where
 /// }
 ///
 /// assert_eq!(parser.parse_peek(Partial::new("ab\\\"cd\"")), Ok((Partial::new("\""), String::from("ab\"cd"))));
+/// # }
 /// ```
 #[inline(always)]
 pub fn escaped_transform<Input, Error, Normal, Escape, Output>(

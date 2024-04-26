@@ -19,7 +19,7 @@ use winnow::token::{take_till, take_while};
 
 /// Parse a string. Use a loop of `parse_fragment` and push all of the fragments
 /// into an output string.
-pub fn parse_string<'a, E>(input: &mut &'a str) -> PResult<String, E>
+pub(crate) fn parse_string<'a, E>(input: &mut &'a str) -> PResult<String, E>
 where
     E: ParserError<&'a str> + FromExternalError<&'a str, std::num::ParseIntError>,
 {

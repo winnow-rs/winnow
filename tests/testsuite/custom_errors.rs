@@ -12,7 +12,7 @@ use winnow::IResult;
 use winnow::Partial;
 
 #[derive(Debug)]
-pub struct CustomError(String);
+pub(crate) struct CustomError(String);
 
 impl<'a> From<(&'a str, ErrorKind)> for CustomError {
     fn from(error: (&'a str, ErrorKind)) -> Self {

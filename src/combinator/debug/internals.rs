@@ -6,7 +6,7 @@ use crate::error::ErrMode;
 use crate::stream::Stream;
 use crate::*;
 
-pub struct Trace<P, D, I, O, E>
+pub(crate) struct Trace<P, D, I, O, E>
 where
     P: Parser<I, O, E>,
     I: Stream,
@@ -27,7 +27,7 @@ where
     D: std::fmt::Display,
 {
     #[inline(always)]
-    pub fn new(parser: P, name: D) -> Self {
+    pub(crate) fn new(parser: P, name: D) -> Self {
         Self {
             parser,
             name,
@@ -62,19 +62,19 @@ where
     }
 }
 
-pub struct Depth {
+pub(crate) struct Depth {
     depth: usize,
     inc: bool,
 }
 
 impl Depth {
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         let depth = DEPTH.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
         let inc = true;
         Self { depth, inc }
     }
 
-    pub fn existing() -> Self {
+    pub(crate) fn existing() -> Self {
         let depth = DEPTH.load(std::sync::atomic::Ordering::SeqCst);
         let inc = false;
         Self { depth, inc }
@@ -107,7 +107,7 @@ impl crate::lib::std::ops::Deref for Depth {
 
 static DEPTH: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
 
-pub enum Severity {
+pub(crate) enum Severity {
     Success,
     Backtrack,
     Cut,
@@ -115,7 +115,7 @@ pub enum Severity {
 }
 
 impl Severity {
-    pub fn with_result<T, E>(result: &Result<T, ErrMode<E>>) -> Self {
+    pub(crate) fn with_result<T, E>(result: &Result<T, ErrMode<E>>) -> Self {
         match result {
             Ok(_) => Self::Success,
             Err(ErrMode::Backtrack(_)) => Self::Backtrack,
@@ -125,7 +125,7 @@ impl Severity {
     }
 }
 
-pub fn start<I: Stream>(
+pub(crate) fn start<I: Stream>(
     depth: usize,
     name: &dyn crate::lib::std::fmt::Display,
     count: usize,
@@ -178,7 +178,7 @@ pub fn start<I: Stream>(
     );
 }
 
-pub fn end(
+pub(crate) fn end(
     depth: usize,
     name: &dyn crate::lib::std::fmt::Display,
     count: usize,
@@ -228,7 +228,7 @@ pub fn end(
     );
 }
 
-pub fn result(depth: usize, name: &dyn crate::lib::std::fmt::Display, severity: Severity) {
+pub(crate) fn result(depth: usize, name: &dyn crate::lib::std::fmt::Display, severity: Severity) {
     let gutter_style = anstyle::Style::new().bold();
 
     let (call_width, _) = column_widths();

@@ -276,7 +276,7 @@ fn value(i: &mut &str) -> PResult<()> {
 ///
 /// JsonValue.string -> iterator over String (returns None after first successful call)
 ///
-/// object(input).filter(|(k, _)| k == "users").flatten(|(_, v)| v.object()).filter(|(k, _)| k == "city").flatten(|(_,v)| v.string())
+/// object(input).filter(|(k, _)| k == "users").flatten(|(_, v)| v.object()).filter(|(k, _)| k == "city").flatten(|(_,v)| `v.string()`)
 fn main() {
     /*let data = "{
     \"users\": {

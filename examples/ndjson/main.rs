@@ -14,7 +14,7 @@ fn main() -> Result<(), lexopt::Error> {
         option: Some("<PATH>".to_owned()),
     })?;
 
-    let mut file = std::fs::File::open(&input).map_err(to_lexopt)?;
+    let mut file = std::fs::File::open(input).map_err(to_lexopt)?;
 
     // Intentionally starting with a small buffer to make it easier to show `Incomplete` handling
     let buffer_size = 10;
@@ -39,7 +39,7 @@ fn main() -> Result<(), lexopt::Error> {
 
         loop {
             let input = parser::Stream::new(std::str::from_utf8(buffer.data()).map_err(to_lexopt)?);
-            match parser::ndjson::<InputError<parser::Stream>>.parse_peek(input) {
+            match parser::ndjson::<InputError<parser::Stream<'_>>>.parse_peek(input) {
                 Ok((remainder, value)) => {
                     println!("{:?}", value);
                     println!();

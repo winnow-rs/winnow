@@ -7,7 +7,7 @@ use winnow::{
     unpeek, IResult, Parser,
 };
 
-pub fn end_of_line(input: &str) -> IResult<&str, &str> {
+pub(crate) fn end_of_line(input: &str) -> IResult<&str, &str> {
     if input.is_empty() {
         Ok((input, input))
     } else {
@@ -15,11 +15,11 @@ pub fn end_of_line(input: &str) -> IResult<&str, &str> {
     }
 }
 
-pub fn read_line(input: &str) -> IResult<&str, &str> {
+pub(crate) fn read_line(input: &str) -> IResult<&str, &str> {
     terminated(alphanumeric, unpeek(end_of_line)).parse_peek(input)
 }
 
-pub fn read_lines(input: &str) -> IResult<&str, Vec<&str>> {
+pub(crate) fn read_lines(input: &str) -> IResult<&str, Vec<&str>> {
     repeat(0.., unpeek(read_line)).parse_peek(input)
 }
 

@@ -13,7 +13,7 @@ use winnow::{
 };
 
 #[derive(Debug, Clone)]
-pub enum Expr {
+pub(crate) enum Expr {
     Value(i64),
     Add(Box<Expr>, Box<Expr>),
     Sub(Box<Expr>, Box<Expr>),
@@ -23,7 +23,7 @@ pub enum Expr {
 }
 
 impl Expr {
-    pub fn eval(&self) -> i64 {
+    pub(crate) fn eval(&self) -> i64 {
         match self {
             Self::Value(v) => *v,
             Self::Add(lhs, rhs) => lhs.eval() + rhs.eval(),
@@ -49,7 +49,7 @@ impl Display for Expr {
     }
 }
 
-pub fn expr(i: &mut &str) -> PResult<Expr> {
+pub(crate) fn expr(i: &mut &str) -> PResult<Expr> {
     let init = term.parse_next(i)?;
 
     repeat(0.., (one_of(['+', '-']), term))

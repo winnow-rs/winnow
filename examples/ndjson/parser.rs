@@ -15,7 +15,7 @@ use winnow::{
 };
 
 #[derive(Debug, PartialEq, Clone)]
-pub enum JsonValue {
+pub(crate) enum JsonValue {
     Null,
     Boolean(bool),
     Str(String),
@@ -25,9 +25,9 @@ pub enum JsonValue {
 }
 
 /// Use `Partial` to cause `ErrMode::Incomplete` while parsing
-pub type Stream<'i> = Partial<&'i str>;
+pub(crate) type Stream<'i> = Partial<&'i str>;
 
-pub fn ndjson<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
+pub(crate) fn ndjson<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
     input: &mut Stream<'i>,
 ) -> PResult<Option<JsonValue>, E> {
     alt((
@@ -221,11 +221,11 @@ mod test {
     fn json_string() {
         assert_eq!(
             string::<Error<'_>>.parse_peek(Partial::new("\"\"")),
-            Ok((Partial::new(""), "".to_string()))
+            Ok((Partial::new(""), "".to_owned()))
         );
         assert_eq!(
             string::<Error<'_>>.parse_peek(Partial::new("\"abc\"")),
-            Ok((Partial::new(""), "abc".to_string()))
+            Ok((Partial::new(""), "abc".to_owned()))
         );
         assert_eq!(
             string::<Error<'_>>.parse_peek(Partial::new(
@@ -233,12 +233,12 @@ mod test {
             )),
             Ok((
                 Partial::new(""),
-                "abc\"\\/\x08\x0C\n\r\t\x01——def".to_string()
+                "abc\"\\/\x08\x0C\n\r\t\x01——def".to_owned()
             )),
         );
         assert_eq!(
             string::<Error<'_>>.parse_peek(Partial::new("\"\\uD83D\\uDE10\"")),
-            Ok((Partial::new(""), "😐".to_string()))
+            Ok((Partial::new(""), "😐".to_owned()))
         );
 
         assert!(string::<Error<'_>>.parse_peek(Partial::new("\"")).is_err());
@@ -271,8 +271,8 @@ mod test {
 
         let expected = Object(
             vec![
-                ("a".to_string(), Num(42.0)),
-                ("b".to_string(), Str("x".to_string())),
+                ("a".to_owned(), Num(42.0)),
+                ("b".to_owned(), Str("x".to_owned())),
             ]
             .into_iter()
             .collect(),
@@ -291,7 +291,7 @@ mod test {
         let input = r#"[42,"x"]
 "#;
 
-        let expected = Array(vec![Num(42.0), Str("x".to_string())]);
+        let expected = Array(vec![Num(42.0), Str("x".to_owned())]);
 
         assert_eq!(
             ndjson::<Error<'_>>.parse_peek(Partial::new(input)),
@@ -312,28 +312,28 @@ mod test {
                 Partial::new(""),
                 Some(Object(
                     vec![
-                        ("null".to_string(), Null),
-                        ("true".to_string(), Boolean(true)),
-                        ("false".to_string(), Boolean(false)),
-                        ("number".to_string(), Num(123e4)),
-                        ("string".to_string(), Str(" abc 123 ".to_string())),
+                        ("null".to_owned(), Null),
+                        ("true".to_owned(), Boolean(true)),
+                        ("false".to_owned(), Boolean(false)),
+                        ("number".to_owned(), Num(123e4)),
+                        ("string".to_owned(), Str(" abc 123 ".to_owned())),
                         (
-                            "array".to_string(),
-                            Array(vec![Boolean(false), Num(1.0), Str("two".to_string())])
+                            "array".to_owned(),
+                            Array(vec![Boolean(false), Num(1.0), Str("two".to_owned())])
                         ),
                         (
-                            "object".to_string(),
+                            "object".to_owned(),
                             Object(
                                 vec![
-                                    ("a".to_string(), Num(1.0)),
-                                    ("b".to_string(), Str("c".to_string())),
+                                    ("a".to_owned(), Num(1.0)),
+                                    ("b".to_owned(), Str("c".to_owned())),
                                 ]
                                 .into_iter()
                                 .collect()
                             )
                         ),
-                        ("empty_array".to_string(), Array(vec![]),),
-                        ("empty_object".to_string(), Object(HashMap::new()),),
+                        ("empty_array".to_owned(), Array(vec![]),),
+                        ("empty_object".to_owned(), Object(HashMap::new()),),
                     ]
                     .into_iter()
                     .collect()
