@@ -35,7 +35,7 @@
 //! #
 //! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //! #     take_while(1.., (
-//! #         ('0'..='7'),
+//! #         ('0', '1'),
 //! #     )).parse_next(input)
 //! # }
 //! #
