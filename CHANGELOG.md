@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Support `&mut [impl Parser]` within `alt`
+
 ## [0.6.7] - 2024-04-26
 
 ### Fixes
