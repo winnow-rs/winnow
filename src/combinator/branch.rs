@@ -149,6 +149,31 @@ impl<const N: usize, I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I,
     }
 }
 
+impl<I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I, O, E> for &mut [P] {
+    fn choice(&mut self, input: &mut I) -> PResult<O, E> {
+        let mut error: Option<E> = None;
+
+        let start = input.checkpoint();
+        for branch in self.iter_mut() {
+            input.reset(&start);
+            match branch.parse_next(input) {
+                Err(ErrMode::Backtrack(e)) => {
+                    error = match error {
+                        Some(error) => Some(error.or(e)),
+                        None => Some(e),
+                    };
+                }
+                res => return res,
+            }
+        }
+
+        match error {
+            Some(e) => Err(ErrMode::Backtrack(e.append(input, &start, ErrorKind::Alt))),
+            None => Err(ErrMode::assert(input, "`alt` needs at least one parser")),
+        }
+    }
+}
+
 macro_rules! alt_trait(
   ($first:ident $second:ident $($id: ident)+) => (
     alt_trait!(__impl $first $second; $($id)+);

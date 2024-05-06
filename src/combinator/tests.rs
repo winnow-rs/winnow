@@ -671,6 +671,22 @@ fn alt_array() {
 }
 
 #[test]
+fn alt_dynamic_array() {
+    fn alt1<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8]> {
+        alt(&mut ["a", "bc", "def"][..]).parse_next(i)
+    }
+
+    let a = &b"a"[..];
+    assert_eq!(alt1.parse_peek(a), Ok((&b""[..], (&b"a"[..]))));
+
+    let bc = &b"bc"[..];
+    assert_eq!(alt1.parse_peek(bc), Ok((&b""[..], (&b"bc"[..]))));
+
+    let defg = &b"defg"[..];
+    assert_eq!(alt1.parse_peek(defg), Ok((&b"g"[..], (&b"def"[..]))));
+}
+
+#[test]
 fn permutation_test() {
     #[allow(clippy::type_complexity)]
     fn perm(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (&[u8], &[u8], &[u8])> {
