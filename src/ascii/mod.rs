@@ -942,7 +942,7 @@ where
     trace("space0", take_while(0.., AsChar::is_space)).parse_next(input)
 }
 
-/// Recognizes zero or more spaces and tabs.
+/// Recognizes one or more spaces and tabs.
 ///
 /// *Complete version*: Will return the whole input if no terminating token is found (a non space
 /// character).
