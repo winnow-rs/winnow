@@ -176,6 +176,17 @@ where
 
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
+impl<I, E> Default for Recoverable<I, E>
+where
+    I: Default + Stream,
+{
+    fn default() -> Self {
+        Self::new(I::default())
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
 impl<I, E> Recoverable<I, E>
 where
     I: Stream,
@@ -298,7 +309,7 @@ impl<I: Stream + crate::lib::std::fmt::Debug, E: crate::lib::std::fmt::Debug>
 /// let output = word.parse(input).unwrap();
 /// assert_eq!(state.get(), 1);
 /// ```
-#[derive(Clone, Copy, Eq, PartialEq)]
+#[derive(Clone, Copy, Default, Eq, PartialEq)]
 #[doc(alias = "LocatedSpan")]
 pub struct Stateful<I, S> {
     /// Inner input being wrapped in state
