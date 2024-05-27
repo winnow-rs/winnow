@@ -5,7 +5,7 @@ members = ["fuzz"]
 [workspace.package]
 license = "MIT"
 edition = "2021"
-rust-version = "1.64.0"  # MSRV
+rust-version = "1.65.0"  # MSRV
 include = [
   "build.rs",
   "src/**/*",
