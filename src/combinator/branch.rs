@@ -3,6 +3,8 @@ use crate::error::{ErrMode, ErrorKind, ParserError};
 use crate::stream::Stream;
 use crate::*;
 
+#[doc(hidden)]
+pub use crate::__dispatch_cases;
 #[doc(inline)]
 pub use crate::dispatch;
 
