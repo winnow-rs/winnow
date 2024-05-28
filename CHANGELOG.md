@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.6.9] - 2024-05-28
+
 ### Compatibility
 
 - Bump MSRV to 1.65
@@ -2343,7 +2345,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.8...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.9...HEAD
+[0.6.9]: https://github.com/winnow-rs/winnow/compare/v0.6.8...v0.6.9
 [0.6.8]: https://github.com/winnow-rs/winnow/compare/v0.6.7...v0.6.8
 [0.6.7]: https://github.com/winnow-rs/winnow/compare/v0.6.6...v0.6.7
 [0.6.6]: https://github.com/winnow-rs/winnow/compare/v0.6.5...v0.6.6
