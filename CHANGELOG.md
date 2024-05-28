@@ -3,6 +3,14 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+- Bump MSRV to 1.65
+
+### Features
+
+- Add `Debug` impls for `stream::Stateful` and `stream::Recoverable`
+
 ## [0.6.8] - 2024-05-06
 
 ### Features
