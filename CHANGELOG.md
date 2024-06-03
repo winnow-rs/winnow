@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Extend `seq!` to constructing enum variants
+
 ## [0.6.9] - 2024-05-28
 
 ### Compatibility
