@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Remove `AsBytes` bounds, unblocking parsing frames of binary input
+
 ## [0.6.10] - 2024-06-03
 
 ### Features
