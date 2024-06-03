@@ -7,7 +7,7 @@ mod tests;
 use crate::combinator::trace;
 use crate::error::{ErrMode, ErrorConvert, ErrorKind, Needed, ParserError};
 use crate::lib::std::ops::{AddAssign, Div, Shl, Shr};
-use crate::stream::{AsBytes, Stream, StreamIsPartial, ToUsize};
+use crate::stream::{Stream, StreamIsPartial, ToUsize};
 use crate::{unpeek, IResult, PResult, Parser};
 
 /// Number of bits in a byte
@@ -192,7 +192,7 @@ where
 #[inline(always)]
 pub fn take<Input, Output, Count, Error>(count: Count) -> impl Parser<(Input, usize), Output, Error>
 where
-    Input: Stream<Token = u8> + AsBytes + StreamIsPartial + Clone,
+    Input: Stream<Token = u8> + StreamIsPartial + Clone,
     Output: From<u8> + AddAssign + Shl<usize, Output = Output> + Shr<usize, Output = Output>,
     Count: ToUsize,
     Error: ParserError<(Input, usize)>,
@@ -216,7 +216,7 @@ fn take_<I, O, E: ParserError<(I, usize)>, const PARTIAL: bool>(
 ) -> IResult<(I, usize), O, E>
 where
     I: StreamIsPartial,
-    I: Stream<Token = u8> + AsBytes + Clone,
+    I: Stream<Token = u8> + Clone,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
     if count == 0 {
@@ -238,7 +238,7 @@ where
             let mut remaining: usize = count;
             let mut end_offset: usize = 0;
 
-            for byte in input.as_bytes().iter().copied().take(cnt + 1) {
+            for (_, byte) in input.iter_offsets().take(cnt + 1) {
                 if remaining == 0 {
                     break;
                 }
@@ -338,7 +338,7 @@ pub fn pattern<Input, Output, Count, Error: ParserError<(Input, usize)>>(
     count: Count,
 ) -> impl Parser<(Input, usize), Output, Error>
 where
-    Input: Stream<Token = u8> + AsBytes + StreamIsPartial + Clone,
+    Input: Stream<Token = u8> + StreamIsPartial + Clone,
     Count: ToUsize,
     Output: From<u8>
         + AddAssign
@@ -404,7 +404,7 @@ pub fn bool<Input, Error: ParserError<(Input, usize)>>(
     input: &mut (Input, usize),
 ) -> PResult<bool, Error>
 where
-    Input: Stream<Token = u8> + AsBytes + StreamIsPartial + Clone,
+    Input: Stream<Token = u8> + StreamIsPartial + Clone,
 {
     trace("bool", |input: &mut (Input, usize)| {
         let bit: u32 = take(1usize).parse_next(input)?;
