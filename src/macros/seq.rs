@@ -1,5 +1,13 @@
 /// Initialize a struct or tuple out of a sequences of parsers
 ///
+/// Unlike normal struct initialization syntax:
+/// - `_` fields can exist to run a parser but ignore the result
+/// - Parse results for a field can later be referenced using the field name
+///
+/// Unlike normal tuple initialization syntax:
+/// - Struct-style initialization (`{ 0: _, 1: _}`) is not supported
+/// - `_: <parser>` fields can exist to run a parser but ignore the result
+///
 ///# Example
 ///
 /// ```
