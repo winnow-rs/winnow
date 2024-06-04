@@ -18,9 +18,9 @@
 //!
 //! ```text
 //!                                   ┌─► Ok(what matched the parser)
-//!             ┌─────────┐           │
-//! my input───►│my parser├──►either──┤
-//!             └─────────┘           └─► Err(...)
+//!             ┌────────┐           │
+//! my input───►│a parser├──►either──┤
+//!             └────────┘           └─► Err(...)
 //! ```
 //!
 //!
