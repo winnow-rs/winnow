@@ -36,6 +36,8 @@
 //! To combine parsers, we need a common way to refer to them which is where the [`Parser<I, O, E>`]
 //! trait comes in with [`Parser::parse_next`] being the primary way to drive
 //! parsing forward.
+//! In [`chapter_7`], we'll cover how to integrate these into your application, particularly with
+//! [`Parser::parse`].
 //!
 //! You'll note that `I` and `O` are parameterized -- while most of the examples in this book
 //! will be with `&str` (i.e. parsing a string); they do not have to be strings; nor do they
@@ -77,6 +79,7 @@
 
 #![allow(unused_imports)]
 use super::chapter_6;
+use super::chapter_7;
 use crate::PResult;
 use crate::Parser;
 
