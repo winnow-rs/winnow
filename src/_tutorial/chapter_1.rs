@@ -14,7 +14,7 @@
 //! what was processed, pointing to what will be parsed next.
 //!
 //! If the parser failed, then there are multiple errors that could be returned.
-//! For simplicity, however, in the next chapters we will leave these unexplored.
+//! We'll explore this further in [`chapter_6`].
 //!
 //! ```text
 //!                                   ┌─► Ok(what matched the parser)
@@ -77,6 +77,7 @@
 //! ```
 
 #![allow(unused_imports)]
+use super::chapter_6;
 use crate::PResult;
 use crate::Parser;
 
