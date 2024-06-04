@@ -188,6 +188,43 @@ fn seq_struct_no_trailing_comma_elided() {
 }
 
 #[test]
+fn seq_enum_struct_variant() {
+    #[derive(Debug, PartialEq, Eq)]
+    enum Expr {
+        Add { lhs: u32, rhs: u32 },
+        Mul(u32, u32),
+    }
+
+    fn add(input: &mut &[u8]) -> PResult<Expr> {
+        seq! {Expr::Add {
+            lhs: dec_uint::<_, u32, _>,
+            _: b" + ",
+            rhs: dec_uint::<_, u32, _>,
+        }}
+        .parse_next(input)
+    }
+
+    fn mul(input: &mut &[u8]) -> PResult<Expr> {
+        seq!(Expr::Mul(
+             dec_uint::<_, u32, _>,
+             _: b" * ",
+             dec_uint::<_, u32, _>,
+        ))
+        .parse_next(input)
+    }
+
+    assert_eq!(
+        add.parse_peek(&b"1 + 2"[..]),
+        Ok((&b""[..], Expr::Add { lhs: 1, rhs: 2 })),
+    );
+
+    assert_eq!(
+        mul.parse_peek(&b"3 * 4"[..]),
+        Ok((&b""[..], Expr::Mul(3, 4))),
+    );
+}
+
+#[test]
 fn seq_tuple_struct_basics() {
     #[derive(Debug, PartialEq)]
     struct Point(u32, u32);
