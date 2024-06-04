@@ -180,25 +180,25 @@ macro_rules! seq_parse_tuple_fields {
         (_ : $head_parser: expr, $($fields: tt)* );
         $($sequenced: tt)*
     ) => {
-        $crate::seq_parse_tuple_fields!( ( $($fields)* ) ; $($sequenced)* $head_parser.void(), )
+        $crate::seq_parse_tuple_fields!( ( $($fields)* ) ; $($sequenced)* $head_parser.void().by_ref(), )
     };
     (
         (_ : $head_parser: expr);
         $($sequenced: tt)*
     ) => {
-        $crate::seq_parse_tuple_fields!((); $($sequenced)* $head_parser.void(), )
+        $crate::seq_parse_tuple_fields!((); $($sequenced)* $head_parser.void().by_ref(), )
     };
     (
         ($head_parser: expr, $($fields: tt)*);
         $($sequenced: tt)*
     ) => {
-        $crate::seq_parse_tuple_fields!( ( $($fields)* ) ; $($sequenced)* $head_parser, )
+        $crate::seq_parse_tuple_fields!( ( $($fields)* ) ; $($sequenced)* $head_parser.by_ref(), )
     };
     (
         ($head_parser: expr);
         $($sequenced: tt)*
     )=> {
-        $crate::seq_parse_tuple_fields!((); $($sequenced)* $head_parser, )
+        $crate::seq_parse_tuple_fields!((); $($sequenced)* $head_parser.by_ref(), )
     };
     (
         ();

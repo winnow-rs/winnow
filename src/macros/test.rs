@@ -1,4 +1,5 @@
 use crate::ascii::dec_uint;
+use crate::ascii::digit0;
 use crate::combinator::dispatch;
 use crate::combinator::empty;
 use crate::combinator::fail;
@@ -175,6 +176,30 @@ fn seq_struct_no_trailing_comma_elided() {
     }
 
     fn parser(input: &mut &str) -> PResult<Point> {
+        seq! {
+            Point {
+                x: dec_uint,
+                _: ',',
+                y: dec_uint,
+                _: empty
+            }
+        }
+        .parse_next(input)
+    }
+}
+
+#[test]
+fn seq_struct_borrow() {
+    #![allow(dead_code)]
+
+    #[derive(Debug, PartialEq)]
+    struct Point {
+        x: u32,
+        y: u32,
+    }
+
+    fn parser(input: &mut &str) -> PResult<Point> {
+        let mut dec_uint = digit0.parse_to();
         seq! {
             Point {
                 x: dec_uint,
@@ -373,6 +398,22 @@ fn seq_tuple_no_parens() {
             _: ',',
             dec_uint,
         )
+        .parse_next(input)
+    }
+}
+
+#[test]
+fn seq_tuple_borrow() {
+    #![allow(dead_code)]
+
+    fn parser(input: &mut &str) -> PResult<(u32, u32)> {
+        let mut dec_uint0 = digit0.parse_to();
+        let mut dec_uint1 = digit0.parse_to();
+        seq! {
+            dec_uint0,
+            _: ',',
+            dec_uint1,
+        }
         .parse_next(input)
     }
 }
