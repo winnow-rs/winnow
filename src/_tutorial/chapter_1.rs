@@ -10,11 +10,10 @@
 //!  - `Err` indicates the parser could not find what it was looking for.
 //!
 //! Parsers do more than just return a binary "success"/"failure" code.
-//! On success, the parser will return the processed data. The input will be advanced to the end of
-//! what was processed, pointing to what will be parsed next.
-//!
-//! If the parser failed, then there are multiple errors that could be returned.
-//! We'll explore this further in [`chapter_6`].
+//! - On success, the parser will return the processed data. The input will be advanced to the end of
+//!   what was processed, pointing to what will be parsed next.
+//! - If the parser failed, then there are multiple errors that could be returned.
+//!   We'll explore this further in [`chapter_6`].
 //!
 //! ```text
 //!                                   ┌─► Ok(what matched the parser)
