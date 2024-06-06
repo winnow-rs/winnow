@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Improve compilation errors when using non-parsers with `seq!` struct syntax
+
 ## [0.6.11] - 2024-06-03
 
 ### Fixes
