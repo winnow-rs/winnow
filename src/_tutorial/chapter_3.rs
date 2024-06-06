@@ -180,7 +180,7 @@
 //!
 //! > **Warning:** the above example is for illustrative purposes and relying on `Result::Ok` or
 //! > `Result::Err` can lead to incorrect behavior. This will be clarified in later when covering
-//! > [error handling][`chapter_7`#errmode]
+//! > [error handling][`chapter_7`#error-cuts]
 //!
 //! [`opt`] is a parser that encapsulates this pattern of "retry on failure":
 //! ```rust

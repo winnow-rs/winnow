@@ -1,30 +1,49 @@
 //! # Chapter 7: Error Reporting
 //!
-//! ## `Error`
+//! ## Context
 //!
-//! Back in [`chapter_1`], we glossed over the `Err` side of [`PResult`].  `PResult<O>` is
-//! actually short for `PResult<O, E=ContextError>` where [`ContextError`] is a relatively cheap
-//! way of building up reasonable errors for humans.
-//!
-//! You can use [`Parser::context`] to annotate the error with custom types
-//! while unwinding to further improve the error quality.
-//!
+//! With [`Parser::parse`] we get errors that point to the failure but don't explain the reason for
+//! the failure:
 //! ```rust
 //! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
 //! # use winnow::combinator::alt;
-//! use winnow::error::StrContext;
-//!
-//! fn parse_digits<'s>(input: &mut &'s str) -> PResult<(&'s str, &'s str)> {
-//!     alt((
-//!         ("0b", parse_bin_digits).context(StrContext::Label("binary")),
-//!         ("0o", parse_oct_digits).context(StrContext::Label("octal")),
-//!         ("0d", parse_dec_digits).context(StrContext::Label("decimal")),
-//!         ("0x", parse_hex_digits).context(StrContext::Label("hexadecimal")),
-//!     )).parse_next(input)
-//! }
-//!
+//! # use winnow::token::take;
+//! # use winnow::combinator::fail;
+//! # use winnow::Parser;
+//! #
+//! # #[derive(Debug, PartialEq, Eq)]
+//! # pub struct Hex(usize);
+//! #
+//! # impl std::str::FromStr for Hex {
+//! #     type Err = String;
+//! #
+//! #     fn from_str(input: &str) -> Result<Self, Self::Err> {
+//! #         parse_digits
+//! #             .try_map(|(t, v)| match t {
+//! #                "0b" => usize::from_str_radix(v, 2),
+//! #                "0o" => usize::from_str_radix(v, 8),
+//! #                "0d" => usize::from_str_radix(v, 10),
+//! #                "0x" => usize::from_str_radix(v, 16),
+//! #                _ => unreachable!("`parse_digits` doesn't return `{t}`"),
+//! #              })
+//! #             .map(Hex)
+//! #             .parse(input)
+//! #             .map_err(|e| e.to_string())
+//! #     }
+//! # }
+//! #
 //! // ...
+//!
+//! # fn parse_digits<'s>(input: &mut &'s str) -> PResult<(&'s str, &'s str)> {
+//! #     alt((
+//! #         ("0b", parse_bin_digits),
+//! #         ("0o", parse_oct_digits),
+//! #         ("0d", parse_dec_digits),
+//! #         ("0x", parse_hex_digits),
+//! #     )).parse_next(input)
+//! # }
+//! #
 //! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='1'),
@@ -50,23 +69,179 @@
 //! #         ('a'..='f'),
 //! #     )).parse_next(input)
 //! # }
-//!
 //! fn main() {
-//!     let mut input = "0x1a2b Hello";
+//!     let input = "0xZZ";
+//!     let error = "\
+//! 0xZZ
+//!   ^
+//! ";
+//!     assert_eq!(input.parse::<Hex>().unwrap_err(), error);
+//! }
+//! ```
 //!
-//!     let (prefix, digits) = parse_digits.parse_next(&mut input).unwrap();
+//! Back in [`chapter_1`], we glossed over the `Err` variant of [`PResult`].  `PResult<O>` is
+//! actually short for `PResult<O, E=ContextError>` where [`ContextError`] is a relatively cheap
+//! way of building up reasonable errors for humans.
 //!
-//!     assert_eq!(input, " Hello");
-//!     assert_eq!(prefix, "0x");
-//!     assert_eq!(digits, "1a2b");
+//! You can use [`Parser::context`] to annotate the error with custom types
+//! while unwinding to further clarify the error:
+//! ```rust
+//! # use winnow::prelude::*;
+//! # use winnow::token::take_while;
+//! # use winnow::combinator::alt;
+//! # use winnow::token::take;
+//! # use winnow::combinator::fail;
+//! # use winnow::Parser;
+//! use winnow::error::StrContext;
+//!
+//! #
+//! # #[derive(Debug, PartialEq, Eq)]
+//! # pub struct Hex(usize);
+//! #
+//! # impl std::str::FromStr for Hex {
+//! #     type Err = String;
+//! #
+//! #     fn from_str(input: &str) -> Result<Self, Self::Err> {
+//! #         parse_digits
+//! #             .try_map(|(t, v)| match t {
+//! #                "0b" => usize::from_str_radix(v, 2),
+//! #                "0o" => usize::from_str_radix(v, 8),
+//! #                "0d" => usize::from_str_radix(v, 10),
+//! #                "0x" => usize::from_str_radix(v, 16),
+//! #                _ => unreachable!("`parse_digits` doesn't return `{t}`"),
+//! #              })
+//! #             .map(Hex)
+//! #             .parse(input)
+//! #             .map_err(|e| e.to_string())
+//! #     }
+//! # }
+//! #
+//! fn parse_digits<'s>(input: &mut &'s str) -> PResult<(&'s str, &'s str)> {
+//!     alt((
+//!         ("0b", parse_bin_digits).context(StrContext::Label("binary")),
+//!         ("0o", parse_oct_digits).context(StrContext::Label("octal")),
+//!         ("0d", parse_dec_digits).context(StrContext::Label("decimal")),
+//!         ("0x", parse_hex_digits).context(StrContext::Label("hexadecimal")),
+//!     )).parse_next(input)
+//! }
+//!
+//! // ...
+//!
+//! #
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='1'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='7'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='9'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='9'),
+//! #         ('A'..='F'),
+//! #         ('a'..='f'),
+//! #     )).parse_next(input)
+//! # }
+//! fn main() {
+//!     let input = "0xZZ";
+//!     let error = "\
+//! 0xZZ
+//!   ^
+//! invalid hexadecimal";
+//!     assert_eq!(input.parse::<Hex>().unwrap_err(), error);
 //! }
 //! ```
 //!
 //! At first glance, this looks correct but what `context` will be reported when parsing `"0b5"`?
-//! If you remember back to [`chapter_3`], [`alt`] will only report the last error by default which
-//! means when parsing `"0b5"`, the `context` will be `"hexadecimal"`.
+//! ```rust
+//! # use winnow::prelude::*;
+//! # use winnow::token::take_while;
+//! # use winnow::combinator::alt;
+//! # use winnow::token::take;
+//! # use winnow::combinator::fail;
+//! # use winnow::Parser;
+//! # use winnow::error::StrContext;
+//! #
+//! #
+//! # #[derive(Debug, PartialEq, Eq)]
+//! # pub struct Hex(usize);
+//! #
+//! # impl std::str::FromStr for Hex {
+//! #     type Err = String;
+//! #
+//! #     fn from_str(input: &str) -> Result<Self, Self::Err> {
+//! #         parse_digits
+//! #             .try_map(|(t, v)| match t {
+//! #                "0b" => usize::from_str_radix(v, 2),
+//! #                "0o" => usize::from_str_radix(v, 8),
+//! #                "0d" => usize::from_str_radix(v, 10),
+//! #                "0x" => usize::from_str_radix(v, 16),
+//! #                _ => unreachable!("`parse_digits` doesn't return `{t}`"),
+//! #              })
+//! #             .map(Hex)
+//! #             .parse(input)
+//! #             .map_err(|e| e.to_string())
+//! #     }
+//! # }
+//! #
+//! # fn parse_digits<'s>(input: &mut &'s str) -> PResult<(&'s str, &'s str)> {
+//! #     alt((
+//! #         ("0b", parse_bin_digits).context(StrContext::Label("binary")),
+//! #         ("0o", parse_oct_digits).context(StrContext::Label("octal")),
+//! #         ("0d", parse_dec_digits).context(StrContext::Label("decimal")),
+//! #         ("0x", parse_hex_digits).context(StrContext::Label("hexadecimal")),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='1'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='7'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='9'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='9'),
+//! #         ('A'..='F'),
+//! #         ('a'..='f'),
+//! #     )).parse_next(input)
+//! # }
+//! fn main() {
+//!     let input = "0b5";
+//!     let error = "\
+//! 0b5
+//! ^
+//! invalid hexadecimal";
+//!     assert_eq!(input.parse::<Hex>().unwrap_err(), error);
+//! }
+//! ```
+//! If you remember back to [`chapter_3`], [`alt`] will only report the last error when what we
+//! want is the error from `parse_bin_digits.
 //!
-//! ## `ErrMode`
+//! ## Error Cuts
 //!
 //! Let's break down `PResult<O, E>` one step further:
 //! ```rust
@@ -87,9 +262,34 @@
 //! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
 //! # use winnow::combinator::alt;
-//! # use winnow::error::StrContext;
-//! use winnow::combinator::cut_err;
+//! # use winnow::combinator::cut_err;
+//! # use winnow::token::take;
+//! # use winnow::combinator::fail;
+//! # use winnow::Parser;
+//! use winnow::error::StrContext;
 //!
+//! #
+//! # #[derive(Debug, PartialEq, Eq)]
+//! # pub struct Hex(usize);
+//! #
+//! # impl std::str::FromStr for Hex {
+//! #     type Err = String;
+//! #
+//! #     fn from_str(input: &str) -> Result<Self, Self::Err> {
+//! #         parse_digits
+//! #             .try_map(|(t, v)| match t {
+//! #                "0b" => usize::from_str_radix(v, 2),
+//! #                "0o" => usize::from_str_radix(v, 8),
+//! #                "0d" => usize::from_str_radix(v, 10),
+//! #                "0x" => usize::from_str_radix(v, 16),
+//! #                _ => unreachable!("`parse_digits` doesn't return `{t}`"),
+//! #              })
+//! #             .map(Hex)
+//! #             .parse(input)
+//! #             .map_err(|e| e.to_string())
+//! #     }
+//! # }
+//! #
 //! fn parse_digits<'s>(input: &mut &'s str) -> PResult<(&'s str, &'s str)> {
 //!     alt((
 //!         ("0b", cut_err(parse_bin_digits)).context(StrContext::Label("binary")),
@@ -100,6 +300,8 @@
 //! }
 //!
 //! // ...
+//!
+//! #
 //! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='1'),
@@ -125,18 +327,15 @@
 //! #         ('a'..='f'),
 //! #     )).parse_next(input)
 //! # }
-//!
 //! fn main() {
-//!     let mut input = "0x1a2b Hello";
-//!
-//!     let (prefix, digits) = parse_digits.parse_next(&mut input).unwrap();
-//!
-//!     assert_eq!(input, " Hello");
-//!     assert_eq!(prefix, "0x");
-//!     assert_eq!(digits, "1a2b");
+//!     let input = "0b5";
+//!     let error = "\
+//! 0b5
+//!   ^
+//! invalid binary";
+//!     assert_eq!(input.parse::<Hex>().unwrap_err(), error);
 //! }
 //! ```
-//! Now, when parsing `"0b5"`, the `context` will be `"binary"`.
 
 #![allow(unused_imports)]
 use super::chapter_1;
