@@ -8,19 +8,15 @@
 //! # use winnow::error::ContextError;
 //! # use winnow::error::ErrMode;
 //! # use winnow::Parser;
-//! #
+//! use winnow::PResult;
+//!
 //! pub fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
 //!     // ...
 //! #     Ok("")
 //! }
-//!
-//! type PResult<O> = Result<
-//!     O,
-//!     ErrMode<ContextError>
-//! >;
 //! ```
 //! 1. We have to decide what to do about the "remainder" of the `input`.
-//! 2. The [`ErrMode<ContextError>`] is not compatible with the rest of the Rust ecosystem.
+//! 2. The [`PResult`] is not compatible with the rest of the Rust ecosystem.
 //!     Normally, Rust applications want errors that are `std::error::Error + Send + Sync + 'static`
 //!     meaning:
 //!     - They implement the [`std::error::Error`] trait
@@ -30,7 +26,7 @@
 //!
 //! winnow provides [`Parser::parse`] to help with this:
 //! - Ensures we hit [`eof`]
-//! - Removes the [`ErrMode`] wrapper
+//! - Converts from [`PResult`] to [`Result`]
 //! - Wraps the error in [`ParseError`]
 //!   - Provides access to the original [`input`][ParseError::input] with the
 //!     [`offset`][ParseError::offset] of where it failed
