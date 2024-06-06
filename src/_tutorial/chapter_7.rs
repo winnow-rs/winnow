@@ -173,7 +173,9 @@
 //! }
 //! ```
 //!
-//! At first glance, this looks correct but what `context` will be reported when parsing `"0b5"`?
+//! If you remember back to [`chapter_3`], [`alt`] will only report the last error.
+//! So if the parsers fail for any reason, like a bad radix, it will be reported as an invalid
+//! hexadecimal value:
 //! ```rust
 //! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
@@ -249,19 +251,204 @@
 //! #     )).parse_next(input)
 //! # }
 //! fn main() {
-//!     let input = "0b5";
+//!     let input = "100";
 //!     let error = "\
-//! 0b5
+//! 100
 //! ^
 //! invalid digit
 //! expected hexadecimal";
 //!     assert_eq!(input.parse::<Hex>().unwrap_err(), error);
 //! }
 //! ```
-//! If you remember back to [`chapter_3`], [`alt`] will only report the last error when what we
-//! want is the error from `parse_bin_digits.
+//! We can improve this with [`fail`]:
+//! ```rust
+//! # use winnow::prelude::*;
+//! # use winnow::token::take_while;
+//! # use winnow::combinator::alt;
+//! # use winnow::token::take;
+//! # use winnow::combinator::fail;
+//! # use winnow::Parser;
+//! use winnow::error::StrContext;
+//! use winnow::error::StrContextValue;
+//!
+//! #
+//! # #[derive(Debug, PartialEq, Eq)]
+//! # pub struct Hex(usize);
+//! #
+//! # impl std::str::FromStr for Hex {
+//! #     type Err = String;
+//! #
+//! #     fn from_str(input: &str) -> Result<Self, Self::Err> {
+//! #         parse_digits
+//! #             .try_map(|(t, v)| match t {
+//! #                "0b" => usize::from_str_radix(v, 2),
+//! #                "0o" => usize::from_str_radix(v, 8),
+//! #                "0d" => usize::from_str_radix(v, 10),
+//! #                "0x" => usize::from_str_radix(v, 16),
+//! #                _ => unreachable!("`parse_digits` doesn't return `{t}`"),
+//! #              })
+//! #             .map(Hex)
+//! #             .parse(input)
+//! #             .map_err(|e| e.to_string())
+//! #     }
+//! # }
+//! #
+//! fn parse_digits<'s>(input: &mut &'s str) -> PResult<(&'s str, &'s str)> {
+//!     alt((
+//!         ("0b", parse_bin_digits)
+//!           .context(StrContext::Label("digit"))
+//!           .context(StrContext::Expected(StrContextValue::Description("binary"))),
+//!         ("0o", parse_oct_digits)
+//!           .context(StrContext::Label("digit"))
+//!           .context(StrContext::Expected(StrContextValue::Description("octal"))),
+//!         ("0d", parse_dec_digits)
+//!           .context(StrContext::Label("digit"))
+//!           .context(StrContext::Expected(StrContextValue::Description("decimal"))),
+//!         ("0x", parse_hex_digits)
+//!           .context(StrContext::Label("digit"))
+//!           .context(StrContext::Expected(StrContextValue::Description("hexadecimal"))),
+//!         fail
+//!           .context(StrContext::Label("radix prefix"))
+//!           .context(StrContext::Expected(StrContextValue::StringLiteral("0b")))
+//!           .context(StrContext::Expected(StrContextValue::StringLiteral("0o")))
+//!           .context(StrContext::Expected(StrContextValue::StringLiteral("0d")))
+//!           .context(StrContext::Expected(StrContextValue::StringLiteral("0x"))),
+//!     )).parse_next(input)
+//! }
+//!
+//! // ...
+//!
+//! #
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='1'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='7'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='9'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='9'),
+//! #         ('A'..='F'),
+//! #         ('a'..='f'),
+//! #     )).parse_next(input)
+//! # }
+//! fn main() {
+//!     let input = "100";
+//!     let error = "\
+//! 100
+//! ^
+//! invalid radix prefix
+//! expected `0b`, `0o`, `0d`, `0x`";
+//!     assert_eq!(input.parse::<Hex>().unwrap_err(), error);
+//! }
+//! ```
 //!
 //! ## Error Cuts
+//!
+//! We still have the issue that we are falling-through when the radix is valid but the digits
+//! don't match it:
+//! ```rust
+//! # use winnow::prelude::*;
+//! # use winnow::token::take_while;
+//! # use winnow::combinator::alt;
+//! # use winnow::token::take;
+//! # use winnow::combinator::fail;
+//! # use winnow::Parser;
+//! # use winnow::error::StrContext;
+//! # use winnow::error::StrContextValue;
+//! #
+//! #
+//! # #[derive(Debug, PartialEq, Eq)]
+//! # pub struct Hex(usize);
+//! #
+//! # impl std::str::FromStr for Hex {
+//! #     type Err = String;
+//! #
+//! #     fn from_str(input: &str) -> Result<Self, Self::Err> {
+//! #         parse_digits
+//! #             .try_map(|(t, v)| match t {
+//! #                "0b" => usize::from_str_radix(v, 2),
+//! #                "0o" => usize::from_str_radix(v, 8),
+//! #                "0d" => usize::from_str_radix(v, 10),
+//! #                "0x" => usize::from_str_radix(v, 16),
+//! #                _ => unreachable!("`parse_digits` doesn't return `{t}`"),
+//! #              })
+//! #             .map(Hex)
+//! #             .parse(input)
+//! #             .map_err(|e| e.to_string())
+//! #     }
+//! # }
+//! #
+//! # fn parse_digits<'s>(input: &mut &'s str) -> PResult<(&'s str, &'s str)> {
+//! #     alt((
+//! #         ("0b", parse_bin_digits)
+//! #           .context(StrContext::Label("digit"))
+//! #           .context(StrContext::Expected(StrContextValue::Description("binary"))),
+//! #         ("0o", parse_oct_digits)
+//! #           .context(StrContext::Label("digit"))
+//! #           .context(StrContext::Expected(StrContextValue::Description("octal"))),
+//! #         ("0d", parse_dec_digits)
+//! #           .context(StrContext::Label("digit"))
+//! #           .context(StrContext::Expected(StrContextValue::Description("decimal"))),
+//! #         ("0x", parse_hex_digits)
+//! #           .context(StrContext::Label("digit"))
+//! #           .context(StrContext::Expected(StrContextValue::Description("hexadecimal"))),
+//! #         fail
+//! #           .context(StrContext::Label("radix prefix"))
+//! #           .context(StrContext::Expected(StrContextValue::StringLiteral("0b")))
+//! #           .context(StrContext::Expected(StrContextValue::StringLiteral("0o")))
+//! #           .context(StrContext::Expected(StrContextValue::StringLiteral("0d")))
+//! #           .context(StrContext::Expected(StrContextValue::StringLiteral("0x"))),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='1'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='7'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='9'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='9'),
+//! #         ('A'..='F'),
+//! #         ('a'..='f'),
+//! #     )).parse_next(input)
+//! # }
+//! fn main() {
+//!     let input = "0b5";
+//!     let error = "\
+//! 0b5
+//! ^
+//! invalid radix prefix
+//! expected `0b`, `0o`, `0d`, `0x`";
+//!     assert_eq!(input.parse::<Hex>().unwrap_err(), error);
+//! }
+//! ```
 //!
 //! Let's break down `PResult<O, E>` one step further:
 //! ```rust
@@ -325,6 +512,12 @@
 //!         ("0x", cut_err(parse_hex_digits))
 //!           .context(StrContext::Label("digit"))
 //!           .context(StrContext::Expected(StrContextValue::Description("hexadecimal"))),
+//!         fail
+//!           .context(StrContext::Label("radix prefix"))
+//!           .context(StrContext::Expected(StrContextValue::StringLiteral("0b")))
+//!           .context(StrContext::Expected(StrContextValue::StringLiteral("0o")))
+//!           .context(StrContext::Expected(StrContextValue::StringLiteral("0d")))
+//!           .context(StrContext::Expected(StrContextValue::StringLiteral("0x"))),
 //!     )).parse_next(input)
 //! }
 //!
@@ -372,6 +565,7 @@ use super::chapter_1;
 use super::chapter_3;
 use crate::combinator::alt;
 use crate::combinator::cut_err;
+use crate::combinator::fail;
 use crate::error::ContextError;
 use crate::error::ErrMode;
 use crate::error::ErrMode::*;
