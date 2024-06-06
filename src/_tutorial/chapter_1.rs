@@ -13,7 +13,7 @@
 //! - On success, the parser will return the processed data. The input will be advanced to the end of
 //!   what was processed, pointing to what will be parsed next.
 //! - If the parser failed, then there are multiple errors that could be returned.
-//!   We'll explore this further in [`chapter_6`].
+//!   We'll explore this further in [`chapter_7`].
 //!
 //! ```text
 //!                                   ┌─► Ok(what matched the parser)
@@ -36,7 +36,7 @@
 //! To combine parsers, we need a common way to refer to them which is where the [`Parser<I, O, E>`]
 //! trait comes in with [`Parser::parse_next`] being the primary way to drive
 //! parsing forward.
-//! In [`chapter_7`], we'll cover how to integrate these into your application, particularly with
+//! In [`chapter_6`], we'll cover how to integrate these into your application, particularly with
 //! [`Parser::parse`].
 //!
 //! You'll note that `I` and `O` are parameterized -- while most of the examples in this book
