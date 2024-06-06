@@ -7,12 +7,12 @@ use winnow::stream::Stream;
 #[derive(Debug, PartialEq, Eq)]
 pub enum CustomError<I> {
     MyError,
-    Nom(I, ErrorKind),
+    Winnow(I, ErrorKind),
 }
 
 impl<I: Stream + Clone> ParserError<I> for CustomError<I> {
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
-        CustomError::Nom(input.clone(), kind)
+        CustomError::Winnow(input.clone(), kind)
     }
 
     fn append(self, _: &I, _: &<I as Stream>::Checkpoint, _: ErrorKind) -> Self {
