@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Documentation
+
+- Expand on error reporting
+
 ## [0.6.12] - 2024-06-06
 
 ### Fixes
