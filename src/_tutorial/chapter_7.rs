@@ -93,6 +93,7 @@
 //! # use winnow::combinator::fail;
 //! # use winnow::Parser;
 //! use winnow::error::StrContext;
+//! use winnow::error::StrContextValue;
 //!
 //! #
 //! # #[derive(Debug, PartialEq, Eq)]
@@ -118,10 +119,18 @@
 //! #
 //! fn parse_digits<'s>(input: &mut &'s str) -> PResult<(&'s str, &'s str)> {
 //!     alt((
-//!         ("0b", parse_bin_digits).context(StrContext::Label("binary")),
-//!         ("0o", parse_oct_digits).context(StrContext::Label("octal")),
-//!         ("0d", parse_dec_digits).context(StrContext::Label("decimal")),
-//!         ("0x", parse_hex_digits).context(StrContext::Label("hexadecimal")),
+//!         ("0b", parse_bin_digits)
+//!           .context(StrContext::Label("digit"))
+//!           .context(StrContext::Expected(StrContextValue::Description("binary"))),
+//!         ("0o", parse_oct_digits)
+//!           .context(StrContext::Label("digit"))
+//!           .context(StrContext::Expected(StrContextValue::Description("octal"))),
+//!         ("0d", parse_dec_digits)
+//!           .context(StrContext::Label("digit"))
+//!           .context(StrContext::Expected(StrContextValue::Description("decimal"))),
+//!         ("0x", parse_hex_digits)
+//!           .context(StrContext::Label("digit"))
+//!           .context(StrContext::Expected(StrContextValue::Description("hexadecimal"))),
 //!     )).parse_next(input)
 //! }
 //!
@@ -158,7 +167,8 @@
 //!     let error = "\
 //! 0xZZ
 //!   ^
-//! invalid hexadecimal";
+//! invalid digit
+//! expected hexadecimal";
 //!     assert_eq!(input.parse::<Hex>().unwrap_err(), error);
 //! }
 //! ```
@@ -172,6 +182,7 @@
 //! # use winnow::combinator::fail;
 //! # use winnow::Parser;
 //! # use winnow::error::StrContext;
+//! # use winnow::error::StrContextValue;
 //! #
 //! #
 //! # #[derive(Debug, PartialEq, Eq)]
@@ -197,10 +208,18 @@
 //! #
 //! # fn parse_digits<'s>(input: &mut &'s str) -> PResult<(&'s str, &'s str)> {
 //! #     alt((
-//! #         ("0b", parse_bin_digits).context(StrContext::Label("binary")),
-//! #         ("0o", parse_oct_digits).context(StrContext::Label("octal")),
-//! #         ("0d", parse_dec_digits).context(StrContext::Label("decimal")),
-//! #         ("0x", parse_hex_digits).context(StrContext::Label("hexadecimal")),
+//! #         ("0b", parse_bin_digits)
+//! #           .context(StrContext::Label("digit"))
+//! #           .context(StrContext::Expected(StrContextValue::Description("binary"))),
+//! #         ("0o", parse_oct_digits)
+//! #           .context(StrContext::Label("digit"))
+//! #           .context(StrContext::Expected(StrContextValue::Description("octal"))),
+//! #         ("0d", parse_dec_digits)
+//! #           .context(StrContext::Label("digit"))
+//! #           .context(StrContext::Expected(StrContextValue::Description("decimal"))),
+//! #         ("0x", parse_hex_digits)
+//! #           .context(StrContext::Label("digit"))
+//! #           .context(StrContext::Expected(StrContextValue::Description("hexadecimal"))),
 //! #     )).parse_next(input)
 //! # }
 //! #
@@ -234,7 +253,8 @@
 //!     let error = "\
 //! 0b5
 //! ^
-//! invalid hexadecimal";
+//! invalid digit
+//! expected hexadecimal";
 //!     assert_eq!(input.parse::<Hex>().unwrap_err(), error);
 //! }
 //! ```
@@ -262,11 +282,12 @@
 //! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
 //! # use winnow::combinator::alt;
-//! # use winnow::combinator::cut_err;
 //! # use winnow::token::take;
 //! # use winnow::combinator::fail;
 //! # use winnow::Parser;
-//! use winnow::error::StrContext;
+//! # use winnow::error::StrContext;
+//! # use winnow::error::StrContextValue;
+//! use winnow::combinator::cut_err;
 //!
 //! #
 //! # #[derive(Debug, PartialEq, Eq)]
@@ -292,10 +313,18 @@
 //! #
 //! fn parse_digits<'s>(input: &mut &'s str) -> PResult<(&'s str, &'s str)> {
 //!     alt((
-//!         ("0b", cut_err(parse_bin_digits)).context(StrContext::Label("binary")),
-//!         ("0o", cut_err(parse_oct_digits)).context(StrContext::Label("octal")),
-//!         ("0d", cut_err(parse_dec_digits)).context(StrContext::Label("decimal")),
-//!         ("0x", cut_err(parse_hex_digits)).context(StrContext::Label("hexadecimal")),
+//!         ("0b", cut_err(parse_bin_digits))
+//!           .context(StrContext::Label("digit"))
+//!           .context(StrContext::Expected(StrContextValue::Description("binary"))),
+//!         ("0o", cut_err(parse_oct_digits))
+//!           .context(StrContext::Label("digit"))
+//!           .context(StrContext::Expected(StrContextValue::Description("octal"))),
+//!         ("0d", cut_err(parse_dec_digits))
+//!           .context(StrContext::Label("digit"))
+//!           .context(StrContext::Expected(StrContextValue::Description("decimal"))),
+//!         ("0x", cut_err(parse_hex_digits))
+//!           .context(StrContext::Label("digit"))
+//!           .context(StrContext::Expected(StrContextValue::Description("hexadecimal"))),
 //!     )).parse_next(input)
 //! }
 //!
@@ -332,7 +361,8 @@
 //!     let error = "\
 //! 0b5
 //!   ^
-//! invalid binary";
+//! invalid digit
+//! expected binary";
 //!     assert_eq!(input.parse::<Hex>().unwrap_err(), error);
 //! }
 //! ```
