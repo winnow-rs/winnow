@@ -17,7 +17,7 @@ pub trait Alt<I, O, E> {
 /// Pick the first successful parser
 ///
 /// To stop on an error, rather than trying further cases, see
-/// [`cut_err`][crate::combinator::cut_err] ([example][crate::_tutorial::chapter_6]).
+/// [`cut_err`][crate::combinator::cut_err] ([example][crate::_tutorial::chapter_7]).
 ///
 /// For tight control over the error when no match is found, add a final case using [`fail`][crate::combinator::fail].
 /// Alternatively, with a [custom error type][crate::_topic::error], it is possible to track all
@@ -73,7 +73,7 @@ pub trait Permutation<I, O, E> {
 /// tuple of the parser results.
 ///
 /// To stop on an error, rather than trying further permutations, see
-/// [`cut_err`][crate::combinator::cut_err] ([example][crate::_tutorial::chapter_6]).
+/// [`cut_err`][crate::combinator::cut_err] ([example][crate::_tutorial::chapter_7]).
 ///
 /// # Example
 ///
