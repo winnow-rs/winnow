@@ -18,6 +18,7 @@
 //! Optional traits include:
 //! - [`AddContext`]
 //! - [`FromExternalError`]
+//! - [`ErrorConvert`]
 //!
 //! There are multiple strategies for implementing support for [`AddContext`] and [`FromExternalError`]:
 //! - Make your error type generic over the context or external error
@@ -34,6 +35,7 @@
 #![allow(unused_imports)]
 use crate::combinator::cut_err;
 use crate::error::ContextError;
+use crate::error::ErrorConvert;
 use crate::error::StrContext;
 use crate::Parser;
 use crate::_tutorial::chapter_7;
