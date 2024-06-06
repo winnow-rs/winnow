@@ -559,6 +559,155 @@
 //!     assert_eq!(input.parse::<Hex>().unwrap_err(), error);
 //! }
 //! ```
+//!
+//! ## Error Adaptation and Rendering
+//!
+//! While Winnow can provide basic rendering of errors, your application can have various demands
+//! beyond the basics provided like
+//! - Correctly reporting columns with unicode
+//! - Conforming to a specific layout
+//!
+//! For example, to get rustc-like errors with [`annotate-snippets`](https://crates.io/crates/annotate-snippets):
+//! ```rust
+//! # use winnow::prelude::*;
+//! # use winnow::token::take_while;
+//! # use winnow::combinator::alt;
+//! # use winnow::token::take;
+//! # use winnow::combinator::fail;
+//! # use winnow::Parser;
+//! # use winnow::error::ParseError;
+//! # use winnow::error::ContextError;
+//! # use winnow::error::StrContext;
+//! # use winnow::error::StrContextValue;
+//! # use winnow::combinator::cut_err;
+//! #
+//! #
+//! #[derive(Debug, PartialEq, Eq)]
+//! pub struct Hex(usize);
+//!
+//! impl std::str::FromStr for Hex {
+//!     type Err = HexError;
+//!
+//!     fn from_str(input: &str) -> Result<Self, Self::Err> {
+//!         // ...
+//! #         parse_digits
+//! #             .try_map(|(t, v)| match t {
+//! #                "0b" => usize::from_str_radix(v, 2),
+//! #                "0o" => usize::from_str_radix(v, 8),
+//! #                "0d" => usize::from_str_radix(v, 10),
+//! #                "0x" => usize::from_str_radix(v, 16),
+//! #                _ => unreachable!("`parse_digits` doesn't return `{t}`"),
+//! #              })
+//! #             .map(Hex)
+//!             .parse(input)
+//!             .map_err(|e| HexError::from_parse(e, input))
+//!     }
+//! }
+//!
+//! #[derive(Debug)]
+//! pub struct HexError {
+//!     message: String,
+//!     // Byte spans are tracked, rather than line and column.
+//!     // This makes it easier to operate on programmatically
+//!     // and doesn't limit us to one definition for column count
+//!     // which can depend on the output medium and application.
+//!     span: std::ops::Range<usize>,
+//!     input: String,
+//! }
+//!
+//! impl HexError {
+//!     fn from_parse(error: ParseError<&str, ContextError>, input: &str) -> Self {
+//!         // The default renderer for `ContextError` is still used but that can be
+//!         // customized as well to better fit your needs.
+//!         let message = error.inner().to_string();
+//!         let input = input.to_owned();
+//!         let start = error.offset();
+//!         // Assume the error span is only for the first `char`.
+//!         // Semantic errors are free to choose the entire span returned by `Parser::with_span`.
+//!         let end = (start + 1..).find(|e| input.is_char_boundary(*e)).unwrap_or(start);
+//!         Self {
+//!             message,
+//!             span: start..end,
+//!             input,
+//!         }
+//!     }
+//! }
+//!
+//! impl std::fmt::Display for HexError {
+//!     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//!         let message = annotate_snippets::Level::Error.title(&self.message)
+//!             .snippet(annotate_snippets::Snippet::source(&self.input)
+//!                 .fold(true)
+//!                 .annotation(annotate_snippets::Level::Error.span(self.span.clone()))
+//!             );
+//!         let renderer = annotate_snippets::Renderer::plain();
+//!         let rendered = renderer.render(message);
+//!         rendered.fmt(f)
+//!     }
+//! }
+//!
+//! impl std::error::Error for HexError {}
+//!
+//! # fn parse_digits<'s>(input: &mut &'s str) -> PResult<(&'s str, &'s str)> {
+//! #     alt((
+//! #         ("0b", cut_err(parse_bin_digits))
+//! #           .context(StrContext::Label("digit"))
+//! #           .context(StrContext::Expected(StrContextValue::Description("binary"))),
+//! #         ("0o", cut_err(parse_oct_digits))
+//! #           .context(StrContext::Label("digit"))
+//! #           .context(StrContext::Expected(StrContextValue::Description("octal"))),
+//! #         ("0d", cut_err(parse_dec_digits))
+//! #           .context(StrContext::Label("digit"))
+//! #           .context(StrContext::Expected(StrContextValue::Description("decimal"))),
+//! #         ("0x", cut_err(parse_hex_digits))
+//! #           .context(StrContext::Label("digit"))
+//! #           .context(StrContext::Expected(StrContextValue::Description("hexadecimal"))),
+//! #         fail
+//! #           .context(StrContext::Label("radix prefix"))
+//! #           .context(StrContext::Expected(StrContextValue::StringLiteral("0b")))
+//! #           .context(StrContext::Expected(StrContextValue::StringLiteral("0o")))
+//! #           .context(StrContext::Expected(StrContextValue::StringLiteral("0d")))
+//! #           .context(StrContext::Expected(StrContextValue::StringLiteral("0x"))),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='1'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='7'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='9'),
+//! #     )).parse_next(input)
+//! # }
+//! #
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! #     take_while(1.., (
+//! #         ('0'..='9'),
+//! #         ('A'..='F'),
+//! #         ('a'..='f'),
+//! #     )).parse_next(input)
+//! # }
+//! fn main() {
+//!     let input = "0b5";
+//!     let error = "\
+//! error: invalid digit
+//! expected binary
+//!   |
+//! 1 | 0b5
+//!   |   ^
+//!   |";
+//!     assert_eq!(input.parse::<Hex>().unwrap_err().to_string(), error);
+//! }
+//! ```
 
 #![allow(unused_imports)]
 use super::chapter_1;
