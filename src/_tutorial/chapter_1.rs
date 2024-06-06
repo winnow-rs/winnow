@@ -10,17 +10,16 @@
 //!  - `Err` indicates the parser could not find what it was looking for.
 //!
 //! Parsers do more than just return a binary "success"/"failure" code.
-//! On success, the parser will return the processed data. The input will be advanced to the end of
-//! what was processed, pointing to what will be parsed next.
-//!
-//! If the parser failed, then there are multiple errors that could be returned.
-//! For simplicity, however, in the next chapters we will leave these unexplored.
+//! - On success, the parser will return the processed data. The input will be advanced to the end of
+//!   what was processed, pointing to what will be parsed next.
+//! - If the parser failed, then there are multiple errors that could be returned.
+//!   We'll explore this further in [`chapter_6`].
 //!
 //! ```text
 //!                                   ┌─► Ok(what matched the parser)
-//!             ┌─────────┐           │
-//! my input───►│my parser├──►either──┤
-//!             └─────────┘           └─► Err(...)
+//!             ┌────────┐           │
+//! my input───►│a parser├──►either──┤
+//!             └────────┘           └─► Err(...)
 //! ```
 //!
 //!
@@ -37,6 +36,8 @@
 //! To combine parsers, we need a common way to refer to them which is where the [`Parser<I, O, E>`]
 //! trait comes in with [`Parser::parse_next`] being the primary way to drive
 //! parsing forward.
+//! In [`chapter_7`], we'll cover how to integrate these into your application, particularly with
+//! [`Parser::parse`].
 //!
 //! You'll note that `I` and `O` are parameterized -- while most of the examples in this book
 //! will be with `&str` (i.e. parsing a string); they do not have to be strings; nor do they
@@ -77,6 +78,8 @@
 //! ```
 
 #![allow(unused_imports)]
+use super::chapter_6;
+use super::chapter_7;
 use crate::PResult;
 use crate::Parser;
 
