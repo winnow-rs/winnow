@@ -567,6 +567,9 @@
 //! - Correctly reporting columns with unicode
 //! - Conforming to a specific layout
 //!
+//! As a reminder [`chapter_6`] demonstrated how to convert a [`PResult`] to a standard
+//! Rust [`Result`], and this section assumes that has been done.
+//!
 //! For example, to get rustc-like errors with [`annotate-snippets`](https://crates.io/crates/annotate-snippets):
 //! ```rust
 //! # use winnow::prelude::*;
@@ -712,6 +715,7 @@
 #![allow(unused_imports)]
 use super::chapter_1;
 use super::chapter_3;
+use super::chapter_6;
 use crate::combinator::alt;
 use crate::combinator::cut_err;
 use crate::combinator::fail;
