@@ -1571,6 +1571,8 @@ dependencies = [
  "snapbox",
  "term-transcript",
  "terminal_size",
+ "unicode-width",
+ "winnow",
 ]
 
 [[package]]

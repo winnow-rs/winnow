@@ -120,6 +120,7 @@ std = ["alloc", "memchr?/std"]
 simd = ["dep:memchr"]
 debug = ["std", "dep:anstream", "dep:anstyle", "dep:is-terminal", "dep:terminal_size"]
 unstable-recover = []
+unicode-width = ["dep:unicode-width"]
 
 unstable-doc = ["alloc", "std", "simd", "unstable-recover"]
 
@@ -129,6 +130,7 @@ anstyle = { version = "1.0.1", optional = true }
 is-terminal = { version = "0.4.9", optional = true }
 memchr = { version = "2.5", optional = true, default-features = false }
 terminal_size = { version = "0.2.6", optional = true }
+unicode-width = {version = "0.1.13", optional = true}
 
 [dev-dependencies]
 doc-comment = "0.3"
@@ -141,6 +143,7 @@ circular = "0.3.0"
 rustc-hash = "1.1.0"
 automod = "1.0.14"
 annotate-snippets = "0.11.3"
+winnow = {path = ".", features = ["unicode-width"]}
 
 [profile.bench]
 debug = true

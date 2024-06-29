@@ -1212,9 +1212,10 @@ where
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let input = self.input.as_bstr();
         let span_start = self.offset;
-        let span_end = span_start;
         #[cfg(feature = "std")]
         if input.contains(&b'\n') {
+            let span_end = span_start;
+
             let (line_idx, col_idx) = translate_position(input, span_start);
             let line_num = line_idx + 1;
             let col_num = col_idx + 1;
@@ -1251,8 +1252,19 @@ where
             }
             writeln!(f)?;
         } else {
+            let utf8_str = String::from_utf8_lossy(input);
+
+            #[cfg(feature = "unicode-width")]
+            // Compensate for unicode "🌍"-like symbol widths
+            let span_start = {
+                use unicode_width::UnicodeWidthStr;
+                UnicodeWidthStr::width_cjk(&utf8_str[0..self.offset])
+            };
+
+            let span_end = span_start;
+
             let content = input;
-            writeln!(f, "{}", String::from_utf8_lossy(content))?;
+            writeln!(f, "{}", utf8_str)?;
             for _ in 0..span_start {
                 write!(f, " ")?;
             }
@@ -1294,8 +1306,20 @@ fn translate_position(input: &[u8], index: usize) -> (usize, usize) {
 
     // HACK: This treats byte offset and column offsets the same
     let column = crate::lib::std::str::from_utf8(&input[line_start..=index])
-        .map(|s| s.chars().count() - 1)
+        .map(|s| {
+            #[cfg(not(feature = "unicode-width"))]
+            {
+                s.chars().count() - 1
+            }
+
+            #[cfg(feature = "unicode-width")]
+            {
+                use unicode_width::UnicodeWidthStr;
+                UnicodeWidthStr::width_cjk(s) - 1
+            }
+        })
         .unwrap_or_else(|_| index - line_start);
+
     let column = column + column_offset;
 
     (line, column)
@@ -1318,6 +1342,24 @@ mod test_parse_error {
 0xZ123
   ^
 slice error starting at: Z123";
+        assert_eq!(error.to_string(), expected);
+    }
+
+    #[test]
+    #[cfg(feature = "unicode-width")]
+    fn single_line_unicode() {
+        let mut input = "0x世界3";
+        let start = input.checkpoint();
+        let _ = input.next_token().unwrap();
+        let _ = input.next_token().unwrap();
+        let _ = input.next_token().unwrap();
+        let _ = input.next_token().unwrap();
+        let inner = InputError::new(input, ErrorKind::Slice);
+        let error = ParseError::new(input, start, inner);
+        let expected = "\
+0x世界3
+      ^
+slice error starting at: 3";
         assert_eq!(error.to_string(), expected);
     }
 }
