@@ -2,6 +2,7 @@
 //!
 //! When things inevitably go wrong, you can introspect the parsing state by running your test case
 //! with `--features winnow/debug`:
+//!
 //! ![Trace output from string example](https://raw.githubusercontent.com/winnow-rs/winnow/main/assets/trace.svg "Example output")
 //!
 //! You can extend your own parsers to show up by wrapping their body with
