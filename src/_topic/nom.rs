@@ -31,7 +31,7 @@
 //! 1. Ensure everything compiles and tests pass, ignoring deprecation messages (see [migration
 //!     notes](https://github.com/winnow-rs/winnow/blob/v0.5.0/CHANGELOG.md))
 //! 1. Commit
-//! 1. Resolve deprecation messagess
+//! 1. Resolve deprecation messages
 //! 1. Commit
 //!
 //! For example migrations, see
