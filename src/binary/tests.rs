@@ -797,6 +797,22 @@ mod partial {
     }
 
     #[test]
+    fn le_u16_tests() {
+        assert_parse!(
+            le_u16.parse_peek(Partial::new(&[0x00, 0x03][..])),
+            Ok((Partial::new(&b""[..]), 0x0300))
+        );
+        assert_parse!(
+            le_u16.parse_peek(Partial::new(&[b'a', b'b'][..])),
+            Ok((Partial::new(&b""[..]), 0x6261))
+        );
+        assert_parse!(
+            le_u16.parse_peek(Partial::new(&[0x01][..])),
+            Err(ErrMode::Incomplete(Needed::new(1)))
+        );
+    }
+
+    #[test]
     fn le_i8_tests() {
         assert_parse!(
             le_i8.parse_peek(Partial::new(&[0x00][..])),
@@ -865,6 +881,22 @@ mod partial {
         assert_parse!(
             le_i24.parse_peek(Partial::new(&[0xAA, 0xCB, 0xED][..])),
             Ok((Partial::new(&b""[..]), -1_193_046_i32))
+        );
+    }
+
+    #[test]
+    fn le_u32_test() {
+        assert_parse!(
+            le_u32.parse_peek(Partial::new(&[0x00, 0x03, 0x05, 0x07][..])),
+            Ok((Partial::new(&b""[..]), 0x07050300))
+        );
+        assert_parse!(
+            le_u32.parse_peek(Partial::new(&[b'a', b'b', b'c', b'd'][..])),
+            Ok((Partial::new(&b""[..]), 0x64636261))
+        );
+        assert_parse!(
+            le_u32.parse_peek(Partial::new(&[0x01][..])),
+            Err(ErrMode::Incomplete(Needed::new(3)))
         );
     }
 
