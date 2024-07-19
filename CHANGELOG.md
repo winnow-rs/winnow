@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.6.14] - 2024-07-19
+
 ### Fixes
 
 - Removed unused `I: Clone` bound on `Parser::parse`
@@ -2373,7 +2375,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.13...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.14...HEAD
+[0.6.14]: https://github.com/winnow-rs/winnow/compare/v0.6.13...v0.6.14
 [0.6.13]: https://github.com/winnow-rs/winnow/compare/v0.6.12...v0.6.13
 [0.6.12]: https://github.com/winnow-rs/winnow/compare/v0.6.11...v0.6.12
 [0.6.11]: https://github.com/winnow-rs/winnow/compare/v0.6.10...v0.6.11
