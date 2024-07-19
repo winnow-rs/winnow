@@ -54,7 +54,6 @@ pub trait Parser<I, O, E> {
         I: Stream,
         // Force users to deal with `Incomplete` when `StreamIsPartial<true>`
         I: StreamIsPartial,
-        I: Clone,
         E: ParserError<I>,
     {
         debug_assert!(
