@@ -287,12 +287,12 @@ impl<I: Stream + crate::lib::std::fmt::Debug, E: crate::lib::std::fmt::Debug>
 /// # use winnow::ascii::alpha1;
 /// # type Error = ();
 ///
-/// #[derive(Clone, Debug)]
-/// struct State<'s>(&'s Cell<u32>);
+/// #[derive(Debug)]
+/// struct State<'s>(&'s mut u32);
 ///
 /// impl<'s> State<'s> {
-///     fn count(&self) {
-///         self.0.set(self.0.get() + 1);
+///     fn count(&mut self) {
+///         *self.0 += 1;
 ///     }
 /// }
 ///
@@ -304,10 +304,10 @@ impl<I: Stream + crate::lib::std::fmt::Debug, E: crate::lib::std::fmt::Debug>
 /// }
 ///
 /// let data = "Hello";
-/// let state = Cell::new(0);
-/// let input = Stream { input: data, state: State(&state) };
+/// let mut state = 0;
+/// let input = Stream { input: data, state: State(&mut state) };
 /// let output = word.parse(input).unwrap();
-/// assert_eq!(state.get(), 1);
+/// assert_eq!(state, 1);
 /// ```
 #[derive(Clone, Copy, Default, Eq, PartialEq)]
 #[doc(alias = "LocatedSpan")]
