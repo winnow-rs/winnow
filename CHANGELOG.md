@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Removed unused `I: Clone` bound on `Parser::parse`
+
 ## [0.6.13] - 2024-06-06
 
 ### Documentation
