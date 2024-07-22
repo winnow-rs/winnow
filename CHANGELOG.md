@@ -3,6 +3,16 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+- Deprecated `Parser::recognize` in favor of `Parser::take`
+- Deprecated `Parser::with_recognized` in favor of `Parser::taken`
+
+### Fixes
+
+- Renamed `Parser::recognize` to `Parser::take` to be consistent with other `take` parsers
+- Renamed `Parser::with_recognized` to `Parser::with_taken` to be consistent with other `take` parsers
+
 ## [0.6.14] - 2024-07-19
 
 ### Fixes
