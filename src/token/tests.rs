@@ -398,16 +398,14 @@ fn partial_take_until_incomplete_s() {
 }
 
 #[test]
-fn partial_recognize() {
+fn partial_take() {
     use crate::ascii::{
         alpha1 as alpha, alphanumeric1 as alphanumeric, digit1 as digit, hex_digit1 as hex_digit,
         multispace1 as multispace, oct_digit1 as oct_digit, space1 as space,
     };
 
     fn x(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        delimited("<!--", take(5_usize), "-->")
-            .recognize()
-            .parse_peek(i)
+        delimited("<!--", take(5_usize), "-->").take().parse_peek(i)
     }
     let r = x(Partial::new(&b"<!-- abc --> aaa"[..]));
     assert_eq!(r, Ok((Partial::new(&b" aaa"[..]), &b"<!-- abc -->"[..])));
@@ -415,43 +413,43 @@ fn partial_recognize() {
     let semicolon = &b";"[..];
 
     fn ya(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        alpha.recognize().parse_peek(i)
+        alpha.take().parse_peek(i)
     }
     let ra = ya(Partial::new(&b"abc;"[..]));
     assert_eq!(ra, Ok((Partial::new(semicolon), &b"abc"[..])));
 
     fn yd(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        digit.recognize().parse_peek(i)
+        digit.take().parse_peek(i)
     }
     let rd = yd(Partial::new(&b"123;"[..]));
     assert_eq!(rd, Ok((Partial::new(semicolon), &b"123"[..])));
 
     fn yhd(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        hex_digit.recognize().parse_peek(i)
+        hex_digit.take().parse_peek(i)
     }
     let rhd = yhd(Partial::new(&b"123abcDEF;"[..]));
     assert_eq!(rhd, Ok((Partial::new(semicolon), &b"123abcDEF"[..])));
 
     fn yod(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        oct_digit.recognize().parse_peek(i)
+        oct_digit.take().parse_peek(i)
     }
     let rod = yod(Partial::new(&b"1234567;"[..]));
     assert_eq!(rod, Ok((Partial::new(semicolon), &b"1234567"[..])));
 
     fn yan(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        alphanumeric.recognize().parse_peek(i)
+        alphanumeric.take().parse_peek(i)
     }
     let ran = yan(Partial::new(&b"123abc;"[..]));
     assert_eq!(ran, Ok((Partial::new(semicolon), &b"123abc"[..])));
 
     fn ys(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        space.recognize().parse_peek(i)
+        space.take().parse_peek(i)
     }
     let rs = ys(Partial::new(&b" \t;"[..]));
     assert_eq!(rs, Ok((Partial::new(semicolon), &b" \t"[..])));
 
     fn yms(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        multispace.recognize().parse_peek(i)
+        multispace.take().parse_peek(i)
     }
     let rms = yms(Partial::new(&b" \t\r\n;"[..]));
     assert_eq!(rms, Ok((Partial::new(semicolon), &b" \t\r\n"[..])));
@@ -714,12 +712,12 @@ fn partial_take_while_m_n_utf8_full_match_range() {
 
 #[test]
 #[cfg(feature = "std")]
-fn partial_recognize_take_while0() {
+fn partial_take_take_while0() {
     fn x(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
         take_while(0.., AsChar::is_alphanum).parse_peek(i)
     }
     fn y(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        unpeek(x).recognize().parse_peek(i)
+        unpeek(x).take().parse_peek(i)
     }
     assert_eq!(
         x(Partial::new(&b"ab."[..])),

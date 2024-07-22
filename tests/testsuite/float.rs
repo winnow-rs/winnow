@@ -14,7 +14,7 @@ fn unsigned_float(i: &[u8]) -> IResult<&[u8], f32> {
         delimited(digit, ".", opt(digit)),
         delimited(opt(digit), ".", digit),
     ))
-    .recognize();
+    .take();
     let float_str = float_bytes.try_map(str::from_utf8);
     float_str.try_map(FromStr::from_str).parse_peek(i)
 }

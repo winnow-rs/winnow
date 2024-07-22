@@ -504,7 +504,7 @@ mod test {
 
     #[test]
     #[cfg(feature = "alloc")]
-    fn recognize_is_a_str() {
+    fn take_is_a_str() {
         use winnow::prelude::*;
 
         let a = "aabbab";
@@ -512,7 +512,7 @@ mod test {
 
         fn f(i: &str) -> IResult<&str, &str> {
             repeat::<_, _, (), _, _>(1.., alt(("a", "b")))
-                .recognize()
+                .take()
                 .parse_peek(i)
         }
 

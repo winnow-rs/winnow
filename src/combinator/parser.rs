@@ -579,9 +579,13 @@ where
     }
 }
 
-/// Implementation of [`Parser::recognize`]
+/// Replaced with [`Take`]
+#[deprecated(since = "0.6.14", note = "Replaced with `Take`")]
+pub type Recognize<F, I, O, E> = Take<F, I, O, E>;
+
+/// Implementation of [`Parser::take`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct Recognize<F, I, O, E>
+pub struct Take<F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
@@ -592,7 +596,7 @@ where
     e: core::marker::PhantomData<E>,
 }
 
-impl<F, I, O, E> Recognize<F, I, O, E>
+impl<F, I, O, E> Take<F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
@@ -608,7 +612,7 @@ where
     }
 }
 
-impl<I, O, E, F> Parser<I, <I as Stream>::Slice, E> for Recognize<F, I, O, E>
+impl<I, O, E, F> Parser<I, <I as Stream>::Slice, E> for Take<F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
@@ -620,17 +624,21 @@ where
             Ok(_) => {
                 let offset = input.offset_from(&checkpoint);
                 input.reset(&checkpoint);
-                let recognized = input.next_slice(offset);
-                Ok(recognized)
+                let taken = input.next_slice(offset);
+                Ok(taken)
             }
             Err(e) => Err(e),
         }
     }
 }
 
-/// Implementation of [`Parser::with_recognized`]
+/// Replaced with [`WithTaken`]
+#[deprecated(since = "0.6.14", note = "Replaced with `WithTaken`")]
+pub type WithRecognized<F, I, O, E> = WithTaken<F, I, O, E>;
+
+/// Implementation of [`Parser::with_taken`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
-pub struct WithRecognized<F, I, O, E>
+pub struct WithTaken<F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
@@ -641,7 +649,7 @@ where
     e: core::marker::PhantomData<E>,
 }
 
-impl<F, I, O, E> WithRecognized<F, I, O, E>
+impl<F, I, O, E> WithTaken<F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
@@ -657,7 +665,7 @@ where
     }
 }
 
-impl<F, I, O, E> Parser<I, (O, <I as Stream>::Slice), E> for WithRecognized<F, I, O, E>
+impl<F, I, O, E> Parser<I, (O, <I as Stream>::Slice), E> for WithTaken<F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
@@ -669,8 +677,8 @@ where
             Ok(result) => {
                 let offset = input.offset_from(&checkpoint);
                 input.reset(&checkpoint);
-                let recognized = input.next_slice(offset);
-                Ok((result, recognized))
+                let taken = input.next_slice(offset);
+                Ok((result, taken))
             }
             Err(e) => Err(e),
         }

@@ -15,9 +15,9 @@ use crate::Parser;
 /// This stops before `n` when the parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
 ///
-/// To recognize a series of tokens, [`Accumulate`] into a `()`
+/// To take a series of tokens, [`Accumulate`] into a `()`
 /// (e.g. with [`.map(|()| ())`][Parser::map])
-/// and then [`Parser::recognize`].
+/// and then [`Parser::take`].
 ///
 /// **Warning:** If the parser passed to `repeat` accepts empty inputs
 /// (like `alpha0` or `digit0`), `repeat` will return an error,
@@ -452,9 +452,9 @@ where
 ///
 /// `f` keeps going so long as `g` produces [`ErrMode::Backtrack`]. To instead chain an error up, see [`cut_err`][crate::combinator::cut_err].
 ///
-/// To recognize a series of tokens, [`Accumulate`] into a `()`
+/// To take a series of tokens, [`Accumulate`] into a `()`
 /// (e.g. with [`.map(|()| ())`][Parser::map])
-/// and then [`Parser::recognize`].
+/// and then [`Parser::take`].
 ///
 /// See also
 /// - [`take_till`][crate::token::take_till] for recognizing up-to a member of a [set of tokens][crate::stream::ContainsToken]
@@ -612,9 +612,9 @@ where
 /// This stops when either parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
 ///
-/// To recognize a series of tokens, [`Accumulate`] into a `()`
+/// To take a series of tokens, [`Accumulate`] into a `()`
 /// (e.g. with [`.map(|()| ())`][Parser::map])
-/// and then [`Parser::recognize`].
+/// and then [`Parser::take`].
 ///
 /// **Warning:** If the separator parser accepts empty inputs
 /// (like `alpha0` or `digit0`), `separated` will return an error,

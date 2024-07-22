@@ -620,7 +620,7 @@ mod complete {
 
     #[cfg(feature = "std")]
     fn parse_f64(i: &str) -> IResult<&str, f64, ()> {
-        match recognize_float_or_exceptions.parse_peek(i) {
+        match take_float_or_exceptions.parse_peek(i) {
             Err(e) => Err(e),
             Ok((i, s)) => {
                 if s.is_empty() {

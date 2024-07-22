@@ -332,7 +332,7 @@ where
 ///
 /// *[Partial version][crate::_topic::partial]* will return a `ErrMode::Incomplete(Needed::new(1))` if a member of the set of tokens reaches the end of the input or is too short.
 ///
-/// To recognize a series of tokens, use [`repeat`][crate::combinator::repeat] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::recognize`].
+/// To take a series of tokens, use [`repeat`][crate::combinator::repeat] to [`Accumulate`][crate::stream::Accumulate] into a `()` and then [`Parser::take`].
 ///
 /// # Effective Signature
 ///
@@ -686,7 +686,7 @@ where
 ///
 /// See also
 /// - [`take_until`] for recognizing up-to a [`literal`] (w/ optional simd optimizations)
-/// - [`repeat_till`][crate::combinator::repeat_till] with [`Parser::recognize`] for recognizing up to a [`Parser`]
+/// - [`repeat_till`][crate::combinator::repeat_till] with [`Parser::take`] for taking tokens up to a [`Parser`]
 ///
 /// # Effective Signature
 ///
@@ -895,7 +895,7 @@ where
 ///
 /// See also
 /// - [`take_till`] for recognizing up-to a [set of tokens][ContainsToken]
-/// - [`repeat_till`][crate::combinator::repeat_till] with [`Parser::recognize`] for recognizing up to a [`Parser`]
+/// - [`repeat_till`][crate::combinator::repeat_till] with [`Parser::take`] for taking tokens up to a [`Parser`]
 ///
 /// # Effective Signature
 ///

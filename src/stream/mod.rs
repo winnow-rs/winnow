@@ -399,7 +399,7 @@ impl<I: crate::lib::std::fmt::Debug, S: crate::lib::std::fmt::Debug> crate::lib:
 /// // but the complete parser will return an error
 /// assert_eq!(take_complete.parse_peek(&b"abc"[..]), Err(ErrMode::Backtrack(InputError::new(&b"abc"[..], ErrorKind::Slice))));
 ///
-/// // the alpha0 function recognizes 0 or more alphabetic characters
+/// // the alpha0 function takes 0 or more alphabetic characters
 /// fn alpha0_partial<'s>(i: &mut Partial<&'s str>) -> PResult<&'s str, InputError<Partial<&'s str>>> {
 ///   ascii::alpha0.parse_next(i)
 /// }
@@ -408,12 +408,12 @@ impl<I: crate::lib::std::fmt::Debug, S: crate::lib::std::fmt::Debug> crate::lib:
 ///   ascii::alpha0.parse_next(i)
 /// }
 ///
-/// // if there's a clear limit to the recognized characters, both parsers work the same way
+/// // if there's a clear limit to the taken characters, both parsers work the same way
 /// assert_eq!(alpha0_partial.parse_peek(Partial::new("abcd;")), Ok((Partial::new(";"), "abcd")));
 /// assert_eq!(alpha0_complete.parse_peek("abcd;"), Ok((";", "abcd")));
 ///
 /// // but when there's no limit, the partial version returns `Incomplete`, because it cannot
-/// // know if more input data should be recognized. The whole input could be "abcd;", or
+/// // know if more input data should be taken. The whole input could be "abcd;", or
 /// // "abcde;"
 /// assert_eq!(alpha0_partial.parse_peek(Partial::new("abcd")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
@@ -3169,7 +3169,7 @@ pub trait AsChar {
 
     /// Tests that self is an alphabetic character
     ///
-    /// **Warning:** for `&str` it recognizes alphabetic
+    /// **Warning:** for `&str` it matches alphabetic
     /// characters outside of the 52 ASCII letters
     fn is_alpha(self) -> bool;
 
