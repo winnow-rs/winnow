@@ -1552,6 +1552,17 @@ where
 
 /// Recognize the input slice with escaped characters.
 ///
+/// Arguments:
+/// - `normal`: unescapeable characters
+///   - Must not include `control`
+/// - `control_char`: e.g. `\` for strings in most languages
+/// - `escape`: parse and transform the escaped character
+///
+/// Parsing ends when:
+/// - `alt(normal, control._char)` [`Backtrack`s][crate::error::ErrMode::Backtrack]
+/// - `normal` doesn't advance the input stream
+/// - *(complete)* input stream is exhausted
+///
 /// See also [`escaped_transform`]
 ///
 /// # Example
@@ -1714,7 +1725,16 @@ where
 
 /// Parse escaped characters, unescaping them
 ///
-/// As an example, the chain `abc\tdef` could be `abc    def` (it also consumes the control character)
+/// Arguments:
+/// - `normal`: unescapeable characters
+///   - Must not include `control`
+/// - `control_char`: e.g. `\` for strings in most languages
+/// - `escape`: parse and transform the escaped character
+///
+/// Parsing ends when:
+/// - `alt(normal, control._char)` [`Backtrack`s][crate::error::ErrMode::Backtrack]
+/// - `normal` doesn't advance the input stream
+/// - *(complete)* input stream is exhausted
 ///
 /// # Example
 ///
