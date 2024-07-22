@@ -201,7 +201,7 @@
 //!
 //! If you look closely at [`repeat`], it isn't collecting directly into a [`Vec`] but
 //! anything that implements the [`Accumulate`] trait to gather the results. This lets us make more complex parsers than we did in
-//! [`chapter_2`] by accumulating the results into a `()` and [`recognize`][Parser::recognize]-ing the captured input:
+//! [`chapter_2`] by accumulating the results into a `()` and [`take`][Parser::take]-ing the captured input:
 //! ```rust
 //! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
@@ -210,8 +210,8 @@
 //! # use winnow::combinator::fail;
 //! # use winnow::combinator::separated;
 //! #
-//! fn recognize_list<'s>(input: &mut &'s str) -> PResult<&'s str> {
-//!     parse_list.recognize().parse_next(input)
+//! fn take_list<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//!     parse_list.take().parse_next(input)
 //! }
 //!
 //! fn parse_list(input: &mut &str) -> PResult<()> {
@@ -257,7 +257,7 @@
 //! fn main() {
 //!     let mut input = "0x1a2b,0x3c4d,0x5e6f Hello";
 //!
-//!     let digits = recognize_list.parse_next(&mut input).unwrap();
+//!     let digits = take_list.parse_next(&mut input).unwrap();
 //!
 //!     assert_eq!(input, " Hello");
 //!     assert_eq!(digits, "0x1a2b,0x3c4d,0x5e6f");

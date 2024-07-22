@@ -1132,7 +1132,7 @@ where
 {
     trace("dec_uint", move |input: &mut Input| {
         alt(((one_of('1'..='9'), digit0).void(), one_of('0').void()))
-            .recognize()
+            .take()
             .verify_map(|s: <Input as Stream>::Slice| {
                 let s = s.as_bstr();
                 // SAFETY: Only 7-bit ASCII characters are parsed
@@ -1222,7 +1222,7 @@ where
             _ => fail,
         });
         alt(((sign, one_of('1'..='9'), digit0).void(), one_of('0').void()))
-            .recognize()
+            .take()
             .verify_map(|s: <Input as Stream>::Slice| {
                 let s = s.as_bstr();
                 // SAFETY: Only 7-bit ASCII characters are parsed
@@ -1491,7 +1491,7 @@ where
     Error: ParserError<Input>,
 {
     trace("float", move |input: &mut Input| {
-        let s = recognize_float_or_exceptions(input)?;
+        let s = take_float_or_exceptions(input)?;
         s.parse_slice()
             .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::Verify))
     })
@@ -1499,9 +1499,7 @@ where
 }
 
 #[allow(clippy::trait_duplication_in_bounds)] // HACK: clippy 1.64.0 bug
-fn recognize_float_or_exceptions<I, E: ParserError<I>>(
-    input: &mut I,
-) -> PResult<<I as Stream>::Slice, E>
+fn take_float_or_exceptions<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -1512,24 +1510,24 @@ where
     I: AsBStr,
 {
     alt((
-        recognize_float,
+        take_float,
         crate::token::literal(Caseless("nan")),
         (
             opt(one_of(['+', '-'])),
             crate::token::literal(Caseless("infinity")),
         )
-            .recognize(),
+            .take(),
         (
             opt(one_of(['+', '-'])),
             crate::token::literal(Caseless("inf")),
         )
-            .recognize(),
+            .take(),
     ))
     .parse_next(input)
 }
 
 #[allow(clippy::trait_duplication_in_bounds)] // HACK: clippy 1.64.0 bug
-fn recognize_float<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+fn take_float<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -1546,7 +1544,7 @@ where
         )),
         opt((one_of(['e', 'E']), opt(one_of(['+', '-'])), cut_err(digit1))),
     )
-        .recognize()
+        .take()
         .parse_next(input)
 }
 

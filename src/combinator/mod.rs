@@ -4,7 +4,7 @@
 //!
 //! ## Basic elements
 //!
-//! Those are used to recognize the lowest level elements of your grammar, like, "here is a dot", or "here is an big endian integer".
+//! Those are used to take a series of tokens for the lowest level elements of your grammar, like, "here is a dot", or "here is an big endian integer".
 //!
 //! | combinator | usage | input | new input | output | comment |
 //! |---|---|---|---|---|---|
@@ -64,8 +64,8 @@
 //! - [`not`]: Returns a result only if the embedded parser returns `Backtrack` or `Incomplete`. Does not consume the input
 //! - [`opt`]: Make the underlying parser optional
 //! - [`peek`]: Returns a result without consuming the input
-//! - [`Parser::recognize`]: If the child parser was successful, return the consumed input as the produced value
-//! - [`Parser::with_recognized`]: If the child parser was successful, return a tuple of the consumed input and the produced output.
+//! - [`Parser::take`]: If the child parser was successful, return the consumed input as the produced value
+//! - [`Parser::with_taken`]: If the child parser was successful, return a tuple of the consumed input and the produced output.
 //! - [`Parser::span`]: If the child parser was successful, return the location of the consumed input as the produced value
 //! - [`Parser::with_span`]: If the child parser was successful, return a tuple of the location of the consumed input and the produced output.
 //! - [`Parser::verify`]: Returns the result of the child parser if it satisfies a verification function

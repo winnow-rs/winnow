@@ -57,7 +57,7 @@ fn json_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static s
     .parse_next(input)
 }
 
-/// `literal(string)` generates a parser that recognizes the argument string.
+/// `literal(string)` generates a parser that takes the argument string.
 ///
 /// This also shows returning a sub-slice of the original input
 fn null<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<&'i str, E> {
@@ -80,7 +80,7 @@ fn boolean<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<bo
     alt((parse_true, parse_false)).parse_next(input)
 }
 
-/// This parser gathers all `char`s up into a `String`with a parse to recognize the double quote
+/// This parser gathers all `char`s up into a `String`with a parse to take the double quote
 /// character, before the string (using `preceded`) and after the string (using `terminated`).
 fn string<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
     input: &mut Stream<'i>,

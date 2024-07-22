@@ -583,7 +583,7 @@ where
 #[deprecated(since = "0.6.14", note = "Replaced with `Take`")]
 pub type Recognize<F, I, O, E> = Take<F, I, O, E>;
 
-/// Implementation of [`Parser::recognize`]
+/// Implementation of [`Parser::take`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Take<F, I, O, E>
 where
@@ -624,8 +624,8 @@ where
             Ok(_) => {
                 let offset = input.offset_from(&checkpoint);
                 input.reset(&checkpoint);
-                let recognized = input.next_slice(offset);
-                Ok(recognized)
+                let taken = input.next_slice(offset);
+                Ok(taken)
             }
             Err(e) => Err(e),
         }
@@ -636,7 +636,7 @@ where
 #[deprecated(since = "0.6.14", note = "Replaced with `WithTaken`")]
 pub type WithRecognized<F, I, O, E> = WithTaken<F, I, O, E>;
 
-/// Implementation of [`Parser::with_recognized`]
+/// Implementation of [`Parser::with_taken`]
 #[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct WithTaken<F, I, O, E>
 where
@@ -677,8 +677,8 @@ where
             Ok(result) => {
                 let offset = input.offset_from(&checkpoint);
                 input.reset(&checkpoint);
-                let recognized = input.next_slice(offset);
-                Ok((result, recognized))
+                let taken = input.next_slice(offset);
+                Ok((result, taken))
             }
             Err(e) => Err(e),
         }

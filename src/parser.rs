@@ -254,7 +254,7 @@ pub trait Parser<I, O, E> {
     /// use winnow::combinator::separated_pair;
     /// # fn main() {
     ///
-    /// let mut parser = separated_pair(alpha1, ',', alpha1).recognize();
+    /// let mut parser = separated_pair(alpha1, ',', alpha1).take();
     ///
     /// assert_eq!(parser.parse_peek("abcd,efgh"), Ok(("", "abcd,efgh")));
     /// assert_eq!(parser.parse_peek("abcd;"),Err(ErrMode::Backtrack(InputError::new(";", ErrorKind::Tag))));
@@ -284,7 +284,7 @@ pub trait Parser<I, O, E> {
 
     /// Produce the consumed input with the output
     ///
-    /// Functions similarly to [recognize][Parser::recognize] except it
+    /// Functions similarly to [take][Parser::take] except it
     /// returns the parser output as well.
     ///
     /// This can be useful especially in cases where the output is not the same type
@@ -305,18 +305,18 @@ pub trait Parser<I, O, E> {
     ///     "1234".value(true).parse_next(input)
     /// }
     ///
-    /// let mut consumed_parser = separated_pair(alpha1, ',', alpha1).value(true).with_recognized();
+    /// let mut consumed_parser = separated_pair(alpha1, ',', alpha1).value(true).with_taken();
     ///
     /// assert_eq!(consumed_parser.parse_peek("abcd,efgh1"), Ok(("1", (true, "abcd,efgh"))));
     /// assert_eq!(consumed_parser.parse_peek("abcd;"),Err(ErrMode::Backtrack(InputError::new(";", ErrorKind::Tag))));
     ///
     /// // the second output (representing the consumed input)
-    /// // should be the same as that of the `recognize` parser.
-    /// let mut recognize_parser = inner_parser.recognize();
-    /// let mut consumed_parser = inner_parser.with_recognized().map(|(output, consumed)| consumed);
+    /// // should be the same as that of the `take` parser.
+    /// let mut take_parser = inner_parser.take();
+    /// let mut consumed_parser = inner_parser.with_taken().map(|(output, consumed)| consumed);
     ///
-    /// assert_eq!(recognize_parser.parse_peek("1234"), consumed_parser.parse_peek("1234"));
-    /// assert_eq!(recognize_parser.parse_peek("abcd"), consumed_parser.parse_peek("abcd"));
+    /// assert_eq!(take_parser.parse_peek("1234"), consumed_parser.parse_peek("1234"));
+    /// assert_eq!(take_parser.parse_peek("abcd"), consumed_parser.parse_peek("abcd"));
     /// ```
     #[doc(alias = "consumed")]
     #[doc(alias = "with_recognized")]
@@ -398,11 +398,11 @@ pub trait Parser<I, O, E> {
     ///
     /// // the second output (representing the consumed input)
     /// // should be the same as that of the `span` parser.
-    /// let mut recognize_parser = inner_parser.span();
+    /// let mut span_parser = inner_parser.span();
     /// let mut consumed_parser = inner_parser.with_span().map(|(output, consumed)| consumed);
     ///
-    /// assert_eq!(recognize_parser.parse_peek(Located::new("1234")), consumed_parser.parse_peek(Located::new("1234")));
-    /// assert_eq!(recognize_parser.parse_peek(Located::new("abcd")), consumed_parser.parse_peek(Located::new("abcd")));
+    /// assert_eq!(span_parser.parse_peek(Located::new("1234")), consumed_parser.parse_peek(Located::new("1234")));
+    /// assert_eq!(span_parser.parse_peek(Located::new("abcd")), consumed_parser.parse_peek(Located::new("abcd")));
     /// # }
     /// ```
     #[inline(always)]
