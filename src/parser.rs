@@ -261,13 +261,25 @@ pub trait Parser<I, O, E> {
     /// # }
     /// ```
     #[doc(alias = "concat")]
+    #[doc(alias = "recognize")]
     #[inline(always)]
-    fn recognize(self) -> Recognize<Self, I, O, E>
+    fn take(self) -> Take<Self, I, O, E>
     where
         Self: core::marker::Sized,
         I: Stream,
     {
-        Recognize::new(self)
+        Take::new(self)
+    }
+
+    /// Replaced with [`Parser::take`]
+    #[inline(always)]
+    #[deprecated(since = "0.6.14", note = "Replaced with `Parser::take`")]
+    fn recognize(self) -> Take<Self, I, O, E>
+    where
+        Self: core::marker::Sized,
+        I: Stream,
+    {
+        Take::new(self)
     }
 
     /// Produce the consumed input with the output
@@ -307,13 +319,25 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(recognize_parser.parse_peek("abcd"), consumed_parser.parse_peek("abcd"));
     /// ```
     #[doc(alias = "consumed")]
+    #[doc(alias = "with_recognized")]
     #[inline(always)]
-    fn with_recognized(self) -> WithRecognized<Self, I, O, E>
+    fn with_taken(self) -> WithTaken<Self, I, O, E>
     where
         Self: core::marker::Sized,
         I: Stream,
     {
-        WithRecognized::new(self)
+        WithTaken::new(self)
+    }
+
+    /// Replaced with [`Parser::with_taken`]
+    #[inline(always)]
+    #[deprecated(since = "0.6.14", note = "Replaced with `Parser::with_taken`")]
+    fn with_recognized(self) -> WithTaken<Self, I, O, E>
+    where
+        Self: core::marker::Sized,
+        I: Stream,
+    {
+        WithTaken::new(self)
     }
 
     /// Produce the location of the consumed input as produced value.
