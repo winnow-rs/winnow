@@ -60,7 +60,6 @@ pub type PResult<O, E = ContextError> = Result<O, ErrMode<E>>;
 /// **Note:** This is only possible for `Stream` that are [partial][`crate::stream::StreamIsPartial`],
 /// like [`Partial`][crate::Partial].
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub enum Needed {
     /// Needs more data, but we do not know how much
     Unknown,
@@ -94,7 +93,6 @@ impl Needed {
 
 /// Add parse error state to [`ParserError`]s
 #[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub enum ErrMode<E> {
     /// There was not enough data to determine the appropriate action
     ///
