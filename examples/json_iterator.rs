@@ -43,7 +43,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
         match string(&mut data) {
             Ok(s) => {
                 self.offset(data);
-                println!("-> {}", s);
+                println!("-> {s}");
                 Some(s)
             }
             _ => None,
@@ -56,7 +56,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
         match boolean(&mut data) {
             Ok(o) => {
                 self.offset(data);
-                println!("-> {}", o);
+                println!("-> {o}");
                 Some(o)
             }
             _ => None,
@@ -69,7 +69,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
         match float::<_, _, ()>.parse_next(&mut data) {
             Ok(o) => {
                 self.offset(data);
-                println!("-> {}", o);
+                println!("-> {o}");
                 Some(o)
             }
             _ => None,
@@ -305,7 +305,7 @@ fn main() {
                 })
                 .collect();
 
-            println!("res = {:?}", s);
+            println!("res = {s:?}");
         }
     };
 }

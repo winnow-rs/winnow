@@ -10,7 +10,7 @@ fn main() -> Result<(), lexopt::Error> {
     let input = args.input.as_deref().unwrap_or("1 + 1");
     if let Err(err) = calc(input, args.implementation) {
         println!("FAILED");
-        println!("{}", err);
+        println!("{err}");
     }
 
     Ok(())
@@ -20,11 +20,11 @@ fn calc(
     input: &str,
     imp: Impl,
 ) -> Result<(), winnow::error::ParseError<&str, winnow::error::ContextError>> {
-    println!("{} =", input);
+    println!("{input} =");
     match imp {
         Impl::Eval => {
             let result = parser::expr.parse(input)?;
-            println!("  {}", result);
+            println!("  {result}");
         }
         Impl::Ast => {
             let result = parser_ast::expr.parse(input)?;
@@ -32,7 +32,7 @@ fn calc(
         }
         Impl::Lexer => {
             let tokens = parser_lexer::lex.parse(input)?;
-            println!("  {:#?}", tokens);
+            println!("  {tokens:#?}");
             let result = parser_lexer::expr.parse(tokens.as_slice()).unwrap();
             println!("  {:#?}={}", result, result.eval());
         }

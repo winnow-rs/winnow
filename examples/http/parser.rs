@@ -34,7 +34,7 @@ pub(crate) fn parse(data: &[u8]) -> Option<Vec<(Request<'_>, Vec<Header<'_>>)>> 
                 }
             }
             Err(e) => {
-                println!("error: {:?}", e);
+                println!("error: {e:?}");
                 return None;
             }
         }

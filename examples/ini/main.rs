@@ -11,19 +11,19 @@ fn main() -> Result<(), lexopt::Error> {
     if args.binary {
         match parser::categories.parse(input.as_bytes()) {
             Ok(result) => {
-                println!("  {:?}", result);
+                println!("  {result:?}");
             }
             Err(err) => {
-                println!("  {:?}", err);
+                println!("  {err:?}");
             }
         }
     } else {
         match parser_str::categories.parse(input) {
             Ok(result) => {
-                println!("  {:?}", result);
+                println!("  {result:?}");
             }
             Err(err) => {
-                println!("  {}", err);
+                println!("  {err}");
             }
         }
     }

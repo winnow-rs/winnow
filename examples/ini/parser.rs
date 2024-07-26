@@ -53,7 +53,7 @@ key = value2"[..];
 key = value2"[..];
 
     let res = category.parse_peek(ini_file);
-    println!("{:?}", res);
+    println!("{res:?}");
     match res {
         Ok((i, o)) => println!("i: {:?} | o: {:?}", str::from_utf8(i), o),
         _ => println!("error"),
@@ -70,7 +70,7 @@ key = value2"[..];
     let ini_without_key_value = &b"\nkey = value2"[..];
 
     let res = key_value.parse_peek(ini_file);
-    println!("{:?}", res);
+    println!("{res:?}");
     match res {
         Ok((i, (o1, o2))) => println!("i: {:?} | o: ({:?},{:?})", str::from_utf8(i), o1, o2),
         _ => println!("error"),
@@ -87,7 +87,7 @@ key = value2"[..];
     let ini_without_key_value = &b"\nkey = value2"[..];
 
     let res = key_value.parse_peek(ini_file);
-    println!("{:?}", res);
+    println!("{res:?}");
     match res {
         Ok((i, (o1, o2))) => println!("i: {:?} | o: ({:?},{:?})", str::from_utf8(i), o1, o2),
         _ => println!("error"),
@@ -104,7 +104,7 @@ key = value2"[..];
     let ini_without_key_value = &b"\nkey = value2"[..];
 
     let res = key_value.parse_peek(ini_file);
-    println!("{:?}", res);
+    println!("{res:?}");
     match res {
         Ok((i, (o1, o2))) => println!("i: {:?} | o: ({:?},{:?})", str::from_utf8(i), o1, o2),
         _ => println!("error"),

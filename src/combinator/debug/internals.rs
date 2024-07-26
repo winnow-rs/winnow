@@ -199,7 +199,7 @@ pub(crate) fn end(
     let (status_style, status) = match severity {
         Severity::Success => {
             let style = anstyle::Style::new().fg_color(Some(anstyle::AnsiColor::Green.into()));
-            let status = format!("+{}", consumed);
+            let status = format!("+{consumed}");
             (style, status)
         }
         Severity::Backtrack => (

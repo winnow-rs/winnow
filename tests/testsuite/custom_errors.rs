@@ -16,13 +16,13 @@ pub(crate) struct CustomError(String);
 
 impl<'a> From<(&'a str, ErrorKind)> for CustomError {
     fn from(error: (&'a str, ErrorKind)) -> Self {
-        CustomError(format!("error code was: {:?}", error))
+        CustomError(format!("error code was: {error:?}"))
     }
 }
 
 impl<'a> ParserError<Partial<&'a str>> for CustomError {
     fn from_error_kind(_: &Partial<&'a str>, kind: ErrorKind) -> Self {
-        CustomError(format!("error code was: {:?}", kind))
+        CustomError(format!("error code was: {kind:?}"))
     }
 
     fn append(
@@ -31,7 +31,7 @@ impl<'a> ParserError<Partial<&'a str>> for CustomError {
         _: &<Partial<&'a str> as Stream>::Checkpoint,
         kind: ErrorKind,
     ) -> Self {
-        CustomError(format!("{:?}\nerror code was: {:?}", self, kind))
+        CustomError(format!("{self:?}\nerror code was: {kind:?}"))
     }
 }
 

@@ -21,7 +21,7 @@ fn parse() {
         parser.parse_peek("abcabcabcabc").unwrap()
     };
 
-    println!("res: {:?}", res);
+    println!("res: {res:?}");
     assert_eq!(counter, 5);
 }
 
@@ -41,7 +41,7 @@ fn accumulate() {
         parser.parse_peek("abcabcabcabc").unwrap()
     };
 
-    println!("v: {:?}", v);
+    println!("v: {v:?}");
     assert_eq!(count, 4);
     assert_eq!(v.len(), 4);
 }

@@ -67,9 +67,9 @@ key = value2";
 key = value2";
 
     let res = category.parse_peek(ini_file);
-    println!("{:?}", res);
+    println!("{res:?}");
     match res {
-        Ok((i, o)) => println!("i: {} | o: {:?}", i, o),
+        Ok((i, o)) => println!("i: {i} | o: {o:?}"),
         _ => println!("error"),
     }
 
@@ -84,9 +84,9 @@ key = value2";
     let ini_without_key_value = "key = value2";
 
     let res = key_value.parse_peek(ini_file);
-    println!("{:?}", res);
+    println!("{res:?}");
     match res {
-        Ok((i, (o1, o2))) => println!("i: {} | o: ({:?},{:?})", i, o1, o2),
+        Ok((i, (o1, o2))) => println!("i: {i} | o: ({o1:?},{o2:?})"),
         _ => println!("error"),
     }
 
@@ -101,9 +101,9 @@ key = value2";
     let ini_without_key_value = "key = value2";
 
     let res = key_value.parse_peek(ini_file);
-    println!("{:?}", res);
+    println!("{res:?}");
     match res {
-        Ok((i, (o1, o2))) => println!("i: {} | o: ({:?},{:?})", i, o1, o2),
+        Ok((i, (o1, o2))) => println!("i: {i} | o: ({o1:?},{o2:?})"),
         _ => println!("error"),
     }
 
@@ -118,9 +118,9 @@ key = value2";
     let ini_without_key_value = "key = value2";
 
     let res = key_value.parse_peek(ini_file);
-    println!("{:?}", res);
+    println!("{res:?}");
     match res {
-        Ok((i, (o1, o2))) => println!("i: {} | o: ({:?},{:?})", i, o1, o2),
+        Ok((i, (o1, o2))) => println!("i: {i} | o: ({o1:?},{o2:?})"),
         _ => println!("error"),
     }
 
@@ -138,9 +138,9 @@ key = value2
     let ini_without_key_value = "[category]";
 
     let res = keys_and_values.parse_peek(ini_file);
-    println!("{:?}", res);
+    println!("{res:?}");
     match res {
-        Ok((i, ref o)) => println!("i: {} | o: {:?}", i, o),
+        Ok((i, ref o)) => println!("i: {i} | o: {o:?}"),
         _ => println!("error"),
     }
 
@@ -163,9 +163,9 @@ key = value2
     let ini_after_parser = "[category]";
 
     let res = category_and_keys.parse_peek(ini_file);
-    println!("{:?}", res);
+    println!("{res:?}");
     match res {
-        Ok((i, ref o)) => println!("i: {} | o: {:?}", i, o),
+        Ok((i, ref o)) => println!("i: {i} | o: {o:?}"),
         _ => println!("error"),
     }
 
@@ -191,7 +191,7 @@ key4 = value4
     let res = categories.parse_peek(ini_file);
     //println!("{:?}", res);
     match res {
-        Ok((i, ref o)) => println!("i: {} | o: {:?}", i, o),
+        Ok((i, ref o)) => println!("i: {i} | o: {o:?}"),
         _ => println!("error"),
     }
 

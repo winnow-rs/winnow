@@ -30,13 +30,13 @@ fn main() -> Result<(), lexopt::Error> {
     };
     match result {
         Ok(json) => {
-            println!("{:#?}", json);
+            println!("{json:#?}");
         }
         Err(err) => {
             if args.pretty {
-                println!("{}", err);
+                println!("{err}");
             } else {
-                println!("{:#?}", err);
+                println!("{err:#?}");
             }
         }
     }

@@ -65,7 +65,7 @@ mod bytes {
         #[inline]
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             for byte in self.as_bytes() {
-                write!(f, "{:0>2x}", byte)?;
+                write!(f, "{byte:0>2x}")?;
             }
             Ok(())
         }
@@ -81,7 +81,7 @@ mod bytes {
                         write!(f, "_")?;
                     }
                 }
-                write!(f, "{:0>2X}", byte)?;
+                write!(f, "{byte:0>2X}")?;
             }
             Ok(())
         }
@@ -297,7 +297,7 @@ mod bytes {
         fn test_sliced() {
             // Output can change from run-to-run
             let total = Bytes::new(b"12345678901234567890");
-            format!("{:#?}", total);
+            format!("{total:#?}");
             format!("{:#?}", &total[1..]);
             format!("{:#?}", &total[10..]);
         }

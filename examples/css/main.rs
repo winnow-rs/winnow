@@ -9,13 +9,13 @@ fn main() -> Result<(), lexopt::Error> {
 
     let input = args.input.as_deref().unwrap_or("#AAAAAA");
 
-    println!("{} =", input);
+    println!("{input} =");
     match hex_color.parse(input) {
         Ok(result) => {
-            println!("  {:?}", result);
+            println!("  {result:?}");
         }
         Err(err) => {
-            println!("  {}", err);
+            println!("  {err}");
         }
     }
 
