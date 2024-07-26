@@ -16,7 +16,7 @@ Connection: keep-alive
     );
 
     if let Some(result) = parser::parse(input.as_bytes()) {
-        println!("  {:#?}", result);
+        println!("  {result:#?}");
     }
 
     Ok(())

@@ -35,8 +35,7 @@ mod test {
             }
             other => panic!(
                 "Parser `literal` didn't succeed when it should have. \
-         Got `{:?}`.",
-                other
+         Got `{other:?}`."
             ),
         };
     }
@@ -51,8 +50,7 @@ mod test {
             other => {
                 panic!(
                     "Parser `literal` didn't require more input when it should have. \
-           Got `{:?}`.",
-                    other
+           Got `{other:?}`."
                 );
             }
         };
@@ -67,8 +65,7 @@ mod test {
             Err(ErrMode::Backtrack(_)) => (),
             other => {
                 panic!(
-                    "Parser `literal` didn't fail when it should have. Got `{:?}`.`",
-                    other
+                    "Parser `literal` didn't fail when it should have. Got `{other:?}`.`"
                 );
             }
         };
@@ -96,20 +93,16 @@ mod test {
             Ok((extra, output)) => {
                 assert!(
                     extra == LEFTOVER,
-                    "Parser `take_s` consumed leftover input. Leftover `{}`.",
-                    extra
+                    "Parser `take_s` consumed leftover input. Leftover `{extra}`."
                 );
                 assert!(
           output == CONSUMED,
-          "Parser `take_s` doesn't return the string it consumed on success. Expected `{}`, got `{}`.",
-          CONSUMED,
-          output
+          "Parser `take_s` doesn't return the string it consumed on success. Expected `{CONSUMED}`, got `{output}`."
         );
             }
             other => panic!(
                 "Parser `take_s` didn't succeed when it should have. \
-         Got `{:?}`.",
-                other
+         Got `{other:?}`."
             ),
         };
     }
@@ -125,8 +118,7 @@ mod test {
             Err(ErrMode::Incomplete(_)) => (),
             other => panic!(
                 "Parser `take` didn't require more input when it should have. \
-         Got `{:?}`.",
-                other
+         Got `{other:?}`."
             ),
         }
     }
@@ -144,21 +136,17 @@ mod test {
                 assert!(
                     extra == LEFTOVER,
                     "Parser `take_until`\
-           consumed leftover input. Leftover `{}`.",
-                    extra
+           consumed leftover input. Leftover `{extra}`."
                 );
                 assert!(
                     output == CONSUMED,
                     "Parser `take_until`\
-           doesn't return the string it consumed on success. Expected `{}`, got `{}`.",
-                    CONSUMED,
-                    output
+           doesn't return the string it consumed on success. Expected `{CONSUMED}`, got `{output}`."
                 );
             }
             other => panic!(
                 "Parser `take_until` didn't succeed when it should have. \
-         Got `{:?}`.",
-                other
+         Got `{other:?}`."
             ),
         };
     }
@@ -176,8 +164,7 @@ mod test {
             Err(ErrMode::Incomplete(_)) => (),
             other => panic!(
                 "Parser `take_until` didn't require more input when it should have. \
-         Got `{:?}`.",
-                other
+         Got `{other:?}`."
             ),
         };
     }
@@ -195,8 +182,7 @@ mod test {
             Err(ErrMode::Incomplete(_)) => (),
             other => panic!(
                 "Parser `take_until` didn't fail when it should have. \
-         Got `{:?}`.",
-                other
+         Got `{other:?}`."
             ),
         };
     }
@@ -247,15 +233,12 @@ mod test {
                 assert!(
                     output == CONSUMED,
                     "Parser `take_while` doesn't return the string it consumed on success. \
-           Expected `{}`, got `{}`.",
-                    CONSUMED,
-                    output
+           Expected `{CONSUMED}`, got `{output}`."
                 );
             }
             other => panic!(
                 "Parser `take_while` didn't succeed when it should have. \
-         Got `{:?}`.",
-                other
+         Got `{other:?}`."
             ),
         };
     }
@@ -282,15 +265,12 @@ mod test {
                 assert!(
                     output == CONSUMED,
                     "Parser `take_while` doesn't return the string it consumed on success. \
-           Expected `{}`, got `{}`.",
-                    CONSUMED,
-                    output
+           Expected `{CONSUMED}`, got `{output}`."
                 );
             }
             other => panic!(
                 "Parser `take_while` didn't succeed when it should have. \
-         Got `{:?}`.",
-                other
+         Got `{other:?}`."
             ),
         };
     }
@@ -341,15 +321,12 @@ mod test {
                 assert!(
                     output == CONSUMED,
                     "Parser `take_while` doesn't return the string it consumed on success. \
-           Expected `{}`, got `{}`.",
-                    CONSUMED,
-                    output
+           Expected `{CONSUMED}`, got `{output}`."
                 );
             }
             other => panic!(
                 "Parser `take_while` didn't succeed when it should have. \
-         Got `{:?}`.",
-                other
+         Got `{other:?}`."
             ),
         };
     }
@@ -367,20 +344,16 @@ mod test {
             Ok((extra, output)) => {
                 assert!(
                     extra == LEFTOVER,
-                    "Parser `is_a` consumed leftover input. Leftover `{}`.",
-                    extra
+                    "Parser `is_a` consumed leftover input. Leftover `{extra}`."
                 );
                 assert!(
           output == CONSUMED,
-          "Parser `is_a` doesn't return the string it consumed on success. Expected `{}`, got `{}`.",
-          CONSUMED,
-          output
+          "Parser `is_a` doesn't return the string it consumed on success. Expected `{CONSUMED}`, got `{output}`."
         );
             }
             other => panic!(
                 "Parser `is_a` didn't succeed when it should have. \
-         Got `{:?}`.",
-                other
+         Got `{other:?}`."
             ),
         };
     }
@@ -400,8 +373,7 @@ mod test {
             Err(ErrMode::Backtrack(_)) => (),
             other => panic!(
                 "Parser `take_while` didn't fail when it should have. \
-         Got `{:?}`.",
-                other
+         Got `{other:?}`."
             ),
         };
     }
@@ -416,8 +388,7 @@ mod test {
         match test(INPUT) {
             Err(ErrMode::Backtrack(_)) => (),
             other => panic!(
-                "Parser `is_a` didn't fail when it should have. Got `{:?}`.",
-                other
+                "Parser `is_a` didn't fail when it should have. Got `{other:?}`."
             ),
         };
     }
@@ -442,15 +413,12 @@ mod test {
                 assert!(
                     output == CONSUMED,
                     "Parser `take_till0` doesn't return the string it consumed on success. \
-           Expected `{}`, got `{}`.",
-                    CONSUMED,
-                    output
+           Expected `{CONSUMED}`, got `{output}`."
                 );
             }
             other => panic!(
                 "Parser `take_till0` didn't succeed when it should have. \
-         Got `{:?}`.",
-                other
+         Got `{other:?}`."
             ),
         };
     }
@@ -468,20 +436,16 @@ mod test {
             Ok((extra, output)) => {
                 assert!(
                     extra == LEFTOVER,
-                    "Parser `take_till1` consumed leftover input. Leftover `{}`.",
-                    extra
+                    "Parser `take_till1` consumed leftover input. Leftover `{extra}`."
                 );
                 assert!(
           output == CONSUMED,
-          "Parser `take_till1` doesn't return the string it consumed on success. Expected `{}`, got `{}`.",
-          CONSUMED,
-          output
+          "Parser `take_till1` doesn't return the string it consumed on success. Expected `{CONSUMED}`, got `{output}`."
         );
             }
             other => panic!(
                 "Parser `take_till1` didn't succeed when it should have. \
-         Got `{:?}`.",
-                other
+         Got `{other:?}`."
             ),
         };
     }
@@ -496,8 +460,7 @@ mod test {
         match test(INPUT) {
             Err(ErrMode::Backtrack(_)) => (),
             other => panic!(
-                "Parser `is_not` didn't fail when it should have. Got `{:?}`.",
-                other
+                "Parser `is_not` didn't fail when it should have. Got `{other:?}`."
             ),
         };
     }

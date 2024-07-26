@@ -129,7 +129,6 @@ where
 }
 
 /// Implementation of [`repeat`]
-#[cfg_attr(nightly, warn(rustdoc::missing_doc_code_examples))]
 pub struct Repeat<P, I, O, C, E>
 where
     P: Parser<I, O, E>,

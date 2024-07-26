@@ -39,12 +39,12 @@ impl Display for Expr {
     fn fmt(&self, format: &mut Formatter<'_>) -> fmt::Result {
         use Expr::{Add, Div, Mul, Paren, Sub, Value};
         match *self {
-            Value(val) => write!(format, "{}", val),
-            Add(ref left, ref right) => write!(format, "{} + {}", left, right),
-            Sub(ref left, ref right) => write!(format, "{} - {}", left, right),
-            Mul(ref left, ref right) => write!(format, "{} * {}", left, right),
-            Div(ref left, ref right) => write!(format, "{} / {}", left, right),
-            Paren(ref expr) => write!(format, "({})", expr),
+            Value(val) => write!(format, "{val}"),
+            Add(ref left, ref right) => write!(format, "{left} + {right}"),
+            Sub(ref left, ref right) => write!(format, "{left} - {right}"),
+            Mul(ref left, ref right) => write!(format, "{left} * {right}"),
+            Div(ref left, ref right) => write!(format, "{left} / {right}"),
+            Paren(ref expr) => write!(format, "({expr})"),
         }
     }
 }

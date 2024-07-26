@@ -41,13 +41,13 @@ mod parse_int {
         let (i, res) = digit
             .complete_err()
             .map(|x| {
-                println!("x: {:?}", x);
+                println!("x: {x:?}");
                 let result = str::from_utf8(x).unwrap();
-                println!("Result: {}", result);
+                println!("Result: {result}");
                 println!("int is empty?: {}", x.is_empty());
                 match result.parse() {
                     Ok(i) => i,
-                    Err(e) => panic!("UH OH! NOT A DIGIT! {:?}", e),
+                    Err(e) => panic!("UH OH! NOT A DIGIT! {e:?}"),
                 }
             })
             .parse_peek(i)?;

@@ -574,7 +574,7 @@ mod complete {
             let expected32 = str::parse::<f32>(test).unwrap();
             let expected64 = str::parse::<f64>(test).unwrap();
 
-            println!("now parsing: {} -> {}", test, expected32);
+            println!("now parsing: {test} -> {expected32}");
 
             assert_parse!(
                 float.parse_peek(test.as_bytes()),
@@ -598,7 +598,7 @@ mod complete {
         let nan_test_cases = ["nan", "NaN", "NAN"];
 
         for test in nan_test_cases {
-            println!("now parsing: {}", test);
+            println!("now parsing: {test}");
 
             let (remaining, parsed) = float::<_, f32, ()>.parse_peek(test.as_bytes()).unwrap();
             assert!(parsed.is_nan());
@@ -639,7 +639,7 @@ mod complete {
       #[cfg(feature = "std")]
       #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
       fn floats(s in "\\PC*") {
-          println!("testing {}", s);
+          println!("testing {s}");
           let res1 = parse_f64(&s);
           let res2 = float::<_, f64, ()>.parse_peek(s.as_str());
           assert_eq!(res1, res2);

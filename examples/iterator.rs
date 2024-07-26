@@ -27,7 +27,7 @@ fn main() {
     });
 
     for value in it {
-        println!("parser returned: {}", value);
+        println!("parser returned: {value}");
     }
 
     println!("\n********************\n");
@@ -46,7 +46,7 @@ fn main() {
         });
 
     // will print "parser iterator returned: Ok(("abc", ["abc", "abc", "abc"]))"
-    println!("\nparser iterator returned: {:?}", res);
+    println!("\nparser iterator returned: {res:?}");
 
     println!("\n********************\n");
 
@@ -70,8 +70,5 @@ fn main() {
     let (remaining_input, ()) = parser_result.unwrap();
 
     // will print "iterator returned {"key1": "value1", "key3": "value3", "key2": "value2"}, remaining input is ';'"
-    println!(
-        "iterator returned {:?}, remaining input is '{}'",
-        res, remaining_input
-    );
+    println!("iterator returned {res:?}, remaining input is '{remaining_input}'");
 }
