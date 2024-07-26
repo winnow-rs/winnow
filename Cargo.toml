@@ -3,6 +3,7 @@ resolver = "2"
 members = ["fuzz"]
 
 [workspace.package]
+repository = "https://github.com/winnow-rs/winnow"
 license = "MIT"
 edition = "2021"
 rust-version = "1.65.0"  # MSRV
@@ -18,7 +19,7 @@ include = [
 ]
 
 [workspace.lints.rust]
-rust_2018_idioms = "warn"
+rust_2018_idioms = { level = "warn", priority = -1 }
 unreachable_pub = "warn"
 unsafe_op_in_unsafe_fn = "warn"
 unused_lifetimes = "warn"
@@ -58,7 +59,6 @@ let_and_return = "allow"  # sometimes good to name what you are returning
 linkedlist = "warn"
 lossy_float_literal = "warn"
 macro_use_imports = "warn"
-match_wildcard_for_single_variants = "warn"
 mem_forget = "warn"
 mutex_integer = "warn"
 needless_continue = "warn"
@@ -73,7 +73,6 @@ rest_pat_in_fully_bound_structs = "warn"
 same_functions_in_if_condition = "warn"
 # self_named_module_files = "warn"  # false-positives
 semicolon_if_nothing_returned = "warn"
-single_match_else = "allow"
 str_to_string = "warn"
 string_add = "warn"
 string_add_assign = "warn"
@@ -81,6 +80,7 @@ string_lit_as_bytes = "warn"
 string_to_string = "warn"
 todo = "warn"
 trait_duplication_in_bounds = "warn"
+uninlined_format_args = "warn"
 verbose_file_reads = "warn"
 wildcard_imports = "allow"
 zero_sized_map_values = "warn"
@@ -89,10 +89,10 @@ zero_sized_map_values = "warn"
 name = "winnow"
 version = "0.6.16"
 description = "A byte-oriented, zero-copy, parser combinators library"
-repository = "https://github.com/winnow-rs/winnow"
 categories = ["parsing"]
 keywords = ["parser", "parser-combinators", "parsing", "streaming", "bit"]
 autoexamples = false
+repository.workspace = true
 license.workspace = true
 edition.workspace = true
 rust-version.workspace = true
