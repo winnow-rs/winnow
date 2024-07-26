@@ -16,7 +16,7 @@
 //!   We'll explore this further in [`chapter_7`].
 //!
 //! ```text
-//!                                   ┌─► Ok(what matched the parser)
+//!                                  ┌─► Ok(what matched the parser)
 //!             ┌────────┐           │
 //! my input───►│a parser├──►either──┤
 //!             └────────┘           └─► Err(...)
