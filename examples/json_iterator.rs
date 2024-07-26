@@ -87,7 +87,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
                 self.offset(data);
                 let mut first = true;
                 let mut done = false;
-                let mut previous = std::usize::MAX;
+                let mut previous = usize::MAX;
 
                 let v = self.clone();
 
@@ -146,7 +146,7 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
 
                 let mut first = true;
                 let mut done = false;
-                let mut previous = std::usize::MAX;
+                let mut previous = usize::MAX;
 
                 let v = self.clone();
 
