@@ -28,9 +28,14 @@
 //! - Ensures we hit [`eof`]
 //! - Converts from [`PResult`] to [`Result`]
 //! - Wraps the error in [`ParseError`]
-//!   - Provides access to the original [`input`][ParseError::input] with the
-//!     [`offset`][ParseError::offset] of where it failed
-//!   - Provides a default renderer (via [`std::fmt::Display`])
+//!   - For simple cases, [`ParseError`] provides a [`std::fmt::Display`] impl to render the error.
+//!   - For more involved cases, [`ParseError`] provides the original [`input`][ParseError::input] and the
+//!     [`offset`][ParseError::offset] of where it failed so you can capture this information in
+//!     your error, [rendering it as you wish][chapter_7#error-adaptation-and-rendering].
+//!
+//! However, [`ParseError`] will still need some level of adaptation to integrate with your
+//! application's error type (like with `?`).
+//!
 //! ```rust
 //! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
@@ -43,13 +48,13 @@
 //! pub struct Hex(usize);
 //!
 //! impl std::str::FromStr for Hex {
-//!     type Err = String;
+//!     type Err = anyhow::Error;
 //!
 //!     fn from_str(input: &str) -> Result<Self, Self::Err> {
 //!         parse_digits
 //!             .map(Hex)
 //!             .parse(input)
-//!             .map_err(|e| e.to_string())
+//!             .map_err(|e| anyhow::format_err!("{e}"))
 //!     }
 //! }
 //!
@@ -103,6 +108,7 @@
 
 #![allow(unused_imports)]
 use super::chapter_1;
+use super::chapter_7;
 use crate::combinator::eof;
 use crate::error::ErrMode;
 use crate::error::InputError;
