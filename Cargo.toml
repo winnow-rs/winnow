@@ -141,6 +141,7 @@ circular = "0.3.0"
 rustc-hash = "1.1.0"
 automod = "1.0.14"
 annotate-snippets = "0.11.3"
+anyhow = "1.0.86"
 
 [profile.bench]
 debug = true
