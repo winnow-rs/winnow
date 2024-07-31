@@ -2775,6 +2775,26 @@ impl<T: Clone, S> Clone for Checkpoint<T, S> {
     }
 }
 
+impl<T: PartialOrd, S> PartialOrd for Checkpoint<T, S> {
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
+        self.inner.partial_cmp(&other.inner)
+    }
+}
+
+impl<T: Ord, S> Ord for Checkpoint<T, S> {
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
+        self.inner.cmp(&other.inner)
+    }
+}
+
+impl<T: PartialEq, S> PartialEq for Checkpoint<T, S> {
+    fn eq(&self, other: &Self) -> bool {
+        self.inner.eq(&other.inner)
+    }
+}
+
+impl<T: Eq, S> Eq for Checkpoint<T, S> {}
+
 impl<T: crate::lib::std::fmt::Debug, S> crate::lib::std::fmt::Debug for Checkpoint<T, S> {
     fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
         self.inner.fmt(f)
