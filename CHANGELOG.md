@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.6.17] - 2024-07-31
+
 ### Features
 
 - Make `Checkpoint`s comparable
@@ -2393,7 +2395,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.16...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.17...HEAD
+[0.6.17]: https://github.com/winnow-rs/winnow/compare/v0.6.16...v0.6.17
 [0.6.16]: https://github.com/winnow-rs/winnow/compare/v0.6.15...v0.6.16
 [0.6.15]: https://github.com/winnow-rs/winnow/compare/v0.6.14...v0.6.15
 [0.6.14]: https://github.com/winnow-rs/winnow/compare/v0.6.13...v0.6.14
