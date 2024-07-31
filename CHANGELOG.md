@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Make `Checkpoint`s comparable
+
 ## [0.6.16] - 2024-07-25
 
 ## [0.6.15] - 2024-07-22
