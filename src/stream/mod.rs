@@ -2767,6 +2767,7 @@ impl<T, S> Checkpoint<T, S> {
 impl<T: Copy, S> Copy for Checkpoint<T, S> {}
 
 impl<T: Clone, S> Clone for Checkpoint<T, S> {
+    #[inline(always)]
     fn clone(&self) -> Self {
         Self {
             inner: self.inner.clone(),
@@ -2776,18 +2777,21 @@ impl<T: Clone, S> Clone for Checkpoint<T, S> {
 }
 
 impl<T: PartialOrd, S> PartialOrd for Checkpoint<T, S> {
+    #[inline(always)]
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
         self.inner.partial_cmp(&other.inner)
     }
 }
 
 impl<T: Ord, S> Ord for Checkpoint<T, S> {
+    #[inline(always)]
     fn cmp(&self, other: &Self) -> core::cmp::Ordering {
         self.inner.cmp(&other.inner)
     }
 }
 
 impl<T: PartialEq, S> PartialEq for Checkpoint<T, S> {
+    #[inline(always)]
     fn eq(&self, other: &Self) -> bool {
         self.inner.eq(&other.inner)
     }
