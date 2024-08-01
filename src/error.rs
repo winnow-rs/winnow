@@ -63,7 +63,9 @@ pub type PResult<O, E = ContextError> = Result<O, ErrMode<E>>;
 pub enum Needed {
     /// Needs more data, but we do not know how much
     Unknown,
-    /// Contains the required data size in bytes
+    /// Contains a lower bound on the buffer offset needed to finish parsing
+    ///
+    /// For byte/`&str` streams, this translates to bytes
     Size(NonZeroUsize),
 }
 
@@ -253,7 +255,7 @@ where
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ErrMode::Incomplete(Needed::Size(u)) => write!(f, "Parsing requires {u} bytes/chars"),
+            ErrMode::Incomplete(Needed::Size(u)) => write!(f, "Parsing requires {u} more data"),
             ErrMode::Incomplete(Needed::Unknown) => write!(f, "Parsing requires more data"),
             ErrMode::Cut(c) => write!(f, "Parsing Failure: {c:?}"),
             ErrMode::Backtrack(c) => write!(f, "Parsing Error: {c:?}"),
