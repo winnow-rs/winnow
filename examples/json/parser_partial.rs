@@ -8,7 +8,7 @@ use winnow::{
     combinator::{cut_err, rest},
     combinator::{delimited, preceded, separated_pair, terminated},
     combinator::{repeat, separated},
-    error::{AddContext, ParserError},
+    error::{AddContext, ParserError, StrContext},
     stream::Partial,
     token::{any, none_of, take, take_while},
 };
@@ -20,7 +20,7 @@ pub(crate) type Stream<'i> = Partial<&'i str>;
 /// The root element of a JSON parser is any value
 ///
 /// A parser has the following signature:
-/// `&mut Stream -> PResult<Output, InputError>`, with `PResult` defined as:
+/// `&mut Stream -> PResult<Output, ContextError>`, with `PResult` defined as:
 /// `type PResult<O, E = ErrorKind> = Result<O, ErrMode<E>>;`
 ///
 /// most of the times you can ignore the error type and use the default (but this
@@ -29,7 +29,7 @@ pub(crate) type Stream<'i> = Partial<&'i str>;
 /// Here we use `&str` as input type, but parsers can be generic over
 /// the input type, work directly with `&[u8]`, or any other type that
 /// implements the required traits.
-pub(crate) fn json<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
+pub(crate) fn json<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> PResult<JsonValue, E> {
     delimited(ws, json_value, ws_or_eof).parse_next(input)
@@ -37,7 +37,7 @@ pub(crate) fn json<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'sta
 
 /// `alt` is a combinator that tries multiple parsers one by one, until
 /// one of them succeeds
-fn json_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
+fn json_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> PResult<JsonValue, E> {
     // `alt` combines the each value parser. It returns the result of the first
@@ -78,7 +78,7 @@ fn boolean<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<bo
 
 /// This parser gathers all `char`s up into a `String`with a parse to take the double quote
 /// character, before the string (using `preceded`) and after the string (using `terminated`).
-fn string<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
+fn string<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> PResult<String, E> {
     preceded(
@@ -97,7 +97,7 @@ fn string<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>
     )
     // `context` lets you add a static string to errors to provide more information in the
     // error chain (to indicate which parser had an error)
-    .context("string")
+    .context(StrContext::Expected("string".into()))
     .parse_next(input)
 }
 
@@ -158,7 +158,7 @@ fn u16_hex<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<u1
 /// accumulating results in a `Vec`, until it encounters an error.
 /// If you want more control on the parser application, check out the `iterator`
 /// combinator (cf `examples/iterator.rs`)
-fn array<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
+fn array<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> PResult<Vec<JsonValue>, E> {
     preceded(
@@ -168,11 +168,11 @@ fn array<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
             (ws, ']'),
         )),
     )
-    .context("array")
+    .context(StrContext::Expected("array".into()))
     .parse_next(input)
 }
 
-fn object<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
+fn object<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> PResult<HashMap<String, JsonValue>, E> {
     preceded(
@@ -182,11 +182,11 @@ fn object<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>
             (ws, '}'),
         )),
     )
-    .context("object")
+    .context(StrContext::Expected("object".into()))
     .parse_next(input)
 }
 
-fn key_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
+fn key_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> PResult<(String, JsonValue), E> {
     separated_pair(string, cut_err((ws, ':', ws)), json_value).parse_next(input)
@@ -211,25 +211,25 @@ const WS: &[char] = &[' ', '\t', '\r', '\n'];
 #[cfg(test)]
 mod test {
     #[allow(clippy::useless_attribute)]
-    #[allow(dead_code)] // its dead for benches
+    #[allow(unused_imports)] // its dead for benches
     use super::*;
 
     #[allow(clippy::useless_attribute)]
     #[allow(dead_code)] // its dead for benches
-    type Error<'i> = winnow::error::InputError<Partial<&'i str>>;
+    type Error = winnow::error::ContextError;
 
     #[test]
     fn json_string() {
         assert_eq!(
-            string::<Error<'_>>.parse_peek(Partial::new("\"\"")),
+            string::<Error>.parse_peek(Partial::new("\"\"")),
             Ok((Partial::new(""), "".to_owned()))
         );
         assert_eq!(
-            string::<Error<'_>>.parse_peek(Partial::new("\"abc\"")),
+            string::<Error>.parse_peek(Partial::new("\"abc\"")),
             Ok((Partial::new(""), "abc".to_owned()))
         );
         assert_eq!(
-            string::<Error<'_>>.parse_peek(Partial::new(
+            string::<Error>.parse_peek(Partial::new(
                 "\"abc\\\"\\\\\\/\\b\\f\\n\\r\\t\\u0001\\u2014\u{2014}def\""
             )),
             Ok((
@@ -238,27 +238,23 @@ mod test {
             )),
         );
         assert_eq!(
-            string::<Error<'_>>.parse_peek(Partial::new("\"\\uD83D\\uDE10\"")),
+            string::<Error>.parse_peek(Partial::new("\"\\uD83D\\uDE10\"")),
             Ok((Partial::new(""), "😐".to_owned()))
         );
 
-        assert!(string::<Error<'_>>.parse_peek(Partial::new("\"")).is_err());
-        assert!(string::<Error<'_>>
-            .parse_peek(Partial::new("\"abc"))
-            .is_err());
-        assert!(string::<Error<'_>>
-            .parse_peek(Partial::new("\"\\\""))
-            .is_err());
-        assert!(string::<Error<'_>>
+        assert!(string::<Error>.parse_peek(Partial::new("\"")).is_err());
+        assert!(string::<Error>.parse_peek(Partial::new("\"abc")).is_err());
+        assert!(string::<Error>.parse_peek(Partial::new("\"\\\"")).is_err());
+        assert!(string::<Error>
             .parse_peek(Partial::new("\"\\u123\""))
             .is_err());
-        assert!(string::<Error<'_>>
+        assert!(string::<Error>
             .parse_peek(Partial::new("\"\\uD800\""))
             .is_err());
-        assert!(string::<Error<'_>>
+        assert!(string::<Error>
             .parse_peek(Partial::new("\"\\uD800\\uD800\""))
             .is_err());
-        assert!(string::<Error<'_>>
+        assert!(string::<Error>
             .parse_peek(Partial::new("\"\\uDC00\""))
             .is_err());
     }
@@ -279,7 +275,7 @@ mod test {
         );
 
         assert_eq!(
-            json::<Error<'_>>.parse_peek(Partial::new(input)),
+            json::<Error>.parse_peek(Partial::new(input)),
             Ok((Partial::new(""), expected))
         );
     }
@@ -293,7 +289,7 @@ mod test {
         let expected = Array(vec![Num(42.0), Str("x".to_owned())]);
 
         assert_eq!(
-            json::<Error<'_>>.parse_peek(Partial::new(input)),
+            json::<Error>.parse_peek(Partial::new(input)),
             Ok((Partial::new(""), expected))
         );
     }
@@ -317,7 +313,7 @@ mod test {
   "#;
 
         assert_eq!(
-            json::<Error<'_>>.parse_peek(Partial::new(input)),
+            json::<Error>.parse_peek(Partial::new(input)),
             Ok((
                 Partial::new(""),
                 Object(

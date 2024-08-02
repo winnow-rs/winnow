@@ -13,11 +13,6 @@ fn json_bench(c: &mut criterion::Criterion) {
         let len = sample.len();
         group.throughput(criterion::Throughput::Bytes(len as u64));
 
-        group.bench_with_input(criterion::BenchmarkId::new("basic", name), &len, |b, _| {
-            type Error<'i> = winnow::error::InputError<parser::Stream<'i>>;
-
-            b.iter(|| parser::json::<Error<'_>>.parse_peek(sample).unwrap());
-        });
         group.bench_with_input(criterion::BenchmarkId::new("unit", name), &len, |b, _| {
             type Error<'i> = ();
 
@@ -27,32 +22,28 @@ fn json_bench(c: &mut criterion::Criterion) {
             criterion::BenchmarkId::new("context", name),
             &len,
             |b, _| {
-                type Error<'i> = winnow::error::ContextError<parser::Stream<'i>>;
+                type Error = winnow::error::ContextError;
 
-                b.iter(|| parser::json::<Error<'_>>.parse_peek(sample).unwrap());
+                b.iter(|| parser::json::<Error>.parse_peek(sample).unwrap());
             },
         );
         group.bench_with_input(
             criterion::BenchmarkId::new("dispatch", name),
             &len,
             |b, _| {
-                type Error<'i> = winnow::error::InputError<parser_dispatch::Stream<'i>>;
+                type Error = winnow::error::ContextError;
 
-                b.iter(|| {
-                    parser_dispatch::json::<Error<'_>>
-                        .parse_peek(sample)
-                        .unwrap()
-                });
+                b.iter(|| parser_dispatch::json::<Error>.parse_peek(sample).unwrap());
             },
         );
         group.bench_with_input(
             criterion::BenchmarkId::new("streaming", name),
             &len,
             |b, _| {
-                type Error<'i> = winnow::error::InputError<parser_partial::Stream<'i>>;
+                type Error = winnow::error::ContextError;
 
                 b.iter(|| {
-                    parser_partial::json::<Error<'_>>
+                    parser_partial::json::<Error>
                         .parse_peek(Partial::new(sample))
                         .unwrap()
                 });
