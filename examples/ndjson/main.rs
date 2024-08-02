@@ -7,6 +7,7 @@ use winnow::error::ErrMode;
 use winnow::error::Needed;
 use winnow::prelude::*;
 use winnow::stream::Offset;
+use winnow::stream::Stream as _;
 
 fn main() -> Result<(), lexopt::Error> {
     let args = Args::parse()?;
@@ -38,13 +39,15 @@ fn main() -> Result<(), lexopt::Error> {
         buffer.fill(read);
 
         loop {
-            let input = parser::Stream::new(std::str::from_utf8(buffer.data()).map_err(to_lexopt)?);
-            match parser::ndjson::<ContextError>.parse_peek(input) {
-                Ok((remainder, value)) => {
+            let mut input =
+                parser::Stream::new(std::str::from_utf8(buffer.data()).map_err(to_lexopt)?);
+            let start = input.checkpoint();
+            match parser::ndjson::<ContextError>.parse_next(&mut input) {
+                Ok(value) => {
                     println!("{value:?}");
                     println!();
                     // Tell the buffer how much we read
-                    let consumed = remainder.offset_from(&input);
+                    let consumed = input.offset_from(&start);
                     buffer.consume(consumed);
                 }
                 Err(ErrMode::Backtrack(e)) | Err(ErrMode::Cut(e)) => {
