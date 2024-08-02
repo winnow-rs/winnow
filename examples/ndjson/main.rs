@@ -2,8 +2,8 @@ mod parser;
 
 use std::io::Read;
 
+use winnow::error::ContextError;
 use winnow::error::ErrMode;
-use winnow::error::InputError;
 use winnow::error::Needed;
 use winnow::prelude::*;
 use winnow::stream::Offset;
@@ -39,7 +39,7 @@ fn main() -> Result<(), lexopt::Error> {
 
         loop {
             let input = parser::Stream::new(std::str::from_utf8(buffer.data()).map_err(to_lexopt)?);
-            match parser::ndjson::<InputError<parser::Stream<'_>>>.parse_peek(input) {
+            match parser::ndjson::<ContextError>.parse_peek(input) {
                 Ok((remainder, value)) => {
                     println!("{value:?}");
                     println!();

@@ -210,25 +210,25 @@ const WS: &[char] = &[' ', '\t'];
 #[cfg(test)]
 mod test {
     #[allow(clippy::useless_attribute)]
-    #[allow(dead_code)] // its dead for benches
+    #[allow(unused_imports)] // its dead for benches
     use super::*;
 
     #[allow(clippy::useless_attribute)]
     #[allow(dead_code)] // its dead for benches
-    type Error<'i> = winnow::error::InputError<Partial<&'i str>>;
+    type Error = winnow::error::ContextError;
 
     #[test]
     fn json_string() {
         assert_eq!(
-            string::<Error<'_>>.parse_peek(Partial::new("\"\"")),
+            string::<Error>.parse_peek(Partial::new("\"\"")),
             Ok((Partial::new(""), "".to_owned()))
         );
         assert_eq!(
-            string::<Error<'_>>.parse_peek(Partial::new("\"abc\"")),
+            string::<Error>.parse_peek(Partial::new("\"abc\"")),
             Ok((Partial::new(""), "abc".to_owned()))
         );
         assert_eq!(
-            string::<Error<'_>>.parse_peek(Partial::new(
+            string::<Error>.parse_peek(Partial::new(
                 "\"abc\\\"\\\\\\/\\b\\f\\n\\r\\t\\u0001\\u2014\u{2014}def\""
             )),
             Ok((
@@ -237,27 +237,23 @@ mod test {
             )),
         );
         assert_eq!(
-            string::<Error<'_>>.parse_peek(Partial::new("\"\\uD83D\\uDE10\"")),
+            string::<Error>.parse_peek(Partial::new("\"\\uD83D\\uDE10\"")),
             Ok((Partial::new(""), "😐".to_owned()))
         );
 
-        assert!(string::<Error<'_>>.parse_peek(Partial::new("\"")).is_err());
-        assert!(string::<Error<'_>>
-            .parse_peek(Partial::new("\"abc"))
-            .is_err());
-        assert!(string::<Error<'_>>
-            .parse_peek(Partial::new("\"\\\""))
-            .is_err());
-        assert!(string::<Error<'_>>
+        assert!(string::<Error>.parse_peek(Partial::new("\"")).is_err());
+        assert!(string::<Error>.parse_peek(Partial::new("\"abc")).is_err());
+        assert!(string::<Error>.parse_peek(Partial::new("\"\\\"")).is_err());
+        assert!(string::<Error>
             .parse_peek(Partial::new("\"\\u123\""))
             .is_err());
-        assert!(string::<Error<'_>>
+        assert!(string::<Error>
             .parse_peek(Partial::new("\"\\uD800\""))
             .is_err());
-        assert!(string::<Error<'_>>
+        assert!(string::<Error>
             .parse_peek(Partial::new("\"\\uD800\\uD800\""))
             .is_err());
-        assert!(string::<Error<'_>>
+        assert!(string::<Error>
             .parse_peek(Partial::new("\"\\uDC00\""))
             .is_err());
     }
@@ -279,7 +275,7 @@ mod test {
         );
 
         assert_eq!(
-            ndjson::<Error<'_>>.parse_peek(Partial::new(input)),
+            ndjson::<Error>.parse_peek(Partial::new(input)),
             Ok((Partial::new(""), Some(expected)))
         );
     }
@@ -294,7 +290,7 @@ mod test {
         let expected = Array(vec![Num(42.0), Str("x".to_owned())]);
 
         assert_eq!(
-            ndjson::<Error<'_>>.parse_peek(Partial::new(input)),
+            ndjson::<Error>.parse_peek(Partial::new(input)),
             Ok((Partial::new(""), Some(expected)))
         );
     }
@@ -307,7 +303,7 @@ mod test {
 "#;
 
         assert_eq!(
-            ndjson::<Error<'_>>.parse_peek(Partial::new(input)),
+            ndjson::<Error>.parse_peek(Partial::new(input)),
             Ok((
                 Partial::new(""),
                 Some(Object(

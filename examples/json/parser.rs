@@ -19,7 +19,7 @@ pub(crate) type Stream<'i> = &'i str;
 /// The root element of a JSON parser is any value
 ///
 /// A parser has the following signature:
-/// `&mut Stream -> PResult<Output, InputError>`, with `PResult` defined as:
+/// `&mut Stream -> PResult<Output, ContextError>`, with `PResult` defined as:
 /// `type PResult<O, E = (I, ErrorKind)> = Result<O, Err<E>>;`
 ///
 /// most of the times you can ignore the error type and use the default (but this
@@ -205,42 +205,37 @@ const WS: &[char] = &[' ', '\t', '\r', '\n'];
 #[cfg(test)]
 mod test {
     #[allow(clippy::useless_attribute)]
-    #[allow(dead_code)] // its dead for benches
+    #[allow(unused_imports)] // its dead for benches
     use super::*;
 
     #[allow(clippy::useless_attribute)]
     #[allow(dead_code)] // its dead for benches
-    type Error<'i> = winnow::error::InputError<&'i str>;
+    type Error = winnow::error::ContextError;
 
     #[test]
     fn json_string() {
+        assert_eq!(string::<Error>.parse_peek("\"\""), Ok(("", "".to_owned())));
         assert_eq!(
-            string::<Error<'_>>.parse_peek("\"\""),
-            Ok(("", "".to_owned()))
-        );
-        assert_eq!(
-            string::<Error<'_>>.parse_peek("\"abc\""),
+            string::<Error>.parse_peek("\"abc\""),
             Ok(("", "abc".to_owned()))
         );
         assert_eq!(
-            string::<Error<'_>>
+            string::<Error>
                 .parse_peek("\"abc\\\"\\\\\\/\\b\\f\\n\\r\\t\\u0001\\u2014\u{2014}def\""),
             Ok(("", "abc\"\\/\x08\x0C\n\r\t\x01——def".to_owned())),
         );
         assert_eq!(
-            string::<Error<'_>>.parse_peek("\"\\uD83D\\uDE10\""),
+            string::<Error>.parse_peek("\"\\uD83D\\uDE10\""),
             Ok(("", "😐".to_owned()))
         );
 
-        assert!(string::<Error<'_>>.parse_peek("\"").is_err());
-        assert!(string::<Error<'_>>.parse_peek("\"abc").is_err());
-        assert!(string::<Error<'_>>.parse_peek("\"\\\"").is_err());
-        assert!(string::<Error<'_>>.parse_peek("\"\\u123\"").is_err());
-        assert!(string::<Error<'_>>.parse_peek("\"\\uD800\"").is_err());
-        assert!(string::<Error<'_>>
-            .parse_peek("\"\\uD800\\uD800\"")
-            .is_err());
-        assert!(string::<Error<'_>>.parse_peek("\"\\uDC00\"").is_err());
+        assert!(string::<Error>.parse_peek("\"").is_err());
+        assert!(string::<Error>.parse_peek("\"abc").is_err());
+        assert!(string::<Error>.parse_peek("\"\\\"").is_err());
+        assert!(string::<Error>.parse_peek("\"\\u123\"").is_err());
+        assert!(string::<Error>.parse_peek("\"\\uD800\"").is_err());
+        assert!(string::<Error>.parse_peek("\"\\uD800\\uD800\"").is_err());
+        assert!(string::<Error>.parse_peek("\"\\uDC00\"").is_err());
     }
 
     #[test]
@@ -258,7 +253,7 @@ mod test {
             .collect(),
         );
 
-        assert_eq!(json::<Error<'_>>.parse_peek(input), Ok(("", expected)));
+        assert_eq!(json::<Error>.parse_peek(input), Ok(("", expected)));
     }
 
     #[test]
@@ -269,7 +264,7 @@ mod test {
 
         let expected = Array(vec![Num(42.0), Str("x".to_owned())]);
 
-        assert_eq!(json::<Error<'_>>.parse_peek(input), Ok(("", expected)));
+        assert_eq!(json::<Error>.parse_peek(input), Ok(("", expected)));
     }
 
     #[test]
@@ -291,7 +286,7 @@ mod test {
   "#;
 
         assert_eq!(
-            json::<Error<'_>>.parse_peek(input),
+            json::<Error>.parse_peek(input),
             Ok((
                 "",
                 Object(
