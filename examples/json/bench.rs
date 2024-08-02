@@ -27,9 +27,9 @@ fn json_bench(c: &mut criterion::Criterion) {
             criterion::BenchmarkId::new("context", name),
             &len,
             |b, _| {
-                type Error<'i> = winnow::error::ContextError<parser::Stream<'i>>;
+                type Error = winnow::error::ContextError;
 
-                b.iter(|| parser::json::<Error<'_>>.parse_peek(sample).unwrap());
+                b.iter(|| parser::json::<Error>.parse_peek(sample).unwrap());
             },
         );
         group.bench_with_input(

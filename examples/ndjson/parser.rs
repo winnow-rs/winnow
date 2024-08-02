@@ -9,7 +9,7 @@ use winnow::{
     combinator::cut_err,
     combinator::{delimited, preceded, separated_pair, terminated},
     combinator::{repeat, separated},
-    error::{AddContext, ParserError},
+    error::{AddContext, ParserError, StrContext},
     stream::Partial,
     token::{any, none_of, take, take_while},
 };
@@ -27,7 +27,7 @@ pub(crate) enum JsonValue {
 /// Use `Partial` to cause `ErrMode::Incomplete` while parsing
 pub(crate) type Stream<'i> = Partial<&'i str>;
 
-pub(crate) fn ndjson<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
+pub(crate) fn ndjson<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> PResult<Option<JsonValue>, E> {
     alt((
@@ -41,7 +41,7 @@ pub(crate) fn ndjson<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'s
 
 /// `alt` is a combinator that tries multiple parsers one by one, until
 /// one of them succeeds
-fn json_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
+fn json_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> PResult<JsonValue, E> {
     // `alt` combines the each value parser. It returns the result of the first
@@ -82,7 +82,7 @@ fn boolean<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<bo
 
 /// This parser gathers all `char`s up into a `String`with a parse to take the double quote
 /// character, before the string (using `preceded`) and after the string (using `terminated`).
-fn string<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
+fn string<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> PResult<String, E> {
     preceded(
@@ -101,7 +101,7 @@ fn string<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>
     )
     // `context` lets you add a static string to errors to provide more information in the
     // error chain (to indicate which parser had an error)
-    .context("string")
+    .context(StrContext::Expected("string".into()))
     .parse_next(input)
 }
 
@@ -162,7 +162,7 @@ fn u16_hex<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<u1
 /// accumulating results in a `Vec`, until it encounters an error.
 /// If you want more control on the parser application, check out the `iterator`
 /// combinator (cf `examples/iterator.rs`)
-fn array<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
+fn array<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> PResult<Vec<JsonValue>, E> {
     preceded(
@@ -172,11 +172,11 @@ fn array<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
             (ws, ']'),
         )),
     )
-    .context("array")
+    .context(StrContext::Expected("array".into()))
     .parse_next(input)
 }
 
-fn object<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
+fn object<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> PResult<HashMap<String, JsonValue>, E> {
     preceded(
@@ -186,11 +186,11 @@ fn object<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>
             (ws, '}'),
         )),
     )
-    .context("object")
+    .context(StrContext::Expected("object".into()))
     .parse_next(input)
 }
 
-fn key_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, &'static str>>(
+fn key_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> PResult<(String, JsonValue), E> {
     separated_pair(string, cut_err((ws, ':', ws)), json_value).parse_next(input)
