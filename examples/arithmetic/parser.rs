@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use winnow::error::ParserError;
 use winnow::prelude::*;
 use winnow::{
     ascii::{digit1 as digits, multispace0 as multispaces},
@@ -53,12 +54,17 @@ fn term(i: &mut &str) -> PResult<i64> {
 // If either str::from_utf8 or FromStr::from_str fail,
 // we fallback to the parens parser defined above
 fn factor(i: &mut &str) -> PResult<i64> {
-    delimited(
-        multispaces,
-        alt((digits.try_map(FromStr::from_str), parens)),
-        multispaces,
-    )
-    .parse_next(i)
+    escape_spaces(alt((digits.try_map(FromStr::from_str), parens))).parse_next(i)
+}
+
+// A generic combinator with remove the surrounding whitespaces from a combinator
+fn escape_spaces<'a, Output, Error>(
+    parser: impl Parser<&'a str, Output, Error>,
+) -> impl Parser<&'a str, Output, Error>
+where
+    Error: ParserError<&'a str>,
+{
+    delimited(multispaces, parser, multispaces)
 }
 
 // We parse any expr surrounded by parens, ignoring all whitespace around those
