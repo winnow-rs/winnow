@@ -26,17 +26,20 @@ Already have an idea? It might be good to first [create an issue][new issue]
 to propose it so we can make sure we are aligned and lower the risk of having
 to re-work some of it and the discouragement that goes along with that.
 
-### Combinators
+### `Parser`s
 
 Design guidelines
-- Generally grammar-level combinators are free-functions and output/error
+- Generally grammar-level `Parser`s are free-functions and output/error
   conversion are inherent functions on `Parser`.  `Parser::verify` is an
   example of some nuance as the logic is coupled to the `Parser` its applied
   to.
-- Combinators that directly process tokens must support complete vs streaming
+- `Parser`s that directly process tokens must support complete vs streaming
   parsing.
-- Combinators that process `0..` tokens have a `0` suffix, `1..` tokens have a
-  `1` suffix, and ranged parsers have a `_m_n` suffix.
+- `Parser`s that work with slices have `take` in their name.
+- When taking slices or repeatedly calling a `Parser`, control the number of
+  times with a range, rather than hard coding it with the range in the name.
+- Where possible, write `Parser`s in a straight-forward manner, reusing other
+  `Parser`s, so they may serve as examples for the user.
 
 ### Process
 
