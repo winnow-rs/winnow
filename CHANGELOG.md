@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `Located::reset_to_start` for parsing encoded graphs with start-relative pointers
+
 ## [0.6.18] - 2024-07-31
 
 ## [0.6.17] - 2024-07-31
