@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.6.19] - 2024-09-24
+
 ### Features
 
 - Add `Located::reset_to_start` for parsing encoded graphs with start-relative pointers
@@ -2401,7 +2403,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.18...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.19...HEAD
+[0.6.19]: https://github.com/winnow-rs/winnow/compare/v0.6.18...v0.6.19
 [0.6.18]: https://github.com/winnow-rs/winnow/compare/v0.6.17...v0.6.18
 [0.6.17]: https://github.com/winnow-rs/winnow/compare/v0.6.16...v0.6.17
 [0.6.16]: https://github.com/winnow-rs/winnow/compare/v0.6.15...v0.6.16
