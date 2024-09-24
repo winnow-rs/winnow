@@ -129,6 +129,21 @@ where
     }
 }
 
+impl<I> Located<I>
+where
+    I: Clone + Stream + Offset,
+{
+    /// Reset the stream to the start
+    ///
+    /// This is useful for formats that encode a graph with addresses relative to the start of the
+    /// input.
+    #[doc(alias = "fseek")]
+    pub fn reset_to_start(&mut self) {
+        let start = self.initial.checkpoint();
+        self.input.reset(&start);
+    }
+}
+
 impl<I> AsRef<I> for Located<I> {
     #[inline(always)]
     fn as_ref(&self) -> &I {
