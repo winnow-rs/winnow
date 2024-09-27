@@ -60,9 +60,8 @@ fn factor(i: &mut &str) -> PResult<i64> {
 
 fn term(i: &mut &str) -> PResult<i64> {
     incr(i)?;
-    let init = factor(i).map_err(|e| {
+    let init = factor(i).inspect_err(|_e| {
         decr();
-        e
     })?;
 
     let res = repeat(0.., alt((('*', factor), ('/', factor.verify(|i| *i != 0)))))
@@ -89,9 +88,8 @@ fn term(i: &mut &str) -> PResult<i64> {
 
 fn expr(i: &mut &str) -> PResult<i64> {
     incr(i)?;
-    let init = term(i).map_err(|e| {
+    let init = term(i).inspect_err(|_e| {
         decr();
-        e
     })?;
 
     let res = repeat(0.., (alt(('+', '-')), term))
