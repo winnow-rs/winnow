@@ -60,7 +60,7 @@ fn factor(i: &mut &str) -> PResult<i64> {
 
 fn term(i: &mut &str) -> PResult<i64> {
     incr(i)?;
-    let init = factor(i).inspect_err(|e| {
+    let init = factor(i).inspect_err(|_e| {
         decr();
     })?;
 
@@ -88,7 +88,7 @@ fn term(i: &mut &str) -> PResult<i64> {
 
 fn expr(i: &mut &str) -> PResult<i64> {
     incr(i)?;
-    let init = term(i).inspect_err(|e| {
+    let init = term(i).inspect_err(|_e| {
         decr();
     })?;
 
