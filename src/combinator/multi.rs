@@ -150,14 +150,14 @@ where
     Input: Stream,
     Error: ParserError<Input>,
 {
-    /// Repeats the embedded parser, calling `g` to gather the results
+    /// Repeats the embedded parser, calling `op` to gather the results
     ///
     /// This stops before `n` when the parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
     /// [`cut_err`][crate::combinator::cut_err].
     ///
     /// # Arguments
     /// * `init` A function returning the initial value.
-    /// * `g` The function that combines a result of `f` with
+    /// * `op` The function that combines a result of `f` with
     ///       the current accumulator.
     ///
     /// **Warning:** If the parser passed to `fold` accepts empty inputs
