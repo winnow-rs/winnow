@@ -72,6 +72,21 @@ where
 }
 
 /// Run a parser from `alternatives` followed by `next`. Pick the first success.
+///
+/// # Example
+///
+/// ```rust
+/// # use winnow::{error::ErrMode, error::InputError,error::ErrorKind, error::Needed};
+/// # use winnow::prelude::*;
+/// use winnow::combinator::alt_then;
+/// # fn main() {
+/// fn parser(input: &str) -> IResult<&str, (&str, &str)> {
+///   alt_then(["aa", "a"], "ab").parse_peek(input)
+/// };
+///
+/// assert_eq!(parser("aab"), Ok(("", ("a", "ab"))));
+/// # }
+/// ```
 pub fn alt_then<Input: Stream, Output, Output2, Error, Alternatives>(
     mut alternatives: Alternatives,
     mut next: impl Parser<Input, Output2, Error>,
