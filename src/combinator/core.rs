@@ -531,7 +531,6 @@ enum State<E> {
 pub fn empty<Input, Error>(_input: &mut Input) -> PResult<(), Error>
 where
     Input: Stream,
-    Error: ParserError<Input>,
 {
     Ok(())
 }
