@@ -1,4 +1,4 @@
-use crate::combinator::trace;
+use crate::combinator::{empty, trace};
 use crate::error::{ErrMode, ErrorKind, ParserError};
 use crate::stream::Stream;
 use crate::*;
@@ -18,7 +18,13 @@ pub trait Alt<I, O, E> {
         input: &mut I,
     ) -> PResult<(O, O2), E>;
     /// Tests each parser in the tuple and returns the result of the first one that succeeds
-    fn choice(&mut self, input: &mut I) -> PResult<O, E>;
+    fn choice(&mut self, input: &mut I) -> PResult<O, E>
+    where
+        I: stream::Stream,
+    {
+        let (o, _) = self.choice_then(&mut empty, input)?;
+        Ok(o)
+    }
 }
 
 /// Pick the first successful parser
