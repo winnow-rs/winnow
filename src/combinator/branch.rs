@@ -78,13 +78,19 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::InputError,error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
-/// use winnow::combinator::alt_then;
+/// use winnow::combinator::{alt, alt_then};
 /// # fn main() {
 /// fn parser(input: &str) -> IResult<&str, (&str, &str)> {
 ///   alt_then(["aa", "a"], "ab").parse_peek(input)
 /// };
 ///
 /// assert_eq!(parser("aab"), Ok(("", ("a", "ab"))));
+///
+/// fn parser2(input: &str) -> IResult<&str, (&str, &str)> {
+///   alt_then(["1", "12", "123"], alt(["6", "56", "456"])).parse_peek(input)
+/// };
+///
+/// assert_eq!(parser2("123456"), Ok(("", ("123", "456"))));
 /// # }
 /// ```
 pub fn alt_then<Input: Stream, Output, Output2, Error, Alternatives>(
