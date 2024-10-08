@@ -10,6 +10,13 @@ pub use crate::dispatch;
 ///
 /// This trait is implemented for tuples of up to 21 elements
 pub trait Alt<I, O, E> {
+    /// Tests each parser in the choices followed by next and returns the
+    /// result of the first one that succeeds
+    fn choice_then<O2>(
+        &mut self,
+        next: &mut impl Parser<I, O2, E>,
+        input: &mut I,
+    ) -> PResult<(O, O2), E>;
     /// Tests each parser in the tuple and returns the result of the first one that succeeds
     fn choice(&mut self, input: &mut I) -> PResult<O, E>;
 }
@@ -125,6 +132,46 @@ pub fn permutation<I: Stream, O, E: ParserError<I>, List: Permutation<I, O, E>>(
 }
 
 impl<const N: usize, I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I, O, E> for [P; N] {
+    fn choice_then<O2>(
+        &mut self,
+        next: &mut impl Parser<I, O2, E>,
+        input: &mut I,
+    ) -> PResult<(O, O2), E> {
+        let mut error: Option<E> = None;
+
+        let start = input.checkpoint();
+        for branch in self {
+            input.reset(&start);
+            match branch.parse_next(input) {
+                Err(ErrMode::Backtrack(e)) => {
+                    error = match error {
+                        Some(error) => Some(error.or(e)),
+                        None => Some(e),
+                    };
+                }
+                Err(e) => return Err(e),
+                Ok(o) => match next.parse_next(input) {
+                    Err(ErrMode::Backtrack(e)) => {
+                        error = match error {
+                            Some(error) => Some(error.or(e)),
+                            None => Some(e),
+                        };
+                    }
+                    Err(e) => return Err(e),
+                    Ok(o2) => return Ok((o, o2)),
+                },
+            }
+        }
+
+        match error {
+            Some(e) => Err(ErrMode::Backtrack(e.append(input, &start, ErrorKind::Alt))),
+            None => Err(ErrMode::assert(
+                input,
+                "`alt_then` needs at least one parser",
+            )),
+        }
+    }
+
     fn choice(&mut self, input: &mut I) -> PResult<O, E> {
         let mut error: Option<E> = None;
 
@@ -150,6 +197,46 @@ impl<const N: usize, I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I,
 }
 
 impl<I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I, O, E> for &mut [P] {
+    fn choice_then<O2>(
+        &mut self,
+        next: &mut impl Parser<I, O2, E>,
+        input: &mut I,
+    ) -> PResult<(O, O2), E> {
+        let mut error: Option<E> = None;
+
+        let start = input.checkpoint();
+        for branch in self.iter_mut() {
+            input.reset(&start);
+            match branch.parse_next(input) {
+                Err(ErrMode::Backtrack(e)) => {
+                    error = match error {
+                        Some(error) => Some(error.or(e)),
+                        None => Some(e),
+                    };
+                }
+                Err(e) => return Err(e),
+                Ok(o) => match next.parse_next(input) {
+                    Err(ErrMode::Backtrack(e)) => {
+                        error = match error {
+                            Some(error) => Some(error.or(e)),
+                            None => Some(e),
+                        };
+                    }
+                    Err(e) => return Err(e),
+                    Ok(o2) => return Ok((o, o2)),
+                },
+            }
+        }
+
+        match error {
+            Some(e) => Err(ErrMode::Backtrack(e.append(input, &start, ErrorKind::Alt))),
+            None => Err(ErrMode::assert(
+                input,
+                "`alt_then` needs at least one parser",
+            )),
+        }
+    }
+
     fn choice(&mut self, input: &mut I) -> PResult<O, E> {
         let mut error: Option<E> = None;
 
@@ -195,6 +282,23 @@ macro_rules! alt_trait_impl(
       I: Stream, Output, Error: ParserError<I>,
       $($id: Parser<I, Output, Error>),+
     > Alt<I, Output, Error> for ( $($id),+ ) {
+      fn choice_then<O2>(&mut self, next: &mut impl Parser<I, O2, Error>, input: &mut I) -> PResult<(Output, O2), Error> {
+          let start = input.checkpoint();
+          let err = match self.0.parse_next(input) {
+            Err(ErrMode::Backtrack(e)) => {
+                e
+            },
+            Err(e) => return Err(e),
+            Ok(o) => match next.parse_next(input) {
+                Err(ErrMode::Backtrack(e)) => {
+                    e
+                },
+                Err(e) => return Err(e),
+                Ok(o2) => return Ok((o, o2)),
+            }
+          };
+          alt_then_trait_inner!(1, self, input, start, err, next, $($id)+)
+      }
 
       fn choice(&mut self, input: &mut I) -> PResult<Output, Error> {
         let start = input.checkpoint();
@@ -247,10 +351,43 @@ macro_rules! alt_trait_inner(
   });
 );
 
+macro_rules! alt_then_trait_inner(
+  ($it:tt, $self:expr, $input:ident, $start:ident, $err:expr, $next:ident, $head:ident $($id:ident)+) => ({
+    $input.reset(&$start);
+    let err = match $self.$it.parse_next($input) {
+      Err(ErrMode::Backtrack(e)) => {
+        $err.or(e)
+      }
+      Err(e) => return Err(e),
+      Ok(o) => match $next.parse_next($input) {
+          Err(ErrMode::Backtrack(e)) => {
+              $err.or(e)
+          }
+          Err(e) => return Err(e),
+          Ok(o2) => return Ok((o, o2))
+      },
+    };
+    succ!($it, alt_then_trait_inner!($self, $input, $start, err, $next, $($id)+))
+  });
+  ($it:tt, $self:expr, $input:ident, $start:ident, $err:expr, $next:ident, $head:ident) => ({
+    Err(ErrMode::Backtrack($err.append($input, &$start, ErrorKind::Alt)))
+  });
+);
+
 alt_trait!(Alt2 Alt3 Alt4 Alt5 Alt6 Alt7 Alt8 Alt9 Alt10 Alt11 Alt12 Alt13 Alt14 Alt15 Alt16 Alt17 Alt18 Alt19 Alt20 Alt21 Alt22);
 
 // Manually implement Alt for (A,), the 1-tuple type
 impl<I: Stream, O, E: ParserError<I>, A: Parser<I, O, E>> Alt<I, O, E> for (A,) {
+    fn choice_then<O2>(
+        &mut self,
+        next: &mut impl Parser<I, O2, E>,
+        input: &mut I,
+    ) -> PResult<(O, O2), E> {
+        let o = self.0.parse_next(input)?;
+        let o2 = next.parse_next(input)?;
+        Ok((o, o2))
+    }
+
     fn choice(&mut self, input: &mut I) -> PResult<O, E> {
         self.0.parse_next(input)
     }
