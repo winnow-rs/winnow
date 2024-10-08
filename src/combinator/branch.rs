@@ -65,6 +65,20 @@ where
     trace("alt", move |i: &mut Input| alternatives.choice(i))
 }
 
+/// Run a parser from `alternatives` followed by `next`. Pick the first success.
+pub fn alt_then<Input: Stream, Output, Output2, Error, Alternatives>(
+    mut alternatives: Alternatives,
+    mut next: impl Parser<Input, Output2, Error>,
+) -> impl Parser<Input, (Output, Output2), Error>
+where
+    Alternatives: Alt<Input, Output, Error>,
+    Error: ParserError<Input>,
+{
+    trace("alt_then", move |i: &mut Input| {
+        alternatives.choice_then(&mut next, i)
+    })
+}
+
 /// Helper trait for the [`permutation()`] combinator.
 ///
 /// This trait is implemented for tuples of up to 21 elements
