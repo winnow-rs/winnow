@@ -30,7 +30,10 @@
 /// // Parse into structs / tuple-structs
 /// fn field(input: &mut &[u8]) -> PResult<Field> {
 ///     seq!{Field {
-///         namespace: empty.value(5),
+///         // `#[temp]` fields can be referenced later
+///         // but they are ignored when building the struct
+///         #[temp] ten: empty.value(10),
+///         namespace: empty.value(ten / 2),
 ///         name: alphanumeric1.map(|s: &[u8]| s.to_owned()),
 ///         // `_` fields are ignored when building the struct
 ///         _: (space0, b':', space0),
@@ -125,13 +128,14 @@ macro_rules! seq_parse_struct_fields {
     };
     (
         $input: ident;
-        $head_field: ident : $head_parser: expr, $($fields: tt)*
+        $(#[temp])? $head_field: ident : $head_parser: expr, $($fields: tt)*
     ) => {
         let $head_field = $crate::Parser::parse_next(&mut $head_parser, $input)?;
         $crate::seq_parse_struct_fields!($input; $($fields)*)
     };
     (
         $input: ident;
+        // `#[temp]` in the last field makes no sense
         $head_field: ident : $head_parser: expr
     ) => {
         let $head_field = $crate::Parser::parse_next(&mut $head_parser, $input)?;
@@ -197,6 +201,14 @@ macro_rules! seq_init_struct_fields {
         $($inits: tt)*
     ) => {
         $crate::seq_init_struct_fields!( (); $($name)::* ; $($inits)* )
+    };
+    (
+        (#[temp] $head_field: ident : $head_parser: expr, $($fields: tt)*);
+        $name: ident;
+        $($inits: tt)*
+    ) =>
+    {
+        $crate::seq_init_struct_fields!( ( $($fields)* ) ; $name ; $($inits)* )
     };
     (
         ($head_field: ident : $head_parser: expr, $($fields: tt)*);
