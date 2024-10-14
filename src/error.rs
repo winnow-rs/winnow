@@ -1164,7 +1164,8 @@ pub struct ParseError<I, E> {
 }
 
 impl<I: Stream, E: ParserError<I>> ParseError<I, E> {
-    pub(crate) fn new(mut input: I, start: I::Checkpoint, inner: E) -> Self {
+    /// Construct a new [`ParseError`] wrapping the given error and input.
+    pub fn new(mut input: I, start: I::Checkpoint, inner: E) -> Self {
         let offset = input.offset_from(&start);
         input.reset(&start);
         Self {
@@ -1176,6 +1177,21 @@ impl<I: Stream, E: ParserError<I>> ParseError<I, E> {
 }
 
 impl<I, E> ParseError<I, E> {
+    /// Replace the [`input`][`ParseError::input`] in this [`ParseError`], returning a new
+    /// [`ParseError`].
+    ///
+    /// **Note:** To replace the [`input`][`ParseError::input`] and
+    /// [`offset`][`ParseError::offset`], use [`ParseError::new`] and
+    /// [`ParseError::into_inner`].
+    #[inline]
+    pub fn with_input<I2>(self, input: I2) -> ParseError<I2, E> {
+        ParseError {
+            input,
+            offset: self.offset,
+            inner: self.inner,
+        }
+    }
+
     /// The [`Stream`] at the initial location when parsing started
     #[inline]
     pub fn input(&self) -> &I {
