@@ -37,7 +37,11 @@ where
 
 /// Return the length of the remaining input.
 ///
+/// <div class="warning">
+///
 /// Note: this does not advance the [`Stream`]
+///
+/// </div>
 ///
 /// # Effective Signature
 ///
@@ -234,7 +238,11 @@ where
 
 /// Succeeds if the child parser returns an error.
 ///
+/// <div class="warning">
+///
 /// **Note:** This does not advance the [`Stream`]
+///
+/// </div>
 ///
 /// # Example
 ///
@@ -505,7 +513,11 @@ enum State<E> {
 /// - [`Parser::default_value`]
 /// - [`Parser::map`]
 ///
+/// <div class="warning">
+///
 /// **Note:** This never advances the [`Stream`]
+///
+/// </div>
 ///
 /// # Example
 ///

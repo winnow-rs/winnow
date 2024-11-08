@@ -57,8 +57,12 @@ pub type PResult<O, E = ContextError> = Result<O, ErrMode<E>>;
 
 /// Contains information on needed data if a parser returned `Incomplete`
 ///
+/// <div class="warning">
+///
 /// **Note:** This is only possible for `Stream` that are [partial][`crate::stream::StreamIsPartial`],
 /// like [`Partial`][crate::Partial].
+///
+/// </div>
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Needed {
     /// Needs more data, but we do not know how much
@@ -350,8 +354,12 @@ pub trait ErrorConvert<E> {
 /// This is useful for testing of generic parsers to ensure the error happens at the right
 /// location.
 ///
+/// <div class="warning">
+///
 /// **Note:** [context][Parser::context] and inner errors (like from [`Parser::try_map`]) will be
 /// dropped.
+///
+/// </div>
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct InputError<I: Clone> {
     /// The input stream, pointing to the location where the error occurred
@@ -1184,8 +1192,12 @@ impl<I, E> ParseError<I, E> {
 
     /// The location in [`ParseError::input`] where parsing failed
     ///
+    /// <div class="warning">
+    ///
     /// **Note:** This is an offset, not an index, and may point to the end of input
     /// (`input.len()`) on eof errors.
+    ///
+    /// </div>
     #[inline]
     pub fn offset(&self) -> usize {
         self.offset

@@ -1210,7 +1210,11 @@ where
 
 /// Recognizes an unsigned 1 byte integer
 ///
+/// <div class="warning">
+///
 /// **Note:** that endianness does not apply to 1 byte numbers.
+///
+/// </div>
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///
@@ -1633,7 +1637,11 @@ where
 
 /// Recognizes a signed 1 byte integer
 ///
+/// <div class="warning">
+///
 /// **Note:** that endianness does not apply to 1 byte numbers.
+///
+/// </div>
 ///
 /// *Complete version*: returns an error if there is not enough input data
 ///

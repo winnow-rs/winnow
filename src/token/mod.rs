@@ -93,8 +93,12 @@ where
 ///
 /// It will return `Err(ErrMode::Backtrack(InputError::new(_, ErrorKind::Tag)))` if the input doesn't match the literal
 ///
+/// <div class="warning">
+///
 /// **Note:** [`Parser`] is implemented for strings and byte strings as a convenience (complete
 /// only)
+///
+/// </div>
 ///
 /// # Effective Signature
 ///
@@ -199,10 +203,14 @@ where
 
 /// Recognize a token that matches a [set of tokens][ContainsToken]
 ///
+/// <div class="warning">
+///
 /// **Note:** [`Parser`] is implemented as a convenience (complete
 /// only) for
 /// - `u8`
 /// - `char`
+///
+/// </div>
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///

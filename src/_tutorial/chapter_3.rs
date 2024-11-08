@@ -178,9 +178,13 @@
 //! }
 //! ```
 //!
-//! > **Warning:** the above example is for illustrative purposes and relying on `Result::Ok` or
-//! > `Result::Err` can lead to incorrect behavior. This will be clarified in later when covering
-//! > [error handling][`chapter_7`#error-cuts]
+//! <div class="warning">
+//!
+//! **Warning:** the above example is for illustrative purposes and relying on `Result::Ok` or
+//! `Result::Err` can lead to incorrect behavior. This will be clarified in later when covering
+//! [error handling][`chapter_7`#error-cuts]
+//!
+//! </div>
 //!
 //! [`opt`] is a parser that encapsulates this pattern of "retry on failure":
 //! ```rust
@@ -293,7 +297,11 @@
 //! # }
 //! ```
 //!
-//! > **Note:** [`empty`] and [`fail`] are parsers that might be useful in the "else" case.
+//! <div class="warning">
+//!
+//! **Note:** [`empty`] and [`fail`] are parsers that might be useful in the "else" case.
+//!
+//! </div>
 //!
 //! Sometimes a giant if/else-if ladder can be slow and you'd rather have a `match` statement for
 //! branches of your parser that have unique prefixes. In this case, you can use the
@@ -354,7 +362,11 @@
 //! # }
 //! ```
 //!
-//! > **Note:** [`peek`] may be useful when [`dispatch`]ing from hints from each case's parser.
+//! <div class="warning">
+//!
+//! **Note:** [`peek`] may be useful when [`dispatch`]ing from hints from each case's parser.
+//!
+//! </div>
 //!
 //! See [`combinator`] for more alternative parsers.
 

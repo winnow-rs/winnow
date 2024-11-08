@@ -80,8 +80,14 @@ where
 
 /// Convert a [`bits`] stream back into a byte stream
 ///
+/// <div class="warning">
+///
 /// **Warning:** A partial byte remaining in the input will be ignored and the given parser will
 /// start parsing at the next full byte.
+///
+/// </div>
+///
+/// # Examples
 ///
 /// ```
 /// use winnow::prelude::*;

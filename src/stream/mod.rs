@@ -669,12 +669,16 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
     fn offset_at(&self, tokens: usize) -> Result<usize, Needed>;
     /// Split off a slice of tokens from the input
     ///
-    /// **NOTE:** For inputs with variable width tokens, like `&str`'s `char`, `offset` might not correspond
+    /// <div class="warning">
+    ///
+    /// **Note:** For inputs with variable width tokens, like `&str`'s `char`, `offset` might not correspond
     /// with the number of tokens. To get a valid offset, use:
     /// - [`Stream::eof_offset`]
     /// - [`Stream::iter_offsets`]
     /// - [`Stream::offset_for`]
     /// - [`Stream::offset_at`]
+    ///
+    /// </div>
     ///
     /// # Panic
     ///
@@ -1835,8 +1839,12 @@ where
 pub trait Offset<Start = Self> {
     /// Offset between the first byte of `start` and the first byte of `self`a
     ///
+    /// <div class="warning">
+    ///
     /// **Note:** This is an offset, not an index, and may point to the end of input
     /// (`start.len()`) when `self` is exhausted.
+    ///
+    /// </div>
     fn offset_from(&self, start: &Start) -> usize;
 }
 
@@ -3208,8 +3216,12 @@ pub trait AsChar {
 
     /// Tests that self is an alphabetic character
     ///
+    /// <div class="warning">
+    ///
     /// **Warning:** for `&str` it matches alphabetic
     /// characters outside of the 52 ASCII letters
+    ///
+    /// </div>
     fn is_alpha(self) -> bool;
 
     /// Tests that self is an alphabetic character
