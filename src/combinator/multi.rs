@@ -19,9 +19,13 @@ use crate::Parser;
 /// (e.g. with [`.map(|()| ())`][Parser::map])
 /// and then [`Parser::take`].
 ///
+/// <div class="warning">
+///
 /// **Warning:** If the parser passed to `repeat` accepts empty inputs
 /// (like `alpha0` or `digit0`), `repeat` will return an error,
 /// to prevent going into an infinite loop.
+///
+/// </div>
 ///
 /// # Example
 ///
@@ -160,9 +164,13 @@ where
     /// * `op` The function that combines a result of `f` with
     ///       the current accumulator.
     ///
+    /// <div class="warning">
+    ///
     /// **Warning:** If the parser passed to `fold` accepts empty inputs
     /// (like `alpha0` or `digit0`), `fold_repeat` will return an error,
     /// to prevent going into an infinite loop.
+    ///
+    /// </div>
     ///
     /// # Example
     ///
@@ -615,9 +623,13 @@ where
 /// (e.g. with [`.map(|()| ())`][Parser::map])
 /// and then [`Parser::take`].
 ///
+/// <div class="warning">
+///
 /// **Warning:** If the separator parser accepts empty inputs
 /// (like `alpha0` or `digit0`), `separated` will return an error,
 /// to prevent going into an infinite loop.
+///
+/// </div>
 ///
 /// # Example
 ///

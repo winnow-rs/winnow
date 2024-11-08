@@ -2,9 +2,13 @@
 //!
 //! To answer this question, it will be useful to contrast this with other approaches to parsing.
 //!
+//! <div class="warning">
+//!
 //! **Note:** This will focus on principles and priorities. For a deeper and wider wider
 //! comparison with other Rust parser libraries, see
 //! [parse-rosetta-rs](https://github.com/rosetta-rs/parse-rosetta-rs).
+//!
+//! </div>
 //!
 //! ## Hand-written parsers
 //!
