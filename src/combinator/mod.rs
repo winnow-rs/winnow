@@ -164,6 +164,7 @@ mod core;
 mod debug;
 mod multi;
 mod parser;
+mod precedence;
 mod sequence;
 
 #[cfg(test)]
@@ -174,6 +175,7 @@ pub use self::core::*;
 pub use self::debug::*;
 pub use self::multi::*;
 pub use self::parser::*;
+pub use self::precedence::*;
 pub use self::sequence::*;
 
 #[allow(unused_imports)]
