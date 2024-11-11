@@ -771,6 +771,7 @@ forked from `nom`. See also the
   - `winnow::Input*` with `winnow::stream::Stream`
   - `E::append` with `err.append`
   - `E::add_context` with `err.add_context`
+  - Resolve `many*` type inference issues by adding `.map(|v: Vec<_>| v)`
 3. Resolve remaining compile errors
 4. Resolve deprecations as described by them
 
