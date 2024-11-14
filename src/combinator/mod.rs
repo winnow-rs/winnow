@@ -165,6 +165,8 @@ mod debug;
 mod multi;
 mod parser;
 mod sequence;
+pub mod shunting_yard;
+pub mod precedence;
 
 mod shunting_yard;
 
@@ -178,7 +180,6 @@ pub use self::core::*;
 pub use self::debug::*;
 pub use self::multi::*;
 pub use self::parser::*;
-pub use self::precedence::*;
 pub use self::sequence::*;
 
 #[allow(unused_imports)]

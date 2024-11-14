@@ -5,6 +5,7 @@ use crate::{PResult, Parser};
 
 use super::trace;
 
+#[inline(always)]
 pub fn precedence<'i, I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand: 'static, E>(
     mut operand: ParseOperand,
     mut prefix: ParsePrefix,
@@ -20,23 +21,17 @@ where
     E: ParserError<I>,
 {
     trace("precedence", move |i: &mut I| {
-        let result = shunting_yard(
-            i,
-            operand.by_ref(),
-            prefix.by_ref(),
-            postfix.by_ref(),
-            infix.by_ref(),
-        )?;
+        let result = shunting_yard(i, &mut operand, &mut prefix, &mut postfix, &mut infix)?;
         Ok(result)
     })
 }
 
 fn shunting_yard<'i, I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand: 'static, E>(
     i: &mut I,
-    mut operand: ParseOperand,
-    mut prefix: ParsePrefix,
-    mut postfix: ParsePostfix,
-    mut infix: ParseInfix,
+    operand: &mut ParseOperand,
+    prefix: &mut ParsePrefix,
+    postfix: &mut ParsePostfix,
+    infix: &mut ParseInfix,
 ) -> PResult<Operand, E>
 where
     I: Stream + StreamIsPartial,
@@ -125,6 +120,7 @@ impl<O> Operator<'_, O> {
     }
 }
 
+#[inline(always)]
 fn evaluate<Operand>(stack: &mut Vec<Operand>, op: Operator<'_, Operand>) {
     match op {
         Operator::Unary(_, op) => {

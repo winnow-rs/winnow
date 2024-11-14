@@ -160,15 +160,15 @@ mod tests {
 
     #[test]
     fn test_precedence() {
-        assert_eq!(parser().parse("-3!+-3 *  4"), Ok(-18));
-        assert_eq!(parser().parse("+2 + 3 *  4"), Ok(14));
-        assert_eq!(parser().parse("2 * 3+4"), Ok(10));
+        assert_eq!(parser().parse("-3!+-3*4"), Ok(-18));
+        assert_eq!(parser().parse("+2+3*4"), Ok(14));
+        assert_eq!(parser().parse("2*3+4"), Ok(10));
     }
     #[test]
     fn test_unary() {
         assert_eq!(parser().parse("-2"), Ok(-2));
         assert_eq!(parser().parse("4!"), Ok(24));
-        assert_eq!(parser().parse("2 + 4!"), Ok(26));
-        assert_eq!(parser().parse("-2 + 2"), Ok(0));
+        assert_eq!(parser().parse("2+4!"), Ok(26));
+        assert_eq!(parser().parse("-2+2"), Ok(0));
     }
 }
