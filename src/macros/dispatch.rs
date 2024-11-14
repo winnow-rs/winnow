@@ -40,16 +40,37 @@
 #[macro_export]
 #[doc(hidden)] // forced to be visible in intended location
 macro_rules! dispatch {
-    ($match_parser: expr; $( $pat:pat $(if $pred:expr)? => $expr: expr ),+ $(,)? ) => {
+    ($match_parser: expr; $($(#[$meta:meta])* $pat:pat $(if $pred:expr)? => $expr: expr ),+ $(,)? ) => {
         $crate::combinator::trace("dispatch", move |i: &mut _|
         {
             use $crate::Parser;
             let initial = $match_parser.parse_next(i)?;
             match initial {
                 $(
+                    $(#[$meta])*
                     $pat $(if $pred)? => $expr.parse_next(i),
                 )*
             }
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::token::any;
+    use crate::Parser;
+    use crate::{combinator::fail, error::ContextError};
+
+    #[test]
+    fn handle_cfg_attributes() {
+        assert!(matches!(
+            dispatch! {any::<_, ContextError>;
+                #[cfg(any())] // always false
+                'a' => crate::combinator::empty,
+                _ => fail::<_, (), _>,
+            }
+            .parse("a"),
+            Err(_)
+        ));
     }
 }
