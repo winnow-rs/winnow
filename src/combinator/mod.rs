@@ -165,6 +165,8 @@ mod debug;
 mod multi;
 mod parser;
 mod sequence;
+pub mod shunting_yard;
+pub mod precedence;
 
 pub mod shunting_yard;
 
