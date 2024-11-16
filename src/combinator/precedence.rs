@@ -207,7 +207,6 @@ macro_rules! impl_parser_for_tuple {
     };
     (~ $($X:ident)+) => {
 
-        #[allow(unused_variables, non_snake_case)]
         impl<I, O: 'static, E, $($X),*> AsPrecedence<I, O, E> for ($($X,)*)
         where
             I: Stream + StreamIsPartial,
@@ -234,7 +233,6 @@ macro_rules! impl_parser_for_tuple {
             }
         }
 
-        #[allow(unused_variables, non_snake_case)]
         impl<'s, I, O: 'static, E, $($X),*> Parser<I, (&'s RefCell<dyn Fn(O) -> O>, usize), E>
             for Prefix<&'s ($($X,)*)>
         where
@@ -245,6 +243,7 @@ macro_rules! impl_parser_for_tuple {
         {
             #[inline(always)]
             fn parse_next(&mut self, input: &mut I) -> PResult<(&'s RefCell<dyn Fn(O) -> O>, usize), E> {
+                #[allow(non_snake_case)]
                 let ($($X,)*) = self.0;
                 alt(($($X.as_prefix(),)*)).parse_next(input)
             }
