@@ -57,7 +57,7 @@ where
     ParsePostfix: Parser<I, (usize, &'i dyn Fn(Operand) -> Operand), E>,
     E: ParserError<I>,
 {
-    let operand = trace("operand", opt(parse_operand.by_ref())).parse_next(i)?;
+    let operand = opt(parse_operand.by_ref()).parse_next(i)?;
     let mut operand = if let Some(operand) = operand {
         operand
     } else {
@@ -75,9 +75,9 @@ where
     'parse: while i.eof_offset() > 0 {
         // Postfix unary operators
         let start = i.checkpoint();
-        if let Some((power, fold_postfix)) =
-            trace("postfix", opt(postfix.by_ref())).parse_next(i)?
-        {
+        if let Some((power, fold_postfix)) = opt(postfix.by_ref()).parse_next(i)? {
+            // control precedence over the prefix e.g.:
+            // `--(i++)` or `(--i)++`
             if power < min_power {
                 i.reset(&start);
                 break;
@@ -91,11 +91,11 @@ where
         let start = i.checkpoint();
         let parse_result = opt(infix.by_ref()).parse_next(i)?;
         if let Some((lpower, rpower, fold_infix)) = parse_result {
-            if rpower < min_power {
+            if lpower < min_power {
                 i.reset(&start);
                 break;
             }
-            let rhs = precedence_impl(i, parse_operand, prefix, postfix, infix, lpower)?;
+            let rhs = precedence_impl(i, parse_operand, prefix, postfix, infix, rpower)?;
             operand = fold_infix(operand, rhs);
 
             continue 'parse;
