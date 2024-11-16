@@ -61,6 +61,7 @@ pub trait PrecedenceParserExt<I, E> {
         Infix(Operator::new(self, fold))
     }
 }
+
 impl<I, E, T: Parser<I, usize, E>> PrecedenceParserExt<I, E> for T where I: Stream {}
 
 /// `NewType` that indicates this type is a prefix operator a [`precedence`] parser.
