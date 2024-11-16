@@ -164,8 +164,9 @@ mod core;
 mod debug;
 mod multi;
 mod parser;
-mod precedence;
 mod sequence;
+
+pub mod precedence;
 
 #[cfg(test)]
 mod tests;
