@@ -76,7 +76,7 @@ where
 
             // Postfix unary operators
             if let Some((lpower, op)) = opt(postfix.by_ref()).parse_next(i)? {
-                unwind_operators_stack(lpower, &mut value_stack, &mut operator_stack);
+                unwind_operators_stack_to(lpower, &mut value_stack, &mut operator_stack);
 
                 // postfix operators are never put in pending state in `operator_stack`
                 // TODO: confirm that `expect` is valid for all invariants
@@ -87,7 +87,7 @@ where
 
             // Infix binary operators
             if let Some((lpower, rpower, op)) = opt(infix.by_ref()).parse_next(i)? {
-                unwind_operators_stack(lpower, &mut value_stack, &mut operator_stack);
+                unwind_operators_stack_to(lpower, &mut value_stack, &mut operator_stack);
                 operator_stack.push(Operator::Binary(lpower, rpower, op));
                 waiting_operand = true;
                 continue 'parse;
@@ -101,6 +101,7 @@ where
     while let Some(op) = operator_stack.pop() {
         evaluate(&mut value_stack, op);
     }
+    // TODO: when it can happen?
     // if eval_stack.len() > 1 {
     //     // Error: value left on stack
     // }
@@ -140,7 +141,7 @@ fn evaluate<Operand>(stack: &mut Vec<Operand>, op: Operator<'_, Operand>) {
     };
 }
 
-fn unwind_operators_stack<Operand>(
+fn unwind_operators_stack_to<Operand>(
     current_left_power: usize,
     value_stack: &mut Vec<Operand>,
     operator_stack: &mut Vec<Operator<'_, Operand>>,
@@ -165,7 +166,6 @@ mod tests {
     use super::*;
 
     fn parser(i: &mut &str) -> PResult<i32> {
-        // TODO: how to elide the closure type without ugly `as _`
         precedence(
             trace(
                 "operand",
