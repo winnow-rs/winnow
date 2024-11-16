@@ -41,53 +41,43 @@ where
     ParsePostfix: Parser<I, (usize, &'i dyn Fn(Operand) -> Operand), E>,
     E: ParserError<I>,
 {
-    // what we expecting to parse next
-    let mut waiting_operand = true;
     // a stack for computing the result
     let mut value_stack = Vec::<Operand>::new();
     let mut operator_stack = Vec::<Operator<'_, Operand>>::new();
 
     'parse: loop {
-        // operands and prefixes
-        if waiting_operand {
-            if let Some(operand) = opt(operand.by_ref()).parse_next(i)? {
-                value_stack.push(operand);
-                waiting_operand = false;
-                continue 'parse;
-            }
-
+        // Prefix unary operators
+        while let Some((lpower, op)) = opt(prefix.by_ref()).parse_next(i)? {
             // prefix operators never trigger the evaluation of pending operators
-            if let Some((lpower, op)) = opt(prefix.by_ref()).parse_next(i)? {
-                operator_stack.push(Operator::Unary(lpower, op));
-                continue 'parse;
-            }
+            operator_stack.push(Operator::Unary(lpower, op));
+        }
 
+        // Operand
+        if let Some(operand) = opt(operand.by_ref()).parse_next(i)? {
+            value_stack.push(operand);
+        } else {
             // error missing operand
             return Err(ErrMode::from_error_kind(i, ErrorKind::Token));
+        }
+
+        if i.eof_offset() <= 0 {
+            break 'parse;
+        }
+
+        // Postfix unary operators
+        while let Some((lpower, op)) = opt(postfix.by_ref()).parse_next(i)? {
+            unwind_operators_stack_to(lpower, &mut value_stack, &mut operator_stack);
+
+            // postfix operators are never put in pending state in `operator_stack`
+            let lhs = value_stack.pop().expect("value");
+            value_stack.push(op(lhs));
+        }
+
+        // Infix binary operators
+        if let Some((lpower, rpower, op)) = opt(infix.by_ref()).parse_next(i)? {
+            unwind_operators_stack_to(lpower, &mut value_stack, &mut operator_stack);
+            operator_stack.push(Operator::Binary(lpower, rpower, op));
         } else {
-            if i.eof_offset() == 0 {
-                break 'parse;
-            }
-
-            // Postfix unary operators
-            if let Some((lpower, op)) = opt(postfix.by_ref()).parse_next(i)? {
-                unwind_operators_stack_to(lpower, &mut value_stack, &mut operator_stack);
-
-                // postfix operators are never put in pending state in `operator_stack`
-                // TODO: confirm that `expect` is valid for all invariants
-                let lhs = value_stack.pop().expect("value");
-                value_stack.push(op(lhs));
-                continue 'parse;
-            }
-
-            // Infix binary operators
-            if let Some((lpower, rpower, op)) = opt(infix.by_ref()).parse_next(i)? {
-                unwind_operators_stack_to(lpower, &mut value_stack, &mut operator_stack);
-                operator_stack.push(Operator::Binary(lpower, rpower, op));
-                waiting_operand = true;
-                continue 'parse;
-            }
-
             // no more operators
             break 'parse;
         }
