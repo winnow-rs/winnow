@@ -166,6 +166,8 @@ mod multi;
 mod parser;
 mod sequence;
 
+mod shunting_yard;
+
 pub mod precedence;
 
 #[cfg(test)]
