@@ -5,16 +5,7 @@ use crate::{
     PResult, Parser,
 };
 
-/// Constructs an expression parser from an operand parser and operator parsers to parse an
-/// arbitrary expression separated by `prefix`, `postfix`, and `infix` operators of various precedence.
-///
-/// This technique is powerful and recommended for parsing expressions.
-///
-/// The implementation uses [Pratt parsing](https://en.wikipedia.org/wiki/Operator-precedence_parser#Pratt_parsing).
-/// This algorithm is similar to the [Shunting Yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm) algorithm
-/// in that both are linear, both use precedence and binding power, and both serve the same purpose.
-/// However, the `Shunting Yard` algorithm additionally uses `left` and `right` associativity,
-/// while `Pratt` parsing only relies on binding power.
+/// Parses an expression based on operator precedence.
 #[doc(alias = "pratt")]
 #[doc(alias = "separated")]
 #[doc(alias = "shunting_yard")]
