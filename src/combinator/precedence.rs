@@ -7,6 +7,110 @@ use crate::{
     PResult, Parser,
 };
 
+/// Constructs an expression parser from an operand parser and operator parsers to parse an
+/// arbitrary expression separated by `prefix`, `postfix`, and `infix` operators of various precedence.
+///
+/// This technique is powerful and recommended for parsing expressions.
+///
+/// The implementation uses [Pratt parsing](https://en.wikipedia.org/wiki/Operator-precedence_parser#Pratt_parsing).
+/// This algorithm is similar to the [Shunting Yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm) algorithm
+/// in that both are linear, both use precedence and binding power, and both serve the same purpose.
+/// However, the `Shunting Yard` algorithm additionally uses `left` and `right` associativity,
+/// while `Pratt` parsing only relies on binding power.
+#[doc(alias = "pratt")]
+#[doc(alias = "separated")]
+#[doc(alias = "shunting_yard")]
+#[doc(alias = "precedence_climbing")]
+#[inline(always)]
+pub fn precedence<I, ParseOperand, Operators, Operand: 'static, E>(
+    mut parse_operand: ParseOperand,
+    ops: Operators,
+) -> impl Parser<I, Operand, E>
+where
+    Operators: AsPrecedence<I, Operand, E>,
+    ParseOperand: Parser<I, Operand, E>,
+    I: Stream + StreamIsPartial,
+    E: ParserError<I>,
+{
+    trace("precedence", move |i: &mut I| {
+        let result = precedence_impl(i, &mut parse_operand, &ops, 0);
+        result
+    })
+}
+
+// recursive function
+fn precedence_impl<I, ParseOperand, Operators, Operand: 'static, E>(
+    i: &mut I,
+    parse_operand: &mut ParseOperand,
+    ops: &Operators,
+    start_power: usize,
+) -> PResult<Operand, E>
+where
+    I: Stream + StreamIsPartial,
+    Operators: AsPrecedence<I, Operand, E>,
+    ParseOperand: Parser<I, Operand, E>,
+    E: ParserError<I>,
+{
+    let operand = trace("operand", opt(parse_operand.by_ref())).parse_next(i)?;
+    let mut operand = if let Some(operand) = operand {
+        operand
+    } else {
+        // Prefix unary operators
+        let len = i.eof_offset();
+        let (fold_prefix, power) = trace("prefix", ops.as_prefix()).parse_next(i)?;
+        // infinite loop check: the parser must always consume
+        if i.eof_offset() == len {
+            return Err(ErrMode::assert(i, "`prefix` parsers must always consume"));
+        }
+        let operand = precedence_impl(i, parse_operand, ops, power)?;
+        fold_prefix.borrow_mut()(operand)
+    };
+
+    'parse: while i.eof_offset() > 0 {
+        // Postfix unary operators
+        let start = i.checkpoint();
+        let len = i.eof_offset();
+        if let Some((fold_postfix, power)) =
+            trace("postfix", opt(ops.as_postfix())).parse_next(i)?
+        {
+            // infinite loop check: the parser must always consume
+            if i.eof_offset() == len {
+                return Err(ErrMode::assert(i, "`postfix` parsers must always consume"));
+            }
+            if power < start_power {
+                i.reset(&start);
+                break;
+            }
+            operand = fold_postfix.borrow_mut()(operand);
+
+            continue 'parse;
+        }
+
+        // Infix binary operators
+        let start = i.checkpoint();
+        let len = i.eof_offset();
+        if let Some((fold_infix, power)) = trace("infix", opt(ops.as_infix())).parse_next(i)? {
+            // infinite loop check: the parser must always consume
+            if i.eof_offset() == len {
+                return Err(ErrMode::assert(i, "`infix` parsers must always consume"));
+            }
+            if power < start_power {
+                i.reset(&start);
+                break;
+            }
+            let rhs = precedence_impl(i, parse_operand, ops, power)?;
+            operand = fold_infix.borrow_mut()(operand, rhs);
+
+            continue 'parse;
+        }
+
+        break 'parse;
+    }
+
+    Ok(operand)
+}
+
+
 /// An adapter for the [`Parser`] trait to enable its use in the [`precedence`] parser.
 pub trait PrecedenceParserExt<I, E> {
     /// Specifies that the parser is a `unary` `prefix` operator within a [`precedence`] parser.
@@ -282,108 +386,6 @@ macro_rules! impl_parser_for_tuple {
 
 impl_parser_for_tuple!(P1 P2 P3 P4 P5 P6 P7 P8 P9 P10 P11 P12 P13 P14 P15 P16 P17 P18 P19 P20 P21);
 
-/// Constructs an expression parser from an operand parser and operator parsers to parse an
-/// arbitrary expression separated by `prefix`, `postfix`, and `infix` operators of various precedence.
-///
-/// This technique is powerful and recommended for parsing expressions.
-///
-/// The implementation uses [Pratt parsing](https://en.wikipedia.org/wiki/Operator-precedence_parser#Pratt_parsing).
-/// This algorithm is similar to the [Shunting Yard](https://en.wikipedia.org/wiki/Shunting_yard_algorithm) algorithm
-/// in that both are linear, both use precedence and binding power, and both serve the same purpose.
-/// However, the `Shunting Yard` algorithm additionally uses `left` and `right` associativity,
-/// while `Pratt` parsing only relies on binding power.
-#[doc(alias = "pratt")]
-#[doc(alias = "separated")]
-#[doc(alias = "shunting_yard")]
-#[doc(alias = "precedence_climbing")]
-#[inline(always)]
-pub fn precedence<I, ParseOperand, Operators, Operand: 'static, E>(
-    mut parse_operand: ParseOperand,
-    ops: Operators,
-) -> impl Parser<I, Operand, E>
-where
-    Operators: AsPrecedence<I, Operand, E>,
-    ParseOperand: Parser<I, Operand, E>,
-    I: Stream + StreamIsPartial,
-    E: ParserError<I>,
-{
-    trace("precedence", move |i: &mut I| {
-        let result = precedence_impl(i, &mut parse_operand, &ops, 0);
-        result
-    })
-}
-
-// recursive function
-fn precedence_impl<I, ParseOperand, Operators, Operand: 'static, E>(
-    i: &mut I,
-    parse_operand: &mut ParseOperand,
-    ops: &Operators,
-    start_power: usize,
-) -> PResult<Operand, E>
-where
-    I: Stream + StreamIsPartial,
-    Operators: AsPrecedence<I, Operand, E>,
-    ParseOperand: Parser<I, Operand, E>,
-    E: ParserError<I>,
-{
-    let operand = trace("operand", opt(parse_operand.by_ref())).parse_next(i)?;
-    let mut operand = if let Some(operand) = operand {
-        operand
-    } else {
-        // Prefix unary operators
-        let len = i.eof_offset();
-        let (fold_prefix, power) = trace("prefix", ops.as_prefix()).parse_next(i)?;
-        // infinite loop check: the parser must always consume
-        if i.eof_offset() == len {
-            return Err(ErrMode::assert(i, "`prefix` parsers must always consume"));
-        }
-        let operand = precedence_impl(i, parse_operand, ops, power)?;
-        fold_prefix.borrow_mut()(operand)
-    };
-
-    'parse: while i.eof_offset() > 0 {
-        // Postfix unary operators
-        let start = i.checkpoint();
-        let len = i.eof_offset();
-        if let Some((fold_postfix, power)) =
-            trace("postfix", opt(ops.as_postfix())).parse_next(i)?
-        {
-            // infinite loop check: the parser must always consume
-            if i.eof_offset() == len {
-                return Err(ErrMode::assert(i, "`postfix` parsers must always consume"));
-            }
-            if power < start_power {
-                i.reset(&start);
-                break;
-            }
-            operand = fold_postfix.borrow_mut()(operand);
-
-            continue 'parse;
-        }
-
-        // Infix binary operators
-        let start = i.checkpoint();
-        let len = i.eof_offset();
-        if let Some((fold_infix, power)) = trace("infix", opt(ops.as_infix())).parse_next(i)? {
-            // infinite loop check: the parser must always consume
-            if i.eof_offset() == len {
-                return Err(ErrMode::assert(i, "`infix` parsers must always consume"));
-            }
-            if power < start_power {
-                i.reset(&start);
-                break;
-            }
-            let rhs = precedence_impl(i, parse_operand, ops, power)?;
-            operand = fold_infix.borrow_mut()(operand, rhs);
-
-            continue 'parse;
-        }
-
-        break 'parse;
-    }
-
-    Ok(operand)
-}
 
 #[cfg(test)]
 mod tests {
