@@ -161,24 +161,6 @@ pub trait AsPrecedence<I: Stream, Operand: 'static, E: ParserError<I>> {
     }
 }
 
-impl<'s, F, O, I, P, E> Parser<I, (&'s RefCell<dyn Fn(O) -> O>, usize), E>
-    for &'s Prefix<Operator<F, P>>
-where
-    F: Fn(O) -> O + 'static,
-    I: Stream,
-    P: Parser<I, usize, E>,
-    E: ParserError<I>,
-{
-    #[inline(always)]
-    fn parse_next(
-        &mut self,
-        input: &mut I,
-    ) -> PResult<(&'s RefCell<dyn Fn(O) -> O + 'static>, usize), E> {
-        let power = self.0.parser.borrow_mut().parse_next(input)?;
-        Ok((&self.0.op, power))
-    }
-}
-
 impl<F, O: 'static, I, P, E> AsPrecedence<I, O, E> for Prefix<Operator<F, P>>
 where
     F: Fn(O) -> O + 'static,
