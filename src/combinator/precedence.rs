@@ -21,7 +21,7 @@ pub trait PrecedenceParserExt<I, E> {
     #[inline(always)]
     fn prefix<F, O>(self, fold: F) -> Prefix<Operator<F, Self>>
     where
-        F: UnaryOp<O>,
+        F: Fn(O) -> O,
         Self: Sized,
     {
         Prefix(Operator::new(self, fold))
@@ -38,7 +38,7 @@ pub trait PrecedenceParserExt<I, E> {
     #[inline(always)]
     fn postfix<F, O>(self, fold: F) -> Postfix<Operator<F, Self>>
     where
-        F: UnaryOp<O>,
+        F: Fn(O) -> O,
         Self: Sized,
     {
         Postfix(Operator::new(self, fold))
@@ -55,7 +55,7 @@ pub trait PrecedenceParserExt<I, E> {
     #[inline(always)]
     fn infix<F, O>(self, fold: F) -> Infix<Operator<F, Self>>
     where
-        F: BinaryOp<O>,
+        F: Fn(O, O) -> O,
         Self: Sized,
     {
         Infix(Operator::new(self, fold))
@@ -103,41 +103,9 @@ impl<OperatorFunc, OperatorParser> Operator<OperatorFunc, OperatorParser> {
     }
 }
 
-/// Type-erased unary predicate that folds an expression into a new expression.
-/// Useful for supporting not only closures but also arbitrary types as operator predicates within the [`precedence`] parser.
-pub trait UnaryOp<O> {
-    /// Invokes the [`UnaryOp`] predicate.
-    fn fold_unary(&mut self, o: O) -> O;
-}
-/// Type-erased binary predicate that folds two expressions into a new expression similar to
-/// [`UnaryOp`] within the [`precedence`] parser.
-pub trait BinaryOp<O> {
-    /// Invokes the [`BinaryOp`] predicate.
-    fn fold_binary(&mut self, lhs: O, rhs: O) -> O;
-}
-
-impl<O, F> UnaryOp<O> for F
+impl<'s, UO, O, I, P, E> Parser<I, (&'s RefCell<dyn Fn(O) -> O>, usize), E> for &'s Operator<UO, P>
 where
-    F: Fn(O) -> O,
-{
-    #[inline(always)]
-    fn fold_unary(&mut self, o: O) -> O {
-        (self)(o)
-    }
-}
-impl<O, F> BinaryOp<O> for F
-where
-    F: Fn(O, O) -> O,
-{
-    #[inline(always)]
-    fn fold_binary(&mut self, lhs: O, rhs: O) -> O {
-        (self)(lhs, rhs)
-    }
-}
-
-impl<'s, UO, O, I, P, E> Parser<I, (&'s RefCell<dyn UnaryOp<O>>, usize), E> for &'s Operator<UO, P>
-where
-    UO: UnaryOp<O> + 'static,
+    UO: Fn(O) -> O + 'static,
     I: Stream + StreamIsPartial,
     P: Parser<I, usize, E>,
     E: ParserError<I>,
@@ -146,14 +114,15 @@ where
     fn parse_next(
         &mut self,
         input: &mut I,
-    ) -> PResult<(&'s RefCell<dyn UnaryOp<O> + 'static>, usize), E> {
+    ) -> PResult<(&'s RefCell<dyn Fn(O) -> O + 'static>, usize), E> {
         let power = self.parser.borrow_mut().parse_next(input)?;
         Ok((&self.op, power))
     }
 }
-impl<'s, BO, O, I, P, E> Parser<I, (&'s RefCell<dyn BinaryOp<O>>, usize), E> for &'s Operator<BO, P>
+impl<'s, BO, O, I, P, E> Parser<I, (&'s RefCell<dyn Fn(O, O) -> O>, usize), E>
+    for &'s Operator<BO, P>
 where
-    BO: BinaryOp<O> + 'static,
+    BO: Fn(O, O) -> O + 'static,
     I: Stream + StreamIsPartial,
     P: Parser<I, usize, E>,
     E: ParserError<I>,
@@ -162,7 +131,7 @@ where
     fn parse_next(
         &mut self,
         input: &mut I,
-    ) -> PResult<(&'s RefCell<dyn BinaryOp<O> + 'static>, usize), E> {
+    ) -> PResult<(&'s RefCell<dyn Fn(O, O) -> O + 'static>, usize), E> {
         let power = self.parser.borrow_mut().parse_next(input)?;
         Ok((&self.op, power))
     }
@@ -173,27 +142,29 @@ pub trait AsPrecedence<I: Stream, Operand: 'static, E: ParserError<I>> {
     /// Interprets a parser as a [`PrecedenceParserExt::prefix`] parser that returns an `unary
     /// predicate` [`UnaryOp`] and a `binding power` as its parsing result.
     #[inline(always)]
-    fn as_prefix(&self) -> impl Parser<I, (&RefCell<dyn UnaryOp<Operand>>, usize), E> {
+    fn as_prefix(&self) -> impl Parser<I, (&RefCell<dyn Fn(Operand) -> Operand>, usize), E> {
         fail
     }
     /// Interprets a parser as a [`PrecedenceParserExt::postfix`] parser that returns an `unary
     /// predicate` [`UnaryOp`] and a `binding power` as its parsing result.
     #[inline(always)]
-    fn as_postfix(&self) -> impl Parser<I, (&RefCell<dyn UnaryOp<Operand>>, usize), E> {
+    fn as_postfix(&self) -> impl Parser<I, (&RefCell<dyn Fn(Operand) -> Operand>, usize), E> {
         fail
     }
     /// Interprets a parser as a [`PrecedenceParserExt::infix`] parser that returns a `binary
     /// predicate` [`BinaryOp`] and a `binding power` as its parsing result.
     #[inline(always)]
-    fn as_infix(&self) -> impl Parser<I, (&RefCell<dyn BinaryOp<Operand>>, usize), E> {
+    fn as_infix(
+        &self,
+    ) -> impl Parser<I, (&RefCell<dyn Fn(Operand, Operand) -> Operand>, usize), E> {
         fail
     }
 }
 
-impl<'s, F, O, I, P, E> Parser<I, (&'s RefCell<dyn UnaryOp<O>>, usize), E>
+impl<'s, F, O, I, P, E> Parser<I, (&'s RefCell<dyn Fn(O) -> O>, usize), E>
     for &'s Prefix<Operator<F, P>>
 where
-    F: UnaryOp<O> + 'static,
+    F: Fn(O) -> O + 'static,
     I: Stream,
     P: Parser<I, usize, E>,
     E: ParserError<I>,
@@ -202,7 +173,7 @@ where
     fn parse_next(
         &mut self,
         input: &mut I,
-    ) -> PResult<(&'s RefCell<dyn UnaryOp<O> + 'static>, usize), E> {
+    ) -> PResult<(&'s RefCell<dyn Fn(O) -> O + 'static>, usize), E> {
         let power = self.0.parser.borrow_mut().parse_next(input)?;
         Ok((&self.0.op, power))
     }
@@ -210,38 +181,38 @@ where
 
 impl<F, O: 'static, I, P, E> AsPrecedence<I, O, E> for Prefix<Operator<F, P>>
 where
-    F: UnaryOp<O> + 'static,
+    F: Fn(O) -> O + 'static,
     I: Stream + StreamIsPartial,
     P: Parser<I, usize, E>,
     E: ParserError<I>,
 {
     #[inline(always)]
-    fn as_prefix(&self) -> impl Parser<I, (&RefCell<dyn UnaryOp<O>>, usize), E> {
+    fn as_prefix(&self) -> impl Parser<I, (&RefCell<dyn Fn(O) -> O>, usize), E> {
         &self.0
     }
 }
 
 impl<F, O: 'static, I, P, E> AsPrecedence<I, O, E> for Postfix<Operator<F, P>>
 where
-    F: UnaryOp<O> + 'static,
+    F: Fn(O) -> O + 'static,
     I: Stream + StreamIsPartial,
     P: Parser<I, usize, E>,
     E: ParserError<I>,
 {
     #[inline(always)]
-    fn as_postfix(&self) -> impl Parser<I, (&RefCell<dyn UnaryOp<O>>, usize), E> {
+    fn as_postfix(&self) -> impl Parser<I, (&RefCell<dyn Fn(O) -> O>, usize), E> {
         &self.0
     }
 }
 impl<F, O: 'static, I, P, E> AsPrecedence<I, O, E> for Infix<Operator<F, P>>
 where
-    F: BinaryOp<O> + 'static,
+    F: Fn(O, O) -> O + 'static,
     I: Stream + StreamIsPartial,
     P: Parser<I, usize, E>,
     E: ParserError<I>,
 {
     #[inline(always)]
-    fn as_infix(&self) -> impl Parser<I, (&RefCell<dyn BinaryOp<O>>, usize), E> {
+    fn as_infix(&self) -> impl Parser<I, (&RefCell<dyn Fn(O, O) -> O>, usize), E> {
         &self.0
     }
 }
@@ -264,25 +235,25 @@ macro_rules! impl_parser_for_tuple {
             #[inline(always)]
             fn as_prefix<'s>(
                 &'s self,
-            ) -> impl Parser<I, (&'s RefCell<dyn UnaryOp<O>>, usize), E> {
+            ) -> impl Parser<I, (&'s RefCell<dyn Fn(O) -> O>, usize), E> {
                 Prefix(self)
             }
             #[inline(always)]
             fn as_infix<'s>(
                 &'s self,
-            ) -> impl Parser<I, (&'s RefCell<dyn BinaryOp<O>>, usize), E> {
+            ) -> impl Parser<I, (&'s RefCell<dyn Fn(O, O) -> O>, usize), E> {
                 Infix(self)
             }
             #[inline(always)]
             fn as_postfix<'s>(
                 &'s self,
-            ) -> impl Parser<I, (&'s RefCell<dyn UnaryOp<O>>, usize), E> {
+            ) -> impl Parser<I, (&'s RefCell<dyn Fn(O) -> O>, usize), E> {
                 Postfix(self)
             }
         }
 
         #[allow(unused_variables, non_snake_case)]
-        impl<'s, I, O: 'static, E, $($X),*> Parser<I, (&'s RefCell<dyn UnaryOp<O>>, usize), E>
+        impl<'s, I, O: 'static, E, $($X),*> Parser<I, (&'s RefCell<dyn Fn(O) -> O>, usize), E>
             for Prefix<&'s ($($X,)*)>
         where
             I: Stream + StreamIsPartial,
@@ -291,13 +262,13 @@ macro_rules! impl_parser_for_tuple {
 
         {
             #[inline(always)]
-            fn parse_next(&mut self, input: &mut I) -> PResult<(&'s RefCell<dyn UnaryOp<O>>, usize), E> {
+            fn parse_next(&mut self, input: &mut I) -> PResult<(&'s RefCell<dyn Fn(O) -> O>, usize), E> {
                 let ($($X,)*) = self.0;
                 alt(($($X.as_prefix(),)*)).parse_next(input)
             }
         }
         #[allow(unused_variables, non_snake_case)]
-        impl<'s, I, O: 'static, E, $($X),*> Parser<I, (&'s RefCell<dyn UnaryOp<O>>, usize), E>
+        impl<'s, I, O: 'static, E, $($X),*> Parser<I, (&'s RefCell<dyn Fn(O) -> O>, usize), E>
             for Postfix<&'s ($($X,)*)>
         where
             I: Stream + StreamIsPartial,
@@ -305,13 +276,13 @@ macro_rules! impl_parser_for_tuple {
             $($X: AsPrecedence<I, O, E>),*
         {
             #[inline(always)]
-            fn parse_next(&mut self, input: &mut I) -> PResult<(&'s RefCell<dyn UnaryOp<O>>, usize), E> {
+            fn parse_next(&mut self, input: &mut I) -> PResult<(&'s RefCell<dyn Fn(O) -> O>, usize), E> {
                 let ($($X,)*) = self.0;
                 alt(($($X.as_postfix(),)*)).parse_next(input)
             }
         }
         #[allow(unused_variables, non_snake_case)]
-        impl<'s, I, O: 'static, E, $($X),*> Parser<I, (&'s RefCell<dyn BinaryOp<O>>, usize), E>
+        impl<'s, I, O: 'static, E, $($X),*> Parser<I, (&'s RefCell<dyn Fn(O, O) -> O>, usize), E>
             for Infix<&'s ($($X,)*)>
         where
             I: Stream + StreamIsPartial,
@@ -319,7 +290,7 @@ macro_rules! impl_parser_for_tuple {
             $($X: AsPrecedence<I, O, E>),*
         {
             #[inline(always)]
-            fn parse_next(&mut self, input: &mut I) -> PResult<(&'s RefCell<dyn BinaryOp<O>>, usize), E> {
+            fn parse_next(&mut self, input: &mut I) -> PResult<(&'s RefCell<dyn Fn(O, O) -> O>, usize), E> {
                 let ($($X,)*) = self.0;
                 alt(($($X.as_infix(),)*)).parse_next(input)
             }
@@ -386,7 +357,7 @@ where
             return Err(ErrMode::assert(i, "`prefix` parsers must always consume"));
         }
         let operand = precedence_impl(i, parse_operand, ops, power)?;
-        fold_prefix.borrow_mut().fold_unary(operand)
+        fold_prefix.borrow_mut()(operand)
     };
 
     'parse: while i.eof_offset() > 0 {
@@ -404,7 +375,7 @@ where
                 i.reset(&start);
                 break;
             }
-            operand = fold_postfix.borrow_mut().fold_unary(operand);
+            operand = fold_postfix.borrow_mut()(operand);
 
             continue 'parse;
         }
@@ -422,7 +393,7 @@ where
                 break;
             }
             let rhs = precedence_impl(i, parse_operand, ops, power)?;
-            operand = fold_infix.borrow_mut().fold_binary(operand, rhs);
+            operand = fold_infix.borrow_mut()(operand, rhs);
 
             continue 'parse;
         }
