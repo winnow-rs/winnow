@@ -118,24 +118,24 @@ mod tests {
     fn parser<'i>() -> impl Parser<&'i str, i32, ContextError> {
         move |i: &mut &str| {
             precedence(
-                delimited(
+                trace("operand", delimited(
                     space0,
                     dispatch! {peek(any);
                         '(' => delimited('(',  parser(), ')'),
                         _ => digit1.parse_to::<i32>()
                     },
                     space0,
-                ),
-                dispatch! {any;
+                )),
+                trace("prefix", dispatch! {any;
                     '+' => empty.value((9, (|_: &mut _, a| a) as _)),
                     '-' => empty.value((9, (|_: &mut _, a: i32| -a) as _)),
                     _ => fail
-                },
-                dispatch! {any;
+                }),
+                trace("postfix", dispatch! {any;
                     '!' => empty.value((9, factorial as _)),
                     _ => fail
-                },
-                dispatch! {any;
+                }),
+                trace("infix", dispatch! {any;
                    '+' => empty.value((5, 6, (|_: &mut _, a, b| a + b) as _  )),
                    '-' => empty.value((5, 6, (|_: &mut _, a, b| a - b) as _)),
                    '*' => empty.value((7, 8, (|_: &mut _, a, b| a * b) as _)),
@@ -143,7 +143,7 @@ mod tests {
                    '%' => empty.value((7, 8, (|_: &mut _, a, b| a % b) as _)),
                    '^' => empty.value((9, 10, (|_: &mut _, a, b| a ^ b) as _)),
                    _ => fail
-                },
+                }),
             )
             .parse_next(i)
         }
