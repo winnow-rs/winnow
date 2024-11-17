@@ -1,4 +1,4 @@
-use winnow::combinator::{cut_err, empty, fail, peek, trace};
+use winnow::combinator::{cut_err, empty, fail, opt, peek, preceded, separated_pair, trace};
 use winnow::prelude::*;
 use winnow::stream::AsChar as _;
 use winnow::token::{any, take, take_while};
@@ -49,7 +49,7 @@ pub(crate) enum Expr {
 
     // A parenthesized expression.
     Paren(Box<Expr>),
-    FunctionCall(Box<Expr>, Box<Expr>),
+    FunctionCall(Box<Expr>, Option<Box<Expr>>),
     Ternary(Box<Expr>, Box<Expr>, Box<Expr>),
     // foo[...]
     Index(Box<Expr>, Box<Expr>),
@@ -85,17 +85,17 @@ pub(crate) fn pratt_parser(i: &mut &str) -> PResult<Expr> {
            delimited(multispace0, dispatch! {any;
                 '+' => alt((
                     // ++
-                    '+'.value((18, (&|a| Expr::PreIncr(Box::new(a))) as _)),
-                    empty.value((18, (&|a| a) as _))
+                    '+'.value((18, (|_: &mut _, a| Expr::PreIncr(Box::new(a))) as _)),
+                    empty.value((18, (|_: &mut _, a| a) as _))
                 )),
                 '-' =>  alt((
                     // --
-                    '-'.value((18, (&|a| Expr::PreDecr(Box::new(a))) as _)),
-                    empty.value((18, (&|a| Expr::Neg(Box::new(a))) as _))
+                    '-'.value((18, (|_: &mut _, a| Expr::PreDecr(Box::new(a))) as _)),
+                    empty.value((18, (|_: &mut _, a| Expr::Neg(Box::new(a))) as _))
                 )),
-                '&' => empty.value((18, (&|a| Expr::Addr(Box::new(a))) as _)),
-                '*' => empty.value((18, (&|a| Expr::Deref(Box::new(a))) as _)),
-                '!' => empty.value((18, (&|a| Expr::Not(Box::new(a))) as _)),
+                '&' => empty.value((18, (|_: &mut _, a| Expr::Addr(Box::new(a))) as _)),
+                '*' => empty.value((18, (|_: &mut _, a| Expr::Deref(Box::new(a))) as _)),
+                '!' => empty.value((18, (|_: &mut _, a| Expr::Not(Box::new(a))) as _)),
                 _ => fail
             }
         , multispace0)),
@@ -103,23 +103,25 @@ pub(crate) fn pratt_parser(i: &mut &str) -> PResult<Expr> {
             "postfix",
             delimited(multispace0, alt((
                 dispatch! {any;
-                    '!' => empty.value((20, (&|a| Expr::Fac(Box::new(a))) as _)),
-                    // '?' => |i: &mut &str| {
-                    //     let (left, right) = separated_pair(pratt_parser, delimited(multispace0, ':', multispace0), pratt_parser).parse_next(i)?;
-                    //     Ok((3, (&|a: Expr| Expr::Ternary(Box::new(a), left.into(), right.into())) as _))
-                    // },
-                // TODO: function call
-                // '(' => empty.value((3, ),
-                // check function call
-                // ')' => empty.value((3, ),
-                // index
-                // '[' => empty.value((70, 71, (&|a|  terminated(pratt_parser, ']') )),
+                    '!' => empty.value((20, (|_: &mut _, a| Expr::Fac(Box::new(a))) as _)),
+                    '?' => empty.value((3, (|i: &mut &str, cond| {
+                        let (left, right) = preceded(multispace0, cut_err(separated_pair(pratt_parser, delimited(multispace0, ':', multispace0), pratt_parser))).parse_next(i).unwrap();
+                        Expr::Ternary(Box::new(cond), Box::new(left), Box::new(right))
+                    }) as _)),
+                    '[' => empty.value((20, (|i: &mut &str, a| {
+                        let index = delimited(multispace0, pratt_parser, (multispace0, cut_err(']'), multispace0)).parse_next(i).unwrap();
+                        Expr::Index(Box::new(a), Box::new(index))
+                    }) as _)),
+                    '(' => empty.value((20, (|i: &mut &str, a| {
+                        let args = delimited(multispace0, opt(pratt_parser), (multispace0, cut_err(')'), multispace0)).parse_next(i).unwrap();
+                        Expr::FunctionCall(Box::new(a), args.map(Box::new))
+                    }) as _)),
                     _ => fail,
                 },
 
                 dispatch! {take(2usize);
-                    "++" => empty.value((19, (&|a| Expr::PostIncr(Box::new(a))) as _)),
-                    "--" => empty.value((19, (&|a| Expr::PostDecr(Box::new(a))) as _)),
+                    "++" => empty.value((19, (|_: &mut _, a| Expr::PostIncr(Box::new(a))) as _)),
+                    "--" => empty.value((19, (|_: &mut _, a| Expr::PostDecr(Box::new(a))) as _)),
                     _ => fail,
                 },
             )), multispace0),
@@ -128,54 +130,54 @@ pub(crate) fn pratt_parser(i: &mut &str) -> PResult<Expr> {
             "infix",
             alt((
                 dispatch! {any;
-                   '*' => empty.value((16, 17, (&|a, b| Expr::Mul(Box::new(a), Box::new(b))) as _)),
-                   '/' => empty.value((16, 17, (&|a, b| Expr::Div(Box::new(a), Box::new(b))) as _)),
-                   '%' => empty.value((16, 17, (&|a, b| Expr::Rem(Box::new(a), Box::new(b))) as _)),
+                   '*' => empty.value((16, 17, (|_: &mut _, a, b| Expr::Mul(Box::new(a), Box::new(b))) as _)),
+                   '/' => empty.value((16, 17, (|_: &mut _, a, b| Expr::Div(Box::new(a), Box::new(b))) as _)),
+                   '%' => empty.value((16, 17, (|_: &mut _, a, b| Expr::Rem(Box::new(a), Box::new(b))) as _)),
 
-                   '+' => empty.value((14, 15, (&|a, b| Expr::Add(Box::new(a), Box::new(b))) as _)),
+                   '+' => empty.value((14, 15, (|_: &mut _, a, b| Expr::Add(Box::new(a), Box::new(b))) as _)),
                    '-' => alt((
                         dispatch!{take(2usize);
-                            "ne" => empty.value((10, 11, (&|a, b| Expr::NotEq(Box::new(a), Box::new(b))) as _)),
-                            "eq" => empty.value((10, 11, (&|a, b| Expr::Eq(Box::new(a), Box::new(b))) as _)),
-                            "gt" => empty.value((12, 13, (&|a, b| Expr::Greater(Box::new(a), Box::new(b))) as _)),
-                            "ge" => empty.value((12, 13, (&|a, b| Expr::GreaterEqual(Box::new(a), Box::new(b))) as _)),
-                            "lt" => empty.value((12, 13, (&|a, b| Expr::Less(Box::new(a), Box::new(b))) as _)),
-                            "le" => empty.value((12, 13, (&|a, b| Expr::LessEqual(Box::new(a), Box::new(b))) as _)),
+                            "ne" => empty.value((10, 11, (|_: &mut _, a, b| Expr::NotEq(Box::new(a), Box::new(b))) as _)),
+                            "eq" => empty.value((10, 11, (|_: &mut _, a, b| Expr::Eq(Box::new(a), Box::new(b))) as _)),
+                            "gt" => empty.value((12, 13, (|_: &mut _, a, b| Expr::Greater(Box::new(a), Box::new(b))) as _)),
+                            "ge" => empty.value((12, 13, (|_: &mut _, a, b| Expr::GreaterEqual(Box::new(a), Box::new(b))) as _)),
+                            "lt" => empty.value((12, 13, (|_: &mut _, a, b| Expr::Less(Box::new(a), Box::new(b))) as _)),
+                            "le" => empty.value((12, 13, (|_: &mut _, a, b| Expr::LessEqual(Box::new(a), Box::new(b))) as _)),
                         _ => fail
                         },
-                        '>'.value((19, 20, (&|a, b| Expr::ArrowOp(Box::new(a), Box::new(b))) as _)),
-                        empty.value((14, 15, (&|a, b| Expr::Sub(Box::new(a), Box::new(b))) as _))
+                        '>'.value((19, 20, (|_: &mut _, a, b| Expr::ArrowOp(Box::new(a), Box::new(b))) as _)),
+                        empty.value((14, 15, (|_: &mut _, a, b| Expr::Sub(Box::new(a), Box::new(b))) as _))
                     )),
-                   '.' => empty.value((19, 20, (&|a, b| Expr::Dot(Box::new(a), Box::new(b))) as _)),
+                   '.' => empty.value((19, 20, (|_: &mut _, a, b| Expr::Dot(Box::new(a), Box::new(b))) as _)),
                    '&' => alt((
                         // &&
-                        "&".value((6, 7, (&|a, b| Expr::And(Box::new(a), Box::new(b))) as _)  ),
+                        "&".value((6, 7, (|_: &mut _, a, b| Expr::And(Box::new(a), Box::new(b))) as _)  ),
 
-                        empty.value((12, 13, (&|a, b| Expr::BitAnd(Box::new(a), Box::new(b))) as _)),
+                        empty.value((12, 13, (|_: &mut _, a, b| Expr::BitAnd(Box::new(a), Box::new(b))) as _)),
                     )),
-                   '^' => empty.value((8, 9, (&|a, b| Expr::BitXor(Box::new(a), Box::new(b))) as _)),
+                   '^' => empty.value((8, 9, (|_: &mut _, a, b| Expr::BitXor(Box::new(a), Box::new(b))) as _)),
                    '=' => alt((
                         // ==
-                        "=".value((10, 11, (&|a, b| Expr::Eq(Box::new(a), Box::new(b))) as _)),
-                        empty.value((1, 2, (&|a, b| Expr::Assign(Box::new(a), Box::new(b))) as _))
+                        "=".value((10, 11, (|_: &mut _, a, b| Expr::Eq(Box::new(a), Box::new(b))) as _)),
+                        empty.value((1, 2, (|_: &mut _, a, b| Expr::Assign(Box::new(a), Box::new(b))) as _))
                     )),
 
                    '>' => alt((
                         // >=
-                        "=".value((12, 13, (&|a, b| Expr::GreaterEqual(Box::new(a), Box::new(b))) as _)),
-                        empty.value((12, 13, (&|a, b| Expr::Greater(Box::new(a), Box::new(b))) as _))
+                        "=".value((12, 13, (|_: &mut _, a, b| Expr::GreaterEqual(Box::new(a), Box::new(b))) as _)),
+                        empty.value((12, 13, (|_: &mut _, a, b| Expr::Greater(Box::new(a), Box::new(b))) as _))
                     )),
                    '<' => alt((
                         // <=
-                        "=".value((12, 13, (&|a, b| Expr::LessEqual(Box::new(a), Box::new(b))) as _)),
-                        empty.value((12, 13, (&|a, b| Expr::Less(Box::new(a), Box::new(b))) as _))
+                        "=".value((12, 13, (|_: &mut _, a, b| Expr::LessEqual(Box::new(a), Box::new(b))) as _)),
+                        empty.value((12, 13, (|_: &mut _, a, b| Expr::Less(Box::new(a), Box::new(b))) as _))
                     )),
-                   ',' => empty.value((0, 1, (&|a, b| Expr::Comma(Box::new(a), Box::new(b))) as _)),
+                   ',' => empty.value((0, 1, (|_: &mut _, a, b| Expr::Comma(Box::new(a), Box::new(b))) as _)),
                    _ => fail
                 },
                 dispatch! {take(2usize);
-                   "!=" => empty.value((10, 11, (&|a, b| Expr::NotEq(Box::new(a), Box::new(b))) as _)),
-                   "||" => empty.value((4, 5, (&|a, b| Expr::Or(Box::new(a), Box::new(b))) as _)),
+                   "!=" => empty.value((10, 11, (|_: &mut _, a, b| Expr::NotEq(Box::new(a), Box::new(b))) as _)),
+                   "||" => empty.value((4, 5, (|_: &mut _, a, b| Expr::Or(Box::new(a), Box::new(b))) as _)),
                    _ => fail
                 },
             )),
@@ -234,7 +236,14 @@ impl Expr {
             Self::Assign(a, b) => binary_fmt!(a, b, "ASSIGN"),
             Self::ArrowOp(a, b) => binary_fmt!(a, b, "ARROW"),
             Self::Dot(a, b) => binary_fmt!(a, b, "ARROW"),
-            Self::FunctionCall(a, b) => binary_fmt!(a, b, "CALL"),
+            Self::FunctionCall(a, b) => {
+                writeln!(f, "CALL")?;
+                a.fmt_ast_with_indent(indent + 1, f)?;
+                if let Some(b) = b {
+                    b.fmt_ast_with_indent(indent + 1, f)?;
+                }
+                Ok(())
+            }
             Self::Add(a, b) => binary_fmt!(a, b, "ADD"),
             Self::Sub(a, b) => binary_fmt!(a, b, "SUB"),
             Self::Mul(a, b) => binary_fmt!(a, b, "MUL"),
@@ -285,7 +294,11 @@ impl Expr {
             Self::Assign(a, b) => binary!("=", a, b),
             Self::FunctionCall(a, b) => {
                 a.fmt_delimited(f)?;
-                b.fmt_delimited(f)?;
+                if let Some(b) = b {
+                    b.fmt_delimited(f)?;
+                } else {
+                    write!(f, "()")?;
+                }
             }
             Self::ArrowOp(a, b) => binary!("->", a, b),
             Self::Dot(a, b) => binary!(".", a, b),
@@ -323,9 +336,11 @@ impl Expr {
                 write!(f, ")")?;
             }
             Self::Ternary(cond, a, b) => {
-                write!(f, "?")?;
+                write!(f, "? ")?;
                 cond.fmt_delimited(f)?;
+                write!(f, " ")?;
                 a.fmt_delimited(f)?;
+                write!(f, " ")?;
                 b.fmt_delimited(f)?;
             }
             _ => unreachable!(),
@@ -354,7 +369,7 @@ mod test {
             // .parse("+- --!&**foo! + 3 * 4 - bar ^ e")
             // .parse("foo(a + b)")
             // .parse("1 + 2 * *4^7! + 6")
-            .parse("a , b, c")
+            .parse("foo(1 + 2 + 3) + bar() ? 1 : 2")
             .unwrap();
         println!("{r}");
     }
