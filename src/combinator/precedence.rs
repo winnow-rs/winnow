@@ -11,7 +11,7 @@ use crate::{
 #[doc(alias = "shunting_yard")]
 #[doc(alias = "precedence_climbing")]
 #[inline(always)]
-pub fn precedence<'i, I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand: 'static, E>(
+pub fn precedence<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand: 'static, E>(
     mut operand: ParseOperand,
     mut prefix: ParsePrefix,
     mut postfix: ParsePostfix,
@@ -20,9 +20,9 @@ pub fn precedence<'i, I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Op
 where
     I: Stream + StreamIsPartial,
     ParseOperand: Parser<I, Operand, E>,
-    ParseInfix: Parser<I, (usize, usize, &'i dyn Fn(Operand, Operand) -> Operand), E>,
-    ParsePrefix: Parser<I, (usize, &'i dyn Fn(Operand) -> Operand), E>,
-    ParsePostfix: Parser<I, (usize, &'i dyn Fn(Operand) -> Operand), E>,
+    ParseInfix: Parser<I, (usize, usize, fn(Operand, Operand) -> Operand), E>,
+    ParsePrefix: Parser<I, (usize, fn(Operand) -> Operand), E>,
+    ParsePostfix: Parser<I, (usize, fn(Operand) -> Operand), E>,
     E: ParserError<I>,
 {
     trace("precedence", move |i: &mut I| {
@@ -32,16 +32,7 @@ where
 }
 
 // recursive function
-fn precedence_impl<
-    'i,
-    I,
-    ParseOperand,
-    ParseInfix,
-    ParsePrefix,
-    ParsePostfix,
-    Operand: 'static,
-    E,
->(
+fn precedence_impl<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand: 'static, E>(
     i: &mut I,
     parse_operand: &mut ParseOperand,
     prefix: &mut ParsePrefix,
@@ -52,9 +43,9 @@ fn precedence_impl<
 where
     I: Stream + StreamIsPartial,
     ParseOperand: Parser<I, Operand, E>,
-    ParseInfix: Parser<I, (usize, usize, &'i dyn Fn(Operand, Operand) -> Operand), E>,
-    ParsePrefix: Parser<I, (usize, &'i dyn Fn(Operand) -> Operand), E>,
-    ParsePostfix: Parser<I, (usize, &'i dyn Fn(Operand) -> Operand), E>,
+    ParseInfix: Parser<I, (usize, usize, fn(Operand, Operand) -> Operand), E>,
+    ParsePrefix: Parser<I, (usize, fn(Operand) -> Operand), E>,
+    ParsePostfix: Parser<I, (usize, fn(Operand) -> Operand), E>,
     E: ParserError<I>,
 {
     let operand = opt(parse_operand.by_ref()).parse_next(i)?;
@@ -136,21 +127,21 @@ mod tests {
                     space0,
                 ),
                 dispatch! {any;
-                    '+' => empty.value((9, (&|a| a) as _)),
-                    '-' => empty.value((9, (&|a: i32| -a) as _)),
+                    '+' => empty.value((9, (|a| a) as _)),
+                    '-' => empty.value((9, (|a: i32| -a) as _)),
                     _ => fail
                 },
                 dispatch! {any;
-                    '!' => empty.value((9, &factorial as _)),
+                    '!' => empty.value((9, factorial as _)),
                     _ => fail
                 },
                 dispatch! {any;
-                   '+' => empty.value((5, 6, (&|a, b|  a + b) as _)),
-                   '-' => empty.value((5, 6, (&|a, b|  a - b) as _)),
-                   '*' => empty.value((7, 8, (&|a, b| a * b) as _)),
-                   '/' => empty.value((7, 8, (&|a, b|  a / b) as _)),
-                   '%' => empty.value((7, 8, (&|a, b|  a % b) as _)),
-                   '^' => empty.value((9, 10, (&|a, b|  a ^ b) as _)),
+                   '+' => empty.value((5, 6, (|a, b| a + b) as _  )),
+                   '-' => empty.value((5, 6, (|a, b| a - b) as _)),
+                   '*' => empty.value((7, 8, (|a, b| a * b) as _)),
+                   '/' => empty.value((7, 8, (|a, b| a / b) as _)),
+                   '%' => empty.value((7, 8, (|a, b| a % b) as _)),
+                   '^' => empty.value((9, 10, (|a, b| a ^ b) as _)),
                    _ => fail
                 },
             )
