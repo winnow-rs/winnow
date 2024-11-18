@@ -1,4 +1,4 @@
-use winnow::combinator::{cut_err, empty, fail, opt, peek, preceded, separated_pair, trace};
+use winnow::combinator::{cut_err, empty, fail, not, opt, peek, preceded, separated_pair, trace};
 use winnow::prelude::*;
 use winnow::stream::AsChar as _;
 use winnow::token::{any, take, take_while};
@@ -26,6 +26,7 @@ pub(crate) enum Expr {
     Sub(Box<Expr>, Box<Expr>),
     Mul(Box<Expr>, Box<Expr>),
     Div(Box<Expr>, Box<Expr>),
+    Pow(Box<Expr>, Box<Expr>),
     Fac(Box<Expr>),
 
     PreIncr(Box<Expr>),
@@ -60,6 +61,7 @@ pub(crate) enum Expr {
     Rem(Box<Expr>, Box<Expr>),
     BitXor(Box<Expr>, Box<Expr>),
     BitAnd(Box<Expr>, Box<Expr>),
+    BitwiseNot(Box<Expr>),
 }
 
 // Parser definition
@@ -96,6 +98,7 @@ pub(crate) fn pratt_parser(i: &mut &str) -> PResult<Expr> {
                 '&' => empty.value((18, (|_: &mut _, a| Ok(Expr::Addr(Box::new(a)))) as _)),
                 '*' => empty.value((18, (|_: &mut _, a| Ok(Expr::Deref(Box::new(a)))) as _)),
                 '!' => empty.value((18, (|_: &mut _, a| Ok(Expr::Not(Box::new(a)))) as _)),
+                '~' => empty.value((18, (|_: &mut _, a| Ok(Expr::BitwiseNot(Box::new(a)))) as _)),
                 _ => fail
             }
         , multispace0)),
@@ -103,7 +106,7 @@ pub(crate) fn pratt_parser(i: &mut &str) -> PResult<Expr> {
             "postfix",
             delimited(multispace0, alt((
                 dispatch! {any;
-                    '!' => empty.value((20, (|_: &mut _, a| Ok(Expr::Fac(Box::new(a)))) as _)),
+                    '!' => not('=').value((19, (|_: &mut _, a| Ok(Expr::Fac(Box::new(a)))) as _)),
                     '?' => empty.value((3, (|i: &mut &str, cond| {
                         let (left, right) = preceded(multispace0, cut_err(separated_pair(pratt_parser, delimited(multispace0, ':', multispace0), pratt_parser))).parse_next(i)?;
                         Ok(Expr::Ternary(Box::new(cond), Box::new(left), Box::new(right)))
@@ -118,10 +121,9 @@ pub(crate) fn pratt_parser(i: &mut &str) -> PResult<Expr> {
                     }) as _)),
                     _ => fail,
                 },
-
                 dispatch! {take(2usize);
-                    "++" => empty.value((19, (|_: &mut _, a| Ok(Expr::PostIncr(Box::new(a)))) as _)),
-                    "--" => empty.value((19, (|_: &mut _, a| Ok(Expr::PostDecr(Box::new(a)))) as _)),
+                    "++" => empty.value((20, (|_: &mut _, a| Ok(Expr::PostIncr(Box::new(a)))) as _)),
+                    "--" => empty.value((20, (|_: &mut _, a| Ok(Expr::PostDecr(Box::new(a)))) as _)),
                     _ => fail,
                 },
             )), multispace0),
@@ -130,7 +132,11 @@ pub(crate) fn pratt_parser(i: &mut &str) -> PResult<Expr> {
             "infix",
             alt((
                 dispatch! {any;
-                   '*' => empty.value((16, 17, (|_: &mut _, a, b| Ok(Expr::Mul(Box::new(a), Box::new(b)))) as _)),
+                   '*' => alt((
+                        // **
+                        "*".value((28, 27, (|_: &mut _, a, b| Ok(Expr::Pow(Box::new(a), Box::new(b)))) as _)),
+                        empty.value((16, 17, (|_: &mut _, a, b| Ok(Expr::Mul(Box::new(a), Box::new(b)))) as _)),
+                    )),
                    '/' => empty.value((16, 17, (|_: &mut _, a, b| Ok(Expr::Div(Box::new(a), Box::new(b)))) as _)),
                    '%' => empty.value((16, 17, (|_: &mut _, a, b| Ok(Expr::Rem(Box::new(a), Box::new(b)))) as _)),
 
@@ -143,12 +149,12 @@ pub(crate) fn pratt_parser(i: &mut &str) -> PResult<Expr> {
                             "ge" => empty.value((12, 13, (|_: &mut _, a, b| Ok(Expr::GreaterEqual(Box::new(a), Box::new(b)))) as _)),
                             "lt" => empty.value((12, 13, (|_: &mut _, a, b| Ok(Expr::Less(Box::new(a), Box::new(b)))) as _)),
                             "le" => empty.value((12, 13, (|_: &mut _, a, b| Ok(Expr::LessEqual(Box::new(a), Box::new(b)))) as _)),
-                        _ => fail
+                            _ => fail
                         },
-                        '>'.value((19, 20, (|_: &mut _, a, b| Ok(Expr::ArrowOp(Box::new(a), Box::new(b)))) as _)),
+                        '>'.value((20, 21, (|_: &mut _, a, b| Ok(Expr::ArrowOp(Box::new(a), Box::new(b)))) as _)),
                         empty.value((14, 15, (|_: &mut _, a, b| Ok(Expr::Sub(Box::new(a), Box::new(b)))) as _))
                     )),
-                   '.' => empty.value((19, 20, (|_: &mut _, a, b| Ok(Expr::Dot(Box::new(a), Box::new(b)))) as _)),
+                   '.' => empty.value((20, 21, (|_: &mut _, a, b| Ok(Expr::Dot(Box::new(a), Box::new(b)))) as _)),
                    '&' => alt((
                         // &&
                         "&".value((6, 7, (|_: &mut _, a, b| Ok(Expr::And(Box::new(a), Box::new(b)))) as _)  ),
@@ -159,7 +165,7 @@ pub(crate) fn pratt_parser(i: &mut &str) -> PResult<Expr> {
                    '=' => alt((
                         // ==
                         "=".value((10, 11, (|_: &mut _, a, b| Ok(Expr::Eq(Box::new(a), Box::new(b)))) as _)),
-                        empty.value((1, 2, (|_: &mut _, a, b| Ok(Expr::Assign(Box::new(a), Box::new(b)))) as _))
+                        empty.value((2, 1, (|_: &mut _, a, b| Ok(Expr::Assign(Box::new(a), Box::new(b)))) as _))
                     )),
 
                    '>' => alt((
@@ -232,6 +238,7 @@ impl Expr {
             Self::PreDecr(a) => unary_fmt!(a, "PRE_DECR"),
             Self::PostDecr(a) => unary_fmt!(a, "POST_DECR"),
             Self::Not(a) => unary_fmt!(a, "NOT"),
+            Self::BitwiseNot(a) => unary_fmt!(a, "BIT_NOT"),
             Self::Paren(a) => unary_fmt!(a, "PAREN"),
             Self::Assign(a, b) => binary_fmt!(a, b, "ASSIGN"),
             Self::ArrowOp(a, b) => binary_fmt!(a, b, "ARROW"),
@@ -248,6 +255,7 @@ impl Expr {
             Self::Sub(a, b) => binary_fmt!(a, b, "SUB"),
             Self::Mul(a, b) => binary_fmt!(a, b, "MUL"),
             Self::Div(a, b) => binary_fmt!(a, b, "DIV"),
+            Self::Pow(a, b) => binary_fmt!(a, b, "POW"),
             Self::And(a, b) => binary_fmt!(a, b, "AND"),
             Self::Or(a, b) => binary_fmt!(a, b, "OR"),
             Self::Eq(a, b) => binary_fmt!(a, b, "EQ"),
@@ -273,6 +281,7 @@ impl Expr {
         match self {
             Self::Name(name) => return write!(f, "{name}"),
             Self::Value(value) => return write!(f, "{value}"),
+            Self::Paren(a) => return a.fmt_delimited(f),
             _ => (),
         }
         macro_rules! unary {
@@ -293,11 +302,11 @@ impl Expr {
         match self {
             Self::Assign(a, b) => binary!("=", a, b),
             Self::FunctionCall(a, b) => {
+                write!(f, "call ")?;
                 a.fmt_delimited(f)?;
+                write!(f, " ")?;
                 if let Some(b) = b {
                     b.fmt_delimited(f)?;
-                } else {
-                    write!(f, "()")?;
                 }
             }
             Self::ArrowOp(a, b) => binary!("->", a, b),
@@ -307,15 +316,16 @@ impl Expr {
             Self::Neg(a) => unary!("-", a),
             Self::Fac(a) => unary!("!", a),
             Self::Not(a) => unary!("!", a),
+            Self::BitwiseNot(a) => unary!("~", a),
             Self::PreIncr(a) => unary!("pre++", a),
             Self::PostIncr(a) => unary!("post++", a),
             Self::PreDecr(a) => unary!("pre--", a),
             Self::PostDecr(a) => unary!("post--", a),
-
             Self::Add(a, b) => binary!("+", a, b),
             Self::Sub(a, b) => binary!("-", a, b),
             Self::Mul(a, b) => binary!("*", a, b),
             Self::Div(a, b) => binary!("/", a, b),
+            Self::Pow(a, b) => binary!("**", a, b),
             Self::And(a, b) => binary!("&&", a, b),
             Self::Or(a, b) => binary!("||", a, b),
             Self::Eq(a, b) => binary!("==", a, b),
@@ -329,12 +339,6 @@ impl Expr {
             Self::BitAnd(a, b) => binary!("&", a, b),
             Self::Index(a, b) => binary!("[]", a, b),
             Self::Comma(a, b) => binary!(",", a, b),
-
-            Self::Paren(a) => {
-                write!(f, "(")?;
-                a.fmt_delimited(f)?;
-                write!(f, ")")?;
-            }
             Self::Ternary(cond, a, b) => {
                 write!(f, "? ")?;
                 cond.fmt_delimited(f)?;
@@ -363,14 +367,214 @@ mod test {
     #[allow(clippy::useless_attribute)]
     #[allow(unused_imports)] // its dead for benches
     use super::*;
+
+    #[allow(dead_code)]
+    // to invoke fmt_delimited()
+    struct PrefixNotation(Expr);
+
+    impl core::fmt::Display for PrefixNotation {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            self.0.fmt_delimited(f)
+        }
+    }
+
+    #[allow(dead_code)]
+    fn parse(mut i: &str) -> PResult<String> {
+        pratt_parser
+            .parse_next(&mut i)
+            .map(|r| format!("{}", PrefixNotation(r)))
+    }
+
+    #[allow(dead_code)]
+    fn parse_ok(i: &str, expect: &str) {
+        assert_eq!(parse(i).unwrap(), expect);
+    }
+
     #[test]
-    fn test_simple() {
-        let r = pratt_parser
-            // .parse("+- --!&**foo! + 3 * 4 - bar ^ e")
-            // .parse("foo(a + b)")
-            // .parse("1 + 2 * *4^7! + 6")
-            .parse("foo(1 + 2 + 3) + bar() ? 1 : 2")
-            .unwrap();
-        println!("{r}");
+    fn op() {
+        parse_ok("  1 ", "1");
+    }
+
+    #[test]
+    fn equal() {
+        parse_ok("x=3", "(= x 3)");
+        parse_ok("x = 2*3", "(= x (* 2 3))");
+        parse_ok("x = y", "(= x y)");
+        parse_ok("a = b = 10", "(= a (= b 10))");
+        parse_ok("x = ((y*4)-2)", "(= x (- (* y 4) 2))");
+    }
+
+    #[test]
+    fn unary() {
+        parse_ok("- - a", "(-(-a))");
+        parse_ok("+ - a", "(-a)");
+        parse_ok("++ -- a", "(pre++(pre--a))");
+        parse_ok("a ++ --", "(post--(post++a))");
+        parse_ok("!x", "(!x)");
+        parse_ok("x--", "(post--x)");
+        parse_ok("x[1]--", "(post--([] x 1))");
+        parse_ok("--x", "(pre--x)");
+        parse_ok("++x[1]", "(pre++([] x 1))");
+        parse_ok("!x--", "(!(post--x))");
+        parse_ok("~x++", "(~(post++x))");
+        parse_ok("x++ - y++", "(- (post++x) (post++y))");
+        parse_ok("++x - ++y", "(- (pre++x) (pre++y))");
+        parse_ok("--1 * 2", "(* (pre--1) 2)");
+        parse_ok("--f . g", "(pre--(. f g))");
+    }
+
+    #[test]
+    fn same_precedence() {
+        // left associative
+        parse_ok("f . g . h", "(. (. f g) h)");
+        parse_ok("1 + 2 + 3", "(+ (+ 1 2) 3)");
+        parse_ok("1 - 2 - 3", "(- (- 1 2) 3)");
+        parse_ok("1 * 2 * 3", "(* (* 1 2) 3)");
+        parse_ok("1 / 2 / 3", "(/ (/ 1 2) 3)");
+        parse_ok("1 % 2 % 3", "(% (% 1 2) 3)");
+        parse_ok("1 ^ 2 ^ 3", "(^ (^ 1 2) 3)");
+        parse_ok("+-+1", "(-1)");
+        parse_ok("++--++1", "(pre++(pre--(pre++1)))");
+        // right associative
+        parse_ok("2 ** 3 ** 2", "(** 2 (** 3 2))");
+    }
+
+    #[test]
+    fn different_precedence() {
+        parse_ok("1 + 2 * 3", "(+ 1 (* 2 3))");
+        parse_ok("1 + 2 * 3 - 4 / 5", "(- (+ 1 (* 2 3)) (/ 4 5))");
+        parse_ok("a + b * c * d + e", "(+ (+ a (* (* b c) d)) e)");
+        parse_ok("1 + ++2 * 3 * 5 + 6", "(+ (+ 1 (* (* (pre++2) 3) 5)) 6)");
+        parse_ok("**3 + &1", "(+ (*(*3)) (&1))");
+        parse_ok("x*y - y*z", "(- (* x y) (* y z))");
+        parse_ok("x/y - y%z", "(- (/ x y) (% y z))");
+        parse_ok("1<2 * 3", "(< 1 (* 2 3))");
+        parse_ok(
+            " 1 + 2 + f . g . h * 3 * 4",
+            "(+ (+ 1 2) (* (* (. (. f g) h) 3) 4))",
+        );
+    }
+
+    #[test]
+    fn prefix_postfix_power() {
+        // https://en.cppreference.com/w/c/language/operator_precedence
+        // `post++` has `1`, `pre--` and `*` have 2
+        parse_ok("--**3++", "(pre--(*(*(post++3))))");
+        parse_ok("**--3++", "(*(*(pre--(post++3))))");
+        parse_ok("&foo()[0]", "(&([] (call foo ) 0))");
+        parse_ok("-9!", "(-(!9))");
+        parse_ok("f . g !", "(!(. f g))");
+    }
+
+    #[test]
+    fn prefix_infix() {
+        parse_ok("x - -y", "(- x (- y))");
+        parse_ok("-1 * -2", "(* (- 1) (- 2))");
+        parse_ok("-x * -y", "(* (- x) (- y))");
+        parse_ok("x - -234", "(- x (- 234))");
+    }
+
+    #[test]
+    fn ternary() {
+        parse_ok("a ? 2 + c : -2 * 2", "(? a (+ 2 c) (* (-2) 2))");
+        parse_ok("a ? b : c ? d : e", "(? a b (? c d e))");
+        parse_ok("2! > 1 ? 3 : 1", "(? (> (!2) 1) 3 1)");
+        parse_ok(
+            "2 > 1 ? 1 -ne 3 ? 4 : 5 : 1",
+            "(? (> 2 1) (? (!= 1 3) 4 5) 1)",
+        );
+        parse_ok("a > b ? 0 : 1", "(? (> a b) 0 1)");
+        parse_ok("a > b ? x+1 : y+1", "(? (> a b) (+ x 1) (+ y 1))");
+        parse_ok(
+            "1 ? true1 : 2 ? true2 : false",
+            "(? 1 true1 (? 2 true2 false))",
+        );
+        parse_ok(
+            "1 ? true1 : (2 ? true2 : false)",
+            "(? 1 true1 (? 2 true2 false))",
+        );
+
+        parse_ok(
+            "1 ? (2 ? true : false1) : false2",
+            "(? 1 (? 2 true false1) false2)",
+        );
+        parse_ok(
+            "1 ? 2 ? true : false1 : false2",
+            "(? 1 (? 2 true false1) false2)",
+        );
+    }
+
+    #[test]
+    fn comma() {
+        parse_ok("x=1,y=2,z=3", "(, (, (= x 1) (= y 2)) (= z 3))");
+        parse_ok("a, b, c", "(, (, a b) c)");
+        parse_ok("(a, b, c)", "(, (, a b) c)");
+        parse_ok("f(a, b, c), d", "(, (call f (, (, a b) c)) d)");
+        parse_ok("(a, b, c), d", "(, (, (, a b) c) d)");
+    }
+
+    // TODO: fix this
+    #[ignore = "known failure: the recursive ternary `pratt_parser` eats comma and `=`"]
+    #[test]
+    fn comma_ternary() {
+        parse_ok("x ? 1 : 2, y ? 3 : 4", "(, (? x 1 2) (? y 3 4))");
+        parse_ok("a , b ? c, d : e, f", "(, a (? b (, c d) e) f)");
+        parse_ok("a = 0 ? b : c = d", "(= a (= (? 0 b c) d))");
+    }
+
+    #[test]
+    fn braces() {
+        parse_ok("4*(2+3)", "(* 4 (+ 2 3))");
+        parse_ok("(2+3)*4", "(* (+ 2 3) 4)");
+        parse_ok("(((0)))", "0");
+    }
+
+    #[test]
+    fn logical() {
+        parse_ok("a && b || c && d", "(|| (&& a b) (&& c d))");
+        parse_ok("!a && !b", "(&& (!a) (!b))");
+        parse_ok("a != b && c == d", "(&& (!= a b) (== c d))");
+    }
+
+    #[test]
+    fn array() {
+        parse_ok("x[1,2]", "([] x (, 1 2))");
+        parse_ok("x[1]", "([] x 1)");
+        parse_ok("x[a+b]", "([] x (+ a b))");
+        parse_ok("c = pal[i*8]", "(= c ([] pal (* i 8)))");
+        parse_ok("f[x] = 1", "(= ([] f x) 1)");
+        parse_ok("x[0][1]", "([] ([] x 0) 1)");
+    }
+
+    #[test]
+    fn function_call() {
+        parse_ok("a()", "(call a)");
+        parse_ok("a(+1)", "(call a (+ 1))");
+        parse_ok("a()+1", "(+ (call a) 1)");
+        parse_ok("f(a, b, c)", "(call f (, a (, b c)))");
+        parse_ok("print(x)", "(call print x)");
+        parse_ok(
+            "x = y(2)*3 + y(4)*5",
+            "(= x (+ (* (call y 2) 3) (* (call y 4) 5)))",
+        );
+        parse_ok("x(1,2)+y(3,4)", "(+ (call x (, 1 2)) (call y (, 3 4)))");
+        parse_ok("x(a,b,c[d])", "(call x (, (, a b) ([] c d)))");
+        parse_ok(
+            "x(1,2)*j+y(3,4)*k+z(5,6)*l",
+            "(+ (+ (* (call x (, 1 2)) j) (* (call y (, 3 4)) k)) (* (call z (, 5 6)) l))",
+        );
+        parse_ok("print(test(2,3))", "(call print (call test (, 2 3)))");
+        parse_ok("min(255,n*2)", "(call min (, 255 (* n 2)))");
+    }
+
+    #[test]
+    fn member_access() {
+        parse_ok("a.b", "(. a b)");
+        parse_ok("a.b.c", "(. (. a b) c)");
+        parse_ok("a->b", "(-> a b)");
+        parse_ok("++a->b", "(pre++(-> a b))");
+        parse_ok("a++ ->b", "(-> (post++a) b)");
+        parse_ok("a.(x)", "(. a x)");
+        parse_ok("a.(x+3)", "(. a (+ x 3))");
     }
 }
