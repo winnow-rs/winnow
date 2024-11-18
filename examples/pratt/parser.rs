@@ -126,11 +126,11 @@ pub(crate) fn pratt_parser(i: &mut &str) -> PResult<Expr> {
                                 Ok(Expr::Ternary(Box::new(cond), Box::new(left), Box::new(right)))
                             }) as _)),
                             '[' => empty.value((20, (|i: &mut &str, a| {
-                                let index = delimited(multispace0, parser(20), (multispace0, cut_err(']'), multispace0)).parse_next(i)?;
+                                let index = delimited(multispace0, parser(0), (multispace0, cut_err(']'), multispace0)).parse_next(i)?;
                                 Ok(Expr::Index(Box::new(a), Box::new(index)))
                             }) as _)),
                             '(' => empty.value((20, (|i: &mut &str, a| {
-                                let args = delimited(multispace0, opt(parser(20)), (multispace0, cut_err(')'), multispace0)).parse_next(i)?;
+                                let args = delimited(multispace0, opt(parser(0)), (multispace0, cut_err(')'), multispace0)).parse_next(i)?;
                                 Ok(Expr::FunctionCall(Box::new(a), args.map(Box::new)))
                             }) as _)),
                             _ => fail,
@@ -322,8 +322,8 @@ impl Expr {
             Self::FunctionCall(a, b) => {
                 write!(f, "call ")?;
                 a.fmt_delimited(f)?;
-                write!(f, " ")?;
                 if let Some(b) = b {
+                    write!(f, " ")?;
                     b.fmt_delimited(f)?;
                 }
             }
@@ -479,17 +479,17 @@ mod test {
         // `post++` has `1`, `pre--` and `*` have 2
         parse_ok("--**3++", "(pre--(*(*(post++3))))");
         parse_ok("**--3++", "(*(*(pre--(post++3))))");
-        parse_ok("&foo()[0]", "(&([] (call foo ) 0))");
+        parse_ok("&foo()[0]", "(&([] (call foo) 0))");
         parse_ok("-9!", "(-(!9))");
         parse_ok("f . g !", "(!(. f g))");
     }
 
     #[test]
     fn prefix_infix() {
-        parse_ok("x - -y", "(- x (- y))");
-        parse_ok("-1 * -2", "(* (- 1) (- 2))");
-        parse_ok("-x * -y", "(* (- x) (- y))");
-        parse_ok("x - -234", "(- x (- 234))");
+        parse_ok("x - -y", "(- x (-y))");
+        parse_ok("-1 * -2", "(* (-1) (-2))");
+        parse_ok("-x * -y", "(* (-x) (-y))");
+        parse_ok("x - -234", "(- x (-234))");
     }
 
     #[test]
@@ -566,9 +566,9 @@ mod test {
     #[test]
     fn function_call() {
         parse_ok("a()", "(call a)");
-        parse_ok("a(+1)", "(call a (+ 1))");
+        parse_ok("a(+1)", "(call a 1)");
         parse_ok("a()+1", "(+ (call a) 1)");
-        parse_ok("f(a, b, c)", "(call f (, a (, b c)))");
+        parse_ok("f(a, b, c)", "(call f (, (, a b) c))");
         parse_ok("print(x)", "(call print x)");
         parse_ok(
             "x = y(2)*3 + y(4)*5",
