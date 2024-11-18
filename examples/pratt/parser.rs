@@ -1,4 +1,4 @@
-use winnow::combinator::{cut_err, empty, fail, not, opt, peek, preceded, separated_pair, trace};
+use winnow::combinator::{cut_err, empty, fail, not, opt, peek, separated_pair, trace};
 use winnow::error::ContextError;
 use winnow::prelude::*;
 use winnow::stream::AsChar as _;
@@ -122,7 +122,7 @@ pub(crate) fn pratt_parser(i: &mut &str) -> PResult<Expr> {
                         dispatch! {any;
                             '!' => not('=').value((19, (|_: &mut _, a| Ok(Expr::Fac(Box::new(a)))) as _)),
                             '?' => empty.value((3, (|i: &mut &str, cond| {
-                                let (left, right) = preceded(multispace0, cut_err(separated_pair(parser(0), delimited(multispace0, ':', multispace0), parser(3)))).parse_next(i)?;
+                                let (left, right) = cut_err(separated_pair(parser(0), delimited(multispace0, ':', multispace0), parser(3))).parse_next(i)?;
                                 Ok(Expr::Ternary(Box::new(cond), Box::new(left), Box::new(right)))
                             }) as _)),
                             '[' => empty.value((20, (|i: &mut &str, a| {
@@ -508,7 +508,7 @@ mod test {
             "(? 1 true1 (? 2 true2 false))",
         );
         parse_ok(
-            "1 ? true1 : (2 ? true2 : false)",
+            "1 ?      true1 : (2 ? true2 : false)",
             "(? 1 true1 (? 2 true2 false))",
         );
 
