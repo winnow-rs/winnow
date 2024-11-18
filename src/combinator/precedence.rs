@@ -12,6 +12,7 @@ use crate::{
 #[doc(alias = "precedence_climbing")]
 #[inline(always)]
 pub fn precedence<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand: 'static, E>(
+    start_power: usize,
     mut operand: ParseOperand,
     mut prefix: ParsePrefix,
     mut postfix: ParsePostfix,
@@ -34,7 +35,7 @@ where
     E: ParserError<I>,
 {
     trace("precedence", move |i: &mut I| {
-        let result = precedence_impl(i, &mut operand, &mut prefix, &mut postfix, &mut infix, 0)?;
+        let result = precedence_impl(i, &mut operand, &mut prefix, &mut postfix, &mut infix, start_power)?;
         Ok(result)
     })
 }
@@ -133,7 +134,7 @@ mod tests {
     }
     fn parser<'i>() -> impl Parser<&'i str, i32, ContextError> {
         move |i: &mut &str| {
-            precedence(
+            precedence(0,
                 trace(
                     "operand",
                     delimited(
