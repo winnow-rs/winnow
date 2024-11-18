@@ -20,9 +20,17 @@ pub fn precedence<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operan
 where
     I: Stream + StreamIsPartial,
     ParseOperand: Parser<I, Operand, E>,
-    ParseInfix: Parser<I, (usize, usize, fn(&mut I, Operand, Operand) -> Operand), E>,
-    ParsePrefix: Parser<I, (usize, fn(&mut I, Operand) -> Operand), E>,
-    ParsePostfix: Parser<I, (usize, fn(&mut I, Operand) -> Operand), E>,
+    ParseInfix: Parser<
+        I,
+        (
+            usize,
+            usize,
+            fn(&mut I, Operand, Operand) -> PResult<Operand, E>,
+        ),
+        E,
+    >,
+    ParsePrefix: Parser<I, (usize, fn(&mut I, Operand) -> PResult<Operand, E>), E>,
+    ParsePostfix: Parser<I, (usize, fn(&mut I, Operand) -> PResult<Operand, E>), E>,
     E: ParserError<I>,
 {
     trace("precedence", move |i: &mut I| {
@@ -43,9 +51,17 @@ fn precedence_impl<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Opera
 where
     I: Stream + StreamIsPartial,
     ParseOperand: Parser<I, Operand, E>,
-    ParseInfix: Parser<I, (usize, usize, fn(&mut I, Operand, Operand) -> Operand), E>,
-    ParsePrefix: Parser<I, (usize, fn(&mut I, Operand) -> Operand), E>,
-    ParsePostfix: Parser<I, (usize, fn(&mut I, Operand) -> Operand), E>,
+    ParseInfix: Parser<
+        I,
+        (
+            usize,
+            usize,
+            fn(&mut I, Operand, Operand) -> PResult<Operand, E>,
+        ),
+        E,
+    >,
+    ParsePrefix: Parser<I, (usize, fn(&mut I, Operand) -> PResult<Operand, E>), E>,
+    ParsePostfix: Parser<I, (usize, fn(&mut I, Operand) -> PResult<Operand, E>), E>,
     E: ParserError<I>,
 {
     let operand = opt(parse_operand.by_ref()).parse_next(i)?;
@@ -60,7 +76,7 @@ where
             return Err(ErrMode::assert(i, "`prefix` parsers must always consume"));
         }
         let operand = precedence_impl(i, parse_operand, prefix, postfix, infix, power)?;
-        fold_prefix(i, operand)
+        fold_prefix(i, operand)?
     };
 
     'parse: while i.eof_offset() > 0 {
@@ -73,7 +89,7 @@ where
                 i.reset(&start);
                 break;
             }
-            operand = fold_postfix(i, operand);
+            operand = fold_postfix(i, operand)?;
 
             continue 'parse;
         }
@@ -87,7 +103,7 @@ where
                 break;
             }
             let rhs = precedence_impl(i, parse_operand, prefix, postfix, infix, rpower)?;
-            operand = fold_infix(i, operand, rhs);
+            operand = fold_infix(i, operand, rhs)?;
 
             continue 'parse;
         }
@@ -108,42 +124,54 @@ mod tests {
 
     use super::*;
 
-    fn factorial(i: &mut &str, x: i32) -> i32 {
+    fn factorial(x: i32) -> i32 {
         if x == 0 {
             1
         } else {
-            x * factorial(i, x - 1)
+            x * factorial(x - 1)
         }
     }
     fn parser<'i>() -> impl Parser<&'i str, i32, ContextError> {
         move |i: &mut &str| {
             precedence(
-                trace("operand", delimited(
-                    space0,
-                    dispatch! {peek(any);
-                        '(' => delimited('(',  parser(), ')'),
-                        _ => digit1.parse_to::<i32>()
+                trace(
+                    "operand",
+                    delimited(
+                        space0,
+                        dispatch! {peek(any);
+                            '(' => delimited('(',  parser(), ')'),
+                            _ => digit1.parse_to::<i32>()
+                        },
+                        space0,
+                    ),
+                ),
+                trace(
+                    "prefix",
+                    dispatch! {any;
+                        '+' => empty.value((9, (|_: &mut _, a| Ok(a)) as _)),
+                        '-' => empty.value((9, (|_: &mut _, a: i32| Ok(-a)) as _)),
+                        _ => fail
                     },
-                    space0,
-                )),
-                trace("prefix", dispatch! {any;
-                    '+' => empty.value((9, (|_: &mut _, a| a) as _)),
-                    '-' => empty.value((9, (|_: &mut _, a: i32| -a) as _)),
-                    _ => fail
-                }),
-                trace("postfix", dispatch! {any;
-                    '!' => empty.value((9, factorial as _)),
-                    _ => fail
-                }),
-                trace("infix", dispatch! {any;
-                   '+' => empty.value((5, 6, (|_: &mut _, a, b| a + b) as _  )),
-                   '-' => empty.value((5, 6, (|_: &mut _, a, b| a - b) as _)),
-                   '*' => empty.value((7, 8, (|_: &mut _, a, b| a * b) as _)),
-                   '/' => empty.value((7, 8, (|_: &mut _, a, b| a / b) as _)),
-                   '%' => empty.value((7, 8, (|_: &mut _, a, b| a % b) as _)),
-                   '^' => empty.value((9, 10, (|_: &mut _, a, b| a ^ b) as _)),
-                   _ => fail
-                }),
+                ),
+                trace(
+                    "postfix",
+                    dispatch! {any;
+                        '!' => empty.value((9, (|_: &mut _, a| {Ok(factorial(a))}) as _)),
+                        _ => fail
+                    },
+                ),
+                trace(
+                    "infix",
+                    dispatch! {any;
+                       '+' => empty.value((5, 6, (|_: &mut _, a, b| Ok(a + b)) as _  )),
+                       '-' => empty.value((5, 6, (|_: &mut _, a, b| Ok(a - b)) as _)),
+                       '*' => empty.value((7, 8, (|_: &mut _, a, b| Ok(a * b)) as _)),
+                       '/' => empty.value((7, 8, (|_: &mut _, a, b| Ok(a / b)) as _)),
+                       '%' => empty.value((7, 8, (|_: &mut _, a, b| Ok(a % b)) as _)),
+                       '^' => empty.value((9, 10, (|_: &mut _, a, b| Ok(a ^ b)) as _)),
+                       _ => fail
+                    },
+                ),
             )
             .parse_next(i)
         }
