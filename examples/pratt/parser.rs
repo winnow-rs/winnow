@@ -72,7 +72,7 @@ pub(crate) fn pratt_parser(i: &mut &str) -> PResult<Expr> {
     // precedence is based on https://en.cppreference.com/w/c/language/operator_precedence
     // but specified in reverse order, because the `cppreference` table
     // uses `descending` precedence, but we need ascending one
-    fn parser<'i>(start_power: isize) -> impl Parser<&'i str, Expr, ContextError> {
+    fn parser<'i>(start_power: i64) -> impl Parser<&'i str, Expr, ContextError> {
         move |i: &mut &str| {
             precedence::precedence(
             start_power,
@@ -454,7 +454,6 @@ mod test {
     #[test]
     fn same_precedence() {
         // left associative
-        parse_ok("f . g . h", "(. (. f g) h)");
         parse_ok("1 + 2 + 3", "(+ (+ 1 2) 3)");
         parse_ok("1 - 2 - 3", "(- (- 1 2) 3)");
         parse_ok("1 * 2 * 3", "(* (* 1 2) 3)");
@@ -462,6 +461,7 @@ mod test {
         parse_ok("1 % 2 % 3", "(% (% 1 2) 3)");
         parse_ok("1 ^ 2 ^ 3", "(^ (^ 1 2) 3)");
         parse_ok("+-+1", "(-1)");
+        parse_ok("f . g . h", "(. (. f g) h)");
         parse_ok("++--++1", "(pre++(pre--(pre++1)))");
         // right associative
         parse_ok("2 ** 3 ** 2", "(** 2 (** 3 2))");
