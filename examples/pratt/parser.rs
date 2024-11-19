@@ -68,11 +68,11 @@ pub(crate) enum Expr {
 // Parser definition
 
 pub(crate) fn pratt_parser(i: &mut &str) -> PResult<Expr> {
-    use winnow::combinator::precedence;
+    use winnow::combinator::precedence::{self, Assoc};
     // precedence is based on https://en.cppreference.com/w/c/language/operator_precedence
     // but specified in reverse order, because the `cppreference` table
     // uses `descending` precedence, but we need ascending one
-    fn parser<'i>(start_power: usize) -> impl Parser<&'i str, Expr, ContextError> {
+    fn parser<'i>(start_power: isize) -> impl Parser<&'i str, Expr, ContextError> {
         move |i: &mut &str| {
             precedence::precedence(
             start_power,
@@ -150,56 +150,56 @@ pub(crate) fn pratt_parser(i: &mut &str) -> PResult<Expr> {
                     dispatch! {any;
                         '*' => alt((
                             // **
-                            "*".value((28, 27, (|_: &mut _, a, b| Ok(Expr::Pow(Box::new(a), Box::new(b)))) as _)),
-                            empty.value((16, 17, (|_: &mut _, a, b| Ok(Expr::Mul(Box::new(a), Box::new(b)))) as _)),
+                            "*".value((Assoc::Right(28), (|_: &mut _, a, b| Ok(Expr::Pow(Box::new(a), Box::new(b)))) as _)),
+                            empty.value((Assoc::Left(16), (|_: &mut _, a, b| Ok(Expr::Mul(Box::new(a), Box::new(b)))) as _)),
                         )),
-                        '/' => empty.value((16, 17, (|_: &mut _, a, b| Ok(Expr::Div(Box::new(a), Box::new(b)))) as _)),
-                        '%' => empty.value((16, 17, (|_: &mut _, a, b| Ok(Expr::Rem(Box::new(a), Box::new(b)))) as _)),
+                        '/' => empty.value((Assoc::Left(16), (|_: &mut _, a, b| Ok(Expr::Div(Box::new(a), Box::new(b)))) as _)),
+                        '%' => empty.value((Assoc::Left(16), (|_: &mut _, a, b| Ok(Expr::Rem(Box::new(a), Box::new(b)))) as _)),
 
-                        '+' => empty.value((14, 15, (|_: &mut _, a, b| Ok(Expr::Add(Box::new(a), Box::new(b)))) as _)),
+                        '+' => empty.value((Assoc::Left(14), (|_: &mut _, a, b| Ok(Expr::Add(Box::new(a), Box::new(b)))) as _)),
                         '-' => alt((
                             dispatch!{take(2usize);
-                                "ne" => empty.value((10, 11, (|_: &mut _, a, b| Ok(Expr::NotEq(Box::new(a), Box::new(b)))) as _)),
-                                "eq" => empty.value((10, 11, (|_: &mut _, a, b| Ok(Expr::Eq(Box::new(a), Box::new(b)))) as _)),
-                                "gt" => empty.value((12, 13, (|_: &mut _, a, b| Ok(Expr::Greater(Box::new(a), Box::new(b)))) as _)),
-                                "ge" => empty.value((12, 13, (|_: &mut _, a, b| Ok(Expr::GreaterEqual(Box::new(a), Box::new(b)))) as _)),
-                                "lt" => empty.value((12, 13, (|_: &mut _, a, b| Ok(Expr::Less(Box::new(a), Box::new(b)))) as _)),
-                                "le" => empty.value((12, 13, (|_: &mut _, a, b| Ok(Expr::LessEqual(Box::new(a), Box::new(b)))) as _)),
+                                "ne" => empty.value((Assoc::Neither(10), (|_: &mut _, a, b| Ok(Expr::NotEq(Box::new(a), Box::new(b)))) as _)),
+                                "eq" => empty.value((Assoc::Neither(10), (|_: &mut _, a, b| Ok(Expr::Eq(Box::new(a), Box::new(b)))) as _)),
+                                "gt" => empty.value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::Greater(Box::new(a), Box::new(b)))) as _)),
+                                "ge" => empty.value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::GreaterEqual(Box::new(a), Box::new(b)))) as _)),
+                                "lt" => empty.value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::Less(Box::new(a), Box::new(b)))) as _)),
+                                "le" => empty.value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::LessEqual(Box::new(a), Box::new(b)))) as _)),
                                 _ => fail
                             },
-                            '>'.value((20, 21, (|_: &mut _, a, b| Ok(Expr::ArrowOp(Box::new(a), Box::new(b)))) as _)),
-                            empty.value((14, 15, (|_: &mut _, a, b| Ok(Expr::Sub(Box::new(a), Box::new(b)))) as _))
+                            '>'.value((Assoc::Left(20), (|_: &mut _, a, b| Ok(Expr::ArrowOp(Box::new(a), Box::new(b)))) as _)),
+                            empty.value((Assoc::Left(14), (|_: &mut _, a, b| Ok(Expr::Sub(Box::new(a), Box::new(b)))) as _))
                         )),
-                        '.' => empty.value((20, 21, (|_: &mut _, a, b| Ok(Expr::Dot(Box::new(a), Box::new(b)))) as _)),
+                        '.' => empty.value((Assoc::Left(20), (|_: &mut _, a, b| Ok(Expr::Dot(Box::new(a), Box::new(b)))) as _)),
                         '&' => alt((
                             // &&
-                            "&".value((6, 7, (|_: &mut _, a, b| Ok(Expr::And(Box::new(a), Box::new(b)))) as _)  ),
+                            "&".value((Assoc::Left(6), (|_: &mut _, a, b| Ok(Expr::And(Box::new(a), Box::new(b)))) as _)  ),
 
-                            empty.value((12, 13, (|_: &mut _, a, b| Ok(Expr::BitAnd(Box::new(a), Box::new(b)))) as _)),
+                            empty.value((Assoc::Left(12), (|_: &mut _, a, b| Ok(Expr::BitAnd(Box::new(a), Box::new(b)))) as _)),
                         )),
-                        '^' => empty.value((8, 9, (|_: &mut _, a, b| Ok(Expr::BitXor(Box::new(a), Box::new(b)))) as _)),
+                        '^' => empty.value((Assoc::Left(8), (|_: &mut _, a, b| Ok(Expr::BitXor(Box::new(a), Box::new(b)))) as _)),
                         '=' => alt((
                             // ==
-                            "=".value((10, 11, (|_: &mut _, a, b| Ok(Expr::Eq(Box::new(a), Box::new(b)))) as _)),
-                            empty.value((2, 1, (|_: &mut _, a, b| Ok(Expr::Assign(Box::new(a), Box::new(b)))) as _))
+                            "=".value((Assoc::Neither(10), (|_: &mut _, a, b| Ok(Expr::Eq(Box::new(a), Box::new(b)))) as _)),
+                            empty.value((Assoc::Right(2), (|_: &mut _, a, b| Ok(Expr::Assign(Box::new(a), Box::new(b)))) as _))
                         )),
 
                         '>' => alt((
                             // >=
-                            "=".value((12, 13, (|_: &mut _, a, b| Ok(Expr::GreaterEqual(Box::new(a), Box::new(b)))) as _)),
-                            empty.value((12, 13, (|_: &mut _, a, b| Ok(Expr::Greater(Box::new(a), Box::new(b)))) as _))
+                            "=".value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::GreaterEqual(Box::new(a), Box::new(b)))) as _)),
+                            empty.value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::Greater(Box::new(a), Box::new(b)))) as _))
                         )),
                         '<' => alt((
                             // <=
-                            "=".value((12, 13, (|_: &mut _, a, b| Ok(Expr::LessEqual(Box::new(a), Box::new(b)))) as _)),
-                            empty.value((12, 13, (|_: &mut _, a, b| Ok(Expr::Less(Box::new(a), Box::new(b)))) as _))
+                            "=".value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::LessEqual(Box::new(a), Box::new(b)))) as _)),
+                            empty.value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::Less(Box::new(a), Box::new(b)))) as _))
                         )),
-                        ',' => empty.value((0, 1, (|_: &mut _, a, b| Ok(Expr::Comma(Box::new(a), Box::new(b)))) as _)),
+                        ',' => empty.value((Assoc::Left(0), (|_: &mut _, a, b| Ok(Expr::Comma(Box::new(a), Box::new(b)))) as _)),
                         _ => fail
                     },
                     dispatch! {take(2usize);
-                        "!=" => empty.value((10, 11, (|_: &mut _, a, b| Ok(Expr::NotEq(Box::new(a), Box::new(b)))) as _)),
-                        "||" => empty.value((4, 5, (|_: &mut _, a, b| Ok(Expr::Or(Box::new(a), Box::new(b)))) as _)),
+                        "!=" => empty.value((Assoc::Neither(10), (|_: &mut _, a, b| Ok(Expr::NotEq(Box::new(a), Box::new(b)))) as _)),
+                        "||" => empty.value((Assoc::Left(4), (|_: &mut _, a, b| Ok(Expr::Or(Box::new(a), Box::new(b)))) as _)),
                         _ => fail
                     },
                 )),
@@ -382,9 +382,11 @@ impl core::fmt::Display for Expr {
 
 #[cfg(test)]
 mod test {
+
     #[allow(clippy::useless_attribute)]
     #[allow(unused_imports)] // its dead for benches
     use super::*;
+    use winnow::error::ParseError;
 
     #[allow(dead_code)]
     // to invoke fmt_delimited()
@@ -397,9 +399,9 @@ mod test {
     }
 
     #[allow(dead_code)]
-    fn parse(mut i: &str) -> PResult<String> {
+    fn parse(i: &str) -> Result<String, ParseError<&str, winnow::error::ContextError>> {
         pratt_parser
-            .parse_next(&mut i)
+            .parse(i)
             .map(|r| format!("{}", PrefixNotation(r)))
     }
 
@@ -411,6 +413,14 @@ mod test {
     #[test]
     fn op() {
         parse_ok("  1 ", "1");
+    }
+
+    #[test]
+    fn neither() {
+        assert!(parse("1 == 2 == 3").is_err());
+        assert!(parse("1 -le 2 -gt 3").is_err());
+        assert!(parse("1 < 2 < 3").is_err());
+        assert!(parse("1 != 2 == 3").is_err());
     }
 
     #[test]
@@ -538,6 +548,8 @@ mod test {
         parse_ok("a , b ? c, d : e, f", "(, (, a (? b (, c d) e)) f)");
         parse_ok("a = 0 ? b : c = d", "(= a (= (? 0 b c) d))");
     }
+    // 1 == 2 == 3
+    //  1  2 1  1
 
     #[test]
     fn braces() {
