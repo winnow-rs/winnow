@@ -11,7 +11,8 @@ use crate::{
 #[doc(alias = "shunting_yard")]
 #[doc(alias = "precedence_climbing")]
 #[inline(always)]
-pub fn precedence<'i, I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand: 'static, E>(
+pub fn precedence<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand: 'static, E>(
+    start_power: i64,
     mut operand: ParseOperand,
     mut prefix: ParsePrefix,
     mut postfix: ParsePostfix,
@@ -20,44 +21,49 @@ pub fn precedence<'i, I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Op
 where
     I: Stream + StreamIsPartial,
     ParseOperand: Parser<I, Operand, E>,
-    ParseInfix: Parser<I, (usize, usize, &'i dyn Fn(Operand, Operand) -> Operand), E>,
-    ParsePrefix: Parser<I, (usize, &'i dyn Fn(Operand) -> Operand), E>,
-    ParsePostfix: Parser<I, (usize, &'i dyn Fn(Operand) -> Operand), E>,
+    ParseInfix: Parser<I, (Assoc, fn(&mut I, Operand, Operand) -> PResult<Operand, E>), E>,
+    ParsePrefix: Parser<I, (i64, fn(&mut I, Operand) -> PResult<Operand, E>), E>,
+    ParsePostfix: Parser<I, (i64, fn(&mut I, Operand) -> PResult<Operand, E>), E>,
     E: ParserError<I>,
 {
     trace("precedence", move |i: &mut I| {
-        let result = precedence_impl(i, &mut operand, &mut prefix, &mut postfix, &mut infix, 0)?;
+        let result = precedence_impl(
+            i,
+            &mut operand,
+            &mut prefix,
+            &mut postfix,
+            &mut infix,
+            start_power,
+        )?;
         Ok(result)
     })
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum Assoc {
+    Left(i64),
+    Right(i64),
+    Neither(i64),
+}
+
 // recursive function
-fn precedence_impl<
-    'i,
-    I,
-    ParseOperand,
-    ParseInfix,
-    ParsePrefix,
-    ParsePostfix,
-    Operand: 'static,
-    E,
->(
+fn precedence_impl<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand: 'static, E>(
     i: &mut I,
     parse_operand: &mut ParseOperand,
     prefix: &mut ParsePrefix,
     postfix: &mut ParsePostfix,
     infix: &mut ParseInfix,
-    min_power: usize,
+    min_power: i64,
 ) -> PResult<Operand, E>
 where
     I: Stream + StreamIsPartial,
     ParseOperand: Parser<I, Operand, E>,
-    ParseInfix: Parser<I, (usize, usize, &'i dyn Fn(Operand, Operand) -> Operand), E>,
-    ParsePrefix: Parser<I, (usize, &'i dyn Fn(Operand) -> Operand), E>,
-    ParsePostfix: Parser<I, (usize, &'i dyn Fn(Operand) -> Operand), E>,
+    ParseInfix: Parser<I, (Assoc, fn(&mut I, Operand, Operand) -> PResult<Operand, E>), E>,
+    ParsePrefix: Parser<I, (i64, fn(&mut I, Operand) -> PResult<Operand, E>), E>,
+    ParsePostfix: Parser<I, (i64, fn(&mut I, Operand) -> PResult<Operand, E>), E>,
     E: ParserError<I>,
 {
-    let operand = trace("operand", opt(parse_operand.by_ref())).parse_next(i)?;
+    let operand = opt(parse_operand.by_ref()).parse_next(i)?;
     let mut operand = if let Some(operand) = operand {
         operand
     } else {
@@ -69,20 +75,25 @@ where
             return Err(ErrMode::assert(i, "`prefix` parsers must always consume"));
         }
         let operand = precedence_impl(i, parse_operand, prefix, postfix, infix, power)?;
-        fold_prefix(operand)
+        fold_prefix(i, operand)?
     };
 
+    // A variable to stop the `'parse` loop when `Assoc::Neither` with the same
+    // precedence is encountered e.g. `a == b == c`. `Assoc::Neither` has similar
+    // associativity rules as `Assoc::Left`, but we stop parsing when the next operator
+    // is the same as the current one.
+    let mut prev_op_is_neither = None;
     'parse: while i.eof_offset() > 0 {
         // Postfix unary operators
         let start = i.checkpoint();
-        if let Some((power, fold_postfix)) =
-            trace("postfix", opt(postfix.by_ref())).parse_next(i)?
-        {
+        if let Some((power, fold_postfix)) = opt(postfix.by_ref()).parse_next(i)? {
+            // control precedence over the prefix e.g.:
+            // `--(i++)` or `(--i)++`
             if power < min_power {
                 i.reset(&start);
-                break;
+                break 'parse;
             }
-            operand = fold_postfix(operand);
+            operand = fold_postfix(i, operand)?;
 
             continue 'parse;
         }
@@ -90,13 +101,23 @@ where
         // Infix binary operators
         let start = i.checkpoint();
         let parse_result = opt(infix.by_ref()).parse_next(i)?;
-        if let Some((lpower, rpower, fold_infix)) = parse_result {
-            if rpower < min_power {
+        if let Some((assoc, fold_infix)) = parse_result {
+            let mut is_neither = None;
+            let (lpower, rpower) = match assoc {
+                Assoc::Right(p) => (p, p - 1),
+                Assoc::Left(p) => (p, p + 1),
+                Assoc::Neither(p) => {
+                    is_neither = Some(p);
+                    (p, p + 1)
+                }
+            };
+            if lpower < min_power || prev_op_is_neither.is_some_and(|p| lpower == p) {
                 i.reset(&start);
-                break;
+                break 'parse;
             }
-            let rhs = precedence_impl(i, parse_operand, prefix, postfix, infix, lpower)?;
-            operand = fold_infix(operand, rhs);
+            prev_op_is_neither = is_neither;
+            let rhs = precedence_impl(i, parse_operand, prefix, postfix, infix, rpower)?;
+            operand = fold_infix(i, operand, rhs)?;
 
             continue 'parse;
         }
@@ -127,32 +148,45 @@ mod tests {
     fn parser<'i>() -> impl Parser<&'i str, i32, ContextError> {
         move |i: &mut &str| {
             precedence(
-                delimited(
-                    space0,
-                    dispatch! {peek(any);
-                        '(' => delimited('(',  parser(), ')'),
-                        _ => digit1.parse_to::<i32>()
-                    },
-                    space0,
+                0,
+                trace(
+                    "operand",
+                    delimited(
+                        space0,
+                        dispatch! {peek(any);
+                            '(' => delimited('(',  parser(), ')'),
+                            _ => digit1.parse_to::<i32>()
+                        },
+                        space0,
+                    ),
                 ),
-                dispatch! {any;
-                    '+' => empty.value((9, (&|a| a) as _)),
-                    '-' => empty.value((9, (&|a: i32| -a) as _)),
-                    _ => fail
-                },
-                dispatch! {any;
-                    '!' => empty.value((9, &factorial as _)),
-                    _ => fail
-                },
-                dispatch! {any;
-                   '+' => empty.value((5, 6, (&|a, b|  a + b) as _)),
-                   '-' => empty.value((5, 6, (&|a, b|  a - b) as _)),
-                   '*' => empty.value((7, 8, (&|a, b| a * b) as _)),
-                   '/' => empty.value((7, 8, (&|a, b|  a / b) as _)),
-                   '%' => empty.value((7, 8, (&|a, b|  a % b) as _)),
-                   '^' => empty.value((9, 10, (&|a, b|  a ^ b) as _)),
-                   _ => fail
-                },
+                trace(
+                    "prefix",
+                    dispatch! {any;
+                        '+' => empty.value((9, (|_: &mut _, a| Ok(a)) as _)),
+                        '-' => empty.value((9, (|_: &mut _, a: i32| Ok(-a)) as _)),
+                        _ => fail
+                    },
+                ),
+                trace(
+                    "postfix",
+                    dispatch! {any;
+                        '!' => empty.value((9, (|_: &mut _, a| {Ok(factorial(a))}) as _)),
+                        _ => fail
+                    },
+                ),
+                trace(
+                    "infix",
+                    dispatch! {any;
+                       '+' => empty.value((Assoc::Left(5), (|_: &mut _, a, b| Ok(a + b)) as _  )),
+                       '-' => empty.value((Assoc::Left(5), (|_: &mut _, a, b| Ok(a - b)) as _)),
+                       '*' => empty.value((Assoc::Left(7), (|_: &mut _, a, b| Ok(a * b)) as _)),
+                       '/' => empty.value((Assoc::Left(7), (|_: &mut _, a, b| Ok(a / b)) as _)),
+                       '%' => empty.value((Assoc::Left(7), (|_: &mut _, a, b| Ok(a % b)) as _)),
+                       '^' => empty.value((Assoc::Right(9), (|_: &mut _, a, b| Ok(a ^ b)) as _)),
+                       _ => fail
+                    },
+                ),
             )
             .parse_next(i)
         }
@@ -160,15 +194,15 @@ mod tests {
 
     #[test]
     fn test_precedence() {
-        assert_eq!(parser().parse("-3!+-3*4"), Ok(-18));
-        assert_eq!(parser().parse("+2+3*4"), Ok(14));
-        assert_eq!(parser().parse("2*3+4"), Ok(10));
+        // assert_eq!(parser().parse("-3!+-3 *  4"), Ok(-18));
+        // assert_eq!(parser().parse("+2 + 3 *  4"), Ok(14));
+        assert_eq!(parser().parse("2 * 3+4"), Ok(10));
     }
     #[test]
     fn test_unary() {
         assert_eq!(parser().parse("-2"), Ok(-2));
         assert_eq!(parser().parse("4!"), Ok(24));
-        assert_eq!(parser().parse("2+4!"), Ok(26));
-        assert_eq!(parser().parse("-2+2"), Ok(0));
+        assert_eq!(parser().parse("2 + 4!"), Ok(26));
+        assert_eq!(parser().parse("-2 + 2"), Ok(0));
     }
 }

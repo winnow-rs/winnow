@@ -198,6 +198,17 @@ required-features = ["alloc"]
 name = "string"
 required-features = ["alloc"]
 
+[[example]]
+name = "pratt"
+required-features = ["std"]
+
+
+[[bench]]
+name = "pratt"
+path = "examples/pratt/bench.rs"
+harness = false
+required-features = ["std"]
+
 [[bench]]
 name = "arithmetic"
 path = "examples/arithmetic/bench.rs"
