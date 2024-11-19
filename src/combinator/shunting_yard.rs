@@ -132,7 +132,6 @@ where
         }
     }
 
-    dbg!(operator_stack.len());
     while let Some(op) = operator_stack.pop() {
         evaluate(i, &mut value_stack, op)?;
     }

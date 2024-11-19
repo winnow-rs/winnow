@@ -1,6 +1,8 @@
+use bumpalo::boxed::Box;
+use bumpalo::collections::String as BString;
+use bumpalo::Bump;
 use winnow::combinator::{cut_err, empty, fail, not, opt, peek, separated_pair, trace};
 use winnow::error::ContextError;
-use winnow::prelude::*;
 use winnow::stream::AsChar as _;
 use winnow::token::{any, take, take_while};
 use winnow::{
@@ -10,348 +12,225 @@ use winnow::{
     dispatch,
     token::one_of,
 };
+use winnow::{prelude::*, Stateful};
 
-pub(crate) enum Expr {
-    Name(String),
+pub(crate) enum Expr<'a> {
+    Name(BString<'a>),
     Value(i64),
 
-    Assign(Box<Expr>, Box<Expr>),
+    Assign(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
 
-    Addr(Box<Expr>),
-    Deref(Box<Expr>),
+    Addr(Box<'a, Expr<'a>>),
+    Deref(Box<'a, Expr<'a>>),
 
-    Dot(Box<Expr>, Box<Expr>),
-    ArrowOp(Box<Expr>, Box<Expr>),
-    Neg(Box<Expr>),
-    Add(Box<Expr>, Box<Expr>),
-    Sub(Box<Expr>, Box<Expr>),
-    Mul(Box<Expr>, Box<Expr>),
-    Div(Box<Expr>, Box<Expr>),
-    Pow(Box<Expr>, Box<Expr>),
-    Fac(Box<Expr>),
+    Dot(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
+    ArrowOp(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
+    Neg(Box<'a, Expr<'a>>),
+    Add(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
+    Sub(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
+    Mul(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
+    Div(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
+    Pow(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
+    Fac(Box<'a, Expr<'a>>),
 
-    PreIncr(Box<Expr>),
-    PostIncr(Box<Expr>),
-    PreDecr(Box<Expr>),
-    PostDecr(Box<Expr>),
+    PreIncr(Box<'a, Expr<'a>>),
+    PostIncr(Box<'a, Expr<'a>>),
+    PreDecr(Box<'a, Expr<'a>>),
+    PostDecr(Box<'a, Expr<'a>>),
 
-    And(Box<Expr>, Box<Expr>),
-    Or(Box<Expr>, Box<Expr>),
+    And(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
+    Or(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
 
     // `==`
-    Eq(Box<Expr>, Box<Expr>),
+    Eq(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
     // `!=`
-    NotEq(Box<Expr>, Box<Expr>),
+    NotEq(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
     // `!`
-    Not(Box<Expr>),
-    Greater(Box<Expr>, Box<Expr>),
-    GreaterEqual(Box<Expr>, Box<Expr>),
-    Less(Box<Expr>, Box<Expr>),
-    LessEqual(Box<Expr>, Box<Expr>),
+    Not(Box<'a, Expr<'a>>),
+    Greater(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
+    GreaterEqual(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
+    Less(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
+    LessEqual(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
 
     // A parenthesized expression.
-    Paren(Box<Expr>),
-    FunctionCall(Box<Expr>, Option<Box<Expr>>),
-    Ternary(Box<Expr>, Box<Expr>, Box<Expr>),
+    Paren(Box<'a, Expr<'a>>),
+    FunctionCall(Box<'a, Expr<'a>>, Option<Box<'a, Expr<'a>>>),
+    Ternary(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
     // foo[...]
-    Index(Box<Expr>, Box<Expr>),
+    Index(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
     // a, b
-    Comma(Box<Expr>, Box<Expr>),
+    Comma(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
 
     // %
-    Rem(Box<Expr>, Box<Expr>),
-    BitXor(Box<Expr>, Box<Expr>),
-    BitAnd(Box<Expr>, Box<Expr>),
-    BitwiseNot(Box<Expr>),
+    Rem(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
+    BitXor(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
+    BitAnd(Box<'a, Expr<'a>>, Box<'a, Expr<'a>>),
+    BitwiseNot(Box<'a, Expr<'a>>),
 }
+
+type Input<'i> = Stateful<&'i str, bumpalo::Bump>;
 
 // Parser definition
 
-pub(crate) fn pratt_parser(i: &mut &str) -> PResult<Expr> {
-    use winnow::combinator::precedence::{self, Assoc};
-    // precedence is based on https://en.cppreference.com/w/c/language/operator_precedence
-    // but specified in reverse order, because the `cppreference` table
-    // uses `descending` precedence, but we need ascending one
-    fn parser<'i>(start_power: i64) -> impl Parser<&'i str, Expr, ContextError> {
-        move |i: &mut &str| {
-            precedence::precedence(
-            start_power,
-            trace(
-                "operand",
-                delimited(
-                    multispace0,
-                    dispatch! {peek(any);
-                        '(' => delimited('(',  parser(0).map(|e| Expr::Paren(Box::new(e))), cut_err(')')),
-                        _ => alt((
-                            identifier.map(|s| Expr::Name(s.into())),
-                            digit1.parse_to::<i64>().map(Expr::Value)
-                        )),
-                    },
-                    multispace0,
-                ),
-            ),
-            trace(
-                "prefix",
-                delimited(
-                    multispace0,
-                    dispatch! {any;
-                        '+' => alt((
-                            // ++
-                            '+'.value((18, (|_: &mut _, a| Ok(Expr::PreIncr(Box::new(a)))) as _)),
-                            empty.value((18, (|_: &mut _, a| Ok(a)) as _))
-                        )),
-                        '-' =>  alt((
-                            // --
-                            '-'.value((18, (|_: &mut _, a| Ok(Expr::PreDecr(Box::new(a)))) as _)),
-                            empty.value((18, (|_: &mut _, a| Ok(Expr::Neg(Box::new(a)))) as _))
-                        )),
-                        '&' => empty.value((18, (|_: &mut _, a| Ok(Expr::Addr(Box::new(a)))) as _)),
-                        '*' => empty.value((18, (|_: &mut _, a| Ok(Expr::Deref(Box::new(a)))) as _)),
-                        '!' => empty.value((18, (|_: &mut _, a| Ok(Expr::Not(Box::new(a)))) as _)),
-                        '~' => empty.value((18, (|_: &mut _, a| Ok(Expr::BitwiseNot(Box::new(a)))) as _)),
-                        _ => fail
-                    },
-                    multispace0,
-                ),
-            ),
-            trace(
-                "postfix",
-                delimited(
-                    multispace0,
-                    alt((
-                        dispatch! {any;
-                            '!' => not('=').value((19, (|_: &mut _, a| Ok(Expr::Fac(Box::new(a)))) as _)),
-                            '?' => empty.value((3, (|i: &mut &str, cond| {
-                                let (left, right) = cut_err(separated_pair(parser(0), delimited(multispace0, ':', multispace0), parser(3))).parse_next(i)?;
-                                Ok(Expr::Ternary(Box::new(cond), Box::new(left), Box::new(right)))
-                            }) as _)),
-                            '[' => empty.value((20, (|i: &mut &str, a| {
-                                let index = delimited(multispace0, parser(0), (multispace0, cut_err(']'), multispace0)).parse_next(i)?;
-                                Ok(Expr::Index(Box::new(a), Box::new(index)))
-                            }) as _)),
-                            '(' => empty.value((20, (|i: &mut &str, a| {
-                                let args = delimited(multispace0, opt(parser(0)), (multispace0, cut_err(')'), multispace0)).parse_next(i)?;
-                                Ok(Expr::FunctionCall(Box::new(a), args.map(Box::new)))
-                            }) as _)),
-                            _ => fail,
-                        },
-                        dispatch! {take(2usize);
-                            "++" => empty.value((20, (|_: &mut _, a| Ok(Expr::PostIncr(Box::new(a)))) as _)),
-                            "--" => empty.value((20, (|_: &mut _, a| Ok(Expr::PostDecr(Box::new(a)))) as _)),
-                            _ => fail,
-                        },
-                    )),
-                    multispace0,
-                ),
-            ),
-            trace(
-                "infix",
-                alt((
-                    dispatch! {any;
-                        '*' => alt((
-                            // **
-                            "*".value((Assoc::Right(28), (|_: &mut _, a, b| Ok(Expr::Pow(Box::new(a), Box::new(b)))) as _)),
-                            empty.value((Assoc::Left(16), (|_: &mut _, a, b| Ok(Expr::Mul(Box::new(a), Box::new(b)))) as _)),
-                        )),
-                        '/' => empty.value((Assoc::Left(16), (|_: &mut _, a, b| Ok(Expr::Div(Box::new(a), Box::new(b)))) as _)),
-                        '%' => empty.value((Assoc::Left(16), (|_: &mut _, a, b| Ok(Expr::Rem(Box::new(a), Box::new(b)))) as _)),
-
-                        '+' => empty.value((Assoc::Left(14), (|_: &mut _, a, b| Ok(Expr::Add(Box::new(a), Box::new(b)))) as _)),
-                        '-' => alt((
-                            dispatch!{take(2usize);
-                                "ne" => empty.value((Assoc::Neither(10), (|_: &mut _, a, b| Ok(Expr::NotEq(Box::new(a), Box::new(b)))) as _)),
-                                "eq" => empty.value((Assoc::Neither(10), (|_: &mut _, a, b| Ok(Expr::Eq(Box::new(a), Box::new(b)))) as _)),
-                                "gt" => empty.value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::Greater(Box::new(a), Box::new(b)))) as _)),
-                                "ge" => empty.value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::GreaterEqual(Box::new(a), Box::new(b)))) as _)),
-                                "lt" => empty.value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::Less(Box::new(a), Box::new(b)))) as _)),
-                                "le" => empty.value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::LessEqual(Box::new(a), Box::new(b)))) as _)),
-                                _ => fail
-                            },
-                            '>'.value((Assoc::Left(20), (|_: &mut _, a, b| Ok(Expr::ArrowOp(Box::new(a), Box::new(b)))) as _)),
-                            empty.value((Assoc::Left(14), (|_: &mut _, a, b| Ok(Expr::Sub(Box::new(a), Box::new(b)))) as _))
-                        )),
-                        '.' => empty.value((Assoc::Left(20), (|_: &mut _, a, b| Ok(Expr::Dot(Box::new(a), Box::new(b)))) as _)),
-                        '&' => alt((
-                            // &&
-                            "&".value((Assoc::Left(6), (|_: &mut _, a, b| Ok(Expr::And(Box::new(a), Box::new(b)))) as _)  ),
-
-                            empty.value((Assoc::Left(12), (|_: &mut _, a, b| Ok(Expr::BitAnd(Box::new(a), Box::new(b)))) as _)),
-                        )),
-                        '^' => empty.value((Assoc::Left(8), (|_: &mut _, a, b| Ok(Expr::BitXor(Box::new(a), Box::new(b)))) as _)),
-                        '=' => alt((
-                            // ==
-                            "=".value((Assoc::Neither(10), (|_: &mut _, a, b| Ok(Expr::Eq(Box::new(a), Box::new(b)))) as _)),
-                            empty.value((Assoc::Right(2), (|_: &mut _, a, b| Ok(Expr::Assign(Box::new(a), Box::new(b)))) as _))
-                        )),
-
-                        '>' => alt((
-                            // >=
-                            "=".value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::GreaterEqual(Box::new(a), Box::new(b)))) as _)),
-                            empty.value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::Greater(Box::new(a), Box::new(b)))) as _))
-                        )),
-                        '<' => alt((
-                            // <=
-                            "=".value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::LessEqual(Box::new(a), Box::new(b)))) as _)),
-                            empty.value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::Less(Box::new(a), Box::new(b)))) as _))
-                        )),
-                        ',' => empty.value((Assoc::Left(0), (|_: &mut _, a, b| Ok(Expr::Comma(Box::new(a), Box::new(b)))) as _)),
-                        _ => fail
-                    },
-                    dispatch! {take(2usize);
-                        "!=" => empty.value((Assoc::Neither(10), (|_: &mut _, a, b| Ok(Expr::NotEq(Box::new(a), Box::new(b)))) as _)),
-                        "||" => empty.value((Assoc::Left(4), (|_: &mut _, a, b| Ok(Expr::Or(Box::new(a), Box::new(b)))) as _)),
-                        _ => fail
-                    },
-                )),
-            ),
-        ).parse_next(i)
+pub(crate) fn pratt_parser<'i, 'a>(bump: &'a Bump) -> impl Parser<&'i str, Expr<'a>, ContextError> {
+    move |i: &mut &'i str| -> PResult<Expr<'a>> {
+        use winnow::combinator::precedence::{self, Assoc};
+        // precedence is based on https://en.cppreference.com/w/c/language/operator_precedence
+        // but specified in reverse order, because the `cppreference` table
+        // uses `descending` precedence, but we need ascending one
+        fn parser<'i, 'a>(
+            start_power: i64,
+            bump: &'a Bump,
+        ) -> impl Parser<&'i str, Expr<'a>, ContextError> + 'a {
+            move |i: &mut &'i str| -> PResult<Expr<'a>> {
+                let r = Expr::Name(BString::from_str_in("a", bump));
+                // Ok(r)
+                let r2 = precedence::precedence(0, fail, fail, fail, fail).parse_next(i);
+                r2
+                // let st = BString::from_str_in("hello", bump);
+                // let r = precedence::precedence(
+                //     start_power,
+                //     trace(
+                //         "operand",
+                //         delimited(
+                //             multispace0,
+                //             dispatch! {peek(any);
+                //                 // '(' => delimited('(',  parser(0).map(|e| {
+                //                 //     let r = Expr::Paren(Box::new_in(e, &i.state));
+                //                 //     r
+                //                 // }), cut_err(')')),
+                //                 // _ => alt((
+                //                 //     identifier.map(|s| Expr::Name(BString::from_str_in(s, &i.state))),
+                //                 //     digit1.parse_to::<i64>().map(Expr::Value)
+                //                 // )),
+                //                 _ => fail,
+                //             },
+                //             multispace0,
+                //         ),
+                //     ),
+                //     trace(
+                //         "prefix",
+                //         delimited(
+                //             multispace0,
+                //             dispatch! {any;
+                //                 // '+' => alt((
+                //                 //     // ++
+                //                 //     '+'.value((18, (|i: &mut Input<'a>, a| Ok(Expr::PreIncr(Box::new_in(a, &i.state)))) as fn(&mut Input<'a>, Expr<'a>) -> PResult<Expr<'a>>)),
+                //                 //     empty.value((18, (|_: &mut _, a| Ok(a)) as _))
+                //                 // )),
+                //                 // '-' =>  alt((
+                //                 //     // --
+                //                 //     '-'.value((18, (|i: &mut Input<'_>, a| Ok(Expr::PreDecr(Box::new_in(a, &i.state)))) as _)),
+                //                 //     empty.value((18, (|i: &mut Input<'_>, a| Ok(Expr::Neg(Box::new_in(a, &i.state)))) as _))
+                //                 // )),
+                //                 // '&' => empty.value((18, (|i2: &mut _, a| Ok(Expr::Addr(Box::new_in(a, &bumpalo::Bump::new())))) as _)),
+                //                 // '*' => empty.value((18, (|i: &mut Input<'_>, a| Ok(Expr::Deref(Box::new_in(a, &i.state)))) as _)),
+                //                 // '!' => empty.value((18, (|i: &mut Input<'_>, a| Ok(Expr::Not(Box::new_in(a, &i.state)))) as _)),
+                //                 // '~' => empty.value((18, (|i: &mut Input<'_>, a| Ok(Expr::BitwiseNot(Box::new_in(a, &i.state)))) as _)),
+                //                 _ => fail
+                //             },
+                //             multispace0,
+                //         ),
+                //     ),
+                //     trace(
+                //         "postfix",
+                //         delimited(
+                //             multispace0,
+                //             alt((
+                //                 fail,
+                //                 // dispatch! {any;
+                //                 //     '!' => not('=').value((19, (|i: &mut Input<'_>, a| Ok(Expr::Fac(Box::new_in(a, &i.state)))) as _)),
+                //                 //     '?' => empty.value((3, (|i: &mut Input<'_>, cond| {
+                //                 //         let (left, right) = cut_err(separated_pair(parser(0), delimited(multispace0, ':', multispace0), parser(3))).parse_next(i)?;
+                //                 //         Ok(Expr::Ternary(Box::new_in(cond, &i.state), Box::new_in(left, &i.state), Box::new_in(right, &i.state)))
+                //                 //     }) as _)),
+                //                 //     '[' => empty.value((20, (|i: &mut Input<'_>, a| {
+                //                 //         let index = delimited(multispace0, parser(0), (multispace0, cut_err(']'), multispace0)).parse_next(i)?;
+                //                 //         Ok(Expr::Index(Box::new_in(a, &i.state), Box::new_in(index, &i.state)))
+                //                 //     }) as _)),
+                //                 //     '(' => empty.value((20, (|i: &mut Input<'_>, a| {
+                //                 //         let args = delimited(multispace0, opt(parser(0)), (multispace0, cut_err(')'), multispace0)).parse_next(i)?;
+                //                 //         Ok(Expr::FunctionCall(Box::new_in(a, &i.state), args.map(|a| Box::new_in(a, &i.state))))
+                //                 //     }) as _)),
+                //                 //     _ => fail,
+                //                 // },
+                //                 // dispatch! {take(2usize);
+                //                 //     "++" => empty.value((20, (|i: &mut Input<'_>, a| Ok(Expr::PostIncr(Box::new_in(a, &i.state)))) as _)),
+                //                 //     "--" => empty.value((20, (|i: &mut Input<'_>, a| Ok(Expr::PostDecr(Box::new_in(a, &i.state)))) as _)),
+                //                 //     _ => fail,
+                //                 // },
+                //             )),
+                //             multispace0,
+                //         ),
+                //     ),
+                //     trace(
+                //         "infix",
+                //         alt((
+                //             fail,
+                //             // dispatch! {any;
+                //             //     '*' => alt((
+                //             //         // **
+                //             //         "*".value((Assoc::Right(28), (|i: &mut Input<'_>, a, b| Ok(Expr::Pow(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //         empty.value((Assoc::Left(16), (|i: &mut Input<'a>, a, b| Ok(Expr::Mul(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //     )),
+                //             //     '/' => empty.value((Assoc::Left(16), (|i: &mut Input<'a>, a, b| Ok(Expr::Div(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //     '%' => empty.value((Assoc::Left(16), (|i: &mut Input<'a>, a, b| Ok(Expr::Rem(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //
+                //             //     '+' => empty.value((Assoc::Left(14), (|i: &mut Input<'a>, a, b| Ok(Expr::Add(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //     '-' => alt((
+                //             //         dispatch!{take(2usize);
+                //             //             "ne" => empty.value((Assoc::Neither(10), (|i: &mut Input<'a>, a, b| Ok(Expr::NotEq(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //             "eq" => empty.value((Assoc::Neither(10), (|i: &mut Input<'a>, a, b| Ok(Expr::Eq(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //             "gt" => empty.value((Assoc::Neither(12), (|i: &mut Input<'a>, a, b| Ok(Expr::Greater(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //             "ge" => empty.value((Assoc::Neither(12), (|i: &mut Input<'a>, a, b| Ok(Expr::GreaterEqual(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //             "lt" => empty.value((Assoc::Neither(12), (|i: &mut Input<'a>, a, b| Ok(Expr::Less(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //             "le" => empty.value((Assoc::Neither(12), (|i: &mut Input<'a>, a, b| Ok(Expr::LessEqual(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //             _ => fail
+                //             //         },
+                //             //         '>'.value((Assoc::Left(20), (|i: &mut Input<'a>, a, b| Ok(Expr::ArrowOp(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //         empty.value((Assoc::Left(14), (|i: &mut Input<'a>, a, b| Ok(Expr::Sub(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _))
+                //             //     )),
+                //             //     '.' => empty.value((Assoc::Left(20), (|i: &mut Input<'a>, a, b| Ok(Expr::Dot(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //     '&' => alt((
+                //             //         // &&
+                //             //         "&".value((Assoc::Left(6), (|i: &mut Input<'a>, a, b| Ok(Expr::And(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)  ),
+                //             //
+                //             //         empty.value((Assoc::Left(12), (|i: &mut Input<'a>, a, b| Ok(Expr::BitAnd(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //     )),
+                //             //     '^' => empty.value((Assoc::Left(8), (|i: &mut Input<'a>, a, b| Ok(Expr::BitXor(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //     '=' => alt((
+                //             //         // ==
+                //             //         "=".value((Assoc::Neither(10), (|i: &mut Input<'a>, a, b| Ok(Expr::Eq(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //         empty.value((Assoc::Right(2), (|i: &mut Input<'a>, a, b| Ok(Expr::Assign(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _))
+                //             //     )),
+                //             //
+                //             //     '>' => alt((
+                //             //         // >=
+                //             //         "=".value((Assoc::Neither(12), (|i: &mut Input<'a>, a, b| Ok(Expr::GreaterEqual(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //         empty.value((Assoc::Neither(12), (|i: &mut Input<'a>, a, b| Ok(Expr::Greater(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _))
+                //             //     )),
+                //             //     '<' => alt((
+                //             //         // <=
+                //             //         "=".value((Assoc::Neither(12), (|i: &mut Input<'a>, a, b| Ok(Expr::LessEqual(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //         empty.value((Assoc::Neither(12), (|i: &mut Input<'a>, a, b| Ok(Expr::Less(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _))
+                //             //     )),
+                //             //     ',' => empty.value((Assoc::Left(0), (|i: &mut Input<'_>, a, b| Ok(Expr::Comma(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //     _ => fail
+                //             // },
+                //             // dispatch! {take(2usize);
+                //             //     "!=" => empty.value((Assoc::Neither(10), (|i: &mut Input<'a>, a, b| Ok(Expr::NotEq(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //     "||" => empty.value((Assoc::Left(4), (|i: &mut Input<'a>, a, b| Ok(Expr::Or(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                //             //     _ => fail
+                //             // },
+                //         )),
+                //     ),
+                // )
+                // .parse_next(i);
+                // r
+            }
         }
+        parser(0, bump).parse_next(i)
     }
-    parser(0).parse_next(i)
-}
-
-pub(crate) fn shunting_yard_parser(i: &mut &str) -> PResult<Expr> {
-    use winnow::combinator::precedence::Assoc;
-    use winnow::combinator::shunting_yard;
-    // precedence is based on https://en.cppreference.com/w/c/language/operator_precedence
-    // but specified in reverse order, because the `cppreference` table
-    // uses `descending` precedence, but we need ascending one
-    fn parser<'i>(start_power: i64) -> impl Parser<&'i str, Expr, ContextError> {
-        move |i: &mut &str| {
-            shunting_yard::precedence(
-            start_power,
-            trace(
-                "operand",
-                delimited(
-                    multispace0,
-                    dispatch! {peek(any);
-                        '(' => delimited('(',  parser(0).map(|e| Expr::Paren(Box::new(e))), cut_err(')')),
-                        _ => alt((
-                            identifier.map(|s| Expr::Name(s.into())),
-                            digit1.parse_to::<i64>().map(Expr::Value)
-                        )),
-                    },
-                    multispace0,
-                ),
-            ),
-            trace(
-                "prefix",
-                delimited(
-                    multispace0,
-                    dispatch! {any;
-                        '+' => alt((
-                            // ++
-                            '+'.value((18, (|_: &mut _, a| Ok(Expr::PreIncr(Box::new(a)))) as _)),
-                            empty.value((18, (|_: &mut _, a| Ok(a)) as _))
-                        )),
-                        '-' =>  alt((
-                            // --
-                            '-'.value((18, (|_: &mut _, a| Ok(Expr::PreDecr(Box::new(a)))) as _)),
-                            empty.value((18, (|_: &mut _, a| Ok(Expr::Neg(Box::new(a)))) as _))
-                        )),
-                        '&' => empty.value((18, (|_: &mut _, a| Ok(Expr::Addr(Box::new(a)))) as _)),
-                        '*' => empty.value((18, (|_: &mut _, a| Ok(Expr::Deref(Box::new(a)))) as _)),
-                        '!' => empty.value((18, (|_: &mut _, a| Ok(Expr::Not(Box::new(a)))) as _)),
-                        '~' => empty.value((18, (|_: &mut _, a| Ok(Expr::BitwiseNot(Box::new(a)))) as _)),
-                        _ => fail
-                    },
-                    multispace0,
-                ),
-            ),
-            trace(
-                "postfix",
-                delimited(
-                    multispace0,
-                    alt((
-                        dispatch! {any;
-                            '!' => not('=').value((19, (|_: &mut _, a| Ok(Expr::Fac(Box::new(a)))) as _)),
-                            '?' => empty.value((3, (|i: &mut &str, cond| {
-                                let (left, right) = cut_err(separated_pair(parser(0), delimited(multispace0, ':', multispace0), parser(3))).parse_next(i)?;
-                                Ok(Expr::Ternary(Box::new(cond), Box::new(left), Box::new(right)))
-                            }) as _)),
-                            '[' => empty.value((20, (|i: &mut &str, a| {
-                                let index = delimited(multispace0, parser(0), (multispace0, cut_err(']'), multispace0)).parse_next(i)?;
-                                Ok(Expr::Index(Box::new(a), Box::new(index)))
-                            }) as _)),
-                            '(' => empty.value((20, (|i: &mut &str, a| {
-                                let args = delimited(multispace0, opt(parser(0)), (multispace0, cut_err(')'), multispace0)).parse_next(i)?;
-                                Ok(Expr::FunctionCall(Box::new(a), args.map(Box::new)))
-                            }) as _)),
-                            _ => fail,
-                        },
-                        dispatch! {take(2usize);
-                            "++" => empty.value((20, (|_: &mut _, a| Ok(Expr::PostIncr(Box::new(a)))) as _)),
-                            "--" => empty.value((20, (|_: &mut _, a| Ok(Expr::PostDecr(Box::new(a)))) as _)),
-                            _ => fail,
-                        },
-                    )),
-                    multispace0,
-                ),
-            ),
-            trace(
-                "infix",
-                alt((
-                    dispatch! {any;
-                        '*' => alt((
-                            // **
-                            "*".value((Assoc::Right(28), (|_: &mut _, a, b| Ok(Expr::Pow(Box::new(a), Box::new(b)))) as _)),
-                            empty.value((Assoc::Left(16), (|_: &mut _, a, b| Ok(Expr::Mul(Box::new(a), Box::new(b)))) as _)),
-                        )),
-                        '/' => empty.value((Assoc::Left(16), (|_: &mut _, a, b| Ok(Expr::Div(Box::new(a), Box::new(b)))) as _)),
-                        '%' => empty.value((Assoc::Left(16), (|_: &mut _, a, b| Ok(Expr::Rem(Box::new(a), Box::new(b)))) as _)),
-
-                        '+' => empty.value((Assoc::Left(14), (|_: &mut _, a, b| Ok(Expr::Add(Box::new(a), Box::new(b)))) as _)),
-                        '-' => alt((
-                            dispatch!{take(2usize);
-                                "ne" => empty.value((Assoc::Neither(10), (|_: &mut _, a, b| Ok(Expr::NotEq(Box::new(a), Box::new(b)))) as _)),
-                                "eq" => empty.value((Assoc::Neither(10), (|_: &mut _, a, b| Ok(Expr::Eq(Box::new(a), Box::new(b)))) as _)),
-                                "gt" => empty.value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::Greater(Box::new(a), Box::new(b)))) as _)),
-                                "ge" => empty.value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::GreaterEqual(Box::new(a), Box::new(b)))) as _)),
-                                "lt" => empty.value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::Less(Box::new(a), Box::new(b)))) as _)),
-                                "le" => empty.value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::LessEqual(Box::new(a), Box::new(b)))) as _)),
-                                _ => fail
-                            },
-                            '>'.value((Assoc::Left(20), (|_: &mut _, a, b| Ok(Expr::ArrowOp(Box::new(a), Box::new(b)))) as _)),
-                            empty.value((Assoc::Left(14), (|_: &mut _, a, b| Ok(Expr::Sub(Box::new(a), Box::new(b)))) as _))
-                        )),
-                        '.' => empty.value((Assoc::Left(20), (|_: &mut _, a, b| Ok(Expr::Dot(Box::new(a), Box::new(b)))) as _)),
-                        '&' => alt((
-                            // &&
-                            "&".value((Assoc::Left(6), (|_: &mut _, a, b| Ok(Expr::And(Box::new(a), Box::new(b)))) as _)  ),
-
-                            empty.value((Assoc::Left(12), (|_: &mut _, a, b| Ok(Expr::BitAnd(Box::new(a), Box::new(b)))) as _)),
-                        )),
-                        '^' => empty.value((Assoc::Left(8), (|_: &mut _, a, b| Ok(Expr::BitXor(Box::new(a), Box::new(b)))) as _)),
-                        '=' => alt((
-                            // ==
-                            "=".value((Assoc::Neither(10), (|_: &mut _, a, b| Ok(Expr::Eq(Box::new(a), Box::new(b)))) as _)),
-                            empty.value((Assoc::Right(2), (|_: &mut _, a, b| Ok(Expr::Assign(Box::new(a), Box::new(b)))) as _))
-                        )),
-
-                        '>' => alt((
-                            // >=
-                            "=".value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::GreaterEqual(Box::new(a), Box::new(b)))) as _)),
-                            empty.value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::Greater(Box::new(a), Box::new(b)))) as _))
-                        )),
-                        '<' => alt((
-                            // <=
-                            "=".value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::LessEqual(Box::new(a), Box::new(b)))) as _)),
-                            empty.value((Assoc::Neither(12), (|_: &mut _, a, b| Ok(Expr::Less(Box::new(a), Box::new(b)))) as _))
-                        )),
-                        ',' => empty.value((Assoc::Left(0), (|_: &mut _, a, b| Ok(Expr::Comma(Box::new(a), Box::new(b)))) as _)),
-                        _ => fail
-                    },
-                    dispatch! {take(2usize);
-                        "!=" => empty.value((Assoc::Neither(10), (|_: &mut _, a, b| Ok(Expr::NotEq(Box::new(a), Box::new(b)))) as _)),
-                        "||" => empty.value((Assoc::Left(4), (|_: &mut _, a, b| Ok(Expr::Or(Box::new(a), Box::new(b)))) as _)),
-                        _ => fail
-                    },
-                )),
-            ),
-        ).parse_next(i)
-        }
-    }
-    parser(0).parse_next(i)
 }
 
 fn identifier<'i>(i: &mut &'i str) -> PResult<&'i str> {
@@ -366,7 +245,7 @@ fn identifier<'i>(i: &mut &'i str) -> PResult<&'i str> {
     .parse_next(i)
 }
 
-impl Expr {
+impl Expr<'_> {
     fn fmt_ast_with_indent(
         &self,
         indent: u32,
@@ -516,7 +395,7 @@ impl Expr {
     }
 }
 
-impl core::fmt::Display for Expr {
+impl core::fmt::Display for Expr<'_> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         self.fmt_ast_with_indent(0, f)?;
         writeln!(f)?;
@@ -534,19 +413,24 @@ mod test {
 
     #[allow(dead_code)]
     // to invoke fmt_delimited()
-    struct PrefixNotation(Expr);
+    struct PrefixNotation<'a>(Expr<'a>);
 
-    impl core::fmt::Display for PrefixNotation {
+    impl core::fmt::Display for PrefixNotation<'_> {
         fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
             self.0.fmt_delimited(f)
         }
     }
 
     #[allow(dead_code)]
-    fn parse(i: &str) -> Result<String, ParseError<&str, winnow::error::ContextError>> {
-        pratt_parser
-            .parse(i)
-            .map(|r| format!("{}", PrefixNotation(r)))
+    fn parse(i: &str) -> Result<String, ParseError<Input<'_>, winnow::error::ContextError>> {
+        let i = Stateful {
+            input: i,
+            state: bumpalo::Bump::new(),
+        };
+        // pratt_parser
+        //     .parse(i)
+        //     .map(|r| format!("{}", PrefixNotation(r)))
+        todo!()
     }
 
     #[allow(dead_code)]

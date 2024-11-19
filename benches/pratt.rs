@@ -20,54 +20,56 @@ static CORPUS: &str = include_str!("ariphmetic.txt");
 
 fn pratt_parser(i: &mut Stream<'_>) -> PResult<i64> {
     use winnow::combinator::precedence;
-    precedence::precedence(
-        dispatch! {peek(any);
-            b'(' => delimited(b'(',  pratt_parser, b')'),
-            _ => digit1.parse_to::<i64>()
-        },
-        dispatch! {any;
-            b'+' => empty.value((9, (&|a| a) as _)),
-            b'-' => empty.value((9, (&|a: i64| -a) as _)),
-            _ => fail
-        },
-        fail,
-        dispatch! {any;
-           b'+' => empty.value((5, 6, (&|a, b|  a + b) as _)),
-           b'-' => empty.value((5, 6, (&|a, b|  a - b) as _)),
-           b'*' => empty.value((7, 8, (&|a, b| a * b) as _)),
-           b'/' => empty.value((7, 8, (&|a, b|  a / b) as _)),
-           b'%' => empty.value((7, 8, (&|a, b|  a % b) as _)),
-           b'^' => empty.value((9, 10, (&|a, b|  a ^ b) as _)),
-           _ => fail
-        },
-    )
-    .parse_next(i)
+    // precedence::precedence(
+    //     dispatch! {peek(any);
+    //         b'(' => delimited(b'(',  pratt_parser, b')'),
+    //         _ => digit1.parse_to::<i64>()
+    //     },
+    //     dispatch! {any;
+    //         b'+' => empty.value((9, (&|a| a) as _)),
+    //         b'-' => empty.value((9, (&|a: i64| -a) as _)),
+    //         _ => fail
+    //     },
+    //     fail,
+    //     dispatch! {any;
+    //        b'+' => empty.value((5, 6, (&|a, b|  a + b) as _)),
+    //        b'-' => empty.value((5, 6, (&|a, b|  a - b) as _)),
+    //        b'*' => empty.value((7, 8, (&|a, b| a * b) as _)),
+    //        b'/' => empty.value((7, 8, (&|a, b|  a / b) as _)),
+    //        b'%' => empty.value((7, 8, (&|a, b|  a % b) as _)),
+    //        b'^' => empty.value((9, 10, (&|a, b|  a ^ b) as _)),
+    //        _ => fail
+    //     },
+    // )
+    // .parse_next(i)
+    Ok(0)
 }
 
 fn shunting_yard_parser(i: &mut Stream<'_>) -> PResult<i64> {
     use winnow::combinator::shunting_yard;
-    shunting_yard::precedence(
-        dispatch! {peek(any);
-            b'(' => delimited(b'(',  shunting_yard_parser, b')'),
-            _ => digit1.parse_to::<i64>()
-        },
-        dispatch! {any;
-            b'+' => empty.value((9, (&|a| a) as _)),
-            b'-' => empty.value((9, (&|a: i64| -a) as _)),
-            _ => fail
-        },
-        fail,
-        dispatch! {any;
-           b'+' => empty.value((5, 6, (&|a, b|  a + b) as _)),
-           b'-' => empty.value((5, 6, (&|a, b|  a - b) as _)),
-           b'*' => empty.value((7, 8, (&|a, b| a * b) as _)),
-           b'/' => empty.value((7, 8, (&|a, b|  a / b) as _)),
-           b'%' => empty.value((7, 8, (&|a, b|  a % b) as _)),
-           b'^' => empty.value((9, 10, (&|a, b|  a ^ b) as _)),
-           _ => fail
-        },
-    )
-    .parse_next(i)
+    // shunting_yard::precedence(
+    //     dispatch! {peek(any);
+    //         b'(' => delimited(b'(',  shunting_yard_parser, b')'),
+    //         _ => digit1.parse_to::<i64>()
+    //     },
+    //     dispatch! {any;
+    //         b'+' => empty.value((9, (&|a| a) as _)),
+    //         b'-' => empty.value((9, (&|a: i64| -a) as _)),
+    //         _ => fail
+    //     },
+    //     fail,
+    //     dispatch! {any;
+    //        b'+' => empty.value((5, 6, (&|a, b|  a + b) as _)),
+    //        b'-' => empty.value((5, 6, (&|a, b|  a - b) as _)),
+    //        b'*' => empty.value((7, 8, (&|a, b| a * b) as _)),
+    //        b'/' => empty.value((7, 8, (&|a, b|  a / b) as _)),
+    //        b'%' => empty.value((7, 8, (&|a, b|  a % b) as _)),
+    //        b'^' => empty.value((9, 10, (&|a, b|  a ^ b) as _)),
+    //        _ => fail
+    //     },
+    // )
+    // .parse_next(i)
+    Ok(0)
 }
 
 fn parse_expression(c: &mut Criterion) {

@@ -11,7 +11,7 @@ use crate::{
 #[doc(alias = "shunting_yard")]
 #[doc(alias = "precedence_climbing")]
 #[inline(always)]
-pub fn precedence<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand: 'static, E>(
+pub fn precedence<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand, E>(
     start_power: i64,
     mut operand: ParseOperand,
     mut prefix: ParsePrefix,
@@ -47,7 +47,7 @@ pub enum Assoc {
 }
 
 // recursive function
-fn precedence_impl<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand: 'static, E>(
+fn precedence_impl<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand, E>(
     i: &mut I,
     parse_operand: &mut ParseOperand,
     prefix: &mut ParsePrefix,
