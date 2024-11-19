@@ -548,8 +548,6 @@ mod test {
         parse_ok("a , b ? c, d : e, f", "(, (, a (? b (, c d) e)) f)");
         parse_ok("a = 0 ? b : c = d", "(= a (= (? 0 b c) d))");
     }
-    // 1 == 2 == 3
-    //  1  2 1  1
 
     #[test]
     fn braces() {
@@ -605,5 +603,29 @@ mod test {
         parse_ok("a++ ->b", "(-> (post++a) b)");
         parse_ok("a.(x)", "(. a x)");
         parse_ok("a.(x+3)", "(. a (+ x 3))");
+    }
+
+    #[test]
+    fn errors() {
+        assert!(parse("x + a b").is_err());
+        assert!(parse("x[a b]").is_err());
+        assert!(parse("x[a)]").is_err());
+        assert!(parse("x(a])").is_err());
+        assert!(parse("[a + b]").is_err());
+        assert!(parse("[a b]").is_err());
+        assert!(parse("+").is_err());
+        assert!(parse("a +").is_err());
+        assert!(parse("<=").is_err());
+        assert!(parse("<= - a + b").is_err());
+        assert!(parse("a b").is_err());
+        assert!(parse("a + b @").is_err());
+        assert!(parse("a + b )").is_err());
+        assert!(parse("( a + b").is_err());
+        assert!(parse("( a + b) c").is_err());
+        assert!(parse("f ( a + b ) c").is_err());
+        assert!(parse("@ a + b").is_err());
+        assert!(parse("a @ b").is_err());
+        assert!(parse("(a @ b)").is_err());
+        assert!(parse(")").is_err());
     }
 }
