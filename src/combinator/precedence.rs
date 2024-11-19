@@ -12,7 +12,7 @@ use crate::{
 #[doc(alias = "precedence_climbing")]
 #[inline(always)]
 pub fn precedence<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand: 'static, E>(
-    start_power: isize,
+    start_power: i64,
     mut operand: ParseOperand,
     mut prefix: ParsePrefix,
     mut postfix: ParsePostfix,
@@ -22,8 +22,8 @@ where
     I: Stream + StreamIsPartial,
     ParseOperand: Parser<I, Operand, E>,
     ParseInfix: Parser<I, (Assoc, fn(&mut I, Operand, Operand) -> PResult<Operand, E>), E>,
-    ParsePrefix: Parser<I, (isize, fn(&mut I, Operand) -> PResult<Operand, E>), E>,
-    ParsePostfix: Parser<I, (isize, fn(&mut I, Operand) -> PResult<Operand, E>), E>,
+    ParsePrefix: Parser<I, (i64, fn(&mut I, Operand) -> PResult<Operand, E>), E>,
+    ParsePostfix: Parser<I, (i64, fn(&mut I, Operand) -> PResult<Operand, E>), E>,
     E: ParserError<I>,
 {
     trace("precedence", move |i: &mut I| {
@@ -41,9 +41,9 @@ where
 
 #[derive(Debug, Clone, Copy)]
 pub enum Assoc {
-    Left(isize),
-    Right(isize),
-    Neither(isize),
+    Left(i64),
+    Right(i64),
+    Neither(i64),
 }
 
 // recursive function
@@ -53,14 +53,14 @@ fn precedence_impl<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Opera
     prefix: &mut ParsePrefix,
     postfix: &mut ParsePostfix,
     infix: &mut ParseInfix,
-    min_power: isize,
+    min_power: i64,
 ) -> PResult<Operand, E>
 where
     I: Stream + StreamIsPartial,
     ParseOperand: Parser<I, Operand, E>,
     ParseInfix: Parser<I, (Assoc, fn(&mut I, Operand, Operand) -> PResult<Operand, E>), E>,
-    ParsePrefix: Parser<I, (isize, fn(&mut I, Operand) -> PResult<Operand, E>), E>,
-    ParsePostfix: Parser<I, (isize, fn(&mut I, Operand) -> PResult<Operand, E>), E>,
+    ParsePrefix: Parser<I, (i64, fn(&mut I, Operand) -> PResult<Operand, E>), E>,
+    ParsePostfix: Parser<I, (i64, fn(&mut I, Operand) -> PResult<Operand, E>), E>,
     E: ParserError<I>,
 {
     let operand = opt(parse_operand.by_ref()).parse_next(i)?;
@@ -105,13 +105,13 @@ where
             let mut is_neither = None;
             let (lpower, rpower) = match assoc {
                 Assoc::Right(p) => (p, p - 1),
-                Assoc::Left(p) => (p, p),
+                Assoc::Left(p) => (p, p + 1),
                 Assoc::Neither(p) => {
                     is_neither = Some(p);
-                    (p, p)
+                    (p, p + 1)
                 }
             };
-            if lpower <= min_power || prev_op_is_neither.is_some_and(|p| lpower == p) {
+            if lpower < min_power || prev_op_is_neither.is_some_and(|p| lpower == p) {
                 i.reset(&start);
                 break 'parse;
             }
