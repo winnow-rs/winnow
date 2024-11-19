@@ -63,14 +63,12 @@ mod tests {
 
     #[test]
     fn handle_cfg_attributes() {
-        assert!(matches!(
-            dispatch! {any::<_, ContextError>;
-                #[cfg(any())] // always false
-                'a' => crate::combinator::empty,
-                _ => fail::<_, (), _>,
-            }
-            .parse("a"),
-            Err(_)
-        ));
+        assert!(dispatch! {any::<_, ContextError>;
+            #[cfg(any())] // always false
+            'a' => crate::combinator::empty,
+            _ => fail::<_, (), _>,
+        }
+        .parse("a")
+        .is_err());
     }
 }
