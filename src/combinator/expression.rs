@@ -11,7 +11,7 @@ use crate::{
 #[doc(alias = "shunting_yard")]
 #[doc(alias = "precedence_climbing")]
 #[inline(always)]
-pub fn precedence<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand, E>(
+pub fn expression<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand, E>(
     start_power: i64,
     mut operand: ParseOperand,
     mut prefix: ParsePrefix,
@@ -26,8 +26,8 @@ where
     ParsePostfix: Parser<I, (i64, fn(&mut I, Operand) -> PResult<Operand, E>), E>,
     E: ParserError<I>,
 {
-    trace("precedence", move |i: &mut I| {
-        let result = precedence_impl(
+    trace("expression", move |i: &mut I| {
+        let result = expression_impl(
             i,
             &mut operand,
             &mut prefix,
@@ -47,7 +47,7 @@ pub enum Assoc {
 }
 
 // recursive function
-fn precedence_impl<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand, E>(
+fn expression_impl<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand, E>(
     i: &mut I,
     parse_operand: &mut ParseOperand,
     prefix: &mut ParsePrefix,
@@ -74,7 +74,7 @@ where
         if i.eof_offset() == len {
             return Err(ErrMode::assert(i, "`prefix` parsers must always consume"));
         }
-        let operand = precedence_impl(i, parse_operand, prefix, postfix, infix, power)?;
+        let operand = expression_impl(i, parse_operand, prefix, postfix, infix, power)?;
         fold_prefix(i, operand)?
     };
 
@@ -116,7 +116,7 @@ where
                 break 'parse;
             }
             prev_op_is_neither = is_neither;
-            let rhs = precedence_impl(i, parse_operand, prefix, postfix, infix, rpower)?;
+            let rhs = expression_impl(i, parse_operand, prefix, postfix, infix, rpower)?;
             operand = fold_infix(i, operand, rhs)?;
 
             continue 'parse;
@@ -147,7 +147,7 @@ mod tests {
     }
     fn parser<'i>() -> impl Parser<&'i str, i32, ContextError> {
         move |i: &mut &str| {
-            precedence(
+            expression(
                 0,
                 trace(
                     "operand",
@@ -193,7 +193,7 @@ mod tests {
     }
 
     #[test]
-    fn test_precedence() {
+    fn test_expression() {
         // assert_eq!(parser().parse("-3!+-3 *  4"), Ok(-18));
         // assert_eq!(parser().parse("+2 + 3 *  4"), Ok(14));
         assert_eq!(parser().parse("2 * 3+4"), Ok(10));
