@@ -1,4 +1,4 @@
-use winnow::prelude::*;
+use winnow::{prelude::*, Stateful};
 
 mod parser;
 
@@ -6,6 +6,11 @@ fn main() -> Result<(), lexopt::Error> {
     let args = Args::parse()?;
 
     let input = args.input.as_deref().unwrap_or("1 + 1");
+    let b = bumpalo::Bump::new();
+    let input = Stateful {
+        input,
+        state: &b,
+    };
     match parser::pratt_parser.parse(input) {
         Ok(result) => {
             println!("{result}");
