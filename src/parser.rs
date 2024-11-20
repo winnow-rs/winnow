@@ -82,7 +82,18 @@ pub trait Parser<I, O, E> {
 
     /// Take tokens from the [`Stream`], turning it into the output
     ///
-    /// This includes advancing the [`Stream`] to the next location.
+    /// This returns a copy of the [`Stream`] advanced to the next location.
+    ///
+    /// <div class="warning">
+    ///
+    /// Generally, prefer [`Parser::parse_next`].
+    /// This is primarily intended for:
+    /// - Migrating from older versions / `nom`
+    /// - Testing [`Parser`]s
+    ///
+    /// For look-ahead parsing, see instead [`peek`].
+    ///
+    /// </div>
     #[inline(always)]
     fn parse_peek(&mut self, mut input: I) -> IResult<I, O, E> {
         match self.parse_next(&mut input) {

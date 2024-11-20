@@ -157,7 +157,9 @@ where
     })
 }
 
-/// Tries to apply its parser without consuming the input.
+/// Apply the parser without advancing the input.
+///
+/// To lookahead and only advance on success, see [`opt`].
 ///
 /// # Example
 ///
