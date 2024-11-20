@@ -222,6 +222,159 @@ pub(crate) fn pratt_parser<'i, 'a>(i: &mut Input<'i, 'a>) -> PResult<Expr<'a>> {
         parser(0).parse_next(i)
 }
 
+pub(crate) fn shunting_yard_parser<'i, 'a>(i: &mut Input<'i, 'a>) -> PResult<Expr<'a>> {
+        use winnow::combinator::precedence::Assoc;
+        use winnow::combinator::shunting_yard;
+        // precedence is based on https://en.cppreference.com/w/c/language/operator_precedence
+        // but specified in reverse order, because the `cppreference` table
+        // uses `descending` precedence, but we need ascending one
+        fn parser<'i, 'a>(
+            start_power: i64,
+        ) -> impl Parser<Input<'i, 'a>, Expr<'a>, ContextError> {
+            move |i: &mut Input<'i, 'a>| {
+                shunting_yard::precedence(
+                    start_power, 
+                    trace(
+                        "operand",
+                        delimited(
+                            multispace0,
+                            dispatch! {peek(any);
+                                '(' => |i: &mut Input<'i, 'a>| {
+                                        delimited('(', parser(0).map(|e| Expr::Paren(Box::new_in(e, &*i.state))), cut_err(')')).parse_next(i)
+                                },
+                                _ => alt((
+                                    |i: &mut Input<'i, 'a>| {
+                                        identifier.map(|s| Expr::Name(BString::from_str_in(s, &*i.state))).parse_next(i)
+                                    },
+                                    digit1.parse_to::<i64>().map(Expr::Value),
+                                )),
+                            },
+                            multispace0,
+                        ),
+                    ),
+                    trace(
+                        "prefix",
+                        delimited(
+                            multispace0,
+                            dispatch! {any;
+                                '+' => alt((
+                                    // ++
+                                    '+'.value((18, (|i: &mut Input<'i, 'a>, a| Ok(Expr::PreIncr(Box::new_in(a, i.state)))) as _)),
+                                    empty.value((18, (|_: &mut _, a| Ok(a)) as _))
+                                )),
+                                '-' =>  alt((
+                                    // --
+                                    '-'.value((18, (|i: &mut Input<'i, 'a>, a| Ok(Expr::PreDecr(Box::new_in(a, i.state)))) as _)),
+                                    empty.value((18, (|i: &mut Input<'i, 'a>, a| Ok(Expr::Neg(Box::new_in(a, i.state)))) as _))
+                                )),
+                                '&' => empty.value((18, (|i: &mut Input<'i, 'a>, a| Ok(Expr::Addr(Box::new_in(a, i.state)))) as _)),
+                                '*' => empty.value((18, (|i: &mut Input<'i, 'a>, a| Ok(Expr::Deref(Box::new_in(a, i.state)))) as _)),
+                                '!' => empty.value((18, (|i: &mut Input<'i, 'a>, a| Ok(Expr::Not(Box::new_in(a, i.state)))) as _)),
+                                '~' => empty.value((18, (|i: &mut Input<'i, 'a>, a| Ok(Expr::BitwiseNot(Box::new_in(a, i.state)))) as _)),
+                                _ => fail
+                            },
+                            multispace0,
+                        ),
+                    ),
+                    trace(
+                        "postfix",
+                        delimited(
+                            multispace0,
+                            alt((
+                                dispatch! {any;
+                                    '!' => not('=').value((19, (|i: &mut Input<'i, 'a>, a| Ok(Expr::Fac(Box::new_in(a, &i.state)))) as _)),
+                                    '?' => empty.value((3, (|i: &mut Input<'i, 'a>, cond| {
+                                        let (left, right) = cut_err(separated_pair(parser(0), delimited(multispace0, ':', multispace0), parser(3))).parse_next(i)?;
+                                        Ok(Expr::Ternary(Box::new_in(cond, &i.state), Box::new_in(left, &i.state), Box::new_in(right, &i.state)))
+                                    }) as _)),
+                                    '[' => empty.value((20, (|i: &mut Input<'i, 'a>, a| {
+                                        let index = delimited(multispace0, parser(0), (multispace0, cut_err(']'), multispace0)).parse_next(i)?;
+                                        Ok(Expr::Index(Box::new_in(a, &i.state), Box::new_in(index, &i.state)))
+                                    }) as _)),
+                                    '(' => empty.value((20, (|i: &mut Input<'i, 'a>, a| {
+                                        let args = delimited(multispace0, opt(parser(0)), (multispace0, cut_err(')'), multispace0)).parse_next(i)?;
+                                        Ok(Expr::FunctionCall(Box::new_in(a, &i.state), args.map(|a| Box::new_in(a, &i.state))))
+                                    }) as _)),
+                                    _ => fail,
+                                },
+                                dispatch! {take(2usize);
+                                    "++" => empty.value((20, (|i: &mut Input<'i, 'a>, a| Ok(Expr::PostIncr(Box::new_in(a, &i.state)))) as _)),
+                                    "--" => empty.value((20, (|i: &mut Input<'i, 'a>, a| Ok(Expr::PostDecr(Box::new_in(a, &i.state)))) as _)),
+                                    _ => fail,
+                                },
+                            )),
+                            multispace0,
+                        ),
+                    ),
+                    trace(
+                        "infix",
+                        alt((
+                            // fail,
+                            dispatch! {any;
+                                '*' => alt((
+                                    // **
+                                    "*".value((Assoc::Right(28), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::Pow(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                    empty.value((Assoc::Left(16), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::Mul(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                )),
+                                '/' => empty.value((Assoc::Left(16), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::Div(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                '%' => empty.value((Assoc::Left(16), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::Rem(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+
+                                '+' => empty.value((Assoc::Left(14), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::Add(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                '-' => alt((
+                                    dispatch!{take(2usize);
+                                        "ne" => empty.value((Assoc::Neither(10), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::NotEq(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                        "eq" => empty.value((Assoc::Neither(10), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::Eq(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                        "gt" => empty.value((Assoc::Neither(12), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::Greater(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                        "ge" => empty.value((Assoc::Neither(12), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::GreaterEqual(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                        "lt" => empty.value((Assoc::Neither(12), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::Less(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                        "le" => empty.value((Assoc::Neither(12), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::LessEqual(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                        _ => fail
+                                    },
+                                    '>'.value((Assoc::Left(20), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::ArrowOp(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                    empty.value((Assoc::Left(14), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::Sub(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _))
+                                )),
+                                '.' => empty.value((Assoc::Left(20), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::Dot(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                '&' => alt((
+                                    // &&
+                                    "&".value((Assoc::Left(6), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::And(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)  ),
+
+                                    empty.value((Assoc::Left(12), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::BitAnd(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                )),
+                                '^' => empty.value((Assoc::Left(8), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::BitXor(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                '=' => alt((
+                                    // ==
+                                    "=".value((Assoc::Neither(10), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::Eq(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                    empty.value((Assoc::Right(2), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::Assign(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _))
+                                )),
+
+                                '>' => alt((
+                                    // >=
+                                    "=".value((Assoc::Neither(12), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::GreaterEqual(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                    empty.value((Assoc::Neither(12), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::Greater(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _))
+                                )),
+                                '<' => alt((
+                                    // <=
+                                    "=".value((Assoc::Neither(12), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::LessEqual(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                    empty.value((Assoc::Neither(12), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::Less(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _))
+                                )),
+                                ',' => empty.value((Assoc::Left(0), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::Comma(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                _ => fail
+                            },
+                            dispatch! {take(2usize);
+                                "!=" => empty.value((Assoc::Neither(10), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::NotEq(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                "||" => empty.value((Assoc::Left(4), (|i: &mut Input<'i, 'a>, a, b| Ok(Expr::Or(Box::new_in(a, &i.state), Box::new_in(b, &i.state)))) as _)),
+                                _ => fail
+                            },
+                        )),
+                    ),
+                )
+                .parse_next(i)
+            }
+        }
+        parser(0).parse_next(i)
+}
+
+
 fn identifier<'i, 'a>(i: &mut Input<'i, 'a>) -> PResult<&'i str> {
     trace(
         "identifier",

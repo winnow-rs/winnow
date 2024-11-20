@@ -6,7 +6,7 @@ use crate::{PResult, Parser};
 use super::precedence::Assoc;
 use super::trace;
 
-pub fn precedence<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand: 'static, E>(
+pub fn precedence<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand, E>(
     start_precedence: i64,
     mut operand: ParseOperand,
     mut prefix: ParsePrefix,
@@ -34,7 +34,7 @@ where
     })
 }
 
-fn shunting_yard<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand: 'static, E>(
+fn shunting_yard<I, ParseOperand, ParseInfix, ParsePrefix, ParsePostfix, Operand, E>(
     start_precedence: i64,
     i: &mut I,
     mut operand: ParseOperand,
