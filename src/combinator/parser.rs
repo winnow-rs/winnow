@@ -490,6 +490,47 @@ where
     }
 }
 
+/// Implementation of [`Parser::value_with`]
+pub struct ValueWith<P, F, I, O, O2, E>
+where
+    P: Parser<I, O, E>,
+    F: FnMut() -> O2,
+{
+    parser: P,
+    generator: F,
+    i: core::marker::PhantomData<I>,
+    o: core::marker::PhantomData<O>,
+    e: core::marker::PhantomData<E>,
+}
+
+impl<P, F, I, O, O2, E> ValueWith<P, F, I, O, O2, E>
+where
+    P: Parser<I, O, E>,
+    F: FnMut() -> O2,
+{
+    #[inline(always)]
+    pub(crate) fn new(parser: P, generator: F) -> Self {
+        Self {
+            parser,
+            generator,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
+    }
+}
+
+impl<P, F, I, O, O2, E> Parser<I, O2, E> for ValueWith<P, F, I, O, O2, E>
+where
+    P: Parser<I, O, E>,
+    F: FnMut() -> O2,
+{
+    #[inline]
+    fn parse_next(&mut self, input: &mut I) -> PResult<O2, E> {
+        (self.parser).parse_next(input).map(|_| (self.generator)())
+    }
+}
+
 /// Implementation of [`Parser::default_value`]
 pub struct DefaultValue<F, I, O, O2, E>
 where
