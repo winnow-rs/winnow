@@ -218,7 +218,13 @@ where
                     (p, p + 1, f)
                 }
             };
-            if lpower < min_power || prev_op_is_neither.is_some_and(|p| lpower == p) {
+            if lpower < min_power
+                // MSRV: `is_some_and`
+                || match prev_op_is_neither {
+                    None => false,
+                    Some(p) => lpower == p,
+                }
+            {
                 i.reset(&start);
                 break 'parse;
             }
