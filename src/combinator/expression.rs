@@ -246,7 +246,7 @@ pub struct Prefix<I, O, E>(i64, fn(&mut I, O) -> PResult<O, E>);
 impl<I, O, E> Clone for Prefix<I, O, E> {
     #[inline(always)]
     fn clone(&self) -> Self {
-        Prefix(self.0, self.1.clone())
+        Prefix(self.0, self.1)
     }
 }
 
