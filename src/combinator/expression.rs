@@ -314,17 +314,17 @@ mod tests {
             use Infix::*;
             expression(0, digit1.parse_to::<i32>())
                 .prefix(dispatch! {any;
-                    '+' => Prefix(12, |_: &mut _, a: i32| Ok(a)),
-                    '-' => Prefix(12, |_: &mut _, a: i32| Ok(-a)),
+                    '+' => Prefix(12, |_, a| Ok(a)),
+                    '-' => Prefix(12, |_, a: i32| Ok(-a)),
                     _ => fail
                 })
                 .infix(dispatch! {any;
-                   '+' => Left(5, |_: &mut _, a, b| Ok(a + b)),
-                   '-' => Left(5, |_: &mut _, a, b| Ok(a - b)),
-                   '*' => Left(7, |_: &mut _, a, b| Ok(a * b)),
-                   '/' => Left(7, |_: &mut _, a, b| Ok(a / b)),
-                   '%' => Left(7, |_: &mut _, a, b| Ok(a % b)),
-                   '^' => Left(9, |_: &mut _, a, b| Ok(a ^ b)),
+                   '+' => Left(5, |_, a, b| Ok(a + b)),
+                   '-' => Left(5, |_, a, b| Ok(a - b)),
+                   '*' => Left(7, |_, a, b| Ok(a * b)),
+                   '/' => Left(7, |_, a, b| Ok(a / b)),
+                   '%' => Left(7, |_, a, b| Ok(a % b)),
+                   '^' => Left(9, |_, a, b| Ok(a ^ b)),
                    _ => fail
                 })
                 .parse_next(i)
