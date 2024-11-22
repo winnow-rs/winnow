@@ -16,7 +16,6 @@ use super::{empty, fail};
 #[doc(alias = "precedence_climbing")]
 #[inline(always)]
 pub fn expression<I, ParseOperand, O, E>(
-    start_power: i64,
     parse_operand: ParseOperand,
 ) -> Expression<
     I,
@@ -33,7 +32,7 @@ where
     E: ParserError<I>,
 {
     Expression {
-        start_power,
+        precedence_level: 0,
         parse_operand,
         parse_prefix: fail,
         parse_postfix: fail,
@@ -50,7 +49,7 @@ where
     ParseOperand: Parser<I, O, E>,
     E: ParserError<I>,
 {
-    start_power: i64,
+    precedence_level: i64,
     parse_operand: ParseOperand,
     parse_prefix: Pre,
     parse_postfix: Post,
@@ -75,7 +74,7 @@ where
         NewParsePrefix: Parser<I, Prefix<I, O, E>, E>,
     {
         Expression {
-            start_power: self.start_power,
+            precedence_level: self.precedence_level,
             parse_operand: self.parse_operand,
             parse_prefix: parser,
             parse_postfix: self.parse_postfix,
@@ -95,7 +94,7 @@ where
         NewParsePostfix: Parser<I, Postfix<I, O, E>, E>,
     {
         Expression {
-            start_power: self.start_power,
+            precedence_level: self.precedence_level,
             parse_operand: self.parse_operand,
             parse_prefix: self.parse_prefix,
             parse_postfix: parser,
@@ -115,7 +114,7 @@ where
         NewParseInfix: Parser<I, Infix<I, O, E>, E>,
     {
         Expression {
-            start_power: self.start_power,
+            precedence_level: self.precedence_level,
             parse_operand: self.parse_operand,
             parse_prefix: self.parse_prefix,
             parse_postfix: self.parse_postfix,
@@ -124,6 +123,15 @@ where
             o: Default::default(),
             e: Default::default(),
         }
+    }
+
+    #[inline(always)]
+    pub fn current_precedence_level(
+        mut self,
+        level: i64,
+    ) -> Expression<I, O, ParseOperand, Pre, Post, Pix, E> {
+        self.precedence_level = level;
+        self
     }
 }
 
@@ -145,7 +153,7 @@ where
                 &mut self.parse_prefix,
                 &mut self.parse_postfix,
                 &mut self.parse_infix,
-                self.start_power,
+                self.precedence_level,
             )
         })
         .parse_next(input)
@@ -312,7 +320,8 @@ mod tests {
     fn parser<'i>() -> impl Parser<&'i str, i32, ContextError> {
         move |i: &mut &str| {
             use Infix::*;
-            expression(0, digit1.parse_to::<i32>())
+            expression(digit1.parse_to::<i32>())
+                .current_precedence_level(0)
                 .prefix(dispatch! {any;
                     '+' => Prefix(12, |_, a| Ok(a)),
                     '-' => Prefix(12, |_, a: i32| Ok(-a)),
