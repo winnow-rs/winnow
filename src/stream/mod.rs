@@ -2684,6 +2684,16 @@ impl<'a, R: FromStr> ParseSlice<R> for &'a str {
     }
 }
 
+impl<I, R> ParseSlice<R> for Located<I>
+where
+    I: ParseSlice<R>,
+{
+    #[inline(always)]
+    fn parse_slice(&self) -> Option<R> {
+        self.input.parse_slice()
+    }
+}
+
 /// Convert a `Stream` into an appropriate `Output` type
 pub trait UpdateSlice: Stream {
     /// Convert an `Output` type to be used as `Stream`
