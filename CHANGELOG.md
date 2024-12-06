@@ -351,7 +351,7 @@ All others
 
 ### Features
 
-- Add `separated` combiantor
+- Add `separated` combinator
 
 ### Compatibility
 
@@ -667,7 +667,7 @@ Example: `chumsky`s json bench:
   - `sequence`
   - `branch`
   - `multi`
-- Renamed the `*many*` combiantors as `*repeat*` to make the code read more clearly
+- Renamed the `*many*` combinators as `*repeat*` to make the code read more clearly
 - Generalized `repeat_m_n` as `repeat` which takes any range type
 - Generalzied `fold_repeat_m_n` as `fold_repeat` which takes any range type
 - Generalized `take_while_m_n` as `take_while` which takes any range type
@@ -850,7 +850,7 @@ MSRV was raised to 1.60 (#158, #160, #167)
   - `context` as `Parser::context`
 - `many0_count`, `many1_count` in favor of `many0` and `many1` (#127)
 - Freestanding `into` in favor of `Parser::output_into` and `Parser::err_into` (#37, #48)
-- `winnow::combinator::cut` in favor of `winnow::combiantor::cut_err` (#117)
+- `winnow::combinator::cut` in favor of `winnow::combinator::cut_err` (#117)
 - `Parser::parse` in favor of `Parser::parse_next` (#76)
 - `is_a` with `take_while1` thanks to new `FindToken` impls (#44)
 - `is_not` with `take_till1` thanks to new `FindToken` impls (#44)
@@ -964,7 +964,7 @@ MSRV was raised to 1.60 (#158, #160, #167)
 - documentation fixes
 - tests fixes
 - limit the initial capacity of the result vector of `many_m_n` to 64kiB
-- bits parser now accept `Parser` implementors instead of only functions
+- bits parser now accept `Parser` implementers instead of only functions
 
 ### Added
 
@@ -1978,7 +1978,7 @@ This version also adds a lot of interesting features, like the permutation combi
 
 ### Changed
 
-- `apply_rf` is renamed to `apply_m`. This will not warrant a major version, since it is part missing from the methods feture added in the 1.2.0 release
+- `apply_rf` is renamed to `apply_m`. This will not warrant a major version, since it is part missing from the methods feature added in the 1.2.0 release
 - the `regexp_macros` feature that used `regex!` to precompile regular expressions has been replaced by the normal regex engine combined with `lazy_static`
 
 ### Fixed
@@ -2243,7 +2243,7 @@ Considering the number of changes since the last release, this version can conta
 - `cond!` had an infinite macro recursion
 
 ### Changed
-- `chain!` generates less code now. No apprent compilation time improvement
+- `chain!` generates less code now. No apparent compilation time improvement
 
 ## [nom 0.3.3] - 2015-06-09
 
