@@ -460,7 +460,7 @@ where
 /// `f` keeps going so long as `g` produces [`ErrMode::Backtrack`]. To instead chain an error up, see [`cut_err`][crate::combinator::cut_err].
 ///
 /// To take a series of tokens, [`Accumulate`] into a `()`
-/// (e.g. with [`.map(|()| ())`][Parser::map])
+/// (e.g. with [`.map(|((), _)| ())`][Parser::map])
 /// and then [`Parser::take`].
 ///
 /// See also
