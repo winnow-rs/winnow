@@ -2186,15 +2186,37 @@ pub trait Compare<T> {
     fn compare(&self, t: T) -> CompareResult;
 }
 
-impl<'a, 'b> Compare<&'b [u8]> for &'a [u8] {
-    #[inline]
-    fn compare(&self, t: &'b [u8]) -> CompareResult {
-        if t.iter().zip(*self).any(|(a, b)| a != b) {
+impl<T> Compare<&str> for T
+where
+    T: AsRef<[u8]>,
+{
+    fn compare(&self, t: &str) -> CompareResult {
+        let self_bytes = self.as_ref();
+        let t_bytes = t.as_bytes();
+
+        if t_bytes.iter().zip(self_bytes).any(|(a, b)| a != b) {
             CompareResult::Error
-        } else if self.len() < t.slice_len() {
+        } else if self_bytes.len() < t_bytes.len() {
             CompareResult::Incomplete
         } else {
-            CompareResult::Ok(t.slice_len())
+            CompareResult::Ok(t_bytes.len())
+        }
+    }
+}
+
+impl<T> Compare<&[u8]> for T
+where
+    T: AsRef<[u8]>,
+{
+    fn compare(&self, t: &[u8]) -> CompareResult {
+        let self_bytes = self.as_ref();
+
+        if t.iter().zip(self_bytes).any(|(a, b)| a != b) {
+            CompareResult::Error
+        } else if self_bytes.len() < t.len() {
+            CompareResult::Incomplete
+        } else {
+            CompareResult::Ok(t.len())
         }
     }
 }
@@ -2244,13 +2266,6 @@ impl<'a, 'b, const LEN: usize> Compare<AsciiCaseless<&'b [u8; LEN]>> for &'a [u8
     }
 }
 
-impl<'a, 'b> Compare<&'b str> for &'a [u8] {
-    #[inline(always)]
-    fn compare(&self, t: &'b str) -> CompareResult {
-        self.compare(t.as_bytes())
-    }
-}
-
 impl<'a, 'b> Compare<AsciiCaseless<&'b str>> for &'a [u8] {
     #[inline(always)]
     fn compare(&self, t: AsciiCaseless<&'b str>) -> CompareResult {
@@ -2294,13 +2309,6 @@ impl<'a> Compare<AsciiCaseless<char>> for &'a [u8] {
     }
 }
 
-impl<'a, 'b> Compare<&'b str> for &'a str {
-    #[inline(always)]
-    fn compare(&self, t: &'b str) -> CompareResult {
-        self.as_bytes().compare(t.as_bytes())
-    }
-}
-
 impl<'a, 'b> Compare<AsciiCaseless<&'b str>> for &'a str {
     #[inline(always)]
     fn compare(&self, t: AsciiCaseless<&'b str>) -> CompareResult {
@@ -2319,28 +2327,6 @@ impl<'a> Compare<AsciiCaseless<char>> for &'a str {
     #[inline(always)]
     fn compare(&self, t: AsciiCaseless<char>) -> CompareResult {
         self.as_bytes().compare(t)
-    }
-}
-
-impl<'a, T> Compare<T> for &'a Bytes
-where
-    &'a [u8]: Compare<T>,
-{
-    #[inline(always)]
-    fn compare(&self, t: T) -> CompareResult {
-        let bytes = (*self).as_bytes();
-        bytes.compare(t)
-    }
-}
-
-impl<'a, T> Compare<T> for &'a BStr
-where
-    &'a [u8]: Compare<T>,
-{
-    #[inline(always)]
-    fn compare(&self, t: T) -> CompareResult {
-        let bytes = (*self).as_bytes();
-        bytes.compare(t)
     }
 }
 
