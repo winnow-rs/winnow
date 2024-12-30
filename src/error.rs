@@ -386,7 +386,7 @@ impl<I: Clone> InputError<I> {
 }
 
 #[cfg(feature = "alloc")]
-impl<'i, I: ToOwned> InputError<&'i I>
+impl<I: ToOwned> InputError<&I>
 where
     <I as ToOwned>::Owned: Clone,
 {

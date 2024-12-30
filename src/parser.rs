@@ -743,9 +743,9 @@ pub trait Parser<I, O, E> {
     }
 }
 
-impl<'a, I, O, E, F> Parser<I, O, E> for F
+impl<I, O, E, F> Parser<I, O, E> for F
 where
-    F: FnMut(&mut I) -> PResult<O, E> + 'a,
+    F: FnMut(&mut I) -> PResult<O, E>,
     I: Stream,
 {
     #[inline(always)]
@@ -1128,7 +1128,7 @@ impl_parser_for_tuples!(
 use crate::lib::std::boxed::Box;
 
 #[cfg(feature = "alloc")]
-impl<'a, I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + 'a> {
+impl<I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + '_> {
     #[inline(always)]
     fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
         (**self).parse_next(i)

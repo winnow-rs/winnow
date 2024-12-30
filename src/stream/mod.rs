@@ -514,7 +514,7 @@ impl<S: SliceLen> SliceLen for AsciiCaseless<S> {
     }
 }
 
-impl<'a, T> SliceLen for &'a [T] {
+impl<T> SliceLen for &[T] {
     #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
@@ -528,14 +528,14 @@ impl<T, const LEN: usize> SliceLen for [T; LEN] {
     }
 }
 
-impl<'a, T, const LEN: usize> SliceLen for &'a [T; LEN] {
+impl<T, const LEN: usize> SliceLen for &[T; LEN] {
     #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
 }
 
-impl<'a> SliceLen for &'a str {
+impl SliceLen for &str {
     #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
@@ -556,14 +556,14 @@ impl SliceLen for char {
     }
 }
 
-impl<'a> SliceLen for &'a Bytes {
+impl SliceLen for &Bytes {
     #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
     }
 }
 
-impl<'a> SliceLen for &'a BStr {
+impl SliceLen for &BStr {
     #[inline(always)]
     fn slice_len(&self) -> usize {
         self.len()
@@ -1435,7 +1435,7 @@ where
 
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
-impl<'a, E> Recover<E> for &'a str {
+impl<E> Recover<E> for &str {
     #[inline(always)]
     fn record_err(
         &mut self,
@@ -1455,7 +1455,7 @@ impl<'a, E> Recover<E> for &'a str {
 
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
-impl<'a, E> Recover<E> for &'a Bytes {
+impl<E> Recover<E> for &Bytes {
     #[inline(always)]
     fn record_err(
         &mut self,
@@ -1475,7 +1475,7 @@ impl<'a, E> Recover<E> for &'a Bytes {
 
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
-impl<'a, E> Recover<E> for &'a BStr {
+impl<E> Recover<E> for &BStr {
     #[inline(always)]
     fn record_err(
         &mut self,
@@ -1649,7 +1649,7 @@ pub trait StreamIsPartial: Sized {
     }
 }
 
-impl<'a, T> StreamIsPartial for &'a [T] {
+impl<T> StreamIsPartial for &[T] {
     type PartialState = ();
 
     fn complete(&mut self) -> Self::PartialState {}
@@ -1662,7 +1662,7 @@ impl<'a, T> StreamIsPartial for &'a [T] {
     }
 }
 
-impl<'a> StreamIsPartial for &'a str {
+impl StreamIsPartial for &str {
     type PartialState = ();
 
     fn complete(&mut self) -> Self::PartialState {
@@ -1677,7 +1677,7 @@ impl<'a> StreamIsPartial for &'a str {
     }
 }
 
-impl<'a> StreamIsPartial for &'a Bytes {
+impl StreamIsPartial for &Bytes {
     type PartialState = ();
 
     fn complete(&mut self) -> Self::PartialState {
@@ -1692,7 +1692,7 @@ impl<'a> StreamIsPartial for &'a Bytes {
     }
 }
 
-impl<'a> StreamIsPartial for &'a BStr {
+impl StreamIsPartial for &BStr {
     type PartialState = ();
 
     fn complete(&mut self) -> Self::PartialState {
@@ -1848,7 +1848,7 @@ pub trait Offset<Start = Self> {
     fn offset_from(&self, start: &Start) -> usize;
 }
 
-impl<'a, T> Offset for &'a [T] {
+impl<T> Offset for &[T] {
     #[inline]
     fn offset_from(&self, start: &Self) -> usize {
         let fst = (*start).as_ptr();
@@ -1872,7 +1872,7 @@ where
     }
 }
 
-impl<'a> Offset for &'a str {
+impl Offset for &str {
     #[inline(always)]
     fn offset_from(&self, start: &Self) -> usize {
         self.as_bytes().offset_from(&start.as_bytes())
@@ -1886,7 +1886,7 @@ impl<'a> Offset<<&'a str as Stream>::Checkpoint> for &'a str {
     }
 }
 
-impl<'a> Offset for &'a Bytes {
+impl Offset for &Bytes {
     #[inline(always)]
     fn offset_from(&self, start: &Self) -> usize {
         self.as_bytes().offset_from(&start.as_bytes())
@@ -1900,7 +1900,7 @@ impl<'a> Offset<<&'a Bytes as Stream>::Checkpoint> for &'a Bytes {
     }
 }
 
-impl<'a> Offset for &'a BStr {
+impl Offset for &BStr {
     #[inline(always)]
     fn offset_from(&self, start: &Self) -> usize {
         self.as_bytes().offset_from(&start.as_bytes())
@@ -2038,14 +2038,14 @@ pub trait AsBytes {
     fn as_bytes(&self) -> &[u8];
 }
 
-impl<'a> AsBytes for &'a [u8] {
+impl AsBytes for &[u8] {
     #[inline(always)]
     fn as_bytes(&self) -> &[u8] {
         self
     }
 }
 
-impl<'a> AsBytes for &'a Bytes {
+impl AsBytes for &Bytes {
     #[inline(always)]
     fn as_bytes(&self) -> &[u8] {
         (*self).as_bytes()
@@ -2101,21 +2101,21 @@ pub trait AsBStr {
     fn as_bstr(&self) -> &[u8];
 }
 
-impl<'a> AsBStr for &'a [u8] {
+impl AsBStr for &[u8] {
     #[inline(always)]
     fn as_bstr(&self) -> &[u8] {
         self
     }
 }
 
-impl<'a> AsBStr for &'a BStr {
+impl AsBStr for &BStr {
     #[inline(always)]
     fn as_bstr(&self) -> &[u8] {
         (*self).as_bytes()
     }
 }
 
-impl<'a> AsBStr for &'a str {
+impl AsBStr for &str {
     #[inline(always)]
     fn as_bstr(&self) -> &[u8] {
         (*self).as_bytes()
@@ -2186,7 +2186,7 @@ pub trait Compare<T> {
     fn compare(&self, t: T) -> CompareResult;
 }
 
-impl<'a, 'b> Compare<&'b [u8]> for &'a [u8] {
+impl<'b> Compare<&'b [u8]> for &[u8] {
     #[inline]
     fn compare(&self, t: &'b [u8]) -> CompareResult {
         if t.iter().zip(*self).any(|(a, b)| a != b) {
@@ -2199,7 +2199,7 @@ impl<'a, 'b> Compare<&'b [u8]> for &'a [u8] {
     }
 }
 
-impl<'a, 'b> Compare<AsciiCaseless<&'b [u8]>> for &'a [u8] {
+impl<'b> Compare<AsciiCaseless<&'b [u8]>> for &[u8] {
     #[inline]
     fn compare(&self, t: AsciiCaseless<&'b [u8]>) -> CompareResult {
         if t.0
@@ -2216,49 +2216,49 @@ impl<'a, 'b> Compare<AsciiCaseless<&'b [u8]>> for &'a [u8] {
     }
 }
 
-impl<'a, const LEN: usize> Compare<[u8; LEN]> for &'a [u8] {
+impl<const LEN: usize> Compare<[u8; LEN]> for &[u8] {
     #[inline(always)]
     fn compare(&self, t: [u8; LEN]) -> CompareResult {
         self.compare(&t[..])
     }
 }
 
-impl<'a, const LEN: usize> Compare<AsciiCaseless<[u8; LEN]>> for &'a [u8] {
+impl<const LEN: usize> Compare<AsciiCaseless<[u8; LEN]>> for &[u8] {
     #[inline(always)]
     fn compare(&self, t: AsciiCaseless<[u8; LEN]>) -> CompareResult {
         self.compare(AsciiCaseless(&t.0[..]))
     }
 }
 
-impl<'a, 'b, const LEN: usize> Compare<&'b [u8; LEN]> for &'a [u8] {
+impl<'b, const LEN: usize> Compare<&'b [u8; LEN]> for &[u8] {
     #[inline(always)]
     fn compare(&self, t: &'b [u8; LEN]) -> CompareResult {
         self.compare(&t[..])
     }
 }
 
-impl<'a, 'b, const LEN: usize> Compare<AsciiCaseless<&'b [u8; LEN]>> for &'a [u8] {
+impl<'b, const LEN: usize> Compare<AsciiCaseless<&'b [u8; LEN]>> for &[u8] {
     #[inline(always)]
     fn compare(&self, t: AsciiCaseless<&'b [u8; LEN]>) -> CompareResult {
         self.compare(AsciiCaseless(&t.0[..]))
     }
 }
 
-impl<'a, 'b> Compare<&'b str> for &'a [u8] {
+impl<'b> Compare<&'b str> for &[u8] {
     #[inline(always)]
     fn compare(&self, t: &'b str) -> CompareResult {
         self.compare(t.as_bytes())
     }
 }
 
-impl<'a, 'b> Compare<AsciiCaseless<&'b str>> for &'a [u8] {
+impl<'b> Compare<AsciiCaseless<&'b str>> for &[u8] {
     #[inline(always)]
     fn compare(&self, t: AsciiCaseless<&'b str>) -> CompareResult {
         self.compare(AsciiCaseless(t.0.as_bytes()))
     }
 }
 
-impl<'a> Compare<u8> for &'a [u8] {
+impl Compare<u8> for &[u8] {
     #[inline]
     fn compare(&self, t: u8) -> CompareResult {
         match self.first().copied() {
@@ -2269,7 +2269,7 @@ impl<'a> Compare<u8> for &'a [u8] {
     }
 }
 
-impl<'a> Compare<AsciiCaseless<u8>> for &'a [u8] {
+impl Compare<AsciiCaseless<u8>> for &[u8] {
     #[inline]
     fn compare(&self, t: AsciiCaseless<u8>) -> CompareResult {
         match self.first() {
@@ -2280,42 +2280,42 @@ impl<'a> Compare<AsciiCaseless<u8>> for &'a [u8] {
     }
 }
 
-impl<'a> Compare<char> for &'a [u8] {
+impl Compare<char> for &[u8] {
     #[inline(always)]
     fn compare(&self, t: char) -> CompareResult {
         self.compare(t.encode_utf8(&mut [0; 4]).as_bytes())
     }
 }
 
-impl<'a> Compare<AsciiCaseless<char>> for &'a [u8] {
+impl Compare<AsciiCaseless<char>> for &[u8] {
     #[inline(always)]
     fn compare(&self, t: AsciiCaseless<char>) -> CompareResult {
         self.compare(AsciiCaseless(t.0.encode_utf8(&mut [0; 4]).as_bytes()))
     }
 }
 
-impl<'a, 'b> Compare<&'b str> for &'a str {
+impl<'b> Compare<&'b str> for &str {
     #[inline(always)]
     fn compare(&self, t: &'b str) -> CompareResult {
         self.as_bytes().compare(t.as_bytes())
     }
 }
 
-impl<'a, 'b> Compare<AsciiCaseless<&'b str>> for &'a str {
+impl<'b> Compare<AsciiCaseless<&'b str>> for &str {
     #[inline(always)]
     fn compare(&self, t: AsciiCaseless<&'b str>) -> CompareResult {
         self.as_bytes().compare(t.as_bytes())
     }
 }
 
-impl<'a> Compare<char> for &'a str {
+impl Compare<char> for &str {
     #[inline(always)]
     fn compare(&self, t: char) -> CompareResult {
         self.as_bytes().compare(t)
     }
 }
 
-impl<'a> Compare<AsciiCaseless<char>> for &'a str {
+impl Compare<AsciiCaseless<char>> for &str {
     #[inline(always)]
     fn compare(&self, t: AsciiCaseless<char>) -> CompareResult {
         self.as_bytes().compare(t)
@@ -2393,21 +2393,21 @@ pub trait FindSlice<T> {
     fn find_slice(&self, substr: T) -> Option<crate::lib::std::ops::Range<usize>>;
 }
 
-impl<'i, 's> FindSlice<&'s [u8]> for &'i [u8] {
+impl<'s> FindSlice<&'s [u8]> for &[u8] {
     #[inline(always)]
     fn find_slice(&self, substr: &'s [u8]) -> Option<crate::lib::std::ops::Range<usize>> {
         memmem(self, substr)
     }
 }
 
-impl<'i, 's> FindSlice<(&'s [u8],)> for &'i [u8] {
+impl<'s> FindSlice<(&'s [u8],)> for &[u8] {
     #[inline(always)]
     fn find_slice(&self, substr: (&'s [u8],)) -> Option<crate::lib::std::ops::Range<usize>> {
         memmem(self, substr.0)
     }
 }
 
-impl<'i, 's> FindSlice<(&'s [u8], &'s [u8])> for &'i [u8] {
+impl<'s> FindSlice<(&'s [u8], &'s [u8])> for &[u8] {
     #[inline(always)]
     fn find_slice(
         &self,
@@ -2417,7 +2417,7 @@ impl<'i, 's> FindSlice<(&'s [u8], &'s [u8])> for &'i [u8] {
     }
 }
 
-impl<'i, 's> FindSlice<(&'s [u8], &'s [u8], &'s [u8])> for &'i [u8] {
+impl<'s> FindSlice<(&'s [u8], &'s [u8], &'s [u8])> for &[u8] {
     #[inline(always)]
     fn find_slice(
         &self,
@@ -2427,7 +2427,7 @@ impl<'i, 's> FindSlice<(&'s [u8], &'s [u8], &'s [u8])> for &'i [u8] {
     }
 }
 
-impl<'i> FindSlice<char> for &'i [u8] {
+impl FindSlice<char> for &[u8] {
     #[inline(always)]
     fn find_slice(&self, substr: char) -> Option<crate::lib::std::ops::Range<usize>> {
         let mut b = [0; 4];
@@ -2436,7 +2436,7 @@ impl<'i> FindSlice<char> for &'i [u8] {
     }
 }
 
-impl<'i> FindSlice<(char,)> for &'i [u8] {
+impl FindSlice<(char,)> for &[u8] {
     #[inline(always)]
     fn find_slice(&self, substr: (char,)) -> Option<crate::lib::std::ops::Range<usize>> {
         let mut b = [0; 4];
@@ -2445,7 +2445,7 @@ impl<'i> FindSlice<(char,)> for &'i [u8] {
     }
 }
 
-impl<'i> FindSlice<(char, char)> for &'i [u8] {
+impl FindSlice<(char, char)> for &[u8] {
     #[inline(always)]
     fn find_slice(&self, substr: (char, char)) -> Option<crate::lib::std::ops::Range<usize>> {
         let mut b = [0; 4];
@@ -2456,7 +2456,7 @@ impl<'i> FindSlice<(char, char)> for &'i [u8] {
     }
 }
 
-impl<'i> FindSlice<(char, char, char)> for &'i [u8] {
+impl FindSlice<(char, char, char)> for &[u8] {
     #[inline(always)]
     fn find_slice(&self, substr: (char, char, char)) -> Option<crate::lib::std::ops::Range<usize>> {
         let mut b = [0; 4];
@@ -2469,56 +2469,56 @@ impl<'i> FindSlice<(char, char, char)> for &'i [u8] {
     }
 }
 
-impl<'i> FindSlice<u8> for &'i [u8] {
+impl FindSlice<u8> for &[u8] {
     #[inline(always)]
     fn find_slice(&self, substr: u8) -> Option<crate::lib::std::ops::Range<usize>> {
         memchr(substr, self).map(|i| i..i + 1)
     }
 }
 
-impl<'i> FindSlice<(u8,)> for &'i [u8] {
+impl FindSlice<(u8,)> for &[u8] {
     #[inline(always)]
     fn find_slice(&self, substr: (u8,)) -> Option<crate::lib::std::ops::Range<usize>> {
         memchr(substr.0, self).map(|i| i..i + 1)
     }
 }
 
-impl<'i> FindSlice<(u8, u8)> for &'i [u8] {
+impl FindSlice<(u8, u8)> for &[u8] {
     #[inline(always)]
     fn find_slice(&self, substr: (u8, u8)) -> Option<crate::lib::std::ops::Range<usize>> {
         memchr2(substr, self).map(|i| i..i + 1)
     }
 }
 
-impl<'i> FindSlice<(u8, u8, u8)> for &'i [u8] {
+impl FindSlice<(u8, u8, u8)> for &[u8] {
     #[inline(always)]
     fn find_slice(&self, substr: (u8, u8, u8)) -> Option<crate::lib::std::ops::Range<usize>> {
         memchr3(substr, self).map(|i| i..i + 1)
     }
 }
 
-impl<'i, 's> FindSlice<&'s str> for &'i [u8] {
+impl<'s> FindSlice<&'s str> for &[u8] {
     #[inline(always)]
     fn find_slice(&self, substr: &'s str) -> Option<crate::lib::std::ops::Range<usize>> {
         self.find_slice(substr.as_bytes())
     }
 }
 
-impl<'i, 's> FindSlice<(&'s str,)> for &'i [u8] {
+impl<'s> FindSlice<(&'s str,)> for &[u8] {
     #[inline(always)]
     fn find_slice(&self, substr: (&'s str,)) -> Option<crate::lib::std::ops::Range<usize>> {
         memmem(self, substr.0.as_bytes())
     }
 }
 
-impl<'i, 's> FindSlice<(&'s str, &'s str)> for &'i [u8] {
+impl<'s> FindSlice<(&'s str, &'s str)> for &[u8] {
     #[inline(always)]
     fn find_slice(&self, substr: (&'s str, &'s str)) -> Option<crate::lib::std::ops::Range<usize>> {
         memmem2(self, (substr.0.as_bytes(), substr.1.as_bytes()))
     }
 }
 
-impl<'i, 's> FindSlice<(&'s str, &'s str, &'s str)> for &'i [u8] {
+impl<'s> FindSlice<(&'s str, &'s str, &'s str)> for &[u8] {
     #[inline(always)]
     fn find_slice(
         &self,
@@ -2535,28 +2535,28 @@ impl<'i, 's> FindSlice<(&'s str, &'s str, &'s str)> for &'i [u8] {
     }
 }
 
-impl<'i, 's> FindSlice<&'s str> for &'i str {
+impl<'s> FindSlice<&'s str> for &str {
     #[inline(always)]
     fn find_slice(&self, substr: &'s str) -> Option<crate::lib::std::ops::Range<usize>> {
         self.as_bytes().find_slice(substr)
     }
 }
 
-impl<'i, 's> FindSlice<(&'s str,)> for &'i str {
+impl<'s> FindSlice<(&'s str,)> for &str {
     #[inline(always)]
     fn find_slice(&self, substr: (&'s str,)) -> Option<crate::lib::std::ops::Range<usize>> {
         self.as_bytes().find_slice(substr)
     }
 }
 
-impl<'i, 's> FindSlice<(&'s str, &'s str)> for &'i str {
+impl<'s> FindSlice<(&'s str, &'s str)> for &str {
     #[inline(always)]
     fn find_slice(&self, substr: (&'s str, &'s str)) -> Option<crate::lib::std::ops::Range<usize>> {
         self.as_bytes().find_slice(substr)
     }
 }
 
-impl<'i, 's> FindSlice<(&'s str, &'s str, &'s str)> for &'i str {
+impl<'s> FindSlice<(&'s str, &'s str, &'s str)> for &str {
     #[inline(always)]
     fn find_slice(
         &self,
@@ -2566,28 +2566,28 @@ impl<'i, 's> FindSlice<(&'s str, &'s str, &'s str)> for &'i str {
     }
 }
 
-impl<'i> FindSlice<char> for &'i str {
+impl FindSlice<char> for &str {
     #[inline(always)]
     fn find_slice(&self, substr: char) -> Option<crate::lib::std::ops::Range<usize>> {
         self.as_bytes().find_slice(substr)
     }
 }
 
-impl<'i> FindSlice<(char,)> for &'i str {
+impl FindSlice<(char,)> for &str {
     #[inline(always)]
     fn find_slice(&self, substr: (char,)) -> Option<crate::lib::std::ops::Range<usize>> {
         self.as_bytes().find_slice(substr)
     }
 }
 
-impl<'i> FindSlice<(char, char)> for &'i str {
+impl FindSlice<(char, char)> for &str {
     #[inline(always)]
     fn find_slice(&self, substr: (char, char)) -> Option<crate::lib::std::ops::Range<usize>> {
         self.as_bytes().find_slice(substr)
     }
 }
 
-impl<'i> FindSlice<(char, char, char)> for &'i str {
+impl FindSlice<(char, char, char)> for &str {
     #[inline(always)]
     fn find_slice(&self, substr: (char, char, char)) -> Option<crate::lib::std::ops::Range<usize>> {
         self.as_bytes().find_slice(substr)
@@ -2670,14 +2670,14 @@ pub trait ParseSlice<R> {
     fn parse_slice(&self) -> Option<R>;
 }
 
-impl<'a, R: FromStr> ParseSlice<R> for &'a [u8] {
+impl<R: FromStr> ParseSlice<R> for &[u8] {
     #[inline(always)]
     fn parse_slice(&self) -> Option<R> {
         from_utf8(self).ok().and_then(|s| s.parse().ok())
     }
 }
 
-impl<'a, R: FromStr> ParseSlice<R> for &'a str {
+impl<R: FromStr> ParseSlice<R> for &str {
     #[inline(always)]
     fn parse_slice(&self) -> Option<R> {
         self.parse().ok()
@@ -2690,7 +2690,7 @@ pub trait UpdateSlice: Stream {
     fn update_slice(self, inner: Self::Slice) -> Self;
 }
 
-impl<'a, T> UpdateSlice for &'a [T]
+impl<T> UpdateSlice for &[T]
 where
     T: Clone + crate::lib::std::fmt::Debug,
 {
@@ -2700,21 +2700,21 @@ where
     }
 }
 
-impl<'a> UpdateSlice for &'a str {
+impl UpdateSlice for &str {
     #[inline(always)]
     fn update_slice(self, inner: Self::Slice) -> Self {
         inner
     }
 }
 
-impl<'a> UpdateSlice for &'a Bytes {
+impl UpdateSlice for &Bytes {
     #[inline(always)]
     fn update_slice(self, inner: Self::Slice) -> Self {
         Bytes::new(inner)
     }
 }
 
-impl<'a> UpdateSlice for &'a BStr {
+impl UpdateSlice for &BStr {
     #[inline(always)]
     fn update_slice(self, inner: Self::Slice) -> Self {
         BStr::new(inner)
@@ -3280,7 +3280,7 @@ impl AsChar for u8 {
     }
 }
 
-impl<'a> AsChar for &'a u8 {
+impl AsChar for &u8 {
     #[inline(always)]
     fn as_char(self) -> char {
         (*self).as_char()
@@ -3358,7 +3358,7 @@ impl AsChar for char {
     }
 }
 
-impl<'a> AsChar for &'a char {
+impl AsChar for &char {
     #[inline(always)]
     fn as_char(self) -> char {
         (*self).as_char()
@@ -3433,7 +3433,7 @@ impl ContainsToken<u8> for u8 {
     }
 }
 
-impl<'a> ContainsToken<&'a u8> for u8 {
+impl ContainsToken<&u8> for u8 {
     #[inline(always)]
     fn contains_token(&self, token: &u8) -> bool {
         self.contains_token(*token)
@@ -3447,7 +3447,7 @@ impl ContainsToken<char> for u8 {
     }
 }
 
-impl<'a> ContainsToken<&'a char> for u8 {
+impl ContainsToken<&char> for u8 {
     #[inline(always)]
     fn contains_token(&self, token: &char) -> bool {
         self.contains_token(*token)

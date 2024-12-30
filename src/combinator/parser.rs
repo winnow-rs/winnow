@@ -26,7 +26,7 @@ impl<'p, P> ByRef<'p, P> {
     }
 }
 
-impl<'p, I, O, E, P> Parser<I, O, E> for ByRef<'p, P>
+impl<I, O, E, P> Parser<I, O, E> for ByRef<'_, P>
 where
     P: Parser<I, O, E>,
 {

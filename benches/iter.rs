@@ -107,7 +107,8 @@ fn repeat(input: &mut &[u8]) -> PResult<usize> {
         count += winnow::combinator::repeat(0.., one_of(AsChar::is_dec_digit))
             .map(|count: usize| count)
             .parse_next(input)?;
-        winnow::combinator::repeat(0.., one_of(|b: u8| !b.is_dec_digit())).parse_next(input)?;
+        let () =
+            winnow::combinator::repeat(0.., one_of(|b: u8| !b.is_dec_digit())).parse_next(input)?;
     }
     Ok(count)
 }
