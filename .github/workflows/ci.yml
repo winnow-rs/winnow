@@ -124,7 +124,7 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: "1.76"  # STABLE
+        toolchain: "1.80.0"  # STABLE
     - uses: Swatinem/rust-cache@v2
     - name: Check documentation
       env:
@@ -139,7 +139,7 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: "1.76"  # STABLE
+        toolchain: "1.80.0"  # STABLE
         components: rustfmt
     - uses: Swatinem/rust-cache@v2
     - name: Check formatting
@@ -155,7 +155,7 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: "1.76"  # STABLE
+        toolchain: "1.80.0"  # STABLE
         components: clippy
     - uses: Swatinem/rust-cache@v2
     - name: Install SARIF tools
