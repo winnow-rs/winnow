@@ -1,4 +1,6 @@
-//! # Migrating from `nom`
+//! # For `nom` users
+//!
+//! ## Migrating from `nom`
 //!
 //! For comparisons with `nom`, see
 //! - [Why `winnow`][super::why]
@@ -9,6 +11,8 @@
 //! When trying to look for the equivalent of a `nom` combinator, search in the docs for the name
 //! of the `nom` combinator.  It is expected that, where names diverge, a doc alias exists.
 //! See also the [List of combinators][crate::combinator].
+//!
+//! ### Complex migrations
 //!
 //! For larger parsers, it is likely best to take smaller steps
 //! - Easier to debug when something goes wrong
@@ -34,6 +38,8 @@
 //! 1. Resolve deprecation messages
 //! 1. Commit
 //!
+//! ### Examples
+//!
 //! For example migrations, see
 //! - [git-config-env](https://github.com/gitext-rs/git-config-env/pull/11) (nom to winnow 0.3)
 //! - [git-conventional](https://github.com/crate-ci/git-conventional/pull/37) (nom to winnow 0.3,
@@ -47,3 +53,52 @@
 //!   to winnow 0.5)
 //! - [gitoxide](https://github.com/Byron/gitoxide/pull/956) (gradual migration from nom
 //!   to winnow 0.5)
+//!
+//! ## API differences
+//!
+//! ### Renamed APIs
+//!
+//! Names have changed for consistency or clarity.
+//!
+//! To find a parser you are looking for,
+//! - Search the docs for the `nom` parser
+//! - See the [List of combinators][crate::combinator]
+//!
+//! ### `&mut I`
+//!
+//! For an explanation of this change, see [Why `winnow`][super::why]
+//!
+//! To save and restore from intermediate states, [`Stream::checkpoint`] and [`Stream::reset`] can help:
+//! ```rust
+//! use winnow::stream::Stream as _;
+//! # let mut i = "";
+//! # let i = &mut i;
+//!
+//! let start = i.checkpoint();
+//! // ...
+//! i.reset(&start);
+//! ```
+//!
+//! When the Output of a parser is a slice, you have to add a lifetime:
+//! ```rust
+//! # use winnow::prelude::*;
+//! fn foo<'i>(i: &mut &'i str) -> PResult<&'i str> {
+//!     // ...
+//! #   winnow::combinator::rest.parse_next(i)
+//! }
+//! ```
+//!
+//! When writing a closure, you need to annotate the type:
+//! ```rust
+//! # use winnow::prelude::*;
+//! # use winnow::combinator::trace;
+//! fn foo(i: &mut &str) -> PResult<usize> {
+//!     trace("foo", |i: &mut _| {
+//!         // ...
+//! #       Ok(0)
+//!     }).parse_next(i)
+//! }
+//! ```
+
+#![allow(unused_imports)]
+use crate::stream::Stream;

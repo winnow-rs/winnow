@@ -42,7 +42,7 @@
 //! - Zero-copy parsing
 //! - [Parse traces] for easier debugging
 //! - [Streaming parsing][crate::Partial] for network communication or large file
-//! - [Stateful][crate::Stateful] parsers
+//! - [Stateful]] parsers
 //!
 //! For binary formats, `winnow` includes:
 //! - [A hexadecimal view][crate::Bytes] in [trace]
@@ -74,6 +74,25 @@
 //!
 //! See also our [nom migration guide][super::nom]
 //!
+//! ### Design trade-offs
+//!
+//! `winnow` switched from pure-function parser (`Fn(I) -> (I, O)` to `Fn(&mut I) -> O`).
+//! On error, `i` is left pointing at where the error happened.
+//!
+//! Benefits:
+//! - Cleaner code: Removes need to pass `i` everywhere and makes changes to `i` more explicit
+//! - Correctness: No forgetting to chain `i` through a parser
+//! - Flexibility: `I` does not need to be `Copy` or even `Clone`. For example, [`Stateful`] can use `&mut S` instead of `RefCell<S>`.
+//! - Performance: `Result::Ok` is smaller without `i`, reducing the risk that the output will be
+//!   returned on the stack, rather than the much faster CPU registers.
+//!   `Result::Err` can also be smaller because the error type does not need to carry `i` to point
+//!   to the error.
+//!   See also [#72](https://github.com/winnow-rs/winnow/issues/72).
+//!
+//! Downsides:
+//! - When returning a slice, you have to add a lifetime (`fn foo<'i>(i: &mut &i str) -> PResult<&i str>`)
+//! - When writing a closure, you need to annotate the type (`|i: &mut _|`, at least the full type isn't needed)
+//!
 //! ## `chumsky`
 //!
 //! [`chumsky`](https://crates.io/crates/chumsky) is an up and coming parser-combinator library
@@ -104,3 +123,4 @@
 use crate::binary::length_take;
 use crate::combinator::trace;
 use crate::stream::Accumulate;
+use crate::stream::Stateful;
