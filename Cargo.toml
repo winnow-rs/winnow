@@ -124,7 +124,7 @@ unstable-recover = []
 unstable-doc = ["alloc", "std", "simd", "unstable-recover"]
 
 [dependencies]
-anstream = { version = "0.3.2", optional = true }
+anstream = { version = "0.6.18", optional = true }
 anstyle = { version = "1.0.1", optional = true }
 is-terminal = { version = "0.4.9", optional = true }
 memchr = { version = "2.5", optional = true, default-features = false }
