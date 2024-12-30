@@ -287,7 +287,7 @@ mod bytes {
         #[test]
         fn test_pretty_debug() {
             // Output can change from run-to-run
-            format!(
+            let _ = format!(
                 "{:#?}",
                 Bytes::new(b"\0\0\0 ftypisom\0\0\x02\0isomiso2avc1mp")
             );
@@ -297,9 +297,9 @@ mod bytes {
         fn test_sliced() {
             // Output can change from run-to-run
             let total = Bytes::new(b"12345678901234567890");
-            format!("{total:#?}");
-            format!("{:#?}", &total[1..]);
-            format!("{:#?}", &total[10..]);
+            let _ = format!("{total:#?}");
+            let _ = format!("{:#?}", &total[1..]);
+            let _ = format!("{:#?}", &total[10..]);
         }
     }
 }

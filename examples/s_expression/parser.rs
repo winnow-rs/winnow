@@ -25,7 +25,7 @@ pub(crate) fn eval_from_str(src: &str) -> Result<Expr, String> {
 
 /// For parsing, we start by defining the types that define the shape of data that we want.
 /// In this case, we want something tree-like
-
+///
 /// The remaining half is Lists. We implement these as recursive Expressions.
 /// For a list of numbers, we have `'(1 2 3)`, which we'll parse to:
 /// ```
@@ -242,7 +242,7 @@ where
 /// a little interpreter to take an Expr, which is really an
 /// [Abstract Syntax Tree](https://en.wikipedia.org/wiki/Abstract_syntax_tree) (AST),
 /// and give us something back
-
+///
 /// This function tries to reduce the AST.
 /// This has to return an Expression rather than an Atom because quoted `s_expressions`
 /// can't be reduced

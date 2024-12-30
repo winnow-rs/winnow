@@ -462,7 +462,7 @@ where
     }
 }
 
-impl<'a, F, I, O, E> core::iter::Iterator for &'a mut ParserIterator<F, I, O, E>
+impl<F, I, O, E> core::iter::Iterator for &mut ParserIterator<F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
