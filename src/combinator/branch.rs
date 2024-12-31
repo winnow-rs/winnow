@@ -48,6 +48,7 @@ pub trait Alt<I, O, E> {
 /// # }
 /// ```
 #[doc(alias = "choice")]
+#[inline(always)]
 pub fn alt<Input: Stream, Output, Error, Alternatives>(
     mut alternatives: Alternatives,
 ) -> impl Parser<Input, Output, Error>
@@ -118,6 +119,7 @@ pub trait Permutation<I, O, E> {
 /// assert_eq!(parser("ab"), Err(ErrMode::Backtrack(InputError::new("b", ErrorKind::Tag))));
 /// ```
 ///
+#[inline(always)]
 pub fn permutation<I: Stream, O, E: ParserError<I>, List: Permutation<I, O, E>>(
     mut l: List,
 ) -> impl Parser<I, O, E> {

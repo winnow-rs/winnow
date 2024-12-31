@@ -124,6 +124,7 @@ where
         Self { initial, input }
     }
 
+    #[inline]
     fn location(&self) -> usize {
         self.input.offset_from(&self.initial)
     }
@@ -138,6 +139,7 @@ where
     /// This is useful for formats that encode a graph with addresses relative to the start of the
     /// input.
     #[doc(alias = "fseek")]
+    #[inline]
     pub fn reset_to_start(&mut self) {
         let start = self.initial.checkpoint();
         self.input.reset(&start);
@@ -195,6 +197,7 @@ impl<I, E> Default for Recoverable<I, E>
 where
     I: Default + Stream,
 {
+    #[inline]
     fn default() -> Self {
         Self::new(I::default())
     }
@@ -207,6 +210,7 @@ where
     I: Stream,
 {
     /// Track recoverable errors with the stream
+    #[inline]
     pub fn new(input: I) -> Self {
         Self {
             input,
@@ -216,6 +220,7 @@ where
     }
 
     /// Act as a normal stream
+    #[inline]
     pub fn unrecoverable(input: I) -> Self {
         Self {
             input,
@@ -225,6 +230,7 @@ where
     }
 
     /// Access the current input and errors
+    #[inline]
     pub fn into_parts(self) -> (I, Vec<E>) {
         (self.input, self.errors)
     }
@@ -446,6 +452,7 @@ where
     I: StreamIsPartial,
 {
     /// Create a partial input
+    #[inline]
     pub fn new(input: I) -> Self {
         debug_assert!(
             !I::is_partial_supported(),
@@ -466,6 +473,7 @@ impl<I> Default for Partial<I>
 where
     I: Default + StreamIsPartial,
 {
+    #[inline]
     fn default() -> Self {
         Self::new(I::default())
     }
@@ -1652,8 +1660,10 @@ pub trait StreamIsPartial: Sized {
 impl<T> StreamIsPartial for &[T] {
     type PartialState = ();
 
+    #[inline]
     fn complete(&mut self) -> Self::PartialState {}
 
+    #[inline]
     fn restore_partial(&mut self, _state: Self::PartialState) {}
 
     #[inline(always)]
@@ -1665,10 +1675,12 @@ impl<T> StreamIsPartial for &[T] {
 impl StreamIsPartial for &str {
     type PartialState = ();
 
+    #[inline]
     fn complete(&mut self) -> Self::PartialState {
         // Already complete
     }
 
+    #[inline]
     fn restore_partial(&mut self, _state: Self::PartialState) {}
 
     #[inline(always)]
@@ -1680,10 +1692,12 @@ impl StreamIsPartial for &str {
 impl StreamIsPartial for &Bytes {
     type PartialState = ();
 
+    #[inline]
     fn complete(&mut self) -> Self::PartialState {
         // Already complete
     }
 
+    #[inline]
     fn restore_partial(&mut self, _state: Self::PartialState) {}
 
     #[inline(always)]
@@ -1695,10 +1709,12 @@ impl StreamIsPartial for &Bytes {
 impl StreamIsPartial for &BStr {
     type PartialState = ();
 
+    #[inline]
     fn complete(&mut self) -> Self::PartialState {
         // Already complete
     }
 
+    #[inline]
     fn restore_partial(&mut self, _state: Self::PartialState) {}
 
     #[inline(always)]
@@ -1713,10 +1729,12 @@ where
 {
     type PartialState = I::PartialState;
 
+    #[inline]
     fn complete(&mut self) -> Self::PartialState {
         self.0.complete()
     }
 
+    #[inline]
     fn restore_partial(&mut self, state: Self::PartialState) {
         self.0.restore_partial(state);
     }
@@ -1738,10 +1756,12 @@ where
 {
     type PartialState = I::PartialState;
 
+    #[inline]
     fn complete(&mut self) -> Self::PartialState {
         self.input.complete()
     }
 
+    #[inline]
     fn restore_partial(&mut self, state: Self::PartialState) {
         self.input.restore_partial(state);
     }
@@ -1766,10 +1786,12 @@ where
 {
     type PartialState = I::PartialState;
 
+    #[inline]
     fn complete(&mut self) -> Self::PartialState {
         self.input.complete()
     }
 
+    #[inline]
     fn restore_partial(&mut self, state: Self::PartialState) {
         self.input.restore_partial(state);
     }
@@ -1791,10 +1813,12 @@ where
 {
     type PartialState = I::PartialState;
 
+    #[inline]
     fn complete(&mut self) -> Self::PartialState {
         self.input.complete()
     }
 
+    #[inline]
     fn restore_partial(&mut self, state: Self::PartialState) {
         self.input.restore_partial(state);
     }
@@ -1816,10 +1840,12 @@ where
 {
     type PartialState = bool;
 
+    #[inline]
     fn complete(&mut self) -> Self::PartialState {
         core::mem::replace(&mut self.partial, false)
     }
 
+    #[inline]
     fn restore_partial(&mut self, state: Self::PartialState) {
         self.partial = state;
     }
