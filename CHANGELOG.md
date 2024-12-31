@@ -3,6 +3,15 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Performance
+
+- More inlining
+
+### Documentation
+
+- Clarify roles of `peek` and `Parser::parse_peek`
+- Provide more context for people coming from `nom`
+
 ## [0.6.20] - 2024-09-25
 
 ### Internal
