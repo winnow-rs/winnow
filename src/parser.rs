@@ -1062,7 +1062,6 @@ where
     E: ParserError<Recoverable<I, R>>,
     E: crate::lib::std::fmt::Debug,
 {
-    #[inline]
     fn recoverable_parse(&mut self, input: I) -> (I, Option<O>, Vec<R>) {
         debug_assert!(
             !I::is_partial_supported(),

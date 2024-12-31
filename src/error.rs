@@ -277,6 +277,7 @@ pub trait ParserError<I: Stream>: Sized {
 
     /// Process a parser assertion
     #[cfg_attr(debug_assertions, track_caller)]
+    #[inline(always)]
     fn assert(input: &I, _message: &'static str) -> Self
     where
         I: crate::lib::std::fmt::Debug,

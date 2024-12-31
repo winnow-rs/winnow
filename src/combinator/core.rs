@@ -542,6 +542,7 @@ enum State<E> {
 /// ```
 #[doc(alias = "value")]
 #[doc(alias = "success")]
+#[inline]
 pub fn empty<Input, Error>(_input: &mut Input) -> PResult<(), Error>
 where
     Input: Stream,
@@ -566,6 +567,7 @@ where
 /// assert_eq!(fail::<_, &str, _>.parse_peek(s), Err(ErrMode::Backtrack(InputError::new(s, ErrorKind::Fail))));
 /// ```
 #[doc(alias = "unexpected")]
+#[inline]
 pub fn fail<Input, Output, Error>(i: &mut Input) -> PResult<Output, Error>
 where
     Input: Stream,
