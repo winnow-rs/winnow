@@ -120,6 +120,46 @@ fn seq_struct_default_init() {
 }
 
 #[test]
+fn seq_struct_referring_elided() {
+    #[derive(Debug, PartialEq, Default)]
+    struct Point {
+        x: u32,
+        y: u32,
+    }
+
+    fn parser(input: &mut &str) -> PResult<Point> {
+        seq! {
+            Point {
+                #[temp] half_x: dec_uint::<_, u32, _>,
+                x: empty.value(half_x * 2),
+                _: ',',
+                #[temp] half_y: dec_uint::<_, u32, _>,
+                y: empty.value(half_y * 2),
+            }
+        }
+        .parse_next(input)
+    }
+    assert_eq!(
+        parser.parse_peek("123,4 remaining"),
+        Ok((" remaining", Point { x: 246, y: 8 },)),
+    );
+    assert_eq!(
+        parser.parse_peek("123, remaining"),
+        Err(ErrMode::Backtrack(ParserError::from_error_kind(
+            &" remaining",
+            ErrorKind::Fail
+        )))
+    );
+    assert_eq!(
+        parser.parse_peek(""),
+        Err(ErrMode::Backtrack(ParserError::from_error_kind(
+            &"",
+            ErrorKind::Fail
+        )))
+    );
+}
+
+#[test]
 fn seq_struct_trailing_comma_elided() {
     #![allow(dead_code)]
 
