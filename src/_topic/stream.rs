@@ -5,7 +5,7 @@
 //! - Improved debug output like [`Bytes`]
 //! - [`Stateful`] for passing state through your parser, like tracking recursion
 //!   depth
-//! - [`Located`] for looking up the absolute position of a token
+//! - [`LocatingSlice`] for looking up the absolute position of a token
 //!
 //! But that won't always cut it for your parser. For example, you might lex `&str` into
 //! a series of tokens and then want to parse a `TokenStream`.
