@@ -50,7 +50,7 @@
 //! - Some common parsers to help get started, like numbers
 //!
 //! For text formats, `winnow` includes:
-//! - [Tracking of spans][crate::Located]
+//! - [Tracking of spans][crate::LocatingSlice]
 //! - [A textual view when parsing as bytes][crate::BStr] in [trace]
 //! - Ability to evaluate directly, parse to an AST, or lex and parse the format
 //!

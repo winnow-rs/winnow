@@ -3,7 +3,7 @@
 //! Stream types include:
 //! - `&[u8]` and [`Bytes`] for binary data
 //! - `&str` (aliased as [`Str`]) and [`BStr`] for UTF-8 data
-//! - [`Located`] can track the location within the original buffer to report
+//! - [`LocatingSlice`] can track the location within the original buffer to report
 //!   [spans][crate::Parser::with_span]
 //! - [`Stateful`] to thread global state through your parsers
 //! - [`Partial`] can mark an input as partial buffer that is being streamed into
@@ -95,7 +95,11 @@ impl BStr {
     }
 }
 
-/// Allow collecting the span of a parsed token
+/// Deprecated, replaced with [`LocatingSlice`]
+#[deprecated(since = "0.6.22", note = "Replaced with `LocatingSlice`")]
+pub type Located<I> = LocatingSlice<I>;
+
+/// Allow collecting the span of a parsed token within a slice
 ///
 /// Spans are tracked as a [`Range<usize>`] of byte offsets.
 ///
@@ -108,13 +112,14 @@ impl BStr {
 ///
 /// See [`Parser::span`][crate::Parser::span] and [`Parser::with_span`][crate::Parser::with_span] for more details
 #[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
-#[doc(alias = "LocatedSpan")]
-pub struct Located<I> {
+#[doc(alias = "LocatingSliceSpan")]
+#[doc(alias = "Located")]
+pub struct LocatingSlice<I> {
     initial: I,
     input: I,
 }
 
-impl<I> Located<I>
+impl<I> LocatingSlice<I>
 where
     I: Clone + Offset,
 {
@@ -130,7 +135,7 @@ where
     }
 }
 
-impl<I> Located<I>
+impl<I> LocatingSlice<I>
 where
     I: Clone + Stream + Offset,
 {
@@ -146,14 +151,14 @@ where
     }
 }
 
-impl<I> AsRef<I> for Located<I> {
+impl<I> AsRef<I> for LocatingSlice<I> {
     #[inline(always)]
     fn as_ref(&self) -> &I {
         &self.input
     }
 }
 
-impl<I> crate::lib::std::ops::Deref for Located<I> {
+impl<I> crate::lib::std::ops::Deref for LocatingSlice<I> {
     type Target = I;
 
     #[inline(always)]
@@ -162,13 +167,13 @@ impl<I> crate::lib::std::ops::Deref for Located<I> {
     }
 }
 
-impl<I: crate::lib::std::fmt::Display> crate::lib::std::fmt::Display for Located<I> {
+impl<I: crate::lib::std::fmt::Display> crate::lib::std::fmt::Display for LocatingSlice<I> {
     fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
         self.input.fmt(f)
     }
 }
 
-impl<I: crate::lib::std::fmt::Debug> crate::lib::std::fmt::Debug for Located<I> {
+impl<I: crate::lib::std::fmt::Debug> crate::lib::std::fmt::Debug for LocatingSlice<I> {
     #[inline]
     fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
         self.input.fmt(f)
@@ -331,7 +336,7 @@ impl<I: Stream + crate::lib::std::fmt::Debug, E: crate::lib::std::fmt::Debug>
 /// assert_eq!(state, 1);
 /// ```
 #[derive(Clone, Copy, Default, Eq, PartialEq)]
-#[doc(alias = "LocatedSpan")]
+#[doc(alias = "LocatingSliceSpan")]
 pub struct Stateful<I, S> {
     /// Inner input being wrapped in state
     pub input: I,
@@ -588,7 +593,7 @@ where
     }
 }
 
-impl<I> SliceLen for Located<I>
+impl<I> SliceLen for LocatingSlice<I>
 where
     I: SliceLen,
 {
@@ -639,7 +644,7 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
     type Token: crate::lib::std::fmt::Debug;
     /// Sequence of `Token`s
     ///
-    /// Example: `&[u8]` for `Located<&[u8]>` or `&str` for `Located<&str>`
+    /// Example: `&[u8]` for `LocatingSlice<&[u8]>` or `&str` for `LocatingSlice<&str>`
     type Slice: crate::lib::std::fmt::Debug;
 
     /// Iterate with the offset from the current location
@@ -1129,7 +1134,7 @@ where
     }
 }
 
-impl<I: Stream> Stream for Located<I> {
+impl<I: Stream> Stream for LocatingSlice<I> {
     type Token = <I as Stream>::Token;
     type Slice = <I as Stream>::Slice;
 
@@ -1348,13 +1353,13 @@ impl<I: Stream> Stream for Partial<I> {
 
 /// Number of indices input has advanced since start of parsing
 ///
-/// See [`Located`] for adding location tracking to your [`Stream`]
+/// See [`LocatingSlice`] for adding location tracking to your [`Stream`]
 pub trait Location {
     /// Number of indices input has advanced since start of parsing
     fn location(&self) -> usize;
 }
 
-impl<I> Location for Located<I>
+impl<I> Location for LocatingSlice<I>
 where
     I: Clone + Offset,
 {
@@ -1527,7 +1532,7 @@ where
 
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
-impl<I, E> Recover<E> for Located<I>
+impl<I, E> Recover<E> for LocatingSlice<I>
 where
     I: Recover<E>,
     I: Stream,
@@ -1750,7 +1755,7 @@ where
     }
 }
 
-impl<I> StreamIsPartial for Located<I>
+impl<I> StreamIsPartial for LocatingSlice<I>
 where
     I: StreamIsPartial,
 {
@@ -1960,7 +1965,7 @@ where
     }
 }
 
-impl<I> Offset for Located<I>
+impl<I> Offset for LocatingSlice<I>
 where
     I: Stream,
 {
@@ -1970,12 +1975,12 @@ where
     }
 }
 
-impl<I> Offset<<Located<I> as Stream>::Checkpoint> for Located<I>
+impl<I> Offset<<LocatingSlice<I> as Stream>::Checkpoint> for LocatingSlice<I>
 where
     I: Stream,
 {
     #[inline(always)]
-    fn offset_from(&self, other: &<Located<I> as Stream>::Checkpoint) -> usize {
+    fn offset_from(&self, other: &<LocatingSlice<I> as Stream>::Checkpoint) -> usize {
         self.checkpoint().offset_from(other)
     }
 }
@@ -2078,7 +2083,7 @@ impl AsBytes for &Bytes {
     }
 }
 
-impl<I> AsBytes for Located<I>
+impl<I> AsBytes for LocatingSlice<I>
 where
     I: AsBytes,
 {
@@ -2148,7 +2153,7 @@ impl AsBStr for &str {
     }
 }
 
-impl<I> AsBStr for Located<I>
+impl<I> AsBStr for LocatingSlice<I>
 where
     I: AsBStr,
 {
@@ -2370,7 +2375,7 @@ where
     }
 }
 
-impl<I, U> Compare<U> for Located<I>
+impl<I, U> Compare<U> for LocatingSlice<I>
 where
     I: Compare<U>,
 {
@@ -2644,7 +2649,7 @@ where
     }
 }
 
-impl<I, T> FindSlice<T> for Located<I>
+impl<I, T> FindSlice<T> for LocatingSlice<I>
 where
     I: FindSlice<T>,
 {
@@ -2747,7 +2752,7 @@ impl UpdateSlice for &BStr {
     }
 }
 
-impl<I> UpdateSlice for Located<I>
+impl<I> UpdateSlice for LocatingSlice<I>
 where
     I: UpdateSlice,
 {
