@@ -130,7 +130,16 @@ where
     }
 
     #[inline]
-    fn location(&self) -> usize {
+    fn previous_token_end(&self) -> usize {
+        // Assumptions:
+        // - Index offsets is sufficient
+        // - Tokens are continuous
+        self.input.offset_from(&self.initial)
+    }
+    #[inline]
+    fn current_token_start(&self) -> usize {
+        // Assumptions:
+        // - Index offsets is sufficient
         self.input.offset_from(&self.initial)
     }
 }
@@ -1351,12 +1360,14 @@ impl<I: Stream> Stream for Partial<I> {
     }
 }
 
-/// Number of indices input has advanced since start of parsing
+/// Current parse locations offset
 ///
 /// See [`LocatingSlice`] for adding location tracking to your [`Stream`]
 pub trait Location {
-    /// Number of indices input has advanced since start of parsing
-    fn location(&self) -> usize;
+    /// Previous token's end offset
+    fn previous_token_end(&self) -> usize;
+    /// Current token's start offset
+    fn current_token_start(&self) -> usize;
 }
 
 impl<I> Location for LocatingSlice<I>
@@ -1364,8 +1375,12 @@ where
     I: Clone + Offset,
 {
     #[inline(always)]
-    fn location(&self) -> usize {
-        self.location()
+    fn previous_token_end(&self) -> usize {
+        self.previous_token_end()
+    }
+    #[inline(always)]
+    fn current_token_start(&self) -> usize {
+        self.current_token_start()
     }
 }
 
@@ -1377,8 +1392,12 @@ where
     I: Stream,
 {
     #[inline(always)]
-    fn location(&self) -> usize {
-        self.input.location()
+    fn previous_token_end(&self) -> usize {
+        self.input.previous_token_end()
+    }
+    #[inline(always)]
+    fn current_token_start(&self) -> usize {
+        self.input.current_token_start()
     }
 }
 
@@ -1387,8 +1406,12 @@ where
     I: Location,
 {
     #[inline(always)]
-    fn location(&self) -> usize {
-        self.input.location()
+    fn previous_token_end(&self) -> usize {
+        self.input.previous_token_end()
+    }
+    #[inline(always)]
+    fn current_token_start(&self) -> usize {
+        self.input.current_token_start()
     }
 }
 
@@ -1397,8 +1420,12 @@ where
     I: Location,
 {
     #[inline(always)]
-    fn location(&self) -> usize {
-        self.input.location()
+    fn previous_token_end(&self) -> usize {
+        self.input.previous_token_end()
+    }
+    #[inline(always)]
+    fn current_token_start(&self) -> usize {
+        self.input.current_token_start()
     }
 }
 

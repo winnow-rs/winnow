@@ -706,9 +706,9 @@ where
 {
     #[inline]
     fn parse_next(&mut self, input: &mut I) -> PResult<Range<usize>, E> {
-        let start = input.location();
+        let start = input.current_token_start();
         self.parser.parse_next(input).map(move |_| {
-            let end = input.location();
+            let end = input.previous_token_end();
             start..end
         })
     }
@@ -749,9 +749,9 @@ where
 {
     #[inline]
     fn parse_next(&mut self, input: &mut I) -> PResult<(O, Range<usize>), E> {
-        let start = input.location();
+        let start = input.current_token_start();
         self.parser.parse_next(input).map(move |output| {
-            let end = input.location();
+            let end = input.previous_token_end();
             (output, (start..end))
         })
     }
