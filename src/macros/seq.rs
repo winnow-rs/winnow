@@ -127,7 +127,7 @@ macro_rules! seq_parse_struct_fields {
         ( $unnamed1: ident, $($unnamed: ident),* );
         ( _ : $head_parser: expr, $($fields: tt)* );
     ) => {
-        let _ = $crate::Parser::parse_next(&mut $head_parser, $input)?;
+        let $unnamed1 = $crate::Parser::parse_next(&mut $head_parser, $input)?;
         $crate::seq_parse_struct_fields!(
             $input ;
             ( $($unnamed),* );
