@@ -3265,7 +3265,7 @@ pub trait AsChar {
     /// # Example
     ///
     /// ```
-    /// use winnow::stream::AsChar as _;
+    /// use winnow::prelude::*;
     ///
     /// assert_eq!('a'.as_char(), 'a');
     /// assert_eq!(u8::MAX.as_char(), std::char::from_u32(u8::MAX as u32).unwrap());
