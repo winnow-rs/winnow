@@ -93,7 +93,7 @@ where
 /// use winnow::prelude::*;
 /// use winnow::Bytes;
 /// use winnow::binary::bits::{bits, bytes, take};
-/// use winnow::combinator::rest;
+/// use winnow::token::rest;
 /// use winnow::error::InputError;
 ///
 /// type Stream<'i> = &'i Bytes;
