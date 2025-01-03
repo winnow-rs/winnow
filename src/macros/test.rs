@@ -438,3 +438,24 @@ fn seq_tuple_no_parens() {
         .parse_next(input)
     }
 }
+
+#[test]
+fn seq_tuple_borrow() {
+    #![allow(dead_code)]
+
+    #[derive(Debug, PartialEq)]
+    struct Point(u32, u32);
+
+    fn parser(input: &mut &str) -> PResult<Point> {
+        let mut dec_uint = digit0.parse_to();
+        seq! {
+            Point(
+                dec_uint,
+                _: ',',
+                dec_uint,
+                _: empty
+            )
+        }
+        .parse_next(input)
+    }
+}
