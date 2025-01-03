@@ -1002,7 +1002,7 @@ impl<I: Stream, E: ParserError<I>> Parser<I, (), E> for () {
 }
 
 macro_rules! impl_parser_for_tuple {
-  ($($parser:ident $output:ident),+) => (
+  ($($index:tt $parser:ident $output:ident),+) => (
     #[allow(non_snake_case)]
     impl<I: Stream, $($output),+, E: ParserError<I>, $($parser),+> Parser<I, ($($output),+,), E> for ($($parser),+,)
     where
@@ -1010,9 +1010,7 @@ macro_rules! impl_parser_for_tuple {
     {
       #[inline(always)]
       fn parse_next(&mut self, i: &mut I) -> PResult<($($output),+,), E> {
-        let ($(ref mut $parser),+,) = *self;
-
-        $(let $output = $parser.parse_next(i)?;)+
+        $(let $output = self.$index.parse_next(i)?;)+
 
         Ok(($($output),+,))
       }
@@ -1021,15 +1019,51 @@ macro_rules! impl_parser_for_tuple {
 }
 
 macro_rules! impl_parser_for_tuples {
-    ($parser1:ident $output1:ident, $($parser:ident $output:ident),+) => {
-        impl_parser_for_tuples!(__impl $parser1 $output1; $($parser $output),+);
+    ($index1:tt $parser1:ident $output1:ident, $($index:tt $parser:ident $output:ident),+) => {
+        impl_parser_for_tuples!(__impl $index1 $parser1 $output1; $($index $parser $output),+);
     };
-    (__impl $($parser:ident $output:ident),+; $parser1:ident $output1:ident $(,$parser2:ident $output2:ident)*) => {
-        impl_parser_for_tuple!($($parser $output),+);
-        impl_parser_for_tuples!(__impl $($parser $output),+, $parser1 $output1; $($parser2 $output2),*);
+    (__impl $($index:tt $parser:ident $output:ident),+; $index1:tt $parser1:ident $output1:ident $(,$index2:tt $parser2:ident $output2:ident)*) => {
+        impl_parser_for_tuple!($($index $parser $output),+);
+        impl_parser_for_tuples!(__impl $($index $parser $output),+, $index1 $parser1 $output1; $($index2 $parser2 $output2),*);
     };
-    (__impl $($parser:ident $output:ident),+;) => {
-        impl_parser_for_tuple!($($parser $output),+);
+    (__impl $($index:tt $parser:ident $output:ident),+;) => {
+        impl_parser_for_tuple!($($index $parser $output),+);
+    }
+}
+
+impl_parser_for_tuples!(
+  0 P0 O0,
+  1 P1 O1,
+  2 P2 O2,
+  3 P3 O3,
+  4 P4 O4,
+  5 P5 O5,
+  6 P6 O6,
+  7 P7 O7,
+  8 P8 O8,
+  9 P9 O9,
+  10 P10 O10,
+  11 P11 O11,
+  12 P12 O12,
+  13 P13 O13,
+  14 P14 O14,
+  15 P15 O15,
+  16 P16 O16,
+  17 P17 O17,
+  18 P18 O18,
+  19 P19 O19,
+  20 P20 O20,
+  21 P21 O21
+);
+
+#[cfg(feature = "alloc")]
+use crate::lib::std::boxed::Box;
+
+#[cfg(feature = "alloc")]
+impl<I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + '_> {
+    #[inline(always)]
+    fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
+        (**self).parse_next(i)
     }
 }
 
@@ -1096,41 +1130,6 @@ where
         }
 
         (input, o, errs)
-    }
-}
-
-impl_parser_for_tuples!(
-  P1 O1,
-  P2 O2,
-  P3 O3,
-  P4 O4,
-  P5 O5,
-  P6 O6,
-  P7 O7,
-  P8 O8,
-  P9 O9,
-  P10 O10,
-  P11 O11,
-  P12 O12,
-  P13 O13,
-  P14 O14,
-  P15 O15,
-  P16 O16,
-  P17 O17,
-  P18 O18,
-  P19 O19,
-  P20 O20,
-  P21 O21
-);
-
-#[cfg(feature = "alloc")]
-use crate::lib::std::boxed::Box;
-
-#[cfg(feature = "alloc")]
-impl<I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + '_> {
-    #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
-        (**self).parse_next(i)
     }
 }
 
