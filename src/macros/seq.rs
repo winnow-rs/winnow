@@ -75,9 +75,9 @@ macro_rules! seq {
     ($($name: ident)::* { $($fields: tt)* }) => {
         $crate::combinator::trace(stringify!($($name)::*), move |input: &mut _| {
             $crate::seq_parse_struct_fields!(
-                input ;
-                ( _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20 );
                 ( $($fields)* );
+                ( _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, _17, _18, _19, _20 );
+                input ;
             );
             Ok($crate::seq_init_struct_fields!(
                 ( $($fields)* );
@@ -123,52 +123,52 @@ macro_rules! seq {
 #[doc(hidden)]
 macro_rules! seq_parse_struct_fields {
     (
-        $input: ident ;
-        ( $unnamed1: ident, $($unnamed: ident),* );
         ( _ : $head_parser: expr, $($fields: tt)* );
+        ( $unnamed1: ident, $($unnamed: ident),* );
+        $input: ident ;
     ) => {
         let $unnamed1 = $crate::Parser::parse_next(&mut $head_parser, $input)?;
         $crate::seq_parse_struct_fields!(
-            $input ;
-            ( $($unnamed),* );
             ( $($fields)* );
+            ( $($unnamed),* );
+            $input ;
         )
     };
     (
-        $input: ident ;
-        ( $unnamed1: ident, $($unnamed: ident),* );
         ( _ : $head_parser: expr );
+        ( $unnamed1: ident, $($unnamed: ident),* );
+        $input: ident ;
     ) => {
         let $unnamed1 = $crate::Parser::parse_next(&mut $head_parser, $input)?;
     };
     (
-        $input: ident ;
-        ( $unnamed1: ident, $($unnamed: ident),* );
         ( $head_field: ident : $head_parser: expr, $($fields: tt)* );
+        ( $unnamed1: ident, $($unnamed: ident),* );
+        $input: ident ;
     ) => {
         let $head_field = $crate::Parser::parse_next(&mut $head_parser, $input)?;
         $crate::seq_parse_struct_fields!(
-            $input ;
-            ( $($unnamed),* );
             ( $($fields)* );
+            ( $($unnamed),* );
+            $input ;
         )
     };
     (
-        $input: ident ;
-        ( $unnamed1: ident, $($unnamed: ident),* );
         ( $head_field: ident : $head_parser: expr );
+        ( $unnamed1: ident, $($unnamed: ident),* );
+        $input: ident ;
     ) => {
         let $head_field = $crate::Parser::parse_next(&mut $head_parser, $input)?;
     };
     (
-        $input: expr ;
-        ( $($unnamed: ident),* );
         ( .. $update: expr );
+        ( $($unnamed: ident),* );
+        $input: expr ;
     ) => {};
     (
-        $input: expr ;
-        ( $($unnamed: ident),* );
         ( $(,)? );
+        ( $($unnamed: ident),* );
+        $input: expr ;
     ) => {};
 }
 
