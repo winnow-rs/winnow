@@ -1043,7 +1043,7 @@ where
 /// # use winnow::prelude::*;;
 /// pub fn rest<'i>(input: &mut &'i str) -> PResult<&'i str>
 /// # {
-/// #     winnow::combinator::rest.parse_next(input)
+/// #     winnow::token::rest.parse_next(input)
 /// # }
 /// ```
 ///
@@ -1053,7 +1053,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::error::ErrorKind;
 /// # use winnow::error::InputError;
-/// use winnow::combinator::rest;
+/// use winnow::token::rest;
 /// assert_eq!(rest::<_,InputError<_>>.parse_peek("abc"), Ok(("", "abc")));
 /// assert_eq!(rest::<_,InputError<_>>.parse_peek(""), Ok(("", "")));
 /// ```
@@ -1081,7 +1081,7 @@ where
 /// # use winnow::prelude::*;;
 /// pub fn rest_len(input: &mut &str) -> PResult<usize>
 /// # {
-/// #     winnow::combinator::rest_len.parse_next(input)
+/// #     winnow::token::rest_len.parse_next(input)
 /// # }
 /// ```
 ///
@@ -1091,7 +1091,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::error::ErrorKind;
 /// # use winnow::error::InputError;
-/// use winnow::combinator::rest_len;
+/// use winnow::token::rest_len;
 /// assert_eq!(rest_len::<_,InputError<_>>.parse_peek("abc"), Ok(("abc", 3)));
 /// assert_eq!(rest_len::<_,InputError<_>>.parse_peek(""), Ok(("", 0)));
 /// ```

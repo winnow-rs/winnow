@@ -84,7 +84,7 @@
 //! # use winnow::prelude::*;
 //! fn foo<'i>(i: &mut &'i str) -> PResult<&'i str> {
 //!     // ...
-//! #   winnow::combinator::rest.parse_next(i)
+//! #   winnow::token::rest.parse_next(i)
 //! }
 //! ```
 //!
