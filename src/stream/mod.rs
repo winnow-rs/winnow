@@ -254,6 +254,11 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
 
     /// Return the inner-most stream
     fn raw(&self) -> &dyn crate::lib::std::fmt::Debug;
+
+    /// Write out a single-line summary of the current parse location
+    fn trace(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "{:#?}", self.raw())
+    }
 }
 
 impl<'i, T> Stream for &'i [T]

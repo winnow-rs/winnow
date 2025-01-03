@@ -446,6 +446,7 @@ mod display {
 #[cfg(all(test, feature = "std"))]
 mod debug {
     use crate::stream::BStr;
+    use crate::stream::Stream as _;
     use snapbox::assert_data_eq;
     use snapbox::str;
 
@@ -465,5 +466,15 @@ mod debug {
         let input = BStr::new(b"abc");
         let expected = str!["abc"];
         assert_data_eq!(&format!("{input:#?}"), expected);
+    }
+
+    #[test]
+    fn test_trace() {
+        let input = BStr::new(b"abc");
+        let expected = str!["abc"];
+        assert_data_eq!(
+            crate::util::from_fn(|f| input.trace(f)).to_string(),
+            expected
+        );
     }
 }
