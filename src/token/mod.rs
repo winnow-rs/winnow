@@ -500,90 +500,48 @@ where
         match (start_inclusive, end_inclusive) {
             (0, None) => {
                 if <Input as StreamIsPartial>::is_partial_supported() {
-                    take_while0_::<_, _, _, true>(i, &set)
+                    take_till0::<_, _, _, true>(i, |c| !set.contains_token(c))
                 } else {
-                    take_while0_::<_, _, _, false>(i, &set)
+                    take_till0::<_, _, _, false>(i, |c| !set.contains_token(c))
                 }
             }
             (1, None) => {
                 if <Input as StreamIsPartial>::is_partial_supported() {
-                    take_while1_::<_, _, _, true>(i, &set)
+                    take_till1::<_, _, _, true>(i, |c| !set.contains_token(c))
                 } else {
-                    take_while1_::<_, _, _, false>(i, &set)
+                    take_till1::<_, _, _, false>(i, |c| !set.contains_token(c))
                 }
             }
             (start, end) => {
                 let end = end.unwrap_or(usize::MAX);
                 if <Input as StreamIsPartial>::is_partial_supported() {
-                    take_while_m_n_::<_, _, _, true>(i, start, end, &set)
+                    take_till_m_n::<_, _, _, true>(i, start, end, |c| !set.contains_token(c))
                 } else {
-                    take_while_m_n_::<_, _, _, false>(i, start, end, &set)
+                    take_till_m_n::<_, _, _, false>(i, start, end, |c| !set.contains_token(c))
                 }
             }
         }
     })
 }
 
-fn take_while0_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
-    input: &mut I,
-    list: &T,
-) -> PResult<<I as Stream>::Slice, Error>
-where
-    I: StreamIsPartial,
-    I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    if PARTIAL && input.is_partial() {
-        take_till0_partial(input, |c| !list.contains_token(c))
-    } else {
-        take_till0_complete(input, |c| !list.contains_token(c))
-    }
-}
-
-fn take_while1_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
-    input: &mut I,
-    list: &T,
-) -> PResult<<I as Stream>::Slice, Error>
-where
-    I: StreamIsPartial,
-    I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    if PARTIAL && input.is_partial() {
-        take_till1_partial(input, |c| !list.contains_token(c))
-    } else {
-        take_till1_complete(input, |c| !list.contains_token(c))
-    }
-}
-
-fn take_while_m_n_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
-    input: &mut I,
-    m: usize,
-    n: usize,
-    list: &T,
-) -> PResult<<I as Stream>::Slice, Error>
-where
-    I: StreamIsPartial,
-    I: Stream,
-    T: ContainsToken<<I as Stream>::Token>,
-{
-    take_till_m_n::<_, _, _, PARTIAL>(input, m, n, |c| !list.contains_token(c))
-}
-
-fn take_till0_partial<P, I: Stream, E: ParserError<I>>(
+fn take_till0<P, I: StreamIsPartial + Stream, E: ParserError<I>, const PARTIAL: bool>(
     input: &mut I,
     predicate: P,
 ) -> PResult<<I as Stream>::Slice, E>
 where
     P: Fn(I::Token) -> bool,
 {
-    let offset = input
-        .offset_for(predicate)
-        .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
+    let offset = match input.offset_for(predicate) {
+        Some(offset) => offset,
+        None if PARTIAL && input.is_partial() => {
+            return Err(ErrMode::Incomplete(Needed::new(1)));
+        }
+        None => input.eof_offset(),
+    };
     Ok(input.next_slice(offset))
 }
 
-fn take_till1_partial<P, I: Stream, E: ParserError<I>>(
+fn take_till1<P, I: StreamIsPartial + Stream, E: ParserError<I>, const PARTIAL: bool>(
     input: &mut I,
     predicate: P,
 ) -> PResult<<I as Stream>::Slice, E>
@@ -591,40 +549,13 @@ where
     P: Fn(I::Token) -> bool,
 {
     let e: ErrorKind = ErrorKind::Slice;
-    let offset = input
-        .offset_for(predicate)
-        .ok_or_else(|| ErrMode::Incomplete(Needed::new(1)))?;
-    if offset == 0 {
-        Err(ErrMode::from_error_kind(input, e))
-    } else {
-        Ok(input.next_slice(offset))
-    }
-}
-
-fn take_till0_complete<P, I: Stream, E: ParserError<I>>(
-    input: &mut I,
-    predicate: P,
-) -> PResult<<I as Stream>::Slice, E>
-where
-    P: Fn(I::Token) -> bool,
-{
-    let offset = input
-        .offset_for(predicate)
-        .unwrap_or_else(|| input.eof_offset());
-    Ok(input.next_slice(offset))
-}
-
-fn take_till1_complete<P, I: Stream, E: ParserError<I>>(
-    input: &mut I,
-    predicate: P,
-) -> PResult<<I as Stream>::Slice, E>
-where
-    P: Fn(I::Token) -> bool,
-{
-    let e: ErrorKind = ErrorKind::Slice;
-    let offset = input
-        .offset_for(predicate)
-        .unwrap_or_else(|| input.eof_offset());
+    let offset = match input.offset_for(predicate) {
+        Some(offset) => offset,
+        None if PARTIAL && input.is_partial() => {
+            return Err(ErrMode::Incomplete(Needed::new(1)));
+        }
+        None => input.eof_offset(),
+    };
     if offset == 0 {
         Err(ErrMode::from_error_kind(input, e))
     } else {
@@ -761,16 +692,16 @@ where
         match (start_inclusive, end_inclusive) {
             (0, None) => {
                 if <Input as StreamIsPartial>::is_partial_supported() {
-                    take_till0_partial(i, |c| set.contains_token(c))
+                    take_till0::<_, _, _, true>(i, |c| set.contains_token(c))
                 } else {
-                    take_till0_complete(i, |c| set.contains_token(c))
+                    take_till0::<_, _, _, false>(i, |c| set.contains_token(c))
                 }
             }
             (1, None) => {
                 if <Input as StreamIsPartial>::is_partial_supported() {
-                    take_till1_partial(i, |c| set.contains_token(c))
+                    take_till1::<_, _, _, true>(i, |c| set.contains_token(c))
                 } else {
-                    take_till1_complete(i, |c| set.contains_token(c))
+                    take_till1::<_, _, _, false>(i, |c| set.contains_token(c))
                 }
             }
             (start, end) => {
