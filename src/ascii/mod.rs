@@ -1611,9 +1611,19 @@ where
 {
     trace("take_escaped", move |input: &mut Input| {
         if <Input as StreamIsPartial>::is_partial_supported() && input.is_partial() {
-            streaming_escaped_internal(input, &mut normal, control_char, &mut escapable)
+            escaped_internal::<_, _, _, _, _, _, true>(
+                input,
+                &mut normal,
+                control_char,
+                &mut escapable,
+            )
         } else {
-            complete_escaped_internal(input, &mut normal, control_char, &mut escapable)
+            escaped_internal::<_, _, _, _, _, _, false>(
+                input,
+                &mut normal,
+                control_char,
+                &mut escapable,
+            )
         }
     })
 }
@@ -1635,49 +1645,7 @@ where
     take_escaped(normal, control_char, escapable)
 }
 
-fn streaming_escaped_internal<I, Error, F, G, O1, O2>(
-    input: &mut I,
-    normal: &mut F,
-    control_char: char,
-    escapable: &mut G,
-) -> PResult<<I as Stream>::Slice, Error>
-where
-    I: StreamIsPartial,
-    I: Stream,
-    I: Compare<char>,
-    F: Parser<I, O1, Error>,
-    G: Parser<I, O2, Error>,
-    Error: ParserError<I>,
-{
-    let start = input.checkpoint();
-
-    while input.eof_offset() > 0 {
-        let current_len = input.eof_offset();
-
-        match opt(normal.by_ref()).parse_next(input)? {
-            Some(_) => {
-                if input.eof_offset() == current_len {
-                    let offset = input.offset_from(&start);
-                    input.reset(&start);
-                    return Ok(input.next_slice(offset));
-                }
-            }
-            None => {
-                if opt(control_char).parse_next(input)?.is_some() {
-                    let _ = escapable.parse_next(input)?;
-                } else {
-                    let offset = input.offset_from(&start);
-                    input.reset(&start);
-                    return Ok(input.next_slice(offset));
-                }
-            }
-        }
-    }
-
-    Err(ErrMode::Incomplete(Needed::Unknown))
-}
-
-fn complete_escaped_internal<'a, I, Error, F, G, O1, O2>(
+fn escaped_internal<'a, I, Error, F, G, O1, O2, const PARTIAL: bool>(
     input: &mut I,
     normal: &mut F,
     control_char: char,
@@ -1717,8 +1685,12 @@ where
         }
     }
 
-    input.reset(&start);
-    Ok(input.finish())
+    if PARTIAL && input.is_partial() {
+        Err(ErrMode::Incomplete(Needed::Unknown))
+    } else {
+        input.reset(&start);
+        Ok(input.finish())
+    }
 }
 
 /// Parse escaped characters, unescaping them
@@ -1804,53 +1776,24 @@ where
 {
     trace("escaped_transform", move |input: &mut Input| {
         if <Input as StreamIsPartial>::is_partial_supported() && input.is_partial() {
-            streaming_escaped_transform_internal(input, &mut normal, control_char, &mut escape)
+            escaped_transform_internal::<_, _, _, _, _, true>(
+                input,
+                &mut normal,
+                control_char,
+                &mut escape,
+            )
         } else {
-            complete_escaped_transform_internal(input, &mut normal, control_char, &mut escape)
+            escaped_transform_internal::<_, _, _, _, _, false>(
+                input,
+                &mut normal,
+                control_char,
+                &mut escape,
+            )
         }
     })
 }
 
-fn streaming_escaped_transform_internal<I, Error, F, G, Output>(
-    input: &mut I,
-    normal: &mut F,
-    control_char: char,
-    transform: &mut G,
-) -> PResult<Output, Error>
-where
-    I: StreamIsPartial,
-    I: Stream,
-    I: Compare<char>,
-    Output: crate::stream::Accumulate<<I as Stream>::Slice>,
-    F: Parser<I, <I as Stream>::Slice, Error>,
-    G: Parser<I, <I as Stream>::Slice, Error>,
-    Error: ParserError<I>,
-{
-    let mut res = Output::initial(Some(input.eof_offset()));
-
-    while input.eof_offset() > 0 {
-        let current_len = input.eof_offset();
-        match opt(normal.by_ref()).parse_next(input)? {
-            Some(o) => {
-                res.accumulate(o);
-                if input.eof_offset() == current_len {
-                    return Ok(res);
-                }
-            }
-            None => {
-                if opt(control_char).parse_next(input)?.is_some() {
-                    let o = transform.parse_next(input)?;
-                    res.accumulate(o);
-                } else {
-                    return Ok(res);
-                }
-            }
-        }
-    }
-    Err(ErrMode::Incomplete(Needed::Unknown))
-}
-
-fn complete_escaped_transform_internal<I, Error, F, G, Output>(
+fn escaped_transform_internal<I, Error, F, G, Output, const PARTIAL: bool>(
     input: &mut I,
     normal: &mut F,
     control_char: char,
@@ -1887,7 +1830,12 @@ where
             }
         }
     }
-    Ok(res)
+
+    if PARTIAL && input.is_partial() {
+        Err(ErrMode::Incomplete(Needed::Unknown))
+    } else {
+        Ok(res)
+    }
 }
 
 mod sealed {
