@@ -1,4 +1,5 @@
 use crate::ascii::dec_uint;
+use crate::ascii::digit0;
 use crate::combinator::dispatch;
 use crate::combinator::empty;
 use crate::combinator::fail;
@@ -225,6 +226,30 @@ fn seq_enum_struct_variant() {
 }
 
 #[test]
+fn seq_struct_borrow() {
+    #![allow(dead_code)]
+
+    #[derive(Debug, PartialEq)]
+    struct Point {
+        x: u32,
+        y: u32,
+    }
+
+    fn parser(input: &mut &str) -> PResult<Point> {
+        let mut dec_uint = digit0.parse_to();
+        seq! {
+            Point {
+                x: dec_uint,
+                _: ',',
+                y: dec_uint,
+                _: empty
+            }
+        }
+        .parse_next(input)
+    }
+}
+
+#[test]
 fn seq_tuple_struct_basics() {
     #[derive(Debug, PartialEq)]
     struct Point(u32, u32);
@@ -410,6 +435,27 @@ fn seq_tuple_no_parens() {
             _: ',',
             dec_uint,
         )
+        .parse_next(input)
+    }
+}
+
+#[test]
+fn seq_tuple_borrow() {
+    #![allow(dead_code)]
+
+    #[derive(Debug, PartialEq)]
+    struct Point(u32, u32);
+
+    fn parser(input: &mut &str) -> PResult<Point> {
+        let mut dec_uint = digit0.parse_to();
+        seq! {
+            Point(
+                dec_uint,
+                _: ',',
+                dec_uint,
+                _: empty
+            )
+        }
         .parse_next(input)
     }
 }
