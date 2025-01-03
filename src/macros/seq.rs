@@ -75,7 +75,6 @@ macro_rules! seq {
     ($($name: ident)::* { $($fields: tt)* }) => {
         $crate::combinator::trace(stringify!($($name)::*), move |input: &mut _| {
             $crate::seq_parse_struct_fields!(input; $($fields)*);
-            #[allow(clippy::redundant_field_names)]
             Ok($crate::seq_init_struct_fields!( ($($fields)*); $($name)::*;))
         })
     };
@@ -204,14 +203,14 @@ macro_rules! seq_init_struct_fields {
         $($inits: tt)*
     ) =>
     {
-        $crate::seq_init_struct_fields!( ( $($fields)* ) ; $($name)::* ; $($inits)* $head_field: $head_field, )
+        $crate::seq_init_struct_fields!( ( $($fields)* ) ; $($name)::* ; $($inits)* $head_field, )
     };
     (
         ($head_field: ident : $head_parser: expr);
         $($name: ident)::*;
         $($inits: tt)*
     ) => {
-        $crate::seq_init_struct_fields!( (); $($name)::* ; $($inits)* $head_field: $head_field,)
+        $crate::seq_init_struct_fields!( (); $($name)::* ; $($inits)* $head_field,)
     };
     (
         (.. $update: expr);
