@@ -111,7 +111,7 @@ pub type Located<I> = LocatingSlice<I>;
 /// byte offsets to line numbers.
 ///
 /// See [`Parser::span`][crate::Parser::span] and [`Parser::with_span`][crate::Parser::with_span] for more details
-#[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Default, Debug, PartialEq, Eq, PartialOrd, Ord)]
 #[doc(alias = "LocatingSliceSpan")]
 #[doc(alias = "Located")]
 pub struct LocatingSlice<I> {
@@ -182,19 +182,12 @@ impl<I: crate::lib::std::fmt::Display> crate::lib::std::fmt::Display for Locatin
     }
 }
 
-impl<I: crate::lib::std::fmt::Debug> crate::lib::std::fmt::Debug for LocatingSlice<I> {
-    #[inline]
-    fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
-        self.input.fmt(f)
-    }
-}
-
 /// Allow recovering from parse errors, capturing them as the parser continues
 ///
 /// Generally, this will be used indirectly via
 /// [`RecoverableParser::recoverable_parse`][crate::RecoverableParser::recoverable_parse].
 #[cfg(feature = "unstable-recover")]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[cfg(feature = "std")]
 pub struct Recoverable<I, E>
 where
@@ -287,25 +280,6 @@ where
     }
 }
 
-#[cfg(feature = "unstable-recover")]
-#[cfg(feature = "std")]
-impl<I: Stream + crate::lib::std::fmt::Debug, E: crate::lib::std::fmt::Debug>
-    crate::lib::std::fmt::Debug for Recoverable<I, E>
-{
-    #[inline]
-    fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
-        if f.alternate() {
-            self.input.fmt(f)
-        } else {
-            f.debug_struct("Recoverable")
-                .field("input", &self.input)
-                .field("errors", &self.errors)
-                .field("is_recoverable", &self.is_recoverable)
-                .finish()
-        }
-    }
-}
-
 /// Thread global state through your parsers
 ///
 /// Use cases
@@ -344,7 +318,7 @@ impl<I: Stream + crate::lib::std::fmt::Debug, E: crate::lib::std::fmt::Debug>
 /// let output = word.parse(input).unwrap();
 /// assert_eq!(state, 1);
 /// ```
-#[derive(Clone, Copy, Default, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[doc(alias = "LocatingSliceSpan")]
 pub struct Stateful<I, S> {
     /// Inner input being wrapped in state
@@ -372,22 +346,6 @@ impl<I, S> crate::lib::std::ops::Deref for Stateful<I, S> {
 impl<I: crate::lib::std::fmt::Display, S> crate::lib::std::fmt::Display for Stateful<I, S> {
     fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
         self.input.fmt(f)
-    }
-}
-
-impl<I: crate::lib::std::fmt::Debug, S: crate::lib::std::fmt::Debug> crate::lib::std::fmt::Debug
-    for Stateful<I, S>
-{
-    #[inline]
-    fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
-        if f.alternate() {
-            self.input.fmt(f)
-        } else {
-            f.debug_struct("Stateful")
-                .field("input", &self.input)
-                .field("state", &self.state)
-                .finish()
-        }
     }
 }
 
@@ -455,7 +413,7 @@ impl<I: crate::lib::std::fmt::Debug, S: crate::lib::std::fmt::Debug> crate::lib:
 /// // while the complete version knows that all of the data is there
 /// assert_eq!(alpha0_complete.parse_peek("abcd"), Ok(("", "abcd")));
 /// ```
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Partial<I> {
     input: I,
     partial: bool,
@@ -505,20 +463,6 @@ impl<I> crate::lib::std::ops::Deref for Partial<I> {
 impl<I: crate::lib::std::fmt::Display> crate::lib::std::fmt::Display for Partial<I> {
     fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
         self.input.fmt(f)
-    }
-}
-
-impl<I: crate::lib::std::fmt::Debug> crate::lib::std::fmt::Debug for Partial<I> {
-    #[inline]
-    fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
-        if f.alternate() {
-            self.input.fmt(f)
-        } else {
-            f.debug_struct("Partial")
-                .field("input", &self.input)
-                .field("partial", &self.partial)
-                .finish()
-        }
     }
 }
 
