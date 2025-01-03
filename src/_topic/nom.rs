@@ -70,7 +70,7 @@
 //!
 //! To save and restore from intermediate states, [`Stream::checkpoint`] and [`Stream::reset`] can help:
 //! ```rust
-//! use winnow::stream::Stream as _;
+//! use winnow::prelude::*;
 //! # let mut i = "";
 //! # let i = &mut i;
 //!

@@ -3,7 +3,6 @@ use criterion::black_box;
 use winnow::combinator::opt;
 use winnow::prelude::*;
 use winnow::stream::AsChar;
-use winnow::stream::Stream as _;
 use winnow::token::one_of;
 
 fn iter(c: &mut criterion::Criterion) {

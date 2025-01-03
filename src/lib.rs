@@ -144,6 +144,10 @@ pub mod _tutorial;
 /// }
 /// ```
 pub mod prelude {
+    pub use crate::error::ParserError as _;
+    pub use crate::stream::AsChar as _;
+    pub use crate::stream::ContainsToken as _;
+    pub use crate::stream::Stream as _;
     pub use crate::stream::StreamIsPartial as _;
     pub use crate::IResult;
     pub use crate::PResult;
