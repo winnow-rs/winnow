@@ -16,6 +16,13 @@ use crate::IResult;
 use crate::Parser;
 use crate::Partial;
 
+macro_rules! assert_parse(
+  ($left: expr, $right: expr) => {
+    let res: $crate::IResult<_, _, InputError<_>> = $left;
+    assert_eq!(res, $right);
+  };
+);
+
 #[test]
 fn complete_take_while_m_n_utf8_all_matching() {
     let result: IResult<&str, &str> =
@@ -833,4 +840,24 @@ fn partial_literal_fixed_size_array() {
     let input = Partial::new(&[0x42, 0x00][..]);
     assert_eq!(test(input), Ok((Partial::new(&b"\x00"[..]), &b"\x42"[..])));
     assert_eq!(test2(input), Ok((Partial::new(&b"\x00"[..]), &b"\x42"[..])));
+}
+
+#[test]
+fn rest_on_slices() {
+    let input: &[u8] = &b"Hello, world!"[..];
+    let empty: &[u8] = &b""[..];
+    assert_parse!(rest.parse_peek(input), Ok((empty, input)));
+}
+
+#[test]
+fn rest_on_strs() {
+    let input: &str = "Hello, world!";
+    let empty: &str = "";
+    assert_parse!(rest.parse_peek(input), Ok((empty, input)));
+}
+
+#[test]
+fn rest_len_on_slices() {
+    let input: &[u8] = &b"Hello, world!"[..];
+    assert_parse!(rest_len.parse_peek(input), Ok((input, input.len())));
 }
