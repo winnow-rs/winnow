@@ -660,7 +660,8 @@ mod complete {
 
     // issue #1336 "take_escaped hangs if normal parser accepts empty"
     #[test]
-    fn complete_take_escaped_hang() {
+    #[cfg_attr(debug_assertions, should_panic)]
+    fn complete_take_escaped_hang_1() {
         // issue #1336 "take_escaped hangs if normal parser accepts empty"
         fn escaped_string(input: &str) -> IResult<&str, &str> {
             use crate::ascii::alpha0;
@@ -668,11 +669,36 @@ mod complete {
             take_escaped(alpha0, '\\', one_of(['n'])).parse_peek(input)
         }
 
-        escaped_string("7").unwrap();
-        escaped_string("a7").unwrap();
+        let input = "7";
+        assert_eq!(
+            escaped_string(input),
+            Err(ErrMode::Cut(error_position!(&input, ErrorKind::Assert)))
+        );
+    }
+
+    // issue #1336 "take_escaped hangs if normal parser accepts empty"
+    #[test]
+    #[cfg_attr(debug_assertions, should_panic)]
+    fn complete_take_escaped_hang_2() {
+        // issue #1336 "take_escaped hangs if normal parser accepts empty"
+        fn escaped_string(input: &str) -> IResult<&str, &str> {
+            use crate::ascii::alpha0;
+            use crate::token::one_of;
+            take_escaped(alpha0, '\\', one_of(['n'])).parse_peek(input)
+        }
+
+        let input = "a7";
+        assert_eq!(
+            escaped_string(input),
+            Err(ErrMode::Cut(error_position!(
+                &&input[1..],
+                ErrorKind::Assert
+            )))
+        );
     }
 
     #[test]
+    #[cfg_attr(debug_assertions, should_panic)]
     fn complete_take_escaped_hang_1118() {
         // issue ##1118 take_escaped does not work with empty string
         fn unquote(input: &str) -> IResult<&str, &str> {
@@ -692,7 +718,14 @@ mod complete {
             .parse_peek(input)
         }
 
-        assert_eq!(unquote(r#""""#), Ok(("", "")));
+        let input = r#""""#;
+        assert_eq!(
+            unquote(input),
+            Err(ErrMode::Cut(error_position!(
+                &&input[1..],
+                ErrorKind::Assert
+            )))
+        );
     }
 
     #[cfg(feature = "alloc")]

@@ -1563,6 +1563,15 @@ where
 ///
 /// See also [`escaped_transform`]
 ///
+/// <div class="warning">
+///
+/// **Warning:** If the `normal` parser passed to `take_escaped` accepts empty inputs
+/// (like `alpha0` or `digit0`), `take_escaped` will return an error,
+/// to prevent going into an infinite loop.
+///
+/// </div>
+///
+///
 /// # Example
 ///
 /// ```rust
@@ -1667,10 +1676,12 @@ where
 
         match opt(normal.by_ref()).parse_next(input)? {
             Some(_) => {
+                // infinite loop check: the parser must always consume
                 if input.eof_offset() == current_len {
-                    let offset = input.offset_from(&start);
-                    input.reset(&start);
-                    return Ok(input.next_slice(offset));
+                    return Err(ErrMode::assert(
+                        input,
+                        "`take_escaped` parsers must always consume",
+                    ));
                 }
             }
             None => {
@@ -1705,6 +1716,14 @@ where
 /// - `alt(normal, control._char)` [`Backtrack`s][crate::error::ErrMode::Backtrack]
 /// - `normal` doesn't advance the input stream
 /// - *(complete)* input stream is exhausted
+///
+/// <div class="warning">
+///
+/// **Warning:** If the `normal` parser passed to `escaped_transform` accepts empty inputs
+/// (like `alpha0` or `digit0`), `escaped_transform` will return an error,
+/// to prevent going into an infinite loop.
+///
+/// </div>
 ///
 /// # Example
 ///
@@ -1816,8 +1835,12 @@ where
         match opt(normal.by_ref()).parse_next(input)? {
             Some(o) => {
                 res.accumulate(o);
+                // infinite loop check: the parser must always consume
                 if input.eof_offset() == current_len {
-                    return Ok(res);
+                    return Err(ErrMode::assert(
+                        input,
+                        "`escaped_transform` parsers must always consume",
+                    ));
                 }
             }
             None => {
