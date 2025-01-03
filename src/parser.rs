@@ -268,7 +268,7 @@ pub trait Parser<I, O, E> {
     /// let mut parser = separated_pair(alpha1, ',', alpha1).take();
     ///
     /// assert_eq!(parser.parse_peek("abcd,efgh"), Ok(("", "abcd,efgh")));
-    /// assert_eq!(parser.parse_peek("abcd;"),Err(ErrMode::Backtrack(InputError::new(";", ErrorKind::Tag))));
+    /// assert_eq!(parser.parse_peek("abcd;"),Err(ErrMode::Backtrack(InputError::new(";", ErrorKind::Literal))));
     /// # }
     /// ```
     #[doc(alias = "concat")]
@@ -319,7 +319,7 @@ pub trait Parser<I, O, E> {
     /// let mut consumed_parser = separated_pair(alpha1, ',', alpha1).value(true).with_taken();
     ///
     /// assert_eq!(consumed_parser.parse_peek("abcd,efgh1"), Ok(("1", (true, "abcd,efgh"))));
-    /// assert_eq!(consumed_parser.parse_peek("abcd;"),Err(ErrMode::Backtrack(InputError::new(";", ErrorKind::Tag))));
+    /// assert_eq!(consumed_parser.parse_peek("abcd;"),Err(ErrMode::Backtrack(InputError::new(";", ErrorKind::Literal))));
     ///
     /// // the second output (representing the consumed input)
     /// // should be the same as that of the `take` parser.
@@ -365,7 +365,7 @@ pub trait Parser<I, O, E> {
     /// let mut parser = separated_pair(alpha1.span(), ',', alpha1.span());
     ///
     /// assert_eq!(parser.parse(LocatingSlice::new("abcd,efgh")), Ok((0..4, 5..9)));
-    /// assert_eq!(parser.parse_peek(LocatingSlice::new("abcd;")),Err(ErrMode::Backtrack(InputError::new(LocatingSlice::new("abcd;").peek_slice(4).0, ErrorKind::Tag))));
+    /// assert_eq!(parser.parse_peek(LocatingSlice::new("abcd;")),Err(ErrMode::Backtrack(InputError::new(LocatingSlice::new("abcd;").peek_slice(4).0, ErrorKind::Literal))));
     /// ```
     #[inline(always)]
     fn span(self) -> Span<Self, I, O, E>
@@ -405,7 +405,7 @@ pub trait Parser<I, O, E> {
     /// let mut consumed_parser = separated_pair(alpha1.value(1).with_span(), ',', alpha1.value(2).with_span());
     ///
     /// assert_eq!(consumed_parser.parse(LocatingSlice::new("abcd,efgh")), Ok(((1, 0..4), (2, 5..9))));
-    /// assert_eq!(consumed_parser.parse_peek(LocatingSlice::new("abcd;")),Err(ErrMode::Backtrack(InputError::new(LocatingSlice::new("abcd;").peek_slice(4).0, ErrorKind::Tag))));
+    /// assert_eq!(consumed_parser.parse_peek(LocatingSlice::new("abcd;")),Err(ErrMode::Backtrack(InputError::new(LocatingSlice::new("abcd;").peek_slice(4).0, ErrorKind::Literal))));
     ///
     /// // the second output (representing the consumed input)
     /// // should be the same as that of the `span` parser.
@@ -765,9 +765,9 @@ where
 ///     b'a'.parse_next(i)
 /// }
 /// assert_eq!(parser.parse_peek(&b"abc"[..]), Ok((&b"bc"[..], b'a')));
-/// assert_eq!(parser.parse_peek(&b" abc"[..]), Err(ErrMode::Backtrack(InputError::new(&b" abc"[..], ErrorKind::Tag))));
-/// assert_eq!(parser.parse_peek(&b"bc"[..]), Err(ErrMode::Backtrack(InputError::new(&b"bc"[..], ErrorKind::Tag))));
-/// assert_eq!(parser.parse_peek(&b""[..]), Err(ErrMode::Backtrack(InputError::new(&b""[..], ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek(&b" abc"[..]), Err(ErrMode::Backtrack(InputError::new(&b" abc"[..], ErrorKind::Literal))));
+/// assert_eq!(parser.parse_peek(&b"bc"[..]), Err(ErrMode::Backtrack(InputError::new(&b"bc"[..], ErrorKind::Literal))));
+/// assert_eq!(parser.parse_peek(&b""[..]), Err(ErrMode::Backtrack(InputError::new(&b""[..], ErrorKind::Literal))));
 /// ```
 impl<I, E> Parser<I, u8, E> for u8
 where
@@ -793,9 +793,9 @@ where
 ///     'a'.parse_next(i)
 /// }
 /// assert_eq!(parser.parse_peek("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser.parse_peek(" abc"), Err(ErrMode::Backtrack(InputError::new(" abc", ErrorKind::Tag))));
-/// assert_eq!(parser.parse_peek("bc"), Err(ErrMode::Backtrack(InputError::new("bc", ErrorKind::Tag))));
-/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek(" abc"), Err(ErrMode::Backtrack(InputError::new(" abc", ErrorKind::Literal))));
+/// assert_eq!(parser.parse_peek("bc"), Err(ErrMode::Backtrack(InputError::new("bc", ErrorKind::Literal))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
 /// ```
 impl<I, E> Parser<I, char, E> for char
 where
@@ -1227,7 +1227,7 @@ mod tests {
             tuple_3(Partial::new(&b"abcdejk"[..])),
             Err(ErrMode::Backtrack(error_position!(
                 &Partial::new(&b"jk"[..]),
-                ErrorKind::Tag
+                ErrorKind::Literal
             )))
         );
     }

@@ -204,7 +204,7 @@ fn peek_test() {
         peek_literal(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"xxx"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
 }
@@ -333,7 +333,7 @@ fn complete() {
         res_a,
         Err(ErrMode::Backtrack(error_position!(
             &&b"mn"[..],
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
 }
@@ -361,21 +361,21 @@ fn separated_pair_test() {
         sep_pair_abc_def(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"xxx"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     assert_eq!(
         sep_pair_abc_def(Partial::new(&b"xxx,def"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"xxx,def"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     assert_eq!(
         sep_pair_abc_def(Partial::new(&b"abc,xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"xxx"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
 }
@@ -402,21 +402,21 @@ fn preceded_test() {
         preceded_abcd_efgh(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"xxx"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     assert_eq!(
         preceded_abcd_efgh(Partial::new(&b"xxxxdef"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"xxxxdef"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     assert_eq!(
         preceded_abcd_efgh(Partial::new(&b"abcdxxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"xxx"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
 }
@@ -443,21 +443,21 @@ fn terminated_test() {
         terminated_abcd_efgh(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"xxx"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     assert_eq!(
         terminated_abcd_efgh(Partial::new(&b"xxxxdef"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"xxxxdef"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     assert_eq!(
         terminated_abcd_efgh(Partial::new(&b"abcdxxxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"xxxx"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
 }
@@ -488,28 +488,28 @@ fn delimited_test() {
         delimited_abc_def_ghi(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"xxx"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     assert_eq!(
         delimited_abc_def_ghi(Partial::new(&b"xxxdefghi"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"xxxdefghi"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         ),))
     );
     assert_eq!(
         delimited_abc_def_ghi(Partial::new(&b"abcxxxghi"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"xxxghi"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     assert_eq!(
         delimited_abc_def_ghi(Partial::new(&b"abcdefxxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"xxx"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
 }
@@ -632,7 +632,7 @@ fn alt_incomplete() {
         alt1(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(a),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     let a = &b"de"[..];
@@ -665,7 +665,7 @@ fn alt_array() {
     let i = &b"z"[..];
     assert_eq!(
         alt1.parse_peek(i),
-        Err(ErrMode::Backtrack(error_position!(&i, ErrorKind::Tag)))
+        Err(ErrMode::Backtrack(error_position!(&i, ErrorKind::Literal)))
     );
 }
 
@@ -716,7 +716,7 @@ fn permutation_test() {
         Err(ErrMode::Backtrack(error_node_position!(
             &Partial::new(&b"efgxyzabcdefghi"[..]),
             ErrorKind::Alt,
-            error_position!(&Partial::new(&b"xyzabcdefghi"[..]), ErrorKind::Tag)
+            error_position!(&Partial::new(&b"xyzabcdefghi"[..]), ErrorKind::Literal)
         )))
     );
 
@@ -829,7 +829,7 @@ fn separated1_test() {
         multi(Partial::new(c)),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(c),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     let res3 = vec![&b"abcd"[..], &b"abcd"[..]];
@@ -869,7 +869,7 @@ fn separated_test() {
         multi(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"ef"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     let res1 = vec![&b"abcd"[..], &b"abcd"[..]];
@@ -966,7 +966,7 @@ fn repeat1_test() {
         multi(Partial::new(c)),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(c),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     assert_eq!(
@@ -995,8 +995,8 @@ fn repeat_till_test() {
         multi(&c[..]),
         Err(ErrMode::Backtrack(error_node_position!(
             &&c[..],
-            ErrorKind::Many,
-            error_position!(&&c[..], ErrorKind::Tag)
+            ErrorKind::Repeat,
+            error_position!(&&c[..], ErrorKind::Literal)
         )))
     );
 }
@@ -1013,16 +1013,16 @@ fn repeat_till_range_test() {
         multi("cd"),
         Err(ErrMode::Backtrack(error_node_position!(
             &"cd",
-            ErrorKind::Many,
-            error_position!(&"cd", ErrorKind::Tag)
+            ErrorKind::Repeat,
+            error_position!(&"cd", ErrorKind::Literal)
         )))
     );
     assert_eq!(
         multi("abcd"),
         Err(ErrMode::Backtrack(error_node_position!(
             &"cd",
-            ErrorKind::Many,
-            error_position!(&"cd", ErrorKind::Tag)
+            ErrorKind::Repeat,
+            error_position!(&"cd", ErrorKind::Literal)
         )))
     );
     assert_eq!(multi("ababcd"), Ok(("", (vec!["ab", "ab"], "cd"))));
@@ -1035,8 +1035,8 @@ fn repeat_till_range_test() {
         multi("abababababcd"),
         Err(ErrMode::Backtrack(error_node_position!(
             &"cd",
-            ErrorKind::Many,
-            error_position!(&"abcd", ErrorKind::Tag)
+            ErrorKind::Repeat,
+            error_position!(&"abcd", ErrorKind::Literal)
         )))
     );
 }
@@ -1046,7 +1046,10 @@ fn repeat_till_range_test() {
 fn infinite_many() {
     fn tst(input: &[u8]) -> IResult<&[u8], &[u8]> {
         println!("input: {input:?}");
-        Err(ErrMode::Backtrack(error_position!(&input, ErrorKind::Tag)))
+        Err(ErrMode::Backtrack(error_position!(
+            &input,
+            ErrorKind::Literal
+        )))
     }
 
     // should not go into an infinite loop
@@ -1062,7 +1065,7 @@ fn infinite_many() {
     let a = &b"abcdef"[..];
     assert_eq!(
         multi1(a),
-        Err(ErrMode::Backtrack(error_position!(&a, ErrorKind::Tag)))
+        Err(ErrMode::Backtrack(error_position!(&a, ErrorKind::Literal)))
     );
 }
 
@@ -1083,7 +1086,7 @@ fn repeat_test() {
         multi(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"ef"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     let res1 = vec![&b"Abcd"[..], &b"Abcd"[..]];
@@ -1131,21 +1134,21 @@ fn count_test() {
         cnt_2(Partial::new(&b"xxx"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"xxx"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     assert_eq!(
         cnt_2(Partial::new(&b"xxxabcabcdef"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"xxxabcabcdef"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     assert_eq!(
         cnt_2(Partial::new(&b"abcxxxabcdef"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"xxxabcdef"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
 }
@@ -1296,7 +1299,7 @@ fn fold_repeat1_test() {
         multi(Partial::new(c)),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(c),
-            ErrorKind::Many
+            ErrorKind::Repeat
         )))
     );
     assert_eq!(
@@ -1328,7 +1331,7 @@ fn fold_repeat_test() {
         multi(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"ef"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     let res1 = vec![&b"Abcd"[..], &b"Abcd"[..]];

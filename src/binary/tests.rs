@@ -1190,7 +1190,7 @@ mod partial {
             cnt(Partial::new(&b"2abcxxx"[..])),
             Err(ErrMode::Backtrack(error_position!(
                 &Partial::new(&b"xxx"[..]),
-                ErrorKind::Tag
+                ErrorKind::Literal
             )))
         );
     }

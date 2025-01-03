@@ -60,8 +60,8 @@ use crate::Parser;
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
 /// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Tag))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Literal))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
 /// # }
 /// ```
 ///
@@ -77,9 +77,9 @@ use crate::Parser;
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Tag))));
-/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Tag))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("abc123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Literal))));
+/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Literal))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
 /// # }
 /// ```
@@ -220,8 +220,8 @@ where
     ///
     /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
     /// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-    /// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Many))));
-    /// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Many))));
+    /// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Repeat))));
+    /// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Repeat))));
     /// ```
     ///
     /// Arbitrary number of repetitions:
@@ -347,7 +347,7 @@ where
 {
     let start = i.checkpoint();
     match f.parse_next(i) {
-        Err(e) => Err(e.append(i, &start, ErrorKind::Many)),
+        Err(e) => Err(e.append(i, &start, ErrorKind::Repeat)),
         Ok(o) => {
             let mut acc = C::initial(None);
             acc.accumulate(o);
@@ -397,7 +397,7 @@ where
                 res.accumulate(o);
             }
             Err(e) => {
-                return Err(e.append(i, &start, ErrorKind::Many));
+                return Err(e.append(i, &start, ErrorKind::Repeat));
             }
         }
     }
@@ -437,7 +437,11 @@ where
             }
             Err(ErrMode::Backtrack(e)) => {
                 if count < min {
-                    return Err(ErrMode::Backtrack(e.append(input, &start, ErrorKind::Many)));
+                    return Err(ErrMode::Backtrack(e.append(
+                        input,
+                        &start,
+                        ErrorKind::Repeat,
+                    )));
                 } else {
                     input.reset(&start);
                     return Ok(res);
@@ -480,9 +484,9 @@ where
 /// };
 ///
 /// assert_eq!(parser("abcabcend"), Ok(("", (vec!["abc", "abc"], "end"))));
-/// assert_eq!(parser("abc123end"), Err(ErrMode::Backtrack(InputError::new("123end", ErrorKind::Tag))));
-/// assert_eq!(parser("123123end"), Err(ErrMode::Backtrack(InputError::new("123123end", ErrorKind::Tag))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("abc123end"), Err(ErrMode::Backtrack(InputError::new("123end", ErrorKind::Literal))));
+/// assert_eq!(parser("123123end"), Err(ErrMode::Backtrack(InputError::new("123123end", ErrorKind::Literal))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
 /// assert_eq!(parser("abcendefg"), Ok(("efg", (vec!["abc"], "end"))));
 /// # }
 /// ```
@@ -534,7 +538,7 @@ where
             Err(ErrMode::Backtrack(_)) => {
                 i.reset(&start);
                 match f.parse_next(i) {
-                    Err(e) => return Err(e.append(i, &start, ErrorKind::Many)),
+                    Err(e) => return Err(e.append(i, &start, ErrorKind::Repeat)),
                     Ok(o) => {
                         // infinite loop check: the parser must always consume
                         if i.eof_offset() == len {
@@ -580,7 +584,7 @@ where
                 res.accumulate(o);
             }
             Err(e) => {
-                return Err(e.append(i, &start, ErrorKind::Many));
+                return Err(e.append(i, &start, ErrorKind::Repeat));
             }
         }
     }
@@ -596,7 +600,7 @@ where
                 i.reset(&start);
                 match f.parse_next(i) {
                     Err(e) => {
-                        return Err(e.append(i, &start, ErrorKind::Many));
+                        return Err(e.append(i, &start, ErrorKind::Repeat));
                     }
                     Ok(o) => {
                         // infinite loop check: the parser must always consume
@@ -666,8 +670,8 @@ where
 /// assert_eq!(parser("abc|abc|abc"), Ok(("", vec!["abc", "abc", "abc"])));
 /// assert_eq!(parser("abc123abc"), Ok(("123abc", vec!["abc"])));
 /// assert_eq!(parser("abc|def"), Ok(("|def", vec!["abc"])));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
-/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(InputError::new("def|abc", ErrorKind::Tag))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
+/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(InputError::new("def|abc", ErrorKind::Literal))));
 /// # }
 /// ```
 ///
@@ -683,10 +687,10 @@ where
 /// }
 ///
 /// assert_eq!(parser("abc|abc|abc"), Ok(("|abc", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123abc"), Err(ErrMode::Backtrack(InputError::new("123abc", ErrorKind::Tag))));
-/// assert_eq!(parser("abc|def"), Err(ErrMode::Backtrack(InputError::new("def", ErrorKind::Tag))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
-/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(InputError::new("def|abc", ErrorKind::Tag))));
+/// assert_eq!(parser("abc123abc"), Err(ErrMode::Backtrack(InputError::new("123abc", ErrorKind::Literal))));
+/// assert_eq!(parser("abc|def"), Err(ErrMode::Backtrack(InputError::new("def", ErrorKind::Literal))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
+/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(InputError::new("def|abc", ErrorKind::Literal))));
 /// # }
 /// ```
 ///
@@ -884,7 +888,7 @@ where
     let start = input.checkpoint();
     match parser.parse_next(input) {
         Err(e) => {
-            return Err(e.append(input, &start, ErrorKind::Many));
+            return Err(e.append(input, &start, ErrorKind::Repeat));
         }
         Ok(o) => {
             acc.accumulate(o);
@@ -896,7 +900,7 @@ where
         let len = input.eof_offset();
         match separator.parse_next(input) {
             Err(e) => {
-                return Err(e.append(input, &start, ErrorKind::Many));
+                return Err(e.append(input, &start, ErrorKind::Repeat));
             }
             Ok(_) => {
                 // infinite loop check
@@ -909,7 +913,7 @@ where
 
                 match parser.parse_next(input) {
                     Err(e) => {
-                        return Err(e.append(input, &start, ErrorKind::Many));
+                        return Err(e.append(input, &start, ErrorKind::Repeat));
                     }
                     Ok(o) => {
                         acc.accumulate(o);
@@ -952,7 +956,11 @@ where
                 input.reset(&start);
                 return Ok(acc);
             } else {
-                return Err(ErrMode::Backtrack(e.append(input, &start, ErrorKind::Many)));
+                return Err(ErrMode::Backtrack(e.append(
+                    input,
+                    &start,
+                    ErrorKind::Repeat,
+                )));
             }
         }
         Err(e) => return Err(e),
@@ -967,7 +975,11 @@ where
         match separator.parse_next(input) {
             Err(ErrMode::Backtrack(e)) => {
                 if index < min {
-                    return Err(ErrMode::Backtrack(e.append(input, &start, ErrorKind::Many)));
+                    return Err(ErrMode::Backtrack(e.append(
+                        input,
+                        &start,
+                        ErrorKind::Repeat,
+                    )));
                 } else {
                     input.reset(&start);
                     return Ok(acc);
@@ -991,7 +1003,7 @@ where
                             return Err(ErrMode::Backtrack(e.append(
                                 input,
                                 &start,
-                                ErrorKind::Many,
+                                ErrorKind::Repeat,
                             )));
                         } else {
                             input.reset(&start);
@@ -1149,9 +1161,9 @@ where
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", ["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Tag))));
-/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Tag))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
+/// assert_eq!(parser("abc123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Literal))));
+/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Literal))));
+/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", ["abc", "abc"])));
 /// ```
 pub fn fill<'i, Input, Output, Error, ParseNext>(
@@ -1171,7 +1183,7 @@ where
                     *elem = o;
                 }
                 Err(e) => {
-                    return Err(e.append(i, &start, ErrorKind::Many));
+                    return Err(e.append(i, &start, ErrorKind::Repeat));
                 }
             }
         }
@@ -1236,7 +1248,7 @@ where
 {
     let init = init();
     match f.parse_next(input) {
-        Err(ErrMode::Backtrack(_)) => Err(ErrMode::from_error_kind(input, ErrorKind::Many)),
+        Err(ErrMode::Backtrack(_)) => Err(ErrMode::from_error_kind(input, ErrorKind::Repeat)),
         Err(e) => Err(e),
         Ok(o1) => {
             let mut acc = g(init, o1);
@@ -1313,7 +1325,7 @@ where
                     return Err(ErrMode::Backtrack(err.append(
                         input,
                         &start,
-                        ErrorKind::Many,
+                        ErrorKind::Repeat,
                     )));
                 } else {
                     input.reset(&start);

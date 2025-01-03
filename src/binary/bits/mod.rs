@@ -322,7 +322,7 @@ where
 ///     parser(0b000000_01, 2, (stream(&[0b111111_11]), 0)),
 ///     Err(winnow::error::ErrMode::Backtrack(InputError::new(
 ///         (stream(&[0b11111111]), 0),
-///         ErrorKind::Tag
+///         ErrorKind::Literal
 ///     )))
 /// );
 ///
@@ -331,7 +331,7 @@ where
 ///     parser(0b11111110, 8, (stream(&[0b11111111]), 0)),
 ///     Err(winnow::error::ErrMode::Backtrack(InputError::new(
 ///         (stream(&[0b11111111]), 0),
-///         ErrorKind::Tag
+///         ErrorKind::Literal
 ///     )))
 /// );
 /// ```
@@ -363,7 +363,7 @@ where
                 input.reset(&start);
                 Err(ErrMode::Backtrack(Error::from_error_kind(
                     input,
-                    ErrorKind::Tag,
+                    ErrorKind::Literal,
                 )))
             }
         })

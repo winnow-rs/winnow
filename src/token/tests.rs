@@ -127,21 +127,21 @@ fn complete_literal_case_insensitive() {
         caseless_bytes(&b"ab"[..]),
         Err(ErrMode::Backtrack(error_position!(
             &&b"ab"[..],
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     assert_eq!(
         caseless_bytes(&b"Hello"[..]),
         Err(ErrMode::Backtrack(error_position!(
             &&b"Hello"[..],
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     assert_eq!(
         caseless_bytes(&b"Hel"[..]),
         Err(ErrMode::Backtrack(error_position!(
             &&b"Hel"[..],
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
 
@@ -153,18 +153,24 @@ fn complete_literal_case_insensitive() {
     assert_eq!(caseless_str("ABCDefgh"), Ok(("efgh", "ABCD")));
     assert_eq!(
         caseless_str("ab"),
-        Err(ErrMode::Backtrack(error_position!(&"ab", ErrorKind::Tag)))
+        Err(ErrMode::Backtrack(error_position!(
+            &"ab",
+            ErrorKind::Literal
+        )))
     );
     assert_eq!(
         caseless_str("Hello"),
         Err(ErrMode::Backtrack(error_position!(
             &"Hello",
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     assert_eq!(
         caseless_str("Hel"),
-        Err(ErrMode::Backtrack(error_position!(&"Hel", ErrorKind::Tag)))
+        Err(ErrMode::Backtrack(error_position!(
+            &"Hel",
+            ErrorKind::Literal
+        )))
     );
 
     fn matches_kelvin(i: &str) -> IResult<&str, &str> {
@@ -172,7 +178,10 @@ fn complete_literal_case_insensitive() {
     }
     assert_eq!(
         matches_kelvin("K"),
-        Err(ErrMode::Backtrack(error_position!(&"K", ErrorKind::Tag)))
+        Err(ErrMode::Backtrack(error_position!(
+            &"K",
+            ErrorKind::Literal
+        )))
     );
 
     fn is_kelvin(i: &str) -> IResult<&str, &str> {
@@ -180,7 +189,10 @@ fn complete_literal_case_insensitive() {
     }
     assert_eq!(
         is_kelvin("k"),
-        Err(ErrMode::Backtrack(error_position!(&"k", ErrorKind::Tag)))
+        Err(ErrMode::Backtrack(error_position!(
+            &"k",
+            ErrorKind::Literal
+        )))
     );
 }
 
@@ -208,7 +220,7 @@ fn complete_literal_char() {
         test(&[b'A', b'\0'][..]),
         Err(ErrMode::Backtrack(error_position!(
             &&b"A\0"[..],
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
 }
@@ -223,7 +235,7 @@ fn complete_literal_byte() {
         test(&[b'A', b'\0'][..]),
         Err(ErrMode::Backtrack(error_position!(
             &&b"A\0"[..],
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
 }
@@ -274,7 +286,7 @@ fn char_byteslice() {
         f(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(a),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
 
@@ -293,7 +305,7 @@ fn char_str() {
         f(Partial::new(a)),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(a),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
 
@@ -754,14 +766,14 @@ fn partial_literal_case_insensitive() {
         caseless_bytes(Partial::new(&b"Hello"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"Hello"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     assert_eq!(
         caseless_bytes(Partial::new(&b"Hel"[..])),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(&b"Hel"[..]),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
 
@@ -788,14 +800,14 @@ fn partial_literal_case_insensitive() {
         caseless_str(Partial::new("Hello")),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new("Hello"),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
     assert_eq!(
         caseless_str(Partial::new("Hel")),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new("Hel"),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
 
@@ -806,7 +818,7 @@ fn partial_literal_case_insensitive() {
         matches_kelvin(Partial::new("K")),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new("K"),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
 
@@ -817,7 +829,7 @@ fn partial_literal_case_insensitive() {
         is_kelvin(Partial::new("k")),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new("k"),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
 }

@@ -140,7 +140,7 @@ fn test_pattern_partial_err() {
         result,
         Err(crate::error::ErrMode::Backtrack(InputError::new(
             (input, offset),
-            ErrorKind::Tag
+            ErrorKind::Literal
         )))
     );
 }
