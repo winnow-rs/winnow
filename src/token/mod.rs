@@ -267,7 +267,9 @@ where
 #[doc(alias = "char")]
 #[doc(alias = "token")]
 #[doc(alias = "satisfy")]
-pub fn one_of<Input, Set, Error>(set: Set) -> impl Parser<Input, <Input as Stream>::Token, Error>
+pub fn one_of<Input, Set, Error>(
+    mut set: Set,
+) -> impl Parser<Input, <Input as Stream>::Token, Error>
 where
     Input: StreamIsPartial + Stream,
     <Input as Stream>::Token: Clone,
@@ -320,7 +322,9 @@ where
 /// assert_eq!(none_of::<_, _, InputError<_>>('a').parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn none_of<Input, Set, Error>(set: Set) -> impl Parser<Input, <Input as Stream>::Token, Error>
+pub fn none_of<Input, Set, Error>(
+    mut set: Set,
+) -> impl Parser<Input, <Input as Stream>::Token, Error>
 where
     Input: StreamIsPartial + Stream,
     <Input as Stream>::Token: Clone,
@@ -485,7 +489,7 @@ where
 #[doc(alias = "take_while1")]
 pub fn take_while<Set, Input, Error>(
     occurrences: impl Into<Range>,
-    set: Set,
+    mut set: Set,
 ) -> impl Parser<Input, <Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream,
@@ -529,7 +533,7 @@ fn take_till0<P, I: StreamIsPartial + Stream, E: ParserError<I>, const PARTIAL: 
     predicate: P,
 ) -> PResult<<I as Stream>::Slice, E>
 where
-    P: Fn(I::Token) -> bool,
+    P: FnMut(I::Token) -> bool,
 {
     let offset = match input.offset_for(predicate) {
         Some(offset) => offset,
@@ -546,7 +550,7 @@ fn take_till1<P, I: StreamIsPartial + Stream, E: ParserError<I>, const PARTIAL: 
     predicate: P,
 ) -> PResult<<I as Stream>::Slice, E>
 where
-    P: Fn(I::Token) -> bool,
+    P: FnMut(I::Token) -> bool,
 {
     let e: ErrorKind = ErrorKind::Slice;
     let offset = match input.offset_for(predicate) {
@@ -567,12 +571,12 @@ fn take_till_m_n<P, I, Error: ParserError<I>, const PARTIAL: bool>(
     input: &mut I,
     m: usize,
     n: usize,
-    predicate: P,
+    mut predicate: P,
 ) -> PResult<<I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream,
-    P: Fn(I::Token) -> bool,
+    P: FnMut(I::Token) -> bool,
 {
     if n < m {
         return Err(ErrMode::assert(
@@ -677,7 +681,7 @@ where
 #[doc(alias = "is_not")]
 pub fn take_till<Set, Input, Error>(
     occurrences: impl Into<Range>,
-    set: Set,
+    mut set: Set,
 ) -> impl Parser<Input, <Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream,
