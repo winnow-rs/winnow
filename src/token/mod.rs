@@ -1033,3 +1033,77 @@ where
         None => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
     }
 }
+
+/// Return the remaining input.
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing a `&str` [Stream]:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn rest<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// # {
+/// #     winnow::token::rest.parse_next(input)
+/// # }
+/// ```
+///
+/// # Example
+///
+/// ```rust
+/// # use winnow::prelude::*;
+/// # use winnow::error::ErrorKind;
+/// # use winnow::error::InputError;
+/// use winnow::token::rest;
+/// assert_eq!(rest::<_,InputError<_>>.parse_peek("abc"), Ok(("", "abc")));
+/// assert_eq!(rest::<_,InputError<_>>.parse_peek(""), Ok(("", "")));
+/// ```
+#[inline]
+pub fn rest<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+{
+    trace("rest", move |input: &mut Input| Ok(input.finish())).parse_next(input)
+}
+
+/// Return the length of the remaining input.
+///
+/// <div class="warning">
+///
+/// Note: this does not advance the [`Stream`]
+///
+/// </div>
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing a `&str` [Stream]:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn rest_len(input: &mut &str) -> PResult<usize>
+/// # {
+/// #     winnow::token::rest_len.parse_next(input)
+/// # }
+/// ```
+///
+/// # Example
+///
+/// ```rust
+/// # use winnow::prelude::*;
+/// # use winnow::error::ErrorKind;
+/// # use winnow::error::InputError;
+/// use winnow::token::rest_len;
+/// assert_eq!(rest_len::<_,InputError<_>>.parse_peek("abc"), Ok(("abc", 3)));
+/// assert_eq!(rest_len::<_,InputError<_>>.parse_peek(""), Ok(("", 0)));
+/// ```
+#[inline]
+pub fn rest_len<Input, Error>(input: &mut Input) -> PResult<usize, Error>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+{
+    trace("rest_len", move |input: &mut Input| {
+        let len = input.eof_offset();
+        Ok(len)
+    })
+    .parse_next(input)
+}

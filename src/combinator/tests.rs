@@ -65,26 +65,6 @@ fn eof_on_strs() {
     assert_parse!(res_over, Ok((is_over, is_over)));
 }
 
-#[test]
-fn rest_on_slices() {
-    let input: &[u8] = &b"Hello, world!"[..];
-    let empty: &[u8] = &b""[..];
-    assert_parse!(rest.parse_peek(input), Ok((empty, input)));
-}
-
-#[test]
-fn rest_on_strs() {
-    let input: &str = "Hello, world!";
-    let empty: &str = "";
-    assert_parse!(rest.parse_peek(input), Ok((empty, input)));
-}
-
-#[test]
-fn rest_len_on_slices() {
-    let input: &[u8] = &b"Hello, world!"[..];
-    assert_parse!(rest_len.parse_peek(input), Ok((input, input.len())));
-}
-
 use crate::lib::std::convert::From;
 impl From<u32> for CustomError {
     fn from(_: u32) -> Self {
