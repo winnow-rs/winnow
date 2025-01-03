@@ -1569,7 +1569,7 @@ checksum = "589f6da84c646204747d1270a2a5661ea66ed1cced2631d546fdfb155959f9ec"
 
 [[package]]
 name = "winnow"
-version = "0.6.21"
+version = "0.6.22"
 dependencies = [
  "annotate-snippets",
  "anstream 0.3.2",
