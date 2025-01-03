@@ -40,9 +40,9 @@
 //!
 //! `winnow` includes support for:
 //! - Zero-copy parsing
-//! - [Parse traces] for easier debugging
-//! - [Streaming parsing][crate::Partial] for network communication or large file
-//! - [Stateful]] parsers
+//! - [Parse traces][trace] for easier debugging
+//! - [Streaming parsing][Partial] for network communication or large file
+//! - [Stateful] parsers
 //!
 //! For binary formats, `winnow` includes:
 //! - [A hexadecimal view][crate::Bytes] in [trace]
@@ -123,4 +123,5 @@
 use crate::binary::length_take;
 use crate::combinator::trace;
 use crate::stream::Accumulate;
+use crate::stream::Partial;
 use crate::stream::Stateful;
