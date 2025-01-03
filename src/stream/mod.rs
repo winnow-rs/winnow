@@ -628,7 +628,7 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
     /// Finds the offset of the next matching token
     fn offset_for<P>(&self, predicate: P) -> Option<usize>
     where
-        P: Fn(Self::Token) -> bool;
+        P: FnMut(Self::Token) -> bool;
     /// Get the offset for the number of `tokens` into the stream
     ///
     /// This means "0 tokens" will return `0` offset
@@ -723,9 +723,9 @@ where
     }
 
     #[inline(always)]
-    fn offset_for<P>(&self, predicate: P) -> Option<usize>
+    fn offset_for<P>(&self, mut predicate: P) -> Option<usize>
     where
-        P: Fn(Self::Token) -> bool,
+        P: FnMut(Self::Token) -> bool,
     {
         self.iter().position(|b| predicate(b.clone()))
     }
@@ -785,9 +785,9 @@ impl<'i> Stream for &'i str {
     }
 
     #[inline(always)]
-    fn offset_for<P>(&self, predicate: P) -> Option<usize>
+    fn offset_for<P>(&self, mut predicate: P) -> Option<usize>
     where
-        P: Fn(Self::Token) -> bool,
+        P: FnMut(Self::Token) -> bool,
     {
         for (o, c) in self.iter_offsets() {
             if predicate(c) {
@@ -863,9 +863,9 @@ impl<'i> Stream for &'i Bytes {
     }
 
     #[inline(always)]
-    fn offset_for<P>(&self, predicate: P) -> Option<usize>
+    fn offset_for<P>(&self, mut predicate: P) -> Option<usize>
     where
-        P: Fn(Self::Token) -> bool,
+        P: FnMut(Self::Token) -> bool,
     {
         self.iter().position(|b| predicate(*b))
     }
@@ -928,9 +928,9 @@ impl<'i> Stream for &'i BStr {
     }
 
     #[inline(always)]
-    fn offset_for<P>(&self, predicate: P) -> Option<usize>
+    fn offset_for<P>(&self, mut predicate: P) -> Option<usize>
     where
-        P: Fn(Self::Token) -> bool,
+        P: FnMut(Self::Token) -> bool,
     {
         self.iter().position(|b| predicate(*b))
     }
@@ -998,9 +998,9 @@ where
     }
 
     #[inline(always)]
-    fn offset_for<P>(&self, predicate: P) -> Option<usize>
+    fn offset_for<P>(&self, mut predicate: P) -> Option<usize>
     where
-        P: Fn(Self::Token) -> bool,
+        P: FnMut(Self::Token) -> bool,
     {
         self.iter_offsets()
             .find_map(|(o, b)| predicate(b).then_some(o))
@@ -1112,7 +1112,7 @@ impl<I: Stream> Stream for LocatingSlice<I> {
     #[inline(always)]
     fn offset_for<P>(&self, predicate: P) -> Option<usize>
     where
-        P: Fn(Self::Token) -> bool,
+        P: FnMut(Self::Token) -> bool,
     {
         self.input.offset_for(predicate)
     }
@@ -1170,7 +1170,7 @@ where
     #[inline(always)]
     fn offset_for<P>(&self, predicate: P) -> Option<usize>
     where
-        P: Fn(Self::Token) -> bool,
+        P: FnMut(Self::Token) -> bool,
     {
         self.input.offset_for(predicate)
     }
@@ -1223,7 +1223,7 @@ impl<I: Stream, S: crate::lib::std::fmt::Debug> Stream for Stateful<I, S> {
     #[inline(always)]
     fn offset_for<P>(&self, predicate: P) -> Option<usize>
     where
-        P: Fn(Self::Token) -> bool,
+        P: FnMut(Self::Token) -> bool,
     {
         self.input.offset_for(predicate)
     }
@@ -1276,7 +1276,7 @@ impl<I: Stream> Stream for Partial<I> {
     #[inline(always)]
     fn offset_for<P>(&self, predicate: P) -> Option<usize>
     where
-        P: Fn(Self::Token) -> bool,
+        P: FnMut(Self::Token) -> bool,
     {
         self.input.offset_for(predicate)
     }
@@ -3425,54 +3425,54 @@ impl AsChar for &char {
 /// ```
 pub trait ContainsToken<T> {
     /// Returns true if self contains the token
-    fn contains_token(&self, token: T) -> bool;
+    fn contains_token(&mut self, token: T) -> bool;
 }
 
 impl ContainsToken<u8> for u8 {
     #[inline(always)]
-    fn contains_token(&self, token: u8) -> bool {
+    fn contains_token(&mut self, token: u8) -> bool {
         *self == token
     }
 }
 
 impl ContainsToken<&u8> for u8 {
     #[inline(always)]
-    fn contains_token(&self, token: &u8) -> bool {
+    fn contains_token(&mut self, token: &u8) -> bool {
         self.contains_token(*token)
     }
 }
 
 impl ContainsToken<char> for u8 {
     #[inline(always)]
-    fn contains_token(&self, token: char) -> bool {
+    fn contains_token(&mut self, token: char) -> bool {
         self.as_char() == token
     }
 }
 
 impl ContainsToken<&char> for u8 {
     #[inline(always)]
-    fn contains_token(&self, token: &char) -> bool {
+    fn contains_token(&mut self, token: &char) -> bool {
         self.contains_token(*token)
     }
 }
 
 impl<C: AsChar> ContainsToken<C> for char {
     #[inline(always)]
-    fn contains_token(&self, token: C) -> bool {
+    fn contains_token(&mut self, token: C) -> bool {
         *self == token.as_char()
     }
 }
 
-impl<C, F: Fn(C) -> bool> ContainsToken<C> for F {
+impl<C, F: FnMut(C) -> bool> ContainsToken<C> for F {
     #[inline(always)]
-    fn contains_token(&self, token: C) -> bool {
+    fn contains_token(&mut self, token: C) -> bool {
         self(token)
     }
 }
 
 impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for crate::lib::std::ops::Range<C2> {
     #[inline(always)]
-    fn contains_token(&self, token: C1) -> bool {
+    fn contains_token(&mut self, token: C1) -> bool {
         let start = self.start.clone().as_char();
         let end = self.end.clone().as_char();
         (start..end).contains(&token.as_char())
@@ -3483,7 +3483,7 @@ impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1>
     for crate::lib::std::ops::RangeInclusive<C2>
 {
     #[inline(always)]
-    fn contains_token(&self, token: C1) -> bool {
+    fn contains_token(&mut self, token: C1) -> bool {
         let start = self.start().clone().as_char();
         let end = self.end().clone().as_char();
         (start..=end).contains(&token.as_char())
@@ -3492,7 +3492,7 @@ impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1>
 
 impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for crate::lib::std::ops::RangeFrom<C2> {
     #[inline(always)]
-    fn contains_token(&self, token: C1) -> bool {
+    fn contains_token(&mut self, token: C1) -> bool {
         let start = self.start.clone().as_char();
         (start..).contains(&token.as_char())
     }
@@ -3500,7 +3500,7 @@ impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for crate::lib::std::ops:
 
 impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1> for crate::lib::std::ops::RangeTo<C2> {
     #[inline(always)]
-    fn contains_token(&self, token: C1) -> bool {
+    fn contains_token(&mut self, token: C1) -> bool {
         let end = self.end.clone().as_char();
         (..end).contains(&token.as_char())
     }
@@ -3510,7 +3510,7 @@ impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1>
     for crate::lib::std::ops::RangeToInclusive<C2>
 {
     #[inline(always)]
-    fn contains_token(&self, token: C1) -> bool {
+    fn contains_token(&mut self, token: C1) -> bool {
         let end = self.end.clone().as_char();
         (..=end).contains(&token.as_char())
     }
@@ -3518,14 +3518,14 @@ impl<C1: AsChar, C2: AsChar + Clone> ContainsToken<C1>
 
 impl<C1: AsChar> ContainsToken<C1> for crate::lib::std::ops::RangeFull {
     #[inline(always)]
-    fn contains_token(&self, _token: C1) -> bool {
+    fn contains_token(&mut self, _token: C1) -> bool {
         true
     }
 }
 
 impl<C: AsChar> ContainsToken<C> for &'_ [u8] {
     #[inline]
-    fn contains_token(&self, token: C) -> bool {
+    fn contains_token(&mut self, token: C) -> bool {
         let token = token.as_char();
         self.iter().any(|t| t.as_char() == token)
     }
@@ -3533,7 +3533,7 @@ impl<C: AsChar> ContainsToken<C> for &'_ [u8] {
 
 impl<C: AsChar> ContainsToken<C> for &'_ [char] {
     #[inline]
-    fn contains_token(&self, token: C) -> bool {
+    fn contains_token(&mut self, token: C) -> bool {
         let token = token.as_char();
         self.iter().any(|t| *t == token)
     }
@@ -3541,7 +3541,7 @@ impl<C: AsChar> ContainsToken<C> for &'_ [char] {
 
 impl<const LEN: usize, C: AsChar> ContainsToken<C> for &'_ [u8; LEN] {
     #[inline]
-    fn contains_token(&self, token: C) -> bool {
+    fn contains_token(&mut self, token: C) -> bool {
         let token = token.as_char();
         self.iter().any(|t| t.as_char() == token)
     }
@@ -3549,7 +3549,7 @@ impl<const LEN: usize, C: AsChar> ContainsToken<C> for &'_ [u8; LEN] {
 
 impl<const LEN: usize, C: AsChar> ContainsToken<C> for &'_ [char; LEN] {
     #[inline]
-    fn contains_token(&self, token: C) -> bool {
+    fn contains_token(&mut self, token: C) -> bool {
         let token = token.as_char();
         self.iter().any(|t| *t == token)
     }
@@ -3557,7 +3557,7 @@ impl<const LEN: usize, C: AsChar> ContainsToken<C> for &'_ [char; LEN] {
 
 impl<const LEN: usize, C: AsChar> ContainsToken<C> for [u8; LEN] {
     #[inline]
-    fn contains_token(&self, token: C) -> bool {
+    fn contains_token(&mut self, token: C) -> bool {
         let token = token.as_char();
         self.iter().any(|t| t.as_char() == token)
     }
@@ -3565,7 +3565,7 @@ impl<const LEN: usize, C: AsChar> ContainsToken<C> for [u8; LEN] {
 
 impl<const LEN: usize, C: AsChar> ContainsToken<C> for [char; LEN] {
     #[inline]
-    fn contains_token(&self, token: C) -> bool {
+    fn contains_token(&mut self, token: C) -> bool {
         let token = token.as_char();
         self.iter().any(|t| *t == token)
     }
@@ -3573,7 +3573,7 @@ impl<const LEN: usize, C: AsChar> ContainsToken<C> for [char; LEN] {
 
 impl<T> ContainsToken<T> for () {
     #[inline(always)]
-    fn contains_token(&self, _token: T) -> bool {
+    fn contains_token(&mut self, _token: T) -> bool {
         false
     }
 }
@@ -3587,8 +3587,8 @@ macro_rules! impl_contains_token_for_tuple {
       $($haystack: ContainsToken<T>),+
     {
     #[inline]
-      fn contains_token(&self, token: T) -> bool {
-        let ($(ref $haystack),+,) = *self;
+      fn contains_token(&mut self, token: T) -> bool {
+        let ($(ref mut $haystack),+,) = *self;
         $($haystack.contains_token(token.clone()) || )+ false
       }
     }
