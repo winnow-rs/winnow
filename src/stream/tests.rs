@@ -168,7 +168,7 @@ fn test_literal_support_char() {
 
     assert_eq!(
         literal::<_, _, InputError<_>>('-').parse_peek("π"),
-        Err(Backtrack(InputError::new("π", ErrorKind::Tag)))
+        Err(Backtrack(InputError::new("π", ErrorKind::Literal)))
     );
 
     assert_eq!(
@@ -201,7 +201,10 @@ fn test_literal_support_char() {
 
     assert_eq!(
         literal::<_, &[u8], InputError<_>>('a').parse_peek(b"ABCxyz"),
-        Err(Backtrack(InputError::new(&b"ABCxyz"[..], ErrorKind::Tag)))
+        Err(Backtrack(InputError::new(
+            &b"ABCxyz"[..],
+            ErrorKind::Literal
+        )))
     );
 
     assert_eq!(
@@ -223,6 +226,9 @@ fn test_literal_support_char() {
 
     assert_eq!(
         literal::<_, &[u8], InputError<_>>('-').parse_peek(b"\xCF\x80"),
-        Err(Backtrack(InputError::new(&b"\xCF\x80"[..], ErrorKind::Tag)))
+        Err(Backtrack(InputError::new(
+            &b"\xCF\x80"[..],
+            ErrorKind::Literal
+        )))
     );
 }

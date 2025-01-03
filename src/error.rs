@@ -1096,9 +1096,9 @@ impl<I: Stream + Clone + fmt::Display, C: fmt::Display> fmt::Display for TreeErr
 pub enum ErrorKind {
   Assert,
   Token,
-  Tag,
+  Literal,
   Alt,
-  Many,
+  Repeat,
   Eof,
   Slice,
   Complete,
@@ -1114,9 +1114,9 @@ impl ErrorKind {
     match *self {
       ErrorKind::Assert                    => "assert",
       ErrorKind::Token                     => "token",
-      ErrorKind::Tag                       => "tag",
+      ErrorKind::Literal                   => "literal",
       ErrorKind::Alt                       => "alternative",
-      ErrorKind::Many                      => "many",
+      ErrorKind::Repeat                    => "repeat",
       ErrorKind::Eof                       => "end of file",
       ErrorKind::Slice                     => "slice",
       ErrorKind::Complete                  => "complete",

@@ -258,7 +258,7 @@ mod complete {
             till_line_ending.parse_peek(f),
             Err(ErrMode::Backtrack(InputError::new(
                 &f[12..],
-                ErrorKind::Tag
+                ErrorKind::Literal
             )))
         );
 
@@ -367,25 +367,31 @@ mod complete {
             crlf.parse_peek(&b"\r"[..]),
             Err(ErrMode::Backtrack(error_position!(
                 &&b"\r"[..],
-                ErrorKind::Tag
+                ErrorKind::Literal
             )))
         );
         assert_parse!(
             crlf.parse_peek(&b"\ra"[..]),
             Err(ErrMode::Backtrack(error_position!(
                 &&b"\ra"[..],
-                ErrorKind::Tag
+                ErrorKind::Literal
             )))
         );
 
         assert_parse!(crlf.parse_peek("\r\na"), Ok(("a", "\r\n")));
         assert_parse!(
             crlf.parse_peek("\r"),
-            Err(ErrMode::Backtrack(error_position!(&"\r", ErrorKind::Tag)))
+            Err(ErrMode::Backtrack(error_position!(
+                &"\r",
+                ErrorKind::Literal
+            )))
         );
         assert_parse!(
             crlf.parse_peek("\ra"),
-            Err(ErrMode::Backtrack(error_position!(&"\ra", ErrorKind::Tag)))
+            Err(ErrMode::Backtrack(error_position!(
+                &"\ra",
+                ErrorKind::Literal
+            )))
         );
     }
 
@@ -403,14 +409,14 @@ mod complete {
             line_ending.parse_peek(&b"\r"[..]),
             Err(ErrMode::Backtrack(error_position!(
                 &&b"\r"[..],
-                ErrorKind::Tag
+                ErrorKind::Literal
             )))
         );
         assert_parse!(
             line_ending.parse_peek(&b"\ra"[..]),
             Err(ErrMode::Backtrack(error_position!(
                 &&b"\ra"[..],
-                ErrorKind::Tag
+                ErrorKind::Literal
             )))
         );
 
@@ -418,11 +424,17 @@ mod complete {
         assert_parse!(line_ending.parse_peek("\r\na"), Ok(("a", "\r\n")));
         assert_parse!(
             line_ending.parse_peek("\r"),
-            Err(ErrMode::Backtrack(error_position!(&"\r", ErrorKind::Tag)))
+            Err(ErrMode::Backtrack(error_position!(
+                &"\r",
+                ErrorKind::Literal
+            )))
         );
         assert_parse!(
             line_ending.parse_peek("\ra"),
-            Err(ErrMode::Backtrack(error_position!(&"\ra", ErrorKind::Tag)))
+            Err(ErrMode::Backtrack(error_position!(
+                &"\ra",
+                ErrorKind::Literal
+            )))
         );
     }
 
@@ -810,7 +822,7 @@ mod complete {
             esc(&b"AB\\"[..]),
             Err(ErrMode::Backtrack(error_position!(
                 &&b""[..],
-                ErrorKind::Tag
+                ErrorKind::Literal
             )))
         );
         assert_eq!(
@@ -818,7 +830,7 @@ mod complete {
             Err(ErrMode::Backtrack(error_node_position!(
                 &&b"AB\\A"[..],
                 ErrorKind::Eof,
-                error_position!(&&b"A"[..], ErrorKind::Tag)
+                error_position!(&&b"A"[..], ErrorKind::Literal)
             )))
         );
 
@@ -865,14 +877,14 @@ mod complete {
         assert_eq!(esc("ab\\\"12"), Ok(("12", String::from("ab\""))));
         assert_eq!(
             esc("AB\\"),
-            Err(ErrMode::Backtrack(error_position!(&"", ErrorKind::Tag)))
+            Err(ErrMode::Backtrack(error_position!(&"", ErrorKind::Literal)))
         );
         assert_eq!(
             esc("AB\\A"),
             Err(ErrMode::Backtrack(error_node_position!(
                 &"AB\\A",
                 ErrorKind::Eof,
-                error_position!(&"A", ErrorKind::Tag)
+                error_position!(&"A", ErrorKind::Literal)
             )))
         );
 
@@ -1261,7 +1273,7 @@ mod partial {
             till_line_ending.parse_peek(Partial::new(f)),
             Err(ErrMode::Backtrack(InputError::new(
                 Partial::new(&f[12..]),
-                ErrorKind::Tag
+                ErrorKind::Literal
             )))
         );
 
@@ -1397,7 +1409,7 @@ mod partial {
             crlf.parse_peek(Partial::new(&b"\ra"[..])),
             Err(ErrMode::Backtrack(error_position!(
                 &Partial::new(&b"\ra"[..]),
-                ErrorKind::Tag
+                ErrorKind::Literal
             )))
         );
 
@@ -1413,7 +1425,7 @@ mod partial {
             crlf.parse_peek(Partial::new("\ra")),
             Err(ErrMode::Backtrack(error_position!(
                 &Partial::new("\ra"),
-                ErrorKind::Tag
+                ErrorKind::Literal
             )))
         );
     }
@@ -1436,7 +1448,7 @@ mod partial {
             line_ending.parse_peek(Partial::new(&b"\ra"[..])),
             Err(ErrMode::Backtrack(error_position!(
                 &Partial::new(&b"\ra"[..]),
-                ErrorKind::Tag
+                ErrorKind::Literal
             )))
         );
 
@@ -1456,7 +1468,7 @@ mod partial {
             line_ending.parse_peek(Partial::new("\ra")),
             Err(ErrMode::Backtrack(error_position!(
                 &Partial::new("\ra"),
-                ErrorKind::Tag
+                ErrorKind::Literal
             )))
         );
     }

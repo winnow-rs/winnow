@@ -22,8 +22,8 @@ pub use crate::seq;
 ///
 /// assert_eq!(parser.parse_peek("abcefg"), Ok(("", "efg")));
 /// assert_eq!(parser.parse_peek("abcefghij"), Ok(("hij", "efg")));
-/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
-/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
+/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Literal))));
 /// ```
 #[doc(alias = "ignore_then")]
 pub fn preceded<Input, Ignored, Output, Error, IgnoredParser, ParseNext>(
@@ -58,8 +58,8 @@ where
 ///
 /// assert_eq!(parser.parse_peek("abcefg"), Ok(("", "abc")));
 /// assert_eq!(parser.parse_peek("abcefghij"), Ok(("hij", "abc")));
-/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
-/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
+/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Literal))));
 /// ```
 #[doc(alias = "then_ignore")]
 pub fn terminated<Input, Output, Ignored, Error, ParseNext, IgnoredParser>(
@@ -94,8 +94,8 @@ where
 ///
 /// assert_eq!(parser.parse_peek("abc|efg"), Ok(("", ("abc", "efg"))));
 /// assert_eq!(parser.parse_peek("abc|efghij"), Ok(("hij", ("abc", "efg"))));
-/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
-/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
+/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Literal))));
 /// ```
 pub fn separated_pair<Input, O1, Sep, O2, Error, P1, SepParser, P2>(
     mut first: P1,
@@ -132,8 +132,8 @@ where
 ///
 /// assert_eq!(parser.parse_peek("(abc)"), Ok(("", "abc")));
 /// assert_eq!(parser.parse_peek("(abc)def"), Ok(("def", "abc")));
-/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
-/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Tag))));
+/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
+/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Literal))));
 /// ```
 #[doc(alias = "between")]
 #[doc(alias = "padded")]
