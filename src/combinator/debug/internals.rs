@@ -146,7 +146,7 @@ pub(crate) fn start<I: Stream>(
 
     // The debug version of `slice` might be wider, either due to rendering one byte as two nibbles or
     // escaping in strings.
-    let mut debug_slice = format!("{:#?}", input.raw());
+    let mut debug_slice = format!("{:?}", from_fn(|f| input.trace(f)));
     let (debug_slice, eof) = if let Some(debug_offset) = debug_slice
         .char_indices()
         .enumerate()
@@ -298,4 +298,30 @@ fn columns_env() -> Option<usize> {
     std::env::var("COLUMNS")
         .ok()
         .and_then(|c| c.parse::<usize>().ok())
+}
+
+fn from_fn<F: Fn(&mut core::fmt::Formatter<'_>) -> core::fmt::Result>(f: F) -> FromFn<F> {
+    FromFn(f)
+}
+
+struct FromFn<F>(F)
+where
+    F: Fn(&mut core::fmt::Formatter<'_>) -> core::fmt::Result;
+
+impl<F> core::fmt::Debug for FromFn<F>
+where
+    F: Fn(&mut core::fmt::Formatter<'_>) -> core::fmt::Result,
+{
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        (self.0)(f)
+    }
+}
+
+impl<F> core::fmt::Display for FromFn<F>
+where
+    F: Fn(&mut core::fmt::Formatter<'_>) -> core::fmt::Result,
+{
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        (self.0)(f)
+    }
 }
