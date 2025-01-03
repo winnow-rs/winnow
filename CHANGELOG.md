@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Respect `is_partial` in `take_till`
+
 ## [0.6.21] - 2024-12-31
 
 ### Performance
