@@ -240,8 +240,8 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::token::one_of;
+/// # use winnow::token::rest;
 /// # use winnow::ascii::digit1;
-/// # use winnow::combinator::rest;
 /// # use winnow::combinator::alt;
 /// # use winnow::combinator::preceded;
 /// # use winnow::prelude::*;
@@ -265,8 +265,8 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::prelude::*;
 /// # use winnow::token::one_of;
+/// # use winnow::token::rest;
 /// # use winnow::ascii::digit1;
-/// # use winnow::combinator::rest;
 /// # use winnow::combinator::alt;
 /// # use winnow::combinator::preceded;
 /// use winnow::combinator::cut_err;

@@ -1073,7 +1073,7 @@ where
         let start_token = input.checkpoint();
         let result = (
             self.by_ref(),
-            crate::combinator::eof.resume_after(rest.void()),
+            crate::combinator::eof.resume_after(crate::token::rest.void()),
         )
             .parse_next(&mut input);
 

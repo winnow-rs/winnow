@@ -5,12 +5,12 @@ use winnow::prelude::*;
 use winnow::{
     ascii::float,
     combinator::alt,
-    combinator::{cut_err, rest},
+    combinator::cut_err,
     combinator::{delimited, preceded, separated_pair, terminated},
     combinator::{repeat, separated},
     error::{AddContext, ParserError, StrContext},
     stream::Partial,
-    token::{any, none_of, take, take_while},
+    token::{any, none_of, rest, take, take_while},
 };
 
 use crate::json::JsonValue;
