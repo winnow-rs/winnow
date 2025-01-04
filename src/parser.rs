@@ -686,7 +686,7 @@ pub trait Parser<I, O, E> {
     /// # }
     /// ```
     #[inline(always)]
-    fn complete_err(self) -> CompleteErr<Self>
+    fn complete_err(self) -> CompleteErr<Self, I, O, E>
     where
         Self: core::marker::Sized,
     {
