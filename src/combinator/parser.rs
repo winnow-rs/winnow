@@ -16,22 +16,10 @@ use crate::*;
 
 /// Implementation of [`Parser::by_ref`]
 pub struct ByRef<'p, P, I, O, E> {
-    p: &'p mut P,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    e: core::marker::PhantomData<E>,
-}
-
-impl<'p, P, I, O, E> ByRef<'p, P, I, O, E> {
-    #[inline(always)]
-    pub(crate) fn new(p: &'p mut P) -> Self {
-        Self {
-            p,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-        }
-    }
+    pub(crate) p: &'p mut P,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) e: core::marker::PhantomData<E>,
 }
 
 impl<I, O, E, P> Parser<I, O, E> for ByRef<'_, P, I, O, E>
@@ -50,30 +38,12 @@ where
     F: Parser<I, O, E>,
     G: FnMut(O) -> O2,
 {
-    parser: F,
-    map: G,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    o2: core::marker::PhantomData<O2>,
-    e: core::marker::PhantomData<E>,
-}
-
-impl<F, G, I, O, O2, E> Map<F, G, I, O, O2, E>
-where
-    F: Parser<I, O, E>,
-    G: FnMut(O) -> O2,
-{
-    #[inline(always)]
-    pub(crate) fn new(parser: F, map: G) -> Self {
-        Self {
-            parser,
-            map,
-            i: Default::default(),
-            o: Default::default(),
-            o2: Default::default(),
-            e: Default::default(),
-        }
-    }
+    pub(crate) parser: F,
+    pub(crate) map: G,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) o2: core::marker::PhantomData<O2>,
+    pub(crate) e: core::marker::PhantomData<E>,
 }
 
 impl<F, G, I, O, O2, E> Parser<I, O2, E> for Map<F, G, I, O, O2, E>
@@ -98,34 +68,13 @@ where
     I: Stream,
     E: FromExternalError<I, E2>,
 {
-    parser: F,
-    map: G,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    o2: core::marker::PhantomData<O2>,
-    e: core::marker::PhantomData<E>,
-    e2: core::marker::PhantomData<E2>,
-}
-
-impl<F, G, I, O, O2, E, E2> TryMap<F, G, I, O, O2, E, E2>
-where
-    F: Parser<I, O, E>,
-    G: FnMut(O) -> Result<O2, E2>,
-    I: Stream,
-    E: FromExternalError<I, E2>,
-{
-    #[inline(always)]
-    pub(crate) fn new(parser: F, map: G) -> Self {
-        Self {
-            parser,
-            map,
-            i: Default::default(),
-            o: Default::default(),
-            o2: Default::default(),
-            e: Default::default(),
-            e2: Default::default(),
-        }
-    }
+    pub(crate) parser: F,
+    pub(crate) map: G,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) o2: core::marker::PhantomData<O2>,
+    pub(crate) e: core::marker::PhantomData<E>,
+    pub(crate) e2: core::marker::PhantomData<E2>,
 }
 
 impl<F, G, I, O, O2, E, E2> Parser<I, O2, E> for TryMap<F, G, I, O, O2, E, E2>
@@ -156,32 +105,12 @@ where
     I: Stream,
     E: ParserError<I>,
 {
-    parser: F,
-    map: G,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    o2: core::marker::PhantomData<O2>,
-    e: core::marker::PhantomData<E>,
-}
-
-impl<F, G, I, O, O2, E> VerifyMap<F, G, I, O, O2, E>
-where
-    F: Parser<I, O, E>,
-    G: FnMut(O) -> Option<O2>,
-    I: Stream,
-    E: ParserError<I>,
-{
-    #[inline(always)]
-    pub(crate) fn new(parser: F, map: G) -> Self {
-        Self {
-            parser,
-            map,
-            i: Default::default(),
-            o: Default::default(),
-            o2: Default::default(),
-            e: Default::default(),
-        }
-    }
+    pub(crate) parser: F,
+    pub(crate) map: G,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) o2: core::marker::PhantomData<O2>,
+    pub(crate) e: core::marker::PhantomData<E>,
 }
 
 impl<F, G, I, O, O2, E> Parser<I, O2, E> for VerifyMap<F, G, I, O, O2, E>
@@ -212,32 +141,12 @@ where
     O: StreamIsPartial,
     I: Stream,
 {
-    outer: F,
-    inner: G,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    o2: core::marker::PhantomData<O2>,
-    e: core::marker::PhantomData<E>,
-}
-
-impl<F, G, I, O, O2, E> AndThen<F, G, I, O, O2, E>
-where
-    F: Parser<I, O, E>,
-    G: Parser<O, O2, E>,
-    O: StreamIsPartial,
-    I: Stream,
-{
-    #[inline(always)]
-    pub(crate) fn new(outer: F, inner: G) -> Self {
-        Self {
-            outer,
-            inner,
-            i: Default::default(),
-            o: Default::default(),
-            o2: Default::default(),
-            e: Default::default(),
-        }
-    }
+    pub(crate) outer: F,
+    pub(crate) inner: G,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) o2: core::marker::PhantomData<O2>,
+    pub(crate) e: core::marker::PhantomData<E>,
 }
 
 impl<F, G, I, O, O2, E> Parser<I, O2, E> for AndThen<F, G, I, O, O2, E>
@@ -268,30 +177,11 @@ where
     O: crate::stream::ParseSlice<O2>,
     E: ParserError<I>,
 {
-    p: P,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    o2: core::marker::PhantomData<O2>,
-    e: core::marker::PhantomData<E>,
-}
-
-impl<P, I, O, O2, E> ParseTo<P, I, O, O2, E>
-where
-    P: Parser<I, O, E>,
-    I: Stream,
-    O: crate::stream::ParseSlice<O2>,
-    E: ParserError<I>,
-{
-    #[inline(always)]
-    pub(crate) fn new(p: P) -> Self {
-        Self {
-            p,
-            i: Default::default(),
-            o: Default::default(),
-            o2: Default::default(),
-            e: Default::default(),
-        }
-    }
+    pub(crate) p: P,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) o2: core::marker::PhantomData<O2>,
+    pub(crate) e: core::marker::PhantomData<E>,
 }
 
 impl<P, I, O, O2, E> Parser<I, O2, E> for ParseTo<P, I, O, O2, E>
@@ -321,33 +211,13 @@ where
     G: FnMut(O) -> H,
     H: Parser<I, O2, E>,
 {
-    f: F,
-    g: G,
-    h: core::marker::PhantomData<H>,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    o2: core::marker::PhantomData<O2>,
-    e: core::marker::PhantomData<E>,
-}
-
-impl<F, G, H, I, O, O2, E> FlatMap<F, G, H, I, O, O2, E>
-where
-    F: Parser<I, O, E>,
-    G: FnMut(O) -> H,
-    H: Parser<I, O2, E>,
-{
-    #[inline(always)]
-    pub(crate) fn new(f: F, g: G) -> Self {
-        Self {
-            f,
-            g,
-            h: Default::default(),
-            i: Default::default(),
-            o: Default::default(),
-            o2: Default::default(),
-            e: Default::default(),
-        }
-    }
+    pub(crate) f: F,
+    pub(crate) g: G,
+    pub(crate) h: core::marker::PhantomData<H>,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) o2: core::marker::PhantomData<O2>,
+    pub(crate) e: core::marker::PhantomData<E>,
 }
 
 impl<F, G, H, I, O, O2, E> Parser<I, O2, E> for FlatMap<F, G, H, I, O, O2, E>
@@ -365,22 +235,10 @@ where
 
 /// Implementation of [`Parser::complete_err`]
 pub struct CompleteErr<P, I, O, E> {
-    p: P,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    e: core::marker::PhantomData<E>,
-}
-
-impl<P, I, O, E> CompleteErr<P, I, O, E> {
-    #[inline(always)]
-    pub(crate) fn new(p: P) -> Self {
-        Self {
-            p,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-        }
-    }
+    pub(crate) p: P,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) e: core::marker::PhantomData<E>,
 }
 
 impl<P, I, O, E> Parser<I, O, E> for CompleteErr<P, I, O, E>
@@ -413,34 +271,12 @@ where
     O2: ?Sized,
     E: ParserError<I>,
 {
-    parser: F,
-    filter: G,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    o2: core::marker::PhantomData<O2>,
-    e: core::marker::PhantomData<E>,
-}
-
-impl<F, G, I, O, O2, E> Verify<F, G, I, O, O2, E>
-where
-    F: Parser<I, O, E>,
-    G: FnMut(&O2) -> bool,
-    I: Stream,
-    O: Borrow<O2>,
-    O2: ?Sized,
-    E: ParserError<I>,
-{
-    #[inline(always)]
-    pub(crate) fn new(parser: F, filter: G) -> Self {
-        Self {
-            parser,
-            filter,
-            i: Default::default(),
-            o: Default::default(),
-            o2: Default::default(),
-            e: Default::default(),
-        }
-    }
+    pub(crate) parser: F,
+    pub(crate) filter: G,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) o2: core::marker::PhantomData<O2>,
+    pub(crate) e: core::marker::PhantomData<E>,
 }
 
 impl<F, G, I, O, O2, E> Parser<I, O, E> for Verify<F, G, I, O, O2, E>
@@ -471,28 +307,11 @@ where
     F: Parser<I, O, E>,
     O2: Clone,
 {
-    parser: F,
-    val: O2,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    e: core::marker::PhantomData<E>,
-}
-
-impl<F, I, O, O2, E> Value<F, I, O, O2, E>
-where
-    F: Parser<I, O, E>,
-    O2: Clone,
-{
-    #[inline(always)]
-    pub(crate) fn new(parser: F, val: O2) -> Self {
-        Self {
-            parser,
-            val,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-        }
-    }
+    pub(crate) parser: F,
+    pub(crate) val: O2,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) e: core::marker::PhantomData<E>,
 }
 
 impl<F, I, O, O2, E> Parser<I, O2, E> for Value<F, I, O, O2, E>
@@ -512,28 +331,11 @@ where
     F: Parser<I, O, E>,
     O2: core::default::Default,
 {
-    parser: F,
-    o2: core::marker::PhantomData<O2>,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    e: core::marker::PhantomData<E>,
-}
-
-impl<F, I, O, O2, E> DefaultValue<F, I, O, O2, E>
-where
-    F: Parser<I, O, E>,
-    O2: core::default::Default,
-{
-    #[inline(always)]
-    pub(crate) fn new(parser: F) -> Self {
-        Self {
-            parser,
-            o2: Default::default(),
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-        }
-    }
+    pub(crate) parser: F,
+    pub(crate) o2: core::marker::PhantomData<O2>,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) e: core::marker::PhantomData<E>,
 }
 
 impl<F, I, O, O2, E> Parser<I, O2, E> for DefaultValue<F, I, O, O2, E>
@@ -552,25 +354,10 @@ pub struct Void<F, I, O, E>
 where
     F: Parser<I, O, E>,
 {
-    parser: F,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    e: core::marker::PhantomData<E>,
-}
-
-impl<F, I, O, E> Void<F, I, O, E>
-where
-    F: Parser<I, O, E>,
-{
-    #[inline(always)]
-    pub(crate) fn new(parser: F) -> Self {
-        Self {
-            parser,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-        }
-    }
+    pub(crate) parser: F,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) e: core::marker::PhantomData<E>,
 }
 
 impl<F, I, O, E> Parser<I, (), E> for Void<F, I, O, E>
@@ -593,26 +380,10 @@ where
     F: Parser<I, O, E>,
     I: Stream,
 {
-    parser: F,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    e: core::marker::PhantomData<E>,
-}
-
-impl<F, I, O, E> Take<F, I, O, E>
-where
-    F: Parser<I, O, E>,
-    I: Stream,
-{
-    #[inline(always)]
-    pub(crate) fn new(parser: F) -> Self {
-        Self {
-            parser,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-        }
-    }
+    pub(crate) parser: F,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) e: core::marker::PhantomData<E>,
 }
 
 impl<I, O, E, F> Parser<I, <I as Stream>::Slice, E> for Take<F, I, O, E>
@@ -645,26 +416,10 @@ where
     F: Parser<I, O, E>,
     I: Stream,
 {
-    parser: F,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    e: core::marker::PhantomData<E>,
-}
-
-impl<F, I, O, E> WithTaken<F, I, O, E>
-where
-    F: Parser<I, O, E>,
-    I: Stream,
-{
-    #[inline(always)]
-    pub(crate) fn new(parser: F) -> Self {
-        Self {
-            parser,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-        }
-    }
+    pub(crate) parser: F,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) e: core::marker::PhantomData<E>,
 }
 
 impl<F, I, O, E> Parser<I, (O, <I as Stream>::Slice), E> for WithTaken<F, I, O, E>
@@ -693,26 +448,10 @@ where
     F: Parser<I, O, E>,
     I: Stream + Location,
 {
-    parser: F,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    e: core::marker::PhantomData<E>,
-}
-
-impl<F, I, O, E> Span<F, I, O, E>
-where
-    F: Parser<I, O, E>,
-    I: Stream + Location,
-{
-    #[inline(always)]
-    pub(crate) fn new(parser: F) -> Self {
-        Self {
-            parser,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-        }
-    }
+    pub(crate) parser: F,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) e: core::marker::PhantomData<E>,
 }
 
 impl<I, O, E, F> Parser<I, Range<usize>, E> for Span<F, I, O, E>
@@ -736,26 +475,10 @@ where
     F: Parser<I, O, E>,
     I: Stream + Location,
 {
-    parser: F,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    e: core::marker::PhantomData<E>,
-}
-
-impl<F, I, O, E> WithSpan<F, I, O, E>
-where
-    F: Parser<I, O, E>,
-    I: Stream + Location,
-{
-    #[inline(always)]
-    pub(crate) fn new(parser: F) -> Self {
-        Self {
-            parser,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-        }
-    }
+    pub(crate) parser: F,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) e: core::marker::PhantomData<E>,
 }
 
 impl<F, I, O, E> Parser<I, (O, Range<usize>), E> for WithSpan<F, I, O, E>
@@ -779,28 +502,11 @@ where
     F: Parser<I, O, E>,
     O: Into<O2>,
 {
-    parser: F,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    o2: core::marker::PhantomData<O2>,
-    e: core::marker::PhantomData<E>,
-}
-
-impl<F, I, O, O2, E> OutputInto<F, I, O, O2, E>
-where
-    F: Parser<I, O, E>,
-    O: Into<O2>,
-{
-    #[inline(always)]
-    pub(crate) fn new(parser: F) -> Self {
-        Self {
-            parser,
-            i: Default::default(),
-            o: Default::default(),
-            o2: Default::default(),
-            e: Default::default(),
-        }
-    }
+    pub(crate) parser: F,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) o2: core::marker::PhantomData<O2>,
+    pub(crate) e: core::marker::PhantomData<E>,
 }
 
 impl<F, I, O, O2, E> Parser<I, O2, E> for OutputInto<F, I, O, O2, E>
@@ -820,28 +526,11 @@ where
     F: Parser<I, O, E>,
     E: Into<E2>,
 {
-    parser: F,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    e: core::marker::PhantomData<E>,
-    e2: core::marker::PhantomData<E2>,
-}
-
-impl<F, I, O, E, E2> ErrInto<F, I, O, E, E2>
-where
-    F: Parser<I, O, E>,
-    E: Into<E2>,
-{
-    #[inline(always)]
-    pub(crate) fn new(parser: F) -> Self {
-        Self {
-            parser,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-            e2: Default::default(),
-        }
-    }
+    pub(crate) parser: F,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) e: core::marker::PhantomData<E>,
+    pub(crate) e2: core::marker::PhantomData<E2>,
 }
 
 impl<F, I, O, E, E2> Parser<I, O, E2> for ErrInto<F, I, O, E, E2>
@@ -868,30 +557,11 @@ where
     E: AddContext<I, C>,
     C: Clone + crate::lib::std::fmt::Debug,
 {
-    parser: F,
-    context: C,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    e: core::marker::PhantomData<E>,
-}
-
-impl<F, I, O, E, C> Context<F, I, O, E, C>
-where
-    F: Parser<I, O, E>,
-    I: Stream,
-    E: AddContext<I, C>,
-    C: Clone + crate::lib::std::fmt::Debug,
-{
-    #[inline(always)]
-    pub(crate) fn new(parser: F, context: C) -> Self {
-        Self {
-            parser,
-            context,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-        }
-    }
+    pub(crate) parser: F,
+    pub(crate) context: C,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) e: core::marker::PhantomData<E>,
 }
 
 impl<F, I, O, E, C> Parser<I, O, E> for Context<F, I, O, E, C>
@@ -925,33 +595,11 @@ where
     I: Recover<E>,
     E: FromRecoverableError<I, E>,
 {
-    parser: P,
-    recover: R,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    e: core::marker::PhantomData<E>,
-}
-
-#[cfg(feature = "unstable-recover")]
-#[cfg(feature = "std")]
-impl<P, R, I, O, E> RetryAfter<P, R, I, O, E>
-where
-    P: Parser<I, O, E>,
-    R: Parser<I, (), E>,
-    I: Stream,
-    I: Recover<E>,
-    E: FromRecoverableError<I, E>,
-{
-    #[inline(always)]
-    pub(crate) fn new(parser: P, recover: R) -> Self {
-        Self {
-            parser,
-            recover,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-        }
-    }
+    pub(crate) parser: P,
+    pub(crate) recover: R,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) e: core::marker::PhantomData<E>,
 }
 
 #[cfg(feature = "unstable-recover")]
@@ -1023,33 +671,11 @@ where
     I: Recover<E>,
     E: FromRecoverableError<I, E>,
 {
-    parser: P,
-    recover: R,
-    i: core::marker::PhantomData<I>,
-    o: core::marker::PhantomData<O>,
-    e: core::marker::PhantomData<E>,
-}
-
-#[cfg(feature = "unstable-recover")]
-#[cfg(feature = "std")]
-impl<P, R, I, O, E> ResumeAfter<P, R, I, O, E>
-where
-    P: Parser<I, O, E>,
-    R: Parser<I, (), E>,
-    I: Stream,
-    I: Recover<E>,
-    E: FromRecoverableError<I, E>,
-{
-    #[inline(always)]
-    pub(crate) fn new(parser: P, recover: R) -> Self {
-        Self {
-            parser,
-            recover,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-        }
-    }
+    pub(crate) parser: P,
+    pub(crate) recover: R,
+    pub(crate) i: core::marker::PhantomData<I>,
+    pub(crate) o: core::marker::PhantomData<O>,
+    pub(crate) e: core::marker::PhantomData<E>,
 }
 
 #[cfg(feature = "unstable-recover")]
