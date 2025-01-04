@@ -1,3 +1,5 @@
+//! Opaque implementations of [`Parser`]
+
 use crate::combinator::trace;
 use crate::combinator::trace_result;
 use crate::combinator::DisplayDebug;
