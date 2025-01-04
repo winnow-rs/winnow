@@ -146,7 +146,7 @@ pub trait Parser<I, O, E> {
     /// }
     /// ```
     #[inline(always)]
-    fn by_ref(&mut self) -> ByRef<'_, Self>
+    fn by_ref(&mut self) -> ByRef<'_, Self, I, O, E>
     where
         Self: core::marker::Sized,
     {

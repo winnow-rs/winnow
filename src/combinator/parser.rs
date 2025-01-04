@@ -15,18 +15,26 @@ use crate::stream::{Location, Stream};
 use crate::*;
 
 /// Implementation of [`Parser::by_ref`]
-pub struct ByRef<'p, P> {
+pub struct ByRef<'p, P, I, O, E> {
     p: &'p mut P,
+    i: core::marker::PhantomData<I>,
+    o: core::marker::PhantomData<O>,
+    e: core::marker::PhantomData<E>,
 }
 
-impl<'p, P> ByRef<'p, P> {
+impl<'p, P, I, O, E> ByRef<'p, P, I, O, E> {
     #[inline(always)]
     pub(crate) fn new(p: &'p mut P) -> Self {
-        Self { p }
+        Self {
+            p,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
     }
 }
 
-impl<I, O, E, P> Parser<I, O, E> for ByRef<'_, P>
+impl<I, O, E, P> Parser<I, O, E> for ByRef<'_, P, I, O, E>
 where
     P: Parser<I, O, E>,
 {
