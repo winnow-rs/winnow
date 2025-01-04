@@ -150,7 +150,7 @@ pub trait Parser<I, O, E> {
     where
         Self: core::marker::Sized,
     {
-        ByRef::new(self)
+        ByRef { p: self }
     }
 
     /// Produce the provided value
@@ -175,7 +175,13 @@ pub trait Parser<I, O, E> {
         Self: core::marker::Sized,
         O2: Clone,
     {
-        Value::new(self, val)
+        Value {
+            parser: self,
+            val,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
     }
 
     /// Produce a type's default value
@@ -199,7 +205,13 @@ pub trait Parser<I, O, E> {
         Self: core::marker::Sized,
         O2: core::default::Default,
     {
-        DefaultValue::new(self)
+        DefaultValue {
+            parser: self,
+            o2: Default::default(),
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
     }
 
     /// Discards the output of the `Parser`
@@ -222,7 +234,12 @@ pub trait Parser<I, O, E> {
     where
         Self: core::marker::Sized,
     {
-        Void::new(self)
+        Void {
+            parser: self,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
     }
 
     /// Convert the parser's output to another type using [`std::convert::From`]
@@ -252,7 +269,13 @@ pub trait Parser<I, O, E> {
         Self: core::marker::Sized,
         O: Into<O2>,
     {
-        OutputInto::new(self)
+        OutputInto {
+            parser: self,
+            i: Default::default(),
+            o: Default::default(),
+            o2: Default::default(),
+            e: Default::default(),
+        }
     }
 
     /// Produce the consumed input as produced value.
@@ -279,7 +302,12 @@ pub trait Parser<I, O, E> {
         Self: core::marker::Sized,
         I: Stream,
     {
-        Take::new(self)
+        Take {
+            parser: self,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
     }
 
     /// Replaced with [`Parser::take`]
@@ -290,7 +318,12 @@ pub trait Parser<I, O, E> {
         Self: core::marker::Sized,
         I: Stream,
     {
-        Take::new(self)
+        Take {
+            parser: self,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
     }
 
     /// Produce the consumed input with the output
@@ -337,7 +370,12 @@ pub trait Parser<I, O, E> {
         Self: core::marker::Sized,
         I: Stream,
     {
-        WithTaken::new(self)
+        WithTaken {
+            parser: self,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
     }
 
     /// Replaced with [`Parser::with_taken`]
@@ -348,7 +386,12 @@ pub trait Parser<I, O, E> {
         Self: core::marker::Sized,
         I: Stream,
     {
-        WithTaken::new(self)
+        WithTaken {
+            parser: self,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
     }
 
     /// Produce the location of the consumed input as produced value.
@@ -373,7 +416,12 @@ pub trait Parser<I, O, E> {
         Self: core::marker::Sized,
         I: Stream + Location,
     {
-        Span::new(self)
+        Span {
+            parser: self,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
     }
 
     /// Produce the location of consumed input with the output
@@ -422,7 +470,12 @@ pub trait Parser<I, O, E> {
         Self: core::marker::Sized,
         I: Stream + Location,
     {
-        WithSpan::new(self)
+        WithSpan {
+            parser: self,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
     }
 
     /// Maps a function over the output of a parser
@@ -449,7 +502,14 @@ pub trait Parser<I, O, E> {
         G: FnMut(O) -> O2,
         Self: core::marker::Sized,
     {
-        Map::new(self, map)
+        Map {
+            parser: self,
+            map,
+            i: Default::default(),
+            o: Default::default(),
+            o2: Default::default(),
+            e: Default::default(),
+        }
     }
 
     /// Applies a function returning a `Result` over the output of a parser.
@@ -481,7 +541,15 @@ pub trait Parser<I, O, E> {
         I: Stream,
         E: FromExternalError<I, E2>,
     {
-        TryMap::new(self, map)
+        TryMap {
+            parser: self,
+            map,
+            i: Default::default(),
+            o: Default::default(),
+            o2: Default::default(),
+            e: Default::default(),
+            e2: Default::default(),
+        }
     }
 
     /// Apply both [`Parser::verify`] and [`Parser::map`].
@@ -516,7 +584,14 @@ pub trait Parser<I, O, E> {
         I: Stream,
         E: ParserError<I>,
     {
-        VerifyMap::new(self, map)
+        VerifyMap {
+            parser: self,
+            map,
+            i: Default::default(),
+            o: Default::default(),
+            o2: Default::default(),
+            e: Default::default(),
+        }
     }
 
     /// Creates a parser from the output of this one
@@ -558,7 +633,15 @@ pub trait Parser<I, O, E> {
         G: FnMut(O) -> H,
         H: Parser<I, O2, E>,
     {
-        FlatMap::new(self, map)
+        FlatMap {
+            f: self,
+            g: map,
+            h: Default::default(),
+            i: Default::default(),
+            o: Default::default(),
+            o2: Default::default(),
+            e: Default::default(),
+        }
     }
 
     /// Applies a second parser over the output of the first one
@@ -586,7 +669,14 @@ pub trait Parser<I, O, E> {
         O: StreamIsPartial,
         I: Stream,
     {
-        AndThen::new(self, inner)
+        AndThen {
+            outer: self,
+            inner,
+            i: Default::default(),
+            o: Default::default(),
+            o2: Default::default(),
+            e: Default::default(),
+        }
     }
 
     /// Apply [`std::str::FromStr`] to the output of the parser
@@ -617,7 +707,13 @@ pub trait Parser<I, O, E> {
         O: ParseSlice<O2>,
         E: ParserError<I>,
     {
-        ParseTo::new(self)
+        ParseTo {
+            p: self,
+            i: Default::default(),
+            o: Default::default(),
+            o2: Default::default(),
+            e: Default::default(),
+        }
     }
 
     /// Returns the output of the child parser if it satisfies a verification function.
@@ -651,7 +747,14 @@ pub trait Parser<I, O, E> {
         O2: ?Sized,
         E: ParserError<I>,
     {
-        Verify::new(self, filter)
+        Verify {
+            parser: self,
+            filter,
+            i: Default::default(),
+            o: Default::default(),
+            o2: Default::default(),
+            e: Default::default(),
+        }
     }
 
     /// If parsing fails, add context to the error
@@ -667,7 +770,13 @@ pub trait Parser<I, O, E> {
         E: AddContext<I, C>,
         C: Clone + crate::lib::std::fmt::Debug,
     {
-        Context::new(self, context)
+        Context {
+            parser: self,
+            context,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
     }
 
     /// Transforms [`Incomplete`][crate::error::ErrMode::Incomplete] into [`Backtrack`][crate::error::ErrMode::Backtrack]
@@ -690,7 +799,7 @@ pub trait Parser<I, O, E> {
     where
         Self: core::marker::Sized,
     {
-        CompleteErr::new(self)
+        CompleteErr { f: self }
     }
 
     /// Convert the parser's error to another type using [`std::convert::From`]
@@ -700,7 +809,13 @@ pub trait Parser<I, O, E> {
         Self: core::marker::Sized,
         E: Into<E2>,
     {
-        ErrInto::new(self)
+        ErrInto {
+            parser: self,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+            e2: Default::default(),
+        }
     }
 
     /// Recover from an error by skipping everything `recover` consumes and trying again
@@ -721,7 +836,13 @@ pub trait Parser<I, O, E> {
         I: Recover<E>,
         E: FromRecoverableError<I, E>,
     {
-        RetryAfter::new(self, recover)
+        RetryAfter {
+            parser: self,
+            recover,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
     }
 
     /// Recover from an error by skipping this parse and everything `recover` consumes
@@ -739,7 +860,13 @@ pub trait Parser<I, O, E> {
         I: Recover<E>,
         E: FromRecoverableError<I, E>,
     {
-        ResumeAfter::new(self, recover)
+        ResumeAfter {
+            parser: self,
+            recover,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
     }
 }
 
