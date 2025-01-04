@@ -15,18 +15,26 @@ use crate::stream::{Location, Stream};
 use crate::*;
 
 /// Implementation of [`Parser::by_ref`]
-pub struct ByRef<'p, P> {
+pub struct ByRef<'p, P, I, O, E> {
     p: &'p mut P,
+    i: core::marker::PhantomData<I>,
+    o: core::marker::PhantomData<O>,
+    e: core::marker::PhantomData<E>,
 }
 
-impl<'p, P> ByRef<'p, P> {
+impl<'p, P, I, O, E> ByRef<'p, P, I, O, E> {
     #[inline(always)]
     pub(crate) fn new(p: &'p mut P) -> Self {
-        Self { p }
+        Self {
+            p,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
     }
 }
 
-impl<I, O, E, P> Parser<I, O, E> for ByRef<'_, P>
+impl<I, O, E, P> Parser<I, O, E> for ByRef<'_, P, I, O, E>
 where
     P: Parser<I, O, E>,
 {
@@ -356,27 +364,35 @@ where
 }
 
 /// Implementation of [`Parser::complete_err`]
-pub struct CompleteErr<F> {
-    f: F,
+pub struct CompleteErr<P, I, O, E> {
+    p: P,
+    i: core::marker::PhantomData<I>,
+    o: core::marker::PhantomData<O>,
+    e: core::marker::PhantomData<E>,
 }
 
-impl<F> CompleteErr<F> {
+impl<P, I, O, E> CompleteErr<P, I, O, E> {
     #[inline(always)]
-    pub(crate) fn new(f: F) -> Self {
-        Self { f }
+    pub(crate) fn new(p: P) -> Self {
+        Self {
+            p,
+            i: Default::default(),
+            o: Default::default(),
+            e: Default::default(),
+        }
     }
 }
 
-impl<F, I, O, E> Parser<I, O, E> for CompleteErr<F>
+impl<P, I, O, E> Parser<I, O, E> for CompleteErr<P, I, O, E>
 where
+    P: Parser<I, O, E>,
     I: Stream,
-    F: Parser<I, O, E>,
     E: ParserError<I>,
 {
     #[inline]
     fn parse_next(&mut self, input: &mut I) -> PResult<O, E> {
         trace("complete_err", |input: &mut I| {
-            match (self.f).parse_next(input) {
+            match (self.p).parse_next(input) {
                 Err(ErrMode::Incomplete(_)) => {
                     Err(ErrMode::from_error_kind(input, ErrorKind::Complete))
                 }
