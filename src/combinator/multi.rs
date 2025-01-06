@@ -132,7 +132,7 @@ where
     }
 }
 
-/// Implementation of [`repeat`]
+/// [`Parser`] implementation for [`repeat`]
 pub struct Repeat<P, I, O, C, E>
 where
     P: Parser<I, O, E>,
