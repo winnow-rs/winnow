@@ -1607,13 +1607,13 @@ where
 /// assert_eq!(esc(Partial::new("12\\\"34;")), Ok((Partial::new(";"), "12\\\"34")));
 /// ```
 #[inline(always)]
-pub fn take_escaped<'i, Input, Error, Normal, Escapable, NormalOutput, EscapableOutput>(
+pub fn take_escaped<Input, Error, Normal, Escapable, NormalOutput, EscapableOutput>(
     mut normal: Normal,
     control_char: char,
     mut escapable: Escapable,
 ) -> impl Parser<Input, <Input as Stream>::Slice, Error>
 where
-    Input: StreamIsPartial + Stream + Compare<char> + 'i,
+    Input: StreamIsPartial + Stream + Compare<char>,
     Normal: Parser<Input, NormalOutput, Error>,
     Escapable: Parser<Input, EscapableOutput, Error>,
     Error: ParserError<Input>,
@@ -1640,13 +1640,13 @@ where
 /// Deprecated, replaced with [`take_escaped`]
 #[deprecated(since = "0.6.4", note = "Replaced with `take_escaped`")]
 #[inline(always)]
-pub fn escaped<'i, Input, Error, Normal, Escapable, NormalOutput, EscapableOutput>(
+pub fn escaped<Input, Error, Normal, Escapable, NormalOutput, EscapableOutput>(
     normal: Normal,
     control_char: char,
     escapable: Escapable,
 ) -> impl Parser<Input, <Input as Stream>::Slice, Error>
 where
-    Input: StreamIsPartial + Stream + Compare<char> + 'i,
+    Input: StreamIsPartial + Stream + Compare<char>,
     Normal: Parser<Input, NormalOutput, Error>,
     Escapable: Parser<Input, EscapableOutput, Error>,
     Error: ParserError<Input>,
@@ -1654,7 +1654,7 @@ where
     take_escaped(normal, control_char, escapable)
 }
 
-fn escaped_internal<'a, I, Error, F, G, O1, O2, const PARTIAL: bool>(
+fn escaped_internal<I, Error, F, G, O1, O2, const PARTIAL: bool>(
     input: &mut I,
     normal: &mut F,
     control_char: char,
@@ -1664,7 +1664,6 @@ where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<char>,
-    I: 'a,
     F: Parser<I, O1, Error>,
     G: Parser<I, O2, Error>,
     Error: ParserError<I>,
