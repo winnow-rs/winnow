@@ -1,3 +1,5 @@
+//! Opaque implementations of [`Parser`]
+
 use crate::combinator::trace;
 use crate::combinator::trace_result;
 use crate::combinator::DisplayDebug;
@@ -14,7 +16,7 @@ use crate::stream::StreamIsPartial;
 use crate::stream::{Location, Stream};
 use crate::*;
 
-/// Implementation of [`Parser::by_ref`]
+/// [`Parser`] implementation for [`Parser::by_ref`]
 pub struct ByRef<'p, P> {
     pub(crate) p: &'p mut P,
 }
@@ -29,7 +31,7 @@ where
     }
 }
 
-/// Implementation of [`Parser::map`]
+/// [`Parser`] implementation for [`Parser::map`]
 pub struct Map<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -57,7 +59,7 @@ where
     }
 }
 
-/// Implementation of [`Parser::try_map`]
+/// [`Parser`] implementation for [`Parser::try_map`]
 pub struct TryMap<F, G, I, O, O2, E, E2>
 where
     F: Parser<I, O, E>,
@@ -94,7 +96,7 @@ where
     }
 }
 
-/// Implementation of [`Parser::verify_map`]
+/// [`Parser`] implementation for [`Parser::verify_map`]
 pub struct VerifyMap<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -130,7 +132,7 @@ where
     }
 }
 
-/// Implementation of [`Parser::and_then`]
+/// [`Parser`] implementation for [`Parser::and_then`]
 pub struct AndThen<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -166,7 +168,7 @@ where
     }
 }
 
-/// Implementation of [`Parser::parse_to`]
+/// [`Parser`] implementation for [`Parser::parse_to`]
 pub struct ParseTo<P, I, O, O2, E>
 where
     P: Parser<I, O, E>,
@@ -201,7 +203,7 @@ where
     }
 }
 
-/// Implementation of [`Parser::flat_map`]
+/// [`Parser`] implementation for [`Parser::flat_map`]
 pub struct FlatMap<F, G, H, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -230,7 +232,7 @@ where
     }
 }
 
-/// Implementation of [`Parser::complete_err`]
+/// [`Parser`] implementation for [`Parser::complete_err`]
 pub struct CompleteErr<F> {
     pub(crate) f: F,
 }
@@ -255,7 +257,7 @@ where
     }
 }
 
-/// Implementation of [`Parser::verify`]
+/// [`Parser`] implementation for [`Parser::verify`]
 pub struct Verify<F, G, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -295,7 +297,7 @@ where
     }
 }
 
-/// Implementation of [`Parser::value`]
+/// [`Parser`] implementation for [`Parser::value`]
 pub struct Value<F, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -319,7 +321,7 @@ where
     }
 }
 
-/// Implementation of [`Parser::default_value`]
+/// [`Parser`] implementation for [`Parser::default_value`]
 pub struct DefaultValue<F, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -343,7 +345,7 @@ where
     }
 }
 
-/// Implementation of [`Parser::void`]
+/// [`Parser`] implementation for [`Parser::void`]
 pub struct Void<F, I, O, E>
 where
     F: Parser<I, O, E>,
@@ -368,7 +370,7 @@ where
 #[deprecated(since = "0.6.14", note = "Replaced with `Take`")]
 pub type Recognize<F, I, O, E> = Take<F, I, O, E>;
 
-/// Implementation of [`Parser::take`]
+/// [`Parser`] implementation for [`Parser::take`]
 pub struct Take<F, I, O, E>
 where
     F: Parser<I, O, E>,
@@ -404,7 +406,7 @@ where
 #[deprecated(since = "0.6.14", note = "Replaced with `WithTaken`")]
 pub type WithRecognized<F, I, O, E> = WithTaken<F, I, O, E>;
 
-/// Implementation of [`Parser::with_taken`]
+/// [`Parser`] implementation for [`Parser::with_taken`]
 pub struct WithTaken<F, I, O, E>
 where
     F: Parser<I, O, E>,
@@ -436,7 +438,7 @@ where
     }
 }
 
-/// Implementation of [`Parser::span`]
+/// [`Parser`] implementation for [`Parser::span`]
 pub struct Span<F, I, O, E>
 where
     F: Parser<I, O, E>,
@@ -463,7 +465,7 @@ where
     }
 }
 
-/// Implementation of [`Parser::with_span`]
+/// [`Parser`] implementation for [`Parser::with_span`]
 pub struct WithSpan<F, I, O, E>
 where
     F: Parser<I, O, E>,
@@ -490,7 +492,7 @@ where
     }
 }
 
-/// Implementation of [`Parser::output_into`]
+/// [`Parser`] implementation for [`Parser::output_into`]
 pub struct OutputInto<F, I, O, O2, E>
 where
     F: Parser<I, O, E>,
@@ -514,7 +516,7 @@ where
     }
 }
 
-/// Implementation of [`Parser::err_into`]
+/// [`Parser`] implementation for [`Parser::err_into`]
 pub struct ErrInto<F, I, O, E, E2>
 where
     F: Parser<I, O, E>,
@@ -543,7 +545,7 @@ where
     }
 }
 
-/// Implementation of [`Parser::context`]
+/// [`Parser`] implementation for [`Parser::context`]
 pub struct Context<F, I, O, E, C>
 where
     F: Parser<I, O, E>,
@@ -578,7 +580,7 @@ where
     }
 }
 
-/// Implementation of [`Parser::retry_after`]
+/// [`Parser`] implementation for [`Parser::retry_after`]
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
 pub struct RetryAfter<P, R, I, O, E>
@@ -654,7 +656,7 @@ where
     }
 }
 
-/// Implementation of [`Parser::resume_after`]
+/// [`Parser`] implementation for [`Parser::resume_after`]
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
 pub struct ResumeAfter<P, R, I, O, E>
