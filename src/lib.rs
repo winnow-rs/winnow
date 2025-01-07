@@ -149,6 +149,7 @@ pub mod prelude {
     pub use crate::stream::ContainsToken as _;
     pub use crate::stream::Stream as _;
     pub use crate::stream::StreamIsPartial as _;
+    pub use crate::ModalResult;
     pub use crate::PResult;
     pub use crate::Parser;
     #[cfg(feature = "unstable-recover")]
@@ -159,6 +160,7 @@ pub mod prelude {
     pub(crate) use crate::TestResult;
 }
 
+pub use error::ModalResult;
 pub use error::PResult;
 pub use parser::*;
 pub use stream::BStr;
