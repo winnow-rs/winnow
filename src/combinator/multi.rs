@@ -32,6 +32,7 @@ use crate::Parser;
 /// Zero or more repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
@@ -50,6 +51,7 @@ use crate::Parser;
 /// One or more repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
@@ -68,6 +70,7 @@ use crate::Parser;
 /// Fixed number of repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
@@ -87,6 +90,7 @@ use crate::Parser;
 /// Arbitrary repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
@@ -176,6 +180,7 @@ where
     ///
     /// Zero or more repetitions:
     /// ```rust
+    /// # use winnow::error::IResult;
     /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
     /// # use winnow::prelude::*;
     /// use winnow::combinator::repeat;
@@ -201,6 +206,7 @@ where
     ///
     /// One or more repetitions:
     /// ```rust
+    /// # use winnow::error::IResult;
     /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
     /// # use winnow::prelude::*;
     /// use winnow::combinator::repeat;
@@ -226,6 +232,7 @@ where
     ///
     /// Arbitrary number of repetitions:
     /// ```rust
+    /// # use winnow::error::IResult;
     /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
     /// # use winnow::prelude::*;
     /// use winnow::combinator::repeat;
@@ -475,6 +482,7 @@ where
 ///
 /// ```rust
 /// # #[cfg(feature = "std")] {
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat_till;
@@ -640,6 +648,7 @@ where
 /// Zero or more repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
@@ -659,6 +668,7 @@ where
 /// One or more repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
@@ -678,6 +688,7 @@ where
 /// Fixed number of repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
@@ -697,6 +708,7 @@ where
 /// Arbitrary repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
@@ -1032,6 +1044,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated_foldl1;
@@ -1099,6 +1112,7 @@ where
 /// # Example
 ///
 /// ```
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated_foldr1;
@@ -1150,6 +1164,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::fill;

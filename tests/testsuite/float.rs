@@ -2,9 +2,9 @@ use winnow::ascii::digit1 as digit;
 use winnow::combinator::alt;
 use winnow::combinator::delimited;
 use winnow::combinator::opt;
+use winnow::error::IResult;
 use winnow::prelude::*;
 use winnow::unpeek;
-use winnow::IResult;
 
 use std::str;
 use std::str::FromStr;

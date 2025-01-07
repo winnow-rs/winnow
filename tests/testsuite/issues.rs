@@ -4,7 +4,9 @@
 
 use winnow::prelude::*;
 use winnow::Partial;
-use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed, unpeek, IResult};
+use winnow::{
+    error::ErrMode, error::ErrorKind, error::IResult, error::InputError, error::Needed, unpeek,
+};
 
 #[allow(dead_code)]
 struct Range {
@@ -29,7 +31,8 @@ mod parse_int {
         ascii::{digit1 as digit, space1 as space},
         combinator::opt,
         combinator::repeat,
-        unpeek, IResult,
+        error::IResult,
+        unpeek,
     };
 
     fn parse_ints(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<i32>> {
@@ -135,7 +138,7 @@ mod issue_647 {
     use super::*;
     use winnow::combinator::separated;
     use winnow::token::literal;
-    use winnow::{binary::be_f64, error::ErrMode, IResult};
+    use winnow::{binary::be_f64, error::ErrMode, error::IResult};
     pub(crate) type Stream<'a> = Partial<&'a [u8]>;
 
     #[derive(PartialEq, Debug, Clone)]

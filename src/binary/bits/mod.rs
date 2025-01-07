@@ -8,7 +8,7 @@ use crate::combinator::trace;
 use crate::error::{ErrMode, ErrorConvert, ErrorKind, Needed, ParserError};
 use crate::lib::std::ops::{AddAssign, Div, Shl, Shr};
 use crate::stream::{Stream, StreamIsPartial, ToUsize};
-use crate::{unpeek, IResult, PResult, Parser};
+use crate::{error::IResult, unpeek, PResult, Parser};
 
 /// Number of bits in a byte
 const BYTE: usize = u8::BITS as usize;
@@ -19,11 +19,11 @@ const BYTE: usize = u8::BITS as usize;
 ///
 /// # Example
 /// ```
-/// use winnow::prelude::*;
-/// use winnow::Bytes;
-/// use winnow::binary::bits::{bits, take};
-/// use winnow::error::InputError;
-///
+/// # use winnow::prelude::*;
+/// # use winnow::Bytes;
+/// # use winnow::binary::bits::{bits, take};
+/// # use winnow::error::InputError;
+/// # use winnow::error::IResult;
 /// type Stream<'i> = &'i Bytes;
 ///
 /// fn stream(b: &[u8]) -> Stream<'_> {
@@ -95,6 +95,7 @@ where
 /// use winnow::binary::bits::{bits, bytes, take};
 /// use winnow::token::rest;
 /// use winnow::error::InputError;
+/// use winnow::error::IResult;
 ///
 /// type Stream<'i> = &'i Bytes;
 ///
@@ -171,6 +172,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
 /// # use winnow::error::{InputError, ErrorKind};
+/// # use winnow::error::IResult;
 /// use winnow::binary::bits::take;
 ///
 /// type Stream<'i> = &'i Bytes;
@@ -290,6 +292,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
 /// # use winnow::error::{InputError, ErrorKind};
+/// # use winnow::error::IResult;
 /// use winnow::binary::bits::pattern;
 ///
 /// type Stream<'i> = &'i Bytes;
@@ -390,6 +393,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
 /// # use winnow::error::{InputError, ErrorKind};
+/// # use winnow::error::IResult;
 /// use winnow::binary::bits::bool;
 ///
 /// type Stream<'i> = &'i Bytes;

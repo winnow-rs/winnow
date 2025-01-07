@@ -4,7 +4,8 @@ use winnow::{
     ascii::{alphanumeric1 as alphanumeric, line_ending as eol},
     combinator::repeat,
     combinator::terminated,
-    unpeek, IResult, Parser,
+    error::IResult,
+    unpeek, Parser,
 };
 
 pub(crate) fn end_of_line(input: &str) -> IResult<&str, &str> {

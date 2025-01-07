@@ -1,14 +1,14 @@
 use super::*;
 use crate::unpeek;
-use crate::IResult;
 
 mod complete {
     use super::*;
+    use crate::error::IResult;
     use crate::error::InputError;
 
     macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
-      let res: $crate::IResult<_, _, InputError<_>> = $left;
+      let res: $crate::error::IResult<_, _, InputError<_>> = $left;
       assert_eq!(res, $right);
     };
   );
@@ -436,6 +436,7 @@ mod complete {
 mod partial {
     use super::*;
     use crate::error::ErrMode;
+    use crate::error::IResult;
     use crate::error::InputError;
     use crate::error::Needed;
     #[cfg(feature = "alloc")]
@@ -446,12 +447,11 @@ mod partial {
         binary::{be_u16, be_u8},
         error::ErrorKind,
         lib::std::str::{self, FromStr},
-        IResult,
     };
 
     macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
-      let res: $crate::IResult<_, _, InputError<_>> = $left;
+      let res: $crate::error::IResult<_, _, InputError<_>> = $left;
       assert_eq!(res, $right);
     };
   );

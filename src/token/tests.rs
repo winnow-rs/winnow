@@ -7,18 +7,18 @@ use crate::ascii::Caseless;
 use crate::combinator::delimited;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
+use crate::error::IResult;
 use crate::error::InputError;
 use crate::error::Needed;
 use crate::stream::AsChar;
 use crate::token::literal;
 use crate::unpeek;
-use crate::IResult;
 use crate::Parser;
 use crate::Partial;
 
 macro_rules! assert_parse(
   ($left: expr, $right: expr) => {
-    let res: $crate::IResult<_, _, InputError<_>> = $left;
+    let res: $crate::error::IResult<_, _, InputError<_>> = $left;
     assert_eq!(res, $right);
   };
 );

@@ -5,10 +5,10 @@ use std::str;
 
 use winnow::combinator::delimited;
 use winnow::combinator::repeat;
+use winnow::error::IResult;
 use winnow::error::InputError;
 use winnow::prelude::*;
 use winnow::token::take_till;
-use winnow::IResult;
 
 fn atom<'a>(_tomb: &mut ()) -> impl Parser<&'a [u8], String, InputError<&'a [u8]>> {
     take_till(1.., [' ', '\t', '\r', '\n'])

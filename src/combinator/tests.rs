@@ -6,6 +6,7 @@ use crate::binary::u8;
 use crate::binary::Endianness;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
+use crate::error::IResult;
 use crate::error::InputError;
 use crate::error::Needed;
 use crate::error::ParserError;
@@ -14,7 +15,6 @@ use crate::lib::std::borrow::ToOwned;
 use crate::stream::Stream;
 use crate::token::take;
 use crate::unpeek;
-use crate::IResult;
 use crate::PResult;
 use crate::Parser;
 use crate::Partial;
@@ -24,7 +24,7 @@ use crate::lib::std::vec::Vec;
 
 macro_rules! assert_parse(
   ($left: expr, $right: expr) => {
-    let res: $crate::IResult<_, _, InputError<_>> = $left;
+    let res: $crate::error::IResult<_, _, InputError<_>> = $left;
     assert_eq!(res, $right);
   };
 );

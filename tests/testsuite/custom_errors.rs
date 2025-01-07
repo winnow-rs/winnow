@@ -4,11 +4,11 @@ use winnow::ascii::digit1 as digit;
 #[cfg(feature = "alloc")]
 use winnow::combinator::repeat;
 use winnow::combinator::terminated;
+use winnow::error::IResult;
 use winnow::error::{ErrorKind, ParserError};
 use winnow::prelude::*;
 use winnow::stream::Stream;
 use winnow::unpeek;
-use winnow::IResult;
 use winnow::Partial;
 
 #[derive(Debug)]

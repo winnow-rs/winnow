@@ -38,6 +38,7 @@ use crate::Parser;
 /// ```rust
 /// # use winnow::{token::any, error::ErrMode, error::{InputError, ErrorKind}};
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// fn parser(input: &str) -> IResult<&str, char> {
 ///     any.parse_peek(input)
 /// }
@@ -49,6 +50,7 @@ use crate::Parser;
 /// ```rust
 /// # use winnow::{token::any, error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// # use winnow::Partial;
 /// assert_eq!(any::<_, InputError<_>>.parse_peek(Partial::new("abc")), Ok((Partial::new("bc"),'a')));
 /// assert_eq!(any::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
@@ -115,6 +117,7 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// #
 /// fn parser(s: &str) -> IResult<&str, &str> {
@@ -128,6 +131,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::Partial;
 ///
@@ -144,6 +148,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// use winnow::token::literal;
 /// use winnow::ascii::Caseless;
 ///
@@ -233,6 +238,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::token::one_of;
 /// assert_eq!(one_of::<_, _, InputError<_>>(['a', 'b', 'c']).parse_peek("b"), Ok(("", 'b')));
@@ -249,6 +255,7 @@ where
 ///
 /// ```
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::token::one_of;
@@ -306,6 +313,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// # use winnow::token::none_of;
 /// assert_eq!(none_of::<_, _, InputError<_>>(['a', 'b', 'c']).parse_peek("z"), Ok(("", 'z')));
 /// assert_eq!(none_of::<_, _, InputError<_>>(['a', 'b']).parse_peek("a"), Err(ErrMode::Backtrack(InputError::new("a", ErrorKind::Verify))));
@@ -315,6 +323,7 @@ where
 /// ```
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// # use winnow::Partial;
 /// # use winnow::token::none_of;
 /// assert_eq!(none_of::<_, _, InputError<_>>(['a', 'b', 'c']).parse_peek(Partial::new("z")), Ok((Partial::new(""), 'z')));
@@ -366,6 +375,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
 ///
@@ -382,6 +392,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// # use winnow::Partial;
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
@@ -400,6 +411,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
 ///
@@ -425,6 +437,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// # use winnow::Partial;
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
@@ -452,6 +465,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
 ///
@@ -469,6 +483,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// # use winnow::Partial;
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
@@ -650,6 +665,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// use winnow::token::take_till;
 ///
 /// fn till_colon(s: &str) -> IResult<&str, &str> {
@@ -665,6 +681,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// # use winnow::Partial;
 /// use winnow::token::take_till;
 ///
@@ -750,6 +767,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// use winnow::token::take;
 ///
 /// fn take6(s: &str) -> IResult<&str, &str> {
@@ -768,6 +786,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// use winnow::error::InputError;
 /// use winnow::token::take;
 ///
@@ -777,7 +796,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::error::{ErrMode, ErrorKind, InputError, Needed, IResult};
 /// # use winnow::Partial;
 /// use winnow::token::take;
 ///
@@ -858,6 +877,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// use winnow::token::take_until;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
@@ -873,6 +893,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// # use winnow::Partial;
 /// use winnow::token::take_until;
 ///
@@ -889,6 +910,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// use winnow::token::take_until;
 ///
 /// fn until_eof(s: &str) -> IResult<&str, &str> {
@@ -905,6 +927,7 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// # use winnow::Partial;
 /// use winnow::token::take_until;
 ///
@@ -1051,6 +1074,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// # use winnow::error::ErrorKind;
 /// # use winnow::error::InputError;
 /// use winnow::token::rest;
@@ -1089,6 +1113,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
+/// # use winnow::error::IResult;
 /// # use winnow::error::ErrorKind;
 /// # use winnow::error::InputError;
 /// use winnow::token::rest_len;
