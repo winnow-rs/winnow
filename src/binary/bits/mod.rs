@@ -8,7 +8,7 @@ use crate::combinator::trace;
 use crate::error::{ErrMode, ErrorConvert, ErrorKind, Needed, ParserError};
 use crate::lib::std::ops::{AddAssign, Div, Shl, Shr};
 use crate::stream::{Stream, StreamIsPartial, ToUsize};
-use crate::{error::IResult, unpeek, PResult, Parser};
+use crate::{error::IResult, PResult, Parser};
 
 /// Number of bits in a byte
 const BYTE: usize = u8::BITS as usize;
@@ -56,6 +56,8 @@ where
     Input: Stream + Clone,
     ParseNext: Parser<(Input, usize), Output, BitError>,
 {
+    #![allow(deprecated)]
+    use crate::unpeek;
     trace(
         "bits",
         unpeek(move |input: Input| {
@@ -124,6 +126,8 @@ where
     Input: Stream<Token = u8> + Clone,
     ParseNext: Parser<Input, Output, ByteError>,
 {
+    #![allow(deprecated)]
+    use crate::unpeek;
     trace(
         "bytes",
         unpeek(move |(input, offset): (Input, usize)| {
@@ -205,6 +209,8 @@ where
     Count: ToUsize,
     Error: ParserError<(Input, usize)>,
 {
+    #![allow(deprecated)]
+    use crate::unpeek;
     let count = count.to_usize();
     trace(
         "take",

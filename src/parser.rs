@@ -1271,8 +1271,9 @@ where
     }
 }
 
-/// Convert a [`Parser::parse_peek`] style parse function to be a [`Parser`]
+/// Deprecated
 #[inline(always)]
+#[deprecated(since = "0.6.23")]
 pub fn unpeek<'a, I, O, E>(
     mut peek: impl FnMut(I) -> IResult<I, O, E> + 'a,
 ) -> impl FnMut(&mut I) -> PResult<O, E>
