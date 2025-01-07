@@ -4,24 +4,23 @@ use winnow::{
     ascii::{alphanumeric1 as alphanumeric, line_ending as eol},
     combinator::repeat,
     combinator::terminated,
-    error::IResult,
-    unpeek, Parser,
+    prelude::*,
 };
 
-pub(crate) fn end_of_line(input: &str) -> IResult<&str, &str> {
+pub(crate) fn end_of_line<'i>(input: &mut &'i str) -> PResult<&'i str> {
     if input.is_empty() {
-        Ok((input, input))
+        Ok(*input)
     } else {
-        eol.parse_peek(input)
+        eol.parse_next(input)
     }
 }
 
-pub(crate) fn read_line(input: &str) -> IResult<&str, &str> {
-    terminated(alphanumeric, unpeek(end_of_line)).parse_peek(input)
+pub(crate) fn read_line<'i>(input: &mut &'i str) -> PResult<&'i str> {
+    terminated(alphanumeric, end_of_line).parse_next(input)
 }
 
-pub(crate) fn read_lines(input: &str) -> IResult<&str, Vec<&str>> {
-    repeat(0.., unpeek(read_line)).parse_peek(input)
+pub(crate) fn read_lines<'i>(input: &mut &'i str) -> PResult<Vec<&'i str>> {
+    repeat(0.., read_line).parse_next(input)
 }
 
 #[cfg(feature = "alloc")]
@@ -29,6 +28,6 @@ pub(crate) fn read_lines(input: &str) -> IResult<&str, Vec<&str>> {
 fn read_lines_test() {
     let res = Ok(("", vec!["Duck", "Dog", "Cow"]));
 
-    assert_eq!(read_lines("Duck\nDog\nCow\n"), res);
-    assert_eq!(read_lines("Duck\nDog\nCow"), res);
+    assert_eq!(read_lines.parse_peek("Duck\nDog\nCow\n"), res);
+    assert_eq!(read_lines.parse_peek("Duck\nDog\nCow"), res);
 }

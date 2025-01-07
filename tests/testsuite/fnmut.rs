@@ -1,7 +1,6 @@
 #![cfg(feature = "alloc")]
 
 use winnow::combinator::repeat;
-use winnow::unpeek;
 use winnow::Parser;
 
 #[test]
@@ -10,13 +9,10 @@ fn parse() {
     let mut counter = 0;
 
     let res = {
-        let mut parser = repeat::<_, _, Vec<_>, (), _>(
-            0..,
-            unpeek(|i| {
-                counter += 1;
-                "abc".parse_peek(i)
-            }),
-        );
+        let mut parser = repeat::<_, _, Vec<_>, (), _>(0.., |i: &mut _| {
+            counter += 1;
+            "abc".parse_next(i)
+        });
 
         parser.parse_peek("abcabcabcabc").unwrap()
     };
@@ -30,14 +26,11 @@ fn accumulate() {
     let mut v = Vec::new();
 
     let (_, count) = {
-        let mut parser = repeat::<_, _, usize, (), _>(
-            0..,
-            unpeek(|i| {
-                let (i, o) = "abc".parse_peek(i)?;
-                v.push(o);
-                Ok((i, ()))
-            }),
-        );
+        let mut parser = repeat::<_, _, usize, (), _>(0.., |i: &mut _| {
+            let o = "abc".parse_next(i)?;
+            v.push(o);
+            Ok(())
+        });
         parser.parse_peek("abcabcabcabc").unwrap()
     };
 

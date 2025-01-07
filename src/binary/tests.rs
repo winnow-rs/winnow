@@ -1,5 +1,4 @@
 use super::*;
-use crate::unpeek;
 
 mod complete {
     use super::*;
@@ -1156,38 +1155,38 @@ mod partial {
     #[test]
     #[cfg(feature = "alloc")]
     fn length_repeat_test() {
-        fn number(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
+        fn number(i: &mut Partial<&[u8]>) -> PResult<u32> {
             digit
                 .try_map(str::from_utf8)
                 .try_map(FromStr::from_str)
-                .parse_peek(i)
+                .parse_next(i)
         }
 
-        fn cnt(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<&[u8]>> {
-            length_repeat(unpeek(number), "abc").parse_peek(i)
+        fn cnt<'i>(i: &mut Partial<&'i [u8]>) -> PResult<Vec<&'i [u8]>> {
+            length_repeat(number, "abc").parse_next(i)
         }
 
         assert_eq!(
-            cnt(Partial::new(&b"2abcabcabcdef"[..])),
+            cnt.parse_peek(Partial::new(&b"2abcabcabcdef"[..])),
             Ok((Partial::new(&b"abcdef"[..]), vec![&b"abc"[..], &b"abc"[..]]))
         );
         assert_eq!(
-            cnt(Partial::new(&b"2ab"[..])),
+            cnt.parse_peek(Partial::new(&b"2ab"[..])),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            cnt(Partial::new(&b"3abcab"[..])),
+            cnt.parse_peek(Partial::new(&b"3abcab"[..])),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            cnt(Partial::new(&b"xxx"[..])),
+            cnt.parse_peek(Partial::new(&b"xxx"[..])),
             Err(ErrMode::Backtrack(error_position!(
                 &Partial::new(&b"xxx"[..]),
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            cnt(Partial::new(&b"2abcxxx"[..])),
+            cnt.parse_peek(Partial::new(&b"2abcxxx"[..])),
             Err(ErrMode::Backtrack(error_position!(
                 &Partial::new(&b"xxx"[..]),
                 ErrorKind::Literal
@@ -1243,34 +1242,34 @@ mod partial {
 
     #[test]
     fn length_take_test() {
-        fn number(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
+        fn number(i: &mut Partial<&[u8]>) -> PResult<u32> {
             digit
                 .try_map(str::from_utf8)
                 .try_map(FromStr::from_str)
-                .parse_peek(i)
+                .parse_next(i)
         }
 
-        fn take(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-            length_take(unpeek(number)).parse_peek(i)
+        fn take<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+            length_take(number).parse_next(i)
         }
 
         assert_eq!(
-            take(Partial::new(&b"6abcabcabcdef"[..])),
+            take.parse_peek(Partial::new(&b"6abcabcabcdef"[..])),
             Ok((Partial::new(&b"abcdef"[..]), &b"abcabc"[..]))
         );
         assert_eq!(
-            take(Partial::new(&b"3ab"[..])),
+            take.parse_peek(Partial::new(&b"3ab"[..])),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            take(Partial::new(&b"xxx"[..])),
+            take.parse_peek(Partial::new(&b"xxx"[..])),
             Err(ErrMode::Backtrack(error_position!(
                 &Partial::new(&b"xxx"[..]),
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            take(Partial::new(&b"2abcxxx"[..])),
+            take.parse_peek(Partial::new(&b"2abcxxx"[..])),
             Ok((Partial::new(&b"cxxx"[..]), &b"ab"[..]))
         );
     }

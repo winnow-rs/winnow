@@ -12,7 +12,6 @@ use crate::error::InputError;
 use crate::error::Needed;
 use crate::stream::AsChar;
 use crate::token::literal;
-use crate::unpeek;
 use crate::Parser;
 use crate::Partial;
 
@@ -732,18 +731,18 @@ fn partial_take_while_m_n_utf8_full_match_range() {
 #[test]
 #[cfg(feature = "std")]
 fn partial_take_take_while0() {
-    fn x(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_while(0.., AsChar::is_alphanum).parse_peek(i)
+    fn x<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+        take_while(0.., AsChar::is_alphanum).parse_next(i)
     }
-    fn y(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        unpeek(x).take().parse_peek(i)
+    fn y<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+        x.take().parse_next(i)
     }
     assert_eq!(
-        x(Partial::new(&b"ab."[..])),
+        x.parse_peek(Partial::new(&b"ab."[..])),
         Ok((Partial::new(&b"."[..]), &b"ab"[..]))
     );
     assert_eq!(
-        y(Partial::new(&b"ab."[..])),
+        y.parse_peek(Partial::new(&b"ab."[..])),
         Ok((Partial::new(&b"."[..]), &b"ab"[..]))
     );
 }

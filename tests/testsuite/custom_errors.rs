@@ -4,11 +4,9 @@ use winnow::ascii::digit1 as digit;
 #[cfg(feature = "alloc")]
 use winnow::combinator::repeat;
 use winnow::combinator::terminated;
-use winnow::error::IResult;
 use winnow::error::{ErrorKind, ParserError};
 use winnow::prelude::*;
 use winnow::stream::Stream;
-use winnow::unpeek;
 use winnow::Partial;
 
 #[derive(Debug)]
@@ -35,23 +33,23 @@ impl<'a> ParserError<Partial<&'a str>> for CustomError {
     }
 }
 
-fn test1(input: Partial<&str>) -> IResult<Partial<&str>, &str, CustomError> {
+fn test1<'i>(input: &mut Partial<&'i str>) -> PResult<&'i str, CustomError> {
     //fix_error!(input, CustomError, tag!("abcd"))
-    "abcd".parse_peek(input)
+    "abcd".parse_next(input)
 }
 
-fn test2(input: Partial<&str>) -> IResult<Partial<&str>, &str, CustomError> {
+fn test2<'i>(input: &mut Partial<&'i str>) -> PResult<&'i str, CustomError> {
     //terminated!(input, test1, fix_error!(CustomError, digit))
-    terminated(unpeek(test1), digit).parse_peek(input)
+    terminated(test1, digit).parse_next(input)
 }
 
-fn test3(input: Partial<&str>) -> IResult<Partial<&str>, &str, CustomError> {
-    unpeek(test1)
+fn test3<'i>(input: &mut Partial<&'i str>) -> PResult<&'i str, CustomError> {
+    test1
         .verify(|s: &str| s.starts_with("abcd"))
-        .parse_peek(input)
+        .parse_next(input)
 }
 
 #[cfg(feature = "alloc")]
-fn test4(input: Partial<&str>) -> IResult<Partial<&str>, Vec<&str>, CustomError> {
-    repeat(4, unpeek(test1)).parse_peek(input)
+fn test4<'i>(input: &mut Partial<&'i str>) -> PResult<Vec<&'i str>, CustomError> {
+    repeat(4, test1).parse_next(input)
 }
