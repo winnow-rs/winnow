@@ -6,6 +6,7 @@ use crate::binary::u8;
 use crate::binary::Endianness;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
+use crate::error::IResult;
 use crate::error::InputError;
 use crate::error::Needed;
 use crate::error::ParserError;
@@ -13,8 +14,6 @@ use crate::error::ParserError;
 use crate::lib::std::borrow::ToOwned;
 use crate::stream::Stream;
 use crate::token::take;
-use crate::unpeek;
-use crate::IResult;
 use crate::PResult;
 use crate::Parser;
 use crate::Partial;
@@ -24,7 +23,7 @@ use crate::lib::std::vec::Vec;
 
 macro_rules! assert_parse(
   ($left: expr, $right: expr) => {
-    let res: $crate::IResult<_, _, InputError<_>> = $left;
+    let res: $crate::error::IResult<_, _, InputError<_>> = $left;
     assert_eq!(res, $right);
   };
 );
@@ -534,33 +533,27 @@ fn alt_test() {
         }
     }
 
-    fn work(input: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
-        Ok(input.peek_finish())
+    fn work<'i>(input: &mut &'i [u8]) -> PResult<&'i [u8], ErrorStr> {
+        Ok(input.finish())
     }
 
     #[allow(unused_variables)]
-    fn dont_work(input: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
+    fn dont_work<'i>(input: &mut &'i [u8]) -> PResult<&'i [u8], ErrorStr> {
         Err(ErrMode::Backtrack(ErrorStr("abcd".to_owned())))
     }
 
-    fn work2(input: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
-        Ok((input, &b""[..]))
+    fn work2<'i>(_input: &mut &'i [u8]) -> PResult<&'i [u8], ErrorStr> {
+        Ok(&b""[..])
     }
 
-    fn alt1(i: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
-        alt((unpeek(dont_work), unpeek(dont_work))).parse_peek(i)
+    fn alt1<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], ErrorStr> {
+        alt((dont_work, dont_work)).parse_next(i)
     }
-    fn alt2(i: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
-        alt((unpeek(dont_work), unpeek(work))).parse_peek(i)
+    fn alt2<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], ErrorStr> {
+        alt((dont_work, work)).parse_next(i)
     }
-    fn alt3(i: &[u8]) -> IResult<&[u8], &[u8], ErrorStr> {
-        alt((
-            unpeek(dont_work),
-            unpeek(dont_work),
-            unpeek(work2),
-            unpeek(dont_work),
-        ))
-        .parse_peek(i)
+    fn alt3<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], ErrorStr> {
+        alt((dont_work, dont_work, work2, dont_work)).parse_next(i)
     }
     //named!(alt1, alt!(dont_work | dont_work));
     //named!(alt2, alt!(dont_work | work));
@@ -568,15 +561,15 @@ fn alt_test() {
 
     let a = &b"abcd"[..];
     assert_eq!(
-        alt1(a),
+        alt1.parse_peek(a),
         Err(ErrMode::Backtrack(error_node_position!(
             &a,
             ErrorKind::Alt,
             ErrorStr("abcd".to_owned())
         )))
     );
-    assert_eq!(alt2(a), Ok((&b""[..], a)));
-    assert_eq!(alt3(a), Ok((a, &b""[..])));
+    assert_eq!(alt2.parse_peek(a), Ok((&b""[..], a)));
+    assert_eq!(alt3.parse_peek(a), Ok((a, &b""[..])));
 
     fn alt4(i: &[u8]) -> IResult<&[u8], &[u8]> {
         alt(("abcd", "efgh")).parse_peek(i)
@@ -1024,27 +1017,27 @@ fn repeat_till_range_test() {
 #[test]
 #[cfg(feature = "std")]
 fn infinite_many() {
-    fn tst(input: &[u8]) -> IResult<&[u8], &[u8]> {
+    fn tst<'i>(input: &mut &'i [u8]) -> PResult<&'i [u8]> {
         println!("input: {input:?}");
         Err(ErrMode::Backtrack(error_position!(
-            &input,
+            input,
             ErrorKind::Literal
         )))
     }
 
     // should not go into an infinite loop
-    fn multi0(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-        repeat(0.., unpeek(tst)).parse_peek(i)
+    fn multi0<'i>(i: &mut &'i [u8]) -> PResult<Vec<&'i [u8]>> {
+        repeat(0.., tst).parse_next(i)
     }
     let a = &b"abcdef"[..];
-    assert_eq!(multi0(a), Ok((a, Vec::new())));
+    assert_eq!(multi0.parse_peek(a), Ok((a, Vec::new())));
 
-    fn multi1(i: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
-        repeat(1.., unpeek(tst)).parse_peek(i)
+    fn multi1<'i>(i: &mut &'i [u8]) -> PResult<Vec<&'i [u8]>> {
+        repeat(1.., tst).parse_next(i)
     }
     let a = &b"abcdef"[..];
     assert_eq!(
-        multi1(a),
+        multi1.parse_peek(a),
         Err(ErrMode::Backtrack(error_position!(&a, ErrorKind::Literal)))
     );
 }

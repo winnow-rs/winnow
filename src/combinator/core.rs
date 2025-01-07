@@ -32,6 +32,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::opt;
@@ -71,7 +72,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, IResult};
+/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::IResult};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::cond;
 /// use winnow::ascii::alpha1;
@@ -112,7 +113,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::IResult};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::peek;
 /// use winnow::ascii::alpha1;
@@ -150,6 +151,7 @@ where
 ///
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::prelude::*;;
 /// pub fn eof<'i>(input: &mut &'i str) -> PResult<&'i str>
 /// # {
@@ -160,6 +162,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use std::str;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::combinator::eof;
@@ -197,7 +200,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::IResult};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::not;
 /// use winnow::ascii::alpha1;
@@ -238,6 +241,7 @@ where
 ///
 /// Without `cut_err`:
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::token::one_of;
 /// # use winnow::token::rest;
@@ -262,6 +266,7 @@ where
 ///
 /// With `cut_err`:
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::prelude::*;
 /// # use winnow::token::one_of;
@@ -325,6 +330,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::prelude::*;
 /// # use winnow::combinator::todo;
 ///
@@ -354,7 +360,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// use winnow::{combinator::iterator, IResult, ascii::alpha1, combinator::terminated};
+/// use winnow::{combinator::iterator, error::IResult, ascii::alpha1, combinator::terminated};
 /// use std::collections::HashMap;
 ///
 /// let data = "abc|defg|hijkl|mnopqr|123";
@@ -472,6 +478,7 @@ enum State<E> {
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::alt;
@@ -507,7 +514,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::IResult};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::fail;
 ///

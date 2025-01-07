@@ -7,18 +7,17 @@ use crate::ascii::Caseless;
 use crate::combinator::delimited;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
+use crate::error::IResult;
 use crate::error::InputError;
 use crate::error::Needed;
 use crate::stream::AsChar;
 use crate::token::literal;
-use crate::unpeek;
-use crate::IResult;
 use crate::Parser;
 use crate::Partial;
 
 macro_rules! assert_parse(
   ($left: expr, $right: expr) => {
-    let res: $crate::IResult<_, _, InputError<_>> = $left;
+    let res: $crate::error::IResult<_, _, InputError<_>> = $left;
     assert_eq!(res, $right);
   };
 );
@@ -732,18 +731,18 @@ fn partial_take_while_m_n_utf8_full_match_range() {
 #[test]
 #[cfg(feature = "std")]
 fn partial_take_take_while0() {
-    fn x(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_while(0.., AsChar::is_alphanum).parse_peek(i)
+    fn x<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+        take_while(0.., AsChar::is_alphanum).parse_next(i)
     }
-    fn y(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        unpeek(x).take().parse_peek(i)
+    fn y<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+        x.take().parse_next(i)
     }
     assert_eq!(
-        x(Partial::new(&b"ab."[..])),
+        x.parse_peek(Partial::new(&b"ab."[..])),
         Ok((Partial::new(&b"."[..]), &b"ab"[..]))
     );
     assert_eq!(
-        y(Partial::new(&b"ab."[..])),
+        y.parse_peek(Partial::new(&b"ab."[..])),
         Ok((Partial::new(&b"."[..]), &b"ab"[..]))
     );
 }

@@ -28,6 +28,7 @@ pub trait Alt<I, O, E> {
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::InputError,error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::ascii::{alpha1, digit1};
@@ -79,6 +80,7 @@ pub trait Permutation<I, O, E> {
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode,error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::ascii::{alpha1, digit1};
@@ -102,6 +104,7 @@ pub trait Permutation<I, O, E> {
 /// The parsers are applied greedily: if there are multiple unapplied parsers
 /// that could parse the next slice of input, the first one is used.
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::permutation;

@@ -7,9 +7,8 @@ mod test {
     use winnow::{combinator::alt, combinator::repeat, token::literal};
     use winnow::{
         error::ErrMode,
-        error::{ErrorKind, InputError},
+        error::{ErrorKind, IResult, InputError},
         token::{take, take_till, take_until, take_while},
-        IResult,
     };
 
     #[test]
@@ -64,9 +63,7 @@ mod test {
         match res {
             Err(ErrMode::Backtrack(_)) => (),
             other => {
-                panic!(
-                    "Parser `literal` didn't fail when it should have. Got `{other:?}`.`"
-                );
+                panic!("Parser `literal` didn't fail when it should have. Got `{other:?}`.`");
             }
         };
     }
@@ -387,9 +384,7 @@ mod test {
         }
         match test(INPUT) {
             Err(ErrMode::Backtrack(_)) => (),
-            other => panic!(
-                "Parser `is_a` didn't fail when it should have. Got `{other:?}`."
-            ),
+            other => panic!("Parser `is_a` didn't fail when it should have. Got `{other:?}`."),
         };
     }
 
@@ -459,9 +454,7 @@ mod test {
         }
         match test(INPUT) {
             Err(ErrMode::Backtrack(_)) => (),
-            other => panic!(
-                "Parser `is_not` didn't fail when it should have. Got `{other:?}`."
-            ),
+            other => panic!("Parser `is_not` didn't fail when it should have. Got `{other:?}`."),
         };
     }
 

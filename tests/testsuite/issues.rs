@@ -4,7 +4,7 @@
 
 use winnow::prelude::*;
 use winnow::Partial;
-use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed, unpeek, IResult};
+use winnow::{error::ErrMode, error::ErrorKind, error::IResult, error::InputError, error::Needed};
 
 #[allow(dead_code)]
 struct Range {
@@ -29,16 +29,15 @@ mod parse_int {
         ascii::{digit1 as digit, space1 as space},
         combinator::opt,
         combinator::repeat,
-        unpeek, IResult,
     };
 
-    fn parse_ints(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, Vec<i32>> {
-        repeat(0.., unpeek(spaces_or_int)).parse_peek(input)
+    fn parse_ints(input: &mut Partial<&[u8]>) -> PResult<Vec<i32>> {
+        repeat(0.., spaces_or_int).parse_next(input)
     }
 
-    fn spaces_or_int(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i32> {
-        let (i, _) = opt(space.complete_err()).parse_peek(input)?;
-        let (i, res) = digit
+    fn spaces_or_int(input: &mut Partial<&[u8]>) -> PResult<i32> {
+        let _ = opt(space.complete_err()).parse_next(input)?;
+        let res = digit
             .complete_err()
             .map(|x| {
                 println!("x: {x:?}");
@@ -50,18 +49,18 @@ mod parse_int {
                     Err(e) => panic!("UH OH! NOT A DIGIT! {e:?}"),
                 }
             })
-            .parse_peek(i)?;
+            .parse_next(input)?;
 
-        Ok((i, res))
+        Ok(res)
     }
 
     #[test]
     fn issue_142() {
-        let subject = parse_ints(Partial::new(&b"12 34 5689a"[..]));
+        let subject = parse_ints.parse_peek(Partial::new(&b"12 34 5689a"[..]));
         let expected = Ok((Partial::new(&b"a"[..]), vec![12, 34, 5689]));
         assert_eq!(subject, expected);
 
-        let subject = parse_ints(Partial::new(&b"12 34 5689 "[..]));
+        let subject = parse_ints.parse_peek(Partial::new(&b"12 34 5689 "[..]));
         let expected = Ok((Partial::new(&b" "[..]), vec![12, 34, 5689]));
         assert_eq!(subject, expected);
     }
@@ -135,7 +134,7 @@ mod issue_647 {
     use super::*;
     use winnow::combinator::separated;
     use winnow::token::literal;
-    use winnow::{binary::be_f64, error::ErrMode, IResult};
+    use winnow::{binary::be_f64, error::ErrMode, error::IResult};
     pub(crate) type Stream<'a> = Partial<&'a [u8]>;
 
     #[derive(PartialEq, Debug, Clone)]
@@ -163,17 +162,17 @@ mod issue_647 {
 #[test]
 #[cfg_attr(debug_assertions, should_panic)]
 fn issue_848_overflow_incomplete_bits_to_bytes() {
-    fn take(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
+    fn take<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
         use winnow::token::take;
-        take(0x2000000000000000_usize).parse_peek(i)
+        take(0x2000000000000000_usize).parse_next(i)
     }
-    fn parser(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
+    fn parser<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
         use winnow::binary::bits::{bits, bytes};
 
-        bits(bytes(unpeek(take))).parse_peek(i)
+        bits(bytes(take)).parse_next(i)
     }
     assert_eq!(
-        parser(Partial::new(&b""[..])),
+        parser.parse_peek(Partial::new(&b""[..])),
         Err(ErrMode::Cut(InputError::new(
             Partial::new(&b""[..]),
             ErrorKind::Assert

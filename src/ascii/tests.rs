@@ -1,11 +1,11 @@
 use super::*;
-use crate::prelude::*;
 
 mod complete {
     use super::*;
     use crate::combinator::alt;
     use crate::error::ErrMode;
     use crate::error::ErrorKind;
+    use crate::error::IResult;
     use crate::error::InputError;
     use crate::stream::ParseSlice;
     use crate::token::none_of;
@@ -16,7 +16,7 @@ mod complete {
 
     macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
-      let res: $crate::IResult<_, _, InputError<_>> = $left;
+      let res: $crate::error::IResult<_, _, InputError<_>> = $left;
       assert_eq!(res, $right);
     };
   );
@@ -956,14 +956,14 @@ mod complete {
 mod partial {
     use super::*;
     use crate::error::ErrorKind;
+    use crate::error::IResult;
     use crate::error::InputError;
     use crate::error::{ErrMode, Needed};
-    use crate::IResult;
     use crate::Partial;
 
     macro_rules! assert_parse(
     ($left: expr, $right: expr) => {
-      let res: $crate::IResult<_, _, InputError<_>> = $left;
+      let res: $crate::error::IResult<_, _, InputError<_>> = $left;
       assert_eq!(res, $right);
     };
   );

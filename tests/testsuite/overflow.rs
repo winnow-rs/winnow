@@ -7,7 +7,7 @@ use winnow::binary::be_u64;
 use winnow::binary::length_take;
 #[cfg(feature = "alloc")]
 use winnow::combinator::repeat;
-use winnow::error::{ErrMode, Needed};
+use winnow::error::{ErrMode, IResult, Needed};
 use winnow::prelude::*;
 use winnow::token::take;
 use winnow::Partial;

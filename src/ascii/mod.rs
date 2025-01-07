@@ -1576,7 +1576,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed, error::IResult};
 /// # use winnow::ascii::digit1;
 /// # use winnow::prelude::*;
 /// use winnow::ascii::take_escaped;
@@ -1592,7 +1592,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed, IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed, error::IResult};
 /// # use winnow::ascii::digit1;
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;

@@ -40,6 +40,7 @@ pub enum Endianness {
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -54,6 +55,7 @@ pub enum Endianness {
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -84,6 +86,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -98,6 +101,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -128,6 +132,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -142,6 +147,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -172,6 +178,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -186,6 +193,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -216,6 +224,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -230,6 +239,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -260,6 +270,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -274,6 +285,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -342,6 +354,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -356,6 +369,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -386,6 +400,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -400,6 +415,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -433,6 +449,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -447,6 +464,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -488,6 +506,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -502,6 +521,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -535,6 +555,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -549,6 +570,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -582,6 +604,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -596,6 +619,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -629,6 +653,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -643,6 +668,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -673,6 +699,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -687,6 +714,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -717,6 +745,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -731,6 +760,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -761,6 +791,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -775,6 +806,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -805,6 +837,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -819,6 +852,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -849,6 +883,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -863,6 +898,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -930,6 +966,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -944,6 +981,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -974,6 +1012,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -988,6 +1027,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -1021,6 +1061,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1035,6 +1076,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -1076,6 +1118,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1090,6 +1133,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -1123,6 +1167,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1137,6 +1182,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -1170,6 +1216,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1184,6 +1231,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -1223,6 +1271,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1237,6 +1286,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1292,6 +1342,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1313,6 +1364,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1363,6 +1415,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1384,6 +1437,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1434,6 +1488,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1455,6 +1510,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1505,6 +1561,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1526,6 +1583,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1576,6 +1634,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1597,6 +1656,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1650,6 +1710,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1664,6 +1725,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1706,6 +1768,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1727,6 +1790,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1777,6 +1841,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1798,6 +1863,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1848,6 +1914,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1869,6 +1936,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1919,6 +1987,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1940,6 +2009,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -1990,6 +2060,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -2011,6 +2082,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -2058,6 +2130,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::prelude::*;
@@ -2073,6 +2146,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -2106,6 +2180,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -2120,6 +2195,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -2153,6 +2229,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -2167,6 +2244,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -2200,6 +2278,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -2214,6 +2293,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -2250,6 +2330,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -2271,6 +2352,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -2321,6 +2403,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -2342,6 +2425,7 @@ where
 /// ```
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
@@ -2393,6 +2477,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed, stream::Partial};
 /// # use winnow::prelude::*;
 /// use winnow::Bytes;
@@ -2437,6 +2522,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed, stream::{Partial, StreamIsPartial}};
 /// # use winnow::prelude::*;
 /// use winnow::Bytes;
@@ -2490,6 +2576,7 @@ where
 /// # Example
 ///
 /// ```rust
+/// # use winnow::error::IResult;
 /// # #[cfg(feature = "std")] {
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
