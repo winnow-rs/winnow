@@ -8,7 +8,7 @@ use crate::combinator::trace;
 use crate::error::{ErrMode, ErrorConvert, ErrorKind, Needed, ParserError};
 use crate::lib::std::ops::{AddAssign, Div, Shl, Shr};
 use crate::stream::{Stream, StreamIsPartial, ToUsize};
-use crate::{error::IResult, PResult, Parser};
+use crate::{PResult, Parser};
 
 /// Number of bits in a byte
 const BYTE: usize = u8::BITS as usize;
@@ -56,28 +56,23 @@ where
     Input: Stream + Clone,
     ParseNext: Parser<(Input, usize), Output, BitError>,
 {
-    #![allow(deprecated)]
-    use crate::unpeek;
-    trace(
-        "bits",
-        unpeek(move |input: Input| {
-            match parser.parse_peek((input, 0)) {
-                Ok(((rest, offset), result)) => {
-                    // If the next byte has been partially read, it will be sliced away as well.
-                    // The parser functions might already slice away all fully read bytes.
-                    // That's why `offset / BYTE` isn't necessarily needed at all times.
-                    let remaining_bytes_index =
-                        offset / BYTE + if offset % BYTE == 0 { 0 } else { 1 };
-                    let (input, _) = rest.peek_slice(remaining_bytes_index);
-                    Ok((input, result))
-                }
-                Err(ErrMode::Incomplete(n)) => {
-                    Err(ErrMode::Incomplete(n.map(|u| u.get() / BYTE + 1)))
-                }
-                Err(e) => Err(e.convert()),
+    trace("bits", move |input: &mut Input| {
+        let mut bit_input = (input.clone(), 0);
+        match parser.parse_next(&mut bit_input) {
+            Ok(result) => {
+                let (mut rest, offset) = bit_input;
+                // If the next byte has been partially read, it will be sliced away as well.
+                // The parser functions might already slice away all fully read bytes.
+                // That's why `offset / BYTE` isn't necessarily needed at all times.
+                let remaining_bytes_index = offset / BYTE + if offset % BYTE == 0 { 0 } else { 1 };
+                let _ = rest.next_slice(remaining_bytes_index);
+                *input = rest;
+                Ok(result)
             }
-        }),
-    )
+            Err(ErrMode::Incomplete(n)) => Err(ErrMode::Incomplete(n.map(|u| u.get() / BYTE + 1))),
+            Err(e) => Err(e.convert()),
+        }
+    })
 }
 
 /// Convert a [`bits`] stream back into a byte stream
@@ -126,35 +121,29 @@ where
     Input: Stream<Token = u8> + Clone,
     ParseNext: Parser<Input, Output, ByteError>,
 {
-    #![allow(deprecated)]
-    use crate::unpeek;
-    trace(
-        "bytes",
-        unpeek(move |(input, offset): (Input, usize)| {
-            let (inner, _) = if offset % BYTE != 0 {
-                input.peek_slice(1 + offset / BYTE)
-            } else {
-                input.peek_slice(offset / BYTE)
-            };
-            let i = (input, offset);
-            match parser.parse_peek(inner) {
-                Ok((rest, res)) => Ok(((rest, 0), res)),
-                Err(ErrMode::Incomplete(Needed::Unknown)) => {
-                    Err(ErrMode::Incomplete(Needed::Unknown))
-                }
-                Err(ErrMode::Incomplete(Needed::Size(sz))) => {
-                    Err(match sz.get().checked_mul(BYTE) {
-                        Some(v) => ErrMode::Incomplete(Needed::new(v)),
-                        None => ErrMode::Cut(BitError::assert(
-                            &i,
-                            "overflow in turning needed bytes into needed bits",
-                        )),
-                    })
-                }
-                Err(e) => Err(e.convert()),
+    trace("bytes", move |bit_input: &mut (Input, usize)| {
+        let (mut input, offset) = bit_input.clone();
+        let _ = if offset % BYTE != 0 {
+            input.next_slice(1 + offset / BYTE)
+        } else {
+            input.next_slice(offset / BYTE)
+        };
+        match parser.parse_next(&mut input) {
+            Ok(res) => {
+                *bit_input = (input, 0);
+                Ok(res)
             }
-        }),
-    )
+            Err(ErrMode::Incomplete(Needed::Unknown)) => Err(ErrMode::Incomplete(Needed::Unknown)),
+            Err(ErrMode::Incomplete(Needed::Size(sz))) => Err(match sz.get().checked_mul(BYTE) {
+                Some(v) => ErrMode::Incomplete(Needed::new(v)),
+                None => ErrMode::Cut(BitError::assert(
+                    bit_input,
+                    "overflow in turning needed bytes into needed bits",
+                )),
+            }),
+            Err(e) => Err(e.convert()),
+        }
+    })
 }
 
 /// Parse taking `count` bits
@@ -209,33 +198,29 @@ where
     Count: ToUsize,
     Error: ParserError<(Input, usize)>,
 {
-    #![allow(deprecated)]
-    use crate::unpeek;
     let count = count.to_usize();
-    trace(
-        "take",
-        unpeek(move |input: (Input, usize)| {
-            if <Input as StreamIsPartial>::is_partial_supported() {
-                take_::<_, _, _, true>(input, count)
-            } else {
-                take_::<_, _, _, false>(input, count)
-            }
-        }),
-    )
+    trace("take", move |input: &mut (Input, usize)| {
+        if <Input as StreamIsPartial>::is_partial_supported() {
+            take_::<_, _, _, true>(input, count)
+        } else {
+            take_::<_, _, _, false>(input, count)
+        }
+    })
 }
 
 fn take_<I, O, E: ParserError<(I, usize)>, const PARTIAL: bool>(
-    (input, bit_offset): (I, usize),
+    bit_input: &mut (I, usize),
     count: usize,
-) -> IResult<(I, usize), O, E>
+) -> PResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8> + Clone,
     O: From<u8> + AddAssign + Shl<usize, Output = O> + Shr<usize, Output = O>,
 {
     if count == 0 {
-        Ok(((input, bit_offset), 0u8.into()))
+        Ok(0u8.into())
     } else {
+        let (mut input, bit_offset) = bit_input.clone();
         if input.eof_offset() * BYTE < count + bit_offset {
             if PARTIAL && input.is_partial() {
                 Err(ErrMode::Incomplete(Needed::new(count)))
@@ -272,8 +257,9 @@ where
                     offset = 0;
                 }
             }
-            let (input, _) = input.peek_slice(cnt);
-            Ok(((input, end_offset), acc))
+            let _ = input.next_slice(cnt);
+            *bit_input = (input, end_offset);
+            Ok(acc)
         }
     }
 }
