@@ -542,12 +542,9 @@ where
 {
     #[inline]
     fn parse_next(&mut self, i: &mut I) -> PResult<O, E2> {
-        match self.parser.parse_next(i) {
-            Ok(ok) => Ok(ok),
-            Err(ErrMode::Backtrack(e)) => Err(ErrMode::Backtrack(e.into())),
-            Err(ErrMode::Cut(e)) => Err(ErrMode::Cut(e.into())),
-            Err(ErrMode::Incomplete(e)) => Err(ErrMode::Incomplete(e)),
-        }
+        self.parser
+            .parse_next(i)
+            .map_err(|err| err.map(|e| e.into()))
     }
 }
 
