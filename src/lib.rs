@@ -165,6 +165,7 @@ pub mod prelude {
 pub use error::ModalResult;
 #[allow(deprecated)]
 pub use error::PResult;
+pub use error::Result;
 pub use parser::*;
 pub use stream::BStr;
 pub use stream::Bytes;

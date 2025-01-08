@@ -30,6 +30,13 @@ use crate::stream::Stream;
 #[allow(unused_imports)] // Here for intra-doc links
 use crate::Parser;
 
+/// By default, the error type (`E`) is [`ContextError`].
+///
+/// When integrating into the result of the application, see
+/// - [`Parser::parse`]
+/// - [`ParserError::into_inner`]
+pub type Result<O, E = ContextError> = core::result::Result<O, E>;
+
 /// [Modal error reporting][ErrMode] for [`Parser::parse_next`]
 ///
 /// - `Ok(O)` is the parsed value
