@@ -1,4 +1,5 @@
 use super::*;
+use crate::error::IResult;
 use crate::error::InputError;
 use crate::Partial;
 
