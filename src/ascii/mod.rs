@@ -178,12 +178,12 @@ where
     I: FindSlice<(char, char)>,
     <I as Stream>::Token: AsChar + Clone,
 {
-    let res = match take_until::<_, _, ()>(0.., ('\r', '\n')).parse_next(input) {
+    let res = match take_until(0.., ('\r', '\n')).parse_next(input) {
         Ok(slice) => slice,
-        Err(ErrMode::Incomplete(err)) => {
-            return Err(ErrMode::Incomplete(err));
+        Err(ErrMode::Backtrack(_)) => input.finish(),
+        Err(err) => {
+            return Err(err);
         }
-        Err(_) => input.finish(),
     };
     if matches!(input.compare("\r"), CompareResult::Ok(_)) {
         let comp = input.compare("\r\n");
