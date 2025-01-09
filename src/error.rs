@@ -172,7 +172,6 @@ impl<E> ErrMode<E> {
     /// Unwrap the mode, returning the underlying error
     ///
     /// Returns `None` for [`ErrMode::Incomplete`]
-    #[cfg_attr(debug_assertions, track_caller)]
     #[inline(always)]
     pub fn into_inner(self) -> Option<E> {
         match self {
