@@ -339,6 +339,7 @@ where
 pub fn todo<Input, Output, Error>(input: &mut Input) -> ModalResult<Output, Error>
 where
     Input: Stream,
+    Error: ParserError<Input>,
 {
     #![allow(clippy::todo)]
     trace("todo", move |_input: &mut Input| {
@@ -403,6 +404,7 @@ impl<F, I, O, E> ParserIterator<F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
+    E: ParserError<I>,
 {
     /// Returns the remaining input if parsing was successful, or the error if we encountered an error.
     pub fn finish(mut self) -> ModalResult<(I, ()), E> {
@@ -417,6 +419,7 @@ impl<F, I, O, E> core::iter::Iterator for &mut ParserIterator<F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
+    E: ParserError<I>,
 {
     type Item = O;
 

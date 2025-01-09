@@ -544,6 +544,7 @@ pub trait Parser<I, O, E> {
         G: FnMut(O) -> Result<O2, E2>,
         I: Stream,
         E: FromExternalError<I, E2>,
+        E: ParserError<I>,
     {
         impls::TryMap {
             parser: self,
@@ -781,6 +782,7 @@ pub trait Parser<I, O, E> {
         Self: core::marker::Sized,
         I: Stream,
         E: AddContext<I, C>,
+        E: ParserError<I>,
         C: Clone + crate::lib::std::fmt::Debug,
     {
         impls::Context {
@@ -855,7 +857,7 @@ pub trait Parser<I, O, E> {
         R: Parser<I, (), E>,
         I: Stream,
         I: Recover<E>,
-        E: FromRecoverableError<I, E>,
+        E: ParserError<I> + FromRecoverableError<I, E>,
     {
         impls::RetryAfter {
             parser: self,
@@ -879,7 +881,7 @@ pub trait Parser<I, O, E> {
         R: Parser<I, (), E>,
         I: Stream,
         I: Recover<E>,
-        E: FromRecoverableError<I, E>,
+        E: ParserError<I> + FromRecoverableError<I, E>,
     {
         impls::ResumeAfter {
             parser: self,

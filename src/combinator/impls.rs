@@ -69,6 +69,7 @@ where
     G: FnMut(O) -> Result<O2, E2>,
     I: Stream,
     E: FromExternalError<I, E2>,
+    E: ParserError<I>,
 {
     pub(crate) parser: F,
     pub(crate) map: G,
@@ -85,6 +86,7 @@ where
     G: FnMut(O) -> Result<O2, E2>,
     I: Stream,
     E: FromExternalError<I, E2>,
+    E: ParserError<I>,
 {
     #[inline]
     fn parse_next(&mut self, input: &mut I) -> ModalResult<O2, E> {
@@ -554,6 +556,7 @@ where
     F: Parser<I, O, E>,
     I: Stream,
     E: AddContext<I, C>,
+    E: ParserError<I>,
     C: Clone + crate::lib::std::fmt::Debug,
 {
     pub(crate) parser: F,
@@ -568,6 +571,7 @@ where
     F: Parser<I, O, E>,
     I: Stream,
     E: AddContext<I, C>,
+    E: ParserError<I>,
     C: Clone + crate::lib::std::fmt::Debug,
 {
     #[inline]
@@ -592,7 +596,7 @@ where
     R: Parser<I, (), E>,
     I: Stream,
     I: Recover<E>,
-    E: FromRecoverableError<I, E>,
+    E: ParserError<I> + FromRecoverableError<I, E>,
 {
     pub(crate) parser: P,
     pub(crate) recover: R,
@@ -609,7 +613,7 @@ where
     R: Parser<I, (), E>,
     I: Stream,
     I: Recover<E>,
-    E: FromRecoverableError<I, E>,
+    E: ParserError<I> + FromRecoverableError<I, E>,
 {
     #[inline(always)]
     fn parse_next(&mut self, i: &mut I) -> ModalResult<O, E> {
@@ -629,7 +633,7 @@ where
     R: Parser<I, (), E>,
     I: Stream,
     I: Recover<E>,
-    E: FromRecoverableError<I, E>,
+    E: ParserError<I> + FromRecoverableError<I, E>,
 {
     loop {
         let token_start = i.checkpoint();
@@ -668,7 +672,7 @@ where
     R: Parser<I, (), E>,
     I: Stream,
     I: Recover<E>,
-    E: FromRecoverableError<I, E>,
+    E: ParserError<I> + FromRecoverableError<I, E>,
 {
     pub(crate) parser: P,
     pub(crate) recover: R,
@@ -685,7 +689,7 @@ where
     R: Parser<I, (), E>,
     I: Stream,
     I: Recover<E>,
-    E: FromRecoverableError<I, E>,
+    E: ParserError<I> + FromRecoverableError<I, E>,
 {
     #[inline(always)]
     fn parse_next(&mut self, i: &mut I) -> ModalResult<Option<O>, E> {
@@ -709,7 +713,7 @@ where
     R: Parser<I, (), E>,
     I: Stream,
     I: Recover<E>,
-    E: FromRecoverableError<I, E>,
+    E: ParserError<I> + FromRecoverableError<I, E>,
 {
     let token_start = i.checkpoint();
     let mut err = match parser.parse_next(i) {

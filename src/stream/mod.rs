@@ -1532,6 +1532,7 @@ where
     I: Stream,
     R: FromRecoverableError<Self, E>,
     R: crate::lib::std::fmt::Debug,
+    E: crate::error::ParserError<Self>,
 {
     fn record_err(
         &mut self,
