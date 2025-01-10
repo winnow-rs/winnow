@@ -131,22 +131,6 @@ impl<E> ErrMode<E> {
         matches!(self, ErrMode::Incomplete(_))
     }
 
-    /// Prevent backtracking, bubbling the error up to the top
-    pub fn cut(self) -> Self {
-        match self {
-            ErrMode::Backtrack(e) => ErrMode::Cut(e),
-            rest => rest,
-        }
-    }
-
-    /// Enable backtracking support
-    pub fn backtrack(self) -> Self {
-        match self {
-            ErrMode::Cut(e) => ErrMode::Backtrack(e),
-            rest => rest,
-        }
-    }
-
     /// Applies the given function to the inner error
     pub fn map<E2, F>(self, f: F) -> ErrMode<E2>
     where
@@ -230,6 +214,22 @@ impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
         match self {
             ErrMode::Incomplete(needed) => Ok(needed),
             err => Err(err),
+        }
+    }
+}
+
+impl<E> ModalError for ErrMode<E> {
+    fn cut(self) -> Self {
+        match self {
+            ErrMode::Backtrack(e) => ErrMode::Cut(e),
+            rest => rest,
+        }
+    }
+
+    fn backtrack(self) -> Self {
+        match self {
+            ErrMode::Cut(e) => ErrMode::Backtrack(e),
+            rest => rest,
         }
     }
 }
@@ -386,6 +386,14 @@ pub trait ParserError<I: Stream>: Sized {
     fn into_needed(self) -> Result<Needed, Self> {
         Err(self)
     }
+}
+
+/// Manipulate the how parsers respond to this error
+pub trait ModalError {
+    /// Prevent backtracking, bubbling the error up to the top
+    fn cut(self) -> Self;
+    /// Enable backtracking support
+    fn backtrack(self) -> Self;
 }
 
 /// Used by [`Parser::context`] to add custom data to error while backtracking

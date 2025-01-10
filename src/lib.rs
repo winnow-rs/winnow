@@ -144,6 +144,7 @@ pub mod _tutorial;
 /// }
 /// ```
 pub mod prelude {
+    pub use crate::error::ModalError as _;
     pub use crate::error::ParserError as _;
     pub use crate::stream::AsChar as _;
     pub use crate::stream::ContainsToken as _;

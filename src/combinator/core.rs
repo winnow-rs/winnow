@@ -1,5 +1,5 @@
 use crate::combinator::trace;
-use crate::error::{ErrMode, ErrorKind, ParserError};
+use crate::error::{ErrMode, ErrorKind, ModalError, ParserError};
 use crate::stream::Stream;
 use crate::*;
 
