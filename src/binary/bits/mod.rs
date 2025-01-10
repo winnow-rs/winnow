@@ -68,8 +68,10 @@ where
                 *input = rest;
                 Ok(result)
             }
-            Err(ErrMode::Incomplete(n)) => Err(ErrMode::Incomplete(n.map(|u| u.get() / BYTE + 1))),
-            Err(e) => Err(ErrorConvert::convert(e)),
+            Err(e) => match e.into_needed() {
+                Ok(n) => Err(ErrMode::incomplete(input, n.map(|u| u.get() / BYTE + 1))),
+                Err(e) => Err(ErrorConvert::convert(e)),
+            },
         }
     })
 }
@@ -131,15 +133,17 @@ where
                 *bit_input = (input, 0);
                 Ok(res)
             }
-            Err(ErrMode::Incomplete(Needed::Unknown)) => Err(ErrMode::Incomplete(Needed::Unknown)),
-            Err(ErrMode::Incomplete(Needed::Size(sz))) => Err(match sz.get().checked_mul(BYTE) {
-                Some(v) => ErrMode::Incomplete(Needed::new(v)),
-                None => ErrMode::assert(
-                    bit_input,
-                    "overflow in turning needed bytes into needed bits",
-                ),
-            }),
-            Err(e) => Err(ErrorConvert::convert(e)),
+            Err(e) => match e.into_needed() {
+                Ok(Needed::Unknown) => Err(ErrMode::incomplete(bit_input, Needed::Unknown)),
+                Ok(Needed::Size(sz)) => Err(match sz.get().checked_mul(BYTE) {
+                    Some(v) => ErrMode::incomplete(bit_input, Needed::new(v)),
+                    None => ErrMode::assert(
+                        bit_input,
+                        "overflow in turning needed bytes into needed bits",
+                    ),
+                }),
+                Err(e) => Err(ErrorConvert::convert(e)),
+            },
         }
     })
 }

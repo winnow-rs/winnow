@@ -219,6 +219,19 @@ impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
     fn is_backtrack(&self) -> bool {
         matches!(self, ErrMode::Backtrack(_))
     }
+
+    #[inline(always)]
+    fn is_needed(&self) -> bool {
+        matches!(self, ErrMode::Incomplete(_))
+    }
+
+    #[inline(always)]
+    fn into_needed(self) -> Result<Needed, Self> {
+        match self {
+            ErrMode::Incomplete(needed) => Ok(needed),
+            err => Err(err),
+        }
+    }
 }
 
 impl<E1, E2> ErrorConvert<ErrMode<E2>> for ErrMode<E1>
@@ -360,6 +373,18 @@ pub trait ParserError<I: Stream>: Sized {
     #[inline(always)]
     fn is_backtrack(&self) -> bool {
         true
+    }
+
+    /// Is more data [`Needed`]
+    #[inline(always)]
+    fn is_needed(&self) -> bool {
+        false
+    }
+
+    /// Extract the [`Needed`] data, if present
+    #[inline(always)]
+    fn into_needed(self) -> Result<Needed, Self> {
+        Err(self)
     }
 }
 

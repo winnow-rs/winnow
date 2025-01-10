@@ -255,9 +255,10 @@ where
     fn parse_next(&mut self, input: &mut I) -> ModalResult<O, E> {
         trace("complete_err", |input: &mut I| {
             match (self.p).parse_next(input) {
-                Err(ErrMode::Incomplete(_)) => {
-                    Err(ErrMode::from_error_kind(input, ErrorKind::Complete))
-                }
+                Err(err) => match err.into_needed() {
+                    Ok(_) => Err(ErrMode::from_error_kind(input, ErrorKind::Complete)),
+                    Err(err) => Err(err),
+                },
                 rest => rest,
             }
         })
@@ -641,7 +642,7 @@ where
             Ok(o) => {
                 return Ok(o);
             }
-            Err(ErrMode::Incomplete(e)) => return Err(ErrMode::Incomplete(e)),
+            Err(e) if e.is_needed() => return Err(e),
             Err(err) => err,
         };
         let err_start = i.checkpoint();
@@ -720,7 +721,7 @@ where
         Ok(o) => {
             return Ok(Some(o));
         }
-        Err(ErrMode::Incomplete(e)) => return Err(ErrMode::Incomplete(e)),
+        Err(e) if e.is_needed() => return Err(e),
         Err(err) => err,
     };
     let err_start = i.checkpoint();

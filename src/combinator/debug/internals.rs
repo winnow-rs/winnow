@@ -2,7 +2,6 @@
 
 use std::io::Write;
 
-use crate::error::ErrMode;
 use crate::error::ParserError;
 use crate::stream::Stream;
 use crate::*;
@@ -119,14 +118,12 @@ pub(crate) enum Severity {
 }
 
 impl Severity {
-    pub(crate) fn with_result<T, I: Stream, E: ParserError<I>>(
-        result: &Result<T, ErrMode<E>>,
-    ) -> Self {
+    pub(crate) fn with_result<T, I: Stream, E: ParserError<I>>(result: &Result<T, E>) -> Self {
         match result {
             Ok(_) => Self::Success,
-            Err(ErrMode::Backtrack(_)) => Self::Backtrack,
-            Err(ErrMode::Cut(_)) => Self::Cut,
-            Err(ErrMode::Incomplete(_)) => Self::Incomplete,
+            Err(e) if e.is_backtrack() => Self::Backtrack,
+            Err(e) if e.is_needed() => Self::Incomplete,
+            _ => Self::Cut,
         }
     }
 }
