@@ -1,5 +1,5 @@
 use crate::combinator::trace;
-use crate::error::{ErrMode, ErrorKind, Needed, ParserError};
+use crate::error::{ErrMode, ErrorKind, ParserError};
 use crate::stream::Stream;
 use crate::*;
 
@@ -397,7 +397,7 @@ where
 {
     parser: F,
     input: I,
-    state: Option<State<E>>,
+    state: Option<State<ErrMode<E>>>,
     o: core::marker::PhantomData<O>,
 }
 
@@ -410,8 +410,7 @@ where
     pub fn finish(mut self) -> PResult<(I, ()), E> {
         match self.state.take().unwrap() {
             State::Running | State::Done => Ok((self.input, ())),
-            State::Failure(e) => Err(ErrMode::Cut(e)),
-            State::Incomplete(i) => Err(ErrMode::Incomplete(i)),
+            State::Cut(e) => Err(e),
         }
     }
 }
@@ -437,12 +436,8 @@ where
                     self.state = Some(State::Done);
                     None
                 }
-                Err(ErrMode::Cut(e)) => {
-                    self.state = Some(State::Failure(e));
-                    None
-                }
-                Err(ErrMode::Incomplete(i)) => {
-                    self.state = Some(State::Incomplete(i));
+                Err(e) => {
+                    self.state = Some(State::Cut(e));
                     None
                 }
             }
@@ -455,8 +450,7 @@ where
 enum State<E> {
     Running,
     Done,
-    Failure(E),
-    Incomplete(Needed),
+    Cut(E),
 }
 
 /// Succeed, consuming no input
