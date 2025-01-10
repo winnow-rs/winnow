@@ -190,7 +190,7 @@ where
         match comp {
             CompareResult::Ok(_) => {}
             CompareResult::Incomplete if PARTIAL && input.is_partial() => {
-                return Err(ErrMode::Incomplete(Needed::Unknown));
+                return Err(ErrMode::incomplete(input, Needed::Unknown));
             }
             CompareResult::Incomplete | CompareResult::Error => {
                 let e: ErrorKind = ErrorKind::Literal;
@@ -1344,7 +1344,7 @@ where
                     && invalid_offset == input.eof_offset()
                 {
                     // Only the next byte is guaranteed required
-                    return Err(ErrMode::Incomplete(Needed::new(1)));
+                    return Err(ErrMode::incomplete(input, Needed::new(1)));
                 } else {
                     invalid_offset
                 }
@@ -1688,7 +1688,7 @@ where
     }
 
     if PARTIAL && input.is_partial() {
-        Err(ErrMode::Incomplete(Needed::Unknown))
+        Err(ErrMode::incomplete(input, Needed::Unknown))
     } else {
         input.reset(&start);
         Ok(input.finish())
@@ -1845,7 +1845,7 @@ where
     }
 
     if PARTIAL && input.is_partial() {
-        Err(ErrMode::Incomplete(Needed::Unknown))
+        Err(ErrMode::incomplete(input, Needed::Unknown))
     } else {
         Ok(res)
     }

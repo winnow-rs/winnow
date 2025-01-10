@@ -310,7 +310,7 @@ where
             Ok(res)
         }
         Err(e) if <Input as StreamIsPartial>::is_partial_supported() && input.is_partial() => {
-            Err(ErrMode::Incomplete(e))
+            Err(ErrMode::incomplete(input, e))
         }
         Err(_needed) => Err(ErrMode::from_error_kind(input, ErrorKind::Slice)),
     }
@@ -898,7 +898,7 @@ where
             Ok(res)
         }
         Err(e) if <Input as StreamIsPartial>::is_partial_supported() && input.is_partial() => {
-            Err(ErrMode::Incomplete(e))
+            Err(ErrMode::incomplete(input, e))
         }
         Err(_needed) => Err(ErrMode::from_error_kind(input, ErrorKind::Slice)),
     }
@@ -1273,7 +1273,7 @@ where
 {
     input.next_token().ok_or_else(|| {
         if PARTIAL && input.is_partial() {
-            ErrMode::Incomplete(Needed::new(1))
+            ErrMode::incomplete(input, Needed::new(1))
         } else {
             ErrMode::from_error_kind(input, ErrorKind::Token)
         }

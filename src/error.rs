@@ -194,6 +194,11 @@ impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
         ErrMode::Cut(E::assert(input, message))
     }
 
+    #[inline(always)]
+    fn incomplete(_input: &I, needed: Needed) -> Self {
+        ErrMode::Incomplete(needed)
+    }
+
     #[inline]
     fn append(self, input: &I, token_start: &<I as Stream>::Checkpoint, kind: ErrorKind) -> Self {
         match self {
@@ -313,6 +318,19 @@ pub trait ParserError<I: Stream>: Sized {
         panic!("assert `{_message}` failed at {input:#?}");
         #[cfg(not(debug_assertions))]
         Self::from_error_kind(input, ErrorKind::Assert)
+    }
+
+    /// There was not enough data to determine the appropriate action
+    ///
+    /// More data needs to be buffered before retrying the parse.
+    ///
+    /// This must only be set when the [`Stream`] is [partial][`crate::stream::StreamIsPartial`], like with
+    /// [`Partial`][crate::Partial]
+    ///
+    /// Convert this into an `Backtrack` with [`Parser::complete_err`]
+    #[inline(always)]
+    fn incomplete(input: &I, _needed: Needed) -> Self {
+        Self::from_error_kind(input, ErrorKind::Complete)
     }
 
     /// Like [`ParserError::from_error_kind`] but merges it with the existing error.

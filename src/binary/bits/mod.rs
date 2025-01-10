@@ -216,7 +216,7 @@ where
         let (mut input, bit_offset) = bit_input.clone();
         if input.eof_offset() * BYTE < count + bit_offset {
             if PARTIAL && input.is_partial() {
-                Err(ErrMode::Incomplete(Needed::new(count)))
+                Err(ErrMode::incomplete(bit_input, Needed::new(count)))
             } else {
                 Err(ErrMode::from_error_kind(
                     &(input, bit_offset),
