@@ -160,6 +160,8 @@ pub use error::PResult;
 pub use parser::*;
 pub use stream::BStr;
 pub use stream::Bytes;
+#[allow(deprecated)]
+pub use stream::Located;
 pub use stream::LocatingSlice;
 pub use stream::Partial;
 pub use stream::Stateful;
