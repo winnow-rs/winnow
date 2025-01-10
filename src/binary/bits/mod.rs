@@ -136,10 +136,10 @@ where
             Err(ErrMode::Incomplete(Needed::Unknown)) => Err(ErrMode::Incomplete(Needed::Unknown)),
             Err(ErrMode::Incomplete(Needed::Size(sz))) => Err(match sz.get().checked_mul(BYTE) {
                 Some(v) => ErrMode::Incomplete(Needed::new(v)),
-                None => ErrMode::Cut(BitError::assert(
+                None => ErrMode::assert(
                     bit_input,
                     "overflow in turning needed bytes into needed bits",
-                )),
+                ),
             }),
             Err(e) => Err(ErrorConvert::convert(e)),
         }
