@@ -96,7 +96,7 @@ impl BStr {
 }
 
 /// Deprecated, replaced with [`LocatingSlice`]
-#[deprecated(since = "0.6.22", note = "Replaced with `LocatingSlice`")]
+#[deprecated(since = "0.6.23", note = "Replaced with `LocatingSlice`")]
 pub type Located<I> = LocatingSlice<I>;
 
 /// Allow collecting the span of a parsed token within a slice
