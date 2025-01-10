@@ -128,13 +128,13 @@ pub fn permutation<I: Stream, O, E: ParserError<I>, List: Permutation<I, O, E>>(
 
 impl<const N: usize, I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I, O, E> for [P; N] {
     fn choice(&mut self, input: &mut I) -> ModalResult<O, E> {
-        let mut error: Option<E> = None;
+        let mut error: Option<ErrMode<E>> = None;
 
         let start = input.checkpoint();
         for branch in self {
             input.reset(&start);
             match branch.parse_next(input) {
-                Err(ErrMode::Backtrack(e)) => {
+                Err(e) if e.is_backtrack() => {
                     error = match error {
                         Some(error) => Some(error.or(e)),
                         None => Some(e),
@@ -145,7 +145,7 @@ impl<const N: usize, I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I,
         }
 
         match error {
-            Some(e) => Err(ErrMode::Backtrack(e.append(input, &start, ErrorKind::Alt))),
+            Some(e) => Err(e.append(input, &start, ErrorKind::Alt)),
             None => Err(ErrMode::assert(input, "`alt` needs at least one parser")),
         }
     }
@@ -153,13 +153,13 @@ impl<const N: usize, I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I,
 
 impl<I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I, O, E> for &mut [P] {
     fn choice(&mut self, input: &mut I) -> ModalResult<O, E> {
-        let mut error: Option<E> = None;
+        let mut error: Option<ErrMode<E>> = None;
 
         let start = input.checkpoint();
         for branch in self.iter_mut() {
             input.reset(&start);
             match branch.parse_next(input) {
-                Err(ErrMode::Backtrack(e)) => {
+                Err(e) if e.is_backtrack() => {
                     error = match error {
                         Some(error) => Some(error.or(e)),
                         None => Some(e),
@@ -170,7 +170,7 @@ impl<I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I, O, E> for &mut 
         }
 
         match error {
-            Some(e) => Err(ErrMode::Backtrack(e.append(input, &start, ErrorKind::Alt))),
+            Some(e) => Err(e.append(input, &start, ErrorKind::Alt)),
             None => Err(ErrMode::assert(input, "`alt` needs at least one parser")),
         }
     }
@@ -201,7 +201,7 @@ macro_rules! alt_trait_impl(
       fn choice(&mut self, input: &mut I) -> ModalResult<Output, Error> {
         let start = input.checkpoint();
         match self.0.parse_next(input) {
-          Err(ErrMode::Backtrack(e)) => alt_trait_inner!(1, self, input, start, e, $($id)+),
+          Err(e) if e.is_backtrack() => alt_trait_inner!(1, self, input, start, e, $($id)+),
           res => res,
         }
       }
@@ -237,7 +237,7 @@ macro_rules! alt_trait_inner(
   ($it:tt, $self:expr, $input:expr, $start:ident, $err:expr, $head:ident $($id:ident)+) => ({
     $input.reset(&$start);
     match $self.$it.parse_next($input) {
-      Err(ErrMode::Backtrack(e)) => {
+      Err(e) if e.is_backtrack() => {
         let err = $err.or(e);
         succ!($it, alt_trait_inner!($self, $input, $start, err, $($id)+))
       }
@@ -245,7 +245,7 @@ macro_rules! alt_trait_inner(
     }
   });
   ($it:tt, $self:expr, $input:expr, $start:ident, $err:expr, $head:ident) => ({
-    Err(ErrMode::Backtrack($err.append($input, &$start, ErrorKind::Alt)))
+    Err($err.append($input, &$start, ErrorKind::Alt))
   });
 );
 
@@ -289,7 +289,7 @@ macro_rules! permutation_trait_impl(
         let mut res = ($(Option::<$ty>::None),+);
 
         loop {
-          let mut err: Option<Error> = None;
+          let mut err: Option<ErrMode<Error>> = None;
           let start = input.checkpoint();
           permutation_trait_inner!(0, self, input, start, res, err, $($name)+);
 
@@ -298,7 +298,7 @@ macro_rules! permutation_trait_impl(
           if let Some(err) = err {
             // There are remaining parsers, and all errored on the remaining input
             input.reset(&start);
-            return Err(ErrMode::Backtrack(err.append(input, &start, ErrorKind::Alt)));
+            return Err(err.append(input, &start, ErrorKind::Alt));
           }
 
           // All parsers were applied
@@ -321,7 +321,7 @@ macro_rules! permutation_trait_inner(
           $res.$it = Some(o);
           continue;
         }
-        Err(ErrMode::Backtrack(e)) => {
+        Err(e) if e.is_backtrack() => {
           $err = Some(match $err {
             Some(err) => err.or(e),
             None => e,

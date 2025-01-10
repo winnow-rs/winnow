@@ -209,6 +209,11 @@ impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
             (ErrMode::Cut(e), _) | (_, ErrMode::Cut(e)) => ErrMode::Cut(e),
         }
     }
+
+    #[inline(always)]
+    fn is_backtrack(&self) -> bool {
+        matches!(self, ErrMode::Backtrack(_))
+    }
 }
 
 impl<E1, E2> ErrorConvert<ErrMode<E2>> for ErrMode<E1>
@@ -331,6 +336,12 @@ pub trait ParserError<I: Stream>: Sized {
     #[inline]
     fn or(self, other: Self) -> Self {
         other
+    }
+
+    /// Is backtracking and trying new parse branches allowed?
+    #[inline(always)]
+    fn is_backtrack(&self) -> bool {
+        true
     }
 }
 

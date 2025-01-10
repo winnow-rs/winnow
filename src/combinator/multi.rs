@@ -471,7 +471,7 @@ where
         let start = i.checkpoint();
         let len = i.eof_offset();
         match f.parse_next(i) {
-            Err(ErrMode::Backtrack(_)) => {
+            Err(e) if e.is_backtrack() => {
                 i.reset(&start);
                 return Ok(acc);
             }
@@ -506,7 +506,7 @@ where
                 let start = i.checkpoint();
                 let len = i.eof_offset();
                 match f.parse_next(i) {
-                    Err(ErrMode::Backtrack(_)) => {
+                    Err(e) if e.is_backtrack() => {
                         i.reset(&start);
                         return Ok(acc);
                     }
@@ -590,13 +590,9 @@ where
 
                 res.accumulate(value);
             }
-            Err(ErrMode::Backtrack(e)) => {
+            Err(e) if e.is_backtrack() => {
                 if count < min {
-                    return Err(ErrMode::Backtrack(e.append(
-                        input,
-                        &start,
-                        ErrorKind::Repeat,
-                    )));
+                    return Err(e.append(input, &start, ErrorKind::Repeat));
                 } else {
                     input.reset(&start);
                     return Ok(res);
@@ -690,7 +686,7 @@ where
         let len = i.eof_offset();
         match g.parse_next(i) {
             Ok(o) => return Ok((res, o)),
-            Err(ErrMode::Backtrack(_)) => {
+            Err(e) if e.is_backtrack() => {
                 i.reset(&start);
                 match f.parse_next(i) {
                     Err(e) => return Err(e.append(i, &start, ErrorKind::Repeat)),
@@ -748,9 +744,9 @@ where
         let len = i.eof_offset();
         match g.parse_next(i) {
             Ok(o) => return Ok((res, o)),
-            Err(ErrMode::Backtrack(err)) => {
+            Err(err) if err.is_backtrack() => {
                 if count == max {
-                    return Err(ErrMode::Backtrack(err));
+                    return Err(err);
                 }
                 i.reset(&start);
                 match f.parse_next(i) {
@@ -923,7 +919,7 @@ where
 
     let start = input.checkpoint();
     match parser.parse_next(input) {
-        Err(ErrMode::Backtrack(_)) => {
+        Err(e) if e.is_backtrack() => {
             input.reset(&start);
             return Ok(acc);
         }
@@ -937,7 +933,7 @@ where
         let start = input.checkpoint();
         let len = input.eof_offset();
         match separator.parse_next(input) {
-            Err(ErrMode::Backtrack(_)) => {
+            Err(e) if e.is_backtrack() => {
                 input.reset(&start);
                 return Ok(acc);
             }
@@ -952,7 +948,7 @@ where
                 }
 
                 match parser.parse_next(input) {
-                    Err(ErrMode::Backtrack(_)) => {
+                    Err(e) if e.is_backtrack() => {
                         input.reset(&start);
                         return Ok(acc);
                     }
@@ -992,7 +988,7 @@ where
         let start = input.checkpoint();
         let len = input.eof_offset();
         match separator.parse_next(input) {
-            Err(ErrMode::Backtrack(_)) => {
+            Err(e) if e.is_backtrack() => {
                 input.reset(&start);
                 return Ok(acc);
             }
@@ -1007,7 +1003,7 @@ where
                 }
 
                 match parser.parse_next(input) {
-                    Err(ErrMode::Backtrack(_)) => {
+                    Err(e) if e.is_backtrack() => {
                         input.reset(&start);
                         return Ok(acc);
                     }
@@ -1106,16 +1102,12 @@ where
 
     let start = input.checkpoint();
     match parser.parse_next(input) {
-        Err(ErrMode::Backtrack(e)) => {
+        Err(e) if e.is_backtrack() => {
             if min == 0 {
                 input.reset(&start);
                 return Ok(acc);
             } else {
-                return Err(ErrMode::Backtrack(e.append(
-                    input,
-                    &start,
-                    ErrorKind::Repeat,
-                )));
+                return Err(e.append(input, &start, ErrorKind::Repeat));
             }
         }
         Err(e) => return Err(e),
@@ -1128,13 +1120,9 @@ where
         let start = input.checkpoint();
         let len = input.eof_offset();
         match separator.parse_next(input) {
-            Err(ErrMode::Backtrack(e)) => {
+            Err(e) if e.is_backtrack() => {
                 if index < min {
-                    return Err(ErrMode::Backtrack(e.append(
-                        input,
-                        &start,
-                        ErrorKind::Repeat,
-                    )));
+                    return Err(e.append(input, &start, ErrorKind::Repeat));
                 } else {
                     input.reset(&start);
                     return Ok(acc);
@@ -1153,13 +1141,9 @@ where
                 }
 
                 match parser.parse_next(input) {
-                    Err(ErrMode::Backtrack(e)) => {
+                    Err(e) if e.is_backtrack() => {
                         if index < min {
-                            return Err(ErrMode::Backtrack(e.append(
-                                input,
-                                &start,
-                                ErrorKind::Repeat,
-                            )));
+                            return Err(e.append(input, &start, ErrorKind::Repeat));
                         } else {
                             input.reset(&start);
                             return Ok(acc);
@@ -1219,7 +1203,7 @@ where
             let start = i.checkpoint();
             let len = i.eof_offset();
             match sep.parse_next(i) {
-                Err(ErrMode::Backtrack(_)) => {
+                Err(e) if e.is_backtrack() => {
                     i.reset(&start);
                     return Ok(ol);
                 }
@@ -1231,7 +1215,7 @@ where
                     }
 
                     match parser.parse_next(i) {
-                        Err(ErrMode::Backtrack(_)) => {
+                        Err(e) if e.is_backtrack() => {
                             i.reset(&start);
                             return Ok(ol);
                         }
@@ -1377,7 +1361,7 @@ where
 
                 res = g(res, o);
             }
-            Err(ErrMode::Backtrack(_)) => {
+            Err(e) if e.is_backtrack() => {
                 input.reset(&start);
                 return Ok(res);
             }
@@ -1412,7 +1396,7 @@ where
                 let start = input.checkpoint();
                 let len = input.eof_offset();
                 match f.parse_next(input) {
-                    Err(ErrMode::Backtrack(_)) => {
+                    Err(e) if e.is_backtrack() => {
                         input.reset(&start);
                         break;
                     }
@@ -1475,13 +1459,9 @@ where
                 acc = fold(acc, value);
             }
             //FInputXMError: handle failure properly
-            Err(ErrMode::Backtrack(err)) => {
+            Err(err) if err.is_backtrack() => {
                 if count < min {
-                    return Err(ErrMode::Backtrack(err.append(
-                        input,
-                        &start,
-                        ErrorKind::Repeat,
-                    )));
+                    return Err(err.append(input, &start, ErrorKind::Repeat));
                 } else {
                     input.reset(&start);
                     break;
@@ -1540,13 +1520,9 @@ where
                 acc = tmp;
             }
             //FInputXMError: handle failure properly
-            Err(ErrMode::Backtrack(err)) => {
+            Err(err) if err.is_backtrack() => {
                 if count < min {
-                    return Err(ErrMode::Backtrack(err.append(
-                        input,
-                        &start,
-                        ErrorKind::Repeat,
-                    )));
+                    return Err(err.append(input, &start, ErrorKind::Repeat));
                 } else {
                     input.reset(&start);
                     break;
@@ -1607,13 +1583,9 @@ where
                 }
             }
             //FInputXMError: handle failure properly
-            Err(ErrMode::Backtrack(err)) => {
+            Err(err) if err.is_backtrack() => {
                 if count < min {
-                    return Err(ErrMode::Backtrack(err.append(
-                        input,
-                        &start,
-                        ErrorKind::Repeat,
-                    )));
+                    return Err(err.append(input, &start, ErrorKind::Repeat));
                 } else {
                     input.reset(&start);
                     break;

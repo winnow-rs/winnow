@@ -56,7 +56,7 @@ where
         let start = input.checkpoint();
         match parser.parse_next(input) {
             Ok(o) => Ok(Some(o)),
-            Err(ErrMode::Backtrack(_)) => {
+            Err(e) if e.is_backtrack() => {
                 input.reset(&start);
                 Ok(None)
             }
@@ -225,7 +225,7 @@ where
         input.reset(&start);
         match res {
             Ok(_) => Err(ErrMode::from_error_kind(input, ErrorKind::Not)),
-            Err(ErrMode::Backtrack(_)) => Ok(()),
+            Err(e) if e.is_backtrack() => Ok(()),
             Err(e) => Err(e),
         }
     })
@@ -432,7 +432,7 @@ where
                     self.state = Some(State::Running);
                     Some(o)
                 }
-                Err(ErrMode::Backtrack(_)) => {
+                Err(e) if e.is_backtrack() => {
                     self.input.reset(&start);
                     self.state = Some(State::Done);
                     None

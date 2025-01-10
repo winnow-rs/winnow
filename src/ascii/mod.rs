@@ -180,7 +180,7 @@ where
 {
     let res = match take_until(0.., ('\r', '\n')).parse_next(input) {
         Ok(slice) => slice,
-        Err(ErrMode::Backtrack(_)) => input.finish(),
+        Err(err) if err.is_backtrack() => input.finish(),
         Err(err) => {
             return Err(err);
         }
