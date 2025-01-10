@@ -1511,17 +1511,9 @@ where
 {
     alt((
         take_float,
-        crate::token::literal(Caseless("nan")),
-        (
-            opt(one_of(['+', '-'])),
-            crate::token::literal(Caseless("infinity")),
-        )
-            .take(),
-        (
-            opt(one_of(['+', '-'])),
-            crate::token::literal(Caseless("inf")),
-        )
-            .take(),
+        Caseless("nan"),
+        (opt(one_of(['+', '-'])), Caseless("infinity")).take(),
+        (opt(one_of(['+', '-'])), Caseless("inf")).take(),
     ))
     .parse_next(input)
 }
