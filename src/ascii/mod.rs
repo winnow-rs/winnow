@@ -8,11 +8,11 @@ mod tests;
 use crate::lib::std::ops::{Add, Shl};
 
 use crate::combinator::alt;
-use crate::combinator::cut_err;
 use crate::combinator::dispatch;
 use crate::combinator::empty;
 use crate::combinator::fail;
 use crate::combinator::opt;
+use crate::combinator::peek;
 use crate::combinator::trace;
 use crate::error::ParserError;
 use crate::error::{ErrMode, ErrorKind, Needed};
@@ -1458,7 +1458,7 @@ impl HexUint for u128 {
 /// assert_eq!(parser.parse_peek("11e-1"), Ok(("", 1.1)));
 /// assert_eq!(parser.parse_peek("123E-02"), Ok(("", 1.23)));
 /// assert_eq!(parser.parse_peek("123K-01"), Ok(("K-01", 123.0)));
-/// assert_eq!(parser.parse_peek("abc"), Err(ErrMode::Backtrack(InputError::new("abc", ErrorKind::Literal))));
+/// assert_eq!(parser.parse_peek("abc"), Err(ErrMode::Backtrack(InputError::new("abc", ErrorKind::Slice))));
 /// ```
 ///
 /// ```rust
@@ -1476,7 +1476,7 @@ impl HexUint for u128 {
 /// assert_eq!(parser.parse_peek(Partial::new("11e-1")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// assert_eq!(parser.parse_peek(Partial::new("123E-02")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// assert_eq!(parser.parse_peek(Partial::new("123K-01")), Ok((Partial::new("K-01"), 123.0)));
-/// assert_eq!(parser.parse_peek(Partial::new("abc")), Err(ErrMode::Backtrack(InputError::new(Partial::new("abc"), ErrorKind::Literal))));
+/// assert_eq!(parser.parse_peek(Partial::new("abc")), Err(ErrMode::Backtrack(InputError::new(Partial::new("abc"), ErrorKind::Slice))));
 /// ```
 #[inline(always)]
 #[doc(alias = "f32")]
@@ -1509,25 +1509,36 @@ where
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
-    alt((
-        take_float,
-        crate::token::literal(Caseless("nan")),
-        (
-            opt(one_of(['+', '-'])),
-            crate::token::literal(Caseless("infinity")),
-        )
-            .take(),
-        (
-            opt(one_of(['+', '-'])),
-            crate::token::literal(Caseless("inf")),
-        )
-            .take(),
-    ))
+    dispatch! {opt(peek(any).map(AsChar::as_char));
+        Some('N') | Some('n') => Caseless("nan").void(),
+        Some('+') | Some('-') => (any, take_unsigned_float_or_exceptions).void(),
+        _ => take_unsigned_float_or_exceptions,
+    }
+    .take()
     .parse_next(input)
 }
 
 #[allow(clippy::trait_duplication_in_bounds)] // HACK: clippy 1.64.0 bug
-fn take_float<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+fn take_unsigned_float_or_exceptions<I, E: ParserError<I>>(input: &mut I) -> PResult<(), E>
+where
+    I: StreamIsPartial,
+    I: Stream,
+    I: Compare<Caseless<&'static str>>,
+    I: Compare<char>,
+    <I as Stream>::Token: AsChar + Clone,
+    <I as Stream>::IterOffsets: Clone,
+    I: AsBStr,
+{
+    dispatch! {opt(peek(any).map(AsChar::as_char));
+        Some('I') | Some('i') => (Caseless("inf"), opt(Caseless("inity"))).void(),
+        Some('.') => ('.', digit1, take_exp).void(),
+        _ => (digit1, opt(('.', opt(digit1))), take_exp).void(),
+    }
+    .parse_next(input)
+}
+
+#[allow(clippy::trait_duplication_in_bounds)] // HACK: clippy 1.64.0 bug
+fn take_exp<I, E: ParserError<I>>(input: &mut I) -> PResult<(), E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -1536,16 +1547,11 @@ where
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
-    (
-        opt(one_of(['+', '-'])),
-        alt((
-            (digit1, opt(('.', opt(digit1)))).void(),
-            ('.', digit1).void(),
-        )),
-        opt((one_of(['e', 'E']), opt(one_of(['+', '-'])), cut_err(digit1))),
-    )
-        .take()
-        .parse_next(input)
+    dispatch! {opt(peek(any).map(AsChar::as_char));
+        Some('E') | Some('e') => (one_of(['e', 'E']), opt(one_of(['+', '-'])), digit1).void(),
+        _ => empty,
+    }
+    .parse_next(input)
 }
 
 /// Recognize the input slice with escaped characters.
