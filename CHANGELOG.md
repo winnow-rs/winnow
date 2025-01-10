@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Add back in `winnow::Located` which was removed by accident
+
 ## [0.6.23] - 2025-01-10
 
 ### Compatibiloty
