@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.6.24] - 2025-01-10
+
 ### Fixes
 
 - Add back in `winnow::Located` which was removed by accident
@@ -2445,7 +2447,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.23...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.24...HEAD
+[0.6.24]: https://github.com/winnow-rs/winnow/compare/v0.6.23...v0.6.24
 [0.6.23]: https://github.com/winnow-rs/winnow/compare/v0.6.22...v0.6.23
 [0.6.22]: https://github.com/winnow-rs/winnow/compare/v0.6.21...v0.6.22
 [0.6.21]: https://github.com/winnow-rs/winnow/compare/v0.6.20...v0.6.21
