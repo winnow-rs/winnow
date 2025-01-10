@@ -1512,8 +1512,12 @@ where
     alt((
         take_float,
         Caseless("nan"),
-        (opt(one_of(['+', '-'])), Caseless("infinity")).take(),
-        (opt(one_of(['+', '-'])), Caseless("inf")).take(),
+        (
+            opt(one_of(['+', '-'])),
+            Caseless("inf"),
+            opt(Caseless("inity")),
+        )
+            .take(),
     ))
     .parse_next(input)
 }
