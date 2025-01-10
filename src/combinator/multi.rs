@@ -342,10 +342,6 @@ where
     /// assert_eq!(parser("123123"), Ok(("123123", HashSet::from([]))));
     /// assert_eq!(parser(""), Ok(("", HashSet::from([]))));
     /// ```
-    #[doc(alias = "verify_fold_many0")]
-    #[doc(alias = "verify_fold_many1")]
-    #[doc(alias = "verify_fold_many_m_n")]
-    #[doc(alias = "verify_fold_repeat")]
     #[inline(always)]
     pub fn verify_fold<Init, Op, Result>(
         mut self,
@@ -361,7 +357,7 @@ where
             end_inclusive,
         } = self.occurrences;
         trace("repeat_verify_fold", move |input: &mut Input| {
-            verify_fold_impl(
+            verify_fold_m_n(
                 start_inclusive,
                 end_inclusive.unwrap_or(usize::MAX),
                 &mut self.parser,
@@ -419,10 +415,6 @@ where
     /// assert_eq!(parser("abc123"), Ok(("123", b"abc".to_vec())));
     /// assert_eq!(parser("123123"), Ok(("123123", vec![])));
     /// assert_eq!(parser(""), Ok(("", vec![])));
-    #[doc(alias = "try_fold_many0")]
-    #[doc(alias = "try_fold_many1")]
-    #[doc(alias = "try_fold_many_m_n")]
-    #[doc(alias = "try_fold_repeat")]
     #[inline(always)]
     pub fn try_fold<Init, Op, OpError, Result>(
         mut self,
@@ -439,7 +431,7 @@ where
             end_inclusive,
         } = self.occurrences;
         trace("repeat_try_fold", move |input: &mut Input| {
-            try_fold_impl(
+            try_fold_m_n(
                 start_inclusive,
                 end_inclusive.unwrap_or(usize::MAX),
                 &mut self.parser,
@@ -1515,7 +1507,7 @@ where
 }
 
 #[inline(always)]
-fn verify_fold_impl<I, O, E, F, G, H, R>(
+fn verify_fold_m_n<I, O, E, F, G, H, R>(
     min: usize,
     max: usize,
     parse: &mut F,
@@ -1580,7 +1572,7 @@ where
 }
 
 #[inline(always)]
-fn try_fold_impl<I, O, E, F, G, H, R, GE>(
+fn try_fold_m_n<I, O, E, F, G, H, R, GE>(
     min: usize,
     max: usize,
     parse: &mut F,
