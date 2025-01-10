@@ -604,7 +604,7 @@ mod complete {
         let remaining_exponent = "-1.234E-";
         assert_parse!(
             float::<_, f64, _>.parse_peek(remaining_exponent),
-            Err(ErrMode::Cut(InputError::new("", ErrorKind::Slice)))
+            Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Slice)))
         );
 
         let nan_test_cases = ["nan", "NaN", "NAN"];

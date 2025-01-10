@@ -8,7 +8,6 @@ mod tests;
 use crate::lib::std::ops::{Add, Shl};
 
 use crate::combinator::alt;
-use crate::combinator::cut_err;
 use crate::combinator::dispatch;
 use crate::combinator::empty;
 use crate::combinator::fail;
@@ -1549,7 +1548,7 @@ where
     I: AsBStr,
 {
     dispatch! {opt(peek(any).map(AsChar::as_char));
-        Some('E') | Some('e') => (one_of(['e', 'E']), opt(one_of(['+', '-'])), cut_err(digit1)).void(),
+        Some('E') | Some('e') => (one_of(['e', 'E']), opt(one_of(['+', '-'])), digit1).void(),
         _ => empty,
     }
     .parse_next(input)
