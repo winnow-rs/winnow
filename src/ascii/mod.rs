@@ -1511,19 +1511,20 @@ where
 {
     alt((
         take_float,
-        Caseless("nan"),
+        Caseless("nan").void(),
         (
             opt(one_of(['+', '-'])),
             Caseless("inf"),
             opt(Caseless("inity")),
         )
-            .take(),
+            .void(),
     ))
+    .take()
     .parse_next(input)
 }
 
 #[allow(clippy::trait_duplication_in_bounds)] // HACK: clippy 1.64.0 bug
-fn take_float<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+fn take_float<I, E: ParserError<I>>(input: &mut I) -> PResult<(), E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -1540,7 +1541,7 @@ where
         )),
         opt((one_of(['e', 'E']), opt(one_of(['+', '-'])), cut_err(digit1))),
     )
-        .take()
+        .void()
         .parse_next(input)
 }
 
