@@ -161,12 +161,13 @@ impl<E> ErrMode<E> {
         }
     }
 
-    /// Automatically converts between errors if the underlying type supports it
+    /// Deprecated, replaced with [`ErrorConvert`]
+    #[deprecated(since = "0.6.23", note = "Replaced with `ErrorConvert`")]
     pub fn convert<F>(self) -> ErrMode<F>
     where
         E: ErrorConvert<F>,
     {
-        self.map(ErrorConvert::convert)
+        ErrorConvert::convert(self)
     }
 
     /// Unwrap the mode, returning the underlying error
@@ -210,6 +211,16 @@ impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
             (ErrMode::Incomplete(e), _) | (_, ErrMode::Incomplete(e)) => ErrMode::Incomplete(e),
             (ErrMode::Cut(e), _) | (_, ErrMode::Cut(e)) => ErrMode::Cut(e),
         }
+    }
+}
+
+impl<E1, E2> ErrorConvert<ErrMode<E2>> for ErrMode<E1>
+where
+    E1: ErrorConvert<E2>,
+{
+    #[inline(always)]
+    fn convert(self) -> ErrMode<E2> {
+        self.map(|e| e.convert())
     }
 }
 

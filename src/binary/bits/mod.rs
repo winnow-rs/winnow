@@ -70,7 +70,7 @@ where
                 Ok(result)
             }
             Err(ErrMode::Incomplete(n)) => Err(ErrMode::Incomplete(n.map(|u| u.get() / BYTE + 1))),
-            Err(e) => Err(e.convert()),
+            Err(e) => Err(ErrorConvert::convert(e)),
         }
     })
 }
@@ -141,7 +141,7 @@ where
                     "overflow in turning needed bytes into needed bits",
                 )),
             }),
-            Err(e) => Err(e.convert()),
+            Err(e) => Err(ErrorConvert::convert(e)),
         }
     })
 }
