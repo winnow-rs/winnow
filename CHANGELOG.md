@@ -3,6 +3,18 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibiloty
+
+- `stream::Located` is deprecated in favor of `stream::LocatingSlice`
+- `combnator::rest` is deprecated in favor of `token::rest`
+- `combnator::rest_len` is deprecated in favor of `token::rest_len`
+- `combinator::<Struct>` have mostly been deprecated in favor of `combinator::impls::<Struct>`
+- `unpeek` is deprecated
+
+### Features
+
+- Added `repeat().try_fold()` and `repeat().verify_fold()`
+
 ## [0.6.22] - 2025-01-03
 
 ### Fixes
