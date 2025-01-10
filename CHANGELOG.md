@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.6.23] - 2025-01-10
+
 ### Compatibiloty
 
 - `stream::Located` is deprecated in favor of `stream::LocatingSlice`
@@ -2439,7 +2441,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.22...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.23...HEAD
+[0.6.23]: https://github.com/winnow-rs/winnow/compare/v0.6.22...v0.6.23
 [0.6.22]: https://github.com/winnow-rs/winnow/compare/v0.6.21...v0.6.22
 [0.6.21]: https://github.com/winnow-rs/winnow/compare/v0.6.20...v0.6.21
 [0.6.20]: https://github.com/winnow-rs/winnow/compare/v0.6.19...v0.6.20
