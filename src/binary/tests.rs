@@ -2,7 +2,6 @@ use super::*;
 
 mod complete {
     use super::*;
-    use crate::error::IResult;
     use crate::error::InputError;
 
     macro_rules! assert_parse(
@@ -352,81 +351,87 @@ mod complete {
     fn configurable_endianness() {
         use crate::binary::Endianness;
 
-        fn be_tst16(i: &[u8]) -> IResult<&[u8], u16> {
-            u16(Endianness::Big).parse_peek(i)
+        fn be_tst16(i: &mut &[u8]) -> PResult<u16> {
+            u16(Endianness::Big).parse_next(i)
         }
-        fn le_tst16(i: &[u8]) -> IResult<&[u8], u16> {
-            u16(Endianness::Little).parse_peek(i)
-        }
-        assert_eq!(be_tst16(&[0x80, 0x00]), Ok((&b""[..], 32_768_u16)));
-        assert_eq!(le_tst16(&[0x80, 0x00]), Ok((&b""[..], 128_u16)));
-
-        fn be_tst32(i: &[u8]) -> IResult<&[u8], u32> {
-            u32(Endianness::Big).parse_peek(i)
-        }
-        fn le_tst32(i: &[u8]) -> IResult<&[u8], u32> {
-            u32(Endianness::Little).parse_peek(i)
+        fn le_tst16(i: &mut &[u8]) -> PResult<u16> {
+            u16(Endianness::Little).parse_next(i)
         }
         assert_eq!(
-            be_tst32(&[0x12, 0x00, 0x60, 0x00]),
+            be_tst16.parse_peek(&[0x80, 0x00]),
+            Ok((&b""[..], 32_768_u16))
+        );
+        assert_eq!(le_tst16.parse_peek(&[0x80, 0x00]), Ok((&b""[..], 128_u16)));
+
+        fn be_tst32(i: &mut &[u8]) -> PResult<u32> {
+            u32(Endianness::Big).parse_next(i)
+        }
+        fn le_tst32(i: &mut &[u8]) -> PResult<u32> {
+            u32(Endianness::Little).parse_next(i)
+        }
+        assert_eq!(
+            be_tst32.parse_peek(&[0x12, 0x00, 0x60, 0x00]),
             Ok((&b""[..], 302_014_464_u32))
         );
         assert_eq!(
-            le_tst32(&[0x12, 0x00, 0x60, 0x00]),
+            le_tst32.parse_peek(&[0x12, 0x00, 0x60, 0x00]),
             Ok((&b""[..], 6_291_474_u32))
         );
 
-        fn be_tst64(i: &[u8]) -> IResult<&[u8], u64> {
-            u64(Endianness::Big).parse_peek(i)
+        fn be_tst64(i: &mut &[u8]) -> PResult<u64> {
+            u64(Endianness::Big).parse_next(i)
         }
-        fn le_tst64(i: &[u8]) -> IResult<&[u8], u64> {
-            u64(Endianness::Little).parse_peek(i)
+        fn le_tst64(i: &mut &[u8]) -> PResult<u64> {
+            u64(Endianness::Little).parse_next(i)
         }
         assert_eq!(
-            be_tst64(&[0x12, 0x00, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
+            be_tst64.parse_peek(&[0x12, 0x00, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
             Ok((&b""[..], 1_297_142_246_100_992_000_u64))
         );
         assert_eq!(
-            le_tst64(&[0x12, 0x00, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
+            le_tst64.parse_peek(&[0x12, 0x00, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
             Ok((&b""[..], 36_028_874_334_666_770_u64))
         );
 
-        fn be_tsti16(i: &[u8]) -> IResult<&[u8], i16> {
-            i16(Endianness::Big).parse_peek(i)
+        fn be_tsti16(i: &mut &[u8]) -> PResult<i16> {
+            i16(Endianness::Big).parse_next(i)
         }
-        fn le_tsti16(i: &[u8]) -> IResult<&[u8], i16> {
-            i16(Endianness::Little).parse_peek(i)
+        fn le_tsti16(i: &mut &[u8]) -> PResult<i16> {
+            i16(Endianness::Little).parse_next(i)
         }
-        assert_eq!(be_tsti16(&[0x00, 0x80]), Ok((&b""[..], 128_i16)));
-        assert_eq!(le_tsti16(&[0x00, 0x80]), Ok((&b""[..], -32_768_i16)));
+        assert_eq!(be_tsti16.parse_peek(&[0x00, 0x80]), Ok((&b""[..], 128_i16)));
+        assert_eq!(
+            le_tsti16.parse_peek(&[0x00, 0x80]),
+            Ok((&b""[..], -32_768_i16))
+        );
 
-        fn be_tsti32(i: &[u8]) -> IResult<&[u8], i32> {
-            i32(Endianness::Big).parse_peek(i)
+        fn be_tsti32(i: &mut &[u8]) -> PResult<i32> {
+            i32(Endianness::Big).parse_next(i)
         }
-        fn le_tsti32(i: &[u8]) -> IResult<&[u8], i32> {
-            i32(Endianness::Little).parse_peek(i)
+        fn le_tsti32(i: &mut &[u8]) -> PResult<i32> {
+            i32(Endianness::Little).parse_next(i)
         }
         assert_eq!(
-            be_tsti32(&[0x00, 0x12, 0x60, 0x00]),
+            be_tsti32.parse_peek(&[0x00, 0x12, 0x60, 0x00]),
             Ok((&b""[..], 1_204_224_i32))
         );
         assert_eq!(
-            le_tsti32(&[0x00, 0x12, 0x60, 0x00]),
+            le_tsti32.parse_peek(&[0x00, 0x12, 0x60, 0x00]),
             Ok((&b""[..], 6_296_064_i32))
         );
 
-        fn be_tsti64(i: &[u8]) -> IResult<&[u8], i64> {
-            i64(Endianness::Big).parse_peek(i)
+        fn be_tsti64(i: &mut &[u8]) -> PResult<i64> {
+            i64(Endianness::Big).parse_next(i)
         }
-        fn le_tsti64(i: &[u8]) -> IResult<&[u8], i64> {
-            i64(Endianness::Little).parse_peek(i)
+        fn le_tsti64(i: &mut &[u8]) -> PResult<i64> {
+            i64(Endianness::Little).parse_next(i)
         }
         assert_eq!(
-            be_tsti64(&[0x00, 0xFF, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
+            be_tsti64.parse_peek(&[0x00, 0xFF, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
             Ok((&b""[..], 71_881_672_479_506_432_i64))
         );
         assert_eq!(
-            le_tsti64(&[0x00, 0xFF, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
+            le_tsti64.parse_peek(&[0x00, 0xFF, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
             Ok((&b""[..], 36_028_874_334_732_032_i64))
         );
     }
@@ -435,7 +440,6 @@ mod complete {
 mod partial {
     use super::*;
     use crate::error::ErrMode;
-    use crate::error::IResult;
     use crate::error::InputError;
     use crate::error::Needed;
     #[cfg(feature = "alloc")]
@@ -1053,99 +1057,99 @@ mod partial {
     fn configurable_endianness() {
         use crate::binary::Endianness;
 
-        fn be_tst16(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u16> {
-            u16(Endianness::Big).parse_peek(i)
+        fn be_tst16(i: &mut Partial<&[u8]>) -> PResult<u16> {
+            u16(Endianness::Big).parse_next(i)
         }
-        fn le_tst16(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u16> {
-            u16(Endianness::Little).parse_peek(i)
+        fn le_tst16(i: &mut Partial<&[u8]>) -> PResult<u16> {
+            u16(Endianness::Little).parse_next(i)
         }
         assert_eq!(
-            be_tst16(Partial::new(&[0x80, 0x00])),
+            be_tst16.parse_peek(Partial::new(&[0x80, 0x00])),
             Ok((Partial::new(&b""[..]), 32_768_u16))
         );
         assert_eq!(
-            le_tst16(Partial::new(&[0x80, 0x00])),
+            le_tst16.parse_peek(Partial::new(&[0x80, 0x00])),
             Ok((Partial::new(&b""[..]), 128_u16))
         );
 
-        fn be_tst32(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
-            u32(Endianness::Big).parse_peek(i)
+        fn be_tst32(i: &mut Partial<&[u8]>) -> PResult<u32> {
+            u32(Endianness::Big).parse_next(i)
         }
-        fn le_tst32(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
-            u32(Endianness::Little).parse_peek(i)
+        fn le_tst32(i: &mut Partial<&[u8]>) -> PResult<u32> {
+            u32(Endianness::Little).parse_next(i)
         }
         assert_eq!(
-            be_tst32(Partial::new(&[0x12, 0x00, 0x60, 0x00])),
+            be_tst32.parse_peek(Partial::new(&[0x12, 0x00, 0x60, 0x00])),
             Ok((Partial::new(&b""[..]), 302_014_464_u32))
         );
         assert_eq!(
-            le_tst32(Partial::new(&[0x12, 0x00, 0x60, 0x00])),
+            le_tst32.parse_peek(Partial::new(&[0x12, 0x00, 0x60, 0x00])),
             Ok((Partial::new(&b""[..]), 6_291_474_u32))
         );
 
-        fn be_tst64(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u64> {
-            u64(Endianness::Big).parse_peek(i)
+        fn be_tst64(i: &mut Partial<&[u8]>) -> PResult<u64> {
+            u64(Endianness::Big).parse_next(i)
         }
-        fn le_tst64(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u64> {
-            u64(Endianness::Little).parse_peek(i)
+        fn le_tst64(i: &mut Partial<&[u8]>) -> PResult<u64> {
+            u64(Endianness::Little).parse_next(i)
         }
         assert_eq!(
-            be_tst64(Partial::new(&[
+            be_tst64.parse_peek(Partial::new(&[
                 0x12, 0x00, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00
             ])),
             Ok((Partial::new(&b""[..]), 1_297_142_246_100_992_000_u64))
         );
         assert_eq!(
-            le_tst64(Partial::new(&[
+            le_tst64.parse_peek(Partial::new(&[
                 0x12, 0x00, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00
             ])),
             Ok((Partial::new(&b""[..]), 36_028_874_334_666_770_u64))
         );
 
-        fn be_tsti16(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i16> {
-            i16(Endianness::Big).parse_peek(i)
+        fn be_tsti16(i: &mut Partial<&[u8]>) -> PResult<i16> {
+            i16(Endianness::Big).parse_next(i)
         }
-        fn le_tsti16(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i16> {
-            i16(Endianness::Little).parse_peek(i)
+        fn le_tsti16(i: &mut Partial<&[u8]>) -> PResult<i16> {
+            i16(Endianness::Little).parse_next(i)
         }
         assert_eq!(
-            be_tsti16(Partial::new(&[0x00, 0x80])),
+            be_tsti16.parse_peek(Partial::new(&[0x00, 0x80])),
             Ok((Partial::new(&b""[..]), 128_i16))
         );
         assert_eq!(
-            le_tsti16(Partial::new(&[0x00, 0x80])),
+            le_tsti16.parse_peek(Partial::new(&[0x00, 0x80])),
             Ok((Partial::new(&b""[..]), -32_768_i16))
         );
 
-        fn be_tsti32(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i32> {
-            i32(Endianness::Big).parse_peek(i)
+        fn be_tsti32(i: &mut Partial<&[u8]>) -> PResult<i32> {
+            i32(Endianness::Big).parse_next(i)
         }
-        fn le_tsti32(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i32> {
-            i32(Endianness::Little).parse_peek(i)
+        fn le_tsti32(i: &mut Partial<&[u8]>) -> PResult<i32> {
+            i32(Endianness::Little).parse_next(i)
         }
         assert_eq!(
-            be_tsti32(Partial::new(&[0x00, 0x12, 0x60, 0x00])),
+            be_tsti32.parse_peek(Partial::new(&[0x00, 0x12, 0x60, 0x00])),
             Ok((Partial::new(&b""[..]), 1_204_224_i32))
         );
         assert_eq!(
-            le_tsti32(Partial::new(&[0x00, 0x12, 0x60, 0x00])),
+            le_tsti32.parse_peek(Partial::new(&[0x00, 0x12, 0x60, 0x00])),
             Ok((Partial::new(&b""[..]), 6_296_064_i32))
         );
 
-        fn be_tsti64(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i64> {
-            i64(Endianness::Big).parse_peek(i)
+        fn be_tsti64(i: &mut Partial<&[u8]>) -> PResult<i64> {
+            i64(Endianness::Big).parse_next(i)
         }
-        fn le_tsti64(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i64> {
-            i64(Endianness::Little).parse_peek(i)
+        fn le_tsti64(i: &mut Partial<&[u8]>) -> PResult<i64> {
+            i64(Endianness::Little).parse_next(i)
         }
         assert_eq!(
-            be_tsti64(Partial::new(&[
+            be_tsti64.parse_peek(Partial::new(&[
                 0x00, 0xFF, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00
             ])),
             Ok((Partial::new(&b""[..]), 71_881_672_479_506_432_i64))
         );
         assert_eq!(
-            le_tsti64(Partial::new(&[
+            le_tsti64.parse_peek(Partial::new(&[
                 0x00, 0xFF, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00
             ])),
             Ok((Partial::new(&b""[..]), 36_028_874_334_732_032_i64))
@@ -1198,44 +1202,44 @@ mod partial {
     fn partial_length_bytes() {
         use crate::binary::le_u8;
 
-        fn x(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-            length_take(le_u8).parse_peek(i)
+        fn x<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+            length_take(le_u8).parse_next(i)
         }
         assert_eq!(
-            x(Partial::new(b"\x02..>>")),
+            x.parse_peek(Partial::new(b"\x02..>>")),
             Ok((Partial::new(&b">>"[..]), &b".."[..]))
         );
         assert_eq!(
-            x(Partial::new(b"\x02..")),
+            x.parse_peek(Partial::new(b"\x02..")),
             Ok((Partial::new(&[][..]), &b".."[..]))
         );
         assert_eq!(
-            x(Partial::new(b"\x02.")),
+            x.parse_peek(Partial::new(b"\x02.")),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            x(Partial::new(b"\x02")),
+            x.parse_peek(Partial::new(b"\x02")),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
 
-        fn y(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-            let (i, _) = "magic".parse_peek(i)?;
-            length_take(le_u8).parse_peek(i)
+        fn y<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+            let _ = "magic".parse_next(i)?;
+            length_take(le_u8).parse_next(i)
         }
         assert_eq!(
-            y(Partial::new(b"magic\x02..>>")),
+            y.parse_peek(Partial::new(b"magic\x02..>>")),
             Ok((Partial::new(&b">>"[..]), &b".."[..]))
         );
         assert_eq!(
-            y(Partial::new(b"magic\x02..")),
+            y.parse_peek(Partial::new(b"magic\x02..")),
             Ok((Partial::new(&[][..]), &b".."[..]))
         );
         assert_eq!(
-            y(Partial::new(b"magic\x02.")),
+            y.parse_peek(Partial::new(b"magic\x02.")),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
         assert_eq!(
-            y(Partial::new(b"magic\x02")),
+            y.parse_peek(Partial::new(b"magic\x02")),
             Err(ErrMode::Incomplete(Needed::new(2)))
         );
     }
@@ -1278,11 +1282,11 @@ mod partial {
     fn length_and_then_test() {
         use crate::stream::StreamIsPartial;
 
-        fn length_and_then_1(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u16> {
-            length_and_then(be_u8, be_u16).parse_peek(i)
+        fn length_and_then_1(i: &mut Partial<&[u8]>) -> PResult<u16> {
+            length_and_then(be_u8, be_u16).parse_next(i)
         }
-        fn length_and_then_2(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (u8, u8)> {
-            length_and_then(be_u8, (be_u8, be_u8)).parse_peek(i)
+        fn length_and_then_2(i: &mut Partial<&[u8]>) -> PResult<(u8, u8)> {
+            length_and_then(be_u8, (be_u8, be_u8)).parse_next(i)
         }
 
         let mut empty_complete = Partial::new(&b""[..]);
@@ -1290,14 +1294,14 @@ mod partial {
 
         let i1 = [0, 5, 6];
         assert_eq!(
-            length_and_then_1(Partial::new(&i1)),
+            length_and_then_1.parse_peek(Partial::new(&i1)),
             Err(ErrMode::Backtrack(error_position!(
                 &empty_complete,
                 ErrorKind::Slice
             )))
         );
         assert_eq!(
-            length_and_then_2(Partial::new(&i1)),
+            length_and_then_2.parse_peek(Partial::new(&i1)),
             Err(ErrMode::Backtrack(error_position!(
                 &empty_complete,
                 ErrorKind::Token
@@ -1309,14 +1313,14 @@ mod partial {
             let mut middle_complete = Partial::new(&i2[1..2]);
             let _ = middle_complete.complete();
             assert_eq!(
-                length_and_then_1(Partial::new(&i2)),
+                length_and_then_1.parse_peek(Partial::new(&i2)),
                 Err(ErrMode::Backtrack(error_position!(
                     &middle_complete,
                     ErrorKind::Slice
                 )))
             );
             assert_eq!(
-                length_and_then_2(Partial::new(&i2)),
+                length_and_then_2.parse_peek(Partial::new(&i2)),
                 Err(ErrMode::Backtrack(error_position!(
                     &empty_complete,
                     ErrorKind::Token
@@ -1326,21 +1330,21 @@ mod partial {
 
         let i3 = [2, 5, 6, 3, 4, 5, 7];
         assert_eq!(
-            length_and_then_1(Partial::new(&i3)),
+            length_and_then_1.parse_peek(Partial::new(&i3)),
             Ok((Partial::new(&i3[3..]), 1286))
         );
         assert_eq!(
-            length_and_then_2(Partial::new(&i3)),
+            length_and_then_2.parse_peek(Partial::new(&i3)),
             Ok((Partial::new(&i3[3..]), (5, 6)))
         );
 
         let i4 = [3, 5, 6, 3, 4, 5];
         assert_eq!(
-            length_and_then_1(Partial::new(&i4)),
+            length_and_then_1.parse_peek(Partial::new(&i4)),
             Ok((Partial::new(&i4[4..]), 1286))
         );
         assert_eq!(
-            length_and_then_2(Partial::new(&i4)),
+            length_and_then_2.parse_peek(Partial::new(&i4)),
             Ok((Partial::new(&i4[4..]), (5, 6)))
         );
     }

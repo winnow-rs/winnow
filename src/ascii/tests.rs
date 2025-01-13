@@ -5,7 +5,6 @@ mod complete {
     use crate::combinator::alt;
     use crate::error::ErrMode;
     use crate::error::ErrorKind;
-    use crate::error::IResult;
     use crate::error::InputError;
     use crate::stream::ParseSlice;
     use crate::token::none_of;
@@ -325,21 +324,21 @@ mod complete {
 
     #[test]
     fn full_line_windows() {
-        fn take_full_line(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8])> {
-            (till_line_ending, line_ending).parse_peek(i)
+        fn take_full_line<'i>(i: &mut &'i [u8]) -> PResult<(&'i [u8], &'i [u8])> {
+            (till_line_ending, line_ending).parse_next(i)
         }
         let input = b"abc\r\n";
-        let output = take_full_line(input);
+        let output = take_full_line.parse_peek(input);
         assert_eq!(output, Ok((&b""[..], (&b"abc"[..], &b"\r\n"[..]))));
     }
 
     #[test]
     fn full_line_unix() {
-        fn take_full_line(i: &[u8]) -> IResult<&[u8], (&[u8], &[u8])> {
-            (till_line_ending, line_ending).parse_peek(i)
+        fn take_full_line<'i>(i: &mut &'i [u8]) -> PResult<(&'i [u8], &'i [u8])> {
+            (till_line_ending, line_ending).parse_next(i)
         }
         let input = b"abc\n";
-        let output = take_full_line(input);
+        let output = take_full_line.parse_peek(input);
         assert_eq!(output, Ok((&b""[..], (&b"abc"[..], &b"\n"[..]))));
     }
 
@@ -440,22 +439,22 @@ mod complete {
 
     #[test]
     fn dec_uint_tests() {
-        fn dec_u32(input: &[u8]) -> IResult<&[u8], u32> {
-            dec_uint.parse_peek(input)
+        fn dec_u32<'i>(input: &mut &'i [u8]) -> PResult<u32, InputError<&'i [u8]>> {
+            dec_uint.parse_next(input)
         }
 
         assert_parse!(
-            dec_u32(&b";"[..]),
+            dec_u32.parse_peek(&b";"[..]),
             Err(ErrMode::Backtrack(error_position!(
                 &&b";"[..],
                 ErrorKind::Verify
             )))
         );
-        assert_parse!(dec_u32(&b"0;"[..]), Ok((&b";"[..], 0)));
-        assert_parse!(dec_u32(&b"1;"[..]), Ok((&b";"[..], 1)));
-        assert_parse!(dec_u32(&b"32;"[..]), Ok((&b";"[..], 32)));
+        assert_parse!(dec_u32.parse_peek(&b"0;"[..]), Ok((&b";"[..], 0)));
+        assert_parse!(dec_u32.parse_peek(&b"1;"[..]), Ok((&b";"[..], 1)));
+        assert_parse!(dec_u32.parse_peek(&b"32;"[..]), Ok((&b";"[..], 32)));
         assert_parse!(
-            dec_u32(&b"1000000000000000000000;"[..]), // overflow
+            dec_u32.parse_peek(&b"1000000000000000000000;"[..]), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 &&b"1000000000000000000000;"[..],
                 ErrorKind::Verify
@@ -465,31 +464,31 @@ mod complete {
 
     #[test]
     fn dec_int_tests() {
-        fn dec_i32(input: &[u8]) -> IResult<&[u8], i32> {
-            dec_int.parse_peek(input)
+        fn dec_i32<'i>(input: &mut &'i [u8]) -> PResult<i32, InputError<&'i [u8]>> {
+            dec_int.parse_next(input)
         }
 
         assert_parse!(
-            dec_i32(&b";"[..]),
+            dec_i32.parse_peek(&b";"[..]),
             Err(ErrMode::Backtrack(error_position!(
                 &&b";"[..],
                 ErrorKind::Verify
             )))
         );
-        assert_parse!(dec_i32(&b"0;"[..]), Ok((&b";"[..], 0)));
-        assert_parse!(dec_i32(&b"1;"[..]), Ok((&b";"[..], 1)));
-        assert_parse!(dec_i32(&b"32;"[..]), Ok((&b";"[..], 32)));
+        assert_parse!(dec_i32.parse_peek(&b"0;"[..]), Ok((&b";"[..], 0)));
+        assert_parse!(dec_i32.parse_peek(&b"1;"[..]), Ok((&b";"[..], 1)));
+        assert_parse!(dec_i32.parse_peek(&b"32;"[..]), Ok((&b";"[..], 32)));
         assert_parse!(
-            dec_i32(&b"-0;"[..]),
+            dec_i32.parse_peek(&b"-0;"[..]),
             Err(ErrMode::Backtrack(error_position!(
                 &&b"-0;"[..],
                 ErrorKind::Verify
             )))
         );
-        assert_parse!(dec_i32(&b"-1;"[..]), Ok((&b";"[..], -1)));
-        assert_parse!(dec_i32(&b"-32;"[..]), Ok((&b";"[..], -32)));
+        assert_parse!(dec_i32.parse_peek(&b"-1;"[..]), Ok((&b";"[..], -1)));
+        assert_parse!(dec_i32.parse_peek(&b"-32;"[..]), Ok((&b";"[..], -32)));
         assert_parse!(
-            dec_i32(&b"1000000000000000000000;"[..]), // overflow
+            dec_i32.parse_peek(&b"1000000000000000000000;"[..]), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 &&b"1000000000000000000000;"[..],
                 ErrorKind::Verify
@@ -499,52 +498,61 @@ mod complete {
 
     #[test]
     fn hex_uint_tests() {
-        fn hex_u32(input: &[u8]) -> IResult<&[u8], u32> {
-            hex_uint.parse_peek(input)
+        fn hex_u32<'i>(input: &mut &'i [u8]) -> PResult<u32, InputError<&'i [u8]>> {
+            hex_uint.parse_next(input)
         }
 
         assert_parse!(
-            hex_u32(&b";"[..]),
+            hex_u32.parse_peek(&b";"[..]),
             Err(ErrMode::Backtrack(error_position!(
                 &&b";"[..],
                 ErrorKind::Slice
             )))
         );
-        assert_parse!(hex_u32(&b"ff;"[..]), Ok((&b";"[..], 255)));
-        assert_parse!(hex_u32(&b"1be2;"[..]), Ok((&b";"[..], 7138)));
-        assert_parse!(hex_u32(&b"c5a31be2;"[..]), Ok((&b";"[..], 3_315_801_058)));
-        assert_parse!(hex_u32(&b"C5A31be2;"[..]), Ok((&b";"[..], 3_315_801_058)));
+        assert_parse!(hex_u32.parse_peek(&b"ff;"[..]), Ok((&b";"[..], 255)));
+        assert_parse!(hex_u32.parse_peek(&b"1be2;"[..]), Ok((&b";"[..], 7138)));
         assert_parse!(
-            hex_u32(&b"00c5a31be2;"[..]), // overflow
+            hex_u32.parse_peek(&b"c5a31be2;"[..]),
+            Ok((&b";"[..], 3_315_801_058))
+        );
+        assert_parse!(
+            hex_u32.parse_peek(&b"C5A31be2;"[..]),
+            Ok((&b";"[..], 3_315_801_058))
+        );
+        assert_parse!(
+            hex_u32.parse_peek(&b"00c5a31be2;"[..]), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 &&b"00c5a31be2;"[..],
                 ErrorKind::Verify
             )))
         );
         assert_parse!(
-            hex_u32(&b"c5a31be201;"[..]), // overflow
+            hex_u32.parse_peek(&b"c5a31be201;"[..]), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 &&b"c5a31be201;"[..],
                 ErrorKind::Verify
             )))
         );
-        assert_parse!(hex_u32(&b"ffffffff;"[..]), Ok((&b";"[..], 4_294_967_295)));
         assert_parse!(
-            hex_u32(&b"ffffffffffffffff;"[..]), // overflow
+            hex_u32.parse_peek(&b"ffffffff;"[..]),
+            Ok((&b";"[..], 4_294_967_295))
+        );
+        assert_parse!(
+            hex_u32.parse_peek(&b"ffffffffffffffff;"[..]), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 &&b"ffffffffffffffff;"[..],
                 ErrorKind::Verify
             )))
         );
         assert_parse!(
-            hex_u32(&b"ffffffffffffffff"[..]), // overflow
+            hex_u32.parse_peek(&b"ffffffffffffffff"[..]), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 &&b"ffffffffffffffff"[..],
                 ErrorKind::Verify
             )))
         );
-        assert_parse!(hex_u32(&b"0x1be2;"[..]), Ok((&b"x1be2;"[..], 0)));
-        assert_parse!(hex_u32(&b"12af"[..]), Ok((&b""[..], 0x12af)));
+        assert_parse!(hex_u32.parse_peek(&b"0x1be2;"[..]), Ok((&b"x1be2;"[..], 0)));
+        assert_parse!(hex_u32.parse_peek(&b"12af"[..]), Ok((&b""[..], 0x12af)));
     }
 
     #[test]
@@ -630,32 +638,32 @@ mod complete {
         }
     }
 
-    #[cfg(feature = "std")]
-    fn parse_f64(i: &str) -> IResult<&str, f64, ()> {
-        match take_float_or_exceptions.parse_peek(i) {
-            Err(e) => Err(e),
-            Ok((i, s)) => {
-                if s.is_empty() {
-                    return Err(ErrMode::Backtrack(()));
-                }
-                match s.parse_slice() {
-                    Some(n) => Ok((i, n)),
-                    None => Err(ErrMode::Backtrack(())),
-                }
-            }
-        }
-    }
-
     proptest! {
       #[test]
       #[cfg(feature = "std")]
       #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
       fn floats(s in "\\PC*") {
           println!("testing {s}");
-          let res1 = parse_f64(&s);
+          let res1 = parse_f64.parse_peek(&s);
           let res2 = float::<_, f64, ()>.parse_peek(s.as_str());
           assert_eq!(res1, res2);
       }
+    }
+
+    #[cfg(feature = "std")]
+    fn parse_f64(i: &mut &str) -> PResult<f64, ()> {
+        match take_float_or_exceptions.parse_next(i) {
+            Err(e) => Err(e),
+            Ok(s) => {
+                if s.is_empty() {
+                    return Err(ErrMode::Backtrack(()));
+                }
+                match s.parse_slice() {
+                    Some(n) => Ok(n),
+                    None => Err(ErrMode::Backtrack(())),
+                }
+            }
+        }
     }
 
     // issue #1336 "take_escaped hangs if normal parser accepts empty"
@@ -663,15 +671,15 @@ mod complete {
     #[cfg_attr(debug_assertions, should_panic)]
     fn complete_take_escaped_hang_1() {
         // issue #1336 "take_escaped hangs if normal parser accepts empty"
-        fn escaped_string(input: &str) -> IResult<&str, &str> {
+        fn escaped_string<'i>(input: &mut &'i str) -> PResult<&'i str> {
             use crate::ascii::alpha0;
             use crate::token::one_of;
-            take_escaped(alpha0, '\\', one_of(['n'])).parse_peek(input)
+            take_escaped(alpha0, '\\', one_of(['n'])).parse_next(input)
         }
 
         let input = "7";
         assert_eq!(
-            escaped_string(input),
+            escaped_string.parse_peek(input),
             Err(ErrMode::Cut(error_position!(&input, ErrorKind::Assert)))
         );
     }
@@ -681,15 +689,15 @@ mod complete {
     #[cfg_attr(debug_assertions, should_panic)]
     fn complete_take_escaped_hang_2() {
         // issue #1336 "take_escaped hangs if normal parser accepts empty"
-        fn escaped_string(input: &str) -> IResult<&str, &str> {
+        fn escaped_string<'i>(input: &mut &'i str) -> PResult<&'i str> {
             use crate::ascii::alpha0;
             use crate::token::one_of;
-            take_escaped(alpha0, '\\', one_of(['n'])).parse_peek(input)
+            take_escaped(alpha0, '\\', one_of(['n'])).parse_next(input)
         }
 
         let input = "a7";
         assert_eq!(
-            escaped_string(input),
+            escaped_string.parse_peek(input),
             Err(ErrMode::Cut(error_position!(
                 &&input[1..],
                 ErrorKind::Assert
@@ -701,7 +709,7 @@ mod complete {
     #[cfg_attr(debug_assertions, should_panic)]
     fn complete_take_escaped_hang_1118() {
         // issue ##1118 take_escaped does not work with empty string
-        fn unquote(input: &str) -> IResult<&str, &str> {
+        fn unquote<'i>(input: &mut &'i str) -> PResult<&'i str> {
             use crate::combinator::delimited;
             use crate::combinator::opt;
             use crate::token::one_of;
@@ -715,12 +723,12 @@ mod complete {
                 ),
                 '"',
             )
-            .parse_peek(input)
+            .parse_next(input)
         }
 
         let input = r#""""#;
         assert_eq!(
-            unquote(input),
+            unquote.parse_peek(input),
             Err(ErrMode::Cut(error_position!(
                 &&input[1..],
                 ErrorKind::Assert
@@ -735,23 +743,32 @@ mod complete {
         use crate::ascii::{alpha1 as alpha, digit1 as digit};
         use crate::token::one_of;
 
-        fn esc(i: &[u8]) -> IResult<&[u8], &[u8]> {
-            take_escaped(alpha, '\\', one_of(['\"', 'n', '\\'])).parse_peek(i)
+        fn esc<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8]> {
+            take_escaped(alpha, '\\', one_of(['\"', 'n', '\\'])).parse_next(i)
         }
-        assert_eq!(esc(&b"abcd;"[..]), Ok((&b";"[..], &b"abcd"[..])));
-        assert_eq!(esc(&b"ab\\\"cd;"[..]), Ok((&b";"[..], &b"ab\\\"cd"[..])));
-        assert_eq!(esc(&b"\\\"abcd;"[..]), Ok((&b";"[..], &b"\\\"abcd"[..])));
-        assert_eq!(esc(&b"\\n;"[..]), Ok((&b";"[..], &b"\\n"[..])));
-        assert_eq!(esc(&b"ab\\\"12"[..]), Ok((&b"12"[..], &b"ab\\\""[..])));
+        assert_eq!(esc.parse_peek(&b"abcd;"[..]), Ok((&b";"[..], &b"abcd"[..])));
         assert_eq!(
-            esc(&b"AB\\"[..]),
+            esc.parse_peek(&b"ab\\\"cd;"[..]),
+            Ok((&b";"[..], &b"ab\\\"cd"[..]))
+        );
+        assert_eq!(
+            esc.parse_peek(&b"\\\"abcd;"[..]),
+            Ok((&b";"[..], &b"\\\"abcd"[..]))
+        );
+        assert_eq!(esc.parse_peek(&b"\\n;"[..]), Ok((&b";"[..], &b"\\n"[..])));
+        assert_eq!(
+            esc.parse_peek(&b"ab\\\"12"[..]),
+            Ok((&b"12"[..], &b"ab\\\""[..]))
+        );
+        assert_eq!(
+            esc.parse_peek(&b"AB\\"[..]),
             Err(ErrMode::Backtrack(error_position!(
                 &&b""[..],
                 ErrorKind::Token
             )))
         );
         assert_eq!(
-            esc(&b"AB\\A"[..]),
+            esc.parse_peek(&b"AB\\A"[..]),
             Err(ErrMode::Backtrack(error_node_position!(
                 &&b"AB\\A"[..],
                 ErrorKind::Token,
@@ -759,10 +776,13 @@ mod complete {
             )))
         );
 
-        fn esc2(i: &[u8]) -> IResult<&[u8], &[u8]> {
-            take_escaped(digit, '\\', one_of(['\"', 'n', '\\'])).parse_peek(i)
+        fn esc2<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8]> {
+            take_escaped(digit, '\\', one_of(['\"', 'n', '\\'])).parse_next(i)
         }
-        assert_eq!(esc2(&b"12\\nnn34"[..]), Ok((&b"nn34"[..], &b"12\\n"[..])));
+        assert_eq!(
+            esc2.parse_peek(&b"12\\nnn34"[..]),
+            Ok((&b"nn34"[..], &b"12\\n"[..]))
+        );
     }
 
     #[cfg(feature = "alloc")]
@@ -771,20 +791,20 @@ mod complete {
         use crate::ascii::{alpha1 as alpha, digit1 as digit};
         use crate::token::one_of;
 
-        fn esc(i: &str) -> IResult<&str, &str> {
-            take_escaped(alpha, '\\', one_of(['\"', 'n', '\\'])).parse_peek(i)
+        fn esc<'i>(i: &mut &'i str) -> PResult<&'i str> {
+            take_escaped(alpha, '\\', one_of(['\"', 'n', '\\'])).parse_next(i)
         }
-        assert_eq!(esc("abcd;"), Ok((";", "abcd")));
-        assert_eq!(esc("ab\\\"cd;"), Ok((";", "ab\\\"cd")));
-        assert_eq!(esc("\\\"abcd;"), Ok((";", "\\\"abcd")));
-        assert_eq!(esc("\\n;"), Ok((";", "\\n")));
-        assert_eq!(esc("ab\\\"12"), Ok(("12", "ab\\\"")));
+        assert_eq!(esc.parse_peek("abcd;"), Ok((";", "abcd")));
+        assert_eq!(esc.parse_peek("ab\\\"cd;"), Ok((";", "ab\\\"cd")));
+        assert_eq!(esc.parse_peek("\\\"abcd;"), Ok((";", "\\\"abcd")));
+        assert_eq!(esc.parse_peek("\\n;"), Ok((";", "\\n")));
+        assert_eq!(esc.parse_peek("ab\\\"12"), Ok(("12", "ab\\\"")));
         assert_eq!(
-            esc("AB\\"),
+            esc.parse_peek("AB\\"),
             Err(ErrMode::Backtrack(error_position!(&"", ErrorKind::Token)))
         );
         assert_eq!(
-            esc("AB\\A"),
+            esc.parse_peek("AB\\A"),
             Err(ErrMode::Backtrack(error_node_position!(
                 &"AB\\A",
                 ErrorKind::Token,
@@ -792,25 +812,25 @@ mod complete {
             )))
         );
 
-        fn esc2(i: &str) -> IResult<&str, &str> {
-            take_escaped(digit, '\\', one_of(['\"', 'n', '\\'])).parse_peek(i)
+        fn esc2<'i>(i: &mut &'i str) -> PResult<&'i str> {
+            take_escaped(digit, '\\', one_of(['\"', 'n', '\\'])).parse_next(i)
         }
-        assert_eq!(esc2("12\\nnn34"), Ok(("nn34", "12\\n")));
+        assert_eq!(esc2.parse_peek("12\\nnn34"), Ok(("nn34", "12\\n")));
 
-        fn esc3(i: &str) -> IResult<&str, &str> {
-            take_escaped(alpha, '\u{241b}', one_of(['\"', 'n'])).parse_peek(i)
+        fn esc3<'i>(i: &mut &'i str) -> PResult<&'i str> {
+            take_escaped(alpha, '\u{241b}', one_of(['\"', 'n'])).parse_next(i)
         }
-        assert_eq!(esc3("ab␛ncd;"), Ok((";", "ab␛ncd")));
+        assert_eq!(esc3.parse_peek("ab␛ncd;"), Ok((";", "ab␛ncd")));
     }
 
     #[test]
     fn test_escaped_error() {
-        fn esc(s: &str) -> IResult<&str, &str> {
+        fn esc<'i>(i: &mut &'i str) -> PResult<&'i str> {
             use crate::ascii::digit1;
-            take_escaped(digit1, '\\', one_of(['\"', 'n', '\\'])).parse_peek(s)
+            take_escaped(digit1, '\\', one_of(['\"', 'n', '\\'])).parse_next(i)
         }
 
-        assert_eq!(esc("abcd"), Ok(("abcd", "")));
+        assert_eq!(esc.parse_peek("abcd"), Ok(("abcd", "")));
     }
 
     #[cfg(feature = "alloc")]
@@ -823,7 +843,7 @@ mod complete {
             String::from_utf8_lossy(&i).into_owned()
         }
 
-        fn esc(i: &[u8]) -> IResult<&[u8], String> {
+        fn esc(i: &mut &[u8]) -> PResult<String> {
             escaped_transform(
                 alpha,
                 '\\',
@@ -834,32 +854,38 @@ mod complete {
                 )),
             )
             .map(to_s)
-            .parse_peek(i)
+            .parse_next(i)
         }
 
-        assert_eq!(esc(&b"abcd;"[..]), Ok((&b";"[..], String::from("abcd"))));
         assert_eq!(
-            esc(&b"ab\\\"cd;"[..]),
+            esc.parse_peek(&b"abcd;"[..]),
+            Ok((&b";"[..], String::from("abcd")))
+        );
+        assert_eq!(
+            esc.parse_peek(&b"ab\\\"cd;"[..]),
             Ok((&b";"[..], String::from("ab\"cd")))
         );
         assert_eq!(
-            esc(&b"\\\"abcd;"[..]),
+            esc.parse_peek(&b"\\\"abcd;"[..]),
             Ok((&b";"[..], String::from("\"abcd")))
         );
-        assert_eq!(esc(&b"\\n;"[..]), Ok((&b";"[..], String::from("\n"))));
         assert_eq!(
-            esc(&b"ab\\\"12"[..]),
+            esc.parse_peek(&b"\\n;"[..]),
+            Ok((&b";"[..], String::from("\n")))
+        );
+        assert_eq!(
+            esc.parse_peek(&b"ab\\\"12"[..]),
             Ok((&b"12"[..], String::from("ab\"")))
         );
         assert_eq!(
-            esc(&b"AB\\"[..]),
+            esc.parse_peek(&b"AB\\"[..]),
             Err(ErrMode::Backtrack(error_position!(
                 &&b""[..],
                 ErrorKind::Literal
             )))
         );
         assert_eq!(
-            esc(&b"AB\\A"[..]),
+            esc.parse_peek(&b"AB\\A"[..]),
             Err(ErrMode::Backtrack(error_node_position!(
                 &&b"AB\\A"[..],
                 ErrorKind::Eof,
@@ -867,7 +893,7 @@ mod complete {
             )))
         );
 
-        fn esc2(i: &[u8]) -> IResult<&[u8], String> {
+        fn esc2(i: &mut &[u8]) -> PResult<String> {
             escaped_transform(
                 alpha,
                 '&',
@@ -877,14 +903,14 @@ mod complete {
                 )),
             )
             .map(to_s)
-            .parse_peek(i)
+            .parse_next(i)
         }
         assert_eq!(
-            esc2(&b"ab&egrave;DEF;"[..]),
+            esc2.parse_peek(&b"ab&egrave;DEF;"[..]),
             Ok((&b";"[..], String::from("abèDEF")))
         );
         assert_eq!(
-            esc2(&b"ab&egrave;D&agrave;EF;"[..]),
+            esc2.parse_peek(&b"ab&egrave;D&agrave;EF;"[..]),
             Ok((&b";"[..], String::from("abèDàEF")))
         );
     }
@@ -894,26 +920,32 @@ mod complete {
     fn complete_escape_transform_str() {
         use crate::ascii::alpha1 as alpha;
 
-        fn esc(i: &str) -> IResult<&str, String> {
+        fn esc(i: &mut &str) -> PResult<String> {
             escaped_transform(
                 alpha,
                 '\\',
                 alt(("\\".value("\\"), "\"".value("\""), "n".value("\n"))),
             )
-            .parse_peek(i)
+            .parse_next(i)
         }
 
-        assert_eq!(esc("abcd;"), Ok((";", String::from("abcd"))));
-        assert_eq!(esc("ab\\\"cd;"), Ok((";", String::from("ab\"cd"))));
-        assert_eq!(esc("\\\"abcd;"), Ok((";", String::from("\"abcd"))));
-        assert_eq!(esc("\\n;"), Ok((";", String::from("\n"))));
-        assert_eq!(esc("ab\\\"12"), Ok(("12", String::from("ab\""))));
+        assert_eq!(esc.parse_peek("abcd;"), Ok((";", String::from("abcd"))));
         assert_eq!(
-            esc("AB\\"),
+            esc.parse_peek("ab\\\"cd;"),
+            Ok((";", String::from("ab\"cd")))
+        );
+        assert_eq!(
+            esc.parse_peek("\\\"abcd;"),
+            Ok((";", String::from("\"abcd")))
+        );
+        assert_eq!(esc.parse_peek("\\n;"), Ok((";", String::from("\n"))));
+        assert_eq!(esc.parse_peek("ab\\\"12"), Ok(("12", String::from("ab\""))));
+        assert_eq!(
+            esc.parse_peek("AB\\"),
             Err(ErrMode::Backtrack(error_position!(&"", ErrorKind::Literal)))
         );
         assert_eq!(
-            esc("AB\\A"),
+            esc.parse_peek("AB\\A"),
             Err(ErrMode::Backtrack(error_node_position!(
                 &"AB\\A",
                 ErrorKind::Eof,
@@ -921,42 +953,47 @@ mod complete {
             )))
         );
 
-        fn esc2(i: &str) -> IResult<&str, String> {
+        fn esc2(i: &mut &str) -> PResult<String> {
             escaped_transform(
                 alpha,
                 '&',
                 alt(("egrave;".value("è"), "agrave;".value("à"))),
             )
-            .parse_peek(i)
+            .parse_next(i)
         }
-        assert_eq!(esc2("ab&egrave;DEF;"), Ok((";", String::from("abèDEF"))));
         assert_eq!(
-            esc2("ab&egrave;D&agrave;EF;"),
+            esc2.parse_peek("ab&egrave;DEF;"),
+            Ok((";", String::from("abèDEF")))
+        );
+        assert_eq!(
+            esc2.parse_peek("ab&egrave;D&agrave;EF;"),
             Ok((";", String::from("abèDàEF")))
         );
 
-        fn esc3(i: &str) -> IResult<&str, String> {
-            escaped_transform(alpha, '␛', alt(("0".value("\0"), "n".value("\n")))).parse_peek(i)
+        fn esc3(i: &mut &str) -> PResult<String> {
+            escaped_transform(alpha, '␛', alt(("0".value("\0"), "n".value("\n")))).parse_next(i)
         }
-        assert_eq!(esc3("a␛0bc␛n"), Ok(("", String::from("a\0bc\n"))));
+        assert_eq!(
+            esc3.parse_peek("a␛0bc␛n"),
+            Ok(("", String::from("a\0bc\n")))
+        );
     }
 
     #[test]
     #[cfg(feature = "alloc")]
     fn test_escaped_transform_error() {
-        fn esc_trans(s: &str) -> IResult<&str, String> {
+        fn esc_trans(i: &mut &str) -> PResult<String> {
             use crate::ascii::digit1;
-            escaped_transform(digit1, '\\', "n").parse_peek(s)
+            escaped_transform(digit1, '\\', "n").parse_next(i)
         }
 
-        assert_eq!(esc_trans("abcd"), Ok(("abcd", String::new())));
+        assert_eq!(esc_trans.parse_peek("abcd"), Ok(("abcd", String::new())));
     }
 }
 
 mod partial {
     use super::*;
     use crate::error::ErrorKind;
-    use crate::error::IResult;
     use crate::error::InputError;
     use crate::error::{ErrMode, Needed};
     use crate::Partial;
@@ -1389,11 +1426,11 @@ mod partial {
     #[test]
     fn full_line_windows() {
         #[allow(clippy::type_complexity)]
-        fn take_full_line(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (&[u8], &[u8])> {
-            (till_line_ending, line_ending).parse_peek(i)
+        fn take_full_line<'i>(i: &mut Partial<&'i [u8]>) -> PResult<(&'i [u8], &'i [u8])> {
+            (till_line_ending, line_ending).parse_next(i)
         }
         let input = b"abc\r\n";
-        let output = take_full_line(Partial::new(input));
+        let output = take_full_line.parse_peek(Partial::new(input));
         assert_eq!(
             output,
             Ok((Partial::new(&b""[..]), (&b"abc"[..], &b"\r\n"[..])))
@@ -1403,11 +1440,11 @@ mod partial {
     #[test]
     fn full_line_unix() {
         #[allow(clippy::type_complexity)]
-        fn take_full_line(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (&[u8], &[u8])> {
-            (till_line_ending, line_ending).parse_peek(i)
+        fn take_full_line<'i>(i: &mut Partial<&'i [u8]>) -> PResult<(&'i [u8], &'i [u8])> {
+            (till_line_ending, line_ending).parse_next(i)
         }
         let input = b"abc\n";
-        let output = take_full_line(Partial::new(input));
+        let output = take_full_line.parse_peek(Partial::new(input));
         assert_eq!(
             output,
             Ok((Partial::new(&b""[..]), (&b"abc"[..], &b"\n"[..])))
@@ -1508,71 +1545,73 @@ mod partial {
 
     #[test]
     fn hex_uint_tests() {
-        fn hex_u32(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
-            hex_uint.parse_peek(input)
+        fn hex_u32<'i>(
+            input: &mut Partial<&'i [u8]>,
+        ) -> PResult<u32, InputError<Partial<&'i [u8]>>> {
+            hex_uint.parse_next(input)
         }
 
         assert_parse!(
-            hex_u32(Partial::new(&b";"[..])),
+            hex_u32.parse_peek(Partial::new(&b";"[..])),
             Err(ErrMode::Backtrack(error_position!(
                 &Partial::new(&b";"[..]),
                 ErrorKind::Slice
             )))
         );
         assert_parse!(
-            hex_u32(Partial::new(&b"ff;"[..])),
+            hex_u32.parse_peek(Partial::new(&b"ff;"[..])),
             Ok((Partial::new(&b";"[..]), 255))
         );
         assert_parse!(
-            hex_u32(Partial::new(&b"1be2;"[..])),
+            hex_u32.parse_peek(Partial::new(&b"1be2;"[..])),
             Ok((Partial::new(&b";"[..]), 7138))
         );
         assert_parse!(
-            hex_u32(Partial::new(&b"c5a31be2;"[..])),
+            hex_u32.parse_peek(Partial::new(&b"c5a31be2;"[..])),
             Ok((Partial::new(&b";"[..]), 3_315_801_058))
         );
         assert_parse!(
-            hex_u32(Partial::new(&b"C5A31be2;"[..])),
+            hex_u32.parse_peek(Partial::new(&b"C5A31be2;"[..])),
             Ok((Partial::new(&b";"[..]), 3_315_801_058))
         );
         assert_parse!(
-            hex_u32(Partial::new(&b"00c5a31be2;"[..])), // overflow
+            hex_u32.parse_peek(Partial::new(&b"00c5a31be2;"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 &Partial::new(&b"00c5a31be2;"[..]),
                 ErrorKind::Verify
             )))
         );
         assert_parse!(
-            hex_u32(Partial::new(&b"c5a31be201;"[..])), // overflow
+            hex_u32.parse_peek(Partial::new(&b"c5a31be201;"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 &Partial::new(&b"c5a31be201;"[..]),
                 ErrorKind::Verify
             )))
         );
         assert_parse!(
-            hex_u32(Partial::new(&b"ffffffff;"[..])),
+            hex_u32.parse_peek(Partial::new(&b"ffffffff;"[..])),
             Ok((Partial::new(&b";"[..]), 4_294_967_295))
         );
         assert_parse!(
-            hex_u32(Partial::new(&b"ffffffffffffffff;"[..])), // overflow
+            hex_u32.parse_peek(Partial::new(&b"ffffffffffffffff;"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 &Partial::new(&b"ffffffffffffffff;"[..]),
                 ErrorKind::Verify
             )))
         );
         assert_parse!(
-            hex_u32(Partial::new(&b"ffffffffffffffff"[..])), // overflow
+            hex_u32.parse_peek(Partial::new(&b"ffffffffffffffff"[..])), // overflow
             Err(ErrMode::Backtrack(error_position!(
                 &Partial::new(&b"ffffffffffffffff"[..]),
                 ErrorKind::Verify
             )))
         );
         assert_parse!(
-            hex_u32(Partial::new(&b"0x1be2;"[..])),
+            hex_u32.parse_peek(Partial::new(&b"0x1be2;"[..])),
             Ok((Partial::new(&b"x1be2;"[..]), 0))
         );
         assert_parse!(
-            hex_u32(Partial::new(&b"12af"[..])),
+            hex_u32.parse_peek(Partial::new(&b"12af"[..])),
             Err(ErrMode::Incomplete(Needed::new(1)))
         );
     }
