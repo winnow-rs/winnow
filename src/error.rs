@@ -187,7 +187,6 @@ impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
         ErrMode::Backtrack(E::from_error_kind(input, kind))
     }
 
-    #[cfg_attr(debug_assertions, track_caller)]
     #[inline(always)]
     fn assert(input: &I, message: &'static str) -> Self
     where
@@ -275,7 +274,6 @@ pub trait ParserError<I: Stream>: Sized {
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self;
 
     /// Process a parser assertion
-    #[cfg_attr(debug_assertions, track_caller)]
     #[inline(always)]
     fn assert(input: &I, _message: &'static str) -> Self
     where
