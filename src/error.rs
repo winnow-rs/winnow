@@ -1102,16 +1102,31 @@ impl<I: Stream + Clone + fmt::Display, C: fmt::Display> fmt::Display for TreeErr
 #[derive(Debug,PartialEq,Eq,Hash,Clone,Copy)]
 #[allow(missing_docs)]
 pub enum ErrorKind {
+  /// This variant is only used for internal testing. Users should not be exposed to this
+  /// in normal operations.
   Assert,
+  /// A parser expecting a certain token couldn't match on the input.
   Token,
+  /// A literal parser couldn't match on the input.
   Literal,
+  /// An [`crate::combinator::alt`] combinator exhausted all available options.
   Alt,
+  /// Used by repeating combinators to indicate that the parser has consumed everything it could
+  /// find or was tasked to do in case of a fixed number of repetitions.
   Repeat,
+  /// The [`crate::combinator::eof`] combinator did not match the end of the file.
+  /// I.e. there's still some input left.
   Eof,
   Slice,
+  /// A special kind that appears when [`crate::parser::Parser::complete_err`] is used to convert
+  /// an [`ErrMode::Incomplete`] error into a [`ErrMode::Backtrack`] error.
   Complete,
+  /// Used when a parser passed to the [`crate::combinator::not`] combinator succeeds.
   Not,
+  /// Used when a [`crate::parser::Parser::verify`] or [`crate::parser::Parser::verify_map`] call
+  /// does not succeed.
   Verify,
+  /// Used when a [`crate::combinator::fail`] combinator is reached.
   Fail,
 }
 
