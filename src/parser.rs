@@ -1292,6 +1292,9 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use snapbox::str;
+
     use crate::binary::be_u16;
     use crate::error::ErrMode;
     use crate::error::ErrorKind;
@@ -1327,57 +1330,163 @@ mod tests {
     #[test]
     fn single_element_tuples() {
         use crate::ascii::alpha1;
-        use crate::error::ErrorKind;
 
         let mut parser = (alpha1,);
-        assert_eq!(parser.parse_peek("abc123def"), Ok(("123def", ("abc",))));
-        assert_eq!(
+        assert_parse!(
+            parser.parse_peek("abc123def"),
+            str![[r#"
+Ok(
+    (
+        "123def",
+        (
+            "abc",
+        ),
+    ),
+)
+
+"#]]
+        );
+        assert_parse!(
             parser.parse_peek("123def"),
-            Err(ErrMode::Backtrack(InputError::new(
-                "123def",
-                ErrorKind::Slice
-            )))
+            str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "123def",
+            kind: Slice,
+        },
+    ),
+)
+
+"#]]
         );
     }
 
     #[test]
     fn tuple_test() {
         #[allow(clippy::type_complexity)]
-        fn tuple_3(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, (u16, &[u8], &[u8])> {
-            (be_u16, take(3u8), "fg").parse_peek(i)
+        fn tuple_3<'i>(
+            i: &mut Partial<&'i [u8]>,
+        ) -> PResult<(u16, &'i [u8], &'i [u8]), InputError<Partial<&'i [u8]>>> {
+            (be_u16, take(3u8), "fg").parse_next(i)
         }
 
-        assert_eq!(
-            tuple_3(Partial::new(&b"abcdefgh"[..])),
-            Ok((
-                Partial::new(&b"h"[..]),
-                (0x6162u16, &b"cde"[..], &b"fg"[..])
-            ))
+        assert_parse!(
+            tuple_3.parse_peek(Partial::new(&b"abcdefgh"[..])),
+            str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                104,
+            ],
+            partial: true,
+        },
+        (
+            24930,
+            [
+                99,
+                100,
+                101,
+            ],
+            [
+                102,
+                103,
+            ],
+        ),
+    ),
+)
+
+"#]]
         );
-        assert_eq!(
-            tuple_3(Partial::new(&b"abcd"[..])),
-            Err(ErrMode::Incomplete(Needed::new(1)))
+        assert_parse!(
+            tuple_3.parse_peek(Partial::new(&b"abcd"[..])),
+            str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
         );
-        assert_eq!(
-            tuple_3(Partial::new(&b"abcde"[..])),
-            Err(ErrMode::Incomplete(Needed::new(2)))
+        assert_parse!(
+            tuple_3.parse_peek(Partial::new(&b"abcde"[..])),
+            str![[r#"
+Err(
+    Incomplete(
+        Size(
+            2,
+        ),
+    ),
+)
+
+"#]]
         );
-        assert_eq!(
-            tuple_3(Partial::new(&b"abcdejk"[..])),
-            Err(ErrMode::Backtrack(error_position!(
-                &Partial::new(&b"jk"[..]),
-                ErrorKind::Literal
-            )))
+        assert_parse!(
+            tuple_3.parse_peek(Partial::new(&b"abcdejk"[..])),
+            str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    106,
+                    107,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
         );
     }
 
     #[test]
     fn unit_type() {
-        fn parser(i: &mut &str) -> PResult<()> {
+        fn parser<'i>(i: &mut &'i str) -> PResult<(), InputError<&'i str>> {
             ().parse_next(i)
         }
-        assert_eq!(parser.parse_peek("abxsbsh"), Ok(("abxsbsh", ())));
-        assert_eq!(parser.parse_peek("sdfjakdsas"), Ok(("sdfjakdsas", ())));
-        assert_eq!(parser.parse_peek(""), Ok(("", ())));
+        assert_parse!(
+            parser.parse_peek("abxsbsh"),
+            str![[r#"
+Ok(
+    (
+        "abxsbsh",
+        (),
+    ),
+)
+
+"#]]
+        );
+        assert_parse!(
+            parser.parse_peek("sdfjakdsas"),
+            str![[r#"
+Ok(
+    (
+        "sdfjakdsas",
+        (),
+    ),
+)
+
+"#]]
+        );
+        assert_parse!(
+            parser.parse_peek(""),
+            str![[r#"
+Ok(
+    (
+        "",
+        (),
+    ),
+)
+
+"#]]
+        );
     }
 }

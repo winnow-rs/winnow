@@ -1,4 +1,5 @@
 use super::*;
+use snapbox::str;
 
 use crate::ascii::digit1 as digit;
 use crate::binary::u16;
@@ -7,7 +8,6 @@ use crate::binary::Endianness;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::InputError;
-use crate::error::Needed;
 use crate::error::ParserError;
 #[cfg(feature = "alloc")]
 use crate::lib::std::borrow::ToOwned;
@@ -28,14 +28,46 @@ fn eof_on_slices() {
     let res_not_over = eof.parse_peek(not_over);
     assert_parse!(
         res_not_over,
-        Err(ErrMode::Backtrack(error_position!(
-            &not_over,
-            ErrorKind::Eof
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: [
+                72,
+                101,
+                108,
+                108,
+                111,
+                44,
+                32,
+                119,
+                111,
+                114,
+                108,
+                100,
+                33,
+            ],
+            kind: Eof,
+        },
+    ),
+)
+
+"#]]
     );
 
     let res_over = eof.parse_peek(is_over);
-    assert_parse!(res_over, Ok((is_over, is_over)));
+    assert_parse!(
+        res_over,
+        str![[r#"
+Ok(
+    (
+        [],
+        [],
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
@@ -46,14 +78,32 @@ fn eof_on_strs() {
     let res_not_over = eof.parse_peek(not_over);
     assert_parse!(
         res_not_over,
-        Err(ErrMode::Backtrack(error_position!(
-            &not_over,
-            ErrorKind::Eof
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "Hello, world!",
+            kind: Eof,
+        },
+    ),
+)
+
+"#]]
     );
 
     let res_over = eof.parse_peek(is_over);
-    assert_parse!(res_over, Ok((is_over, is_over)));
+    assert_parse!(
+        res_over,
+        str![[r#"
+Ok(
+    (
+        "",
+        "",
+    ),
+)
+
+"#]]
+    );
 }
 
 use crate::lib::std::convert::From;
@@ -85,7 +135,22 @@ fn test_parser_flat_map() {
     let input: &[u8] = &[3, 100, 101, 102, 103, 104][..];
     assert_parse!(
         u8.flat_map(take).parse_peek(input),
-        Ok((&[103, 104][..], &[100, 101, 102][..]))
+        str![[r#"
+Ok(
+    (
+        [
+            103,
+            104,
+        ],
+        [
+            100,
+            101,
+            102,
+        ],
+    ),
+)
+
+"#]]
     );
 }
 
@@ -101,15 +166,32 @@ fn test_parser_verify_map() {
     assert_parse!(
         u8.verify_map(|u| if u < 20 { Some(u) } else { None })
             .parse_peek(input),
-        Err(ErrMode::Backtrack(InputError::new(
-            &[50][..],
-            ErrorKind::Verify
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: [
+                50,
+            ],
+            kind: Verify,
+        },
+    ),
+)
+
+"#]]
     );
     assert_parse!(
         u8.verify_map(|u| if u > 20 { Some(u) } else { None })
             .parse_peek(input),
-        Ok((&[][..], 50))
+        str![[r#"
+Ok(
+    (
+        [],
+        50,
+    ),
+)
+
+"#]]
     );
 }
 
@@ -118,7 +200,20 @@ fn test_parser_map_parser() {
     let input: &[u8] = &[100, 101, 102, 103, 104][..];
     assert_parse!(
         take(4usize).and_then(take(2usize)).parse_peek(input),
-        Ok((&[104][..], &[100, 101][..]))
+        str![[r#"
+Ok(
+    (
+        [
+            104,
+        ],
+        [
+            100,
+            101,
+        ],
+    ),
+)
+
+"#]]
     );
 }
 
@@ -131,75 +226,232 @@ fn test_parser_into() {
     let mut parser = take::<_, _, InputError<_>>(3u8).output_into();
     let result: crate::error::IResult<&[u8], Vec<u8>> = parser.parse_peek(&b"abcdefg"[..]);
 
-    assert_eq!(result, Ok((&b"defg"[..], vec![97, 98, 99])));
+    assert_parse!(
+        result,
+        str![[r#"
+Ok(
+    (
+        [
+            100,
+            101,
+            102,
+            103,
+        ],
+        [
+            97,
+            98,
+            99,
+        ],
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn opt_test() {
-    fn opt_abcd<'i>(i: &mut Partial<&'i [u8]>) -> PResult<Option<&'i [u8]>> {
+    fn opt_abcd<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<Option<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
         opt("abcd").parse_next(i)
     }
 
     let a = &b"abcdef"[..];
     let b = &b"bcdefg"[..];
     let c = &b"ab"[..];
-    assert_eq!(
+    assert_parse!(
         opt_abcd.parse_peek(Partial::new(a)),
-        Ok((Partial::new(&b"ef"[..]), Some(&b"abcd"[..])))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+            ],
+            partial: true,
+        },
+        Some(
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         opt_abcd.parse_peek(Partial::new(b)),
-        Ok((Partial::new(&b"bcdefg"[..]), None))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+            ],
+            partial: true,
+        },
+        None,
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         opt_abcd.parse_peek(Partial::new(c)),
-        Err(ErrMode::Incomplete(Needed::new(2)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            2,
+        ),
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn peek_test() {
-    fn peek_literal<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+    fn peek_literal<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
         peek("abcd").parse_next(i)
     }
 
-    assert_eq!(
+    assert_parse!(
         peek_literal.parse_peek(Partial::new(&b"abcdef"[..])),
-        Ok((Partial::new(&b"abcdef"[..]), &b"abcd"[..]))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+            ],
+            partial: true,
+        },
+        [
+            97,
+            98,
+            99,
+            100,
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         peek_literal.parse_peek(Partial::new(&b"ab"[..])),
-        Err(ErrMode::Incomplete(Needed::new(2)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            2,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         peek_literal.parse_peek(Partial::new(&b"xxx"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"xxx"[..]),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    120,
+                    120,
+                    120,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn not_test() {
-    fn not_aaa(i: &mut Partial<&[u8]>) -> PResult<()> {
+    fn not_aaa<'i>(i: &mut Partial<&'i [u8]>) -> PResult<(), InputError<Partial<&'i [u8]>>> {
         not("aaa").parse_next(i)
     }
 
-    assert_eq!(
+    assert_parse!(
         not_aaa.parse_peek(Partial::new(&b"aaa"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"aaa"[..]),
-            ErrorKind::Not
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    97,
+                    97,
+                    97,
+                ],
+                partial: true,
+            },
+            kind: Not,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         not_aaa.parse_peek(Partial::new(&b"aa"[..])),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         not_aaa.parse_peek(Partial::new(&b"abcd"[..])),
-        Ok((Partial::new(&b"abcd"[..]), ()))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                97,
+                98,
+                99,
+                100,
+            ],
+            partial: true,
+        },
+        (),
+    ),
+)
+
+"#]]
     );
 }
 
@@ -207,25 +459,71 @@ fn not_test() {
 fn test_parser_verify() {
     use crate::token::take;
 
-    fn test<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+    fn test<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
         take(5u8)
             .verify(|slice: &[u8]| slice[0] == b'a')
             .parse_next(i)
     }
-    assert_eq!(
+    assert_parse!(
         test.parse_peek(Partial::new(&b"bcd"[..])),
-        Err(ErrMode::Incomplete(Needed::new(2)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            2,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         test.parse_peek(Partial::new(&b"bcdefg"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"bcdefg"[..]),
-            ErrorKind::Verify
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    98,
+                    99,
+                    100,
+                    101,
+                    102,
+                    103,
+                ],
+                partial: true,
+            },
+            kind: Verify,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         test.parse_peek(Partial::new(&b"abcdefg"[..])),
-        Ok((Partial::new(&b"fg"[..]), &b"abcde"[..]))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                102,
+                103,
+            ],
+            partial: true,
+        },
+        [
+            97,
+            98,
+            99,
+            100,
+            101,
+        ],
+    ),
+)
+
+"#]]
     );
 }
 
@@ -236,19 +534,45 @@ fn test_parser_verify_ref() {
 
     let mut parser1 = take(3u8).verify(|s: &[u8]| s == &b"abc"[..]);
 
-    assert_eq!(
+    assert_parse!(
         parser1.parse_peek(&b"abcd"[..]),
-        Ok((&b"d"[..], &b"abc"[..]))
+        str![[r#"
+Ok(
+    (
+        [
+            100,
+        ],
+        [
+            97,
+            98,
+            99,
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         parser1.parse_peek(&b"defg"[..]),
-        Err(ErrMode::Backtrack(InputError::new(
-            &b"defg"[..],
-            ErrorKind::Verify
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: [
+                100,
+                101,
+                102,
+                103,
+            ],
+            kind: Verify,
+        },
+    ),
+)
+
+"#]]
     );
 
-    fn parser2(i: &mut &[u8]) -> PResult<u32> {
+    fn parser2<'i>(i: &mut &'i [u8]) -> PResult<u32, InputError<&'i [u8]>> {
         crate::binary::be_u32
             .verify(|val: &u32| *val < 3)
             .parse_next(i)
@@ -263,16 +587,42 @@ fn test_parser_verify_alloc() {
         .map(|s: &[u8]| s.to_vec())
         .verify(|s: &[u8]| s == &b"abc"[..]);
 
-    assert_eq!(
+    assert_parse!(
         parser1.parse_peek(&b"abcd"[..]),
-        Ok((&b"d"[..], b"abc".to_vec()))
+        str![[r#"
+Ok(
+    (
+        [
+            100,
+        ],
+        [
+            97,
+            98,
+            99,
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         parser1.parse_peek(&b"defg"[..]),
-        Err(ErrMode::Backtrack(InputError::new(
-            &b"defg"[..],
-            ErrorKind::Verify
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: [
+                100,
+                101,
+                102,
+                103,
+            ],
+            kind: Verify,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
@@ -281,207 +631,620 @@ fn fail_test() {
     let a = "string";
     let b = "another string";
 
-    assert_eq!(
+    assert_parse!(
         fail::<_, &str, _>.parse_peek(a),
-        Err(ErrMode::Backtrack(InputError::new(a, ErrorKind::Fail)))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "string",
+            kind: Fail,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         fail::<_, &str, _>.parse_peek(b),
-        Err(ErrMode::Backtrack(InputError::new(b, ErrorKind::Fail)))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "another string",
+            kind: Fail,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn complete() {
-    fn err_test<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8]> {
+    fn err_test<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], InputError<&'i [u8]>> {
         let _ = "ijkl".parse_next(i)?;
         "mnop".parse_next(i)
     }
     let a = &b"ijklmn"[..];
 
     let res_a = err_test.parse_peek(a);
-    assert_eq!(
+    assert_parse!(
         res_a,
-        Err(ErrMode::Backtrack(error_position!(
-            &&b"mn"[..],
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: [
+                109,
+                110,
+            ],
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn separated_pair_test() {
     #[allow(clippy::type_complexity)]
-    fn sep_pair_abc_def<'i>(i: &mut Partial<&'i [u8]>) -> PResult<(&'i [u8], &'i [u8])> {
+    fn sep_pair_abc_def<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<(&'i [u8], &'i [u8]), InputError<Partial<&'i [u8]>>> {
         separated_pair("abc", ",", "def").parse_next(i)
     }
 
-    assert_eq!(
+    assert_parse!(
         sep_pair_abc_def.parse_peek(Partial::new(&b"abc,defghijkl"[..])),
-        Ok((Partial::new(&b"ghijkl"[..]), (&b"abc"[..], &b"def"[..])))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+            ],
+            partial: true,
+        },
+        (
+            [
+                97,
+                98,
+                99,
+            ],
+            [
+                100,
+                101,
+                102,
+            ],
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         sep_pair_abc_def.parse_peek(Partial::new(&b"ab"[..])),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         sep_pair_abc_def.parse_peek(Partial::new(&b"abc,d"[..])),
-        Err(ErrMode::Incomplete(Needed::new(2)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            2,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         sep_pair_abc_def.parse_peek(Partial::new(&b"xxx"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"xxx"[..]),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    120,
+                    120,
+                    120,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         sep_pair_abc_def.parse_peek(Partial::new(&b"xxx,def"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"xxx,def"[..]),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    120,
+                    120,
+                    120,
+                    44,
+                    100,
+                    101,
+                    102,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         sep_pair_abc_def.parse_peek(Partial::new(&b"abc,xxx"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"xxx"[..]),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    120,
+                    120,
+                    120,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn preceded_test() {
-    fn preceded_abcd_efgh<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+    fn preceded_abcd_efgh<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
         preceded("abcd", "efgh").parse_next(i)
     }
 
-    assert_eq!(
+    assert_parse!(
         preceded_abcd_efgh.parse_peek(Partial::new(&b"abcdefghijkl"[..])),
-        Ok((Partial::new(&b"ijkl"[..]), &b"efgh"[..]))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                105,
+                106,
+                107,
+                108,
+            ],
+            partial: true,
+        },
+        [
+            101,
+            102,
+            103,
+            104,
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         preceded_abcd_efgh.parse_peek(Partial::new(&b"ab"[..])),
-        Err(ErrMode::Incomplete(Needed::new(2)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            2,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         preceded_abcd_efgh.parse_peek(Partial::new(&b"abcde"[..])),
-        Err(ErrMode::Incomplete(Needed::new(3)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            3,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         preceded_abcd_efgh.parse_peek(Partial::new(&b"xxx"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"xxx"[..]),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    120,
+                    120,
+                    120,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         preceded_abcd_efgh.parse_peek(Partial::new(&b"xxxxdef"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"xxxxdef"[..]),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    120,
+                    120,
+                    120,
+                    120,
+                    100,
+                    101,
+                    102,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         preceded_abcd_efgh.parse_peek(Partial::new(&b"abcdxxx"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"xxx"[..]),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    120,
+                    120,
+                    120,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn terminated_test() {
-    fn terminated_abcd_efgh<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+    fn terminated_abcd_efgh<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
         terminated("abcd", "efgh").parse_next(i)
     }
 
-    assert_eq!(
+    assert_parse!(
         terminated_abcd_efgh.parse_peek(Partial::new(&b"abcdefghijkl"[..])),
-        Ok((Partial::new(&b"ijkl"[..]), &b"abcd"[..]))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                105,
+                106,
+                107,
+                108,
+            ],
+            partial: true,
+        },
+        [
+            97,
+            98,
+            99,
+            100,
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         terminated_abcd_efgh.parse_peek(Partial::new(&b"ab"[..])),
-        Err(ErrMode::Incomplete(Needed::new(2)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            2,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         terminated_abcd_efgh.parse_peek(Partial::new(&b"abcde"[..])),
-        Err(ErrMode::Incomplete(Needed::new(3)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            3,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         terminated_abcd_efgh.parse_peek(Partial::new(&b"xxx"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"xxx"[..]),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    120,
+                    120,
+                    120,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         terminated_abcd_efgh.parse_peek(Partial::new(&b"xxxxdef"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"xxxxdef"[..]),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    120,
+                    120,
+                    120,
+                    120,
+                    100,
+                    101,
+                    102,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         terminated_abcd_efgh.parse_peek(Partial::new(&b"abcdxxxx"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"xxxx"[..]),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    120,
+                    120,
+                    120,
+                    120,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn delimited_test() {
-    fn delimited_abc_def_ghi<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+    fn delimited_abc_def_ghi<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
         delimited("abc", "def", "ghi").parse_next(i)
     }
 
-    assert_eq!(
+    assert_parse!(
         delimited_abc_def_ghi.parse_peek(Partial::new(&b"abcdefghijkl"[..])),
-        Ok((Partial::new(&b"jkl"[..]), &b"def"[..]))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                106,
+                107,
+                108,
+            ],
+            partial: true,
+        },
+        [
+            100,
+            101,
+            102,
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         delimited_abc_def_ghi.parse_peek(Partial::new(&b"ab"[..])),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         delimited_abc_def_ghi.parse_peek(Partial::new(&b"abcde"[..])),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         delimited_abc_def_ghi.parse_peek(Partial::new(&b"abcdefgh"[..])),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         delimited_abc_def_ghi.parse_peek(Partial::new(&b"xxx"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"xxx"[..]),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    120,
+                    120,
+                    120,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         delimited_abc_def_ghi.parse_peek(Partial::new(&b"xxxdefghi"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"xxxdefghi"[..]),
-            ErrorKind::Literal
-        ),))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    120,
+                    120,
+                    120,
+                    100,
+                    101,
+                    102,
+                    103,
+                    104,
+                    105,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         delimited_abc_def_ghi.parse_peek(Partial::new(&b"abcxxxghi"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"xxxghi"[..]),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    120,
+                    120,
+                    120,
+                    103,
+                    104,
+                    105,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         delimited_abc_def_ghi.parse_peek(Partial::new(&b"abcdefxxx"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"xxx"[..]),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    120,
+                    120,
+                    120,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
@@ -563,145 +1326,478 @@ fn alt_test() {
     assert_eq!(alt2.parse_peek(a), Ok((&b""[..], a)));
     assert_eq!(alt3.parse_peek(a), Ok((a, &b""[..])));
 
-    fn alt4<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8]> {
+    fn alt4<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], InputError<&'i [u8]>> {
         alt(("abcd", "efgh")).parse_next(i)
     }
     let b = &b"efgh"[..];
-    assert_eq!(alt4.parse_peek(a), Ok((&b""[..], a)));
-    assert_eq!(alt4.parse_peek(b), Ok((&b""[..], b)));
+    assert_parse!(
+        alt4.parse_peek(a),
+        str![[r#"
+Ok(
+    (
+        [],
+        [
+            97,
+            98,
+            99,
+            100,
+        ],
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        alt4.parse_peek(b),
+        str![[r#"
+Ok(
+    (
+        [],
+        [
+            101,
+            102,
+            103,
+            104,
+        ],
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn alt_incomplete() {
-    fn alt1<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+    fn alt1<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
         alt(("a", "bc", "def")).parse_next(i)
     }
 
     let a = &b""[..];
-    assert_eq!(
+    assert_parse!(
         alt1.parse_peek(Partial::new(a)),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
     let a = &b"b"[..];
-    assert_eq!(
+    assert_parse!(
         alt1.parse_peek(Partial::new(a)),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
     let a = &b"bcd"[..];
-    assert_eq!(
+    assert_parse!(
         alt1.parse_peek(Partial::new(a)),
-        Ok((Partial::new(&b"d"[..]), &b"bc"[..]))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                100,
+            ],
+            partial: true,
+        },
+        [
+            98,
+            99,
+        ],
+    ),
+)
+
+"#]]
     );
     let a = &b"cde"[..];
-    assert_eq!(
+    assert_parse!(
         alt1.parse_peek(Partial::new(a)),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(a),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    99,
+                    100,
+                    101,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
     let a = &b"de"[..];
-    assert_eq!(
+    assert_parse!(
         alt1.parse_peek(Partial::new(a)),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
     let a = &b"defg"[..];
-    assert_eq!(
+    assert_parse!(
         alt1.parse_peek(Partial::new(a)),
-        Ok((Partial::new(&b"g"[..]), &b"def"[..]))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                103,
+            ],
+            partial: true,
+        },
+        [
+            100,
+            101,
+            102,
+        ],
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn alt_array() {
-    fn alt1<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8]> {
+    fn alt1<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], InputError<&'i [u8]>> {
         alt(["a", "bc", "def"]).parse_next(i)
     }
 
     let i = &b"a"[..];
-    assert_eq!(alt1.parse_peek(i), Ok((&b""[..], (&b"a"[..]))));
+    assert_parse!(
+        alt1.parse_peek(i),
+        str![[r#"
+Ok(
+    (
+        [],
+        [
+            97,
+        ],
+    ),
+)
+
+"#]]
+    );
 
     let i = &b"bc"[..];
-    assert_eq!(alt1.parse_peek(i), Ok((&b""[..], (&b"bc"[..]))));
+    assert_parse!(
+        alt1.parse_peek(i),
+        str![[r#"
+Ok(
+    (
+        [],
+        [
+            98,
+            99,
+        ],
+    ),
+)
+
+"#]]
+    );
 
     let i = &b"defg"[..];
-    assert_eq!(alt1.parse_peek(i), Ok((&b"g"[..], (&b"def"[..]))));
+    assert_parse!(
+        alt1.parse_peek(i),
+        str![[r#"
+Ok(
+    (
+        [
+            103,
+        ],
+        [
+            100,
+            101,
+            102,
+        ],
+    ),
+)
+
+"#]]
+    );
 
     let i = &b"z"[..];
-    assert_eq!(
+    assert_parse!(
         alt1.parse_peek(i),
-        Err(ErrMode::Backtrack(error_position!(&i, ErrorKind::Literal)))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: [
+                122,
+            ],
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn alt_dynamic_array() {
-    fn alt1<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8]> {
+    fn alt1<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], InputError<&'i [u8]>> {
         alt(&mut ["a", "bc", "def"][..]).parse_next(i)
     }
 
     let a = &b"a"[..];
-    assert_eq!(alt1.parse_peek(a), Ok((&b""[..], (&b"a"[..]))));
+    assert_parse!(
+        alt1.parse_peek(a),
+        str![[r#"
+Ok(
+    (
+        [],
+        [
+            97,
+        ],
+    ),
+)
+
+"#]]
+    );
 
     let bc = &b"bc"[..];
-    assert_eq!(alt1.parse_peek(bc), Ok((&b""[..], (&b"bc"[..]))));
+    assert_parse!(
+        alt1.parse_peek(bc),
+        str![[r#"
+Ok(
+    (
+        [],
+        [
+            98,
+            99,
+        ],
+    ),
+)
+
+"#]]
+    );
 
     let defg = &b"defg"[..];
-    assert_eq!(alt1.parse_peek(defg), Ok((&b"g"[..], (&b"def"[..]))));
+    assert_parse!(
+        alt1.parse_peek(defg),
+        str![[r#"
+Ok(
+    (
+        [
+            103,
+        ],
+        [
+            100,
+            101,
+            102,
+        ],
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn permutation_test() {
     #[allow(clippy::type_complexity)]
-    fn perm<'i>(i: &mut Partial<&'i [u8]>) -> PResult<(&'i [u8], &'i [u8], &'i [u8])> {
+    fn perm<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<(&'i [u8], &'i [u8], &'i [u8]), InputError<Partial<&'i [u8]>>> {
         permutation(("abcd", "efg", "hi")).parse_next(i)
     }
 
-    let expected = (&b"abcd"[..], &b"efg"[..], &b"hi"[..]);
-
     let a = &b"abcdefghijk"[..];
-    assert_eq!(
+    assert_parse!(
         perm.parse_peek(Partial::new(a)),
-        Ok((Partial::new(&b"jk"[..]), expected))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                106,
+                107,
+            ],
+            partial: true,
+        },
+        (
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+            [
+                101,
+                102,
+                103,
+            ],
+            [
+                104,
+                105,
+            ],
+        ),
+    ),
+)
+
+"#]]
     );
     let b = &b"efgabcdhijk"[..];
-    assert_eq!(
+    assert_parse!(
         perm.parse_peek(Partial::new(b)),
-        Ok((Partial::new(&b"jk"[..]), expected))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                106,
+                107,
+            ],
+            partial: true,
+        },
+        (
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+            [
+                101,
+                102,
+                103,
+            ],
+            [
+                104,
+                105,
+            ],
+        ),
+    ),
+)
+
+"#]]
     );
     let c = &b"hiefgabcdjk"[..];
-    assert_eq!(
+    assert_parse!(
         perm.parse_peek(Partial::new(c)),
-        Ok((Partial::new(&b"jk"[..]), expected))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                106,
+                107,
+            ],
+            partial: true,
+        },
+        (
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+            [
+                101,
+                102,
+                103,
+            ],
+            [
+                104,
+                105,
+            ],
+        ),
+    ),
+)
+
+"#]]
     );
 
     let d = &b"efgxyzabcdefghi"[..];
-    assert_eq!(
+    assert_parse!(
         perm.parse_peek(Partial::new(d)),
-        Err(ErrMode::Backtrack(error_node_position!(
-            &Partial::new(&b"efgxyzabcdefghi"[..]),
-            ErrorKind::Alt,
-            error_position!(&Partial::new(&b"xyzabcdefghi"[..]), ErrorKind::Literal)
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    120,
+                    121,
+                    122,
+                    97,
+                    98,
+                    99,
+                    100,
+                    101,
+                    102,
+                    103,
+                    104,
+                    105,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 
     let e = &b"efgabc"[..];
-    assert_eq!(
+    assert_parse!(
         perm.parse_peek(Partial::new(e)),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 #[cfg(feature = "alloc")]
 fn separated0_test() {
-    fn multi<'i>(i: &mut Partial<&'i [u8]>) -> PResult<Vec<&'i [u8]>> {
+    fn multi<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
         separated(0.., "abcd", ",").parse_next(i)
     }
-    fn multi_empty<'i>(i: &mut Partial<&'i [u8]>) -> PResult<Vec<&'i [u8]>> {
+    fn multi_empty<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
         separated(0.., "", ",").parse_next(i)
     }
-    fn multi_longsep<'i>(i: &mut Partial<&'i [u8]>) -> PResult<Vec<&'i [u8]>> {
+    fn multi_longsep<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
         separated(0.., "abcd", "..").parse_next(i)
     }
 
@@ -714,42 +1810,178 @@ fn separated0_test() {
     let g = &b"abcd."[..];
     let h = &b"abcd,abc"[..];
 
-    let res1 = vec![&b"abcd"[..]];
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(a)),
-        Ok((Partial::new(&b"ef"[..]), res1))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+            ],
+            partial: true,
+        },
+        [
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    let res2 = vec![&b"abcd"[..], &b"abcd"[..]];
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(b)),
-        Ok((Partial::new(&b"ef"[..]), res2))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+            ],
+            partial: true,
+        },
+        [
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(c)),
-        Ok((Partial::new(&b"azerty"[..]), Vec::new()))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                97,
+                122,
+                101,
+                114,
+                116,
+                121,
+            ],
+            partial: true,
+        },
+        [],
+    ),
+)
+
+"#]]
     );
-    let res3 = vec![&b""[..], &b""[..], &b""[..]];
-    assert_eq!(
+    assert_parse!(
         multi_empty.parse_peek(Partial::new(d)),
-        Ok((Partial::new(&b"abc"[..]), res3))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                97,
+                98,
+                99,
+            ],
+            partial: true,
+        },
+        [
+            [],
+            [],
+            [],
+        ],
+    ),
+)
+
+"#]]
     );
-    let res4 = vec![&b"abcd"[..], &b"abcd"[..]];
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(e)),
-        Ok((Partial::new(&b",ef"[..]), res4))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                44,
+                101,
+                102,
+            ],
+            partial: true,
+        },
+        [
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
 
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(f)),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi_longsep.parse_peek(Partial::new(g)),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(h)),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
 }
 
@@ -757,29 +1989,28 @@ fn separated0_test() {
 #[cfg(feature = "alloc")]
 #[cfg_attr(debug_assertions, should_panic)]
 fn separated0_empty_sep_test() {
-    fn empty_sep<'i>(i: &mut Partial<&'i [u8]>) -> PResult<Vec<&'i [u8]>> {
+    fn empty_sep<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
         separated(0.., "abc", "").parse_next(i)
     }
 
     let i = &b"abcabc"[..];
 
-    let i_err_pos = &i[3..];
-    assert_eq!(
-        empty_sep.parse_peek(Partial::new(i)),
-        Err(ErrMode::Cut(error_position!(
-            &Partial::new(i_err_pos),
-            ErrorKind::Assert
-        )))
-    );
+    assert_parse!(empty_sep.parse_peek(Partial::new(i)), str![]);
 }
 
 #[test]
 #[cfg(feature = "alloc")]
 fn separated1_test() {
-    fn multi<'i>(i: &mut Partial<&'i [u8]>) -> PResult<Vec<&'i [u8]>> {
+    fn multi<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
         separated(1.., "abcd", ",").parse_next(i)
     }
-    fn multi_longsep<'i>(i: &mut Partial<&'i [u8]>) -> PResult<Vec<&'i [u8]>> {
+    fn multi_longsep<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
         separated(1.., "abcd", "..").parse_next(i)
     }
 
@@ -792,47 +2023,166 @@ fn separated1_test() {
     let g = &b"abcd."[..];
     let h = &b"abcd,abc"[..];
 
-    let res1 = vec![&b"abcd"[..]];
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(a)),
-        Ok((Partial::new(&b"ef"[..]), res1))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+            ],
+            partial: true,
+        },
+        [
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    let res2 = vec![&b"abcd"[..], &b"abcd"[..]];
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(b)),
-        Ok((Partial::new(&b"ef"[..]), res2))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+            ],
+            partial: true,
+        },
+        [
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(c)),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(c),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    97,
+                    122,
+                    101,
+                    114,
+                    116,
+                    121,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    let res3 = vec![&b"abcd"[..], &b"abcd"[..]];
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(d)),
-        Ok((Partial::new(&b",ef"[..]), res3))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                44,
+                101,
+                102,
+            ],
+            partial: true,
+        },
+        [
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
 
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(f)),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi_longsep.parse_peek(Partial::new(g)),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(h)),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 #[cfg(feature = "alloc")]
 fn separated_test() {
-    fn multi<'i>(i: &mut Partial<&'i [u8]>) -> PResult<Vec<&'i [u8]>> {
+    fn multi<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
         separated(2..=4, "abcd", ",").parse_next(i)
     }
 
@@ -842,64 +2192,299 @@ fn separated_test() {
     let d = &b"abcd,abcd,abcd,abcd,abcd,efgh"[..];
     let e = &b"abcd,ab"[..];
 
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(a)),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"ef"[..]),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    101,
+                    102,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    let res1 = vec![&b"abcd"[..], &b"abcd"[..]];
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(b)),
-        Ok((Partial::new(&b",efgh"[..]), res1))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                44,
+                101,
+                102,
+                103,
+                104,
+            ],
+            partial: true,
+        },
+        [
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    let res2 = vec![&b"abcd"[..], &b"abcd"[..], &b"abcd"[..], &b"abcd"[..]];
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(c)),
-        Ok((Partial::new(&b",efgh"[..]), res2))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                44,
+                101,
+                102,
+                103,
+                104,
+            ],
+            partial: true,
+        },
+        [
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    let res3 = vec![&b"abcd"[..], &b"abcd"[..], &b"abcd"[..], &b"abcd"[..]];
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(d)),
-        Ok((Partial::new(&b",abcd,efgh"[..]), res3))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                44,
+                97,
+                98,
+                99,
+                100,
+                44,
+                101,
+                102,
+                103,
+                104,
+            ],
+            partial: true,
+        },
+        [
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(e)),
-        Err(ErrMode::Incomplete(Needed::new(2)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            2,
+        ),
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 #[cfg(feature = "alloc")]
 fn repeat0_test() {
-    fn multi<'i>(i: &mut Partial<&'i [u8]>) -> PResult<Vec<&'i [u8]>> {
+    fn multi<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
         repeat(0.., "abcd").parse_next(i)
     }
 
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(&b"abcdef"[..])),
-        Ok((Partial::new(&b"ef"[..]), vec![&b"abcd"[..]]))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+            ],
+            partial: true,
+        },
+        [
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(&b"abcdabcdefgh"[..])),
-        Ok((Partial::new(&b"efgh"[..]), vec![&b"abcd"[..], &b"abcd"[..]]))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+                103,
+                104,
+            ],
+            partial: true,
+        },
+        [
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(&b"azerty"[..])),
-        Ok((Partial::new(&b"azerty"[..]), Vec::new()))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                97,
+                122,
+                101,
+                114,
+                116,
+                121,
+            ],
+            partial: true,
+        },
+        [],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(&b"abcdab"[..])),
-        Err(ErrMode::Incomplete(Needed::new(2)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            2,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(&b"abcd"[..])),
-        Err(ErrMode::Incomplete(Needed::new(4)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            4,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(&b""[..])),
-        Err(ErrMode::Incomplete(Needed::new(4)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            4,
+        ),
+    ),
+)
+
+"#]]
     );
 }
 
@@ -907,23 +2492,21 @@ fn repeat0_test() {
 #[cfg(feature = "alloc")]
 #[cfg_attr(debug_assertions, should_panic)]
 fn repeat0_empty_test() {
-    fn multi_empty<'i>(i: &mut Partial<&'i [u8]>) -> PResult<Vec<&'i [u8]>> {
+    fn multi_empty<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
         repeat(0.., "").parse_next(i)
     }
 
-    assert_eq!(
-        multi_empty.parse_peek(Partial::new(&b"abcdef"[..])),
-        Err(ErrMode::Cut(error_position!(
-            &Partial::new(&b"abcdef"[..]),
-            ErrorKind::Assert
-        )))
-    );
+    assert_parse!(multi_empty.parse_peek(Partial::new(&b"abcdef"[..])), str![]);
 }
 
 #[test]
 #[cfg(feature = "alloc")]
 fn repeat1_test() {
-    fn multi<'i>(i: &mut Partial<&'i [u8]>) -> PResult<Vec<&'i [u8]>> {
+    fn multi<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
         repeat(1.., "abcd").parse_next(i)
     }
 
@@ -932,26 +2515,100 @@ fn repeat1_test() {
     let c = &b"azerty"[..];
     let d = &b"abcdab"[..];
 
-    let res1 = vec![&b"abcd"[..]];
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(a)),
-        Ok((Partial::new(&b"ef"[..]), res1))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+            ],
+            partial: true,
+        },
+        [
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    let res2 = vec![&b"abcd"[..], &b"abcd"[..]];
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(b)),
-        Ok((Partial::new(&b"efgh"[..]), res2))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+                103,
+                104,
+            ],
+            partial: true,
+        },
+        [
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(c)),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(c),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    97,
+                    122,
+                    101,
+                    114,
+                    116,
+                    121,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(d)),
-        Err(ErrMode::Incomplete(Needed::new(2)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            2,
+        ),
+    ),
+)
+
+"#]]
     );
 }
 
@@ -959,7 +2616,7 @@ fn repeat1_test() {
 #[cfg(feature = "alloc")]
 fn repeat_till_test() {
     #[allow(clippy::type_complexity)]
-    fn multi<'i>(i: &mut &'i [u8]) -> PResult<(Vec<&'i [u8]>, &'i [u8])> {
+    fn multi<'i>(i: &mut &'i [u8]) -> PResult<(Vec<&'i [u8]>, &'i [u8]), InputError<&'i [u8]>> {
         repeat_till(0.., "abcd", "efgh").parse_next(i)
     }
 
@@ -967,17 +2624,89 @@ fn repeat_till_test() {
     let b = b"efghabcd";
     let c = b"azerty";
 
-    let res_a = (vec![&b"abcd"[..], &b"abcd"[..]], &b"efgh"[..]);
-    let res_b: (Vec<&[u8]>, &[u8]) = (Vec::new(), &b"efgh"[..]);
-    assert_eq!(multi.parse_peek(&a[..]), Ok((&b"abcd"[..], res_a)));
-    assert_eq!(multi.parse_peek(&b[..]), Ok((&b"abcd"[..], res_b)));
-    assert_eq!(
+    assert_parse!(
+        multi.parse_peek(&a[..]),
+        str![[r#"
+Ok(
+    (
+        [
+            97,
+            98,
+            99,
+            100,
+        ],
+        (
+            [
+                [
+                    97,
+                    98,
+                    99,
+                    100,
+                ],
+                [
+                    97,
+                    98,
+                    99,
+                    100,
+                ],
+            ],
+            [
+                101,
+                102,
+                103,
+                104,
+            ],
+        ),
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        multi.parse_peek(&b[..]),
+        str![[r#"
+Ok(
+    (
+        [
+            97,
+            98,
+            99,
+            100,
+        ],
+        (
+            [],
+            [
+                101,
+                102,
+                103,
+                104,
+            ],
+        ),
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
         multi.parse_peek(&c[..]),
-        Err(ErrMode::Backtrack(error_node_position!(
-            &&c[..],
-            ErrorKind::Repeat,
-            error_position!(&&c[..], ErrorKind::Literal)
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: [
+                97,
+                122,
+                101,
+                114,
+                116,
+                121,
+            ],
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
@@ -985,52 +2714,115 @@ fn repeat_till_test() {
 #[cfg(feature = "alloc")]
 fn repeat_till_range_test() {
     #[allow(clippy::type_complexity)]
-    fn multi<'i>(i: &mut &'i str) -> PResult<(Vec<&'i str>, &'i str)> {
+    fn multi<'i>(i: &mut &'i str) -> PResult<(Vec<&'i str>, &'i str), InputError<&'i str>> {
         repeat_till(2..=4, "ab", "cd").parse_next(i)
     }
 
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek("cd"),
-        Err(ErrMode::Backtrack(error_node_position!(
-            &"cd",
-            ErrorKind::Repeat,
-            error_position!(&"cd", ErrorKind::Literal)
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "cd",
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek("abcd"),
-        Err(ErrMode::Backtrack(error_node_position!(
-            &"cd",
-            ErrorKind::Repeat,
-            error_position!(&"cd", ErrorKind::Literal)
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "cd",
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek("ababcd"),
-        Ok(("", (vec!["ab", "ab"], "cd")))
+        str![[r#"
+Ok(
+    (
+        "",
+        (
+            [
+                "ab",
+                "ab",
+            ],
+            "cd",
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek("abababcd"),
-        Ok(("", (vec!["ab", "ab", "ab"], "cd")))
+        str![[r#"
+Ok(
+    (
+        "",
+        (
+            [
+                "ab",
+                "ab",
+                "ab",
+            ],
+            "cd",
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek("ababababcd"),
-        Ok(("", (vec!["ab", "ab", "ab", "ab"], "cd")))
+        str![[r#"
+Ok(
+    (
+        "",
+        (
+            [
+                "ab",
+                "ab",
+                "ab",
+                "ab",
+            ],
+            "cd",
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek("abababababcd"),
-        Err(ErrMode::Backtrack(error_node_position!(
-            &"cd",
-            ErrorKind::Repeat,
-            error_position!(&"abcd", ErrorKind::Literal)
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "abcd",
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 #[cfg(feature = "std")]
 fn infinite_many() {
-    fn tst<'i>(input: &mut &'i [u8]) -> PResult<&'i [u8]> {
+    fn tst<'i>(input: &mut &'i [u8]) -> PResult<&'i [u8], InputError<&'i [u8]>> {
         println!("input: {input:?}");
         Err(ErrMode::Backtrack(error_position!(
             input,
@@ -1039,26 +2831,63 @@ fn infinite_many() {
     }
 
     // should not go into an infinite loop
-    fn multi0<'i>(i: &mut &'i [u8]) -> PResult<Vec<&'i [u8]>> {
+    fn multi0<'i>(i: &mut &'i [u8]) -> PResult<Vec<&'i [u8]>, InputError<&'i [u8]>> {
         repeat(0.., tst).parse_next(i)
     }
     let a = &b"abcdef"[..];
-    assert_eq!(multi0.parse_peek(a), Ok((a, Vec::new())));
+    assert_parse!(
+        multi0.parse_peek(a),
+        str![[r#"
+Ok(
+    (
+        [
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+        ],
+        [],
+    ),
+)
 
-    fn multi1<'i>(i: &mut &'i [u8]) -> PResult<Vec<&'i [u8]>> {
+"#]]
+    );
+
+    fn multi1<'i>(i: &mut &'i [u8]) -> PResult<Vec<&'i [u8]>, InputError<&'i [u8]>> {
         repeat(1.., tst).parse_next(i)
     }
     let a = &b"abcdef"[..];
-    assert_eq!(
+    assert_parse!(
         multi1.parse_peek(a),
-        Err(ErrMode::Backtrack(error_position!(&a, ErrorKind::Literal)))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+            ],
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 #[cfg(feature = "alloc")]
 fn repeat_test() {
-    fn multi<'i>(i: &mut Partial<&'i [u8]>) -> PResult<Vec<&'i [u8]>> {
+    fn multi<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
         repeat(2..=4, "Abcd").parse_next(i)
     }
 
@@ -1068,31 +2897,165 @@ fn repeat_test() {
     let d = &b"AbcdAbcdAbcdAbcdAbcdefgh"[..];
     let e = &b"AbcdAb"[..];
 
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(a)),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"ef"[..]),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    101,
+                    102,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    let res1 = vec![&b"Abcd"[..], &b"Abcd"[..]];
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(b)),
-        Ok((Partial::new(&b"efgh"[..]), res1))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+                103,
+                104,
+            ],
+            partial: true,
+        },
+        [
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    let res2 = vec![&b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..]];
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(c)),
-        Ok((Partial::new(&b"efgh"[..]), res2))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+                103,
+                104,
+            ],
+            partial: true,
+        },
+        [
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    let res3 = vec![&b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..]];
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(d)),
-        Ok((Partial::new(&b"Abcdefgh"[..]), res3))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                65,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+            ],
+            partial: true,
+        },
+        [
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(e)),
-        Err(ErrMode::Incomplete(Needed::new(2)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            2,
+        ),
+    ),
+)
+
+"#]]
     );
 }
 
@@ -1100,42 +3063,148 @@ fn repeat_test() {
 #[cfg(feature = "alloc")]
 fn count_test() {
     const TIMES: usize = 2;
-    fn cnt_2<'i>(i: &mut Partial<&'i [u8]>) -> PResult<Vec<&'i [u8]>> {
+    fn cnt_2<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
         repeat(TIMES, "abc").parse_next(i)
     }
 
-    assert_eq!(
+    assert_parse!(
         cnt_2.parse_peek(Partial::new(&b"abcabcabcdef"[..])),
-        Ok((Partial::new(&b"abcdef"[..]), vec![&b"abc"[..], &b"abc"[..]]))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+            ],
+            partial: true,
+        },
+        [
+            [
+                97,
+                98,
+                99,
+            ],
+            [
+                97,
+                98,
+                99,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         cnt_2.parse_peek(Partial::new(&b"ab"[..])),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         cnt_2.parse_peek(Partial::new(&b"abcab"[..])),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         cnt_2.parse_peek(Partial::new(&b"xxx"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"xxx"[..]),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    120,
+                    120,
+                    120,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         cnt_2.parse_peek(Partial::new(&b"xxxabcabcdef"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"xxxabcabcdef"[..]),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    120,
+                    120,
+                    120,
+                    97,
+                    98,
+                    99,
+                    97,
+                    98,
+                    99,
+                    100,
+                    101,
+                    102,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         cnt_2.parse_peek(Partial::new(&b"abcxxxabcdef"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"xxxabcdef"[..]),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    120,
+                    120,
+                    120,
+                    97,
+                    98,
+                    99,
+                    100,
+                    101,
+                    102,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
@@ -1143,44 +3212,140 @@ fn count_test() {
 #[cfg(feature = "alloc")]
 fn count_zero() {
     const TIMES: usize = 0;
-    fn counter_2<'i>(i: &mut &'i [u8]) -> PResult<Vec<&'i [u8]>> {
+    fn counter_2<'i>(i: &mut &'i [u8]) -> PResult<Vec<&'i [u8]>, InputError<&'i [u8]>> {
         repeat(TIMES, "abc").parse_next(i)
     }
 
     let done = &b"abcabcabcdef"[..];
-    let parsed_done = Vec::new();
-    let rest = done;
     let incomplete_1 = &b"ab"[..];
-    let parsed_incompl_1 = Vec::new();
     let incomplete_2 = &b"abcab"[..];
-    let parsed_incompl_2 = Vec::new();
     let error = &b"xxx"[..];
-    let error_remain = &b"xxx"[..];
-    let parsed_err = Vec::new();
     let error_1 = &b"xxxabcabcdef"[..];
-    let parsed_err_1 = Vec::new();
-    let error_1_remain = &b"xxxabcabcdef"[..];
     let error_2 = &b"abcxxxabcdef"[..];
-    let parsed_err_2 = Vec::new();
-    let error_2_remain = &b"abcxxxabcdef"[..];
 
-    assert_eq!(counter_2.parse_peek(done), Ok((rest, parsed_done)));
-    assert_eq!(
+    assert_parse!(
+        counter_2.parse_peek(done),
+        str![[r#"
+Ok(
+    (
+        [
+            97,
+            98,
+            99,
+            97,
+            98,
+            99,
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+        ],
+        [],
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
         counter_2.parse_peek(incomplete_1),
-        Ok((incomplete_1, parsed_incompl_1))
+        str![[r#"
+Ok(
+    (
+        [
+            97,
+            98,
+        ],
+        [],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         counter_2.parse_peek(incomplete_2),
-        Ok((incomplete_2, parsed_incompl_2))
+        str![[r#"
+Ok(
+    (
+        [
+            97,
+            98,
+            99,
+            97,
+            98,
+        ],
+        [],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(counter_2.parse_peek(error), Ok((error_remain, parsed_err)));
-    assert_eq!(
+    assert_parse!(
+        counter_2.parse_peek(error),
+        str![[r#"
+Ok(
+    (
+        [
+            120,
+            120,
+            120,
+        ],
+        [],
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
         counter_2.parse_peek(error_1),
-        Ok((error_1_remain, parsed_err_1))
+        str![[r#"
+Ok(
+    (
+        [
+            120,
+            120,
+            120,
+            97,
+            98,
+            99,
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+        ],
+        [],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         counter_2.parse_peek(error_2),
-        Ok((error_2_remain, parsed_err_2))
+        str![[r#"
+Ok(
+    (
+        [
+            97,
+            98,
+            99,
+            120,
+            120,
+            120,
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+        ],
+        [],
+    ),
+)
+
+"#]]
     );
 }
 
@@ -1209,35 +3374,132 @@ fn fold_repeat0_test() {
         acc.push(item);
         acc
     }
-    fn multi<'i>(i: &mut Partial<&'i [u8]>) -> PResult<Vec<&'i [u8]>> {
+    fn multi<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
         repeat(0.., "abcd")
             .fold(Vec::new, fold_into_vec)
             .parse_next(i)
     }
 
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(&b"abcdef"[..])),
-        Ok((Partial::new(&b"ef"[..]), vec![&b"abcd"[..]]))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+            ],
+            partial: true,
+        },
+        [
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(&b"abcdabcdefgh"[..])),
-        Ok((Partial::new(&b"efgh"[..]), vec![&b"abcd"[..], &b"abcd"[..]]))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+                103,
+                104,
+            ],
+            partial: true,
+        },
+        [
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(&b"azerty"[..])),
-        Ok((Partial::new(&b"azerty"[..]), Vec::new()))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                97,
+                122,
+                101,
+                114,
+                116,
+                121,
+            ],
+            partial: true,
+        },
+        [],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(&b"abcdab"[..])),
-        Err(ErrMode::Incomplete(Needed::new(2)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            2,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(&b"abcd"[..])),
-        Err(ErrMode::Incomplete(Needed::new(4)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            4,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(&b""[..])),
-        Err(ErrMode::Incomplete(Needed::new(4)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            4,
+        ),
+    ),
+)
+
+"#]]
     );
 }
 
@@ -1249,17 +3511,13 @@ fn fold_repeat0_empty_test() {
         acc.push(item);
         acc
     }
-    fn multi_empty<'i>(i: &mut Partial<&'i [u8]>) -> PResult<Vec<&'i [u8]>> {
+    fn multi_empty<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
         repeat(0.., "").fold(Vec::new, fold_into_vec).parse_next(i)
     }
 
-    assert_eq!(
-        multi_empty.parse_peek(Partial::new(&b"abcdef"[..])),
-        Err(ErrMode::Cut(error_position!(
-            &Partial::new(&b"abcdef"[..]),
-            ErrorKind::Assert
-        )))
-    );
+    assert_parse!(multi_empty.parse_peek(Partial::new(&b"abcdef"[..])), str![]);
 }
 
 #[test]
@@ -1269,7 +3527,9 @@ fn fold_repeat1_test() {
         acc.push(item);
         acc
     }
-    fn multi<'i>(i: &mut Partial<&'i [u8]>) -> PResult<Vec<&'i [u8]>> {
+    fn multi<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
         repeat(1.., "abcd")
             .fold(Vec::new, fold_into_vec)
             .parse_next(i)
@@ -1280,26 +3540,100 @@ fn fold_repeat1_test() {
     let c = &b"azerty"[..];
     let d = &b"abcdab"[..];
 
-    let res1 = vec![&b"abcd"[..]];
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(a)),
-        Ok((Partial::new(&b"ef"[..]), res1))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+            ],
+            partial: true,
+        },
+        [
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    let res2 = vec![&b"abcd"[..], &b"abcd"[..]];
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(b)),
-        Ok((Partial::new(&b"efgh"[..]), res2))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+                103,
+                104,
+            ],
+            partial: true,
+        },
+        [
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+            [
+                97,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(c)),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(c),
-            ErrorKind::Repeat
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    97,
+                    122,
+                    101,
+                    114,
+                    116,
+                    121,
+                ],
+                partial: true,
+            },
+            kind: Repeat,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(d)),
-        Err(ErrMode::Incomplete(Needed::new(2)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            2,
+        ),
+    ),
+)
+
+"#]]
     );
 }
 
@@ -1310,7 +3644,9 @@ fn fold_repeat_test() {
         acc.push(item);
         acc
     }
-    fn multi<'i>(i: &mut Partial<&'i [u8]>) -> PResult<Vec<&'i [u8]>> {
+    fn multi<'i>(
+        i: &mut Partial<&'i [u8]>,
+    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
         repeat(2..=4, "Abcd")
             .fold(Vec::new, fold_into_vec)
             .parse_next(i)
@@ -1322,82 +3658,308 @@ fn fold_repeat_test() {
     let d = &b"AbcdAbcdAbcdAbcdAbcdefgh"[..];
     let e = &b"AbcdAb"[..];
 
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(a)),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"ef"[..]),
-            ErrorKind::Literal
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    101,
+                    102,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    let res1 = vec![&b"Abcd"[..], &b"Abcd"[..]];
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(b)),
-        Ok((Partial::new(&b"efgh"[..]), res1))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+                103,
+                104,
+            ],
+            partial: true,
+        },
+        [
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    let res2 = vec![&b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..]];
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(c)),
-        Ok((Partial::new(&b"efgh"[..]), res2))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+                103,
+                104,
+            ],
+            partial: true,
+        },
+        [
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    let res3 = vec![&b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..], &b"Abcd"[..]];
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(d)),
-        Ok((Partial::new(&b"Abcdefgh"[..]), res3))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                65,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+            ],
+            partial: true,
+        },
+        [
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+            [
+                65,
+                98,
+                99,
+                100,
+            ],
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         multi.parse_peek(Partial::new(e)),
-        Err(ErrMode::Incomplete(Needed::new(2)))
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            2,
+        ),
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn repeat0_count_test() {
-    fn count0_nums(i: &mut &[u8]) -> PResult<usize> {
+    fn count0_nums<'i>(i: &mut &'i [u8]) -> PResult<usize, InputError<&'i [u8]>> {
         repeat(0.., (digit, ",")).parse_next(i)
     }
 
-    assert_eq!(
+    assert_parse!(
         count0_nums.parse_peek(&b"123,junk"[..]),
-        Ok((&b"junk"[..], 1))
+        str![[r#"
+Ok(
+    (
+        [
+            106,
+            117,
+            110,
+            107,
+        ],
+        1,
+    ),
+)
+
+"#]]
     );
 
-    assert_eq!(
+    assert_parse!(
         count0_nums.parse_peek(&b"123,45,junk"[..]),
-        Ok((&b"junk"[..], 2))
+        str![[r#"
+Ok(
+    (
+        [
+            106,
+            117,
+            110,
+            107,
+        ],
+        2,
+    ),
+)
+
+"#]]
     );
 
-    assert_eq!(
+    assert_parse!(
         count0_nums.parse_peek(&b"1,2,3,4,5,6,7,8,9,0,junk"[..]),
-        Ok((&b"junk"[..], 10))
+        str![[r#"
+Ok(
+    (
+        [
+            106,
+            117,
+            110,
+            107,
+        ],
+        10,
+    ),
+)
+
+"#]]
     );
 
-    assert_eq!(
+    assert_parse!(
         count0_nums.parse_peek(&b"hello"[..]),
-        Ok((&b"hello"[..], 0))
+        str![[r#"
+Ok(
+    (
+        [
+            104,
+            101,
+            108,
+            108,
+            111,
+        ],
+        0,
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn repeat1_count_test() {
-    fn count1_nums(i: &mut &[u8]) -> PResult<usize> {
+    fn count1_nums<'i>(i: &mut &'i [u8]) -> PResult<usize, InputError<&'i [u8]>> {
         repeat(1.., (digit, ",")).parse_next(i)
     }
 
-    assert_eq!(
+    assert_parse!(
         count1_nums.parse_peek(&b"123,45,junk"[..]),
-        Ok((&b"junk"[..], 2))
+        str![[r#"
+Ok(
+    (
+        [
+            106,
+            117,
+            110,
+            107,
+        ],
+        2,
+    ),
+)
+
+"#]]
     );
 
-    assert_eq!(
+    assert_parse!(
         count1_nums.parse_peek(&b"1,2,3,4,5,6,7,8,9,0,junk"[..]),
-        Ok((&b"junk"[..], 10))
+        str![[r#"
+Ok(
+    (
+        [
+            106,
+            117,
+            110,
+            107,
+        ],
+        10,
+    ),
+)
+
+"#]]
     );
 
-    assert_eq!(
+    assert_parse!(
         count1_nums.parse_peek(&b"hello"[..]),
-        Err(ErrMode::Backtrack(error_position!(
-            &&b"hello"[..],
-            ErrorKind::Slice
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: [
+                104,
+                101,
+                108,
+                108,
+                111,
+            ],
+            kind: Slice,
+        },
+    ),
+)
+
+"#]]
     );
 }
