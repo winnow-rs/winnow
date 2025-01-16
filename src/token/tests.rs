@@ -15,13 +15,6 @@ use crate::token::literal;
 use crate::Parser;
 use crate::Partial;
 
-macro_rules! assert_parse(
-  ($left: expr, $right: expr) => {
-    let res: $crate::error::IResult<_, _, InputError<_>> = $left;
-    assert_eq!(res, $right);
-  };
-);
-
 #[test]
 fn complete_take_while_m_n_utf8_all_matching() {
     let result: IResult<&str, &str> =

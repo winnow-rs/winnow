@@ -4,13 +4,6 @@ mod complete {
     use super::*;
     use crate::error::InputError;
 
-    macro_rules! assert_parse(
-    ($left: expr, $right: expr) => {
-      let res: $crate::error::IResult<_, _, InputError<_>> = $left;
-      assert_eq!(res, $right);
-    };
-  );
-
     #[test]
     fn i8_tests() {
         assert_parse!(i8.parse_peek(&[0x00][..]), Ok((&b""[..], 0)));
@@ -451,13 +444,6 @@ mod partial {
         error::ErrorKind,
         lib::std::str::{self, FromStr},
     };
-
-    macro_rules! assert_parse(
-    ($left: expr, $right: expr) => {
-      let res: $crate::error::IResult<_, _, InputError<_>> = $left;
-      assert_eq!(res, $right);
-    };
-  );
 
     #[test]
     fn i8_tests() {

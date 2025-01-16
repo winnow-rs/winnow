@@ -20,13 +20,6 @@ use crate::Partial;
 #[cfg(feature = "alloc")]
 use crate::lib::std::vec::Vec;
 
-macro_rules! assert_parse(
-  ($left: expr, $right: expr) => {
-    let res: $crate::error::IResult<_, _, InputError<_>> = $left;
-    assert_eq!(res, $right);
-  };
-);
-
 #[test]
 fn eof_on_slices() {
     let not_over: &[u8] = &b"Hello, world!"[..];

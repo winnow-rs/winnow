@@ -13,13 +13,6 @@ mod complete {
     use crate::{lib::std::string::String, lib::std::vec::Vec};
     use proptest::prelude::*;
 
-    macro_rules! assert_parse(
-    ($left: expr, $right: expr) => {
-      let res: $crate::error::IResult<_, _, InputError<_>> = $left;
-      assert_eq!(res, $right);
-    };
-  );
-
     #[test]
     fn character() {
         let empty: &[u8] = b"";
@@ -997,13 +990,6 @@ mod partial {
     use crate::error::InputError;
     use crate::error::{ErrMode, Needed};
     use crate::Partial;
-
-    macro_rules! assert_parse(
-    ($left: expr, $right: expr) => {
-      let res: $crate::error::IResult<_, _, InputError<_>> = $left;
-      assert_eq!(res, $right);
-    };
-  );
 
     #[test]
     fn character() {
