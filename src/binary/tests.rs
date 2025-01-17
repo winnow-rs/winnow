@@ -1,9 +1,11 @@
 use super::*;
+
 use snapbox::str;
+
+use crate::prelude::*;
 
 mod complete {
     use super::*;
-    use crate::error::InputError;
 
     #[test]
     fn i8_tests() {
@@ -893,10 +895,10 @@ Ok(
     fn configurable_endianness() {
         use crate::binary::Endianness;
 
-        fn be_tst16<'i>(i: &mut &'i [u8]) -> PResult<u16, InputError<&'i [u8]>> {
+        fn be_tst16<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], u16> {
             u16(Endianness::Big).parse_next(i)
         }
-        fn le_tst16<'i>(i: &mut &'i [u8]) -> PResult<u16, InputError<&'i [u8]>> {
+        fn le_tst16<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], u16> {
             u16(Endianness::Little).parse_next(i)
         }
         assert_parse!(
@@ -924,10 +926,10 @@ Ok(
 "#]]
         );
 
-        fn be_tst32<'i>(i: &mut &'i [u8]) -> PResult<u32, InputError<&'i [u8]>> {
+        fn be_tst32<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], u32> {
             u32(Endianness::Big).parse_next(i)
         }
-        fn le_tst32<'i>(i: &mut &'i [u8]) -> PResult<u32, InputError<&'i [u8]>> {
+        fn le_tst32<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], u32> {
             u32(Endianness::Little).parse_next(i)
         }
         assert_parse!(
@@ -955,10 +957,10 @@ Ok(
 "#]]
         );
 
-        fn be_tst64<'i>(i: &mut &'i [u8]) -> PResult<u64, InputError<&'i [u8]>> {
+        fn be_tst64<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], u64> {
             u64(Endianness::Big).parse_next(i)
         }
-        fn le_tst64<'i>(i: &mut &'i [u8]) -> PResult<u64, InputError<&'i [u8]>> {
+        fn le_tst64<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], u64> {
             u64(Endianness::Little).parse_next(i)
         }
         assert_parse!(
@@ -986,10 +988,10 @@ Ok(
 "#]]
         );
 
-        fn be_tsti16<'i>(i: &mut &'i [u8]) -> PResult<i16, InputError<&'i [u8]>> {
+        fn be_tsti16<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], i16> {
             i16(Endianness::Big).parse_next(i)
         }
-        fn le_tsti16<'i>(i: &mut &'i [u8]) -> PResult<i16, InputError<&'i [u8]>> {
+        fn le_tsti16<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], i16> {
             i16(Endianness::Little).parse_next(i)
         }
         assert_parse!(
@@ -1017,10 +1019,10 @@ Ok(
 "#]]
         );
 
-        fn be_tsti32<'i>(i: &mut &'i [u8]) -> PResult<i32, InputError<&'i [u8]>> {
+        fn be_tsti32<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], i32> {
             i32(Endianness::Big).parse_next(i)
         }
-        fn le_tsti32<'i>(i: &mut &'i [u8]) -> PResult<i32, InputError<&'i [u8]>> {
+        fn le_tsti32<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], i32> {
             i32(Endianness::Little).parse_next(i)
         }
         assert_parse!(
@@ -1048,10 +1050,10 @@ Ok(
 "#]]
         );
 
-        fn be_tsti64<'i>(i: &mut &'i [u8]) -> PResult<i64, InputError<&'i [u8]>> {
+        fn be_tsti64<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], i64> {
             i64(Endianness::Big).parse_next(i)
         }
-        fn le_tsti64<'i>(i: &mut &'i [u8]) -> PResult<i64, InputError<&'i [u8]>> {
+        fn le_tsti64<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], i64> {
             i64(Endianness::Little).parse_next(i)
         }
         assert_parse!(
@@ -1083,7 +1085,7 @@ Ok(
 
 mod partial {
     use super::*;
-    use crate::error::InputError;
+
     #[cfg(feature = "alloc")]
     use crate::lib::std::vec::Vec;
     use crate::Partial;
@@ -2734,10 +2736,10 @@ Ok(
     fn configurable_endianness() {
         use crate::binary::Endianness;
 
-        fn be_tst16<'i>(i: &mut Partial<&'i [u8]>) -> PResult<u16, InputError<Partial<&'i [u8]>>> {
+        fn be_tst16<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, u16> {
             u16(Endianness::Big).parse_next(i)
         }
-        fn le_tst16<'i>(i: &mut Partial<&'i [u8]>) -> PResult<u16, InputError<Partial<&'i [u8]>>> {
+        fn le_tst16<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, u16> {
             u16(Endianness::Little).parse_next(i)
         }
         assert_parse!(
@@ -2771,10 +2773,10 @@ Ok(
 "#]]
         );
 
-        fn be_tst32<'i>(i: &mut Partial<&'i [u8]>) -> PResult<u32, InputError<Partial<&'i [u8]>>> {
+        fn be_tst32<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, u32> {
             u32(Endianness::Big).parse_next(i)
         }
-        fn le_tst32<'i>(i: &mut Partial<&'i [u8]>) -> PResult<u32, InputError<Partial<&'i [u8]>>> {
+        fn le_tst32<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, u32> {
             u32(Endianness::Little).parse_next(i)
         }
         assert_parse!(
@@ -2808,10 +2810,10 @@ Ok(
 "#]]
         );
 
-        fn be_tst64<'i>(i: &mut Partial<&'i [u8]>) -> PResult<u64, InputError<Partial<&'i [u8]>>> {
+        fn be_tst64<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, u64> {
             u64(Endianness::Big).parse_next(i)
         }
-        fn le_tst64<'i>(i: &mut Partial<&'i [u8]>) -> PResult<u64, InputError<Partial<&'i [u8]>>> {
+        fn le_tst64<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, u64> {
             u64(Endianness::Little).parse_next(i)
         }
         assert_parse!(
@@ -2849,10 +2851,10 @@ Ok(
 "#]]
         );
 
-        fn be_tsti16<'i>(i: &mut Partial<&'i [u8]>) -> PResult<i16, InputError<Partial<&'i [u8]>>> {
+        fn be_tsti16<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, i16> {
             i16(Endianness::Big).parse_next(i)
         }
-        fn le_tsti16<'i>(i: &mut Partial<&'i [u8]>) -> PResult<i16, InputError<Partial<&'i [u8]>>> {
+        fn le_tsti16<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, i16> {
             i16(Endianness::Little).parse_next(i)
         }
         assert_parse!(
@@ -2886,10 +2888,10 @@ Ok(
 "#]]
         );
 
-        fn be_tsti32<'i>(i: &mut Partial<&'i [u8]>) -> PResult<i32, InputError<Partial<&'i [u8]>>> {
+        fn be_tsti32<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, i32> {
             i32(Endianness::Big).parse_next(i)
         }
-        fn le_tsti32<'i>(i: &mut Partial<&'i [u8]>) -> PResult<i32, InputError<Partial<&'i [u8]>>> {
+        fn le_tsti32<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, i32> {
             i32(Endianness::Little).parse_next(i)
         }
         assert_parse!(
@@ -2923,10 +2925,10 @@ Ok(
 "#]]
         );
 
-        fn be_tsti64<'i>(i: &mut Partial<&'i [u8]>) -> PResult<i64, InputError<Partial<&'i [u8]>>> {
+        fn be_tsti64<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, i64> {
             i64(Endianness::Big).parse_next(i)
         }
-        fn le_tsti64<'i>(i: &mut Partial<&'i [u8]>) -> PResult<i64, InputError<Partial<&'i [u8]>>> {
+        fn le_tsti64<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, i64> {
             i64(Endianness::Little).parse_next(i)
         }
         assert_parse!(
@@ -2968,16 +2970,14 @@ Ok(
     #[test]
     #[cfg(feature = "alloc")]
     fn length_repeat_test() {
-        fn number<'i>(i: &mut Partial<&'i [u8]>) -> PResult<u32, InputError<Partial<&'i [u8]>>> {
+        fn number<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, u32> {
             digit
                 .try_map(str::from_utf8)
                 .try_map(FromStr::from_str)
                 .parse_next(i)
         }
 
-        fn cnt<'i>(
-            i: &mut Partial<&'i [u8]>,
-        ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
+        fn cnt<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, Vec<&'i [u8]>> {
             length_repeat(number, "abc").parse_next(i)
         }
 
@@ -3088,7 +3088,7 @@ Err(
     fn partial_length_bytes() {
         use crate::binary::le_u8;
 
-        fn x<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+        fn x<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
             length_take(le_u8).parse_next(i)
         }
         assert_parse!(
@@ -3157,7 +3157,7 @@ Err(
 "#]]
         );
 
-        fn y<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+        fn y<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
             let _ = "magic".parse_next(i)?;
             length_take(le_u8).parse_next(i)
         }
@@ -3230,14 +3230,14 @@ Err(
 
     #[test]
     fn length_take_test() {
-        fn number<'i>(i: &mut Partial<&'i [u8]>) -> PResult<u32, InputError<Partial<&'i [u8]>>> {
+        fn number<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, u32> {
             digit
                 .try_map(str::from_utf8)
                 .try_map(FromStr::from_str)
                 .parse_next(i)
         }
 
-        fn take<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+        fn take<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
             length_take(number).parse_next(i)
         }
 
@@ -3333,14 +3333,12 @@ Ok(
     fn length_and_then_test() {
         use crate::stream::StreamIsPartial;
 
-        fn length_and_then_1<'i>(
-            i: &mut Partial<&'i [u8]>,
-        ) -> PResult<u16, InputError<Partial<&'i [u8]>>> {
+        fn length_and_then_1<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, u16> {
             length_and_then(be_u8, be_u16).parse_next(i)
         }
         fn length_and_then_2<'i>(
             i: &mut Partial<&'i [u8]>,
-        ) -> PResult<(u8, u8), InputError<Partial<&'i [u8]>>> {
+        ) -> TestResult<Partial<&'i [u8]>, (u8, u8)> {
             length_and_then(be_u8, (be_u8, be_u8)).parse_next(i)
         }
 

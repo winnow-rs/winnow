@@ -8,6 +8,8 @@ use winnow::prelude::*;
 use winnow::Partial;
 use winnow::{error::ErrMode, error::IResult, error::InputError, error::Needed};
 
+use crate::TestResult;
+
 #[allow(dead_code)]
 struct Range {
     start: char,
@@ -24,6 +26,7 @@ pub(crate) fn take_char(input: &mut &[u8]) -> PResult<char> {
 
 #[cfg(feature = "std")]
 mod parse_int {
+    use crate::TestResult;
     use snapbox::str;
     use std::str;
     use winnow::prelude::*;
@@ -32,18 +35,13 @@ mod parse_int {
         ascii::{digit1 as digit, space1 as space},
         combinator::opt,
         combinator::repeat,
-        error::InputError,
     };
 
-    fn parse_ints<'i>(
-        input: &mut Partial<&'i [u8]>,
-    ) -> PResult<Vec<i32>, InputError<Partial<&'i [u8]>>> {
+    fn parse_ints<'i>(input: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, Vec<i32>> {
         repeat(0.., spaces_or_int).parse_next(input)
     }
 
-    fn spaces_or_int<'i>(
-        input: &mut Partial<&'i [u8]>,
-    ) -> PResult<i32, InputError<Partial<&'i [u8]>>> {
+    fn spaces_or_int<'i>(input: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, i32> {
         let _ = opt(space.complete_err()).parse_next(input)?;
         let res = digit
             .complete_err()
@@ -65,7 +63,9 @@ mod parse_int {
     #[test]
     fn issue_142() {
         let subject = parse_ints.parse_peek(Partial::new(&b"12 34 5689a"[..]));
-        assert_parse!(subject, str![[r#"
+        assert_parse!(
+            subject,
+            str![[r#"
 Ok(
     (
         Partial {
@@ -82,10 +82,13 @@ Ok(
     ),
 )
 
-"#]]);
+"#]]
+        );
 
         let subject = parse_ints.parse_peek(Partial::new(&b"12 34 5689 "[..]));
-        assert_parse!(subject, str![[r#"
+        assert_parse!(
+            subject,
+            str![[r#"
 Ok(
     (
         Partial {
@@ -102,7 +105,8 @@ Ok(
     ),
 )
 
-"#]]);
+"#]]
+        );
     }
 }
 
@@ -118,13 +122,13 @@ fn usize_length_bytes_issue() {
 fn take_till0_issue() {
     use winnow::token::take_till;
 
-    fn nothing<'i>(
-        input: &mut Partial<&'i [u8]>,
-    ) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn nothing<'i>(input: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         take_till(0.., |_| true).parse_next(input)
     }
 
-    assert_parse!(nothing.parse_peek(Partial::new(b"")), str![[r#"
+    assert_parse!(
+        nothing.parse_peek(Partial::new(b"")),
+        str![[r#"
 Err(
     Incomplete(
         Size(
@@ -133,8 +137,11 @@ Err(
     ),
 )
 
-"#]]);
-    assert_parse!(nothing.parse_peek(Partial::new(b"abc")), str![[r#"
+"#]]
+    );
+    assert_parse!(
+        nothing.parse_peek(Partial::new(b"abc")),
+        str![[r#"
 Ok(
     (
         Partial {
@@ -149,7 +156,8 @@ Ok(
     ),
 )
 
-"#]]);
+"#]]
+    );
 }
 
 #[test]
@@ -157,7 +165,7 @@ fn issue_655() {
     use winnow::ascii::{line_ending, till_line_ending};
     fn twolines<'i>(
         input: &mut Partial<&'i str>,
-    ) -> PResult<(&'i str, &'i str), InputError<Partial<&'i str>>> {
+    ) -> TestResult<Partial<&'i str>, (&'i str, &'i str)> {
         let l1 = till_line_ending.parse_next(input)?;
         let _ = line_ending.parse_next(input)?;
         let l2 = till_line_ending.parse_next(input)?;
@@ -166,7 +174,9 @@ fn issue_655() {
         Ok((l1, l2))
     }
 
-    assert_parse!(twolines.parse_peek(Partial::new("foo\nbar\n")), str![[r#"
+    assert_parse!(
+        twolines.parse_peek(Partial::new("foo\nbar\n")),
+        str![[r#"
 Ok(
     (
         Partial {
@@ -180,8 +190,11 @@ Ok(
     ),
 )
 
-"#]]);
-    assert_parse!(twolines.parse_peek(Partial::new("féo\nbar\n")), str![[r#"
+"#]]
+    );
+    assert_parse!(
+        twolines.parse_peek(Partial::new("féo\nbar\n")),
+        str![[r#"
 Ok(
     (
         Partial {
@@ -195,8 +208,11 @@ Ok(
     ),
 )
 
-"#]]);
-    assert_parse!(twolines.parse_peek(Partial::new("foé\nbar\n")), str![[r#"
+"#]]
+    );
+    assert_parse!(
+        twolines.parse_peek(Partial::new("foé\nbar\n")),
+        str![[r#"
 Ok(
     (
         Partial {
@@ -210,8 +226,11 @@ Ok(
     ),
 )
 
-"#]]);
-    assert_parse!(twolines.parse_peek(Partial::new("foé\r\nbar\n")), str![[r#"
+"#]]
+    );
+    assert_parse!(
+        twolines.parse_peek(Partial::new("foé\r\nbar\n")),
+        str![[r#"
 Ok(
     (
         Partial {
@@ -225,11 +244,12 @@ Ok(
     ),
 )
 
-"#]]);
+"#]]
+    );
 }
 
 #[cfg(feature = "alloc")]
-fn issue_717<'i>(input: &mut &'i [u8]) -> PResult<Vec<&'i [u8]>, InputError<&'i [u8]>> {
+fn issue_717<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], Vec<&'i [u8]>> {
     use winnow::combinator::separated;
     use winnow::token::{literal, take_till};
 
@@ -238,9 +258,9 @@ fn issue_717<'i>(input: &mut &'i [u8]) -> PResult<Vec<&'i [u8]>, InputError<&'i 
 
 mod issue_647 {
     use super::*;
+    use winnow::binary::be_f64;
     use winnow::combinator::separated;
     use winnow::token::literal;
-    use winnow::{binary::be_f64, error::ErrMode};
     pub(crate) type Stream<'a> = Partial<&'a [u8]>;
 
     #[derive(PartialEq, Debug, Clone)]
@@ -250,14 +270,11 @@ mod issue_647 {
     }
 
     #[allow(clippy::type_complexity)]
-    fn list<'a>(
-        input: &mut Stream<'a>,
-        _cs: &f64,
-    ) -> Result<Vec<f64>, ErrMode<InputError<Stream<'a>>>> {
+    fn list<'a>(input: &mut Stream<'a>, _cs: &f64) -> TestResult<Stream<'a>, Vec<f64>> {
         separated(0.., be_f64.complete_err(), literal(",").complete_err()).parse_next(input)
     }
 
-    fn data<'i>(input: &mut Stream<'i>) -> PResult<Data, InputError<Stream<'i>>> {
+    fn data<'i>(input: &mut Stream<'i>) -> TestResult<Stream<'i>, Data> {
         let c = be_f64.parse_next(input)?;
         let _ = "\n".parse_next(input)?;
         let v = list(input, &c)?;
@@ -268,13 +285,11 @@ mod issue_647 {
 #[test]
 #[cfg_attr(debug_assertions, should_panic)]
 fn issue_848_overflow_incomplete_bits_to_bytes() {
-    fn take<'i>(input: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn take<'i>(input: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         use winnow::token::take;
         take(0x2000000000000000_usize).parse_next(input)
     }
-    fn parser<'i>(
-        input: &mut Partial<&'i [u8]>,
-    ) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn parser<'i>(input: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         use winnow::binary::bits::{bits, bytes};
 
         bits(bytes(take)).parse_next(input)
@@ -284,11 +299,13 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
 
 #[test]
 fn issue_942() {
-    pub(crate) fn parser<'i>(input: &mut &'i str) -> PResult<usize, InputError<&'i str>> {
+    pub(crate) fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, usize> {
         use winnow::combinator::repeat;
         repeat(1.., 'a'.context("char_a")).parse_next(input)
     }
-    assert_parse!(parser.parse_peek("aaa"), str![[r#"
+    assert_parse!(
+        parser.parse_peek("aaa"),
+        str![[r#"
 Ok(
     (
         "",
@@ -296,8 +313,11 @@ Ok(
     ),
 )
 
-"#]]);
-    assert_parse!(parser.parse_peek("bbb"), str![[r#"
+"#]]
+    );
+    assert_parse!(
+        parser.parse_peek("bbb"),
+        str![[r#"
 Err(
     Backtrack(
         InputError {
@@ -307,14 +327,17 @@ Err(
     ),
 )
 
-"#]]);
+"#]]
+    );
 }
 
 #[test]
 #[cfg(feature = "std")]
 fn issue_many_m_n_with_zeros() {
     use winnow::combinator::repeat;
-    assert_parse!(repeat(0, 'a').map(|v: Vec<_>| v).parse_peek("aaa"), str![[r#"
+    assert_parse!(
+        repeat(0, 'a').map(|v: Vec<_>| v).parse_peek("aaa"),
+        str![[r#"
 Ok(
     (
         "aaa",
@@ -322,16 +345,19 @@ Ok(
     ),
 )
 
-"#]]);
+"#]]
+    );
 }
 
 #[test]
 fn issue_1231_bits_expect_fn_closure() {
     use winnow::binary::bits::{bits, take};
-    pub(crate) fn example<'i>(input: &mut &'i [u8]) -> PResult<(u8, u8), InputError<&'i [u8]>> {
+    pub(crate) fn example<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], (u8, u8)> {
         bits::<_, _, InputError<_>, _, _>((take(1usize), take(1usize))).parse_next(input)
     }
-    assert_parse!(example.parse_peek(&[0xff]), str![[r#"
+    assert_parse!(
+        example.parse_peek(&[0xff]),
+        str![[r#"
 Ok(
     (
         [],
@@ -342,14 +368,17 @@ Ok(
     ),
 )
 
-"#]]);
+"#]]
+    );
 }
 
 #[test]
 fn issue_1282_findtoken_char() {
     use winnow::token::one_of;
     let mut parser = one_of::<_, _, InputError<_>>(&['a', 'b', 'c'][..]);
-    assert_parse!(parser.parse_peek("aaa"), str![[r#"
+    assert_parse!(
+        parser.parse_peek("aaa"),
+        str![[r#"
 Ok(
     (
         "aa",
@@ -357,20 +386,23 @@ Ok(
     ),
 )
 
-"#]]);
+"#]]
+    );
 }
 
 #[test]
 fn issue_x_looser_fill_bounds() {
     use winnow::{ascii::digit1, combinator::fill, combinator::terminated};
 
-    fn fill_pair<'i>(input: &mut &'i [u8]) -> PResult<[&'i [u8]; 2], InputError<&'i [u8]>> {
+    fn fill_pair<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], [&'i [u8]; 2]> {
         let mut buf = [&[][..], &[][..]];
         fill(terminated(digit1, ","), &mut buf).parse_next(input)?;
         Ok(buf)
     }
 
-    assert_parse!(fill_pair.parse_peek(b"123,456,"), str![[r#"
+    assert_parse!(
+        fill_pair.parse_peek(b"123,456,"),
+        str![[r#"
 Ok(
     (
         [],
@@ -389,8 +421,11 @@ Ok(
     ),
 )
 
-"#]]);
-    assert_parse!(fill_pair.parse_peek(b"123,456,789"), str![[r#"
+"#]]
+    );
+    assert_parse!(
+        fill_pair.parse_peek(b"123,456,789"),
+        str![[r#"
 Ok(
     (
         [
@@ -413,8 +448,11 @@ Ok(
     ),
 )
 
-"#]]);
-    assert_parse!(fill_pair.parse_peek(b"123,,"), str![[r#"
+"#]]
+    );
+    assert_parse!(
+        fill_pair.parse_peek(b"123,,"),
+        str![[r#"
 Err(
     Backtrack(
         InputError {
@@ -426,7 +464,8 @@ Err(
     ),
 )
 
-"#]]);
+"#]]
+    );
 }
 
 #[cfg(feature = "std")]

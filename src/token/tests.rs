@@ -7,10 +7,9 @@ use snapbox::str;
 use crate::ascii::Caseless;
 use crate::combinator::delimited;
 use crate::error::IResult;
-use crate::error::InputError;
+use crate::prelude::*;
 use crate::stream::AsChar;
 use crate::token::literal;
-use crate::Parser;
 use crate::Partial;
 
 #[test]
@@ -88,7 +87,7 @@ fn model_complete_take_while_m_n<'i>(
 
 #[test]
 fn complete_take_until() {
-    fn take_until_5_10<'i>(i: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    fn take_until_5_10<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
         take_until(5..=8, "end").parse_next(i)
     }
     assert_parse!(
@@ -173,7 +172,7 @@ Err(
 
 #[test]
 fn complete_take_until_empty() {
-    fn take_until_empty<'i>(i: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    fn take_until_empty<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
         take_until(0, "").parse_next(i)
     }
     assert_parse!(
@@ -204,7 +203,7 @@ Ok(
 
 #[test]
 fn complete_literal_case_insensitive() {
-    fn caseless_bytes<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], InputError<&'i [u8]>> {
+    fn caseless_bytes<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
         literal(Caseless("ABcd")).parse_next(i)
     }
     assert_parse!(
@@ -329,7 +328,7 @@ Err(
 "#]]
     );
 
-    fn caseless_str<'i>(i: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    fn caseless_str<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
         literal(Caseless("ABcd")).parse_next(i)
     }
     assert_parse!(
@@ -411,7 +410,7 @@ Err(
 "#]]
     );
 
-    fn matches_kelvin<'i>(i: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    fn matches_kelvin<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
         literal(Caseless("k")).parse_next(i)
     }
     assert_parse!(
@@ -429,7 +428,7 @@ Err(
 "#]]
     );
 
-    fn is_kelvin<'i>(i: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    fn is_kelvin<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
         literal(Caseless("K")).parse_next(i)
     }
     assert_parse!(
@@ -450,10 +449,10 @@ Err(
 
 #[test]
 fn complete_literal_fixed_size_array() {
-    fn test<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], InputError<&'i [u8]>> {
+    fn test<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
         literal([0x42]).parse_next(i)
     }
-    fn test2<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], InputError<&'i [u8]>> {
+    fn test2<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
         literal(&[0x42]).parse_next(i)
     }
 
@@ -494,7 +493,7 @@ Ok(
 
 #[test]
 fn complete_literal_char() {
-    fn test<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], InputError<&'i [u8]>> {
+    fn test<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
         literal('B').parse_next(i)
     }
     assert_parse!(
@@ -534,7 +533,7 @@ Err(
 
 #[test]
 fn complete_literal_byte() {
-    fn test<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], InputError<&'i [u8]>> {
+    fn test<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
         literal(b'B').parse_next(i)
     }
     assert_parse!(
@@ -576,7 +575,7 @@ Err(
 fn partial_any_str() {
     use super::any;
     assert_parse!(
-        any::<_, InputError<Partial<&str>>>.parse_peek(Partial::new("Ә")),
+        any.parse_peek(Partial::new("Ә")),
         str![[r#"
 Ok(
     (
@@ -594,7 +593,7 @@ Ok(
 
 #[test]
 fn partial_one_of_test() {
-    fn f<'i>(i: &mut Partial<&'i [u8]>) -> PResult<u8, InputError<Partial<&'i [u8]>>> {
+    fn f<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, u8> {
         one_of(['a', 'b']).parse_next(i)
     }
 
@@ -642,7 +641,7 @@ Err(
 "#]]
     );
 
-    fn utf8<'i>(i: &mut Partial<&'i str>) -> PResult<char, InputError<Partial<&'i str>>> {
+    fn utf8<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, char> {
         one_of(['+', '\u{FF0B}']).parse_next(i)
     }
 
@@ -652,7 +651,7 @@ Err(
 
 #[test]
 fn char_byteslice() {
-    fn f<'i>(i: &mut Partial<&'i [u8]>) -> PResult<char, InputError<Partial<&'i [u8]>>> {
+    fn f<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, char> {
         'c'.parse_next(i)
     }
 
@@ -703,7 +702,7 @@ Ok(
 
 #[test]
 fn char_str() {
-    fn f<'i>(i: &mut Partial<&'i str>) -> PResult<char, InputError<Partial<&'i str>>> {
+    fn f<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, char> {
         'c'.parse_next(i)
     }
 
@@ -746,7 +745,7 @@ Ok(
 
 #[test]
 fn partial_none_of_test() {
-    fn f<'i>(i: &mut Partial<&'i [u8]>) -> PResult<u8, InputError<Partial<&'i [u8]>>> {
+    fn f<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, u8> {
         none_of(['a', 'b']).parse_next(i)
     }
 
@@ -797,7 +796,7 @@ Ok(
 
 #[test]
 fn partial_is_a() {
-    fn a_or_b<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn a_or_b<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         take_while(1.., ['a', 'b']).parse_next(i)
     }
 
@@ -899,7 +898,7 @@ Ok(
 
 #[test]
 fn partial_is_not() {
-    fn a_or_b<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn a_or_b<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         take_till(1.., ['a', 'b']).parse_next(i)
     }
 
@@ -1016,7 +1015,7 @@ Err(
 
 #[test]
 fn partial_take_until_incomplete() {
-    fn y<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn y<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         take_until(0.., "end").parse_next(i)
     }
     assert_parse!(
@@ -1056,7 +1055,7 @@ Err(
 
 #[test]
 fn partial_take_until_incomplete_s() {
-    fn ys<'i>(i: &mut Partial<&'i str>) -> PResult<&'i str, InputError<Partial<&'i str>>> {
+    fn ys<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
         take_until(0.., "end").parse_next(i)
     }
     assert_parse!(
@@ -1079,7 +1078,7 @@ fn partial_take() {
         multispace1 as multispace, oct_digit1 as oct_digit, space1 as space,
     };
 
-    fn x<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn x<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         delimited("<!--", take(5_usize), "-->").take().parse_next(i)
     }
     let r = x.parse_peek(Partial::new(&b"<!-- abc --> aaa"[..]));
@@ -1117,7 +1116,7 @@ Ok(
 "#]]
     );
 
-    fn ya<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn ya<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         alpha.take().parse_next(i)
     }
     let ra = ya.parse_peek(Partial::new(&b"abc;"[..]));
@@ -1143,7 +1142,7 @@ Ok(
 "#]]
     );
 
-    fn yd<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn yd<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         digit.take().parse_next(i)
     }
     let rd = yd.parse_peek(Partial::new(&b"123;"[..]));
@@ -1169,7 +1168,7 @@ Ok(
 "#]]
     );
 
-    fn yhd<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn yhd<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         hex_digit.take().parse_next(i)
     }
     let rhd = yhd.parse_peek(Partial::new(&b"123abcDEF;"[..]));
@@ -1201,7 +1200,7 @@ Ok(
 "#]]
     );
 
-    fn yod<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn yod<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         oct_digit.take().parse_next(i)
     }
     let rod = yod.parse_peek(Partial::new(&b"1234567;"[..]));
@@ -1231,7 +1230,7 @@ Ok(
 "#]]
     );
 
-    fn yan<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn yan<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         alphanumeric.take().parse_next(i)
     }
     let ran = yan.parse_peek(Partial::new(&b"123abc;"[..]));
@@ -1260,7 +1259,7 @@ Ok(
 "#]]
     );
 
-    fn ys<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn ys<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         space.take().parse_next(i)
     }
     let rs = ys.parse_peek(Partial::new(&b" \t;"[..]));
@@ -1285,7 +1284,7 @@ Ok(
 "#]]
     );
 
-    fn yms<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn yms<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         multispace.take().parse_next(i)
     }
     let rms = yms.parse_peek(Partial::new(&b" \t\r\n;"[..]));
@@ -1315,7 +1314,7 @@ Ok(
 
 #[test]
 fn partial_take_while0() {
-    fn f<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn f<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         take_while(0.., AsChar::is_alpha).parse_next(i)
     }
     let a = &b""[..];
@@ -1396,7 +1395,7 @@ Ok(
 
 #[test]
 fn partial_take_while1() {
-    fn f<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn f<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         take_while(1.., AsChar::is_alpha).parse_next(i)
     }
     let a = &b""[..];
@@ -1479,7 +1478,7 @@ Err(
 
 #[test]
 fn partial_take_while_m_n() {
-    fn x<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn x<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         take_while(2..=4, AsChar::is_alpha).parse_next(i)
     }
     let a = &b""[..];
@@ -1598,7 +1597,7 @@ Err(
 
 #[test]
 fn partial_take_till0() {
-    fn f<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn f<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         take_till(0.., AsChar::is_alpha).parse_next(i)
     }
     let a = &b""[..];
@@ -1680,7 +1679,7 @@ Err(
 
 #[test]
 fn partial_take_till1() {
-    fn f<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn f<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         take_till(1.., AsChar::is_alpha).parse_next(i)
     }
     let a = &b""[..];
@@ -1764,7 +1763,7 @@ Err(
 
 #[test]
 fn partial_take_while_utf8() {
-    fn f<'i>(i: &mut Partial<&'i str>) -> PResult<&'i str, InputError<Partial<&'i str>>> {
+    fn f<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
         take_while(0.., |c| c != '點').parse_next(i)
     }
 
@@ -1825,7 +1824,7 @@ Ok(
 "#]]
     );
 
-    fn g<'i>(i: &mut Partial<&'i str>) -> PResult<&'i str, InputError<Partial<&'i str>>> {
+    fn g<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
         take_while(0.., |c| c == '點').parse_next(i)
     }
 
@@ -1876,7 +1875,7 @@ Ok(
 
 #[test]
 fn partial_take_till0_utf8() {
-    fn f<'i>(i: &mut Partial<&'i str>) -> PResult<&'i str, InputError<Partial<&'i str>>> {
+    fn f<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
         take_till(0.., |c| c == '點').parse_next(i)
     }
 
@@ -1937,7 +1936,7 @@ Ok(
 "#]]
     );
 
-    fn g<'i>(i: &mut Partial<&'i str>) -> PResult<&'i str, InputError<Partial<&'i str>>> {
+    fn g<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
         take_till(0.., |c| c != '點').parse_next(i)
     }
 
@@ -1988,7 +1987,7 @@ Ok(
 
 #[test]
 fn partial_take_utf8() {
-    fn f<'i>(i: &mut Partial<&'i str>) -> PResult<&'i str, InputError<Partial<&'i str>>> {
+    fn f<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
         take(3_usize).parse_next(i)
     }
 
@@ -2071,7 +2070,7 @@ Ok(
 "#]]
     );
 
-    fn g<'i>(i: &mut Partial<&'i str>) -> PResult<&'i str, InputError<Partial<&'i str>>> {
+    fn g<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
         take_while(0.., |c| c == '點').parse_next(i)
     }
 
@@ -2122,7 +2121,7 @@ Ok(
 
 #[test]
 fn partial_take_while_m_n_utf8_fixed() {
-    fn parser<'i>(i: &mut Partial<&'i str>) -> PResult<&'i str, InputError<Partial<&'i str>>> {
+    fn parser<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
         take_while(1, |c| c == 'A' || c == '😃').parse_next(i)
     }
     assert_parse!(
@@ -2159,7 +2158,7 @@ Ok(
 
 #[test]
 fn partial_take_while_m_n_utf8_range() {
-    fn parser<'i>(i: &mut Partial<&'i str>) -> PResult<&'i str, InputError<Partial<&'i str>>> {
+    fn parser<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
         take_while(1..=2, |c| c == 'A' || c == '😃').parse_next(i)
     }
     assert_parse!(
@@ -2196,7 +2195,7 @@ Ok(
 
 #[test]
 fn partial_take_while_m_n_utf8_full_match_fixed() {
-    fn parser<'i>(i: &mut Partial<&'i str>) -> PResult<&'i str, InputError<Partial<&'i str>>> {
+    fn parser<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
         take_while(1, |c: char| c.is_alphabetic()).parse_next(i)
     }
     assert_parse!(
@@ -2218,7 +2217,7 @@ Ok(
 
 #[test]
 fn partial_take_while_m_n_utf8_full_match_range() {
-    fn parser<'i>(i: &mut Partial<&'i str>) -> PResult<&'i str, InputError<Partial<&'i str>>> {
+    fn parser<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
         take_while(1..=2, |c: char| c.is_alphabetic()).parse_next(i)
     }
     assert_parse!(
@@ -2241,10 +2240,10 @@ Ok(
 #[test]
 #[cfg(feature = "std")]
 fn partial_take_take_while0() {
-    fn x<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn x<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         take_while(0.., AsChar::is_alphanum).parse_next(i)
     }
-    fn y<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn y<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         x.take().parse_next(i)
     }
     assert_parse!(
@@ -2291,9 +2290,7 @@ Ok(
 
 #[test]
 fn partial_literal_case_insensitive() {
-    fn caseless_bytes<'i>(
-        i: &mut Partial<&'i [u8]>,
-    ) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn caseless_bytes<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         literal(Caseless("ABcd")).parse_next(i)
     }
     assert_parse!(
@@ -2429,9 +2426,7 @@ Err(
 "#]]
     );
 
-    fn caseless_str<'i>(
-        i: &mut Partial<&'i str>,
-    ) -> PResult<&'i str, InputError<Partial<&'i str>>> {
+    fn caseless_str<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
         literal(Caseless("ABcd")).parse_next(i)
     }
     assert_parse!(
@@ -2527,9 +2522,7 @@ Err(
 "#]]
     );
 
-    fn matches_kelvin<'i>(
-        i: &mut Partial<&'i str>,
-    ) -> PResult<&'i str, InputError<Partial<&'i str>>> {
+    fn matches_kelvin<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
         literal(Caseless("k")).parse_next(i)
     }
     assert_parse!(
@@ -2550,7 +2543,7 @@ Err(
 "#]]
     );
 
-    fn is_kelvin<'i>(i: &mut Partial<&'i str>) -> PResult<&'i str, InputError<Partial<&'i str>>> {
+    fn is_kelvin<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
         literal(Caseless("K")).parse_next(i)
     }
     assert_parse!(
@@ -2574,10 +2567,10 @@ Err(
 
 #[test]
 fn partial_literal_fixed_size_array() {
-    fn test<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn test<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         literal([0x42]).parse_next(i)
     }
-    fn test2<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn test2<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         literal(&[0x42]).parse_next(i)
     }
     let input = Partial::new(&[0x42, 0x00][..]);

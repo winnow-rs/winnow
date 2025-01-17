@@ -154,6 +154,9 @@ pub mod prelude {
     #[cfg(feature = "unstable-recover")]
     #[cfg(feature = "std")]
     pub use crate::RecoverableParser as _;
+
+    #[cfg(test)]
+    pub(crate) use crate::TestResult;
 }
 
 pub use error::PResult;
@@ -166,3 +169,6 @@ pub use stream::LocatingSlice;
 pub use stream::Partial;
 pub use stream::Stateful;
 pub use stream::Str;
+
+#[cfg(test)]
+pub(crate) use error::TestResult;

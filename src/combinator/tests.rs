@@ -1,4 +1,5 @@
 use super::*;
+
 use snapbox::str;
 
 use crate::ascii::digit1 as digit;
@@ -7,14 +8,13 @@ use crate::binary::u8;
 use crate::binary::Endianness;
 use crate::error::ErrMode;
 use crate::error::ErrorKind;
-use crate::error::InputError;
 use crate::error::ParserError;
 #[cfg(feature = "alloc")]
 use crate::lib::std::borrow::ToOwned;
+use crate::prelude::*;
 use crate::stream::Stream;
 use crate::token::take;
 use crate::PResult;
-use crate::Parser;
 use crate::Partial;
 
 #[cfg(feature = "alloc")]
@@ -251,9 +251,7 @@ Ok(
 
 #[test]
 fn opt_test() {
-    fn opt_abcd<'i>(
-        i: &mut Partial<&'i [u8]>,
-    ) -> PResult<Option<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
+    fn opt_abcd<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, Option<&'i [u8]>> {
         opt("abcd").parse_next(i)
     }
 
@@ -324,9 +322,7 @@ Err(
 
 #[test]
 fn peek_test() {
-    fn peek_literal<'i>(
-        i: &mut Partial<&'i [u8]>,
-    ) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn peek_literal<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         peek("abcd").parse_next(i)
     }
 
@@ -395,7 +391,7 @@ Err(
 
 #[test]
 fn not_test() {
-    fn not_aaa<'i>(i: &mut Partial<&'i [u8]>) -> PResult<(), InputError<Partial<&'i [u8]>>> {
+    fn not_aaa<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, ()> {
         not("aaa").parse_next(i)
     }
 
@@ -459,7 +455,7 @@ Ok(
 fn test_parser_verify() {
     use crate::token::take;
 
-    fn test<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn test<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         take(5u8)
             .verify(|slice: &[u8]| slice[0] == b'a')
             .parse_next(i)
@@ -572,7 +568,7 @@ Err(
 "#]]
     );
 
-    fn parser2<'i>(i: &mut &'i [u8]) -> PResult<u32, InputError<&'i [u8]>> {
+    fn parser2<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], u32> {
         crate::binary::be_u32
             .verify(|val: &u32| *val < 3)
             .parse_next(i)
@@ -663,7 +659,7 @@ Err(
 
 #[test]
 fn complete() {
-    fn err_test<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], InputError<&'i [u8]>> {
+    fn err_test<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
         let _ = "ijkl".parse_next(i)?;
         "mnop".parse_next(i)
     }
@@ -694,7 +690,7 @@ fn separated_pair_test() {
     #[allow(clippy::type_complexity)]
     fn sep_pair_abc_def<'i>(
         i: &mut Partial<&'i [u8]>,
-    ) -> PResult<(&'i [u8], &'i [u8]), InputError<Partial<&'i [u8]>>> {
+    ) -> TestResult<Partial<&'i [u8]>, (&'i [u8], &'i [u8])> {
         separated_pair("abc", ",", "def").parse_next(i)
     }
 
@@ -830,7 +826,7 @@ Err(
 fn preceded_test() {
     fn preceded_abcd_efgh<'i>(
         i: &mut Partial<&'i [u8]>,
-    ) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    ) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         preceded("abcd", "efgh").parse_next(i)
     }
 
@@ -958,7 +954,7 @@ Err(
 fn terminated_test() {
     fn terminated_abcd_efgh<'i>(
         i: &mut Partial<&'i [u8]>,
-    ) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    ) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         terminated("abcd", "efgh").parse_next(i)
     }
 
@@ -1087,7 +1083,7 @@ Err(
 fn delimited_test() {
     fn delimited_abc_def_ghi<'i>(
         i: &mut Partial<&'i [u8]>,
-    ) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    ) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         delimited("abc", "def", "ghi").parse_next(i)
     }
 
@@ -1326,7 +1322,7 @@ fn alt_test() {
     assert_eq!(alt2.parse_peek(a), Ok((&b""[..], a)));
     assert_eq!(alt3.parse_peek(a), Ok((a, &b""[..])));
 
-    fn alt4<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], InputError<&'i [u8]>> {
+    fn alt4<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
         alt(("abcd", "efgh")).parse_next(i)
     }
     let b = &b"efgh"[..];
@@ -1368,7 +1364,7 @@ Ok(
 
 #[test]
 fn alt_incomplete() {
-    fn alt1<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8], InputError<Partial<&'i [u8]>>> {
+    fn alt1<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         alt(("a", "bc", "def")).parse_next(i)
     }
 
@@ -1483,7 +1479,7 @@ Ok(
 
 #[test]
 fn alt_array() {
-    fn alt1<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], InputError<&'i [u8]>> {
+    fn alt1<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
         alt(["a", "bc", "def"]).parse_next(i)
     }
 
@@ -1561,7 +1557,7 @@ Err(
 
 #[test]
 fn alt_dynamic_array() {
-    fn alt1<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], InputError<&'i [u8]>> {
+    fn alt1<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
         alt(&mut ["a", "bc", "def"][..]).parse_next(i)
     }
 
@@ -1624,7 +1620,7 @@ fn permutation_test() {
     #[allow(clippy::type_complexity)]
     fn perm<'i>(
         i: &mut Partial<&'i [u8]>,
-    ) -> PResult<(&'i [u8], &'i [u8], &'i [u8]), InputError<Partial<&'i [u8]>>> {
+    ) -> TestResult<Partial<&'i [u8]>, (&'i [u8], &'i [u8], &'i [u8])> {
         permutation(("abcd", "efg", "hi")).parse_next(i)
     }
 
@@ -1785,19 +1781,15 @@ Err(
 #[test]
 #[cfg(feature = "alloc")]
 fn separated0_test() {
-    fn multi<'i>(
-        i: &mut Partial<&'i [u8]>,
-    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
+    fn multi<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, Vec<&'i [u8]>> {
         separated(0.., "abcd", ",").parse_next(i)
     }
-    fn multi_empty<'i>(
-        i: &mut Partial<&'i [u8]>,
-    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
+    fn multi_empty<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, Vec<&'i [u8]>> {
         separated(0.., "", ",").parse_next(i)
     }
     fn multi_longsep<'i>(
         i: &mut Partial<&'i [u8]>,
-    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
+    ) -> TestResult<Partial<&'i [u8]>, Vec<&'i [u8]>> {
         separated(0.., "abcd", "..").parse_next(i)
     }
 
@@ -1989,9 +1981,7 @@ Err(
 #[cfg(feature = "alloc")]
 #[cfg_attr(debug_assertions, should_panic)]
 fn separated0_empty_sep_test() {
-    fn empty_sep<'i>(
-        i: &mut Partial<&'i [u8]>,
-    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
+    fn empty_sep<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, Vec<&'i [u8]>> {
         separated(0.., "abc", "").parse_next(i)
     }
 
@@ -2003,14 +1993,12 @@ fn separated0_empty_sep_test() {
 #[test]
 #[cfg(feature = "alloc")]
 fn separated1_test() {
-    fn multi<'i>(
-        i: &mut Partial<&'i [u8]>,
-    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
+    fn multi<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, Vec<&'i [u8]>> {
         separated(1.., "abcd", ",").parse_next(i)
     }
     fn multi_longsep<'i>(
         i: &mut Partial<&'i [u8]>,
-    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
+    ) -> TestResult<Partial<&'i [u8]>, Vec<&'i [u8]>> {
         separated(1.., "abcd", "..").parse_next(i)
     }
 
@@ -2180,9 +2168,7 @@ Err(
 #[test]
 #[cfg(feature = "alloc")]
 fn separated_test() {
-    fn multi<'i>(
-        i: &mut Partial<&'i [u8]>,
-    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
+    fn multi<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, Vec<&'i [u8]>> {
         separated(2..=4, "abcd", ",").parse_next(i)
     }
 
@@ -2361,9 +2347,7 @@ Err(
 #[test]
 #[cfg(feature = "alloc")]
 fn repeat0_test() {
-    fn multi<'i>(
-        i: &mut Partial<&'i [u8]>,
-    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
+    fn multi<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, Vec<&'i [u8]>> {
         repeat(0.., "abcd").parse_next(i)
     }
 
@@ -2492,9 +2476,7 @@ Err(
 #[cfg(feature = "alloc")]
 #[cfg_attr(debug_assertions, should_panic)]
 fn repeat0_empty_test() {
-    fn multi_empty<'i>(
-        i: &mut Partial<&'i [u8]>,
-    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
+    fn multi_empty<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, Vec<&'i [u8]>> {
         repeat(0.., "").parse_next(i)
     }
 
@@ -2504,9 +2486,7 @@ fn repeat0_empty_test() {
 #[test]
 #[cfg(feature = "alloc")]
 fn repeat1_test() {
-    fn multi<'i>(
-        i: &mut Partial<&'i [u8]>,
-    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
+    fn multi<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, Vec<&'i [u8]>> {
         repeat(1.., "abcd").parse_next(i)
     }
 
@@ -2616,7 +2596,7 @@ Err(
 #[cfg(feature = "alloc")]
 fn repeat_till_test() {
     #[allow(clippy::type_complexity)]
-    fn multi<'i>(i: &mut &'i [u8]) -> PResult<(Vec<&'i [u8]>, &'i [u8]), InputError<&'i [u8]>> {
+    fn multi<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], (Vec<&'i [u8]>, &'i [u8])> {
         repeat_till(0.., "abcd", "efgh").parse_next(i)
     }
 
@@ -2714,7 +2694,7 @@ Err(
 #[cfg(feature = "alloc")]
 fn repeat_till_range_test() {
     #[allow(clippy::type_complexity)]
-    fn multi<'i>(i: &mut &'i str) -> PResult<(Vec<&'i str>, &'i str), InputError<&'i str>> {
+    fn multi<'i>(i: &mut &'i str) -> TestResult<&'i str, (Vec<&'i str>, &'i str)> {
         repeat_till(2..=4, "ab", "cd").parse_next(i)
     }
 
@@ -2822,7 +2802,7 @@ Err(
 #[test]
 #[cfg(feature = "std")]
 fn infinite_many() {
-    fn tst<'i>(input: &mut &'i [u8]) -> PResult<&'i [u8], InputError<&'i [u8]>> {
+    fn tst<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
         println!("input: {input:?}");
         Err(ErrMode::Backtrack(error_position!(
             input,
@@ -2831,7 +2811,7 @@ fn infinite_many() {
     }
 
     // should not go into an infinite loop
-    fn multi0<'i>(i: &mut &'i [u8]) -> PResult<Vec<&'i [u8]>, InputError<&'i [u8]>> {
+    fn multi0<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], Vec<&'i [u8]>> {
         repeat(0.., tst).parse_next(i)
     }
     let a = &b"abcdef"[..];
@@ -2855,7 +2835,7 @@ Ok(
 "#]]
     );
 
-    fn multi1<'i>(i: &mut &'i [u8]) -> PResult<Vec<&'i [u8]>, InputError<&'i [u8]>> {
+    fn multi1<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], Vec<&'i [u8]>> {
         repeat(1.., tst).parse_next(i)
     }
     let a = &b"abcdef"[..];
@@ -2885,9 +2865,7 @@ Err(
 #[test]
 #[cfg(feature = "alloc")]
 fn repeat_test() {
-    fn multi<'i>(
-        i: &mut Partial<&'i [u8]>,
-    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
+    fn multi<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, Vec<&'i [u8]>> {
         repeat(2..=4, "Abcd").parse_next(i)
     }
 
@@ -3063,9 +3041,7 @@ Err(
 #[cfg(feature = "alloc")]
 fn count_test() {
     const TIMES: usize = 2;
-    fn cnt_2<'i>(
-        i: &mut Partial<&'i [u8]>,
-    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
+    fn cnt_2<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, Vec<&'i [u8]>> {
         repeat(TIMES, "abc").parse_next(i)
     }
 
@@ -3212,7 +3188,7 @@ Err(
 #[cfg(feature = "alloc")]
 fn count_zero() {
     const TIMES: usize = 0;
-    fn counter_2<'i>(i: &mut &'i [u8]) -> PResult<Vec<&'i [u8]>, InputError<&'i [u8]>> {
+    fn counter_2<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], Vec<&'i [u8]>> {
         repeat(TIMES, "abc").parse_next(i)
     }
 
@@ -3374,9 +3350,7 @@ fn fold_repeat0_test() {
         acc.push(item);
         acc
     }
-    fn multi<'i>(
-        i: &mut Partial<&'i [u8]>,
-    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
+    fn multi<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, Vec<&'i [u8]>> {
         repeat(0.., "abcd")
             .fold(Vec::new, fold_into_vec)
             .parse_next(i)
@@ -3511,9 +3485,7 @@ fn fold_repeat0_empty_test() {
         acc.push(item);
         acc
     }
-    fn multi_empty<'i>(
-        i: &mut Partial<&'i [u8]>,
-    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
+    fn multi_empty<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, Vec<&'i [u8]>> {
         repeat(0.., "").fold(Vec::new, fold_into_vec).parse_next(i)
     }
 
@@ -3527,9 +3499,7 @@ fn fold_repeat1_test() {
         acc.push(item);
         acc
     }
-    fn multi<'i>(
-        i: &mut Partial<&'i [u8]>,
-    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
+    fn multi<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, Vec<&'i [u8]>> {
         repeat(1.., "abcd")
             .fold(Vec::new, fold_into_vec)
             .parse_next(i)
@@ -3644,9 +3614,7 @@ fn fold_repeat_test() {
         acc.push(item);
         acc
     }
-    fn multi<'i>(
-        i: &mut Partial<&'i [u8]>,
-    ) -> PResult<Vec<&'i [u8]>, InputError<Partial<&'i [u8]>>> {
+    fn multi<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, Vec<&'i [u8]>> {
         repeat(2..=4, "Abcd")
             .fold(Vec::new, fold_into_vec)
             .parse_next(i)
@@ -3822,7 +3790,7 @@ Err(
 
 #[test]
 fn repeat0_count_test() {
-    fn count0_nums<'i>(i: &mut &'i [u8]) -> PResult<usize, InputError<&'i [u8]>> {
+    fn count0_nums<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], usize> {
         repeat(0.., (digit, ",")).parse_next(i)
     }
 
@@ -3902,7 +3870,7 @@ Ok(
 
 #[test]
 fn repeat1_count_test() {
-    fn count1_nums<'i>(i: &mut &'i [u8]) -> PResult<usize, InputError<&'i [u8]>> {
+    fn count1_nums<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], usize> {
         repeat(1.., (digit, ",")).parse_next(i)
     }
 

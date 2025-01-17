@@ -3,15 +3,18 @@ use snapbox::str;
 
 mod complete {
     use super::*;
+
+    use proptest::prelude::*;
+
     use crate::combinator::alt;
     use crate::error::ErrMode;
     use crate::error::InputError;
+    use crate::prelude::*;
     use crate::stream::ParseSlice;
     use crate::token::none_of;
     use crate::token::one_of;
     #[cfg(feature = "alloc")]
     use crate::{lib::std::string::String, lib::std::vec::Vec};
-    use proptest::prelude::*;
 
     #[test]
     fn character() {
@@ -1055,9 +1058,7 @@ Err(
     #[test]
     fn full_line_windows() {
         #[allow(clippy::type_complexity)]
-        fn take_full_line<'i>(
-            i: &mut &'i [u8],
-        ) -> PResult<(&'i [u8], &'i [u8]), InputError<&'i [u8]>> {
+        fn take_full_line<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], (&'i [u8], &'i [u8])> {
             (till_line_ending, line_ending).parse_next(i)
         }
         let input = b"abc\r\n";
@@ -1089,9 +1090,7 @@ Ok(
     #[test]
     fn full_line_unix() {
         #[allow(clippy::type_complexity)]
-        fn take_full_line<'i>(
-            i: &mut &'i [u8],
-        ) -> PResult<(&'i [u8], &'i [u8]), InputError<&'i [u8]>> {
+        fn take_full_line<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], (&'i [u8], &'i [u8])> {
             (till_line_ending, line_ending).parse_next(i)
         }
         let input = b"abc\n";
@@ -1380,7 +1379,7 @@ Err(
 
     #[test]
     fn dec_uint_tests() {
-        fn dec_u32<'i>(input: &mut &'i [u8]) -> PResult<u32, InputError<&'i [u8]>> {
+        fn dec_u32<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], u32> {
             dec_uint.parse_next(input)
         }
 
@@ -1484,7 +1483,7 @@ Err(
 
     #[test]
     fn dec_int_tests() {
-        fn dec_i32<'i>(input: &mut &'i [u8]) -> PResult<i32, InputError<&'i [u8]>> {
+        fn dec_i32<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], i32> {
             dec_int.parse_next(input)
         }
 
@@ -1634,7 +1633,7 @@ Err(
 
     #[test]
     fn hex_uint_tests() {
-        fn hex_u32<'i>(input: &mut &'i [u8]) -> PResult<u32, InputError<&'i [u8]>> {
+        fn hex_u32<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], u32> {
             hex_uint.parse_next(input)
         }
 
@@ -2004,7 +2003,7 @@ Err(
     #[cfg_attr(debug_assertions, should_panic)]
     fn complete_take_escaped_hang_1() {
         // issue #1336 "take_escaped hangs if normal parser accepts empty"
-        fn escaped_string<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+        fn escaped_string<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
             use crate::ascii::alpha0;
             use crate::token::one_of;
             take_escaped(alpha0, '\\', one_of(['n'])).parse_next(input)
@@ -2019,7 +2018,7 @@ Err(
     #[cfg_attr(debug_assertions, should_panic)]
     fn complete_take_escaped_hang_2() {
         // issue #1336 "take_escaped hangs if normal parser accepts empty"
-        fn escaped_string<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+        fn escaped_string<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
             use crate::ascii::alpha0;
             use crate::token::one_of;
             take_escaped(alpha0, '\\', one_of(['n'])).parse_next(input)
@@ -2033,7 +2032,7 @@ Err(
     #[cfg_attr(debug_assertions, should_panic)]
     fn complete_take_escaped_hang_1118() {
         // issue ##1118 take_escaped does not work with empty string
-        fn unquote<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+        fn unquote<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
             use crate::combinator::delimited;
             use crate::combinator::opt;
             use crate::token::one_of;
@@ -2061,7 +2060,7 @@ Err(
         use crate::ascii::{alpha1 as alpha, digit1 as digit};
         use crate::token::one_of;
 
-        fn esc<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], InputError<&'i [u8]>> {
+        fn esc<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
             take_escaped(alpha, '\\', one_of(['\"', 'n', '\\'])).parse_next(i)
         }
         assert_parse!(
@@ -2193,7 +2192,7 @@ Err(
 "#]]
         );
 
-        fn esc2<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], InputError<&'i [u8]>> {
+        fn esc2<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
             take_escaped(digit, '\\', one_of(['\"', 'n', '\\'])).parse_next(i)
         }
         assert_parse!(
@@ -2226,7 +2225,7 @@ Ok(
         use crate::ascii::{alpha1 as alpha, digit1 as digit};
         use crate::token::one_of;
 
-        fn esc<'i>(i: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+        fn esc<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
             take_escaped(alpha, '\\', one_of(['\"', 'n', '\\'])).parse_next(i)
         }
         assert_parse!(
@@ -2318,7 +2317,7 @@ Err(
 "#]]
         );
 
-        fn esc2<'i>(i: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+        fn esc2<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
             take_escaped(digit, '\\', one_of(['\"', 'n', '\\'])).parse_next(i)
         }
         assert_parse!(
@@ -2334,7 +2333,7 @@ Ok(
 "#]]
         );
 
-        fn esc3<'i>(i: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+        fn esc3<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
             take_escaped(alpha, '\u{241b}', one_of(['\"', 'n'])).parse_next(i)
         }
         assert_parse!(
@@ -2353,7 +2352,7 @@ Ok(
 
     #[test]
     fn test_escaped_error() {
-        fn esc<'i>(i: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+        fn esc<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
             use crate::ascii::digit1;
             take_escaped(digit1, '\\', one_of(['\"', 'n', '\\'])).parse_next(i)
         }
@@ -2382,7 +2381,7 @@ Ok(
             String::from_utf8_lossy(&i).into_owned()
         }
 
-        fn esc<'i>(i: &mut &'i [u8]) -> PResult<String, InputError<&'i [u8]>> {
+        fn esc<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], String> {
             escaped_transform(
                 alpha,
                 '\\',
@@ -2498,7 +2497,7 @@ Err(
 "#]]
         );
 
-        fn esc2<'i>(i: &mut &'i [u8]) -> PResult<String, InputError<&'i [u8]>> {
+        fn esc2<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], String> {
             escaped_transform(
                 alpha,
                 '&',
@@ -2545,7 +2544,7 @@ Ok(
     fn complete_escape_transform_str() {
         use crate::ascii::alpha1 as alpha;
 
-        fn esc<'i>(i: &mut &'i str) -> PResult<String, InputError<&'i str>> {
+        fn esc<'i>(i: &mut &'i str) -> TestResult<&'i str, String> {
             escaped_transform(
                 alpha,
                 '\\',
@@ -2643,7 +2642,7 @@ Err(
 "#]]
         );
 
-        fn esc2<'i>(i: &mut &'i str) -> PResult<String, InputError<&'i str>> {
+        fn esc2<'i>(i: &mut &'i str) -> TestResult<&'i str, String> {
             escaped_transform(
                 alpha,
                 '&',
@@ -2676,7 +2675,7 @@ Ok(
 "#]]
         );
 
-        fn esc3<'i>(i: &mut &'i str) -> PResult<String, InputError<&'i str>> {
+        fn esc3<'i>(i: &mut &'i str) -> TestResult<&'i str, String> {
             escaped_transform(alpha, '␛', alt(("0".value("\0"), "n".value("\n")))).parse_next(i)
         }
         assert_parse!(
@@ -2696,7 +2695,7 @@ Ok(
     #[test]
     #[cfg(feature = "alloc")]
     fn test_escaped_transform_error() {
-        fn esc_trans<'i>(i: &mut &'i str) -> PResult<String, InputError<&'i str>> {
+        fn esc_trans<'i>(i: &mut &'i str) -> TestResult<&'i str, String> {
             use crate::ascii::digit1;
             escaped_transform(digit1, '\\', "n").parse_next(i)
         }
@@ -2718,7 +2717,9 @@ Ok(
 
 mod partial {
     use super::*;
+
     use crate::error::InputError;
+    use crate::prelude::*;
     use crate::Partial;
 
     #[test]
@@ -3841,7 +3842,7 @@ Err(
         #[allow(clippy::type_complexity)]
         fn take_full_line<'i>(
             i: &mut Partial<&'i [u8]>,
-        ) -> PResult<(&'i [u8], &'i [u8]), InputError<Partial<&'i [u8]>>> {
+        ) -> TestResult<Partial<&'i [u8]>, (&'i [u8], &'i [u8])> {
             (till_line_ending, line_ending).parse_next(i)
         }
         let input = b"abc\r\n";
@@ -3878,7 +3879,7 @@ Ok(
         #[allow(clippy::type_complexity)]
         fn take_full_line<'i>(
             i: &mut Partial<&'i [u8]>,
-        ) -> PResult<(&'i [u8], &'i [u8]), InputError<Partial<&'i [u8]>>> {
+        ) -> TestResult<Partial<&'i [u8]>, (&'i [u8], &'i [u8])> {
             (till_line_ending, line_ending).parse_next(i)
         }
         let input = b"abc\n";
@@ -4198,9 +4199,7 @@ Err(
 
     #[test]
     fn hex_uint_tests() {
-        fn hex_u32<'i>(
-            input: &mut Partial<&'i [u8]>,
-        ) -> PResult<u32, InputError<Partial<&'i [u8]>>> {
+        fn hex_u32<'i>(input: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, u32> {
             hex_uint.parse_next(input)
         }
 

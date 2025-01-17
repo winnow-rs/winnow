@@ -7,10 +7,11 @@ use winnow::ascii::digit1 as digit;
 use winnow::combinator::alt;
 use winnow::combinator::delimited;
 use winnow::combinator::opt;
-use winnow::error::InputError;
 use winnow::prelude::*;
 
-fn unsigned_float<'i>(i: &mut &'i [u8]) -> PResult<f32, InputError<&'i [u8]>> {
+use crate::TestResult;
+
+fn unsigned_float<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], f32> {
     let float_bytes = alt((
         delimited(digit, ".", opt(digit)),
         delimited(opt(digit), ".", digit),
@@ -20,7 +21,7 @@ fn unsigned_float<'i>(i: &mut &'i [u8]) -> PResult<f32, InputError<&'i [u8]>> {
     float_str.try_map(FromStr::from_str).parse_next(i)
 }
 
-fn float<'i>(i: &mut &'i [u8]) -> PResult<f32, InputError<&'i [u8]>> {
+fn float<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], f32> {
     (opt(alt(("+", "-"))), unsigned_float)
         .map(|(sign, value)| {
             sign.and_then(|s| if s[0] == b'-' { Some(-1f32) } else { None })
@@ -32,7 +33,9 @@ fn float<'i>(i: &mut &'i [u8]) -> PResult<f32, InputError<&'i [u8]>> {
 
 #[test]
 fn unsigned_float_test() {
-    assert_parse!(unsigned_float.parse_peek(&b"123.456;"[..]), str![[r#"
+    assert_parse!(
+        unsigned_float.parse_peek(&b"123.456;"[..]),
+        str![[r#"
 Ok(
     (
         [
@@ -42,8 +45,11 @@ Ok(
     ),
 )
 
-"#]]);
-    assert_parse!(unsigned_float.parse_peek(&b"0.123;"[..]), str![[r#"
+"#]]
+    );
+    assert_parse!(
+        unsigned_float.parse_peek(&b"0.123;"[..]),
+        str![[r#"
 Ok(
     (
         [
@@ -53,8 +59,11 @@ Ok(
     ),
 )
 
-"#]]);
-    assert_parse!(unsigned_float.parse_peek(&b"123.0;"[..]), str![[r#"
+"#]]
+    );
+    assert_parse!(
+        unsigned_float.parse_peek(&b"123.0;"[..]),
+        str![[r#"
 Ok(
     (
         [
@@ -64,8 +73,11 @@ Ok(
     ),
 )
 
-"#]]);
-    assert_parse!(unsigned_float.parse_peek(&b"123.;"[..]), str![[r#"
+"#]]
+    );
+    assert_parse!(
+        unsigned_float.parse_peek(&b"123.;"[..]),
+        str![[r#"
 Ok(
     (
         [
@@ -75,8 +87,11 @@ Ok(
     ),
 )
 
-"#]]);
-    assert_parse!(unsigned_float.parse_peek(&b".123;"[..]), str![[r#"
+"#]]
+    );
+    assert_parse!(
+        unsigned_float.parse_peek(&b".123;"[..]),
+        str![[r#"
 Ok(
     (
         [
@@ -86,12 +101,15 @@ Ok(
     ),
 )
 
-"#]]);
+"#]]
+    );
 }
 
 #[test]
 fn float_test() {
-    assert_parse!(float.parse_peek(&b"123.456;"[..]), str![[r#"
+    assert_parse!(
+        float.parse_peek(&b"123.456;"[..]),
+        str![[r#"
 Ok(
     (
         [
@@ -101,8 +119,11 @@ Ok(
     ),
 )
 
-"#]]);
-    assert_parse!(float.parse_peek(&b"+123.456;"[..]), str![[r#"
+"#]]
+    );
+    assert_parse!(
+        float.parse_peek(&b"+123.456;"[..]),
+        str![[r#"
 Ok(
     (
         [
@@ -112,8 +133,11 @@ Ok(
     ),
 )
 
-"#]]);
-    assert_parse!(float.parse_peek(&b"-123.456;"[..]), str![[r#"
+"#]]
+    );
+    assert_parse!(
+        float.parse_peek(&b"-123.456;"[..]),
+        str![[r#"
 Ok(
     (
         [
@@ -123,5 +147,6 @@ Ok(
     ),
 )
 
-"#]]);
+"#]]
+    );
 }

@@ -55,6 +55,9 @@ pub type PResult<O, E = ContextError> = Result<O, ErrMode<E>>;
 /// - [`ErrMode::into_inner`]
 pub type IResult<I, O, E = InputError<I>> = PResult<(I, O), E>;
 
+#[cfg(test)]
+pub(crate) type TestResult<I, O> = PResult<O, InputError<I>>;
+
 /// Contains information on needed data if a parser returned `Incomplete`
 ///
 /// <div class="warning">

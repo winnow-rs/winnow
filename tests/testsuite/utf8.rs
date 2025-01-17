@@ -2,18 +2,17 @@ use snapbox::str;
 
 use winnow::ascii::Caseless;
 use winnow::prelude::*;
+use winnow::token::{take, take_till, take_until, take_while};
 use winnow::Partial;
 #[cfg(feature = "alloc")]
 use winnow::{combinator::alt, combinator::repeat, token::literal};
-use winnow::{
-    error::InputError,
-    token::{take, take_till, take_until, take_while},
-};
+
+use crate::TestResult;
 
 #[test]
 fn literal_succeed_str() {
     const INPUT: &str = "Hello World!";
-    fn test<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    fn test<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
         "Hello".parse_next(input)
     }
 
@@ -74,7 +73,7 @@ Err(
 #[cfg(feature = "alloc")]
 #[test]
 fn literal_case_insensitive_str() {
-    fn test<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    fn test<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
         literal(Caseless("ABcd")).parse_next(input)
     }
     assert_parse!(
@@ -219,7 +218,7 @@ fn is_alphabetic(c: char) -> bool {
 fn take_while_str() {
     use winnow::token::take_while;
 
-    fn f<'i>(input: &mut Partial<&'i str>) -> PResult<&'i str, InputError<Partial<&'i str>>> {
+    fn f<'i>(input: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
         take_while(0.., is_alphabetic).parse_next(input)
     }
     let a = "";
@@ -293,7 +292,7 @@ fn take_while_succeed_none_str() {
     fn while_s(c: char) -> bool {
         c == '9'
     }
-    fn test<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    fn test<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
         take_while(0.., while_s).parse_next(input)
     }
     assert_parse!(
@@ -318,7 +317,7 @@ fn take_while_succeed_some_str() {
     fn while_s(c: char) -> bool {
         matches!(c, 'β' | 'è' | 'ƒ' | 'ô' | 'ř' | 'Â' | 'ß' | 'Ç')
     }
-    fn test<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    fn test<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
         take_while(0.., while_s).parse_next(input)
     }
     assert_parse!(
@@ -337,7 +336,7 @@ Ok(
 
 #[test]
 fn test_take_while1_str() {
-    fn f<'i>(input: &mut Partial<&'i str>) -> PResult<&'i str, InputError<Partial<&'i str>>> {
+    fn f<'i>(input: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
         take_while(1.., is_alphabetic).parse_next(input)
     }
     let a = "";
@@ -413,7 +412,7 @@ fn take_while1_fn_succeed_str() {
     fn while1_s(c: char) -> bool {
         matches!(c, 'β' | 'è' | 'ƒ' | 'ô' | 'ř' | 'Â' | 'ß' | 'Ç')
     }
-    fn test<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    fn test<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
         take_while(1.., while1_s).parse_next(input)
     }
     assert_parse!(
@@ -434,7 +433,7 @@ Ok(
 fn take_while1_set_succeed_str() {
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const MATCH: &[char] = &['β', 'è', 'ƒ', 'ô', 'ř', 'è', 'Â', 'ß', 'Ç'];
-    fn test<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    fn test<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
         take_while(1.., MATCH).parse_next(input)
     }
     assert_parse!(
@@ -459,7 +458,7 @@ fn take_while1_fn_fail_str() {
     fn while1_s(c: char) -> bool {
         c == '9'
     }
-    fn test<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    fn test<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
         take_while(1.., while1_s).parse_next(input)
     }
     assert_parse!(
@@ -482,7 +481,7 @@ Err(
 fn take_while1_set_fail_str() {
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const MATCH: &[char] = &['Û', 'ñ', 'ℓ', 'ú', 'ç', 'ƙ', '¥'];
-    fn test<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    fn test<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
         take_while(1.., MATCH).parse_next(input)
     }
     assert_parse!(
@@ -507,7 +506,7 @@ fn take_till0_succeed_str() {
     fn till_s(c: char) -> bool {
         c == 'á'
     }
-    fn test<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    fn test<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
         take_till(0.., till_s).parse_next(input)
     }
     assert_parse!(
@@ -528,7 +527,7 @@ Ok(
 fn take_till1_succeed_str() {
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const AVOID: &[char] = &['£', 'ú', 'ç', 'ƙ', '¥', 'á'];
-    fn test<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    fn test<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
         take_till(1.., AVOID).parse_next(input)
     }
     assert_parse!(
@@ -549,7 +548,7 @@ Ok(
 fn take_till1_failed_str() {
     const INPUT: &str = "βèƒôřèÂßÇáƒƭèř";
     const AVOID: &[char] = &['β', 'ú', 'ç', 'ƙ', '¥'];
-    fn test<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    fn test<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
         take_till(1.., AVOID).parse_next(input)
     }
     assert_parse!(
@@ -576,7 +575,7 @@ fn take_is_a_str() {
     let a = "aabbab";
     let b = "ababcd";
 
-    fn f<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    fn f<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
         repeat::<_, _, (), _, _>(1.., alt(("a", "b")))
             .take()
             .parse_next(input)
@@ -610,7 +609,7 @@ Ok(
 
 #[test]
 fn utf8_indexing_str() {
-    fn dot<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    fn dot<'i>(input: &mut &'i str) -> TestResult<&'i str, &'i str> {
         ".".parse_next(input)
     }
 

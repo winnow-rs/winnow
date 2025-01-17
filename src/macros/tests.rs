@@ -6,13 +6,12 @@ use crate::combinator::dispatch;
 use crate::combinator::empty;
 use crate::combinator::fail;
 use crate::combinator::seq;
-use crate::error::InputError;
 use crate::prelude::*;
 use crate::token::any;
 
 #[test]
 fn dispatch_basics() {
-    fn escape_seq_char<'i>(input: &mut &'i str) -> PResult<char, InputError<&'i str>> {
+    fn escape_seq_char<'i>(input: &mut &'i str) -> TestResult<&'i str, char> {
         dispatch! {any;
             'b' => empty.value('\u{8}'),
             'f' => empty.value('\u{c}'),
@@ -75,7 +74,7 @@ fn seq_struct_basics() {
         y: u32,
     }
 
-    fn parser<'i>(input: &mut &'i str) -> PResult<Point, InputError<&'i str>> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         seq! {
             Point {
                 x: dec_uint,
@@ -139,7 +138,7 @@ fn seq_struct_default_init() {
         z: u32,
     }
 
-    fn parser<'i>(input: &mut &'i str) -> PResult<Point, InputError<&'i str>> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         seq! {
             Point {
                 x: dec_uint,
@@ -206,7 +205,7 @@ fn seq_struct_trailing_comma_elided() {
         y: u32,
     }
 
-    fn parser<'i>(input: &mut &'i str) -> PResult<Point, InputError<&'i str>> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         seq! {
             Point {
                 x: dec_uint,
@@ -229,7 +228,7 @@ fn seq_struct_no_trailing_comma() {
         y: u32,
     }
 
-    fn parser<'i>(input: &mut &'i str) -> PResult<Point, InputError<&'i str>> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         seq! {
             Point {
                 x: dec_uint,
@@ -251,7 +250,7 @@ fn seq_struct_no_trailing_comma_elided() {
         y: u32,
     }
 
-    fn parser<'i>(input: &mut &'i str) -> PResult<Point, InputError<&'i str>> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         seq! {
             Point {
                 x: dec_uint,
@@ -272,7 +271,7 @@ fn seq_enum_struct_variant() {
         Mul(u32, u32),
     }
 
-    fn add<'i>(input: &mut &'i [u8]) -> PResult<Expr, InputError<&'i [u8]>> {
+    fn add<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], Expr> {
         seq! {Expr::Add {
             lhs: dec_uint::<_, u32, _>,
             _: b" + ",
@@ -281,7 +280,7 @@ fn seq_enum_struct_variant() {
         .parse_next(input)
     }
 
-    fn mul<'i>(input: &mut &'i [u8]) -> PResult<Expr, InputError<&'i [u8]>> {
+    fn mul<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], Expr> {
         seq!(Expr::Mul(
              dec_uint::<_, u32, _>,
              _: b" * ",
@@ -333,7 +332,7 @@ fn seq_struct_borrow() {
         y: u32,
     }
 
-    fn parser<'i>(input: &mut &'i str) -> PResult<Point, InputError<&'i str>> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         let mut dec_uint = digit0.parse_to();
         seq! {
             Point {
@@ -352,7 +351,7 @@ fn seq_tuple_struct_basics() {
     #[derive(Debug, PartialEq)]
     struct Point(u32, u32);
 
-    fn parser<'i>(input: &mut &'i str) -> PResult<Point, InputError<&'i str>> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         seq! {
             Point(
                 dec_uint,
@@ -414,7 +413,7 @@ fn seq_tuple_struct_trailing_comma_elided() {
     #[derive(Debug, PartialEq)]
     struct Point(u32, u32);
 
-    fn parser<'i>(input: &mut &'i str) -> PResult<Point, InputError<&'i str>> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         seq! {
             Point(
                 dec_uint,
@@ -434,7 +433,7 @@ fn seq_tuple_struct_no_trailing_comma() {
     #[derive(Debug, PartialEq)]
     struct Point(u32, u32);
 
-    fn parser<'i>(input: &mut &'i str) -> PResult<Point, InputError<&'i str>> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         seq! {
             Point(
                 dec_uint,
@@ -453,7 +452,7 @@ fn seq_tuple_struct_no_trailing_comma_elided() {
     #[derive(Debug, PartialEq)]
     struct Point(u32, u32);
 
-    fn parser<'i>(input: &mut &'i str) -> PResult<Point, InputError<&'i str>> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         seq! {
             Point(
                 dec_uint,
@@ -468,7 +467,7 @@ fn seq_tuple_struct_no_trailing_comma_elided() {
 
 #[test]
 fn seq_tuple_basics() {
-    fn parser<'i>(input: &mut &'i str) -> PResult<(u32, u32), InputError<&'i str>> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, (u32, u32)> {
         seq! {
             (
                 dec_uint,
@@ -527,7 +526,7 @@ Err(
 fn seq_tuple_trailing_comma_elided() {
     #![allow(dead_code)]
 
-    fn parser<'i>(input: &mut &'i str) -> PResult<(u32, u32), InputError<&'i str>> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, (u32, u32)> {
         seq! {
             (
                 dec_uint,
@@ -544,7 +543,7 @@ fn seq_tuple_trailing_comma_elided() {
 fn seq_tuple_no_trailing_comma() {
     #![allow(dead_code)]
 
-    fn parser<'i>(input: &mut &'i str) -> PResult<(u32, u32), InputError<&'i str>> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, (u32, u32)> {
         seq! {
             (
                 dec_uint,
@@ -560,7 +559,7 @@ fn seq_tuple_no_trailing_comma() {
 fn seq_tuple_no_trailing_comma_elided() {
     #![allow(dead_code)]
 
-    fn parser<'i>(input: &mut &'i str) -> PResult<(u32, u32), InputError<&'i str>> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, (u32, u32)> {
         seq! {
             (
                 dec_uint,
@@ -577,7 +576,7 @@ fn seq_tuple_no_trailing_comma_elided() {
 fn seq_tuple_no_parens() {
     #![allow(dead_code)]
 
-    fn parser<'i>(input: &mut &'i str) -> PResult<(u32, u32), InputError<&'i str>> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, (u32, u32)> {
         seq! (
             dec_uint,
             _: ',',
@@ -594,7 +593,7 @@ fn seq_tuple_borrow() {
     #[derive(Debug, PartialEq)]
     struct Point(u32, u32);
 
-    fn parser<'i>(input: &mut &'i str) -> PResult<Point, InputError<&'i str>> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         let mut dec_uint = digit0.parse_to();
         seq! {
             Point(
