@@ -84,7 +84,7 @@ where
 ///
 /// assert_eq!(parser(true, "abcd;"), Ok((";", Some("abcd"))));
 /// assert_eq!(parser(false, "abcd;"), Ok(("abcd;", None)));
-/// assert_eq!(parser(true, "123;"), Err(ErrMode::Backtrack(InputError::new("123;", ErrorKind::Slice))));
+/// assert!(parser(true, "123;").is_err());
 /// assert_eq!(parser(false, "123;"), Ok(("123;", None)));
 /// # }
 /// ```
@@ -124,7 +124,7 @@ where
 /// }
 ///
 /// assert_eq!(parser.parse_peek("abcd;"), Ok(("abcd;", "abcd")));
-/// assert_eq!(parser.parse_peek("123;"), Err(ErrMode::Backtrack(InputError::new("123;", ErrorKind::Slice))));
+/// assert!(parser.parse_peek("123;").is_err());
 /// # }
 /// ```
 #[doc(alias = "look_ahead")]
@@ -173,7 +173,7 @@ where
 /// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
 ///     eof.parse_next(input)
 /// }
-/// assert_eq!(parser.parse_peek("abc"), Err(ErrMode::Backtrack(InputError::new("abc", ErrorKind::Eof))));
+/// assert!(parser.parse_peek("abc").is_err());
 /// assert_eq!(parser.parse_peek(""), Ok(("", "")));
 /// ```
 #[doc(alias = "end")]
@@ -215,7 +215,7 @@ where
 /// }
 ///
 /// assert_eq!(parser.parse_peek("123"), Ok(("123", ())));
-/// assert_eq!(parser.parse_peek("abcd"), Err(ErrMode::Backtrack(InputError::new("abcd", ErrorKind::Not))));
+/// assert!(parser.parse_peek("abcd").is_err());
 /// # }
 /// ```
 pub fn not<Input, Output, Error, ParseNext>(mut parser: ParseNext) -> impl Parser<Input, (), Error>

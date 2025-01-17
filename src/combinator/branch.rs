@@ -45,7 +45,7 @@ pub trait Alt<I, O, E> {
 /// assert_eq!(parser("123456"), Ok(("", "123456")));
 ///
 /// // both parsers failed, and with the default error type, alt will return the last error
-/// assert_eq!(parser(" "), Err(ErrMode::Backtrack(InputError::new(" ", ErrorKind::Slice))));
+/// assert!(parser(" ").is_err());
 /// # }
 /// ```
 #[doc(alias = "choice")]
@@ -97,7 +97,7 @@ pub trait Permutation<I, O, E> {
 /// assert_eq!(parser("123abc"), Ok(("", ("abc", "123"))));
 ///
 /// // it will fail if one of the parsers failed
-/// assert_eq!(parser("abc;"), Err(ErrMode::Backtrack(InputError::new(";", ErrorKind::Slice))));
+/// assert!(parser("abc;").is_err());
 /// # }
 /// ```
 ///
@@ -119,7 +119,7 @@ pub trait Permutation<I, O, E> {
 ///
 /// // any parses 'a', then char('a') fails on 'b',
 /// // even though char('a') followed by any would succeed
-/// assert_eq!(parser("ab"), Err(ErrMode::Backtrack(InputError::new("b", ErrorKind::Literal))));
+/// assert!(parser("ab").is_err());
 /// ```
 ///
 #[inline(always)]

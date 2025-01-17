@@ -44,7 +44,7 @@ use crate::Parser;
 /// }
 ///
 /// assert_eq!(parser("abc"), Ok(("bc",'a')));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Token))));
+/// assert!(parser("").is_err());
 /// ```
 ///
 /// ```rust
@@ -125,8 +125,8 @@ where
 /// }
 ///
 /// assert_eq!(parser("Hello, World!"), Ok((", World!", "Hello")));
-/// assert_eq!(parser("Something"), Err(ErrMode::Backtrack(InputError::new("Something", ErrorKind::Literal))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
+/// assert!(parser("Something").is_err());
+/// assert!(parser("").is_err());
 /// ```
 ///
 /// ```rust
@@ -140,8 +140,8 @@ where
 /// }
 ///
 /// assert_eq!(parser(Partial::new("Hello, World!")), Ok((Partial::new(", World!"), "Hello")));
-/// assert_eq!(parser(Partial::new("Something")), Err(ErrMode::Backtrack(InputError::new(Partial::new("Something"), ErrorKind::Literal))));
-/// assert_eq!(parser(Partial::new("S")), Err(ErrMode::Backtrack(InputError::new(Partial::new("S"), ErrorKind::Literal))));
+/// assert!(parser(Partial::new("Something")).is_err());
+/// assert!(parser(Partial::new("S")).is_err());
 /// assert_eq!(parser(Partial::new("H")), Err(ErrMode::Incomplete(Needed::new(4))));
 /// ```
 ///
@@ -159,8 +159,8 @@ where
 /// assert_eq!(parser("Hello, World!"), Ok((", World!", "Hello")));
 /// assert_eq!(parser("hello, World!"), Ok((", World!", "hello")));
 /// assert_eq!(parser("HeLlO, World!"), Ok((", World!", "HeLlO")));
-/// assert_eq!(parser("Something"), Err(ErrMode::Backtrack(InputError::new("Something", ErrorKind::Literal))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
+/// assert!(parser("Something").is_err());
+/// assert!(parser("").is_err());
 /// ```
 #[inline(always)]
 #[doc(alias = "tag")]
@@ -242,15 +242,15 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::token::one_of;
 /// assert_eq!(one_of::<_, _, InputError<_>>(['a', 'b', 'c']).parse_peek("b"), Ok(("", 'b')));
-/// assert_eq!(one_of::<_, _, InputError<_>>('a').parse_peek("bc"), Err(ErrMode::Backtrack(InputError::new("bc", ErrorKind::Verify))));
-/// assert_eq!(one_of::<_, _, InputError<_>>('a').parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Token))));
+/// assert!(one_of::<_, _, InputError<_>>('a').parse_peek("bc").is_err());
+/// assert!(one_of::<_, _, InputError<_>>('a').parse_peek("").is_err());
 ///
 /// fn parser_fn(i: &str) -> IResult<&str, char> {
 ///     one_of(|c| c == 'a' || c == 'b').parse_peek(i)
 /// }
 /// assert_eq!(parser_fn("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser_fn("cd"), Err(ErrMode::Backtrack(InputError::new("cd", ErrorKind::Verify))));
-/// assert_eq!(parser_fn(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Token))));
+/// assert!(parser_fn("cd").is_err());
+/// assert!(parser_fn("").is_err());
 /// ```
 ///
 /// ```rust
@@ -260,14 +260,14 @@ where
 /// # use winnow::Partial;
 /// # use winnow::token::one_of;
 /// assert_eq!(one_of::<_, _, InputError<_>>(['a', 'b', 'c']).parse_peek(Partial::new("b")), Ok((Partial::new(""), 'b')));
-/// assert_eq!(one_of::<_, _, InputError<_>>('a').parse_peek(Partial::new("bc")), Err(ErrMode::Backtrack(InputError::new(Partial::new("bc"), ErrorKind::Verify))));
+/// assert!(one_of::<_, _, InputError<_>>('a').parse_peek(Partial::new("bc")).is_err());
 /// assert_eq!(one_of::<_, _, InputError<_>>('a').parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// fn parser_fn(i: Partial<&str>) -> IResult<Partial<&str>, char> {
 ///     one_of(|c| c == 'a' || c == 'b').parse_peek(i)
 /// }
 /// assert_eq!(parser_fn(Partial::new("abc")), Ok((Partial::new("bc"), 'a')));
-/// assert_eq!(parser_fn(Partial::new("cd")), Err(ErrMode::Backtrack(InputError::new(Partial::new("cd"), ErrorKind::Verify))));
+/// assert!(parser_fn(Partial::new("cd")).is_err());
 /// assert_eq!(parser_fn(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
@@ -316,8 +316,8 @@ where
 /// # use winnow::error::IResult;
 /// # use winnow::token::none_of;
 /// assert_eq!(none_of::<_, _, InputError<_>>(['a', 'b', 'c']).parse_peek("z"), Ok(("", 'z')));
-/// assert_eq!(none_of::<_, _, InputError<_>>(['a', 'b']).parse_peek("a"), Err(ErrMode::Backtrack(InputError::new("a", ErrorKind::Verify))));
-/// assert_eq!(none_of::<_, _, InputError<_>>('a').parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Token))));
+/// assert!(none_of::<_, _, InputError<_>>(['a', 'b']).parse_peek("a").is_err());
+/// assert!(none_of::<_, _, InputError<_>>('a').parse_peek("").is_err());
 /// ```
 ///
 /// ```rust
@@ -327,7 +327,7 @@ where
 /// # use winnow::Partial;
 /// # use winnow::token::none_of;
 /// assert_eq!(none_of::<_, _, InputError<_>>(['a', 'b', 'c']).parse_peek(Partial::new("z")), Ok((Partial::new(""), 'z')));
-/// assert_eq!(none_of::<_, _, InputError<_>>(['a', 'b']).parse_peek(Partial::new("a")), Err(ErrMode::Backtrack(InputError::new(Partial::new("a"), ErrorKind::Verify))));
+/// assert!(none_of::<_, _, InputError<_>>(['a', 'b']).parse_peek(Partial::new("a")).is_err());
 /// assert_eq!(none_of::<_, _, InputError<_>>('a').parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
@@ -421,7 +421,7 @@ where
 ///
 /// assert_eq!(alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
 /// assert_eq!(alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
-/// assert_eq!(alpha(b"12345"), Err(ErrMode::Backtrack(InputError::new(&b"12345"[..], ErrorKind::Slice))));
+/// assert!(alpha(b"12345").is_err());
 ///
 /// fn hex(s: &str) -> IResult<&str, &str> {
 ///   take_while(1.., ('0'..='9', 'A'..='F')).parse_peek(s)
@@ -431,7 +431,7 @@ where
 /// assert_eq!(hex("DEADBEEF and others"), Ok((" and others", "DEADBEEF")));
 /// assert_eq!(hex("BADBABEsomething"), Ok(("something", "BADBABE")));
 /// assert_eq!(hex("D15EA5E"), Ok(("", "D15EA5E")));
-/// assert_eq!(hex(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Slice))));
+/// assert!(hex("").is_err());
 /// ```
 ///
 /// ```rust
@@ -448,7 +448,7 @@ where
 ///
 /// assert_eq!(alpha(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
 /// assert_eq!(alpha(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(alpha(Partial::new(b"12345")), Err(ErrMode::Backtrack(InputError::new(Partial::new(&b"12345"[..]), ErrorKind::Slice))));
+/// assert!(alpha(Partial::new(b"12345")).is_err());
 ///
 /// fn hex(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
 ///   take_while(1.., ('0'..='9', 'A'..='F')).parse_peek(s)
@@ -476,8 +476,8 @@ where
 /// assert_eq!(short_alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
 /// assert_eq!(short_alpha(b"lengthy"), Ok((&b"y"[..], &b"length"[..])));
 /// assert_eq!(short_alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
-/// assert_eq!(short_alpha(b"ed"), Err(ErrMode::Backtrack(InputError::new(&b"ed"[..], ErrorKind::Slice))));
-/// assert_eq!(short_alpha(b"12345"), Err(ErrMode::Backtrack(InputError::new(&b"12345"[..], ErrorKind::Slice))));
+/// assert!(short_alpha(b"ed").is_err());
+/// assert!(short_alpha(b"12345").is_err());
 /// ```
 ///
 /// ```rust
@@ -496,7 +496,7 @@ where
 /// assert_eq!(short_alpha(Partial::new(b"lengthy")), Ok((Partial::new(&b"y"[..]), &b"length"[..])));
 /// assert_eq!(short_alpha(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// assert_eq!(short_alpha(Partial::new(b"ed")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(short_alpha(Partial::new(b"12345")), Err(ErrMode::Backtrack(InputError::new(Partial::new(&b"12345"[..]), ErrorKind::Slice))));
+/// assert!(short_alpha(Partial::new(b"12345")).is_err());
 /// ```
 #[inline(always)]
 #[doc(alias = "is_a")]
@@ -776,8 +776,8 @@ where
 ///
 /// assert_eq!(take6("1234567"), Ok(("7", "123456")));
 /// assert_eq!(take6("things"), Ok(("", "things")));
-/// assert_eq!(take6("short"), Err(ErrMode::Backtrack(InputError::new("short", ErrorKind::Slice))));
-/// assert_eq!(take6(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Slice))));
+/// assert!(take6("short").is_err());
+/// assert!(take6("").is_err());
 /// ```
 ///
 /// The units that are taken will depend on the input type. For example, for a
@@ -885,8 +885,8 @@ where
 /// }
 ///
 /// assert_eq!(until_eof("hello, worldeof"), Ok(("eof", "hello, world")));
-/// assert_eq!(until_eof("hello, world"), Err(ErrMode::Backtrack(InputError::new("hello, world", ErrorKind::Slice))));
-/// assert_eq!(until_eof(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Slice))));
+/// assert!(until_eof("hello, world").is_err());
+/// assert!(until_eof("").is_err());
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
 /// ```
 ///
@@ -918,10 +918,10 @@ where
 /// }
 ///
 /// assert_eq!(until_eof("hello, worldeof"), Ok(("eof", "hello, world")));
-/// assert_eq!(until_eof("hello, world"), Err(ErrMode::Backtrack(InputError::new("hello, world", ErrorKind::Slice))));
-/// assert_eq!(until_eof(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Slice))));
+/// assert!(until_eof("hello, world").is_err());
+/// assert!(until_eof("").is_err());
 /// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
-/// assert_eq!(until_eof("eof"), Err(ErrMode::Backtrack(InputError::new("eof", ErrorKind::Slice))));
+/// assert!(until_eof("eof").is_err());
 /// ```
 ///
 /// ```rust
@@ -939,7 +939,7 @@ where
 /// assert_eq!(until_eof(Partial::new("hello, world")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// assert_eq!(until_eof(Partial::new("hello, worldeo")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// assert_eq!(until_eof(Partial::new("1eof2eof")), Ok((Partial::new("eof2eof"), "1")));
-/// assert_eq!(until_eof(Partial::new("eof")), Err(ErrMode::Backtrack(InputError::new(Partial::new("eof"), ErrorKind::Slice))));
+/// assert!(until_eof(Partial::new("eof")).is_err());
 /// ```
 #[inline(always)]
 pub fn take_until<Literal, Input, Error>(

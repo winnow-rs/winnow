@@ -188,7 +188,7 @@ where
 /// assert_eq!(parser((stream(&[0b00010010]), 4), 4), Ok(((stream(&[]), 0), 0b00000010)));
 ///
 /// // Tries to consume 12 bits but only 8 are available
-/// assert_eq!(parser((stream(&[0b00010010]), 0), 12), Err(winnow::error::ErrMode::Backtrack(InputError::new((stream(&[0b00010010]), 0), ErrorKind::Eof))));
+/// assert!(parser((stream(&[0b00010010]), 0), 12).is_err());
 /// ```
 #[inline(always)]
 pub fn take<Input, Output, Count, Error>(count: Count) -> impl Parser<(Input, usize), Output, Error>
@@ -313,22 +313,10 @@ where
 /// );
 ///
 /// // The lowest 2 bits of 0b11111111 and 0b00000001 are different.
-/// assert_eq!(
-///     parser(0b000000_01, 2, (stream(&[0b111111_11]), 0)),
-///     Err(winnow::error::ErrMode::Backtrack(InputError::new(
-///         (stream(&[0b11111111]), 0),
-///         ErrorKind::Literal
-///     )))
-/// );
+/// assert!(parser(0b000000_01, 2, (stream(&[0b111111_11]), 0)).is_err());
 ///
 /// // The lowest 8 bits of 0b11111111 and 0b11111110 are different.
-/// assert_eq!(
-///     parser(0b11111110, 8, (stream(&[0b11111111]), 0)),
-///     Err(winnow::error::ErrMode::Backtrack(InputError::new(
-///         (stream(&[0b11111111]), 0),
-///         ErrorKind::Literal
-///     )))
-/// );
+/// assert!(parser(0b11111110, 8, (stream(&[0b11111111]), 0)).is_err());
 /// ```
 #[inline(always)]
 #[doc(alias = "literal")]

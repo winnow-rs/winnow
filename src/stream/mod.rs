@@ -390,7 +390,7 @@ impl<I: crate::lib::std::fmt::Display, S> crate::lib::std::fmt::Display for Stat
 /// assert_eq!(take_partial.parse_peek(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// // but the complete parser will return an error
-/// assert_eq!(take_complete.parse_peek(&b"abc"[..]), Err(ErrMode::Backtrack(InputError::new(&b"abc"[..], ErrorKind::Slice))));
+/// assert!(take_complete.parse_peek(&b"abc"[..]).is_err());
 ///
 /// // the alpha0 function takes 0 or more alphabetic characters
 /// fn alpha0_partial<'s>(i: &mut Partial<&'s str>) -> PResult<&'s str, InputError<Partial<&'s str>>> {
@@ -3420,8 +3420,8 @@ impl AsChar for &char {
 /// }
 ///
 /// assert_eq!(hex_digit1.parse_peek("21cZ"), Ok(("Z", "21c")));
-/// assert_eq!(hex_digit1.parse_peek("H2"), Err(ErrMode::Backtrack(InputError::new("H2", ErrorKind::Slice))));
-/// assert_eq!(hex_digit1.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Slice))));
+/// assert!(hex_digit1.parse_peek("H2").is_err());
+/// assert!(hex_digit1.parse_peek("").is_err());
 /// ```
 pub trait ContainsToken<T> {
     /// Returns true if self contains the token

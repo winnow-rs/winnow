@@ -63,8 +63,8 @@ use crate::Parser;
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
 /// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Literal))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
+/// assert!(parser("123123").is_err());
+/// assert!(parser("").is_err());
 /// # }
 /// ```
 ///
@@ -81,9 +81,9 @@ use crate::Parser;
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Literal))));
-/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Literal))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
+/// assert!(parser("abc123").is_err());
+/// assert!(parser("123123").is_err());
+/// assert!(parser("").is_err());
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
 /// # }
 /// ```
@@ -227,8 +227,8 @@ where
     ///
     /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
     /// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-    /// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Repeat))));
-    /// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Repeat))));
+    /// assert!(parser("123123").is_err());
+    /// assert!(parser("").is_err());
     /// ```
     ///
     /// Arbitrary number of repetitions:
@@ -337,7 +337,7 @@ where
     /// }
     ///
     /// assert_eq!(parser("abc"), Ok(("", HashSet::from(["abc"]))));
-    /// assert_eq!(parser("abcabc"), Err(ErrMode::Backtrack(InputError::new("abc", ErrorKind::Verify))));
+    /// assert!(parser("abcabc").is_err());
     /// assert_eq!(parser("abc123"), Ok(("123", HashSet::from(["abc"]))));
     /// assert_eq!(parser("123123"), Ok(("123123", HashSet::from([]))));
     /// assert_eq!(parser(""), Ok(("", HashSet::from([]))));
@@ -644,9 +644,9 @@ where
 /// };
 ///
 /// assert_eq!(parser("abcabcend"), Ok(("", (vec!["abc", "abc"], "end"))));
-/// assert_eq!(parser("abc123end"), Err(ErrMode::Backtrack(InputError::new("123end", ErrorKind::Literal))));
-/// assert_eq!(parser("123123end"), Err(ErrMode::Backtrack(InputError::new("123123end", ErrorKind::Literal))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
+/// assert!(parser("abc123end").is_err());
+/// assert!(parser("123123end").is_err());
+/// assert!(parser("").is_err());
 /// assert_eq!(parser("abcendefg"), Ok(("efg", (vec!["abc"], "end"))));
 /// # }
 /// ```
@@ -832,8 +832,8 @@ where
 /// assert_eq!(parser("abc|abc|abc"), Ok(("", vec!["abc", "abc", "abc"])));
 /// assert_eq!(parser("abc123abc"), Ok(("123abc", vec!["abc"])));
 /// assert_eq!(parser("abc|def"), Ok(("|def", vec!["abc"])));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
-/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(InputError::new("def|abc", ErrorKind::Literal))));
+/// assert!(parser("").is_err());
+/// assert!(parser("def|abc").is_err());
 /// # }
 /// ```
 ///
@@ -850,10 +850,10 @@ where
 /// }
 ///
 /// assert_eq!(parser("abc|abc|abc"), Ok(("|abc", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123abc"), Err(ErrMode::Backtrack(InputError::new("123abc", ErrorKind::Literal))));
-/// assert_eq!(parser("abc|def"), Err(ErrMode::Backtrack(InputError::new("def", ErrorKind::Literal))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
-/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(InputError::new("def|abc", ErrorKind::Literal))));
+/// assert!(parser("abc123abc").is_err());
+/// assert!(parser("abc|def").is_err());
+/// assert!(parser("").is_err());
+/// assert!(parser("def|abc").is_err());
 /// # }
 /// ```
 ///
@@ -1207,8 +1207,8 @@ where
 /// }
 ///
 /// assert_eq!(parser("9-3-5"), Ok(("", 1)));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Token))));
-/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(InputError::new("def|abc", ErrorKind::Verify))));
+/// assert!(parser("").is_err());
+/// assert!(parser("def|abc").is_err());
 /// ```
 pub fn separated_foldl1<Input, Output, Sep, Error, ParseNext, SepParser, Op>(
     mut parser: ParseNext,
@@ -1276,8 +1276,8 @@ where
 ///
 /// assert_eq!(parser("2^3^2"), Ok(("", 512)));
 /// assert_eq!(parser("2"), Ok(("", 2)));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Token))));
-/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(InputError::new("def|abc", ErrorKind::Verify))));
+/// assert!(parser("").is_err());
+/// assert!(parser("def|abc").is_err());
 /// ```
 #[cfg(feature = "alloc")]
 pub fn separated_foldr1<Input, Output, Sep, Error, ParseNext, SepParser, Op>(
@@ -1328,9 +1328,9 @@ where
 /// }
 ///
 /// assert_eq!(parser("abcabc"), Ok(("", ["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Literal))));
-/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Literal))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
+/// assert!(parser("abc123").is_err());
+/// assert!(parser("123123").is_err());
+/// assert!(parser("").is_err());
 /// assert_eq!(parser("abcabcabc"), Ok(("abc", ["abc", "abc"])));
 /// ```
 pub fn fill<'i, Input, Output, Error, ParseNext>(

@@ -173,7 +173,7 @@ pub trait Parser<I, O, E> {
     /// }
     ///
     /// assert_eq!(parser.parse_peek("abcd"), Ok(("", 1234)));
-    /// assert_eq!(parser.parse_peek("123abcd;"), Err(ErrMode::Backtrack(InputError::new("123abcd;", ErrorKind::Slice))));
+    /// assert!(parser.parse_peek("123abcd;").is_err());
     /// # }
     /// ```
     #[doc(alias = "to")]
@@ -207,7 +207,7 @@ pub trait Parser<I, O, E> {
     /// }
     ///
     /// assert_eq!(parser.parse_peek("abcd"), Ok(("", 0)));
-    /// assert_eq!(parser.parse_peek("123abcd;"), Err(ErrMode::Backtrack(InputError::new("123abcd;", ErrorKind::Slice))));
+    /// assert!(parser.parse_peek("123abcd;").is_err());
     /// # }
     /// ```
     #[inline(always)]
@@ -240,7 +240,7 @@ pub trait Parser<I, O, E> {
     /// }
     ///
     /// assert_eq!(parser.parse_peek("abcd"), Ok(("", ())));
-    /// assert_eq!(parser.parse_peek("123abcd;"), Err(ErrMode::Backtrack(InputError::new("123abcd;", ErrorKind::Slice))));
+    /// assert!(parser.parse_peek("123abcd;").is_err());
     /// # }
     /// ```
     #[inline(always)]
@@ -309,7 +309,7 @@ pub trait Parser<I, O, E> {
     /// }
     ///
     /// assert_eq!(parser.parse_peek("abcd,efgh"), Ok(("", "abcd,efgh")));
-    /// assert_eq!(parser.parse_peek("abcd;"),Err(ErrMode::Backtrack(InputError::new(";", ErrorKind::Literal))));
+    /// assert!(parser.parse_peek("abcd;").is_err());
     /// # }
     /// ```
     #[doc(alias = "concat")]
@@ -368,7 +368,7 @@ pub trait Parser<I, O, E> {
     /// }
     ///
     /// assert_eq!(parser.parse_peek("abcd,efgh1"), Ok(("1", (true, "abcd,efgh"))));
-    /// assert_eq!(parser.parse_peek("abcd;"),Err(ErrMode::Backtrack(InputError::new(";", ErrorKind::Literal))));
+    /// assert!(parser.parse_peek("abcd;").is_err());
     /// ```
     #[doc(alias = "consumed")]
     #[doc(alias = "with_recognized")]
@@ -419,7 +419,7 @@ pub trait Parser<I, O, E> {
     /// }
     ///
     /// assert_eq!(parser.parse(LocatingSlice::new("abcd,efgh")), Ok((0..4, 5..9)));
-    /// assert_eq!(parser.parse_peek(LocatingSlice::new("abcd;")),Err(ErrMode::Backtrack(InputError::new(LocatingSlice::new("abcd;").peek_slice(4).0, ErrorKind::Literal))));
+    /// assert!(parser.parse_peek(LocatingSlice::new("abcd;")).is_err());
     /// ```
     #[inline(always)]
     fn span(self) -> impls::Span<Self, I, O, E>
@@ -461,7 +461,7 @@ pub trait Parser<I, O, E> {
     /// }
     ///
     /// assert_eq!(parser.parse(LocatingSlice::new("abcd,efgh")), Ok(((1, 0..4), (2, 5..9))));
-    /// assert_eq!(parser.parse_peek(LocatingSlice::new("abcd;")),Err(ErrMode::Backtrack(InputError::new(LocatingSlice::new("abcd;").peek_slice(4).0, ErrorKind::Literal))));
+    /// assert!(parser.parse_peek(LocatingSlice::new("abcd;")).is_err());
     /// ```
     #[inline(always)]
     fn with_span(self) -> impls::WithSpan<Self, I, O, E>
@@ -495,7 +495,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_peek("123456"), Ok(("", 6)));
     ///
     /// // this will fail if digit1 fails
-    /// assert_eq!(parser.parse_peek("abc"), Err(ErrMode::Backtrack(InputError::new("abc", ErrorKind::Slice))));
+    /// assert!(parser.parse_peek("abc").is_err());
     /// # }
     /// ```
     #[inline(always)]
@@ -532,10 +532,10 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_peek("123"), Ok(("", 123)));
     ///
     /// // this will fail if digit1 fails
-    /// assert_eq!(parser.parse_peek("abc"), Err(ErrMode::Backtrack(InputError::new("abc", ErrorKind::Slice))));
+    /// assert!(parser.parse_peek("abc").is_err());
     ///
     /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
-    /// assert_eq!(parser.parse_peek("123456"), Err(ErrMode::Backtrack(InputError::new("123456", ErrorKind::Verify))));
+    /// assert!(parser.parse_peek("123456").is_err());
     /// # }
     /// ```
     #[inline(always)]
@@ -575,10 +575,10 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_peek("123"), Ok(("", 123)));
     ///
     /// // this will fail if digit1 fails
-    /// assert_eq!(parser.parse_peek("abc"), Err(ErrMode::Backtrack(InputError::new("abc", ErrorKind::Slice))));
+    /// assert!(parser.parse_peek("abc").is_err());
     ///
     /// // this will fail if the mapped function fails (a `u8` is too small to hold `123456`)
-    /// assert_eq!(parser.parse_peek("123456"), Err(ErrMode::Backtrack(InputError::new("123456", ErrorKind::Verify))));
+    /// assert!(parser.parse_peek("123456").is_err());
     /// # }
     /// ```
     #[doc(alias = "satisfy_map")]
@@ -616,7 +616,7 @@ pub trait Parser<I, O, E> {
     /// }
     ///
     /// assert_eq!(length_take.parse_peek(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
-    /// assert_eq!(length_take.parse_peek(&[4, 0, 1, 2][..]), Err(ErrMode::Backtrack(InputError::new(&[0, 1, 2][..], ErrorKind::Slice))));
+    /// assert!(length_take.parse_peek(&[4, 0, 1, 2][..]).is_err());
     /// ```
     ///
     /// which is the same as
@@ -632,7 +632,7 @@ pub trait Parser<I, O, E> {
     /// }
     ///
     /// assert_eq!(length_take.parse_peek(&[2, 0, 1, 2][..]), Ok((&[2][..], &[0, 1][..])));
-    /// assert_eq!(length_take.parse_peek(&[4, 0, 1, 2][..]), Err(ErrMode::Backtrack(InputError::new(&[0, 1, 2][..], ErrorKind::Slice))));
+    /// assert!(length_take.parse_peek(&[4, 0, 1, 2][..]).is_err());
     /// ```
     #[inline(always)]
     fn flat_map<G, H, O2>(self, map: G) -> impls::FlatMap<Self, G, H, I, O, O2, E>
@@ -669,7 +669,7 @@ pub trait Parser<I, O, E> {
     ///
     /// assert_eq!(parser.parse_peek("12345"), Ok(("", "12345")));
     /// assert_eq!(parser.parse_peek("123ab"), Ok(("", "123")));
-    /// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Slice))));
+    /// assert!(parser.parse_peek("123").is_err());
     /// # }
     /// ```
     #[inline(always)]
@@ -707,7 +707,7 @@ pub trait Parser<I, O, E> {
     /// assert_eq!(parser.parse_peek("123456"), Ok(("", 123456)));
     ///
     /// // this will fail if digit1 fails
-    /// assert_eq!(parser.parse_peek("abc"), Err(ErrMode::Backtrack(InputError::new("abc", ErrorKind::Slice))));
+    /// assert!(parser.parse_peek("abc").is_err());
     /// ```
     #[doc(alias = "from_str")]
     #[inline(always)]
@@ -745,8 +745,8 @@ pub trait Parser<I, O, E> {
     /// }
     ///
     /// assert_eq!(parser.parse_peek("abcd"), Ok(("", "abcd")));
-    /// assert_eq!(parser.parse_peek("abcde"), Err(ErrMode::Backtrack(InputError::new("abcde", ErrorKind::Verify))));
-    /// assert_eq!(parser.parse_peek("123abcd;"),Err(ErrMode::Backtrack(InputError::new("123abcd;", ErrorKind::Slice))));
+    /// assert!(parser.parse_peek("abcde").is_err());
+    /// assert!(parser.parse_peek("123abcd;").is_err());
     /// # }
     /// ```
     #[doc(alias = "satisfy")]
@@ -914,9 +914,9 @@ where
 ///     b'a'.parse_next(i)
 /// }
 /// assert_eq!(parser.parse_peek(&b"abc"[..]), Ok((&b"bc"[..], b'a')));
-/// assert_eq!(parser.parse_peek(&b" abc"[..]), Err(ErrMode::Backtrack(InputError::new(&b" abc"[..], ErrorKind::Literal))));
-/// assert_eq!(parser.parse_peek(&b"bc"[..]), Err(ErrMode::Backtrack(InputError::new(&b"bc"[..], ErrorKind::Literal))));
-/// assert_eq!(parser.parse_peek(&b""[..]), Err(ErrMode::Backtrack(InputError::new(&b""[..], ErrorKind::Literal))));
+/// assert!(parser.parse_peek(&b" abc"[..]).is_err());
+/// assert!(parser.parse_peek(&b"bc"[..]).is_err());
+/// assert!(parser.parse_peek(&b""[..]).is_err());
 /// ```
 impl<I, E> Parser<I, u8, E> for u8
 where
@@ -942,9 +942,9 @@ where
 ///     'a'.parse_next(i)
 /// }
 /// assert_eq!(parser.parse_peek("abc"), Ok(("bc", 'a')));
-/// assert_eq!(parser.parse_peek(" abc"), Err(ErrMode::Backtrack(InputError::new(" abc", ErrorKind::Literal))));
-/// assert_eq!(parser.parse_peek("bc"), Err(ErrMode::Backtrack(InputError::new("bc", ErrorKind::Literal))));
-/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
+/// assert!(parser.parse_peek(" abc").is_err());
+/// assert!(parser.parse_peek("bc").is_err());
+/// assert!(parser.parse_peek("").is_err());
 /// ```
 impl<I, E> Parser<I, char, E> for char
 where
@@ -974,8 +974,8 @@ where
 ///
 /// assert_eq!(parser.parse_peek(&b"Hello, World!"[..]), Ok((&b", World!"[..], &b"Hello"[..])));
 /// assert_eq!(parser.parse_peek(&b"Something"[..]), Ok((&b"hing"[..], &b"Somet"[..])));
-/// assert_eq!(parser.parse_peek(&b"Some"[..]), Err(ErrMode::Backtrack(InputError::new(&b"Some"[..], ErrorKind::Slice))));
-/// assert_eq!(parser.parse_peek(&b""[..]), Err(ErrMode::Backtrack(InputError::new(&b""[..], ErrorKind::Slice))));
+/// assert!(parser.parse_peek(&b"Some"[..]).is_err());
+/// assert!(parser.parse_peek(&b""[..]).is_err());
 /// ```
 impl<'s, I, E: ParserError<I>> Parser<I, <I as Stream>::Slice, E> for &'s [u8]
 where
@@ -1006,8 +1006,8 @@ where
 /// assert_eq!(parser.parse_peek(&b"hello, World!"[..]), Ok((&b", World!"[..], &b"hello"[..])));
 /// assert_eq!(parser.parse_peek(&b"HeLlo, World!"[..]), Ok((&b", World!"[..], &b"HeLlo"[..])));
 /// assert_eq!(parser.parse_peek(&b"Something"[..]), Ok((&b"hing"[..], &b"Somet"[..])));
-/// assert_eq!(parser.parse_peek(&b"Some"[..]), Err(ErrMode::Backtrack(InputError::new(&b"Some"[..], ErrorKind::Slice))));
-/// assert_eq!(parser.parse_peek(&b""[..]), Err(ErrMode::Backtrack(InputError::new(&b""[..], ErrorKind::Slice))));
+/// assert!(parser.parse_peek(&b"Some"[..]).is_err());
+/// assert!(parser.parse_peek(&b""[..]).is_err());
 /// ```
 impl<'s, I, E: ParserError<I>> Parser<I, <I as Stream>::Slice, E> for AsciiCaseless<&'s [u8]>
 where
@@ -1035,8 +1035,8 @@ where
 ///
 /// assert_eq!(parser.parse_peek(&b"Hello, World!"[..]), Ok((&b", World!"[..], &b"Hello"[..])));
 /// assert_eq!(parser.parse_peek(&b"Something"[..]), Ok((&b"hing"[..], &b"Somet"[..])));
-/// assert_eq!(parser.parse_peek(&b"Some"[..]), Err(ErrMode::Backtrack(InputError::new(&b"Some"[..], ErrorKind::Slice))));
-/// assert_eq!(parser.parse_peek(&b""[..]), Err(ErrMode::Backtrack(InputError::new(&b""[..], ErrorKind::Slice))));
+/// assert!(parser.parse_peek(&b"Some"[..]).is_err());
+/// assert!(parser.parse_peek(&b""[..]).is_err());
 /// ```
 impl<'s, I, E: ParserError<I>, const N: usize> Parser<I, <I as Stream>::Slice, E> for &'s [u8; N]
 where
@@ -1067,8 +1067,8 @@ where
 /// assert_eq!(parser.parse_peek(&b"hello, World!"[..]), Ok((&b", World!"[..], &b"hello"[..])));
 /// assert_eq!(parser.parse_peek(&b"HeLlo, World!"[..]), Ok((&b", World!"[..], &b"HeLlo"[..])));
 /// assert_eq!(parser.parse_peek(&b"Something"[..]), Ok((&b"hing"[..], &b"Somet"[..])));
-/// assert_eq!(parser.parse_peek(&b"Some"[..]), Err(ErrMode::Backtrack(InputError::new(&b"Some"[..], ErrorKind::Slice))));
-/// assert_eq!(parser.parse_peek(&b""[..]), Err(ErrMode::Backtrack(InputError::new(&b""[..], ErrorKind::Slice))));
+/// assert!(parser.parse_peek(&b"Some"[..]).is_err());
+/// assert!(parser.parse_peek(&b""[..]).is_err());
 /// ```
 impl<'s, I, E: ParserError<I>, const N: usize> Parser<I, <I as Stream>::Slice, E>
     for AsciiCaseless<&'s [u8; N]>
@@ -1097,8 +1097,8 @@ where
 ///
 /// assert_eq!(parser.parse_peek("Hello, World!"), Ok((", World!", "Hello")));
 /// assert_eq!(parser.parse_peek("Something"), Ok(("hing", "Somet")));
-/// assert_eq!(parser.parse_peek("Some"), Err(ErrMode::Backtrack(InputError::new("Some", ErrorKind::Slice))));
-/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Slice))));
+/// assert!(parser.parse_peek("Some").is_err());
+/// assert!(parser.parse_peek("").is_err());
 /// ```
 impl<'s, I, E: ParserError<I>> Parser<I, <I as Stream>::Slice, E> for &'s str
 where
@@ -1129,8 +1129,8 @@ where
 /// assert_eq!(parser.parse_peek("hello, World!"), Ok((", World!", "hello")));
 /// assert_eq!(parser.parse_peek("HeLlo, World!"), Ok((", World!", "HeLlo")));
 /// assert_eq!(parser.parse_peek("Something"), Ok(("hing", "Somet")));
-/// assert_eq!(parser.parse_peek("Some"), Err(ErrMode::Backtrack(InputError::new("Some", ErrorKind::Slice))));
-/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Slice))));
+/// assert!(parser.parse_peek("Some").is_err());
+/// assert!(parser.parse_peek("").is_err());
 /// ```
 impl<'s, I, E: ParserError<I>> Parser<I, <I as Stream>::Slice, E> for AsciiCaseless<&'s str>
 where

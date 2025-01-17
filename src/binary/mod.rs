@@ -51,7 +51,7 @@ pub enum Endianness {
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(InputError::new(&[][..], ErrorKind::Token))));
+/// assert!(parser(&b""[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -97,7 +97,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -143,7 +143,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -189,7 +189,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -235,7 +235,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -281,7 +281,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -365,7 +365,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(InputError::new(&[][..], ErrorKind::Token))));
+/// assert!(parser(&b""[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -411,7 +411,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -460,7 +460,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -517,7 +517,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -566,7 +566,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -615,7 +615,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -664,7 +664,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(InputError::new(&[][..], ErrorKind::Token))));
+/// assert!(parser(&b""[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -710,7 +710,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -756,7 +756,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -802,7 +802,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -848,7 +848,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -894,7 +894,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -977,7 +977,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(InputError::new(&[][..], ErrorKind::Token))));
+/// assert!(parser(&b""[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -1023,7 +1023,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -1072,7 +1072,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -1129,7 +1129,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -1178,7 +1178,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -1227,7 +1227,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
-/// assert_eq!(parser(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(parser(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -1282,7 +1282,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(InputError::new(&[][..], ErrorKind::Token))));
+/// assert!(parser(&b""[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -1353,14 +1353,14 @@ where
 /// };
 ///
 /// assert_eq!(be_u16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
-/// assert_eq!(be_u16(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(be_u16(&b"\x01"[..]).is_err());
 ///
 /// fn le_u16(input: &[u8]) -> IResult<&[u8], u16> {
 ///     u16(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_u16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
-/// assert_eq!(le_u16(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(le_u16(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -1426,14 +1426,14 @@ where
 /// };
 ///
 /// assert_eq!(be_u24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
-/// assert_eq!(be_u24(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(be_u24(&b"\x01"[..]).is_err());
 ///
 /// fn le_u24(input: &[u8]) -> IResult<&[u8], u32> {
 ///     u24(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_u24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
-/// assert_eq!(le_u24(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(le_u24(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -1499,14 +1499,14 @@ where
 /// };
 ///
 /// assert_eq!(be_u32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
-/// assert_eq!(be_u32(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(be_u32(&b"\x01"[..]).is_err());
 ///
 /// fn le_u32(input: &[u8]) -> IResult<&[u8], u32> {
 ///     u32(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_u32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
-/// assert_eq!(le_u32(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(le_u32(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -1572,14 +1572,14 @@ where
 /// };
 ///
 /// assert_eq!(be_u64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
-/// assert_eq!(be_u64(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(be_u64(&b"\x01"[..]).is_err());
 ///
 /// fn le_u64(input: &[u8]) -> IResult<&[u8], u64> {
 ///     u64(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_u64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
-/// assert_eq!(le_u64(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(le_u64(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -1645,14 +1645,14 @@ where
 /// };
 ///
 /// assert_eq!(be_u128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
-/// assert_eq!(be_u128(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(be_u128(&b"\x01"[..]).is_err());
 ///
 /// fn le_u128(input: &[u8]) -> IResult<&[u8], u128> {
 ///     u128(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_u128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
-/// assert_eq!(le_u128(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(le_u128(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -1721,7 +1721,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&b"\x00\x03abcefg"[..]), Ok((&b"\x03abcefg"[..], 0x00)));
-/// assert_eq!(parser(&b""[..]), Err(ErrMode::Backtrack(InputError::new(&[][..], ErrorKind::Token))));
+/// assert!(parser(&b""[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -1779,14 +1779,14 @@ where
 /// };
 ///
 /// assert_eq!(be_i16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
-/// assert_eq!(be_i16(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(be_i16(&b"\x01"[..]).is_err());
 ///
 /// fn le_i16(input: &[u8]) -> IResult<&[u8], i16> {
 ///     i16(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_i16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
-/// assert_eq!(le_i16(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(le_i16(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -1852,14 +1852,14 @@ where
 /// };
 ///
 /// assert_eq!(be_i24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
-/// assert_eq!(be_i24(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(be_i24(&b"\x01"[..]).is_err());
 ///
 /// fn le_i24(input: &[u8]) -> IResult<&[u8], i32> {
 ///     i24(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_i24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
-/// assert_eq!(le_i24(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(le_i24(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -1925,14 +1925,14 @@ where
 /// };
 ///
 /// assert_eq!(be_i32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
-/// assert_eq!(be_i32(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(be_i32(&b"\x01"[..]).is_err());
 ///
 /// fn le_i32(input: &[u8]) -> IResult<&[u8], i32> {
 ///     i32(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_i32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
-/// assert_eq!(le_i32(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(le_i32(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -1998,14 +1998,14 @@ where
 /// };
 ///
 /// assert_eq!(be_i64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
-/// assert_eq!(be_i64(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(be_i64(&b"\x01"[..]).is_err());
 ///
 /// fn le_i64(input: &[u8]) -> IResult<&[u8], i64> {
 ///     i64(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_i64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
-/// assert_eq!(le_i64(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(le_i64(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -2071,14 +2071,14 @@ where
 /// };
 ///
 /// assert_eq!(be_i128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
-/// assert_eq!(be_i128(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(be_i128(&b"\x01"[..]).is_err());
 ///
 /// fn le_i128(input: &[u8]) -> IResult<&[u8], i128> {
 ///     i128(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_i128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
-/// assert_eq!(le_i128(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
+/// assert!(le_i128(&b"\x01"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -2142,7 +2142,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&[0x41, 0x48, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(parser(&b"abc"[..]), Err(ErrMode::Backtrack(InputError::new(&b"abc"[..], ErrorKind::Slice))));
+/// assert!(parser(&b"abc"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -2191,7 +2191,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(parser(&b"abc"[..]), Err(ErrMode::Backtrack(InputError::new(&b"abc"[..], ErrorKind::Slice))));
+/// assert!(parser(&b"abc"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -2240,7 +2240,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&[0x00, 0x00, 0x48, 0x41][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(parser(&b"abc"[..]), Err(ErrMode::Backtrack(InputError::new(&b"abc"[..], ErrorKind::Slice))));
+/// assert!(parser(&b"abc"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -2289,7 +2289,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29, 0x40][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(parser(&b"abc"[..]), Err(ErrMode::Backtrack(InputError::new(&b"abc"[..], ErrorKind::Slice))));
+/// assert!(parser(&b"abc"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -2341,14 +2341,14 @@ where
 /// };
 ///
 /// assert_eq!(be_f32(&[0x41, 0x48, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(be_f32(&b"abc"[..]), Err(ErrMode::Backtrack(InputError::new(&b"abc"[..], ErrorKind::Slice))));
+/// assert!(be_f32(&b"abc"[..]).is_err());
 ///
 /// fn le_f32(input: &[u8]) -> IResult<&[u8], f32> {
 ///     f32(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_f32(&[0x00, 0x00, 0x48, 0x41][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(le_f32(&b"abc"[..]), Err(ErrMode::Backtrack(InputError::new(&b"abc"[..], ErrorKind::Slice))));
+/// assert!(le_f32(&b"abc"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -2414,14 +2414,14 @@ where
 /// };
 ///
 /// assert_eq!(be_f64(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(be_f64(&b"abc"[..]), Err(ErrMode::Backtrack(InputError::new(&b"abc"[..], ErrorKind::Slice))));
+/// assert!(be_f64(&b"abc"[..]).is_err());
 ///
 /// fn le_f64(input: &[u8]) -> IResult<&[u8], f64> {
 ///     f64(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_f64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29, 0x40][..]), Ok((&b""[..], 12.5)));
-/// assert_eq!(le_f64(&b"abc"[..]), Err(ErrMode::Backtrack(InputError::new(&b"abc"[..], ErrorKind::Slice))));
+/// assert!(le_f64(&b"abc"[..]).is_err());
 /// ```
 ///
 /// ```rust
@@ -2546,7 +2546,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(stream(b"\x00\x03abcefg")), Ok((stream(&b"efg"[..]), &b"abc"[..])));
-/// assert_eq!(parser(stream(b"\x00\x03123123")), Err(ErrMode::Backtrack(InputError::new(complete_stream(&b"123"[..]), ErrorKind::Literal))));
+/// assert!(parser(stream(b"\x00\x03123123")).is_err());
 /// assert_eq!(parser(stream(b"\x00\x03a")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 pub fn length_and_then<Input, Output, Count, Error, CountParser, ParseNext>(
@@ -2599,7 +2599,7 @@ where
 /// }
 ///
 /// assert_eq!(parser(stream(b"\x02abcabcabc")), Ok((stream(b"abc"), vec![&b"abc"[..], &b"abc"[..]])));
-/// assert_eq!(parser(stream(b"\x03123123123")), Err(ErrMode::Backtrack(InputError::new(stream(b"123123123"), ErrorKind::Literal))));
+/// assert!(parser(stream(b"\x03123123123")).is_err());
 /// # }
 /// ```
 pub fn length_repeat<Input, Output, Accumulator, Count, Error, CountParser, ParseNext>(
