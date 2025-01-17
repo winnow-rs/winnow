@@ -18,7 +18,9 @@ pub use crate::seq;
 /// # use winnow::error::Needed::Size;
 /// use winnow::combinator::preceded;
 ///
-/// let mut parser = preceded("abc", "efg");
+/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+///     preceded("abc", "efg").parse_next(input)
+/// }
 ///
 /// assert_eq!(parser.parse_peek("abcefg"), Ok(("", "efg")));
 /// assert_eq!(parser.parse_peek("abcefghij"), Ok(("hij", "efg")));
@@ -54,7 +56,9 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::combinator::terminated;
 ///
-/// let mut parser = terminated("abc", "efg");
+/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+///     terminated("abc", "efg").parse_next(input)
+/// }
 ///
 /// assert_eq!(parser.parse_peek("abcefg"), Ok(("", "abc")));
 /// assert_eq!(parser.parse_peek("abcefghij"), Ok(("hij", "abc")));
@@ -90,7 +94,9 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated_pair;
 ///
-/// let mut parser = separated_pair("abc", "|", "efg");
+/// fn parser<'i>(input: &mut &'i str) -> PResult<(&'i str, &'i str), InputError<&'i str>> {
+///     separated_pair("abc", "|", "efg").parse_next(input)
+/// }
 ///
 /// assert_eq!(parser.parse_peek("abc|efg"), Ok(("", ("abc", "efg"))));
 /// assert_eq!(parser.parse_peek("abc|efghij"), Ok(("hij", ("abc", "efg"))));
@@ -128,7 +134,9 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::combinator::delimited;
 ///
-/// let mut parser = delimited("(", "abc", ")");
+/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+///     delimited("(", "abc", ")").parse_next(input)
+/// }
 ///
 /// assert_eq!(parser.parse_peek("(abc)"), Ok(("", "abc")));
 /// assert_eq!(parser.parse_peek("(abc)def"), Ok(("def", "abc")));

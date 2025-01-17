@@ -1348,15 +1348,15 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::u16;
 ///
-/// let be_u16 = |s| {
-///     u16(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_u16(input: &[u8]) -> IResult<&[u8], u16> {
+///     u16(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_u16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
 /// assert_eq!(be_u16(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
 ///
-/// let le_u16 = |s| {
-///     u16(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_u16(input: &[u8]) -> IResult<&[u8], u16> {
+///     u16(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_u16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
@@ -1371,15 +1371,15 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::u16;
 ///
-/// let be_u16 = |s| {
-///     u16::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_u16(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u16> {
+///     u16::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_u16(Partial::new(&b"\x00\x03abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0003)));
 /// assert_eq!(be_u16(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
-/// let le_u16 = |s| {
-///     u16::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_u16(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>,  u16> {
+///     u16::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_u16(Partial::new(&b"\x00\x03abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0300)));
@@ -1421,15 +1421,15 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::u24;
 ///
-/// let be_u24 = |s| {
-///     u24(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_u24(input: &[u8]) -> IResult<&[u8], u32> {
+///     u24(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_u24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
 /// assert_eq!(be_u24(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
 ///
-/// let le_u24 = |s| {
-///     u24(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_u24(input: &[u8]) -> IResult<&[u8], u32> {
+///     u24(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_u24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
@@ -1444,15 +1444,15 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::u24;
 ///
-/// let be_u24 = |s| {
-///     u24::<_,InputError<_>>(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_u24(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
+///     u24::<_,InputError<_>>(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_u24(Partial::new(&b"\x00\x03\x05abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x000305)));
 /// assert_eq!(be_u24(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 ///
-/// let le_u24 = |s| {
-///     u24::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_u24(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
+///     u24::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_u24(Partial::new(&b"\x00\x03\x05abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x050300)));
@@ -1494,15 +1494,15 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::u32;
 ///
-/// let be_u32 = |s| {
-///     u32(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_u32(input: &[u8]) -> IResult<&[u8], u32> {
+///     u32(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_u32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
 /// assert_eq!(be_u32(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
 ///
-/// let le_u32 = |s| {
-///     u32(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_u32(input: &[u8]) -> IResult<&[u8], u32> {
+///     u32(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_u32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
@@ -1517,15 +1517,15 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::u32;
 ///
-/// let be_u32 = |s| {
-///     u32::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_u32(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
+///     u32::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_u32(Partial::new(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x00030507)));
 /// assert_eq!(be_u32(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 ///
-/// let le_u32 = |s| {
-///     u32::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_u32(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u32> {
+///     u32::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_u32(Partial::new(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x07050300)));
@@ -1567,15 +1567,15 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::u64;
 ///
-/// let be_u64 = |s| {
-///     u64(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_u64(input: &[u8]) -> IResult<&[u8], u64> {
+///     u64(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_u64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
 /// assert_eq!(be_u64(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
 ///
-/// let le_u64 = |s| {
-///     u64(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_u64(input: &[u8]) -> IResult<&[u8], u64> {
+///     u64(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_u64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
@@ -1590,15 +1590,15 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::u64;
 ///
-/// let be_u64 = |s| {
-///     u64::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_u64(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u64> {
+///     u64::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_u64(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0001020304050607)));
 /// assert_eq!(be_u64(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 ///
-/// let le_u64 = |s| {
-///     u64::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_u64(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u64> {
+///     u64::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_u64(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0706050403020100)));
@@ -1640,15 +1640,15 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::u128;
 ///
-/// let be_u128 = |s| {
-///     u128(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_u128(input: &[u8]) -> IResult<&[u8], u128> {
+///     u128(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_u128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
 /// assert_eq!(be_u128(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
 ///
-/// let le_u128 = |s| {
-///     u128(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_u128(input: &[u8]) -> IResult<&[u8], u128> {
+///     u128(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_u128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
@@ -1663,15 +1663,15 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::u128;
 ///
-/// let be_u128 = |s| {
-///     u128::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_u128(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u128> {
+///     u128::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_u128(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x00010203040506070001020304050607)));
 /// assert_eq!(be_u128(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 ///
-/// let le_u128 = |s| {
-///     u128::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_u128(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u128> {
+///     u128::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_u128(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x07060504030201000706050403020100)));
@@ -1774,15 +1774,15 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::i16;
 ///
-/// let be_i16 = |s| {
-///     i16(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_i16(input: &[u8]) -> IResult<&[u8], i16> {
+///     i16(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_i16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
 /// assert_eq!(be_i16(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
 ///
-/// let le_i16 = |s| {
-///     i16(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_i16(input: &[u8]) -> IResult<&[u8], i16> {
+///     i16(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_i16(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0300)));
@@ -1797,15 +1797,15 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::i16;
 ///
-/// let be_i16 = |s| {
-///     i16::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_i16(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i16> {
+///     i16::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_i16(Partial::new(&b"\x00\x03abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0003)));
 /// assert_eq!(be_i16(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
-/// let le_i16 = |s| {
-///     i16::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_i16(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i16> {
+///     i16::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_i16(Partial::new(&b"\x00\x03abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0300)));
@@ -1847,15 +1847,15 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::i24;
 ///
-/// let be_i24 = |s| {
-///     i24(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_i24(input: &[u8]) -> IResult<&[u8], i32> {
+///     i24(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_i24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
 /// assert_eq!(be_i24(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
 ///
-/// let le_i24 = |s| {
-///     i24(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_i24(input: &[u8]) -> IResult<&[u8], i32> {
+///     i24(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_i24(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x050300)));
@@ -1870,15 +1870,15 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::i24;
 ///
-/// let be_i24 = |s| {
-///     i24::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_i24(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i32> {
+///     i24::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_i24(Partial::new(&b"\x00\x03\x05abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x000305)));
 /// assert_eq!(be_i24(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 ///
-/// let le_i24 = |s| {
-///     i24::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_i24(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i32> {
+///     i24::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_i24(Partial::new(&b"\x00\x03\x05abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x050300)));
@@ -1920,15 +1920,15 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::i32;
 ///
-/// let be_i32 = |s| {
-///     i32(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_i32(input: &[u8]) -> IResult<&[u8], i32> {
+///     i32(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_i32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
 /// assert_eq!(be_i32(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
 ///
-/// let le_i32 = |s| {
-///     i32(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_i32(input: &[u8]) -> IResult<&[u8], i32> {
+///     i32(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_i32(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07050300)));
@@ -1943,15 +1943,15 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::i32;
 ///
-/// let be_i32 = |s| {
-///     i32::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_i32(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i32> {
+///     i32::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_i32(Partial::new(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x00030507)));
 /// assert_eq!(be_i32(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 ///
-/// let le_i32 = |s| {
-///     i32::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_i32(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i32> {
+///     i32::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_i32(Partial::new(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x07050300)));
@@ -1993,15 +1993,15 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::i64;
 ///
-/// let be_i64 = |s| {
-///     i64(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_i64(input: &[u8]) -> IResult<&[u8], i64> {
+///     i64(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_i64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
 /// assert_eq!(be_i64(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
 ///
-/// let le_i64 = |s| {
-///     i64(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_i64(input: &[u8]) -> IResult<&[u8], i64> {
+///     i64(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_i64(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0706050403020100)));
@@ -2016,15 +2016,15 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::i64;
 ///
-/// let be_i64 = |s| {
-///     i64::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_i64(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i64> {
+///     i64::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_i64(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0001020304050607)));
 /// assert_eq!(be_i64(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 ///
-/// let le_i64 = |s| {
-///     i64::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_i64(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i64> {
+///     i64::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_i64(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0706050403020100)));
@@ -2066,15 +2066,15 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::i128;
 ///
-/// let be_i128 = |s| {
-///     i128(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_i128(input: &[u8]) -> IResult<&[u8], i128> {
+///     i128(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_i128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
 /// assert_eq!(be_i128(&b"\x01"[..]), Err(ErrMode::Backtrack(InputError::new(&[0x01][..], ErrorKind::Slice))));
 ///
-/// let le_i128 = |s| {
-///     i128(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_i128(input: &[u8]) -> IResult<&[u8], i128> {
+///     i128(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_i128(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x07060504030201000706050403020100)));
@@ -2089,15 +2089,15 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::i128;
 ///
-/// let be_i128 = |s| {
-///     i128::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_i128(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i128> {
+///     i128::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_i128(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x00010203040506070001020304050607)));
 /// assert_eq!(be_i128(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 ///
-/// let le_i128 = |s| {
-///     i128::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_i128(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, i128> {
+///     i128::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_i128(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x07060504030201000706050403020100)));
@@ -2336,15 +2336,15 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::f32;
 ///
-/// let be_f32 = |s| {
-///     f32(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_f32(input: &[u8]) -> IResult<&[u8], f32> {
+///     f32(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_f32(&[0x41, 0x48, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
 /// assert_eq!(be_f32(&b"abc"[..]), Err(ErrMode::Backtrack(InputError::new(&b"abc"[..], ErrorKind::Slice))));
 ///
-/// let le_f32 = |s| {
-///     f32(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_f32(input: &[u8]) -> IResult<&[u8], f32> {
+///     f32(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_f32(&[0x00, 0x00, 0x48, 0x41][..]), Ok((&b""[..], 12.5)));
@@ -2359,15 +2359,15 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::f32;
 ///
-/// let be_f32 = |s| {
-///     f32::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_f32(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, f32> {
+///     f32::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_f32(Partial::new(&[0x41, 0x48, 0x00, 0x00][..])), Ok((Partial::new(&b""[..]), 12.5)));
 /// assert_eq!(be_f32(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
-/// let le_f32 = |s| {
-///     f32::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_f32(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, f32> {
+///     f32::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_f32(Partial::new(&[0x00, 0x00, 0x48, 0x41][..])), Ok((Partial::new(&b""[..]), 12.5)));
@@ -2409,15 +2409,15 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::f64;
 ///
-/// let be_f64 = |s| {
-///     f64(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_f64(input: &[u8]) -> IResult<&[u8], f64> {
+///     f64(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_f64(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
 /// assert_eq!(be_f64(&b"abc"[..]), Err(ErrMode::Backtrack(InputError::new(&b"abc"[..], ErrorKind::Slice))));
 ///
-/// let le_f64 = |s| {
-///     f64(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_f64(input: &[u8]) -> IResult<&[u8], f64> {
+///     f64(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_f64(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29, 0x40][..]), Ok((&b""[..], 12.5)));
@@ -2432,15 +2432,15 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::f64;
 ///
-/// let be_f64 = |s| {
-///     f64::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(s)
+/// fn be_f64(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, f64> {
+///     f64::<_, InputError<_>>(winnow::binary::Endianness::Big).parse_peek(input)
 /// };
 ///
 /// assert_eq!(be_f64(Partial::new(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])), Ok((Partial::new(&b""[..]), 12.5)));
 /// assert_eq!(be_f64(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(5))));
 ///
-/// let le_f64 = |s| {
-///     f64::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(s)
+/// fn le_f64(input: Partial<&[u8]>) -> IResult<Partial<&[u8]>, f64> {
+///     f64::<_, InputError<_>>(winnow::binary::Endianness::Little).parse_peek(input)
 /// };
 ///
 /// assert_eq!(le_f64(Partial::new(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x29, 0x40][..])), Ok((Partial::new(&b""[..]), 12.5)));

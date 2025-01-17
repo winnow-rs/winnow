@@ -119,7 +119,9 @@ where
 /// use winnow::ascii::alpha1;
 /// # fn main() {
 ///
-/// let mut parser = peek(alpha1);
+/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+///     peek(alpha1).parse_next(input)
+/// }
 ///
 /// assert_eq!(parser.parse_peek("abcd;"), Ok(("abcd;", "abcd")));
 /// assert_eq!(parser.parse_peek("123;"), Err(ErrMode::Backtrack(InputError::new("123;", ErrorKind::Slice))));
@@ -168,7 +170,9 @@ where
 /// # use winnow::combinator::eof;
 /// # use winnow::prelude::*;
 ///
-/// let mut parser = eof;
+/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+///     eof.parse_next(input)
+/// }
 /// assert_eq!(parser.parse_peek("abc"), Err(ErrMode::Backtrack(InputError::new("abc", ErrorKind::Eof))));
 /// assert_eq!(parser.parse_peek(""), Ok(("", "")));
 /// ```
@@ -206,7 +210,9 @@ where
 /// use winnow::ascii::alpha1;
 /// # fn main() {
 ///
-/// let mut parser = not(alpha1);
+/// fn parser<'i>(input: &mut &'i str) -> PResult<(), InputError<&'i str>> {
+///     not(alpha1).parse_next(input)
+/// }
 ///
 /// assert_eq!(parser.parse_peek("123"), Ok(("123", ())));
 /// assert_eq!(parser.parse_peek("abcd"), Err(ErrMode::Backtrack(InputError::new("abcd", ErrorKind::Not))));
@@ -512,8 +518,11 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::combinator::fail;
 ///
-/// let s = "string";
-/// assert_eq!(fail::<_, &str, _>.parse_peek(s), Err(ErrMode::Backtrack(InputError::new(s, ErrorKind::Fail))));
+/// fn parser<'i>(input: &mut &'i str) -> PResult<(), InputError<&'i str>> {
+///     fail.parse_next(input)
+/// }
+///
+/// assert_eq!(parser.parse_peek("string"), Err(ErrMode::Backtrack(InputError::new("string", ErrorKind::Fail))));
 /// ```
 #[doc(alias = "unexpected")]
 #[inline]
