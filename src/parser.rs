@@ -896,7 +896,7 @@ where
 ///
 /// # Example
 ///
-/// ```
+/// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{ErrorKind, InputError}};
 /// fn parser<'s>(i: &mut &'s [u8]) -> PResult<u8, InputError<&'s [u8]>>  {
@@ -924,7 +924,7 @@ where
 ///
 /// # Example
 ///
-/// ```
+/// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{ErrorKind, InputError}};
 /// fn parser<'s>(i: &mut &'s str) -> PResult<char, InputError<&'s str>> {

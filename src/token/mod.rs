@@ -253,7 +253,7 @@ where
 /// assert_eq!(parser_fn(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Token))));
 /// ```
 ///
-/// ```
+/// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
@@ -320,7 +320,7 @@ where
 /// assert_eq!(none_of::<_, _, InputError<_>>('a').parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Token))));
 /// ```
 ///
-/// ```
+/// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::IResult;

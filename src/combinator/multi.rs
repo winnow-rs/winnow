@@ -1263,7 +1263,7 @@ where
 ///
 /// # Example
 ///
-/// ```
+/// ```rust
 /// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;

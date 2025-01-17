@@ -18,7 +18,7 @@ const BYTE: usize = u8::BITS as usize;
 /// See [`bytes`] to convert it back.
 ///
 /// # Example
-/// ```
+/// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
 /// # use winnow::binary::bits::{bits, take};
