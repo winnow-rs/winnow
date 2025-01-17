@@ -1582,35 +1582,35 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed, error::IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::ascii::digit1;
 /// # use winnow::prelude::*;
 /// use winnow::ascii::take_escaped;
 /// use winnow::token::one_of;
 ///
-/// fn esc(s: &str) -> IResult<&str, &str> {
-///   take_escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_peek(s)
+/// fn esc<'i>(input: &mut &'i str) -> PResult<&'i str> {
+///   take_escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_next(input)
 /// }
 ///
-/// assert_eq!(esc("123;"), Ok((";", "123")));
-/// assert_eq!(esc(r#"12\"34;"#), Ok((";", r#"12\"34"#)));
+/// assert_eq!(esc.parse_peek("123;"), Ok((";", "123")));
+/// assert_eq!(esc.parse_peek(r#"12\"34;"#), Ok((";", r#"12\"34"#)));
 /// ```
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed, error::IResult};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::ascii::digit1;
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// use winnow::ascii::take_escaped;
 /// use winnow::token::one_of;
 ///
-/// fn esc(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take_escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_peek(s)
+/// fn esc<'i>(input: &mut Partial<&'i str>) -> PResult<&'i str> {
+///   take_escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_next(input)
 /// }
 ///
-/// assert_eq!(esc(Partial::new("123;")), Ok((Partial::new(";"), "123")));
-/// assert_eq!(esc(Partial::new("12\\\"34;")), Ok((Partial::new(";"), "12\\\"34")));
+/// assert_eq!(esc.parse_peek(Partial::new("123;")), Ok((Partial::new(";"), "123")));
+/// assert_eq!(esc.parse_peek(Partial::new("12\\\"34;")), Ok((Partial::new(";"), "12\\\"34")));
 /// ```
 #[inline(always)]
 pub fn take_escaped<Input, Error, Normal, Escapable, NormalOutput, EscapableOutput>(
