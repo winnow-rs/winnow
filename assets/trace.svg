@@ -68,7 +68,7 @@
   <svg x="0" y="10" width="720" height="532" viewBox="0 0 720 532">
     <foreignObject width="720" height="532">
       <div xmlns="http://www.w3.org/1999/xhtml" class="container">
-        <div class="user-input"><pre><span class="prompt">$</span> ./string</pre></div>
+        <div class="user-input"><pre><span class="prompt">$</span> ./string &#x27;&quot;abc&quot;&#x27;</pre></div>
         <div class="term-output"><pre>&gt; delimited                                         <span class="bold">|</span> <span class="underline">"\"abc\""</span><span class="fg6">∅</span>
  &gt; '"'                                              <span class="bold">|</span> <span class="underline">"\"abc\""</span><span class="fg6">∅</span>
 <span class="fg2"> &lt; '"'                                             </span> <span class="bold">|</span> <span class="fg2">+1</span>
