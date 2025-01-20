@@ -92,5 +92,5 @@ fn example() {
             .with_current_dir(current_dir)
             .with_env("CLICOLOR_FORCE", "1"),
     )
-    .test("assets/trace.svg", [cmd.as_str()]);
+    .test("assets/trace.svg", [format!(r#"{cmd} '"abc"'"#).as_str()]);
 }
