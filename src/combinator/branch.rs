@@ -29,7 +29,7 @@ pub trait Alt<I, O, E> {
 ///
 /// ```rust
 /// # use winnow::error::IResult;
-/// # use winnow::{error::ErrMode, error::InputError,error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::ascii::{alpha1, digit1};
 /// use winnow::combinator::alt;
@@ -81,7 +81,7 @@ pub trait Permutation<I, O, E> {
 ///
 /// ```rust
 /// # use winnow::error::IResult;
-/// # use winnow::{error::ErrMode,error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode,error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::ascii::{alpha1, digit1};
 /// use winnow::combinator::permutation;
@@ -105,7 +105,7 @@ pub trait Permutation<I, O, E> {
 /// that could parse the next slice of input, the first one is used.
 /// ```rust
 /// # use winnow::error::IResult;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}};
+/// # use winnow::{error::ErrMode, error::ErrorKind};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::permutation;
 /// use winnow::token::any;

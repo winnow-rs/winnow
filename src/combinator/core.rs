@@ -33,7 +33,6 @@ where
 ///
 /// ```rust
 /// # use winnow::error::IResult;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::opt;
 /// use winnow::ascii::alpha1;
@@ -72,7 +71,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::IResult};
+/// # use winnow::error::IResult;
 /// # use winnow::prelude::*;
 /// use winnow::combinator::cond;
 /// use winnow::ascii::alpha1;
@@ -113,13 +112,12 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::IResult};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::peek;
 /// use winnow::ascii::alpha1;
 /// # fn main() {
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
 ///     peek(alpha1).parse_next(input)
 /// }
 ///
@@ -166,11 +164,10 @@ where
 /// ```rust
 /// # use winnow::error::IResult;
 /// # use std::str;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::combinator::eof;
 /// # use winnow::prelude::*;
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
 ///     eof.parse_next(input)
 /// }
 /// assert!(parser.parse_peek("abc").is_err());
@@ -204,13 +201,12 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::IResult};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::not;
 /// use winnow::ascii::alpha1;
 /// # fn main() {
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<(), InputError<&'i str>> {
+/// fn parser<'i>(input: &mut &'i str) -> PResult<()> {
 ///     not(alpha1).parse_next(input)
 /// }
 ///
@@ -248,7 +244,6 @@ where
 /// Without `cut_err`:
 /// ```rust
 /// # use winnow::error::IResult;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::token::one_of;
 /// # use winnow::token::rest;
 /// # use winnow::ascii::digit1;
@@ -479,7 +474,6 @@ enum State<E> {
 ///
 /// ```rust
 /// # use winnow::error::IResult;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::alt;
 /// use winnow::combinator::empty;

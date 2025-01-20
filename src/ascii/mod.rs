@@ -31,10 +31,10 @@ use crate::Parser;
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}};
+/// # use winnow::{error::ErrMode, error::{ErrorKind}};
 /// # use winnow::ascii::Caseless;
 ///
-/// fn parser<'s>(s: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn parser<'s>(s: &mut &'s str) -> PResult<&'s str> {
 ///   Caseless("hello").parse_next(s)
 /// }
 ///
@@ -76,9 +76,8 @@ impl Caseless<&str> {
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}};
 /// # use winnow::ascii::crlf;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
 ///     crlf.parse_next(input)
 /// }
 ///
@@ -89,12 +88,12 @@ impl Caseless<&str> {
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::crlf;
-/// assert_eq!(crlf::<_, InputError<_>>.parse_peek(Partial::new("\r\nc")), Ok((Partial::new("c"), "\r\n")));
-/// assert!(crlf::<_, InputError<_>>.parse_peek(Partial::new("ab\r\nc")).is_err());
-/// assert_eq!(crlf::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(crlf::<_, ContextError>.parse_peek(Partial::new("\r\nc")), Ok((Partial::new("c"), "\r\n")));
+/// assert!(crlf::<_, ContextError>.parse_peek(Partial::new("ab\r\nc")).is_err());
+/// assert_eq!(crlf::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
 pub fn crlf<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
@@ -126,9 +125,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::ascii::till_line_ending;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
 ///     till_line_ending.parse_next(input)
 /// }
 ///
@@ -142,14 +140,14 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::till_line_ending;
-/// assert_eq!(till_line_ending::<_, InputError<_>>.parse_peek(Partial::new("ab\r\nc")), Ok((Partial::new("\r\nc"), "ab")));
-/// assert_eq!(till_line_ending::<_, InputError<_>>.parse_peek(Partial::new("abc")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(till_line_ending::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert!(till_line_ending::<_, InputError<_>>.parse_peek(Partial::new("a\rb\nc")).is_err());
-/// assert!(till_line_ending::<_, InputError<_>>.parse_peek(Partial::new("a\rbc")).is_err());
+/// assert_eq!(till_line_ending::<_, ContextError>.parse_peek(Partial::new("ab\r\nc")), Ok((Partial::new("\r\nc"), "ab")));
+/// assert_eq!(till_line_ending::<_, ContextError>.parse_peek(Partial::new("abc")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(till_line_ending::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert!(till_line_ending::<_, ContextError>.parse_peek(Partial::new("a\rb\nc")).is_err());
+/// assert!(till_line_ending::<_, ContextError>.parse_peek(Partial::new("a\rbc")).is_err());
 /// ```
 #[inline(always)]
 pub fn till_line_ending<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
@@ -222,9 +220,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::ascii::line_ending;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
 ///     line_ending.parse_next(input)
 /// }
 ///
@@ -235,12 +232,12 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::line_ending;
-/// assert_eq!(line_ending::<_, InputError<_>>.parse_peek(Partial::new("\r\nc")), Ok((Partial::new("c"), "\r\n")));
-/// assert!(line_ending::<_, InputError<_>>.parse_peek(Partial::new("ab\r\nc")).is_err());
-/// assert_eq!(line_ending::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(line_ending::<_, ContextError>.parse_peek(Partial::new("\r\nc")), Ok((Partial::new("c"), "\r\n")));
+/// assert!(line_ending::<_, ContextError>.parse_peek(Partial::new("ab\r\nc")).is_err());
+/// assert_eq!(line_ending::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn line_ending<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
@@ -272,9 +269,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::ascii::newline;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<char, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<char> {
 ///     newline.parse_next(input)
 /// }
 ///
@@ -285,12 +281,12 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::newline;
-/// assert_eq!(newline::<_, InputError<_>>.parse_peek(Partial::new("\nc")), Ok((Partial::new("c"), '\n')));
-/// assert!(newline::<_, InputError<_>>.parse_peek(Partial::new("\r\nc")).is_err());
-/// assert_eq!(newline::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(newline::<_, ContextError>.parse_peek(Partial::new("\nc")), Ok((Partial::new("c"), '\n')));
+/// assert!(newline::<_, ContextError>.parse_peek(Partial::new("\r\nc")).is_err());
+/// assert_eq!(newline::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn newline<I, Error: ParserError<I>>(input: &mut I) -> PResult<char, Error>
@@ -323,9 +319,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::ascii::tab;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<char, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<char> {
 ///     tab.parse_next(input)
 /// }
 ///
@@ -336,12 +331,12 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::tab;
-/// assert_eq!(tab::<_, InputError<_>>.parse_peek(Partial::new("\tc")), Ok((Partial::new("c"), '\t')));
-/// assert!(tab::<_, InputError<_>>.parse_peek(Partial::new("\r\nc")).is_err());
-/// assert_eq!(tab::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(tab::<_, ContextError>.parse_peek(Partial::new("\tc")), Ok((Partial::new("c"), '\t')));
+/// assert!(tab::<_, ContextError>.parse_peek(Partial::new("\r\nc")).is_err());
+/// assert_eq!(tab::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn tab<Input, Error>(input: &mut Input) -> PResult<char, Error>
@@ -375,9 +370,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::ascii::alpha0;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
 ///     alpha0.parse_next(input)
 /// }
 ///
@@ -388,12 +382,12 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::alpha0;
-/// assert_eq!(alpha0::<_, InputError<_>>.parse_peek(Partial::new("ab1c")), Ok((Partial::new("1c"), "ab")));
-/// assert_eq!(alpha0::<_, InputError<_>>.parse_peek(Partial::new("1c")), Ok((Partial::new("1c"), "")));
-/// assert_eq!(alpha0::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha0::<_, ContextError>.parse_peek(Partial::new("ab1c")), Ok((Partial::new("1c"), "ab")));
+/// assert_eq!(alpha0::<_, ContextError>.parse_peek(Partial::new("1c")), Ok((Partial::new("1c"), "")));
+/// assert_eq!(alpha0::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn alpha0<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
@@ -428,9 +422,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::ascii::alpha1;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
 ///     alpha1.parse_next(input)
 /// }
 ///
@@ -441,12 +434,12 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::alpha1;
-/// assert_eq!(alpha1::<_, InputError<_>>.parse_peek(Partial::new("aB1c")), Ok((Partial::new("1c"), "aB")));
-/// assert!(alpha1::<_, InputError<_>>.parse_peek(Partial::new("1c")).is_err());
-/// assert_eq!(alpha1::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha1::<_, ContextError>.parse_peek(Partial::new("aB1c")), Ok((Partial::new("1c"), "aB")));
+/// assert!(alpha1::<_, ContextError>.parse_peek(Partial::new("1c")).is_err());
+/// assert_eq!(alpha1::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn alpha1<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
@@ -481,9 +474,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::ascii::digit0;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
 ///     digit0.parse_next(input)
 /// }
 ///
@@ -495,12 +487,12 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::digit0;
-/// assert_eq!(digit0::<_, InputError<_>>.parse_peek(Partial::new("21c")), Ok((Partial::new("c"), "21")));
-/// assert_eq!(digit0::<_, InputError<_>>.parse_peek(Partial::new("a21c")), Ok((Partial::new("a21c"), "")));
-/// assert_eq!(digit0::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(digit0::<_, ContextError>.parse_peek(Partial::new("21c")), Ok((Partial::new("c"), "21")));
+/// assert_eq!(digit0::<_, ContextError>.parse_peek(Partial::new("a21c")), Ok((Partial::new("a21c"), "")));
+/// assert_eq!(digit0::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn digit0<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
@@ -535,9 +527,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::ascii::digit1;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
 ///     digit1.parse_next(input)
 /// }
 ///
@@ -548,12 +539,12 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::digit1;
-/// assert_eq!(digit1::<_, InputError<_>>.parse_peek(Partial::new("21c")), Ok((Partial::new("c"), "21")));
-/// assert!(digit1::<_, InputError<_>>.parse_peek(Partial::new("c1")).is_err());
-/// assert_eq!(digit1::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(digit1::<_, ContextError>.parse_peek(Partial::new("21c")), Ok((Partial::new("c"), "21")));
+/// assert!(digit1::<_, ContextError>.parse_peek(Partial::new("c1")).is_err());
+/// assert_eq!(digit1::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// ## Parsing an integer
@@ -562,9 +553,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed, Parser};
 /// # use winnow::ascii::digit1;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<u32, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<u32> {
 ///   digit1.try_map(str::parse).parse_next(input)
 /// }
 ///
@@ -605,9 +595,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::ascii::hex_digit0;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
 ///     hex_digit0.parse_next(input)
 /// }
 ///
@@ -618,12 +607,12 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::hex_digit0;
-/// assert_eq!(hex_digit0::<_, InputError<_>>.parse_peek(Partial::new("21cZ")), Ok((Partial::new("Z"), "21c")));
-/// assert_eq!(hex_digit0::<_, InputError<_>>.parse_peek(Partial::new("Z21c")), Ok((Partial::new("Z21c"), "")));
-/// assert_eq!(hex_digit0::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(hex_digit0::<_, ContextError>.parse_peek(Partial::new("21cZ")), Ok((Partial::new("Z"), "21c")));
+/// assert_eq!(hex_digit0::<_, ContextError>.parse_peek(Partial::new("Z21c")), Ok((Partial::new("Z21c"), "")));
+/// assert_eq!(hex_digit0::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn hex_digit0<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
@@ -659,9 +648,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::ascii::hex_digit1;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
 ///     hex_digit1.parse_next(input)
 /// }
 ///
@@ -672,12 +660,12 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::hex_digit1;
-/// assert_eq!(hex_digit1::<_, InputError<_>>.parse_peek(Partial::new("21cZ")), Ok((Partial::new("Z"), "21c")));
-/// assert!(hex_digit1::<_, InputError<_>>.parse_peek(Partial::new("H2")).is_err());
-/// assert_eq!(hex_digit1::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(hex_digit1::<_, ContextError>.parse_peek(Partial::new("21cZ")), Ok((Partial::new("Z"), "21c")));
+/// assert!(hex_digit1::<_, ContextError>.parse_peek(Partial::new("H2")).is_err());
+/// assert_eq!(hex_digit1::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn hex_digit1<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
@@ -712,9 +700,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::ascii::oct_digit0;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
 ///     oct_digit0.parse_next(input)
 /// }
 ///
@@ -725,12 +712,12 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::oct_digit0;
-/// assert_eq!(oct_digit0::<_, InputError<_>>.parse_peek(Partial::new("21cZ")), Ok((Partial::new("cZ"), "21")));
-/// assert_eq!(oct_digit0::<_, InputError<_>>.parse_peek(Partial::new("Z21c")), Ok((Partial::new("Z21c"), "")));
-/// assert_eq!(oct_digit0::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(oct_digit0::<_, ContextError>.parse_peek(Partial::new("21cZ")), Ok((Partial::new("cZ"), "21")));
+/// assert_eq!(oct_digit0::<_, ContextError>.parse_peek(Partial::new("Z21c")), Ok((Partial::new("Z21c"), "")));
+/// assert_eq!(oct_digit0::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn oct_digit0<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
@@ -766,9 +753,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::ascii::oct_digit1;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
 ///     oct_digit1.parse_next(input)
 /// }
 ///
@@ -779,12 +765,12 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::oct_digit1;
-/// assert_eq!(oct_digit1::<_, InputError<_>>.parse_peek(Partial::new("21cZ")), Ok((Partial::new("cZ"), "21")));
-/// assert!(oct_digit1::<_, InputError<_>>.parse_peek(Partial::new("H2")).is_err());
-/// assert_eq!(oct_digit1::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(oct_digit1::<_, ContextError>.parse_peek(Partial::new("21cZ")), Ok((Partial::new("cZ"), "21")));
+/// assert!(oct_digit1::<_, ContextError>.parse_peek(Partial::new("H2")).is_err());
+/// assert_eq!(oct_digit1::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn oct_digit1<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
@@ -819,9 +805,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::ascii::alphanumeric0;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
 ///     alphanumeric0.parse_next(input)
 /// }
 ///
@@ -832,12 +817,12 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::alphanumeric0;
-/// assert_eq!(alphanumeric0::<_, InputError<_>>.parse_peek(Partial::new("21cZ%1")), Ok((Partial::new("%1"), "21cZ")));
-/// assert_eq!(alphanumeric0::<_, InputError<_>>.parse_peek(Partial::new("&Z21c")), Ok((Partial::new("&Z21c"), "")));
-/// assert_eq!(alphanumeric0::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alphanumeric0::<_, ContextError>.parse_peek(Partial::new("21cZ%1")), Ok((Partial::new("%1"), "21cZ")));
+/// assert_eq!(alphanumeric0::<_, ContextError>.parse_peek(Partial::new("&Z21c")), Ok((Partial::new("&Z21c"), "")));
+/// assert_eq!(alphanumeric0::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn alphanumeric0<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
@@ -872,9 +857,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::ascii::alphanumeric1;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
 ///     alphanumeric1.parse_next(input)
 /// }
 ///
@@ -885,12 +869,12 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::alphanumeric1;
-/// assert_eq!(alphanumeric1::<_, InputError<_>>.parse_peek(Partial::new("21cZ%1")), Ok((Partial::new("%1"), "21cZ")));
-/// assert!(alphanumeric1::<_, InputError<_>>.parse_peek(Partial::new("&H2")).is_err());
-/// assert_eq!(alphanumeric1::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alphanumeric1::<_, ContextError>.parse_peek(Partial::new("21cZ%1")), Ok((Partial::new("%1"), "21cZ")));
+/// assert!(alphanumeric1::<_, ContextError>.parse_peek(Partial::new("&H2")).is_err());
+/// assert_eq!(alphanumeric1::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn alphanumeric1<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
@@ -925,12 +909,12 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::space0;
-/// assert_eq!(space0::<_, InputError<_>>.parse_peek(Partial::new(" \t21c")), Ok((Partial::new("21c"), " \t")));
-/// assert_eq!(space0::<_, InputError<_>>.parse_peek(Partial::new("Z21c")), Ok((Partial::new("Z21c"), "")));
-/// assert_eq!(space0::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(space0::<_, ContextError>.parse_peek(Partial::new(" \t21c")), Ok((Partial::new("21c"), " \t")));
+/// assert_eq!(space0::<_, ContextError>.parse_peek(Partial::new("Z21c")), Ok((Partial::new("Z21c"), "")));
+/// assert_eq!(space0::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn space0<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
@@ -965,9 +949,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::ascii::space1;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
 ///     space1.parse_next(input)
 /// }
 ///
@@ -978,12 +961,12 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::space1;
-/// assert_eq!(space1::<_, InputError<_>>.parse_peek(Partial::new(" \t21c")), Ok((Partial::new("21c"), " \t")));
-/// assert!(space1::<_, InputError<_>>.parse_peek(Partial::new("H2")).is_err());
-/// assert_eq!(space1::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(space1::<_, ContextError>.parse_peek(Partial::new(" \t21c")), Ok((Partial::new("21c"), " \t")));
+/// assert!(space1::<_, ContextError>.parse_peek(Partial::new("H2")).is_err());
+/// assert_eq!(space1::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn space1<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
@@ -1018,9 +1001,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::ascii::multispace0;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
 ///     multispace0.parse_next(input)
 /// }
 ///
@@ -1031,12 +1013,12 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::multispace0;
-/// assert_eq!(multispace0::<_, InputError<_>>.parse_peek(Partial::new(" \t\n\r21c")), Ok((Partial::new("21c"), " \t\n\r")));
-/// assert_eq!(multispace0::<_, InputError<_>>.parse_peek(Partial::new("Z21c")), Ok((Partial::new("Z21c"), "")));
-/// assert_eq!(multispace0::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(multispace0::<_, ContextError>.parse_peek(Partial::new(" \t\n\r21c")), Ok((Partial::new("21c"), " \t\n\r")));
+/// assert_eq!(multispace0::<_, ContextError>.parse_peek(Partial::new("Z21c")), Ok((Partial::new("Z21c"), "")));
+/// assert_eq!(multispace0::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn multispace0<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
@@ -1071,9 +1053,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
 /// # use winnow::ascii::multispace1;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
 ///     multispace1.parse_next(input)
 /// }
 ///
@@ -1084,12 +1065,12 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::multispace1;
-/// assert_eq!(multispace1::<_, InputError<_>>.parse_peek(Partial::new(" \t\n\r21c")), Ok((Partial::new("21c"), " \t\n\r")));
-/// assert!(multispace1::<_, InputError<_>>.parse_peek(Partial::new("H2")).is_err());
-/// assert_eq!(multispace1::<_, InputError<_>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(multispace1::<_, ContextError>.parse_peek(Partial::new(" \t\n\r21c")), Ok((Partial::new("21c"), " \t\n\r")));
+/// assert!(multispace1::<_, ContextError>.parse_peek(Partial::new("H2")).is_err());
+/// assert_eq!(multispace1::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn multispace1<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
@@ -1299,10 +1280,9 @@ impl Int for isize {
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
 /// use winnow::ascii::hex_uint;
 ///
-/// fn parser<'s>(s: &mut &'s [u8]) -> PResult<u32, InputError<&'s [u8]>> {
+/// fn parser<'s>(s: &mut &'s [u8]) -> PResult<u32> {
 ///   hex_uint(s)
 /// }
 ///
@@ -1313,11 +1293,11 @@ impl Int for isize {
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::Partial;
 /// use winnow::ascii::hex_uint;
 ///
-/// fn parser<'s>(s: &mut Partial<&'s [u8]>) -> PResult<u32, InputError<Partial<&'s [u8]>>> {
+/// fn parser<'s>(s: &mut Partial<&'s [u8]>) -> PResult<u32> {
 ///   hex_uint(s)
 /// }
 ///
@@ -1447,11 +1427,10 @@ impl HexUint for u128 {
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::error::Needed::Size;
 /// use winnow::ascii::float;
 ///
-/// fn parser<'s>(s: &mut &'s str) -> PResult<f64, InputError<&'s str>> {
+/// fn parser<'s>(s: &mut &'s str) -> PResult<f64> {
 ///   float(s)
 /// }
 ///
@@ -1463,12 +1442,12 @@ impl HexUint for u128 {
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::error::Needed::Size;
 /// # use winnow::Partial;
 /// use winnow::ascii::float;
 ///
-/// fn parser<'s>(s: &mut Partial<&'s str>) -> PResult<f64, InputError<Partial<&'s str>>> {
+/// fn parser<'s>(s: &mut Partial<&'s str>) -> PResult<f64> {
 ///   float(s)
 /// }
 ///
@@ -1582,7 +1561,6 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use winnow::ascii::digit1;
 /// # use winnow::prelude::*;
 /// use winnow::ascii::take_escaped;
@@ -1598,7 +1576,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::ascii::digit1;
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -1735,14 +1713,13 @@ where
 /// ```rust
 /// # #[cfg(feature = "std")] {
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
 /// # use std::str::from_utf8;
 /// use winnow::token::literal;
 /// use winnow::ascii::escaped_transform;
 /// use winnow::ascii::alpha1;
 /// use winnow::combinator::alt;
 ///
-/// fn parser<'s>(input: &mut &'s str) -> PResult<String, InputError<&'s str>> {
+/// fn parser<'s>(input: &mut &'s str) -> PResult<String> {
 ///   escaped_transform(
 ///     alpha1,
 ///     '\\',
@@ -1762,7 +1739,7 @@ where
 /// ```rust
 /// # #[cfg(feature = "std")] {
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use std::str::from_utf8;
 /// # use winnow::Partial;
 /// use winnow::token::literal;
@@ -1770,7 +1747,7 @@ where
 /// use winnow::ascii::alpha1;
 /// use winnow::combinator::alt;
 ///
-/// fn parser<'s>(input: &mut Partial<&'s str>) -> PResult<String, InputError<Partial<&'s str>>> {
+/// fn parser<'s>(input: &mut Partial<&'s str>) -> PResult<String> {
 ///   escaped_transform(
 ///     alpha1,
 ///     '\\',

@@ -13,12 +13,12 @@ pub use crate::seq;
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// use winnow::combinator::preceded;
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
 ///     preceded("abc", "efg").parse_next(input)
 /// }
 ///
@@ -51,12 +51,12 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// use winnow::combinator::terminated;
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
 ///     terminated("abc", "efg").parse_next(input)
 /// }
 ///
@@ -89,12 +89,12 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::error::Needed::Size;
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated_pair;
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<(&'i str, &'i str), InputError<&'i str>> {
+/// fn parser<'i>(input: &mut &'i str) -> PResult<(&'i str, &'i str)> {
 ///     separated_pair("abc", "|", "efg").parse_next(input)
 /// }
 ///
@@ -129,12 +129,12 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::error::Needed::Size;
 /// # use winnow::prelude::*;
 /// use winnow::combinator::delimited;
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
 ///     delimited("(", "abc", ")").parse_next(input)
 /// }
 ///

@@ -16,13 +16,13 @@ use crate::Parser;
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::token::take_while;
 /// # use winnow::stream::AsChar;
 /// # use winnow::prelude::*;
 /// use winnow::combinator::trace;
 ///
-/// fn short_alpha<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8], InputError<&'s [u8]>> {
+/// fn short_alpha<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8]> {
 ///   trace("short_alpha",
 ///     take_while(3..=6, AsChar::is_alpha)
 ///   ).parse_next(s)

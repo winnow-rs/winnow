@@ -224,10 +224,10 @@
 //! > Let's look at it more closely as its used above (resolving all generic parameters):
 //! > ```rust
 //! > # use winnow::prelude::*;
-//! > # use winnow::error::InputError;
+//! > # use winnow::error::ContextError;
 //! > pub fn one_of<'i>(
 //! >     list: &'static [char]
-//! > ) -> impl Parser<&'i str, char, InputError<&'i str>> {
+//! > ) -> impl Parser<&'i str, char, ContextError> {
 //! >     // ...
 //! > #    winnow::token::one_of(list)
 //! > }

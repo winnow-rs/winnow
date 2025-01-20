@@ -163,12 +163,12 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::InputError, Parser};
+    /// # use winnow::{error::ErrMode,error::ErrorKind, Parser};
     /// # use winnow::prelude::*;
     /// use winnow::ascii::alpha1;
     /// # fn main() {
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<i32, InputError<&'i str>> {
+    /// fn parser<'i>(input: &mut &'i str) -> PResult<i32> {
     ///     alpha1.value(1234).parse_next(input)
     /// }
     ///
@@ -197,12 +197,12 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::InputError, Parser};
+    /// # use winnow::{error::ErrMode,error::ErrorKind, Parser};
     /// # use winnow::prelude::*;
     /// use winnow::ascii::alpha1;
     /// # fn main() {
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<u32, InputError<&'i str>> {
+    /// fn parser<'i>(input: &mut &'i str) -> PResult<u32> {
     ///     alpha1.default_value().parse_next(input)
     /// }
     ///
@@ -230,12 +230,12 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::InputError, Parser};
+    /// # use winnow::{error::ErrMode,error::ErrorKind, Parser};
     /// # use winnow::prelude::*;
     /// use winnow::ascii::alpha1;
     /// # fn main() {
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<(), InputError<&'i str>> {
+    /// fn parser<'i>(input: &mut &'i str) -> PResult<()> {
     ///     alpha1.void().parse_next(input)
     /// }
     ///
@@ -262,19 +262,19 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::prelude::*;
-    /// # use winnow::error::InputError;
+    /// # use winnow::error::ContextError;
     /// # use winnow::error::IResult;
     /// use winnow::ascii::alpha1;
     /// # fn main() {
     ///
-    /// fn parser1<'s>(i: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+    /// fn parser1<'s>(i: &mut &'s str) -> PResult<&'s str> {
     ///   alpha1(i)
     /// }
     ///
     /// let mut parser2 = parser1.output_into();
     ///
     /// // the parser converts the &str output of the child parser into a Vec<u8>
-    /// let bytes: IResult<&str, Vec<u8>> = parser2.parse_peek("abcd");
+    /// let bytes: PResult<(_, Vec<u8>), _> = parser2.parse_peek("abcd");
     /// assert_eq!(bytes, Ok(("", vec![97, 98, 99, 100])));
     /// # }
     /// ```
@@ -298,13 +298,13 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::InputError, Parser};
+    /// # use winnow::{error::ErrMode,error::ErrorKind, Parser};
     /// # use winnow::prelude::*;
     /// use winnow::ascii::{alpha1};
     /// use winnow::combinator::separated_pair;
     /// # fn main() {
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    /// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
     ///     separated_pair(alpha1, ',', alpha1).take().parse_next(input)
     /// }
     ///
@@ -358,12 +358,12 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::prelude::*;
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::InputError};
+    /// # use winnow::{error::ErrMode,error::ErrorKind};
     /// use winnow::ascii::{alpha1};
     /// use winnow::token::literal;
     /// use winnow::combinator::separated_pair;
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<(bool, &'i str), InputError<&'i str>> {
+    /// fn parser<'i>(input: &mut &'i str) -> PResult<(bool, &'i str)> {
     ///     separated_pair(alpha1, ',', alpha1).value(true).with_taken().parse_next(input)
     /// }
     ///
@@ -408,13 +408,13 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::prelude::*;
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::InputError, stream::Stream};
+    /// # use winnow::{error::ErrMode,error::ErrorKind, stream::Stream};
     /// # use std::ops::Range;
     /// use winnow::stream::LocatingSlice;
     /// use winnow::ascii::alpha1;
     /// use winnow::combinator::separated_pair;
     ///
-    /// fn parser<'i>(input: &mut LocatingSlice<&'i str>) -> PResult<(Range<usize>, Range<usize>), InputError<LocatingSlice<&'i str>>> {
+    /// fn parser<'i>(input: &mut LocatingSlice<&'i str>) -> PResult<(Range<usize>, Range<usize>)> {
     ///     separated_pair(alpha1.span(), ',', alpha1.span()).parse_next(input)
     /// }
     ///
@@ -449,14 +449,14 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::prelude::*;
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::InputError, stream::Stream};
+    /// # use winnow::{error::ErrMode,error::ErrorKind, stream::Stream};
     /// # use std::ops::Range;
     /// use winnow::stream::LocatingSlice;
     /// use winnow::ascii::alpha1;
     /// use winnow::token::literal;
     /// use winnow::combinator::separated_pair;
     ///
-    /// fn parser<'i>(input: &mut LocatingSlice<&'i str>) -> PResult<((usize, Range<usize>), (usize, Range<usize>)), InputError<LocatingSlice<&'i str>>> {
+    /// fn parser<'i>(input: &mut LocatingSlice<&'i str>) -> PResult<((usize, Range<usize>), (usize, Range<usize>))> {
     ///     separated_pair(alpha1.value(1).with_span(), ',', alpha1.value(2).with_span()).parse_next(input)
     /// }
     ///
@@ -483,11 +483,11 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::prelude::*;
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::InputError, Parser};
+    /// # use winnow::{error::ErrMode,error::ErrorKind, Parser};
     /// # use winnow::ascii::digit1;
     /// # fn main() {
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<usize, InputError<&'i str>> {
+    /// fn parser<'i>(input: &mut &'i str) -> PResult<usize> {
     ///     digit1.map(|s: &str| s.len()).parse_next(input)
     /// }
     ///
@@ -519,12 +519,12 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::InputError, Parser};
+    /// # use winnow::{error::ErrMode,error::ErrorKind, Parser};
     /// # use winnow::prelude::*;
     /// use winnow::ascii::digit1;
     /// # fn main() {
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<u8, InputError<&'i str>> {
+    /// fn parser<'i>(input: &mut &'i str) -> PResult<u8> {
     ///     digit1.try_map(|s: &str| s.parse::<u8>()).parse_next(input)
     /// }
     ///
@@ -562,12 +562,12 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::InputError, Parser};
+    /// # use winnow::{error::ErrMode,error::ErrorKind, Parser};
     /// # use winnow::prelude::*;
     /// use winnow::ascii::digit1;
     /// # fn main() {
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<u8, InputError<&'i str>> {
+    /// fn parser<'i>(input: &mut &'i str) -> PResult<u8> {
     ///     digit1.verify_map(|s: &str| s.parse::<u8>().ok()).parse_next(input)
     /// }
     ///
@@ -607,11 +607,11 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::InputError, PResult, Parser};
+    /// # use winnow::{error::ErrMode,error::ErrorKind, PResult, Parser};
     /// use winnow::token::take;
     /// use winnow::binary::u8;
     ///
-    /// fn length_take<'s>(input: &mut &'s [u8]) -> PResult<&'s [u8], InputError<&'s [u8]>> {
+    /// fn length_take<'s>(input: &mut &'s [u8]) -> PResult<&'s [u8]> {
     ///     u8.flat_map(take).parse_next(input)
     /// }
     ///
@@ -621,11 +621,11 @@ pub trait Parser<I, O, E> {
     ///
     /// which is the same as
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::InputError, PResult, Parser};
+    /// # use winnow::{error::ErrMode,error::ErrorKind, PResult, Parser};
     /// use winnow::token::take;
     /// use winnow::binary::u8;
     ///
-    /// fn length_take<'s>(input: &mut &'s [u8]) -> PResult<&'s [u8], InputError<&'s [u8]>> {
+    /// fn length_take<'s>(input: &mut &'s [u8]) -> PResult<&'s [u8]> {
     ///     let length = u8.parse_next(input)?;
     ///     let data = take(length).parse_next(input)?;
     ///     Ok(data)
@@ -657,13 +657,13 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::InputError, Parser};
+    /// # use winnow::{error::ErrMode,error::ErrorKind, Parser};
     /// # use winnow::prelude::*;
     /// use winnow::ascii::digit1;
     /// use winnow::token::take;
     /// # fn main() {
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    /// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
     ///     take(5u8).and_then(digit1).parse_next(input)
     /// }
     ///
@@ -696,10 +696,10 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::prelude::*;
-    /// use winnow::{error::ErrMode,error::ErrorKind, error::InputError, Parser};
+    /// use winnow::{error::ErrMode,error::ErrorKind, Parser};
     /// use winnow::ascii::digit1;
     ///
-    /// fn parser<'s>(input: &mut &'s str) -> PResult<u64, InputError<&'s str>> {
+    /// fn parser<'s>(input: &mut &'s str) -> PResult<u64> {
     ///     digit1.parse_to().parse_next(input)
     /// }
     ///
@@ -735,12 +735,12 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, error::InputError, Parser};
+    /// # use winnow::{error::ErrMode,error::ErrorKind, Parser};
     /// # use winnow::ascii::alpha1;
     /// # use winnow::prelude::*;
     /// # fn main() {
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str, InputError<&'i str>> {
+    /// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
     ///     alpha1.verify(|s: &str| s.len() == 4).parse_next(input)
     /// }
     ///
@@ -909,8 +909,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{ErrorKind, InputError}};
-/// fn parser<'s>(i: &mut &'s [u8]) -> PResult<u8, InputError<&'s [u8]>>  {
+/// # use winnow::{error::ErrMode, error::{ErrorKind, ContextError}};
+/// fn parser<'s>(i: &mut &'s [u8]) -> PResult<u8>  {
 ///     b'a'.parse_next(i)
 /// }
 /// assert_eq!(parser.parse_peek(&b"abc"[..]), Ok((&b"bc"[..], b'a')));
@@ -937,8 +937,8 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{ErrorKind, InputError}};
-/// fn parser<'s>(i: &mut &'s str) -> PResult<char, InputError<&'s str>> {
+/// # use winnow::{error::ErrMode, error::{ErrorKind, ContextError}};
+/// fn parser<'s>(i: &mut &'s str) -> PResult<char> {
 ///     'a'.parse_next(i)
 /// }
 /// assert_eq!(parser.parse_peek("abc"), Ok(("bc", 'a')));
@@ -964,11 +964,11 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
 /// # use winnow::combinator::alt;
 /// # use winnow::token::take;
 ///
-/// fn parser<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8], InputError<&'s [u8]>> {
+/// fn parser<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8]> {
 ///   alt((&"Hello"[..], take(5usize))).parse_next(s)
 /// }
 ///
@@ -993,12 +993,12 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
 /// # use winnow::combinator::alt;
 /// # use winnow::token::take;
 /// use winnow::ascii::Caseless;
 ///
-/// fn parser<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8], InputError<&'s [u8]>> {
+/// fn parser<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8]> {
 ///   alt((Caseless(&"hello"[..]), take(5usize))).parse_next(s)
 /// }
 ///
@@ -1025,11 +1025,11 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
 /// # use winnow::combinator::alt;
 /// # use winnow::token::take;
 ///
-/// fn parser<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8], InputError<&'s [u8]>> {
+/// fn parser<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8]> {
 ///   alt((b"Hello", take(5usize))).parse_next(s)
 /// }
 ///
@@ -1054,12 +1054,12 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
 /// # use winnow::combinator::alt;
 /// # use winnow::token::take;
 /// use winnow::ascii::Caseless;
 ///
-/// fn parser<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8], InputError<&'s [u8]>> {
+/// fn parser<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8]> {
 ///   alt((Caseless(b"hello"), take(5usize))).parse_next(s)
 /// }
 ///
@@ -1087,11 +1087,11 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}};
+/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}};
 /// # use winnow::combinator::alt;
 /// # use winnow::token::take;
 ///
-/// fn parser<'s>(s: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn parser<'s>(s: &mut &'s str) -> PResult<&'s str> {
 ///   alt(("Hello", take(5usize))).parse_next(s)
 /// }
 ///
@@ -1116,12 +1116,12 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}};
+/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}};
 /// # use winnow::combinator::alt;
 /// # use winnow::token::take;
 /// # use winnow::ascii::Caseless;
 ///
-/// fn parser<'s>(s: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn parser<'s>(s: &mut &'s str) -> PResult<&'s str> {
 ///   alt((Caseless("hello"), take(5usize))).parse_next(s)
 /// }
 ///

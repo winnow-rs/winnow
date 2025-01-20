@@ -370,14 +370,14 @@ impl<I: crate::lib::std::fmt::Display, S> crate::lib::std::fmt::Display for Stat
 /// Here is how it works in practice:
 ///
 /// ```rust
-/// # use winnow::{PResult, error::ErrMode, error::Needed, error::{InputError, ErrorKind}, token, ascii, stream::Partial};
+/// # use winnow::{PResult, error::ErrMode, error::Needed, error::{ContextError, ErrorKind}, token, ascii, stream::Partial};
 /// # use winnow::prelude::*;
 ///
-/// fn take_partial<'s>(i: &mut Partial<&'s [u8]>) -> PResult<&'s [u8], InputError<Partial<&'s [u8]>>> {
+/// fn take_partial<'s>(i: &mut Partial<&'s [u8]>) -> PResult<&'s [u8], ContextError> {
 ///   token::take(4u8).parse_next(i)
 /// }
 ///
-/// fn take_complete<'s>(i: &mut &'s [u8]) -> PResult<&'s [u8], InputError<&'s [u8]>> {
+/// fn take_complete<'s>(i: &mut &'s [u8]) -> PResult<&'s [u8], ContextError> {
 ///   token::take(4u8).parse_next(i)
 /// }
 ///
@@ -393,11 +393,11 @@ impl<I: crate::lib::std::fmt::Display, S> crate::lib::std::fmt::Display for Stat
 /// assert!(take_complete.parse_peek(&b"abc"[..]).is_err());
 ///
 /// // the alpha0 function takes 0 or more alphabetic characters
-/// fn alpha0_partial<'s>(i: &mut Partial<&'s str>) -> PResult<&'s str, InputError<Partial<&'s str>>> {
+/// fn alpha0_partial<'s>(i: &mut Partial<&'s str>) -> PResult<&'s str, ContextError> {
 ///   ascii::alpha0.parse_next(i)
 /// }
 ///
-/// fn alpha0_complete<'s>(i: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn alpha0_complete<'s>(i: &mut &'s str) -> PResult<&'s str, ContextError> {
 ///   ascii::alpha0.parse_next(i)
 /// }
 ///
@@ -3413,9 +3413,9 @@ impl AsChar for &char {
 /// For example, you could implement `hex_digit0` as:
 /// ```
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError};
 /// # use winnow::token::take_while;
-/// fn hex_digit1<'s>(input: &mut &'s str) -> PResult<&'s str, InputError<&'s str>> {
+/// fn hex_digit1<'s>(input: &mut &'s str) -> PResult<&'s str, ContextError> {
 ///     take_while(1.., ('a'..='f', 'A'..='F', '0'..='9')).parse_next(input)
 /// }
 ///
