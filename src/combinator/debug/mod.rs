@@ -16,13 +16,13 @@ use crate::Parser;
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::token::take_while;
 /// # use winnow::stream::AsChar;
 /// # use winnow::prelude::*;
 /// use winnow::combinator::trace;
 ///
-/// fn short_alpha<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8], InputError<&'s [u8]>> {
+/// fn short_alpha<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8]> {
 ///   trace("short_alpha",
 ///     take_while(3..=6, AsChar::is_alpha)
 ///   ).parse_next(s)
@@ -31,8 +31,8 @@ use crate::Parser;
 /// assert_eq!(short_alpha.parse_peek(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
 /// assert_eq!(short_alpha.parse_peek(b"lengthy"), Ok((&b"y"[..], &b"length"[..])));
 /// assert_eq!(short_alpha.parse_peek(b"latin"), Ok((&b""[..], &b"latin"[..])));
-/// assert_eq!(short_alpha.parse_peek(b"ed"), Err(ErrMode::Backtrack(InputError::new(&b"ed"[..], ErrorKind::Slice))));
-/// assert_eq!(short_alpha.parse_peek(b"12345"), Err(ErrMode::Backtrack(InputError::new(&b"12345"[..], ErrorKind::Slice))));
+/// assert!(short_alpha.parse_peek(b"ed").is_err());
+/// assert!(short_alpha.parse_peek(b"12345").is_err());
 /// ```
 #[cfg_attr(not(feature = "debug"), allow(unused_variables))]
 #[cfg_attr(not(feature = "debug"), allow(unused_mut))]

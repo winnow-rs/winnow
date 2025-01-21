@@ -1,18 +1,17 @@
+use snapbox::str;
+
 use crate::ascii::dec_uint;
 use crate::ascii::digit0;
 use crate::combinator::dispatch;
 use crate::combinator::empty;
 use crate::combinator::fail;
 use crate::combinator::seq;
-use crate::error::ErrMode;
-use crate::error::ErrorKind;
-use crate::error::ParserError;
 use crate::prelude::*;
 use crate::token::any;
 
 #[test]
 fn dispatch_basics() {
-    fn escape_seq_char(input: &mut &str) -> PResult<char> {
+    fn escape_seq_char<'i>(input: &mut &'i str) -> TestResult<&'i str, char> {
         dispatch! {any;
             'b' => empty.value('\u{8}'),
             'f' => empty.value('\u{c}'),
@@ -25,20 +24,45 @@ fn dispatch_basics() {
         }
         .parse_next(input)
     }
-    assert_eq!(escape_seq_char.parse_peek("b123"), Ok(("123", '\u{8}')));
-    assert_eq!(
-        escape_seq_char.parse_peek("error"),
-        Err(ErrMode::Backtrack(ParserError::from_error_kind(
-            &"rror",
-            ErrorKind::Fail
-        )))
+    assert_parse!(
+        escape_seq_char.parse_peek("b123"),
+        str![[r#"
+Ok(
+    (
+        "123",
+        '/u{8}',
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
+        escape_seq_char.parse_peek("error"),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "rror",
+            kind: Fail,
+        },
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
         escape_seq_char.parse_peek(""),
-        Err(ErrMode::Backtrack(ParserError::from_error_kind(
-            &"",
-            ErrorKind::Fail
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "",
+            kind: Token,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
@@ -50,7 +74,7 @@ fn seq_struct_basics() {
         y: u32,
     }
 
-    fn parser(input: &mut &str) -> PResult<Point> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         seq! {
             Point {
                 x: dec_uint,
@@ -60,23 +84,48 @@ fn seq_struct_basics() {
         }
         .parse_next(input)
     }
-    assert_eq!(
+    assert_parse!(
         parser.parse_peek("123,4 remaining"),
-        Ok((" remaining", Point { x: 123, y: 4 },)),
+        str![[r#"
+Ok(
+    (
+        " remaining",
+        Point {
+            x: 123,
+            y: 4,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         parser.parse_peek("123, remaining"),
-        Err(ErrMode::Backtrack(ParserError::from_error_kind(
-            &" remaining",
-            ErrorKind::Fail
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: " remaining",
+            kind: Verify,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         parser.parse_peek(""),
-        Err(ErrMode::Backtrack(ParserError::from_error_kind(
-            &"",
-            ErrorKind::Fail
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "",
+            kind: Token,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
@@ -89,7 +138,7 @@ fn seq_struct_default_init() {
         z: u32,
     }
 
-    fn parser(input: &mut &str) -> PResult<Point> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         seq! {
             Point {
                 x: dec_uint,
@@ -100,23 +149,49 @@ fn seq_struct_default_init() {
         }
         .parse_next(input)
     }
-    assert_eq!(
+    assert_parse!(
         parser.parse_peek("123,4 remaining"),
-        Ok((" remaining", Point { x: 123, y: 4, z: 0 },)),
+        str![[r#"
+Ok(
+    (
+        " remaining",
+        Point {
+            x: 123,
+            y: 4,
+            z: 0,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         parser.parse_peek("123, remaining"),
-        Err(ErrMode::Backtrack(ParserError::from_error_kind(
-            &" remaining",
-            ErrorKind::Fail
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: " remaining",
+            kind: Verify,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         parser.parse_peek(""),
-        Err(ErrMode::Backtrack(ParserError::from_error_kind(
-            &"",
-            ErrorKind::Fail
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "",
+            kind: Token,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
@@ -130,7 +205,7 @@ fn seq_struct_trailing_comma_elided() {
         y: u32,
     }
 
-    fn parser(input: &mut &str) -> PResult<Point> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         seq! {
             Point {
                 x: dec_uint,
@@ -153,7 +228,7 @@ fn seq_struct_no_trailing_comma() {
         y: u32,
     }
 
-    fn parser(input: &mut &str) -> PResult<Point> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         seq! {
             Point {
                 x: dec_uint,
@@ -175,7 +250,7 @@ fn seq_struct_no_trailing_comma_elided() {
         y: u32,
     }
 
-    fn parser(input: &mut &str) -> PResult<Point> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         seq! {
             Point {
                 x: dec_uint,
@@ -196,7 +271,7 @@ fn seq_enum_struct_variant() {
         Mul(u32, u32),
     }
 
-    fn add(input: &mut &[u8]) -> PResult<Expr> {
+    fn add<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], Expr> {
         seq! {Expr::Add {
             lhs: dec_uint::<_, u32, _>,
             _: b" + ",
@@ -205,7 +280,7 @@ fn seq_enum_struct_variant() {
         .parse_next(input)
     }
 
-    fn mul(input: &mut &[u8]) -> PResult<Expr> {
+    fn mul<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], Expr> {
         seq!(Expr::Mul(
              dec_uint::<_, u32, _>,
              _: b" * ",
@@ -214,14 +289,36 @@ fn seq_enum_struct_variant() {
         .parse_next(input)
     }
 
-    assert_eq!(
+    assert_parse!(
         add.parse_peek(&b"1 + 2"[..]),
-        Ok((&b""[..], Expr::Add { lhs: 1, rhs: 2 })),
+        str![[r#"
+Ok(
+    (
+        [],
+        Add {
+            lhs: 1,
+            rhs: 2,
+        },
+    ),
+)
+
+"#]]
     );
 
-    assert_eq!(
+    assert_parse!(
         mul.parse_peek(&b"3 * 4"[..]),
-        Ok((&b""[..], Expr::Mul(3, 4))),
+        str![[r#"
+Ok(
+    (
+        [],
+        Mul(
+            3,
+            4,
+        ),
+    ),
+)
+
+"#]]
     );
 }
 
@@ -235,7 +332,7 @@ fn seq_struct_borrow() {
         y: u32,
     }
 
-    fn parser(input: &mut &str) -> PResult<Point> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         let mut dec_uint = digit0.parse_to();
         seq! {
             Point {
@@ -254,7 +351,7 @@ fn seq_tuple_struct_basics() {
     #[derive(Debug, PartialEq)]
     struct Point(u32, u32);
 
-    fn parser(input: &mut &str) -> PResult<Point> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         seq! {
             Point(
                 dec_uint,
@@ -264,23 +361,48 @@ fn seq_tuple_struct_basics() {
         }
         .parse_next(input)
     }
-    assert_eq!(
+    assert_parse!(
         parser.parse_peek("123,4 remaining"),
-        Ok((" remaining", Point(123, 4),)),
+        str![[r#"
+Ok(
+    (
+        " remaining",
+        Point(
+            123,
+            4,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         parser.parse_peek("123, remaining"),
-        Err(ErrMode::Backtrack(ParserError::from_error_kind(
-            &" remaining",
-            ErrorKind::Fail
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: " remaining",
+            kind: Verify,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         parser.parse_peek(""),
-        Err(ErrMode::Backtrack(ParserError::from_error_kind(
-            &"",
-            ErrorKind::Fail
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "",
+            kind: Token,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
@@ -291,7 +413,7 @@ fn seq_tuple_struct_trailing_comma_elided() {
     #[derive(Debug, PartialEq)]
     struct Point(u32, u32);
 
-    fn parser(input: &mut &str) -> PResult<Point> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         seq! {
             Point(
                 dec_uint,
@@ -311,7 +433,7 @@ fn seq_tuple_struct_no_trailing_comma() {
     #[derive(Debug, PartialEq)]
     struct Point(u32, u32);
 
-    fn parser(input: &mut &str) -> PResult<Point> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         seq! {
             Point(
                 dec_uint,
@@ -330,7 +452,7 @@ fn seq_tuple_struct_no_trailing_comma_elided() {
     #[derive(Debug, PartialEq)]
     struct Point(u32, u32);
 
-    fn parser(input: &mut &str) -> PResult<Point> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         seq! {
             Point(
                 dec_uint,
@@ -345,7 +467,7 @@ fn seq_tuple_struct_no_trailing_comma_elided() {
 
 #[test]
 fn seq_tuple_basics() {
-    fn parser(input: &mut &str) -> PResult<(u32, u32)> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, (u32, u32)> {
         seq! {
             (
                 dec_uint,
@@ -355,23 +477,48 @@ fn seq_tuple_basics() {
         }
         .parse_next(input)
     }
-    assert_eq!(
+    assert_parse!(
         parser.parse_peek("123,4 remaining"),
-        Ok((" remaining", (123, 4),)),
+        str![[r#"
+Ok(
+    (
+        " remaining",
+        (
+            123,
+            4,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         parser.parse_peek("123, remaining"),
-        Err(ErrMode::Backtrack(ParserError::from_error_kind(
-            &" remaining",
-            ErrorKind::Fail
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: " remaining",
+            kind: Verify,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         parser.parse_peek(""),
-        Err(ErrMode::Backtrack(ParserError::from_error_kind(
-            &"",
-            ErrorKind::Fail
-        )))
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "",
+            kind: Token,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
@@ -379,7 +526,7 @@ fn seq_tuple_basics() {
 fn seq_tuple_trailing_comma_elided() {
     #![allow(dead_code)]
 
-    fn parser(input: &mut &str) -> PResult<(u32, u32)> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, (u32, u32)> {
         seq! {
             (
                 dec_uint,
@@ -396,7 +543,7 @@ fn seq_tuple_trailing_comma_elided() {
 fn seq_tuple_no_trailing_comma() {
     #![allow(dead_code)]
 
-    fn parser(input: &mut &str) -> PResult<(u32, u32)> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, (u32, u32)> {
         seq! {
             (
                 dec_uint,
@@ -412,7 +559,7 @@ fn seq_tuple_no_trailing_comma() {
 fn seq_tuple_no_trailing_comma_elided() {
     #![allow(dead_code)]
 
-    fn parser(input: &mut &str) -> PResult<(u32, u32)> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, (u32, u32)> {
         seq! {
             (
                 dec_uint,
@@ -429,7 +576,7 @@ fn seq_tuple_no_trailing_comma_elided() {
 fn seq_tuple_no_parens() {
     #![allow(dead_code)]
 
-    fn parser(input: &mut &str) -> PResult<(u32, u32)> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, (u32, u32)> {
         seq! (
             dec_uint,
             _: ',',
@@ -446,7 +593,7 @@ fn seq_tuple_borrow() {
     #[derive(Debug, PartialEq)]
     struct Point(u32, u32);
 
-    fn parser(input: &mut &str) -> PResult<Point> {
+    fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, Point> {
         let mut dec_uint = digit0.parse_to();
         seq! {
             Point(

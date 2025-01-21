@@ -18,25 +18,24 @@ const BYTE: usize = u8::BITS as usize;
 /// See [`bytes`] to convert it back.
 ///
 /// # Example
-/// ```
+/// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
 /// # use winnow::binary::bits::{bits, take};
-/// # use winnow::error::InputError;
-/// # use winnow::error::IResult;
+/// # use winnow::error::ContextError;
 /// type Stream<'i> = &'i Bytes;
 ///
 /// fn stream(b: &[u8]) -> Stream<'_> {
 ///     Bytes::new(b)
 /// }
 ///
-/// fn parse(input: Stream<'_>) -> IResult<Stream<'_>, (u8, u8)> {
-///     bits::<_, _, InputError<(_, usize)>, _, _>((take(4usize), take(8usize))).parse_peek(input)
+/// fn parse(input: &mut Stream<'_>) -> PResult<(u8, u8)> {
+///     bits::<_, _, ContextError, _, _>((take(4usize), take(8usize))).parse_next(input)
 /// }
 ///
 /// let input = stream(&[0x12, 0x34, 0xff, 0xff]);
 ///
-/// let output = parse(input).expect("We take 1.5 bytes and the input is longer than 2 bytes");
+/// let output = parse.parse_peek(input).expect("We take 1.5 bytes and the input is longer than 2 bytes");
 ///
 /// // The first byte is consumed, the second byte is partially consumed and dropped.
 /// let remaining = output.0;
@@ -91,8 +90,7 @@ where
 /// use winnow::Bytes;
 /// use winnow::binary::bits::{bits, bytes, take};
 /// use winnow::token::rest;
-/// use winnow::error::InputError;
-/// use winnow::error::IResult;
+/// use winnow::error::ContextError;
 ///
 /// type Stream<'i> = &'i Bytes;
 ///
@@ -100,17 +98,17 @@ where
 ///     Bytes::new(b)
 /// }
 ///
-/// fn parse(input: Stream<'_>) -> IResult<Stream<'_>, (u8, u8, &[u8])> {
-///   bits::<_, _, InputError<(_, usize)>, _, _>((
+/// fn parse<'i>(input: &mut Stream<'i>) -> PResult<(u8, u8, &'i [u8])> {
+///   bits::<_, _, ContextError, _, _>((
 ///     take(4usize),
 ///     take(8usize),
-///     bytes::<_, _, InputError<_>, _, _>(rest)
-///   )).parse_peek(input)
+///     bytes::<_, _, ContextError, _, _>(rest)
+///   )).parse_next(input)
 /// }
 ///
 /// let input = stream(&[0x12, 0x34, 0xff, 0xff]);
 ///
-/// assert_eq!(parse(input), Ok(( stream(&[]), (0x01, 0x23, &[0xff, 0xff][..]) )));
+/// assert_eq!(parse.parse_peek(input), Ok(( stream(&[]), (0x01, 0x23, &[0xff, 0xff][..]) )));
 /// ```
 pub fn bytes<Input, Output, ByteError, BitError, ParseNext>(
     mut parser: ParseNext,
@@ -164,8 +162,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
-/// # use winnow::error::{InputError, ErrorKind};
-/// # use winnow::error::IResult;
+/// # use winnow::error::{ContextError, ErrorKind};
 /// use winnow::binary::bits::take;
 ///
 /// type Stream<'i> = &'i Bytes;
@@ -174,21 +171,17 @@ where
 ///     Bytes::new(b)
 /// }
 ///
-/// fn parser(input: (Stream<'_>, usize), count: usize)-> IResult<(Stream<'_>, usize), u8> {
-///   take(count).parse_peek(input)
-/// }
-///
 /// // Consumes 0 bits, returns 0
-/// assert_eq!(parser((stream(&[0b00010010]), 0), 0), Ok(((stream(&[0b00010010]), 0), 0)));
+/// assert_eq!(take::<_, usize, _, ContextError>(0usize).parse_peek((stream(&[0b00010010]), 0)), Ok(((stream(&[0b00010010]), 0), 0)));
 ///
 /// // Consumes 4 bits, returns their values and increase offset to 4
-/// assert_eq!(parser((stream(&[0b00010010]), 0), 4), Ok(((stream(&[0b00010010]), 4), 0b00000001)));
+/// assert_eq!(take::<_, usize, _, ContextError>(4usize).parse_peek((stream(&[0b00010010]), 0)), Ok(((stream(&[0b00010010]), 4), 0b00000001)));
 ///
 /// // Consumes 4 bits, offset is 4, returns their values and increase offset to 0 of next byte
-/// assert_eq!(parser((stream(&[0b00010010]), 4), 4), Ok(((stream(&[]), 0), 0b00000010)));
+/// assert_eq!(take::<_, usize, _, ContextError>(4usize).parse_peek((stream(&[0b00010010]), 4)), Ok(((stream(&[]), 0), 0b00000010)));
 ///
 /// // Tries to consume 12 bits but only 8 are available
-/// assert_eq!(parser((stream(&[0b00010010]), 0), 12), Err(winnow::error::ErrMode::Backtrack(InputError::new((stream(&[0b00010010]), 0), ErrorKind::Eof))));
+/// assert!(take::<_, usize, _, ContextError>(12usize).parse_peek((stream(&[0b00010010]), 0)).is_err());
 /// ```
 #[inline(always)]
 pub fn take<Input, Output, Count, Error>(count: Count) -> impl Parser<(Input, usize), Output, Error>
@@ -283,8 +276,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
-/// # use winnow::error::{InputError, ErrorKind};
-/// # use winnow::error::IResult;
+/// # use winnow::error::{ContextError, ErrorKind};
 /// use winnow::binary::bits::pattern;
 ///
 /// type Stream<'i> = &'i Bytes;
@@ -296,39 +288,27 @@ where
 /// /// Compare the lowest `count` bits of `input` against the lowest `count` bits of `pattern`.
 /// /// Return Ok and the matching section of `input` if there's a match.
 /// /// Return Err if there's no match.
-/// fn parser(bits: u8, count: u8, input: (Stream<'_>, usize)) -> IResult<(Stream<'_>, usize), u8> {
-///     pattern(bits, count).parse_peek(input)
+/// fn parser(bits: u8, count: u8, input: &mut (Stream<'_>, usize)) -> PResult<u8> {
+///     pattern(bits, count).parse_next(input)
 /// }
 ///
 /// // The lowest 4 bits of 0b00001111 match the lowest 4 bits of 0b11111111.
 /// assert_eq!(
-///     parser(0b0000_1111, 4, (stream(&[0b1111_1111]), 0)),
+///     pattern::<_, usize, _, ContextError>(0b0000_1111, 4usize).parse_peek((stream(&[0b1111_1111]), 0)),
 ///     Ok(((stream(&[0b1111_1111]), 4), 0b0000_1111))
 /// );
 ///
 /// // The lowest bit of 0b00001111 matches the lowest bit of 0b11111111 (both are 1).
 /// assert_eq!(
-///     parser(0b00000001, 1, (stream(&[0b11111111]), 0)),
+///     pattern::<_, usize, _, ContextError>(0b00000001, 1usize).parse_peek((stream(&[0b11111111]), 0)),
 ///     Ok(((stream(&[0b11111111]), 1), 0b00000001))
 /// );
 ///
 /// // The lowest 2 bits of 0b11111111 and 0b00000001 are different.
-/// assert_eq!(
-///     parser(0b000000_01, 2, (stream(&[0b111111_11]), 0)),
-///     Err(winnow::error::ErrMode::Backtrack(InputError::new(
-///         (stream(&[0b11111111]), 0),
-///         ErrorKind::Literal
-///     )))
-/// );
+/// assert!(pattern::<_, usize, _, ContextError>(0b000000_01, 2usize).parse_peek((stream(&[0b111111_11]), 0)).is_err());
 ///
 /// // The lowest 8 bits of 0b11111111 and 0b11111110 are different.
-/// assert_eq!(
-///     parser(0b11111110, 8, (stream(&[0b11111111]), 0)),
-///     Err(winnow::error::ErrMode::Backtrack(InputError::new(
-///         (stream(&[0b11111111]), 0),
-///         ErrorKind::Literal
-///     )))
-/// );
+/// assert!(pattern::<_, usize, _, ContextError>(0b11111110, 8usize).parse_peek((stream(&[0b11111111]), 0)).is_err());
 /// ```
 #[inline(always)]
 #[doc(alias = "literal")]
@@ -385,7 +365,6 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
 /// # use winnow::error::{InputError, ErrorKind};
-/// # use winnow::error::IResult;
 /// use winnow::binary::bits::bool;
 ///
 /// type Stream<'i> = &'i Bytes;
@@ -394,12 +373,12 @@ where
 ///     Bytes::new(b)
 /// }
 ///
-/// fn parse(input: (Stream<'_>, usize)) -> IResult<(Stream<'_>, usize), bool> {
-///     bool.parse_peek(input)
+/// fn parse(input: &mut (Stream<'_>, usize)) -> PResult<bool> {
+///     bool.parse_next(input)
 /// }
 ///
-/// assert_eq!(parse((stream(&[0b10000000]), 0)), Ok(((stream(&[0b10000000]), 1), true)));
-/// assert_eq!(parse((stream(&[0b10000000]), 1)), Ok(((stream(&[0b10000000]), 2), false)));
+/// assert_eq!(parse.parse_peek((stream(&[0b10000000]), 0)), Ok(((stream(&[0b10000000]), 1), true)));
+/// assert_eq!(parse.parse_peek((stream(&[0b10000000]), 1)), Ok(((stream(&[0b10000000]), 2), false)));
 /// ```
 #[doc(alias = "any")]
 pub fn bool<Input, Error: ParserError<(Input, usize)>>(

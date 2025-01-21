@@ -2,60 +2,49 @@ use super::*;
 
 #[cfg(feature = "std")]
 use proptest::prelude::*;
+use snapbox::str;
 
 use crate::ascii::Caseless;
 use crate::combinator::delimited;
-use crate::error::ErrMode;
-use crate::error::ErrorKind;
 use crate::error::IResult;
-use crate::error::InputError;
-use crate::error::Needed;
+use crate::prelude::*;
 use crate::stream::AsChar;
 use crate::token::literal;
-use crate::Parser;
 use crate::Partial;
-
-macro_rules! assert_parse(
-  ($left: expr, $right: expr) => {
-    let res: $crate::error::IResult<_, _, InputError<_>> = $left;
-    assert_eq!(res, $right);
-  };
-);
 
 #[test]
 fn complete_take_while_m_n_utf8_all_matching() {
     let result: IResult<&str, &str> =
         take_while(1..=4, |c: char| c.is_alphabetic()).parse_peek("øn");
-    assert_eq!(result, Ok(("", "øn")));
+    assert_parse!(
+        result,
+        str![[r#"
+Ok(
+    (
+        "",
+        "øn",
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn complete_take_while_m_n_utf8_all_matching_substring() {
     let result: IResult<&str, &str> = take_while(1, |c: char| c.is_alphabetic()).parse_peek("øn");
-    assert_eq!(result, Ok(("n", "ø")));
-}
+    assert_parse!(
+        result,
+        str![[r#"
+Ok(
+    (
+        "n",
+        "ø",
+    ),
+)
 
-#[cfg(feature = "std")]
-fn model_complete_take_while_m_n(
-    m: usize,
-    n: usize,
-    valid: usize,
-    input: &str,
-) -> IResult<&str, &str> {
-    if n < m {
-        Err(crate::error::ErrMode::from_error_kind(
-            &input,
-            crate::error::ErrorKind::Slice,
-        ))
-    } else if m <= valid {
-        let offset = n.min(valid);
-        Ok((&input[offset..], &input[0..offset]))
-    } else {
-        Err(crate::error::ErrMode::from_error_kind(
-            &input,
-            crate::error::ErrorKind::Slice,
-        ))
-    }
+"#]]
+    );
 }
 
 #[cfg(feature = "std")]
@@ -64,354 +53,1021 @@ proptest! {
   #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
   fn complete_take_while_m_n_bounds(m in 0..20usize, n in 0..20usize, valid in 0..20usize, invalid in 0..20usize) {
       let input = format!("{:a<valid$}{:b<invalid$}", "", "", valid=valid, invalid=invalid);
-      let expected = model_complete_take_while_m_n(m, n, valid, &input);
+      let mut model_input = input.as_str();
+      let expected = model_complete_take_while_m_n(m, n, valid, &mut model_input);
       if m <= n {
           let actual = take_while(m..=n, |c: char| c == 'a').parse_peek(input.as_str());
-          assert_eq!(expected, actual);
+          assert_eq!(expected.map(|o| (model_input, o)), actual);
       }
   }
 }
 
+#[cfg(feature = "std")]
+fn model_complete_take_while_m_n<'i>(
+    m: usize,
+    n: usize,
+    valid: usize,
+    input: &mut &'i str,
+) -> PResult<&'i str> {
+    if n < m {
+        Err(crate::error::ErrMode::from_error_kind(
+            input,
+            crate::error::ErrorKind::Slice,
+        ))
+    } else if m <= valid {
+        let offset = n.min(valid);
+        Ok(input.next_slice(offset))
+    } else {
+        Err(crate::error::ErrMode::from_error_kind(
+            input,
+            crate::error::ErrorKind::Slice,
+        ))
+    }
+}
+
 #[test]
 fn complete_take_until() {
-    fn take_until_5_10(i: &str) -> IResult<&str, &str> {
-        take_until(5..=8, "end").parse_peek(i)
+    fn take_until_5_10<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
+        take_until(5..=8, "end").parse_next(i)
     }
-    assert_eq!(
-        take_until_5_10("end"),
-        Err(ErrMode::Backtrack(error_position!(
-            &"end",
-            ErrorKind::Slice
-        )))
+    assert_parse!(
+        take_until_5_10.parse_peek("end"),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "end",
+            kind: Slice,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        take_until_5_10("1234end"),
-        Err(ErrMode::Backtrack(error_position!(
-            &"1234end",
-            ErrorKind::Slice
-        )))
+    assert_parse!(
+        take_until_5_10.parse_peek("1234end"),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "1234end",
+            kind: Slice,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(take_until_5_10("12345end"), Ok(("end", "12345")));
-    assert_eq!(take_until_5_10("123456end"), Ok(("end", "123456")));
-    assert_eq!(take_until_5_10("12345678end"), Ok(("end", "12345678")));
-    assert_eq!(
-        take_until_5_10("123456789end"),
-        Err(ErrMode::Backtrack(error_position!(
-            &"123456789end",
-            ErrorKind::Slice
-        )))
+    assert_parse!(
+        take_until_5_10.parse_peek("12345end"),
+        str![[r#"
+Ok(
+    (
+        "end",
+        "12345",
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        take_until_5_10.parse_peek("123456end"),
+        str![[r#"
+Ok(
+    (
+        "end",
+        "123456",
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        take_until_5_10.parse_peek("12345678end"),
+        str![[r#"
+Ok(
+    (
+        "end",
+        "12345678",
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        take_until_5_10.parse_peek("123456789end"),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "123456789end",
+            kind: Slice,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn complete_take_until_empty() {
-    fn take_until_empty(i: &str) -> IResult<&str, &str> {
-        take_until(0, "").parse_peek(i)
+    fn take_until_empty<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
+        take_until(0, "").parse_next(i)
     }
-    assert_eq!(take_until_empty(""), Ok(("", "")));
-    assert_eq!(take_until_empty("end"), Ok(("end", "")));
+    assert_parse!(
+        take_until_empty.parse_peek(""),
+        str![[r#"
+Ok(
+    (
+        "",
+        "",
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        take_until_empty.parse_peek("end"),
+        str![[r#"
+Ok(
+    (
+        "end",
+        "",
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn complete_literal_case_insensitive() {
-    fn caseless_bytes(i: &[u8]) -> IResult<&[u8], &[u8]> {
-        literal(Caseless("ABcd")).parse_peek(i)
+    fn caseless_bytes<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
+        literal(Caseless("ABcd")).parse_next(i)
     }
-    assert_eq!(
-        caseless_bytes(&b"aBCdefgh"[..]),
-        Ok((&b"efgh"[..], &b"aBCd"[..]))
+    assert_parse!(
+        caseless_bytes.parse_peek(&b"aBCdefgh"[..]),
+        str![[r#"
+Ok(
+    (
+        [
+            101,
+            102,
+            103,
+            104,
+        ],
+        [
+            97,
+            66,
+            67,
+            100,
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        caseless_bytes(&b"abcdefgh"[..]),
-        Ok((&b"efgh"[..], &b"abcd"[..]))
+    assert_parse!(
+        caseless_bytes.parse_peek(&b"abcdefgh"[..]),
+        str![[r#"
+Ok(
+    (
+        [
+            101,
+            102,
+            103,
+            104,
+        ],
+        [
+            97,
+            98,
+            99,
+            100,
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        caseless_bytes(&b"ABCDefgh"[..]),
-        Ok((&b"efgh"[..], &b"ABCD"[..]))
+    assert_parse!(
+        caseless_bytes.parse_peek(&b"ABCDefgh"[..]),
+        str![[r#"
+Ok(
+    (
+        [
+            101,
+            102,
+            103,
+            104,
+        ],
+        [
+            65,
+            66,
+            67,
+            68,
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        caseless_bytes(&b"ab"[..]),
-        Err(ErrMode::Backtrack(error_position!(
-            &&b"ab"[..],
-            ErrorKind::Literal
-        )))
+    assert_parse!(
+        caseless_bytes.parse_peek(&b"ab"[..]),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: [
+                97,
+                98,
+            ],
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        caseless_bytes(&b"Hello"[..]),
-        Err(ErrMode::Backtrack(error_position!(
-            &&b"Hello"[..],
-            ErrorKind::Literal
-        )))
+    assert_parse!(
+        caseless_bytes.parse_peek(&b"Hello"[..]),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: [
+                72,
+                101,
+                108,
+                108,
+                111,
+            ],
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        caseless_bytes(&b"Hel"[..]),
-        Err(ErrMode::Backtrack(error_position!(
-            &&b"Hel"[..],
-            ErrorKind::Literal
-        )))
+    assert_parse!(
+        caseless_bytes.parse_peek(&b"Hel"[..]),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: [
+                72,
+                101,
+                108,
+            ],
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 
-    fn caseless_str(i: &str) -> IResult<&str, &str> {
-        literal(Caseless("ABcd")).parse_peek(i)
+    fn caseless_str<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
+        literal(Caseless("ABcd")).parse_next(i)
     }
-    assert_eq!(caseless_str("aBCdefgh"), Ok(("efgh", "aBCd")));
-    assert_eq!(caseless_str("abcdefgh"), Ok(("efgh", "abcd")));
-    assert_eq!(caseless_str("ABCDefgh"), Ok(("efgh", "ABCD")));
-    assert_eq!(
-        caseless_str("ab"),
-        Err(ErrMode::Backtrack(error_position!(
-            &"ab",
-            ErrorKind::Literal
-        )))
+    assert_parse!(
+        caseless_str.parse_peek("aBCdefgh"),
+        str![[r#"
+Ok(
+    (
+        "efgh",
+        "aBCd",
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        caseless_str("Hello"),
-        Err(ErrMode::Backtrack(error_position!(
-            &"Hello",
-            ErrorKind::Literal
-        )))
+    assert_parse!(
+        caseless_str.parse_peek("abcdefgh"),
+        str![[r#"
+Ok(
+    (
+        "efgh",
+        "abcd",
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        caseless_str("Hel"),
-        Err(ErrMode::Backtrack(error_position!(
-            &"Hel",
-            ErrorKind::Literal
-        )))
+    assert_parse!(
+        caseless_str.parse_peek("ABCDefgh"),
+        str![[r#"
+Ok(
+    (
+        "efgh",
+        "ABCD",
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        caseless_str.parse_peek("ab"),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "ab",
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        caseless_str.parse_peek("Hello"),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "Hello",
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        caseless_str.parse_peek("Hel"),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "Hel",
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 
-    fn matches_kelvin(i: &str) -> IResult<&str, &str> {
-        literal(Caseless("k")).parse_peek(i)
+    fn matches_kelvin<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
+        literal(Caseless("k")).parse_next(i)
     }
-    assert_eq!(
-        matches_kelvin("K"),
-        Err(ErrMode::Backtrack(error_position!(
-            &"K",
-            ErrorKind::Literal
-        )))
+    assert_parse!(
+        matches_kelvin.parse_peek("K"),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "K",
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 
-    fn is_kelvin(i: &str) -> IResult<&str, &str> {
-        literal(Caseless("K")).parse_peek(i)
+    fn is_kelvin<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
+        literal(Caseless("K")).parse_next(i)
     }
-    assert_eq!(
-        is_kelvin("k"),
-        Err(ErrMode::Backtrack(error_position!(
-            &"k",
-            ErrorKind::Literal
-        )))
+    assert_parse!(
+        is_kelvin.parse_peek("k"),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: "k",
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn complete_literal_fixed_size_array() {
-    fn test(i: &[u8]) -> IResult<&[u8], &[u8]> {
-        literal([0x42]).parse_peek(i)
+    fn test<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
+        literal([0x42]).parse_next(i)
     }
-    fn test2(i: &[u8]) -> IResult<&[u8], &[u8]> {
-        literal(&[0x42]).parse_peek(i)
+    fn test2<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
+        literal(&[0x42]).parse_next(i)
     }
 
     let input = &[0x42, 0x00][..];
-    assert_eq!(test(input), Ok((&b"\x00"[..], &b"\x42"[..])));
-    assert_eq!(test2(input), Ok((&b"\x00"[..], &b"\x42"[..])));
+    assert_parse!(
+        test.parse_peek(input),
+        str![[r#"
+Ok(
+    (
+        [
+            0,
+        ],
+        [
+            66,
+        ],
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        test2.parse_peek(input),
+        str![[r#"
+Ok(
+    (
+        [
+            0,
+        ],
+        [
+            66,
+        ],
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn complete_literal_char() {
-    fn test(i: &[u8]) -> IResult<&[u8], &[u8]> {
-        literal('B').parse_peek(i)
+    fn test<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
+        literal('B').parse_next(i)
     }
-    assert_eq!(test(&[0x42, 0x00][..]), Ok((&b"\x00"[..], &b"\x42"[..])));
-    assert_eq!(
-        test(&[b'A', b'\0'][..]),
-        Err(ErrMode::Backtrack(error_position!(
-            &&b"A\0"[..],
-            ErrorKind::Literal
-        )))
+    assert_parse!(
+        test.parse_peek(&[0x42, 0x00][..]),
+        str![[r#"
+Ok(
+    (
+        [
+            0,
+        ],
+        [
+            66,
+        ],
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        test.parse_peek(&[b'A', b'\0'][..]),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: [
+                65,
+                0,
+            ],
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn complete_literal_byte() {
-    fn test(i: &[u8]) -> IResult<&[u8], &[u8]> {
-        literal(b'B').parse_peek(i)
+    fn test<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
+        literal(b'B').parse_next(i)
     }
-    assert_eq!(test(&[0x42, 0x00][..]), Ok((&b"\x00"[..], &b"\x42"[..])));
-    assert_eq!(
-        test(&[b'A', b'\0'][..]),
-        Err(ErrMode::Backtrack(error_position!(
-            &&b"A\0"[..],
-            ErrorKind::Literal
-        )))
+    assert_parse!(
+        test.parse_peek(&[0x42, 0x00][..]),
+        str![[r#"
+Ok(
+    (
+        [
+            0,
+        ],
+        [
+            66,
+        ],
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        test.parse_peek(&[b'A', b'\0'][..]),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: [
+                65,
+                0,
+            ],
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn partial_any_str() {
     use super::any;
-    assert_eq!(
-        any::<_, InputError<Partial<&str>>>.parse_peek(Partial::new("Ә")),
-        Ok((Partial::new(""), 'Ә'))
+    assert_parse!(
+        any.parse_peek(Partial::new("Ә")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "",
+            partial: true,
+        },
+        'Ә',
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn partial_one_of_test() {
-    fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u8> {
-        one_of(['a', 'b']).parse_peek(i)
+    fn f<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, u8> {
+        one_of(['a', 'b']).parse_next(i)
     }
 
     let a = &b"abcd"[..];
-    assert_eq!(f(Partial::new(a)), Ok((Partial::new(&b"bcd"[..]), b'a')));
+    assert_parse!(
+        f.parse_peek(Partial::new(a)),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                98,
+                99,
+                100,
+            ],
+            partial: true,
+        },
+        97,
+    ),
+)
 
-    let b = &b"cde"[..];
-    assert_eq!(
-        f(Partial::new(b)),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(b),
-            ErrorKind::Verify
-        )))
+"#]]
     );
 
-    fn utf8(i: Partial<&str>) -> IResult<Partial<&str>, char> {
-        one_of(['+', '\u{FF0B}']).parse_peek(i)
+    let b = &b"cde"[..];
+    assert_parse!(
+        f.parse_peek(Partial::new(b)),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    99,
+                    100,
+                    101,
+                ],
+                partial: true,
+            },
+            kind: Verify,
+        },
+    ),
+)
+
+"#]]
+    );
+
+    fn utf8<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, char> {
+        one_of(['+', '\u{FF0B}']).parse_next(i)
     }
 
-    assert!(utf8(Partial::new("+")).is_ok());
-    assert!(utf8(Partial::new("\u{FF0B}")).is_ok());
+    assert!(utf8.parse_peek(Partial::new("+")).is_ok());
+    assert!(utf8.parse_peek(Partial::new("\u{FF0B}")).is_ok());
 }
 
 #[test]
 fn char_byteslice() {
-    fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, char> {
-        'c'.parse_peek(i)
+    fn f<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, char> {
+        'c'.parse_next(i)
     }
 
     let a = &b"abcd"[..];
-    assert_eq!(
-        f(Partial::new(a)),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(a),
-            ErrorKind::Literal
-        )))
+    assert_parse!(
+        f.parse_peek(Partial::new(a)),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    97,
+                    98,
+                    99,
+                    100,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 
     let b = &b"cde"[..];
-    assert_eq!(f(Partial::new(b)), Ok((Partial::new(&b"de"[..]), 'c')));
+    assert_parse!(
+        f.parse_peek(Partial::new(b)),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                100,
+                101,
+            ],
+            partial: true,
+        },
+        'c',
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn char_str() {
-    fn f(i: Partial<&str>) -> IResult<Partial<&str>, char> {
-        'c'.parse_peek(i)
+    fn f<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, char> {
+        'c'.parse_next(i)
     }
 
     let a = "abcd";
-    assert_eq!(
-        f(Partial::new(a)),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(a),
-            ErrorKind::Literal
-        )))
+    assert_parse!(
+        f.parse_peek(Partial::new(a)),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: "abcd",
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 
     let b = "cde";
-    assert_eq!(f(Partial::new(b)), Ok((Partial::new("de"), 'c')));
+    assert_parse!(
+        f.parse_peek(Partial::new(b)),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "de",
+            partial: true,
+        },
+        'c',
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn partial_none_of_test() {
-    fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, u8> {
-        none_of(['a', 'b']).parse_peek(i)
+    fn f<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, u8> {
+        none_of(['a', 'b']).parse_next(i)
     }
 
     let a = &b"abcd"[..];
-    assert_eq!(
-        f(Partial::new(a)),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(a),
-            ErrorKind::Verify
-        )))
+    assert_parse!(
+        f.parse_peek(Partial::new(a)),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    97,
+                    98,
+                    99,
+                    100,
+                ],
+                partial: true,
+            },
+            kind: Verify,
+        },
+    ),
+)
+
+"#]]
     );
 
     let b = &b"cde"[..];
-    assert_eq!(f(Partial::new(b)), Ok((Partial::new(&b"de"[..]), b'c')));
+    assert_parse!(
+        f.parse_peek(Partial::new(b)),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                100,
+                101,
+            ],
+            partial: true,
+        },
+        99,
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn partial_is_a() {
-    fn a_or_b(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_while(1.., ['a', 'b']).parse_peek(i)
+    fn a_or_b<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
+        take_while(1.., ['a', 'b']).parse_next(i)
     }
 
     let a = Partial::new(&b"abcd"[..]);
-    assert_eq!(a_or_b(a), Ok((Partial::new(&b"cd"[..]), &b"ab"[..])));
+    assert_parse!(
+        a_or_b.parse_peek(a),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                99,
+                100,
+            ],
+            partial: true,
+        },
+        [
+            97,
+            98,
+        ],
+    ),
+)
+
+"#]]
+    );
 
     let b = Partial::new(&b"bcde"[..]);
-    assert_eq!(a_or_b(b), Ok((Partial::new(&b"cde"[..]), &b"b"[..])));
+    assert_parse!(
+        a_or_b.parse_peek(b),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                99,
+                100,
+                101,
+            ],
+            partial: true,
+        },
+        [
+            98,
+        ],
+    ),
+)
+
+"#]]
+    );
 
     let c = Partial::new(&b"cdef"[..]);
-    assert_eq!(
-        a_or_b(c),
-        Err(ErrMode::Backtrack(error_position!(&c, ErrorKind::Slice)))
+    assert_parse!(
+        a_or_b.parse_peek(c),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    99,
+                    100,
+                    101,
+                    102,
+                ],
+                partial: true,
+            },
+            kind: Slice,
+        },
+    ),
+)
+
+"#]]
     );
 
     let d = Partial::new(&b"bacdef"[..]);
-    assert_eq!(a_or_b(d), Ok((Partial::new(&b"cdef"[..]), &b"ba"[..])));
+    assert_parse!(
+        a_or_b.parse_peek(d),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                99,
+                100,
+                101,
+                102,
+            ],
+            partial: true,
+        },
+        [
+            98,
+            97,
+        ],
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn partial_is_not() {
-    fn a_or_b(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_till(1.., ['a', 'b']).parse_peek(i)
+    fn a_or_b<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
+        take_till(1.., ['a', 'b']).parse_next(i)
     }
 
     let a = Partial::new(&b"cdab"[..]);
-    assert_eq!(a_or_b(a), Ok((Partial::new(&b"ab"[..]), &b"cd"[..])));
+    assert_parse!(
+        a_or_b.parse_peek(a),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                97,
+                98,
+            ],
+            partial: true,
+        },
+        [
+            99,
+            100,
+        ],
+    ),
+)
+
+"#]]
+    );
 
     let b = Partial::new(&b"cbde"[..]);
-    assert_eq!(a_or_b(b), Ok((Partial::new(&b"bde"[..]), &b"c"[..])));
+    assert_parse!(
+        a_or_b.parse_peek(b),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                98,
+                100,
+                101,
+            ],
+            partial: true,
+        },
+        [
+            99,
+        ],
+    ),
+)
+
+"#]]
+    );
 
     let c = Partial::new(&b"abab"[..]);
-    assert_eq!(
-        a_or_b(c),
-        Err(ErrMode::Backtrack(error_position!(&c, ErrorKind::Slice)))
+    assert_parse!(
+        a_or_b.parse_peek(c),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    97,
+                    98,
+                    97,
+                    98,
+                ],
+                partial: true,
+            },
+            kind: Slice,
+        },
+    ),
+)
+
+"#]]
     );
 
     let d = Partial::new(&b"cdefba"[..]);
-    assert_eq!(a_or_b(d), Ok((Partial::new(&b"ba"[..]), &b"cdef"[..])));
+    assert_parse!(
+        a_or_b.parse_peek(d),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                98,
+                97,
+            ],
+            partial: true,
+        },
+        [
+            99,
+            100,
+            101,
+            102,
+        ],
+    ),
+)
+
+"#]]
+    );
 
     let e = Partial::new(&b"e"[..]);
-    assert_eq!(a_or_b(e), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_parse!(
+        a_or_b.parse_peek(e),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn partial_take_until_incomplete() {
-    fn y(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_until(0.., "end").parse_peek(i)
+    fn y<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
+        take_until(0.., "end").parse_next(i)
     }
-    assert_eq!(
-        y(Partial::new(&b"nd"[..])),
-        Err(ErrMode::Incomplete(Needed::Unknown))
+    assert_parse!(
+        y.parse_peek(Partial::new(&b"nd"[..])),
+        str![[r#"
+Err(
+    Incomplete(
+        Unknown,
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        y(Partial::new(&b"123"[..])),
-        Err(ErrMode::Incomplete(Needed::Unknown))
+    assert_parse!(
+        y.parse_peek(Partial::new(&b"123"[..])),
+        str![[r#"
+Err(
+    Incomplete(
+        Unknown,
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        y(Partial::new(&b"123en"[..])),
-        Err(ErrMode::Incomplete(Needed::Unknown))
+    assert_parse!(
+        y.parse_peek(Partial::new(&b"123en"[..])),
+        str![[r#"
+Err(
+    Incomplete(
+        Unknown,
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn partial_take_until_incomplete_s() {
-    fn ys(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_until(0.., "end").parse_peek(i)
+    fn ys<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
+        take_until(0.., "end").parse_next(i)
     }
-    assert_eq!(
-        ys(Partial::new("123en")),
-        Err(ErrMode::Incomplete(Needed::Unknown))
+    assert_parse!(
+        ys.parse_peek(Partial::new("123en")),
+        str![[r#"
+Err(
+    Incomplete(
+        Unknown,
+    ),
+)
+
+"#]]
     );
 }
 
@@ -422,99 +1078,408 @@ fn partial_take() {
         multispace1 as multispace, oct_digit1 as oct_digit, space1 as space,
     };
 
-    fn x(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        delimited("<!--", take(5_usize), "-->").take().parse_peek(i)
+    fn x<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
+        delimited("<!--", take(5_usize), "-->").take().parse_next(i)
     }
-    let r = x(Partial::new(&b"<!-- abc --> aaa"[..]));
-    assert_eq!(r, Ok((Partial::new(&b" aaa"[..]), &b"<!-- abc -->"[..])));
+    let r = x.parse_peek(Partial::new(&b"<!-- abc --> aaa"[..]));
+    assert_parse!(
+        r,
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                32,
+                97,
+                97,
+                97,
+            ],
+            partial: true,
+        },
+        [
+            60,
+            33,
+            45,
+            45,
+            32,
+            97,
+            98,
+            99,
+            32,
+            45,
+            45,
+            62,
+        ],
+    ),
+)
 
-    let semicolon = &b";"[..];
+"#]]
+    );
 
-    fn ya(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        alpha.take().parse_peek(i)
+    fn ya<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
+        alpha.take().parse_next(i)
     }
-    let ra = ya(Partial::new(&b"abc;"[..]));
-    assert_eq!(ra, Ok((Partial::new(semicolon), &b"abc"[..])));
+    let ra = ya.parse_peek(Partial::new(&b"abc;"[..]));
+    assert_parse!(
+        ra,
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                59,
+            ],
+            partial: true,
+        },
+        [
+            97,
+            98,
+            99,
+        ],
+    ),
+)
 
-    fn yd(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        digit.take().parse_peek(i)
-    }
-    let rd = yd(Partial::new(&b"123;"[..]));
-    assert_eq!(rd, Ok((Partial::new(semicolon), &b"123"[..])));
+"#]]
+    );
 
-    fn yhd(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        hex_digit.take().parse_peek(i)
+    fn yd<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
+        digit.take().parse_next(i)
     }
-    let rhd = yhd(Partial::new(&b"123abcDEF;"[..]));
-    assert_eq!(rhd, Ok((Partial::new(semicolon), &b"123abcDEF"[..])));
+    let rd = yd.parse_peek(Partial::new(&b"123;"[..]));
+    assert_parse!(
+        rd,
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                59,
+            ],
+            partial: true,
+        },
+        [
+            49,
+            50,
+            51,
+        ],
+    ),
+)
 
-    fn yod(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        oct_digit.take().parse_peek(i)
-    }
-    let rod = yod(Partial::new(&b"1234567;"[..]));
-    assert_eq!(rod, Ok((Partial::new(semicolon), &b"1234567"[..])));
+"#]]
+    );
 
-    fn yan(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        alphanumeric.take().parse_peek(i)
+    fn yhd<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
+        hex_digit.take().parse_next(i)
     }
-    let ran = yan(Partial::new(&b"123abc;"[..]));
-    assert_eq!(ran, Ok((Partial::new(semicolon), &b"123abc"[..])));
+    let rhd = yhd.parse_peek(Partial::new(&b"123abcDEF;"[..]));
+    assert_parse!(
+        rhd,
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                59,
+            ],
+            partial: true,
+        },
+        [
+            49,
+            50,
+            51,
+            97,
+            98,
+            99,
+            68,
+            69,
+            70,
+        ],
+    ),
+)
 
-    fn ys(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        space.take().parse_peek(i)
-    }
-    let rs = ys(Partial::new(&b" \t;"[..]));
-    assert_eq!(rs, Ok((Partial::new(semicolon), &b" \t"[..])));
+"#]]
+    );
 
-    fn yms(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        multispace.take().parse_peek(i)
+    fn yod<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
+        oct_digit.take().parse_next(i)
     }
-    let rms = yms(Partial::new(&b" \t\r\n;"[..]));
-    assert_eq!(rms, Ok((Partial::new(semicolon), &b" \t\r\n"[..])));
+    let rod = yod.parse_peek(Partial::new(&b"1234567;"[..]));
+    assert_parse!(
+        rod,
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                59,
+            ],
+            partial: true,
+        },
+        [
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+        ],
+    ),
+)
+
+"#]]
+    );
+
+    fn yan<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
+        alphanumeric.take().parse_next(i)
+    }
+    let ran = yan.parse_peek(Partial::new(&b"123abc;"[..]));
+    assert_parse!(
+        ran,
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                59,
+            ],
+            partial: true,
+        },
+        [
+            49,
+            50,
+            51,
+            97,
+            98,
+            99,
+        ],
+    ),
+)
+
+"#]]
+    );
+
+    fn ys<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
+        space.take().parse_next(i)
+    }
+    let rs = ys.parse_peek(Partial::new(&b" \t;"[..]));
+    assert_parse!(
+        rs,
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                59,
+            ],
+            partial: true,
+        },
+        [
+            32,
+            9,
+        ],
+    ),
+)
+
+"#]]
+    );
+
+    fn yms<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
+        multispace.take().parse_next(i)
+    }
+    let rms = yms.parse_peek(Partial::new(&b" \t\r\n;"[..]));
+    assert_parse!(
+        rms,
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                59,
+            ],
+            partial: true,
+        },
+        [
+            32,
+            9,
+            13,
+            10,
+        ],
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn partial_take_while0() {
-    fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_while(0.., AsChar::is_alpha).parse_peek(i)
+    fn f<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
+        take_while(0.., AsChar::is_alpha).parse_next(i)
     }
     let a = &b""[..];
     let b = &b"abcd"[..];
     let c = &b"abcd123"[..];
     let d = &b"123"[..];
 
-    assert_eq!(f(Partial::new(a)), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(f(Partial::new(b)), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(f(Partial::new(c)), Ok((Partial::new(d), b)));
-    assert_eq!(f(Partial::new(d)), Ok((Partial::new(d), a)));
+    assert_parse!(
+        f.parse_peek(Partial::new(a)),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        f.parse_peek(Partial::new(b)),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        f.parse_peek(Partial::new(c)),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                49,
+                50,
+                51,
+            ],
+            partial: true,
+        },
+        [
+            97,
+            98,
+            99,
+            100,
+        ],
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        f.parse_peek(Partial::new(d)),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                49,
+                50,
+                51,
+            ],
+            partial: true,
+        },
+        [],
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn partial_take_while1() {
-    fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_while(1.., AsChar::is_alpha).parse_peek(i)
+    fn f<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
+        take_while(1.., AsChar::is_alpha).parse_next(i)
     }
     let a = &b""[..];
     let b = &b"abcd"[..];
     let c = &b"abcd123"[..];
     let d = &b"123"[..];
 
-    assert_eq!(f(Partial::new(a)), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(f(Partial::new(b)), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(f(Partial::new(c)), Ok((Partial::new(&b"123"[..]), b)));
-    assert_eq!(
-        f(Partial::new(d)),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(d),
-            ErrorKind::Slice
-        )))
+    assert_parse!(
+        f.parse_peek(Partial::new(a)),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        f.parse_peek(Partial::new(b)),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        f.parse_peek(Partial::new(c)),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                49,
+                50,
+                51,
+            ],
+            partial: true,
+        },
+        [
+            97,
+            98,
+            99,
+            100,
+        ],
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        f.parse_peek(Partial::new(d)),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    49,
+                    50,
+                    51,
+                ],
+                partial: true,
+            },
+            kind: Slice,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn partial_take_while_m_n() {
-    fn x(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_while(2..=4, AsChar::is_alpha).parse_peek(i)
+    fn x<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
+        take_while(2..=4, AsChar::is_alpha).parse_next(i)
     }
     let a = &b""[..];
     let b = &b"a"[..];
@@ -523,352 +1488,1207 @@ fn partial_take_while_m_n() {
     let e = &b"abcde"[..];
     let f = &b"123"[..];
 
-    assert_eq!(x(Partial::new(a)), Err(ErrMode::Incomplete(Needed::new(2))));
-    assert_eq!(x(Partial::new(b)), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(x(Partial::new(c)), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(x(Partial::new(d)), Ok((Partial::new(&b"123"[..]), c)));
-    assert_eq!(
-        x(Partial::new(e)),
-        Ok((Partial::new(&b"e"[..]), &b"abcd"[..]))
+    assert_parse!(
+        x.parse_peek(Partial::new(a)),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            2,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        x(Partial::new(f)),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(f),
-            ErrorKind::Slice
-        )))
+    assert_parse!(
+        x.parse_peek(Partial::new(b)),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        x.parse_peek(Partial::new(c)),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        x.parse_peek(Partial::new(d)),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                49,
+                50,
+                51,
+            ],
+            partial: true,
+        },
+        [
+            97,
+            98,
+            99,
+        ],
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        x.parse_peek(Partial::new(e)),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+            ],
+            partial: true,
+        },
+        [
+            97,
+            98,
+            99,
+            100,
+        ],
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        x.parse_peek(Partial::new(f)),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    49,
+                    50,
+                    51,
+                ],
+                partial: true,
+            },
+            kind: Slice,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn partial_take_till0() {
-    fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_till(0.., AsChar::is_alpha).parse_peek(i)
+    fn f<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
+        take_till(0.., AsChar::is_alpha).parse_next(i)
     }
     let a = &b""[..];
     let b = &b"abcd"[..];
     let c = &b"123abcd"[..];
     let d = &b"123"[..];
 
-    assert_eq!(f(Partial::new(a)), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(
-        f(Partial::new(b)),
-        Ok((Partial::new(&b"abcd"[..]), &b""[..]))
+    assert_parse!(
+        f.parse_peek(Partial::new(a)),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        f(Partial::new(c)),
-        Ok((Partial::new(&b"abcd"[..]), &b"123"[..]))
+    assert_parse!(
+        f.parse_peek(Partial::new(b)),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                97,
+                98,
+                99,
+                100,
+            ],
+            partial: true,
+        },
+        [],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(f(Partial::new(d)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_parse!(
+        f.parse_peek(Partial::new(c)),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                97,
+                98,
+                99,
+                100,
+            ],
+            partial: true,
+        },
+        [
+            49,
+            50,
+            51,
+        ],
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        f.parse_peek(Partial::new(d)),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn partial_take_till1() {
-    fn f(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        take_till(1.., AsChar::is_alpha).parse_peek(i)
+    fn f<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
+        take_till(1.., AsChar::is_alpha).parse_next(i)
     }
     let a = &b""[..];
     let b = &b"abcd"[..];
     let c = &b"123abcd"[..];
     let d = &b"123"[..];
 
-    assert_eq!(f(Partial::new(a)), Err(ErrMode::Incomplete(Needed::new(1))));
-    assert_eq!(
-        f(Partial::new(b)),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(b),
-            ErrorKind::Slice
-        )))
+    assert_parse!(
+        f.parse_peek(Partial::new(a)),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        f(Partial::new(c)),
-        Ok((Partial::new(&b"abcd"[..]), &b"123"[..]))
+    assert_parse!(
+        f.parse_peek(Partial::new(b)),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    97,
+                    98,
+                    99,
+                    100,
+                ],
+                partial: true,
+            },
+            kind: Slice,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(f(Partial::new(d)), Err(ErrMode::Incomplete(Needed::new(1))));
+    assert_parse!(
+        f.parse_peek(Partial::new(c)),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                97,
+                98,
+                99,
+                100,
+            ],
+            partial: true,
+        },
+        [
+            49,
+            50,
+            51,
+        ],
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        f.parse_peek(Partial::new(d)),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn partial_take_while_utf8() {
-    fn f(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while(0.., |c| c != '點').parse_peek(i)
+    fn f<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
+        take_while(0.., |c| c != '點').parse_next(i)
     }
 
-    assert_eq!(
-        f(Partial::new("")),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+    assert_parse!(
+        f.parse_peek(Partial::new("")),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        f(Partial::new("abcd")),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+    assert_parse!(
+        f.parse_peek(Partial::new("abcd")),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(f(Partial::new("abcd點")), Ok((Partial::new("點"), "abcd")));
-    assert_eq!(
-        f(Partial::new("abcd點a")),
-        Ok((Partial::new("點a"), "abcd"))
+    assert_parse!(
+        f.parse_peek(Partial::new("abcd點")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "點",
+            partial: true,
+        },
+        "abcd",
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        f.parse_peek(Partial::new("abcd點a")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "點a",
+            partial: true,
+        },
+        "abcd",
+    ),
+)
+
+"#]]
     );
 
-    fn g(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while(0.., |c| c == '點').parse_peek(i)
+    fn g<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
+        take_while(0.., |c| c == '點').parse_next(i)
     }
 
-    assert_eq!(
-        g(Partial::new("")),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+    assert_parse!(
+        g.parse_peek(Partial::new("")),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(g(Partial::new("點abcd")), Ok((Partial::new("abcd"), "點")));
-    assert_eq!(
-        g(Partial::new("點點點a")),
-        Ok((Partial::new("a"), "點點點"))
+    assert_parse!(
+        g.parse_peek(Partial::new("點abcd")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "abcd",
+            partial: true,
+        },
+        "點",
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        g.parse_peek(Partial::new("點點點a")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "a",
+            partial: true,
+        },
+        "點點點",
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn partial_take_till0_utf8() {
-    fn f(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_till(0.., |c| c == '點').parse_peek(i)
+    fn f<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
+        take_till(0.., |c| c == '點').parse_next(i)
     }
 
-    assert_eq!(
-        f(Partial::new("")),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+    assert_parse!(
+        f.parse_peek(Partial::new("")),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        f(Partial::new("abcd")),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+    assert_parse!(
+        f.parse_peek(Partial::new("abcd")),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(f(Partial::new("abcd點")), Ok((Partial::new("點"), "abcd")));
-    assert_eq!(
-        f(Partial::new("abcd點a")),
-        Ok((Partial::new("點a"), "abcd"))
+    assert_parse!(
+        f.parse_peek(Partial::new("abcd點")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "點",
+            partial: true,
+        },
+        "abcd",
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        f.parse_peek(Partial::new("abcd點a")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "點a",
+            partial: true,
+        },
+        "abcd",
+    ),
+)
+
+"#]]
     );
 
-    fn g(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_till(0.., |c| c != '點').parse_peek(i)
+    fn g<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
+        take_till(0.., |c| c != '點').parse_next(i)
     }
 
-    assert_eq!(
-        g(Partial::new("")),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+    assert_parse!(
+        g.parse_peek(Partial::new("")),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(g(Partial::new("點abcd")), Ok((Partial::new("abcd"), "點")));
-    assert_eq!(
-        g(Partial::new("點點點a")),
-        Ok((Partial::new("a"), "點點點"))
+    assert_parse!(
+        g.parse_peek(Partial::new("點abcd")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "abcd",
+            partial: true,
+        },
+        "點",
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        g.parse_peek(Partial::new("點點點a")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "a",
+            partial: true,
+        },
+        "點點點",
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn partial_take_utf8() {
-    fn f(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take(3_usize).parse_peek(i)
+    fn f<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
+        take(3_usize).parse_next(i)
     }
 
-    assert_eq!(
-        f(Partial::new("")),
-        Err(ErrMode::Incomplete(Needed::Unknown))
-    );
-    assert_eq!(
-        f(Partial::new("ab")),
-        Err(ErrMode::Incomplete(Needed::Unknown))
-    );
-    assert_eq!(
-        f(Partial::new("點")),
-        Err(ErrMode::Incomplete(Needed::Unknown))
-    );
-    assert_eq!(f(Partial::new("ab點cd")), Ok((Partial::new("cd"), "ab點")));
-    assert_eq!(f(Partial::new("a點bcd")), Ok((Partial::new("cd"), "a點b")));
-    assert_eq!(f(Partial::new("a點b")), Ok((Partial::new(""), "a點b")));
+    assert_parse!(
+        f.parse_peek(Partial::new("")),
+        str![[r#"
+Err(
+    Incomplete(
+        Unknown,
+    ),
+)
 
-    fn g(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while(0.., |c| c == '點').parse_peek(i)
+"#]]
+    );
+    assert_parse!(
+        f.parse_peek(Partial::new("ab")),
+        str![[r#"
+Err(
+    Incomplete(
+        Unknown,
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        f.parse_peek(Partial::new("點")),
+        str![[r#"
+Err(
+    Incomplete(
+        Unknown,
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        f.parse_peek(Partial::new("ab點cd")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "cd",
+            partial: true,
+        },
+        "ab點",
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        f.parse_peek(Partial::new("a點bcd")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "cd",
+            partial: true,
+        },
+        "a點b",
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        f.parse_peek(Partial::new("a點b")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "",
+            partial: true,
+        },
+        "a點b",
+    ),
+)
+
+"#]]
+    );
+
+    fn g<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
+        take_while(0.., |c| c == '點').parse_next(i)
     }
 
-    assert_eq!(
-        g(Partial::new("")),
-        Err(ErrMode::Incomplete(Needed::new(1)))
+    assert_parse!(
+        g.parse_peek(Partial::new("")),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            1,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(g(Partial::new("點abcd")), Ok((Partial::new("abcd"), "點")));
-    assert_eq!(
-        g(Partial::new("點點點a")),
-        Ok((Partial::new("a"), "點點點"))
+    assert_parse!(
+        g.parse_peek(Partial::new("點abcd")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "abcd",
+            partial: true,
+        },
+        "點",
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        g.parse_peek(Partial::new("點點點a")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "a",
+            partial: true,
+        },
+        "點點點",
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn partial_take_while_m_n_utf8_fixed() {
-    fn parser(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while(1, |c| c == 'A' || c == '😃').parse_peek(i)
+    fn parser<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
+        take_while(1, |c| c == 'A' || c == '😃').parse_next(i)
     }
-    assert_eq!(parser(Partial::new("A!")), Ok((Partial::new("!"), "A")));
-    assert_eq!(parser(Partial::new("😃!")), Ok((Partial::new("!"), "😃")));
+    assert_parse!(
+        parser.parse_peek(Partial::new("A!")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "!",
+            partial: true,
+        },
+        "A",
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        parser.parse_peek(Partial::new("😃!")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "!",
+            partial: true,
+        },
+        "😃",
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn partial_take_while_m_n_utf8_range() {
-    fn parser(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while(1..=2, |c| c == 'A' || c == '😃').parse_peek(i)
+    fn parser<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
+        take_while(1..=2, |c| c == 'A' || c == '😃').parse_next(i)
     }
-    assert_eq!(parser(Partial::new("A!")), Ok((Partial::new("!"), "A")));
-    assert_eq!(parser(Partial::new("😃!")), Ok((Partial::new("!"), "😃")));
+    assert_parse!(
+        parser.parse_peek(Partial::new("A!")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "!",
+            partial: true,
+        },
+        "A",
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        parser.parse_peek(Partial::new("😃!")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "!",
+            partial: true,
+        },
+        "😃",
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn partial_take_while_m_n_utf8_full_match_fixed() {
-    fn parser(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while(1, |c: char| c.is_alphabetic()).parse_peek(i)
+    fn parser<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
+        take_while(1, |c: char| c.is_alphabetic()).parse_next(i)
     }
-    assert_eq!(parser(Partial::new("øn")), Ok((Partial::new("n"), "ø")));
+    assert_parse!(
+        parser.parse_peek(Partial::new("øn")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "n",
+            partial: true,
+        },
+        "ø",
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn partial_take_while_m_n_utf8_full_match_range() {
-    fn parser(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        take_while(1..=2, |c: char| c.is_alphabetic()).parse_peek(i)
+    fn parser<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
+        take_while(1..=2, |c: char| c.is_alphabetic()).parse_next(i)
     }
-    assert_eq!(parser(Partial::new("øn")), Ok((Partial::new(""), "øn")));
+    assert_parse!(
+        parser.parse_peek(Partial::new("øn")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "",
+            partial: true,
+        },
+        "øn",
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 #[cfg(feature = "std")]
 fn partial_take_take_while0() {
-    fn x<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+    fn x<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         take_while(0.., AsChar::is_alphanum).parse_next(i)
     }
-    fn y<'i>(i: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+    fn y<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
         x.take().parse_next(i)
     }
-    assert_eq!(
+    assert_parse!(
         x.parse_peek(Partial::new(&b"ab."[..])),
-        Ok((Partial::new(&b"."[..]), &b"ab"[..]))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                46,
+            ],
+            partial: true,
+        },
+        [
+            97,
+            98,
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
+    assert_parse!(
         y.parse_peek(Partial::new(&b"ab."[..])),
-        Ok((Partial::new(&b"."[..]), &b"ab"[..]))
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                46,
+            ],
+            partial: true,
+        },
+        [
+            97,
+            98,
+        ],
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn partial_literal_case_insensitive() {
-    fn caseless_bytes(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        literal(Caseless("ABcd")).parse_peek(i)
+    fn caseless_bytes<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
+        literal(Caseless("ABcd")).parse_next(i)
     }
-    assert_eq!(
-        caseless_bytes(Partial::new(&b"aBCdefgh"[..])),
-        Ok((Partial::new(&b"efgh"[..]), &b"aBCd"[..]))
+    assert_parse!(
+        caseless_bytes.parse_peek(Partial::new(&b"aBCdefgh"[..])),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+                103,
+                104,
+            ],
+            partial: true,
+        },
+        [
+            97,
+            66,
+            67,
+            100,
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        caseless_bytes(Partial::new(&b"abcdefgh"[..])),
-        Ok((Partial::new(&b"efgh"[..]), &b"abcd"[..]))
+    assert_parse!(
+        caseless_bytes.parse_peek(Partial::new(&b"abcdefgh"[..])),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+                103,
+                104,
+            ],
+            partial: true,
+        },
+        [
+            97,
+            98,
+            99,
+            100,
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        caseless_bytes(Partial::new(&b"ABCDefgh"[..])),
-        Ok((Partial::new(&b"efgh"[..]), &b"ABCD"[..]))
+    assert_parse!(
+        caseless_bytes.parse_peek(Partial::new(&b"ABCDefgh"[..])),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                101,
+                102,
+                103,
+                104,
+            ],
+            partial: true,
+        },
+        [
+            65,
+            66,
+            67,
+            68,
+        ],
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        caseless_bytes(Partial::new(&b"ab"[..])),
-        Err(ErrMode::Incomplete(Needed::new(2)))
+    assert_parse!(
+        caseless_bytes.parse_peek(Partial::new(&b"ab"[..])),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            2,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        caseless_bytes(Partial::new(&b"Hello"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"Hello"[..]),
-            ErrorKind::Literal
-        )))
+    assert_parse!(
+        caseless_bytes.parse_peek(Partial::new(&b"Hello"[..])),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    72,
+                    101,
+                    108,
+                    108,
+                    111,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        caseless_bytes(Partial::new(&b"Hel"[..])),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new(&b"Hel"[..]),
-            ErrorKind::Literal
-        )))
+    assert_parse!(
+        caseless_bytes.parse_peek(Partial::new(&b"Hel"[..])),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: [
+                    72,
+                    101,
+                    108,
+                ],
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 
-    fn caseless_str(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        literal(Caseless("ABcd")).parse_peek(i)
+    fn caseless_str<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
+        literal(Caseless("ABcd")).parse_next(i)
     }
-    assert_eq!(
-        caseless_str(Partial::new("aBCdefgh")),
-        Ok((Partial::new("efgh"), "aBCd"))
+    assert_parse!(
+        caseless_str.parse_peek(Partial::new("aBCdefgh")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "efgh",
+            partial: true,
+        },
+        "aBCd",
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        caseless_str(Partial::new("abcdefgh")),
-        Ok((Partial::new("efgh"), "abcd"))
+    assert_parse!(
+        caseless_str.parse_peek(Partial::new("abcdefgh")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "efgh",
+            partial: true,
+        },
+        "abcd",
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        caseless_str(Partial::new("ABCDefgh")),
-        Ok((Partial::new("efgh"), "ABCD"))
+    assert_parse!(
+        caseless_str.parse_peek(Partial::new("ABCDefgh")),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: "efgh",
+            partial: true,
+        },
+        "ABCD",
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        caseless_str(Partial::new("ab")),
-        Err(ErrMode::Incomplete(Needed::new(2)))
+    assert_parse!(
+        caseless_str.parse_peek(Partial::new("ab")),
+        str![[r#"
+Err(
+    Incomplete(
+        Size(
+            2,
+        ),
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        caseless_str(Partial::new("Hello")),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new("Hello"),
-            ErrorKind::Literal
-        )))
+    assert_parse!(
+        caseless_str.parse_peek(Partial::new("Hello")),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: "Hello",
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
-    assert_eq!(
-        caseless_str(Partial::new("Hel")),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new("Hel"),
-            ErrorKind::Literal
-        )))
+    assert_parse!(
+        caseless_str.parse_peek(Partial::new("Hel")),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: "Hel",
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 
-    fn matches_kelvin(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        literal(Caseless("k")).parse_peek(i)
+    fn matches_kelvin<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
+        literal(Caseless("k")).parse_next(i)
     }
-    assert_eq!(
-        matches_kelvin(Partial::new("K")),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new("K"),
-            ErrorKind::Literal
-        )))
+    assert_parse!(
+        matches_kelvin.parse_peek(Partial::new("K")),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: "K",
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 
-    fn is_kelvin(i: Partial<&str>) -> IResult<Partial<&str>, &str> {
-        literal(Caseless("K")).parse_peek(i)
+    fn is_kelvin<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
+        literal(Caseless("K")).parse_next(i)
     }
-    assert_eq!(
-        is_kelvin(Partial::new("k")),
-        Err(ErrMode::Backtrack(error_position!(
-            &Partial::new("k"),
-            ErrorKind::Literal
-        )))
+    assert_parse!(
+        is_kelvin.parse_peek(Partial::new("k")),
+        str![[r#"
+Err(
+    Backtrack(
+        InputError {
+            input: Partial {
+                input: "k",
+                partial: true,
+            },
+            kind: Literal,
+        },
+    ),
+)
+
+"#]]
     );
 }
 
 #[test]
 fn partial_literal_fixed_size_array() {
-    fn test(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        literal([0x42]).parse_peek(i)
+    fn test<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
+        literal([0x42]).parse_next(i)
     }
-    fn test2(i: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-        literal(&[0x42]).parse_peek(i)
+    fn test2<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
+        literal(&[0x42]).parse_next(i)
     }
     let input = Partial::new(&[0x42, 0x00][..]);
-    assert_eq!(test(input), Ok((Partial::new(&b"\x00"[..]), &b"\x42"[..])));
-    assert_eq!(test2(input), Ok((Partial::new(&b"\x00"[..]), &b"\x42"[..])));
+    assert_parse!(
+        test.parse_peek(input),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                0,
+            ],
+            partial: true,
+        },
+        [
+            66,
+        ],
+    ),
+)
+
+"#]]
+    );
+    assert_parse!(
+        test2.parse_peek(input),
+        str![[r#"
+Ok(
+    (
+        Partial {
+            input: [
+                0,
+            ],
+            partial: true,
+        },
+        [
+            66,
+        ],
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn rest_on_slices() {
     let input: &[u8] = &b"Hello, world!"[..];
-    let empty: &[u8] = &b""[..];
-    assert_parse!(rest.parse_peek(input), Ok((empty, input)));
+    assert_parse!(
+        rest.parse_peek(input),
+        str![[r#"
+Ok(
+    (
+        [],
+        [
+            72,
+            101,
+            108,
+            108,
+            111,
+            44,
+            32,
+            119,
+            111,
+            114,
+            108,
+            100,
+            33,
+        ],
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn rest_on_strs() {
     let input: &str = "Hello, world!";
-    let empty: &str = "";
-    assert_parse!(rest.parse_peek(input), Ok((empty, input)));
+    assert_parse!(
+        rest.parse_peek(input),
+        str![[r#"
+Ok(
+    (
+        "",
+        "Hello, world!",
+    ),
+)
+
+"#]]
+    );
 }
 
 #[test]
 fn rest_len_on_slices() {
     let input: &[u8] = &b"Hello, world!"[..];
-    assert_parse!(rest_len.parse_peek(input), Ok((input, input.len())));
+    assert_parse!(
+        rest_len.parse_peek(input),
+        str![[r#"
+Ok(
+    (
+        [
+            72,
+            101,
+            108,
+            108,
+            111,
+            44,
+            32,
+            119,
+            111,
+            114,
+            108,
+            100,
+            33,
+        ],
+        13,
+    ),
+)
+
+"#]]
+    );
 }

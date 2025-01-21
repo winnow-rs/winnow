@@ -13,17 +13,19 @@ pub use crate::seq;
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// use winnow::combinator::preceded;
 ///
-/// let mut parser = preceded("abc", "efg");
+/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
+///     preceded("abc", "efg").parse_next(input)
+/// }
 ///
 /// assert_eq!(parser.parse_peek("abcefg"), Ok(("", "efg")));
 /// assert_eq!(parser.parse_peek("abcefghij"), Ok(("hij", "efg")));
-/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
-/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Literal))));
+/// assert!(parser.parse_peek("").is_err());
+/// assert!(parser.parse_peek("123").is_err());
 /// ```
 #[doc(alias = "ignore_then")]
 pub fn preceded<Input, Ignored, Output, Error, IgnoredParser, ParseNext>(
@@ -49,17 +51,19 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// use winnow::combinator::terminated;
 ///
-/// let mut parser = terminated("abc", "efg");
+/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
+///     terminated("abc", "efg").parse_next(input)
+/// }
 ///
 /// assert_eq!(parser.parse_peek("abcefg"), Ok(("", "abc")));
 /// assert_eq!(parser.parse_peek("abcefghij"), Ok(("hij", "abc")));
-/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
-/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Literal))));
+/// assert!(parser.parse_peek("").is_err());
+/// assert!(parser.parse_peek("123").is_err());
 /// ```
 #[doc(alias = "then_ignore")]
 pub fn terminated<Input, Output, Ignored, Error, ParseNext, IgnoredParser>(
@@ -85,17 +89,19 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::error::Needed::Size;
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated_pair;
 ///
-/// let mut parser = separated_pair("abc", "|", "efg");
+/// fn parser<'i>(input: &mut &'i str) -> PResult<(&'i str, &'i str)> {
+///     separated_pair("abc", "|", "efg").parse_next(input)
+/// }
 ///
 /// assert_eq!(parser.parse_peek("abc|efg"), Ok(("", ("abc", "efg"))));
 /// assert_eq!(parser.parse_peek("abc|efghij"), Ok(("hij", ("abc", "efg"))));
-/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
-/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Literal))));
+/// assert!(parser.parse_peek("").is_err());
+/// assert!(parser.parse_peek("123").is_err());
 /// ```
 pub fn separated_pair<Input, O1, Sep, O2, Error, P1, SepParser, P2>(
     mut first: P1,
@@ -123,17 +129,19 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::error::Needed::Size;
 /// # use winnow::prelude::*;
 /// use winnow::combinator::delimited;
 ///
-/// let mut parser = delimited("(", "abc", ")");
+/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
+///     delimited("(", "abc", ")").parse_next(input)
+/// }
 ///
 /// assert_eq!(parser.parse_peek("(abc)"), Ok(("", "abc")));
 /// assert_eq!(parser.parse_peek("(abc)def"), Ok(("def", "abc")));
-/// assert_eq!(parser.parse_peek(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
-/// assert_eq!(parser.parse_peek("123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Literal))));
+/// assert!(parser.parse_peek("").is_err());
+/// assert!(parser.parse_peek("123").is_err());
 /// ```
 #[doc(alias = "between")]
 #[doc(alias = "padded")]

@@ -111,7 +111,6 @@ use super::chapter_1;
 use super::chapter_7;
 use crate::combinator::eof;
 use crate::error::ErrMode;
-use crate::error::InputError;
 use crate::error::ParseError;
 use crate::PResult;
 use crate::Parser;

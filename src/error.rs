@@ -55,6 +55,9 @@ pub type PResult<O, E = ContextError> = Result<O, ErrMode<E>>;
 /// - [`ErrMode::into_inner`]
 pub type IResult<I, O, E = InputError<I>> = PResult<(I, O), E>;
 
+#[cfg(test)]
+pub(crate) type TestResult<I, O> = PResult<O, InputError<I>>;
+
 /// Contains information on needed data if a parser returned `Incomplete`
 ///
 /// <div class="warning">
@@ -1412,20 +1415,3 @@ mod test_translate_position {
         assert_eq!(position, (1, 2));
     }
 }
-
-/// Creates a parse error from a [`ErrorKind`]
-/// and the position in the input
-#[cfg(test)]
-macro_rules! error_position(
-  ($input:expr, $code:expr) => ({
-    $crate::error::ParserError::from_error_kind($input, $code)
-  });
-);
-
-#[cfg(test)]
-macro_rules! error_node_position(
-  ($input:expr, $code:expr, $next:expr) => ({
-    let start = $input.checkpoint();
-    $crate::error::ParserError::append($next, $input, &start, $code)
-  });
-);

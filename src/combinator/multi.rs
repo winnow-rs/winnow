@@ -33,78 +33,74 @@ use crate::Parser;
 /// Zero or more repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
 ///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   repeat(0.., "abc").parse_peek(s)
+/// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
+///   repeat(0.., "abc").parse_next(s)
 /// }
 ///
-/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Ok(("123123", vec![])));
-/// assert_eq!(parser(""), Ok(("", vec![])));
+/// assert_eq!(parser.parse_peek("abcabc"), Ok(("", vec!["abc", "abc"])));
+/// assert_eq!(parser.parse_peek("abc123"), Ok(("123", vec!["abc"])));
+/// assert_eq!(parser.parse_peek("123123"), Ok(("123123", vec![])));
+/// assert_eq!(parser.parse_peek(""), Ok(("", vec![])));
 /// # }
 /// ```
 ///
 /// One or more repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::error::IResult;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
 ///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   repeat(1.., "abc").parse_peek(s)
+/// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
+///   repeat(1.., "abc").parse_next(s)
 /// }
 ///
-/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Literal))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
+/// assert_eq!(parser.parse_peek("abcabc"), Ok(("", vec!["abc", "abc"])));
+/// assert_eq!(parser.parse_peek("abc123"), Ok(("123", vec!["abc"])));
+/// assert!(parser.parse_peek("123123").is_err());
+/// assert!(parser.parse_peek("").is_err());
 /// # }
 /// ```
 ///
 /// Fixed number of repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::error::IResult;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
 ///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   repeat(2, "abc").parse_peek(s)
+/// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
+///   repeat(2, "abc").parse_next(s)
 /// }
 ///
-/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Literal))));
-/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Literal))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
-/// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
+/// assert_eq!(parser.parse_peek("abcabc"), Ok(("", vec!["abc", "abc"])));
+/// assert!(parser.parse_peek("abc123").is_err());
+/// assert!(parser.parse_peek("123123").is_err());
+/// assert!(parser.parse_peek("").is_err());
+/// assert_eq!(parser.parse_peek("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
 /// # }
 /// ```
 ///
 /// Arbitrary repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
 ///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   repeat(0..=2, "abc").parse_peek(s)
+/// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
+///   repeat(0..=2, "abc").parse_next(s)
 /// }
 ///
-/// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-/// assert_eq!(parser("123123"), Ok(("123123", vec![])));
-/// assert_eq!(parser(""), Ok(("", vec![])));
-/// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
+/// assert_eq!(parser.parse_peek("abcabc"), Ok(("", vec!["abc", "abc"])));
+/// assert_eq!(parser.parse_peek("abc123"), Ok(("123", vec!["abc"])));
+/// assert_eq!(parser.parse_peek("123123"), Ok(("123123", vec![])));
+/// assert_eq!(parser.parse_peek(""), Ok(("", vec![])));
+/// assert_eq!(parser.parse_peek("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
 /// # }
 /// ```
 #[doc(alias = "many0")]
@@ -181,12 +177,11 @@ where
     ///
     /// Zero or more repetitions:
     /// ```rust
-    /// # use winnow::error::IResult;
     /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
     /// # use winnow::prelude::*;
     /// use winnow::combinator::repeat;
     ///
-    /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
+    /// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
     ///   repeat(
     ///     0..,
     ///     "abc"
@@ -196,23 +191,22 @@ where
     ///       acc.push(item);
     ///       acc
     ///     }
-    ///   ).parse_peek(s)
+    ///   ).parse_next(s)
     /// }
     ///
-    /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-    /// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-    /// assert_eq!(parser("123123"), Ok(("123123", vec![])));
-    /// assert_eq!(parser(""), Ok(("", vec![])));
+    /// assert_eq!(parser.parse_peek("abcabc"), Ok(("", vec!["abc", "abc"])));
+    /// assert_eq!(parser.parse_peek("abc123"), Ok(("123", vec!["abc"])));
+    /// assert_eq!(parser.parse_peek("123123"), Ok(("123123", vec![])));
+    /// assert_eq!(parser.parse_peek(""), Ok(("", vec![])));
     /// ```
     ///
     /// One or more repetitions:
     /// ```rust
-    /// # use winnow::error::IResult;
-    /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+    /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
     /// # use winnow::prelude::*;
     /// use winnow::combinator::repeat;
     ///
-    /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
+    /// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
     ///   repeat(
     ///     1..,
     ///     "abc",
@@ -222,23 +216,22 @@ where
     ///       acc.push(item);
     ///       acc
     ///     }
-    ///   ).parse_peek(s)
+    ///   ).parse_next(s)
     /// }
     ///
-    /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-    /// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-    /// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Repeat))));
-    /// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Repeat))));
+    /// assert_eq!(parser.parse_peek("abcabc"), Ok(("", vec!["abc", "abc"])));
+    /// assert_eq!(parser.parse_peek("abc123"), Ok(("123", vec!["abc"])));
+    /// assert!(parser.parse_peek("123123").is_err());
+    /// assert!(parser.parse_peek("").is_err());
     /// ```
     ///
     /// Arbitrary number of repetitions:
     /// ```rust
-    /// # use winnow::error::IResult;
     /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
     /// # use winnow::prelude::*;
     /// use winnow::combinator::repeat;
     ///
-    /// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
+    /// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
     ///   repeat(
     ///     0..=2,
     ///     "abc",
@@ -248,14 +241,14 @@ where
     ///       acc.push(item);
     ///       acc
     ///     }
-    ///   ).parse_peek(s)
+    ///   ).parse_next(s)
     /// }
     ///
-    /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
-    /// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-    /// assert_eq!(parser("123123"), Ok(("123123", vec![])));
-    /// assert_eq!(parser(""), Ok(("", vec![])));
-    /// assert_eq!(parser("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
+    /// assert_eq!(parser.parse_peek("abcabc"), Ok(("", vec!["abc", "abc"])));
+    /// assert_eq!(parser.parse_peek("abc123"), Ok(("123", vec!["abc"])));
+    /// assert_eq!(parser.parse_peek("123123"), Ok(("123123", vec![])));
+    /// assert_eq!(parser.parse_peek(""), Ok(("", vec![])));
+    /// assert_eq!(parser.parse_peek("abcabcabc"), Ok(("abc", vec!["abc", "abc"])));
     /// ```
     #[doc(alias = "fold_many0")]
     #[doc(alias = "fold_many1")]
@@ -314,13 +307,12 @@ where
     ///
     /// Guaranteeing that the input had unique elements:
     /// ```rust
-    /// # use winnow::error::IResult;
-    /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+    /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
     /// # use winnow::prelude::*;
     /// use winnow::combinator::repeat;
     /// use std::collections::HashSet;
     ///
-    /// fn parser(s: &str) -> IResult<&str, HashSet<&str>> {
+    /// fn parser<'i>(s: &mut &'i str) -> PResult<HashSet<&'i str>> {
     ///   repeat(
     ///     0..,
     ///     "abc"
@@ -333,14 +325,14 @@ where
     ///          None
     ///       }
     ///     }
-    ///   ).parse_peek(s)
+    ///   ).parse_next(s)
     /// }
     ///
-    /// assert_eq!(parser("abc"), Ok(("", HashSet::from(["abc"]))));
-    /// assert_eq!(parser("abcabc"), Err(ErrMode::Backtrack(InputError::new("abc", ErrorKind::Verify))));
-    /// assert_eq!(parser("abc123"), Ok(("123", HashSet::from(["abc"]))));
-    /// assert_eq!(parser("123123"), Ok(("123123", HashSet::from([]))));
-    /// assert_eq!(parser(""), Ok(("", HashSet::from([]))));
+    /// assert_eq!(parser.parse_peek("abc"), Ok(("", HashSet::from(["abc"]))));
+    /// assert!(parser.parse_peek("abcabc").is_err());
+    /// assert_eq!(parser.parse_peek("abc123"), Ok(("123", HashSet::from(["abc"]))));
+    /// assert_eq!(parser.parse_peek("123123"), Ok(("123123", HashSet::from([]))));
+    /// assert_eq!(parser.parse_peek(""), Ok(("", HashSet::from([]))));
     /// ```
     #[inline(always)]
     pub fn verify_fold<Init, Op, Result>(
@@ -391,14 +383,13 @@ where
     ///
     /// Writing the output to a vector of bytes:
     /// ```rust
-    /// # use winnow::error::IResult;
-    /// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+    /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
     /// # use winnow::prelude::*;
     /// use winnow::combinator::repeat;
     /// use std::io::Write;
     /// use std::io::Error;
     ///
-    /// fn parser(s: &str) -> IResult<&str, Vec<u8>> {
+    /// fn parser(s: &mut &str) -> PResult<Vec<u8>> {
     ///   repeat(
     ///     0..,
     ///     "abc"
@@ -408,13 +399,13 @@ where
     ///       acc.write(item.as_bytes())?;
     ///       Ok(acc)
     ///     }
-    ///   ).parse_peek(s)
+    ///   ).parse_next(s)
     /// }
     ///
-    /// assert_eq!(parser("abc"), Ok(("", b"abc".to_vec())));
-    /// assert_eq!(parser("abc123"), Ok(("123", b"abc".to_vec())));
-    /// assert_eq!(parser("123123"), Ok(("123123", vec![])));
-    /// assert_eq!(parser(""), Ok(("", vec![])));
+    /// assert_eq!(parser.parse_peek("abc"), Ok(("", b"abc".to_vec())));
+    /// assert_eq!(parser.parse_peek("abc123"), Ok(("123", b"abc".to_vec())));
+    /// assert_eq!(parser.parse_peek("123123"), Ok(("123123", vec![])));
+    /// assert_eq!(parser.parse_peek(""), Ok(("", vec![])));
     #[inline(always)]
     pub fn try_fold<Init, Op, OpError, Result>(
         mut self,
@@ -634,20 +625,19 @@ where
 ///
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::error::IResult;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat_till;
 ///
-/// fn parser(s: &str) -> IResult<&str, (Vec<&str>, &str)> {
-///   repeat_till(0.., "abc", "end").parse_peek(s)
+/// fn parser<'i>(s: &mut &'i str) -> PResult<(Vec<&'i str>, &'i str)> {
+///   repeat_till(0.., "abc", "end").parse_next(s)
 /// };
 ///
-/// assert_eq!(parser("abcabcend"), Ok(("", (vec!["abc", "abc"], "end"))));
-/// assert_eq!(parser("abc123end"), Err(ErrMode::Backtrack(InputError::new("123end", ErrorKind::Literal))));
-/// assert_eq!(parser("123123end"), Err(ErrMode::Backtrack(InputError::new("123123end", ErrorKind::Literal))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
-/// assert_eq!(parser("abcendefg"), Ok(("efg", (vec!["abc"], "end"))));
+/// assert_eq!(parser.parse_peek("abcabcend"), Ok(("", (vec!["abc", "abc"], "end"))));
+/// assert!(parser.parse_peek("abc123end").is_err());
+/// assert!(parser.parse_peek("123123end").is_err());
+/// assert!(parser.parse_peek("").is_err());
+/// assert_eq!(parser.parse_peek("abcendefg"), Ok(("efg", (vec!["abc"], "end"))));
 /// # }
 /// ```
 #[doc(alias = "many_till0")]
@@ -800,80 +790,76 @@ where
 /// Zero or more repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
 ///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   separated(0.., "abc", "|").parse_peek(s)
+/// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
+///   separated(0.., "abc", "|").parse_next(s)
 /// }
 ///
-/// assert_eq!(parser("abc|abc|abc"), Ok(("", vec!["abc", "abc", "abc"])));
-/// assert_eq!(parser("abc123abc"), Ok(("123abc", vec!["abc"])));
-/// assert_eq!(parser("abc|def"), Ok(("|def", vec!["abc"])));
-/// assert_eq!(parser(""), Ok(("", vec![])));
-/// assert_eq!(parser("def|abc"), Ok(("def|abc", vec![])));
+/// assert_eq!(parser.parse_peek("abc|abc|abc"), Ok(("", vec!["abc", "abc", "abc"])));
+/// assert_eq!(parser.parse_peek("abc123abc"), Ok(("123abc", vec!["abc"])));
+/// assert_eq!(parser.parse_peek("abc|def"), Ok(("|def", vec!["abc"])));
+/// assert_eq!(parser.parse_peek(""), Ok(("", vec![])));
+/// assert_eq!(parser.parse_peek("def|abc"), Ok(("def|abc", vec![])));
 /// # }
 /// ```
 ///
 /// One or more repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::error::IResult;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
 ///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   separated(1.., "abc", "|").parse_peek(s)
+/// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
+///   separated(1.., "abc", "|").parse_next(s)
 /// }
 ///
-/// assert_eq!(parser("abc|abc|abc"), Ok(("", vec!["abc", "abc", "abc"])));
-/// assert_eq!(parser("abc123abc"), Ok(("123abc", vec!["abc"])));
-/// assert_eq!(parser("abc|def"), Ok(("|def", vec!["abc"])));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
-/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(InputError::new("def|abc", ErrorKind::Literal))));
+/// assert_eq!(parser.parse_peek("abc|abc|abc"), Ok(("", vec!["abc", "abc", "abc"])));
+/// assert_eq!(parser.parse_peek("abc123abc"), Ok(("123abc", vec!["abc"])));
+/// assert_eq!(parser.parse_peek("abc|def"), Ok(("|def", vec!["abc"])));
+/// assert!(parser.parse_peek("").is_err());
+/// assert!(parser.parse_peek("def|abc").is_err());
 /// # }
 /// ```
 ///
 /// Fixed number of repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::error::IResult;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
 ///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   separated(2, "abc", "|").parse_peek(s)
+/// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
+///   separated(2, "abc", "|").parse_next(s)
 /// }
 ///
-/// assert_eq!(parser("abc|abc|abc"), Ok(("|abc", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123abc"), Err(ErrMode::Backtrack(InputError::new("123abc", ErrorKind::Literal))));
-/// assert_eq!(parser("abc|def"), Err(ErrMode::Backtrack(InputError::new("def", ErrorKind::Literal))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
-/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(InputError::new("def|abc", ErrorKind::Literal))));
+/// assert_eq!(parser.parse_peek("abc|abc|abc"), Ok(("|abc", vec!["abc", "abc"])));
+/// assert!(parser.parse_peek("abc123abc").is_err());
+/// assert!(parser.parse_peek("abc|def").is_err());
+/// assert!(parser.parse_peek("").is_err());
+/// assert!(parser.parse_peek("def|abc").is_err());
 /// # }
 /// ```
 ///
 /// Arbitrary repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::error::IResult;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
 ///
-/// fn parser(s: &str) -> IResult<&str, Vec<&str>> {
-///   separated(0..=2, "abc", "|").parse_peek(s)
+/// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
+///   separated(0..=2, "abc", "|").parse_next(s)
 /// }
 ///
-/// assert_eq!(parser("abc|abc|abc"), Ok(("|abc", vec!["abc", "abc"])));
-/// assert_eq!(parser("abc123abc"), Ok(("123abc", vec!["abc"])));
-/// assert_eq!(parser("abc|def"), Ok(("|def", vec!["abc"])));
-/// assert_eq!(parser(""), Ok(("", vec![])));
-/// assert_eq!(parser("def|abc"), Ok(("def|abc", vec![])));
+/// assert_eq!(parser.parse_peek("abc|abc|abc"), Ok(("|abc", vec!["abc", "abc"])));
+/// assert_eq!(parser.parse_peek("abc123abc"), Ok(("123abc", vec!["abc"])));
+/// assert_eq!(parser.parse_peek("abc|def"), Ok(("|def", vec!["abc"])));
+/// assert_eq!(parser.parse_peek(""), Ok(("", vec![])));
+/// assert_eq!(parser.parse_peek("def|abc"), Ok(("def|abc", vec![])));
 /// # }
 /// ```
 #[doc(alias = "sep_by")]
@@ -1196,19 +1182,18 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::error::IResult;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated_foldl1;
 /// use winnow::ascii::dec_int;
 ///
-/// fn parser(s: &str) -> IResult<&str, i32> {
-///   separated_foldl1(dec_int, "-", |l, _, r| l - r).parse_peek(s)
+/// fn parser(s: &mut &str) -> PResult<i32> {
+///   separated_foldl1(dec_int, "-", |l, _, r| l - r).parse_next(s)
 /// }
 ///
-/// assert_eq!(parser("9-3-5"), Ok(("", 1)));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Token))));
-/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(InputError::new("def|abc", ErrorKind::Verify))));
+/// assert_eq!(parser.parse_peek("9-3-5"), Ok(("", 1)));
+/// assert!(parser.parse_peek("").is_err());
+/// assert!(parser.parse_peek("def|abc").is_err());
 /// ```
 pub fn separated_foldl1<Input, Output, Sep, Error, ParseNext, SepParser, Op>(
     mut parser: ParseNext,
@@ -1263,21 +1248,20 @@ where
 ///
 /// # Example
 ///
-/// ```
-/// # use winnow::error::IResult;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// ```rust
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated_foldr1;
 /// use winnow::ascii::dec_uint;
 ///
-/// fn parser(s: &str) -> IResult<&str, u32> {
-///   separated_foldr1(dec_uint, "^", |l: u32, _, r: u32| l.pow(r)).parse_peek(s)
+/// fn parser(s: &mut &str) -> PResult<u32> {
+///   separated_foldr1(dec_uint, "^", |l: u32, _, r: u32| l.pow(r)).parse_next(s)
 /// }
 ///
-/// assert_eq!(parser("2^3^2"), Ok(("", 512)));
-/// assert_eq!(parser("2"), Ok(("", 2)));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Token))));
-/// assert_eq!(parser("def|abc"), Err(ErrMode::Backtrack(InputError::new("def|abc", ErrorKind::Verify))));
+/// assert_eq!(parser.parse_peek("2^3^2"), Ok(("", 512)));
+/// assert_eq!(parser.parse_peek("2"), Ok(("", 2)));
+/// assert!(parser.parse_peek("").is_err());
+/// assert!(parser.parse_peek("def|abc").is_err());
 /// ```
 #[cfg(feature = "alloc")]
 pub fn separated_foldr1<Input, Output, Sep, Error, ParseNext, SepParser, Op>(
@@ -1316,22 +1300,21 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::error::IResult;
-/// # use winnow::{error::ErrMode, error::{InputError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::fill;
 ///
-/// fn parser(s: &str) -> IResult<&str, [&str; 2]> {
+/// fn parser<'i>(s: &mut &'i str) -> PResult<[&'i str; 2]> {
 ///   let mut buf = ["", ""];
-///   let (rest, ()) = fill("abc", &mut buf).parse_peek(s)?;
-///   Ok((rest, buf))
+///   fill("abc", &mut buf).parse_next(s)?;
+///   Ok(buf)
 /// }
 ///
-/// assert_eq!(parser("abcabc"), Ok(("", ["abc", "abc"])));
-/// assert_eq!(parser("abc123"), Err(ErrMode::Backtrack(InputError::new("123", ErrorKind::Literal))));
-/// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Literal))));
-/// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Literal))));
-/// assert_eq!(parser("abcabcabc"), Ok(("abc", ["abc", "abc"])));
+/// assert_eq!(parser.parse_peek("abcabc"), Ok(("", ["abc", "abc"])));
+/// assert!(parser.parse_peek("abc123").is_err());
+/// assert!(parser.parse_peek("123123").is_err());
+/// assert!(parser.parse_peek("").is_err());
+/// assert_eq!(parser.parse_peek("abcabcabc"), Ok(("abc", ["abc", "abc"])));
 /// ```
 pub fn fill<'i, Input, Output, Error, ParseNext>(
     mut parser: ParseNext,
