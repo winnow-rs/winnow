@@ -1303,6 +1303,7 @@ where
 mod tests {
     use super::*;
 
+    use snapbox::prelude::*;
     use snapbox::str;
 
     use crate::binary::be_u16;
@@ -1355,6 +1356,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             parser.parse_peek("123def"),
@@ -1369,6 +1371,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -1408,6 +1411,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             tuple_3.parse_peek(Partial::new(&b"abcd"[..])),
@@ -1421,6 +1425,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             tuple_3.parse_peek(Partial::new(&b"abcde"[..])),
@@ -1434,6 +1439,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             tuple_3.parse_peek(Partial::new(&b"abcdejk"[..])),
@@ -1454,6 +1460,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -1473,6 +1480,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             parser.parse_peek("sdfjakdsas"),
@@ -1485,6 +1493,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             parser.parse_peek(""),
@@ -1497,6 +1506,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 }

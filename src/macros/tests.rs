@@ -1,3 +1,4 @@
+use snapbox::prelude::*;
 use snapbox::str;
 
 use crate::ascii::dec_uint;
@@ -30,11 +31,12 @@ fn dispatch_basics() {
 Ok(
     (
         "123",
-        '/u{8}',
+        '\u{8}',
     ),
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         escape_seq_char.parse_peek("error"),
@@ -49,6 +51,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         escape_seq_char.parse_peek(""),
@@ -63,6 +66,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -98,6 +102,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         parser.parse_peek("123, remaining"),
@@ -112,6 +117,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         parser.parse_peek(""),
@@ -126,6 +132,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -164,6 +171,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         parser.parse_peek("123, remaining"),
@@ -178,6 +186,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         parser.parse_peek(""),
@@ -192,6 +201,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -303,6 +313,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     assert_parse!(
@@ -319,6 +330,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -375,6 +387,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         parser.parse_peek("123, remaining"),
@@ -389,6 +402,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         parser.parse_peek(""),
@@ -403,6 +417,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -491,6 +506,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         parser.parse_peek("123, remaining"),
@@ -505,6 +521,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         parser.parse_peek(""),
@@ -519,6 +536,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 

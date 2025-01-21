@@ -1,6 +1,7 @@
 #![allow(clippy::unreadable_literal)]
 #![cfg(target_pointer_width = "64")]
 
+use snapbox::prelude::*;
 use snapbox::str;
 
 #[cfg(feature = "alloc")]
@@ -39,6 +40,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -64,6 +66,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -89,6 +92,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -116,6 +120,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -146,6 +151,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -173,6 +179,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -197,6 +204,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -224,6 +232,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -248,5 +257,6 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }

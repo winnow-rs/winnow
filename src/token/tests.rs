@@ -2,6 +2,7 @@ use super::*;
 
 #[cfg(feature = "std")]
 use proptest::prelude::*;
+use snapbox::prelude::*;
 use snapbox::str;
 
 use crate::ascii::Caseless;
@@ -27,6 +28,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -44,6 +46,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -103,6 +106,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         take_until_5_10.parse_peek("1234end"),
@@ -117,6 +121,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         take_until_5_10.parse_peek("12345end"),
@@ -129,6 +134,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         take_until_5_10.parse_peek("123456end"),
@@ -141,6 +147,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         take_until_5_10.parse_peek("12345678end"),
@@ -153,6 +160,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         take_until_5_10.parse_peek("123456789end"),
@@ -167,6 +175,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -186,6 +195,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         take_until_empty.parse_peek("end"),
@@ -198,6 +208,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -227,6 +238,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_bytes.parse_peek(&b"abcdefgh"[..]),
@@ -249,6 +261,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_bytes.parse_peek(&b"ABCDefgh"[..]),
@@ -271,6 +284,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_bytes.parse_peek(&b"ab"[..]),
@@ -288,6 +302,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_bytes.parse_peek(&b"Hello"[..]),
@@ -308,6 +323,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_bytes.parse_peek(&b"Hel"[..]),
@@ -326,6 +342,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 
     fn caseless_str<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
@@ -342,6 +359,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_str.parse_peek("abcdefgh"),
@@ -354,6 +372,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_str.parse_peek("ABCDefgh"),
@@ -366,6 +385,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_str.parse_peek("ab"),
@@ -380,6 +400,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_str.parse_peek("Hello"),
@@ -394,6 +415,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_str.parse_peek("Hel"),
@@ -408,6 +430,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 
     fn matches_kelvin<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
@@ -426,6 +449,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 
     fn is_kelvin<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
@@ -444,6 +468,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -472,6 +497,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         test2.parse_peek(input),
@@ -488,6 +514,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -511,6 +538,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         test.parse_peek(&[b'A', b'\0'][..]),
@@ -528,6 +556,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -551,6 +580,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         test.parse_peek(&[b'A', b'\0'][..]),
@@ -568,6 +598,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -588,6 +619,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -616,6 +648,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     let b = &b"cde"[..];
@@ -639,6 +672,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 
     fn utf8<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, char> {
@@ -677,6 +711,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 
     let b = &b"cde"[..];
@@ -697,6 +732,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -723,6 +759,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 
     let b = "cde";
@@ -740,6 +777,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -771,6 +809,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 
     let b = &b"cde"[..];
@@ -791,6 +830,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -821,6 +861,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     let b = Partial::new(&b"bcde"[..]);
@@ -844,6 +885,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     let c = Partial::new(&b"cdef"[..]);
@@ -868,6 +910,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 
     let d = Partial::new(&b"bacdef"[..]);
@@ -893,6 +936,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -923,6 +967,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     let b = Partial::new(&b"cbde"[..]);
@@ -946,6 +991,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     let c = Partial::new(&b"abab"[..]);
@@ -970,6 +1016,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 
     let d = Partial::new(&b"cdefba"[..]);
@@ -995,6 +1042,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     let e = Partial::new(&b"e"[..]);
@@ -1010,6 +1058,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -1028,6 +1077,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         y.parse_peek(Partial::new(&b"123"[..])),
@@ -1039,6 +1089,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         y.parse_peek(Partial::new(&b"123en"[..])),
@@ -1050,6 +1101,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -1068,6 +1120,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -1114,6 +1167,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     fn ya<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
@@ -1140,6 +1194,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     fn yd<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
@@ -1166,6 +1221,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     fn yhd<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
@@ -1198,6 +1254,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     fn yod<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
@@ -1228,6 +1285,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     fn yan<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
@@ -1257,6 +1315,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     fn ys<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
@@ -1282,6 +1341,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     fn yms<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
@@ -1309,6 +1369,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -1334,6 +1395,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new(b)),
@@ -1347,6 +1409,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new(c)),
@@ -1371,6 +1434,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new(d)),
@@ -1390,6 +1454,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -1415,6 +1480,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new(b)),
@@ -1428,6 +1494,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new(c)),
@@ -1452,6 +1519,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new(d)),
@@ -1473,6 +1541,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -1500,6 +1569,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         x.parse_peek(Partial::new(b)),
@@ -1513,6 +1583,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         x.parse_peek(Partial::new(c)),
@@ -1526,6 +1597,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         x.parse_peek(Partial::new(d)),
@@ -1549,6 +1621,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         x.parse_peek(Partial::new(e)),
@@ -1571,6 +1644,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         x.parse_peek(Partial::new(f)),
@@ -1592,6 +1666,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -1617,6 +1692,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new(b)),
@@ -1637,6 +1713,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new(c)),
@@ -1661,6 +1738,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new(d)),
@@ -1674,6 +1752,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -1699,6 +1778,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new(b)),
@@ -1721,6 +1801,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new(c)),
@@ -1745,6 +1826,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new(d)),
@@ -1758,6 +1840,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -1779,6 +1862,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new("abcd")),
@@ -1792,6 +1876,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new("abcd點")),
@@ -1807,6 +1892,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new("abcd點a")),
@@ -1822,6 +1908,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     fn g<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
@@ -1840,6 +1927,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         g.parse_peek(Partial::new("點abcd")),
@@ -1855,6 +1943,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         g.parse_peek(Partial::new("點點點a")),
@@ -1870,6 +1959,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -1891,6 +1981,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new("abcd")),
@@ -1904,6 +1995,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new("abcd點")),
@@ -1919,6 +2011,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new("abcd點a")),
@@ -1934,6 +2027,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     fn g<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
@@ -1952,6 +2046,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         g.parse_peek(Partial::new("點abcd")),
@@ -1967,6 +2062,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         g.parse_peek(Partial::new("點點點a")),
@@ -1982,6 +2078,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -2001,6 +2098,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new("ab")),
@@ -2012,6 +2110,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new("點")),
@@ -2023,6 +2122,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new("ab點cd")),
@@ -2038,6 +2138,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new("a點bcd")),
@@ -2053,6 +2154,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new("a點b")),
@@ -2068,6 +2170,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     fn g<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
@@ -2086,6 +2189,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         g.parse_peek(Partial::new("點abcd")),
@@ -2101,6 +2205,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         g.parse_peek(Partial::new("點點點a")),
@@ -2116,6 +2221,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -2138,6 +2244,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         parser.parse_peek(Partial::new("😃!")),
@@ -2153,6 +2260,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -2175,6 +2283,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         parser.parse_peek(Partial::new("😃!")),
@@ -2190,6 +2299,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -2212,6 +2322,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -2234,6 +2345,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -2265,6 +2377,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         y.parse_peek(Partial::new(&b"ab."[..])),
@@ -2285,6 +2398,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -2317,6 +2431,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_bytes.parse_peek(Partial::new(&b"abcdefgh"[..])),
@@ -2342,6 +2457,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_bytes.parse_peek(Partial::new(&b"ABCDefgh"[..])),
@@ -2367,6 +2483,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_bytes.parse_peek(Partial::new(&b"ab"[..])),
@@ -2380,6 +2497,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_bytes.parse_peek(Partial::new(&b"Hello"[..])),
@@ -2403,6 +2521,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_bytes.parse_peek(Partial::new(&b"Hel"[..])),
@@ -2424,6 +2543,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 
     fn caseless_str<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
@@ -2443,6 +2563,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_str.parse_peek(Partial::new("abcdefgh")),
@@ -2458,6 +2579,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_str.parse_peek(Partial::new("ABCDefgh")),
@@ -2473,6 +2595,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_str.parse_peek(Partial::new("ab")),
@@ -2486,6 +2609,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_str.parse_peek(Partial::new("Hello")),
@@ -2503,6 +2627,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         caseless_str.parse_peek(Partial::new("Hel")),
@@ -2520,6 +2645,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 
     fn matches_kelvin<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
@@ -2541,6 +2667,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 
     fn is_kelvin<'i>(i: &mut Partial<&'i str>) -> TestResult<Partial<&'i str>, &'i str> {
@@ -2562,6 +2689,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -2592,6 +2720,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         test2.parse_peek(input),
@@ -2611,6 +2740,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -2642,6 +2772,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -2659,6 +2790,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -2690,5 +2822,6 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }

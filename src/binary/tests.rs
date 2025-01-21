@@ -1,5 +1,6 @@
 use super::*;
 
+use snapbox::prelude::*;
 use snapbox::str;
 
 use crate::prelude::*;
@@ -20,6 +21,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             i8.parse_peek(&[0x7f][..]),
@@ -32,6 +34,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             i8.parse_peek(&[0xff][..]),
@@ -44,6 +47,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             i8.parse_peek(&[0x80][..]),
@@ -56,6 +60,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -72,6 +77,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i8.parse_peek(&[0x7f][..]),
@@ -84,6 +90,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i8.parse_peek(&[0xff][..]),
@@ -96,6 +103,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i8.parse_peek(&[0x80][..]),
@@ -108,6 +116,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -124,6 +133,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i16.parse_peek(&[0x7f, 0xff][..]),
@@ -136,6 +146,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i16.parse_peek(&[0xff, 0xff][..]),
@@ -148,6 +159,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i16.parse_peek(&[0x80, 0x00][..]),
@@ -160,6 +172,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -176,6 +189,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_u24.parse_peek(&[0x00, 0xFF, 0xFF][..]),
@@ -188,6 +202,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_u24.parse_peek(&[0x12, 0x34, 0x56][..]),
@@ -200,6 +215,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -216,6 +232,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i24.parse_peek(&[0xFF, 0x00, 0x00][..]),
@@ -228,6 +245,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i24.parse_peek(&[0xED, 0xCB, 0xAA][..]),
@@ -240,6 +258,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -256,6 +275,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i32.parse_peek(&[0x7f, 0xff, 0xff, 0xff][..]),
@@ -268,6 +288,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i32.parse_peek(&[0xff, 0xff, 0xff, 0xff][..]),
@@ -280,6 +301,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i32.parse_peek(&[0x80, 0x00, 0x00, 0x00][..]),
@@ -292,6 +314,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -308,6 +331,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i64.parse_peek(&[0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff][..]),
@@ -320,6 +344,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i64.parse_peek(&[0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff][..]),
@@ -332,6 +357,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i64.parse_peek(&[0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]),
@@ -344,6 +370,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -365,6 +392,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(
@@ -382,6 +410,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(
@@ -399,6 +428,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(
@@ -416,6 +446,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -432,6 +463,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i8.parse_peek(&[0x7f][..]),
@@ -444,6 +476,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i8.parse_peek(&[0xff][..]),
@@ -456,6 +489,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i8.parse_peek(&[0x80][..]),
@@ -468,6 +502,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -484,6 +519,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i16.parse_peek(&[0xff, 0x7f][..]),
@@ -496,6 +532,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i16.parse_peek(&[0xff, 0xff][..]),
@@ -508,6 +545,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i16.parse_peek(&[0x00, 0x80][..]),
@@ -520,6 +558,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -536,6 +575,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_u24.parse_peek(&[0xFF, 0xFF, 0x00][..]),
@@ -548,6 +588,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_u24.parse_peek(&[0x56, 0x34, 0x12][..]),
@@ -560,6 +601,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -576,6 +618,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i24.parse_peek(&[0x00, 0x00, 0xFF][..]),
@@ -588,6 +631,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i24.parse_peek(&[0xAA, 0xCB, 0xED][..]),
@@ -600,6 +644,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -616,6 +661,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i32.parse_peek(&[0xff, 0xff, 0xff, 0x7f][..]),
@@ -628,6 +674,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i32.parse_peek(&[0xff, 0xff, 0xff, 0xff][..]),
@@ -640,6 +687,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i32.parse_peek(&[0x00, 0x00, 0x00, 0x80][..]),
@@ -652,6 +700,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -668,6 +717,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i64.parse_peek(&[0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7f][..]),
@@ -680,6 +730,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i64.parse_peek(&[0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff][..]),
@@ -692,6 +743,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i64.parse_peek(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80][..]),
@@ -704,6 +756,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -725,6 +778,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i128.parse_peek(
@@ -742,6 +796,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i128.parse_peek(
@@ -759,6 +814,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i128.parse_peek(
@@ -776,6 +832,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -792,6 +849,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_f32.parse_peek(&[0x4d, 0x31, 0x1f, 0xd8][..]),
@@ -804,6 +862,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -820,6 +879,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_f64.parse_peek(&[0x41, 0xa6, 0x23, 0xfb, 0x10, 0x00, 0x00, 0x00][..]),
@@ -832,6 +892,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -848,6 +909,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_f32.parse_peek(&[0xd8, 0x1f, 0x31, 0x4d][..]),
@@ -860,6 +922,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -876,6 +939,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_f64.parse_peek(&[0x00, 0x00, 0x00, 0x10, 0xfb, 0x23, 0xa6, 0x41][..]),
@@ -888,6 +952,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -912,6 +977,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_tst16.parse_peek(&[0x80, 0x00]),
@@ -924,6 +990,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         fn be_tst32<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], u32> {
@@ -943,6 +1010,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_tst32.parse_peek(&[0x12, 0x00, 0x60, 0x00]),
@@ -955,6 +1023,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         fn be_tst64<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], u64> {
@@ -974,6 +1043,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_tst64.parse_peek(&[0x12, 0x00, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
@@ -986,6 +1056,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         fn be_tsti16<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], i16> {
@@ -1005,6 +1076,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_tsti16.parse_peek(&[0x00, 0x80]),
@@ -1017,6 +1089,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         fn be_tsti32<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], i32> {
@@ -1036,6 +1109,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_tsti32.parse_peek(&[0x00, 0x12, 0x60, 0x00]),
@@ -1048,6 +1122,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         fn be_tsti64<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], i64> {
@@ -1067,6 +1142,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_tsti64.parse_peek(&[0x00, 0xFF, 0x60, 0x00, 0x12, 0x00, 0x80, 0x00]),
@@ -1079,6 +1155,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 }
@@ -1111,6 +1188,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i8.parse_peek(Partial::new(&[0x7f][..])),
@@ -1126,6 +1204,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i8.parse_peek(Partial::new(&[0xff][..])),
@@ -1141,6 +1220,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i8.parse_peek(Partial::new(&[0x80][..])),
@@ -1156,6 +1236,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i8.parse_peek(Partial::new(&[][..])),
@@ -1169,6 +1250,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -1188,6 +1270,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i16.parse_peek(Partial::new(&[0x7f, 0xff][..])),
@@ -1203,6 +1286,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i16.parse_peek(Partial::new(&[0xff, 0xff][..])),
@@ -1218,6 +1302,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i16.parse_peek(Partial::new(&[0x80, 0x00][..])),
@@ -1233,6 +1318,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i16.parse_peek(Partial::new(&[][..])),
@@ -1246,6 +1332,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i16.parse_peek(Partial::new(&[0x00][..])),
@@ -1259,6 +1346,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -1278,6 +1366,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_u24.parse_peek(Partial::new(&[0x00, 0xFF, 0xFF][..])),
@@ -1293,6 +1382,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_u24.parse_peek(Partial::new(&[0x12, 0x34, 0x56][..])),
@@ -1308,6 +1398,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_u24.parse_peek(Partial::new(&[][..])),
@@ -1321,6 +1412,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_u24.parse_peek(Partial::new(&[0x00][..])),
@@ -1334,6 +1426,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_u24.parse_peek(Partial::new(&[0x00, 0x00][..])),
@@ -1347,6 +1440,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -1366,6 +1460,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i24.parse_peek(Partial::new(&[0xFF, 0x00, 0x00][..])),
@@ -1381,6 +1476,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i24.parse_peek(Partial::new(&[0xED, 0xCB, 0xAA][..])),
@@ -1396,6 +1492,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i24.parse_peek(Partial::new(&[][..])),
@@ -1409,6 +1506,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i24.parse_peek(Partial::new(&[0x00][..])),
@@ -1422,6 +1520,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i24.parse_peek(Partial::new(&[0x00, 0x00][..])),
@@ -1435,6 +1534,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -1454,6 +1554,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i32.parse_peek(Partial::new(&[0x7f, 0xff, 0xff, 0xff][..])),
@@ -1469,6 +1570,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i32.parse_peek(Partial::new(&[0xff, 0xff, 0xff, 0xff][..])),
@@ -1484,6 +1586,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i32.parse_peek(Partial::new(&[0x80, 0x00, 0x00, 0x00][..])),
@@ -1499,6 +1602,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i32.parse_peek(Partial::new(&[][..])),
@@ -1512,6 +1616,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i32.parse_peek(Partial::new(&[0x00][..])),
@@ -1525,6 +1630,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i32.parse_peek(Partial::new(&[0x00, 0x00][..])),
@@ -1538,6 +1644,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i32.parse_peek(Partial::new(&[0x00, 0x00, 0x00][..])),
@@ -1551,6 +1658,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -1572,6 +1680,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i64.parse_peek(Partial::new(
@@ -1589,6 +1698,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i64.parse_peek(Partial::new(
@@ -1606,6 +1716,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i64.parse_peek(Partial::new(
@@ -1623,6 +1734,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i64.parse_peek(Partial::new(&[][..])),
@@ -1636,6 +1748,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i64.parse_peek(Partial::new(&[0x00][..])),
@@ -1649,6 +1762,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i64.parse_peek(Partial::new(&[0x00, 0x00][..])),
@@ -1662,6 +1776,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i64.parse_peek(Partial::new(&[0x00, 0x00, 0x00][..])),
@@ -1675,6 +1790,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i64.parse_peek(Partial::new(&[0x00, 0x00, 0x00, 0x00][..])),
@@ -1688,6 +1804,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i64.parse_peek(Partial::new(&[0x00, 0x00, 0x00, 0x00, 0x00][..])),
@@ -1701,6 +1818,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i64.parse_peek(Partial::new(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])),
@@ -1714,6 +1832,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i64.parse_peek(Partial::new(
@@ -1729,6 +1848,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -1753,6 +1873,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(Partial::new(
@@ -1773,6 +1894,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(Partial::new(
@@ -1793,6 +1915,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(Partial::new(
@@ -1813,6 +1936,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(Partial::new(&[][..])),
@@ -1826,6 +1950,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(Partial::new(&[0x00][..])),
@@ -1839,6 +1964,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(Partial::new(&[0x00, 0x00][..])),
@@ -1852,6 +1978,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(Partial::new(&[0x00, 0x00, 0x00][..])),
@@ -1865,6 +1992,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(Partial::new(&[0x00, 0x00, 0x00, 0x00][..])),
@@ -1878,6 +2006,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(Partial::new(&[0x00, 0x00, 0x00, 0x00, 0x00][..])),
@@ -1891,6 +2020,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(Partial::new(&[0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])),
@@ -1904,6 +2034,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(Partial::new(
@@ -1919,6 +2050,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(Partial::new(
@@ -1934,6 +2066,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(Partial::new(
@@ -1949,6 +2082,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(Partial::new(
@@ -1964,6 +2098,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(Partial::new(
@@ -1979,6 +2114,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(Partial::new(
@@ -1994,6 +2130,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(Partial::new(
@@ -2009,6 +2146,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(Partial::new(
@@ -2027,6 +2165,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_i128.parse_peek(Partial::new(
@@ -2045,6 +2184,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -2064,6 +2204,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_u16.parse_peek(Partial::new(&[b'a', b'b'][..])),
@@ -2079,6 +2220,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_u16.parse_peek(Partial::new(&[0x01][..])),
@@ -2092,6 +2234,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -2111,6 +2254,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i8.parse_peek(Partial::new(&[0x7f][..])),
@@ -2126,6 +2270,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i8.parse_peek(Partial::new(&[0xff][..])),
@@ -2141,6 +2286,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i8.parse_peek(Partial::new(&[0x80][..])),
@@ -2156,6 +2302,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -2175,6 +2322,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i16.parse_peek(Partial::new(&[0xff, 0x7f][..])),
@@ -2190,6 +2338,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i16.parse_peek(Partial::new(&[0xff, 0xff][..])),
@@ -2205,6 +2354,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i16.parse_peek(Partial::new(&[0x00, 0x80][..])),
@@ -2220,6 +2370,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -2239,6 +2390,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_u24.parse_peek(Partial::new(&[0xFF, 0xFF, 0x00][..])),
@@ -2254,6 +2406,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_u24.parse_peek(Partial::new(&[0x56, 0x34, 0x12][..])),
@@ -2269,6 +2422,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -2288,6 +2442,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i24.parse_peek(Partial::new(&[0x00, 0x00, 0xFF][..])),
@@ -2303,6 +2458,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i24.parse_peek(Partial::new(&[0xAA, 0xCB, 0xED][..])),
@@ -2318,6 +2474,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -2337,6 +2494,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_u32.parse_peek(Partial::new(&[b'a', b'b', b'c', b'd'][..])),
@@ -2352,6 +2510,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_u32.parse_peek(Partial::new(&[0x01][..])),
@@ -2365,6 +2524,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -2384,6 +2544,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i32.parse_peek(Partial::new(&[0xff, 0xff, 0xff, 0x7f][..])),
@@ -2399,6 +2560,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i32.parse_peek(Partial::new(&[0xff, 0xff, 0xff, 0xff][..])),
@@ -2414,6 +2576,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i32.parse_peek(Partial::new(&[0x00, 0x00, 0x00, 0x80][..])),
@@ -2429,6 +2592,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -2450,6 +2614,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i64.parse_peek(Partial::new(
@@ -2467,6 +2632,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i64.parse_peek(Partial::new(
@@ -2484,6 +2650,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i64.parse_peek(Partial::new(
@@ -2501,6 +2668,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -2525,6 +2693,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i128.parse_peek(Partial::new(
@@ -2545,6 +2714,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i128.parse_peek(Partial::new(
@@ -2565,6 +2735,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_i128.parse_peek(Partial::new(
@@ -2585,6 +2756,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -2604,6 +2776,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_f32.parse_peek(Partial::new(&[0x4d, 0x31, 0x1f, 0xd8][..])),
@@ -2619,6 +2792,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -2640,6 +2814,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             be_f64.parse_peek(Partial::new(
@@ -2657,6 +2832,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -2676,6 +2852,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_f32.parse_peek(Partial::new(&[0xd8, 0x1f, 0x31, 0x4d][..])),
@@ -2691,6 +2868,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -2712,6 +2890,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_f64.parse_peek(Partial::new(
@@ -2729,6 +2908,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -2756,6 +2936,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_tst16.parse_peek(Partial::new(&[0x80, 0x00])),
@@ -2771,6 +2952,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         fn be_tst32<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, u32> {
@@ -2793,6 +2975,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_tst32.parse_peek(Partial::new(&[0x12, 0x00, 0x60, 0x00])),
@@ -2808,6 +2991,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         fn be_tst64<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, u64> {
@@ -2832,6 +3016,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_tst64.parse_peek(Partial::new(&[
@@ -2849,6 +3034,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         fn be_tsti16<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, i16> {
@@ -2871,6 +3057,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_tsti16.parse_peek(Partial::new(&[0x00, 0x80])),
@@ -2886,6 +3073,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         fn be_tsti32<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, i32> {
@@ -2908,6 +3096,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_tsti32.parse_peek(Partial::new(&[0x00, 0x12, 0x60, 0x00])),
@@ -2923,6 +3112,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         fn be_tsti64<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, i64> {
@@ -2947,6 +3137,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             le_tsti64.parse_peek(Partial::new(&[
@@ -2964,6 +3155,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -3013,6 +3205,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             cnt.parse_peek(Partial::new(&b"2ab"[..])),
@@ -3026,6 +3219,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             cnt.parse_peek(Partial::new(&b"3abcab"[..])),
@@ -3039,6 +3233,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             cnt.parse_peek(Partial::new(&b"xxx"[..])),
@@ -3060,6 +3255,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             cnt.parse_peek(Partial::new(&b"2abcxxx"[..])),
@@ -3081,6 +3277,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -3111,6 +3308,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             x.parse_peek(Partial::new(b"\x02..")),
@@ -3129,6 +3327,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             x.parse_peek(Partial::new(b"\x02.")),
@@ -3142,6 +3341,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             x.parse_peek(Partial::new(b"\x02")),
@@ -3155,6 +3355,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
 
         fn y<'i>(i: &mut Partial<&'i [u8]>) -> TestResult<Partial<&'i [u8]>, &'i [u8]> {
@@ -3181,6 +3382,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             y.parse_peek(Partial::new(b"magic\x02..")),
@@ -3199,6 +3401,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             y.parse_peek(Partial::new(b"magic\x02.")),
@@ -3212,6 +3415,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             y.parse_peek(Partial::new(b"magic\x02")),
@@ -3225,6 +3429,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -3269,6 +3474,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             take.parse_peek(Partial::new(&b"3ab"[..])),
@@ -3282,6 +3488,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             take.parse_peek(Partial::new(&b"xxx"[..])),
@@ -3303,6 +3510,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             take.parse_peek(Partial::new(&b"2abcxxx"[..])),
@@ -3326,6 +3534,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -3362,6 +3571,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             length_and_then_2.parse_peek(Partial::new(&i1)),
@@ -3379,6 +3589,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
 
         let i2 = [1, 5, 6, 3];
@@ -3403,6 +3614,7 @@ Err(
 )
 
 "#]]
+                .raw()
             );
             assert_parse!(
                 length_and_then_2.parse_peek(Partial::new(&i2)),
@@ -3420,6 +3632,7 @@ Err(
 )
 
 "#]]
+                .raw()
             );
         }
 
@@ -3443,6 +3656,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             length_and_then_2.parse_peek(Partial::new(&i3)),
@@ -3466,6 +3680,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         let i4 = [3, 5, 6, 3, 4, 5];
@@ -3486,6 +3701,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             length_and_then_2.parse_peek(Partial::new(&i4)),
@@ -3507,6 +3723,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 }
