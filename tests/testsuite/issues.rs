@@ -2,6 +2,7 @@
 #![allow(dead_code)]
 #![allow(clippy::redundant_closure)]
 
+use snapbox::prelude::*;
 use snapbox::str;
 
 use winnow::prelude::*;
@@ -27,6 +28,7 @@ pub(crate) fn take_char(input: &mut &[u8]) -> PResult<char> {
 #[cfg(feature = "std")]
 mod parse_int {
     use crate::TestResult;
+    use snapbox::prelude::*;
     use snapbox::str;
     use std::str;
     use winnow::prelude::*;
@@ -83,6 +85,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         let subject = parse_ints.parse_peek(Partial::new(&b"12 34 5689 "[..]));
@@ -106,6 +109,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 }
@@ -138,6 +142,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         nothing.parse_peek(Partial::new(b"abc")),
@@ -157,6 +162,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -191,6 +197,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         twolines.parse_peek(Partial::new("féo\nbar\n")),
@@ -209,6 +216,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         twolines.parse_peek(Partial::new("foé\nbar\n")),
@@ -227,6 +235,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         twolines.parse_peek(Partial::new("foé\r\nbar\n")),
@@ -245,6 +254,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -314,6 +324,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         parser.parse_peek("bbb"),
@@ -328,6 +339,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -346,6 +358,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -369,6 +382,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -387,6 +401,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -422,6 +437,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         fill_pair.parse_peek(b"123,456,789"),
@@ -449,6 +465,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         fill_pair.parse_peek(b"123,,"),
@@ -465,6 +482,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -503,5 +521,6 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }

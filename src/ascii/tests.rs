@@ -1,4 +1,5 @@
 use super::*;
+use snapbox::prelude::*;
 use snapbox::str;
 
 mod complete {
@@ -41,6 +42,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alpha1.parse_peek(b),
@@ -60,6 +62,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alpha1.parse_peek(c),
@@ -78,6 +81,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alpha1.parse_peek(d),
@@ -98,6 +102,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             digit1.parse_peek(a),
@@ -117,6 +122,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             digit1.parse_peek(b),
@@ -134,6 +140,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             digit1.parse_peek(c),
@@ -153,6 +160,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             digit1.parse_peek(d),
@@ -174,6 +182,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(a),
@@ -191,6 +200,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(b),
@@ -208,6 +218,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(c),
@@ -225,6 +236,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(d),
@@ -245,6 +257,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(e),
@@ -261,6 +274,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             oct_digit1.parse_peek(a),
@@ -280,6 +294,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             oct_digit1.parse_peek(b),
@@ -297,6 +312,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             oct_digit1.parse_peek(c),
@@ -316,6 +332,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             oct_digit1.parse_peek(d),
@@ -337,6 +354,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alphanumeric1.parse_peek(a),
@@ -354,6 +372,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         //assert_parse!(fix_error!(b,(), alphanumeric), str![]);
         assert_parse!(
@@ -372,6 +391,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alphanumeric1.parse_peek(d),
@@ -392,6 +412,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             space1.parse_peek(e),
@@ -406,6 +427,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             space1.parse_peek(f),
@@ -422,6 +444,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -444,6 +467,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alpha1.parse_peek(b),
@@ -458,6 +482,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alpha1.parse_peek(c),
@@ -470,6 +495,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alpha1.parse_peek(d),
@@ -482,6 +508,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             digit1.parse_peek(a),
@@ -496,6 +523,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             digit1.parse_peek(b),
@@ -508,6 +536,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             digit1.parse_peek(c),
@@ -522,6 +551,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             digit1.parse_peek(d),
@@ -536,6 +566,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(a),
@@ -548,6 +579,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(b),
@@ -560,6 +592,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(c),
@@ -572,6 +605,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(d),
@@ -584,6 +618,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(e),
@@ -598,6 +633,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             oct_digit1.parse_peek(a),
@@ -612,6 +648,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             oct_digit1.parse_peek(b),
@@ -624,6 +661,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             oct_digit1.parse_peek(c),
@@ -638,6 +676,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             oct_digit1.parse_peek(d),
@@ -652,6 +691,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alphanumeric1.parse_peek(a),
@@ -664,6 +704,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         //assert_parse!(fix_error!(b,(), alphanumeric), str![]);
         assert_parse!(
@@ -677,6 +718,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alphanumeric1.parse_peek(d),
@@ -689,6 +731,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             space1.parse_peek(e),
@@ -701,6 +744,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -785,6 +829,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         let b: &[u8] = b"ab12cd\nefgh\nijkl";
@@ -817,6 +862,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         let c: &[u8] = b"ab12cd\r\nefgh\nijkl";
@@ -850,6 +896,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         let d: &[u8] = b"ab12cd";
@@ -871,6 +918,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -883,13 +931,14 @@ Ok(
 Err(
     Backtrack(
         InputError {
-            input: "/rÂßÇáƒƭèř",
+            input: "\rÂßÇáƒƭèř",
             kind: Literal,
         },
     ),
 )
 
 "#]]
+            .raw()
         );
 
         let g2: &str = "ab12cd";
@@ -904,6 +953,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -946,6 +996,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         let i = &b"g"[..];
@@ -964,6 +1015,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
 
         let i = &b"G"[..];
@@ -982,6 +1034,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
 
         assert!(AsChar::is_hex_digit(b'0'));
@@ -1023,6 +1076,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         let i = &b"8"[..];
@@ -1041,6 +1095,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
 
         assert!(AsChar::is_oct_digit(b'0'));
@@ -1084,6 +1139,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -1115,6 +1171,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -1136,6 +1193,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -1156,6 +1214,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -1177,6 +1236,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             crlf.parse_peek(&b"\r"[..]),
@@ -1193,6 +1253,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             crlf.parse_peek(&b"\ra"[..]),
@@ -1210,6 +1271,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
 
         assert_parse!(
@@ -1218,11 +1280,12 @@ Err(
 Ok(
     (
         "a",
-        "/r/n",
+        "\r\n",
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             crlf.parse_peek("\r"),
@@ -1230,13 +1293,14 @@ Ok(
 Err(
     Backtrack(
         InputError {
-            input: "/r",
+            input: "\r",
             kind: Literal,
         },
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             crlf.parse_peek("\ra"),
@@ -1244,13 +1308,14 @@ Err(
 Err(
     Backtrack(
         InputError {
-            input: "/ra",
+            input: "\ra",
             kind: Literal,
         },
     ),
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -1271,6 +1336,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             line_ending.parse_peek(&b"\r\na"[..]),
@@ -1288,6 +1354,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             line_ending.parse_peek(&b"\r"[..]),
@@ -1304,6 +1371,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             line_ending.parse_peek(&b"\ra"[..]),
@@ -1321,6 +1389,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
 
         assert_parse!(
@@ -1329,11 +1398,12 @@ Err(
 Ok(
     (
         "a",
-        "/n",
+        "\n",
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             line_ending.parse_peek("\r\na"),
@@ -1341,11 +1411,12 @@ Ok(
 Ok(
     (
         "a",
-        "/r/n",
+        "\r\n",
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             line_ending.parse_peek("\r"),
@@ -1353,13 +1424,14 @@ Ok(
 Err(
     Backtrack(
         InputError {
-            input: "/r",
+            input: "\r",
             kind: Literal,
         },
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             line_ending.parse_peek("\ra"),
@@ -1367,13 +1439,14 @@ Err(
 Err(
     Backtrack(
         InputError {
-            input: "/ra",
+            input: "\ra",
             kind: Literal,
         },
     ),
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -1398,6 +1471,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             dec_u32.parse_peek(&b"0;"[..]),
@@ -1412,6 +1486,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             dec_u32.parse_peek(&b"1;"[..]),
@@ -1426,6 +1501,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             dec_u32.parse_peek(&b"32;"[..]),
@@ -1440,6 +1516,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             dec_u32.parse_peek(&b"1000000000000000000000;"[..]), // overflow
@@ -1478,6 +1555,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -1502,6 +1580,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             dec_i32.parse_peek(&b"0;"[..]),
@@ -1516,6 +1595,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             dec_i32.parse_peek(&b"1;"[..]),
@@ -1530,6 +1610,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             dec_i32.parse_peek(&b"32;"[..]),
@@ -1544,6 +1625,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             dec_i32.parse_peek(&b"-0;"[..]),
@@ -1562,6 +1644,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             dec_i32.parse_peek(&b"-1;"[..]),
@@ -1576,6 +1659,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             dec_i32.parse_peek(&b"-32;"[..]),
@@ -1590,6 +1674,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             dec_i32.parse_peek(&b"1000000000000000000000;"[..]), // overflow
@@ -1628,6 +1713,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -1652,6 +1738,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(&b"ff;"[..]),
@@ -1666,6 +1753,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(&b"1be2;"[..]),
@@ -1680,6 +1768,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(&b"c5a31be2;"[..]),
@@ -1694,6 +1783,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(&b"C5A31be2;"[..]),
@@ -1708,6 +1798,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(&b"00c5a31be2;"[..]), // overflow
@@ -1734,6 +1825,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(&b"c5a31be201;"[..]), // overflow
@@ -1760,6 +1852,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(&b"ffffffff;"[..]),
@@ -1774,6 +1867,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(&b"ffffffffffffffff;"[..]), // overflow
@@ -1806,6 +1900,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(&b"ffffffffffffffff"[..]), // overflow
@@ -1837,6 +1932,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(&b"0x1be2;"[..]),
@@ -1856,6 +1952,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(&b"12af"[..]),
@@ -1868,6 +1965,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -1945,6 +2043,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
 
         let nan_test_cases = ["nan", "NaN", "NAN"];
@@ -2081,6 +2180,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek(&b"ab\\\"cd;"[..]),
@@ -2102,6 +2202,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek(&b"\\\"abcd;"[..]),
@@ -2123,6 +2224,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek(&b"\\n;"[..]),
@@ -2140,6 +2242,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek(&b"ab\\\"12"[..]),
@@ -2160,6 +2263,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek(&b"AB\\"[..]),
@@ -2174,6 +2278,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek(&b"AB\\A"[..]),
@@ -2190,6 +2295,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
 
         fn esc2<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
@@ -2216,6 +2322,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -2239,6 +2346,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek("ab\\\"cd;"),
@@ -2246,11 +2354,12 @@ Ok(
 Ok(
     (
         ";",
-        "ab///"cd",
+        "ab\\\"cd",
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek("\\\"abcd;"),
@@ -2258,11 +2367,12 @@ Ok(
 Ok(
     (
         ";",
-        "///"abcd",
+        "\\\"abcd",
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek("\\n;"),
@@ -2270,11 +2380,12 @@ Ok(
 Ok(
     (
         ";",
-        "//n",
+        "\\n",
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek("ab\\\"12"),
@@ -2282,11 +2393,12 @@ Ok(
 Ok(
     (
         "12",
-        "ab///"",
+        "ab\\\"",
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek("AB\\"),
@@ -2301,6 +2413,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek("AB\\A"),
@@ -2315,6 +2428,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
 
         fn esc2<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
@@ -2326,11 +2440,12 @@ Err(
 Ok(
     (
         "nn34",
-        "12//n",
+        "12\\n",
     ),
 )
 
 "#]]
+            .raw()
         );
 
         fn esc3<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
@@ -2347,6 +2462,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -2368,6 +2484,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -2408,6 +2525,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek(&b"ab\\\"cd;"[..]),
@@ -2417,11 +2535,12 @@ Ok(
         [
             59,
         ],
-        "ab/"cd",
+        "ab\"cd",
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek(&b"\\\"abcd;"[..]),
@@ -2431,11 +2550,12 @@ Ok(
         [
             59,
         ],
-        "/"abcd",
+        "\"abcd",
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek(&b"\\n;"[..]),
@@ -2445,11 +2565,12 @@ Ok(
         [
             59,
         ],
-        "/n",
+        "\n",
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek(&b"ab\\\"12"[..]),
@@ -2460,11 +2581,12 @@ Ok(
             49,
             50,
         ],
-        "ab/"",
+        "ab\"",
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek(&b"AB\\"[..]),
@@ -2479,6 +2601,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek(&b"AB\\A"[..]),
@@ -2495,6 +2618,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
 
         fn esc2<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], String> {
@@ -2522,6 +2646,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc2.parse_peek(&b"ab&egrave;D&agrave;EF;"[..]),
@@ -2536,6 +2661,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -2564,6 +2690,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek("ab\\\"cd;"),
@@ -2571,11 +2698,12 @@ Ok(
 Ok(
     (
         ";",
-        "ab/"cd",
+        "ab\"cd",
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek("\\\"abcd;"),
@@ -2583,11 +2711,12 @@ Ok(
 Ok(
     (
         ";",
-        "/"abcd",
+        "\"abcd",
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek("\\n;"),
@@ -2595,11 +2724,12 @@ Ok(
 Ok(
     (
         ";",
-        "/n",
+        "\n",
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek("ab\\\"12"),
@@ -2607,11 +2737,12 @@ Ok(
 Ok(
     (
         "12",
-        "ab/"",
+        "ab\"",
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek("AB\\"),
@@ -2626,6 +2757,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc.parse_peek("AB\\A"),
@@ -2640,6 +2772,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
 
         fn esc2<'i>(i: &mut &'i str) -> TestResult<&'i str, String> {
@@ -2661,6 +2794,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             esc2.parse_peek("ab&egrave;D&agrave;EF;"),
@@ -2673,6 +2807,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         fn esc3<'i>(i: &mut &'i str) -> TestResult<&'i str, String> {
@@ -2684,11 +2819,12 @@ Ok(
 Ok(
     (
         "",
-        "a/0bc/n",
+        "a\0bc\n",
     ),
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -2711,6 +2847,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 }
@@ -2743,6 +2880,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alpha1.parse_peek(Partial::new(b)),
@@ -2765,6 +2903,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alpha1.parse_peek(Partial::new(c)),
@@ -2786,6 +2925,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alpha1.parse_peek(Partial::new(d)),
@@ -2809,6 +2949,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             digit1.parse_peek(Partial::new(a)),
@@ -2831,6 +2972,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             digit1.parse_peek(Partial::new(b)),
@@ -2844,6 +2986,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             digit1.parse_peek(Partial::new(c)),
@@ -2866,6 +3009,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             digit1.parse_peek(Partial::new(d)),
@@ -2890,6 +3034,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(Partial::new(a)),
@@ -2903,6 +3048,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(Partial::new(b)),
@@ -2916,6 +3062,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(Partial::new(c)),
@@ -2929,6 +3076,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(Partial::new(d)),
@@ -2952,6 +3100,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(Partial::new(e)),
@@ -2971,6 +3120,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             oct_digit1.parse_peek(Partial::new(a)),
@@ -2993,6 +3143,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             oct_digit1.parse_peek(Partial::new(b)),
@@ -3006,6 +3157,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             oct_digit1.parse_peek(Partial::new(c)),
@@ -3028,6 +3180,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             oct_digit1.parse_peek(Partial::new(d)),
@@ -3052,6 +3205,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alphanumeric1.parse_peek(Partial::new(a)),
@@ -3065,6 +3219,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         //assert_parse!(fix_error!(b,(), alphanumeric1), str![]);
         assert_parse!(
@@ -3079,6 +3234,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alphanumeric1.parse_peek(Partial::new(d)),
@@ -3102,6 +3258,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             space1.parse_peek(Partial::new(e)),
@@ -3115,6 +3272,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             space1.parse_peek(Partial::new(f)),
@@ -3134,6 +3292,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -3157,6 +3316,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alpha1.parse_peek(Partial::new(b)),
@@ -3174,6 +3334,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alpha1.parse_peek(Partial::new(c)),
@@ -3189,6 +3350,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alpha1.parse_peek(Partial::new(d)),
@@ -3204,6 +3366,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             digit1.parse_peek(Partial::new(a)),
@@ -3221,6 +3384,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             digit1.parse_peek(Partial::new(b)),
@@ -3234,6 +3398,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             digit1.parse_peek(Partial::new(c)),
@@ -3251,6 +3416,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             digit1.parse_peek(Partial::new(d)),
@@ -3268,6 +3434,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(Partial::new(a)),
@@ -3281,6 +3448,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(Partial::new(b)),
@@ -3294,6 +3462,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(Partial::new(c)),
@@ -3307,6 +3476,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(Partial::new(d)),
@@ -3322,6 +3492,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_digit1.parse_peek(Partial::new(e)),
@@ -3339,6 +3510,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             oct_digit1.parse_peek(Partial::new(a)),
@@ -3356,6 +3528,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             oct_digit1.parse_peek(Partial::new(b)),
@@ -3369,6 +3542,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             oct_digit1.parse_peek(Partial::new(c)),
@@ -3386,6 +3560,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             oct_digit1.parse_peek(Partial::new(d)),
@@ -3403,6 +3578,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alphanumeric1.parse_peek(Partial::new(a)),
@@ -3416,6 +3592,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         //assert_parse!(fix_error!(b,(), alphanumeric1), str![]);
         assert_parse!(
@@ -3430,6 +3607,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             alphanumeric1.parse_peek(Partial::new(d)),
@@ -3445,6 +3623,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             space1.parse_peek(Partial::new(e)),
@@ -3458,6 +3637,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -3552,6 +3732,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         let b: &[u8] = b"ab12cd\nefgh\nijkl";
@@ -3587,6 +3768,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         let c: &[u8] = b"ab12cd\r\nefgh\nijkl";
@@ -3623,6 +3805,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         let d: &[u8] = b"ab12cd";
@@ -3636,6 +3819,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -3649,7 +3833,7 @@ Err(
     Backtrack(
         InputError {
             input: Partial {
-                input: "/rÂßÇáƒƭèř",
+                input: "\rÂßÇáƒƭèř",
                 partial: true,
             },
             kind: Literal,
@@ -3658,6 +3842,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
 
         let g2: &str = "ab12cd";
@@ -3671,6 +3856,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -3716,6 +3902,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         let i = &b"g"[..];
@@ -3737,6 +3924,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
 
         let i = &b"G"[..];
@@ -3758,6 +3946,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
 
         assert!(AsChar::is_hex_digit(b'0'));
@@ -3802,6 +3991,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
 
         let i = &b"8"[..];
@@ -3823,6 +4013,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
 
         assert!(AsChar::is_oct_digit(b'0'));
@@ -3871,6 +4062,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -3907,6 +4099,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -3931,6 +4124,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -3954,6 +4148,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -3978,6 +4173,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             crlf.parse_peek(Partial::new(&b"\r"[..])),
@@ -3991,6 +4187,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             crlf.parse_peek(Partial::new(&b"\ra"[..])),
@@ -4011,6 +4208,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
 
         assert_parse!(
@@ -4022,11 +4220,12 @@ Ok(
             input: "a",
             partial: true,
         },
-        "/r/n",
+        "\r\n",
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             crlf.parse_peek(Partial::new("\r")),
@@ -4040,6 +4239,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             crlf.parse_peek(Partial::new("\ra")),
@@ -4048,7 +4248,7 @@ Err(
     Backtrack(
         InputError {
             input: Partial {
-                input: "/ra",
+                input: "\ra",
                 partial: true,
             },
             kind: Literal,
@@ -4057,6 +4257,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -4080,6 +4281,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             line_ending.parse_peek(Partial::new(&b"\r\na"[..])),
@@ -4100,6 +4302,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             line_ending.parse_peek(Partial::new(&b"\r"[..])),
@@ -4113,6 +4316,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             line_ending.parse_peek(Partial::new(&b"\ra"[..])),
@@ -4133,6 +4337,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
 
         assert_parse!(
@@ -4144,11 +4349,12 @@ Ok(
             input: "a",
             partial: true,
         },
-        "/n",
+        "\n",
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             line_ending.parse_peek(Partial::new("\r\na")),
@@ -4159,11 +4365,12 @@ Ok(
             input: "a",
             partial: true,
         },
-        "/r/n",
+        "\r\n",
     ),
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             line_ending.parse_peek(Partial::new("\r")),
@@ -4177,6 +4384,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             line_ending.parse_peek(Partial::new("\ra")),
@@ -4185,7 +4393,7 @@ Err(
     Backtrack(
         InputError {
             input: Partial {
-                input: "/ra",
+                input: "\ra",
                 partial: true,
             },
             kind: Literal,
@@ -4194,6 +4402,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 
@@ -4221,6 +4430,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(Partial::new(&b"ff;"[..])),
@@ -4238,6 +4448,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(Partial::new(&b"1be2;"[..])),
@@ -4255,6 +4466,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(Partial::new(&b"c5a31be2;"[..])),
@@ -4272,6 +4484,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(Partial::new(&b"C5A31be2;"[..])),
@@ -4289,6 +4502,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(Partial::new(&b"00c5a31be2;"[..])), // overflow
@@ -4318,6 +4532,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(Partial::new(&b"c5a31be201;"[..])), // overflow
@@ -4347,6 +4562,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(Partial::new(&b"ffffffff;"[..])),
@@ -4364,6 +4580,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(Partial::new(&b"ffffffffffffffff;"[..])), // overflow
@@ -4399,6 +4616,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(Partial::new(&b"ffffffffffffffff"[..])), // overflow
@@ -4433,6 +4651,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(Partial::new(&b"0x1be2;"[..])),
@@ -4455,6 +4674,7 @@ Ok(
 )
 
 "#]]
+            .raw()
         );
         assert_parse!(
             hex_u32.parse_peek(Partial::new(&b"12af"[..])),
@@ -4468,6 +4688,7 @@ Err(
 )
 
 "#]]
+            .raw()
         );
     }
 }

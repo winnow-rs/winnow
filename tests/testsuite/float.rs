@@ -1,6 +1,7 @@
 use std::str;
 use std::str::FromStr;
 
+use snapbox::prelude::*;
 use snapbox::str;
 
 use winnow::ascii::digit1 as digit;
@@ -46,6 +47,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         unsigned_float.parse_peek(&b"0.123;"[..]),
@@ -60,6 +62,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         unsigned_float.parse_peek(&b"123.0;"[..]),
@@ -74,6 +77,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         unsigned_float.parse_peek(&b"123.;"[..]),
@@ -88,6 +92,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         unsigned_float.parse_peek(&b".123;"[..]),
@@ -102,6 +107,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -120,6 +126,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         float.parse_peek(&b"+123.456;"[..]),
@@ -134,6 +141,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         float.parse_peek(&b"-123.456;"[..]),
@@ -148,5 +156,6 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }

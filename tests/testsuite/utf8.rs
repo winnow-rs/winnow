@@ -1,3 +1,4 @@
+use snapbox::prelude::*;
 use snapbox::str;
 
 use winnow::ascii::Caseless;
@@ -27,6 +28,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -47,6 +49,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -67,6 +70,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -87,6 +91,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         test.parse_peek("abcdefgh"),
@@ -99,6 +104,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         test.parse_peek("ABCDefgh"),
@@ -111,6 +117,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -129,6 +136,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -148,6 +156,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -167,6 +176,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -187,6 +197,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -207,6 +218,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -238,6 +250,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new(b)),
@@ -251,6 +264,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new(c)),
@@ -266,6 +280,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new(d)),
@@ -281,6 +296,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -306,6 +322,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -331,6 +348,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -356,6 +374,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new(b)),
@@ -369,6 +388,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new(c)),
@@ -384,6 +404,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(Partial::new(d)),
@@ -401,6 +422,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -426,6 +448,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -447,6 +470,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -474,6 +498,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -497,6 +522,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -520,6 +546,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -541,6 +568,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -564,6 +592,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -592,6 +621,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         f.parse_peek(b),
@@ -604,6 +634,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 

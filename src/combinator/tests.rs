@@ -1,5 +1,6 @@
 use super::*;
 
+use snapbox::prelude::*;
 use snapbox::str;
 
 use crate::ascii::digit1 as digit;
@@ -53,6 +54,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 
     let res_over = eof.parse_peek(is_over);
@@ -67,6 +69,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -89,6 +92,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 
     let res_over = eof.parse_peek(is_over);
@@ -103,6 +107,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -151,6 +156,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -179,6 +185,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         u8.verify_map(|u| if u > 20 { Some(u) } else { None })
@@ -192,6 +199,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -214,6 +222,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -246,6 +255,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -282,6 +292,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         opt_abcd.parse_peek(Partial::new(b)),
@@ -304,6 +315,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         opt_abcd.parse_peek(Partial::new(c)),
@@ -317,6 +329,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -352,6 +365,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         peek_literal.parse_peek(Partial::new(&b"ab"[..])),
@@ -365,6 +379,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         peek_literal.parse_peek(Partial::new(&b"xxx"[..])),
@@ -386,6 +401,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -415,6 +431,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         not_aaa.parse_peek(Partial::new(&b"aa"[..])),
@@ -428,6 +445,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         not_aaa.parse_peek(Partial::new(&b"abcd"[..])),
@@ -448,6 +466,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -472,6 +491,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         test.parse_peek(Partial::new(&b"bcdefg"[..])),
@@ -496,6 +516,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         test.parse_peek(Partial::new(&b"abcdefg"[..])),
@@ -520,6 +541,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -547,6 +569,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         parser1.parse_peek(&b"defg"[..]),
@@ -566,6 +589,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 
     fn parser2<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], u32> {
@@ -600,6 +624,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         parser1.parse_peek(&b"defg"[..]),
@@ -619,6 +644,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -640,6 +666,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         fail::<_, &str, _>.parse_peek(b),
@@ -654,6 +681,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -682,6 +710,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -726,6 +755,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         sep_pair_abc_def.parse_peek(Partial::new(&b"ab"[..])),
@@ -739,6 +769,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         sep_pair_abc_def.parse_peek(Partial::new(&b"abc,d"[..])),
@@ -752,6 +783,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         sep_pair_abc_def.parse_peek(Partial::new(&b"xxx"[..])),
@@ -773,6 +805,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         sep_pair_abc_def.parse_peek(Partial::new(&b"xxx,def"[..])),
@@ -798,6 +831,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         sep_pair_abc_def.parse_peek(Partial::new(&b"abc,xxx"[..])),
@@ -819,6 +853,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -854,6 +889,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         preceded_abcd_efgh.parse_peek(Partial::new(&b"ab"[..])),
@@ -867,6 +903,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         preceded_abcd_efgh.parse_peek(Partial::new(&b"abcde"[..])),
@@ -880,6 +917,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         preceded_abcd_efgh.parse_peek(Partial::new(&b"xxx"[..])),
@@ -901,6 +939,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         preceded_abcd_efgh.parse_peek(Partial::new(&b"xxxxdef"[..])),
@@ -926,6 +965,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         preceded_abcd_efgh.parse_peek(Partial::new(&b"abcdxxx"[..])),
@@ -947,6 +987,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -982,6 +1023,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         terminated_abcd_efgh.parse_peek(Partial::new(&b"ab"[..])),
@@ -995,6 +1037,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         terminated_abcd_efgh.parse_peek(Partial::new(&b"abcde"[..])),
@@ -1008,6 +1051,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         terminated_abcd_efgh.parse_peek(Partial::new(&b"xxx"[..])),
@@ -1029,6 +1073,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         terminated_abcd_efgh.parse_peek(Partial::new(&b"xxxxdef"[..])),
@@ -1054,6 +1099,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         terminated_abcd_efgh.parse_peek(Partial::new(&b"abcdxxxx"[..])),
@@ -1076,6 +1122,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -1109,6 +1156,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         delimited_abc_def_ghi.parse_peek(Partial::new(&b"ab"[..])),
@@ -1122,6 +1170,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         delimited_abc_def_ghi.parse_peek(Partial::new(&b"abcde"[..])),
@@ -1135,6 +1184,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         delimited_abc_def_ghi.parse_peek(Partial::new(&b"abcdefgh"[..])),
@@ -1148,6 +1198,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         delimited_abc_def_ghi.parse_peek(Partial::new(&b"xxx"[..])),
@@ -1169,6 +1220,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         delimited_abc_def_ghi.parse_peek(Partial::new(&b"xxxdefghi"[..])),
@@ -1196,6 +1248,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         delimited_abc_def_ghi.parse_peek(Partial::new(&b"abcxxxghi"[..])),
@@ -1220,6 +1273,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         delimited_abc_def_ghi.parse_peek(Partial::new(&b"abcdefxxx"[..])),
@@ -1241,6 +1295,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -1340,6 +1395,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         alt4.parse_peek(b),
@@ -1357,6 +1413,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -1379,6 +1436,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     let a = &b"b"[..];
     assert_parse!(
@@ -1393,6 +1451,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     let a = &b"bcd"[..];
     assert_parse!(
@@ -1414,6 +1473,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     let a = &b"cde"[..];
     assert_parse!(
@@ -1436,6 +1496,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     let a = &b"de"[..];
     assert_parse!(
@@ -1450,6 +1511,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     let a = &b"defg"[..];
     assert_parse!(
@@ -1472,6 +1534,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -1495,6 +1558,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     let i = &b"bc"[..];
@@ -1512,6 +1576,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     let i = &b"defg"[..];
@@ -1532,6 +1597,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     let i = &b"z"[..];
@@ -1550,6 +1616,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -1573,6 +1640,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     let bc = &b"bc"[..];
@@ -1590,6 +1658,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     let defg = &b"defg"[..];
@@ -1610,6 +1679,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -1656,6 +1726,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     let b = &b"efgabcdhijk"[..];
     assert_parse!(
@@ -1691,6 +1762,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     let c = &b"hiefgabcdjk"[..];
     assert_parse!(
@@ -1726,6 +1798,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     let d = &b"efgxyzabcdefghi"[..];
@@ -1758,6 +1831,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 
     let e = &b"efgabc"[..];
@@ -1773,6 +1847,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -1824,6 +1899,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(b)),
@@ -1855,6 +1931,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(c)),
@@ -1877,6 +1954,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi_empty.parse_peek(Partial::new(d)),
@@ -1900,6 +1978,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(e)),
@@ -1932,6 +2011,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     assert_parse!(
@@ -1946,6 +2026,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi_longsep.parse_peek(Partial::new(g)),
@@ -1959,6 +2040,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(h)),
@@ -1972,6 +2054,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -2033,6 +2116,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(b)),
@@ -2064,6 +2148,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(c)),
@@ -2088,6 +2173,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(d)),
@@ -2120,6 +2206,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     assert_parse!(
@@ -2134,6 +2221,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi_longsep.parse_peek(Partial::new(g)),
@@ -2147,6 +2235,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(h)),
@@ -2160,6 +2249,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -2195,6 +2285,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(b)),
@@ -2229,6 +2320,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(c)),
@@ -2275,6 +2367,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(d)),
@@ -2326,6 +2419,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(e)),
@@ -2339,6 +2433,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -2373,6 +2468,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(&b"abcdabcdefgh"[..])),
@@ -2406,6 +2502,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(&b"azerty"[..])),
@@ -2428,6 +2525,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(&b"abcdab"[..])),
@@ -2441,6 +2539,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(&b"abcd"[..])),
@@ -2454,6 +2553,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(&b""[..])),
@@ -2467,6 +2567,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -2517,6 +2618,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(b)),
@@ -2550,6 +2652,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(c)),
@@ -2574,6 +2677,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(d)),
@@ -2587,6 +2691,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -2639,6 +2744,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(&b[..]),
@@ -2664,6 +2770,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(&c[..]),
@@ -2685,6 +2792,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -2709,6 +2817,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek("abcd"),
@@ -2723,6 +2832,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek("ababcd"),
@@ -2741,6 +2851,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek("abababcd"),
@@ -2760,6 +2871,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek("ababababcd"),
@@ -2780,6 +2892,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek("abababababcd"),
@@ -2794,6 +2907,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -2828,6 +2942,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     fn multi1<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], Vec<&'i [u8]>> {
@@ -2854,6 +2969,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -2889,6 +3005,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(b)),
@@ -2922,6 +3039,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(c)),
@@ -2967,6 +3085,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(d)),
@@ -3016,6 +3135,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(e)),
@@ -3029,6 +3149,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -3072,6 +3193,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         cnt_2.parse_peek(Partial::new(&b"ab"[..])),
@@ -3085,6 +3207,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         cnt_2.parse_peek(Partial::new(&b"abcab"[..])),
@@ -3098,6 +3221,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         cnt_2.parse_peek(Partial::new(&b"xxx"[..])),
@@ -3119,6 +3243,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         cnt_2.parse_peek(Partial::new(&b"xxxabcabcdef"[..])),
@@ -3149,6 +3274,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         cnt_2.parse_peek(Partial::new(&b"abcxxxabcdef"[..])),
@@ -3176,6 +3302,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -3218,6 +3345,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         counter_2.parse_peek(incomplete_1),
@@ -3233,6 +3361,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         counter_2.parse_peek(incomplete_2),
@@ -3251,6 +3380,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         counter_2.parse_peek(error),
@@ -3267,6 +3397,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         counter_2.parse_peek(error_1),
@@ -3292,6 +3423,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         counter_2.parse_peek(error_2),
@@ -3317,6 +3449,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -3375,6 +3508,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(&b"abcdabcdefgh"[..])),
@@ -3408,6 +3542,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(&b"azerty"[..])),
@@ -3430,6 +3565,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(&b"abcdab"[..])),
@@ -3443,6 +3579,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(&b"abcd"[..])),
@@ -3456,6 +3593,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(&b""[..])),
@@ -3469,6 +3607,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -3529,6 +3668,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(b)),
@@ -3562,6 +3702,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(c)),
@@ -3586,6 +3727,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(d)),
@@ -3599,6 +3741,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -3640,6 +3783,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(b)),
@@ -3673,6 +3817,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(c)),
@@ -3718,6 +3863,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(d)),
@@ -3767,6 +3913,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
     assert_parse!(
         multi.parse_peek(Partial::new(e)),
@@ -3780,6 +3927,7 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -3805,6 +3953,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     assert_parse!(
@@ -3823,6 +3972,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     assert_parse!(
@@ -3841,6 +3991,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     assert_parse!(
@@ -3860,6 +4011,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 }
 
@@ -3885,6 +4037,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     assert_parse!(
@@ -3903,6 +4056,7 @@ Ok(
 )
 
 "#]]
+        .raw()
     );
 
     assert_parse!(
@@ -3924,5 +4078,6 @@ Err(
 )
 
 "#]]
+        .raw()
     );
 }
