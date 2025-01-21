@@ -73,18 +73,21 @@ where
 /// ```rust
 /// # use winnow::error::IResult;
 /// # use winnow::prelude::*;
+/// # use winnow::combinator::opt;
 /// use winnow::combinator::cond;
 /// use winnow::ascii::alpha1;
 /// # fn main() {
 ///
-/// fn parser(b: bool, i: &str) -> IResult<&str, Option<&str>> {
-///   cond(b, alpha1).parse_peek(i)
+/// fn parser(i: &str) -> IResult<&str, Option<&str>> {
+///   let (i, prefix) = opt("-").parse_peek(i)?;
+///   let condition = prefix.is_some();
+///   cond(condition, alpha1).parse_peek(i)
 /// }
 ///
-/// assert_eq!(parser(true, "abcd;"), Ok((";", Some("abcd"))));
-/// assert_eq!(parser(false, "abcd;"), Ok(("abcd;", None)));
-/// assert!(parser(true, "123;").is_err());
-/// assert_eq!(parser(false, "123;"), Ok(("123;", None)));
+/// assert_eq!(parser("-abcd;"), Ok((";", Some("abcd"))));
+/// assert_eq!(parser("abcd;"), Ok(("abcd;", None)));
+/// assert!(parser("-123;").is_err());
+/// assert_eq!(parser("123;"), Ok(("123;", None)));
 /// # }
 /// ```
 pub fn cond<Input, Output, Error, ParseNext>(
