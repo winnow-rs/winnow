@@ -263,7 +263,6 @@ pub trait Parser<I, O, E> {
     /// ```rust
     /// # use winnow::prelude::*;
     /// # use winnow::error::ContextError;
-    /// # use winnow::error::IResult;
     /// use winnow::ascii::alpha1;
     /// # fn main() {
     ///

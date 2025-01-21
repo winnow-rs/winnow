@@ -28,24 +28,23 @@ pub trait Alt<I, O, E> {
 /// # Example
 ///
 /// ```rust
-/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::ascii::{alpha1, digit1};
 /// use winnow::combinator::alt;
 /// # fn main() {
-/// fn parser(input: &str) -> IResult<&str, &str> {
-///   alt((alpha1, digit1)).parse_peek(input)
+/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
+///   alt((alpha1, digit1)).parse_next(input)
 /// };
 ///
 /// // the first parser, alpha1, takes the input
-/// assert_eq!(parser("abc"), Ok(("", "abc")));
+/// assert_eq!(parser.parse_peek("abc"), Ok(("", "abc")));
 ///
 /// // the first parser returns an error, so alt tries the second one
-/// assert_eq!(parser("123456"), Ok(("", "123456")));
+/// assert_eq!(parser.parse_peek("123456"), Ok(("", "123456")));
 ///
 /// // both parsers failed, and with the default error type, alt will return the last error
-/// assert!(parser(" ").is_err());
+/// assert!(parser.parse_peek(" ").is_err());
 /// # }
 /// ```
 #[doc(alias = "choice")]
@@ -80,46 +79,44 @@ pub trait Permutation<I, O, E> {
 /// # Example
 ///
 /// ```rust
-/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode,error::ErrorKind, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::ascii::{alpha1, digit1};
 /// use winnow::combinator::permutation;
 /// # fn main() {
-/// fn parser(input: &str) -> IResult<&str, (&str, &str)> {
-///   permutation((alpha1, digit1)).parse_peek(input)
+/// fn parser<'i>(input: &mut &'i str) -> PResult<(&'i str, &'i str)> {
+///   permutation((alpha1, digit1)).parse_next(input)
 /// }
 ///
 /// // permutation takes alphabetic characters then digit
-/// assert_eq!(parser("abc123"), Ok(("", ("abc", "123"))));
+/// assert_eq!(parser.parse_peek("abc123"), Ok(("", ("abc", "123"))));
 ///
 /// // but also in inverse order
-/// assert_eq!(parser("123abc"), Ok(("", ("abc", "123"))));
+/// assert_eq!(parser.parse_peek("123abc"), Ok(("", ("abc", "123"))));
 ///
 /// // it will fail if one of the parsers failed
-/// assert!(parser("abc;").is_err());
+/// assert!(parser.parse_peek("abc;").is_err());
 /// # }
 /// ```
 ///
 /// The parsers are applied greedily: if there are multiple unapplied parsers
 /// that could parse the next slice of input, the first one is used.
 /// ```rust
-/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::permutation;
 /// use winnow::token::any;
 ///
-/// fn parser(input: &str) -> IResult<&str, (char, char)> {
-///   permutation((any, 'a')).parse_peek(input)
+/// fn parser(input: &mut &str) -> PResult<(char, char)> {
+///   permutation((any, 'a')).parse_next(input)
 /// }
 ///
 /// // any parses 'b', then char('a') parses 'a'
-/// assert_eq!(parser("ba"), Ok(("", ('b', 'a'))));
+/// assert_eq!(parser.parse_peek("ba"), Ok(("", ('b', 'a'))));
 ///
 /// // any parses 'a', then char('a') fails on 'b',
 /// // even though char('a') followed by any would succeed
-/// assert!(parser("ab").is_err());
+/// assert!(parser.parse_peek("ab").is_err());
 /// ```
 ///
 #[inline(always)]

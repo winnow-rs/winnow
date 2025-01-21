@@ -38,19 +38,17 @@ use crate::Parser;
 /// ```rust
 /// # use winnow::{token::any, error::ErrMode, error::{ContextError, ErrorKind}};
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
-/// fn parser(input: &str) -> IResult<&str, char> {
-///     any.parse_peek(input)
+/// fn parser(input: &mut &str) -> PResult<char> {
+///     any.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser("abc"), Ok(("bc",'a')));
-/// assert!(parser("").is_err());
+/// assert_eq!(parser.parse_peek("abc"), Ok(("bc",'a')));
+/// assert!(parser.parse_peek("").is_err());
 /// ```
 ///
 /// ```rust
 /// # use winnow::{token::any, error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// # use winnow::Partial;
 /// assert_eq!(any::<_, ContextError>.parse_peek(Partial::new("abc")), Ok((Partial::new("bc"),'a')));
 /// assert_eq!(any::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
@@ -117,50 +115,47 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
 /// #
-/// fn parser(s: &str) -> IResult<&str, &str> {
-///   "Hello".parse_peek(s)
+/// fn parser<'i>(s: &mut &'i str) -> PResult<&'i str> {
+///   "Hello".parse_next(s)
 /// }
 ///
-/// assert_eq!(parser("Hello, World!"), Ok((", World!", "Hello")));
-/// assert!(parser("Something").is_err());
-/// assert!(parser("").is_err());
+/// assert_eq!(parser.parse_peek("Hello, World!"), Ok((", World!", "Hello")));
+/// assert!(parser.parse_peek("Something").is_err());
+/// assert!(parser.parse_peek("").is_err());
 /// ```
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
 /// # use winnow::Partial;
 ///
-/// fn parser(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   "Hello".parse_peek(s)
+/// fn parser<'i>(s: &mut Partial<&'i str>) -> PResult<&'i str> {
+///   "Hello".parse_next(s)
 /// }
 ///
-/// assert_eq!(parser(Partial::new("Hello, World!")), Ok((Partial::new(", World!"), "Hello")));
-/// assert!(parser(Partial::new("Something")).is_err());
-/// assert!(parser(Partial::new("S")).is_err());
-/// assert_eq!(parser(Partial::new("H")), Err(ErrMode::Incomplete(Needed::new(4))));
+/// assert_eq!(parser.parse_peek(Partial::new("Hello, World!")), Ok((Partial::new(", World!"), "Hello")));
+/// assert!(parser.parse_peek(Partial::new("Something")).is_err());
+/// assert!(parser.parse_peek(Partial::new("S")).is_err());
+/// assert_eq!(parser.parse_peek(Partial::new("H")), Err(ErrMode::Incomplete(Needed::new(4))));
 /// ```
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// use winnow::token::literal;
 /// use winnow::ascii::Caseless;
 ///
-/// fn parser(s: &str) -> IResult<&str, &str> {
-///   literal(Caseless("hello")).parse_peek(s)
+/// fn parser<'i>(s: &mut &'i str) -> PResult<&'i str> {
+///   literal(Caseless("hello")).parse_next(s)
 /// }
 ///
-/// assert_eq!(parser("Hello, World!"), Ok((", World!", "Hello")));
-/// assert_eq!(parser("hello, World!"), Ok((", World!", "hello")));
-/// assert_eq!(parser("HeLlO, World!"), Ok((", World!", "HeLlO")));
-/// assert!(parser("Something").is_err());
-/// assert!(parser("").is_err());
+/// assert_eq!(parser.parse_peek("Hello, World!"), Ok((", World!", "Hello")));
+/// assert_eq!(parser.parse_peek("hello, World!"), Ok((", World!", "hello")));
+/// assert_eq!(parser.parse_peek("HeLlO, World!"), Ok((", World!", "HeLlO")));
+/// assert!(parser.parse_peek("Something").is_err());
+/// assert!(parser.parse_peek("").is_err());
 /// ```
 #[inline(always)]
 #[doc(alias = "tag")]
@@ -238,24 +233,22 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError};
 /// # use winnow::token::one_of;
 /// assert_eq!(one_of::<_, _, ContextError>(['a', 'b', 'c']).parse_peek("b"), Ok(("", 'b')));
 /// assert!(one_of::<_, _, ContextError>('a').parse_peek("bc").is_err());
 /// assert!(one_of::<_, _, ContextError>('a').parse_peek("").is_err());
 ///
-/// fn parser_fn(i: &str) -> IResult<&str, char> {
-///     one_of(|c| c == 'a' || c == 'b').parse_peek(i)
+/// fn parser_fn(i: &mut &str) -> PResult<char> {
+///     one_of(|c| c == 'a' || c == 'b').parse_next(i)
 /// }
-/// assert_eq!(parser_fn("abc"), Ok(("bc", 'a')));
-/// assert!(parser_fn("cd").is_err());
-/// assert!(parser_fn("").is_err());
+/// assert_eq!(parser_fn.parse_peek("abc"), Ok(("bc", 'a')));
+/// assert!(parser_fn.parse_peek("cd").is_err());
+/// assert!(parser_fn.parse_peek("").is_err());
 /// ```
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::token::one_of;
@@ -263,12 +256,12 @@ where
 /// assert!(one_of::<_, _, ContextError>('a').parse_peek(Partial::new("bc")).is_err());
 /// assert_eq!(one_of::<_, _, ContextError>('a').parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
-/// fn parser_fn(i: Partial<&str>) -> IResult<Partial<&str>, char> {
-///     one_of(|c| c == 'a' || c == 'b').parse_peek(i)
+/// fn parser_fn(i: &mut Partial<&str>) -> PResult<char> {
+///     one_of(|c| c == 'a' || c == 'b').parse_next(i)
 /// }
-/// assert_eq!(parser_fn(Partial::new("abc")), Ok((Partial::new("bc"), 'a')));
-/// assert!(parser_fn(Partial::new("cd")).is_err());
-/// assert_eq!(parser_fn(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(parser_fn.parse_peek(Partial::new("abc")), Ok((Partial::new("bc"), 'a')));
+/// assert!(parser_fn.parse_peek(Partial::new("cd")).is_err());
+/// assert_eq!(parser_fn.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 #[doc(alias = "char")]
@@ -313,7 +306,6 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError};
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// # use winnow::token::none_of;
 /// assert_eq!(none_of::<_, _, ContextError>(['a', 'b', 'c']).parse_peek("z"), Ok(("", 'z')));
 /// assert!(none_of::<_, _, ContextError>(['a', 'b']).parse_peek("a").is_err());
@@ -323,7 +315,6 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// # use winnow::Partial;
 /// # use winnow::token::none_of;
 /// assert_eq!(none_of::<_, _, ContextError>(['a', 'b', 'c']).parse_peek(Partial::new("z")), Ok((Partial::new(""), 'z')));
@@ -375,128 +366,122 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
 ///
-/// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
-///   take_while(0.., AsChar::is_alpha).parse_peek(s)
+/// fn alpha<'i>(s: &mut &'i [u8]) -> PResult<&'i [u8]> {
+///   take_while(0.., AsChar::is_alpha).parse_next(s)
 /// }
 ///
-/// assert_eq!(alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
-/// assert_eq!(alpha(b"12345"), Ok((&b"12345"[..], &b""[..])));
-/// assert_eq!(alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
-/// assert_eq!(alpha(b""), Ok((&b""[..], &b""[..])));
+/// assert_eq!(alpha.parse_peek(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
+/// assert_eq!(alpha.parse_peek(b"12345"), Ok((&b"12345"[..], &b""[..])));
+/// assert_eq!(alpha.parse_peek(b"latin"), Ok((&b""[..], &b"latin"[..])));
+/// assert_eq!(alpha.parse_peek(b""), Ok((&b""[..], &b""[..])));
 /// ```
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// # use winnow::Partial;
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
 ///
-/// fn alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-///   take_while(0.., AsChar::is_alpha).parse_peek(s)
+/// fn alpha<'i>(s: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+///   take_while(0.., AsChar::is_alpha).parse_next(s)
 /// }
 ///
-/// assert_eq!(alpha(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
-/// assert_eq!(alpha(Partial::new(b"12345")), Ok((Partial::new(&b"12345"[..]), &b""[..])));
-/// assert_eq!(alpha(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(alpha(Partial::new(b"")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha.parse_peek(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
+/// assert_eq!(alpha.parse_peek(Partial::new(b"12345")), Ok((Partial::new(&b"12345"[..]), &b""[..])));
+/// assert_eq!(alpha.parse_peek(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(alpha.parse_peek(Partial::new(b"")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// One or more tokens:
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
 ///
-/// fn alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
-///   take_while(1.., AsChar::is_alpha).parse_peek(s)
+/// fn alpha<'i>(s: &mut &'i [u8]) -> PResult<&'i [u8]> {
+///   take_while(1.., AsChar::is_alpha).parse_next(s)
 /// }
 ///
-/// assert_eq!(alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
-/// assert_eq!(alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
-/// assert!(alpha(b"12345").is_err());
+/// assert_eq!(alpha.parse_peek(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
+/// assert_eq!(alpha.parse_peek(b"latin"), Ok((&b""[..], &b"latin"[..])));
+/// assert!(alpha.parse_peek(b"12345").is_err());
 ///
-/// fn hex(s: &str) -> IResult<&str, &str> {
-///   take_while(1.., ('0'..='9', 'A'..='F')).parse_peek(s)
+/// fn hex<'i>(s: &mut &'i str) -> PResult<&'i str> {
+///   take_while(1.., ('0'..='9', 'A'..='F')).parse_next(s)
 /// }
 ///
-/// assert_eq!(hex("123 and voila"), Ok((" and voila", "123")));
-/// assert_eq!(hex("DEADBEEF and others"), Ok((" and others", "DEADBEEF")));
-/// assert_eq!(hex("BADBABEsomething"), Ok(("something", "BADBABE")));
-/// assert_eq!(hex("D15EA5E"), Ok(("", "D15EA5E")));
-/// assert!(hex("").is_err());
+/// assert_eq!(hex.parse_peek("123 and voila"), Ok((" and voila", "123")));
+/// assert_eq!(hex.parse_peek("DEADBEEF and others"), Ok((" and others", "DEADBEEF")));
+/// assert_eq!(hex.parse_peek("BADBABEsomething"), Ok(("something", "BADBABE")));
+/// assert_eq!(hex.parse_peek("D15EA5E"), Ok(("", "D15EA5E")));
+/// assert!(hex.parse_peek("").is_err());
 /// ```
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// # use winnow::Partial;
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
 ///
-/// fn alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-///   take_while(1.., AsChar::is_alpha).parse_peek(s)
+/// fn alpha<'i>(s: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+///   take_while(1.., AsChar::is_alpha).parse_next(s)
 /// }
 ///
-/// assert_eq!(alpha(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
-/// assert_eq!(alpha(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert!(alpha(Partial::new(b"12345")).is_err());
+/// assert_eq!(alpha.parse_peek(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
+/// assert_eq!(alpha.parse_peek(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert!(alpha.parse_peek(Partial::new(b"12345")).is_err());
 ///
-/// fn hex(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take_while(1.., ('0'..='9', 'A'..='F')).parse_peek(s)
+/// fn hex<'i>(s: &mut Partial<&'i str>) -> PResult<&'i str> {
+///   take_while(1.., ('0'..='9', 'A'..='F')).parse_next(s)
 /// }
 ///
-/// assert_eq!(hex(Partial::new("123 and voila")), Ok((Partial::new(" and voila"), "123")));
-/// assert_eq!(hex(Partial::new("DEADBEEF and others")), Ok((Partial::new(" and others"), "DEADBEEF")));
-/// assert_eq!(hex(Partial::new("BADBABEsomething")), Ok((Partial::new("something"), "BADBABE")));
-/// assert_eq!(hex(Partial::new("D15EA5E")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(hex(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(hex.parse_peek(Partial::new("123 and voila")), Ok((Partial::new(" and voila"), "123")));
+/// assert_eq!(hex.parse_peek(Partial::new("DEADBEEF and others")), Ok((Partial::new(" and others"), "DEADBEEF")));
+/// assert_eq!(hex.parse_peek(Partial::new("BADBABEsomething")), Ok((Partial::new("something"), "BADBABE")));
+/// assert_eq!(hex.parse_peek(Partial::new("D15EA5E")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(hex.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 ///
 /// Arbitrary amount of tokens:
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
 ///
-/// fn short_alpha(s: &[u8]) -> IResult<&[u8], &[u8]> {
-///   take_while(3..=6, AsChar::is_alpha).parse_peek(s)
+/// fn short_alpha<'i>(s: &mut &'i [u8]) -> PResult<&'i [u8]> {
+///   take_while(3..=6, AsChar::is_alpha).parse_next(s)
 /// }
 ///
-/// assert_eq!(short_alpha(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
-/// assert_eq!(short_alpha(b"lengthy"), Ok((&b"y"[..], &b"length"[..])));
-/// assert_eq!(short_alpha(b"latin"), Ok((&b""[..], &b"latin"[..])));
-/// assert!(short_alpha(b"ed").is_err());
-/// assert!(short_alpha(b"12345").is_err());
+/// assert_eq!(short_alpha.parse_peek(b"latin123"), Ok((&b"123"[..], &b"latin"[..])));
+/// assert_eq!(short_alpha.parse_peek(b"lengthy"), Ok((&b"y"[..], &b"length"[..])));
+/// assert_eq!(short_alpha.parse_peek(b"latin"), Ok((&b""[..], &b"latin"[..])));
+/// assert!(short_alpha.parse_peek(b"ed").is_err());
+/// assert!(short_alpha.parse_peek(b"12345").is_err());
 /// ```
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// # use winnow::Partial;
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
 ///
-/// fn short_alpha(s: Partial<&[u8]>) -> IResult<Partial<&[u8]>, &[u8]> {
-///   take_while(3..=6, AsChar::is_alpha).parse_peek(s)
+/// fn short_alpha<'i>(s: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+///   take_while(3..=6, AsChar::is_alpha).parse_next(s)
 /// }
 ///
-/// assert_eq!(short_alpha(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
-/// assert_eq!(short_alpha(Partial::new(b"lengthy")), Ok((Partial::new(&b"y"[..]), &b"length"[..])));
-/// assert_eq!(short_alpha(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(short_alpha(Partial::new(b"ed")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert!(short_alpha(Partial::new(b"12345")).is_err());
+/// assert_eq!(short_alpha.parse_peek(Partial::new(b"latin123")), Ok((Partial::new(&b"123"[..]), &b"latin"[..])));
+/// assert_eq!(short_alpha.parse_peek(Partial::new(b"lengthy")), Ok((Partial::new(&b"y"[..]), &b"length"[..])));
+/// assert_eq!(short_alpha.parse_peek(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(short_alpha.parse_peek(Partial::new(b"ed")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert!(short_alpha.parse_peek(Partial::new(b"12345")).is_err());
 /// ```
 #[inline(always)]
 #[doc(alias = "is_a")]
@@ -665,34 +650,32 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// use winnow::token::take_till;
 ///
-/// fn till_colon(s: &str) -> IResult<&str, &str> {
-///   take_till(0.., |c| c == ':').parse_peek(s)
+/// fn till_colon<'i>(s: &mut &'i str) -> PResult<&'i str> {
+///   take_till(0.., |c| c == ':').parse_next(s)
 /// }
 ///
-/// assert_eq!(till_colon("latin:123"), Ok((":123", "latin")));
-/// assert_eq!(till_colon(":empty matched"), Ok((":empty matched", ""))); //allowed
-/// assert_eq!(till_colon("12345"), Ok(("", "12345")));
-/// assert_eq!(till_colon(""), Ok(("", "")));
+/// assert_eq!(till_colon.parse_peek("latin:123"), Ok((":123", "latin")));
+/// assert_eq!(till_colon.parse_peek(":empty matched"), Ok((":empty matched", ""))); //allowed
+/// assert_eq!(till_colon.parse_peek("12345"), Ok(("", "12345")));
+/// assert_eq!(till_colon.parse_peek(""), Ok(("", "")));
 /// ```
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// # use winnow::Partial;
 /// use winnow::token::take_till;
 ///
-/// fn till_colon(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take_till(0.., |c| c == ':').parse_peek(s)
+/// fn till_colon<'i>(s: &mut Partial<&'i str>) -> PResult<&'i str> {
+///   take_till(0.., |c| c == ':').parse_next(s)
 /// }
 ///
-/// assert_eq!(till_colon(Partial::new("latin:123")), Ok((Partial::new(":123"), "latin")));
-/// assert_eq!(till_colon(Partial::new(":empty matched")), Ok((Partial::new(":empty matched"), ""))); //allowed
-/// assert_eq!(till_colon(Partial::new("12345")), Err(ErrMode::Incomplete(Needed::new(1))));
-/// assert_eq!(till_colon(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(till_colon.parse_peek(Partial::new("latin:123")), Ok((Partial::new(":123"), "latin")));
+/// assert_eq!(till_colon.parse_peek(Partial::new(":empty matched")), Ok((Partial::new(":empty matched"), ""))); //allowed
+/// assert_eq!(till_colon.parse_peek(Partial::new("12345")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(till_colon.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 #[doc(alias = "is_not")]
@@ -767,17 +750,16 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// use winnow::token::take;
 ///
-/// fn take6(s: &str) -> IResult<&str, &str> {
-///   take(6usize).parse_peek(s)
+/// fn take6<'i>(s: &mut &'i str) -> PResult<&'i str> {
+///   take(6usize).parse_next(s)
 /// }
 ///
-/// assert_eq!(take6("1234567"), Ok(("7", "123456")));
-/// assert_eq!(take6("things"), Ok(("", "things")));
-/// assert!(take6("short").is_err());
-/// assert!(take6("").is_err());
+/// assert_eq!(take6.parse_peek("1234567"), Ok(("7", "123456")));
+/// assert_eq!(take6.parse_peek("things"), Ok(("", "things")));
+/// assert!(take6.parse_peek("short").is_err());
+/// assert!(take6.parse_peek("").is_err());
 /// ```
 ///
 /// The units that are taken will depend on the input type. For example, for a
@@ -786,7 +768,6 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// use winnow::error::ContextError;
 /// use winnow::token::take;
 ///
@@ -796,18 +777,18 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::error::{ErrMode, ErrorKind, ContextError, Needed, IResult};
+/// # use winnow::error::{ErrMode, ErrorKind, ContextError, Needed};
 /// # use winnow::Partial;
 /// use winnow::token::take;
 ///
-/// fn take6(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take(6usize).parse_peek(s)
+/// fn take6<'i>(s: &mut Partial<&'i str>) -> PResult<&'i str> {
+///   take(6usize).parse_next(s)
 /// }
 ///
-/// assert_eq!(take6(Partial::new("1234567")), Ok((Partial::new("7"), "123456")));
-/// assert_eq!(take6(Partial::new("things")), Ok((Partial::new(""), "things")));
+/// assert_eq!(take6.parse_peek(Partial::new("1234567")), Ok((Partial::new("7"), "123456")));
+/// assert_eq!(take6.parse_peek(Partial::new("things")), Ok((Partial::new(""), "things")));
 /// // `Unknown` as we don't know the number of bytes that `count` corresponds to
-/// assert_eq!(take6(Partial::new("short")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(take6.parse_peek(Partial::new("short")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// ```
 #[inline(always)]
 pub fn take<UsizeLike, Input, Error>(
@@ -877,69 +858,65 @@ where
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// use winnow::token::take_until;
 ///
-/// fn until_eof(s: &str) -> IResult<&str, &str> {
-///   take_until(0.., "eof").parse_peek(s)
+/// fn until_eof<'i>(s: &mut &'i str) -> PResult<&'i str> {
+///   take_until(0.., "eof").parse_next(s)
 /// }
 ///
-/// assert_eq!(until_eof("hello, worldeof"), Ok(("eof", "hello, world")));
-/// assert!(until_eof("hello, world").is_err());
-/// assert!(until_eof("").is_err());
-/// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
+/// assert_eq!(until_eof.parse_peek("hello, worldeof"), Ok(("eof", "hello, world")));
+/// assert!(until_eof.parse_peek("hello, world").is_err());
+/// assert!(until_eof.parse_peek("").is_err());
+/// assert_eq!(until_eof.parse_peek("1eof2eof"), Ok(("eof2eof", "1")));
 /// ```
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// # use winnow::Partial;
 /// use winnow::token::take_until;
 ///
-/// fn until_eof(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take_until(0.., "eof").parse_peek(s)
+/// fn until_eof<'i>(s: &mut Partial<&'i str>) -> PResult<&'i str> {
+///   take_until(0.., "eof").parse_next(s)
 /// }
 ///
-/// assert_eq!(until_eof(Partial::new("hello, worldeof")), Ok((Partial::new("eof"), "hello, world")));
-/// assert_eq!(until_eof(Partial::new("hello, world")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(until_eof(Partial::new("hello, worldeo")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(until_eof(Partial::new("1eof2eof")), Ok((Partial::new("eof2eof"), "1")));
+/// assert_eq!(until_eof.parse_peek(Partial::new("hello, worldeof")), Ok((Partial::new("eof"), "hello, world")));
+/// assert_eq!(until_eof.parse_peek(Partial::new("hello, world")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(until_eof.parse_peek(Partial::new("hello, worldeo")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(until_eof.parse_peek(Partial::new("1eof2eof")), Ok((Partial::new("eof2eof"), "1")));
 /// ```
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// use winnow::token::take_until;
 ///
-/// fn until_eof(s: &str) -> IResult<&str, &str> {
-///   take_until(1.., "eof").parse_peek(s)
+/// fn until_eof<'i>(s: &mut &'i str) -> PResult<&'i str> {
+///   take_until(1.., "eof").parse_next(s)
 /// }
 ///
-/// assert_eq!(until_eof("hello, worldeof"), Ok(("eof", "hello, world")));
-/// assert!(until_eof("hello, world").is_err());
-/// assert!(until_eof("").is_err());
-/// assert_eq!(until_eof("1eof2eof"), Ok(("eof2eof", "1")));
-/// assert!(until_eof("eof").is_err());
+/// assert_eq!(until_eof.parse_peek("hello, worldeof"), Ok(("eof", "hello, world")));
+/// assert!(until_eof.parse_peek("hello, world").is_err());
+/// assert!(until_eof.parse_peek("").is_err());
+/// assert_eq!(until_eof.parse_peek("1eof2eof"), Ok(("eof2eof", "1")));
+/// assert!(until_eof.parse_peek("eof").is_err());
 /// ```
 ///
 /// ```rust
 /// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// # use winnow::Partial;
 /// use winnow::token::take_until;
 ///
-/// fn until_eof(s: Partial<&str>) -> IResult<Partial<&str>, &str> {
-///   take_until(1.., "eof").parse_peek(s)
+/// fn until_eof<'i>(s: &mut Partial<&'i str>) -> PResult<&'i str> {
+///   take_until(1.., "eof").parse_next(s)
 /// }
 ///
-/// assert_eq!(until_eof(Partial::new("hello, worldeof")), Ok((Partial::new("eof"), "hello, world")));
-/// assert_eq!(until_eof(Partial::new("hello, world")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(until_eof(Partial::new("hello, worldeo")), Err(ErrMode::Incomplete(Needed::Unknown)));
-/// assert_eq!(until_eof(Partial::new("1eof2eof")), Ok((Partial::new("eof2eof"), "1")));
-/// assert!(until_eof(Partial::new("eof")).is_err());
+/// assert_eq!(until_eof.parse_peek(Partial::new("hello, worldeof")), Ok((Partial::new("eof"), "hello, world")));
+/// assert_eq!(until_eof.parse_peek(Partial::new("hello, world")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(until_eof.parse_peek(Partial::new("hello, worldeo")), Err(ErrMode::Incomplete(Needed::Unknown)));
+/// assert_eq!(until_eof.parse_peek(Partial::new("1eof2eof")), Ok((Partial::new("eof2eof"), "1")));
+/// assert!(until_eof.parse_peek(Partial::new("eof")).is_err());
 /// ```
 #[inline(always)]
 pub fn take_until<Literal, Input, Error>(
@@ -1074,7 +1051,6 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// # use winnow::error::ErrorKind;
 /// # use winnow::error::ContextError;
 /// use winnow::token::rest;
@@ -1113,7 +1089,6 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::error::IResult;
 /// # use winnow::error::ErrorKind;
 /// # use winnow::error::ContextError;
 /// use winnow::token::rest_len;
