@@ -1313,10 +1313,8 @@ fn alt_test() {
     let a = &b"abcd"[..];
     assert_eq!(
         alt1.parse_peek(a),
-        Err(ErrMode::Backtrack(error_node_position!(
-            &a,
-            ErrorKind::Alt,
-            ErrorStr("abcd".to_owned())
+        Err(ErrMode::Backtrack(ErrorStr(
+            "custom error message: ([97, 98, 99, 100], Alt) - ErrorStr(\"abcd\")".to_owned()
         )))
     );
     assert_eq!(alt2.parse_peek(a), Ok((&b""[..], a)));
@@ -2804,10 +2802,7 @@ Err(
 fn infinite_many() {
     fn tst<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
         println!("input: {input:?}");
-        Err(ErrMode::Backtrack(error_position!(
-            input,
-            ErrorKind::Literal
-        )))
+        Err(ErrMode::from_error_kind(input, ErrorKind::Literal))
     }
 
     // should not go into an infinite loop
