@@ -336,10 +336,7 @@ where
                 Ok(o)
             } else {
                 input.reset(&start);
-                Err(ErrMode::Backtrack(Error::from_error_kind(
-                    input,
-                    ErrorKind::Literal,
-                )))
+                Err(ErrMode::from_error_kind(input, ErrorKind::Literal))
             }
         })
     })
