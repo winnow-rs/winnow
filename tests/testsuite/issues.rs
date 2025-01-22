@@ -390,7 +390,7 @@ Ok(
 #[test]
 fn issue_1282_findtoken_char() {
     use winnow::token::one_of;
-    let mut parser = one_of::<_, _, InputError<_>>(&['a', 'b', 'c'][..]);
+    let mut parser = one_of(&['a', 'b', 'c'][..]);
     assert_parse!(
         parser.parse_peek("aaa"),
         str![[r#"

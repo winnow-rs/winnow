@@ -447,20 +447,14 @@ impl<I: Clone, E> FromExternalError<I, E> for InputError<I> {
 impl<I: Clone> ErrorConvert<InputError<(I, usize)>> for InputError<I> {
     #[inline]
     fn convert(self) -> InputError<(I, usize)> {
-        InputError {
-            input: (self.input, 0),
-            kind: self.kind,
-        }
+        self.map_input(|i| (i, 0))
     }
 }
 
 impl<I: Clone> ErrorConvert<InputError<I>> for InputError<(I, usize)> {
     #[inline]
     fn convert(self) -> InputError<I> {
-        InputError {
-            input: self.input.0,
-            kind: self.kind,
-        }
+        self.map_input(|(i, _o)| i)
     }
 }
 
@@ -817,11 +811,7 @@ pub struct TreeErrorContext<I, C = StrContext> {
 }
 
 #[cfg(feature = "std")]
-impl<'i, I: ToOwned, C> TreeError<&'i I, C>
-where
-    &'i I: Stream + Clone,
-    <I as ToOwned>::Owned: Clone,
-{
+impl<I: ToOwned, C> TreeError<&I, C> {
     /// Obtaining ownership
     pub fn into_owned(self) -> TreeError<<I as ToOwned>::Owned, C> {
         self.map_input(ToOwned::to_owned)
@@ -829,12 +819,9 @@ where
 }
 
 #[cfg(feature = "std")]
-impl<I, C> TreeError<I, C>
-where
-    I: Stream + Clone,
-{
+impl<I, C> TreeError<I, C> {
     /// Translate the input type
-    pub fn map_input<I2: Clone, O: Clone + Fn(I) -> I2>(self, op: O) -> TreeError<I2, C> {
+    pub fn map_input<I2, O: Clone + Fn(I) -> I2>(self, op: O) -> TreeError<I2, C> {
         match self {
             TreeError::Base(base) => TreeError::Base(TreeErrorBase {
                 input: op(base.input),
@@ -939,7 +926,7 @@ where
 
 #[cfg(feature = "std")]
 #[cfg(feature = "unstable-recover")]
-impl<I: Stream + Clone, C> FromRecoverableError<I, Self> for TreeError<I, C> {
+impl<I: Stream, C> FromRecoverableError<I, Self> for TreeError<I, C> {
     #[inline]
     fn from_recoverable_error(
         _token_start: &<I as Stream>::Checkpoint,
@@ -954,7 +941,7 @@ impl<I: Stream + Clone, C> FromRecoverableError<I, Self> for TreeError<I, C> {
 #[cfg(feature = "std")]
 impl<I, C, E: std::error::Error + Send + Sync + 'static> FromExternalError<I, E> for TreeError<I, C>
 where
-    I: Stream + Clone,
+    I: Clone,
 {
     fn from_external_error(input: &I, kind: ErrorKind, e: E) -> Self {
         TreeError::Base(TreeErrorBase {
@@ -966,9 +953,25 @@ where
 }
 
 #[cfg(feature = "std")]
+impl<I, C> ErrorConvert<TreeError<(I, usize), C>> for TreeError<I, C> {
+    #[inline]
+    fn convert(self) -> TreeError<(I, usize), C> {
+        self.map_input(|i| (i, 0))
+    }
+}
+
+#[cfg(feature = "std")]
+impl<I, C> ErrorConvert<TreeError<I, C>> for TreeError<(I, usize), C> {
+    #[inline]
+    fn convert(self) -> TreeError<I, C> {
+        self.map_input(|(i, _o)| i)
+    }
+}
+
+#[cfg(feature = "std")]
 impl<I, C> TreeError<I, C>
 where
-    I: Stream + Clone + crate::lib::std::fmt::Display,
+    I: crate::lib::std::fmt::Display,
     C: fmt::Display,
 {
     fn write(&self, f: &mut fmt::Formatter<'_>, indent: usize) -> fmt::Result {
@@ -1003,7 +1006,7 @@ where
 }
 
 #[cfg(feature = "std")]
-impl<I: Stream + Clone + fmt::Display> fmt::Display for TreeErrorBase<I> {
+impl<I: fmt::Display> fmt::Display for TreeErrorBase<I> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(cause) = self.cause.as_ref() {
             write!(f, "caused by {cause}")?;
@@ -1018,7 +1021,7 @@ impl<I: Stream + Clone + fmt::Display> fmt::Display for TreeErrorBase<I> {
 }
 
 #[cfg(feature = "std")]
-impl<I: Stream + Clone + fmt::Display, C: fmt::Display> fmt::Display for TreeErrorContext<I, C> {
+impl<I: fmt::Display, C: fmt::Display> fmt::Display for TreeErrorContext<I, C> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let context = &self.context;
         let input = abbreviate(self.input.to_string());
@@ -1028,10 +1031,8 @@ impl<I: Stream + Clone + fmt::Display, C: fmt::Display> fmt::Display for TreeErr
 }
 
 #[cfg(feature = "std")]
-impl<
-        I: Stream + Clone + fmt::Debug + fmt::Display + Sync + Send + 'static,
-        C: fmt::Display + fmt::Debug,
-    > std::error::Error for TreeError<I, C>
+impl<I: fmt::Debug + fmt::Display + Sync + Send + 'static, C: fmt::Display + fmt::Debug>
+    std::error::Error for TreeError<I, C>
 {
 }
 
@@ -1059,7 +1060,7 @@ fn abbreviate(input: String) -> String {
 }
 
 #[cfg(feature = "std")]
-impl<I: Stream + Clone + fmt::Display, C: fmt::Display> fmt::Display for TreeError<I, C> {
+impl<I: fmt::Display, C: fmt::Display> fmt::Display for TreeError<I, C> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.write(f, 0)
     }

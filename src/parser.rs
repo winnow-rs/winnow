@@ -1310,8 +1310,8 @@ mod tests {
     use crate::binary::be_u16;
     use crate::error::ErrMode;
     use crate::error::ErrorKind;
-    use crate::error::InputError;
     use crate::error::Needed;
+    use crate::error::TestResult;
     use crate::token::take;
     use crate::Partial;
 
@@ -1381,7 +1381,7 @@ Err(
         #[allow(clippy::type_complexity)]
         fn tuple_3<'i>(
             i: &mut Partial<&'i [u8]>,
-        ) -> PResult<(u16, &'i [u8], &'i [u8]), InputError<Partial<&'i [u8]>>> {
+        ) -> TestResult<Partial<&'i [u8]>, (u16, &'i [u8], &'i [u8])> {
             (be_u16, take(3u8), "fg").parse_next(i)
         }
 
@@ -1467,7 +1467,7 @@ Err(
 
     #[test]
     fn unit_type() {
-        fn parser<'i>(i: &mut &'i str) -> PResult<(), InputError<&'i str>> {
+        fn parser<'i>(i: &mut &'i str) -> TestResult<&'i str, ()> {
             ().parse_next(i)
         }
         assert_parse!(
