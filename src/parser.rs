@@ -5,7 +5,7 @@ use crate::combinator::impls;
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
 use crate::error::FromRecoverableError;
-use crate::error::{AddContext, FromExternalError, IResult, PResult, ParseError, ParserError};
+use crate::error::{AddContext, FromExternalError, PResult, ParseError, ParserError};
 use crate::stream::{Compare, Location, ParseSlice, Stream, StreamIsPartial};
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
@@ -1284,8 +1284,9 @@ where
 /// Deprecated
 #[inline(always)]
 #[deprecated(since = "0.6.23")]
+#[allow(deprecated)]
 pub fn unpeek<'a, I, O, E>(
-    mut peek: impl FnMut(I) -> IResult<I, O, E> + 'a,
+    mut peek: impl FnMut(I) -> crate::error::IResult<I, O, E> + 'a,
 ) -> impl FnMut(&mut I) -> PResult<O, E>
 where
     I: Clone,
