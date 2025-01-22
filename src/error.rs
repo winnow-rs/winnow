@@ -953,6 +953,22 @@ where
 }
 
 #[cfg(feature = "std")]
+impl<I, C> ErrorConvert<TreeError<(I, usize), C>> for TreeError<I, C> {
+    #[inline]
+    fn convert(self) -> TreeError<(I, usize), C> {
+        self.map_input(|i| (i, 0))
+    }
+}
+
+#[cfg(feature = "std")]
+impl<I, C> ErrorConvert<TreeError<I, C>> for TreeError<(I, usize), C> {
+    #[inline]
+    fn convert(self) -> TreeError<I, C> {
+        self.map_input(|(i, _o)| i)
+    }
+}
+
+#[cfg(feature = "std")]
 impl<I, C> TreeError<I, C>
 where
     I: crate::lib::std::fmt::Display,
