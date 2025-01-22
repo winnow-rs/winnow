@@ -42,17 +42,8 @@ use crate::Parser;
 /// - [`ErrMode::into_inner`]
 pub type PResult<O, E = ContextError> = Result<O, ErrMode<E>>;
 
-/// For use with [`Parser::parse_peek`] which allows the input stream to be threaded through a
-/// parser.
-///
-/// - `Ok((I, O))` is the remaining [input][crate::stream] and the parsed value
-/// - [`Err(ErrMode<E>)`][ErrMode] is the error along with how to respond to it
-///
-/// By default, the error type (`E`) is [`InputError`]
-///
-/// When integrating into the result of the application, see
-/// - [`Parser::parse`]
-/// - [`ErrMode::into_inner`]
+/// Deprecated, replaced with [`PResult`]
+#[deprecated(since = "0.6.25", note = "Replaced with `PResult`")]
 pub type IResult<I, O, E = InputError<I>> = PResult<(I, O), E>;
 
 /// Contains information on needed data if a parser returned `Incomplete`
@@ -187,7 +178,6 @@ impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
         ErrMode::Backtrack(E::from_error_kind(input, kind))
     }
 
-    #[cfg_attr(debug_assertions, track_caller)]
     #[inline(always)]
     fn assert(input: &I, message: &'static str) -> Self
     where
@@ -275,7 +265,6 @@ pub trait ParserError<I: Stream>: Sized {
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self;
 
     /// Process a parser assertion
-    #[cfg_attr(debug_assertions, track_caller)]
     #[inline(always)]
     fn assert(input: &I, _message: &'static str) -> Self
     where
