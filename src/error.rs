@@ -592,11 +592,6 @@ impl<I: Stream, C> ParserError<I> for ContextError<C> {
     ) -> Self {
         self
     }
-
-    #[inline]
-    fn or(self, other: Self) -> Self {
-        other
-    }
 }
 
 impl<C, I: Stream> AddContext<I, C> for ContextError<C> {
