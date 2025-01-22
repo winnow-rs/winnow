@@ -294,7 +294,15 @@ pub trait ParserError<I: Stream>: Sized {
     ///
     /// This is useful when backtracking through a parse tree, accumulating error context on the
     /// way.
-    fn append(self, input: &I, token_start: &<I as Stream>::Checkpoint, kind: ErrorKind) -> Self;
+    #[inline]
+    fn append(
+        self,
+        _input: &I,
+        _token_start: &<I as Stream>::Checkpoint,
+        _kind: ErrorKind,
+    ) -> Self {
+        self
+    }
 
     /// Combines errors from two different parse branches.
     ///
@@ -407,16 +415,6 @@ impl<I: Stream + Clone> ParserError<I> for InputError<I> {
             kind,
         }
     }
-
-    #[inline]
-    fn append(
-        self,
-        _input: &I,
-        _token_start: &<I as Stream>::Checkpoint,
-        _kind: ErrorKind,
-    ) -> Self {
-        self
-    }
 }
 
 impl<I: Stream + Clone, C> AddContext<I, C> for InputError<I> {}
@@ -487,15 +485,6 @@ impl<I: Clone + fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::E
 impl<I: Stream> ParserError<I> for () {
     #[inline]
     fn from_error_kind(_: &I, _: ErrorKind) -> Self {}
-
-    #[inline]
-    fn append(
-        self,
-        _input: &I,
-        _token_start: &<I as Stream>::Checkpoint,
-        _kind: ErrorKind,
-    ) -> Self {
-    }
 }
 
 impl<I: Stream, C> AddContext<I, C> for () {}
@@ -581,21 +570,6 @@ impl<I: Stream, C> ParserError<I> for ContextError<C> {
     #[inline]
     fn from_error_kind(_input: &I, _kind: ErrorKind) -> Self {
         Self::new()
-    }
-
-    #[inline]
-    fn append(
-        self,
-        _input: &I,
-        _token_start: &<I as Stream>::Checkpoint,
-        _kind: ErrorKind,
-    ) -> Self {
-        self
-    }
-
-    #[inline]
-    fn or(self, other: Self) -> Self {
-        other
     }
 }
 
@@ -1133,16 +1107,6 @@ impl<I: Stream> ParserError<I> for ErrorKind {
     #[inline]
     fn from_error_kind(_input: &I, kind: ErrorKind) -> Self {
         kind
-    }
-
-    #[inline]
-    fn append(
-        self,
-        _input: &I,
-        _token_start: &<I as Stream>::Checkpoint,
-        _kind: ErrorKind,
-    ) -> Self {
-        self
     }
 }
 
