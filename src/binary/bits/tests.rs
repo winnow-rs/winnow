@@ -1,5 +1,4 @@
 use super::*;
-use crate::error::IResult;
 use crate::error::InputError;
 use crate::Partial;
 
@@ -10,7 +9,8 @@ fn test_complete_byte_consumption_bits() {
     let input = &[0x12, 0x34, 0x56, 0x78][..];
 
     // Take 3 bit slices with sizes [4, 8, 4].
-    let result: IResult<&[u8], (u8, u8, u8)> =
+    #[allow(clippy::type_complexity)]
+    let result: PResult<(&[u8], (u8, u8, u8)), InputError<_>> =
         bits::<_, _, InputError<(&[u8], usize)>, _, _>((take(4usize), take(8usize), take(4usize)))
             .parse_peek(input);
 
@@ -34,7 +34,7 @@ fn test_partial_byte_consumption_bits() {
     let input = &[0x12, 0x34, 0x56, 0x78][..];
 
     // Take bit slices with sizes [4, 8].
-    let result: IResult<&[u8], (u8, u8)> =
+    let result: PResult<(&[u8], (u8, u8)), InputError<_>> =
         bits::<_, _, InputError<(&[u8], usize)>, _, _>((take(4usize), take(8usize)))
             .parse_peek(input);
 
@@ -55,7 +55,7 @@ fn test_incomplete_bits() {
     let input = Partial::new(&[0x12][..]);
 
     // Take bit slices with sizes [4, 8].
-    let result: IResult<_, (u8, u8)> =
+    let result: PResult<(_, (u8, u8)), InputError<_>> =
         bits::<_, _, InputError<(_, usize)>, _, _>((take(4usize), take(8usize))).parse_peek(input);
 
     assert!(result.is_err());
@@ -70,7 +70,8 @@ fn test_take_complete_0() {
     assert_eq!(count, 0usize);
     let offset = 0usize;
 
-    let result: IResult<(&[u8], usize), usize> = take(count).parse_peek((input, offset));
+    let result: PResult<((&[u8], usize), usize), InputError<_>> =
+        take(count).parse_peek((input, offset));
 
     assert_eq!(result, Ok(((input, offset), 0)));
 }
@@ -79,7 +80,8 @@ fn test_take_complete_0() {
 fn test_take_complete_eof() {
     let input = &[0b00010010][..];
 
-    let result: IResult<(&[u8], usize), usize> = take(1usize).parse_peek((input, 8));
+    let result: PResult<((&[u8], usize), usize), InputError<_>> =
+        take(1usize).parse_peek((input, 8));
 
     assert_eq!(
         result,
@@ -94,7 +96,8 @@ fn test_take_complete_eof() {
 fn test_take_complete_span_over_multiple_bytes() {
     let input = &[0b00010010, 0b00110100, 0b11111111, 0b11111111][..];
 
-    let result: IResult<(&[u8], usize), usize> = take(24usize).parse_peek((input, 4));
+    let result: PResult<((&[u8], usize), usize), InputError<_>> =
+        take(24usize).parse_peek((input, 4));
 
     assert_eq!(
         result,
@@ -109,7 +112,8 @@ fn test_take_partial_0() {
     assert_eq!(count, 0usize);
     let offset = 0usize;
 
-    let result: IResult<(_, usize), usize> = take(count).parse_peek((input, offset));
+    let result: PResult<((_, usize), usize), InputError<_>> =
+        take(count).parse_peek((input, offset));
 
     assert_eq!(result, Ok(((input, offset), 0)));
 }
@@ -121,7 +125,7 @@ fn test_pattern_partial_ok() {
     let bits_to_take = 4usize;
     let value_to_pattern = 0b0001;
 
-    let result: IResult<(_, usize), usize> =
+    let result: PResult<((_, usize), usize), InputError<_>> =
         pattern(value_to_pattern, bits_to_take).parse_peek((input, offset));
 
     assert_eq!(result, Ok(((input, bits_to_take), value_to_pattern)));
@@ -134,7 +138,7 @@ fn test_pattern_partial_err() {
     let bits_to_take = 4usize;
     let value_to_pattern = 0b1111;
 
-    let result: IResult<(_, usize), usize> =
+    let result: PResult<((_, usize), usize), InputError<_>> =
         pattern(value_to_pattern, bits_to_take).parse_peek((input, offset));
 
     assert_eq!(
@@ -150,7 +154,7 @@ fn test_pattern_partial_err() {
 fn test_bool_0_complete() {
     let input = [0b10000000].as_ref();
 
-    let result: IResult<(&[u8], usize), bool> = bool.parse_peek((input, 0));
+    let result: PResult<((&[u8], usize), bool), InputError<_>> = bool.parse_peek((input, 0));
 
     assert_eq!(result, Ok(((input, 1), true)));
 }
@@ -159,7 +163,7 @@ fn test_bool_0_complete() {
 fn test_bool_eof_complete() {
     let input = [0b10000000].as_ref();
 
-    let result: IResult<(&[u8], usize), bool> = bool.parse_peek((input, 8));
+    let result: PResult<((&[u8], usize), bool), InputError<_>> = bool.parse_peek((input, 8));
 
     assert_eq!(
         result,
@@ -174,7 +178,9 @@ fn test_bool_eof_complete() {
 fn test_bool_0_partial() {
     let input = Partial::new([0b10000000].as_ref());
 
-    let result: IResult<(Partial<&[u8]>, usize), bool> = bool.parse_peek((input, 0));
+    #[allow(clippy::type_complexity)]
+    let result: PResult<((Partial<&[u8]>, usize), bool), InputError<_>> =
+        bool.parse_peek((input, 0));
 
     assert_eq!(result, Ok(((input, 1), true)));
 }
@@ -183,7 +189,9 @@ fn test_bool_0_partial() {
 fn test_bool_eof_partial() {
     let input = Partial::new([0b10000000].as_ref());
 
-    let result: IResult<(Partial<&[u8]>, usize), bool> = bool.parse_peek((input, 8));
+    #[allow(clippy::type_complexity)]
+    let result: PResult<((Partial<&[u8]>, usize), bool), InputError<_>> =
+        bool.parse_peek((input, 8));
 
     assert_eq!(
         result,

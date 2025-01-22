@@ -5,7 +5,7 @@ use crate::combinator::impls;
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
 use crate::error::FromRecoverableError;
-use crate::error::{AddContext, FromExternalError, IResult, PResult, ParseError, ParserError};
+use crate::error::{AddContext, FromExternalError, PResult, ParseError, ParserError};
 use crate::stream::{Compare, Location, ParseSlice, Stream, StreamIsPartial};
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
@@ -95,7 +95,7 @@ pub trait Parser<I, O, E> {
     ///
     /// </div>
     #[inline(always)]
-    fn parse_peek(&mut self, mut input: I) -> IResult<I, O, E> {
+    fn parse_peek(&mut self, mut input: I) -> PResult<(I, O), E> {
         match self.parse_next(&mut input) {
             Ok(o) => Ok((input, o)),
             Err(err) => Err(err),
@@ -1284,8 +1284,9 @@ where
 /// Deprecated
 #[inline(always)]
 #[deprecated(since = "0.6.23")]
+#[allow(deprecated)]
 pub fn unpeek<'a, I, O, E>(
-    mut peek: impl FnMut(I) -> IResult<I, O, E> + 'a,
+    mut peek: impl FnMut(I) -> crate::error::IResult<I, O, E> + 'a,
 ) -> impl FnMut(&mut I) -> PResult<O, E>
 where
     I: Clone,
@@ -1325,8 +1326,8 @@ mod tests {
     #[test]
     #[cfg(target_pointer_width = "64")]
     fn size_test() {
-        assert_size!(IResult<&[u8], &[u8], (&[u8], u32)>, 40);
-        assert_size!(IResult<&str, &str, u32>, 40);
+        assert_size!(PResult<&[u8], (&[u8], u32)>, 40);
+        assert_size!(PResult<&str, u32>, 40);
         assert_size!(Needed, 8);
         assert_size!(ErrMode<u32>, 16);
         assert_size!(ErrorKind, 1);
