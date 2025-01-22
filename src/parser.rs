@@ -65,9 +65,9 @@ pub trait Parser<I, O, E> {
         let (o, _) = (self.by_ref(), crate::combinator::eof)
             .parse_next(&mut input)
             .map_err(|e| {
-                let e = e
-                    .into_inner()
-                    .expect("complete parsers should not report `ErrMode::Incomplete(_)`");
+                let e = e.into_inner().unwrap_or_else(|_err| {
+                    panic!("complete parsers should not report `ErrMode::Incomplete(_)`")
+                });
                 ParseError::new(input, start, e)
             })?;
         Ok(o)
@@ -1264,9 +1264,9 @@ where
         let (o, err) = match result {
             Ok((o, _)) => (Some(o), None),
             Err(err) => {
-                let err = err
-                    .into_inner()
-                    .expect("complete parsers should not report `ErrMode::Incomplete(_)`");
+                let err = err.into_inner().unwrap_or_else(|_err| {
+                    panic!("complete parsers should not report `ErrMode::Incomplete(_)`")
+                });
                 let err_start = input.checkpoint();
                 let err = R::from_recoverable_error(&start_token, &err_start, &input, err);
                 (None, Some(err))

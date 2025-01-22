@@ -39,7 +39,7 @@ use crate::Parser;
 ///
 /// When integrating into the result of the application, see
 /// - [`Parser::parse`]
-/// - [`ErrMode::into_inner`]
+/// - [`ParserError::into_inner`]
 pub type ModalResult<O, E = ContextError> = Result<O, ErrMode<E>>;
 
 /// Deprecated, replaced with [`ModalResult`]
@@ -151,20 +151,11 @@ impl<E> ErrMode<E> {
     {
         ErrorConvert::convert(self)
     }
-
-    /// Unwrap the mode, returning the underlying error
-    ///
-    /// Returns `None` for [`ErrMode::Incomplete`]
-    #[inline(always)]
-    pub fn into_inner(self) -> Option<E> {
-        match self {
-            ErrMode::Backtrack(e) | ErrMode::Cut(e) => Some(e),
-            ErrMode::Incomplete(_) => None,
-        }
-    }
 }
 
 impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
+    type Inner = E;
+
     #[inline(always)]
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
         ErrMode::Backtrack(E::from_error_kind(input, kind))
@@ -202,6 +193,15 @@ impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
     #[inline(always)]
     fn is_backtrack(&self) -> bool {
         matches!(self, ErrMode::Backtrack(_))
+    }
+
+    /// Unwrap the mode, returning the underlying error
+    #[inline(always)]
+    fn into_inner(self) -> Result<Self::Inner, Self> {
+        match self {
+            ErrMode::Backtrack(e) | ErrMode::Cut(e) => Ok(e),
+            err @ ErrMode::Incomplete(_) => Err(err),
+        }
     }
 
     #[inline(always)]
@@ -318,6 +318,11 @@ where
 /// It provides methods to create an error from some combinators,
 /// and combine existing errors in combinators like `alt`.
 pub trait ParserError<I: Stream>: Sized {
+    /// Generally, `Self`
+    ///
+    /// Mostly used for [`ErrMode`]
+    type Inner;
+
     /// Creates an error from the input position and an [`ErrorKind`]
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self;
 
@@ -374,6 +379,9 @@ pub trait ParserError<I: Stream>: Sized {
     fn is_backtrack(&self) -> bool {
         true
     }
+
+    /// Unwrap the mode, returning the underlying error, if present
+    fn into_inner(self) -> Result<Self::Inner, Self>;
 
     /// Is more data [`Needed`]
     #[inline(always)]
@@ -490,12 +498,19 @@ where
 }
 
 impl<I: Stream + Clone> ParserError<I> for InputError<I> {
+    type Inner = Self;
+
     #[inline]
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
         Self {
             input: input.clone(),
             kind,
         }
+    }
+
+    #[inline(always)]
+    fn into_inner(self) -> Result<Self::Inner, Self> {
+        Ok(self)
     }
 }
 
@@ -559,8 +574,15 @@ impl<I: Clone + fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::E
 }
 
 impl<I: Stream> ParserError<I> for () {
+    type Inner = Self;
+
     #[inline]
     fn from_error_kind(_: &I, _: ErrorKind) -> Self {}
+
+    #[inline(always)]
+    fn into_inner(self) -> Result<Self::Inner, Self> {
+        Ok(self)
+    }
 }
 
 impl<I: Stream, C> AddContext<I, C> for () {}
@@ -643,9 +665,16 @@ impl<C> Default for ContextError<C> {
 }
 
 impl<I: Stream, C> ParserError<I> for ContextError<C> {
+    type Inner = Self;
+
     #[inline]
     fn from_error_kind(_input: &I, _kind: ErrorKind) -> Self {
         Self::new()
+    }
+
+    #[inline(always)]
+    fn into_inner(self) -> Result<Self::Inner, Self> {
+        Ok(self)
     }
 }
 
@@ -955,6 +984,8 @@ impl<I, C> ParserError<I> for TreeError<I, C>
 where
     I: Stream + Clone,
 {
+    type Inner = Self;
+
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
         TreeError::Base(TreeErrorBase {
             input: input.clone(),
@@ -990,6 +1021,11 @@ where
             }
             (first, second) => TreeError::Alt(vec![first, second]),
         }
+    }
+
+    #[inline(always)]
+    fn into_inner(self) -> Result<Self::Inner, Self> {
+        Ok(self)
     }
 }
 
@@ -1187,9 +1223,16 @@ impl ErrorKind {
 }
 
 impl<I: Stream> ParserError<I> for ErrorKind {
+    type Inner = Self;
+
     #[inline]
     fn from_error_kind(_input: &I, kind: ErrorKind) -> Self {
         kind
+    }
+
+    #[inline(always)]
+    fn into_inner(self) -> Result<Self::Inner, Self> {
+        Ok(self)
     }
 }
 

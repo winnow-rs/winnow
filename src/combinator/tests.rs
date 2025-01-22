@@ -119,8 +119,14 @@ impl From<u32> for CustomError {
 }
 
 impl<I: Stream> ParserError<I> for CustomError {
+    type Inner = Self;
+
     fn from_error_kind(_: &I, _: ErrorKind) -> Self {
         CustomError
+    }
+
+    fn into_inner(self) -> Result<Self::Inner, Self> {
+        Ok(self)
     }
 }
 
@@ -1322,6 +1328,8 @@ fn alt_test() {
 
     #[cfg(feature = "alloc")]
     impl<I: Stream + Debug> ParserError<I> for ErrorStr {
+        type Inner = Self;
+
         fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
             ErrorStr(format!("custom error message: ({input:?}, {kind:?})"))
         }
@@ -1330,6 +1338,10 @@ fn alt_test() {
             ErrorStr(format!(
                 "custom error message: ({input:?}, {kind:?}) - {self:?}"
             ))
+        }
+
+        fn into_inner(self) -> Result<Self::Inner, Self> {
+            Ok(self)
         }
     }
 
@@ -3457,8 +3469,14 @@ impl<I> From<(I, ErrorKind)> for NilError {
 }
 
 impl<I: Stream> ParserError<I> for NilError {
+    type Inner = Self;
+
     fn from_error_kind(_: &I, _: ErrorKind) -> NilError {
         NilError
+    }
+
+    fn into_inner(self) -> Result<Self::Inner, Self> {
+        Ok(self)
     }
 }
 

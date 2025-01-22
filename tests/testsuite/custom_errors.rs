@@ -19,6 +19,8 @@ impl<'a> From<(&'a str, ErrorKind)> for CustomError {
 }
 
 impl<'a> ParserError<Partial<&'a str>> for CustomError {
+    type Inner = Self;
+
     fn from_error_kind(_: &Partial<&'a str>, kind: ErrorKind) -> Self {
         CustomError(format!("error code was: {kind:?}"))
     }
@@ -30,6 +32,10 @@ impl<'a> ParserError<Partial<&'a str>> for CustomError {
         kind: ErrorKind,
     ) -> Self {
         CustomError(format!("{self:?}\nerror code was: {kind:?}"))
+    }
+
+    fn into_inner(self) -> Result<Self::Inner, Self> {
+        Ok(self)
     }
 }
 

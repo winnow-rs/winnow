@@ -18,8 +18,14 @@ pub enum CustomError<I> {
 }
 
 impl<I: Stream + Clone> ParserError<I> for CustomError<I> {
+    type Inner = Self;
+
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
         CustomError::Winnow(input.clone(), kind)
+    }
+
+    fn into_inner(self) -> Result<Self::Inner, Self> {
+        Ok(self)
     }
 }
 
