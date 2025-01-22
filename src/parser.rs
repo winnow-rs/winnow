@@ -95,7 +95,7 @@ pub trait Parser<I, O, E> {
     ///
     /// </div>
     #[inline(always)]
-    fn parse_peek(&mut self, mut input: I) -> IResult<I, O, E> {
+    fn parse_peek(&mut self, mut input: I) -> PResult<(I, O), E> {
         match self.parse_next(&mut input) {
             Ok(o) => Ok((input, o)),
             Err(err) => Err(err),
@@ -1325,8 +1325,8 @@ mod tests {
     #[test]
     #[cfg(target_pointer_width = "64")]
     fn size_test() {
-        assert_size!(IResult<&[u8], &[u8], (&[u8], u32)>, 40);
-        assert_size!(IResult<&str, &str, u32>, 40);
+        assert_size!(PResult<&[u8], (&[u8], u32)>, 40);
+        assert_size!(PResult<&str, u32>, 40);
         assert_size!(Needed, 8);
         assert_size!(ErrMode<u32>, 16);
         assert_size!(ErrorKind, 1);

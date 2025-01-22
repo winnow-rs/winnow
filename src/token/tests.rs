@@ -7,7 +7,6 @@ use snapbox::str;
 
 use crate::ascii::Caseless;
 use crate::combinator::delimited;
-use crate::error::IResult;
 use crate::prelude::*;
 use crate::stream::AsChar;
 use crate::token::literal;
@@ -15,10 +14,8 @@ use crate::Partial;
 
 #[test]
 fn complete_take_while_m_n_utf8_all_matching() {
-    let result: IResult<&str, &str> =
-        take_while(1..=4, |c: char| c.is_alphabetic()).parse_peek("øn");
     assert_parse!(
-        result,
+        take_while(1..=4, |c: char| c.is_alphabetic()).parse_peek("øn"),
         str![[r#"
 Ok(
     (
@@ -34,9 +31,8 @@ Ok(
 
 #[test]
 fn complete_take_while_m_n_utf8_all_matching_substring() {
-    let result: IResult<&str, &str> = take_while(1, |c: char| c.is_alphabetic()).parse_peek("øn");
     assert_parse!(
-        result,
+        take_while(1, |c: char| c.is_alphabetic()).parse_peek("øn"),
         str![[r#"
 Ok(
     (

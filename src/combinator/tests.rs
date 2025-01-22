@@ -229,14 +229,12 @@ Ok(
 #[test]
 #[cfg(feature = "std")]
 fn test_parser_into() {
-    use crate::error::InputError;
     use crate::token::take;
 
-    let mut parser = take::<_, _, InputError<_>>(3u8).output_into();
-    let result: crate::error::IResult<&[u8], Vec<u8>> = parser.parse_peek(&b"abcdefg"[..]);
-
     assert_parse!(
-        result,
+        take(3u8)
+            .output_into::<Vec<u8>>()
+            .parse_peek(&b"abcdefg"[..]),
         str![[r#"
 Ok(
     (

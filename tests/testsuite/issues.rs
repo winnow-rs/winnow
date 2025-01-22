@@ -7,7 +7,7 @@ use snapbox::str;
 
 use winnow::prelude::*;
 use winnow::Partial;
-use winnow::{error::ErrMode, error::IResult, error::InputError, error::Needed};
+use winnow::{error::ErrMode, error::InputError, error::Needed};
 
 use crate::TestResult;
 
@@ -119,7 +119,8 @@ fn usize_length_bytes_issue() {
     use winnow::binary::be_u16;
     use winnow::binary::length_take;
     #[allow(clippy::type_complexity)]
-    let _: IResult<Partial<&[u8]>, &[u8]> = length_take(be_u16).parse_peek(Partial::new(b"012346"));
+    let _: PResult<(Partial<&[u8]>, &[u8])> =
+        length_take(be_u16).parse_peek(Partial::new(b"012346"));
 }
 
 #[test]
