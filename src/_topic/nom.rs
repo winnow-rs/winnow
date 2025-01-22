@@ -82,7 +82,7 @@
 //! When the Output of a parser is a slice, you have to add a lifetime:
 //! ```rust
 //! # use winnow::prelude::*;
-//! fn foo<'i>(i: &mut &'i str) -> PResult<&'i str> {
+//! fn foo<'i>(i: &mut &'i str) -> ModalResult<&'i str> {
 //!     // ...
 //! #   winnow::token::rest.parse_next(i)
 //! }
@@ -92,7 +92,7 @@
 //! ```rust
 //! # use winnow::prelude::*;
 //! # use winnow::combinator::trace;
-//! fn foo(i: &mut &str) -> PResult<usize> {
+//! fn foo(i: &mut &str) -> ModalResult<usize> {
 //!     trace("foo", |i: &mut _| {
 //!         // ...
 //! #       Ok(0)

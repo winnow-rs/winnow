@@ -8,7 +8,7 @@
 //! - Can be modified according to the user's needs, because some languages need a lot more information
 //! - Help thread-through the [stream][crate::stream]
 //!
-//! To abstract these needs away from the user, generally `winnow` parsers use the [`PResult`]
+//! To abstract these needs away from the user, generally `winnow` parsers use the [`ModalResult`]
 //! alias, rather than [`Result`].  [`Parser::parse`] is a top-level operation
 //! that can help convert to a `Result` for integrating with your application's error reporting.
 //!
@@ -46,12 +46,12 @@ pub type ModalResult<O, E = ContextError> = Result<O, ErrMode<E>>;
 #[deprecated(since = "0.6.23", note = "Replaced with ModalResult")]
 pub type PResult<O, E = ContextError> = ModalResult<O, E>;
 
-/// Deprecated, replaced with [`PResult`]
-#[deprecated(since = "0.6.25", note = "Replaced with `PResult`")]
-pub type IResult<I, O, E = InputError<I>> = PResult<(I, O), E>;
+/// Deprecated, replaced with [`ModalResult`]
+#[deprecated(since = "0.6.25", note = "Replaced with `ModalResult`")]
+pub type IResult<I, O, E = InputError<I>> = ModalResult<(I, O), E>;
 
 #[cfg(test)]
-pub(crate) type TestResult<I, O> = PResult<O, InputError<I>>;
+pub(crate) type TestResult<I, O> = ModalResult<O, InputError<I>>;
 
 /// Contains information on needed data if a parser returned `Incomplete`
 ///

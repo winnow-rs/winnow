@@ -15,7 +15,7 @@ use crate::lib::std::borrow::ToOwned;
 use crate::prelude::*;
 use crate::stream::Stream;
 use crate::token::take;
-use crate::PResult;
+use crate::ModalResult;
 use crate::Partial;
 
 #[cfg(feature = "alloc")]
@@ -126,7 +126,7 @@ impl<I: Stream> ParserError<I> for CustomError {
 
 struct CustomError;
 #[allow(dead_code)]
-fn custom_error<'i>(input: &mut &'i [u8]) -> PResult<&'i [u8], CustomError> {
+fn custom_error<'i>(input: &mut &'i [u8]) -> ModalResult<&'i [u8], CustomError> {
     //fix_error!(input, CustomError<_>, alphanumeric)
     crate::ascii::alphanumeric1.parse_next(input)
 }
@@ -157,7 +157,7 @@ Ok(
 }
 
 #[allow(dead_code)]
-fn test_closure_compiles_195(input: &mut &[u8]) -> PResult<()> {
+fn test_closure_compiles_195(input: &mut &[u8]) -> ModalResult<()> {
     u8.flat_map(|num| repeat(num as usize, u16(Endianness::Big)))
         .parse_next(input)
 }
@@ -1333,26 +1333,26 @@ fn alt_test() {
         }
     }
 
-    fn work<'i>(input: &mut &'i [u8]) -> PResult<&'i [u8], ErrorStr> {
+    fn work<'i>(input: &mut &'i [u8]) -> ModalResult<&'i [u8], ErrorStr> {
         Ok(input.finish())
     }
 
     #[allow(unused_variables)]
-    fn dont_work<'i>(input: &mut &'i [u8]) -> PResult<&'i [u8], ErrorStr> {
+    fn dont_work<'i>(input: &mut &'i [u8]) -> ModalResult<&'i [u8], ErrorStr> {
         Err(ErrMode::Backtrack(ErrorStr("abcd".to_owned())))
     }
 
-    fn work2<'i>(_input: &mut &'i [u8]) -> PResult<&'i [u8], ErrorStr> {
+    fn work2<'i>(_input: &mut &'i [u8]) -> ModalResult<&'i [u8], ErrorStr> {
         Ok(&b""[..])
     }
 
-    fn alt1<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], ErrorStr> {
+    fn alt1<'i>(i: &mut &'i [u8]) -> ModalResult<&'i [u8], ErrorStr> {
         alt((dont_work, dont_work)).parse_next(i)
     }
-    fn alt2<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], ErrorStr> {
+    fn alt2<'i>(i: &mut &'i [u8]) -> ModalResult<&'i [u8], ErrorStr> {
         alt((dont_work, work)).parse_next(i)
     }
-    fn alt3<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], ErrorStr> {
+    fn alt3<'i>(i: &mut &'i [u8]) -> ModalResult<&'i [u8], ErrorStr> {
         alt((dont_work, dont_work, work2, dont_work)).parse_next(i)
     }
     //named!(alt1, alt!(dont_work | dont_work));

@@ -29,7 +29,7 @@ where
     P: Parser<I, O, E>,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<O, E> {
         self.p.parse_next(i)
     }
 }
@@ -54,7 +54,7 @@ where
     G: FnMut(O) -> O2,
 {
     #[inline]
-    fn parse_next(&mut self, i: &mut I) -> PResult<O2, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<O2, E> {
         match self.parser.parse_next(i) {
             Err(e) => Err(e),
             Ok(o) => Ok((self.map)(o)),
@@ -87,7 +87,7 @@ where
     E: FromExternalError<I, E2>,
 {
     #[inline]
-    fn parse_next(&mut self, input: &mut I) -> PResult<O2, E> {
+    fn parse_next(&mut self, input: &mut I) -> ModalResult<O2, E> {
         let start = input.checkpoint();
         let o = self.parser.parse_next(input)?;
         let res = (self.map)(o).map_err(|err| {
@@ -123,7 +123,7 @@ where
     E: ParserError<I>,
 {
     #[inline]
-    fn parse_next(&mut self, input: &mut I) -> PResult<O2, E> {
+    fn parse_next(&mut self, input: &mut I) -> ModalResult<O2, E> {
         let start = input.checkpoint();
         let o = self.parser.parse_next(input)?;
         let res = (self.map)(o).ok_or_else(|| {
@@ -159,7 +159,7 @@ where
     I: Stream,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> PResult<O2, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<O2, E> {
         let start = i.checkpoint();
         let mut o = self.outer.parse_next(i)?;
         let _ = o.complete();
@@ -194,7 +194,7 @@ where
     E: ParserError<I>,
 {
     #[inline]
-    fn parse_next(&mut self, i: &mut I) -> PResult<O2, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<O2, E> {
         let start = i.checkpoint();
         let o = self.p.parse_next(i)?;
         let res = o.parse_slice().ok_or_else(|| {
@@ -229,7 +229,7 @@ where
     H: Parser<I, O2, E>,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> PResult<O2, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<O2, E> {
         let o = self.f.parse_next(i)?;
         (self.g)(o).parse_next(i)
     }
@@ -250,7 +250,7 @@ where
     E: ParserError<I>,
 {
     #[inline]
-    fn parse_next(&mut self, input: &mut I) -> PResult<O, E> {
+    fn parse_next(&mut self, input: &mut I) -> ModalResult<O, E> {
         trace("complete_err", |input: &mut I| {
             match (self.p).parse_next(input) {
                 Err(ErrMode::Incomplete(_)) => {
@@ -291,7 +291,7 @@ where
     E: ParserError<I>,
 {
     #[inline]
-    fn parse_next(&mut self, input: &mut I) -> PResult<O, E> {
+    fn parse_next(&mut self, input: &mut I) -> ModalResult<O, E> {
         let start = input.checkpoint();
         let o = self.parser.parse_next(input)?;
         let res = (self.filter)(o.borrow()).then_some(o).ok_or_else(|| {
@@ -322,7 +322,7 @@ where
     O2: Clone,
 {
     #[inline]
-    fn parse_next(&mut self, input: &mut I) -> PResult<O2, E> {
+    fn parse_next(&mut self, input: &mut I) -> ModalResult<O2, E> {
         (self.parser).parse_next(input).map(|_| self.val.clone())
     }
 }
@@ -346,7 +346,7 @@ where
     O2: core::default::Default,
 {
     #[inline]
-    fn parse_next(&mut self, input: &mut I) -> PResult<O2, E> {
+    fn parse_next(&mut self, input: &mut I) -> ModalResult<O2, E> {
         (self.parser).parse_next(input).map(|_| O2::default())
     }
 }
@@ -367,7 +367,7 @@ where
     F: Parser<I, O, E>,
 {
     #[inline(always)]
-    fn parse_next(&mut self, input: &mut I) -> PResult<(), E> {
+    fn parse_next(&mut self, input: &mut I) -> ModalResult<(), E> {
         (self.parser).parse_next(input).map(|_| ())
     }
 }
@@ -394,7 +394,7 @@ where
     I: Stream,
 {
     #[inline]
-    fn parse_next(&mut self, input: &mut I) -> PResult<<I as Stream>::Slice, E> {
+    fn parse_next(&mut self, input: &mut I) -> ModalResult<<I as Stream>::Slice, E> {
         let checkpoint = input.checkpoint();
         match (self.parser).parse_next(input) {
             Ok(_) => {
@@ -430,7 +430,7 @@ where
     I: Stream,
 {
     #[inline]
-    fn parse_next(&mut self, input: &mut I) -> PResult<(O, <I as Stream>::Slice), E> {
+    fn parse_next(&mut self, input: &mut I) -> ModalResult<(O, <I as Stream>::Slice), E> {
         let checkpoint = input.checkpoint();
         match (self.parser).parse_next(input) {
             Ok(result) => {
@@ -462,7 +462,7 @@ where
     I: Stream + Location,
 {
     #[inline]
-    fn parse_next(&mut self, input: &mut I) -> PResult<Range<usize>, E> {
+    fn parse_next(&mut self, input: &mut I) -> ModalResult<Range<usize>, E> {
         let start = input.current_token_start();
         self.parser.parse_next(input).map(move |_| {
             let end = input.previous_token_end();
@@ -489,7 +489,7 @@ where
     I: Stream + Location,
 {
     #[inline]
-    fn parse_next(&mut self, input: &mut I) -> PResult<(O, Range<usize>), E> {
+    fn parse_next(&mut self, input: &mut I) -> ModalResult<(O, Range<usize>), E> {
         let start = input.current_token_start();
         self.parser.parse_next(input).map(move |output| {
             let end = input.previous_token_end();
@@ -517,7 +517,7 @@ where
     O: Into<O2>,
 {
     #[inline]
-    fn parse_next(&mut self, i: &mut I) -> PResult<O2, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<O2, E> {
         self.parser.parse_next(i).map(|o| o.into())
     }
 }
@@ -541,7 +541,7 @@ where
     E: Into<E2>,
 {
     #[inline]
-    fn parse_next(&mut self, i: &mut I) -> PResult<O, E2> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<O, E2> {
         self.parser
             .parse_next(i)
             .map_err(|err| err.map(|e| e.into()))
@@ -571,7 +571,7 @@ where
     C: Clone + crate::lib::std::fmt::Debug,
 {
     #[inline]
-    fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<O, E> {
         let context = self.context.clone();
         trace(DisplayDebug(self.context.clone()), move |i: &mut I| {
             let start = i.checkpoint();
@@ -612,7 +612,7 @@ where
     E: FromRecoverableError<I, E>,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<O, E> {
         if I::is_recovery_supported() {
             retry_after_inner(&mut self.parser, &mut self.recover, i)
         } else {
@@ -623,7 +623,7 @@ where
 
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
-fn retry_after_inner<P, R, I, O, E>(parser: &mut P, recover: &mut R, i: &mut I) -> PResult<O, E>
+fn retry_after_inner<P, R, I, O, E>(parser: &mut P, recover: &mut R, i: &mut I) -> ModalResult<O, E>
 where
     P: Parser<I, O, E>,
     R: Parser<I, (), E>,
@@ -688,7 +688,7 @@ where
     E: FromRecoverableError<I, E>,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> PResult<Option<O>, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<Option<O>, E> {
         if I::is_recovery_supported() {
             resume_after_inner(&mut self.parser, &mut self.recover, i)
         } else {
@@ -703,7 +703,7 @@ fn resume_after_inner<P, R, I, O, E>(
     parser: &mut P,
     recover: &mut R,
     i: &mut I,
-) -> PResult<Option<O>, E>
+) -> ModalResult<Option<O>, E>
 where
     P: Parser<I, O, E>,
     R: Parser<I, (), E>,

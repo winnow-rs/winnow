@@ -23,7 +23,7 @@ use crate::token::any;
 use crate::token::one_of;
 use crate::token::take_until;
 use crate::token::take_while;
-use crate::PResult;
+use crate::ModalResult;
 use crate::Parser;
 
 /// Mark a value as case-insensitive for ASCII characters
@@ -34,7 +34,7 @@ use crate::Parser;
 /// # use winnow::{error::ErrMode, error::{ErrorKind}};
 /// # use winnow::ascii::Caseless;
 ///
-/// fn parser<'s>(s: &mut &'s str) -> PResult<&'s str> {
+/// fn parser<'s>(s: &mut &'s str) -> ModalResult<&'s str> {
 ///   Caseless("hello").parse_next(s)
 /// }
 ///
@@ -66,7 +66,7 @@ impl Caseless<&str> {
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn crlf<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn crlf<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::ascii::crlf.parse_next(input)
 /// # }
@@ -77,7 +77,7 @@ impl Caseless<&str> {
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::crlf;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 ///     crlf.parse_next(input)
 /// }
 ///
@@ -96,7 +96,7 @@ impl Caseless<&str> {
 /// assert_eq!(crlf::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn crlf<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn crlf<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream + Compare<&'static str>,
     Error: ParserError<Input>,
@@ -115,7 +115,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn till_line_ending<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn till_line_ending<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::ascii::till_line_ending.parse_next(input)
 /// # }
@@ -126,7 +126,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::till_line_ending;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 ///     till_line_ending.parse_next(input)
 /// }
 ///
@@ -150,7 +150,9 @@ where
 /// assert!(till_line_ending::<_, ContextError>.parse_peek(Partial::new("a\rbc")).is_err());
 /// ```
 #[inline(always)]
-pub fn till_line_ending<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn till_line_ending<Input, Error>(
+    input: &mut Input,
+) -> ModalResult<<Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream + Compare<&'static str> + FindSlice<(char, char)>,
     <Input as Stream>::Token: AsChar + Clone,
@@ -168,7 +170,7 @@ where
 
 fn till_line_ending_<I, E: ParserError<I>, const PARTIAL: bool>(
     input: &mut I,
-) -> PResult<<I as Stream>::Slice, E>
+) -> ModalResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -210,7 +212,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn line_ending<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn line_ending<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::ascii::line_ending.parse_next(input)
 /// # }
@@ -221,7 +223,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::line_ending;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 ///     line_ending.parse_next(input)
 /// }
 ///
@@ -240,7 +242,7 @@ where
 /// assert_eq!(line_ending::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn line_ending<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn line_ending<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream + Compare<&'static str>,
     Error: ParserError<Input>,
@@ -259,7 +261,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn newline(input: &mut &str) -> PResult<char>
+/// pub fn newline(input: &mut &str) -> ModalResult<char>
 /// # {
 /// #     winnow::ascii::newline.parse_next(input)
 /// # }
@@ -270,7 +272,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::newline;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<char> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<char> {
 ///     newline.parse_next(input)
 /// }
 ///
@@ -289,7 +291,7 @@ where
 /// assert_eq!(newline::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn newline<I, Error: ParserError<I>>(input: &mut I) -> PResult<char, Error>
+pub fn newline<I, Error: ParserError<I>>(input: &mut I) -> ModalResult<char, Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -309,7 +311,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn tab(input: &mut &str) -> PResult<char>
+/// pub fn tab(input: &mut &str) -> ModalResult<char>
 /// # {
 /// #     winnow::ascii::tab.parse_next(input)
 /// # }
@@ -320,7 +322,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::tab;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<char> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<char> {
 ///     tab.parse_next(input)
 /// }
 ///
@@ -339,7 +341,7 @@ where
 /// assert_eq!(tab::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn tab<Input, Error>(input: &mut Input) -> PResult<char, Error>
+pub fn tab<Input, Error>(input: &mut Input) -> ModalResult<char, Error>
 where
     Input: StreamIsPartial + Stream + Compare<char>,
     Error: ParserError<Input>,
@@ -360,7 +362,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn alpha0<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn alpha0<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::ascii::alpha0.parse_next(input)
 /// # }
@@ -371,7 +373,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::alpha0;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 ///     alpha0.parse_next(input)
 /// }
 ///
@@ -390,7 +392,7 @@ where
 /// assert_eq!(alpha0::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alpha0<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn alpha0<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream,
     <Input as Stream>::Token: AsChar,
@@ -412,7 +414,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn alpha1<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn alpha1<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::ascii::alpha1.parse_next(input)
 /// # }
@@ -423,7 +425,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::alpha1;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 ///     alpha1.parse_next(input)
 /// }
 ///
@@ -442,7 +444,7 @@ where
 /// assert_eq!(alpha1::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alpha1<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn alpha1<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream,
     <Input as Stream>::Token: AsChar,
@@ -464,7 +466,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn digit0<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn digit0<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::ascii::digit0.parse_next(input)
 /// # }
@@ -475,7 +477,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::digit0;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 ///     digit0.parse_next(input)
 /// }
 ///
@@ -495,7 +497,7 @@ where
 /// assert_eq!(digit0::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn digit0<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn digit0<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream,
     <Input as Stream>::Token: AsChar,
@@ -517,7 +519,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn digit1<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn digit1<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::ascii::digit1.parse_next(input)
 /// # }
@@ -528,7 +530,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::digit1;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 ///     digit1.parse_next(input)
 /// }
 ///
@@ -554,7 +556,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::digit1;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<u32> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<u32> {
 ///   digit1.try_map(str::parse).parse_next(input)
 /// }
 ///
@@ -563,7 +565,7 @@ where
 /// assert!(parser.parse_peek("b").is_err());
 /// ```
 #[inline(always)]
-pub fn digit1<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn digit1<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream,
     <Input as Stream>::Token: AsChar,
@@ -585,7 +587,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn hex_digit0<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn hex_digit0<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::ascii::hex_digit0.parse_next(input)
 /// # }
@@ -596,7 +598,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::hex_digit0;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 ///     hex_digit0.parse_next(input)
 /// }
 ///
@@ -615,7 +617,7 @@ where
 /// assert_eq!(hex_digit0::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn hex_digit0<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn hex_digit0<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream,
     <Input as Stream>::Token: AsChar,
@@ -638,7 +640,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn hex_digit1<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn hex_digit1<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::ascii::hex_digit1.parse_next(input)
 /// # }
@@ -649,7 +651,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::hex_digit1;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 ///     hex_digit1.parse_next(input)
 /// }
 ///
@@ -668,7 +670,7 @@ where
 /// assert_eq!(hex_digit1::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn hex_digit1<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn hex_digit1<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream,
     <Input as Stream>::Token: AsChar,
@@ -690,7 +692,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn oct_digit0<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn oct_digit0<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::ascii::oct_digit0.parse_next(input)
 /// # }
@@ -701,7 +703,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::oct_digit0;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 ///     oct_digit0.parse_next(input)
 /// }
 ///
@@ -720,7 +722,7 @@ where
 /// assert_eq!(oct_digit0::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn oct_digit0<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn oct_digit0<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial,
     Input: Stream,
@@ -743,7 +745,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn oct_digit1<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn oct_digit1<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::ascii::oct_digit1.parse_next(input)
 /// # }
@@ -754,7 +756,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::oct_digit1;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 ///     oct_digit1.parse_next(input)
 /// }
 ///
@@ -773,7 +775,7 @@ where
 /// assert_eq!(oct_digit1::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn oct_digit1<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn oct_digit1<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream,
     <Input as Stream>::Token: AsChar,
@@ -795,7 +797,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn alphanumeric0<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn alphanumeric0<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::ascii::alphanumeric0.parse_next(input)
 /// # }
@@ -806,7 +808,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::alphanumeric0;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 ///     alphanumeric0.parse_next(input)
 /// }
 ///
@@ -825,7 +827,9 @@ where
 /// assert_eq!(alphanumeric0::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alphanumeric0<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn alphanumeric0<Input, Error>(
+    input: &mut Input,
+) -> ModalResult<<Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream,
     <Input as Stream>::Token: AsChar,
@@ -847,7 +851,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn alphanumeric1<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn alphanumeric1<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::ascii::alphanumeric1.parse_next(input)
 /// # }
@@ -858,7 +862,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::alphanumeric1;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 ///     alphanumeric1.parse_next(input)
 /// }
 ///
@@ -877,7 +881,9 @@ where
 /// assert_eq!(alphanumeric1::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn alphanumeric1<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn alphanumeric1<Input, Error>(
+    input: &mut Input,
+) -> ModalResult<<Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream,
     <Input as Stream>::Token: AsChar,
@@ -899,7 +905,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn space0<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn space0<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::ascii::space0.parse_next(input)
 /// # }
@@ -917,7 +923,7 @@ where
 /// assert_eq!(space0::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn space0<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn space0<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream,
     <Input as Stream>::Token: AsChar,
@@ -939,7 +945,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn space1<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn space1<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::ascii::space1.parse_next(input)
 /// # }
@@ -950,7 +956,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::space1;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 ///     space1.parse_next(input)
 /// }
 ///
@@ -969,7 +975,7 @@ where
 /// assert_eq!(space1::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn space1<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn space1<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream,
     <Input as Stream>::Token: AsChar,
@@ -991,7 +997,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn multispace0<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn multispace0<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::ascii::multispace0.parse_next(input)
 /// # }
@@ -1002,7 +1008,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::multispace0;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 ///     multispace0.parse_next(input)
 /// }
 ///
@@ -1021,7 +1027,7 @@ where
 /// assert_eq!(multispace0::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn multispace0<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn multispace0<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream,
     <Input as Stream>::Token: AsChar + Clone,
@@ -1043,7 +1049,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn multispace1<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn multispace1<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::ascii::multispace1.parse_next(input)
 /// # }
@@ -1054,7 +1060,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::ascii::multispace1;
-/// fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 ///     multispace1.parse_next(input)
 /// }
 ///
@@ -1073,7 +1079,7 @@ where
 /// assert_eq!(multispace1::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn multispace1<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn multispace1<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream,
     <Input as Stream>::Token: AsChar + Clone,
@@ -1093,7 +1099,7 @@ where
 /// Assuming you are parsing a `&str` [Stream] into a `u32`:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn dec_uint(input: &mut &str) -> PResult<u32>
+/// pub fn dec_uint(input: &mut &str) -> ModalResult<u32>
 /// # {
 /// #     winnow::ascii::dec_uint.parse_next(input)
 /// # }
@@ -1103,7 +1109,7 @@ where
 #[doc(alias = "u32")]
 #[doc(alias = "u64")]
 #[doc(alias = "u128")]
-pub fn dec_uint<Input, Output, Error>(input: &mut Input) -> PResult<Output, Error>
+pub fn dec_uint<Input, Output, Error>(input: &mut Input) -> ModalResult<Output, Error>
 where
     Input: StreamIsPartial + Stream,
     <Input as Stream>::Slice: AsBStr,
@@ -1178,7 +1184,7 @@ impl Uint for usize {
 /// Assuming you are parsing a `&str` [Stream] into an `i32`:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn dec_int(input: &mut &str) -> PResult<i32>
+/// pub fn dec_int(input: &mut &str) -> ModalResult<i32>
 /// # {
 /// #     winnow::ascii::dec_int.parse_next(input)
 /// # }
@@ -1188,7 +1194,7 @@ impl Uint for usize {
 #[doc(alias = "i32")]
 #[doc(alias = "i64")]
 #[doc(alias = "i128")]
-pub fn dec_int<Input, Output, Error>(input: &mut Input) -> PResult<Output, Error>
+pub fn dec_int<Input, Output, Error>(input: &mut Input) -> ModalResult<Output, Error>
 where
     Input: StreamIsPartial + Stream,
     <Input as Stream>::Slice: AsBStr,
@@ -1270,7 +1276,7 @@ impl Int for isize {
 /// Assuming you are parsing a `&str` [Stream] into a `u32`:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn hex_uint(input: &mut &str) -> PResult<u32>
+/// pub fn hex_uint(input: &mut &str) -> ModalResult<u32>
 /// # {
 /// #     winnow::ascii::hex_uint.parse_next(input)
 /// # }
@@ -1282,7 +1288,7 @@ impl Int for isize {
 /// # use winnow::prelude::*;
 /// use winnow::ascii::hex_uint;
 ///
-/// fn parser<'s>(s: &mut &'s [u8]) -> PResult<u32> {
+/// fn parser<'s>(s: &mut &'s [u8]) -> ModalResult<u32> {
 ///   hex_uint(s)
 /// }
 ///
@@ -1297,7 +1303,7 @@ impl Int for isize {
 /// # use winnow::Partial;
 /// use winnow::ascii::hex_uint;
 ///
-/// fn parser<'s>(s: &mut Partial<&'s [u8]>) -> PResult<u32> {
+/// fn parser<'s>(s: &mut Partial<&'s [u8]>) -> ModalResult<u32> {
 ///   hex_uint(s)
 /// }
 ///
@@ -1306,7 +1312,7 @@ impl Int for isize {
 /// assert!(parser.parse_peek(Partial::new(&b"ggg"[..])).is_err());
 /// ```
 #[inline]
-pub fn hex_uint<Input, Output, Error>(input: &mut Input) -> PResult<Output, Error>
+pub fn hex_uint<Input, Output, Error>(input: &mut Input) -> ModalResult<Output, Error>
 where
     Input: StreamIsPartial + Stream,
     <Input as Stream>::Token: AsChar,
@@ -1417,7 +1423,7 @@ impl HexUint for u128 {
 /// Assuming you are parsing a `&str` [Stream] into an `f64`:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn float(input: &mut &str) -> PResult<f64>
+/// pub fn float(input: &mut &str) -> ModalResult<f64>
 /// # {
 /// #     winnow::ascii::float.parse_next(input)
 /// # }
@@ -1430,7 +1436,7 @@ impl HexUint for u128 {
 /// # use winnow::error::Needed::Size;
 /// use winnow::ascii::float;
 ///
-/// fn parser<'s>(s: &mut &'s str) -> PResult<f64> {
+/// fn parser<'s>(s: &mut &'s str) -> ModalResult<f64> {
 ///   float(s)
 /// }
 ///
@@ -1447,7 +1453,7 @@ impl HexUint for u128 {
 /// # use winnow::Partial;
 /// use winnow::ascii::float;
 ///
-/// fn parser<'s>(s: &mut Partial<&'s str>) -> PResult<f64> {
+/// fn parser<'s>(s: &mut Partial<&'s str>) -> ModalResult<f64> {
 ///   float(s)
 /// }
 ///
@@ -1461,7 +1467,7 @@ impl HexUint for u128 {
 #[doc(alias = "f32")]
 #[doc(alias = "double")]
 #[allow(clippy::trait_duplication_in_bounds)] // HACK: clippy 1.64.0 bug
-pub fn float<Input, Output, Error>(input: &mut Input) -> PResult<Output, Error>
+pub fn float<Input, Output, Error>(input: &mut Input) -> ModalResult<Output, Error>
 where
     Input: StreamIsPartial + Stream + Compare<Caseless<&'static str>> + Compare<char> + AsBStr,
     <Input as Stream>::Slice: ParseSlice<Output>,
@@ -1478,7 +1484,9 @@ where
 }
 
 #[allow(clippy::trait_duplication_in_bounds)] // HACK: clippy 1.64.0 bug
-fn take_float_or_exceptions<I, E: ParserError<I>>(input: &mut I) -> PResult<<I as Stream>::Slice, E>
+fn take_float_or_exceptions<I, E: ParserError<I>>(
+    input: &mut I,
+) -> ModalResult<<I as Stream>::Slice, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -1498,7 +1506,7 @@ where
 }
 
 #[allow(clippy::trait_duplication_in_bounds)] // HACK: clippy 1.64.0 bug
-fn take_unsigned_float_or_exceptions<I, E: ParserError<I>>(input: &mut I) -> PResult<(), E>
+fn take_unsigned_float_or_exceptions<I, E: ParserError<I>>(input: &mut I) -> ModalResult<(), E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -1517,7 +1525,7 @@ where
 }
 
 #[allow(clippy::trait_duplication_in_bounds)] // HACK: clippy 1.64.0 bug
-fn take_exp<I, E: ParserError<I>>(input: &mut I) -> PResult<(), E>
+fn take_exp<I, E: ParserError<I>>(input: &mut I) -> ModalResult<(), E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -1566,7 +1574,7 @@ where
 /// use winnow::ascii::take_escaped;
 /// use winnow::token::one_of;
 ///
-/// fn esc<'i>(input: &mut &'i str) -> PResult<&'i str> {
+/// fn esc<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
 ///   take_escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_next(input)
 /// }
 ///
@@ -1583,7 +1591,7 @@ where
 /// use winnow::ascii::take_escaped;
 /// use winnow::token::one_of;
 ///
-/// fn esc<'i>(input: &mut Partial<&'i str>) -> PResult<&'i str> {
+/// fn esc<'i>(input: &mut Partial<&'i str>) -> ModalResult<&'i str> {
 ///   take_escaped(digit1, '\\', one_of(['"', 'n', '\\'])).parse_next(input)
 /// }
 ///
@@ -1643,7 +1651,7 @@ fn escaped_internal<I, Error, F, G, O1, O2, const PARTIAL: bool>(
     normal: &mut F,
     control_char: char,
     escapable: &mut G,
-) -> PResult<<I as Stream>::Slice, Error>
+) -> ModalResult<<I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -1719,7 +1727,7 @@ where
 /// use winnow::ascii::alpha1;
 /// use winnow::combinator::alt;
 ///
-/// fn parser<'s>(input: &mut &'s str) -> PResult<String> {
+/// fn parser<'s>(input: &mut &'s str) -> ModalResult<String> {
 ///   escaped_transform(
 ///     alpha1,
 ///     '\\',
@@ -1747,7 +1755,7 @@ where
 /// use winnow::ascii::alpha1;
 /// use winnow::combinator::alt;
 ///
-/// fn parser<'s>(input: &mut Partial<&'s str>) -> PResult<String> {
+/// fn parser<'s>(input: &mut Partial<&'s str>) -> ModalResult<String> {
 ///   escaped_transform(
 ///     alpha1,
 ///     '\\',
@@ -1799,7 +1807,7 @@ fn escaped_transform_internal<I, Error, F, G, Output, const PARTIAL: bool>(
     normal: &mut F,
     control_char: char,
     transform: &mut G,
-) -> PResult<Output, Error>
+) -> ModalResult<Output, Error>
 where
     I: StreamIsPartial,
     I: Stream,

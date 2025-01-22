@@ -5,7 +5,7 @@ use crate::combinator::impls;
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
 use crate::error::FromRecoverableError;
-use crate::error::{AddContext, FromExternalError, PResult, ParseError, ParserError};
+use crate::error::{AddContext, FromExternalError, ModalResult, ParseError, ParserError};
 use crate::stream::{Compare, Location, ParseSlice, Stream, StreamIsPartial};
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
@@ -17,7 +17,7 @@ use crate::stream::{Recover, Recoverable};
 /// ```rust
 /// use winnow::prelude::*;
 ///
-/// fn empty(input: &mut &str) -> PResult<()> {
+/// fn empty(input: &mut &str) -> ModalResult<()> {
 ///     let output = ();
 ///     Ok(output)
 /// }
@@ -30,7 +30,7 @@ use crate::stream::{Recover, Recoverable};
 /// ```rust
 /// use winnow::prelude::*;
 ///
-/// fn empty<O: Clone>(output: O) -> impl FnMut(&mut &str) -> PResult<O> {
+/// fn empty<O: Clone>(output: O) -> impl FnMut(&mut &str) -> ModalResult<O> {
 ///     move |input: &mut &str| {
 ///         let output = output.clone();
 ///         Ok(output)
@@ -78,7 +78,7 @@ pub trait Parser<I, O, E> {
     /// This includes advancing the [`Stream`] to the next location.
     ///
     /// On error, `input` will be left pointing at the error location.
-    fn parse_next(&mut self, input: &mut I) -> PResult<O, E>;
+    fn parse_next(&mut self, input: &mut I) -> ModalResult<O, E>;
 
     /// Take tokens from the [`Stream`], turning it into the output
     ///
@@ -95,7 +95,7 @@ pub trait Parser<I, O, E> {
     ///
     /// </div>
     #[inline(always)]
-    fn parse_peek(&mut self, mut input: I) -> PResult<(I, O), E> {
+    fn parse_peek(&mut self, mut input: I) -> ModalResult<(I, O), E> {
         match self.parse_next(&mut input) {
             Ok(o) => Ok((input, o)),
             Err(err) => Err(err),
@@ -168,7 +168,7 @@ pub trait Parser<I, O, E> {
     /// use winnow::ascii::alpha1;
     /// # fn main() {
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<i32> {
+    /// fn parser<'i>(input: &mut &'i str) -> ModalResult<i32> {
     ///     alpha1.value(1234).parse_next(input)
     /// }
     ///
@@ -202,7 +202,7 @@ pub trait Parser<I, O, E> {
     /// use winnow::ascii::alpha1;
     /// # fn main() {
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<u32> {
+    /// fn parser<'i>(input: &mut &'i str) -> ModalResult<u32> {
     ///     alpha1.default_value().parse_next(input)
     /// }
     ///
@@ -235,7 +235,7 @@ pub trait Parser<I, O, E> {
     /// use winnow::ascii::alpha1;
     /// # fn main() {
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<()> {
+    /// fn parser<'i>(input: &mut &'i str) -> ModalResult<()> {
     ///     alpha1.void().parse_next(input)
     /// }
     ///
@@ -266,14 +266,14 @@ pub trait Parser<I, O, E> {
     /// use winnow::ascii::alpha1;
     /// # fn main() {
     ///
-    /// fn parser1<'s>(i: &mut &'s str) -> PResult<&'s str> {
+    /// fn parser1<'s>(i: &mut &'s str) -> ModalResult<&'s str> {
     ///   alpha1(i)
     /// }
     ///
     /// let mut parser2 = parser1.output_into();
     ///
     /// // the parser converts the &str output of the child parser into a Vec<u8>
-    /// let bytes: PResult<(_, Vec<u8>), _> = parser2.parse_peek("abcd");
+    /// let bytes: ModalResult<(_, Vec<u8>), _> = parser2.parse_peek("abcd");
     /// assert_eq!(bytes, Ok(("", vec![97, 98, 99, 100])));
     /// # }
     /// ```
@@ -303,7 +303,7 @@ pub trait Parser<I, O, E> {
     /// use winnow::combinator::separated_pair;
     /// # fn main() {
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
+    /// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
     ///     separated_pair(alpha1, ',', alpha1).take().parse_next(input)
     /// }
     ///
@@ -362,7 +362,7 @@ pub trait Parser<I, O, E> {
     /// use winnow::token::literal;
     /// use winnow::combinator::separated_pair;
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<(bool, &'i str)> {
+    /// fn parser<'i>(input: &mut &'i str) -> ModalResult<(bool, &'i str)> {
     ///     separated_pair(alpha1, ',', alpha1).value(true).with_taken().parse_next(input)
     /// }
     ///
@@ -413,7 +413,7 @@ pub trait Parser<I, O, E> {
     /// use winnow::ascii::alpha1;
     /// use winnow::combinator::separated_pair;
     ///
-    /// fn parser<'i>(input: &mut LocatingSlice<&'i str>) -> PResult<(Range<usize>, Range<usize>)> {
+    /// fn parser<'i>(input: &mut LocatingSlice<&'i str>) -> ModalResult<(Range<usize>, Range<usize>)> {
     ///     separated_pair(alpha1.span(), ',', alpha1.span()).parse_next(input)
     /// }
     ///
@@ -455,7 +455,7 @@ pub trait Parser<I, O, E> {
     /// use winnow::token::literal;
     /// use winnow::combinator::separated_pair;
     ///
-    /// fn parser<'i>(input: &mut LocatingSlice<&'i str>) -> PResult<((usize, Range<usize>), (usize, Range<usize>))> {
+    /// fn parser<'i>(input: &mut LocatingSlice<&'i str>) -> ModalResult<((usize, Range<usize>), (usize, Range<usize>))> {
     ///     separated_pair(alpha1.value(1).with_span(), ',', alpha1.value(2).with_span()).parse_next(input)
     /// }
     ///
@@ -486,7 +486,7 @@ pub trait Parser<I, O, E> {
     /// # use winnow::ascii::digit1;
     /// # fn main() {
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<usize> {
+    /// fn parser<'i>(input: &mut &'i str) -> ModalResult<usize> {
     ///     digit1.map(|s: &str| s.len()).parse_next(input)
     /// }
     ///
@@ -523,7 +523,7 @@ pub trait Parser<I, O, E> {
     /// use winnow::ascii::digit1;
     /// # fn main() {
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<u8> {
+    /// fn parser<'i>(input: &mut &'i str) -> ModalResult<u8> {
     ///     digit1.try_map(|s: &str| s.parse::<u8>()).parse_next(input)
     /// }
     ///
@@ -566,7 +566,7 @@ pub trait Parser<I, O, E> {
     /// use winnow::ascii::digit1;
     /// # fn main() {
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<u8> {
+    /// fn parser<'i>(input: &mut &'i str) -> ModalResult<u8> {
     ///     digit1.verify_map(|s: &str| s.parse::<u8>().ok()).parse_next(input)
     /// }
     ///
@@ -606,11 +606,11 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, PResult, Parser};
+    /// # use winnow::{error::ErrMode,error::ErrorKind, ModalResult, Parser};
     /// use winnow::token::take;
     /// use winnow::binary::u8;
     ///
-    /// fn length_take<'s>(input: &mut &'s [u8]) -> PResult<&'s [u8]> {
+    /// fn length_take<'s>(input: &mut &'s [u8]) -> ModalResult<&'s [u8]> {
     ///     u8.flat_map(take).parse_next(input)
     /// }
     ///
@@ -620,11 +620,11 @@ pub trait Parser<I, O, E> {
     ///
     /// which is the same as
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, PResult, Parser};
+    /// # use winnow::{error::ErrMode,error::ErrorKind, ModalResult, Parser};
     /// use winnow::token::take;
     /// use winnow::binary::u8;
     ///
-    /// fn length_take<'s>(input: &mut &'s [u8]) -> PResult<&'s [u8]> {
+    /// fn length_take<'s>(input: &mut &'s [u8]) -> ModalResult<&'s [u8]> {
     ///     let length = u8.parse_next(input)?;
     ///     let data = take(length).parse_next(input)?;
     ///     Ok(data)
@@ -662,7 +662,7 @@ pub trait Parser<I, O, E> {
     /// use winnow::token::take;
     /// # fn main() {
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
+    /// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
     ///     take(5u8).and_then(digit1).parse_next(input)
     /// }
     ///
@@ -698,7 +698,7 @@ pub trait Parser<I, O, E> {
     /// use winnow::{error::ErrMode,error::ErrorKind, Parser};
     /// use winnow::ascii::digit1;
     ///
-    /// fn parser<'s>(input: &mut &'s str) -> PResult<u64> {
+    /// fn parser<'s>(input: &mut &'s str) -> ModalResult<u64> {
     ///     digit1.parse_to().parse_next(input)
     /// }
     ///
@@ -739,7 +739,7 @@ pub trait Parser<I, O, E> {
     /// # use winnow::prelude::*;
     /// # fn main() {
     ///
-    /// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
+    /// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
     ///     alpha1.verify(|s: &str| s.len() == 4).parse_next(input)
     /// }
     ///
@@ -802,7 +802,7 @@ pub trait Parser<I, O, E> {
     /// # use winnow::prelude::*;
     /// # fn main() {
     ///
-    /// fn parser<'i>(input: &mut Partial<&'i str>) -> PResult<&'i str, InputError<Partial<&'i str>>> {
+    /// fn parser<'i>(input: &mut Partial<&'i str>) -> ModalResult<&'i str, InputError<Partial<&'i str>>> {
     ///     take(5u8).complete_err().parse_next(input)
     /// }
     ///
@@ -893,11 +893,11 @@ pub trait Parser<I, O, E> {
 
 impl<I, O, E, F> Parser<I, O, E> for F
 where
-    F: FnMut(&mut I) -> PResult<O, E>,
+    F: FnMut(&mut I) -> ModalResult<O, E>,
     I: Stream,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<O, E> {
         self(i)
     }
 }
@@ -909,7 +909,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{ErrorKind, ContextError}};
-/// fn parser<'s>(i: &mut &'s [u8]) -> PResult<u8>  {
+/// fn parser<'s>(i: &mut &'s [u8]) -> ModalResult<u8>  {
 ///     b'a'.parse_next(i)
 /// }
 /// assert_eq!(parser.parse_peek(&b"abc"[..]), Ok((&b"bc"[..], b'a')));
@@ -925,7 +925,7 @@ where
     E: ParserError<I>,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> PResult<u8, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<u8, E> {
         crate::token::literal(*self).value(*self).parse_next(i)
     }
 }
@@ -937,7 +937,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{ErrorKind, ContextError}};
-/// fn parser<'s>(i: &mut &'s str) -> PResult<char> {
+/// fn parser<'s>(i: &mut &'s str) -> ModalResult<char> {
 ///     'a'.parse_next(i)
 /// }
 /// assert_eq!(parser.parse_peek("abc"), Ok(("bc", 'a')));
@@ -953,7 +953,7 @@ where
     E: ParserError<I>,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> PResult<char, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<char, E> {
         crate::token::literal(*self).value(*self).parse_next(i)
     }
 }
@@ -967,7 +967,7 @@ where
 /// # use winnow::combinator::alt;
 /// # use winnow::token::take;
 ///
-/// fn parser<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8]> {
+/// fn parser<'s>(s: &mut &'s [u8]) -> ModalResult<&'s [u8]> {
 ///   alt((&"Hello"[..], take(5usize))).parse_next(s)
 /// }
 ///
@@ -982,7 +982,7 @@ where
     I: Stream,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> PResult<<I as Stream>::Slice, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<<I as Stream>::Slice, E> {
         crate::token::literal(*self).parse_next(i)
     }
 }
@@ -997,7 +997,7 @@ where
 /// # use winnow::token::take;
 /// use winnow::ascii::Caseless;
 ///
-/// fn parser<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8]> {
+/// fn parser<'s>(s: &mut &'s [u8]) -> ModalResult<&'s [u8]> {
 ///   alt((Caseless(&"hello"[..]), take(5usize))).parse_next(s)
 /// }
 ///
@@ -1014,7 +1014,7 @@ where
     I: Stream,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> PResult<<I as Stream>::Slice, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<<I as Stream>::Slice, E> {
         crate::token::literal(*self).parse_next(i)
     }
 }
@@ -1028,7 +1028,7 @@ where
 /// # use winnow::combinator::alt;
 /// # use winnow::token::take;
 ///
-/// fn parser<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8]> {
+/// fn parser<'s>(s: &mut &'s [u8]) -> ModalResult<&'s [u8]> {
 ///   alt((b"Hello", take(5usize))).parse_next(s)
 /// }
 ///
@@ -1043,7 +1043,7 @@ where
     I: Stream,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> PResult<<I as Stream>::Slice, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<<I as Stream>::Slice, E> {
         crate::token::literal(*self).parse_next(i)
     }
 }
@@ -1058,7 +1058,7 @@ where
 /// # use winnow::token::take;
 /// use winnow::ascii::Caseless;
 ///
-/// fn parser<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8]> {
+/// fn parser<'s>(s: &mut &'s [u8]) -> ModalResult<&'s [u8]> {
 ///   alt((Caseless(b"hello"), take(5usize))).parse_next(s)
 /// }
 ///
@@ -1076,7 +1076,7 @@ where
     I: Stream,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> PResult<<I as Stream>::Slice, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<<I as Stream>::Slice, E> {
         crate::token::literal(*self).parse_next(i)
     }
 }
@@ -1090,7 +1090,7 @@ where
 /// # use winnow::combinator::alt;
 /// # use winnow::token::take;
 ///
-/// fn parser<'s>(s: &mut &'s str) -> PResult<&'s str> {
+/// fn parser<'s>(s: &mut &'s str) -> ModalResult<&'s str> {
 ///   alt(("Hello", take(5usize))).parse_next(s)
 /// }
 ///
@@ -1105,7 +1105,7 @@ where
     I: Stream,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> PResult<<I as Stream>::Slice, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<<I as Stream>::Slice, E> {
         crate::token::literal(*self).parse_next(i)
     }
 }
@@ -1120,7 +1120,7 @@ where
 /// # use winnow::token::take;
 /// # use winnow::ascii::Caseless;
 ///
-/// fn parser<'s>(s: &mut &'s str) -> PResult<&'s str> {
+/// fn parser<'s>(s: &mut &'s str) -> ModalResult<&'s str> {
 ///   alt((Caseless("hello"), take(5usize))).parse_next(s)
 /// }
 ///
@@ -1137,14 +1137,14 @@ where
     I: Stream,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> PResult<<I as Stream>::Slice, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<<I as Stream>::Slice, E> {
         crate::token::literal(*self).parse_next(i)
     }
 }
 
 impl<I: Stream, E: ParserError<I>> Parser<I, (), E> for () {
     #[inline(always)]
-    fn parse_next(&mut self, _i: &mut I) -> PResult<(), E> {
+    fn parse_next(&mut self, _i: &mut I) -> ModalResult<(), E> {
         Ok(())
     }
 }
@@ -1157,7 +1157,7 @@ macro_rules! impl_parser_for_tuple {
       $($parser: Parser<I, $output, E>),+
     {
       #[inline(always)]
-      fn parse_next(&mut self, i: &mut I) -> PResult<($($output),+,), E> {
+      fn parse_next(&mut self, i: &mut I) -> ModalResult<($($output),+,), E> {
         $(let $output = self.$index.parse_next(i)?;)+
 
         Ok(($($output),+,))
@@ -1210,7 +1210,7 @@ use crate::lib::std::boxed::Box;
 #[cfg(feature = "alloc")]
 impl<I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + '_> {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<O, E> {
         (**self).parse_next(i)
     }
 }
@@ -1287,7 +1287,7 @@ where
 #[allow(deprecated)]
 pub fn unpeek<'a, I, O, E>(
     mut peek: impl FnMut(I) -> crate::error::IResult<I, O, E> + 'a,
-) -> impl FnMut(&mut I) -> PResult<O, E>
+) -> impl FnMut(&mut I) -> ModalResult<O, E>
 where
     I: Clone,
 {
@@ -1326,8 +1326,8 @@ mod tests {
     #[test]
     #[cfg(target_pointer_width = "64")]
     fn size_test() {
-        assert_size!(PResult<&[u8], (&[u8], u32)>, 40);
-        assert_size!(PResult<&str, u32>, 40);
+        assert_size!(ModalResult<&[u8], (&[u8], u32)>, 40);
+        assert_size!(ModalResult<&str, u32>, 40);
         assert_size!(Needed, 8);
         assert_size!(ErrMode<u32>, 16);
         assert_size!(ErrorKind, 1);

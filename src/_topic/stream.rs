@@ -15,12 +15,12 @@
 //! Let's assume we have an input type we'll call `MyStream`.
 //! `MyStream` is a sequence of `MyItem` type.
 //!
-//! The goal is to define parsers with this signature: `&mut MyStream -> PResult<Output>`.
+//! The goal is to define parsers with this signature: `&mut MyStream -> ModalResult<Output>`.
 //! ```rust
 //! # use winnow::prelude::*;
 //! # type MyStream<'i> = &'i str;
 //! # type Output<'i> = &'i str;
-//! fn parser<'s>(i: &mut MyStream<'s>) -> PResult<Output<'s>> {
+//! fn parser<'s>(i: &mut MyStream<'s>) -> ModalResult<Output<'s>> {
 //!     "test".parse_next(i)
 //! }
 //! ```

@@ -22,7 +22,7 @@ use crate::Parser;
 /// # use winnow::prelude::*;
 /// use winnow::combinator::trace;
 ///
-/// fn short_alpha<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8]> {
+/// fn short_alpha<'s>(s: &mut &'s [u8]) -> ModalResult<&'s [u8]> {
 ///   trace("short_alpha",
 ///     take_while(3..=6, AsChar::is_alpha)
 ///   ).parse_next(s)

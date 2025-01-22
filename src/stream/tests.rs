@@ -6,7 +6,7 @@ use crate::error::{ErrorKind, InputError};
 use crate::token::literal;
 use crate::{
     combinator::{separated, separated_pair},
-    PResult, Parser,
+    ModalResult, Parser,
 };
 
 use super::*;
@@ -15,7 +15,7 @@ use super::*;
 #[test]
 fn test_fxhashmap_compiles() {
     let input = "a=b";
-    fn pair(i: &mut &str) -> PResult<(char, char)> {
+    fn pair(i: &mut &str) -> ModalResult<(char, char)> {
         let out = separated_pair('a', '=', 'b').parse_next(i)?;
         Ok(out)
     }

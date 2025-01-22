@@ -29,7 +29,7 @@ pub(crate) type Stream<'i> = Partial<&'i str>;
 
 pub(crate) fn ndjson<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
-) -> PResult<Option<JsonValue>, E> {
+) -> ModalResult<Option<JsonValue>, E> {
     alt((
         terminated(delimited(ws, json_value, ws), line_ending).map(Some),
         line_ending.value(None),
@@ -43,7 +43,7 @@ pub(crate) fn ndjson<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, Str
 /// one of them succeeds
 fn json_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
-) -> PResult<JsonValue, E> {
+) -> ModalResult<JsonValue, E> {
     // `alt` combines the each value parser. It returns the result of the first
     // successful parser, or an error
     alt((
@@ -60,7 +60,7 @@ fn json_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext
 /// `literal(string)` generates a parser that takes the argument string.
 ///
 /// This also shows returning a sub-slice of the original input
-fn null<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<&'i str, E> {
+fn null<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult<&'i str, E> {
     // This is a parser that returns `"null"` if it sees the string "null", and
     // an error otherwise
     "null".parse_next(input)
@@ -68,7 +68,7 @@ fn null<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<&'i s
 
 /// We can combine `tag` with other functions, like `value` which returns a given constant value on
 /// success.
-fn boolean<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<bool, E> {
+fn boolean<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult<bool, E> {
     // This is a parser that returns `true` if it sees the string "true", and
     // an error otherwise
     let parse_true = "true".value(true);
@@ -84,7 +84,7 @@ fn boolean<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<bo
 /// character, before the string (using `preceded`) and after the string (using `terminated`).
 fn string<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
-) -> PResult<String, E> {
+) -> ModalResult<String, E> {
     preceded(
         '\"',
         // `cut_err` transforms an `ErrMode::Backtrack(e)` to `ErrMode::Cut(e)`, signaling to
@@ -107,7 +107,7 @@ fn string<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 
 /// You can mix the above declarative parsing with an imperative style to handle more unique cases,
 /// like escaping
-fn character<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<char, E> {
+fn character<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult<char, E> {
     let c = none_of('"').parse_next(input)?;
     if c == '\\' {
         alt((
@@ -130,7 +130,7 @@ fn character<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<
     }
 }
 
-fn unicode_escape<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<char, E> {
+fn unicode_escape<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult<char, E> {
     alt((
         // Not a surrogate
         u16_hex
@@ -152,7 +152,7 @@ fn unicode_escape<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PRe
     .parse_next(input)
 }
 
-fn u16_hex<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<u16, E> {
+fn u16_hex<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult<u16, E> {
     take(4usize)
         .verify_map(|s| u16::from_str_radix(s, 16).ok())
         .parse_next(input)
@@ -164,7 +164,7 @@ fn u16_hex<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<u1
 /// combinator (cf `examples/iterator.rs`)
 fn array<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
-) -> PResult<Vec<JsonValue>, E> {
+) -> ModalResult<Vec<JsonValue>, E> {
     preceded(
         ('[', ws),
         cut_err(terminated(
@@ -178,7 +178,7 @@ fn array<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 
 fn object<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
-) -> PResult<HashMap<String, JsonValue>, E> {
+) -> ModalResult<HashMap<String, JsonValue>, E> {
     preceded(
         ('{', ws),
         cut_err(terminated(
@@ -192,14 +192,14 @@ fn object<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 
 fn key_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
-) -> PResult<(String, JsonValue), E> {
+) -> ModalResult<(String, JsonValue), E> {
     separated_pair(string, cut_err((ws, ':', ws)), json_value).parse_next(input)
 }
 
 /// Parser combinators are constructed from the bottom up:
 /// first we write parsers for the smallest elements (here a space character),
 /// then we'll combine them in larger parsers
-fn ws<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> PResult<&'i str, E> {
+fn ws<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult<&'i str, E> {
     // Combinators like `take_while` return a function. That function is the
     // parser,to which we can pass the input
     take_while(0.., WS).parse_next(input)

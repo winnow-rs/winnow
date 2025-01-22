@@ -8,7 +8,7 @@ use crate::combinator::trace;
 use crate::error::{ErrMode, ErrorConvert, ErrorKind, Needed, ParserError};
 use crate::lib::std::ops::{AddAssign, Div, Shl, Shr};
 use crate::stream::{Stream, StreamIsPartial, ToUsize};
-use crate::{PResult, Parser};
+use crate::{ModalResult, Parser};
 
 /// Number of bits in a byte
 const BYTE: usize = u8::BITS as usize;
@@ -29,7 +29,7 @@ const BYTE: usize = u8::BITS as usize;
 ///     Bytes::new(b)
 /// }
 ///
-/// fn parse(input: &mut Stream<'_>) -> PResult<(u8, u8)> {
+/// fn parse(input: &mut Stream<'_>) -> ModalResult<(u8, u8)> {
 ///     bits::<_, _, ContextError, _, _>((take(4usize), take(8usize))).parse_next(input)
 /// }
 ///
@@ -98,7 +98,7 @@ where
 ///     Bytes::new(b)
 /// }
 ///
-/// fn parse<'i>(input: &mut Stream<'i>) -> PResult<(u8, u8, &'i [u8])> {
+/// fn parse<'i>(input: &mut Stream<'i>) -> ModalResult<(u8, u8, &'i [u8])> {
 ///   bits::<_, _, ContextError, _, _>((
 ///     take(4usize),
 ///     take(8usize),
@@ -204,7 +204,7 @@ where
 fn take_<I, O, E: ParserError<(I, usize)>, const PARTIAL: bool>(
     bit_input: &mut (I, usize),
     count: usize,
-) -> PResult<O, E>
+) -> ModalResult<O, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8> + Clone,
@@ -288,7 +288,7 @@ where
 /// /// Compare the lowest `count` bits of `input` against the lowest `count` bits of `pattern`.
 /// /// Return Ok and the matching section of `input` if there's a match.
 /// /// Return Err if there's no match.
-/// fn parser(bits: u8, count: u8, input: &mut (Stream<'_>, usize)) -> PResult<u8> {
+/// fn parser(bits: u8, count: u8, input: &mut (Stream<'_>, usize)) -> ModalResult<u8> {
 ///     pattern(bits, count).parse_next(input)
 /// }
 ///
@@ -350,7 +350,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;;
 /// # use winnow::error::ContextError;
-/// pub fn bool(input: &mut (&[u8], usize)) -> PResult<bool>
+/// pub fn bool(input: &mut (&[u8], usize)) -> ModalResult<bool>
 /// # {
 /// #     winnow::binary::bits::bool.parse_next(input)
 /// # }
@@ -370,7 +370,7 @@ where
 ///     Bytes::new(b)
 /// }
 ///
-/// fn parse(input: &mut (Stream<'_>, usize)) -> PResult<bool> {
+/// fn parse(input: &mut (Stream<'_>, usize)) -> ModalResult<bool> {
 ///     bool.parse_next(input)
 /// }
 ///
@@ -380,7 +380,7 @@ where
 #[doc(alias = "any")]
 pub fn bool<Input, Error: ParserError<(Input, usize)>>(
     input: &mut (Input, usize),
-) -> PResult<bool, Error>
+) -> ModalResult<bool, Error>
 where
     Input: Stream<Token = u8> + StreamIsPartial + Clone,
 {

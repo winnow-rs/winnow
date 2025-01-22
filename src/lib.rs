@@ -133,7 +133,7 @@ pub mod _tutorial;
 /// ```rust
 /// use winnow::prelude::*;
 ///
-/// fn parse_data(input: &mut &str) -> PResult<u64> {
+/// fn parse_data(input: &mut &str) -> ModalResult<u64> {
 ///     // ...
 /// #   winnow::ascii::dec_uint(input)
 /// }
@@ -150,6 +150,7 @@ pub mod prelude {
     pub use crate::stream::Stream as _;
     pub use crate::stream::StreamIsPartial as _;
     pub use crate::ModalResult;
+    #[allow(deprecated)]
     pub use crate::PResult;
     pub use crate::Parser;
     #[cfg(feature = "unstable-recover")]
@@ -161,6 +162,7 @@ pub mod prelude {
 }
 
 pub use error::ModalResult;
+#[allow(deprecated)]
 pub use error::PResult;
 pub use parser::*;
 pub use stream::BStr;

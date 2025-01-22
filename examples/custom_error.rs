@@ -48,7 +48,7 @@ impl<I: Stream + Clone, E: std::error::Error + Send + Sync + 'static> FromExtern
     }
 }
 
-pub fn parse<'s>(_input: &mut &'s str) -> PResult<&'s str, CustomError<&'s str>> {
+pub fn parse<'s>(_input: &mut &'s str) -> ModalResult<&'s str, CustomError<&'s str>> {
     Err(ErrMode::Backtrack(CustomError::MyError))
 }
 

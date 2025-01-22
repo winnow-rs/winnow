@@ -17,7 +17,7 @@ struct Range {
     end: char,
 }
 
-pub(crate) fn take_char(input: &mut &[u8]) -> PResult<char> {
+pub(crate) fn take_char(input: &mut &[u8]) -> ModalResult<char> {
     if !input.is_empty() {
         Ok(input.next_token().unwrap() as char)
     } else {
@@ -119,7 +119,7 @@ fn usize_length_bytes_issue() {
     use winnow::binary::be_u16;
     use winnow::binary::length_take;
     #[allow(clippy::type_complexity)]
-    let _: PResult<(Partial<&[u8]>, &[u8])> =
+    let _: ModalResult<(Partial<&[u8]>, &[u8])> =
         length_take(be_u16).parse_peek(Partial::new(b"012346"));
 }
 

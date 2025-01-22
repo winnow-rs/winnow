@@ -8,7 +8,7 @@ use crate::error::ParserError;
 use crate::stream::Accumulate;
 use crate::stream::Range;
 use crate::stream::Stream;
-use crate::PResult;
+use crate::ModalResult;
 use crate::Parser;
 
 /// [`Accumulate`] the output of a parser into a container, like `Vec`
@@ -37,7 +37,7 @@ use crate::Parser;
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
 ///
-/// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
+/// fn parser<'i>(s: &mut &'i str) -> ModalResult<Vec<&'i str>> {
 ///   repeat(0.., "abc").parse_next(s)
 /// }
 ///
@@ -55,7 +55,7 @@ use crate::Parser;
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
 ///
-/// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
+/// fn parser<'i>(s: &mut &'i str) -> ModalResult<Vec<&'i str>> {
 ///   repeat(1.., "abc").parse_next(s)
 /// }
 ///
@@ -73,7 +73,7 @@ use crate::Parser;
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
 ///
-/// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
+/// fn parser<'i>(s: &mut &'i str) -> ModalResult<Vec<&'i str>> {
 ///   repeat(2, "abc").parse_next(s)
 /// }
 ///
@@ -92,7 +92,7 @@ use crate::Parser;
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
 ///
-/// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
+/// fn parser<'i>(s: &mut &'i str) -> ModalResult<Vec<&'i str>> {
 ///   repeat(0..=2, "abc").parse_next(s)
 /// }
 ///
@@ -181,7 +181,7 @@ where
     /// # use winnow::prelude::*;
     /// use winnow::combinator::repeat;
     ///
-    /// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
+    /// fn parser<'i>(s: &mut &'i str) -> ModalResult<Vec<&'i str>> {
     ///   repeat(
     ///     0..,
     ///     "abc"
@@ -206,7 +206,7 @@ where
     /// # use winnow::prelude::*;
     /// use winnow::combinator::repeat;
     ///
-    /// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
+    /// fn parser<'i>(s: &mut &'i str) -> ModalResult<Vec<&'i str>> {
     ///   repeat(
     ///     1..,
     ///     "abc",
@@ -231,7 +231,7 @@ where
     /// # use winnow::prelude::*;
     /// use winnow::combinator::repeat;
     ///
-    /// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
+    /// fn parser<'i>(s: &mut &'i str) -> ModalResult<Vec<&'i str>> {
     ///   repeat(
     ///     0..=2,
     ///     "abc",
@@ -312,7 +312,7 @@ where
     /// use winnow::combinator::repeat;
     /// use std::collections::HashSet;
     ///
-    /// fn parser<'i>(s: &mut &'i str) -> PResult<HashSet<&'i str>> {
+    /// fn parser<'i>(s: &mut &'i str) -> ModalResult<HashSet<&'i str>> {
     ///   repeat(
     ///     0..,
     ///     "abc"
@@ -389,7 +389,7 @@ where
     /// use std::io::Write;
     /// use std::io::Error;
     ///
-    /// fn parser(s: &mut &str) -> PResult<Vec<u8>> {
+    /// fn parser(s: &mut &str) -> ModalResult<Vec<u8>> {
     ///   repeat(
     ///     0..,
     ///     "abc"
@@ -442,7 +442,7 @@ where
     E: ParserError<I>,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> PResult<C, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<C, E> {
         let Range {
             start_inclusive,
             end_inclusive,
@@ -459,7 +459,7 @@ where
     }
 }
 
-fn repeat0_<I, O, C, E, F>(f: &mut F, i: &mut I) -> PResult<C, E>
+fn repeat0_<I, O, C, E, F>(f: &mut F, i: &mut I) -> ModalResult<C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -488,7 +488,7 @@ where
     }
 }
 
-fn repeat1_<I, O, C, E, F>(f: &mut F, i: &mut I) -> PResult<C, E>
+fn repeat1_<I, O, C, E, F>(f: &mut F, i: &mut I) -> ModalResult<C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -525,7 +525,7 @@ where
     }
 }
 
-fn repeat_n_<I, O, C, E, F>(count: usize, f: &mut F, i: &mut I) -> PResult<C, E>
+fn repeat_n_<I, O, C, E, F>(count: usize, f: &mut F, i: &mut I) -> ModalResult<C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -555,7 +555,12 @@ where
     Ok(res)
 }
 
-fn repeat_m_n_<I, O, C, E, F>(min: usize, max: usize, parse: &mut F, input: &mut I) -> PResult<C, E>
+fn repeat_m_n_<I, O, C, E, F>(
+    min: usize,
+    max: usize,
+    parse: &mut F,
+    input: &mut I,
+) -> ModalResult<C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -629,7 +634,7 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat_till;
 ///
-/// fn parser<'i>(s: &mut &'i str) -> PResult<(Vec<&'i str>, &'i str)> {
+/// fn parser<'i>(s: &mut &'i str) -> ModalResult<(Vec<&'i str>, &'i str)> {
 ///   repeat_till(0.., "abc", "end").parse_next(s)
 /// };
 ///
@@ -671,7 +676,7 @@ where
     })
 }
 
-fn repeat_till0_<I, O, C, P, E, F, G>(f: &mut F, g: &mut G, i: &mut I) -> PResult<(C, P), E>
+fn repeat_till0_<I, O, C, P, E, F, G>(f: &mut F, g: &mut G, i: &mut I) -> ModalResult<(C, P), E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -710,7 +715,7 @@ fn repeat_till_m_n_<I, O, C, P, E, F, G>(
     f: &mut F,
     g: &mut G,
     i: &mut I,
-) -> PResult<(C, P), E>
+) -> ModalResult<(C, P), E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -794,7 +799,7 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
 ///
-/// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
+/// fn parser<'i>(s: &mut &'i str) -> ModalResult<Vec<&'i str>> {
 ///   separated(0.., "abc", "|").parse_next(s)
 /// }
 ///
@@ -813,7 +818,7 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
 ///
-/// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
+/// fn parser<'i>(s: &mut &'i str) -> ModalResult<Vec<&'i str>> {
 ///   separated(1.., "abc", "|").parse_next(s)
 /// }
 ///
@@ -832,7 +837,7 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
 ///
-/// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
+/// fn parser<'i>(s: &mut &'i str) -> ModalResult<Vec<&'i str>> {
 ///   separated(2, "abc", "|").parse_next(s)
 /// }
 ///
@@ -851,7 +856,7 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
 ///
-/// fn parser<'i>(s: &mut &'i str) -> PResult<Vec<&'i str>> {
+/// fn parser<'i>(s: &mut &'i str) -> ModalResult<Vec<&'i str>> {
 ///   separated(0..=2, "abc", "|").parse_next(s)
 /// }
 ///
@@ -906,7 +911,7 @@ fn separated0_<I, O, C, O2, E, P, S>(
     parser: &mut P,
     separator: &mut S,
     input: &mut I,
-) -> PResult<C, E>
+) -> ModalResult<C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -965,7 +970,7 @@ fn separated1_<I, O, C, O2, E, P, S>(
     parser: &mut P,
     separator: &mut S,
     input: &mut I,
-) -> PResult<C, E>
+) -> ModalResult<C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -1021,7 +1026,7 @@ fn separated_n_<I, O, C, O2, E, P, S>(
     parser: &mut P,
     separator: &mut S,
     input: &mut I,
-) -> PResult<C, E>
+) -> ModalResult<C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -1082,7 +1087,7 @@ fn separated_m_n_<I, O, C, O2, E, P, S>(
     parser: &mut P,
     separator: &mut S,
     input: &mut I,
-) -> PResult<C, E>
+) -> ModalResult<C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -1187,7 +1192,7 @@ where
 /// use winnow::combinator::separated_foldl1;
 /// use winnow::ascii::dec_int;
 ///
-/// fn parser(s: &mut &str) -> PResult<i32> {
+/// fn parser(s: &mut &str) -> ModalResult<i32> {
 ///   separated_foldl1(dec_int, "-", |l, _, r| l - r).parse_next(s)
 /// }
 ///
@@ -1254,7 +1259,7 @@ where
 /// use winnow::combinator::separated_foldr1;
 /// use winnow::ascii::dec_uint;
 ///
-/// fn parser(s: &mut &str) -> PResult<u32> {
+/// fn parser(s: &mut &str) -> ModalResult<u32> {
 ///   separated_foldr1(dec_uint, "^", |l: u32, _, r: u32| l.pow(r)).parse_next(s)
 /// }
 ///
@@ -1304,7 +1309,7 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::combinator::fill;
 ///
-/// fn parser<'i>(s: &mut &'i str) -> PResult<[&'i str; 2]> {
+/// fn parser<'i>(s: &mut &'i str) -> ModalResult<[&'i str; 2]> {
 ///   let mut buf = ["", ""];
 ///   fill("abc", &mut buf).parse_next(s)?;
 ///   Ok(buf)
@@ -1347,7 +1352,7 @@ fn fold_repeat0_<I, O, E, F, G, H, R>(
     init: &mut H,
     g: &mut G,
     input: &mut I,
-) -> PResult<R, E>
+) -> ModalResult<R, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -1388,7 +1393,7 @@ fn fold_repeat1_<I, O, E, F, G, H, R>(
     init: &mut H,
     g: &mut G,
     input: &mut I,
-) -> PResult<R, E>
+) -> ModalResult<R, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -1438,7 +1443,7 @@ fn fold_repeat_m_n_<I, O, E, F, G, H, R>(
     init: &mut H,
     fold: &mut G,
     input: &mut I,
-) -> PResult<R, E>
+) -> ModalResult<R, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -1497,7 +1502,7 @@ fn verify_fold_m_n<I, O, E, F, G, H, R>(
     init: &mut H,
     fold: &mut G,
     input: &mut I,
-) -> PResult<R, E>
+) -> ModalResult<R, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -1562,7 +1567,7 @@ fn try_fold_m_n<I, O, E, F, G, H, R, GE>(
     init: &mut H,
     fold: &mut G,
     input: &mut I,
-) -> PResult<R, E>
+) -> ModalResult<R, E>
 where
     I: Stream,
     F: Parser<I, O, E>,

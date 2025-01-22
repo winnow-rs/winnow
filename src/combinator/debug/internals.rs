@@ -46,7 +46,7 @@ where
     D: std::fmt::Display,
 {
     #[inline]
-    fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
+    fn parse_next(&mut self, i: &mut I) -> ModalResult<O, E> {
         let depth = Depth::new();
         let original = i.checkpoint();
         start(*depth, &self.name, self.call_count, i);

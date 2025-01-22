@@ -23,7 +23,7 @@ fn reset() {
     });
 }
 
-fn incr(i: &mut &str) -> PResult<()> {
+fn incr(i: &mut &str) -> ModalResult<()> {
     LEVEL.with(|l| {
         *l.borrow_mut() += 1;
 
@@ -45,7 +45,7 @@ fn decr() {
     });
 }
 
-fn parens(i: &mut &str) -> PResult<i64> {
+fn parens(i: &mut &str) -> ModalResult<i64> {
     delimited(
         space,
         delimited(terminated("(", incr), expr, ")".map(|_| decr())),
@@ -54,11 +54,11 @@ fn parens(i: &mut &str) -> PResult<i64> {
     .parse_next(i)
 }
 
-fn factor(i: &mut &str) -> PResult<i64> {
+fn factor(i: &mut &str) -> ModalResult<i64> {
     alt((delimited(space, digit, space).parse_to(), parens)).parse_next(i)
 }
 
-fn term(i: &mut &str) -> PResult<i64> {
+fn term(i: &mut &str) -> ModalResult<i64> {
     incr(i)?;
     let init = factor(i).inspect_err(|_e| {
         decr();
@@ -86,7 +86,7 @@ fn term(i: &mut &str) -> PResult<i64> {
     res
 }
 
-fn expr(i: &mut &str) -> PResult<i64> {
+fn expr(i: &mut &str) -> ModalResult<i64> {
     incr(i)?;
     let init = term(i).inspect_err(|_e| {
         decr();

@@ -8,15 +8,15 @@
 //! # use winnow::error::ContextError;
 //! # use winnow::error::ErrMode;
 //! # use winnow::Parser;
-//! use winnow::PResult;
+//! use winnow::ModalResult;
 //!
-//! pub fn parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! pub fn parser<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //!     // ...
 //! #     Ok("")
 //! }
 //! ```
 //! 1. We have to decide what to do about the "remainder" of the `input`.
-//! 2. The [`PResult`] is not compatible with the rest of the Rust ecosystem.
+//! 2. The [`ModalResult`] is not compatible with the rest of the Rust ecosystem.
 //!     Normally, Rust applications want errors that are `std::error::Error + Send + Sync + 'static`
 //!     meaning:
 //!     - They implement the [`std::error::Error`] trait
@@ -26,7 +26,7 @@
 //!
 //! winnow provides [`Parser::parse`] to help with this:
 //! - Ensures we hit [`eof`]
-//! - Converts from [`PResult`] to [`Result`]
+//! - Converts from [`ModalResult`] to [`Result`]
 //! - Wraps the error in [`ParseError`]
 //!   - For simple cases, [`ParseError`] provides a [`std::fmt::Display`] impl to render the error.
 //!   - For more involved cases, [`ParseError`] provides the original [`input`][ParseError::input] and the
@@ -59,7 +59,7 @@
 //! }
 //!
 //! // ...
-//! # fn parse_digits<'s>(input: &mut &'s str) -> PResult<usize> {
+//! # fn parse_digits<'s>(input: &mut &'s str) -> ModalResult<usize> {
 //! #     dispatch!(take(2usize);
 //! #         "0b" => parse_bin_digits.try_map(|s| usize::from_str_radix(s, 2)),
 //! #         "0o" => parse_oct_digits.try_map(|s| usize::from_str_radix(s, 8)),
@@ -69,25 +69,25 @@
 //! #     ).parse_next(input)
 //! # }
 //! #
-//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='1'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
@@ -112,7 +112,7 @@ use super::chapter_7;
 use crate::combinator::eof;
 use crate::error::ErrMode;
 use crate::error::ParseError;
-use crate::PResult;
+use crate::ModalResult;
 use crate::Parser;
 
 pub use super::chapter_5 as previous;

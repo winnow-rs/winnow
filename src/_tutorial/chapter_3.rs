@@ -13,11 +13,11 @@
 //! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
 //! #
-//! fn parse_prefix<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! fn parse_prefix<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //!     "0x".parse_next(input)
 //! }
 //!
-//! fn parse_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! fn parse_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //!     take_while(1.., (
 //!         ('0'..='9'),
 //!         ('A'..='F'),
@@ -42,11 +42,11 @@
 //! # use winnow::prelude::*;
 //! # use winnow::token::take_while;
 //! #
-//! # fn parse_prefix<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_prefix<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     "0x".parse_next(input)
 //! # }
 //! #
-//! # fn parse_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
@@ -77,11 +77,11 @@
 //! # use winnow::token::take_while;
 //! use winnow::combinator::preceded;
 //!
-//! # fn parse_prefix<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_prefix<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     "0x".parse_next(input)
 //! # }
 //! #
-//! # fn parse_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
@@ -118,7 +118,7 @@
 //! # use winnow::token::take_while;
 //! use winnow::stream::Stream;
 //!
-//! fn parse_digits<'s>(input: &mut &'s str) -> PResult<(&'s str, &'s str)> {
+//! fn parse_digits<'s>(input: &mut &'s str) -> ModalResult<(&'s str, &'s str)> {
 //!     let start = input.checkpoint();
 //!     if let Ok(output) = ("0b", parse_bin_digits).parse_next(input) {
 //!         return Ok(output);
@@ -139,25 +139,25 @@
 //! }
 //!
 //! // ...
-//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='1'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
@@ -192,7 +192,7 @@
 //! # use winnow::token::take_while;
 //! use winnow::combinator::opt;
 //!
-//! fn parse_digits<'s>(input: &mut &'s str) -> PResult<(&'s str, &'s str)> {
+//! fn parse_digits<'s>(input: &mut &'s str) -> ModalResult<(&'s str, &'s str)> {
 //!     if let Some(output) = opt(("0b", parse_bin_digits)).parse_next(input)? {
 //!         Ok(output)
 //!     } else if let Some(output) = opt(("0o", parse_oct_digits)).parse_next(input)? {
@@ -204,25 +204,25 @@
 //!     }
 //! }
 //! #
-//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='1'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
@@ -249,7 +249,7 @@
 //! # use winnow::token::take_while;
 //! use winnow::combinator::alt;
 //!
-//! fn parse_digits<'s>(input: &mut &'s str) -> PResult<(&'s str, &'s str)> {
+//! fn parse_digits<'s>(input: &mut &'s str) -> ModalResult<(&'s str, &'s str)> {
 //!     alt((
 //!         ("0b", parse_bin_digits),
 //!         ("0o", parse_oct_digits),
@@ -258,25 +258,25 @@
 //!     )).parse_next(input)
 //! }
 //! #
-//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='1'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
@@ -314,7 +314,7 @@
 //! use winnow::token::take;
 //! use winnow::combinator::fail;
 //!
-//! fn parse_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! fn parse_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //!     dispatch!(take(2usize);
 //!         "0b" => parse_bin_digits,
 //!         "0o" => parse_oct_digits,
@@ -324,25 +324,25 @@
 //!     ).parse_next(input)
 //! }
 //! #
-//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='1'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),

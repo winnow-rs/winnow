@@ -67,7 +67,7 @@ fn model_complete_take_while_m_n<'i>(
     n: usize,
     valid: usize,
     input: &mut &'i str,
-) -> PResult<&'i str> {
+) -> ModalResult<&'i str> {
     if n < m {
         Err(crate::error::ErrMode::from_error_kind(
             input,

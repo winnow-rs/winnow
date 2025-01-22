@@ -17,7 +17,7 @@ use crate::lib::std::ops::{Add, Shl};
 use crate::stream::Accumulate;
 use crate::stream::{Stream, StreamIsPartial};
 use crate::stream::{ToUsize, UpdateSlice};
-use crate::PResult;
+use crate::ModalResult;
 use crate::Parser;
 
 /// Configurable endianness
@@ -45,7 +45,7 @@ pub enum Endianness {
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::be_u8;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<u8> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<u8> {
 ///     be_u8.parse_next(s)
 /// }
 ///
@@ -59,7 +59,7 @@ pub enum Endianness {
 /// # use winnow::Partial;
 /// use winnow::binary::be_u8;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<u8> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<u8> {
 ///     be_u8.parse_next(s)
 /// }
 ///
@@ -67,7 +67,7 @@ pub enum Endianness {
 /// assert_eq!(parser.parse_peek(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn be_u8<Input, Error>(input: &mut Input) -> PResult<u8, Error>
+pub fn be_u8<Input, Error>(input: &mut Input) -> ModalResult<u8, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -89,7 +89,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::be_u16;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<u16> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<u16> {
 ///     be_u16.parse_next(s)
 /// }
 ///
@@ -103,7 +103,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::be_u16;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<u16> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<u16> {
 ///     be_u16.parse_next(s)
 /// }
 ///
@@ -111,7 +111,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn be_u16<Input, Error>(input: &mut Input) -> PResult<u16, Error>
+pub fn be_u16<Input, Error>(input: &mut Input) -> ModalResult<u16, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -133,7 +133,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::be_u24;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<u32> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<u32> {
 ///     be_u24.parse_next(s)
 /// }
 ///
@@ -147,7 +147,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::be_u24;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<u32> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<u32> {
 ///     be_u24.parse_next(s)
 /// }
 ///
@@ -155,7 +155,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn be_u24<Input, Error>(input: &mut Input) -> PResult<u32, Error>
+pub fn be_u24<Input, Error>(input: &mut Input) -> ModalResult<u32, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -177,7 +177,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::be_u32;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<u32> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<u32> {
 ///     be_u32.parse_next(s)
 /// }
 ///
@@ -191,7 +191,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::be_u32;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<u32> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<u32> {
 ///     be_u32.parse_next(s)
 /// }
 ///
@@ -199,7 +199,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn be_u32<Input, Error>(input: &mut Input) -> PResult<u32, Error>
+pub fn be_u32<Input, Error>(input: &mut Input) -> ModalResult<u32, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -221,7 +221,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::be_u64;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<u64> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<u64> {
 ///     be_u64.parse_next(s)
 /// }
 ///
@@ -235,7 +235,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::be_u64;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<u64> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<u64> {
 ///     be_u64.parse_next(s)
 /// }
 ///
@@ -243,7 +243,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn be_u64<Input, Error>(input: &mut Input) -> PResult<u64, Error>
+pub fn be_u64<Input, Error>(input: &mut Input) -> ModalResult<u64, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -265,7 +265,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::be_u128;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<u128> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<u128> {
 ///     be_u128.parse_next(s)
 /// }
 ///
@@ -279,7 +279,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::be_u128;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<u128> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<u128> {
 ///     be_u128.parse_next(s)
 /// }
 ///
@@ -287,7 +287,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn be_u128<Input, Error>(input: &mut Input) -> PResult<u128, Error>
+pub fn be_u128<Input, Error>(input: &mut Input) -> ModalResult<u128, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -296,7 +296,7 @@ where
 }
 
 #[inline]
-fn be_uint<Input, Uint, Error>(input: &mut Input, bound: usize) -> PResult<Uint, Error>
+fn be_uint<Input, Uint, Error>(input: &mut Input, bound: usize) -> ModalResult<Uint, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
@@ -347,7 +347,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::be_i8;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<i8> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<i8> {
 ///     be_i8.parse_next(s)
 /// }
 ///
@@ -361,7 +361,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::be_i8;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<i8> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<i8> {
 ///       be_i8.parse_next(s)
 /// }
 ///
@@ -369,7 +369,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn be_i8<Input, Error>(input: &mut Input) -> PResult<i8, Error>
+pub fn be_i8<Input, Error>(input: &mut Input) -> ModalResult<i8, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -391,7 +391,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::be_i16;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<i16> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<i16> {
 ///     be_i16.parse_next(s)
 /// }
 ///
@@ -405,7 +405,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::be_i16;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<i16> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<i16> {
 ///       be_i16.parse_next(s)
 /// }
 ///
@@ -413,7 +413,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn be_i16<Input, Error>(input: &mut Input) -> PResult<i16, Error>
+pub fn be_i16<Input, Error>(input: &mut Input) -> ModalResult<i16, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -438,7 +438,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::be_i24;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<i32> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<i32> {
 ///     be_i24.parse_next(s)
 /// }
 ///
@@ -452,7 +452,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::be_i24;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<i32> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<i32> {
 ///       be_i24.parse_next(s)
 /// }
 ///
@@ -460,7 +460,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn be_i24<Input, Error>(input: &mut Input) -> PResult<i32, Error>
+pub fn be_i24<Input, Error>(input: &mut Input) -> ModalResult<i32, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -493,7 +493,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::be_i32;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<i32> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<i32> {
 ///       be_i32.parse_next(s)
 /// }
 ///
@@ -507,7 +507,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::be_i32;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<i32> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<i32> {
 ///       be_i32.parse_next(s)
 /// }
 ///
@@ -515,7 +515,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(4))));
 /// ```
 #[inline(always)]
-pub fn be_i32<Input, Error>(input: &mut Input) -> PResult<i32, Error>
+pub fn be_i32<Input, Error>(input: &mut Input) -> ModalResult<i32, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -540,7 +540,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::be_i64;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<i64> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<i64> {
 ///       be_i64.parse_next(s)
 /// }
 ///
@@ -554,7 +554,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::be_i64;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<i64> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<i64> {
 ///       be_i64.parse_next(s)
 /// }
 ///
@@ -562,7 +562,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn be_i64<Input, Error>(input: &mut Input) -> PResult<i64, Error>
+pub fn be_i64<Input, Error>(input: &mut Input) -> ModalResult<i64, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -587,7 +587,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::be_i128;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<i128> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<i128> {
 ///       be_i128.parse_next(s)
 /// }
 ///
@@ -601,7 +601,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::be_i128;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<i128> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<i128> {
 ///       be_i128.parse_next(s)
 /// }
 ///
@@ -609,7 +609,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn be_i128<Input, Error>(input: &mut Input) -> PResult<i128, Error>
+pub fn be_i128<Input, Error>(input: &mut Input) -> ModalResult<i128, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -634,7 +634,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::le_u8;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<u8> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<u8> {
 ///       le_u8.parse_next(s)
 /// }
 ///
@@ -648,7 +648,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::le_u8;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<u8> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<u8> {
 ///       le_u8.parse_next(s)
 /// }
 ///
@@ -656,7 +656,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn le_u8<Input, Error>(input: &mut Input) -> PResult<u8, Error>
+pub fn le_u8<Input, Error>(input: &mut Input) -> ModalResult<u8, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -678,7 +678,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::le_u16;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<u16> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<u16> {
 ///       le_u16.parse_next(s)
 /// }
 ///
@@ -692,7 +692,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::le_u16;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<u16> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<u16> {
 ///       le_u16.parse_next(s)
 /// }
 ///
@@ -700,7 +700,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn le_u16<Input, Error>(input: &mut Input) -> PResult<u16, Error>
+pub fn le_u16<Input, Error>(input: &mut Input) -> ModalResult<u16, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -722,7 +722,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::le_u24;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<u32> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<u32> {
 ///       le_u24.parse_next(s)
 /// }
 ///
@@ -736,7 +736,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::le_u24;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<u32> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<u32> {
 ///       le_u24.parse_next(s)
 /// }
 ///
@@ -744,7 +744,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn le_u24<Input, Error>(input: &mut Input) -> PResult<u32, Error>
+pub fn le_u24<Input, Error>(input: &mut Input) -> ModalResult<u32, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -766,7 +766,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::le_u32;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<u32> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<u32> {
 ///       le_u32.parse_next(s)
 /// }
 ///
@@ -780,7 +780,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::le_u32;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<u32> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<u32> {
 ///       le_u32.parse_next(s)
 /// }
 ///
@@ -788,7 +788,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn le_u32<Input, Error>(input: &mut Input) -> PResult<u32, Error>
+pub fn le_u32<Input, Error>(input: &mut Input) -> ModalResult<u32, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -810,7 +810,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::le_u64;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<u64> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<u64> {
 ///       le_u64.parse_next(s)
 /// }
 ///
@@ -824,7 +824,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::le_u64;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<u64> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<u64> {
 ///       le_u64.parse_next(s)
 /// }
 ///
@@ -832,7 +832,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn le_u64<Input, Error>(input: &mut Input) -> PResult<u64, Error>
+pub fn le_u64<Input, Error>(input: &mut Input) -> ModalResult<u64, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -854,7 +854,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::le_u128;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<u128> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<u128> {
 ///       le_u128.parse_next(s)
 /// }
 ///
@@ -868,7 +868,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::le_u128;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<u128> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<u128> {
 ///       le_u128.parse_next(s)
 /// }
 ///
@@ -876,7 +876,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn le_u128<Input, Error>(input: &mut Input) -> PResult<u128, Error>
+pub fn le_u128<Input, Error>(input: &mut Input) -> ModalResult<u128, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -885,7 +885,7 @@ where
 }
 
 #[inline]
-fn le_uint<Input, Uint, Error>(input: &mut Input, bound: usize) -> PResult<Uint, Error>
+fn le_uint<Input, Uint, Error>(input: &mut Input, bound: usize) -> ModalResult<Uint, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Uint: Default + Shl<u8, Output = Uint> + Add<Uint, Output = Uint> + From<u8>,
@@ -935,7 +935,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::le_i8;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<i8> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<i8> {
 ///       le_i8.parse_next(s)
 /// }
 ///
@@ -949,7 +949,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::le_i8;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<i8> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<i8> {
 ///       le_i8.parse_next(s)
 /// }
 ///
@@ -957,7 +957,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn le_i8<Input, Error>(input: &mut Input) -> PResult<i8, Error>
+pub fn le_i8<Input, Error>(input: &mut Input) -> ModalResult<i8, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -979,7 +979,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::le_i16;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<i16> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<i16> {
 ///       le_i16.parse_next(s)
 /// }
 ///
@@ -993,7 +993,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::le_i16;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<i16> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<i16> {
 ///       le_i16.parse_next(s)
 /// }
 ///
@@ -1001,7 +1001,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn le_i16<Input, Error>(input: &mut Input) -> PResult<i16, Error>
+pub fn le_i16<Input, Error>(input: &mut Input) -> ModalResult<i16, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -1026,7 +1026,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::le_i24;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<i32> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<i32> {
 ///       le_i24.parse_next(s)
 /// }
 ///
@@ -1040,7 +1040,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::le_i24;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<i32> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<i32> {
 ///       le_i24.parse_next(s)
 /// }
 ///
@@ -1048,7 +1048,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 /// ```
 #[inline(always)]
-pub fn le_i24<Input, Error>(input: &mut Input) -> PResult<i32, Error>
+pub fn le_i24<Input, Error>(input: &mut Input) -> ModalResult<i32, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -1081,7 +1081,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::le_i32;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<i32> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<i32> {
 ///       le_i32.parse_next(s)
 /// }
 ///
@@ -1095,7 +1095,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::le_i32;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<i32> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<i32> {
 ///       le_i32.parse_next(s)
 /// }
 ///
@@ -1103,7 +1103,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn le_i32<Input, Error>(input: &mut Input) -> PResult<i32, Error>
+pub fn le_i32<Input, Error>(input: &mut Input) -> ModalResult<i32, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -1128,7 +1128,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::le_i64;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<i64> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<i64> {
 ///       le_i64.parse_next(s)
 /// }
 ///
@@ -1142,7 +1142,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::le_i64;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<i64> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<i64> {
 ///       le_i64.parse_next(s)
 /// }
 ///
@@ -1150,7 +1150,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn le_i64<Input, Error>(input: &mut Input) -> PResult<i64, Error>
+pub fn le_i64<Input, Error>(input: &mut Input) -> ModalResult<i64, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -1175,7 +1175,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::le_i128;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<i128> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<i128> {
 ///       le_i128.parse_next(s)
 /// }
 ///
@@ -1189,7 +1189,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::le_i128;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<i128> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<i128> {
 ///       le_i128.parse_next(s)
 /// }
 ///
@@ -1197,7 +1197,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 /// ```
 #[inline(always)]
-pub fn le_i128<Input, Error>(input: &mut Input) -> PResult<i128, Error>
+pub fn le_i128<Input, Error>(input: &mut Input) -> ModalResult<i128, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -1228,7 +1228,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::u8;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<u8> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<u8> {
 ///       u8.parse_next(s)
 /// }
 ///
@@ -1243,7 +1243,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::u8;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<u8> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<u8> {
 ///       u8.parse_next(s)
 /// }
 ///
@@ -1251,7 +1251,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn u8<Input, Error>(input: &mut Input) -> PResult<u8, Error>
+pub fn u8<Input, Error>(input: &mut Input) -> ModalResult<u8, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -1266,7 +1266,7 @@ where
     .parse_next(input)
 }
 
-fn u8_<Input, Error, const PARTIAL: bool>(input: &mut Input) -> PResult<u8, Error>
+fn u8_<Input, Error, const PARTIAL: bool>(input: &mut Input) -> ModalResult<u8, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -1297,14 +1297,14 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::u16;
 ///
-/// fn be_u16(input: &mut &[u8]) -> PResult<u16> {
+/// fn be_u16(input: &mut &[u8]) -> ModalResult<u16> {
 ///     u16(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_u16.parse_peek(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
 /// assert!(be_u16.parse_peek(&b"\x01"[..]).is_err());
 ///
-/// fn le_u16(input: &mut &[u8]) -> PResult<u16> {
+/// fn le_u16(input: &mut &[u8]) -> ModalResult<u16> {
 ///     u16(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -1319,14 +1319,14 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::u16;
 ///
-/// fn be_u16(input: &mut Partial<&[u8]>) -> PResult<u16> {
+/// fn be_u16(input: &mut Partial<&[u8]>) -> ModalResult<u16> {
 ///     u16(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_u16.parse_peek(Partial::new(&b"\x00\x03abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0003)));
 /// assert_eq!(be_u16.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
-/// fn le_u16(input: &mut Partial<&[u8]>) -> PResult< u16> {
+/// fn le_u16(input: &mut Partial<&[u8]>) -> ModalResult< u16> {
 ///     u16(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -1368,14 +1368,14 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::u24;
 ///
-/// fn be_u24(input: &mut &[u8]) -> PResult<u32> {
+/// fn be_u24(input: &mut &[u8]) -> ModalResult<u32> {
 ///     u24(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_u24.parse_peek(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
 /// assert!(be_u24.parse_peek(&b"\x01"[..]).is_err());
 ///
-/// fn le_u24(input: &mut &[u8]) -> PResult<u32> {
+/// fn le_u24(input: &mut &[u8]) -> ModalResult<u32> {
 ///     u24(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -1390,14 +1390,14 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::u24;
 ///
-/// fn be_u24(input: &mut Partial<&[u8]>) -> PResult<u32> {
+/// fn be_u24(input: &mut Partial<&[u8]>) -> ModalResult<u32> {
 ///     u24(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_u24.parse_peek(Partial::new(&b"\x00\x03\x05abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x000305)));
 /// assert_eq!(be_u24.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 ///
-/// fn le_u24(input: &mut Partial<&[u8]>) -> PResult<u32> {
+/// fn le_u24(input: &mut Partial<&[u8]>) -> ModalResult<u32> {
 ///     u24(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -1439,14 +1439,14 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::u32;
 ///
-/// fn be_u32(input: &mut &[u8]) -> PResult<u32> {
+/// fn be_u32(input: &mut &[u8]) -> ModalResult<u32> {
 ///     u32(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_u32.parse_peek(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
 /// assert!(be_u32.parse_peek(&b"\x01"[..]).is_err());
 ///
-/// fn le_u32(input: &mut &[u8]) -> PResult<u32> {
+/// fn le_u32(input: &mut &[u8]) -> ModalResult<u32> {
 ///     u32(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -1461,14 +1461,14 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::u32;
 ///
-/// fn be_u32(input: &mut Partial<&[u8]>) -> PResult<u32> {
+/// fn be_u32(input: &mut Partial<&[u8]>) -> ModalResult<u32> {
 ///     u32(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_u32.parse_peek(Partial::new(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x00030507)));
 /// assert_eq!(be_u32.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 ///
-/// fn le_u32(input: &mut Partial<&[u8]>) -> PResult<u32> {
+/// fn le_u32(input: &mut Partial<&[u8]>) -> ModalResult<u32> {
 ///     u32(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -1510,14 +1510,14 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::u64;
 ///
-/// fn be_u64(input: &mut &[u8]) -> PResult<u64> {
+/// fn be_u64(input: &mut &[u8]) -> ModalResult<u64> {
 ///     u64(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_u64.parse_peek(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
 /// assert!(be_u64.parse_peek(&b"\x01"[..]).is_err());
 ///
-/// fn le_u64(input: &mut &[u8]) -> PResult<u64> {
+/// fn le_u64(input: &mut &[u8]) -> ModalResult<u64> {
 ///     u64(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -1532,14 +1532,14 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::u64;
 ///
-/// fn be_u64(input: &mut Partial<&[u8]>) -> PResult<u64> {
+/// fn be_u64(input: &mut Partial<&[u8]>) -> ModalResult<u64> {
 ///     u64(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_u64.parse_peek(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0001020304050607)));
 /// assert_eq!(be_u64.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 ///
-/// fn le_u64(input: &mut Partial<&[u8]>) -> PResult<u64> {
+/// fn le_u64(input: &mut Partial<&[u8]>) -> ModalResult<u64> {
 ///     u64(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -1581,14 +1581,14 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::u128;
 ///
-/// fn be_u128(input: &mut &[u8]) -> PResult<u128> {
+/// fn be_u128(input: &mut &[u8]) -> ModalResult<u128> {
 ///     u128(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_u128.parse_peek(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
 /// assert!(be_u128.parse_peek(&b"\x01"[..]).is_err());
 ///
-/// fn le_u128(input: &mut &[u8]) -> PResult<u128> {
+/// fn le_u128(input: &mut &[u8]) -> ModalResult<u128> {
 ///     u128(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -1603,14 +1603,14 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::u128;
 ///
-/// fn be_u128(input: &mut Partial<&[u8]>) -> PResult<u128> {
+/// fn be_u128(input: &mut Partial<&[u8]>) -> ModalResult<u128> {
 ///     u128(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_u128.parse_peek(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x00010203040506070001020304050607)));
 /// assert_eq!(be_u128.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 ///
-/// fn le_u128(input: &mut Partial<&[u8]>) -> PResult<u128> {
+/// fn le_u128(input: &mut Partial<&[u8]>) -> ModalResult<u128> {
 ///     u128(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -1655,7 +1655,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::i8;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<i8> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<i8> {
 ///       i8.parse_next(s)
 /// }
 ///
@@ -1670,7 +1670,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::i8;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<i8> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<i8> {
 ///       i8.parse_next(s)
 /// }
 ///
@@ -1678,7 +1678,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&b""[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
-pub fn i8<Input, Error>(input: &mut Input) -> PResult<i8, Error>
+pub fn i8<Input, Error>(input: &mut Input) -> ModalResult<i8, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -1711,14 +1711,14 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::i16;
 ///
-/// fn be_i16(input: &mut &[u8]) -> PResult<i16> {
+/// fn be_i16(input: &mut &[u8]) -> ModalResult<i16> {
 ///     i16(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_i16.parse_peek(&b"\x00\x03abcefg"[..]), Ok((&b"abcefg"[..], 0x0003)));
 /// assert!(be_i16.parse_peek(&b"\x01"[..]).is_err());
 ///
-/// fn le_i16(input: &mut &[u8]) -> PResult<i16> {
+/// fn le_i16(input: &mut &[u8]) -> ModalResult<i16> {
 ///     i16(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -1733,14 +1733,14 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::i16;
 ///
-/// fn be_i16(input: &mut Partial<&[u8]>) -> PResult<i16> {
+/// fn be_i16(input: &mut Partial<&[u8]>) -> ModalResult<i16> {
 ///     i16(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_i16.parse_peek(Partial::new(&b"\x00\x03abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0003)));
 /// assert_eq!(be_i16.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
-/// fn le_i16(input: &mut Partial<&[u8]>) -> PResult<i16> {
+/// fn le_i16(input: &mut Partial<&[u8]>) -> ModalResult<i16> {
 ///     i16(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -1782,14 +1782,14 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::i24;
 ///
-/// fn be_i24(input: &mut &[u8]) -> PResult<i32> {
+/// fn be_i24(input: &mut &[u8]) -> ModalResult<i32> {
 ///     i24(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_i24.parse_peek(&b"\x00\x03\x05abcefg"[..]), Ok((&b"abcefg"[..], 0x000305)));
 /// assert!(be_i24.parse_peek(&b"\x01"[..]).is_err());
 ///
-/// fn le_i24(input: &mut &[u8]) -> PResult<i32> {
+/// fn le_i24(input: &mut &[u8]) -> ModalResult<i32> {
 ///     i24(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -1804,14 +1804,14 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::i24;
 ///
-/// fn be_i24(input: &mut Partial<&[u8]>) -> PResult<i32> {
+/// fn be_i24(input: &mut Partial<&[u8]>) -> ModalResult<i32> {
 ///     i24(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_i24.parse_peek(Partial::new(&b"\x00\x03\x05abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x000305)));
 /// assert_eq!(be_i24.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(2))));
 ///
-/// fn le_i24(input: &mut Partial<&[u8]>) -> PResult<i32> {
+/// fn le_i24(input: &mut Partial<&[u8]>) -> ModalResult<i32> {
 ///     i24(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -1853,14 +1853,14 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::i32;
 ///
-/// fn be_i32(input: &mut &[u8]) -> PResult<i32> {
+/// fn be_i32(input: &mut &[u8]) -> ModalResult<i32> {
 ///     i32(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_i32.parse_peek(&b"\x00\x03\x05\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00030507)));
 /// assert!(be_i32.parse_peek(&b"\x01"[..]).is_err());
 ///
-/// fn le_i32(input: &mut &[u8]) -> PResult<i32> {
+/// fn le_i32(input: &mut &[u8]) -> ModalResult<i32> {
 ///     i32(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -1875,14 +1875,14 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::i32;
 ///
-/// fn be_i32(input: &mut Partial<&[u8]>) -> PResult<i32> {
+/// fn be_i32(input: &mut Partial<&[u8]>) -> ModalResult<i32> {
 ///     i32(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_i32.parse_peek(Partial::new(&b"\x00\x03\x05\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x00030507)));
 /// assert_eq!(be_i32.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(3))));
 ///
-/// fn le_i32(input: &mut Partial<&[u8]>) -> PResult<i32> {
+/// fn le_i32(input: &mut Partial<&[u8]>) -> ModalResult<i32> {
 ///     i32(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -1924,14 +1924,14 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::i64;
 ///
-/// fn be_i64(input: &mut &[u8]) -> PResult<i64> {
+/// fn be_i64(input: &mut &[u8]) -> ModalResult<i64> {
 ///     i64(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_i64.parse_peek(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x0001020304050607)));
 /// assert!(be_i64.parse_peek(&b"\x01"[..]).is_err());
 ///
-/// fn le_i64(input: &mut &[u8]) -> PResult<i64> {
+/// fn le_i64(input: &mut &[u8]) -> ModalResult<i64> {
 ///     i64(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -1946,14 +1946,14 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::i64;
 ///
-/// fn be_i64(input: &mut Partial<&[u8]>) -> PResult<i64> {
+/// fn be_i64(input: &mut Partial<&[u8]>) -> ModalResult<i64> {
 ///     i64(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_i64.parse_peek(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x0001020304050607)));
 /// assert_eq!(be_i64.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(7))));
 ///
-/// fn le_i64(input: &mut Partial<&[u8]>) -> PResult<i64> {
+/// fn le_i64(input: &mut Partial<&[u8]>) -> ModalResult<i64> {
 ///     i64(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -1995,14 +1995,14 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::i128;
 ///
-/// fn be_i128(input: &mut &[u8]) -> PResult<i128> {
+/// fn be_i128(input: &mut &[u8]) -> ModalResult<i128> {
 ///     i128(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_i128.parse_peek(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..]), Ok((&b"abcefg"[..], 0x00010203040506070001020304050607)));
 /// assert!(be_i128.parse_peek(&b"\x01"[..]).is_err());
 ///
-/// fn le_i128(input: &mut &[u8]) -> PResult<i128> {
+/// fn le_i128(input: &mut &[u8]) -> ModalResult<i128> {
 ///     i128(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -2017,14 +2017,14 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::i128;
 ///
-/// fn be_i128(input: &mut Partial<&[u8]>) -> PResult<i128> {
+/// fn be_i128(input: &mut Partial<&[u8]>) -> ModalResult<i128> {
 ///     i128(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_i128.parse_peek(Partial::new(&b"\x00\x01\x02\x03\x04\x05\x06\x07\x00\x01\x02\x03\x04\x05\x06\x07abcefg"[..])), Ok((Partial::new(&b"abcefg"[..]), 0x00010203040506070001020304050607)));
 /// assert_eq!(be_i128.parse_peek(Partial::new(&b"\x01"[..])), Err(ErrMode::Incomplete(Needed::new(15))));
 ///
-/// fn le_i128(input: &mut Partial<&[u8]>) -> PResult<i128> {
+/// fn le_i128(input: &mut Partial<&[u8]>) -> ModalResult<i128> {
 ///     i128(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -2064,7 +2064,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::be_f32;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<f32> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<f32> {
 ///       be_f32.parse_next(s)
 /// }
 ///
@@ -2078,7 +2078,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::be_f32;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<f32> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<f32> {
 ///       be_f32.parse_next(s)
 /// }
 ///
@@ -2086,7 +2086,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn be_f32<Input, Error>(input: &mut Input) -> PResult<f32, Error>
+pub fn be_f32<Input, Error>(input: &mut Input) -> ModalResult<f32, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -2111,7 +2111,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::be_f64;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<f64> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<f64> {
 ///       be_f64.parse_next(s)
 /// }
 ///
@@ -2125,7 +2125,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::be_f64;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<f64> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<f64> {
 ///       be_f64.parse_next(s)
 /// }
 ///
@@ -2133,7 +2133,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn be_f64<Input, Error>(input: &mut Input) -> PResult<f64, Error>
+pub fn be_f64<Input, Error>(input: &mut Input) -> ModalResult<f64, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -2158,7 +2158,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::le_f32;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<f32> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<f32> {
 ///       le_f32.parse_next(s)
 /// }
 ///
@@ -2172,7 +2172,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::le_f32;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<f32> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<f32> {
 ///       le_f32.parse_next(s)
 /// }
 ///
@@ -2180,7 +2180,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(3))));
 /// ```
 #[inline(always)]
-pub fn le_f32<Input, Error>(input: &mut Input) -> PResult<f32, Error>
+pub fn le_f32<Input, Error>(input: &mut Input) -> ModalResult<f32, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -2205,7 +2205,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::le_f64;
 ///
-/// fn parser(s: &mut &[u8]) -> PResult<f64> {
+/// fn parser(s: &mut &[u8]) -> ModalResult<f64> {
 ///       le_f64.parse_next(s)
 /// }
 ///
@@ -2219,7 +2219,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::le_f64;
 ///
-/// fn parser(s: &mut Partial<&[u8]>) -> PResult<f64> {
+/// fn parser(s: &mut Partial<&[u8]>) -> ModalResult<f64> {
 ///       le_f64.parse_next(s)
 /// }
 ///
@@ -2227,7 +2227,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new(&[0x01][..])), Err(ErrMode::Incomplete(Needed::new(7))));
 /// ```
 #[inline(always)]
-pub fn le_f64<Input, Error>(input: &mut Input) -> PResult<f64, Error>
+pub fn le_f64<Input, Error>(input: &mut Input) -> ModalResult<f64, Error>
 where
     Input: StreamIsPartial + Stream<Token = u8>,
     Error: ParserError<Input>,
@@ -2255,14 +2255,14 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::f32;
 ///
-/// fn be_f32(input: &mut &[u8]) -> PResult<f32> {
+/// fn be_f32(input: &mut &[u8]) -> ModalResult<f32> {
 ///     f32(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_f32.parse_peek(&[0x41, 0x48, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
 /// assert!(be_f32.parse_peek(&b"abc"[..]).is_err());
 ///
-/// fn le_f32(input: &mut &[u8]) -> PResult<f32> {
+/// fn le_f32(input: &mut &[u8]) -> ModalResult<f32> {
 ///     f32(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -2277,14 +2277,14 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::f32;
 ///
-/// fn be_f32(input: &mut Partial<&[u8]>) -> PResult<f32> {
+/// fn be_f32(input: &mut Partial<&[u8]>) -> ModalResult<f32> {
 ///     f32(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_f32.parse_peek(Partial::new(&[0x41, 0x48, 0x00, 0x00][..])), Ok((Partial::new(&b""[..]), 12.5)));
 /// assert_eq!(be_f32.parse_peek(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
-/// fn le_f32(input: &mut Partial<&[u8]>) -> PResult<f32> {
+/// fn le_f32(input: &mut Partial<&[u8]>) -> ModalResult<f32> {
 ///     f32(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -2326,14 +2326,14 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::binary::f64;
 ///
-/// fn be_f64(input: &mut &[u8]) -> PResult<f64> {
+/// fn be_f64(input: &mut &[u8]) -> ModalResult<f64> {
 ///     f64(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_f64.parse_peek(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..]), Ok((&b""[..], 12.5)));
 /// assert!(be_f64.parse_peek(&b"abc"[..]).is_err());
 ///
-/// fn le_f64(input: &mut &[u8]) -> PResult<f64> {
+/// fn le_f64(input: &mut &[u8]) -> ModalResult<f64> {
 ///     f64(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -2348,14 +2348,14 @@ where
 /// # use winnow::Partial;
 /// use winnow::binary::f64;
 ///
-/// fn be_f64(input: &mut Partial<&[u8]>) -> PResult<f64> {
+/// fn be_f64(input: &mut Partial<&[u8]>) -> ModalResult<f64> {
 ///     f64(winnow::binary::Endianness::Big).parse_next(input)
 /// };
 ///
 /// assert_eq!(be_f64.parse_peek(Partial::new(&[0x40, 0x29, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00][..])), Ok((Partial::new(&b""[..]), 12.5)));
 /// assert_eq!(be_f64.parse_peek(Partial::new(&b"abc"[..])), Err(ErrMode::Incomplete(Needed::new(5))));
 ///
-/// fn le_f64(input: &mut Partial<&[u8]>) -> PResult<f64> {
+/// fn le_f64(input: &mut Partial<&[u8]>) -> ModalResult<f64> {
 ///     f64(winnow::binary::Endianness::Little).parse_next(input)
 /// };
 ///
@@ -2405,7 +2405,7 @@ where
 ///     Partial::new(Bytes::new(b))
 /// }
 ///
-/// fn parser<'i>(s: &mut Stream<'i>) -> PResult<&'i [u8]> {
+/// fn parser<'i>(s: &mut Stream<'i>) -> ModalResult<&'i [u8]> {
 ///   length_take(be_u16).parse_next(s)
 /// }
 ///
@@ -2455,7 +2455,7 @@ where
 ///     p
 /// }
 ///
-/// fn parser<'i>(s: &mut Stream<'i>) -> PResult<&'i [u8]> {
+/// fn parser<'i>(s: &mut Stream<'i>) -> ModalResult<&'i [u8]> {
 ///   length_and_then(be_u16, "abc").parse_next(s)
 /// }
 ///
@@ -2504,7 +2504,7 @@ where
 ///     Bytes::new(b)
 /// }
 ///
-/// fn parser<'i>(s: &mut Stream<'i>) -> PResult<Vec<&'i [u8]>> {
+/// fn parser<'i>(s: &mut Stream<'i>) -> ModalResult<Vec<&'i [u8]>> {
 ///   length_repeat(u8.map(|i| {
 ///      println!("got number: {}", i);
 ///      i

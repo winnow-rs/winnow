@@ -307,7 +307,7 @@ where
 ///
 /// type Stream<'is> = Stateful<&'is str, State<'is>>;
 ///
-/// fn word<'s>(i: &mut Stream<'s>) -> PResult<&'s str> {
+/// fn word<'s>(i: &mut Stream<'s>) -> ModalResult<&'s str> {
 ///   i.state.count();
 ///   alpha1.parse_next(i)
 /// }
@@ -370,14 +370,14 @@ impl<I: crate::lib::std::fmt::Display, S> crate::lib::std::fmt::Display for Stat
 /// Here is how it works in practice:
 ///
 /// ```rust
-/// # use winnow::{PResult, error::ErrMode, error::Needed, error::{ContextError, ErrorKind}, token, ascii, stream::Partial};
+/// # use winnow::{ModalResult, error::ErrMode, error::Needed, error::{ContextError, ErrorKind}, token, ascii, stream::Partial};
 /// # use winnow::prelude::*;
 ///
-/// fn take_partial<'s>(i: &mut Partial<&'s [u8]>) -> PResult<&'s [u8], ContextError> {
+/// fn take_partial<'s>(i: &mut Partial<&'s [u8]>) -> ModalResult<&'s [u8], ContextError> {
 ///   token::take(4u8).parse_next(i)
 /// }
 ///
-/// fn take_complete<'s>(i: &mut &'s [u8]) -> PResult<&'s [u8], ContextError> {
+/// fn take_complete<'s>(i: &mut &'s [u8]) -> ModalResult<&'s [u8], ContextError> {
 ///   token::take(4u8).parse_next(i)
 /// }
 ///
@@ -393,11 +393,11 @@ impl<I: crate::lib::std::fmt::Display, S> crate::lib::std::fmt::Display for Stat
 /// assert!(take_complete.parse_peek(&b"abc"[..]).is_err());
 ///
 /// // the alpha0 function takes 0 or more alphabetic characters
-/// fn alpha0_partial<'s>(i: &mut Partial<&'s str>) -> PResult<&'s str, ContextError> {
+/// fn alpha0_partial<'s>(i: &mut Partial<&'s str>) -> ModalResult<&'s str, ContextError> {
 ///   ascii::alpha0.parse_next(i)
 /// }
 ///
-/// fn alpha0_complete<'s>(i: &mut &'s str) -> PResult<&'s str, ContextError> {
+/// fn alpha0_complete<'s>(i: &mut &'s str) -> ModalResult<&'s str, ContextError> {
 ///   ascii::alpha0.parse_next(i)
 /// }
 ///
@@ -2838,7 +2838,7 @@ impl<T: crate::lib::std::fmt::Debug, S> crate::lib::std::fmt::Debug for Checkpoi
 /// # use winnow::prelude::*;
 /// # use winnow::token::any;
 /// # use winnow::combinator::repeat;
-/// # fn inner(input: &mut &str) -> PResult<char> {
+/// # fn inner(input: &mut &str) -> ModalResult<char> {
 /// #     any.parse_next(input)
 /// # }
 /// # let mut input = "0123456789012345678901234567890123456789";
@@ -3415,7 +3415,7 @@ impl AsChar for &char {
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError};
 /// # use winnow::token::take_while;
-/// fn hex_digit1<'s>(input: &mut &'s str) -> PResult<&'s str, ContextError> {
+/// fn hex_digit1<'s>(input: &mut &'s str) -> ModalResult<&'s str, ContextError> {
 ///     take_while(1.., ('a'..='f', 'A'..='F', '0'..='9')).parse_next(input)
 /// }
 ///

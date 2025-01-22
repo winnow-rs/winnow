@@ -6,7 +6,7 @@ use crate::*;
 /// Deprecated, replaced with [`token::rest`]
 #[deprecated(since = "0.6.23", note = "replaced with `token::rest`")]
 #[inline]
-pub fn rest<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn rest<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Slice, Error>
 where
     Input: Stream,
     Error: ParserError<Input>,
@@ -17,7 +17,7 @@ where
 /// Deprecated, replaced with [`token::rest_len`]
 #[deprecated(since = "0.6.23", note = "replaced with `token::rest_len`")]
 #[inline]
-pub fn rest_len<Input, Error>(input: &mut Input) -> PResult<usize, Error>
+pub fn rest_len<Input, Error>(input: &mut Input) -> ModalResult<usize, Error>
 where
     Input: Stream,
     Error: ParserError<Input>,
@@ -37,7 +37,7 @@ where
 /// use winnow::ascii::alpha1;
 /// # fn main() {
 ///
-/// fn parser<'i>(i: &mut &'i str) -> PResult<Option<&'i str>> {
+/// fn parser<'i>(i: &mut &'i str) -> ModalResult<Option<&'i str>> {
 ///   opt(alpha1).parse_next(i)
 /// }
 ///
@@ -76,7 +76,7 @@ where
 /// use winnow::ascii::alpha1;
 /// # fn main() {
 ///
-/// fn parser<'i>(i: &mut &'i str) -> PResult<Option<&'i str>> {
+/// fn parser<'i>(i: &mut &'i str) -> ModalResult<Option<&'i str>> {
 ///   let prefix = opt("-").parse_next(i)?;
 ///   let condition = prefix.is_some();
 ///   cond(condition, alpha1).parse_next(i)
@@ -118,7 +118,7 @@ where
 /// use winnow::ascii::alpha1;
 /// # fn main() {
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
+/// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
 ///     peek(alpha1).parse_next(input)
 /// }
 ///
@@ -153,7 +153,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn eof<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn eof<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::combinator::eof.parse_next(input)
 /// # }
@@ -166,7 +166,7 @@ where
 /// # use winnow::combinator::eof;
 /// # use winnow::prelude::*;
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
+/// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
 ///     eof.parse_next(input)
 /// }
 /// assert!(parser.parse_peek("abc").is_err());
@@ -174,7 +174,7 @@ where
 /// ```
 #[doc(alias = "end")]
 #[doc(alias = "eoi")]
-pub fn eof<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn eof<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Slice, Error>
 where
     Input: Stream,
     Error: ParserError<Input>,
@@ -205,7 +205,7 @@ where
 /// use winnow::ascii::alpha1;
 /// # fn main() {
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<()> {
+/// fn parser<'i>(input: &mut &'i str) -> ModalResult<()> {
 ///     not(alpha1).parse_next(input)
 /// }
 ///
@@ -250,7 +250,7 @@ where
 /// # use winnow::prelude::*;
 /// # fn main() {
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
+/// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
 ///   alt((
 ///     preceded(one_of(['+', '-']), digit1),
 ///     rest
@@ -275,7 +275,7 @@ where
 /// use winnow::combinator::cut_err;
 /// # fn main() {
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
+/// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
 ///   alt((
 ///     preceded(one_of(['+', '-']), cut_err(digit1)),
 ///     rest
@@ -331,12 +331,12 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::combinator::todo;
 ///
-/// fn parser(input: &mut &str) -> PResult<u64> {
+/// fn parser(input: &mut &str) -> ModalResult<u64> {
 ///     todo(input)
 /// }
 /// ```
 #[track_caller]
-pub fn todo<Input, Output, Error>(input: &mut Input) -> PResult<Output, Error>
+pub fn todo<Input, Output, Error>(input: &mut Input) -> ModalResult<Output, Error>
 where
     Input: Stream,
 {
@@ -365,7 +365,7 @@ where
 /// let mut it = iterator(data, terminated(alpha1, "|"));
 ///
 /// let parsed = it.map(|v| (v, v.len())).collect::<HashMap<_,_>>();
-/// let res: PResult<_> = it.finish();
+/// let res: ModalResult<_> = it.finish();
 ///
 /// assert_eq!(parsed, [("abc", 3usize), ("defg", 4), ("hijkl", 5), ("mnopqr", 6)].iter().cloned().collect());
 /// assert_eq!(res, Ok(("123", ())));
@@ -405,7 +405,7 @@ where
     I: Stream,
 {
     /// Returns the remaining input if parsing was successful, or the error if we encountered an error.
-    pub fn finish(mut self) -> PResult<(I, ()), E> {
+    pub fn finish(mut self) -> ModalResult<(I, ()), E> {
         match self.state.take().unwrap() {
             State::Running | State::Done => Ok((self.input, ())),
             State::Cut(e) => Err(e),
@@ -474,7 +474,7 @@ enum State<E> {
 /// use winnow::combinator::alt;
 /// use winnow::combinator::empty;
 ///
-/// fn sign(input: &mut &str) -> PResult<isize> {
+/// fn sign(input: &mut &str) -> ModalResult<isize> {
 ///     alt((
 ///         '-'.value(-1),
 ///         '+'.value(1),
@@ -488,7 +488,7 @@ enum State<E> {
 #[doc(alias = "value")]
 #[doc(alias = "success")]
 #[inline]
-pub fn empty<Input, Error>(_input: &mut Input) -> PResult<(), Error>
+pub fn empty<Input, Error>(_input: &mut Input) -> ModalResult<(), Error>
 where
     Input: Stream,
     Error: ParserError<Input>,
@@ -508,7 +508,7 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::combinator::fail;
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<(), InputError<&'i str>> {
+/// fn parser<'i>(input: &mut &'i str) -> ModalResult<(), InputError<&'i str>> {
 ///     fail.parse_next(input)
 /// }
 ///
@@ -516,7 +516,7 @@ where
 /// ```
 #[doc(alias = "unexpected")]
 #[inline]
-pub fn fail<Input, Output, Error>(i: &mut Input) -> PResult<Output, Error>
+pub fn fail<Input, Output, Error>(i: &mut Input) -> ModalResult<Output, Error>
 where
     Input: Stream,
     Error: ParserError<Input>,

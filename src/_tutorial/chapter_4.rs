@@ -1,15 +1,15 @@
 //! # Chapter 4: Parsers With Custom Return Types
 //!
 //! So far, we have seen mostly functions that take an `&str`, and return a
-//! `PResult<&str>`. Splitting strings into smaller strings and characters is certainly
+//! `ModalResult<&str>`. Splitting strings into smaller strings and characters is certainly
 //! useful, but it's not the only thing winnow is capable of!
 //!
 //! A useful operation when parsing is to convert between types; for example
 //! parsing from `&str` to another primitive, like [`usize`].
 //!
 //! All we need to do for our parser to return a different type is to change
-//! the type parameter of [`PResult`] to the desired return type.
-//! For example, to return a `usize`, return a `PResult<usize>`.
+//! the type parameter of [`ModalResult`] to the desired return type.
+//! For example, to return a `usize`, return a `ModalResult<usize>`.
 //!
 //! One winnow-native way of doing a type conversion is to use the
 //! [`Parser::parse_to`] combinator
@@ -20,7 +20,7 @@
 //! # use winnow::prelude::*;
 //! # use winnow::ascii::digit1;
 //! #
-//! fn parse_digits(input: &mut &str) -> PResult<usize> {
+//! fn parse_digits(input: &mut &str) -> ModalResult<usize> {
 //!     digit1
 //!         .parse_to()
 //!         .parse_next(input)
@@ -46,7 +46,7 @@
 //! use winnow::token::take;
 //! use winnow::combinator::fail;
 //!
-//! fn parse_digits(input: &mut &str) -> PResult<usize> {
+//! fn parse_digits(input: &mut &str) -> ModalResult<usize> {
 //!     dispatch!(take(2usize);
 //!         "0b" => parse_bin_digits.try_map(|s| usize::from_str_radix(s, 2)),
 //!         "0o" => parse_oct_digits.try_map(|s| usize::from_str_radix(s, 8)),
@@ -57,25 +57,25 @@
 //! }
 //!
 //! // ...
-//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='1'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
@@ -98,7 +98,7 @@
 //! See also [`Parser`] for more output-modifying parsers.
 
 #![allow(unused_imports)]
-use crate::PResult;
+use crate::ModalResult;
 use crate::Parser;
 use std::str::FromStr;
 

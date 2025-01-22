@@ -50,7 +50,7 @@ fn contains_token(c: &mut criterion::Criterion) {
     group.finish();
 }
 
-fn parser_slice(input: &mut &str) -> PResult<usize> {
+fn parser_slice(input: &mut &str) -> ModalResult<usize> {
     let contains = &['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'][..];
     repeat(
         0..,
@@ -59,7 +59,7 @@ fn parser_slice(input: &mut &str) -> PResult<usize> {
     .parse_next(input)
 }
 
-fn parser_array(input: &mut &str) -> PResult<usize> {
+fn parser_array(input: &mut &str) -> ModalResult<usize> {
     let contains = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
     repeat(
         0..,
@@ -68,7 +68,7 @@ fn parser_array(input: &mut &str) -> PResult<usize> {
     .parse_next(input)
 }
 
-fn parser_tuple(input: &mut &str) -> PResult<usize> {
+fn parser_tuple(input: &mut &str) -> ModalResult<usize> {
     let contains = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9');
     repeat(
         0..,
@@ -77,7 +77,7 @@ fn parser_tuple(input: &mut &str) -> PResult<usize> {
     .parse_next(input)
 }
 
-fn parser_closure_or(input: &mut &str) -> PResult<usize> {
+fn parser_closure_or(input: &mut &str) -> ModalResult<usize> {
     let contains = |c: char| {
         c == '0'
             || c == '1'
@@ -97,7 +97,7 @@ fn parser_closure_or(input: &mut &str) -> PResult<usize> {
     .parse_next(input)
 }
 
-fn parser_closure_matches(input: &mut &str) -> PResult<usize> {
+fn parser_closure_matches(input: &mut &str) -> ModalResult<usize> {
     let contains = |c: char| matches!(c, '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9');
     repeat(
         0..,

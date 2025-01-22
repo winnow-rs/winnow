@@ -14,7 +14,7 @@
 //! use winnow::combinator::repeat;
 //! use winnow::combinator::terminated;
 //!
-//! fn parse_list(input: &mut &str) -> PResult<Vec<usize>> {
+//! fn parse_list(input: &mut &str) -> ModalResult<Vec<usize>> {
 //!     let mut list = Vec::new();
 //!     while let Some(output) = opt(terminated(parse_digits, opt(','))).parse_next(input)? {
 //!         list.push(output);
@@ -23,7 +23,7 @@
 //! }
 //!
 //! // ...
-//! # fn parse_digits(input: &mut &str) -> PResult<usize> {
+//! # fn parse_digits(input: &mut &str) -> ModalResult<usize> {
 //! #     dispatch!(take(2usize);
 //! #         "0b" => parse_bin_digits.try_map(|s| usize::from_str_radix(s, 2)),
 //! #         "0o" => parse_oct_digits.try_map(|s| usize::from_str_radix(s, 8)),
@@ -33,25 +33,25 @@
 //! #     ).parse_next(input)
 //! # }
 //! #
-//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='1'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
@@ -82,13 +82,13 @@
 //! use winnow::combinator::repeat;
 //! use winnow::combinator::terminated;
 //!
-//! fn parse_list(input: &mut &str) -> PResult<Vec<usize>> {
+//! fn parse_list(input: &mut &str) -> ModalResult<Vec<usize>> {
 //!     repeat(0..,
 //!         terminated(parse_digits, opt(','))
 //!     ).parse_next(input)
 //! }
 //! #
-//! # fn parse_digits(input: &mut &str) -> PResult<usize> {
+//! # fn parse_digits(input: &mut &str) -> ModalResult<usize> {
 //! #     dispatch!(take(2usize);
 //! #         "0b" => parse_bin_digits.try_map(|s| usize::from_str_radix(s, 2)),
 //! #         "0o" => parse_oct_digits.try_map(|s| usize::from_str_radix(s, 8)),
@@ -98,25 +98,25 @@
 //! #     ).parse_next(input)
 //! # }
 //! #
-//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='1'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
@@ -146,12 +146,12 @@
 //! # use winnow::combinator::fail;
 //! use winnow::combinator::separated;
 //!
-//! fn parse_list(input: &mut &str) -> PResult<Vec<usize>> {
+//! fn parse_list(input: &mut &str) -> ModalResult<Vec<usize>> {
 //!     separated(0.., parse_digits, ",").parse_next(input)
 //! }
 //!
 //! // ...
-//! # fn parse_digits(input: &mut &str) -> PResult<usize> {
+//! # fn parse_digits(input: &mut &str) -> ModalResult<usize> {
 //! #     dispatch!(take(2usize);
 //! #         "0b" => parse_bin_digits.try_map(|s| usize::from_str_radix(s, 2)),
 //! #         "0o" => parse_oct_digits.try_map(|s| usize::from_str_radix(s, 8)),
@@ -161,25 +161,25 @@
 //! #     ).parse_next(input)
 //! # }
 //! #
-//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='1'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
@@ -223,15 +223,15 @@
 //! # use winnow::combinator::fail;
 //! # use winnow::combinator::separated;
 //! #
-//! fn take_list<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! fn take_list<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //!     parse_list.take().parse_next(input)
 //! }
 //!
-//! fn parse_list(input: &mut &str) -> PResult<()> {
+//! fn parse_list(input: &mut &str) -> ModalResult<()> {
 //!     separated(0.., parse_digits, ",").parse_next(input)
 //! }
 //!
-//! # fn parse_digits(input: &mut &str) -> PResult<usize> {
+//! # fn parse_digits(input: &mut &str) -> ModalResult<usize> {
 //! #     dispatch!(take(2usize);
 //! #         "0b" => parse_bin_digits.try_map(|s| usize::from_str_radix(s, 2)),
 //! #         "0o" => parse_oct_digits.try_map(|s| usize::from_str_radix(s, 8)),
@@ -241,25 +241,25 @@
 //! #     ).parse_next(input)
 //! # }
 //! #
-//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='1'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),

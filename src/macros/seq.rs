@@ -28,7 +28,7 @@
 /// }
 ///
 /// // Parse into structs / tuple-structs
-/// fn field(input: &mut &[u8]) -> PResult<Field> {
+/// fn field(input: &mut &[u8]) -> ModalResult<Field> {
 ///     seq!{Field {
 ///         namespace: empty.value(5),
 ///         name: alphanumeric1.map(|s: &[u8]| s.to_owned()),
@@ -43,7 +43,7 @@
 /// }
 ///
 /// // Or parse into tuples
-/// fn point(input: &mut &[u8]) -> PResult<(u32, u32)> {
+/// fn point(input: &mut &[u8]) -> ModalResult<(u32, u32)> {
 ///     let mut num = dec_uint::<_, u32, ContextError>;
 ///     seq!(num, _: (space0, b',', space0), num).parse_next(input)
 /// }

@@ -9,7 +9,7 @@ use winnow::prelude::*;
 fn main() {
     let mut data = "abcabcabcabc";
 
-    fn parser<'s>(i: &mut &'s str) -> PResult<&'s str> {
+    fn parser<'s>(i: &mut &'s str) -> ModalResult<&'s str> {
         "abc".parse_next(i)
     }
 
@@ -66,7 +66,7 @@ fn main() {
         .map(|(k, v)| (k.to_uppercase(), v))
         .collect::<HashMap<_, _>>();
 
-    let parser_result: PResult<(_, _), ()> = winnow_it.finish();
+    let parser_result: ModalResult<(_, _), ()> = winnow_it.finish();
     let (remaining_input, ()) = parser_result.unwrap();
 
     // will print "iterator returned {"key1": "value1", "key3": "value3", "key2": "value2"}, remaining input is ';'"

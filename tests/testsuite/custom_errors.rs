@@ -33,23 +33,23 @@ impl<'a> ParserError<Partial<&'a str>> for CustomError {
     }
 }
 
-fn test1<'i>(input: &mut Partial<&'i str>) -> PResult<&'i str, CustomError> {
+fn test1<'i>(input: &mut Partial<&'i str>) -> ModalResult<&'i str, CustomError> {
     //fix_error!(input, CustomError, tag!("abcd"))
     "abcd".parse_next(input)
 }
 
-fn test2<'i>(input: &mut Partial<&'i str>) -> PResult<&'i str, CustomError> {
+fn test2<'i>(input: &mut Partial<&'i str>) -> ModalResult<&'i str, CustomError> {
     //terminated!(input, test1, fix_error!(CustomError, digit))
     terminated(test1, digit).parse_next(input)
 }
 
-fn test3<'i>(input: &mut Partial<&'i str>) -> PResult<&'i str, CustomError> {
+fn test3<'i>(input: &mut Partial<&'i str>) -> ModalResult<&'i str, CustomError> {
     test1
         .verify(|s: &str| s.starts_with("abcd"))
         .parse_next(input)
 }
 
 #[cfg(feature = "alloc")]
-fn test4<'i>(input: &mut Partial<&'i str>) -> PResult<Vec<&'i str>, CustomError> {
+fn test4<'i>(input: &mut Partial<&'i str>) -> ModalResult<Vec<&'i str>, CustomError> {
     repeat(4, test1).parse_next(input)
 }

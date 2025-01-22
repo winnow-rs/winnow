@@ -49,7 +49,7 @@ impl Display for Expr {
     }
 }
 
-pub(crate) fn expr(i: &mut &str) -> PResult<Expr> {
+pub(crate) fn expr(i: &mut &str) -> ModalResult<Expr> {
     let init = term.parse_next(i)?;
 
     repeat(0.., (one_of(['+', '-']), term))
@@ -66,7 +66,7 @@ pub(crate) fn expr(i: &mut &str) -> PResult<Expr> {
         .parse_next(i)
 }
 
-fn term(i: &mut &str) -> PResult<Expr> {
+fn term(i: &mut &str) -> ModalResult<Expr> {
     let init = factor.parse_next(i)?;
 
     repeat(0.., (one_of(['*', '/']), factor))
@@ -83,7 +83,7 @@ fn term(i: &mut &str) -> PResult<Expr> {
         .parse_next(i)
 }
 
-fn factor(i: &mut &str) -> PResult<Expr> {
+fn factor(i: &mut &str) -> ModalResult<Expr> {
     delimited(
         multispaces,
         alt((digits.try_map(FromStr::from_str).map(Expr::Value), parens)),
@@ -92,7 +92,7 @@ fn factor(i: &mut &str) -> PResult<Expr> {
     .parse_next(i)
 }
 
-fn parens(i: &mut &str) -> PResult<Expr> {
+fn parens(i: &mut &str) -> ModalResult<Expr> {
     delimited("(", expr, ")")
         .map(|e| Expr::Paren(Box::new(e)))
         .parse_next(i)

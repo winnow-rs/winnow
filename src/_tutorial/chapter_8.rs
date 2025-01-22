@@ -9,11 +9,11 @@
 //! You can extend your own parsers to show up by wrapping their body with
 //! [`trace`][crate::combinator::trace].  Going back to [`do_nothing_parser`][super::chapter_1].
 //! ```rust
-//! # use winnow::PResult;
+//! # use winnow::ModalResult;
 //! # use winnow::Parser;
 //! use winnow::combinator::trace;
 //!
-//! pub fn do_nothing_parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! pub fn do_nothing_parser<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //!     trace(
 //!         "do_nothing_parser",
 //!         |i: &mut _| Ok("")

@@ -2082,7 +2082,7 @@ Err(
     }
 
     #[cfg(feature = "std")]
-    fn parse_f64(i: &mut &str) -> PResult<f64, ()> {
+    fn parse_f64(i: &mut &str) -> ModalResult<f64, ()> {
         match take_float_or_exceptions.parse_next(i) {
             Err(e) => Err(e),
             Ok(s) => {

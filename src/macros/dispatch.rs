@@ -17,11 +17,11 @@
 /// # use winnow::combinator::empty;
 /// # use winnow::combinator::fail;
 ///
-/// fn escaped(input: &mut &str) -> PResult<char> {
+/// fn escaped(input: &mut &str) -> ModalResult<char> {
 ///     preceded('\\', escape_seq_char).parse_next(input)
 /// }
 ///
-/// fn escape_seq_char(input: &mut &str) -> PResult<char> {
+/// fn escape_seq_char(input: &mut &str) -> ModalResult<char> {
 ///     dispatch! {any;
 ///         'b' => empty.value('\u{8}'),
 ///         'f' => empty.value('\u{c}'),
