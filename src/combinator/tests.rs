@@ -122,10 +122,6 @@ impl<I: Stream> ParserError<I> for CustomError {
     fn from_error_kind(_: &I, _: ErrorKind) -> Self {
         CustomError
     }
-
-    fn append(self, _: &I, _: &<I as Stream>::Checkpoint, _: ErrorKind) -> Self {
-        CustomError
-    }
 }
 
 struct CustomError;
@@ -3462,9 +3458,6 @@ impl<I> From<(I, ErrorKind)> for NilError {
 
 impl<I: Stream> ParserError<I> for NilError {
     fn from_error_kind(_: &I, _: ErrorKind) -> NilError {
-        NilError
-    }
-    fn append(self, _: &I, _: &<I as Stream>::Checkpoint, _: ErrorKind) -> NilError {
         NilError
     }
 }

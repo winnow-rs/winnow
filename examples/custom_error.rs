@@ -21,10 +21,6 @@ impl<I: Stream + Clone> ParserError<I> for CustomError<I> {
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
         CustomError::Winnow(input.clone(), kind)
     }
-
-    fn append(self, _: &I, _: &<I as Stream>::Checkpoint, _: ErrorKind) -> Self {
-        self
-    }
 }
 
 impl<C, I: Stream> AddContext<I, C> for CustomError<I> {
