@@ -5,9 +5,9 @@
 use snapbox::prelude::*;
 use snapbox::str;
 
+use winnow::error::{ErrMode, Needed, StrContext, TreeError};
 use winnow::prelude::*;
 use winnow::Partial;
-use winnow::{error::ErrMode, error::InputError, error::Needed};
 
 use crate::TestResult;
 
@@ -312,7 +312,7 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
 fn issue_942() {
     pub(crate) fn parser<'i>(input: &mut &'i str) -> TestResult<&'i str, usize> {
         use winnow::combinator::repeat;
-        repeat(1.., 'a'.context("char_a")).parse_next(input)
+        repeat(1.., 'a'.context(StrContext::Label("char_a"))).parse_next(input)
     }
     assert_parse!(
         parser.parse_peek("aaa"),
@@ -332,9 +332,31 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: "bbb",
-            kind: Literal,
+        Stack {
+            base: Base(
+                TreeErrorBase {
+                    input: "bbb",
+                    kind: Literal,
+                    cause: None,
+                },
+            ),
+            stack: [
+                Context(
+                    TreeErrorContext {
+                        input: "bbb",
+                        context: Label(
+                            "char_a",
+                        ),
+                    },
+                ),
+                Kind(
+                    TreeErrorBase {
+                        input: "bbb",
+                        kind: Repeat,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -367,7 +389,7 @@ Ok(
 fn issue_1231_bits_expect_fn_closure() {
     use winnow::binary::bits::{bits, take};
     pub(crate) fn example<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], (u8, u8)> {
-        bits::<_, _, InputError<_>, _, _>((take(1usize), take(1usize))).parse_next(input)
+        bits::<_, _, TreeError<_>, _, _>((take(1usize), take(1usize))).parse_next(input)
     }
     assert_parse!(
         example.parse_peek(&[0xff]),
@@ -473,11 +495,27 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: [
-                44,
+        Stack {
+            base: Base(
+                TreeErrorBase {
+                    input: [
+                        44,
+                    ],
+                    kind: Slice,
+                    cause: None,
+                },
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: [
+                            44,
+                        ],
+                        kind: Repeat,
+                        cause: None,
+                    },
+                ),
             ],
-            kind: Slice,
         },
     ),
 )

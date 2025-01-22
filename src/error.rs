@@ -47,7 +47,7 @@ pub type PResult<O, E = ContextError> = Result<O, ErrMode<E>>;
 pub type IResult<I, O, E = InputError<I>> = PResult<(I, O), E>;
 
 #[cfg(test)]
-pub(crate) type TestResult<I, O> = PResult<O, InputError<I>>;
+pub(crate) type TestResult<I, O> = PResult<O, TreeError<I>>;
 
 /// Contains information on needed data if a parser returned `Incomplete`
 ///

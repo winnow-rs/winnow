@@ -3240,17 +3240,20 @@ Err(
             str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        120,
+                        120,
+                        120,
+                    ],
+                    partial: true,
+                },
+                kind: Slice,
+                cause: None,
             },
-            kind: Slice,
-        },
+        ),
     ),
 )
 
@@ -3262,16 +3265,37 @@ Err(
             str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                ],
-                partial: true,
-            },
-            kind: Literal,
+        Stack {
+            base: Base(
+                TreeErrorBase {
+                    input: Partial {
+                        input: [
+                            120,
+                            120,
+                            120,
+                        ],
+                        partial: true,
+                    },
+                    kind: Literal,
+                    cause: None,
+                },
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: Partial {
+                            input: [
+                                120,
+                                120,
+                                120,
+                            ],
+                            partial: true,
+                        },
+                        kind: Repeat,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -3495,17 +3519,20 @@ Err(
             str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        120,
+                        120,
+                        120,
+                    ],
+                    partial: true,
+                },
+                kind: Slice,
+                cause: None,
             },
-            kind: Slice,
-        },
+        ),
     ),
 )
 
@@ -3560,13 +3587,16 @@ Ok(
             str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [],
-                partial: false,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [],
+                    partial: false,
+                },
+                kind: Slice,
+                cause: None,
             },
-            kind: Slice,
-        },
+        ),
     ),
 )
 
@@ -3578,13 +3608,16 @@ Err(
             str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [],
-                partial: false,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [],
+                    partial: false,
+                },
+                kind: Token,
+                cause: None,
             },
-            kind: Token,
-        },
+        ),
     ),
 )
 
@@ -3601,15 +3634,18 @@ Err(
                 str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    5,
-                ],
-                partial: false,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        5,
+                    ],
+                    partial: false,
+                },
+                kind: Slice,
+                cause: None,
             },
-            kind: Slice,
-        },
+        ),
     ),
 )
 
@@ -3621,13 +3657,16 @@ Err(
                 str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [],
-                partial: false,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [],
+                    partial: false,
+                },
+                kind: Token,
+                cause: None,
             },
-            kind: Token,
-        },
+        ),
     ),
 )
 

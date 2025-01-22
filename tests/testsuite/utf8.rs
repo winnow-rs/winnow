@@ -41,10 +41,13 @@ fn literal_incomplete_str() {
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: "Hello",
-            kind: Literal,
-        },
+        Base(
+            TreeErrorBase {
+                input: "Hello",
+                kind: Literal,
+                cause: None,
+            },
+        ),
     ),
 )
 
@@ -62,10 +65,13 @@ fn literal_error_str() {
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: "Hello World!",
-            kind: Literal,
-        },
+        Base(
+            TreeErrorBase {
+                input: "Hello World!",
+                kind: Literal,
+                cause: None,
+            },
+        ),
     ),
 )
 
@@ -411,13 +417,16 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: "123",
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: "123",
+                    partial: true,
+                },
+                kind: Slice,
+                cause: None,
             },
-            kind: Slice,
-        },
+        ),
     ),
 )
 
@@ -490,10 +499,13 @@ fn take_while1_fn_fail_str() {
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: "βèƒôřèÂßÇáƒƭèř",
-            kind: Slice,
-        },
+        Base(
+            TreeErrorBase {
+                input: "βèƒôřèÂßÇáƒƭèř",
+                kind: Slice,
+                cause: None,
+            },
+        ),
     ),
 )
 
@@ -514,10 +526,13 @@ fn take_while1_set_fail_str() {
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: "βèƒôřèÂßÇáƒƭèř",
-            kind: Slice,
-        },
+        Base(
+            TreeErrorBase {
+                input: "βèƒôřèÂßÇáƒƭèř",
+                kind: Slice,
+                cause: None,
+            },
+        ),
     ),
 )
 
@@ -584,10 +599,13 @@ fn take_till1_failed_str() {
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: "βèƒôřèÂßÇáƒƭèř",
-            kind: Slice,
-        },
+        Base(
+            TreeErrorBase {
+                input: "βèƒôřèÂßÇáƒƭèř",
+                kind: Slice,
+                cause: None,
+            },
+        ),
     ),
 )
 

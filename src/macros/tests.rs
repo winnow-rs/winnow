@@ -43,10 +43,13 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: "rror",
-            kind: Fail,
-        },
+        Base(
+            TreeErrorBase {
+                input: "rror",
+                kind: Fail,
+                cause: None,
+            },
+        ),
     ),
 )
 
@@ -58,10 +61,13 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: "",
-            kind: Token,
-        },
+        Base(
+            TreeErrorBase {
+                input: "",
+                kind: Token,
+                cause: None,
+            },
+        ),
     ),
 )
 
@@ -109,9 +115,34 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: " remaining",
-            kind: Verify,
+        Stack {
+            base: Alt(
+                [
+                    Base(
+                        TreeErrorBase {
+                            input: " remaining",
+                            kind: Verify,
+                            cause: None,
+                        },
+                    ),
+                    Base(
+                        TreeErrorBase {
+                            input: " remaining",
+                            kind: Verify,
+                            cause: None,
+                        },
+                    ),
+                ],
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: " remaining",
+                        kind: Alt,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -124,9 +155,34 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: "",
-            kind: Token,
+        Stack {
+            base: Alt(
+                [
+                    Base(
+                        TreeErrorBase {
+                            input: "",
+                            kind: Token,
+                            cause: None,
+                        },
+                    ),
+                    Base(
+                        TreeErrorBase {
+                            input: "",
+                            kind: Token,
+                            cause: None,
+                        },
+                    ),
+                ],
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: "",
+                        kind: Alt,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -178,9 +234,34 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: " remaining",
-            kind: Verify,
+        Stack {
+            base: Alt(
+                [
+                    Base(
+                        TreeErrorBase {
+                            input: " remaining",
+                            kind: Verify,
+                            cause: None,
+                        },
+                    ),
+                    Base(
+                        TreeErrorBase {
+                            input: " remaining",
+                            kind: Verify,
+                            cause: None,
+                        },
+                    ),
+                ],
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: " remaining",
+                        kind: Alt,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -193,9 +274,34 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: "",
-            kind: Token,
+        Stack {
+            base: Alt(
+                [
+                    Base(
+                        TreeErrorBase {
+                            input: "",
+                            kind: Token,
+                            cause: None,
+                        },
+                    ),
+                    Base(
+                        TreeErrorBase {
+                            input: "",
+                            kind: Token,
+                            cause: None,
+                        },
+                    ),
+                ],
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: "",
+                        kind: Alt,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -394,9 +500,34 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: " remaining",
-            kind: Verify,
+        Stack {
+            base: Alt(
+                [
+                    Base(
+                        TreeErrorBase {
+                            input: " remaining",
+                            kind: Verify,
+                            cause: None,
+                        },
+                    ),
+                    Base(
+                        TreeErrorBase {
+                            input: " remaining",
+                            kind: Verify,
+                            cause: None,
+                        },
+                    ),
+                ],
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: " remaining",
+                        kind: Alt,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -409,9 +540,34 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: "",
-            kind: Token,
+        Stack {
+            base: Alt(
+                [
+                    Base(
+                        TreeErrorBase {
+                            input: "",
+                            kind: Token,
+                            cause: None,
+                        },
+                    ),
+                    Base(
+                        TreeErrorBase {
+                            input: "",
+                            kind: Token,
+                            cause: None,
+                        },
+                    ),
+                ],
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: "",
+                        kind: Alt,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -513,9 +669,34 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: " remaining",
-            kind: Verify,
+        Stack {
+            base: Alt(
+                [
+                    Base(
+                        TreeErrorBase {
+                            input: " remaining",
+                            kind: Verify,
+                            cause: None,
+                        },
+                    ),
+                    Base(
+                        TreeErrorBase {
+                            input: " remaining",
+                            kind: Verify,
+                            cause: None,
+                        },
+                    ),
+                ],
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: " remaining",
+                        kind: Alt,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -528,9 +709,34 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: "",
-            kind: Token,
+        Stack {
+            base: Alt(
+                [
+                    Base(
+                        TreeErrorBase {
+                            input: "",
+                            kind: Token,
+                            cause: None,
+                        },
+                    ),
+                    Base(
+                        TreeErrorBase {
+                            input: "",
+                            kind: Token,
+                            cause: None,
+                        },
+                    ),
+                ],
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: "",
+                        kind: Alt,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )

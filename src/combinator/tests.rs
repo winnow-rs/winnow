@@ -32,24 +32,27 @@ fn eof_on_slices() {
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: [
-                72,
-                101,
-                108,
-                108,
-                111,
-                44,
-                32,
-                119,
-                111,
-                114,
-                108,
-                100,
-                33,
-            ],
-            kind: Eof,
-        },
+        Base(
+            TreeErrorBase {
+                input: [
+                    72,
+                    101,
+                    108,
+                    108,
+                    111,
+                    44,
+                    32,
+                    119,
+                    111,
+                    114,
+                    108,
+                    100,
+                    33,
+                ],
+                kind: Eof,
+                cause: None,
+            },
+        ),
     ),
 )
 
@@ -84,10 +87,13 @@ fn eof_on_strs() {
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: "Hello, world!",
-            kind: Eof,
-        },
+        Base(
+            TreeErrorBase {
+                input: "Hello, world!",
+                kind: Eof,
+                cause: None,
+            },
+        ),
     ),
 )
 
@@ -171,12 +177,15 @@ fn test_parser_verify_map() {
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: [
-                50,
-            ],
-            kind: Verify,
-        },
+        Base(
+            TreeErrorBase {
+                input: [
+                    50,
+                ],
+                kind: Verify,
+                cause: None,
+            },
+        ),
     ),
 )
 
@@ -380,17 +389,20 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        120,
+                        120,
+                        120,
+                    ],
+                    partial: true,
+                },
+                kind: Literal,
+                cause: None,
             },
-            kind: Literal,
-        },
+        ),
     ),
 )
 
@@ -410,17 +422,20 @@ fn not_test() {
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    97,
-                    97,
-                    97,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        97,
+                        97,
+                        97,
+                    ],
+                    partial: true,
+                },
+                kind: Not,
+                cause: None,
             },
-            kind: Not,
-        },
+        ),
     ),
 )
 
@@ -492,20 +507,23 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    98,
-                    99,
-                    100,
-                    101,
-                    102,
-                    103,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        98,
+                        99,
+                        100,
+                        101,
+                        102,
+                        103,
+                    ],
+                    partial: true,
+                },
+                kind: Verify,
+                cause: None,
             },
-            kind: Verify,
-        },
+        ),
     ),
 )
 
@@ -570,15 +588,18 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: [
-                100,
-                101,
-                102,
-                103,
-            ],
-            kind: Verify,
-        },
+        Base(
+            TreeErrorBase {
+                input: [
+                    100,
+                    101,
+                    102,
+                    103,
+                ],
+                kind: Verify,
+                cause: None,
+            },
+        ),
     ),
 )
 
@@ -625,15 +646,18 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: [
-                100,
-                101,
-                102,
-                103,
-            ],
-            kind: Verify,
-        },
+        Base(
+            TreeErrorBase {
+                input: [
+                    100,
+                    101,
+                    102,
+                    103,
+                ],
+                kind: Verify,
+                cause: None,
+            },
+        ),
     ),
 )
 
@@ -652,10 +676,13 @@ fn fail_test() {
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: "string",
-            kind: Fail,
-        },
+        Base(
+            TreeErrorBase {
+                input: "string",
+                kind: Fail,
+                cause: None,
+            },
+        ),
     ),
 )
 
@@ -667,10 +694,13 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: "another string",
-            kind: Fail,
-        },
+        Base(
+            TreeErrorBase {
+                input: "another string",
+                kind: Fail,
+                cause: None,
+            },
+        ),
     ),
 )
 
@@ -693,13 +723,16 @@ fn complete() {
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: [
-                109,
-                110,
-            ],
-            kind: Literal,
-        },
+        Base(
+            TreeErrorBase {
+                input: [
+                    109,
+                    110,
+                ],
+                kind: Literal,
+                cause: None,
+            },
+        ),
     ),
 )
 
@@ -784,17 +817,20 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        120,
+                        120,
+                        120,
+                    ],
+                    partial: true,
+                },
+                kind: Literal,
+                cause: None,
             },
-            kind: Literal,
-        },
+        ),
     ),
 )
 
@@ -806,21 +842,24 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                    44,
-                    100,
-                    101,
-                    102,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        120,
+                        120,
+                        120,
+                        44,
+                        100,
+                        101,
+                        102,
+                    ],
+                    partial: true,
+                },
+                kind: Literal,
+                cause: None,
             },
-            kind: Literal,
-        },
+        ),
     ),
 )
 
@@ -832,17 +871,20 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        120,
+                        120,
+                        120,
+                    ],
+                    partial: true,
+                },
+                kind: Literal,
+                cause: None,
             },
-            kind: Literal,
-        },
+        ),
     ),
 )
 
@@ -918,17 +960,20 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        120,
+                        120,
+                        120,
+                    ],
+                    partial: true,
+                },
+                kind: Literal,
+                cause: None,
             },
-            kind: Literal,
-        },
+        ),
     ),
 )
 
@@ -940,21 +985,24 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                    120,
-                    100,
-                    101,
-                    102,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        120,
+                        120,
+                        120,
+                        120,
+                        100,
+                        101,
+                        102,
+                    ],
+                    partial: true,
+                },
+                kind: Literal,
+                cause: None,
             },
-            kind: Literal,
-        },
+        ),
     ),
 )
 
@@ -966,17 +1014,20 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        120,
+                        120,
+                        120,
+                    ],
+                    partial: true,
+                },
+                kind: Literal,
+                cause: None,
             },
-            kind: Literal,
-        },
+        ),
     ),
 )
 
@@ -1052,17 +1103,20 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        120,
+                        120,
+                        120,
+                    ],
+                    partial: true,
+                },
+                kind: Literal,
+                cause: None,
             },
-            kind: Literal,
-        },
+        ),
     ),
 )
 
@@ -1074,21 +1128,24 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                    120,
-                    100,
-                    101,
-                    102,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        120,
+                        120,
+                        120,
+                        120,
+                        100,
+                        101,
+                        102,
+                    ],
+                    partial: true,
+                },
+                kind: Literal,
+                cause: None,
             },
-            kind: Literal,
-        },
+        ),
     ),
 )
 
@@ -1100,18 +1157,21 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                    120,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        120,
+                        120,
+                        120,
+                        120,
+                    ],
+                    partial: true,
+                },
+                kind: Literal,
+                cause: None,
             },
-            kind: Literal,
-        },
+        ),
     ),
 )
 
@@ -1199,17 +1259,20 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        120,
+                        120,
+                        120,
+                    ],
+                    partial: true,
+                },
+                kind: Literal,
+                cause: None,
             },
-            kind: Literal,
-        },
+        ),
     ),
 )
 
@@ -1221,23 +1284,26 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                    100,
-                    101,
-                    102,
-                    103,
-                    104,
-                    105,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        120,
+                        120,
+                        120,
+                        100,
+                        101,
+                        102,
+                        103,
+                        104,
+                        105,
+                    ],
+                    partial: true,
+                },
+                kind: Literal,
+                cause: None,
             },
-            kind: Literal,
-        },
+        ),
     ),
 )
 
@@ -1249,20 +1315,23 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                    103,
-                    104,
-                    105,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        120,
+                        120,
+                        120,
+                        103,
+                        104,
+                        105,
+                    ],
+                    partial: true,
+                },
+                kind: Literal,
+                cause: None,
             },
-            kind: Literal,
-        },
+        ),
     ),
 )
 
@@ -1274,17 +1343,20 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        120,
+                        120,
+                        120,
+                    ],
+                    partial: true,
+                },
+                kind: Literal,
+                cause: None,
             },
-            kind: Literal,
-        },
+        ),
     ),
 )
 
@@ -1475,16 +1547,69 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    99,
-                    100,
-                    101,
+        Stack {
+            base: Alt(
+                [
+                    Base(
+                        TreeErrorBase {
+                            input: Partial {
+                                input: [
+                                    99,
+                                    100,
+                                    101,
+                                ],
+                                partial: true,
+                            },
+                            kind: Literal,
+                            cause: None,
+                        },
+                    ),
+                    Base(
+                        TreeErrorBase {
+                            input: Partial {
+                                input: [
+                                    99,
+                                    100,
+                                    101,
+                                ],
+                                partial: true,
+                            },
+                            kind: Literal,
+                            cause: None,
+                        },
+                    ),
+                    Base(
+                        TreeErrorBase {
+                            input: Partial {
+                                input: [
+                                    99,
+                                    100,
+                                    101,
+                                ],
+                                partial: true,
+                            },
+                            kind: Literal,
+                            cause: None,
+                        },
+                    ),
                 ],
-                partial: true,
-            },
-            kind: Literal,
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: Partial {
+                            input: [
+                                99,
+                                100,
+                                101,
+                            ],
+                            partial: true,
+                        },
+                        kind: Alt,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -1600,11 +1725,49 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: [
-                122,
+        Stack {
+            base: Alt(
+                [
+                    Base(
+                        TreeErrorBase {
+                            input: [
+                                122,
+                            ],
+                            kind: Literal,
+                            cause: None,
+                        },
+                    ),
+                    Base(
+                        TreeErrorBase {
+                            input: [
+                                122,
+                            ],
+                            kind: Literal,
+                            cause: None,
+                        },
+                    ),
+                    Base(
+                        TreeErrorBase {
+                            input: [
+                                122,
+                            ],
+                            kind: Literal,
+                            cause: None,
+                        },
+                    ),
+                ],
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: [
+                            122,
+                        ],
+                        kind: Alt,
+                        cause: None,
+                    },
+                ),
             ],
-            kind: Literal,
         },
     ),
 )
@@ -1801,25 +1964,82 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    121,
-                    122,
-                    97,
-                    98,
-                    99,
-                    100,
-                    101,
-                    102,
-                    103,
-                    104,
-                    105,
+        Stack {
+            base: Alt(
+                [
+                    Base(
+                        TreeErrorBase {
+                            input: Partial {
+                                input: [
+                                    120,
+                                    121,
+                                    122,
+                                    97,
+                                    98,
+                                    99,
+                                    100,
+                                    101,
+                                    102,
+                                    103,
+                                    104,
+                                    105,
+                                ],
+                                partial: true,
+                            },
+                            kind: Literal,
+                            cause: None,
+                        },
+                    ),
+                    Base(
+                        TreeErrorBase {
+                            input: Partial {
+                                input: [
+                                    120,
+                                    121,
+                                    122,
+                                    97,
+                                    98,
+                                    99,
+                                    100,
+                                    101,
+                                    102,
+                                    103,
+                                    104,
+                                    105,
+                                ],
+                                partial: true,
+                            },
+                            kind: Literal,
+                            cause: None,
+                        },
+                    ),
                 ],
-                partial: true,
-            },
-            kind: Literal,
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: Partial {
+                            input: [
+                                120,
+                                121,
+                                122,
+                                97,
+                                98,
+                                99,
+                                100,
+                                101,
+                                102,
+                                103,
+                                104,
+                                105,
+                            ],
+                            partial: true,
+                        },
+                        kind: Alt,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -2149,20 +2369,23 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    97,
-                    122,
-                    101,
-                    114,
-                    116,
-                    121,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        97,
+                        122,
+                        101,
+                        114,
+                        116,
+                        121,
+                    ],
+                    partial: true,
+                },
+                kind: Literal,
+                cause: None,
             },
-            kind: Literal,
-        },
+        ),
     ),
 )
 
@@ -2265,15 +2488,36 @@ fn separated_test() {
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    101,
-                    102,
-                ],
-                partial: true,
-            },
-            kind: Literal,
+        Stack {
+            base: Base(
+                TreeErrorBase {
+                    input: Partial {
+                        input: [
+                            101,
+                            102,
+                        ],
+                        partial: true,
+                    },
+                    kind: Literal,
+                    cause: None,
+                },
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: Partial {
+                            input: [
+                                44,
+                                101,
+                                102,
+                            ],
+                            partial: true,
+                        },
+                        kind: Repeat,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -2653,19 +2897,43 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    97,
-                    122,
-                    101,
-                    114,
-                    116,
-                    121,
-                ],
-                partial: true,
-            },
-            kind: Literal,
+        Stack {
+            base: Base(
+                TreeErrorBase {
+                    input: Partial {
+                        input: [
+                            97,
+                            122,
+                            101,
+                            114,
+                            116,
+                            121,
+                        ],
+                        partial: true,
+                    },
+                    kind: Literal,
+                    cause: None,
+                },
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: Partial {
+                            input: [
+                                97,
+                                122,
+                                101,
+                                114,
+                                116,
+                                121,
+                            ],
+                            partial: true,
+                        },
+                        kind: Repeat,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -2771,16 +3039,37 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: [
-                97,
-                122,
-                101,
-                114,
-                116,
-                121,
+        Stack {
+            base: Base(
+                TreeErrorBase {
+                    input: [
+                        97,
+                        122,
+                        101,
+                        114,
+                        116,
+                        121,
+                    ],
+                    kind: Literal,
+                    cause: None,
+                },
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: [
+                            97,
+                            122,
+                            101,
+                            114,
+                            116,
+                            121,
+                        ],
+                        kind: Repeat,
+                        cause: None,
+                    },
+                ),
             ],
-            kind: Literal,
         },
     ),
 )
@@ -2803,9 +3092,23 @@ fn repeat_till_range_test() {
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: "cd",
-            kind: Literal,
+        Stack {
+            base: Base(
+                TreeErrorBase {
+                    input: "cd",
+                    kind: Literal,
+                    cause: None,
+                },
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: "cd",
+                        kind: Repeat,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -2818,9 +3121,23 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: "cd",
-            kind: Literal,
+        Stack {
+            base: Base(
+                TreeErrorBase {
+                    input: "cd",
+                    kind: Literal,
+                    cause: None,
+                },
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: "abcd",
+                        kind: Repeat,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -2893,10 +3210,13 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: "abcd",
-            kind: Literal,
-        },
+        Base(
+            TreeErrorBase {
+                input: "abcd",
+                kind: Literal,
+                cause: None,
+            },
+        ),
     ),
 )
 
@@ -2948,16 +3268,37 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: [
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
+        Stack {
+            base: Base(
+                TreeErrorBase {
+                    input: [
+                        97,
+                        98,
+                        99,
+                        100,
+                        101,
+                        102,
+                    ],
+                    kind: Literal,
+                    cause: None,
+                },
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: [
+                            97,
+                            98,
+                            99,
+                            100,
+                            101,
+                            102,
+                        ],
+                        kind: Repeat,
+                        cause: None,
+                    },
+                ),
             ],
-            kind: Literal,
         },
     ),
 )
@@ -2985,15 +3326,35 @@ fn repeat_test() {
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    101,
-                    102,
-                ],
-                partial: true,
-            },
-            kind: Literal,
+        Stack {
+            base: Base(
+                TreeErrorBase {
+                    input: Partial {
+                        input: [
+                            101,
+                            102,
+                        ],
+                        partial: true,
+                    },
+                    kind: Literal,
+                    cause: None,
+                },
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: Partial {
+                            input: [
+                                101,
+                                102,
+                            ],
+                            partial: true,
+                        },
+                        kind: Repeat,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -3222,16 +3583,37 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                ],
-                partial: true,
-            },
-            kind: Literal,
+        Stack {
+            base: Base(
+                TreeErrorBase {
+                    input: Partial {
+                        input: [
+                            120,
+                            120,
+                            120,
+                        ],
+                        partial: true,
+                    },
+                    kind: Literal,
+                    cause: None,
+                },
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: Partial {
+                            input: [
+                                120,
+                                120,
+                                120,
+                            ],
+                            partial: true,
+                        },
+                        kind: Repeat,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -3244,25 +3626,55 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                    97,
-                    98,
-                    99,
-                    97,
-                    98,
-                    99,
-                    100,
-                    101,
-                    102,
-                ],
-                partial: true,
-            },
-            kind: Literal,
+        Stack {
+            base: Base(
+                TreeErrorBase {
+                    input: Partial {
+                        input: [
+                            120,
+                            120,
+                            120,
+                            97,
+                            98,
+                            99,
+                            97,
+                            98,
+                            99,
+                            100,
+                            101,
+                            102,
+                        ],
+                        partial: true,
+                    },
+                    kind: Literal,
+                    cause: None,
+                },
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: Partial {
+                            input: [
+                                120,
+                                120,
+                                120,
+                                97,
+                                98,
+                                99,
+                                97,
+                                98,
+                                99,
+                                100,
+                                101,
+                                102,
+                            ],
+                            partial: true,
+                        },
+                        kind: Repeat,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -3275,22 +3687,49 @@ Err(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    120,
-                    120,
-                    120,
-                    97,
-                    98,
-                    99,
-                    100,
-                    101,
-                    102,
-                ],
-                partial: true,
-            },
-            kind: Literal,
+        Stack {
+            base: Base(
+                TreeErrorBase {
+                    input: Partial {
+                        input: [
+                            120,
+                            120,
+                            120,
+                            97,
+                            98,
+                            99,
+                            100,
+                            101,
+                            102,
+                        ],
+                        partial: true,
+                    },
+                    kind: Literal,
+                    cause: None,
+                },
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: Partial {
+                            input: [
+                                120,
+                                120,
+                                120,
+                                97,
+                                98,
+                                99,
+                                100,
+                                101,
+                                102,
+                            ],
+                            partial: true,
+                        },
+                        kind: Repeat,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -3700,20 +4139,23 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    97,
-                    122,
-                    101,
-                    114,
-                    116,
-                    121,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        97,
+                        122,
+                        101,
+                        114,
+                        116,
+                        121,
+                    ],
+                    partial: true,
+                },
+                kind: Repeat,
+                cause: None,
             },
-            kind: Repeat,
-        },
+        ),
     ),
 )
 
@@ -3760,15 +4202,35 @@ fn fold_repeat_test() {
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    101,
-                    102,
-                ],
-                partial: true,
-            },
-            kind: Literal,
+        Stack {
+            base: Base(
+                TreeErrorBase {
+                    input: Partial {
+                        input: [
+                            101,
+                            102,
+                        ],
+                        partial: true,
+                    },
+                    kind: Literal,
+                    cause: None,
+                },
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: Partial {
+                            input: [
+                                101,
+                                102,
+                            ],
+                            partial: true,
+                        },
+                        kind: Repeat,
+                        cause: None,
+                    },
+                ),
+            ],
         },
     ),
 )
@@ -4055,15 +4517,35 @@ Ok(
         str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: [
-                104,
-                101,
-                108,
-                108,
-                111,
+        Stack {
+            base: Base(
+                TreeErrorBase {
+                    input: [
+                        104,
+                        101,
+                        108,
+                        108,
+                        111,
+                    ],
+                    kind: Slice,
+                    cause: None,
+                },
+            ),
+            stack: [
+                Kind(
+                    TreeErrorBase {
+                        input: [
+                            104,
+                            101,
+                            108,
+                            108,
+                            111,
+                        ],
+                        kind: Repeat,
+                        cause: None,
+                    },
+                ),
             ],
-            kind: Slice,
         },
     ),
 )

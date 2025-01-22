@@ -1364,10 +1364,13 @@ Ok(
             str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: "123def",
-            kind: Slice,
-        },
+        Base(
+            TreeErrorBase {
+                input: "123def",
+                kind: Slice,
+                cause: None,
+            },
+        ),
     ),
 )
 
@@ -1447,16 +1450,19 @@ Err(
             str![[r#"
 Err(
     Backtrack(
-        InputError {
-            input: Partial {
-                input: [
-                    106,
-                    107,
-                ],
-                partial: true,
+        Base(
+            TreeErrorBase {
+                input: Partial {
+                    input: [
+                        106,
+                        107,
+                    ],
+                    partial: true,
+                },
+                kind: Literal,
+                cause: None,
             },
-            kind: Literal,
-        },
+        ),
     ),
 )
 
