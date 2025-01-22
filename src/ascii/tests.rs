@@ -2076,7 +2076,7 @@ Err(
       fn floats(s in "\\PC*") {
           println!("testing {s}");
           let res1 = parse_f64.parse_peek(&s);
-          let res2 = float::<_, f64, ()>.parse_peek(s.as_str());
+          let res2 = float::<_, f64, ErrMode<()>>.parse_peek(s.as_str());
           assert_eq!(res1, res2);
       }
     }

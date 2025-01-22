@@ -5,7 +5,7 @@ use crate::combinator::impls;
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
 use crate::error::FromRecoverableError;
-use crate::error::{AddContext, FromExternalError, ModalResult, ParseError, ParserError};
+use crate::error::{AddContext, FromExternalError, ParseError, ParserError, Result};
 use crate::stream::{Compare, Location, ParseSlice, Stream, StreamIsPartial};
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
@@ -48,13 +48,14 @@ use crate::stream::{Recover, Recoverable};
 pub trait Parser<I, O, E> {
     /// Parse all of `input`, generating `O` from it
     #[inline]
-    fn parse(&mut self, mut input: I) -> Result<O, ParseError<I, E>>
+    fn parse(&mut self, mut input: I) -> Result<O, ParseError<I, <E as ParserError<I>>::Inner>>
     where
         Self: core::marker::Sized,
         I: Stream,
         // Force users to deal with `Incomplete` when `StreamIsPartial<true>`
         I: StreamIsPartial,
         E: ParserError<I>,
+        <E as ParserError<I>>::Inner: ParserError<I>,
     {
         debug_assert!(
             !I::is_partial_supported(),
@@ -78,7 +79,7 @@ pub trait Parser<I, O, E> {
     /// This includes advancing the [`Stream`] to the next location.
     ///
     /// On error, `input` will be left pointing at the error location.
-    fn parse_next(&mut self, input: &mut I) -> ModalResult<O, E>;
+    fn parse_next(&mut self, input: &mut I) -> Result<O, E>;
 
     /// Take tokens from the [`Stream`], turning it into the output
     ///
@@ -95,7 +96,7 @@ pub trait Parser<I, O, E> {
     ///
     /// </div>
     #[inline(always)]
-    fn parse_peek(&mut self, mut input: I) -> ModalResult<(I, O), E> {
+    fn parse_peek(&mut self, mut input: I) -> Result<(I, O), E> {
         match self.parse_next(&mut input) {
             Ok(o) => Ok((input, o)),
             Err(err) => Err(err),
@@ -895,11 +896,11 @@ pub trait Parser<I, O, E> {
 
 impl<I, O, E, F> Parser<I, O, E> for F
 where
-    F: FnMut(&mut I) -> ModalResult<O, E>,
+    F: FnMut(&mut I) -> Result<O, E>,
     I: Stream,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> ModalResult<O, E> {
+    fn parse_next(&mut self, i: &mut I) -> Result<O, E> {
         self(i)
     }
 }
@@ -927,7 +928,7 @@ where
     E: ParserError<I>,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> ModalResult<u8, E> {
+    fn parse_next(&mut self, i: &mut I) -> Result<u8, E> {
         crate::token::literal(*self).value(*self).parse_next(i)
     }
 }
@@ -955,7 +956,7 @@ where
     E: ParserError<I>,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> ModalResult<char, E> {
+    fn parse_next(&mut self, i: &mut I) -> Result<char, E> {
         crate::token::literal(*self).value(*self).parse_next(i)
     }
 }
@@ -984,7 +985,7 @@ where
     I: Stream,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> ModalResult<<I as Stream>::Slice, E> {
+    fn parse_next(&mut self, i: &mut I) -> Result<<I as Stream>::Slice, E> {
         crate::token::literal(*self).parse_next(i)
     }
 }
@@ -1016,7 +1017,7 @@ where
     I: Stream,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> ModalResult<<I as Stream>::Slice, E> {
+    fn parse_next(&mut self, i: &mut I) -> Result<<I as Stream>::Slice, E> {
         crate::token::literal(*self).parse_next(i)
     }
 }
@@ -1045,7 +1046,7 @@ where
     I: Stream,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> ModalResult<<I as Stream>::Slice, E> {
+    fn parse_next(&mut self, i: &mut I) -> Result<<I as Stream>::Slice, E> {
         crate::token::literal(*self).parse_next(i)
     }
 }
@@ -1078,7 +1079,7 @@ where
     I: Stream,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> ModalResult<<I as Stream>::Slice, E> {
+    fn parse_next(&mut self, i: &mut I) -> Result<<I as Stream>::Slice, E> {
         crate::token::literal(*self).parse_next(i)
     }
 }
@@ -1107,7 +1108,7 @@ where
     I: Stream,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> ModalResult<<I as Stream>::Slice, E> {
+    fn parse_next(&mut self, i: &mut I) -> Result<<I as Stream>::Slice, E> {
         crate::token::literal(*self).parse_next(i)
     }
 }
@@ -1139,14 +1140,14 @@ where
     I: Stream,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> ModalResult<<I as Stream>::Slice, E> {
+    fn parse_next(&mut self, i: &mut I) -> Result<<I as Stream>::Slice, E> {
         crate::token::literal(*self).parse_next(i)
     }
 }
 
 impl<I: Stream, E: ParserError<I>> Parser<I, (), E> for () {
     #[inline(always)]
-    fn parse_next(&mut self, _i: &mut I) -> ModalResult<(), E> {
+    fn parse_next(&mut self, _i: &mut I) -> Result<(), E> {
         Ok(())
     }
 }
@@ -1159,7 +1160,7 @@ macro_rules! impl_parser_for_tuple {
       $($parser: Parser<I, $output, E>),+
     {
       #[inline(always)]
-      fn parse_next(&mut self, i: &mut I) -> ModalResult<($($output),+,), E> {
+      fn parse_next(&mut self, i: &mut I) -> Result<($($output),+,), E> {
         $(let $output = self.$index.parse_next(i)?;)+
 
         Ok(($($output),+,))
@@ -1212,7 +1213,7 @@ use crate::lib::std::boxed::Box;
 #[cfg(feature = "alloc")]
 impl<I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + '_> {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> ModalResult<O, E> {
+    fn parse_next(&mut self, i: &mut I) -> Result<O, E> {
         (**self).parse_next(i)
     }
 }
@@ -1264,9 +1265,6 @@ where
         let (o, err) = match result {
             Ok((o, _)) => (Some(o), None),
             Err(err) => {
-                let err = err.into_inner().unwrap_or_else(|_err| {
-                    panic!("complete parsers should not report `ErrMode::Incomplete(_)`")
-                });
                 let err_start = input.checkpoint();
                 let err = R::from_recoverable_error(&start_token, &err_start, &input, err);
                 (None, Some(err))
@@ -1289,7 +1287,7 @@ where
 #[allow(deprecated)]
 pub fn unpeek<'a, I, O, E>(
     mut peek: impl FnMut(I) -> crate::error::IResult<I, O, E> + 'a,
-) -> impl FnMut(&mut I) -> ModalResult<O, E>
+) -> impl FnMut(&mut I) -> crate::error::ModalResult<O, E>
 where
     I: Clone,
 {
@@ -1328,8 +1326,8 @@ mod tests {
     #[test]
     #[cfg(target_pointer_width = "64")]
     fn size_test() {
-        assert_size!(ModalResult<&[u8], (&[u8], u32)>, 40);
-        assert_size!(ModalResult<&str, u32>, 40);
+        assert_size!(Result<&[u8], (&[u8], u32)>, 40);
+        assert_size!(Result<&str, u32>, 40);
         assert_size!(Needed, 8);
         assert_size!(ErrMode<u32>, 16);
         assert_size!(ErrorKind, 1);

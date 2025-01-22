@@ -370,7 +370,7 @@ impl<I: crate::lib::std::fmt::Display, S> crate::lib::std::fmt::Display for Stat
 /// Here is how it works in practice:
 ///
 /// ```rust
-/// # use winnow::{ModalResult, error::ErrMode, error::Needed, error::{ContextError, ErrorKind}, token, ascii, stream::Partial};
+/// # use winnow::{Result, error::ErrMode, error::Needed, error::{ContextError, ErrorKind}, token, ascii, stream::Partial};
 /// # use winnow::prelude::*;
 ///
 /// fn take_partial<'s>(i: &mut Partial<&'s [u8]>) -> ModalResult<&'s [u8], ContextError> {
@@ -1387,8 +1387,8 @@ pub trait Recover<E>: Stream {
         &mut self,
         token_start: &Self::Checkpoint,
         err_start: &Self::Checkpoint,
-        err: ErrMode<E>,
-    ) -> Result<(), ErrMode<E>>;
+        err: E,
+    ) -> Result<(), E>;
 
     /// Report whether the [`Stream`] can save off errors for recovery
     fn is_recovery_supported() -> bool;
@@ -1405,8 +1405,8 @@ where
         &mut self,
         _token_start: &Self::Checkpoint,
         _err_start: &Self::Checkpoint,
-        err: ErrMode<E>,
-    ) -> Result<(), ErrMode<E>> {
+        err: E,
+    ) -> Result<(), E> {
         Err(err)
     }
 
@@ -1425,8 +1425,8 @@ impl<E> Recover<E> for &str {
         &mut self,
         _token_start: &Self::Checkpoint,
         _err_start: &Self::Checkpoint,
-        err: ErrMode<E>,
-    ) -> Result<(), ErrMode<E>> {
+        err: E,
+    ) -> Result<(), E> {
         Err(err)
     }
 
@@ -1445,8 +1445,8 @@ impl<E> Recover<E> for &Bytes {
         &mut self,
         _token_start: &Self::Checkpoint,
         _err_start: &Self::Checkpoint,
-        err: ErrMode<E>,
-    ) -> Result<(), ErrMode<E>> {
+        err: E,
+    ) -> Result<(), E> {
         Err(err)
     }
 
@@ -1465,8 +1465,8 @@ impl<E> Recover<E> for &BStr {
         &mut self,
         _token_start: &Self::Checkpoint,
         _err_start: &Self::Checkpoint,
-        err: ErrMode<E>,
-    ) -> Result<(), ErrMode<E>> {
+        err: E,
+    ) -> Result<(), E> {
         Err(err)
     }
 
@@ -1489,8 +1489,8 @@ where
         &mut self,
         _token_start: &Self::Checkpoint,
         _err_start: &Self::Checkpoint,
-        err: ErrMode<E>,
-    ) -> Result<(), ErrMode<E>> {
+        err: E,
+    ) -> Result<(), E> {
         Err(err)
     }
 
@@ -1513,8 +1513,8 @@ where
         &mut self,
         _token_start: &Self::Checkpoint,
         _err_start: &Self::Checkpoint,
-        err: ErrMode<E>,
-    ) -> Result<(), ErrMode<E>> {
+        err: E,
+    ) -> Result<(), E> {
         Err(err)
     }
 
@@ -1538,16 +1538,15 @@ where
         &mut self,
         token_start: &Self::Checkpoint,
         err_start: &Self::Checkpoint,
-        err: ErrMode<E>,
-    ) -> Result<(), ErrMode<E>> {
+        err: E,
+    ) -> Result<(), E> {
         if self.is_recoverable {
-            match err {
-                ErrMode::Incomplete(need) => Err(ErrMode::Incomplete(need)),
-                ErrMode::Backtrack(err) | ErrMode::Cut(err) => {
-                    self.errors
-                        .push(R::from_recoverable_error(token_start, err_start, self, err));
-                    Ok(())
-                }
+            if err.is_needed() {
+                Err(err)
+            } else {
+                self.errors
+                    .push(R::from_recoverable_error(token_start, err_start, self, err));
+                Ok(())
             }
         } else {
             Err(err)
@@ -1574,8 +1573,8 @@ where
         &mut self,
         _token_start: &Self::Checkpoint,
         _err_start: &Self::Checkpoint,
-        err: ErrMode<E>,
-    ) -> Result<(), ErrMode<E>> {
+        err: E,
+    ) -> Result<(), E> {
         Err(err)
     }
 
@@ -1598,8 +1597,8 @@ where
         &mut self,
         _token_start: &Self::Checkpoint,
         _err_start: &Self::Checkpoint,
-        err: ErrMode<E>,
-    ) -> Result<(), ErrMode<E>> {
+        err: E,
+    ) -> Result<(), E> {
         Err(err)
     }
 

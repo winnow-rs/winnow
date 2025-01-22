@@ -1,12 +1,12 @@
 use crate::combinator::trace;
-use crate::error::{ErrMode, ErrorKind, ModalError, ParserError};
+use crate::error::{ErrorKind, ModalError, ParserError};
 use crate::stream::Stream;
 use crate::*;
 
 /// Deprecated, replaced with [`token::rest`]
 #[deprecated(since = "0.6.23", note = "replaced with `token::rest`")]
 #[inline]
-pub fn rest<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Slice, Error>
+pub fn rest<Input, Error>(input: &mut Input) -> Result<<Input as Stream>::Slice, Error>
 where
     Input: Stream,
     Error: ParserError<Input>,
@@ -17,7 +17,7 @@ where
 /// Deprecated, replaced with [`token::rest_len`]
 #[deprecated(since = "0.6.23", note = "replaced with `token::rest_len`")]
 #[inline]
-pub fn rest_len<Input, Error>(input: &mut Input) -> ModalResult<usize, Error>
+pub fn rest_len<Input, Error>(input: &mut Input) -> Result<usize, Error>
 where
     Input: Stream,
     Error: ParserError<Input>,
@@ -25,7 +25,7 @@ where
     crate::token::rest_len(input)
 }
 
-/// Apply a [`Parser`], producing `None` on [`ErrMode::Backtrack`].
+/// Apply a [`Parser`], producing `None` on [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack].
 ///
 /// To chain an error up, see [`cut_err`].
 ///
@@ -174,7 +174,7 @@ where
 /// ```
 #[doc(alias = "end")]
 #[doc(alias = "eoi")]
-pub fn eof<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Slice, Error>
+pub fn eof<Input, Error>(input: &mut Input) -> Result<<Input as Stream>::Slice, Error>
 where
     Input: Stream,
     Error: ParserError<Input>,
@@ -231,7 +231,7 @@ where
     })
 }
 
-/// Transforms an [`ErrMode::Backtrack`] (recoverable) to [`ErrMode::Cut`] (unrecoverable)
+/// Transforms an [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack] (recoverable) to [`ErrMode::Cut`][crate::error::ErrMode::Cut] (unrecoverable)
 ///
 /// This commits the parse result, preventing alternative branch paths like with
 /// [`winnow::combinator::alt`][crate::combinator::alt].
@@ -292,7 +292,7 @@ pub fn cut_err<Input, Output, Error, ParseNext>(
 ) -> impl Parser<Input, Output, Error>
 where
     Input: Stream,
-    Error: ParserError<Input>,
+    Error: ParserError<Input> + ModalError,
     ParseNext: Parser<Input, Output, Error>,
 {
     trace("cut_err", move |input: &mut Input| {
@@ -300,7 +300,7 @@ where
     })
 }
 
-/// Transforms an [`ErrMode::Cut`] (unrecoverable) to [`ErrMode::Backtrack`] (recoverable)
+/// Transforms an [`ErrMode::Cut`][crate::error::ErrMode::Cut] (unrecoverable) to [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack] (recoverable)
 ///
 /// This attempts the parse, allowing other parsers to be tried on failure, like with
 /// [`winnow::combinator::alt`][crate::combinator::alt].
@@ -309,7 +309,7 @@ pub fn backtrack_err<Input, Output, Error, ParseNext>(
 ) -> impl Parser<Input, Output, Error>
 where
     Input: Stream,
-    Error: ParserError<Input>,
+    Error: ParserError<Input> + ModalError,
     ParseNext: Parser<Input, Output, Error>,
 {
     trace("backtrack_err", move |input: &mut Input| {
@@ -336,7 +336,7 @@ where
 /// }
 /// ```
 #[track_caller]
-pub fn todo<Input, Output, Error>(input: &mut Input) -> ModalResult<Output, Error>
+pub fn todo<Input, Output, Error>(input: &mut Input) -> Result<Output, Error>
 where
     Input: Stream,
     Error: ParserError<Input>,
@@ -353,7 +353,7 @@ where
 /// Call the iterator's [`ParserIterator::finish`] method to get the remaining input if successful,
 /// or the error value if we encountered an error.
 ///
-/// On [`ErrMode::Backtrack`], iteration will stop. To instead chain an error up, see [`cut_err`].
+/// On [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack], iteration will stop. To instead chain an error up, see [`cut_err`].
 ///
 /// # Example
 ///
@@ -396,7 +396,7 @@ where
 {
     parser: F,
     input: I,
-    state: Option<State<ErrMode<E>>>,
+    state: Option<State<E>>,
     o: core::marker::PhantomData<O>,
 }
 
@@ -407,7 +407,7 @@ where
     E: ParserError<I>,
 {
     /// Returns the remaining input if parsing was successful, or the error if we encountered an error.
-    pub fn finish(mut self) -> ModalResult<(I, ()), E> {
+    pub fn finish(mut self) -> Result<(I, ()), E> {
         match self.state.take().unwrap() {
             State::Running | State::Done => Ok((self.input, ())),
             State::Cut(e) => Err(e),
@@ -491,7 +491,7 @@ enum State<E> {
 #[doc(alias = "value")]
 #[doc(alias = "success")]
 #[inline]
-pub fn empty<Input, Error>(_input: &mut Input) -> ModalResult<(), Error>
+pub fn empty<Input, Error>(_input: &mut Input) -> Result<(), Error>
 where
     Input: Stream,
     Error: ParserError<Input>,
@@ -519,7 +519,7 @@ where
 /// ```
 #[doc(alias = "unexpected")]
 #[inline]
-pub fn fail<Input, Output, Error>(i: &mut Input) -> ModalResult<Output, Error>
+pub fn fail<Input, Output, Error>(i: &mut Input) -> Result<Output, Error>
 where
     Input: Stream,
     Error: ParserError<Input>,

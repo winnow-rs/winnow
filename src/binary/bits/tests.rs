@@ -1,5 +1,7 @@
 use super::*;
+use crate::error::ErrMode;
 use crate::error::InputError;
+use crate::prelude::*;
 use crate::Partial;
 
 #[test]
@@ -11,8 +13,12 @@ fn test_complete_byte_consumption_bits() {
     // Take 3 bit slices with sizes [4, 8, 4].
     #[allow(clippy::type_complexity)]
     let result: ModalResult<(&[u8], (u8, u8, u8)), InputError<_>> =
-        bits::<_, _, InputError<(&[u8], usize)>, _, _>((take(4usize), take(8usize), take(4usize)))
-            .parse_peek(input);
+        bits::<_, _, ErrMode<InputError<(&[u8], usize)>>, _, _>((
+            take(4usize),
+            take(8usize),
+            take(4usize),
+        ))
+        .parse_peek(input);
 
     let output = result.expect("We take 2 bytes and the input is longer than 2 bytes");
 
@@ -35,7 +41,7 @@ fn test_partial_byte_consumption_bits() {
 
     // Take bit slices with sizes [4, 8].
     let result: ModalResult<(&[u8], (u8, u8)), InputError<_>> =
-        bits::<_, _, InputError<(&[u8], usize)>, _, _>((take(4usize), take(8usize)))
+        bits::<_, _, ErrMode<InputError<(&[u8], usize)>>, _, _>((take(4usize), take(8usize)))
             .parse_peek(input);
 
     let output = result.expect("We take 1.5 bytes and the input is longer than 2 bytes");
@@ -56,7 +62,8 @@ fn test_incomplete_bits() {
 
     // Take bit slices with sizes [4, 8].
     let result: ModalResult<(_, (u8, u8)), InputError<_>> =
-        bits::<_, _, InputError<(_, usize)>, _, _>((take(4usize), take(8usize))).parse_peek(input);
+        bits::<_, _, ErrMode<InputError<(_, usize)>>, _, _>((take(4usize), take(8usize)))
+            .parse_peek(input);
 
     assert!(result.is_err());
     let error = result.err().unwrap();

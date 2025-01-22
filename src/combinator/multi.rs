@@ -1,19 +1,18 @@
 //! Combinators applying their child parser multiple times
 
 use crate::combinator::trace;
-use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::FromExternalError;
 use crate::error::ParserError;
 use crate::stream::Accumulate;
 use crate::stream::Range;
 use crate::stream::Stream;
-use crate::ModalResult;
 use crate::Parser;
+use crate::Result;
 
 /// [`Accumulate`] the output of a parser into a container, like `Vec`
 ///
-/// This stops before `n` when the parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
+/// This stops before `n` when the parser returns [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack]. To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
 ///
 /// To take a series of tokens, [`Accumulate`] into a `()`
@@ -157,7 +156,7 @@ where
 {
     /// Repeats the embedded parser, calling `op` to gather the results
     ///
-    /// This stops before `n` when the parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
+    /// This stops before `n` when the parser returns [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack]. To instead chain an error up, see
     /// [`cut_err`][crate::combinator::cut_err].
     ///
     /// # Arguments
@@ -286,7 +285,7 @@ where
 
     /// Akin to [`Repeat::fold`], but for containers that can reject an element.
     ///
-    /// This stops before `n` when the parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
+    /// This stops before `n` when the parser returns [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack]. To instead chain an error up, see
     /// [`cut_err`][crate::combinator::cut_err]. Additionally, if the fold function returns `None`, the parser will
     /// stop and return an error.
     ///
@@ -362,7 +361,7 @@ where
 
     /// Akin to [`Repeat::fold`], but for containers that can error when an element is accumulated.
     ///
-    /// This stops before `n` when the parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
+    /// This stops before `n` when the parser returns [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack]. To instead chain an error up, see
     /// [`cut_err`][crate::combinator::cut_err]. Additionally, if the fold function returns an error, the parser will
     /// stop and return it.
     ///
@@ -442,7 +441,7 @@ where
     E: ParserError<I>,
 {
     #[inline(always)]
-    fn parse_next(&mut self, i: &mut I) -> ModalResult<C, E> {
+    fn parse_next(&mut self, i: &mut I) -> Result<C, E> {
         let Range {
             start_inclusive,
             end_inclusive,
@@ -459,7 +458,7 @@ where
     }
 }
 
-fn repeat0_<I, O, C, E, F>(f: &mut F, i: &mut I) -> ModalResult<C, E>
+fn repeat0_<I, O, C, E, F>(f: &mut F, i: &mut I) -> Result<C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -491,7 +490,7 @@ where
     }
 }
 
-fn repeat1_<I, O, C, E, F>(f: &mut F, i: &mut I) -> ModalResult<C, E>
+fn repeat1_<I, O, C, E, F>(f: &mut F, i: &mut I) -> Result<C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -531,7 +530,7 @@ where
     }
 }
 
-fn repeat_n_<I, O, C, E, F>(count: usize, f: &mut F, i: &mut I) -> ModalResult<C, E>
+fn repeat_n_<I, O, C, E, F>(count: usize, f: &mut F, i: &mut I) -> Result<C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -564,12 +563,7 @@ where
     Ok(res)
 }
 
-fn repeat_m_n_<I, O, C, E, F>(
-    min: usize,
-    max: usize,
-    parse: &mut F,
-    input: &mut I,
-) -> ModalResult<C, E>
+fn repeat_m_n_<I, O, C, E, F>(min: usize, max: usize, parse: &mut F, input: &mut I) -> Result<C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -621,7 +615,7 @@ where
 ///
 /// Returns a tuple of the results of `f` in a `Vec` and the result of `g`.
 ///
-/// `f` keeps going so long as `g` produces [`ErrMode::Backtrack`]. To instead chain an error up, see [`cut_err`][crate::combinator::cut_err].
+/// `f` keeps going so long as `g` produces [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack]. To instead chain an error up, see [`cut_err`][crate::combinator::cut_err].
 ///
 /// To take a series of tokens, [`Accumulate`] into a `()`
 /// (e.g. with [`.map(|((), _)| ())`][Parser::map])
@@ -681,7 +675,7 @@ where
     })
 }
 
-fn repeat_till0_<I, O, C, P, E, F, G>(f: &mut F, g: &mut G, i: &mut I) -> ModalResult<(C, P), E>
+fn repeat_till0_<I, O, C, P, E, F, G>(f: &mut F, g: &mut G, i: &mut I) -> Result<(C, P), E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -723,7 +717,7 @@ fn repeat_till_m_n_<I, O, C, P, E, F, G>(
     f: &mut F,
     g: &mut G,
     i: &mut I,
-) -> ModalResult<(C, P), E>
+) -> Result<(C, P), E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -786,7 +780,7 @@ where
 
 /// [`Accumulate`] the output of a parser, interleaved with `sep`
 ///
-/// This stops when either parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
+/// This stops when either parser returns [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack]. To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
 ///
 /// To take a series of tokens, [`Accumulate`] into a `()`
@@ -922,7 +916,7 @@ fn separated0_<I, O, C, O2, E, P, S>(
     parser: &mut P,
     separator: &mut S,
     input: &mut I,
-) -> ModalResult<C, E>
+) -> Result<C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -981,7 +975,7 @@ fn separated1_<I, O, C, O2, E, P, S>(
     parser: &mut P,
     separator: &mut S,
     input: &mut I,
-) -> ModalResult<C, E>
+) -> Result<C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -1037,7 +1031,7 @@ fn separated_n_<I, O, C, O2, E, P, S>(
     parser: &mut P,
     separator: &mut S,
     input: &mut I,
-) -> ModalResult<C, E>
+) -> Result<C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -1098,7 +1092,7 @@ fn separated_m_n_<I, O, C, O2, E, P, S>(
     parser: &mut P,
     separator: &mut S,
     input: &mut I,
-) -> ModalResult<C, E>
+) -> Result<C, E>
 where
     I: Stream,
     C: Accumulate<O>,
@@ -1180,7 +1174,7 @@ where
 
 /// Alternates between two parsers, merging the results (left associative)
 ///
-/// This stops when either parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
+/// This stops when either parser returns [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack]. To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Example
@@ -1250,7 +1244,7 @@ where
 
 /// Alternates between two parsers, merging the results (right associative)
 ///
-/// This stops when either parser returns [`ErrMode::Backtrack`]. To instead chain an error up, see
+/// This stops when either parser returns [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack]. To instead chain an error up, see
 /// [`cut_err`][crate::combinator::cut_err].
 ///
 /// # Example
@@ -1354,7 +1348,7 @@ fn fold_repeat0_<I, O, E, F, G, H, R>(
     init: &mut H,
     g: &mut G,
     input: &mut I,
-) -> ModalResult<R, E>
+) -> Result<R, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -1395,7 +1389,7 @@ fn fold_repeat1_<I, O, E, F, G, H, R>(
     init: &mut H,
     g: &mut G,
     input: &mut I,
-) -> ModalResult<R, E>
+) -> Result<R, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -1445,7 +1439,7 @@ fn fold_repeat_m_n_<I, O, E, F, G, H, R>(
     init: &mut H,
     fold: &mut G,
     input: &mut I,
-) -> ModalResult<R, E>
+) -> Result<R, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -1500,7 +1494,7 @@ fn verify_fold_m_n<I, O, E, F, G, H, R>(
     init: &mut H,
     fold: &mut G,
     input: &mut I,
-) -> ModalResult<R, E>
+) -> Result<R, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -1561,7 +1555,7 @@ fn try_fold_m_n<I, O, E, F, G, H, R, GE>(
     init: &mut H,
     fold: &mut G,
     input: &mut I,
-) -> ModalResult<R, E>
+) -> Result<R, E>
 where
     I: Stream,
     F: Parser<I, O, E>,
@@ -1594,7 +1588,7 @@ where
                     Ok(tmp) => acc = tmp,
                     Err(e) => {
                         input.reset(&start);
-                        let res = Err(ErrMode::from_external_error(input, ErrorKind::Verify, e));
+                        let res = Err(E::from_external_error(input, ErrorKind::Verify, e));
                         super::debug::trace_result("try_fold", &res);
                         return res;
                     }

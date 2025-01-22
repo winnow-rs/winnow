@@ -16,6 +16,7 @@
 /// # use winnow::combinator::delimited;
 /// # use winnow::combinator::empty;
 /// # use winnow::error::ContextError;
+/// # use winnow::error::ErrMode;
 /// use winnow::combinator::seq;
 ///
 /// #[derive(Default, Debug, PartialEq)]
@@ -44,7 +45,7 @@
 ///
 /// // Or parse into tuples
 /// fn point(input: &mut &[u8]) -> ModalResult<(u32, u32)> {
-///     let mut num = dec_uint::<_, u32, ContextError>;
+///     let mut num = dec_uint::<_, u32, ErrMode<ContextError>>;
 ///     seq!(num, _: (space0, b',', space0), num).parse_next(input)
 /// }
 ///

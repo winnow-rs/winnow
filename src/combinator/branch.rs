@@ -1,5 +1,5 @@
 use crate::combinator::trace;
-use crate::error::{ErrMode, ErrorKind, ParserError};
+use crate::error::{ErrorKind, ParserError};
 use crate::stream::Stream;
 use crate::*;
 
@@ -11,7 +11,7 @@ pub use crate::dispatch;
 /// This trait is implemented for tuples of up to 21 elements
 pub trait Alt<I, O, E> {
     /// Tests each parser in the tuple and returns the result of the first one that succeeds
-    fn choice(&mut self, input: &mut I) -> ModalResult<O, E>;
+    fn choice(&mut self, input: &mut I) -> Result<O, E>;
 }
 
 /// Pick the first successful parser
@@ -64,7 +64,7 @@ where
 /// This trait is implemented for tuples of up to 21 elements
 pub trait Permutation<I, O, E> {
     /// Tries to apply all parsers in the tuple in various orders until all of them succeed
-    fn permutation(&mut self, input: &mut I) -> ModalResult<O, E>;
+    fn permutation(&mut self, input: &mut I) -> Result<O, E>;
 }
 
 /// Applies a list of parsers in any order.
@@ -127,8 +127,8 @@ pub fn permutation<I: Stream, O, E: ParserError<I>, List: Permutation<I, O, E>>(
 }
 
 impl<const N: usize, I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I, O, E> for [P; N] {
-    fn choice(&mut self, input: &mut I) -> ModalResult<O, E> {
-        let mut error: Option<ErrMode<E>> = None;
+    fn choice(&mut self, input: &mut I) -> Result<O, E> {
+        let mut error: Option<E> = None;
 
         let start = input.checkpoint();
         for branch in self {
@@ -155,8 +155,8 @@ impl<const N: usize, I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I,
 }
 
 impl<I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I, O, E> for &mut [P] {
-    fn choice(&mut self, input: &mut I) -> ModalResult<O, E> {
-        let mut error: Option<ErrMode<E>> = None;
+    fn choice(&mut self, input: &mut I) -> Result<O, E> {
+        let mut error: Option<E> = None;
 
         let start = input.checkpoint();
         for branch in self.iter_mut() {
@@ -204,7 +204,7 @@ macro_rules! alt_trait_impl(
       $($id: Parser<I, Output, Error>),+
     > Alt<I, Output, Error> for ( $($id),+ ) {
 
-      fn choice(&mut self, input: &mut I) -> ModalResult<Output, Error> {
+      fn choice(&mut self, input: &mut I) -> Result<Output, Error> {
         let start = input.checkpoint();
         match self.0.parse_next(input) {
           Err(e) if e.is_backtrack() => alt_trait_inner!(1, self, input, start, e, $($id)+),
@@ -259,7 +259,7 @@ alt_trait!(Alt2 Alt3 Alt4 Alt5 Alt6 Alt7 Alt8 Alt9 Alt10 Alt11 Alt12 Alt13 Alt14
 
 // Manually implement Alt for (A,), the 1-tuple type
 impl<I: Stream, O, E: ParserError<I>, A: Parser<I, O, E>> Alt<I, O, E> for (A,) {
-    fn choice(&mut self, input: &mut I) -> ModalResult<O, E> {
+    fn choice(&mut self, input: &mut I) -> Result<O, E> {
         self.0.parse_next(input)
     }
 }
@@ -291,11 +291,11 @@ macro_rules! permutation_trait_impl(
       $($name: Parser<I, $ty, Error>),+
     > Permutation<I, ( $($ty),+ ), Error> for ( $($name),+ ) {
 
-      fn permutation(&mut self, input: &mut I) -> ModalResult<( $($ty),+ ), Error> {
+      fn permutation(&mut self, input: &mut I) -> Result<( $($ty),+ ), Error> {
         let mut res = ($(Option::<$ty>::None),+);
 
         loop {
-          let mut err: Option<ErrMode<Error>> = None;
+          let mut err: Option<Error> = None;
           let start = input.checkpoint();
           permutation_trait_inner!(0, self, input, start, res, err, $($name)+);
 

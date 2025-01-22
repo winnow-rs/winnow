@@ -367,7 +367,7 @@ Ok(
 fn issue_1231_bits_expect_fn_closure() {
     use winnow::binary::bits::{bits, take};
     pub(crate) fn example<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], (u8, u8)> {
-        bits::<_, _, InputError<_>, _, _>((take(1usize), take(1usize))).parse_next(input)
+        bits::<_, _, ErrMode<InputError<_>>, _, _>((take(1usize), take(1usize))).parse_next(input)
     }
     assert_parse!(
         example.parse_peek(&[0xff]),

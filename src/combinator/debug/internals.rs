@@ -49,7 +49,7 @@ where
     E: ParserError<I>,
 {
     #[inline]
-    fn parse_next(&mut self, i: &mut I) -> ModalResult<O, E> {
+    fn parse_next(&mut self, i: &mut I) -> Result<O, E> {
         let depth = Depth::new();
         let original = i.checkpoint();
         start(*depth, &self.name, self.call_count, i);

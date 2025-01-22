@@ -12,8 +12,8 @@ use crate::lib::std::result::Result::Ok;
 use crate::stream::Range;
 use crate::stream::{Compare, CompareResult, ContainsToken, FindSlice, SliceLen, Stream};
 use crate::stream::{StreamIsPartial, ToUsize};
-use crate::ModalResult;
 use crate::Parser;
+use crate::Result;
 
 /// Matches one token
 ///
@@ -49,12 +49,12 @@ use crate::Parser;
 /// # use winnow::{token::any, error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// assert_eq!(any::<_, ContextError>.parse_peek(Partial::new("abc")), Ok((Partial::new("bc"),'a')));
-/// assert_eq!(any::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(any::<_, ErrMode<ContextError>>.parse_peek(Partial::new("abc")), Ok((Partial::new("bc"),'a')));
+/// assert_eq!(any::<_, ErrMode<ContextError>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 #[doc(alias = "token")]
-pub fn any<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Token, Error>
+pub fn any<Input, Error>(input: &mut Input) -> Result<<Input as Stream>::Token, Error>
 where
     Input: StreamIsPartial + Stream,
     Error: ParserError<Input>,
@@ -69,9 +69,7 @@ where
     .parse_next(input)
 }
 
-fn any_<I, E: ParserError<I>, const PARTIAL: bool>(
-    input: &mut I,
-) -> ModalResult<<I as Stream>::Token, E>
+fn any_<I, E: ParserError<I>, const PARTIAL: bool>(input: &mut I) -> Result<<I as Stream>::Token, E>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -181,7 +179,7 @@ where
 fn literal_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     i: &mut I,
     t: T,
-) -> ModalResult<<I as Stream>::Slice, Error>
+) -> Result<<I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream + Compare<T>,
@@ -252,9 +250,9 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::token::one_of;
-/// assert_eq!(one_of::<_, _, ContextError>(['a', 'b', 'c']).parse_peek(Partial::new("b")), Ok((Partial::new(""), 'b')));
-/// assert!(one_of::<_, _, ContextError>('a').parse_peek(Partial::new("bc")).is_err());
-/// assert_eq!(one_of::<_, _, ContextError>('a').parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(one_of::<_, _, ErrMode<ContextError>>(['a', 'b', 'c']).parse_peek(Partial::new("b")), Ok((Partial::new(""), 'b')));
+/// assert!(one_of::<_, _, ErrMode<ContextError>>('a').parse_peek(Partial::new("bc")).is_err());
+/// assert_eq!(one_of::<_, _, ErrMode<ContextError>>('a').parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
 /// fn parser_fn(i: &mut Partial<&str>) -> ModalResult<char> {
 ///     one_of(|c| c == 'a' || c == 'b').parse_next(i)
@@ -317,9 +315,9 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// # use winnow::token::none_of;
-/// assert_eq!(none_of::<_, _, ContextError>(['a', 'b', 'c']).parse_peek(Partial::new("z")), Ok((Partial::new(""), 'z')));
-/// assert!(none_of::<_, _, ContextError>(['a', 'b']).parse_peek(Partial::new("a")).is_err());
-/// assert_eq!(none_of::<_, _, ContextError>('a').parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(none_of::<_, _, ErrMode<ContextError>>(['a', 'b', 'c']).parse_peek(Partial::new("z")), Ok((Partial::new(""), 'z')));
+/// assert!(none_of::<_, _, ErrMode<ContextError>>(['a', 'b']).parse_peek(Partial::new("a")).is_err());
+/// assert_eq!(none_of::<_, _, ErrMode<ContextError>>('a').parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn none_of<Input, Set, Error>(
@@ -531,7 +529,7 @@ where
 fn take_till0<P, I: StreamIsPartial + Stream, E: ParserError<I>, const PARTIAL: bool>(
     input: &mut I,
     predicate: P,
-) -> ModalResult<<I as Stream>::Slice, E>
+) -> Result<<I as Stream>::Slice, E>
 where
     P: FnMut(I::Token) -> bool,
 {
@@ -548,7 +546,7 @@ where
 fn take_till1<P, I: StreamIsPartial + Stream, E: ParserError<I>, const PARTIAL: bool>(
     input: &mut I,
     predicate: P,
-) -> ModalResult<<I as Stream>::Slice, E>
+) -> Result<<I as Stream>::Slice, E>
 where
     P: FnMut(I::Token) -> bool,
 {
@@ -572,7 +570,7 @@ fn take_till_m_n<P, I, Error: ParserError<I>, const PARTIAL: bool>(
     m: usize,
     n: usize,
     mut predicate: P,
-) -> ModalResult<<I as Stream>::Slice, Error>
+) -> Result<<I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -812,7 +810,7 @@ where
 fn take_<I, Error: ParserError<I>, const PARTIAL: bool>(
     i: &mut I,
     c: usize,
-) -> ModalResult<<I as Stream>::Slice, Error>
+) -> Result<<I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream,
@@ -963,7 +961,7 @@ where
 fn take_until0_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     i: &mut I,
     t: T,
-) -> ModalResult<<I as Stream>::Slice, Error>
+) -> Result<<I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,
@@ -978,7 +976,7 @@ where
 fn take_until1_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     i: &mut I,
     t: T,
-) -> ModalResult<<I as Stream>::Slice, Error>
+) -> Result<<I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,
@@ -1001,7 +999,7 @@ fn take_until_m_n_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     start: usize,
     end: usize,
     t: T,
-) -> ModalResult<<I as Stream>::Slice, Error>
+) -> Result<<I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,
@@ -1058,7 +1056,7 @@ where
 /// assert_eq!(rest::<_,ContextError>.parse_peek(""), Ok(("", "")));
 /// ```
 #[inline]
-pub fn rest<Input, Error>(input: &mut Input) -> ModalResult<<Input as Stream>::Slice, Error>
+pub fn rest<Input, Error>(input: &mut Input) -> Result<<Input as Stream>::Slice, Error>
 where
     Input: Stream,
     Error: ParserError<Input>,
@@ -1096,7 +1094,7 @@ where
 /// assert_eq!(rest_len::<_,ContextError>.parse_peek(""), Ok(("", 0)));
 /// ```
 #[inline]
-pub fn rest_len<Input, Error>(input: &mut Input) -> ModalResult<usize, Error>
+pub fn rest_len<Input, Error>(input: &mut Input) -> Result<usize, Error>
 where
     Input: Stream,
     Error: ParserError<Input>,
