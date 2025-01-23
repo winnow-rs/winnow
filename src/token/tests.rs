@@ -69,7 +69,7 @@ fn model_complete_take_while_m_n<'i>(
     input: &mut &'i str,
 ) -> ModalResult<&'i str> {
     if n < m {
-        Err(crate::error::ErrMode::from_error_kind(
+        Err(crate::error::ParserError::from_error_kind(
             input,
             crate::error::ErrorKind::Slice,
         ))
@@ -77,7 +77,7 @@ fn model_complete_take_while_m_n<'i>(
         let offset = n.min(valid);
         Ok(input.next_slice(offset))
     } else {
-        Err(crate::error::ErrMode::from_error_kind(
+        Err(crate::error::ParserError::from_error_kind(
             input,
             crate::error::ErrorKind::Slice,
         ))

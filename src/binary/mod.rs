@@ -9,7 +9,6 @@ mod tests;
 
 use crate::combinator::repeat;
 use crate::combinator::trace;
-use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::Needed;
 use crate::error::ParserError;
@@ -310,9 +309,9 @@ where
             Ok(res)
         }
         Err(e) if <Input as StreamIsPartial>::is_partial_supported() && input.is_partial() => {
-            Err(ErrMode::incomplete(input, e))
+            Err(ParserError::incomplete(input, e))
         }
-        Err(_needed) => Err(ErrMode::from_error_kind(input, ErrorKind::Slice)),
+        Err(_needed) => Err(ParserError::from_error_kind(input, ErrorKind::Slice)),
     }
 }
 
@@ -898,9 +897,9 @@ where
             Ok(res)
         }
         Err(e) if <Input as StreamIsPartial>::is_partial_supported() && input.is_partial() => {
-            Err(ErrMode::incomplete(input, e))
+            Err(ParserError::incomplete(input, e))
         }
-        Err(_needed) => Err(ErrMode::from_error_kind(input, ErrorKind::Slice)),
+        Err(_needed) => Err(ParserError::from_error_kind(input, ErrorKind::Slice)),
     }
 }
 
@@ -1273,9 +1272,9 @@ where
 {
     input.next_token().ok_or_else(|| {
         if PARTIAL && input.is_partial() {
-            ErrMode::incomplete(input, Needed::new(1))
+            ParserError::incomplete(input, Needed::new(1))
         } else {
-            ErrMode::from_error_kind(input, ErrorKind::Token)
+            ParserError::from_error_kind(input, ErrorKind::Token)
         }
     })
 }

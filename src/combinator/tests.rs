@@ -2922,7 +2922,7 @@ Err(
 fn infinite_many() {
     fn tst<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
         println!("input: {input:?}");
-        Err(ErrMode::from_error_kind(input, ErrorKind::Literal))
+        Err(ParserError::from_error_kind(input, ErrorKind::Literal))
     }
 
     // should not go into an infinite loop

@@ -130,7 +130,7 @@ where
         let o = self.parser.parse_next(input)?;
         let res = (self.map)(o).ok_or_else(|| {
             input.reset(&start);
-            ErrMode::from_error_kind(input, ErrorKind::Verify)
+            ParserError::from_error_kind(input, ErrorKind::Verify)
         });
         trace_result("verify", &res);
         res
@@ -201,7 +201,7 @@ where
         let o = self.p.parse_next(i)?;
         let res = o.parse_slice().ok_or_else(|| {
             i.reset(&start);
-            ErrMode::from_error_kind(i, ErrorKind::Verify)
+            ParserError::from_error_kind(i, ErrorKind::Verify)
         });
         trace_result("verify", &res);
         res
@@ -256,7 +256,7 @@ where
         trace("complete_err", |input: &mut I| {
             match (self.p).parse_next(input) {
                 Err(err) => match err.into_needed() {
-                    Ok(_) => Err(ErrMode::from_error_kind(input, ErrorKind::Complete)),
+                    Ok(_) => Err(ParserError::from_error_kind(input, ErrorKind::Complete)),
                     Err(err) => Err(err),
                 },
                 rest => rest,
@@ -299,7 +299,7 @@ where
         let o = self.parser.parse_next(input)?;
         let res = (self.filter)(o.borrow()).then_some(o).ok_or_else(|| {
             input.reset(&start);
-            ErrMode::from_error_kind(input, ErrorKind::Verify)
+            ParserError::from_error_kind(input, ErrorKind::Verify)
         });
         trace_result("verify", &res);
         res

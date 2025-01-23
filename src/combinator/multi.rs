@@ -479,7 +479,10 @@ where
             Ok(o) => {
                 // infinite loop check: the parser must always consume
                 if i.eof_offset() == len {
-                    return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
+                    return Err(ParserError::assert(
+                        i,
+                        "`repeat` parsers must always consume",
+                    ));
                 }
 
                 acc.accumulate(o);
@@ -514,7 +517,10 @@ where
                     Ok(o) => {
                         // infinite loop check: the parser must always consume
                         if i.eof_offset() == len {
-                            return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
+                            return Err(ParserError::assert(
+                                i,
+                                "`repeat` parsers must always consume",
+                            ));
                         }
 
                         acc.accumulate(o);
@@ -541,7 +547,10 @@ where
             Ok(o) => {
                 // infinite loop check: the parser must always consume
                 if i.eof_offset() == len {
-                    return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
+                    return Err(ParserError::assert(
+                        i,
+                        "`repeat` parsers must always consume",
+                    ));
                 }
 
                 res.accumulate(o);
@@ -568,7 +577,7 @@ where
     E: ParserError<I>,
 {
     if min > max {
-        return Err(ErrMode::assert(
+        return Err(ParserError::assert(
             input,
             "range should be ascending, rather than descending",
         ));
@@ -582,7 +591,7 @@ where
             Ok(value) => {
                 // infinite loop check: the parser must always consume
                 if input.eof_offset() == len {
-                    return Err(ErrMode::assert(
+                    return Err(ParserError::assert(
                         input,
                         "`repeat` parsers must always consume",
                     ));
@@ -693,7 +702,10 @@ where
                     Ok(o) => {
                         // infinite loop check: the parser must always consume
                         if i.eof_offset() == len {
-                            return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
+                            return Err(ParserError::assert(
+                                i,
+                                "`repeat` parsers must always consume",
+                            ));
                         }
 
                         res.accumulate(o);
@@ -720,7 +732,7 @@ where
     E: ParserError<I>,
 {
     if min > max {
-        return Err(ErrMode::assert(
+        return Err(ParserError::assert(
             i,
             "range should be ascending, rather than descending",
         ));
@@ -756,7 +768,10 @@ where
                     Ok(o) => {
                         // infinite loop check: the parser must always consume
                         if i.eof_offset() == len {
-                            return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
+                            return Err(ParserError::assert(
+                                i,
+                                "`repeat` parsers must always consume",
+                            ));
                         }
 
                         res.accumulate(o);
@@ -941,7 +956,7 @@ where
             Ok(_) => {
                 // infinite loop check
                 if input.eof_offset() == len {
-                    return Err(ErrMode::assert(
+                    return Err(ParserError::assert(
                         input,
                         "`separated` separator parser must always consume",
                     ));
@@ -996,7 +1011,7 @@ where
             Ok(_) => {
                 // infinite loop check
                 if input.eof_offset() == len {
-                    return Err(ErrMode::assert(
+                    return Err(ParserError::assert(
                         input,
                         "`separated` separator parser must always consume",
                     ));
@@ -1056,7 +1071,7 @@ where
             Ok(_) => {
                 // infinite loop check
                 if input.eof_offset() == len {
-                    return Err(ErrMode::assert(
+                    return Err(ParserError::assert(
                         input,
                         "`separated` separator parser must always consume",
                     ));
@@ -1092,7 +1107,7 @@ where
     E: ParserError<I>,
 {
     if min > max {
-        return Err(ErrMode::assert(
+        return Err(ParserError::assert(
             input,
             "range should be ascending, rather than descending",
         ));
@@ -1134,7 +1149,7 @@ where
             Ok(_) => {
                 // infinite loop check
                 if input.eof_offset() == len {
-                    return Err(ErrMode::assert(
+                    return Err(ParserError::assert(
                         input,
                         "`separated` separator parser must always consume",
                     ));
@@ -1211,7 +1226,10 @@ where
                 Ok(s) => {
                     // infinite loop check: the parser must always consume
                     if i.eof_offset() == len {
-                        return Err(ErrMode::assert(i, "`repeat` parsers must always consume"));
+                        return Err(ParserError::assert(
+                            i,
+                            "`repeat` parsers must always consume",
+                        ));
                     }
 
                     match parser.parse_next(i) {
@@ -1353,7 +1371,7 @@ where
             Ok(o) => {
                 // infinite loop check: the parser must always consume
                 if input.eof_offset() == len {
-                    return Err(ErrMode::assert(
+                    return Err(ParserError::assert(
                         input,
                         "`repeat` parsers must always consume",
                     ));
@@ -1404,7 +1422,7 @@ where
                     Ok(o) => {
                         // infinite loop check: the parser must always consume
                         if input.eof_offset() == len {
-                            return Err(ErrMode::assert(
+                            return Err(ParserError::assert(
                                 input,
                                 "`repeat` parsers must always consume",
                             ));
@@ -1436,7 +1454,7 @@ where
     E: ParserError<I>,
 {
     if min > max {
-        return Err(ErrMode::assert(
+        return Err(ParserError::assert(
             input,
             "range should be ascending, rather than descending",
         ));
@@ -1450,7 +1468,7 @@ where
             Ok(value) => {
                 // infinite loop check: the parser must always consume
                 if input.eof_offset() == len {
-                    return Err(ErrMode::assert(
+                    return Err(ParserError::assert(
                         input,
                         "`repeat` parsers must always consume",
                     ));
@@ -1491,7 +1509,7 @@ where
     E: ParserError<I>,
 {
     if min > max {
-        return Err(ErrMode::assert(
+        return Err(ParserError::assert(
             input,
             "range should be ascending, rather than descending",
         ));
@@ -1505,7 +1523,7 @@ where
             Ok(value) => {
                 // infinite loop check: the parser must always consume
                 if input.eof_offset() == len {
-                    return Err(ErrMode::assert(
+                    return Err(ParserError::assert(
                         input,
                         "`repeat` parsers must always consume",
                     ));
@@ -1513,7 +1531,7 @@ where
 
                 let Some(tmp) = fold(acc, value) else {
                     input.reset(&start);
-                    let res = Err(ErrMode::from_error_kind(input, ErrorKind::Verify));
+                    let res = Err(ParserError::from_error_kind(input, ErrorKind::Verify));
                     super::debug::trace_result("verify_fold", &res);
                     return res;
                 };
@@ -1552,7 +1570,7 @@ where
     E: ParserError<I> + FromExternalError<I, GE>,
 {
     if min > max {
-        return Err(ErrMode::assert(
+        return Err(ParserError::assert(
             input,
             "range should be ascending, rather than descending",
         ));
@@ -1566,7 +1584,7 @@ where
             Ok(value) => {
                 // infinite loop check: the parser must always consume
                 if input.eof_offset() == len {
-                    return Err(ErrMode::assert(
+                    return Err(ParserError::assert(
                         input,
                         "`repeat` parsers must always consume",
                     ));

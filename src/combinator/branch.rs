@@ -146,7 +146,10 @@ impl<const N: usize, I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I,
 
         match error {
             Some(e) => Err(e.append(input, &start, ErrorKind::Alt)),
-            None => Err(ErrMode::assert(input, "`alt` needs at least one parser")),
+            None => Err(ParserError::assert(
+                input,
+                "`alt` needs at least one parser",
+            )),
         }
     }
 }
@@ -171,7 +174,10 @@ impl<I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I, O, E> for &mut 
 
         match error {
             Some(e) => Err(e.append(input, &start, ErrorKind::Alt)),
-            None => Err(ErrMode::assert(input, "`alt` needs at least one parser")),
+            None => Err(ParserError::assert(
+                input,
+                "`alt` needs at least one parser",
+            )),
         }
     }
 }

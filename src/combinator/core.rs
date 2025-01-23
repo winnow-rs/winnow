@@ -183,7 +183,7 @@ where
         if input.eof_offset() == 0 {
             Ok(input.next_slice(0))
         } else {
-            Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
+            Err(ParserError::from_error_kind(input, ErrorKind::Eof))
         }
     })
     .parse_next(input)
@@ -224,7 +224,7 @@ where
         let res = parser.parse_next(input);
         input.reset(&start);
         match res {
-            Ok(_) => Err(ErrMode::from_error_kind(input, ErrorKind::Not)),
+            Ok(_) => Err(ParserError::from_error_kind(input, ErrorKind::Not)),
             Err(e) if e.is_backtrack() => Ok(()),
             Err(e) => Err(e),
         }
@@ -525,7 +525,7 @@ where
     Error: ParserError<Input>,
 {
     trace("fail", |i: &mut Input| {
-        Err(ErrMode::from_error_kind(i, ErrorKind::Fail))
+        Err(ParserError::from_error_kind(i, ErrorKind::Fail))
     })
     .parse_next(i)
 }

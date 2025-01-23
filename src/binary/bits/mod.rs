@@ -5,7 +5,7 @@
 mod tests;
 
 use crate::combinator::trace;
-use crate::error::{ErrMode, ErrorConvert, ErrorKind, Needed, ParserError};
+use crate::error::{ErrorConvert, ErrorKind, Needed, ParserError};
 use crate::lib::std::ops::{AddAssign, Div, Shl, Shr};
 use crate::stream::{Stream, StreamIsPartial, ToUsize};
 use crate::{ModalResult, Parser};
@@ -69,7 +69,10 @@ where
                 Ok(result)
             }
             Err(e) => match e.into_needed() {
-                Ok(n) => Err(ErrMode::incomplete(input, n.map(|u| u.get() / BYTE + 1))),
+                Ok(n) => Err(ParserError::incomplete(
+                    input,
+                    n.map(|u| u.get() / BYTE + 1),
+                )),
                 Err(e) => Err(ErrorConvert::convert(e)),
             },
         }
@@ -134,10 +137,10 @@ where
                 Ok(res)
             }
             Err(e) => match e.into_needed() {
-                Ok(Needed::Unknown) => Err(ErrMode::incomplete(bit_input, Needed::Unknown)),
+                Ok(Needed::Unknown) => Err(ParserError::incomplete(bit_input, Needed::Unknown)),
                 Ok(Needed::Size(sz)) => Err(match sz.get().checked_mul(BYTE) {
-                    Some(v) => ErrMode::incomplete(bit_input, Needed::new(v)),
-                    None => ErrMode::assert(
+                    Some(v) => ParserError::incomplete(bit_input, Needed::new(v)),
+                    None => ParserError::assert(
                         bit_input,
                         "overflow in turning needed bytes into needed bits",
                     ),
@@ -220,9 +223,9 @@ where
         let (mut input, bit_offset) = bit_input.clone();
         if input.eof_offset() * BYTE < count + bit_offset {
             if PARTIAL && input.is_partial() {
-                Err(ErrMode::incomplete(bit_input, Needed::new(count)))
+                Err(ParserError::incomplete(bit_input, Needed::new(count)))
             } else {
-                Err(ErrMode::from_error_kind(
+                Err(ParserError::from_error_kind(
                     &(input, bit_offset),
                     ErrorKind::Eof,
                 ))
@@ -340,7 +343,7 @@ where
                 Ok(o)
             } else {
                 input.reset(&start);
-                Err(ErrMode::from_error_kind(input, ErrorKind::Literal))
+                Err(ParserError::from_error_kind(input, ErrorKind::Literal))
             }
         })
     })

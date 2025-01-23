@@ -16,10 +16,10 @@
 //!
 //! fn parse_prefix(input: &mut &str) -> ModalResult<char> {
 //!     let c = input.next_token().ok_or_else(|| {
-//!         ErrMode::from_error_kind(input, ErrorKind::Token)
+//!         ParserError::from_error_kind(input, ErrorKind::Token)
 //!     })?;
 //!     if c != '0' {
-//!         return Err(ErrMode::from_error_kind(input, ErrorKind::Verify));
+//!         return Err(ParserError::from_error_kind(input, ErrorKind::Verify));
 //!     }
 //!     Ok(c)
 //! }
@@ -49,7 +49,7 @@
 //!     let c = any
 //!         .parse_next(input)?;
 //!     if c != '0' {
-//!         return Err(ErrMode::from_error_kind(input, ErrorKind::Verify));
+//!         return Err(ParserError::from_error_kind(input, ErrorKind::Verify));
 //!     }
 //!     Ok(c)
 //! }
@@ -129,11 +129,11 @@
 //! fn parse_prefix<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
 //!     let expected = "0x";
 //!     if input.len() < expected.len() {
-//!         return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
+//!         return Err(ParserError::from_error_kind(input, ErrorKind::Slice));
 //!     }
 //!     let actual = input.next_slice(expected.len());
 //!     if actual != expected {
-//!         return Err(ErrMode::from_error_kind(input, ErrorKind::Verify));
+//!         return Err(ParserError::from_error_kind(input, ErrorKind::Verify));
 //!     }
 //!     Ok(actual)
 //! }

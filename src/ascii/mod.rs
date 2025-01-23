@@ -15,7 +15,7 @@ use crate::combinator::opt;
 use crate::combinator::peek;
 use crate::combinator::trace;
 use crate::error::ParserError;
-use crate::error::{ErrMode, ErrorKind, Needed};
+use crate::error::{ErrorKind, Needed};
 use crate::stream::FindSlice;
 use crate::stream::{AsBStr, AsChar, ParseSlice, Stream, StreamIsPartial};
 use crate::stream::{Compare, CompareResult};
@@ -31,7 +31,6 @@ use crate::Parser;
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{ErrorKind}};
 /// # use winnow::ascii::Caseless;
 ///
 /// fn parser<'s>(s: &mut &'s str) -> ModalResult<&'s str> {
@@ -190,11 +189,11 @@ where
         match comp {
             CompareResult::Ok(_) => {}
             CompareResult::Incomplete if PARTIAL && input.is_partial() => {
-                return Err(ErrMode::incomplete(input, Needed::Unknown));
+                return Err(ParserError::incomplete(input, Needed::Unknown));
             }
             CompareResult::Incomplete | CompareResult::Error => {
                 let e: ErrorKind = ErrorKind::Literal;
-                return Err(ErrMode::from_error_kind(input, e));
+                return Err(ParserError::from_error_kind(input, e));
             }
         }
     }
@@ -1333,7 +1332,7 @@ where
             Ok(max_offset) => {
                 if max_offset < invalid_offset {
                     // Overflow
-                    return Err(ErrMode::from_error_kind(input, ErrorKind::Verify));
+                    return Err(ParserError::from_error_kind(input, ErrorKind::Verify));
                 } else {
                     invalid_offset
                 }
@@ -1344,7 +1343,7 @@ where
                     && invalid_offset == input.eof_offset()
                 {
                     // Only the next byte is guaranteed required
-                    return Err(ErrMode::incomplete(input, Needed::new(1)));
+                    return Err(ParserError::incomplete(input, Needed::new(1)));
                 } else {
                     invalid_offset
                 }
@@ -1352,7 +1351,7 @@ where
         };
         if offset == 0 {
             // Must be at least one digit
-            return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
+            return Err(ParserError::from_error_kind(input, ErrorKind::Slice));
         }
         let parsed = input.next_slice(offset);
 
@@ -1478,7 +1477,7 @@ where
     trace("float", move |input: &mut Input| {
         let s = take_float_or_exceptions(input)?;
         s.parse_slice()
-            .ok_or_else(|| ErrMode::from_error_kind(input, ErrorKind::Verify))
+            .ok_or_else(|| ParserError::from_error_kind(input, ErrorKind::Verify))
     })
     .parse_next(input)
 }
@@ -1669,7 +1668,7 @@ where
             Some(_) => {
                 // infinite loop check: the parser must always consume
                 if input.eof_offset() == current_len {
-                    return Err(ErrMode::assert(
+                    return Err(ParserError::assert(
                         input,
                         "`take_escaped` parsers must always consume",
                     ));
@@ -1688,7 +1687,7 @@ where
     }
 
     if PARTIAL && input.is_partial() {
-        Err(ErrMode::incomplete(input, Needed::Unknown))
+        Err(ParserError::incomplete(input, Needed::Unknown))
     } else {
         input.reset(&start);
         Ok(input.finish())
@@ -1827,7 +1826,7 @@ where
                 res.accumulate(o);
                 // infinite loop check: the parser must always consume
                 if input.eof_offset() == current_len {
-                    return Err(ErrMode::assert(
+                    return Err(ParserError::assert(
                         input,
                         "`escaped_transform` parsers must always consume",
                     ));
@@ -1845,7 +1844,7 @@ where
     }
 
     if PARTIAL && input.is_partial() {
-        Err(ErrMode::incomplete(input, Needed::Unknown))
+        Err(ParserError::incomplete(input, Needed::Unknown))
     } else {
         Ok(res)
     }

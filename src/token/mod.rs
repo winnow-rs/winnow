@@ -5,7 +5,6 @@ mod tests;
 
 use crate::combinator::trace;
 use crate::combinator::DisplayDebug;
-use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::Needed;
 use crate::error::ParserError;
@@ -79,9 +78,9 @@ where
 {
     input.next_token().ok_or_else(|| {
         if PARTIAL && input.is_partial() {
-            ErrMode::incomplete(input, Needed::new(1))
+            ParserError::incomplete(input, Needed::new(1))
         } else {
-            ErrMode::from_error_kind(input, ErrorKind::Token)
+            ParserError::from_error_kind(input, ErrorKind::Token)
         }
     })
 }
@@ -191,13 +190,13 @@ where
     let literal_len = t.slice_len();
     match i.compare(t) {
         CompareResult::Ok(len) => Ok(i.next_slice(len)),
-        CompareResult::Incomplete if PARTIAL && i.is_partial() => Err(ErrMode::incomplete(
+        CompareResult::Incomplete if PARTIAL && i.is_partial() => Err(ParserError::incomplete(
             i,
             Needed::new(literal_len - i.eof_offset()),
         )),
         CompareResult::Incomplete | CompareResult::Error => {
             let e: ErrorKind = ErrorKind::Literal;
-            Err(ErrMode::from_error_kind(i, e))
+            Err(ParserError::from_error_kind(i, e))
         }
     }
 }
@@ -539,7 +538,7 @@ where
     let offset = match input.offset_for(predicate) {
         Some(offset) => offset,
         None if PARTIAL && input.is_partial() => {
-            return Err(ErrMode::incomplete(input, Needed::new(1)));
+            return Err(ParserError::incomplete(input, Needed::new(1)));
         }
         None => input.eof_offset(),
     };
@@ -557,12 +556,12 @@ where
     let offset = match input.offset_for(predicate) {
         Some(offset) => offset,
         None if PARTIAL && input.is_partial() => {
-            return Err(ErrMode::incomplete(input, Needed::new(1)));
+            return Err(ParserError::incomplete(input, Needed::new(1)));
         }
         None => input.eof_offset(),
     };
     if offset == 0 {
-        Err(ErrMode::from_error_kind(input, e))
+        Err(ParserError::from_error_kind(input, e))
     } else {
         Ok(input.next_slice(offset))
     }
@@ -580,7 +579,7 @@ where
     P: FnMut(I::Token) -> bool,
 {
     if n < m {
-        return Err(ErrMode::assert(
+        return Err(ParserError::assert(
             input,
             "`occurrences` should be ascending, rather than descending",
         ));
@@ -590,7 +589,7 @@ where
     for (processed, (offset, token)) in input.iter_offsets().enumerate() {
         if predicate(token) {
             if processed < m {
-                return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
+                return Err(ParserError::from_error_kind(input, ErrorKind::Slice));
             } else {
                 return Ok(input.next_slice(offset));
             }
@@ -610,13 +609,13 @@ where
             } else {
                 1
             };
-            Err(ErrMode::incomplete(input, Needed::new(needed)))
+            Err(ParserError::incomplete(input, Needed::new(needed)))
         }
     } else {
         if m <= final_count {
             Ok(input.finish())
         } else {
-            Err(ErrMode::from_error_kind(input, ErrorKind::Slice))
+            Err(ParserError::from_error_kind(input, ErrorKind::Slice))
         }
     }
 }
@@ -820,8 +819,8 @@ where
 {
     match i.offset_at(c) {
         Ok(offset) => Ok(i.next_slice(offset)),
-        Err(e) if PARTIAL && i.is_partial() => Err(ErrMode::incomplete(i, e)),
-        Err(_needed) => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
+        Err(e) if PARTIAL && i.is_partial() => Err(ParserError::incomplete(i, e)),
+        Err(_needed) => Err(ParserError::from_error_kind(i, ErrorKind::Slice)),
     }
 }
 
@@ -971,8 +970,8 @@ where
 {
     match i.find_slice(t) {
         Some(range) => Ok(i.next_slice(range.start)),
-        None if PARTIAL && i.is_partial() => Err(ErrMode::incomplete(i, Needed::Unknown)),
-        None => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
+        None if PARTIAL && i.is_partial() => Err(ParserError::incomplete(i, Needed::Unknown)),
+        None => Err(ParserError::from_error_kind(i, ErrorKind::Slice)),
     }
 }
 
@@ -985,11 +984,11 @@ where
     I: Stream + FindSlice<T>,
 {
     match i.find_slice(t) {
-        None if PARTIAL && i.is_partial() => Err(ErrMode::incomplete(i, Needed::Unknown)),
-        None => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
+        None if PARTIAL && i.is_partial() => Err(ParserError::incomplete(i, Needed::Unknown)),
+        None => Err(ParserError::from_error_kind(i, ErrorKind::Slice)),
         Some(range) => {
             if range.start == 0 {
-                Err(ErrMode::from_error_kind(i, ErrorKind::Slice))
+                Err(ParserError::from_error_kind(i, ErrorKind::Slice))
             } else {
                 Ok(i.next_slice(range.start))
             }
@@ -1008,7 +1007,7 @@ where
     I: Stream + FindSlice<T>,
 {
     if end < start {
-        return Err(ErrMode::assert(
+        return Err(ParserError::assert(
             i,
             "`occurrences` should be ascending, rather than descending",
         ));
@@ -1020,18 +1019,18 @@ where
             let end_offset = i.offset_at(end).unwrap_or_else(|_err| i.eof_offset());
             if start_offset.map(|s| range.start < s).unwrap_or(true) {
                 if PARTIAL && i.is_partial() {
-                    return Err(ErrMode::incomplete(i, Needed::Unknown));
+                    return Err(ParserError::incomplete(i, Needed::Unknown));
                 } else {
-                    return Err(ErrMode::from_error_kind(i, ErrorKind::Slice));
+                    return Err(ParserError::from_error_kind(i, ErrorKind::Slice));
                 }
             }
             if end_offset < range.start {
-                return Err(ErrMode::from_error_kind(i, ErrorKind::Slice));
+                return Err(ParserError::from_error_kind(i, ErrorKind::Slice));
             }
             Ok(i.next_slice(range.start))
         }
-        None if PARTIAL && i.is_partial() => Err(ErrMode::incomplete(i, Needed::Unknown)),
-        None => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
+        None if PARTIAL && i.is_partial() => Err(ParserError::incomplete(i, Needed::Unknown)),
+        None => Err(ParserError::from_error_kind(i, ErrorKind::Slice)),
     }
 }
 

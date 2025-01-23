@@ -1,7 +1,6 @@
 #![no_main]
 use libfuzzer_sys::fuzz_target;
 use std::str;
-use winnow::error::ParserError;
 
 use winnow::prelude::*;
 use winnow::{
@@ -29,7 +28,7 @@ fn incr(i: &mut &str) -> ModalResult<()> {
 
         // limit the number of recursions, the fuzzer keeps running into them
         if *l.borrow() >= 8192 {
-            Err(winnow::error::ErrMode::from_error_kind(
+            Err(winnow::error::ParserError::from_error_kind(
                 i,
                 winnow::error::ErrorKind::Repeat,
             ))
