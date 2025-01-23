@@ -1276,7 +1276,7 @@ fn fold_repeat1_test() {
         multi(Partial::new(c)),
         Err(ErrMode::Backtrack(error_position!(
             &Partial::new(c),
-            ErrorKind::Many
+            ErrorKind::Tag
         )))
     );
     assert_eq!(

@@ -221,8 +221,8 @@ where
     ///
     /// assert_eq!(parser("abcabc"), Ok(("", vec!["abc", "abc"])));
     /// assert_eq!(parser("abc123"), Ok(("123", vec!["abc"])));
-    /// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Many))));
-    /// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Many))));
+    /// assert_eq!(parser("123123"), Err(ErrMode::Backtrack(InputError::new("123123", ErrorKind::Tag))));
+    /// assert_eq!(parser(""), Err(ErrMode::Backtrack(InputError::new("", ErrorKind::Tag))));
     /// ```
     ///
     /// Arbitrary number of repetitions:
@@ -1387,9 +1387,9 @@ where
     E: ParserError<I>,
 {
     let init = init();
+    let start = input.checkpoint();
     match f.parse_next(input) {
-        Err(ErrMode::Backtrack(_)) => Err(ErrMode::from_error_kind(input, ErrorKind::Many)),
-        Err(e) => Err(e),
+        Err(e) => Err(e.append(input, &start, ErrorKind::Many)),
         Ok(o1) => {
             let mut acc = g(init, o1);
 
