@@ -1397,9 +1397,9 @@ where
     E: ParserError<I>,
 {
     let init = init();
+    let start = input.checkpoint();
     match f.parse_next(input) {
-        Err(ErrMode::Backtrack(_)) => Err(ErrMode::from_error_kind(input, ErrorKind::Repeat)),
-        Err(e) => Err(e),
+        Err(e) => Err(e.append(input, &start, ErrorKind::Repeat)),
         Ok(o1) => {
             let mut acc = g(init, o1);
 
