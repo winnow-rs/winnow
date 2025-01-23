@@ -733,6 +733,6 @@ where
     }
 
     i.reset(&err_start);
-    err = err.map(|err| E::from_recoverable_error(&token_start, &err_start, i, err));
+    err = FromRecoverableError::from_recoverable_error(&token_start, &err_start, i, err);
     Err(err)
 }
