@@ -3712,7 +3712,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Repeat,
+            kind: Literal,
         },
     ),
 )
