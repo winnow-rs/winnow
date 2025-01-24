@@ -241,33 +241,42 @@ fn test_literal_support_char() {
 fn tokenslice_location() {
     #[derive(Clone, Debug)]
     struct Token {
-        #[allow(dead_code)]
         span: std::ops::Range<usize>,
+    }
+
+    impl Location for Token {
+        #[inline(always)]
+        fn previous_token_end(&self) -> usize {
+            self.span.end
+        }
+        #[inline(always)]
+        fn current_token_start(&self) -> usize {
+            self.span.start
+        }
     }
 
     let input = [
         Token { span: 1..9 },
         Token { span: 11..19 },
         Token { span: 21..29 },
-    ]
-    .as_slice();
-    let mut input = LocatingSlice::new(input);
-    assert_eq!(input.previous_token_end(), 0);
-
-    // Parse operation
-    assert_eq!(input.current_token_start(), 0);
-    let _ = input.next_token();
+    ];
+    let mut input = TokenSlice::new(&input);
     assert_eq!(input.previous_token_end(), 1);
 
     // Parse operation
     assert_eq!(input.current_token_start(), 1);
     let _ = input.next_token();
-    assert_eq!(input.previous_token_end(), 2);
+    assert_eq!(input.previous_token_end(), 9);
 
     // Parse operation
-    assert_eq!(input.current_token_start(), 2);
+    assert_eq!(input.current_token_start(), 11);
     let _ = input.next_token();
-    assert_eq!(input.previous_token_end(), 3);
+    assert_eq!(input.previous_token_end(), 19);
 
-    assert_eq!(input.current_token_start(), 3);
+    // Parse operation
+    assert_eq!(input.current_token_start(), 21);
+    let _ = input.next_token();
+    assert_eq!(input.previous_token_end(), 29);
+
+    assert_eq!(input.current_token_start(), 29);
 }
