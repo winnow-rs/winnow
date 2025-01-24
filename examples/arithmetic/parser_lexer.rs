@@ -72,28 +72,28 @@ pub enum Oper {
 
 impl winnow::stream::ContainsToken<Token> for Token {
     #[inline(always)]
-    fn contains_token(&mut self, token: Token) -> bool {
+    fn contains_token(&self, token: Token) -> bool {
         *self == token
     }
 }
 
 impl winnow::stream::ContainsToken<Token> for &'_ [Token] {
     #[inline]
-    fn contains_token(&mut self, token: Token) -> bool {
+    fn contains_token(&self, token: Token) -> bool {
         self.iter().any(|t| *t == token)
     }
 }
 
 impl<const LEN: usize> winnow::stream::ContainsToken<Token> for &'_ [Token; LEN] {
     #[inline]
-    fn contains_token(&mut self, token: Token) -> bool {
+    fn contains_token(&self, token: Token) -> bool {
         self.iter().any(|t| *t == token)
     }
 }
 
 impl<const LEN: usize> winnow::stream::ContainsToken<Token> for [Token; LEN] {
     #[inline]
-    fn contains_token(&mut self, token: Token) -> bool {
+    fn contains_token(&self, token: Token) -> bool {
         self.iter().any(|t| *t == token)
     }
 }
