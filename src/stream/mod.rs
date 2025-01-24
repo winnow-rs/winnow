@@ -48,6 +48,7 @@ mod recoverable;
 mod stateful;
 #[cfg(test)]
 mod tests;
+mod token;
 
 pub use bstr::BStr;
 pub use bytes::Bytes;
@@ -58,6 +59,7 @@ pub use range::Range;
 #[cfg(feature = "std")]
 pub use recoverable::Recoverable;
 pub use stateful::Stateful;
+pub use token::TokenSlice;
 
 /// UTF-8 Stream
 pub type Str<'i> = &'i str;
