@@ -2,6 +2,7 @@ use crate::error::Needed;
 use crate::lib::std::iter::Enumerate;
 use crate::lib::std::slice::Iter;
 use crate::stream::Checkpoint;
+use crate::stream::Location;
 use crate::stream::Offset;
 #[cfg(feature = "unstable-recover")]
 #[cfg(feature = "std")]
@@ -40,6 +41,25 @@ where
     pub fn reset_to_start(&mut self) {
         let start = self.initial.checkpoint();
         self.input.reset(&start);
+    }
+}
+
+/// Track locations by implementing [`Location`] on the Token.
+impl<T> TokenSlice<'_, T>
+where
+    T: Location,
+{
+    #[inline(always)]
+    fn previous_token_end(&self) -> Option<usize> {
+        let index = self.input.offset_from(&self.initial);
+        index
+            .checked_sub(1)
+            .map(|i| self.initial[i].previous_token_end())
+    }
+
+    #[inline(always)]
+    fn current_token_start(&self) -> Option<usize> {
+        self.input.first().map(|t| t.current_token_start())
     }
 }
 
@@ -131,6 +151,24 @@ where
     #[inline(always)]
     fn raw(&self) -> &dyn crate::lib::std::fmt::Debug {
         &self.input
+    }
+}
+
+impl<T> Location for TokenSlice<'_, T>
+where
+    T: Location,
+{
+    #[inline(always)]
+    fn previous_token_end(&self) -> usize {
+        self.previous_token_end()
+            .or_else(|| self.current_token_start())
+            .unwrap_or(0)
+    }
+    #[inline(always)]
+    fn current_token_start(&self) -> usize {
+        self.current_token_start()
+            .or_else(|| self.previous_token_end())
+            .unwrap_or(0)
     }
 }
 
