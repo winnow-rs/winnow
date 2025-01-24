@@ -2792,7 +2792,7 @@ Ok(
 
 #[test]
 fn tokenslice_literals() {
-    type TokenSlice<'i, 't> = &'i [Token<'t>];
+    type TokenSlice<'i, 't> = crate::stream::TokenSlice<'i, Token<'t>>;
 
     #[derive(Clone, Debug, PartialEq, Eq)]
     struct Token<'i> {
@@ -2800,16 +2800,16 @@ fn tokenslice_literals() {
         raw: &'i str,
     }
 
-    impl<'t> ContainsToken<Token<'t>> for &str {
+    impl<'t> ContainsToken<&Token<'t>> for &str {
         #[inline(always)]
-        fn contains_token(&self, token: Token<'t>) -> bool {
+        fn contains_token(&self, token: &Token<'t>) -> bool {
             *self == token.raw
         }
     }
 
-    impl<'t> ContainsToken<Token<'t>> for TokenKind {
+    impl<'t> ContainsToken<&Token<'t>> for TokenKind {
         #[inline(always)]
-        fn contains_token(&self, token: Token<'t>) -> bool {
+        fn contains_token(&self, token: &Token<'t>) -> bool {
             *self == token.kind
         }
     }
@@ -2831,18 +2831,18 @@ fn tokenslice_literals() {
         }
     }
 
-    impl<'i, 't> Parser<TokenSlice<'i, 't>, Token<'t>, ErrMode<InputError<TokenSlice<'i, 't>>>>
+    impl<'i, 't> Parser<TokenSlice<'i, 't>, &'i Token<'t>, ErrMode<InputError<TokenSlice<'i, 't>>>>
         for TokenKind
     {
         fn parse_next(
             &mut self,
             input: &mut TokenSlice<'i, 't>,
-        ) -> TestResult<TokenSlice<'i, 't>, Token<'t>> {
+        ) -> TestResult<TokenSlice<'i, 't>, &'i Token<'t>> {
             one_of(*self).parse_next(input)
         }
     }
 
-    let mut input = [
+    let input = [
         Token {
             kind: TokenKind::If,
             raw: "if",
@@ -2867,8 +2867,8 @@ fn tokenslice_literals() {
             kind: TokenKind::RightCurly,
             raw: "}",
         },
-    ]
-    .as_slice();
+    ];
+    let mut input = TokenSlice::new(&input);
 
     assert_parse!(
         (
