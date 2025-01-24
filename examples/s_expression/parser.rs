@@ -2,7 +2,6 @@
 //! parser and tiny [lisp](https://en.wikipedia.org/wiki/Lisp_(programming_language)) interpreter.
 //! Lisp is a simple type of language made up of Atoms and Lists, forming easily parsable trees.
 
-use winnow::error::ErrMode;
 use winnow::{
     ascii::{alpha1, digit1, multispace0, multispace1},
     combinator::alt,
@@ -225,9 +224,9 @@ fn parse_quote(i: &mut &'_ str) -> ModalResult<Expr> {
 //.parse_next/
 /// Unlike the previous functions, this function doesn't take or consume input, instead it
 /// takes a parsing function and returns a new parsing function.
-fn s_exp<'a, O1, F>(inner: F) -> impl Parser<&'a str, O1, ErrMode<ContextError>>
+fn s_exp<'a, O1, F>(inner: F) -> impl ModalParser<&'a str, O1, ContextError>
 where
-    F: Parser<&'a str, O1, ErrMode<ContextError>>,
+    F: ModalParser<&'a str, O1, ContextError>,
 {
     delimited(
         '(',

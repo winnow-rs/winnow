@@ -1218,6 +1218,11 @@ impl<I, O, E> Parser<I, O, E> for Box<dyn Parser<I, O, E> + '_> {
     }
 }
 
+/// Trait alias for [`Parser`] to be used with [`ModalResult`][crate::error::ModalResult]
+pub trait ModalParser<I, O, E>: Parser<I, O, crate::error::ErrMode<E>> {}
+
+impl<I, O, E, P> ModalParser<I, O, E> for P where P: Parser<I, O, crate::error::ErrMode<E>> {}
+
 /// Collect all errors when parsing the input
 ///
 /// [`Parser`]s will need to use [`Recoverable<I, _>`] for their input.
