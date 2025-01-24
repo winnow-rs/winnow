@@ -6,17 +6,16 @@
 //! Parsers we've been working with look like:
 //! ```rust
 //! # use winnow::error::ContextError;
-//! # use winnow::error::ErrMode;
 //! # use winnow::Parser;
-//! use winnow::ModalResult;
+//! use winnow::Result;
 //!
-//! pub fn parser<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
+//! pub fn parser<'s>(input: &mut &'s str) -> Result<&'s str> {
 //!     // ...
 //! #     Ok("")
 //! }
 //! ```
 //! 1. We have to decide what to do about the "remainder" of the `input`.
-//! 2. The [`ModalResult`] is not compatible with the rest of the Rust ecosystem.
+//! 2. The [`Result`] may not be compatible with the rest of the Rust ecosystem.
 //!     Normally, Rust applications want errors that are `std::error::Error + Send + Sync + 'static`
 //!     meaning:
 //!     - They implement the [`std::error::Error`] trait
@@ -26,18 +25,19 @@
 //!
 //! winnow provides [`Parser::parse`] to help with this:
 //! - Ensures we hit [`eof`]
-//! - Converts from [`ModalResult`] to [`Result`]
 //! - Wraps the error in [`ParseError`]
 //!   - For simple cases, [`ParseError`] provides a [`std::fmt::Display`] impl to render the error.
 //!   - For more involved cases, [`ParseError`] provides the original [`input`][ParseError::input] and the
 //!     [`offset`][ParseError::offset] of where it failed so you can capture this information in
 //!     your error, [rendering it as you wish][chapter_7#error-adaptation-and-rendering].
+//! - Converts from [`ModalResult`] to [`Result`] (if used, more on this in [`chapter_7`])
 //!
 //! However, [`ParseError`] will still need some level of adaptation to integrate with your
 //! application's error type (like with `?`).
 //!
 //! ```rust
 //! # use winnow::prelude::*;
+//! # use winnow::Result;
 //! # use winnow::token::take_while;
 //! # use winnow::combinator::dispatch;
 //! # use winnow::token::take;
@@ -59,7 +59,7 @@
 //! }
 //!
 //! // ...
-//! # fn parse_digits<'s>(input: &mut &'s str) -> ModalResult<usize> {
+//! # fn parse_digits<'s>(input: &mut &'s str) -> Result<usize> {
 //! #     dispatch!(take(2usize);
 //! #         "0b" => parse_bin_digits.try_map(|s| usize::from_str_radix(s, 2)),
 //! #         "0o" => parse_oct_digits.try_map(|s| usize::from_str_radix(s, 8)),
@@ -69,25 +69,25 @@
 //! #     ).parse_next(input)
 //! # }
 //! #
-//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> Result<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='1'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> Result<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> Result<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> ModalResult<&'s str> {
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> Result<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
