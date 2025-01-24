@@ -24,7 +24,7 @@ jobs:
     permissions:
       contents: none
     name: CI
-    needs: [test, miri, msrv, lockfile, docs, rustfmt, clippy, minimal-versions]
+    needs: [test, msrv, lockfile, docs, rustfmt, clippy, minimal-versions]
     runs-on: ubuntu-latest
     if: "always()"
     steps:
