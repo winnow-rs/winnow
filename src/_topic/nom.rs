@@ -99,6 +99,18 @@
 //!     }).parse_next(i)
 //! }
 //! ```
+//!
+//! ### Optional [`ErrMode`]
+//!
+//! Called `Err` in `nom`, [`ErrMode`] is responsible for
+//! - Deciding whether to backtrack and try another branch in cases like `alt` or report back to
+//!   the error back to users
+//! - Tracking incomplete input on partial parsing
+//!
+//! As this isn't needed in every parser, it was made optional.  [`ModalResult`] is a convenience
+//! type for using [`ErrMode`].
 
 #![allow(unused_imports)]
+use crate::error::ErrMode;
+use crate::error::ModalResult;
 use crate::stream::Stream;
