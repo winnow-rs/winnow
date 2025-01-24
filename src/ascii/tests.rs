@@ -2499,17 +2499,9 @@ Ok(
         }
 
         fn esc<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], String> {
-            escaped_transform(
-                alpha,
-                '\\',
-                alt((
-                    "\\".value(&b"\\"[..]),
-                    "\"".value(&b"\""[..]),
-                    "n".value(&b"\n"[..]),
-                )),
-            )
-            .map(to_s)
-            .parse_next(i)
+            escaped_transform(alpha, '\\', alt((b'\\', b'"', "n".value(b'\n'))))
+                .map(to_s)
+                .parse_next(i)
         }
 
         assert_parse!(
@@ -2674,7 +2666,12 @@ Ok(
             escaped_transform(
                 alpha,
                 '\\',
-                alt(("\\".value("\\"), "\"".value("\""), "n".value("\n"))),
+                alt((
+                    '\\',
+                    '"',
+                    "n".value('\n'),
+                    ("x", hex_uint).map(|(_, hex)| char::from_u32(hex).unwrap()),
+                )),
             )
             .parse_next(i)
         }
@@ -2738,6 +2735,19 @@ Ok(
     (
         "12",
         "ab\"",
+    ),
+)
+
+"#]]
+            .raw()
+        );
+        assert_parse!(
+            esc.parse_peek("ab\\x20"),
+            str![[r#"
+Ok(
+    (
+        "",
+        "ab ",
     ),
 )
 
