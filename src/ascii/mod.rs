@@ -1765,28 +1765,29 @@ where
 /// # }
 /// ```
 #[inline(always)]
-pub fn escaped_transform<Input, Error, Normal, Escape, Output>(
+pub fn escaped_transform<Input, Error, Normal, NormalOutput, Escape, EscapeOutput, Output>(
     mut normal: Normal,
     control_char: char,
     mut escape: Escape,
 ) -> impl Parser<Input, Output, Error>
 where
     Input: StreamIsPartial + Stream + Compare<char>,
-    Output: crate::stream::Accumulate<<Input as Stream>::Slice>,
-    Normal: Parser<Input, <Input as Stream>::Slice, Error>,
-    Escape: Parser<Input, <Input as Stream>::Slice, Error>,
+    Normal: Parser<Input, NormalOutput, Error>,
+    Escape: Parser<Input, EscapeOutput, Error>,
+    Output: crate::stream::Accumulate<NormalOutput>,
+    Output: crate::stream::Accumulate<EscapeOutput>,
     Error: ParserError<Input>,
 {
     trace("escaped_transform", move |input: &mut Input| {
         if <Input as StreamIsPartial>::is_partial_supported() && input.is_partial() {
-            escaped_transform_internal::<_, _, _, _, _, true>(
+            escaped_transform_internal::<_, _, _, _, _, _, _, true>(
                 input,
                 &mut normal,
                 control_char,
                 &mut escape,
             )
         } else {
-            escaped_transform_internal::<_, _, _, _, _, false>(
+            escaped_transform_internal::<_, _, _, _, _, _, _, false>(
                 input,
                 &mut normal,
                 control_char,
@@ -1796,7 +1797,16 @@ where
     })
 }
 
-fn escaped_transform_internal<I, Error, F, G, Output, const PARTIAL: bool>(
+fn escaped_transform_internal<
+    I,
+    Error,
+    F,
+    NormalOutput,
+    G,
+    EscapeOutput,
+    Output,
+    const PARTIAL: bool,
+>(
     input: &mut I,
     normal: &mut F,
     control_char: char,
@@ -1806,12 +1816,14 @@ where
     I: StreamIsPartial,
     I: Stream,
     I: Compare<char>,
-    Output: crate::stream::Accumulate<<I as Stream>::Slice>,
-    F: Parser<I, <I as Stream>::Slice, Error>,
-    G: Parser<I, <I as Stream>::Slice, Error>,
+    Output: crate::stream::Accumulate<NormalOutput>,
+    Output: crate::stream::Accumulate<EscapeOutput>,
+    F: Parser<I, NormalOutput, Error>,
+    G: Parser<I, EscapeOutput, Error>,
     Error: ParserError<I>,
 {
-    let mut res = Output::initial(Some(input.eof_offset()));
+    let mut res =
+        <Output as crate::stream::Accumulate<NormalOutput>>::initial(Some(input.eof_offset()));
 
     while input.eof_offset() > 0 {
         let current_len = input.eof_offset();
