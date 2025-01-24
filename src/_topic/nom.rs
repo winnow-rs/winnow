@@ -64,6 +64,13 @@
 //! - Search the docs for the `nom` parser
 //! - See the [List of combinators][crate::combinator]
 //!
+//! ### Partial/streaming parsers
+//!
+//! `nom` differentiated some parsers by being `streaming` or `complete`.
+//! Instead, we tag the input type (`I`) by wrapping it in [`Partial<I>`] and parsers will adjust
+//! their behavior accordingly.
+//! See [partial] special topic.
+//!
 //! ### `&mut I`
 //!
 //! For an explanation of this change, see [Why `winnow`][super::why]
@@ -111,6 +118,8 @@
 //! type for using [`ErrMode`].
 
 #![allow(unused_imports)]
+use crate::_topic::partial;
 use crate::error::ErrMode;
 use crate::error::ModalResult;
+use crate::stream::Partial;
 use crate::stream::Stream;
