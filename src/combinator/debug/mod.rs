@@ -3,7 +3,7 @@
 #[cfg(feature = "debug")]
 mod internals;
 
-use crate::error::ErrMode;
+use crate::error::ParserError;
 use crate::stream::Stream;
 use crate::Parser;
 
@@ -22,7 +22,7 @@ use crate::Parser;
 /// # use winnow::prelude::*;
 /// use winnow::combinator::trace;
 ///
-/// fn short_alpha<'s>(s: &mut &'s [u8]) -> PResult<&'s [u8]> {
+/// fn short_alpha<'s>(s: &mut &'s [u8]) -> ModalResult<&'s [u8]> {
 ///   trace("short_alpha",
 ///     take_while(3..=6, AsChar::is_alpha)
 ///   ).parse_next(s)
@@ -37,7 +37,7 @@ use crate::Parser;
 #[cfg_attr(not(feature = "debug"), allow(unused_variables))]
 #[cfg_attr(not(feature = "debug"), allow(unused_mut))]
 #[cfg_attr(not(feature = "debug"), inline(always))]
-pub fn trace<I: Stream, O, E>(
+pub fn trace<I: Stream, O, E: ParserError<I>>(
     name: impl crate::lib::std::fmt::Display,
     parser: impl Parser<I, O, E>,
 ) -> impl Parser<I, O, E> {
@@ -52,9 +52,9 @@ pub fn trace<I: Stream, O, E>(
 }
 
 #[cfg_attr(not(feature = "debug"), allow(unused_variables))]
-pub(crate) fn trace_result<T, E>(
+pub(crate) fn trace_result<T, I: Stream, E: ParserError<I>>(
     name: impl crate::lib::std::fmt::Display,
-    res: &Result<T, ErrMode<E>>,
+    res: &Result<T, E>,
 ) {
     #[cfg(feature = "debug")]
     {

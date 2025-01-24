@@ -1,5 +1,6 @@
 use winnow::combinator::repeat;
 use winnow::prelude::*;
+use winnow::Result;
 
 mod parser;
 mod parser_str;
@@ -31,7 +32,7 @@ port=143
 file=payroll.dat
 \0";
 
-    fn acc<'s>(i: &mut parser::Stream<'s>) -> PResult<Vec<(&'s str, &'s str)>> {
+    fn acc<'s>(i: &mut parser::Stream<'s>) -> Result<Vec<(&'s str, &'s str)>> {
         repeat(0.., parser::key_value).parse_next(i)
     }
 

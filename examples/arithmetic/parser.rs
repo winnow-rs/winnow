@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
 use winnow::prelude::*;
+use winnow::Result;
 use winnow::{
     ascii::{digit1 as digits, multispace0 as multispaces},
     combinator::alt,
@@ -11,7 +12,7 @@ use winnow::{
 
 // Parser definition
 
-pub(crate) fn expr(i: &mut &str) -> PResult<i64> {
+pub(crate) fn expr(i: &mut &str) -> Result<i64> {
     let init = term.parse_next(i)?;
 
     repeat(0.., (one_of(['+', '-']), term))
@@ -31,7 +32,7 @@ pub(crate) fn expr(i: &mut &str) -> PResult<i64> {
 // We read an initial factor and for each time we find
 // a * or / operator followed by another factor, we do
 // the math by folding everything
-fn term(i: &mut &str) -> PResult<i64> {
+fn term(i: &mut &str) -> Result<i64> {
     let init = factor.parse_next(i)?;
 
     repeat(0.., (one_of(['*', '/']), factor))
@@ -52,7 +53,7 @@ fn term(i: &mut &str) -> PResult<i64> {
 // We look for a digit suite, and try to convert it.
 // If either str::from_utf8 or FromStr::from_str fail,
 // we fallback to the parens parser defined above
-fn factor(i: &mut &str) -> PResult<i64> {
+fn factor(i: &mut &str) -> Result<i64> {
     delimited(
         multispaces,
         alt((digits.try_map(FromStr::from_str), parens)),
@@ -62,7 +63,7 @@ fn factor(i: &mut &str) -> PResult<i64> {
 }
 
 // We parse any expr surrounded by parens, ignoring all whitespace around those
-fn parens(i: &mut &str) -> PResult<i64> {
+fn parens(i: &mut &str) -> Result<i64> {
     delimited('(', expr, ')').parse_next(i)
 }
 

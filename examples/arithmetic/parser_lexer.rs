@@ -4,6 +4,7 @@ use std::fmt::{Debug, Display, Formatter};
 use std::str::FromStr;
 
 use winnow::prelude::*;
+use winnow::Result;
 use winnow::{
     ascii::{digit1 as digits, multispace0 as multispaces},
     combinator::alt,
@@ -98,16 +99,16 @@ impl<const LEN: usize> winnow::stream::ContainsToken<Token> for [Token; LEN] {
 }
 
 #[allow(dead_code)]
-pub(crate) fn expr2(i: &mut &str) -> PResult<Expr> {
+pub(crate) fn expr2(i: &mut &str) -> Result<Expr> {
     let tokens = lex.parse_next(i)?;
     expr.parse_next(&mut tokens.as_slice())
 }
 
-pub(crate) fn lex(i: &mut &str) -> PResult<Vec<Token>> {
+pub(crate) fn lex(i: &mut &str) -> Result<Vec<Token>> {
     preceded(multispaces, repeat(1.., terminated(token, multispaces))).parse_next(i)
 }
 
-fn token(i: &mut &str) -> PResult<Token> {
+fn token(i: &mut &str) -> Result<Token> {
     dispatch! {peek(any);
         '0'..='9' => digits.try_map(FromStr::from_str).map(Token::Value),
         '(' => '('.value(Token::OpenParen),
@@ -121,7 +122,7 @@ fn token(i: &mut &str) -> PResult<Token> {
     .parse_next(i)
 }
 
-pub(crate) fn expr(i: &mut &[Token]) -> PResult<Expr> {
+pub(crate) fn expr(i: &mut &[Token]) -> Result<Expr> {
     let init = term.parse_next(i)?;
 
     repeat(
@@ -144,7 +145,7 @@ pub(crate) fn expr(i: &mut &[Token]) -> PResult<Expr> {
     .parse_next(i)
 }
 
-fn term(i: &mut &[Token]) -> PResult<Expr> {
+fn term(i: &mut &[Token]) -> Result<Expr> {
     let init = factor.parse_next(i)?;
 
     repeat(
@@ -167,7 +168,7 @@ fn term(i: &mut &[Token]) -> PResult<Expr> {
     .parse_next(i)
 }
 
-fn factor(i: &mut &[Token]) -> PResult<Expr> {
+fn factor(i: &mut &[Token]) -> Result<Expr> {
     alt((
         one_of(|t| matches!(t, Token::Value(_))).map(|t| match t {
             Token::Value(v) => Expr::Value(v),
@@ -178,7 +179,7 @@ fn factor(i: &mut &[Token]) -> PResult<Expr> {
     .parse_next(i)
 }
 
-fn parens(i: &mut &[Token]) -> PResult<Expr> {
+fn parens(i: &mut &[Token]) -> Result<Expr> {
     delimited(one_of(Token::OpenParen), expr, one_of(Token::CloseParen))
         .map(|e| Expr::Paren(Box::new(e)))
         .parse_next(i)

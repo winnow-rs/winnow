@@ -209,27 +209,27 @@ impl<'a, 'b: 'a> JsonValue<'a, 'b> {
     }
 }
 
-fn sp<'a, E: ParserError<&'a str>>(i: &mut &'a str) -> PResult<&'a str, E> {
+fn sp<'a, E: ParserError<&'a str>>(i: &mut &'a str) -> ModalResult<&'a str, E> {
     let chars = " \t\r\n";
 
     take_while(0.., move |c| chars.contains(c)).parse_next(i)
 }
 
-fn parse_str<'a, E: ParserError<&'a str>>(i: &mut &'a str) -> PResult<&'a str, E> {
+fn parse_str<'a, E: ParserError<&'a str>>(i: &mut &'a str) -> ModalResult<&'a str, E> {
     take_escaped(alphanumeric, '\\', one_of(['"', 'n', '\\'])).parse_next(i)
 }
 
-fn string<'s>(i: &mut &'s str) -> PResult<&'s str> {
+fn string<'s>(i: &mut &'s str) -> ModalResult<&'s str> {
     preceded('\"', cut_err(terminated(parse_str, '\"')))
         .context(StrContext::Label("string"))
         .parse_next(i)
 }
 
-fn boolean(input: &mut &str) -> PResult<bool> {
+fn boolean(input: &mut &str) -> ModalResult<bool> {
     alt(("false".map(|_| false), "true".map(|_| true))).parse_next(input)
 }
 
-fn array(i: &mut &str) -> PResult<()> {
+fn array(i: &mut &str) -> ModalResult<()> {
     preceded(
         '[',
         cut_err(terminated(
@@ -241,11 +241,11 @@ fn array(i: &mut &str) -> PResult<()> {
     .parse_next(i)
 }
 
-fn key_value<'s>(i: &mut &'s str) -> PResult<(&'s str, ())> {
+fn key_value<'s>(i: &mut &'s str) -> ModalResult<(&'s str, ())> {
     separated_pair(preceded(sp, string), cut_err(preceded(sp, ':')), value).parse_next(i)
 }
 
-fn hash(i: &mut &str) -> PResult<()> {
+fn hash(i: &mut &str) -> ModalResult<()> {
     preceded(
         '{',
         cut_err(terminated(
@@ -257,7 +257,7 @@ fn hash(i: &mut &str) -> PResult<()> {
     .parse_next(i)
 }
 
-fn value(i: &mut &str) -> PResult<()> {
+fn value(i: &mut &str) -> ModalResult<()> {
     preceded(
         sp,
         alt((

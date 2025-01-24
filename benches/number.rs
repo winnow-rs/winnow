@@ -5,7 +5,6 @@ use criterion::Criterion;
 
 use winnow::ascii::float;
 use winnow::binary::be_u64;
-use winnow::error::ErrMode;
 use winnow::error::ErrorKind;
 use winnow::error::InputError;
 use winnow::error::ParserError;
@@ -14,7 +13,7 @@ use winnow::stream::ParseSlice;
 
 type Stream<'i> = &'i [u8];
 
-fn parser(i: &mut Stream<'_>) -> PResult<u64> {
+fn parser(i: &mut Stream<'_>) -> ModalResult<u64> {
     be_u64.parse_next(i)
 }
 
@@ -49,10 +48,10 @@ fn float_str(c: &mut Criterion) {
     });
 }
 
-fn std_float(input: &mut &[u8]) -> PResult<f64> {
+fn std_float(input: &mut &[u8]) -> ModalResult<f64> {
     match input.parse_slice() {
         Some(n) => Ok(n),
-        None => Err(ErrMode::from_error_kind(input, ErrorKind::Slice)),
+        None => Err(ParserError::from_error_kind(input, ErrorKind::Slice)),
     }
 }
 

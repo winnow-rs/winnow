@@ -1,15 +1,15 @@
 //! # Chapter 4: Parsers With Custom Return Types
 //!
 //! So far, we have seen mostly functions that take an `&str`, and return a
-//! `PResult<&str>`. Splitting strings into smaller strings and characters is certainly
+//! [`Result<&str>`]. Splitting strings into smaller strings and characters is certainly
 //! useful, but it's not the only thing winnow is capable of!
 //!
 //! A useful operation when parsing is to convert between types; for example
 //! parsing from `&str` to another primitive, like [`usize`].
 //!
 //! All we need to do for our parser to return a different type is to change
-//! the type parameter of [`PResult`] to the desired return type.
-//! For example, to return a `usize`, return a `PResult<usize>`.
+//! the type parameter of [`Result`] to the desired return type.
+//! For example, to return a `usize`, return a `Result<usize>`.
 //!
 //! One winnow-native way of doing a type conversion is to use the
 //! [`Parser::parse_to`] combinator
@@ -18,9 +18,10 @@
 //! The following code converts from a string containing a number to `usize`:
 //! ```rust
 //! # use winnow::prelude::*;
+//! # use winnow::Result;
 //! # use winnow::ascii::digit1;
 //! #
-//! fn parse_digits(input: &mut &str) -> PResult<usize> {
+//! fn parse_digits(input: &mut &str) -> Result<usize> {
 //!     digit1
 //!         .parse_to()
 //!         .parse_next(input)
@@ -41,12 +42,13 @@
 //! all radices of numbers:
 //! ```rust
 //! # use winnow::prelude::*;
+//! # use winnow::Result;
 //! # use winnow::token::take_while;
 //! use winnow::combinator::dispatch;
 //! use winnow::token::take;
 //! use winnow::combinator::fail;
 //!
-//! fn parse_digits(input: &mut &str) -> PResult<usize> {
+//! fn parse_digits(input: &mut &str) -> Result<usize> {
 //!     dispatch!(take(2usize);
 //!         "0b" => parse_bin_digits.try_map(|s| usize::from_str_radix(s, 2)),
 //!         "0o" => parse_oct_digits.try_map(|s| usize::from_str_radix(s, 8)),
@@ -57,25 +59,25 @@
 //! }
 //!
 //! // ...
-//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_bin_digits<'s>(input: &mut &'s str) -> Result<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='1'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_oct_digits<'s>(input: &mut &'s str) -> Result<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='7'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_dec_digits<'s>(input: &mut &'s str) -> Result<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #     )).parse_next(input)
 //! # }
 //! #
-//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! # fn parse_hex_digits<'s>(input: &mut &'s str) -> Result<&'s str> {
 //! #     take_while(1.., (
 //! #         ('0'..='9'),
 //! #         ('A'..='F'),
@@ -98,8 +100,8 @@
 //! See also [`Parser`] for more output-modifying parsers.
 
 #![allow(unused_imports)]
-use crate::PResult;
 use crate::Parser;
+use crate::Result;
 use std::str::FromStr;
 
 pub use super::chapter_3 as previous;

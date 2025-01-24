@@ -5,10 +5,10 @@
 mod tests;
 
 use crate::combinator::trace;
-use crate::error::{ErrMode, ErrorConvert, ErrorKind, Needed, ParserError};
+use crate::error::{ErrorConvert, ErrorKind, Needed, ParserError};
 use crate::lib::std::ops::{AddAssign, Div, Shl, Shr};
 use crate::stream::{Stream, StreamIsPartial, ToUsize};
-use crate::{PResult, Parser};
+use crate::{Parser, Result};
 
 /// Number of bits in a byte
 const BYTE: usize = u8::BITS as usize;
@@ -23,14 +23,15 @@ const BYTE: usize = u8::BITS as usize;
 /// # use winnow::Bytes;
 /// # use winnow::binary::bits::{bits, take};
 /// # use winnow::error::ContextError;
+/// # use winnow::error::ErrMode;
 /// type Stream<'i> = &'i Bytes;
 ///
 /// fn stream(b: &[u8]) -> Stream<'_> {
 ///     Bytes::new(b)
 /// }
 ///
-/// fn parse(input: &mut Stream<'_>) -> PResult<(u8, u8)> {
-///     bits::<_, _, ContextError, _, _>((take(4usize), take(8usize))).parse_next(input)
+/// fn parse(input: &mut Stream<'_>) -> ModalResult<(u8, u8)> {
+///     bits::<_, _, ErrMode<ContextError>, _, _>((take(4usize), take(8usize))).parse_next(input)
 /// }
 ///
 /// let input = stream(&[0x12, 0x34, 0xff, 0xff]);
@@ -68,8 +69,13 @@ where
                 *input = rest;
                 Ok(result)
             }
-            Err(ErrMode::Incomplete(n)) => Err(ErrMode::Incomplete(n.map(|u| u.get() / BYTE + 1))),
-            Err(e) => Err(ErrorConvert::convert(e)),
+            Err(e) => match e.into_needed() {
+                Ok(n) => Err(ParserError::incomplete(
+                    input,
+                    n.map(|u| u.get() / BYTE + 1),
+                )),
+                Err(e) => Err(ErrorConvert::convert(e)),
+            },
         }
     })
 }
@@ -86,11 +92,12 @@ where
 /// # Examples
 ///
 /// ```
-/// use winnow::prelude::*;
-/// use winnow::Bytes;
+/// # use winnow::prelude::*;
+/// # use winnow::Bytes;
+/// # use winnow::token::rest;
+/// # use winnow::error::ContextError;
+/// # use winnow::error::ErrMode;
 /// use winnow::binary::bits::{bits, bytes, take};
-/// use winnow::token::rest;
-/// use winnow::error::ContextError;
 ///
 /// type Stream<'i> = &'i Bytes;
 ///
@@ -98,11 +105,11 @@ where
 ///     Bytes::new(b)
 /// }
 ///
-/// fn parse<'i>(input: &mut Stream<'i>) -> PResult<(u8, u8, &'i [u8])> {
-///   bits::<_, _, ContextError, _, _>((
+/// fn parse<'i>(input: &mut Stream<'i>) -> ModalResult<(u8, u8, &'i [u8])> {
+///   bits::<_, _, ErrMode<ContextError>, _, _>((
 ///     take(4usize),
 ///     take(8usize),
-///     bytes::<_, _, ContextError, _, _>(rest)
+///     bytes::<_, _, ErrMode<ContextError>, _, _>(rest)
 ///   )).parse_next(input)
 /// }
 ///
@@ -131,15 +138,17 @@ where
                 *bit_input = (input, 0);
                 Ok(res)
             }
-            Err(ErrMode::Incomplete(Needed::Unknown)) => Err(ErrMode::Incomplete(Needed::Unknown)),
-            Err(ErrMode::Incomplete(Needed::Size(sz))) => Err(match sz.get().checked_mul(BYTE) {
-                Some(v) => ErrMode::Incomplete(Needed::new(v)),
-                None => ErrMode::assert(
-                    bit_input,
-                    "overflow in turning needed bytes into needed bits",
-                ),
-            }),
-            Err(e) => Err(ErrorConvert::convert(e)),
+            Err(e) => match e.into_needed() {
+                Ok(Needed::Unknown) => Err(ParserError::incomplete(bit_input, Needed::Unknown)),
+                Ok(Needed::Size(sz)) => Err(match sz.get().checked_mul(BYTE) {
+                    Some(v) => ParserError::incomplete(bit_input, Needed::new(v)),
+                    None => ParserError::assert(
+                        bit_input,
+                        "overflow in turning needed bytes into needed bits",
+                    ),
+                }),
+                Err(e) => Err(ErrorConvert::convert(e)),
+            },
         }
     })
 }
@@ -204,7 +213,7 @@ where
 fn take_<I, O, E: ParserError<(I, usize)>, const PARTIAL: bool>(
     bit_input: &mut (I, usize),
     count: usize,
-) -> PResult<O, E>
+) -> Result<O, E>
 where
     I: StreamIsPartial,
     I: Stream<Token = u8> + Clone,
@@ -216,9 +225,9 @@ where
         let (mut input, bit_offset) = bit_input.clone();
         if input.eof_offset() * BYTE < count + bit_offset {
             if PARTIAL && input.is_partial() {
-                Err(ErrMode::Incomplete(Needed::new(count)))
+                Err(ParserError::incomplete(bit_input, Needed::new(count)))
             } else {
-                Err(ErrMode::from_error_kind(
+                Err(ParserError::from_error_kind(
                     &(input, bit_offset),
                     ErrorKind::Eof,
                 ))
@@ -288,7 +297,7 @@ where
 /// /// Compare the lowest `count` bits of `input` against the lowest `count` bits of `pattern`.
 /// /// Return Ok and the matching section of `input` if there's a match.
 /// /// Return Err if there's no match.
-/// fn parser(bits: u8, count: u8, input: &mut (Stream<'_>, usize)) -> PResult<u8> {
+/// fn parser(bits: u8, count: u8, input: &mut (Stream<'_>, usize)) -> ModalResult<u8> {
 ///     pattern(bits, count).parse_next(input)
 /// }
 ///
@@ -336,7 +345,7 @@ where
                 Ok(o)
             } else {
                 input.reset(&start);
-                Err(ErrMode::from_error_kind(input, ErrorKind::Literal))
+                Err(ParserError::from_error_kind(input, ErrorKind::Literal))
             }
         })
     })
@@ -350,7 +359,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;;
 /// # use winnow::error::ContextError;
-/// pub fn bool(input: &mut (&[u8], usize)) -> PResult<bool>
+/// pub fn bool(input: &mut (&[u8], usize)) -> ModalResult<bool>
 /// # {
 /// #     winnow::binary::bits::bool.parse_next(input)
 /// # }
@@ -370,7 +379,7 @@ where
 ///     Bytes::new(b)
 /// }
 ///
-/// fn parse(input: &mut (Stream<'_>, usize)) -> PResult<bool> {
+/// fn parse(input: &mut (Stream<'_>, usize)) -> ModalResult<bool> {
 ///     bool.parse_next(input)
 /// }
 ///
@@ -380,7 +389,7 @@ where
 #[doc(alias = "any")]
 pub fn bool<Input, Error: ParserError<(Input, usize)>>(
     input: &mut (Input, usize),
-) -> PResult<bool, Error>
+) -> Result<bool, Error>
 where
     Input: Stream<Token = u8> + StreamIsPartial + Clone,
 {

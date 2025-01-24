@@ -7,7 +7,7 @@ use winnow::{
     prelude::*,
 };
 
-pub(crate) fn end_of_line<'i>(input: &mut &'i str) -> PResult<&'i str> {
+pub(crate) fn end_of_line<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
     if input.is_empty() {
         Ok(*input)
     } else {
@@ -15,11 +15,11 @@ pub(crate) fn end_of_line<'i>(input: &mut &'i str) -> PResult<&'i str> {
     }
 }
 
-pub(crate) fn read_line<'i>(input: &mut &'i str) -> PResult<&'i str> {
+pub(crate) fn read_line<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
     terminated(alphanumeric, end_of_line).parse_next(input)
 }
 
-pub(crate) fn read_lines<'i>(input: &mut &'i str) -> PResult<Vec<&'i str>> {
+pub(crate) fn read_lines<'i>(input: &mut &'i str) -> ModalResult<Vec<&'i str>> {
     repeat(0.., read_line).parse_next(input)
 }
 

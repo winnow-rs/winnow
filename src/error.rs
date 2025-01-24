@@ -8,7 +8,7 @@
 //! - Can be modified according to the user's needs, because some languages need a lot more information
 //! - Help thread-through the [stream][crate::stream]
 //!
-//! To abstract these needs away from the user, generally `winnow` parsers use the [`PResult`]
+//! To abstract these needs away from the user, generally `winnow` parsers use the [`ModalResult`]
 //! alias, rather than [`Result`].  [`Parser::parse`] is a top-level operation
 //! that can help convert to a `Result` for integrating with your application's error reporting.
 //!
@@ -30,7 +30,14 @@ use crate::stream::Stream;
 #[allow(unused_imports)] // Here for intra-doc links
 use crate::Parser;
 
-/// For use with [`Parser::parse_next`]
+/// By default, the error type (`E`) is [`ContextError`].
+///
+/// When integrating into the result of the application, see
+/// - [`Parser::parse`]
+/// - [`ParserError::into_inner`]
+pub type Result<O, E = ContextError> = core::result::Result<O, E>;
+
+/// [Modal error reporting][ErrMode] for [`Parser::parse_next`]
 ///
 /// - `Ok(O)` is the parsed value
 /// - [`Err(ErrMode<E>)`][ErrMode] is the error along with how to respond to it
@@ -39,15 +46,19 @@ use crate::Parser;
 ///
 /// When integrating into the result of the application, see
 /// - [`Parser::parse`]
-/// - [`ErrMode::into_inner`]
-pub type PResult<O, E = ContextError> = Result<O, ErrMode<E>>;
+/// - [`ParserError::into_inner`]
+pub type ModalResult<O, E = ContextError> = Result<O, ErrMode<E>>;
 
-/// Deprecated, replaced with [`PResult`]
-#[deprecated(since = "0.6.25", note = "Replaced with `PResult`")]
-pub type IResult<I, O, E = InputError<I>> = PResult<(I, O), E>;
+/// Deprecated, replaced with [`ModalResult`]
+#[deprecated(since = "0.6.23", note = "Replaced with ModalResult")]
+pub type PResult<O, E = ContextError> = ModalResult<O, E>;
+
+/// Deprecated, replaced with [`ModalResult`]
+#[deprecated(since = "0.6.25", note = "Replaced with `ModalResult`")]
+pub type IResult<I, O, E = InputError<I>> = ModalResult<(I, O), E>;
 
 #[cfg(test)]
-pub(crate) type TestResult<I, O> = PResult<O, InputError<I>>;
+pub(crate) type TestResult<I, O> = ModalResult<O, InputError<I>>;
 
 /// Contains information on needed data if a parser returned `Incomplete`
 ///
@@ -127,22 +138,6 @@ impl<E> ErrMode<E> {
         matches!(self, ErrMode::Incomplete(_))
     }
 
-    /// Prevent backtracking, bubbling the error up to the top
-    pub fn cut(self) -> Self {
-        match self {
-            ErrMode::Backtrack(e) => ErrMode::Cut(e),
-            rest => rest,
-        }
-    }
-
-    /// Enable backtracking support
-    pub fn backtrack(self) -> Self {
-        match self {
-            ErrMode::Cut(e) => ErrMode::Backtrack(e),
-            rest => rest,
-        }
-    }
-
     /// Applies the given function to the inner error
     pub fn map<E2, F>(self, f: F) -> ErrMode<E2>
     where
@@ -163,20 +158,11 @@ impl<E> ErrMode<E> {
     {
         ErrorConvert::convert(self)
     }
-
-    /// Unwrap the mode, returning the underlying error
-    ///
-    /// Returns `None` for [`ErrMode::Incomplete`]
-    #[inline(always)]
-    pub fn into_inner(self) -> Option<E> {
-        match self {
-            ErrMode::Backtrack(e) | ErrMode::Cut(e) => Some(e),
-            ErrMode::Incomplete(_) => None,
-        }
-    }
 }
 
 impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
+    type Inner = E;
+
     #[inline(always)]
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
         ErrMode::Backtrack(E::from_error_kind(input, kind))
@@ -188,6 +174,11 @@ impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
         I: crate::lib::std::fmt::Debug,
     {
         ErrMode::Cut(E::assert(input, message))
+    }
+
+    #[inline(always)]
+    fn incomplete(_input: &I, needed: Needed) -> Self {
+        ErrMode::Incomplete(needed)
     }
 
     #[inline]
@@ -203,6 +194,49 @@ impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
             (ErrMode::Backtrack(e), ErrMode::Backtrack(o)) => ErrMode::Backtrack(e.or(o)),
             (ErrMode::Incomplete(e), _) | (_, ErrMode::Incomplete(e)) => ErrMode::Incomplete(e),
             (ErrMode::Cut(e), _) | (_, ErrMode::Cut(e)) => ErrMode::Cut(e),
+        }
+    }
+
+    #[inline(always)]
+    fn is_backtrack(&self) -> bool {
+        matches!(self, ErrMode::Backtrack(_))
+    }
+
+    /// Unwrap the mode, returning the underlying error
+    #[inline(always)]
+    fn into_inner(self) -> Result<Self::Inner, Self> {
+        match self {
+            ErrMode::Backtrack(e) | ErrMode::Cut(e) => Ok(e),
+            err @ ErrMode::Incomplete(_) => Err(err),
+        }
+    }
+
+    #[inline(always)]
+    fn is_needed(&self) -> bool {
+        matches!(self, ErrMode::Incomplete(_))
+    }
+
+    #[inline(always)]
+    fn into_needed(self) -> Result<Needed, Self> {
+        match self {
+            ErrMode::Incomplete(needed) => Ok(needed),
+            err => Err(err),
+        }
+    }
+}
+
+impl<E> ModalError for ErrMode<E> {
+    fn cut(self) -> Self {
+        match self {
+            ErrMode::Backtrack(e) => ErrMode::Cut(e),
+            rest => rest,
+        }
+    }
+
+    fn backtrack(self) -> Self {
+        match self {
+            ErrMode::Cut(e) => ErrMode::Backtrack(e),
+            rest => rest,
         }
     }
 }
@@ -231,6 +265,22 @@ impl<I: Stream, C, E: AddContext<I, C>> AddContext<I, C> for ErrMode<E> {
     #[inline(always)]
     fn add_context(self, input: &I, token_start: &<I as Stream>::Checkpoint, context: C) -> Self {
         self.map(|err| err.add_context(input, token_start, context))
+    }
+}
+
+#[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
+impl<I: Stream, E1: FromRecoverableError<I, E2>, E2> FromRecoverableError<I, ErrMode<E2>>
+    for ErrMode<E1>
+{
+    #[inline]
+    fn from_recoverable_error(
+        token_start: &<I as Stream>::Checkpoint,
+        err_start: &<I as Stream>::Checkpoint,
+        input: &I,
+        e: ErrMode<E2>,
+    ) -> Self {
+        e.map(|e| E1::from_recoverable_error(token_start, err_start, input, e))
     }
 }
 
@@ -275,6 +325,11 @@ where
 /// It provides methods to create an error from some combinators,
 /// and combine existing errors in combinators like `alt`.
 pub trait ParserError<I: Stream>: Sized {
+    /// Generally, `Self`
+    ///
+    /// Mostly used for [`ErrMode`]
+    type Inner;
+
     /// Creates an error from the input position and an [`ErrorKind`]
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self;
 
@@ -288,6 +343,19 @@ pub trait ParserError<I: Stream>: Sized {
         panic!("assert `{_message}` failed at {input:#?}");
         #[cfg(not(debug_assertions))]
         Self::from_error_kind(input, ErrorKind::Assert)
+    }
+
+    /// There was not enough data to determine the appropriate action
+    ///
+    /// More data needs to be buffered before retrying the parse.
+    ///
+    /// This must only be set when the [`Stream`] is [partial][`crate::stream::StreamIsPartial`], like with
+    /// [`Partial`][crate::Partial]
+    ///
+    /// Convert this into an `Backtrack` with [`Parser::complete_err`]
+    #[inline(always)]
+    fn incomplete(input: &I, _needed: Needed) -> Self {
+        Self::from_error_kind(input, ErrorKind::Complete)
     }
 
     /// Like [`ParserError::from_error_kind`] but merges it with the existing error.
@@ -312,6 +380,35 @@ pub trait ParserError<I: Stream>: Sized {
     fn or(self, other: Self) -> Self {
         other
     }
+
+    /// Is backtracking and trying new parse branches allowed?
+    #[inline(always)]
+    fn is_backtrack(&self) -> bool {
+        true
+    }
+
+    /// Unwrap the mode, returning the underlying error, if present
+    fn into_inner(self) -> Result<Self::Inner, Self>;
+
+    /// Is more data [`Needed`]
+    #[inline(always)]
+    fn is_needed(&self) -> bool {
+        false
+    }
+
+    /// Extract the [`Needed`] data, if present
+    #[inline(always)]
+    fn into_needed(self) -> Result<Needed, Self> {
+        Err(self)
+    }
+}
+
+/// Manipulate the how parsers respond to this error
+pub trait ModalError {
+    /// Prevent backtracking, bubbling the error up to the top
+    fn cut(self) -> Self;
+    /// Enable backtracking support
+    fn backtrack(self) -> Self;
 }
 
 /// Used by [`Parser::context`] to add custom data to error while backtracking
@@ -408,12 +505,19 @@ where
 }
 
 impl<I: Stream + Clone> ParserError<I> for InputError<I> {
+    type Inner = Self;
+
     #[inline]
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
         Self {
             input: input.clone(),
             kind,
         }
+    }
+
+    #[inline(always)]
+    fn into_inner(self) -> Result<Self::Inner, Self> {
+        Ok(self)
     }
 }
 
@@ -477,8 +581,15 @@ impl<I: Clone + fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::E
 }
 
 impl<I: Stream> ParserError<I> for () {
+    type Inner = Self;
+
     #[inline]
     fn from_error_kind(_: &I, _: ErrorKind) -> Self {}
+
+    #[inline(always)]
+    fn into_inner(self) -> Result<Self::Inner, Self> {
+        Ok(self)
+    }
 }
 
 impl<I: Stream, C> AddContext<I, C> for () {}
@@ -561,9 +672,16 @@ impl<C> Default for ContextError<C> {
 }
 
 impl<I: Stream, C> ParserError<I> for ContextError<C> {
+    type Inner = Self;
+
     #[inline]
     fn from_error_kind(_input: &I, _kind: ErrorKind) -> Self {
         Self::new()
+    }
+
+    #[inline(always)]
+    fn into_inner(self) -> Result<Self::Inner, Self> {
+        Ok(self)
     }
 }
 
@@ -873,6 +991,8 @@ impl<I, C> ParserError<I> for TreeError<I, C>
 where
     I: Stream + Clone,
 {
+    type Inner = Self;
+
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
         TreeError::Base(TreeErrorBase {
             input: input.clone(),
@@ -908,6 +1028,11 @@ where
             }
             (first, second) => TreeError::Alt(vec![first, second]),
         }
+    }
+
+    #[inline(always)]
+    fn into_inner(self) -> Result<Self::Inner, Self> {
+        Ok(self)
     }
 }
 
@@ -1105,9 +1230,16 @@ impl ErrorKind {
 }
 
 impl<I: Stream> ParserError<I> for ErrorKind {
+    type Inner = Self;
+
     #[inline]
     fn from_error_kind(_input: &I, kind: ErrorKind) -> Self {
         kind
+    }
+
+    #[inline(always)]
+    fn into_inner(self) -> Result<Self::Inner, Self> {
+        Ok(self)
     }
 }
 

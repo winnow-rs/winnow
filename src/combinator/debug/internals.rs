@@ -2,7 +2,7 @@
 
 use std::io::Write;
 
-use crate::error::ErrMode;
+use crate::error::ParserError;
 use crate::stream::Stream;
 use crate::*;
 
@@ -11,6 +11,7 @@ where
     P: Parser<I, O, E>,
     I: Stream,
     D: std::fmt::Display,
+    E: ParserError<I>,
 {
     parser: P,
     name: D,
@@ -25,6 +26,7 @@ where
     P: Parser<I, O, E>,
     I: Stream,
     D: std::fmt::Display,
+    E: ParserError<I>,
 {
     #[inline(always)]
     pub(crate) fn new(parser: P, name: D) -> Self {
@@ -44,9 +46,10 @@ where
     P: Parser<I, O, E>,
     I: Stream,
     D: std::fmt::Display,
+    E: ParserError<I>,
 {
     #[inline]
-    fn parse_next(&mut self, i: &mut I) -> PResult<O, E> {
+    fn parse_next(&mut self, i: &mut I) -> Result<O, E> {
         let depth = Depth::new();
         let original = i.checkpoint();
         start(*depth, &self.name, self.call_count, i);
@@ -115,12 +118,12 @@ pub(crate) enum Severity {
 }
 
 impl Severity {
-    pub(crate) fn with_result<T, E>(result: &Result<T, ErrMode<E>>) -> Self {
+    pub(crate) fn with_result<T, I: Stream, E: ParserError<I>>(result: &Result<T, E>) -> Self {
         match result {
             Ok(_) => Self::Success,
-            Err(ErrMode::Backtrack(_)) => Self::Backtrack,
-            Err(ErrMode::Cut(_)) => Self::Cut,
-            Err(ErrMode::Incomplete(_)) => Self::Incomplete,
+            Err(e) if e.is_backtrack() => Self::Backtrack,
+            Err(e) if e.is_needed() => Self::Incomplete,
+            _ => Self::Cut,
         }
     }
 }

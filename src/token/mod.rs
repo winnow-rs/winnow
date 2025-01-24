@@ -5,7 +5,6 @@ mod tests;
 
 use crate::combinator::trace;
 use crate::combinator::DisplayDebug;
-use crate::error::ErrMode;
 use crate::error::ErrorKind;
 use crate::error::Needed;
 use crate::error::ParserError;
@@ -13,8 +12,8 @@ use crate::lib::std::result::Result::Ok;
 use crate::stream::Range;
 use crate::stream::{Compare, CompareResult, ContainsToken, FindSlice, SliceLen, Stream};
 use crate::stream::{StreamIsPartial, ToUsize};
-use crate::PResult;
 use crate::Parser;
+use crate::Result;
 
 /// Matches one token
 ///
@@ -27,7 +26,7 @@ use crate::Parser;
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn any(input: &mut &str) -> PResult<char>
+/// pub fn any(input: &mut &str) -> ModalResult<char>
 /// # {
 /// #     winnow::token::any.parse_next(input)
 /// # }
@@ -38,7 +37,7 @@ use crate::Parser;
 /// ```rust
 /// # use winnow::{token::any, error::ErrMode, error::{ContextError, ErrorKind}};
 /// # use winnow::prelude::*;
-/// fn parser(input: &mut &str) -> PResult<char> {
+/// fn parser(input: &mut &str) -> ModalResult<char> {
 ///     any.parse_next(input)
 /// }
 ///
@@ -50,12 +49,12 @@ use crate::Parser;
 /// # use winnow::{token::any, error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
-/// assert_eq!(any::<_, ContextError>.parse_peek(Partial::new("abc")), Ok((Partial::new("bc"),'a')));
-/// assert_eq!(any::<_, ContextError>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(any::<_, ErrMode<ContextError>>.parse_peek(Partial::new("abc")), Ok((Partial::new("bc"),'a')));
+/// assert_eq!(any::<_, ErrMode<ContextError>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 #[doc(alias = "token")]
-pub fn any<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Token, Error>
+pub fn any<Input, Error>(input: &mut Input) -> Result<<Input as Stream>::Token, Error>
 where
     Input: StreamIsPartial + Stream,
     Error: ParserError<Input>,
@@ -70,18 +69,16 @@ where
     .parse_next(input)
 }
 
-fn any_<I, E: ParserError<I>, const PARTIAL: bool>(
-    input: &mut I,
-) -> PResult<<I as Stream>::Token, E>
+fn any_<I, E: ParserError<I>, const PARTIAL: bool>(input: &mut I) -> Result<<I as Stream>::Token, E>
 where
     I: StreamIsPartial,
     I: Stream,
 {
     input.next_token().ok_or_else(|| {
         if PARTIAL && input.is_partial() {
-            ErrMode::Incomplete(Needed::new(1))
+            ParserError::incomplete(input, Needed::new(1))
         } else {
-            ErrMode::from_error_kind(input, ErrorKind::Token)
+            ParserError::from_error_kind(input, ErrorKind::Token)
         }
     })
 }
@@ -117,7 +114,7 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
 /// #
-/// fn parser<'i>(s: &mut &'i str) -> PResult<&'i str> {
+/// fn parser<'i>(s: &mut &'i str) -> ModalResult<&'i str> {
 ///   "Hello".parse_next(s)
 /// }
 ///
@@ -131,7 +128,7 @@ where
 /// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
 /// # use winnow::Partial;
 ///
-/// fn parser<'i>(s: &mut Partial<&'i str>) -> PResult<&'i str> {
+/// fn parser<'i>(s: &mut Partial<&'i str>) -> ModalResult<&'i str> {
 ///   "Hello".parse_next(s)
 /// }
 ///
@@ -147,7 +144,7 @@ where
 /// use winnow::token::literal;
 /// use winnow::ascii::Caseless;
 ///
-/// fn parser<'i>(s: &mut &'i str) -> PResult<&'i str> {
+/// fn parser<'i>(s: &mut &'i str) -> ModalResult<&'i str> {
 ///   literal(Caseless("hello")).parse_next(s)
 /// }
 ///
@@ -182,7 +179,7 @@ where
 fn literal_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     i: &mut I,
     t: T,
-) -> PResult<<I as Stream>::Slice, Error>
+) -> Result<<I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream + Compare<T>,
@@ -191,12 +188,13 @@ where
     let literal_len = t.slice_len();
     match i.compare(t) {
         CompareResult::Ok(len) => Ok(i.next_slice(len)),
-        CompareResult::Incomplete if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(
+        CompareResult::Incomplete if PARTIAL && i.is_partial() => Err(ParserError::incomplete(
+            i,
             Needed::new(literal_len - i.eof_offset()),
         )),
         CompareResult::Incomplete | CompareResult::Error => {
             let e: ErrorKind = ErrorKind::Literal;
-            Err(ErrMode::from_error_kind(i, e))
+            Err(ParserError::from_error_kind(i, e))
         }
     }
 }
@@ -239,7 +237,7 @@ where
 /// assert!(one_of::<_, _, ContextError>('a').parse_peek("bc").is_err());
 /// assert!(one_of::<_, _, ContextError>('a').parse_peek("").is_err());
 ///
-/// fn parser_fn(i: &mut &str) -> PResult<char> {
+/// fn parser_fn(i: &mut &str) -> ModalResult<char> {
 ///     one_of(|c| c == 'a' || c == 'b').parse_next(i)
 /// }
 /// assert_eq!(parser_fn.parse_peek("abc"), Ok(("bc", 'a')));
@@ -252,11 +250,11 @@ where
 /// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::token::one_of;
-/// assert_eq!(one_of::<_, _, ContextError>(['a', 'b', 'c']).parse_peek(Partial::new("b")), Ok((Partial::new(""), 'b')));
-/// assert!(one_of::<_, _, ContextError>('a').parse_peek(Partial::new("bc")).is_err());
-/// assert_eq!(one_of::<_, _, ContextError>('a').parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(one_of::<_, _, ErrMode<ContextError>>(['a', 'b', 'c']).parse_peek(Partial::new("b")), Ok((Partial::new(""), 'b')));
+/// assert!(one_of::<_, _, ErrMode<ContextError>>('a').parse_peek(Partial::new("bc")).is_err());
+/// assert_eq!(one_of::<_, _, ErrMode<ContextError>>('a').parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 ///
-/// fn parser_fn(i: &mut Partial<&str>) -> PResult<char> {
+/// fn parser_fn(i: &mut Partial<&str>) -> ModalResult<char> {
 ///     one_of(|c| c == 'a' || c == 'b').parse_next(i)
 /// }
 /// assert_eq!(parser_fn.parse_peek(Partial::new("abc")), Ok((Partial::new("bc"), 'a')));
@@ -317,9 +315,9 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// # use winnow::token::none_of;
-/// assert_eq!(none_of::<_, _, ContextError>(['a', 'b', 'c']).parse_peek(Partial::new("z")), Ok((Partial::new(""), 'z')));
-/// assert!(none_of::<_, _, ContextError>(['a', 'b']).parse_peek(Partial::new("a")).is_err());
-/// assert_eq!(none_of::<_, _, ContextError>('a').parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(none_of::<_, _, ErrMode<ContextError>>(['a', 'b', 'c']).parse_peek(Partial::new("z")), Ok((Partial::new(""), 'z')));
+/// assert!(none_of::<_, _, ErrMode<ContextError>>(['a', 'b']).parse_peek(Partial::new("a")).is_err());
+/// assert_eq!(none_of::<_, _, ErrMode<ContextError>>('a').parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// ```
 #[inline(always)]
 pub fn none_of<Input, Set, Error>(
@@ -369,7 +367,7 @@ where
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
 ///
-/// fn alpha<'i>(s: &mut &'i [u8]) -> PResult<&'i [u8]> {
+/// fn alpha<'i>(s: &mut &'i [u8]) -> ModalResult<&'i [u8]> {
 ///   take_while(0.., AsChar::is_alpha).parse_next(s)
 /// }
 ///
@@ -386,7 +384,7 @@ where
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
 ///
-/// fn alpha<'i>(s: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+/// fn alpha<'i>(s: &mut Partial<&'i [u8]>) -> ModalResult<&'i [u8]> {
 ///   take_while(0.., AsChar::is_alpha).parse_next(s)
 /// }
 ///
@@ -403,7 +401,7 @@ where
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
 ///
-/// fn alpha<'i>(s: &mut &'i [u8]) -> PResult<&'i [u8]> {
+/// fn alpha<'i>(s: &mut &'i [u8]) -> ModalResult<&'i [u8]> {
 ///   take_while(1.., AsChar::is_alpha).parse_next(s)
 /// }
 ///
@@ -411,7 +409,7 @@ where
 /// assert_eq!(alpha.parse_peek(b"latin"), Ok((&b""[..], &b"latin"[..])));
 /// assert!(alpha.parse_peek(b"12345").is_err());
 ///
-/// fn hex<'i>(s: &mut &'i str) -> PResult<&'i str> {
+/// fn hex<'i>(s: &mut &'i str) -> ModalResult<&'i str> {
 ///   take_while(1.., ('0'..='9', 'A'..='F')).parse_next(s)
 /// }
 ///
@@ -429,7 +427,7 @@ where
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
 ///
-/// fn alpha<'i>(s: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+/// fn alpha<'i>(s: &mut Partial<&'i [u8]>) -> ModalResult<&'i [u8]> {
 ///   take_while(1.., AsChar::is_alpha).parse_next(s)
 /// }
 ///
@@ -437,7 +435,7 @@ where
 /// assert_eq!(alpha.parse_peek(Partial::new(b"latin")), Err(ErrMode::Incomplete(Needed::new(1))));
 /// assert!(alpha.parse_peek(Partial::new(b"12345")).is_err());
 ///
-/// fn hex<'i>(s: &mut Partial<&'i str>) -> PResult<&'i str> {
+/// fn hex<'i>(s: &mut Partial<&'i str>) -> ModalResult<&'i str> {
 ///   take_while(1.., ('0'..='9', 'A'..='F')).parse_next(s)
 /// }
 ///
@@ -455,7 +453,7 @@ where
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
 ///
-/// fn short_alpha<'i>(s: &mut &'i [u8]) -> PResult<&'i [u8]> {
+/// fn short_alpha<'i>(s: &mut &'i [u8]) -> ModalResult<&'i [u8]> {
 ///   take_while(3..=6, AsChar::is_alpha).parse_next(s)
 /// }
 ///
@@ -473,7 +471,7 @@ where
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
 ///
-/// fn short_alpha<'i>(s: &mut Partial<&'i [u8]>) -> PResult<&'i [u8]> {
+/// fn short_alpha<'i>(s: &mut Partial<&'i [u8]>) -> ModalResult<&'i [u8]> {
 ///   take_while(3..=6, AsChar::is_alpha).parse_next(s)
 /// }
 ///
@@ -531,14 +529,14 @@ where
 fn take_till0<P, I: StreamIsPartial + Stream, E: ParserError<I>, const PARTIAL: bool>(
     input: &mut I,
     predicate: P,
-) -> PResult<<I as Stream>::Slice, E>
+) -> Result<<I as Stream>::Slice, E>
 where
     P: FnMut(I::Token) -> bool,
 {
     let offset = match input.offset_for(predicate) {
         Some(offset) => offset,
         None if PARTIAL && input.is_partial() => {
-            return Err(ErrMode::Incomplete(Needed::new(1)));
+            return Err(ParserError::incomplete(input, Needed::new(1)));
         }
         None => input.eof_offset(),
     };
@@ -548,7 +546,7 @@ where
 fn take_till1<P, I: StreamIsPartial + Stream, E: ParserError<I>, const PARTIAL: bool>(
     input: &mut I,
     predicate: P,
-) -> PResult<<I as Stream>::Slice, E>
+) -> Result<<I as Stream>::Slice, E>
 where
     P: FnMut(I::Token) -> bool,
 {
@@ -556,12 +554,12 @@ where
     let offset = match input.offset_for(predicate) {
         Some(offset) => offset,
         None if PARTIAL && input.is_partial() => {
-            return Err(ErrMode::Incomplete(Needed::new(1)));
+            return Err(ParserError::incomplete(input, Needed::new(1)));
         }
         None => input.eof_offset(),
     };
     if offset == 0 {
-        Err(ErrMode::from_error_kind(input, e))
+        Err(ParserError::from_error_kind(input, e))
     } else {
         Ok(input.next_slice(offset))
     }
@@ -572,14 +570,14 @@ fn take_till_m_n<P, I, Error: ParserError<I>, const PARTIAL: bool>(
     m: usize,
     n: usize,
     mut predicate: P,
-) -> PResult<<I as Stream>::Slice, Error>
+) -> Result<<I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream,
     P: FnMut(I::Token) -> bool,
 {
     if n < m {
-        return Err(ErrMode::assert(
+        return Err(ParserError::assert(
             input,
             "`occurrences` should be ascending, rather than descending",
         ));
@@ -589,7 +587,7 @@ where
     for (processed, (offset, token)) in input.iter_offsets().enumerate() {
         if predicate(token) {
             if processed < m {
-                return Err(ErrMode::from_error_kind(input, ErrorKind::Slice));
+                return Err(ParserError::from_error_kind(input, ErrorKind::Slice));
             } else {
                 return Ok(input.next_slice(offset));
             }
@@ -609,13 +607,13 @@ where
             } else {
                 1
             };
-            Err(ErrMode::Incomplete(Needed::new(needed)))
+            Err(ParserError::incomplete(input, Needed::new(needed)))
         }
     } else {
         if m <= final_count {
             Ok(input.finish())
         } else {
-            Err(ErrMode::from_error_kind(input, ErrorKind::Slice))
+            Err(ParserError::from_error_kind(input, ErrorKind::Slice))
         }
     }
 }
@@ -652,7 +650,7 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::token::take_till;
 ///
-/// fn till_colon<'i>(s: &mut &'i str) -> PResult<&'i str> {
+/// fn till_colon<'i>(s: &mut &'i str) -> ModalResult<&'i str> {
 ///   take_till(0.., |c| c == ':').parse_next(s)
 /// }
 ///
@@ -668,7 +666,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::token::take_till;
 ///
-/// fn till_colon<'i>(s: &mut Partial<&'i str>) -> PResult<&'i str> {
+/// fn till_colon<'i>(s: &mut Partial<&'i str>) -> ModalResult<&'i str> {
 ///   take_till(0.., |c| c == ':').parse_next(s)
 /// }
 ///
@@ -752,7 +750,7 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::token::take;
 ///
-/// fn take6<'i>(s: &mut &'i str) -> PResult<&'i str> {
+/// fn take6<'i>(s: &mut &'i str) -> ModalResult<&'i str> {
 ///   take(6usize).parse_next(s)
 /// }
 ///
@@ -781,7 +779,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::token::take;
 ///
-/// fn take6<'i>(s: &mut Partial<&'i str>) -> PResult<&'i str> {
+/// fn take6<'i>(s: &mut Partial<&'i str>) -> ModalResult<&'i str> {
 ///   take(6usize).parse_next(s)
 /// }
 ///
@@ -812,15 +810,15 @@ where
 fn take_<I, Error: ParserError<I>, const PARTIAL: bool>(
     i: &mut I,
     c: usize,
-) -> PResult<<I as Stream>::Slice, Error>
+) -> Result<<I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream,
 {
     match i.offset_at(c) {
         Ok(offset) => Ok(i.next_slice(offset)),
-        Err(e) if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(e)),
-        Err(_needed) => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
+        Err(e) if PARTIAL && i.is_partial() => Err(ParserError::incomplete(i, e)),
+        Err(_needed) => Err(ParserError::from_error_kind(i, ErrorKind::Slice)),
     }
 }
 
@@ -860,7 +858,7 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::token::take_until;
 ///
-/// fn until_eof<'i>(s: &mut &'i str) -> PResult<&'i str> {
+/// fn until_eof<'i>(s: &mut &'i str) -> ModalResult<&'i str> {
 ///   take_until(0.., "eof").parse_next(s)
 /// }
 ///
@@ -876,7 +874,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::token::take_until;
 ///
-/// fn until_eof<'i>(s: &mut Partial<&'i str>) -> PResult<&'i str> {
+/// fn until_eof<'i>(s: &mut Partial<&'i str>) -> ModalResult<&'i str> {
 ///   take_until(0.., "eof").parse_next(s)
 /// }
 ///
@@ -891,7 +889,7 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::token::take_until;
 ///
-/// fn until_eof<'i>(s: &mut &'i str) -> PResult<&'i str> {
+/// fn until_eof<'i>(s: &mut &'i str) -> ModalResult<&'i str> {
 ///   take_until(1.., "eof").parse_next(s)
 /// }
 ///
@@ -908,7 +906,7 @@ where
 /// # use winnow::Partial;
 /// use winnow::token::take_until;
 ///
-/// fn until_eof<'i>(s: &mut Partial<&'i str>) -> PResult<&'i str> {
+/// fn until_eof<'i>(s: &mut Partial<&'i str>) -> ModalResult<&'i str> {
 ///   take_until(1.., "eof").parse_next(s)
 /// }
 ///
@@ -963,32 +961,32 @@ where
 fn take_until0_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     i: &mut I,
     t: T,
-) -> PResult<<I as Stream>::Slice, Error>
+) -> Result<<I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,
 {
     match i.find_slice(t) {
         Some(range) => Ok(i.next_slice(range.start)),
-        None if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
-        None => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
+        None if PARTIAL && i.is_partial() => Err(ParserError::incomplete(i, Needed::Unknown)),
+        None => Err(ParserError::from_error_kind(i, ErrorKind::Slice)),
     }
 }
 
 fn take_until1_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     i: &mut I,
     t: T,
-) -> PResult<<I as Stream>::Slice, Error>
+) -> Result<<I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,
 {
     match i.find_slice(t) {
-        None if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
-        None => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
+        None if PARTIAL && i.is_partial() => Err(ParserError::incomplete(i, Needed::Unknown)),
+        None => Err(ParserError::from_error_kind(i, ErrorKind::Slice)),
         Some(range) => {
             if range.start == 0 {
-                Err(ErrMode::from_error_kind(i, ErrorKind::Slice))
+                Err(ParserError::from_error_kind(i, ErrorKind::Slice))
             } else {
                 Ok(i.next_slice(range.start))
             }
@@ -1001,13 +999,13 @@ fn take_until_m_n_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
     start: usize,
     end: usize,
     t: T,
-) -> PResult<<I as Stream>::Slice, Error>
+) -> Result<<I as Stream>::Slice, Error>
 where
     I: StreamIsPartial,
     I: Stream + FindSlice<T>,
 {
     if end < start {
-        return Err(ErrMode::assert(
+        return Err(ParserError::assert(
             i,
             "`occurrences` should be ascending, rather than descending",
         ));
@@ -1019,18 +1017,18 @@ where
             let end_offset = i.offset_at(end).unwrap_or_else(|_err| i.eof_offset());
             if start_offset.map(|s| range.start < s).unwrap_or(true) {
                 if PARTIAL && i.is_partial() {
-                    return Err(ErrMode::Incomplete(Needed::Unknown));
+                    return Err(ParserError::incomplete(i, Needed::Unknown));
                 } else {
-                    return Err(ErrMode::from_error_kind(i, ErrorKind::Slice));
+                    return Err(ParserError::from_error_kind(i, ErrorKind::Slice));
                 }
             }
             if end_offset < range.start {
-                return Err(ErrMode::from_error_kind(i, ErrorKind::Slice));
+                return Err(ParserError::from_error_kind(i, ErrorKind::Slice));
             }
             Ok(i.next_slice(range.start))
         }
-        None if PARTIAL && i.is_partial() => Err(ErrMode::Incomplete(Needed::Unknown)),
-        None => Err(ErrMode::from_error_kind(i, ErrorKind::Slice)),
+        None if PARTIAL && i.is_partial() => Err(ParserError::incomplete(i, Needed::Unknown)),
+        None => Err(ParserError::from_error_kind(i, ErrorKind::Slice)),
     }
 }
 
@@ -1041,7 +1039,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn rest<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn rest<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::token::rest.parse_next(input)
 /// # }
@@ -1058,7 +1056,7 @@ where
 /// assert_eq!(rest::<_,ContextError>.parse_peek(""), Ok(("", "")));
 /// ```
 #[inline]
-pub fn rest<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn rest<Input, Error>(input: &mut Input) -> Result<<Input as Stream>::Slice, Error>
 where
     Input: Stream,
     Error: ParserError<Input>,
@@ -1079,7 +1077,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn rest_len(input: &mut &str) -> PResult<usize>
+/// pub fn rest_len(input: &mut &str) -> ModalResult<usize>
 /// # {
 /// #     winnow::token::rest_len.parse_next(input)
 /// # }
@@ -1096,7 +1094,7 @@ where
 /// assert_eq!(rest_len::<_,ContextError>.parse_peek(""), Ok(("", 0)));
 /// ```
 #[inline]
-pub fn rest_len<Input, Error>(input: &mut Input) -> PResult<usize, Error>
+pub fn rest_len<Input, Error>(input: &mut Input) -> Result<usize, Error>
 where
     Input: Stream,
     Error: ParserError<Input>,

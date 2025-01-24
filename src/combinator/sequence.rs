@@ -18,7 +18,7 @@ pub use crate::seq;
 /// # use winnow::error::Needed::Size;
 /// use winnow::combinator::preceded;
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
+/// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
 ///     preceded("abc", "efg").parse_next(input)
 /// }
 ///
@@ -56,7 +56,7 @@ where
 /// # use winnow::error::Needed::Size;
 /// use winnow::combinator::terminated;
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
+/// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
 ///     terminated("abc", "efg").parse_next(input)
 /// }
 ///
@@ -94,7 +94,7 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated_pair;
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<(&'i str, &'i str)> {
+/// fn parser<'i>(input: &mut &'i str) -> ModalResult<(&'i str, &'i str)> {
 ///     separated_pair("abc", "|", "efg").parse_next(input)
 /// }
 ///
@@ -134,7 +134,7 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::combinator::delimited;
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
+/// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
 ///     delimited("(", "abc", ")").parse_next(input)
 /// }
 ///

@@ -23,14 +23,14 @@
 //! ```
 //!
 //!
-//! To represent this model of the world, winnow uses the [`PResult<O>`] type.
+//! To represent this model of the world, winnow uses the [`Result<O>`] type.
 //! The `Ok` variant has `output: O`;
 //! whereas the `Err` variant stores an error.
 //!
 //! You can import that from:
 //!
 //! ```rust
-//! use winnow::PResult;
+//! use winnow::Result;
 //! ```
 //!
 //! To combine parsers, we need a common way to refer to them which is where the [`Parser<I, O, E>`]
@@ -49,7 +49,7 @@
 //! The simplest parser we can write is one which successfully does nothing.
 //!
 //! To make it easier to implement a [`Parser`], the trait is implemented for
-//! functions of the form `Fn(&mut I) -> PResult<O>`.
+//! functions of the form `Fn(&mut I) -> Result<O>`.
 //!
 //! This parser function should take in a `&str`:
 //!
@@ -58,10 +58,10 @@
 //!  - Since it doesn't parse anything, it also should just return an empty string.
 //!
 //! ```rust
-//! use winnow::PResult;
+//! use winnow::Result;
 //! use winnow::Parser;
 //!
-//! pub fn do_nothing_parser<'s>(input: &mut &'s str) -> PResult<&'s str> {
+//! pub fn do_nothing_parser<'s>(input: &mut &'s str) -> Result<&'s str> {
 //!     Ok("")
 //! }
 //!
@@ -80,7 +80,6 @@
 #![allow(unused_imports)]
 use super::chapter_6;
 use super::chapter_7;
-use crate::PResult;
 use crate::Parser;
 
 pub use super::chapter_0 as previous;

@@ -15,7 +15,7 @@ use crate::lib::std::borrow::ToOwned;
 use crate::prelude::*;
 use crate::stream::Stream;
 use crate::token::take;
-use crate::PResult;
+use crate::ModalResult;
 use crate::Partial;
 
 #[cfg(feature = "alloc")]
@@ -119,14 +119,20 @@ impl From<u32> for CustomError {
 }
 
 impl<I: Stream> ParserError<I> for CustomError {
+    type Inner = Self;
+
     fn from_error_kind(_: &I, _: ErrorKind) -> Self {
         CustomError
+    }
+
+    fn into_inner(self) -> Result<Self::Inner, Self> {
+        Ok(self)
     }
 }
 
 struct CustomError;
 #[allow(dead_code)]
-fn custom_error<'i>(input: &mut &'i [u8]) -> PResult<&'i [u8], CustomError> {
+fn custom_error<'i>(input: &mut &'i [u8]) -> ModalResult<&'i [u8], CustomError> {
     //fix_error!(input, CustomError<_>, alphanumeric)
     crate::ascii::alphanumeric1.parse_next(input)
 }
@@ -157,7 +163,7 @@ Ok(
 }
 
 #[allow(dead_code)]
-fn test_closure_compiles_195(input: &mut &[u8]) -> PResult<()> {
+fn test_closure_compiles_195(input: &mut &[u8]) -> ModalResult<()> {
     u8.flat_map(|num| repeat(num as usize, u16(Endianness::Big)))
         .parse_next(input)
 }
@@ -1322,6 +1328,8 @@ fn alt_test() {
 
     #[cfg(feature = "alloc")]
     impl<I: Stream + Debug> ParserError<I> for ErrorStr {
+        type Inner = Self;
+
         fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
             ErrorStr(format!("custom error message: ({input:?}, {kind:?})"))
         }
@@ -1331,28 +1339,32 @@ fn alt_test() {
                 "custom error message: ({input:?}, {kind:?}) - {self:?}"
             ))
         }
+
+        fn into_inner(self) -> Result<Self::Inner, Self> {
+            Ok(self)
+        }
     }
 
-    fn work<'i>(input: &mut &'i [u8]) -> PResult<&'i [u8], ErrorStr> {
+    fn work<'i>(input: &mut &'i [u8]) -> ModalResult<&'i [u8], ErrorStr> {
         Ok(input.finish())
     }
 
     #[allow(unused_variables)]
-    fn dont_work<'i>(input: &mut &'i [u8]) -> PResult<&'i [u8], ErrorStr> {
+    fn dont_work<'i>(input: &mut &'i [u8]) -> ModalResult<&'i [u8], ErrorStr> {
         Err(ErrMode::Backtrack(ErrorStr("abcd".to_owned())))
     }
 
-    fn work2<'i>(_input: &mut &'i [u8]) -> PResult<&'i [u8], ErrorStr> {
+    fn work2<'i>(_input: &mut &'i [u8]) -> ModalResult<&'i [u8], ErrorStr> {
         Ok(&b""[..])
     }
 
-    fn alt1<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], ErrorStr> {
+    fn alt1<'i>(i: &mut &'i [u8]) -> ModalResult<&'i [u8], ErrorStr> {
         alt((dont_work, dont_work)).parse_next(i)
     }
-    fn alt2<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], ErrorStr> {
+    fn alt2<'i>(i: &mut &'i [u8]) -> ModalResult<&'i [u8], ErrorStr> {
         alt((dont_work, work)).parse_next(i)
     }
-    fn alt3<'i>(i: &mut &'i [u8]) -> PResult<&'i [u8], ErrorStr> {
+    fn alt3<'i>(i: &mut &'i [u8]) -> ModalResult<&'i [u8], ErrorStr> {
         alt((dont_work, dont_work, work2, dont_work)).parse_next(i)
     }
     //named!(alt1, alt!(dont_work | dont_work));
@@ -2910,7 +2922,7 @@ Err(
 fn infinite_many() {
     fn tst<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
         println!("input: {input:?}");
-        Err(ErrMode::from_error_kind(input, ErrorKind::Literal))
+        Err(ParserError::from_error_kind(input, ErrorKind::Literal))
     }
 
     // should not go into an infinite loop
@@ -3457,8 +3469,14 @@ impl<I> From<(I, ErrorKind)> for NilError {
 }
 
 impl<I: Stream> ParserError<I> for NilError {
+    type Inner = Self;
+
     fn from_error_kind(_: &I, _: ErrorKind) -> NilError {
         NilError
+    }
+
+    fn into_inner(self) -> Result<Self::Inner, Self> {
+        Ok(self)
     }
 }
 

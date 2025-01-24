@@ -90,7 +90,7 @@
 //!   See also [#72](https://github.com/winnow-rs/winnow/issues/72).
 //!
 //! Downsides:
-//! - When returning a slice, you have to add a lifetime (`fn foo<'i>(i: &mut &i str) -> PResult<&i str>`)
+//! - When returning a slice, you have to add a lifetime (`fn foo<'i>(i: &mut &i str) -> ModalResult<&i str>`)
 //! - When writing a closure, you need to annotate the type (`|i: &mut _|`, at least the full type isn't needed)
 //!
 //! ## `chumsky`

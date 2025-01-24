@@ -38,11 +38,11 @@ fn find_slice(c: &mut criterion::Criterion) {
     group.finish();
 }
 
-fn parser_byte(input: &mut &str) -> PResult<usize> {
+fn parser_byte(input: &mut &str) -> ModalResult<usize> {
     repeat(0.., (take_until(0.., "\r"), "\r")).parse_next(input)
 }
 
-fn parser_slice(input: &mut &str) -> PResult<usize> {
+fn parser_slice(input: &mut &str) -> ModalResult<usize> {
     repeat(0.., (take_until(0.., "\r\n"), "\r\n")).parse_next(input)
 }
 

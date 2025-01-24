@@ -1,12 +1,12 @@
 use crate::combinator::trace;
-use crate::error::{ErrMode, ErrorKind, ParserError};
+use crate::error::{ErrorKind, ModalError, ParserError};
 use crate::stream::Stream;
 use crate::*;
 
 /// Deprecated, replaced with [`token::rest`]
 #[deprecated(since = "0.6.23", note = "replaced with `token::rest`")]
 #[inline]
-pub fn rest<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn rest<Input, Error>(input: &mut Input) -> Result<<Input as Stream>::Slice, Error>
 where
     Input: Stream,
     Error: ParserError<Input>,
@@ -17,7 +17,7 @@ where
 /// Deprecated, replaced with [`token::rest_len`]
 #[deprecated(since = "0.6.23", note = "replaced with `token::rest_len`")]
 #[inline]
-pub fn rest_len<Input, Error>(input: &mut Input) -> PResult<usize, Error>
+pub fn rest_len<Input, Error>(input: &mut Input) -> Result<usize, Error>
 where
     Input: Stream,
     Error: ParserError<Input>,
@@ -25,7 +25,7 @@ where
     crate::token::rest_len(input)
 }
 
-/// Apply a [`Parser`], producing `None` on [`ErrMode::Backtrack`].
+/// Apply a [`Parser`], producing `None` on [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack].
 ///
 /// To chain an error up, see [`cut_err`].
 ///
@@ -37,7 +37,7 @@ where
 /// use winnow::ascii::alpha1;
 /// # fn main() {
 ///
-/// fn parser<'i>(i: &mut &'i str) -> PResult<Option<&'i str>> {
+/// fn parser<'i>(i: &mut &'i str) -> ModalResult<Option<&'i str>> {
 ///   opt(alpha1).parse_next(i)
 /// }
 ///
@@ -56,7 +56,7 @@ where
         let start = input.checkpoint();
         match parser.parse_next(input) {
             Ok(o) => Ok(Some(o)),
-            Err(ErrMode::Backtrack(_)) => {
+            Err(e) if e.is_backtrack() => {
                 input.reset(&start);
                 Ok(None)
             }
@@ -76,7 +76,7 @@ where
 /// use winnow::ascii::alpha1;
 /// # fn main() {
 ///
-/// fn parser<'i>(i: &mut &'i str) -> PResult<Option<&'i str>> {
+/// fn parser<'i>(i: &mut &'i str) -> ModalResult<Option<&'i str>> {
 ///   let prefix = opt("-").parse_next(i)?;
 ///   let condition = prefix.is_some();
 ///   cond(condition, alpha1).parse_next(i)
@@ -118,7 +118,7 @@ where
 /// use winnow::ascii::alpha1;
 /// # fn main() {
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
+/// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
 ///     peek(alpha1).parse_next(input)
 /// }
 ///
@@ -153,7 +153,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn eof<'i>(input: &mut &'i str) -> PResult<&'i str>
+/// pub fn eof<'i>(input: &mut &'i str) -> ModalResult<&'i str>
 /// # {
 /// #     winnow::combinator::eof.parse_next(input)
 /// # }
@@ -166,7 +166,7 @@ where
 /// # use winnow::combinator::eof;
 /// # use winnow::prelude::*;
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
+/// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
 ///     eof.parse_next(input)
 /// }
 /// assert!(parser.parse_peek("abc").is_err());
@@ -174,7 +174,7 @@ where
 /// ```
 #[doc(alias = "end")]
 #[doc(alias = "eoi")]
-pub fn eof<Input, Error>(input: &mut Input) -> PResult<<Input as Stream>::Slice, Error>
+pub fn eof<Input, Error>(input: &mut Input) -> Result<<Input as Stream>::Slice, Error>
 where
     Input: Stream,
     Error: ParserError<Input>,
@@ -183,7 +183,7 @@ where
         if input.eof_offset() == 0 {
             Ok(input.next_slice(0))
         } else {
-            Err(ErrMode::from_error_kind(input, ErrorKind::Eof))
+            Err(ParserError::from_error_kind(input, ErrorKind::Eof))
         }
     })
     .parse_next(input)
@@ -205,7 +205,7 @@ where
 /// use winnow::ascii::alpha1;
 /// # fn main() {
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<()> {
+/// fn parser<'i>(input: &mut &'i str) -> ModalResult<()> {
 ///     not(alpha1).parse_next(input)
 /// }
 ///
@@ -224,14 +224,14 @@ where
         let res = parser.parse_next(input);
         input.reset(&start);
         match res {
-            Ok(_) => Err(ErrMode::from_error_kind(input, ErrorKind::Not)),
-            Err(ErrMode::Backtrack(_)) => Ok(()),
+            Ok(_) => Err(ParserError::from_error_kind(input, ErrorKind::Not)),
+            Err(e) if e.is_backtrack() => Ok(()),
             Err(e) => Err(e),
         }
     })
 }
 
-/// Transforms an [`ErrMode::Backtrack`] (recoverable) to [`ErrMode::Cut`] (unrecoverable)
+/// Transforms an [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack] (recoverable) to [`ErrMode::Cut`][crate::error::ErrMode::Cut] (unrecoverable)
 ///
 /// This commits the parse result, preventing alternative branch paths like with
 /// [`winnow::combinator::alt`][crate::combinator::alt].
@@ -250,7 +250,7 @@ where
 /// # use winnow::prelude::*;
 /// # fn main() {
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
+/// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
 ///   alt((
 ///     preceded(one_of(['+', '-']), digit1),
 ///     rest
@@ -275,7 +275,7 @@ where
 /// use winnow::combinator::cut_err;
 /// # fn main() {
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<&'i str> {
+/// fn parser<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
 ///   alt((
 ///     preceded(one_of(['+', '-']), cut_err(digit1)),
 ///     rest
@@ -292,7 +292,7 @@ pub fn cut_err<Input, Output, Error, ParseNext>(
 ) -> impl Parser<Input, Output, Error>
 where
     Input: Stream,
-    Error: ParserError<Input>,
+    Error: ParserError<Input> + ModalError,
     ParseNext: Parser<Input, Output, Error>,
 {
     trace("cut_err", move |input: &mut Input| {
@@ -300,7 +300,7 @@ where
     })
 }
 
-/// Transforms an [`ErrMode::Cut`] (unrecoverable) to [`ErrMode::Backtrack`] (recoverable)
+/// Transforms an [`ErrMode::Cut`][crate::error::ErrMode::Cut] (unrecoverable) to [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack] (recoverable)
 ///
 /// This attempts the parse, allowing other parsers to be tried on failure, like with
 /// [`winnow::combinator::alt`][crate::combinator::alt].
@@ -309,7 +309,7 @@ pub fn backtrack_err<Input, Output, Error, ParseNext>(
 ) -> impl Parser<Input, Output, Error>
 where
     Input: Stream,
-    Error: ParserError<Input>,
+    Error: ParserError<Input> + ModalError,
     ParseNext: Parser<Input, Output, Error>,
 {
     trace("backtrack_err", move |input: &mut Input| {
@@ -331,14 +331,15 @@ where
 /// # use winnow::prelude::*;
 /// # use winnow::combinator::todo;
 ///
-/// fn parser(input: &mut &str) -> PResult<u64> {
+/// fn parser(input: &mut &str) -> ModalResult<u64> {
 ///     todo(input)
 /// }
 /// ```
 #[track_caller]
-pub fn todo<Input, Output, Error>(input: &mut Input) -> PResult<Output, Error>
+pub fn todo<Input, Output, Error>(input: &mut Input) -> Result<Output, Error>
 where
     Input: Stream,
+    Error: ParserError<Input>,
 {
     #![allow(clippy::todo)]
     trace("todo", move |_input: &mut Input| {
@@ -352,7 +353,7 @@ where
 /// Call the iterator's [`ParserIterator::finish`] method to get the remaining input if successful,
 /// or the error value if we encountered an error.
 ///
-/// On [`ErrMode::Backtrack`], iteration will stop. To instead chain an error up, see [`cut_err`].
+/// On [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack], iteration will stop. To instead chain an error up, see [`cut_err`].
 ///
 /// # Example
 ///
@@ -365,7 +366,7 @@ where
 /// let mut it = iterator(data, terminated(alpha1, "|"));
 ///
 /// let parsed = it.map(|v| (v, v.len())).collect::<HashMap<_,_>>();
-/// let res: PResult<_> = it.finish();
+/// let res: ModalResult<_> = it.finish();
 ///
 /// assert_eq!(parsed, [("abc", 3usize), ("defg", 4), ("hijkl", 5), ("mnopqr", 6)].iter().cloned().collect());
 /// assert_eq!(res, Ok(("123", ())));
@@ -395,7 +396,7 @@ where
 {
     parser: F,
     input: I,
-    state: Option<State<ErrMode<E>>>,
+    state: Option<State<E>>,
     o: core::marker::PhantomData<O>,
 }
 
@@ -403,9 +404,10 @@ impl<F, I, O, E> ParserIterator<F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
+    E: ParserError<I>,
 {
     /// Returns the remaining input if parsing was successful, or the error if we encountered an error.
-    pub fn finish(mut self) -> PResult<(I, ()), E> {
+    pub fn finish(mut self) -> Result<(I, ()), E> {
         match self.state.take().unwrap() {
             State::Running | State::Done => Ok((self.input, ())),
             State::Cut(e) => Err(e),
@@ -417,6 +419,7 @@ impl<F, I, O, E> core::iter::Iterator for &mut ParserIterator<F, I, O, E>
 where
     F: Parser<I, O, E>,
     I: Stream,
+    E: ParserError<I>,
 {
     type Item = O;
 
@@ -429,7 +432,7 @@ where
                     self.state = Some(State::Running);
                     Some(o)
                 }
-                Err(ErrMode::Backtrack(_)) => {
+                Err(e) if e.is_backtrack() => {
                     self.input.reset(&start);
                     self.state = Some(State::Done);
                     None
@@ -474,7 +477,7 @@ enum State<E> {
 /// use winnow::combinator::alt;
 /// use winnow::combinator::empty;
 ///
-/// fn sign(input: &mut &str) -> PResult<isize> {
+/// fn sign(input: &mut &str) -> ModalResult<isize> {
 ///     alt((
 ///         '-'.value(-1),
 ///         '+'.value(1),
@@ -488,7 +491,7 @@ enum State<E> {
 #[doc(alias = "value")]
 #[doc(alias = "success")]
 #[inline]
-pub fn empty<Input, Error>(_input: &mut Input) -> PResult<(), Error>
+pub fn empty<Input, Error>(_input: &mut Input) -> Result<(), Error>
 where
     Input: Stream,
     Error: ParserError<Input>,
@@ -508,7 +511,7 @@ where
 /// # use winnow::prelude::*;
 /// use winnow::combinator::fail;
 ///
-/// fn parser<'i>(input: &mut &'i str) -> PResult<(), InputError<&'i str>> {
+/// fn parser<'i>(input: &mut &'i str) -> ModalResult<(), InputError<&'i str>> {
 ///     fail.parse_next(input)
 /// }
 ///
@@ -516,13 +519,13 @@ where
 /// ```
 #[doc(alias = "unexpected")]
 #[inline]
-pub fn fail<Input, Output, Error>(i: &mut Input) -> PResult<Output, Error>
+pub fn fail<Input, Output, Error>(i: &mut Input) -> Result<Output, Error>
 where
     Input: Stream,
     Error: ParserError<Input>,
 {
     trace("fail", |i: &mut Input| {
-        Err(ErrMode::from_error_kind(i, ErrorKind::Fail))
+        Err(ParserError::from_error_kind(i, ErrorKind::Fail))
     })
     .parse_next(i)
 }

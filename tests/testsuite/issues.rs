@@ -17,7 +17,7 @@ struct Range {
     end: char,
 }
 
-pub(crate) fn take_char(input: &mut &[u8]) -> PResult<char> {
+pub(crate) fn take_char(input: &mut &[u8]) -> ModalResult<char> {
     if !input.is_empty() {
         Ok(input.next_token().unwrap() as char)
     } else {
@@ -119,7 +119,7 @@ fn usize_length_bytes_issue() {
     use winnow::binary::be_u16;
     use winnow::binary::length_take;
     #[allow(clippy::type_complexity)]
-    let _: PResult<(Partial<&[u8]>, &[u8])> =
+    let _: ModalResult<(Partial<&[u8]>, &[u8])> =
         length_take(be_u16).parse_peek(Partial::new(b"012346"));
 }
 
@@ -367,7 +367,7 @@ Ok(
 fn issue_1231_bits_expect_fn_closure() {
     use winnow::binary::bits::{bits, take};
     pub(crate) fn example<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], (u8, u8)> {
-        bits::<_, _, InputError<_>, _, _>((take(1usize), take(1usize))).parse_next(input)
+        bits::<_, _, ErrMode<InputError<_>>, _, _>((take(1usize), take(1usize))).parse_next(input)
     }
     assert_parse!(
         example.parse_peek(&[0xff]),

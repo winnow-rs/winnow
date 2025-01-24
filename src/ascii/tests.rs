@@ -2076,13 +2076,13 @@ Err(
       fn floats(s in "\\PC*") {
           println!("testing {s}");
           let res1 = parse_f64.parse_peek(&s);
-          let res2 = float::<_, f64, ()>.parse_peek(s.as_str());
+          let res2 = float::<_, f64, ErrMode<()>>.parse_peek(s.as_str());
           assert_eq!(res1, res2);
       }
     }
 
     #[cfg(feature = "std")]
-    fn parse_f64(i: &mut &str) -> PResult<f64, ()> {
+    fn parse_f64(i: &mut &str) -> ModalResult<f64, ()> {
         match take_float_or_exceptions.parse_next(i) {
             Err(e) => Err(e),
             Ok(s) => {

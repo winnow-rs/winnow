@@ -64,6 +64,13 @@
 //! - Search the docs for the `nom` parser
 //! - See the [List of combinators][crate::combinator]
 //!
+//! ### Partial/streaming parsers
+//!
+//! `nom` differentiated some parsers by being `streaming` or `complete`.
+//! Instead, we tag the input type (`I`) by wrapping it in [`Partial<I>`] and parsers will adjust
+//! their behavior accordingly.
+//! See [partial] special topic.
+//!
 //! ### `&mut I`
 //!
 //! For an explanation of this change, see [Why `winnow`][super::why]
@@ -82,7 +89,7 @@
 //! When the Output of a parser is a slice, you have to add a lifetime:
 //! ```rust
 //! # use winnow::prelude::*;
-//! fn foo<'i>(i: &mut &'i str) -> PResult<&'i str> {
+//! fn foo<'i>(i: &mut &'i str) -> ModalResult<&'i str> {
 //!     // ...
 //! #   winnow::token::rest.parse_next(i)
 //! }
@@ -92,13 +99,27 @@
 //! ```rust
 //! # use winnow::prelude::*;
 //! # use winnow::combinator::trace;
-//! fn foo(i: &mut &str) -> PResult<usize> {
+//! fn foo(i: &mut &str) -> ModalResult<usize> {
 //!     trace("foo", |i: &mut _| {
 //!         // ...
 //! #       Ok(0)
 //!     }).parse_next(i)
 //! }
 //! ```
+//!
+//! ### Optional [`ErrMode`]
+//!
+//! Called `Err` in `nom`, [`ErrMode`] is responsible for
+//! - Deciding whether to backtrack and try another branch in cases like `alt` or report back to
+//!   the error back to users
+//! - Tracking incomplete input on partial parsing
+//!
+//! As this isn't needed in every parser, it was made optional.  [`ModalResult`] is a convenience
+//! type for using [`ErrMode`].
 
 #![allow(unused_imports)]
+use crate::_topic::partial;
+use crate::error::ErrMode;
+use crate::error::ModalResult;
+use crate::stream::Partial;
 use crate::stream::Stream;

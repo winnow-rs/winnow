@@ -18,8 +18,14 @@ pub enum CustomError<I> {
 }
 
 impl<I: Stream + Clone> ParserError<I> for CustomError<I> {
+    type Inner = Self;
+
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
         CustomError::Winnow(input.clone(), kind)
+    }
+
+    fn into_inner(self) -> Result<Self::Inner, Self> {
+        Ok(self)
     }
 }
 
@@ -48,7 +54,7 @@ impl<I: Stream + Clone, E: std::error::Error + Send + Sync + 'static> FromExtern
     }
 }
 
-pub fn parse<'s>(_input: &mut &'s str) -> PResult<&'s str, CustomError<&'s str>> {
+pub fn parse<'s>(_input: &mut &'s str) -> ModalResult<&'s str, CustomError<&'s str>> {
     Err(ErrMode::Backtrack(CustomError::MyError))
 }
 

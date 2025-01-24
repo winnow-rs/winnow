@@ -89,43 +89,43 @@ fn next_slice(c: &mut criterion::Criterion) {
     group.finish();
 }
 
-fn parser_ascii_char(input: &mut &str) -> PResult<usize> {
+fn parser_ascii_char(input: &mut &str) -> ModalResult<usize> {
     repeat(0.., 'h').parse_next(input)
 }
 
-fn parser_ascii_str(input: &mut &str) -> PResult<usize> {
+fn parser_ascii_str(input: &mut &str) -> ModalResult<usize> {
     repeat(0.., "h").parse_next(input)
 }
 
-fn parser_ascii_one_of(input: &mut &str) -> PResult<usize> {
+fn parser_ascii_one_of(input: &mut &str) -> ModalResult<usize> {
     repeat(0.., one_of('h')).parse_next(input)
 }
 
-fn parser_ascii_tag_char(input: &mut &str) -> PResult<usize> {
+fn parser_ascii_tag_char(input: &mut &str) -> ModalResult<usize> {
     repeat(0.., literal('h')).parse_next(input)
 }
 
-fn parser_ascii_tag_str(input: &mut &str) -> PResult<usize> {
+fn parser_ascii_tag_str(input: &mut &str) -> ModalResult<usize> {
     repeat(0.., literal("h")).parse_next(input)
 }
 
-fn parser_utf8_char(input: &mut &str) -> PResult<usize> {
+fn parser_utf8_char(input: &mut &str) -> ModalResult<usize> {
     repeat(0.., '🧑').parse_next(input)
 }
 
-fn parser_utf8_str(input: &mut &str) -> PResult<usize> {
+fn parser_utf8_str(input: &mut &str) -> ModalResult<usize> {
     repeat(0.., "🧑").parse_next(input)
 }
 
-fn parser_utf8_one_of(input: &mut &str) -> PResult<usize> {
+fn parser_utf8_one_of(input: &mut &str) -> ModalResult<usize> {
     repeat(0.., one_of('🧑')).parse_next(input)
 }
 
-fn parser_utf8_tag_char(input: &mut &str) -> PResult<usize> {
+fn parser_utf8_tag_char(input: &mut &str) -> ModalResult<usize> {
     repeat(0.., literal('🧑')).parse_next(input)
 }
 
-fn parser_utf8_tag_str(input: &mut &str) -> PResult<usize> {
+fn parser_utf8_tag_str(input: &mut &str) -> ModalResult<usize> {
     repeat(0.., literal("🧑")).parse_next(input)
 }
 
