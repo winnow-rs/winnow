@@ -146,6 +146,7 @@ pub mod _tutorial;
 pub mod prelude {
     pub use crate::stream::StreamIsPartial as _;
     pub use crate::IResult;
+    pub use crate::ModalParser;
     pub use crate::ModalResult;
     pub use crate::PResult;
     pub use crate::Parser;
