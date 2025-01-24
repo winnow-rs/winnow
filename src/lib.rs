@@ -59,11 +59,10 @@
 #[cfg_attr(test, macro_use)]
 #[allow(unused_extern_crates)]
 extern crate alloc;
-#[cfg(doctest)]
-extern crate doc_comment;
 
+#[doc = include_str!("../README.md")]
 #[cfg(doctest)]
-doc_comment::doctest!("../README.md");
+pub struct ReadmeDoctests;
 
 /// Lib module to re-export everything needed from `std` or `core`/`alloc`. This is how `serde` does
 /// it, albeit there it is not public.
