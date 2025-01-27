@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.6.25] - 2025-01-27
+
 ### Compatibility
 
 - Deprecated `PResult` in favor of `ModalResult`: v0.7 will make `ErrMode` optional and `PResult` will no longer be descriptive enough
@@ -2460,7 +2462,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.24...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.25...HEAD
+[0.6.25]: https://github.com/winnow-rs/winnow/compare/v0.6.24...v0.6.25
 [0.6.24]: https://github.com/winnow-rs/winnow/compare/v0.6.23...v0.6.24
 [0.6.23]: https://github.com/winnow-rs/winnow/compare/v0.6.22...v0.6.23
 [0.6.22]: https://github.com/winnow-rs/winnow/compare/v0.6.21...v0.6.22
