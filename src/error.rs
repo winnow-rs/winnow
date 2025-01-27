@@ -43,7 +43,7 @@ use crate::Parser;
 pub type ModalResult<O, E = ContextError> = Result<O, ErrMode<E>>;
 
 /// Deprecated, replaced with [`ModalResult`]
-#[deprecated(since = "0.6.23", note = "Replaced with ModalResult")]
+#[deprecated(since = "0.6.25", note = "Replaced with ModalResult")]
 pub type PResult<O, E = ContextError> = ModalResult<O, E>;
 
 /// Deprecated, replaced with [`PResult`]
