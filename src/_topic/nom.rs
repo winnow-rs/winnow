@@ -71,6 +71,15 @@
 //! their behavior accordingly.
 //! See [partial] special topic.
 //!
+//! ### Parsers return [`Stream::Slice`], rather than [`Stream`]
+//!
+//! In `nom`, parsers like [`take_while`] parse a [`Stream`] and return a [`Stream`].
+//! When wrapping the input, like with [`Stateful`],
+//! you have to unwrap the input to integrate it in your application,
+//! requires [`Stream`] to be `Clone` (which requires `RefCell` for mutable external state),
+//! and is then expensive to `clone()`.
+//! Instead, [`Stream::Slice`] was added to track the intended type for parsers to return.
+//!
 //! ### `&mut I`
 //!
 //! For an explanation of this change, see [Why `winnow`][super::why]
@@ -122,4 +131,6 @@ use crate::_topic::partial;
 use crate::error::ErrMode;
 use crate::error::ModalResult;
 use crate::stream::Partial;
+use crate::stream::Stateful;
 use crate::stream::Stream;
+use crate::token::take_while;
