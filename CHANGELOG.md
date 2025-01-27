@@ -3,6 +3,19 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+- Deprecated `PResult` in favor of `ModalResult`: v0.7 will make `ErrMode` optional and `PResult` will no longer be descriptive enough
+- Deprecate `IResult` in favor of `PResult<(I, O)>`
+
+### Documentation
+
+- Update comparison with nom
+
+### Fixes
+
+- Ensure we append errors in `repeat(_).fold(1..)`
+
 ## [0.6.24] - 2025-01-10
 
 ### Fixes
@@ -11,7 +24,7 @@
 
 ## [0.6.23] - 2025-01-10
 
-### Compatibiloty
+### Compatibility
 
 - `stream::Located` is deprecated in favor of `stream::LocatingSlice`
 - `combnator::rest` is deprecated in favor of `token::rest`
