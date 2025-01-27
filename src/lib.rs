@@ -146,6 +146,8 @@ pub mod _tutorial;
 pub mod prelude {
     pub use crate::stream::StreamIsPartial as _;
     pub use crate::IResult;
+    pub use crate::ModalParser;
+    pub use crate::ModalResult;
     pub use crate::PResult;
     pub use crate::Parser;
     #[cfg(feature = "unstable-recover")]
@@ -154,6 +156,7 @@ pub mod prelude {
 }
 
 pub use error::IResult;
+pub use error::ModalResult;
 pub use error::PResult;
 pub use parser::*;
 pub use stream::BStr;

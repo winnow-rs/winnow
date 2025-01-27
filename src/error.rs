@@ -30,7 +30,7 @@ use crate::stream::Stream;
 #[allow(unused_imports)] // Here for intra-doc links
 use crate::Parser;
 
-/// For use with [`Parser::parse_next`]
+/// [Modal error reporting][ErrMode] for [`Parser::parse_next`]
 ///
 /// - `Ok(O)` is the parsed value
 /// - [`Err(ErrMode<E>)`][ErrMode] is the error along with how to respond to it
@@ -40,7 +40,11 @@ use crate::Parser;
 /// When integrating into the result of the application, see
 /// - [`Parser::parse`]
 /// - [`ErrMode::into_inner`]
-pub type PResult<O, E = ContextError> = Result<O, ErrMode<E>>;
+pub type ModalResult<O, E = ContextError> = Result<O, ErrMode<E>>;
+
+/// Deprecated, replaced with [`ModalResult`]
+#[deprecated(since = "0.6.23", note = "Replaced with ModalResult")]
+pub type PResult<O, E = ContextError> = ModalResult<O, E>;
 
 /// Deprecated, replaced with [`PResult`]
 #[deprecated(since = "0.6.25", note = "Replaced with `PResult`")]

@@ -1160,6 +1160,11 @@ macro_rules! impl_parser_for_tuples {
     }
 }
 
+/// Trait alias for [`Parser`] to ease the transition to the next release
+pub trait ModalParser<I, O, E>: Parser<I, O, E> {}
+
+impl<I, O, E, P> ModalParser<I, O, E> for P where P: Parser<I, O, E> {}
+
 /// Collect all errors when parsing the input
 ///
 /// [`Parser`]s will need to use [`Recoverable<I, _>`] for their input.
