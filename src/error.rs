@@ -47,8 +47,8 @@ pub type ModalResult<O, E = ContextError> = Result<O, ErrMode<E>>;
 pub type PResult<O, E = ContextError> = ModalResult<O, E>;
 
 /// Deprecated, replaced with [`PResult`]
-#[deprecated(since = "0.6.25", note = "Replaced with `PResult`")]
-pub type IResult<I, O, E = InputError<I>> = PResult<(I, O), E>;
+#[deprecated(since = "0.6.25", note = "Replaced with `ModalResult`")]
+pub type IResult<I, O, E = InputError<I>> = ModalResult<(I, O), E>;
 
 /// Contains information on needed data if a parser returned `Incomplete`
 ///
