@@ -54,7 +54,7 @@
 //! - [gitoxide](https://github.com/Byron/gitoxide/pull/956) (gradual migration from nom
 //!   to winnow 0.5)
 //!
-//! ## API differences
+//! ## Differences
 //!
 //! ### Renamed APIs
 //!
@@ -82,7 +82,22 @@
 //!
 //! ### `&mut I`
 //!
-//! For an explanation of this change, see [Why `winnow`][super::why]
+//! `winnow` switched from pure-function parser (`Fn(I) -> (I, O)` to `Fn(&mut I) -> O`).
+//! On error, `i` is left pointing at where the error happened.
+//!
+//! Benefits:
+//! - Cleaner code: Removes need to pass `i` everywhere and makes changes to `i` more explicit
+//! - Correctness: No forgetting to chain `i` through a parser
+//! - Flexibility: `I` does not need to be `Copy` or even `Clone`. For example, [`Stateful`] can use `&mut S` instead of `RefCell<S>`.
+//! - Performance: `Result::Ok` is smaller without `i`, reducing the risk that the output will be
+//!   returned on the stack, rather than the much faster CPU registers.
+//!   `Result::Err` can also be smaller because the error type does not need to carry `i` to point
+//!   to the error.
+//!   See also [#72](https://github.com/winnow-rs/winnow/issues/72).
+//!
+//! Downsides:
+//! - When returning a slice, you have to add a lifetime (`fn foo<'i>(i: &mut &i str) -> ModalResult<&i str>`)
+//! - When writing a closure, you need to annotate the type (`|i: &mut _|`, at least the full type isn't needed)
 //!
 //! To save and restore from intermediate states, [`Stream::checkpoint`] and [`Stream::reset`] can help:
 //! ```rust
