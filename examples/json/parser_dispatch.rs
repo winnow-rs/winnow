@@ -4,7 +4,6 @@ use std::str;
 use winnow::prelude::*;
 use winnow::{
     ascii::float,
-    combinator::cut_err,
     combinator::empty,
     combinator::fail,
     combinator::peek,
@@ -91,17 +90,13 @@ fn string<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 ) -> PResult<String, E> {
     preceded(
         '\"',
-        // `cut_err` transforms an `ErrMode::Backtrack(e)` to `ErrMode::Cut(e)`, signaling to
-        // combinators like  `alt` that they should not try other parsers. We were in the
-        // right branch (since we found the `"` character) but encountered an error when
-        // parsing the string
-        cut_err(terminated(
+        terminated(
             repeat(0.., character).fold(String::new, |mut string, c| {
                 string.push(c);
                 string
             }),
             '\"',
-        )),
+        ),
     )
     // `context` lets you add a static string to errors to provide more information in the
     // error chain (to indicate which parser had an error)
@@ -169,10 +164,7 @@ fn array<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 ) -> PResult<Vec<JsonValue>, E> {
     preceded(
         ('[', ws),
-        cut_err(terminated(
-            separated(0.., json_value, (ws, ',', ws)),
-            (ws, ']'),
-        )),
+        terminated(separated(0.., json_value, (ws, ',', ws)), (ws, ']')),
     )
     .context(StrContext::Expected("array".into()))
     .parse_next(input)
@@ -183,10 +175,7 @@ fn object<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 ) -> PResult<HashMap<String, JsonValue>, E> {
     preceded(
         ('{', ws),
-        cut_err(terminated(
-            separated(0.., key_value, (ws, ',', ws)),
-            (ws, '}'),
-        )),
+        terminated(separated(0.., key_value, (ws, ',', ws)), (ws, '}')),
     )
     .context(StrContext::Expected("object".into()))
     .parse_next(input)
@@ -195,7 +184,7 @@ fn object<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 fn key_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
 ) -> PResult<(String, JsonValue), E> {
-    separated_pair(string, cut_err((ws, ':', ws)), json_value).parse_next(input)
+    separated_pair(string, (ws, ':', ws), json_value).parse_next(input)
 }
 
 /// Parser combinators are constructed from the bottom up:
