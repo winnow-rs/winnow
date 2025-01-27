@@ -54,7 +54,7 @@
 //! - [gitoxide](https://github.com/Byron/gitoxide/pull/956) (gradual migration from nom
 //!   to winnow 0.5)
 //!
-//! ## API differences
+//! ## Differences
 //!
 //! ### Renamed APIs
 //!
@@ -64,16 +64,75 @@
 //! - Search the docs for the `nom` parser
 //! - See the [List of combinators][crate::combinator]
 //!
-//! ### Partial/streaming parsers
+//! ### GATs
 //!
-//! `nom` differentiated some parsers by being `streaming` or `complete`.
+//! `nom` v8 back-propagates how you will use a parser to parser functions using a language feature
+//! called GATs.
+//! Winnow avoids this.
+//!
+//! Benefits for avoiding GATs:
+//! - Predictable performance as writing; idiomatic `fn(&mut I) -> Result<O>` parser sever the
+//!   back-propagation from GATs.
+//! - No "eek out X% perf improvement" pressure to contort a parser to be written declaratively
+//!   that is better written imperatively
+//! - Built-in parsers serve are simple examples of idiomatic parsers
+//! - Faster build times and smaller binary size as parsers only need to be generated for one mode, not upto 6
+//!
+//! Downsides
+//! - Performance
+//!
+//! #### Partial/streaming parsers
+//!
+//! `nom` v8 back-propagates whether `Parser::parse_complete` was used to select `complete`
+//! parsers.
+//! Previously, users had ensure consistently using a parser from the `streaming` or `complete` module.
 //! Instead, we tag the input type (`I`) by wrapping it in [`Partial<I>`] and parsers will adjust
 //! their behavior accordingly.
 //! See [partial] special topic.
 //!
+//! #### Eliding Output
+//!
+//! `nom` v8 back-propagates whether an Output will be used and skips its creation.
+//! For example, `value(Null, many0(_))` will avoid creating and pushing to a `Vec`.
+//! Previously, users had to select `count_many0` over `many0` to avoid creating a `Vec`.
+//! Instead, `repeat` returns an `impl Accumulate<T>` which could be a `Vec`, a `usize` for `count`
+//! variants, or `()` to do no extra work.
+//!
+//! #### Eliding Backtracked Errors
+//!
+//! Under the hood, [`alt`] is an `if-not-error-else` ladder, see [`_tutorial::chapter_3`].
+//! nom v8 back-propagates whether the error will be discarded and avoids any expensive work done
+//! for rich error messages.
+//! Instead, [`ContextError`] and other changes have made it so errors have very little overhead.
+//! [`dispatch!`] can also be used in some situations to avoid `alt`s overhead.
+//!
+//! ### Parsers return [`Stream::Slice`], rather than [`Stream`]
+//!
+//! In `nom`, parsers like [`take_while`] parse a [`Stream`] and return a [`Stream`].
+//! When wrapping the input, like with [`Stateful`],
+//! you have to unwrap the input to integrate it in your application,
+//! requires [`Stream`] to be `Clone` (which requires `RefCell` for mutable external state),
+//! and is then expensive to `clone()`.
+//! Instead, [`Stream::Slice`] was added to track the intended type for parsers to return.
+//!
 //! ### `&mut I`
 //!
-//! For an explanation of this change, see [Why `winnow`][super::why]
+//! `winnow` switched from pure-function parser (`Fn(I) -> (I, O)` to `Fn(&mut I) -> O`).
+//! On error, `i` is left pointing at where the error happened.
+//!
+//! Benefits:
+//! - Cleaner code: Removes need to pass `i` everywhere and makes changes to `i` more explicit
+//! - Correctness: No forgetting to chain `i` through a parser
+//! - Flexibility: `I` does not need to be `Copy` or even `Clone`. For example, [`Stateful`] can use `&mut S` instead of `RefCell<S>`.
+//! - Performance: `Result::Ok` is smaller without `i`, reducing the risk that the output will be
+//!   returned on the stack, rather than the much faster CPU registers.
+//!   `Result::Err` can also be smaller because the error type does not need to carry `i` to point
+//!   to the error.
+//!   See also [#72](https://github.com/winnow-rs/winnow/issues/72).
+//!
+//! Downsides:
+//! - When returning a slice, you have to add a lifetime (`fn foo<'i>(i: &mut &i str) -> ModalResult<&i str>`)
+//! - When writing a closure, you need to annotate the type (`|i: &mut _|`, at least the full type isn't needed)
 //!
 //! To save and restore from intermediate states, [`Stream::checkpoint`] and [`Stream::reset`] can help:
 //! ```rust
@@ -119,7 +178,14 @@
 
 #![allow(unused_imports)]
 use crate::_topic::partial;
+use crate::_tutorial;
+use crate::combinator::alt;
+use crate::combinator::dispatch;
+use crate::error::ContextError;
 use crate::error::ErrMode;
 use crate::error::ModalResult;
+use crate::stream::Accumulate;
 use crate::stream::Partial;
+use crate::stream::Stateful;
 use crate::stream::Stream;
+use crate::token::take_while;
