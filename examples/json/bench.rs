@@ -13,16 +13,6 @@ fn json_bench(c: &mut criterion::Criterion) {
         let len = sample.len();
         group.throughput(criterion::Throughput::Bytes(len as u64));
 
-        group.bench_with_input(criterion::BenchmarkId::new("unit", name), &len, |b, _| {
-            type Error<'i> = ();
-
-            b.iter(|| parser_alt::json::<Error<'_>>.parse_peek(sample).unwrap());
-        });
-        group.bench_with_input(criterion::BenchmarkId::new("alt", name), &len, |b, _| {
-            type Error = winnow::error::ContextError;
-
-            b.iter(|| parser_alt::json::<Error>.parse_peek(sample).unwrap());
-        });
         group.bench_with_input(
             criterion::BenchmarkId::new("dispatch", name),
             &len,
@@ -32,6 +22,20 @@ fn json_bench(c: &mut criterion::Criterion) {
                 b.iter(|| parser_dispatch::json::<Error>.parse_peek(sample).unwrap());
             },
         );
+        group.bench_with_input(criterion::BenchmarkId::new("unit", name), &len, |b, _| {
+            type Error<'i> = ();
+
+            b.iter(|| {
+                parser_dispatch::json::<Error<'_>>
+                    .parse_peek(sample)
+                    .unwrap()
+            });
+        });
+        group.bench_with_input(criterion::BenchmarkId::new("alt", name), &len, |b, _| {
+            type Error = winnow::error::ContextError;
+
+            b.iter(|| parser_alt::json::<Error>.parse_peek(sample).unwrap());
+        });
         group.bench_with_input(
             criterion::BenchmarkId::new("streaming", name),
             &len,
