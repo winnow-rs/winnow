@@ -236,3 +236,38 @@ fn test_literal_support_char() {
         )))
     );
 }
+
+#[test]
+fn tokenslice_location() {
+    #[derive(Clone, Debug)]
+    struct Token {
+        #[allow(dead_code)]
+        span: std::ops::Range<usize>,
+    }
+
+    let input = [
+        Token { span: 1..9 },
+        Token { span: 11..19 },
+        Token { span: 21..29 },
+    ]
+    .as_slice();
+    let mut input = LocatingSlice::new(input);
+    assert_eq!(input.previous_token_end(), 0);
+
+    // Parse operation
+    assert_eq!(input.current_token_start(), 0);
+    let _ = input.next_token();
+    assert_eq!(input.previous_token_end(), 1);
+
+    // Parse operation
+    assert_eq!(input.current_token_start(), 1);
+    let _ = input.next_token();
+    assert_eq!(input.previous_token_end(), 2);
+
+    // Parse operation
+    assert_eq!(input.current_token_start(), 2);
+    let _ = input.next_token();
+    assert_eq!(input.previous_token_end(), 3);
+
+    assert_eq!(input.current_token_start(), 3);
+}

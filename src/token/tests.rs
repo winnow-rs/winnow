@@ -7,6 +7,8 @@ use snapbox::str;
 
 use crate::ascii::Caseless;
 use crate::combinator::delimited;
+use crate::error::ErrMode;
+use crate::error::InputError;
 use crate::prelude::*;
 use crate::stream::AsChar;
 use crate::token::literal;
@@ -2814,6 +2816,121 @@ Ok(
             33,
         ],
         13,
+    ),
+)
+
+"#]]
+        .raw()
+    );
+}
+
+#[test]
+fn tokenslice_literals() {
+    type TokenSlice<'i, 't> = &'i [Token<'t>];
+
+    #[derive(Clone, Debug, PartialEq, Eq)]
+    struct Token<'i> {
+        kind: TokenKind,
+        raw: &'i str,
+    }
+
+    impl<'i, 't> ContainsToken<Token<'t>> for &'i str {
+        #[inline(always)]
+        fn contains_token(&self, token: Token<'t>) -> bool {
+            *self == token.raw
+        }
+    }
+
+    impl<'t> ContainsToken<Token<'t>> for TokenKind {
+        #[inline(always)]
+        fn contains_token(&self, token: Token<'t>) -> bool {
+            *self == token.kind
+        }
+    }
+
+    #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+    enum TokenKind {
+        If,
+        LeftParen,
+        RightParen,
+        LeftCurly,
+        RightCurly,
+        Value,
+    }
+
+    impl SliceLen for TokenKind {
+        #[inline(always)]
+        fn slice_len(&self) -> usize {
+            1
+        }
+    }
+
+    impl<'i, 't> Parser<TokenSlice<'i, 't>, Token<'t>, ErrMode<InputError<TokenSlice<'i, 't>>>>
+        for TokenKind
+    {
+        fn parse_next(
+            &mut self,
+            input: &mut TokenSlice<'i, 't>,
+        ) -> TestResult<TokenSlice<'i, 't>, Token<'t>> {
+            one_of(*self).parse_next(input)
+        }
+    }
+
+    let mut input = [
+        Token {
+            kind: TokenKind::If,
+            raw: "if",
+        },
+        Token {
+            kind: TokenKind::LeftParen,
+            raw: "(",
+        },
+        Token {
+            kind: TokenKind::Value,
+            raw: "hello",
+        },
+        Token {
+            kind: TokenKind::RightParen,
+            raw: ")",
+        },
+        Token {
+            kind: TokenKind::LeftCurly,
+            raw: "{",
+        },
+        Token {
+            kind: TokenKind::RightCurly,
+            raw: "}",
+        },
+    ]
+    .as_slice();
+
+    assert_parse!(
+        (
+            TokenKind::If,
+            TokenKind::LeftParen,
+            one_of("hello"),
+            TokenKind::RightParen
+        )
+            .parse_next(&mut input),
+        str![[r#"
+Ok(
+    (
+        Token {
+            kind: If,
+            raw: "if",
+        },
+        Token {
+            kind: LeftParen,
+            raw: "(",
+        },
+        Token {
+            kind: Value,
+            raw: "hello",
+        },
+        Token {
+            kind: RightParen,
+            raw: ")",
+        },
     ),
 )
 
