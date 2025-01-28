@@ -333,6 +333,12 @@ pub trait ParserError<I: Stream>: Sized {
     /// Creates an error from the input position and an [`ErrorKind`]
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self;
 
+    /// Creates an error from the input position
+    #[inline(always)]
+    fn from_input(input: &I) -> Self {
+        Self::from_error_kind(input, ErrorKind::Fail)
+    }
+
     /// Process a parser assertion
     #[inline(always)]
     fn assert(input: &I, _message: &'static str) -> Self
