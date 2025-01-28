@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::str;
 
 use winnow::prelude::*;
+use winnow::Result;
 use winnow::{
     ascii::float,
     combinator::empty,
@@ -21,8 +22,7 @@ pub(crate) type Stream<'i> = &'i str;
 /// The root element of a JSON parser is any value
 ///
 /// A parser has the following signature:
-/// `&mut Stream -> ModalResult<Output ContextError>`, with `ModalResult` defined as:
-/// `type ModalResult<O, E = ErrorKind> = Result<O, ErrMode<E>>;`
+/// `&mut Stream -> Result<Output ContextError>`
 ///
 /// most of the times you can ignore the error type and use the default (but this
 /// examples shows custom error types later on!)
@@ -32,7 +32,7 @@ pub(crate) type Stream<'i> = &'i str;
 /// implements the required traits.
 pub(crate) fn json<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
-) -> ModalResult<JsonValue, E> {
+) -> Result<JsonValue, E> {
     delimited(ws, json_value, ws).parse_next(input)
 }
 
@@ -40,7 +40,7 @@ pub(crate) fn json<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrCo
 /// one of them succeeds
 fn json_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
-) -> ModalResult<JsonValue, E> {
+) -> Result<JsonValue, E> {
     // `dispatch` gives you `match`-like behavior compared to `alt` successively trying different
     // implementations.
     dispatch!(peek(any);
@@ -61,7 +61,7 @@ fn json_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext
 /// `literal(string)` generates a parser that takes the argument string.
 ///
 /// This also shows returning a sub-slice of the original input
-fn null<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult<&'i str, E> {
+fn null<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> Result<&'i str, E> {
     // This is a parser that returns `"null"` if it sees the string "null", and
     // an error otherwise
     "null".parse_next(input)
@@ -69,7 +69,7 @@ fn null<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult<&
 
 /// We can combine `tag` with other functions, like `value` which returns a given constant value on
 /// success.
-fn true_<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult<bool, E> {
+fn true_<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> Result<bool, E> {
     // This is a parser that returns `true` if it sees the string "true", and
     // an error otherwise
     "true".value(true).parse_next(input)
@@ -77,7 +77,7 @@ fn true_<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult<
 
 /// We can combine `tag` with other functions, like `value` which returns a given constant value on
 /// success.
-fn false_<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult<bool, E> {
+fn false_<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> Result<bool, E> {
     // This is a parser that returns `false` if it sees the string "false", and
     // an error otherwise
     "false".value(false).parse_next(input)
@@ -87,7 +87,7 @@ fn false_<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult
 /// character, before the string (using `preceded`) and after the string (using `terminated`).
 fn string<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
-) -> ModalResult<String, E> {
+) -> Result<String, E> {
     preceded(
         '\"',
         terminated(
@@ -106,7 +106,7 @@ fn string<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 
 /// You can mix the above declarative parsing with an imperative style to handle more unique cases,
 /// like escaping
-fn character<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult<char, E> {
+fn character<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> Result<char, E> {
     let c = none_of('\"').parse_next(input)?;
     if c == '\\' {
         dispatch!(any;
@@ -127,7 +127,7 @@ fn character<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalRes
     }
 }
 
-fn unicode_escape<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult<char, E> {
+fn unicode_escape<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> Result<char, E> {
     alt((
         // Not a surrogate
         u16_hex
@@ -149,7 +149,7 @@ fn unicode_escape<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> Mod
     .parse_next(input)
 }
 
-fn u16_hex<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult<u16, E> {
+fn u16_hex<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> Result<u16, E> {
     take(4usize)
         .verify_map(|s| u16::from_str_radix(s, 16).ok())
         .parse_next(input)
@@ -161,7 +161,7 @@ fn u16_hex<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResul
 /// combinator (cf `examples/iterator.rs`)
 fn array<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
-) -> ModalResult<Vec<JsonValue>, E> {
+) -> Result<Vec<JsonValue>, E> {
     preceded(
         ('[', ws),
         terminated(separated(0.., json_value, (ws, ',', ws)), (ws, ']')),
@@ -172,7 +172,7 @@ fn array<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 
 fn object<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
-) -> ModalResult<HashMap<String, JsonValue>, E> {
+) -> Result<HashMap<String, JsonValue>, E> {
     preceded(
         ('{', ws),
         terminated(separated(0.., key_value, (ws, ',', ws)), (ws, '}')),
@@ -183,14 +183,14 @@ fn object<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
 
 fn key_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext>>(
     input: &mut Stream<'i>,
-) -> ModalResult<(String, JsonValue), E> {
+) -> Result<(String, JsonValue), E> {
     separated_pair(string, (ws, ':', ws), json_value).parse_next(input)
 }
 
 /// Parser combinators are constructed from the bottom up:
 /// first we write parsers for the smallest elements (here a space character),
 /// then we'll combine them in larger parsers
-fn ws<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> ModalResult<&'i str, E> {
+fn ws<'i, E: ParserError<Stream<'i>>>(input: &mut Stream<'i>) -> Result<&'i str, E> {
     // Combinators like `take_while` return a function. That function is the
     // parser,to which we can pass the input
     take_while(0.., WS).parse_next(input)
