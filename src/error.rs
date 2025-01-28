@@ -14,6 +14,7 @@
 //!
 //! Error types include:
 //! - `()`
+//! - [`EmptyError`] when the reason for failure doesn't matter
 //! - [`ErrorKind`]
 //! - [`InputError`] (mostly for testing)
 //! - [`ContextError`]
@@ -472,6 +473,63 @@ impl<I: Clone + fmt::Display> fmt::Display for InputError<I> {
 impl<I: Clone + fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::Error
     for InputError<I>
 {
+}
+
+/// Track an error occurred without any other [`StrContext`]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct EmptyError;
+
+impl<I: Stream> ParserError<I> for EmptyError {
+    #[inline(always)]
+    fn from_error_kind(_: &I, _: ErrorKind) -> Self {
+        Self
+    }
+
+    #[inline]
+    fn append(
+        self,
+        _input: &I,
+        _token_start: &<I as Stream>::Checkpoint,
+        _kind: ErrorKind,
+    ) -> Self {
+        Self
+    }
+}
+
+impl<I: Stream, C> AddContext<I, C> for EmptyError {}
+
+#[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
+impl<I: Stream> FromRecoverableError<I, Self> for EmptyError {
+    #[inline(always)]
+    fn from_recoverable_error(
+        _token_start: &<I as Stream>::Checkpoint,
+        _err_start: &<I as Stream>::Checkpoint,
+        _input: &I,
+        e: Self,
+    ) -> Self {
+        e
+    }
+}
+
+impl<I, E> FromExternalError<I, E> for EmptyError {
+    #[inline(always)]
+    fn from_external_error(_input: &I, _kind: ErrorKind, _e: E) -> Self {
+        Self
+    }
+}
+
+impl ErrorConvert<EmptyError> for EmptyError {
+    #[inline(always)]
+    fn convert(self) -> EmptyError {
+        self
+    }
+}
+
+impl crate::lib::std::fmt::Display for EmptyError {
+    fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
+        "failed to parse".fmt(f)
+    }
 }
 
 impl<I: Stream> ParserError<I> for () {

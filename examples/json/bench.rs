@@ -22,15 +22,19 @@ fn json_bench(c: &mut criterion::Criterion) {
                 b.iter(|| parser_dispatch::json::<Error>.parse_peek(sample).unwrap());
             },
         );
-        group.bench_with_input(criterion::BenchmarkId::new("unit", name), &len, |b, _| {
-            type Error<'i> = ();
+        group.bench_with_input(
+            criterion::BenchmarkId::new("empty-error", name),
+            &len,
+            |b, _| {
+                type Error<'i> = winnow::error::EmptyError;
 
-            b.iter(|| {
-                parser_dispatch::json::<Error<'_>>
-                    .parse_peek(sample)
-                    .unwrap()
-            });
-        });
+                b.iter(|| {
+                    parser_dispatch::json::<Error<'_>>
+                        .parse_peek(sample)
+                        .unwrap()
+                });
+            },
+        );
         group.bench_with_input(criterion::BenchmarkId::new("alt", name), &len, |b, _| {
             type Error = winnow::error::ContextError;
 
