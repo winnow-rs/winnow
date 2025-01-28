@@ -17,6 +17,15 @@ fn json_bench(c: &mut criterion::Criterion) {
             criterion::BenchmarkId::new("dispatch", name),
             &len,
             |b, _| {
+                type Error = winnow::error::ErrMode<winnow::error::ContextError>;
+
+                b.iter(|| parser_dispatch::json::<Error>.parse_peek(sample).unwrap());
+            },
+        );
+        group.bench_with_input(
+            criterion::BenchmarkId::new("modeless", name),
+            &len,
+            |b, _| {
                 type Error = winnow::error::ContextError;
 
                 b.iter(|| parser_dispatch::json::<Error>.parse_peek(sample).unwrap());
