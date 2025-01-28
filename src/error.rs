@@ -489,6 +489,15 @@ impl<I: Clone> InputError<I> {
         Self { input, kind }
     }
 
+    /// Creates a new basic error
+    #[inline]
+    pub fn at(input: I) -> Self {
+        Self {
+            input,
+            kind: ErrorKind::Fail,
+        }
+    }
+
     /// Translate the input type
     #[inline]
     pub fn map_input<I2: Clone, O: Fn(I) -> I2>(self, op: O) -> InputError<I2> {
