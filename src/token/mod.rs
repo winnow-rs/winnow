@@ -9,7 +9,7 @@ use crate::error::Needed;
 use crate::error::ParserError;
 use crate::lib::std::result::Result::Ok;
 use crate::stream::Range;
-use crate::stream::{Compare, CompareResult, ContainsToken, FindSlice, SliceLen, Stream};
+use crate::stream::{Compare, CompareResult, ContainsToken, FindSlice, Stream};
 use crate::stream::{StreamIsPartial, ToUsize};
 use crate::Parser;
 use crate::Result;
@@ -134,7 +134,7 @@ where
 /// assert_eq!(parser.parse_peek(Partial::new("Hello, World!")), Ok((Partial::new(", World!"), "Hello")));
 /// assert!(parser.parse_peek(Partial::new("Something")).is_err());
 /// assert!(parser.parse_peek(Partial::new("S")).is_err());
-/// assert_eq!(parser.parse_peek(Partial::new("H")), Err(ErrMode::Incomplete(Needed::new(4))));
+/// assert_eq!(parser.parse_peek(Partial::new("H")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// ```
 ///
 /// ```rust
@@ -162,7 +162,7 @@ pub fn literal<Literal, Input, Error>(
 ) -> impl Parser<Input, <Input as Stream>::Slice, Error>
 where
     Input: StreamIsPartial + Stream + Compare<Literal>,
-    Literal: SliceLen + Clone + crate::lib::std::fmt::Debug,
+    Literal: Clone + crate::lib::std::fmt::Debug,
     Error: ParserError<Input>,
 {
     trace(DisplayDebug(literal.clone()), move |i: &mut Input| {
@@ -182,15 +182,13 @@ fn literal_<T, I, Error: ParserError<I>, const PARTIAL: bool>(
 where
     I: StreamIsPartial,
     I: Stream + Compare<T>,
-    T: SliceLen + crate::lib::std::fmt::Debug,
+    T: crate::lib::std::fmt::Debug,
 {
-    let literal_len = t.slice_len();
     match i.compare(t) {
         CompareResult::Ok(len) => Ok(i.next_slice(len)),
-        CompareResult::Incomplete if PARTIAL && i.is_partial() => Err(ParserError::incomplete(
-            i,
-            Needed::new(literal_len - i.eof_offset()),
-        )),
+        CompareResult::Incomplete if PARTIAL && i.is_partial() => {
+            Err(ParserError::incomplete(i, Needed::Unknown))
+        }
         CompareResult::Incomplete | CompareResult::Error => Err(ParserError::from_input(i)),
     }
 }
