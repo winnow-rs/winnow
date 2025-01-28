@@ -13,7 +13,6 @@
 //! that can help convert to a `Result` for integrating with your application's error reporting.
 //!
 //! Error types include:
-//! - `()`
 //! - [`EmptyError`] when the reason for failure doesn't matter
 //! - [`ErrorKind`]
 //! - [`InputError`] (mostly for testing)
