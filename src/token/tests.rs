@@ -2800,17 +2800,15 @@ fn tokenslice_literals() {
         raw: &'i str,
     }
 
-    impl<'t> ContainsToken<&Token<'t>> for &str {
-        #[inline(always)]
-        fn contains_token(&self, token: &Token<'t>) -> bool {
-            *self == token.raw
+    impl PartialEq<&str> for Token<'_> {
+        fn eq(&self, other: &&str) -> bool {
+            self.raw == *other
         }
     }
 
-    impl<'t> ContainsToken<&Token<'t>> for TokenKind {
-        #[inline(always)]
-        fn contains_token(&self, token: &Token<'t>) -> bool {
-            *self == token.kind
+    impl PartialEq<TokenKind> for Token<'_> {
+        fn eq(&self, other: &TokenKind) -> bool {
+            self.kind == *other
         }
     }
 
@@ -2838,7 +2836,7 @@ fn tokenslice_literals() {
             &mut self,
             input: &mut TokenSlice<'i, 't>,
         ) -> TestResult<TokenSlice<'i, 't>, &'i Token<'t>> {
-            one_of(*self).parse_next(input)
+            literal(*self).parse_next(input).map(|t| &t[0])
         }
     }
 
@@ -2874,7 +2872,7 @@ fn tokenslice_literals() {
         (
             TokenKind::If,
             TokenKind::LeftParen,
-            one_of("hello"),
+            "hello",
             TokenKind::RightParen
         )
             .parse_next(&mut input),
@@ -2889,10 +2887,12 @@ Ok(
             kind: LeftParen,
             raw: "(",
         },
-        Token {
-            kind: Value,
-            raw: "hello",
-        },
+        [
+            Token {
+                kind: Value,
+                raw: "hello",
+            },
+        ],
         Token {
             kind: RightParen,
             raw: ")",

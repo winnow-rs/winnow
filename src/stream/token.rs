@@ -2,6 +2,8 @@ use crate::error::Needed;
 use crate::lib::std::iter::Enumerate;
 use crate::lib::std::slice::Iter;
 use crate::stream::Checkpoint;
+use crate::stream::Compare;
+use crate::stream::CompareResult;
 use crate::stream::Location;
 use crate::stream::Offset;
 #[cfg(feature = "unstable-recover")]
@@ -240,6 +242,24 @@ where
     #[inline(always)]
     fn offset_from(&self, other: &<TokenSlice<'_, T> as Stream>::Checkpoint) -> usize {
         self.checkpoint().offset_from(other)
+    }
+}
+
+impl<T, O> Compare<O> for TokenSlice<'_, T>
+where
+    T: PartialEq<O> + Eq,
+{
+    #[inline]
+    fn compare(&self, t: O) -> CompareResult {
+        if let Some(token) = self.first() {
+            if *token == t {
+                CompareResult::Ok(1)
+            } else {
+                CompareResult::Error
+            }
+        } else {
+            CompareResult::Incomplete
+        }
     }
 }
 
