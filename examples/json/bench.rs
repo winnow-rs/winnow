@@ -2,7 +2,7 @@ use winnow::prelude::*;
 use winnow::Partial;
 
 mod json;
-mod parser;
+mod parser_alt;
 mod parser_dispatch;
 mod parser_partial;
 
@@ -16,17 +16,13 @@ fn json_bench(c: &mut criterion::Criterion) {
         group.bench_with_input(criterion::BenchmarkId::new("unit", name), &len, |b, _| {
             type Error<'i> = ();
 
-            b.iter(|| parser::json::<Error<'_>>.parse_peek(sample).unwrap());
+            b.iter(|| parser_alt::json::<Error<'_>>.parse_peek(sample).unwrap());
         });
-        group.bench_with_input(
-            criterion::BenchmarkId::new("context", name),
-            &len,
-            |b, _| {
-                type Error = winnow::error::ContextError;
+        group.bench_with_input(criterion::BenchmarkId::new("alt", name), &len, |b, _| {
+            type Error = winnow::error::ContextError;
 
-                b.iter(|| parser::json::<Error>.parse_peek(sample).unwrap());
-            },
-        );
+            b.iter(|| parser_alt::json::<Error>.parse_peek(sample).unwrap());
+        });
         group.bench_with_input(
             criterion::BenchmarkId::new("dispatch", name),
             &len,
