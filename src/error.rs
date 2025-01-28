@@ -1155,10 +1155,15 @@ impl<I: Stream + Clone + fmt::Display, C: fmt::Display> fmt::Display for TreeErr
     }
 }
 
-/// Provide some minor debug context for errors
+/// Deprecated
+///
+/// For error typse, use [`EmptyError`] instead
+///
+/// For creating an error, use [`ParserError::from_input`], [`InputError::at`]
 #[rustfmt::skip]
 #[derive(Debug,PartialEq,Eq,Hash,Clone,Copy)]
 #[allow(missing_docs)]
+#[deprecated(since = "0.6.26")]
 pub enum ErrorKind {
   Assert,
   Token,
