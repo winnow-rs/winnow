@@ -330,7 +330,8 @@ pub trait ParserError<I: Stream>: Sized {
     /// Mostly used for [`ErrMode`]
     type Inner;
 
-    /// Creates an error from the input position and an [`ErrorKind`]
+    /// Deprecated, replaced with [`ParserError::from_input`]
+    #[deprecated(since = "0.6.26", note = "replaced with `ParserError::from_input`")]
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self;
 
     /// Creates an error from the input position
