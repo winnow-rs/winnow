@@ -15,8 +15,8 @@
 //! Error types include:
 //! - [`EmptyError`] when the reason for failure doesn't matter
 //! - [`ErrorKind`]
-//! - [`InputError`] (mostly for testing)
 //! - [`ContextError`]
+//! - [`InputError`] (mostly for testing)
 //! - [`TreeError`] (mostly for testing)
 //! - [Custom errors][crate::_topic::error]
 
