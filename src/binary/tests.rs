@@ -3212,9 +3212,7 @@ Ok(
             str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -3226,9 +3224,7 @@ Err(
             str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 

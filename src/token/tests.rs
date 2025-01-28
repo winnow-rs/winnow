@@ -2488,9 +2488,7 @@ Ok(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            2,
-        ),
+        Unknown,
     ),
 )
 
@@ -2600,9 +2598,7 @@ Ok(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            2,
-        ),
+        Unknown,
     ),
 )
 
@@ -2854,13 +2850,6 @@ fn tokenslice_literals() {
         LeftCurly,
         RightCurly,
         Value,
-    }
-
-    impl SliceLen for TokenKind {
-        #[inline(always)]
-        fn slice_len(&self) -> usize {
-            1
-        }
     }
 
     impl<'i, 't> Parser<TokenSlice<'i, 't>, &'i Token<'t>, ErrMode<InputError<TokenSlice<'i, 't>>>>

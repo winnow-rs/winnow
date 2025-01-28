@@ -4190,9 +4190,7 @@ Ok(
             str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -4242,9 +4240,7 @@ Ok(
             str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -4319,9 +4315,7 @@ Ok(
             str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -4387,9 +4381,7 @@ Ok(
             str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 

@@ -322,9 +322,7 @@ Ok(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            2,
-        ),
+        Unknown,
     ),
 )
 
@@ -372,9 +370,7 @@ Ok(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            2,
-        ),
+        Unknown,
     ),
 )
 
@@ -438,9 +434,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -762,9 +756,7 @@ Ok(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -776,9 +768,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            2,
-        ),
+        Unknown,
     ),
 )
 
@@ -896,9 +886,7 @@ Ok(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            2,
-        ),
+        Unknown,
     ),
 )
 
@@ -910,9 +898,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            3,
-        ),
+        Unknown,
     ),
 )
 
@@ -1030,9 +1016,7 @@ Ok(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            2,
-        ),
+        Unknown,
     ),
 )
 
@@ -1044,9 +1028,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            3,
-        ),
+        Unknown,
     ),
 )
 
@@ -1163,9 +1145,7 @@ Ok(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -1177,9 +1157,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -1191,9 +1169,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -1435,9 +1411,7 @@ fn alt_incomplete() {
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -1450,9 +1424,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -1510,9 +1482,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -1846,9 +1816,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -2025,9 +1993,7 @@ Ok(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -2039,9 +2005,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -2053,9 +2017,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -2220,9 +2182,7 @@ Ok(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -2234,9 +2194,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -2248,9 +2206,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -2432,9 +2388,7 @@ Ok(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            2,
-        ),
+        Unknown,
     ),
 )
 
@@ -2538,9 +2492,7 @@ Ok(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            2,
-        ),
+        Unknown,
     ),
 )
 
@@ -2552,9 +2504,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            4,
-        ),
+        Unknown,
     ),
 )
 
@@ -2566,9 +2516,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            4,
-        ),
+        Unknown,
     ),
 )
 
@@ -2690,9 +2638,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            2,
-        ),
+        Unknown,
     ),
 )
 
@@ -3148,9 +3094,7 @@ Ok(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            2,
-        ),
+        Unknown,
     ),
 )
 
@@ -3206,9 +3150,7 @@ Ok(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -3220,9 +3162,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            1,
-        ),
+        Unknown,
     ),
 )
 
@@ -3581,9 +3521,7 @@ Ok(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            2,
-        ),
+        Unknown,
     ),
 )
 
@@ -3595,9 +3533,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            4,
-        ),
+        Unknown,
     ),
 )
 
@@ -3609,9 +3545,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            4,
-        ),
+        Unknown,
     ),
 )
 
@@ -3743,9 +3677,7 @@ Err(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            2,
-        ),
+        Unknown,
     ),
 )
 
@@ -3929,9 +3861,7 @@ Ok(
         str![[r#"
 Err(
     Incomplete(
-        Size(
-            2,
-        ),
+        Unknown,
     ),
 )
 

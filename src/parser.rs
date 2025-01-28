@@ -1438,9 +1438,7 @@ Err(
             str![[r#"
 Err(
     Incomplete(
-        Size(
-            2,
-        ),
+        Unknown,
     ),
 )
 
