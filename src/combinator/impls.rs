@@ -256,9 +256,9 @@ where
     fn parse_next(&mut self, input: &mut I) -> Result<O, E> {
         trace("complete_err", |input: &mut I| {
             match (self.p).parse_next(input) {
-                Err(err) => match err.into_needed() {
-                    Ok(_) => Err(ParserError::from_input(input)),
-                    Err(err) => Err(err),
+                Err(err) => match err.needed() {
+                    Some(_) => Err(ParserError::from_input(input)),
+                    None => Err(err),
                 },
                 rest => rest,
             }
@@ -641,7 +641,7 @@ where
             Ok(o) => {
                 return Ok(o);
             }
-            Err(e) if e.is_needed() => return Err(e),
+            Err(e) if e.is_incomplete() => return Err(e),
             Err(err) => err,
         };
         let err_start = i.checkpoint();
@@ -720,7 +720,7 @@ where
         Ok(o) => {
             return Ok(Some(o));
         }
-        Err(e) if e.is_needed() => return Err(e),
+        Err(e) if e.is_incomplete() => return Err(e),
         Err(err) => err,
     };
     let err_start = i.checkpoint();

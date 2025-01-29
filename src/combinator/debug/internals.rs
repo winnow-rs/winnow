@@ -122,7 +122,7 @@ impl Severity {
         match result {
             Ok(_) => Self::Success,
             Err(e) if e.is_backtrack() => Self::Backtrack,
-            Err(e) if e.is_needed() => Self::Incomplete,
+            Err(e) if e.is_incomplete() => Self::Incomplete,
             _ => Self::Cut,
         }
     }
