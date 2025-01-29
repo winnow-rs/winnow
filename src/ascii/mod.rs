@@ -1671,6 +1671,25 @@ where
     }
 }
 
+/// Deprecated, replaed with [`escaped`]
+#[inline(always)]
+#[deprecated(since = "7.0.0", note = "replaced with `escaped`")]
+pub fn escaped_transform<Input, Error, Normal, NormalOutput, Escape, EscapeOutput, Output>(
+    normal: Normal,
+    control_char: char,
+    escape: Escape,
+) -> impl Parser<Input, Output, Error>
+where
+    Input: StreamIsPartial + Stream + Compare<char>,
+    Normal: Parser<Input, NormalOutput, Error>,
+    Escape: Parser<Input, EscapeOutput, Error>,
+    Output: crate::stream::Accumulate<NormalOutput>,
+    Output: crate::stream::Accumulate<EscapeOutput>,
+    Error: ParserError<Input>,
+{
+    escaped(normal, control_char, escape)
+}
+
 /// Parse escaped characters, unescaping them
 ///
 /// Arguments:
@@ -1747,7 +1766,7 @@ where
 /// # }
 /// ```
 #[inline(always)]
-pub fn escaped_transform<Input, Error, Normal, NormalOutput, Escape, EscapeOutput, Output>(
+pub fn escaped<Input, Error, Normal, NormalOutput, Escape, EscapeOutput, Output>(
     mut normal: Normal,
     control_char: char,
     mut escape: Escape,
@@ -1760,7 +1779,7 @@ where
     Output: crate::stream::Accumulate<EscapeOutput>,
     Error: ParserError<Input>,
 {
-    trace("escaped_transform", move |input: &mut Input| {
+    trace("escaped", move |input: &mut Input| {
         if <Input as StreamIsPartial>::is_partial_supported() && input.is_partial() {
             escaped_transform_internal::<_, _, _, _, _, _, _, true>(
                 input,

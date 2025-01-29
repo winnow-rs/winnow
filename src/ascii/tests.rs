@@ -2424,7 +2424,7 @@ Ok(
     }
 
     #[test]
-    fn test_escaped_error() {
+    fn test_take_escaped_error() {
         fn esc<'i>(i: &mut &'i str) -> TestResult<&'i str, &'i str> {
             use crate::ascii::digit1;
             take_escaped(digit1, '\\', one_of(['\"', 'n', '\\'])).parse_next(i)
@@ -2456,7 +2456,7 @@ Ok(
         }
 
         fn esc<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], String> {
-            escaped_transform(alpha, '\\', alt((b'\\', b'"', "n".value(b'\n'))))
+            escaped(alpha, '\\', alt((b'\\', b'"', "n".value(b'\n'))))
                 .map(to_s)
                 .parse_next(i)
         }
@@ -2569,7 +2569,7 @@ Err(
         );
 
         fn esc2<'i>(i: &mut &'i [u8]) -> TestResult<&'i [u8], String> {
-            escaped_transform(
+            escaped(
                 alpha,
                 '&',
                 alt((
@@ -2618,7 +2618,7 @@ Ok(
         use crate::ascii::alpha1 as alpha;
 
         fn esc<'i>(i: &mut &'i str) -> TestResult<&'i str, String> {
-            escaped_transform(
+            escaped(
                 alpha,
                 '\\',
                 alt((
@@ -2739,7 +2739,7 @@ Err(
         );
 
         fn esc2<'i>(i: &mut &'i str) -> TestResult<&'i str, String> {
-            escaped_transform(
+            escaped(
                 alpha,
                 '&',
                 alt(("egrave;".value("è"), "agrave;".value("à"))),
@@ -2774,7 +2774,7 @@ Ok(
         );
 
         fn esc3<'i>(i: &mut &'i str) -> TestResult<&'i str, String> {
-            escaped_transform(alpha, '␛', alt(("0".value("\0"), "n".value("\n")))).parse_next(i)
+            escaped(alpha, '␛', alt(("0".value("\0"), "n".value("\n")))).parse_next(i)
         }
         assert_parse!(
             esc3.parse_peek("a␛0bc␛n"),
@@ -2793,10 +2793,10 @@ Ok(
 
     #[test]
     #[cfg(feature = "alloc")]
-    fn test_escaped_transform_error() {
+    fn test_escaped_error() {
         fn esc_trans<'i>(i: &mut &'i str) -> TestResult<&'i str, String> {
             use crate::ascii::digit1;
-            escaped_transform(digit1, '\\', "n").parse_next(i)
+            escaped(digit1, '\\', "n").parse_next(i)
         }
 
         assert_parse!(
