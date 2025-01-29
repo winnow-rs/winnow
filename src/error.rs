@@ -137,6 +137,22 @@ impl<E> ErrMode<E> {
         matches!(self, ErrMode::Incomplete(_))
     }
 
+    /// Prevent backtracking, bubbling the error up to the top
+    pub fn cut(self) -> Self {
+        match self {
+            ErrMode::Backtrack(e) => ErrMode::Cut(e),
+            rest => rest,
+        }
+    }
+
+    /// Enable backtracking support
+    pub fn backtrack(self) -> Self {
+        match self {
+            ErrMode::Cut(e) => ErrMode::Backtrack(e),
+            rest => rest,
+        }
+    }
+
     /// Applies the given function to the inner error
     pub fn map<E2, F>(self, f: F) -> ErrMode<E2>
     where
@@ -149,13 +165,23 @@ impl<E> ErrMode<E> {
         }
     }
 
-    /// Deprecated, replaced with [`ErrorConvert`]
-    #[deprecated(since = "0.6.23", note = "Replaced with `ErrorConvert`")]
+    /// Automatically converts between errors if the underlying type supports it
     pub fn convert<F>(self) -> ErrMode<F>
     where
         E: ErrorConvert<F>,
     {
         ErrorConvert::convert(self)
+    }
+
+    /// Unwrap the mode, returning the underlying error
+    ///
+    /// Returns `None` for [`ErrMode::Incomplete`]
+    #[inline(always)]
+    pub fn into_inner(self) -> Result<E, Self> {
+        match self {
+            ErrMode::Backtrack(e) | ErrMode::Cut(e) => Ok(e),
+            err @ ErrMode::Incomplete(_) => Err(err),
+        }
     }
 }
 
@@ -228,17 +254,11 @@ impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
 
 impl<E> ModalError for ErrMode<E> {
     fn cut(self) -> Self {
-        match self {
-            ErrMode::Backtrack(e) => ErrMode::Cut(e),
-            rest => rest,
-        }
+        self.cut()
     }
 
     fn backtrack(self) -> Self {
-        match self {
-            ErrMode::Cut(e) => ErrMode::Backtrack(e),
-            rest => rest,
-        }
+        self.backtrack()
     }
 }
 
