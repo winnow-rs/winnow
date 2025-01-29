@@ -49,10 +49,6 @@ pub type Result<O, E = ContextError> = core::result::Result<O, E>;
 pub type ModalResult<O, E = ContextError> = Result<O, ErrMode<E>>;
 
 /// Deprecated, replaced with [`ModalResult`]
-#[deprecated(since = "0.6.25", note = "Replaced with ModalResult")]
-pub type PResult<O, E = ContextError> = ModalResult<O, E>;
-
-/// Deprecated, replaced with [`ModalResult`]
 #[deprecated(since = "0.6.25", note = "Replaced with `ModalResult`")]
 pub type IResult<I, O, E = InputError<I>> = ModalResult<(I, O), E>;
 
