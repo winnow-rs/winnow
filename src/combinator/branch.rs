@@ -144,7 +144,6 @@ impl<const N: usize, I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I,
             }
         }
 
-        #[allow(deprecated)]
         match error {
             Some(e) => Err(e.append(input, &start)),
             None => Err(ParserError::assert(
@@ -173,7 +172,6 @@ impl<I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I, O, E> for &mut 
             }
         }
 
-        #[allow(deprecated)]
         match error {
             Some(e) => Err(e.append(input, &start)),
             None => Err(ParserError::assert(
@@ -253,7 +251,6 @@ macro_rules! alt_trait_inner(
     }
   });
   ($it:tt, $self:expr, $input:expr, $start:ident, $err:expr, $head:ident) => ({
-    #[allow(deprecated)]
     Err($err.append($input, &$start))
   });
 );
@@ -307,7 +304,6 @@ macro_rules! permutation_trait_impl(
           if let Some(err) = err {
             // There are remaining parsers, and all errored on the remaining input
             input.reset(&start);
-#[allow(deprecated)]
             return Err(err.append(input, &start));
           }
 

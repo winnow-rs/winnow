@@ -118,7 +118,6 @@ impl From<u32> for CustomError {
 impl<I: Stream> ParserError<I> for CustomError {
     type Inner = Self;
 
-    #[allow(deprecated)]
     fn from_input(_: &I) -> Self {
         CustomError
     }
@@ -1306,12 +1305,10 @@ fn alt_test() {
     impl<I: Stream + Debug> ParserError<I> for ErrorStr {
         type Inner = Self;
 
-        #[allow(deprecated)]
         fn from_input(input: &I) -> Self {
             ErrorStr(format!("custom error message: ({input:?})"))
         }
 
-        #[allow(deprecated)]
         fn append(self, input: &I, _: &<I as Stream>::Checkpoint) -> Self {
             ErrorStr(format!("custom error message: ({input:?}) - {self:?}"))
         }
@@ -3426,7 +3423,6 @@ struct NilError;
 impl<I: Stream> ParserError<I> for NilError {
     type Inner = Self;
 
-    #[allow(deprecated)]
     fn from_input(_: &I) -> NilError {
         NilError
     }

@@ -497,7 +497,6 @@ where
     E: ParserError<I>,
 {
     let start = i.checkpoint();
-    #[allow(deprecated)]
     match f.parse_next(i) {
         Err(e) => Err(e.append(i, &start)),
         Ok(o) => {
@@ -555,7 +554,6 @@ where
                 res.accumulate(o);
             }
             Err(e) => {
-                #[allow(deprecated)]
                 return Err(e.append(i, &start));
             }
         }
@@ -596,7 +594,6 @@ where
             }
             Err(e) if e.is_backtrack() => {
                 if count < min {
-                    #[allow(deprecated)]
                     return Err(e.append(input, &start));
                 } else {
                     input.reset(&start);
@@ -693,7 +690,6 @@ where
             Ok(o) => return Ok((res, o)),
             Err(e) if e.is_backtrack() => {
                 i.reset(&start);
-                #[allow(deprecated)]
                 match f.parse_next(i) {
                     Err(e) => return Err(e.append(i, &start)),
                     Ok(o) => {
@@ -744,7 +740,6 @@ where
                 res.accumulate(o);
             }
             Err(e) => {
-                #[allow(deprecated)]
                 return Err(e.append(i, &start));
             }
         }
@@ -761,7 +756,6 @@ where
                 i.reset(&start);
                 match f.parse_next(i) {
                     Err(e) => {
-                        #[allow(deprecated)]
                         return Err(e.append(i, &start));
                     }
                     Ok(o) => {
@@ -1053,7 +1047,6 @@ where
     let start = input.checkpoint();
     match parser.parse_next(input) {
         Err(e) => {
-            #[allow(deprecated)]
             return Err(e.append(input, &start));
         }
         Ok(o) => {
@@ -1066,7 +1059,6 @@ where
         let len = input.eof_offset();
         match separator.parse_next(input) {
             Err(e) => {
-                #[allow(deprecated)]
                 return Err(e.append(input, &start));
             }
             Ok(_) => {
@@ -1080,7 +1072,6 @@ where
 
                 match parser.parse_next(input) {
                     Err(e) => {
-                        #[allow(deprecated)]
                         return Err(e.append(input, &start));
                     }
                     Ok(o) => {
@@ -1124,7 +1115,6 @@ where
                 input.reset(&start);
                 return Ok(acc);
             } else {
-                #[allow(deprecated)]
                 return Err(e.append(input, &start));
             }
         }
@@ -1140,7 +1130,6 @@ where
         match separator.parse_next(input) {
             Err(e) if e.is_backtrack() => {
                 if index < min {
-                    #[allow(deprecated)]
                     return Err(e.append(input, &start));
                 } else {
                     input.reset(&start);
@@ -1162,7 +1151,6 @@ where
                 match parser.parse_next(input) {
                     Err(e) if e.is_backtrack() => {
                         if index < min {
-                            #[allow(deprecated)]
                             return Err(e.append(input, &start));
                         } else {
                             input.reset(&start);
@@ -1345,7 +1333,6 @@ where
                     *elem = o;
                 }
                 Err(e) => {
-                    #[allow(deprecated)]
                     return Err(e.append(i, &start));
                 }
             }
@@ -1411,7 +1398,6 @@ where
 {
     let init = init();
     let start = input.checkpoint();
-    #[allow(deprecated)]
     match f.parse_next(input) {
         Err(e) => Err(e.append(input, &start)),
         Ok(o1) => {
@@ -1486,7 +1472,6 @@ where
             //FInputXMError: handle failure properly
             Err(err) if err.is_backtrack() => {
                 if count < min {
-                    #[allow(deprecated)]
                     return Err(err.append(input, &start));
                 } else {
                     input.reset(&start);
@@ -1548,7 +1533,6 @@ where
             //FInputXMError: handle failure properly
             Err(err) if err.is_backtrack() => {
                 if count < min {
-                    #[allow(deprecated)]
                     return Err(err.append(input, &start));
                 } else {
                     input.reset(&start);
@@ -1603,7 +1587,6 @@ where
                     Ok(tmp) => acc = tmp,
                     Err(e) => {
                         input.reset(&start);
-                        #[allow(deprecated)]
                         let res = Err(E::from_external_error(input, e));
                         super::debug::trace_result("try_fold", &res);
                         return res;
@@ -1613,7 +1596,6 @@ where
             //FInputXMError: handle failure properly
             Err(err) if err.is_backtrack() => {
                 if count < min {
-                    #[allow(deprecated)]
                     return Err(err.append(input, &start));
                 } else {
                     input.reset(&start);

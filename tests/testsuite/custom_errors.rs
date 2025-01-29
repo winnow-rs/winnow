@@ -4,7 +4,6 @@ use winnow::ascii::digit1 as digit;
 #[cfg(feature = "alloc")]
 use winnow::combinator::repeat;
 use winnow::combinator::terminated;
-#[allow(deprecated)]
 use winnow::error::ParserError;
 use winnow::prelude::*;
 use winnow::stream::Stream;
@@ -16,12 +15,10 @@ pub(crate) struct CustomError(String);
 impl<'a> ParserError<Partial<&'a str>> for CustomError {
     type Inner = Self;
 
-    #[allow(deprecated)]
     fn from_input(_: &Partial<&'a str>) -> Self {
         CustomError("error".to_owned())
     }
 
-    #[allow(deprecated)]
     fn append(self, _: &Partial<&'a str>, _: &<Partial<&'a str> as Stream>::Checkpoint) -> Self {
         self
     }
