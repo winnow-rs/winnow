@@ -121,7 +121,7 @@ impl<I: Stream> ParserError<I> for CustomError {
     type Inner = Self;
 
     #[allow(deprecated)]
-    fn from_error_kind(_: &I, _: crate::error::ErrorKind) -> Self {
+    fn from_input(_: &I) -> Self {
         CustomError
     }
 
@@ -1331,7 +1331,7 @@ fn alt_test() {
         type Inner = Self;
 
         #[allow(deprecated)]
-        fn from_error_kind(input: &I, _: crate::error::ErrorKind) -> Self {
+        fn from_input(input: &I) -> Self {
             ErrorStr(format!("custom error message: ({input:?})"))
         }
 
@@ -3471,7 +3471,7 @@ impl<I: Stream> ParserError<I> for NilError {
     type Inner = Self;
 
     #[allow(deprecated)]
-    fn from_error_kind(_: &I, _: crate::error::ErrorKind) -> NilError {
+    fn from_input(_: &I) -> NilError {
         NilError
     }
 

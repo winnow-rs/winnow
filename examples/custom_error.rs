@@ -21,7 +21,7 @@ impl<I: Stream + Clone> ParserError<I> for CustomError<I> {
     type Inner = Self;
 
     #[allow(deprecated)]
-    fn from_error_kind(input: &I, _: ErrorKind) -> Self {
+    fn from_input(input: &I) -> Self {
         CustomError::Winnow(input.clone())
     }
 

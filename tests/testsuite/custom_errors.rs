@@ -5,7 +5,6 @@ use winnow::ascii::digit1 as digit;
 use winnow::combinator::repeat;
 use winnow::combinator::terminated;
 #[allow(deprecated)]
-use winnow::error::ErrorKind;
 use winnow::error::ParserError;
 use winnow::prelude::*;
 use winnow::stream::Stream;
@@ -18,8 +17,8 @@ impl<'a> ParserError<Partial<&'a str>> for CustomError {
     type Inner = Self;
 
     #[allow(deprecated)]
-    fn from_error_kind(_: &Partial<&'a str>, kind: ErrorKind) -> Self {
-        CustomError(format!("error code was: {kind:?}"))
+    fn from_input(_: &Partial<&'a str>) -> Self {
+        CustomError("error".to_owned())
     }
 
     #[allow(deprecated)]
@@ -27,9 +26,9 @@ impl<'a> ParserError<Partial<&'a str>> for CustomError {
         self,
         _: &Partial<&'a str>,
         _: &<Partial<&'a str> as Stream>::Checkpoint,
-        kind: ErrorKind,
+        _: winnow::error::ErrorKind,
     ) -> Self {
-        CustomError(format!("{self:?}\nerror code was: {kind:?}"))
+        self
     }
 
     fn into_inner(self) -> Result<Self::Inner, Self> {

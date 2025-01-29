@@ -181,9 +181,8 @@ impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
     type Inner = E;
 
     #[inline(always)]
-    #[allow(deprecated)]
-    fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
-        ErrMode::Backtrack(E::from_error_kind(input, kind))
+    fn from_input(input: &I) -> Self {
+        ErrMode::Backtrack(E::from_input(input))
     }
 
     #[inline(always)]
@@ -344,17 +343,8 @@ pub trait ParserError<I: Stream>: Sized {
     /// Mostly used for [`ErrMode`]
     type Inner;
 
-    /// Deprecated, replaced with [`ParserError::from_input`]
-    #[deprecated(since = "0.6.26", note = "replaced with `ParserError::from_input`")]
-    #[allow(deprecated)]
-    fn from_error_kind(input: &I, kind: ErrorKind) -> Self;
-
     /// Creates an error from the input position
-    #[inline(always)]
-    fn from_input(input: &I) -> Self {
-        #[allow(deprecated)]
-        Self::from_error_kind(input, ErrorKind::Fail)
-    }
+    fn from_input(input: &I) -> Self;
 
     /// Process a parser assertion
     #[inline(always)]
@@ -365,7 +355,7 @@ pub trait ParserError<I: Stream>: Sized {
         #[cfg(debug_assertions)]
         panic!("assert `{_message}` failed at {input:#?}");
         #[cfg(not(debug_assertions))]
-        Self::from_error_kind(input, ErrorKind::Assert)
+        Self::from_input(input)
     }
 
     /// There was not enough data to determine the appropriate action
@@ -381,7 +371,7 @@ pub trait ParserError<I: Stream>: Sized {
         Self::from_input(input)
     }
 
-    /// Like [`ParserError::from_error_kind`] but merges it with the existing error.
+    /// Like [`ParserError::from_input`] but merges it with the existing error.
     ///
     /// This is useful when backtracking through a parse tree, accumulating error context on the
     /// way.
@@ -476,7 +466,7 @@ pub trait FromRecoverableError<I: Stream, E> {
 ///
 /// This trait is required by the [`Parser::try_map`] combinator.
 pub trait FromExternalError<I, E> {
-    /// Like [`ParserError::from_error_kind`] but also include an external error.
+    /// Like [`ParserError::from_input`] but also include an external error.
     #[allow(deprecated)]
     fn from_external_error(input: &I, kind: ErrorKind, e: E) -> Self;
 }
@@ -543,11 +533,11 @@ impl<I: Stream + Clone> ParserError<I> for InputError<I> {
     type Inner = Self;
 
     #[inline]
-    #[allow(deprecated)]
-    fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
+    fn from_input(input: &I) -> Self {
+        #[allow(deprecated)]
         Self {
             input: input.clone(),
-            kind,
+            kind: ErrorKind::Fail,
         }
     }
 
@@ -625,8 +615,7 @@ impl<I: Stream> ParserError<I> for EmptyError {
     type Inner = Self;
 
     #[inline(always)]
-    #[allow(deprecated)]
-    fn from_error_kind(_: &I, _: ErrorKind) -> Self {
+    fn from_input(_: &I) -> Self {
         Self
     }
 
@@ -677,8 +666,7 @@ impl<I: Stream> ParserError<I> for () {
     type Inner = Self;
 
     #[inline]
-    #[allow(deprecated)]
-    fn from_error_kind(_: &I, _: ErrorKind) -> Self {}
+    fn from_input(_: &I) -> Self {}
 
     #[inline(always)]
     fn into_inner(self) -> Result<Self::Inner, Self> {
@@ -770,8 +758,7 @@ impl<I: Stream, C> ParserError<I> for ContextError<C> {
     type Inner = Self;
 
     #[inline]
-    #[allow(deprecated)]
-    fn from_error_kind(_input: &I, _kind: ErrorKind) -> Self {
+    fn from_input(_input: &I) -> Self {
         Self::new()
     }
 
@@ -1092,11 +1079,11 @@ where
 {
     type Inner = Self;
 
-    #[allow(deprecated)]
-    fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
+    fn from_input(input: &I) -> Self {
+        #[allow(deprecated)]
         TreeError::Base(TreeErrorBase {
             input: input.clone(),
-            kind,
+            kind: ErrorKind::Fail,
             cause: None,
         })
     }
@@ -1342,9 +1329,8 @@ impl<I: Stream> ParserError<I> for ErrorKind {
     type Inner = Self;
 
     #[inline]
-    #[allow(deprecated)]
-    fn from_error_kind(_input: &I, kind: ErrorKind) -> Self {
-        kind
+    fn from_input(_input: &I) -> Self {
+        Self::Fail
     }
 
     #[inline(always)]
