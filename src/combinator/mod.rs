@@ -173,8 +173,6 @@ pub mod impls;
 pub use self::branch::*;
 pub use self::core::*;
 pub use self::debug::*;
-#[deprecated(since = "0.6.23", note = "Replaced with `combinator::impls`")]
-pub use self::impls::*;
 pub use self::multi::*;
 pub use self::sequence::*;
 
