@@ -22,12 +22,7 @@ impl<'a> ParserError<Partial<&'a str>> for CustomError {
     }
 
     #[allow(deprecated)]
-    fn append(
-        self,
-        _: &Partial<&'a str>,
-        _: &<Partial<&'a str> as Stream>::Checkpoint,
-        _: winnow::error::ErrorKind,
-    ) -> Self {
+    fn append(self, _: &Partial<&'a str>, _: &<Partial<&'a str> as Stream>::Checkpoint) -> Self {
         self
     }
 

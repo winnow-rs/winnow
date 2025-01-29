@@ -199,10 +199,9 @@ impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
     }
 
     #[inline]
-    #[allow(deprecated)]
-    fn append(self, input: &I, token_start: &<I as Stream>::Checkpoint, kind: ErrorKind) -> Self {
+    fn append(self, input: &I, token_start: &<I as Stream>::Checkpoint) -> Self {
         match self {
-            ErrMode::Backtrack(e) => ErrMode::Backtrack(e.append(input, token_start, kind)),
+            ErrMode::Backtrack(e) => ErrMode::Backtrack(e.append(input, token_start)),
             e => e,
         }
     }
@@ -376,13 +375,7 @@ pub trait ParserError<I: Stream>: Sized {
     /// This is useful when backtracking through a parse tree, accumulating error context on the
     /// way.
     #[inline]
-    #[allow(deprecated)]
-    fn append(
-        self,
-        _input: &I,
-        _token_start: &<I as Stream>::Checkpoint,
-        _kind: ErrorKind,
-    ) -> Self {
+    fn append(self, _input: &I, _token_start: &<I as Stream>::Checkpoint) -> Self {
         self
     }
 
@@ -1089,12 +1082,12 @@ where
     }
 
     #[allow(deprecated)]
-    fn append(self, input: &I, token_start: &<I as Stream>::Checkpoint, kind: ErrorKind) -> Self {
+    fn append(self, input: &I, token_start: &<I as Stream>::Checkpoint) -> Self {
         let mut input = input.clone();
         input.reset(token_start);
         let frame = TreeErrorFrame::Kind(TreeErrorBase {
             input,
-            kind,
+            kind: ErrorKind::Fail,
             cause: None,
         });
         self.append_frame(frame)

@@ -1,6 +1,4 @@
 use crate::combinator::trace;
-#[allow(deprecated)]
-use crate::error::ErrorKind;
 use crate::error::ParserError;
 use crate::stream::Stream;
 use crate::*;
@@ -148,7 +146,7 @@ impl<const N: usize, I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I,
 
         #[allow(deprecated)]
         match error {
-            Some(e) => Err(e.append(input, &start, ErrorKind::Alt)),
+            Some(e) => Err(e.append(input, &start)),
             None => Err(ParserError::assert(
                 input,
                 "`alt` needs at least one parser",
@@ -177,7 +175,7 @@ impl<I: Stream, O, E: ParserError<I>, P: Parser<I, O, E>> Alt<I, O, E> for &mut 
 
         #[allow(deprecated)]
         match error {
-            Some(e) => Err(e.append(input, &start, ErrorKind::Alt)),
+            Some(e) => Err(e.append(input, &start)),
             None => Err(ParserError::assert(
                 input,
                 "`alt` needs at least one parser",
@@ -256,7 +254,7 @@ macro_rules! alt_trait_inner(
   });
   ($it:tt, $self:expr, $input:expr, $start:ident, $err:expr, $head:ident) => ({
     #[allow(deprecated)]
-    Err($err.append($input, &$start, ErrorKind::Alt))
+    Err($err.append($input, &$start))
   });
 );
 
@@ -310,7 +308,7 @@ macro_rules! permutation_trait_impl(
             // There are remaining parsers, and all errored on the remaining input
             input.reset(&start);
 #[allow(deprecated)]
-            return Err(err.append(input, &start, ErrorKind::Alt));
+            return Err(err.append(input, &start));
           }
 
           // All parsers were applied

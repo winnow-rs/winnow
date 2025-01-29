@@ -1,8 +1,6 @@
 //! Combinators applying their child parser multiple times
 
 use crate::combinator::trace;
-#[allow(deprecated)]
-use crate::error::ErrorKind;
 use crate::error::FromExternalError;
 use crate::error::ParserError;
 use crate::stream::Accumulate;
@@ -501,7 +499,7 @@ where
     let start = i.checkpoint();
     #[allow(deprecated)]
     match f.parse_next(i) {
-        Err(e) => Err(e.append(i, &start, ErrorKind::Repeat)),
+        Err(e) => Err(e.append(i, &start)),
         Ok(o) => {
             let mut acc = C::initial(None);
             acc.accumulate(o);
@@ -558,7 +556,7 @@ where
             }
             Err(e) => {
                 #[allow(deprecated)]
-                return Err(e.append(i, &start, ErrorKind::Repeat));
+                return Err(e.append(i, &start));
             }
         }
     }
@@ -599,7 +597,7 @@ where
             Err(e) if e.is_backtrack() => {
                 if count < min {
                     #[allow(deprecated)]
-                    return Err(e.append(input, &start, ErrorKind::Repeat));
+                    return Err(e.append(input, &start));
                 } else {
                     input.reset(&start);
                     return Ok(res);
@@ -697,7 +695,7 @@ where
                 i.reset(&start);
                 #[allow(deprecated)]
                 match f.parse_next(i) {
-                    Err(e) => return Err(e.append(i, &start, ErrorKind::Repeat)),
+                    Err(e) => return Err(e.append(i, &start)),
                     Ok(o) => {
                         // infinite loop check: the parser must always consume
                         if i.eof_offset() == len {
@@ -747,7 +745,7 @@ where
             }
             Err(e) => {
                 #[allow(deprecated)]
-                return Err(e.append(i, &start, ErrorKind::Repeat));
+                return Err(e.append(i, &start));
             }
         }
     }
@@ -764,7 +762,7 @@ where
                 match f.parse_next(i) {
                     Err(e) => {
                         #[allow(deprecated)]
-                        return Err(e.append(i, &start, ErrorKind::Repeat));
+                        return Err(e.append(i, &start));
                     }
                     Ok(o) => {
                         // infinite loop check: the parser must always consume
@@ -1056,7 +1054,7 @@ where
     match parser.parse_next(input) {
         Err(e) => {
             #[allow(deprecated)]
-            return Err(e.append(input, &start, ErrorKind::Repeat));
+            return Err(e.append(input, &start));
         }
         Ok(o) => {
             acc.accumulate(o);
@@ -1069,7 +1067,7 @@ where
         match separator.parse_next(input) {
             Err(e) => {
                 #[allow(deprecated)]
-                return Err(e.append(input, &start, ErrorKind::Repeat));
+                return Err(e.append(input, &start));
             }
             Ok(_) => {
                 // infinite loop check
@@ -1083,7 +1081,7 @@ where
                 match parser.parse_next(input) {
                     Err(e) => {
                         #[allow(deprecated)]
-                        return Err(e.append(input, &start, ErrorKind::Repeat));
+                        return Err(e.append(input, &start));
                     }
                     Ok(o) => {
                         acc.accumulate(o);
@@ -1127,7 +1125,7 @@ where
                 return Ok(acc);
             } else {
                 #[allow(deprecated)]
-                return Err(e.append(input, &start, ErrorKind::Repeat));
+                return Err(e.append(input, &start));
             }
         }
         Err(e) => return Err(e),
@@ -1143,7 +1141,7 @@ where
             Err(e) if e.is_backtrack() => {
                 if index < min {
                     #[allow(deprecated)]
-                    return Err(e.append(input, &start, ErrorKind::Repeat));
+                    return Err(e.append(input, &start));
                 } else {
                     input.reset(&start);
                     return Ok(acc);
@@ -1165,7 +1163,7 @@ where
                     Err(e) if e.is_backtrack() => {
                         if index < min {
                             #[allow(deprecated)]
-                            return Err(e.append(input, &start, ErrorKind::Repeat));
+                            return Err(e.append(input, &start));
                         } else {
                             input.reset(&start);
                             return Ok(acc);
@@ -1348,7 +1346,7 @@ where
                 }
                 Err(e) => {
                     #[allow(deprecated)]
-                    return Err(e.append(i, &start, ErrorKind::Repeat));
+                    return Err(e.append(i, &start));
                 }
             }
         }
@@ -1415,7 +1413,7 @@ where
     let start = input.checkpoint();
     #[allow(deprecated)]
     match f.parse_next(input) {
-        Err(e) => Err(e.append(input, &start, ErrorKind::Repeat)),
+        Err(e) => Err(e.append(input, &start)),
         Ok(o1) => {
             let mut acc = g(init, o1);
 
@@ -1489,7 +1487,7 @@ where
             Err(err) if err.is_backtrack() => {
                 if count < min {
                     #[allow(deprecated)]
-                    return Err(err.append(input, &start, ErrorKind::Repeat));
+                    return Err(err.append(input, &start));
                 } else {
                     input.reset(&start);
                     break;
@@ -1551,7 +1549,7 @@ where
             Err(err) if err.is_backtrack() => {
                 if count < min {
                     #[allow(deprecated)]
-                    return Err(err.append(input, &start, ErrorKind::Repeat));
+                    return Err(err.append(input, &start));
                 } else {
                     input.reset(&start);
                     break;
@@ -1616,7 +1614,7 @@ where
             Err(err) if err.is_backtrack() => {
                 if count < min {
                     #[allow(deprecated)]
-                    return Err(err.append(input, &start, ErrorKind::Repeat));
+                    return Err(err.append(input, &start));
                 } else {
                     input.reset(&start);
                     break;

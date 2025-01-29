@@ -1336,12 +1336,7 @@ fn alt_test() {
         }
 
         #[allow(deprecated)]
-        fn append(
-            self,
-            input: &I,
-            _: &<I as Stream>::Checkpoint,
-            _: crate::error::ErrorKind,
-        ) -> Self {
+        fn append(self, input: &I, _: &<I as Stream>::Checkpoint) -> Self {
             ErrorStr(format!("custom error message: ({input:?}) - {self:?}"))
         }
 
