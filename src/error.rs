@@ -218,10 +218,10 @@ impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
     }
 
     #[inline(always)]
-    fn into_needed(self) -> Result<Needed, Self> {
+    fn needed(&self) -> Option<Needed> {
         match self {
-            ErrMode::Incomplete(needed) => Ok(needed),
-            err => Err(err),
+            ErrMode::Incomplete(needed) => Some(*needed),
+            _ => None,
         }
     }
 }
@@ -410,8 +410,8 @@ pub trait ParserError<I: Stream>: Sized {
 
     /// Extract the [`Needed`] data, if present
     #[inline(always)]
-    fn into_needed(self) -> Result<Needed, Self> {
-        Err(self)
+    fn needed(&self) -> Option<Needed> {
+        None
     }
 }
 
