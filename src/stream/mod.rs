@@ -204,11 +204,11 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
     }
     /// Advance to the end of the stream
     #[inline(always)]
-    fn peek_finish(&self) -> (Self, Self::Slice)
+    fn peek_finish(&self) -> Self::Slice
     where
         Self: Clone,
     {
-        self.peek_slice(self.eof_offset())
+        self.peek_slice(self.eof_offset()).1
     }
 
     /// Save the current parse location within the stream
