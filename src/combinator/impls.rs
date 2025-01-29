@@ -408,10 +408,6 @@ where
     }
 }
 
-/// Replaced with [`WithTaken`]
-#[deprecated(since = "0.6.14", note = "Replaced with `WithTaken`")]
-pub type WithRecognized<F, I, O, E> = WithTaken<F, I, O, E>;
-
 /// [`Parser`] implementation for [`Parser::with_taken`]
 pub struct WithTaken<F, I, O, E>
 where

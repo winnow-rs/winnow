@@ -370,22 +370,6 @@ pub trait Parser<I, O, E> {
         }
     }
 
-    /// Replaced with [`Parser::with_taken`]
-    #[inline(always)]
-    #[deprecated(since = "0.6.14", note = "Replaced with `Parser::with_taken`")]
-    fn with_recognized(self) -> impls::WithTaken<Self, I, O, E>
-    where
-        Self: core::marker::Sized,
-        I: Stream,
-    {
-        impls::WithTaken {
-            parser: self,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-        }
-    }
-
     /// Produce the location of the consumed input as produced value.
     ///
     /// # Example
