@@ -94,8 +94,7 @@ where
         let o = self.parser.parse_next(input)?;
         let res = (self.map)(o).map_err(|err| {
             input.reset(&start);
-            #[allow(deprecated)]
-            E::from_external_error(input, crate::error::ErrorKind::Verify, err)
+            E::from_external_error(input, err)
         });
         trace_result("verify", &res);
         res
@@ -376,10 +375,6 @@ where
     }
 }
 
-/// Replaced with [`Take`]
-#[deprecated(since = "0.6.14", note = "Replaced with `Take`")]
-pub type Recognize<F, I, O, E> = Take<F, I, O, E>;
-
 /// [`Parser`] implementation for [`Parser::take`]
 pub struct Take<F, I, O, E>
 where
@@ -411,10 +406,6 @@ where
         }
     }
 }
-
-/// Replaced with [`WithTaken`]
-#[deprecated(since = "0.6.14", note = "Replaced with `WithTaken`")]
-pub type WithRecognized<F, I, O, E> = WithTaken<F, I, O, E>;
 
 /// [`Parser`] implementation for [`Parser::with_taken`]
 pub struct WithTaken<F, I, O, E>

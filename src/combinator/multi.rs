@@ -1,8 +1,6 @@
 //! Combinators applying their child parser multiple times
 
 use crate::combinator::trace;
-#[allow(deprecated)]
-use crate::error::ErrorKind;
 use crate::error::FromExternalError;
 use crate::error::ParserError;
 use crate::stream::Accumulate;
@@ -499,9 +497,8 @@ where
     E: ParserError<I>,
 {
     let start = i.checkpoint();
-    #[allow(deprecated)]
     match f.parse_next(i) {
-        Err(e) => Err(e.append(i, &start, ErrorKind::Repeat)),
+        Err(e) => Err(e.append(i, &start)),
         Ok(o) => {
             let mut acc = C::initial(None);
             acc.accumulate(o);
@@ -557,8 +554,7 @@ where
                 res.accumulate(o);
             }
             Err(e) => {
-                #[allow(deprecated)]
-                return Err(e.append(i, &start, ErrorKind::Repeat));
+                return Err(e.append(i, &start));
             }
         }
     }
@@ -598,8 +594,7 @@ where
             }
             Err(e) if e.is_backtrack() => {
                 if count < min {
-                    #[allow(deprecated)]
-                    return Err(e.append(input, &start, ErrorKind::Repeat));
+                    return Err(e.append(input, &start));
                 } else {
                     input.reset(&start);
                     return Ok(res);
@@ -695,9 +690,8 @@ where
             Ok(o) => return Ok((res, o)),
             Err(e) if e.is_backtrack() => {
                 i.reset(&start);
-                #[allow(deprecated)]
                 match f.parse_next(i) {
-                    Err(e) => return Err(e.append(i, &start, ErrorKind::Repeat)),
+                    Err(e) => return Err(e.append(i, &start)),
                     Ok(o) => {
                         // infinite loop check: the parser must always consume
                         if i.eof_offset() == len {
@@ -746,8 +740,7 @@ where
                 res.accumulate(o);
             }
             Err(e) => {
-                #[allow(deprecated)]
-                return Err(e.append(i, &start, ErrorKind::Repeat));
+                return Err(e.append(i, &start));
             }
         }
     }
@@ -763,8 +756,7 @@ where
                 i.reset(&start);
                 match f.parse_next(i) {
                     Err(e) => {
-                        #[allow(deprecated)]
-                        return Err(e.append(i, &start, ErrorKind::Repeat));
+                        return Err(e.append(i, &start));
                     }
                     Ok(o) => {
                         // infinite loop check: the parser must always consume
@@ -1055,8 +1047,7 @@ where
     let start = input.checkpoint();
     match parser.parse_next(input) {
         Err(e) => {
-            #[allow(deprecated)]
-            return Err(e.append(input, &start, ErrorKind::Repeat));
+            return Err(e.append(input, &start));
         }
         Ok(o) => {
             acc.accumulate(o);
@@ -1068,8 +1059,7 @@ where
         let len = input.eof_offset();
         match separator.parse_next(input) {
             Err(e) => {
-                #[allow(deprecated)]
-                return Err(e.append(input, &start, ErrorKind::Repeat));
+                return Err(e.append(input, &start));
             }
             Ok(_) => {
                 // infinite loop check
@@ -1082,8 +1072,7 @@ where
 
                 match parser.parse_next(input) {
                     Err(e) => {
-                        #[allow(deprecated)]
-                        return Err(e.append(input, &start, ErrorKind::Repeat));
+                        return Err(e.append(input, &start));
                     }
                     Ok(o) => {
                         acc.accumulate(o);
@@ -1126,8 +1115,7 @@ where
                 input.reset(&start);
                 return Ok(acc);
             } else {
-                #[allow(deprecated)]
-                return Err(e.append(input, &start, ErrorKind::Repeat));
+                return Err(e.append(input, &start));
             }
         }
         Err(e) => return Err(e),
@@ -1142,8 +1130,7 @@ where
         match separator.parse_next(input) {
             Err(e) if e.is_backtrack() => {
                 if index < min {
-                    #[allow(deprecated)]
-                    return Err(e.append(input, &start, ErrorKind::Repeat));
+                    return Err(e.append(input, &start));
                 } else {
                     input.reset(&start);
                     return Ok(acc);
@@ -1164,8 +1151,7 @@ where
                 match parser.parse_next(input) {
                     Err(e) if e.is_backtrack() => {
                         if index < min {
-                            #[allow(deprecated)]
-                            return Err(e.append(input, &start, ErrorKind::Repeat));
+                            return Err(e.append(input, &start));
                         } else {
                             input.reset(&start);
                             return Ok(acc);
@@ -1347,8 +1333,7 @@ where
                     *elem = o;
                 }
                 Err(e) => {
-                    #[allow(deprecated)]
-                    return Err(e.append(i, &start, ErrorKind::Repeat));
+                    return Err(e.append(i, &start));
                 }
             }
         }
@@ -1413,9 +1398,8 @@ where
 {
     let init = init();
     let start = input.checkpoint();
-    #[allow(deprecated)]
     match f.parse_next(input) {
-        Err(e) => Err(e.append(input, &start, ErrorKind::Repeat)),
+        Err(e) => Err(e.append(input, &start)),
         Ok(o1) => {
             let mut acc = g(init, o1);
 
@@ -1488,8 +1472,7 @@ where
             //FInputXMError: handle failure properly
             Err(err) if err.is_backtrack() => {
                 if count < min {
-                    #[allow(deprecated)]
-                    return Err(err.append(input, &start, ErrorKind::Repeat));
+                    return Err(err.append(input, &start));
                 } else {
                     input.reset(&start);
                     break;
@@ -1550,8 +1533,7 @@ where
             //FInputXMError: handle failure properly
             Err(err) if err.is_backtrack() => {
                 if count < min {
-                    #[allow(deprecated)]
-                    return Err(err.append(input, &start, ErrorKind::Repeat));
+                    return Err(err.append(input, &start));
                 } else {
                     input.reset(&start);
                     break;
@@ -1605,8 +1587,7 @@ where
                     Ok(tmp) => acc = tmp,
                     Err(e) => {
                         input.reset(&start);
-                        #[allow(deprecated)]
-                        let res = Err(E::from_external_error(input, ErrorKind::Verify, e));
+                        let res = Err(E::from_external_error(input, e));
                         super::debug::trace_result("try_fold", &res);
                         return res;
                     }
@@ -1615,8 +1596,7 @@ where
             //FInputXMError: handle failure properly
             Err(err) if err.is_backtrack() => {
                 if count < min {
-                    #[allow(deprecated)]
-                    return Err(err.append(input, &start, ErrorKind::Repeat));
+                    return Err(err.append(input, &start));
                 } else {
                     input.reset(&start);
                     break;

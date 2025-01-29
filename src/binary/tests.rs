@@ -3249,7 +3249,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3271,7 +3270,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3504,7 +3502,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3565,7 +3562,6 @@ Err(
                 input: [],
                 partial: false,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3583,7 +3579,6 @@ Err(
                 input: [],
                 partial: false,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3608,7 +3603,6 @@ Err(
                 ],
                 partial: false,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3626,7 +3620,6 @@ Err(
                 input: [],
                 partial: false,
             },
-            kind: Fail,
         },
     ),
 )

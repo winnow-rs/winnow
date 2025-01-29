@@ -47,7 +47,6 @@ Err(
                 100,
                 33,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -85,7 +84,6 @@ Err(
     Backtrack(
         InputError {
             input: "Hello, world!",
-            kind: Fail,
         },
     ),
 )
@@ -120,8 +118,7 @@ impl From<u32> for CustomError {
 impl<I: Stream> ParserError<I> for CustomError {
     type Inner = Self;
 
-    #[allow(deprecated)]
-    fn from_error_kind(_: &I, _: crate::error::ErrorKind) -> Self {
+    fn from_input(_: &I) -> Self {
         CustomError
     }
 
@@ -181,7 +178,6 @@ Err(
             input: [
                 50,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -395,7 +391,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -425,7 +420,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -510,7 +504,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -583,7 +576,6 @@ Err(
                 102,
                 103,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -638,7 +630,6 @@ Err(
                 102,
                 103,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -660,7 +651,6 @@ Err(
     Backtrack(
         InputError {
             input: "string",
-            kind: Fail,
         },
     ),
 )
@@ -675,7 +665,6 @@ Err(
     Backtrack(
         InputError {
             input: "another string",
-            kind: Fail,
         },
     ),
 )
@@ -704,7 +693,6 @@ Err(
                 109,
                 110,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -799,7 +787,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -825,7 +812,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -847,7 +833,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -933,7 +918,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -959,7 +943,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -981,7 +964,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1067,7 +1049,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1093,7 +1074,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1116,7 +1096,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1214,7 +1193,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1242,7 +1220,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1267,7 +1244,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1289,7 +1265,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1330,18 +1305,11 @@ fn alt_test() {
     impl<I: Stream + Debug> ParserError<I> for ErrorStr {
         type Inner = Self;
 
-        #[allow(deprecated)]
-        fn from_error_kind(input: &I, _: crate::error::ErrorKind) -> Self {
+        fn from_input(input: &I) -> Self {
             ErrorStr(format!("custom error message: ({input:?})"))
         }
 
-        #[allow(deprecated)]
-        fn append(
-            self,
-            input: &I,
-            _: &<I as Stream>::Checkpoint,
-            _: crate::error::ErrorKind,
-        ) -> Self {
+        fn append(self, input: &I, _: &<I as Stream>::Checkpoint) -> Self {
             ErrorStr(format!("custom error message: ({input:?}) - {self:?}"))
         }
 
@@ -1501,7 +1469,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1621,7 +1588,6 @@ Err(
             input: [
                 122,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -1836,7 +1802,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -2178,7 +2143,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -2290,7 +2254,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -2682,7 +2645,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -2797,7 +2759,6 @@ Err(
                 116,
                 121,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -2822,7 +2783,6 @@ Err(
     Backtrack(
         InputError {
             input: "cd",
-            kind: Fail,
         },
     ),
 )
@@ -2837,7 +2797,6 @@ Err(
     Backtrack(
         InputError {
             input: "cd",
-            kind: Fail,
         },
     ),
 )
@@ -2912,7 +2871,6 @@ Err(
     Backtrack(
         InputError {
             input: "abcd",
-            kind: Fail,
         },
     ),
 )
@@ -2974,7 +2932,6 @@ Err(
                 101,
                 102,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -3010,7 +2967,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3248,7 +3204,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3279,7 +3234,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3307,7 +3261,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3470,8 +3423,7 @@ struct NilError;
 impl<I: Stream> ParserError<I> for NilError {
     type Inner = Self;
 
-    #[allow(deprecated)]
-    fn from_error_kind(_: &I, _: crate::error::ErrorKind) -> NilError {
+    fn from_input(_: &I) -> NilError {
         NilError
     }
 
@@ -3730,7 +3682,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3786,7 +3737,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -4081,7 +4031,6 @@ Err(
                 108,
                 111,
             ],
-            kind: Fail,
         },
     ),
 )

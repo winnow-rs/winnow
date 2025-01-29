@@ -62,10 +62,6 @@ pub use stateful::Stateful;
 /// UTF-8 Stream
 pub type Str<'i> = &'i str;
 
-/// Deprecated, replaced with [`LocatingSlice`]
-#[deprecated(since = "0.6.23", note = "Replaced with `LocatingSlice`")]
-pub type Located<I> = LocatingSlice<I>;
-
 /// Abstract method to calculate the input length
 pub trait SliceLen {
     /// Calculates the input length, as indicated by its name,

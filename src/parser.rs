@@ -328,22 +328,6 @@ pub trait Parser<I, O, E> {
         }
     }
 
-    /// Replaced with [`Parser::take`]
-    #[inline(always)]
-    #[deprecated(since = "0.6.14", note = "Replaced with `Parser::take`")]
-    fn recognize(self) -> impls::Take<Self, I, O, E>
-    where
-        Self: core::marker::Sized,
-        I: Stream,
-    {
-        impls::Take {
-            parser: self,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-        }
-    }
-
     /// Produce the consumed input with the output
     ///
     /// Functions similarly to [take][Parser::take] except it
@@ -374,22 +358,6 @@ pub trait Parser<I, O, E> {
     #[doc(alias = "with_recognized")]
     #[inline(always)]
     fn with_taken(self) -> impls::WithTaken<Self, I, O, E>
-    where
-        Self: core::marker::Sized,
-        I: Stream,
-    {
-        impls::WithTaken {
-            parser: self,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-        }
-    }
-
-    /// Replaced with [`Parser::with_taken`]
-    #[inline(always)]
-    #[deprecated(since = "0.6.14", note = "Replaced with `Parser::with_taken`")]
-    fn with_recognized(self) -> impls::WithTaken<Self, I, O, E>
     where
         Self: core::marker::Sized,
         I: Stream,
@@ -1286,25 +1254,6 @@ where
     }
 }
 
-/// Deprecated
-#[inline(always)]
-#[deprecated(since = "0.6.23")]
-#[allow(deprecated)]
-pub fn unpeek<'a, I, O, E>(
-    mut peek: impl FnMut(I) -> crate::error::IResult<I, O, E> + 'a,
-) -> impl FnMut(&mut I) -> crate::error::ModalResult<O, E>
-where
-    I: Clone,
-{
-    move |input| match peek((*input).clone()) {
-        Ok((i, o)) => {
-            *input = i;
-            Ok(o)
-        }
-        Err(err) => Err(err),
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1369,7 +1318,6 @@ Err(
     Backtrack(
         InputError {
             input: "123def",
-            kind: Fail,
         },
     ),
 )
@@ -1458,7 +1406,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )

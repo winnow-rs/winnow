@@ -45,7 +45,6 @@ Err(
     Backtrack(
         InputError {
             input: "rror",
-            kind: Fail,
         },
     ),
 )
@@ -60,7 +59,6 @@ Err(
     Backtrack(
         InputError {
             input: "",
-            kind: Fail,
         },
     ),
 )
@@ -111,7 +109,6 @@ Err(
     Backtrack(
         InputError {
             input: " remaining",
-            kind: Fail,
         },
     ),
 )
@@ -126,7 +123,6 @@ Err(
     Backtrack(
         InputError {
             input: "",
-            kind: Fail,
         },
     ),
 )
@@ -180,7 +176,6 @@ Err(
     Backtrack(
         InputError {
             input: " remaining",
-            kind: Fail,
         },
     ),
 )
@@ -195,7 +190,6 @@ Err(
     Backtrack(
         InputError {
             input: "",
-            kind: Fail,
         },
     ),
 )
@@ -396,7 +390,6 @@ Err(
     Backtrack(
         InputError {
             input: " remaining",
-            kind: Fail,
         },
     ),
 )
@@ -411,7 +404,6 @@ Err(
     Backtrack(
         InputError {
             input: "",
-            kind: Fail,
         },
     ),
 )
@@ -515,7 +507,6 @@ Err(
     Backtrack(
         InputError {
             input: " remaining",
-            kind: Fail,
         },
     ),
 )
@@ -530,7 +521,6 @@ Err(
     Backtrack(
         InputError {
             input: "",
-            kind: Fail,
         },
     ),
 )

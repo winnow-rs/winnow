@@ -151,8 +151,6 @@ pub mod prelude {
     pub use crate::stream::StreamIsPartial as _;
     pub use crate::ModalParser;
     pub use crate::ModalResult;
-    #[allow(deprecated)]
-    pub use crate::PResult;
     pub use crate::Parser;
     #[cfg(feature = "unstable-recover")]
     #[cfg(feature = "std")]
@@ -163,14 +161,10 @@ pub mod prelude {
 }
 
 pub use error::ModalResult;
-#[allow(deprecated)]
-pub use error::PResult;
 pub use error::Result;
 pub use parser::*;
 pub use stream::BStr;
 pub use stream::Bytes;
-#[allow(deprecated)]
-pub use stream::Located;
 pub use stream::LocatingSlice;
 pub use stream::Partial;
 pub use stream::Stateful;

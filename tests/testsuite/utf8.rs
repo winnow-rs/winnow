@@ -43,7 +43,6 @@ Err(
     Backtrack(
         InputError {
             input: "Hello",
-            kind: Fail,
         },
     ),
 )
@@ -64,7 +63,6 @@ Err(
     Backtrack(
         InputError {
             input: "Hello World!",
-            kind: Fail,
         },
     ),
 )
@@ -416,7 +414,6 @@ Err(
                 input: "123",
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -492,7 +489,6 @@ Err(
     Backtrack(
         InputError {
             input: "βèƒôřèÂßÇáƒƭèř",
-            kind: Fail,
         },
     ),
 )
@@ -516,7 +512,6 @@ Err(
     Backtrack(
         InputError {
             input: "βèƒôřèÂßÇáƒƭèř",
-            kind: Fail,
         },
     ),
 )
@@ -586,7 +581,6 @@ Err(
     Backtrack(
         InputError {
             input: "βèƒôřèÂßÇáƒƭèř",
-            kind: Fail,
         },
     ),
 )
