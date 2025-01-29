@@ -510,14 +510,6 @@ pub struct InputError<I: Clone> {
 impl<I: Clone> InputError<I> {
     /// Creates a new basic error
     #[inline]
-    #[deprecated(since = "0.6.26", note = "replaced with `InputError::at`")]
-    #[allow(deprecated)]
-    pub fn new(input: I, kind: ErrorKind) -> Self {
-        Self { input, kind }
-    }
-
-    /// Creates a new basic error
-    #[inline]
     pub fn at(input: I) -> Self {
         #[allow(deprecated)]
         Self {
