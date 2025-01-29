@@ -1254,25 +1254,6 @@ where
     }
 }
 
-/// Deprecated
-#[inline(always)]
-#[deprecated(since = "0.6.23")]
-#[allow(deprecated)]
-pub fn unpeek<'a, I, O, E>(
-    mut peek: impl FnMut(I) -> crate::error::IResult<I, O, E> + 'a,
-) -> impl FnMut(&mut I) -> crate::error::ModalResult<O, E>
-where
-    I: Clone,
-{
-    move |input| match peek((*input).clone()) {
-        Ok((i, o)) => {
-            *input = i;
-            Ok(o)
-        }
-        Err(err) => Err(err),
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
