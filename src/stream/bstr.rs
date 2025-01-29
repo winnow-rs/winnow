@@ -78,6 +78,15 @@ impl<'i> Stream for &'i BStr {
     }
 
     #[inline(always)]
+    fn peek_token(&self) -> Option<Self::Token> {
+        if self.is_empty() {
+            None
+        } else {
+            Some(self[0])
+        }
+    }
+
+    #[inline(always)]
     fn offset_for<P>(&self, predicate: P) -> Option<usize>
     where
         P: Fn(Self::Token) -> bool,
@@ -96,6 +105,11 @@ impl<'i> Stream for &'i BStr {
     fn next_slice(&mut self, offset: usize) -> Self::Slice {
         let (slice, next) = self.0.split_at(offset);
         *self = BStr::from_bytes(next);
+        slice
+    }
+    #[inline(always)]
+    fn peek_slice(&self, offset: usize) -> Self::Slice {
+        let (slice, _next) = self.split_at(offset);
         slice
     }
 

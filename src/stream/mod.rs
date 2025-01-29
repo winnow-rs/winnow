@@ -154,15 +154,7 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
     /// Split off the next token from the input
     fn next_token(&mut self) -> Option<Self::Token>;
     /// Split off the next token from the input
-    #[inline(always)]
-    fn peek_token(&self) -> Option<(Self, Self::Token)>
-    where
-        Self: Clone,
-    {
-        let mut peek = self.clone();
-        let token = peek.next_token()?;
-        Some((peek, token))
-    }
+    fn peek_token(&self) -> Option<Self::Token>;
 
     /// Finds the offset of the next matching token
     fn offset_for<P>(&self, predicate: P) -> Option<usize>
@@ -195,15 +187,7 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
     ///
     fn next_slice(&mut self, offset: usize) -> Self::Slice;
     /// Split off a slice of tokens from the input
-    #[inline(always)]
-    fn peek_slice(&self, offset: usize) -> (Self, Self::Slice)
-    where
-        Self: Clone,
-    {
-        let mut peek = self.clone();
-        let slice = peek.next_slice(offset);
-        (peek, slice)
-    }
+    fn peek_slice(&self, offset: usize) -> Self::Slice;
 
     /// Advance to the end of the stream
     #[inline(always)]
@@ -212,13 +196,11 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
     }
     /// Advance to the end of the stream
     #[inline(always)]
-    fn peek_finish(&self) -> (Self, Self::Slice)
+    fn peek_finish(&self) -> Self::Slice
     where
         Self: Clone,
     {
-        let mut peek = self.clone();
-        let slice = peek.finish();
-        (peek, slice)
+        self.peek_slice(self.eof_offset())
     }
 
     /// Save the current parse location within the stream
@@ -262,6 +244,15 @@ where
     }
 
     #[inline(always)]
+    fn peek_token(&self) -> Option<Self::Token> {
+        if self.is_empty() {
+            None
+        } else {
+            Some(self[0].clone())
+        }
+    }
+
+    #[inline(always)]
     fn offset_for<P>(&self, predicate: P) -> Option<usize>
     where
         P: Fn(Self::Token) -> bool,
@@ -280,6 +271,11 @@ where
     fn next_slice(&mut self, offset: usize) -> Self::Slice {
         let (slice, next) = self.split_at(offset);
         *self = next;
+        slice
+    }
+    #[inline(always)]
+    fn peek_slice(&self, offset: usize) -> Self::Slice {
+        let (slice, _next) = self.split_at(offset);
         slice
     }
 
@@ -324,6 +320,11 @@ impl<'i> Stream for &'i str {
     }
 
     #[inline(always)]
+    fn peek_token(&self) -> Option<Self::Token> {
+        self.chars().next()
+    }
+
+    #[inline(always)]
     fn offset_for<P>(&self, predicate: P) -> Option<usize>
     where
         P: Fn(Self::Token) -> bool,
@@ -355,6 +356,11 @@ impl<'i> Stream for &'i str {
     fn next_slice(&mut self, offset: usize) -> Self::Slice {
         let (slice, next) = self.split_at(offset);
         *self = next;
+        slice
+    }
+    #[inline(always)]
+    fn peek_slice(&self, offset: usize) -> Self::Slice {
+        let (slice, _next) = self.split_at(offset);
         slice
     }
 
@@ -407,6 +413,11 @@ where
     }
 
     #[inline(always)]
+    fn peek_token(&self) -> Option<Self::Token> {
+        peek_bit(self)
+    }
+
+    #[inline(always)]
     fn offset_for<P>(&self, predicate: P) -> Option<usize>
     where
         P: Fn(Self::Token) -> bool,
@@ -432,6 +443,14 @@ where
         let s = self.0.next_slice(byte_offset);
         let start_offset = self.1;
         self.1 = end_offset;
+        (s, start_offset, end_offset)
+    }
+    #[inline(always)]
+    fn peek_slice(&self, offset: usize) -> Self::Slice {
+        let byte_offset = (offset + self.1) / 8;
+        let end_offset = (offset + self.1) % 8;
+        let s = self.0.peek_slice(byte_offset);
+        let start_offset = self.1;
         (s, start_offset, end_offset)
     }
 
@@ -492,6 +511,27 @@ where
         Some(bit)
     } else {
         i.1 = next_offset;
+        Some(bit)
+    }
+}
+
+fn peek_bit<I>(i: &(I, usize)) -> Option<bool>
+where
+    I: Stream<Token = u8> + Clone,
+{
+    if i.eof_offset() == 0 {
+        return None;
+    }
+    let offset = i.1;
+
+    let mut next_i = i.0.clone();
+    let byte = next_i.next_token()?;
+    let bit = (byte >> offset) & 0x1 == 0x1;
+
+    let next_offset = offset + 1;
+    if next_offset == 8 {
+        Some(bit)
+    } else {
         Some(bit)
     }
 }

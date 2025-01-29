@@ -129,6 +129,11 @@ impl<I: Stream> Stream for LocatingSlice<I> {
     }
 
     #[inline(always)]
+    fn peek_token(&self) -> Option<Self::Token> {
+        self.input.peek_token()
+    }
+
+    #[inline(always)]
     fn offset_for<P>(&self, predicate: P) -> Option<usize>
     where
         P: Fn(Self::Token) -> bool,
@@ -142,6 +147,10 @@ impl<I: Stream> Stream for LocatingSlice<I> {
     #[inline(always)]
     fn next_slice(&mut self, offset: usize) -> Self::Slice {
         self.input.next_slice(offset)
+    }
+    #[inline(always)]
+    fn peek_slice(&self, offset: usize) -> Self::Slice {
+        self.input.peek_slice(offset)
     }
 
     #[inline(always)]
