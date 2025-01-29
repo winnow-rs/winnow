@@ -3,17 +3,6 @@ use crate::error::{ModalError, ParserError};
 use crate::stream::Stream;
 use crate::*;
 
-/// Deprecated, replaced with [`token::rest_len`]
-#[deprecated(since = "0.6.23", note = "replaced with `token::rest_len`")]
-#[inline]
-pub fn rest_len<Input, Error>(input: &mut Input) -> Result<usize, Error>
-where
-    Input: Stream,
-    Error: ParserError<Input>,
-{
-    crate::token::rest_len(input)
-}
-
 /// Apply a [`Parser`], producing `None` on [`ErrMode::Backtrack`][crate::error::ErrMode::Backtrack].
 ///
 /// To chain an error up, see [`cut_err`].
