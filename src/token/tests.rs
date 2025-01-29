@@ -90,7 +90,6 @@ Err(
     Backtrack(
         InputError {
             input: "end",
-            kind: Fail,
         },
     ),
 )
@@ -105,7 +104,6 @@ Err(
     Backtrack(
         InputError {
             input: "1234end",
-            kind: Fail,
         },
     ),
 )
@@ -159,7 +157,6 @@ Err(
     Backtrack(
         InputError {
             input: "123456789end",
-            kind: Fail,
         },
     ),
 )
@@ -286,7 +283,6 @@ Err(
                 97,
                 98,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -307,7 +303,6 @@ Err(
                 108,
                 111,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -326,7 +321,6 @@ Err(
                 101,
                 108,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -384,7 +378,6 @@ Err(
     Backtrack(
         InputError {
             input: "ab",
-            kind: Fail,
         },
     ),
 )
@@ -399,7 +392,6 @@ Err(
     Backtrack(
         InputError {
             input: "Hello",
-            kind: Fail,
         },
     ),
 )
@@ -414,7 +406,6 @@ Err(
     Backtrack(
         InputError {
             input: "Hel",
-            kind: Fail,
         },
     ),
 )
@@ -433,7 +424,6 @@ Err(
     Backtrack(
         InputError {
             input: "K",
-            kind: Fail,
         },
     ),
 )
@@ -452,7 +442,6 @@ Err(
     Backtrack(
         InputError {
             input: "k",
-            kind: Fail,
         },
     ),
 )
@@ -540,7 +529,6 @@ Err(
                 65,
                 0,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -582,7 +570,6 @@ Err(
                 65,
                 0,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -656,7 +643,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -695,7 +681,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -743,7 +728,6 @@ Err(
                 input: "abcd",
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -793,7 +777,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -894,7 +877,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1000,7 +982,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1525,7 +1506,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1650,7 +1630,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1785,7 +1764,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -2505,7 +2483,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -2527,7 +2504,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -2611,7 +2587,6 @@ Err(
                 input: "Hello",
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -2629,7 +2604,6 @@ Err(
                 input: "Hel",
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -2651,7 +2625,6 @@ Err(
                 input: "K",
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -2673,7 +2646,6 @@ Err(
                 input: "k",
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )

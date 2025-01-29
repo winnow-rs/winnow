@@ -1318,7 +1318,6 @@ Err(
     Backtrack(
         InputError {
             input: "123def",
-            kind: Fail,
         },
     ),
 )
@@ -1407,7 +1406,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )

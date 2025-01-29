@@ -47,7 +47,6 @@ Err(
                 100,
                 33,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -85,7 +84,6 @@ Err(
     Backtrack(
         InputError {
             input: "Hello, world!",
-            kind: Fail,
         },
     ),
 )
@@ -181,7 +179,6 @@ Err(
             input: [
                 50,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -395,7 +392,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -425,7 +421,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -510,7 +505,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -583,7 +577,6 @@ Err(
                 102,
                 103,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -638,7 +631,6 @@ Err(
                 102,
                 103,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -660,7 +652,6 @@ Err(
     Backtrack(
         InputError {
             input: "string",
-            kind: Fail,
         },
     ),
 )
@@ -675,7 +666,6 @@ Err(
     Backtrack(
         InputError {
             input: "another string",
-            kind: Fail,
         },
     ),
 )
@@ -704,7 +694,6 @@ Err(
                 109,
                 110,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -799,7 +788,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -825,7 +813,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -847,7 +834,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -933,7 +919,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -959,7 +944,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -981,7 +965,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1067,7 +1050,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1093,7 +1075,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1116,7 +1097,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1214,7 +1194,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1242,7 +1221,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1267,7 +1245,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1289,7 +1266,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1496,7 +1472,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -1616,7 +1591,6 @@ Err(
             input: [
                 122,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -1831,7 +1805,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -2173,7 +2146,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -2285,7 +2257,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -2677,7 +2648,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -2792,7 +2762,6 @@ Err(
                 116,
                 121,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -2817,7 +2786,6 @@ Err(
     Backtrack(
         InputError {
             input: "cd",
-            kind: Fail,
         },
     ),
 )
@@ -2832,7 +2800,6 @@ Err(
     Backtrack(
         InputError {
             input: "cd",
-            kind: Fail,
         },
     ),
 )
@@ -2907,7 +2874,6 @@ Err(
     Backtrack(
         InputError {
             input: "abcd",
-            kind: Fail,
         },
     ),
 )
@@ -2969,7 +2935,6 @@ Err(
                 101,
                 102,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -3005,7 +2970,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3243,7 +3207,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3274,7 +3237,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3302,7 +3264,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3725,7 +3686,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3781,7 +3741,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -4076,7 +4035,6 @@ Err(
                 108,
                 111,
             ],
-            kind: Fail,
         },
     ),
 )

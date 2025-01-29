@@ -56,7 +56,6 @@ Err(
                 51,
                 52,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -116,7 +115,6 @@ Err(
                 99,
                 100,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -154,7 +152,6 @@ Err(
                 50,
                 51,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -176,7 +173,6 @@ Err(
                 49,
                 50,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -268,7 +264,6 @@ Err(
             input: [
                 32,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -288,7 +283,6 @@ Err(
                 99,
                 100,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -326,7 +320,6 @@ Err(
                 50,
                 51,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -348,7 +341,6 @@ Err(
                 49,
                 50,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -476,7 +468,6 @@ Err(
     Backtrack(
         InputError {
             input: "1234",
-            kind: Fail,
         },
     ),
 )
@@ -517,7 +508,6 @@ Err(
     Backtrack(
         InputError {
             input: "abcd",
-            kind: Fail,
         },
     ),
 )
@@ -545,7 +535,6 @@ Err(
     Backtrack(
         InputError {
             input: "a123",
-            kind: Fail,
         },
     ),
 )
@@ -560,7 +549,6 @@ Err(
     Backtrack(
         InputError {
             input: "azé12",
-            kind: Fail,
         },
     ),
 )
@@ -627,7 +615,6 @@ Err(
     Backtrack(
         InputError {
             input: " ",
-            kind: Fail,
         },
     ),
 )
@@ -642,7 +629,6 @@ Err(
     Backtrack(
         InputError {
             input: "abcd",
-            kind: Fail,
         },
     ),
 )
@@ -670,7 +656,6 @@ Err(
     Backtrack(
         InputError {
             input: "a123",
-            kind: Fail,
         },
     ),
 )
@@ -685,7 +670,6 @@ Err(
     Backtrack(
         InputError {
             input: "azé12",
-            kind: Fail,
         },
     ),
 )
@@ -932,7 +916,6 @@ Err(
     Backtrack(
         InputError {
             input: "\rÂßÇáƒƭèř",
-            kind: Fail,
         },
     ),
 )
@@ -1009,7 +992,6 @@ Err(
             input: [
                 103,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -1028,7 +1010,6 @@ Err(
             input: [
                 71,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -1089,7 +1070,6 @@ Err(
             input: [
                 56,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -1247,7 +1227,6 @@ Err(
             input: [
                 13,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -1265,7 +1244,6 @@ Err(
                 13,
                 97,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -1294,7 +1272,6 @@ Err(
     Backtrack(
         InputError {
             input: "\r",
-            kind: Fail,
         },
     ),
 )
@@ -1309,7 +1286,6 @@ Err(
     Backtrack(
         InputError {
             input: "\ra",
-            kind: Fail,
         },
     ),
 )
@@ -1365,7 +1341,6 @@ Err(
             input: [
                 13,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -1383,7 +1358,6 @@ Err(
                 13,
                 97,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -1425,7 +1399,6 @@ Err(
     Backtrack(
         InputError {
             input: "\r",
-            kind: Fail,
         },
     ),
 )
@@ -1440,7 +1413,6 @@ Err(
     Backtrack(
         InputError {
             input: "\ra",
-            kind: Fail,
         },
     ),
 )
@@ -1465,7 +1437,6 @@ Err(
             input: [
                 59,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -1549,7 +1520,6 @@ Err(
                 48,
                 59,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -1574,7 +1544,6 @@ Err(
             input: [
                 59,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -1638,7 +1607,6 @@ Err(
                 48,
                 59,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -1707,7 +1675,6 @@ Err(
                 48,
                 59,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -1732,7 +1699,6 @@ Err(
             input: [
                 59,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -1819,7 +1785,6 @@ Err(
                 50,
                 59,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -1846,7 +1811,6 @@ Err(
                 49,
                 59,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -1894,7 +1858,6 @@ Err(
                 102,
                 59,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -1926,7 +1889,6 @@ Err(
                 102,
                 102,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -2037,7 +1999,6 @@ Err(
     Backtrack(
         InputError {
             input: "",
-            kind: Fail,
         },
     ),
 )
@@ -2272,7 +2233,6 @@ Err(
     Backtrack(
         InputError {
             input: [],
-            kind: Fail,
         },
     ),
 )
@@ -2289,7 +2249,6 @@ Err(
             input: [
                 65,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -2407,7 +2366,6 @@ Err(
     Backtrack(
         InputError {
             input: "",
-            kind: Fail,
         },
     ),
 )
@@ -2422,7 +2380,6 @@ Err(
     Backtrack(
         InputError {
             input: "A",
-            kind: Fail,
         },
     ),
 )
@@ -2587,7 +2544,6 @@ Err(
     Backtrack(
         InputError {
             input: [],
-            kind: Fail,
         },
     ),
 )
@@ -2604,7 +2560,6 @@ Err(
             input: [
                 65,
             ],
-            kind: Fail,
         },
     ),
 )
@@ -2761,7 +2716,6 @@ Err(
     Backtrack(
         InputError {
             input: "",
-            kind: Fail,
         },
     ),
 )
@@ -2776,7 +2730,6 @@ Err(
     Backtrack(
         InputError {
             input: "A",
-            kind: Fail,
         },
     ),
 )
@@ -2907,7 +2860,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -2976,7 +2928,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3013,7 +2964,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3038,7 +2988,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3124,7 +3073,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3147,7 +3095,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3184,7 +3131,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3209,7 +3155,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3338,7 +3283,6 @@ Err(
                 input: "1234",
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3388,7 +3332,6 @@ Err(
                 input: "abcd",
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3420,7 +3363,6 @@ Err(
                 input: "a123",
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3438,7 +3380,6 @@ Err(
                 input: "azé12",
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3514,7 +3455,6 @@ Err(
                 input: " ",
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3532,7 +3472,6 @@ Err(
                 input: "abcd",
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3564,7 +3503,6 @@ Err(
                 input: "a123",
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3582,7 +3520,6 @@ Err(
                 input: "azé12",
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3846,7 +3783,6 @@ Err(
                 input: "\rÂßÇáƒƭèř",
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3928,7 +3864,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -3950,7 +3885,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -4017,7 +3951,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -4212,7 +4145,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -4261,7 +4193,6 @@ Err(
                 input: "\ra",
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -4341,7 +4272,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -4406,7 +4336,6 @@ Err(
                 input: "\ra",
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -4434,7 +4363,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -4536,7 +4464,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -4566,7 +4493,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -4620,7 +4546,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
@@ -4655,7 +4580,6 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Fail,
         },
     ),
 )
