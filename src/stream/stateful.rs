@@ -117,6 +117,11 @@ impl<I: Stream, S: crate::lib::std::fmt::Debug> Stream for Stateful<I, S> {
     }
 
     #[inline(always)]
+    fn peek_token(&self) -> Option<Self::Token> {
+        self.input.peek_token()
+    }
+
+    #[inline(always)]
     fn offset_for<P>(&self, predicate: P) -> Option<usize>
     where
         P: Fn(Self::Token) -> bool,

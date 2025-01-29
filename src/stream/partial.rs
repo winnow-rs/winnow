@@ -166,6 +166,11 @@ impl<I: Stream> Stream for Partial<I> {
     }
 
     #[inline(always)]
+    fn peek_token(&self) -> Option<Self::Token> {
+        self.input.peek_token()
+    }
+
+    #[inline(always)]
     fn offset_for<P>(&self, predicate: P) -> Option<usize>
     where
         P: Fn(Self::Token) -> bool,

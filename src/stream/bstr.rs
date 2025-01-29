@@ -78,6 +78,15 @@ impl<'i> Stream for &'i BStr {
     }
 
     #[inline(always)]
+    fn peek_token(&self) -> Option<Self::Token> {
+        if self.is_empty() {
+            None
+        } else {
+            Some(self[0])
+        }
+    }
+
+    #[inline(always)]
     fn offset_for<P>(&self, predicate: P) -> Option<usize>
     where
         P: Fn(Self::Token) -> bool,

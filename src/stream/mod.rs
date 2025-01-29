@@ -154,15 +154,7 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
     /// Split off the next token from the input
     fn next_token(&mut self) -> Option<Self::Token>;
     /// Split off the next token from the input
-    #[inline(always)]
-    fn peek_token(&self) -> Option<(Self, Self::Token)>
-    where
-        Self: Clone,
-    {
-        let mut peek = self.clone();
-        let token = peek.next_token()?;
-        Some((peek, token))
-    }
+    fn peek_token(&self) -> Option<Self::Token>;
 
     /// Finds the offset of the next matching token
     fn offset_for<P>(&self, predicate: P) -> Option<usize>
@@ -262,6 +254,15 @@ where
     }
 
     #[inline(always)]
+    fn peek_token(&self) -> Option<Self::Token> {
+        if self.is_empty() {
+            None
+        } else {
+            Some(self[0].clone())
+        }
+    }
+
+    #[inline(always)]
     fn offset_for<P>(&self, predicate: P) -> Option<usize>
     where
         P: Fn(Self::Token) -> bool,
@@ -321,6 +322,11 @@ impl<'i> Stream for &'i str {
         let offset = c.len();
         *self = &self[offset..];
         Some(c)
+    }
+
+    #[inline(always)]
+    fn peek_token(&self) -> Option<Self::Token> {
+        self.chars().next()
     }
 
     #[inline(always)]
@@ -404,6 +410,11 @@ where
     #[inline(always)]
     fn next_token(&mut self) -> Option<Self::Token> {
         next_bit(self)
+    }
+
+    #[inline(always)]
+    fn peek_token(&self) -> Option<Self::Token> {
+        peek_bit(self)
     }
 
     #[inline(always)]
@@ -492,6 +503,27 @@ where
         Some(bit)
     } else {
         i.1 = next_offset;
+        Some(bit)
+    }
+}
+
+fn peek_bit<I>(i: &(I, usize)) -> Option<bool>
+where
+    I: Stream<Token = u8> + Clone,
+{
+    if i.eof_offset() == 0 {
+        return None;
+    }
+    let offset = i.1;
+
+    let mut next_i = i.0.clone();
+    let byte = next_i.next_token()?;
+    let bit = (byte >> offset) & 0x1 == 0x1;
+
+    let next_offset = offset + 1;
+    if next_offset == 8 {
+        Some(bit)
+    } else {
         Some(bit)
     }
 }

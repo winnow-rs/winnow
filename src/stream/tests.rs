@@ -101,7 +101,7 @@ fn bit_stream_inner(byte_len: usize, start: usize) {
 
     let mut curr_i = i;
     let mut curr_offset = 0;
-    while let Some((next_i, _token)) = curr_i.peek_token() {
+    while let Some(_token) = curr_i.peek_token() {
         let to_offset = curr_i.offset_from(&i);
         assert_eq!(curr_offset, to_offset);
 
@@ -118,7 +118,7 @@ fn bit_stream_inner(byte_len: usize, start: usize) {
         assert_eq!(eof_slice_i, curr_i);
 
         curr_offset += 1;
-        curr_i = next_i;
+        let _ = curr_i.next_token();
     }
     assert_eq!(i.eof_offset(), curr_offset);
 }
