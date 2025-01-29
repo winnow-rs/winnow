@@ -1,7 +1,5 @@
 use winnow::error::AddContext;
 use winnow::error::ErrMode;
-#[allow(deprecated)]
-use winnow::error::ErrorKind;
 use winnow::error::FromExternalError;
 use winnow::error::ParserError;
 use winnow::prelude::*;
@@ -47,7 +45,7 @@ impl<I: Stream + Clone, E: std::error::Error + Send + Sync + 'static> FromExtern
 {
     #[inline]
     #[allow(deprecated)]
-    fn from_external_error(input: &I, _: ErrorKind, e: E) -> Self {
+    fn from_external_error(input: &I, e: E) -> Self {
         CustomError::External {
             cause: Box::new(e),
             input: input.clone(),

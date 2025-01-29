@@ -95,7 +95,7 @@ where
         let res = (self.map)(o).map_err(|err| {
             input.reset(&start);
             #[allow(deprecated)]
-            E::from_external_error(input, crate::error::ErrorKind::Verify, err)
+            E::from_external_error(input, err)
         });
         trace_result("verify", &res);
         res

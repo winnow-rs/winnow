@@ -1606,7 +1606,7 @@ where
                     Err(e) => {
                         input.reset(&start);
                         #[allow(deprecated)]
-                        let res = Err(E::from_external_error(input, ErrorKind::Verify, e));
+                        let res = Err(E::from_external_error(input, e));
                         super::debug::trace_result("try_fold", &res);
                         return res;
                     }

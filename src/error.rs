@@ -269,8 +269,8 @@ where
 {
     #[inline(always)]
     #[allow(deprecated)]
-    fn from_external_error(input: &I, kind: ErrorKind, e: EXT) -> Self {
-        ErrMode::Backtrack(E::from_external_error(input, kind, e))
+    fn from_external_error(input: &I, e: EXT) -> Self {
+        ErrMode::Backtrack(E::from_external_error(input, e))
     }
 }
 
@@ -468,7 +468,7 @@ pub trait FromRecoverableError<I: Stream, E> {
 pub trait FromExternalError<I, E> {
     /// Like [`ParserError::from_input`] but also include an external error.
     #[allow(deprecated)]
-    fn from_external_error(input: &I, kind: ErrorKind, e: E) -> Self;
+    fn from_external_error(input: &I, e: E) -> Self;
 }
 
 /// Equivalent of `From` implementation to avoid orphan rules in bits parsers
@@ -567,10 +567,10 @@ impl<I: Clone, E> FromExternalError<I, E> for InputError<I> {
     /// Create a new error from an input position and an external error
     #[inline]
     #[allow(deprecated)]
-    fn from_external_error(input: &I, kind: ErrorKind, _e: E) -> Self {
+    fn from_external_error(input: &I, _e: E) -> Self {
         Self {
             input: input.clone(),
-            kind,
+            kind: ErrorKind::Fail,
         }
     }
 }
@@ -644,7 +644,7 @@ impl<I: Stream> FromRecoverableError<I, Self> for EmptyError {
 impl<I, E> FromExternalError<I, E> for EmptyError {
     #[inline(always)]
     #[allow(deprecated)]
-    fn from_external_error(_input: &I, _kind: ErrorKind, _e: E) -> Self {
+    fn from_external_error(_input: &I, _e: E) -> Self {
         Self
     }
 }
@@ -692,7 +692,7 @@ impl<I: Stream> FromRecoverableError<I, Self> for () {
 impl<I, E> FromExternalError<I, E> for () {
     #[inline]
     #[allow(deprecated)]
-    fn from_external_error(_input: &I, _kind: ErrorKind, _e: E) -> Self {}
+    fn from_external_error(_input: &I, _e: E) -> Self {}
 }
 
 impl ErrorConvert<()> for () {
@@ -802,7 +802,7 @@ impl<C, I, E: std::error::Error + Send + Sync + 'static> FromExternalError<I, E>
 {
     #[inline]
     #[allow(deprecated)]
-    fn from_external_error(_input: &I, _kind: ErrorKind, e: E) -> Self {
+    fn from_external_error(_input: &I, e: E) -> Self {
         let mut err = Self::new();
         {
             err.cause = Some(Box::new(e));
@@ -816,7 +816,7 @@ impl<C, I, E: std::error::Error + Send + Sync + 'static> FromExternalError<I, E>
 impl<C, I, E: Send + Sync + 'static> FromExternalError<I, E> for ContextError<C> {
     #[inline]
     #[allow(deprecated)]
-    fn from_external_error(_input: &I, _kind: ErrorKind, _e: E) -> Self {
+    fn from_external_error(_input: &I, _e: E) -> Self {
         let err = Self::new();
         err
     }
@@ -1157,10 +1157,10 @@ where
     I: Clone,
 {
     #[allow(deprecated)]
-    fn from_external_error(input: &I, kind: ErrorKind, e: E) -> Self {
+    fn from_external_error(input: &I, e: E) -> Self {
         TreeError::Base(TreeErrorBase {
             input: input.clone(),
-            kind,
+            kind: ErrorKind::Fail,
             cause: Some(Box::new(e)),
         })
     }
@@ -1347,8 +1347,8 @@ impl<I, E> FromExternalError<I, E> for ErrorKind {
     /// Create a new error from an input position and an external error
     #[inline]
     #[allow(deprecated)]
-    fn from_external_error(_input: &I, kind: ErrorKind, _e: E) -> Self {
-        kind
+    fn from_external_error(_input: &I, _e: E) -> Self {
+        Self::Fail
     }
 }
 
