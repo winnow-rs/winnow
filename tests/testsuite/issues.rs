@@ -334,7 +334,7 @@ Err(
     Backtrack(
         InputError {
             input: "bbb",
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -477,7 +477,7 @@ Err(
             input: [
                 44,
             ],
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )

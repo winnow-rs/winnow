@@ -1,5 +1,5 @@
 use crate::combinator::trace;
-use crate::error::{ErrorKind, ModalError, ParserError};
+use crate::error::{ModalError, ParserError};
 use crate::stream::Stream;
 use crate::*;
 
@@ -183,7 +183,7 @@ where
         if input.eof_offset() == 0 {
             Ok(input.next_slice(0))
         } else {
-            Err(ParserError::from_error_kind(input, ErrorKind::Eof))
+            Err(ParserError::from_input(input))
         }
     })
     .parse_next(input)
@@ -224,7 +224,7 @@ where
         let res = parser.parse_next(input);
         input.reset(&start);
         match res {
-            Ok(_) => Err(ParserError::from_error_kind(input, ErrorKind::Not)),
+            Ok(_) => Err(ParserError::from_input(input)),
             Err(e) if e.is_backtrack() => Ok(()),
             Err(e) => Err(e),
         }
@@ -265,7 +265,7 @@ where
 ///
 /// With `cut_err`:
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError};
+/// # use winnow::{error::ErrMode, error::ContextError};
 /// # use winnow::prelude::*;
 /// # use winnow::token::one_of;
 /// # use winnow::token::rest;
@@ -507,7 +507,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError};
+/// # use winnow::{error::ErrMode, error::InputError};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::fail;
 ///
@@ -515,7 +515,7 @@ where
 ///     fail.parse_next(input)
 /// }
 ///
-/// assert_eq!(parser.parse_peek("string"), Err(ErrMode::Backtrack(InputError::new("string", ErrorKind::Fail))));
+/// assert_eq!(parser.parse_peek("string"), Err(ErrMode::Backtrack(InputError::at("string"))));
 /// ```
 #[doc(alias = "unexpected")]
 #[inline]
@@ -524,8 +524,5 @@ where
     Input: Stream,
     Error: ParserError<Input>,
 {
-    trace("fail", |i: &mut Input| {
-        Err(ParserError::from_error_kind(i, ErrorKind::Fail))
-    })
-    .parse_next(i)
+    trace("fail", |i: &mut Input| Err(ParserError::from_input(i))).parse_next(i)
 }

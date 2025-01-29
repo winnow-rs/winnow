@@ -1700,7 +1700,7 @@ impl AsChar for &char {
 /// For example, you could implement `hex_digit0` as:
 /// ```
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError};
+/// # use winnow::{error::ErrMode, error::ContextError};
 /// # use winnow::token::take_while;
 /// fn hex_digit1<'s>(input: &mut &'s str) -> ModalResult<&'s str, ContextError> {
 ///     take_while(1.., ('a'..='f', 'A'..='F', '0'..='9')).parse_next(input)

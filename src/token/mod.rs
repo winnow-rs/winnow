@@ -5,7 +5,6 @@ mod tests;
 
 use crate::combinator::trace;
 use crate::combinator::DisplayDebug;
-use crate::error::ErrorKind;
 use crate::error::Needed;
 use crate::error::ParserError;
 use crate::lib::std::result::Result::Ok;
@@ -35,7 +34,7 @@ use crate::Result;
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{token::any, error::ErrMode, error::{ContextError, ErrorKind}};
+/// # use winnow::{token::any, error::ErrMode, error::ContextError};
 /// # use winnow::prelude::*;
 /// fn parser(input: &mut &str) -> ModalResult<char> {
 ///     any.parse_next(input)
@@ -46,7 +45,7 @@ use crate::Result;
 /// ```
 ///
 /// ```rust
-/// # use winnow::{token::any, error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{token::any, error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// assert_eq!(any::<_, ErrMode<ContextError>>.parse_peek(Partial::new("abc")), Ok((Partial::new("bc"),'a')));
@@ -78,7 +77,7 @@ where
         if PARTIAL && input.is_partial() {
             ParserError::incomplete(input, Needed::new(1))
         } else {
-            ParserError::from_error_kind(input, ErrorKind::Token)
+            ParserError::from_input(input)
         }
     })
 }
@@ -88,7 +87,7 @@ where
 /// The input data will be compared to the literal combinator's argument and will return the part of
 /// the input that matches the argument
 ///
-/// It will return `Err(ErrMode::Backtrack(ContextError::new(_, ErrorKind::Literal)))` if the input doesn't match the literal
+/// It will return `Err(ErrMode::Backtrack(_))` if the input doesn't match the literal
 ///
 /// <div class="warning">
 ///
@@ -112,7 +111,7 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// #
 /// fn parser<'i>(s: &mut &'i str) -> ModalResult<&'i str> {
 ///   "Hello".parse_next(s)
@@ -125,7 +124,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 ///
 /// fn parser<'i>(s: &mut Partial<&'i str>) -> ModalResult<&'i str> {
@@ -139,7 +138,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::token::literal;
 /// use winnow::ascii::Caseless;
@@ -192,10 +191,7 @@ where
             i,
             Needed::new(literal_len - i.eof_offset()),
         )),
-        CompareResult::Incomplete | CompareResult::Error => {
-            let e: ErrorKind = ErrorKind::Literal;
-            Err(ParserError::from_error_kind(i, e))
-        }
+        CompareResult::Incomplete | CompareResult::Error => Err(ParserError::from_input(i)),
     }
 }
 
@@ -231,7 +227,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError};
+/// # use winnow::{error::ErrMode, error::ContextError};
 /// # use winnow::token::one_of;
 /// assert_eq!(one_of::<_, _, ContextError>(['a', 'b', 'c']).parse_peek("b"), Ok(("", 'b')));
 /// assert!(one_of::<_, _, ContextError>('a').parse_peek("bc").is_err());
@@ -247,7 +243,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::token::one_of;
 /// assert_eq!(one_of::<_, _, ErrMode<ContextError>>(['a', 'b', 'c']).parse_peek(Partial::new("b")), Ok((Partial::new(""), 'b')));
@@ -300,7 +296,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError};
+/// # use winnow::{error::ErrMode, error::ContextError};
 /// # use winnow::prelude::*;
 /// # use winnow::token::none_of;
 /// assert_eq!(none_of::<_, _, ContextError>(['a', 'b', 'c']).parse_peek("z"), Ok(("", 'z')));
@@ -309,7 +305,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// # use winnow::token::none_of;
@@ -333,7 +329,7 @@ where
 
 /// Recognize the longest (m <= len <= n) input slice that matches a [set of tokens][ContainsToken]
 ///
-/// It will return an `ErrMode::Backtrack(ContextError::new(_, ErrorKind::Slice))` if the set of tokens wasn't met or is out
+/// It will return an `ErrMode::Backtrack(_)` if the set of tokens wasn't met or is out
 /// of range (m <= len <= n).
 ///
 /// *[Partial version][crate::_topic::partial]* will return a `ErrMode::Incomplete(Needed::new(1))` if a member of the set of tokens reaches the end of the input or is too short.
@@ -358,7 +354,7 @@ where
 ///
 /// Zero or more tokens:
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
@@ -374,7 +370,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// use winnow::token::take_while;
@@ -392,7 +388,7 @@ where
 ///
 /// One or more tokens:
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
@@ -417,7 +413,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// use winnow::token::take_while;
@@ -444,7 +440,7 @@ where
 ///
 /// Arbitrary amount of tokens:
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::token::take_while;
 /// use winnow::stream::AsChar;
@@ -461,7 +457,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// use winnow::token::take_while;
@@ -546,7 +542,6 @@ fn take_till1<P, I: StreamIsPartial + Stream, E: ParserError<I>, const PARTIAL: 
 where
     P: Fn(I::Token) -> bool,
 {
-    let e: ErrorKind = ErrorKind::Slice;
     let offset = match input.offset_for(predicate) {
         Some(offset) => offset,
         None if PARTIAL && input.is_partial() => {
@@ -555,7 +550,7 @@ where
         None => input.eof_offset(),
     };
     if offset == 0 {
-        Err(ParserError::from_error_kind(input, e))
+        Err(ParserError::from_input(input))
     } else {
         Ok(input.next_slice(offset))
     }
@@ -583,7 +578,7 @@ where
     for (processed, (offset, token)) in input.iter_offsets().enumerate() {
         if predicate(token) {
             if processed < m {
-                return Err(ParserError::from_error_kind(input, ErrorKind::Slice));
+                return Err(ParserError::from_input(input));
             } else {
                 return Ok(input.next_slice(offset));
             }
@@ -609,7 +604,7 @@ where
         if m <= final_count {
             Ok(input.finish())
         } else {
-            Err(ParserError::from_error_kind(input, ErrorKind::Slice))
+            Err(ParserError::from_input(input))
         }
     }
 }
@@ -642,7 +637,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::token::take_till;
 ///
@@ -657,7 +652,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// use winnow::token::take_till;
@@ -716,7 +711,7 @@ where
 
 /// Recognize an input slice containing the first N input elements (I[..N]).
 ///
-/// *Complete version*: It will return `Err(ErrMode::Backtrack(ContextError::new(_, ErrorKind::Slice)))` if the input is shorter than the argument.
+/// *Complete version*: It will return `Err(ErrMode::Backtrack(_))` if the input is shorter than the argument.
 ///
 /// *[Partial version][crate::_topic::partial]*: if the input has less than N elements, `take` will
 /// return a `ErrMode::Incomplete(Needed::new(M))` where M is the number of
@@ -742,7 +737,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::token::take;
 ///
@@ -771,7 +766,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::error::{ErrMode, ErrorKind, ContextError, Needed};
+/// # use winnow::error::{ErrMode, ContextError, Needed};
 /// # use winnow::Partial;
 /// use winnow::token::take;
 ///
@@ -814,7 +809,7 @@ where
     match i.offset_at(c) {
         Ok(offset) => Ok(i.next_slice(offset)),
         Err(e) if PARTIAL && i.is_partial() => Err(ParserError::incomplete(i, e)),
-        Err(_needed) => Err(ParserError::from_error_kind(i, ErrorKind::Slice)),
+        Err(_needed) => Err(ParserError::from_input(i)),
     }
 }
 
@@ -824,7 +819,7 @@ where
 ///
 /// It doesn't consume the literal.
 ///
-/// *Complete version*: It will return `Err(ErrMode::Backtrack(ContextError::new(_, ErrorKind::Slice)))`
+/// *Complete version*: It will return `Err(ErrMode::Backtrack(_))`
 /// if the literal wasn't met.
 ///
 /// *[Partial version][crate::_topic::partial]*: will return a `ErrMode::Incomplete(Needed::new(N))` if the input doesn't
@@ -850,7 +845,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::token::take_until;
 ///
@@ -865,7 +860,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// use winnow::token::take_until;
@@ -881,7 +876,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::token::take_until;
 ///
@@ -897,7 +892,7 @@ where
 /// ```
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
 /// use winnow::token::take_until;
@@ -965,7 +960,7 @@ where
     match i.find_slice(t) {
         Some(range) => Ok(i.next_slice(range.start)),
         None if PARTIAL && i.is_partial() => Err(ParserError::incomplete(i, Needed::Unknown)),
-        None => Err(ParserError::from_error_kind(i, ErrorKind::Slice)),
+        None => Err(ParserError::from_input(i)),
     }
 }
 
@@ -979,10 +974,10 @@ where
 {
     match i.find_slice(t) {
         None if PARTIAL && i.is_partial() => Err(ParserError::incomplete(i, Needed::Unknown)),
-        None => Err(ParserError::from_error_kind(i, ErrorKind::Slice)),
+        None => Err(ParserError::from_input(i)),
         Some(range) => {
             if range.start == 0 {
-                Err(ParserError::from_error_kind(i, ErrorKind::Slice))
+                Err(ParserError::from_input(i))
             } else {
                 Ok(i.next_slice(range.start))
             }
@@ -1015,16 +1010,16 @@ where
                 if PARTIAL && i.is_partial() {
                     return Err(ParserError::incomplete(i, Needed::Unknown));
                 } else {
-                    return Err(ParserError::from_error_kind(i, ErrorKind::Slice));
+                    return Err(ParserError::from_input(i));
                 }
             }
             if end_offset < range.start {
-                return Err(ParserError::from_error_kind(i, ErrorKind::Slice));
+                return Err(ParserError::from_input(i));
             }
             Ok(i.next_slice(range.start))
         }
         None if PARTIAL && i.is_partial() => Err(ParserError::incomplete(i, Needed::Unknown)),
-        None => Err(ParserError::from_error_kind(i, ErrorKind::Slice)),
+        None => Err(ParserError::from_input(i)),
     }
 }
 
@@ -1045,7 +1040,6 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::error::ErrorKind;
 /// # use winnow::error::ContextError;
 /// use winnow::token::rest;
 /// assert_eq!(rest::<_,ContextError>.parse_peek("abc"), Ok(("", "abc")));
@@ -1083,7 +1077,6 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::error::ErrorKind;
 /// # use winnow::error::ContextError;
 /// use winnow::token::rest_len;
 /// assert_eq!(rest_len::<_,ContextError>.parse_peek("abc"), Ok(("abc", 3)));

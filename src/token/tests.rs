@@ -69,18 +69,12 @@ fn model_complete_take_while_m_n<'i>(
     input: &mut &'i str,
 ) -> ModalResult<&'i str> {
     if n < m {
-        Err(crate::error::ParserError::from_error_kind(
-            input,
-            crate::error::ErrorKind::Slice,
-        ))
+        Err(crate::error::ParserError::from_input(input))
     } else if m <= valid {
         let offset = n.min(valid);
         Ok(input.next_slice(offset))
     } else {
-        Err(crate::error::ParserError::from_error_kind(
-            input,
-            crate::error::ErrorKind::Slice,
-        ))
+        Err(crate::error::ParserError::from_input(input))
     }
 }
 
@@ -96,7 +90,7 @@ Err(
     Backtrack(
         InputError {
             input: "end",
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -111,7 +105,7 @@ Err(
     Backtrack(
         InputError {
             input: "1234end",
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -165,7 +159,7 @@ Err(
     Backtrack(
         InputError {
             input: "123456789end",
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -292,7 +286,7 @@ Err(
                 97,
                 98,
             ],
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -313,7 +307,7 @@ Err(
                 108,
                 111,
             ],
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -332,7 +326,7 @@ Err(
                 101,
                 108,
             ],
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -390,7 +384,7 @@ Err(
     Backtrack(
         InputError {
             input: "ab",
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -405,7 +399,7 @@ Err(
     Backtrack(
         InputError {
             input: "Hello",
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -420,7 +414,7 @@ Err(
     Backtrack(
         InputError {
             input: "Hel",
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -439,7 +433,7 @@ Err(
     Backtrack(
         InputError {
             input: "K",
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -458,7 +452,7 @@ Err(
     Backtrack(
         InputError {
             input: "k",
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -546,7 +540,7 @@ Err(
                 65,
                 0,
             ],
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -588,7 +582,7 @@ Err(
                 65,
                 0,
             ],
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -662,7 +656,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -701,7 +695,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -749,7 +743,7 @@ Err(
                 input: "abcd",
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -799,7 +793,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -900,7 +894,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -1006,7 +1000,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -1531,7 +1525,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -1656,7 +1650,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -1791,7 +1785,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -2511,7 +2505,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -2533,7 +2527,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -2617,7 +2611,7 @@ Err(
                 input: "Hello",
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -2635,7 +2629,7 @@ Err(
                 input: "Hel",
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -2657,7 +2651,7 @@ Err(
                 input: "K",
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -2679,7 +2673,7 @@ Err(
                 input: "k",
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )

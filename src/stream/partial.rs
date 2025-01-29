@@ -37,7 +37,7 @@ use crate::stream::UpdateSlice;
 /// Here is how it works in practice:
 ///
 /// ```rust
-/// # use winnow::{Result, error::ErrMode, error::Needed, error::{ContextError, ErrorKind}, token, ascii, stream::Partial};
+/// # use winnow::{Result, error::ErrMode, error::Needed, error::ContextError, token, ascii, stream::Partial};
 /// # use winnow::prelude::*;
 ///
 /// fn take_partial<'s>(i: &mut Partial<&'s [u8]>) -> ModalResult<&'s [u8], ContextError> {

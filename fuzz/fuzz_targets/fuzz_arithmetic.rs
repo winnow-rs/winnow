@@ -28,10 +28,7 @@ fn incr(i: &mut &str) -> ModalResult<()> {
 
         // limit the number of recursions, the fuzzer keeps running into them
         if *l.borrow() >= 8192 {
-            Err(winnow::error::ParserError::from_error_kind(
-                i,
-                winnow::error::ErrorKind::Repeat,
-            ))
+            Err(winnow::error::ParserError::from_input(i))
         } else {
             Ok(())
         }

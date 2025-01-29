@@ -3249,7 +3249,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3271,7 +3271,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -3504,7 +3504,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3565,7 +3565,7 @@ Err(
                 input: [],
                 partial: false,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3583,7 +3583,7 @@ Err(
                 input: [],
                 partial: false,
             },
-            kind: Token,
+            kind: Fail,
         },
     ),
 )
@@ -3608,7 +3608,7 @@ Err(
                 ],
                 partial: false,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3626,7 +3626,7 @@ Err(
                 input: [],
                 partial: false,
             },
-            kind: Token,
+            kind: Fail,
         },
     ),
 )

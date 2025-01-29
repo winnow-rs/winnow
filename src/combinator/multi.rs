@@ -1,6 +1,7 @@
 //! Combinators applying their child parser multiple times
 
 use crate::combinator::trace;
+#[allow(deprecated)]
 use crate::error::ErrorKind;
 use crate::error::FromExternalError;
 use crate::error::ParserError;
@@ -32,7 +33,7 @@ use crate::Result;
 /// Zero or more repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
 ///
@@ -50,7 +51,7 @@ use crate::Result;
 /// One or more repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
 ///
@@ -68,7 +69,7 @@ use crate::Result;
 /// Fixed number of repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
 ///
@@ -87,7 +88,7 @@ use crate::Result;
 /// Arbitrary repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat;
 ///
@@ -176,7 +177,7 @@ where
     ///
     /// Zero or more repetitions:
     /// ```rust
-    /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+    /// # use winnow::{error::ErrMode, error::Needed};
     /// # use winnow::prelude::*;
     /// use winnow::combinator::repeat;
     ///
@@ -201,7 +202,7 @@ where
     ///
     /// One or more repetitions:
     /// ```rust
-    /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+    /// # use winnow::{error::ErrMode, error::Needed};
     /// # use winnow::prelude::*;
     /// use winnow::combinator::repeat;
     ///
@@ -226,7 +227,7 @@ where
     ///
     /// Arbitrary number of repetitions:
     /// ```rust
-    /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+    /// # use winnow::{error::ErrMode, error::Needed};
     /// # use winnow::prelude::*;
     /// use winnow::combinator::repeat;
     ///
@@ -306,7 +307,7 @@ where
     ///
     /// Guaranteeing that the input had unique elements:
     /// ```rust
-    /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+    /// # use winnow::{error::ErrMode, error::Needed};
     /// # use winnow::prelude::*;
     /// use winnow::combinator::repeat;
     /// use std::collections::HashSet;
@@ -382,7 +383,7 @@ where
     ///
     /// Writing the output to a vector of bytes:
     /// ```rust
-    /// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+    /// # use winnow::{error::ErrMode, error::Needed};
     /// # use winnow::prelude::*;
     /// use winnow::combinator::repeat;
     /// use std::io::Write;
@@ -498,6 +499,7 @@ where
     E: ParserError<I>,
 {
     let start = i.checkpoint();
+    #[allow(deprecated)]
     match f.parse_next(i) {
         Err(e) => Err(e.append(i, &start, ErrorKind::Repeat)),
         Ok(o) => {
@@ -555,6 +557,7 @@ where
                 res.accumulate(o);
             }
             Err(e) => {
+                #[allow(deprecated)]
                 return Err(e.append(i, &start, ErrorKind::Repeat));
             }
         }
@@ -595,6 +598,7 @@ where
             }
             Err(e) if e.is_backtrack() => {
                 if count < min {
+                    #[allow(deprecated)]
                     return Err(e.append(input, &start, ErrorKind::Repeat));
                 } else {
                     input.reset(&start);
@@ -629,7 +633,7 @@ where
 ///
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::repeat_till;
 ///
@@ -691,6 +695,7 @@ where
             Ok(o) => return Ok((res, o)),
             Err(e) if e.is_backtrack() => {
                 i.reset(&start);
+                #[allow(deprecated)]
                 match f.parse_next(i) {
                     Err(e) => return Err(e.append(i, &start, ErrorKind::Repeat)),
                     Ok(o) => {
@@ -741,6 +746,7 @@ where
                 res.accumulate(o);
             }
             Err(e) => {
+                #[allow(deprecated)]
                 return Err(e.append(i, &start, ErrorKind::Repeat));
             }
         }
@@ -757,6 +763,7 @@ where
                 i.reset(&start);
                 match f.parse_next(i) {
                     Err(e) => {
+                        #[allow(deprecated)]
                         return Err(e.append(i, &start, ErrorKind::Repeat));
                     }
                     Ok(o) => {
@@ -800,7 +807,7 @@ where
 /// Zero or more repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
 ///
@@ -819,7 +826,7 @@ where
 /// One or more repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
 ///
@@ -838,7 +845,7 @@ where
 /// Fixed number of repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
 ///
@@ -857,7 +864,7 @@ where
 /// Arbitrary repetitions:
 /// ```rust
 /// # #[cfg(feature = "std")] {
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated;
 ///
@@ -1048,6 +1055,7 @@ where
     let start = input.checkpoint();
     match parser.parse_next(input) {
         Err(e) => {
+            #[allow(deprecated)]
             return Err(e.append(input, &start, ErrorKind::Repeat));
         }
         Ok(o) => {
@@ -1060,6 +1068,7 @@ where
         let len = input.eof_offset();
         match separator.parse_next(input) {
             Err(e) => {
+                #[allow(deprecated)]
                 return Err(e.append(input, &start, ErrorKind::Repeat));
             }
             Ok(_) => {
@@ -1073,6 +1082,7 @@ where
 
                 match parser.parse_next(input) {
                     Err(e) => {
+                        #[allow(deprecated)]
                         return Err(e.append(input, &start, ErrorKind::Repeat));
                     }
                     Ok(o) => {
@@ -1116,6 +1126,7 @@ where
                 input.reset(&start);
                 return Ok(acc);
             } else {
+                #[allow(deprecated)]
                 return Err(e.append(input, &start, ErrorKind::Repeat));
             }
         }
@@ -1131,6 +1142,7 @@ where
         match separator.parse_next(input) {
             Err(e) if e.is_backtrack() => {
                 if index < min {
+                    #[allow(deprecated)]
                     return Err(e.append(input, &start, ErrorKind::Repeat));
                 } else {
                     input.reset(&start);
@@ -1152,6 +1164,7 @@ where
                 match parser.parse_next(input) {
                     Err(e) if e.is_backtrack() => {
                         if index < min {
+                            #[allow(deprecated)]
                             return Err(e.append(input, &start, ErrorKind::Repeat));
                         } else {
                             input.reset(&start);
@@ -1180,7 +1193,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated_foldl1;
 /// use winnow::ascii::dec_int;
@@ -1250,7 +1263,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated_foldr1;
 /// use winnow::ascii::dec_uint;
@@ -1301,7 +1314,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::prelude::*;
 /// use winnow::combinator::fill;
 ///
@@ -1334,6 +1347,7 @@ where
                     *elem = o;
                 }
                 Err(e) => {
+                    #[allow(deprecated)]
                     return Err(e.append(i, &start, ErrorKind::Repeat));
                 }
             }
@@ -1399,6 +1413,7 @@ where
 {
     let init = init();
     let start = input.checkpoint();
+    #[allow(deprecated)]
     match f.parse_next(input) {
         Err(e) => Err(e.append(input, &start, ErrorKind::Repeat)),
         Ok(o1) => {
@@ -1473,6 +1488,7 @@ where
             //FInputXMError: handle failure properly
             Err(err) if err.is_backtrack() => {
                 if count < min {
+                    #[allow(deprecated)]
                     return Err(err.append(input, &start, ErrorKind::Repeat));
                 } else {
                     input.reset(&start);
@@ -1525,7 +1541,7 @@ where
 
                 let Some(tmp) = fold(acc, value) else {
                     input.reset(&start);
-                    let res = Err(ParserError::from_error_kind(input, ErrorKind::Verify));
+                    let res = Err(ParserError::from_input(input));
                     super::debug::trace_result("verify_fold", &res);
                     return res;
                 };
@@ -1534,6 +1550,7 @@ where
             //FInputXMError: handle failure properly
             Err(err) if err.is_backtrack() => {
                 if count < min {
+                    #[allow(deprecated)]
                     return Err(err.append(input, &start, ErrorKind::Repeat));
                 } else {
                     input.reset(&start);
@@ -1588,6 +1605,7 @@ where
                     Ok(tmp) => acc = tmp,
                     Err(e) => {
                         input.reset(&start);
+                        #[allow(deprecated)]
                         let res = Err(E::from_external_error(input, ErrorKind::Verify, e));
                         super::debug::trace_result("try_fold", &res);
                         return res;
@@ -1597,6 +1615,7 @@ where
             //FInputXMError: handle failure properly
             Err(err) if err.is_backtrack() => {
                 if count < min {
+                    #[allow(deprecated)]
                     return Err(err.append(input, &start, ErrorKind::Repeat));
                 } else {
                     input.reset(&start);
