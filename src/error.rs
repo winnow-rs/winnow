@@ -403,12 +403,17 @@ pub trait ParserError<I: Stream>: Sized {
     fn into_inner(self) -> Result<Self::Inner, Self>;
 
     /// Is more data [`Needed`]
+    ///
+    /// This must be the same as [`err.needed().is_some()`][ParserError::needed]
     #[inline(always)]
     fn is_incomplete(&self) -> bool {
         false
     }
 
     /// Extract the [`Needed`] data, if present
+    ///
+    /// `Self::needed().is_some()` must be the same as
+    /// [`err.is_incomplete()`][ParserError::is_incomplete]
     #[inline(always)]
     fn needed(&self) -> Option<Needed> {
         None
