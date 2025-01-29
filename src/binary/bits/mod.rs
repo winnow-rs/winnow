@@ -5,7 +5,7 @@
 mod tests;
 
 use crate::combinator::trace;
-use crate::error::{ErrorConvert, ErrorKind, Needed, ParserError};
+use crate::error::{ErrorConvert, Needed, ParserError};
 use crate::lib::std::ops::{AddAssign, Div, Shl, Shr};
 use crate::stream::{Stream, StreamIsPartial, ToUsize};
 use crate::{Parser, Result};
@@ -171,7 +171,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
-/// # use winnow::error::{ContextError, ErrorKind};
+/// # use winnow::error::ContextError;
 /// use winnow::binary::bits::take;
 ///
 /// type Stream<'i> = &'i Bytes;
@@ -227,10 +227,7 @@ where
             if PARTIAL && input.is_partial() {
                 Err(ParserError::incomplete(bit_input, Needed::new(count)))
             } else {
-                Err(ParserError::from_error_kind(
-                    &(input, bit_offset),
-                    ErrorKind::Eof,
-                ))
+                Err(ParserError::from_input(&(input, bit_offset)))
             }
         } else {
             let cnt = (count + bit_offset).div(BYTE);
@@ -285,7 +282,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
-/// # use winnow::error::{ContextError, ErrorKind};
+/// # use winnow::error::ContextError;
 /// use winnow::binary::bits::pattern;
 ///
 /// type Stream<'i> = &'i Bytes;
@@ -345,7 +342,7 @@ where
                 Ok(o)
             } else {
                 input.reset(&start);
-                Err(ParserError::from_error_kind(input, ErrorKind::Literal))
+                Err(ParserError::from_input(input))
             }
         })
     })
@@ -370,7 +367,7 @@ where
 /// ```rust
 /// # use winnow::prelude::*;
 /// # use winnow::Bytes;
-/// # use winnow::error::{InputError, ErrorKind};
+/// # use winnow::error::InputError;
 /// use winnow::binary::bits::bool;
 ///
 /// type Stream<'i> = &'i Bytes;

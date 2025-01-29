@@ -60,7 +60,7 @@ Err(
     Backtrack(
         InputError {
             input: "",
-            kind: Token,
+            kind: Fail,
         },
     ),
 )
@@ -111,7 +111,7 @@ Err(
     Backtrack(
         InputError {
             input: " remaining",
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -126,7 +126,7 @@ Err(
     Backtrack(
         InputError {
             input: "",
-            kind: Token,
+            kind: Fail,
         },
     ),
 )
@@ -180,7 +180,7 @@ Err(
     Backtrack(
         InputError {
             input: " remaining",
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -195,7 +195,7 @@ Err(
     Backtrack(
         InputError {
             input: "",
-            kind: Token,
+            kind: Fail,
         },
     ),
 )
@@ -396,7 +396,7 @@ Err(
     Backtrack(
         InputError {
             input: " remaining",
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -411,7 +411,7 @@ Err(
     Backtrack(
         InputError {
             input: "",
-            kind: Token,
+            kind: Fail,
         },
     ),
 )
@@ -515,7 +515,7 @@ Err(
     Backtrack(
         InputError {
             input: " remaining",
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -530,7 +530,7 @@ Err(
     Backtrack(
         InputError {
             input: "",
-            kind: Token,
+            kind: Fail,
         },
     ),
 )

@@ -164,7 +164,7 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, Parser};
+    /// # use winnow::{error::ErrMode, Parser};
     /// # use winnow::prelude::*;
     /// use winnow::ascii::alpha1;
     /// # fn main() {
@@ -198,7 +198,7 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, Parser};
+    /// # use winnow::{error::ErrMode, Parser};
     /// # use winnow::prelude::*;
     /// use winnow::ascii::alpha1;
     /// # fn main() {
@@ -231,7 +231,7 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, Parser};
+    /// # use winnow::{error::ErrMode, Parser};
     /// # use winnow::prelude::*;
     /// use winnow::ascii::alpha1;
     /// # fn main() {
@@ -298,7 +298,7 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, Parser};
+    /// # use winnow::{error::ErrMode, Parser};
     /// # use winnow::prelude::*;
     /// use winnow::ascii::{alpha1};
     /// use winnow::combinator::separated_pair;
@@ -358,7 +358,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::prelude::*;
-    /// # use winnow::{error::ErrMode,error::ErrorKind};
+    /// # use winnow::{error::ErrMode};
     /// use winnow::ascii::{alpha1};
     /// use winnow::token::literal;
     /// use winnow::combinator::separated_pair;
@@ -408,7 +408,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::prelude::*;
-    /// # use winnow::{error::ErrMode,error::ErrorKind, stream::Stream};
+    /// # use winnow::{error::ErrMode, stream::Stream};
     /// # use std::ops::Range;
     /// use winnow::stream::LocatingSlice;
     /// use winnow::ascii::alpha1;
@@ -449,7 +449,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::prelude::*;
-    /// # use winnow::{error::ErrMode,error::ErrorKind, stream::Stream};
+    /// # use winnow::{error::ErrMode, stream::Stream};
     /// # use std::ops::Range;
     /// use winnow::stream::LocatingSlice;
     /// use winnow::ascii::alpha1;
@@ -483,7 +483,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::prelude::*;
-    /// # use winnow::{error::ErrMode,error::ErrorKind, Parser};
+    /// # use winnow::{error::ErrMode, Parser};
     /// # use winnow::ascii::digit1;
     /// # fn main() {
     ///
@@ -519,7 +519,7 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, Parser};
+    /// # use winnow::{error::ErrMode, Parser};
     /// # use winnow::prelude::*;
     /// use winnow::ascii::digit1;
     /// # fn main() {
@@ -563,7 +563,7 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, Parser};
+    /// # use winnow::{error::ErrMode, Parser};
     /// # use winnow::prelude::*;
     /// use winnow::ascii::digit1;
     /// # fn main() {
@@ -608,7 +608,7 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, ModalResult, Parser};
+    /// # use winnow::{error::ErrMode, ModalResult, Parser};
     /// use winnow::token::take;
     /// use winnow::binary::u8;
     ///
@@ -622,7 +622,7 @@ pub trait Parser<I, O, E> {
     ///
     /// which is the same as
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, ModalResult, Parser};
+    /// # use winnow::{error::ErrMode, ModalResult, Parser};
     /// use winnow::token::take;
     /// use winnow::binary::u8;
     ///
@@ -658,7 +658,7 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, Parser};
+    /// # use winnow::{error::ErrMode, Parser};
     /// # use winnow::prelude::*;
     /// use winnow::ascii::digit1;
     /// use winnow::token::take;
@@ -697,7 +697,7 @@ pub trait Parser<I, O, E> {
     ///
     /// ```rust
     /// # use winnow::prelude::*;
-    /// use winnow::{error::ErrMode,error::ErrorKind, Parser};
+    /// use winnow::{error::ErrMode, Parser};
     /// use winnow::ascii::digit1;
     ///
     /// fn parser<'s>(input: &mut &'s str) -> ModalResult<u64> {
@@ -736,7 +736,7 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode,error::ErrorKind, Parser};
+    /// # use winnow::{error::ErrMode, Parser};
     /// # use winnow::ascii::alpha1;
     /// # use winnow::prelude::*;
     /// # fn main() {
@@ -800,7 +800,7 @@ pub trait Parser<I, O, E> {
     /// # Example
     ///
     /// ```rust
-    /// # use winnow::{error::ErrMode, error::ErrorKind, error::InputError, stream::Partial, Parser};
+    /// # use winnow::{error::ErrMode, error::InputError, stream::Partial, Parser};
     /// # use winnow::token::take;
     /// # use winnow::prelude::*;
     /// # fn main() {
@@ -810,7 +810,7 @@ pub trait Parser<I, O, E> {
     /// }
     ///
     /// assert_eq!(parser.parse_peek(Partial::new("abcdefg")), Ok((Partial::new("fg"), "abcde")));
-    /// assert_eq!(parser.parse_peek(Partial::new("abcd")), Err(ErrMode::Backtrack(InputError::new(Partial::new("abcd"), ErrorKind::Complete))));
+    /// assert_eq!(parser.parse_peek(Partial::new("abcd")), Err(ErrMode::Backtrack(InputError::at(Partial::new("abcd")))));
     /// # }
     /// ```
     #[inline(always)]
@@ -911,7 +911,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{ErrorKind, ContextError}};
+/// # use winnow::{error::ErrMode, error::ContextError};
 /// fn parser<'s>(i: &mut &'s [u8]) -> ModalResult<u8>  {
 ///     b'a'.parse_next(i)
 /// }
@@ -939,7 +939,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{ErrorKind, ContextError}};
+/// # use winnow::{error::ErrMode, error::ContextError};
 /// fn parser<'s>(i: &mut &'s str) -> ModalResult<char> {
 ///     'a'.parse_next(i)
 /// }
@@ -966,7 +966,7 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::combinator::alt;
 /// # use winnow::token::take;
 ///
@@ -995,7 +995,7 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::combinator::alt;
 /// # use winnow::token::take;
 /// use winnow::ascii::Caseless;
@@ -1027,7 +1027,7 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::combinator::alt;
 /// # use winnow::token::take;
 ///
@@ -1056,7 +1056,7 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::combinator::alt;
 /// # use winnow::token::take;
 /// use winnow::ascii::Caseless;
@@ -1089,7 +1089,7 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}};
+/// # use winnow::{error::ErrMode, error::ContextError};
 /// # use winnow::combinator::alt;
 /// # use winnow::token::take;
 ///
@@ -1118,7 +1118,7 @@ where
 /// # Example
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}};
+/// # use winnow::{error::ErrMode, error::ContextError};
 /// # use winnow::combinator::alt;
 /// # use winnow::token::take;
 /// # use winnow::ascii::Caseless;
@@ -1314,7 +1314,6 @@ mod tests {
 
     use crate::binary::be_u16;
     use crate::error::ErrMode;
-    use crate::error::ErrorKind;
     use crate::error::Needed;
     use crate::error::TestResult;
     use crate::token::take;
@@ -1335,7 +1334,6 @@ mod tests {
         assert_size!(Result<&str, u32>, 40);
         assert_size!(Needed, 8);
         assert_size!(ErrMode<u32>, 16);
-        assert_size!(ErrorKind, 1);
     }
 
     #[test]
@@ -1371,7 +1369,7 @@ Err(
     Backtrack(
         InputError {
             input: "123def",
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -1460,7 +1458,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )

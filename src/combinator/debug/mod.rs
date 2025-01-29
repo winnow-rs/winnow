@@ -16,7 +16,7 @@ use crate::Parser;
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::token::take_while;
 /// # use winnow::stream::AsChar;
 /// # use winnow::prelude::*;

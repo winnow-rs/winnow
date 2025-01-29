@@ -13,7 +13,7 @@ pub use crate::seq;
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// use winnow::combinator::preceded;
@@ -51,7 +51,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::prelude::*;
 /// # use winnow::error::Needed::Size;
 /// use winnow::combinator::terminated;
@@ -89,7 +89,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::error::Needed::Size;
 /// # use winnow::prelude::*;
 /// use winnow::combinator::separated_pair;
@@ -129,7 +129,7 @@ where
 /// # Example
 ///
 /// ```rust
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::error::Needed::Size;
 /// # use winnow::prelude::*;
 /// use winnow::combinator::delimited;

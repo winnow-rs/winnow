@@ -11,14 +11,13 @@
 //! # use winnow::Result;
 //! use winnow::stream::Stream;
 //! use winnow::error::ParserError;
-//! use winnow::error::ErrorKind;
 //!
 //! fn parse_prefix(input: &mut &str) -> Result<char> {
 //!     let c = input.next_token().ok_or_else(|| {
-//!         ParserError::from_error_kind(input, ErrorKind::Token)
+//!         ParserError::from_input(input)
 //!     })?;
 //!     if c != '0' {
-//!         return Err(ParserError::from_error_kind(input, ErrorKind::Verify));
+//!         return Err(ParserError::from_input(input));
 //!     }
 //!     Ok(c)
 //! }
@@ -39,7 +38,6 @@
 //! ```rust
 //! # use winnow::Result;
 //! # use winnow::error::ParserError;
-//! # use winnow::error::ErrorKind;
 //! use winnow::Parser;
 //! use winnow::token::any;
 //!
@@ -47,7 +45,7 @@
 //!     let c = any
 //!         .parse_next(input)?;
 //!     if c != '0' {
-//!         return Err(ParserError::from_error_kind(input, ErrorKind::Verify));
+//!         return Err(ParserError::from_input(input));
 //!     }
 //!     Ok(c)
 //! }
@@ -121,16 +119,15 @@
 //! # use winnow::Result;
 //! use winnow::stream::Stream;
 //! use winnow::error::ParserError;
-//! use winnow::error::ErrorKind;
 //!
 //! fn parse_prefix<'s>(input: &mut &'s str) -> Result<&'s str> {
 //!     let expected = "0x";
 //!     if input.len() < expected.len() {
-//!         return Err(ParserError::from_error_kind(input, ErrorKind::Slice));
+//!         return Err(ParserError::from_input(input));
 //!     }
 //!     let actual = input.next_slice(expected.len());
 //!     if actual != expected {
-//!         return Err(ParserError::from_error_kind(input, ErrorKind::Verify));
+//!         return Err(ParserError::from_input(input));
 //!     }
 //!     Ok(actual)
 //! }

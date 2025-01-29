@@ -722,7 +722,6 @@ use crate::combinator::fail;
 use crate::error::ContextError;
 use crate::error::ErrMode;
 use crate::error::ErrMode::*;
-use crate::error::ErrorKind;
 use crate::ModalResult;
 use crate::Parser;
 use crate::Result;

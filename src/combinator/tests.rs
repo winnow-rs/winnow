@@ -8,7 +8,6 @@ use crate::binary::u16;
 use crate::binary::u8;
 use crate::binary::Endianness;
 use crate::error::ErrMode;
-use crate::error::ErrorKind;
 use crate::error::ParserError;
 #[cfg(feature = "alloc")]
 use crate::lib::std::borrow::ToOwned;
@@ -48,7 +47,7 @@ Err(
                 100,
                 33,
             ],
-            kind: Eof,
+            kind: Fail,
         },
     ),
 )
@@ -86,7 +85,7 @@ Err(
     Backtrack(
         InputError {
             input: "Hello, world!",
-            kind: Eof,
+            kind: Fail,
         },
     ),
 )
@@ -121,7 +120,8 @@ impl From<u32> for CustomError {
 impl<I: Stream> ParserError<I> for CustomError {
     type Inner = Self;
 
-    fn from_error_kind(_: &I, _: ErrorKind) -> Self {
+    #[allow(deprecated)]
+    fn from_error_kind(_: &I, _: crate::error::ErrorKind) -> Self {
         CustomError
     }
 
@@ -181,7 +181,7 @@ Err(
             input: [
                 50,
             ],
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -395,7 +395,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -425,7 +425,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Not,
+            kind: Fail,
         },
     ),
 )
@@ -510,7 +510,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -583,7 +583,7 @@ Err(
                 102,
                 103,
             ],
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -638,7 +638,7 @@ Err(
                 102,
                 103,
             ],
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -704,7 +704,7 @@ Err(
                 109,
                 110,
             ],
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -799,7 +799,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -825,7 +825,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -847,7 +847,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -933,7 +933,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -959,7 +959,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -981,7 +981,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -1067,7 +1067,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -1093,7 +1093,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -1116,7 +1116,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -1214,7 +1214,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -1242,7 +1242,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -1267,7 +1267,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -1289,7 +1289,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -1330,14 +1330,19 @@ fn alt_test() {
     impl<I: Stream + Debug> ParserError<I> for ErrorStr {
         type Inner = Self;
 
-        fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
-            ErrorStr(format!("custom error message: ({input:?}, {kind:?})"))
+        #[allow(deprecated)]
+        fn from_error_kind(input: &I, _: crate::error::ErrorKind) -> Self {
+            ErrorStr(format!("custom error message: ({input:?})"))
         }
 
-        fn append(self, input: &I, _: &<I as Stream>::Checkpoint, kind: ErrorKind) -> Self {
-            ErrorStr(format!(
-                "custom error message: ({input:?}, {kind:?}) - {self:?}"
-            ))
+        #[allow(deprecated)]
+        fn append(
+            self,
+            input: &I,
+            _: &<I as Stream>::Checkpoint,
+            _: crate::error::ErrorKind,
+        ) -> Self {
+            ErrorStr(format!("custom error message: ({input:?}) - {self:?}"))
         }
 
         fn into_inner(self) -> Result<Self::Inner, Self> {
@@ -1375,7 +1380,7 @@ fn alt_test() {
     assert_eq!(
         alt1.parse_peek(a),
         Err(ErrMode::Backtrack(ErrorStr(
-            "custom error message: ([97, 98, 99, 100], Alt) - ErrorStr(\"abcd\")".to_owned()
+            "custom error message: ([97, 98, 99, 100]) - ErrorStr(\"abcd\")".to_owned()
         )))
     );
     assert_eq!(alt2.parse_peek(a), Ok((&b""[..], a)));
@@ -1496,7 +1501,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -1616,7 +1621,7 @@ Err(
             input: [
                 122,
             ],
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -1831,7 +1836,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -2173,7 +2178,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -2285,7 +2290,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -2677,7 +2682,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -2792,7 +2797,7 @@ Err(
                 116,
                 121,
             ],
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -2817,7 +2822,7 @@ Err(
     Backtrack(
         InputError {
             input: "cd",
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -2832,7 +2837,7 @@ Err(
     Backtrack(
         InputError {
             input: "cd",
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -2907,7 +2912,7 @@ Err(
     Backtrack(
         InputError {
             input: "abcd",
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -2922,7 +2927,7 @@ Err(
 fn infinite_many() {
     fn tst<'i>(input: &mut &'i [u8]) -> TestResult<&'i [u8], &'i [u8]> {
         println!("input: {input:?}");
-        Err(ParserError::from_error_kind(input, ErrorKind::Literal))
+        Err(ParserError::from_input(input))
     }
 
     // should not go into an infinite loop
@@ -2969,7 +2974,7 @@ Err(
                 101,
                 102,
             ],
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -3005,7 +3010,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -3243,7 +3248,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -3274,7 +3279,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -3302,7 +3307,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -3462,16 +3467,11 @@ Ok(
 #[derive(Debug, Clone, Eq, PartialEq)]
 struct NilError;
 
-impl<I> From<(I, ErrorKind)> for NilError {
-    fn from(_: (I, ErrorKind)) -> Self {
-        NilError
-    }
-}
-
 impl<I: Stream> ParserError<I> for NilError {
     type Inner = Self;
 
-    fn from_error_kind(_: &I, _: ErrorKind) -> NilError {
+    #[allow(deprecated)]
+    fn from_error_kind(_: &I, _: crate::error::ErrorKind) -> NilError {
         NilError
     }
 
@@ -3730,7 +3730,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -3786,7 +3786,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -4081,7 +4081,7 @@ Err(
                 108,
                 111,
             ],
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )

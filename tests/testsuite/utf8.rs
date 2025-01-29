@@ -43,7 +43,7 @@ Err(
     Backtrack(
         InputError {
             input: "Hello",
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -64,7 +64,7 @@ Err(
     Backtrack(
         InputError {
             input: "Hello World!",
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -416,7 +416,7 @@ Err(
                 input: "123",
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -492,7 +492,7 @@ Err(
     Backtrack(
         InputError {
             input: "βèƒôřèÂßÇáƒƭèř",
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -516,7 +516,7 @@ Err(
     Backtrack(
         InputError {
             input: "βèƒôřèÂßÇáƒƭèř",
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -586,7 +586,7 @@ Err(
     Backtrack(
         InputError {
             input: "βèƒôřèÂßÇáƒƭèř",
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )

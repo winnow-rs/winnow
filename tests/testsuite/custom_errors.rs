@@ -4,7 +4,9 @@ use winnow::ascii::digit1 as digit;
 #[cfg(feature = "alloc")]
 use winnow::combinator::repeat;
 use winnow::combinator::terminated;
-use winnow::error::{ErrorKind, ParserError};
+#[allow(deprecated)]
+use winnow::error::ErrorKind;
+use winnow::error::ParserError;
 use winnow::prelude::*;
 use winnow::stream::Stream;
 use winnow::Partial;
@@ -12,19 +14,15 @@ use winnow::Partial;
 #[derive(Debug)]
 pub(crate) struct CustomError(String);
 
-impl<'a> From<(&'a str, ErrorKind)> for CustomError {
-    fn from(error: (&'a str, ErrorKind)) -> Self {
-        CustomError(format!("error code was: {error:?}"))
-    }
-}
-
 impl<'a> ParserError<Partial<&'a str>> for CustomError {
     type Inner = Self;
 
+    #[allow(deprecated)]
     fn from_error_kind(_: &Partial<&'a str>, kind: ErrorKind) -> Self {
         CustomError(format!("error code was: {kind:?}"))
     }
 
+    #[allow(deprecated)]
     fn append(
         self,
         _: &Partial<&'a str>,

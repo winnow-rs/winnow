@@ -56,7 +56,7 @@ Err(
                 51,
                 52,
             ],
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -116,7 +116,7 @@ Err(
                 99,
                 100,
             ],
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -154,7 +154,7 @@ Err(
                 50,
                 51,
             ],
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -176,7 +176,7 @@ Err(
                 49,
                 50,
             ],
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -268,7 +268,7 @@ Err(
             input: [
                 32,
             ],
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -288,7 +288,7 @@ Err(
                 99,
                 100,
             ],
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -326,7 +326,7 @@ Err(
                 50,
                 51,
             ],
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -348,7 +348,7 @@ Err(
                 49,
                 50,
             ],
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -476,7 +476,7 @@ Err(
     Backtrack(
         InputError {
             input: "1234",
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -517,7 +517,7 @@ Err(
     Backtrack(
         InputError {
             input: "abcd",
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -545,7 +545,7 @@ Err(
     Backtrack(
         InputError {
             input: "a123",
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -560,7 +560,7 @@ Err(
     Backtrack(
         InputError {
             input: "azé12",
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -627,7 +627,7 @@ Err(
     Backtrack(
         InputError {
             input: " ",
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -642,7 +642,7 @@ Err(
     Backtrack(
         InputError {
             input: "abcd",
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -670,7 +670,7 @@ Err(
     Backtrack(
         InputError {
             input: "a123",
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -685,7 +685,7 @@ Err(
     Backtrack(
         InputError {
             input: "azé12",
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -932,7 +932,7 @@ Err(
     Backtrack(
         InputError {
             input: "\rÂßÇáƒƭèř",
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -1009,7 +1009,7 @@ Err(
             input: [
                 103,
             ],
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -1028,7 +1028,7 @@ Err(
             input: [
                 71,
             ],
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -1089,7 +1089,7 @@ Err(
             input: [
                 56,
             ],
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -1247,7 +1247,7 @@ Err(
             input: [
                 13,
             ],
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -1265,7 +1265,7 @@ Err(
                 13,
                 97,
             ],
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -1294,7 +1294,7 @@ Err(
     Backtrack(
         InputError {
             input: "\r",
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -1309,7 +1309,7 @@ Err(
     Backtrack(
         InputError {
             input: "\ra",
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -1365,7 +1365,7 @@ Err(
             input: [
                 13,
             ],
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -1383,7 +1383,7 @@ Err(
                 13,
                 97,
             ],
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -1425,7 +1425,7 @@ Err(
     Backtrack(
         InputError {
             input: "\r",
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -1440,7 +1440,7 @@ Err(
     Backtrack(
         InputError {
             input: "\ra",
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -1465,7 +1465,7 @@ Err(
             input: [
                 59,
             ],
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -1549,7 +1549,7 @@ Err(
                 48,
                 59,
             ],
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -1574,7 +1574,7 @@ Err(
             input: [
                 59,
             ],
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -1638,7 +1638,7 @@ Err(
                 48,
                 59,
             ],
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -1707,7 +1707,7 @@ Err(
                 48,
                 59,
             ],
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -1732,7 +1732,7 @@ Err(
             input: [
                 59,
             ],
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -1819,7 +1819,7 @@ Err(
                 50,
                 59,
             ],
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -1846,7 +1846,7 @@ Err(
                 49,
                 59,
             ],
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -1894,7 +1894,7 @@ Err(
                 102,
                 59,
             ],
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -1926,7 +1926,7 @@ Err(
                 102,
                 102,
             ],
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -2037,7 +2037,7 @@ Err(
     Backtrack(
         InputError {
             input: "",
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -2272,7 +2272,7 @@ Err(
     Backtrack(
         InputError {
             input: [],
-            kind: Token,
+            kind: Fail,
         },
     ),
 )
@@ -2289,7 +2289,7 @@ Err(
             input: [
                 65,
             ],
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -2407,7 +2407,7 @@ Err(
     Backtrack(
         InputError {
             input: "",
-            kind: Token,
+            kind: Fail,
         },
     ),
 )
@@ -2422,7 +2422,7 @@ Err(
     Backtrack(
         InputError {
             input: "A",
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -2587,7 +2587,7 @@ Err(
     Backtrack(
         InputError {
             input: [],
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -2604,7 +2604,7 @@ Err(
             input: [
                 65,
             ],
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -2761,7 +2761,7 @@ Err(
     Backtrack(
         InputError {
             input: "",
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -2776,7 +2776,7 @@ Err(
     Backtrack(
         InputError {
             input: "A",
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -2907,7 +2907,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -2976,7 +2976,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3013,7 +3013,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3038,7 +3038,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3124,7 +3124,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3147,7 +3147,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3184,7 +3184,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3209,7 +3209,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3338,7 +3338,7 @@ Err(
                 input: "1234",
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3388,7 +3388,7 @@ Err(
                 input: "abcd",
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3420,7 +3420,7 @@ Err(
                 input: "a123",
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3438,7 +3438,7 @@ Err(
                 input: "azé12",
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3514,7 +3514,7 @@ Err(
                 input: " ",
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3532,7 +3532,7 @@ Err(
                 input: "abcd",
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3564,7 +3564,7 @@ Err(
                 input: "a123",
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3582,7 +3582,7 @@ Err(
                 input: "azé12",
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3846,7 +3846,7 @@ Err(
                 input: "\rÂßÇáƒƭèř",
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -3928,7 +3928,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -3950,7 +3950,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -4017,7 +4017,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -4212,7 +4212,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -4261,7 +4261,7 @@ Err(
                 input: "\ra",
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -4341,7 +4341,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -4406,7 +4406,7 @@ Err(
                 input: "\ra",
                 partial: true,
             },
-            kind: Literal,
+            kind: Fail,
         },
     ),
 )
@@ -4434,7 +4434,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Slice,
+            kind: Fail,
         },
     ),
 )
@@ -4536,7 +4536,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -4566,7 +4566,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -4620,7 +4620,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )
@@ -4655,7 +4655,7 @@ Err(
                 ],
                 partial: true,
             },
-            kind: Verify,
+            kind: Fail,
         },
     ),
 )

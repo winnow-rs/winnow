@@ -14,7 +14,6 @@
 //!
 //! Error types include:
 //! - [`EmptyError`] when the reason for failure doesn't matter
-//! - [`ErrorKind`]
 //! - [`ContextError`]
 //! - [`InputError`] (mostly for testing)
 //! - [`TreeError`] (mostly for testing)
@@ -164,6 +163,7 @@ impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
     type Inner = E;
 
     #[inline(always)]
+    #[allow(deprecated)]
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
         ErrMode::Backtrack(E::from_error_kind(input, kind))
     }
@@ -182,6 +182,7 @@ impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
     }
 
     #[inline]
+    #[allow(deprecated)]
     fn append(self, input: &I, token_start: &<I as Stream>::Checkpoint, kind: ErrorKind) -> Self {
         match self {
             ErrMode::Backtrack(e) => ErrMode::Backtrack(e.append(input, token_start, kind)),
@@ -256,6 +257,7 @@ where
     E: FromExternalError<I, EXT>,
 {
     #[inline(always)]
+    #[allow(deprecated)]
     fn from_external_error(input: &I, kind: ErrorKind, e: EXT) -> Self {
         ErrMode::Backtrack(E::from_external_error(input, kind, e))
     }
@@ -332,11 +334,13 @@ pub trait ParserError<I: Stream>: Sized {
 
     /// Deprecated, replaced with [`ParserError::from_input`]
     #[deprecated(since = "0.6.26", note = "replaced with `ParserError::from_input`")]
+    #[allow(deprecated)]
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self;
 
     /// Creates an error from the input position
     #[inline(always)]
     fn from_input(input: &I) -> Self {
+        #[allow(deprecated)]
         Self::from_error_kind(input, ErrorKind::Fail)
     }
 
@@ -362,7 +366,7 @@ pub trait ParserError<I: Stream>: Sized {
     /// Convert this into an `Backtrack` with [`Parser::complete_err`]
     #[inline(always)]
     fn incomplete(input: &I, _needed: Needed) -> Self {
-        Self::from_error_kind(input, ErrorKind::Complete)
+        Self::from_input(input)
     }
 
     /// Like [`ParserError::from_error_kind`] but merges it with the existing error.
@@ -370,6 +374,7 @@ pub trait ParserError<I: Stream>: Sized {
     /// This is useful when backtracking through a parse tree, accumulating error context on the
     /// way.
     #[inline]
+    #[allow(deprecated)]
     fn append(
         self,
         _input: &I,
@@ -455,6 +460,7 @@ pub trait FromRecoverableError<I: Stream, E> {
 /// This trait is required by the [`Parser::try_map`] combinator.
 pub trait FromExternalError<I, E> {
     /// Like [`ParserError::from_error_kind`] but also include an external error.
+    #[allow(deprecated)]
     fn from_external_error(input: &I, kind: ErrorKind, e: E) -> Self;
 }
 
@@ -476,6 +482,7 @@ pub trait ErrorConvert<E> {
 ///
 /// </div>
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[allow(deprecated)]
 pub struct InputError<I: Clone> {
     /// The input stream, pointing to the location where the error occurred
     pub input: I,
@@ -487,6 +494,7 @@ impl<I: Clone> InputError<I> {
     /// Creates a new basic error
     #[inline]
     #[deprecated(since = "0.6.26", note = "replaced with `InputError::at`")]
+    #[allow(deprecated)]
     pub fn new(input: I, kind: ErrorKind) -> Self {
         Self { input, kind }
     }
@@ -494,6 +502,7 @@ impl<I: Clone> InputError<I> {
     /// Creates a new basic error
     #[inline]
     pub fn at(input: I) -> Self {
+        #[allow(deprecated)]
         Self {
             input,
             kind: ErrorKind::Fail,
@@ -525,6 +534,7 @@ impl<I: Stream + Clone> ParserError<I> for InputError<I> {
     type Inner = Self;
 
     #[inline]
+    #[allow(deprecated)]
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
         Self {
             input: input.clone(),
@@ -557,6 +567,7 @@ impl<I: Clone + Stream> FromRecoverableError<I, Self> for InputError<I> {
 impl<I: Clone, E> FromExternalError<I, E> for InputError<I> {
     /// Create a new error from an input position and an external error
     #[inline]
+    #[allow(deprecated)]
     fn from_external_error(input: &I, kind: ErrorKind, _e: E) -> Self {
         Self {
             input: input.clone(),
@@ -605,6 +616,7 @@ impl<I: Stream> ParserError<I> for EmptyError {
     type Inner = Self;
 
     #[inline(always)]
+    #[allow(deprecated)]
     fn from_error_kind(_: &I, _: ErrorKind) -> Self {
         Self
     }
@@ -633,6 +645,7 @@ impl<I: Stream> FromRecoverableError<I, Self> for EmptyError {
 
 impl<I, E> FromExternalError<I, E> for EmptyError {
     #[inline(always)]
+    #[allow(deprecated)]
     fn from_external_error(_input: &I, _kind: ErrorKind, _e: E) -> Self {
         Self
     }
@@ -655,6 +668,7 @@ impl<I: Stream> ParserError<I> for () {
     type Inner = Self;
 
     #[inline]
+    #[allow(deprecated)]
     fn from_error_kind(_: &I, _: ErrorKind) -> Self {}
 
     #[inline(always)]
@@ -680,6 +694,7 @@ impl<I: Stream> FromRecoverableError<I, Self> for () {
 
 impl<I, E> FromExternalError<I, E> for () {
     #[inline]
+    #[allow(deprecated)]
     fn from_external_error(_input: &I, _kind: ErrorKind, _e: E) -> Self {}
 }
 
@@ -746,6 +761,7 @@ impl<I: Stream, C> ParserError<I> for ContextError<C> {
     type Inner = Self;
 
     #[inline]
+    #[allow(deprecated)]
     fn from_error_kind(_input: &I, _kind: ErrorKind) -> Self {
         Self::new()
     }
@@ -789,6 +805,7 @@ impl<C, I, E: std::error::Error + Send + Sync + 'static> FromExternalError<I, E>
     for ContextError<C>
 {
     #[inline]
+    #[allow(deprecated)]
     fn from_external_error(_input: &I, _kind: ErrorKind, e: E) -> Self {
         let mut err = Self::new();
         {
@@ -802,6 +819,7 @@ impl<C, I, E: std::error::Error + Send + Sync + 'static> FromExternalError<I, E>
 #[cfg(not(feature = "std"))]
 impl<C, I, E: Send + Sync + 'static> FromExternalError<I, E> for ContextError<C> {
     #[inline]
+    #[allow(deprecated)]
     fn from_external_error(_input: &I, _kind: ErrorKind, _e: E) -> Self {
         let err = Self::new();
         err
@@ -984,6 +1002,7 @@ pub struct TreeErrorBase<I> {
     /// Parsed input, at the location where the error occurred
     pub input: I,
     /// Debug context
+    #[allow(deprecated)]
     pub kind: ErrorKind,
     /// See [`FromExternalError::from_external_error`]
     pub cause: Option<Box<dyn std::error::Error + Send + Sync + 'static>>,
@@ -1064,6 +1083,7 @@ where
 {
     type Inner = Self;
 
+    #[allow(deprecated)]
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
         TreeError::Base(TreeErrorBase {
             input: input.clone(),
@@ -1072,6 +1092,7 @@ where
         })
     }
 
+    #[allow(deprecated)]
     fn append(self, input: &I, token_start: &<I as Stream>::Checkpoint, kind: ErrorKind) -> Self {
         let mut input = input.clone();
         input.reset(token_start);
@@ -1139,6 +1160,7 @@ impl<I, C, E: std::error::Error + Send + Sync + 'static> FromExternalError<I, E>
 where
     I: Clone,
 {
+    #[allow(deprecated)]
     fn from_external_error(input: &I, kind: ErrorKind, e: E) -> Self {
         TreeError::Base(TreeErrorBase {
             input: input.clone(),
@@ -1285,6 +1307,7 @@ pub enum ErrorKind {
   Fail,
 }
 
+#[allow(deprecated)]
 impl ErrorKind {
     #[rustfmt::skip]
     /// Converts an `ErrorKind` to a text description
@@ -1305,10 +1328,12 @@ impl ErrorKind {
   }
 }
 
+#[allow(deprecated)]
 impl<I: Stream> ParserError<I> for ErrorKind {
     type Inner = Self;
 
     #[inline]
+    #[allow(deprecated)]
     fn from_error_kind(_input: &I, kind: ErrorKind) -> Self {
         kind
     }
@@ -1319,17 +1344,21 @@ impl<I: Stream> ParserError<I> for ErrorKind {
     }
 }
 
+#[allow(deprecated)]
 impl<I: Stream, C> AddContext<I, C> for ErrorKind {}
 
+#[allow(deprecated)]
 impl<I, E> FromExternalError<I, E> for ErrorKind {
     /// Create a new error from an input position and an external error
     #[inline]
+    #[allow(deprecated)]
     fn from_external_error(_input: &I, kind: ErrorKind, _e: E) -> Self {
         kind
     }
 }
 
 /// The Display implementation allows the `std::error::Error` implementation
+#[allow(deprecated)]
 impl fmt::Display for ErrorKind {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "error {self:?}")
@@ -1337,6 +1366,7 @@ impl fmt::Display for ErrorKind {
 }
 
 #[cfg(feature = "std")]
+#[allow(deprecated)]
 impl std::error::Error for ErrorKind {}
 
 /// See [`Parser::parse`]
@@ -1500,12 +1530,12 @@ mod test_parse_error {
         let start = input.checkpoint();
         let _ = input.next_token().unwrap();
         let _ = input.next_token().unwrap();
-        let inner = InputError::new(input, ErrorKind::Slice);
+        let inner = InputError::at(input);
         let error = ParseError::new(input, start, inner);
         let expected = "\
 0xZ123
   ^
-slice error starting at: Z123";
+fail error starting at: Z123";
         assert_eq!(error.to_string(), expected);
     }
 }

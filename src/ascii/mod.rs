@@ -14,8 +14,8 @@ use crate::combinator::fail;
 use crate::combinator::opt;
 use crate::combinator::peek;
 use crate::combinator::trace;
+use crate::error::Needed;
 use crate::error::ParserError;
-use crate::error::{ErrorKind, Needed};
 use crate::stream::FindSlice;
 use crate::stream::{AsBStr, AsChar, ParseSlice, Stream, StreamIsPartial};
 use crate::stream::{Compare, CompareResult};
@@ -87,7 +87,7 @@ impl Caseless<&str> {
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::crlf;
 /// assert_eq!(crlf::<_, ErrMode<ContextError>>.parse_peek(Partial::new("\r\nc")), Ok((Partial::new("c"), "\r\n")));
@@ -139,7 +139,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::{ContextError, ErrorKind}, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::till_line_ending;
 /// assert_eq!(till_line_ending::<_, ErrMode<ContextError>>.parse_peek(Partial::new("ab\r\nc")), Ok((Partial::new("\r\nc"), "ab")));
@@ -193,8 +193,7 @@ where
                 return Err(ParserError::incomplete(input, Needed::Unknown));
             }
             CompareResult::Incomplete | CompareResult::Error => {
-                let e: ErrorKind = ErrorKind::Literal;
-                return Err(ParserError::from_error_kind(input, e));
+                return Err(ParserError::from_input(input));
             }
         }
     }
@@ -234,7 +233,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::line_ending;
 /// assert_eq!(line_ending::<_, ErrMode<ContextError>>.parse_peek(Partial::new("\r\nc")), Ok((Partial::new("c"), "\r\n")));
@@ -283,7 +282,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::newline;
 /// assert_eq!(newline::<_, ErrMode<ContextError>>.parse_peek(Partial::new("\nc")), Ok((Partial::new("c"), '\n')));
@@ -333,7 +332,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::tab;
 /// assert_eq!(tab::<_, ErrMode<ContextError>>.parse_peek(Partial::new("\tc")), Ok((Partial::new("c"), '\t')));
@@ -384,7 +383,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::alpha0;
 /// assert_eq!(alpha0::<_, ErrMode<ContextError>>.parse_peek(Partial::new("ab1c")), Ok((Partial::new("1c"), "ab")));
@@ -436,7 +435,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::alpha1;
 /// assert_eq!(alpha1::<_, ErrMode<ContextError>>.parse_peek(Partial::new("aB1c")), Ok((Partial::new("1c"), "aB")));
@@ -489,7 +488,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::digit0;
 /// assert_eq!(digit0::<_, ErrMode<ContextError>>.parse_peek(Partial::new("21c")), Ok((Partial::new("c"), "21")));
@@ -541,7 +540,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::digit1;
 /// assert_eq!(digit1::<_, ErrMode<ContextError>>.parse_peek(Partial::new("21c")), Ok((Partial::new("c"), "21")));
@@ -609,7 +608,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::hex_digit0;
 /// assert_eq!(hex_digit0::<_, ErrMode<ContextError>>.parse_peek(Partial::new("21cZ")), Ok((Partial::new("Z"), "21c")));
@@ -662,7 +661,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::hex_digit1;
 /// assert_eq!(hex_digit1::<_, ErrMode<ContextError>>.parse_peek(Partial::new("21cZ")), Ok((Partial::new("Z"), "21c")));
@@ -714,7 +713,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::oct_digit0;
 /// assert_eq!(oct_digit0::<_, ErrMode<ContextError>>.parse_peek(Partial::new("21cZ")), Ok((Partial::new("cZ"), "21")));
@@ -767,7 +766,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::oct_digit1;
 /// assert_eq!(oct_digit1::<_, ErrMode<ContextError>>.parse_peek(Partial::new("21cZ")), Ok((Partial::new("cZ"), "21")));
@@ -819,7 +818,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::alphanumeric0;
 /// assert_eq!(alphanumeric0::<_, ErrMode<ContextError>>.parse_peek(Partial::new("21cZ%1")), Ok((Partial::new("%1"), "21cZ")));
@@ -871,7 +870,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::alphanumeric1;
 /// assert_eq!(alphanumeric1::<_, ErrMode<ContextError>>.parse_peek(Partial::new("21cZ%1")), Ok((Partial::new("%1"), "21cZ")));
@@ -911,7 +910,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::space0;
 /// assert_eq!(space0::<_, ErrMode<ContextError>>.parse_peek(Partial::new(" \t21c")), Ok((Partial::new("21c"), " \t")));
@@ -963,7 +962,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::space1;
 /// assert_eq!(space1::<_, ErrMode<ContextError>>.parse_peek(Partial::new(" \t21c")), Ok((Partial::new("21c"), " \t")));
@@ -1015,7 +1014,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::multispace0;
 /// assert_eq!(multispace0::<_, ErrMode<ContextError>>.parse_peek(Partial::new(" \t\n\r21c")), Ok((Partial::new("21c"), " \t\n\r")));
@@ -1067,7 +1066,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::ContextError, error::Needed};
+/// # use winnow::{error::ErrMode, error::ContextError, error::Needed};
 /// # use winnow::Partial;
 /// # use winnow::ascii::multispace1;
 /// assert_eq!(multispace1::<_, ErrMode<ContextError>>.parse_peek(Partial::new(" \t\n\r21c")), Ok((Partial::new("21c"), " \t\n\r")));
@@ -1295,7 +1294,7 @@ impl Int for isize {
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::Partial;
 /// use winnow::ascii::hex_uint;
 ///
@@ -1329,7 +1328,7 @@ where
             Ok(max_offset) => {
                 if max_offset < invalid_offset {
                     // Overflow
-                    return Err(ParserError::from_error_kind(input, ErrorKind::Verify));
+                    return Err(ParserError::from_input(input));
                 } else {
                     invalid_offset
                 }
@@ -1348,7 +1347,7 @@ where
         };
         if offset == 0 {
             // Must be at least one digit
-            return Err(ParserError::from_error_kind(input, ErrorKind::Slice));
+            return Err(ParserError::from_input(input));
         }
         let parsed = input.next_slice(offset);
 
@@ -1444,7 +1443,7 @@ impl HexUint for u128 {
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::error::Needed::Size;
 /// # use winnow::Partial;
 /// use winnow::ascii::float;
@@ -1474,7 +1473,7 @@ where
     trace("float", move |input: &mut Input| {
         let s = take_float_or_exceptions(input)?;
         s.parse_slice()
-            .ok_or_else(|| ParserError::from_error_kind(input, ErrorKind::Verify))
+            .ok_or_else(|| ParserError::from_input(input))
     })
     .parse_next(input)
 }
@@ -1578,7 +1577,7 @@ where
 ///
 /// ```rust
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use winnow::ascii::digit1;
 /// # use winnow::prelude::*;
 /// # use winnow::Partial;
@@ -1741,7 +1740,7 @@ where
 /// ```rust
 /// # #[cfg(feature = "std")] {
 /// # use winnow::prelude::*;
-/// # use winnow::{error::ErrMode, error::ErrorKind, error::Needed};
+/// # use winnow::{error::ErrMode, error::Needed};
 /// # use std::str::from_utf8;
 /// # use winnow::Partial;
 /// use winnow::token::literal;

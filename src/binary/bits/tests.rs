@@ -92,10 +92,9 @@ fn test_take_complete_eof() {
 
     assert_eq!(
         result,
-        Err(crate::error::ErrMode::Backtrack(InputError::new(
-            (input, 8),
-            ErrorKind::Eof
-        )))
+        Err(crate::error::ErrMode::Backtrack(
+            InputError::at((input, 8),)
+        ))
     );
 }
 
@@ -150,10 +149,9 @@ fn test_pattern_partial_err() {
 
     assert_eq!(
         result,
-        Err(crate::error::ErrMode::Backtrack(InputError::new(
-            (input, offset),
-            ErrorKind::Literal
-        )))
+        Err(crate::error::ErrMode::Backtrack(InputError::at((
+            input, offset
+        ),)))
     );
 }
 
@@ -174,10 +172,9 @@ fn test_bool_eof_complete() {
 
     assert_eq!(
         result,
-        Err(crate::error::ErrMode::Backtrack(InputError::new(
-            (input, 8),
-            ErrorKind::Eof
-        )))
+        Err(crate::error::ErrMode::Backtrack(
+            InputError::at((input, 8),)
+        ))
     );
 }
 

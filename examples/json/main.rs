@@ -4,7 +4,7 @@ mod parser_dispatch;
 #[allow(dead_code)]
 mod parser_partial;
 
-use winnow::error::ErrorKind;
+use winnow::error::EmptyError;
 use winnow::prelude::*;
 
 fn main() -> Result<(), lexopt::Error> {
@@ -25,8 +25,8 @@ fn main() -> Result<(), lexopt::Error> {
     });
 
     let result = match args.implementation {
-        Impl::Naive => parser_alt::json::<ErrorKind>.parse(data),
-        Impl::Dispatch => parser_dispatch::json::<ErrorKind>.parse(data),
+        Impl::Naive => parser_alt::json::<EmptyError>.parse(data),
+        Impl::Dispatch => parser_dispatch::json::<EmptyError>.parse(data),
     };
     match result {
         Ok(json) => {

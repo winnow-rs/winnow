@@ -1,5 +1,6 @@
 use winnow::error::AddContext;
 use winnow::error::ErrMode;
+#[allow(deprecated)]
 use winnow::error::ErrorKind;
 use winnow::error::FromExternalError;
 use winnow::error::ParserError;
@@ -9,19 +10,19 @@ use winnow::stream::Stream;
 #[derive(Debug)]
 pub enum CustomError<I> {
     MyError,
-    Winnow(I, ErrorKind),
+    Winnow(I),
     External {
         cause: Box<dyn std::error::Error + Send + Sync + 'static>,
         input: I,
-        kind: ErrorKind,
     },
 }
 
 impl<I: Stream + Clone> ParserError<I> for CustomError<I> {
     type Inner = Self;
 
-    fn from_error_kind(input: &I, kind: ErrorKind) -> Self {
-        CustomError::Winnow(input.clone(), kind)
+    #[allow(deprecated)]
+    fn from_error_kind(input: &I, _: ErrorKind) -> Self {
+        CustomError::Winnow(input.clone())
     }
 
     fn into_inner(self) -> Result<Self::Inner, Self> {
@@ -45,11 +46,11 @@ impl<I: Stream + Clone, E: std::error::Error + Send + Sync + 'static> FromExtern
     for CustomError<I>
 {
     #[inline]
-    fn from_external_error(input: &I, kind: ErrorKind, e: E) -> Self {
+    #[allow(deprecated)]
+    fn from_external_error(input: &I, _: ErrorKind, e: E) -> Self {
         CustomError::External {
             cause: Box::new(e),
             input: input.clone(),
-            kind,
         }
     }
 }

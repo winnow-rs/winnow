@@ -3,7 +3,7 @@ use proptest::prelude::*;
 
 use crate::error::ErrMode;
 use crate::error::ErrMode::Backtrack;
-use crate::error::{ErrorKind, InputError};
+use crate::error::InputError;
 use crate::token::literal;
 use crate::{
     combinator::{separated, separated_pair},
@@ -169,7 +169,7 @@ fn test_literal_support_char() {
 
     assert_eq!(
         literal::<_, _, ErrMode<InputError<_>>>('-').parse_peek("π"),
-        Err(Backtrack(InputError::new("π", ErrorKind::Literal)))
+        Err(Backtrack(InputError::at("π")))
     );
 
     assert_eq!(
@@ -204,10 +204,7 @@ fn test_literal_support_char() {
 
     assert_eq!(
         literal::<_, &[u8], ErrMode<InputError<_>>>('a').parse_peek(b"ABCxyz"),
-        Err(Backtrack(InputError::new(
-            &b"ABCxyz"[..],
-            ErrorKind::Literal
-        )))
+        Err(Backtrack(InputError::at(&b"ABCxyz"[..],)))
     );
 
     assert_eq!(
@@ -230,9 +227,6 @@ fn test_literal_support_char() {
 
     assert_eq!(
         literal::<_, &[u8], ErrMode<InputError<_>>>('-').parse_peek(b"\xCF\x80"),
-        Err(Backtrack(InputError::new(
-            &b"\xCF\x80"[..],
-            ErrorKind::Literal
-        )))
+        Err(Backtrack(InputError::at(&b"\xCF\x80"[..],)))
     );
 }
