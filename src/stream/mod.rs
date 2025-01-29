@@ -187,15 +187,7 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
     ///
     fn next_slice(&mut self, offset: usize) -> Self::Slice;
     /// Split off a slice of tokens from the input
-    #[inline(always)]
-    fn peek_slice(&self, offset: usize) -> (Self, Self::Slice)
-    where
-        Self: Clone,
-    {
-        let mut peek = self.clone();
-        let slice = peek.next_slice(offset);
-        (peek, slice)
-    }
+    fn peek_slice(&self, offset: usize) -> Self::Slice;
 
     /// Advance to the end of the stream
     #[inline(always)]
@@ -208,7 +200,7 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
     where
         Self: Clone,
     {
-        self.peek_slice(self.eof_offset()).1
+        self.peek_slice(self.eof_offset())
     }
 
     /// Save the current parse location within the stream
@@ -279,6 +271,11 @@ where
     fn next_slice(&mut self, offset: usize) -> Self::Slice {
         let (slice, next) = self.split_at(offset);
         *self = next;
+        slice
+    }
+    #[inline(always)]
+    fn peek_slice(&self, offset: usize) -> Self::Slice {
+        let (slice, _next) = self.split_at(offset);
         slice
     }
 
@@ -361,6 +358,11 @@ impl<'i> Stream for &'i str {
         *self = next;
         slice
     }
+    #[inline(always)]
+    fn peek_slice(&self, offset: usize) -> Self::Slice {
+        let (slice, _next) = self.split_at(offset);
+        slice
+    }
 
     #[inline(always)]
     fn checkpoint(&self) -> Self::Checkpoint {
@@ -441,6 +443,14 @@ where
         let s = self.0.next_slice(byte_offset);
         let start_offset = self.1;
         self.1 = end_offset;
+        (s, start_offset, end_offset)
+    }
+    #[inline(always)]
+    fn peek_slice(&self, offset: usize) -> Self::Slice {
+        let byte_offset = (offset + self.1) / 8;
+        let end_offset = (offset + self.1) % 8;
+        let s = self.0.peek_slice(byte_offset);
+        let start_offset = self.1;
         (s, start_offset, end_offset)
     }
 

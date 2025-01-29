@@ -158,6 +158,10 @@ where
     fn next_slice(&mut self, offset: usize) -> Self::Slice {
         self.input.next_slice(offset)
     }
+    #[inline(always)]
+    fn peek_slice(&self, offset: usize) -> Self::Slice {
+        self.input.peek_slice(offset)
+    }
 
     #[inline(always)]
     fn checkpoint(&self) -> Self::Checkpoint {

@@ -107,6 +107,11 @@ impl<'i> Stream for &'i BStr {
         *self = BStr::from_bytes(next);
         slice
     }
+    #[inline(always)]
+    fn peek_slice(&self, offset: usize) -> Self::Slice {
+        let (slice, _next) = self.split_at(offset);
+        slice
+    }
 
     #[inline(always)]
     fn checkpoint(&self) -> Self::Checkpoint {
