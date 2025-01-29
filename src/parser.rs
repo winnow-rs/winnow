@@ -328,22 +328,6 @@ pub trait Parser<I, O, E> {
         }
     }
 
-    /// Replaced with [`Parser::take`]
-    #[inline(always)]
-    #[deprecated(since = "0.6.14", note = "Replaced with `Parser::take`")]
-    fn recognize(self) -> impls::Take<Self, I, O, E>
-    where
-        Self: core::marker::Sized,
-        I: Stream,
-    {
-        impls::Take {
-            parser: self,
-            i: Default::default(),
-            o: Default::default(),
-            e: Default::default(),
-        }
-    }
-
     /// Produce the consumed input with the output
     ///
     /// Functions similarly to [take][Parser::take] except it

@@ -376,10 +376,6 @@ where
     }
 }
 
-/// Replaced with [`Take`]
-#[deprecated(since = "0.6.14", note = "Replaced with `Take`")]
-pub type Recognize<F, I, O, E> = Take<F, I, O, E>;
-
 /// [`Parser`] implementation for [`Parser::take`]
 pub struct Take<F, I, O, E>
 where
