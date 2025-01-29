@@ -208,9 +208,7 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
     where
         Self: Clone,
     {
-        let mut peek = self.clone();
-        let slice = peek.finish();
-        (peek, slice)
+        self.peek_slice(self.eof_offset())
     }
 
     /// Save the current parse location within the stream
