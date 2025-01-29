@@ -3,17 +3,6 @@ use crate::error::{ModalError, ParserError};
 use crate::stream::Stream;
 use crate::*;
 
-/// Deprecated, replaced with [`token::rest`]
-#[deprecated(since = "0.6.23", note = "replaced with `token::rest`")]
-#[inline]
-pub fn rest<Input, Error>(input: &mut Input) -> Result<<Input as Stream>::Slice, Error>
-where
-    Input: Stream,
-    Error: ParserError<Input>,
-{
-    crate::token::rest(input)
-}
-
 /// Deprecated, replaced with [`token::rest_len`]
 #[deprecated(since = "0.6.23", note = "replaced with `token::rest_len`")]
 #[inline]
