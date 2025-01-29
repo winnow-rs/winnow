@@ -177,10 +177,10 @@ impl<E> ErrMode<E> {
     ///
     /// Returns `None` for [`ErrMode::Incomplete`]
     #[inline(always)]
-    pub fn into_inner(self) -> Option<E> {
+    pub fn into_inner(self) -> Result<E, Self> {
         match self {
-            ErrMode::Backtrack(e) | ErrMode::Cut(e) => Some(e),
-            ErrMode::Incomplete(_) => None,
+            ErrMode::Backtrack(e) | ErrMode::Cut(e) => Ok(e),
+            err @ ErrMode::Incomplete(_) => Err(err),
         }
     }
 }
