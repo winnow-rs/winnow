@@ -463,9 +463,9 @@
 //!
 //! To make [`ErrMode`] more convenient, Winnow provides [`ModalResult`]:
 //! ```rust
-//! # use winnow::error::ErrorKind;
+//! # use winnow::error::ContextError;
 //! # use winnow::error::ErrMode;
-//! pub type ModalResult<O, E = ErrorKind> = Result<O, ErrMode<E>>;
+//! pub type ModalResult<O, E = ContextError> = Result<O, ErrMode<E>>;
 //! ```
 //!
 //! So we can get the correct `context` by changing to [`ModalResult`] and adding [`cut_err`]:
