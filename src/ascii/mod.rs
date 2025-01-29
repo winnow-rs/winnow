@@ -1622,23 +1622,6 @@ where
     })
 }
 
-/// Deprecated, replaced with [`take_escaped`]
-#[deprecated(since = "0.6.4", note = "Replaced with `take_escaped`")]
-#[inline(always)]
-pub fn escaped<Input, Error, Normal, Escapable, NormalOutput, EscapableOutput>(
-    normal: Normal,
-    control_char: char,
-    escapable: Escapable,
-) -> impl Parser<Input, <Input as Stream>::Slice, Error>
-where
-    Input: StreamIsPartial + Stream + Compare<char>,
-    Normal: Parser<Input, NormalOutput, Error>,
-    Escapable: Parser<Input, EscapableOutput, Error>,
-    Error: ParserError<Input>,
-{
-    take_escaped(normal, control_char, escapable)
-}
-
 fn escaped_internal<I, Error, F, G, O1, O2, const PARTIAL: bool>(
     input: &mut I,
     normal: &mut F,
