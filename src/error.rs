@@ -48,10 +48,6 @@ pub type Result<O, E = ContextError> = core::result::Result<O, E>;
 /// - [`ParserError::into_inner`]
 pub type ModalResult<O, E = ContextError> = Result<O, ErrMode<E>>;
 
-/// Deprecated, replaced with [`ModalResult`]
-#[deprecated(since = "0.6.25", note = "Replaced with `ModalResult`")]
-pub type IResult<I, O, E = InputError<I>> = ModalResult<(I, O), E>;
-
 #[cfg(test)]
 pub(crate) type TestResult<I, O> = ModalResult<O, InputError<I>>;
 
