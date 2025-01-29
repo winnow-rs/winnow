@@ -13,10 +13,10 @@
 //! that can help convert to a `Result` for integrating with your application's error reporting.
 //!
 //! Error types include:
-//! - `()`
+//! - [`EmptyError`] when the reason for failure doesn't matter
 //! - [`ErrorKind`]
-//! - [`InputError`] (mostly for testing)
 //! - [`ContextError`]
+//! - [`InputError`] (mostly for testing)
 //! - [`TreeError`] (mostly for testing)
 //! - [Custom errors][crate::_topic::error]
 
@@ -265,8 +265,15 @@ where
 /// It provides methods to create an error from some combinators,
 /// and combine existing errors in combinators like `alt`.
 pub trait ParserError<I: Stream>: Sized {
-    /// Creates an error from the input position and an [`ErrorKind`]
+    /// Deprecated, replaced with [`ParserError::from_input`]
+    #[deprecated(since = "0.6.26", note = "replaced with `ParserError::from_input`")]
     fn from_error_kind(input: &I, kind: ErrorKind) -> Self;
+
+    /// Creates an error from the input position
+    #[inline(always)]
+    fn from_input(input: &I) -> Self {
+        Self::from_error_kind(input, ErrorKind::Fail)
+    }
 
     /// Process a parser assertion
     #[inline(always)]
@@ -364,8 +371,18 @@ pub struct InputError<I: Clone> {
 impl<I: Clone> InputError<I> {
     /// Creates a new basic error
     #[inline]
+    #[deprecated(since = "0.6.26", note = "replaced with `InputError::at`")]
     pub fn new(input: I, kind: ErrorKind) -> Self {
         Self { input, kind }
+    }
+
+    /// Creates a new basic error
+    #[inline]
+    pub fn at(input: I) -> Self {
+        Self {
+            input,
+            kind: ErrorKind::Fail,
+        }
     }
 
     /// Translate the input type
@@ -472,6 +489,63 @@ impl<I: Clone + fmt::Display> fmt::Display for InputError<I> {
 impl<I: Clone + fmt::Debug + fmt::Display + Sync + Send + 'static> std::error::Error
     for InputError<I>
 {
+}
+
+/// Track an error occurred without any other [`StrContext`]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub struct EmptyError;
+
+impl<I: Stream> ParserError<I> for EmptyError {
+    #[inline(always)]
+    fn from_error_kind(_: &I, _: ErrorKind) -> Self {
+        Self
+    }
+
+    #[inline]
+    fn append(
+        self,
+        _input: &I,
+        _token_start: &<I as Stream>::Checkpoint,
+        _kind: ErrorKind,
+    ) -> Self {
+        Self
+    }
+}
+
+impl<I: Stream, C> AddContext<I, C> for EmptyError {}
+
+#[cfg(feature = "unstable-recover")]
+#[cfg(feature = "std")]
+impl<I: Stream> FromRecoverableError<I, Self> for EmptyError {
+    #[inline(always)]
+    fn from_recoverable_error(
+        _token_start: &<I as Stream>::Checkpoint,
+        _err_start: &<I as Stream>::Checkpoint,
+        _input: &I,
+        e: Self,
+    ) -> Self {
+        e
+    }
+}
+
+impl<I, E> FromExternalError<I, E> for EmptyError {
+    #[inline(always)]
+    fn from_external_error(_input: &I, _kind: ErrorKind, _e: E) -> Self {
+        Self
+    }
+}
+
+impl ErrorConvert<EmptyError> for EmptyError {
+    #[inline(always)]
+    fn convert(self) -> EmptyError {
+        self
+    }
+}
+
+impl crate::lib::std::fmt::Display for EmptyError {
+    fn fmt(&self, f: &mut crate::lib::std::fmt::Formatter<'_>) -> crate::lib::std::fmt::Result {
+        "failed to parse".fmt(f)
+    }
 }
 
 impl<I: Stream> ParserError<I> for () {
@@ -1081,10 +1155,15 @@ impl<I: Stream + Clone + fmt::Display, C: fmt::Display> fmt::Display for TreeErr
     }
 }
 
-/// Provide some minor debug context for errors
+/// Deprecated
+///
+/// For error typse, use [`EmptyError`] instead
+///
+/// For creating an error, use [`ParserError::from_input`], [`InputError::at`]
 #[rustfmt::skip]
 #[derive(Debug,PartialEq,Eq,Hash,Clone,Copy)]
 #[allow(missing_docs)]
+#[deprecated(since = "0.6.26")]
 pub enum ErrorKind {
   Assert,
   Token,
