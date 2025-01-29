@@ -213,7 +213,7 @@ impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
     }
 
     #[inline(always)]
-    fn is_needed(&self) -> bool {
+    fn is_incomplete(&self) -> bool {
         matches!(self, ErrMode::Incomplete(_))
     }
 
@@ -404,7 +404,7 @@ pub trait ParserError<I: Stream>: Sized {
 
     /// Is more data [`Needed`]
     #[inline(always)]
-    fn is_needed(&self) -> bool {
+    fn is_incomplete(&self) -> bool {
         false
     }
 

@@ -641,7 +641,7 @@ where
             Ok(o) => {
                 return Ok(o);
             }
-            Err(e) if e.is_needed() => return Err(e),
+            Err(e) if e.is_incomplete() => return Err(e),
             Err(err) => err,
         };
         let err_start = i.checkpoint();
@@ -720,7 +720,7 @@ where
         Ok(o) => {
             return Ok(Some(o));
         }
-        Err(e) if e.is_needed() => return Err(e),
+        Err(e) if e.is_incomplete() => return Err(e),
         Err(err) => err,
     };
     let err_start = i.checkpoint();

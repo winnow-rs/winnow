@@ -198,7 +198,7 @@ where
         err: E,
     ) -> Result<(), E> {
         if self.is_recoverable {
-            if err.is_needed() {
+            if err.is_incomplete() {
                 Err(err)
             } else {
                 self.errors
