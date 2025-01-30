@@ -94,6 +94,12 @@ impl Needed {
 }
 
 /// Add parse error state to [`ParserError`]s
+///
+/// Needed for
+/// - [`Partial`][crate::stream::Partial] to track whether the [`Stream`] is [`ErrMode::Incomplete`].
+///   See also [`_topic/partial`]
+/// - Marking errors as unrecoverable ([`ErrMode::Cut`]) and not retrying alternative parsers.
+///   See also [`_tutorial/chapter_7#error-cuts`]
 #[derive(Debug, Clone, PartialEq)]
 pub enum ErrMode<E> {
     /// There was not enough data to determine the appropriate action
