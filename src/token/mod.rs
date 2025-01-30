@@ -289,20 +289,15 @@ where
     Set: ContainsToken<<Input as Stream>::Token>,
     Error: ParserError<Input>,
 {
-    let start = input.checkpoint();
-    let token = input.next_token().ok_or_else(|| {
-        if PARTIAL && input.is_partial() {
-            ParserError::incomplete(input, Needed::new(1))
-        } else {
-            ParserError::from_input(input)
-        }
-    })?;
-    if set.contains_token(token.clone()) {
-        Ok(token)
-    } else {
-        input.reset(&start);
-        Err(ParserError::from_input(input))
-    }
+    input
+        .next_token_if(|t| set.contains_token(t.clone()))
+        .ok_or_else(|| {
+            if PARTIAL && input.is_partial() && input.eof_offset() == 0 {
+                ParserError::incomplete(input, Needed::new(1))
+            } else {
+                ParserError::from_input(input)
+            }
+        })
 }
 
 /// Recognize a token that does not match a [set of tokens][ContainsToken]

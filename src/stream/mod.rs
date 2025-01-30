@@ -153,6 +153,19 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
 
     /// Split off the next token from the input
     fn next_token(&mut self) -> Option<Self::Token>;
+    /// Conditionally split off the next token from the input
+    #[inline]
+    fn next_token_if(&mut self, predicate: impl Fn(&Self::Token) -> bool) -> Option<Self::Token> {
+        let Some(token) = self.peek_token() else {
+            return None;
+        };
+        if predicate(&token) {
+            self.next_token();
+            Some(token)
+        } else {
+            None
+        }
+    }
     /// Split off the next token from the input
     fn peek_token(&self) -> Option<Self::Token>;
 
