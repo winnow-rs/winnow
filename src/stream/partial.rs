@@ -166,6 +166,11 @@ impl<I: Stream> Stream for Partial<I> {
     }
 
     #[inline(always)]
+    fn next_token_if(&mut self, predicate: impl Fn(&Self::Token) -> bool) -> Option<Self::Token> {
+        self.input.next_token_if(predicate)
+    }
+
+    #[inline(always)]
     fn peek_token(&self) -> Option<Self::Token> {
         self.input.peek_token()
     }

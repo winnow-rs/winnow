@@ -77,6 +77,19 @@ impl<'i> Stream for &'i Bytes {
         }
     }
 
+    #[inline]
+    fn next_token_if(&mut self, predicate: impl Fn(&Self::Token) -> bool) -> Option<Self::Token> {
+        let Some(token) = self.peek_token() else {
+            return None;
+        };
+        if predicate(&token) {
+            self.next_token();
+            Some(token)
+        } else {
+            None
+        }
+    }
+
     #[inline(always)]
     fn peek_token(&self) -> Option<Self::Token> {
         if self.is_empty() {
