@@ -247,12 +247,10 @@ where
 
     #[inline]
     fn next_token_if(&mut self, predicate: impl Fn(&Self::Token) -> bool) -> Option<Self::Token> {
-        let Some(token) = self.peek_token() else {
-            return None;
-        };
+        let (token, next) = self.split_first()?;
         if predicate(&token) {
-            self.next_token();
-            Some(token)
+            *self = next;
+            Some(token.clone())
         } else {
             None
         }
@@ -336,12 +334,11 @@ impl<'i> Stream for &'i str {
 
     #[inline]
     fn next_token_if(&mut self, predicate: impl Fn(&Self::Token) -> bool) -> Option<Self::Token> {
-        let Some(token) = self.peek_token() else {
-            return None;
-        };
-        if predicate(&token) {
-            self.next_token();
-            Some(token)
+        let c = self.chars().next()?;
+        if predicate(&c) {
+            let offset = c.len();
+            *self = &self[offset..];
+            Some(c)
         } else {
             None
         }
