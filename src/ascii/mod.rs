@@ -92,7 +92,7 @@ impl Caseless<&str> {
 /// # use winnow::ascii::crlf;
 /// assert_eq!(crlf::<_, ErrMode<ContextError>>.parse_peek(Partial::new("\r\nc")), Ok((Partial::new("c"), "\r\n")));
 /// assert!(crlf::<_, ErrMode<ContextError>>.parse_peek(Partial::new("ab\r\nc")).is_err());
-/// assert_eq!(crlf::<_, ErrMode<ContextError>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(2))));
+/// assert_eq!(crlf::<_, ErrMode<ContextError>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// ```
 #[inline(always)]
 pub fn crlf<Input, Error>(input: &mut Input) -> Result<<Input as Stream>::Slice, Error>
@@ -238,7 +238,7 @@ where
 /// # use winnow::ascii::line_ending;
 /// assert_eq!(line_ending::<_, ErrMode<ContextError>>.parse_peek(Partial::new("\r\nc")), Ok((Partial::new("c"), "\r\n")));
 /// assert!(line_ending::<_, ErrMode<ContextError>>.parse_peek(Partial::new("ab\r\nc")).is_err());
-/// assert_eq!(line_ending::<_, ErrMode<ContextError>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(line_ending::<_, ErrMode<ContextError>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// ```
 #[inline(always)]
 pub fn line_ending<Input, Error>(input: &mut Input) -> Result<<Input as Stream>::Slice, Error>
@@ -287,7 +287,7 @@ where
 /// # use winnow::ascii::newline;
 /// assert_eq!(newline::<_, ErrMode<ContextError>>.parse_peek(Partial::new("\nc")), Ok((Partial::new("c"), '\n')));
 /// assert!(newline::<_, ErrMode<ContextError>>.parse_peek(Partial::new("\r\nc")).is_err());
-/// assert_eq!(newline::<_, ErrMode<ContextError>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(newline::<_, ErrMode<ContextError>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// ```
 #[inline(always)]
 pub fn newline<I, Error: ParserError<I>>(input: &mut I) -> Result<char, Error>
@@ -337,7 +337,7 @@ where
 /// # use winnow::ascii::tab;
 /// assert_eq!(tab::<_, ErrMode<ContextError>>.parse_peek(Partial::new("\tc")), Ok((Partial::new("c"), '\t')));
 /// assert!(tab::<_, ErrMode<ContextError>>.parse_peek(Partial::new("\r\nc")).is_err());
-/// assert_eq!(tab::<_, ErrMode<ContextError>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::new(1))));
+/// assert_eq!(tab::<_, ErrMode<ContextError>>.parse_peek(Partial::new("")), Err(ErrMode::Incomplete(Needed::Unknown)));
 /// ```
 #[inline(always)]
 pub fn tab<Input, Error>(input: &mut Input) -> Result<char, Error>

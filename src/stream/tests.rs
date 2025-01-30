@@ -229,3 +229,47 @@ fn test_literal_support_char() {
         Err(Backtrack(InputError::at(&b"\xCF\x80"[..],)))
     );
 }
+
+#[test]
+fn tokenslice_location() {
+    #[derive(Clone, Debug)]
+    struct Token {
+        span: crate::lib::std::ops::Range<usize>,
+    }
+
+    impl Location for Token {
+        #[inline(always)]
+        fn previous_token_end(&self) -> usize {
+            self.span.end
+        }
+        #[inline(always)]
+        fn current_token_start(&self) -> usize {
+            self.span.start
+        }
+    }
+
+    let input = [
+        Token { span: 1..9 },
+        Token { span: 11..19 },
+        Token { span: 21..29 },
+    ];
+    let mut input = TokenSlice::new(&input);
+    assert_eq!(input.previous_token_end(), 1);
+
+    // Parse operation
+    assert_eq!(input.current_token_start(), 1);
+    let _ = input.next_token();
+    assert_eq!(input.previous_token_end(), 9);
+
+    // Parse operation
+    assert_eq!(input.current_token_start(), 11);
+    let _ = input.next_token();
+    assert_eq!(input.previous_token_end(), 19);
+
+    // Parse operation
+    assert_eq!(input.current_token_start(), 21);
+    let _ = input.next_token();
+    assert_eq!(input.previous_token_end(), 29);
+
+    assert_eq!(input.current_token_start(), 29);
+}
