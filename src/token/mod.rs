@@ -263,15 +263,46 @@ where
 #[doc(alias = "satisfy")]
 pub fn one_of<Input, Set, Error>(set: Set) -> impl Parser<Input, <Input as Stream>::Token, Error>
 where
-    Input: StreamIsPartial + Stream,
+    Input: StreamIsPartial,
+    Input: Stream,
     <Input as Stream>::Token: Clone,
     Set: ContainsToken<<Input as Stream>::Token>,
     Error: ParserError<Input>,
 {
-    trace(
-        "one_of",
-        any.verify(move |t: &<Input as Stream>::Token| set.contains_token(t.clone())),
-    )
+    trace("one_of", move |input: &mut Input| {
+        if <Input as StreamIsPartial>::is_partial_supported() {
+            one_of_::<_, _, _, true>(input, &set)
+        } else {
+            one_of_::<_, _, _, false>(input, &set)
+        }
+    })
+}
+
+fn one_of_<Input, Set, Error, const PARTIAL: bool>(
+    input: &mut Input,
+    set: &Set,
+) -> Result<<Input as Stream>::Token, Error>
+where
+    Input: StreamIsPartial,
+    Input: Stream,
+    <Input as Stream>::Token: Clone,
+    Set: ContainsToken<<Input as Stream>::Token>,
+    Error: ParserError<Input>,
+{
+    let start = input.checkpoint();
+    let token = input.next_token().ok_or_else(|| {
+        if PARTIAL && input.is_partial() {
+            ParserError::incomplete(input, Needed::new(1))
+        } else {
+            ParserError::from_input(input)
+        }
+    })?;
+    if set.contains_token(token.clone()) {
+        Ok(token)
+    } else {
+        input.reset(&start);
+        Err(ParserError::from_input(input))
+    }
 }
 
 /// Recognize a token that does not match a [set of tokens][ContainsToken]
