@@ -3,6 +3,57 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Migration Guide
+
+1. Upgrade to the latest 0.6 release
+2. Resolve all deprecations
+3. Replace `impl Parser<_, _, _>` with `impl ModalParser<_, _, _>`
+4. Upgrade to 0.7.0
+5. Resolve any compiler errors
+  - For custom errors, remove switch from `from_error_kind` to `from_input` and remove other `kind` parameters
+  - For `seq!(<tuple>)`, you may need to add `mut` to shared parsers
+  - For `Stream::peek*` calls, update for lack of `Stream` being returned
+  - Where `ModalParser` couldn't be used, change `Parser<I, O, E>` to `Parser<I, O, ErrMode<E>>`
+6. Resolve all deprecations
+
+*If* you do not use `cut_err` or `Partial`, you can further clean up the code and improve performance by removing the use of `ErrMode`
+- Replace `ModalResult<O, E>` with `winnow::Result<O>` (if using default error type) or just `Result<O, E>`
+- Replace `impl ModalParser` with `impl Parser`
+- Remove uses of `ErrMode`
+
+### Compatibility
+
+- `escaped` and `take_escaped` now assert, rather than stop, on empty `normal` output
+- Some parsers used in `seq(<tuple>)` must now be `mut`
+- `Stream::peek_token`, `Stream::peek_slice`, `Stream::peek_finish` no longer return a clone of `Stream`
+- `trait Location`s functions have changed to improve parsing of lexed tokens
+- `ParserError::append` and `FromExternalError::from_external_error`s `kind` parameter has been removed
+- `ParserError`, `AsChar`, `ContainsToken`, `Stream` were added to the prelude
+- Some trait bounds changed
+- Deprecated functionality removed
+- Deprecated `escaped_transform` in favor of the new name `escaped`
+
+### Features
+
+- Decoupled `ErrMode` from the core traits through new `ModalError` trait and `ParserError` modal functions, allowing better performance and greater flexibility
+- Add `ParserError`, `AsChar`, `ContainsToken`, `Stream` to the prelude
+- Add `stream::TokenSlice` to help parsing of lexed tokens
+- Implement `ErrorConvert` for `ErrMode`
+
+### Fixes
+
+- Borrow parsers in `seq!(<tuple>)` so they can be used multiple times
+- `escaped` and `take_escaped` now assert, rather than stop, on empty `normal` output
+- Improve type inference for `Parser::by_ref`, `Parser::complete_err`
+- Improve error reports for `float`
+- Added an inherent `ParserError::append` to reduce boilerplate with custom errors
+- Added support for `TreeError` with `binary::bits` parsers
+- `escaped` can now have separate types for `normal` and `escaped` parsers
+
+### Documentation
+
+- Modernized reference examples 
+
 ## [0.6.26] - 2025-01-30
 
 ### Compatibility
