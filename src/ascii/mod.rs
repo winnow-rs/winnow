@@ -12,7 +12,6 @@ use crate::combinator::dispatch;
 use crate::combinator::empty;
 use crate::combinator::fail;
 use crate::combinator::opt;
-use crate::combinator::peek;
 use crate::combinator::trace;
 use crate::error::Needed;
 use crate::error::ParserError;
@@ -21,6 +20,7 @@ use crate::stream::{AsBStr, AsChar, ParseSlice, Stream, StreamIsPartial};
 use crate::stream::{Compare, CompareResult};
 use crate::token::any;
 use crate::token::one_of;
+use crate::token::peek_any;
 use crate::token::take_until;
 use crate::token::take_while;
 use crate::Parser;
@@ -1489,7 +1489,7 @@ where
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
-    dispatch! {opt(peek(any).map(AsChar::as_char));
+    dispatch! {peek_any.map(|t| t.map(AsChar::as_char));
         Some('N') | Some('n') => Caseless("nan").void(),
         Some('+') | Some('-') => (any, take_unsigned_float_or_exceptions).void(),
         _ => take_unsigned_float_or_exceptions,
@@ -1509,7 +1509,7 @@ where
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
-    dispatch! {opt(peek(any).map(AsChar::as_char));
+    dispatch! {peek_any.map(|t| t.map(AsChar::as_char));
         Some('I') | Some('i') => (Caseless("inf"), opt(Caseless("inity"))).void(),
         Some('.') => ('.', digit1, take_exp).void(),
         _ => (digit1, opt(('.', opt(digit1))), take_exp).void(),
@@ -1527,7 +1527,7 @@ where
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
-    dispatch! {opt(peek(any).map(AsChar::as_char));
+    dispatch! {peek_any.map(|t| t.map(AsChar::as_char));
         Some('E') | Some('e') => (one_of(['e', 'E']), opt(one_of(['+', '-'])), digit1).void(),
         _ => empty,
     }

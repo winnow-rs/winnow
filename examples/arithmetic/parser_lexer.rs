@@ -10,11 +10,10 @@ use winnow::{
     combinator::alt,
     combinator::dispatch,
     combinator::fail,
-    combinator::peek,
     combinator::repeat,
     combinator::{delimited, preceded, terminated},
-    token::any,
     token::one_of,
+    token::peek_any,
 };
 
 #[derive(Debug, Clone)]
@@ -109,14 +108,14 @@ pub(crate) fn lex(i: &mut &str) -> Result<Vec<Token>> {
 }
 
 fn token(i: &mut &str) -> Result<Token> {
-    dispatch! {peek(any);
-        '0'..='9' => digits.try_map(FromStr::from_str).map(Token::Value),
-        '(' => '('.value(Token::OpenParen),
-        ')' => ')'.value(Token::CloseParen),
-        '+' => '+'.value(Token::Oper(Oper::Add)),
-        '-' => '-'.value(Token::Oper(Oper::Sub)),
-        '*' => '*'.value(Token::Oper(Oper::Mul)),
-        '/' => '/'.value(Token::Oper(Oper::Div)),
+    dispatch! {peek_any;
+        Some('0'..='9') => digits.try_map(FromStr::from_str).map(Token::Value),
+        Some('(') => '('.value(Token::OpenParen),
+        Some(')') => ')'.value(Token::CloseParen),
+        Some('+') => '+'.value(Token::Oper(Oper::Add)),
+        Some('-') => '-'.value(Token::Oper(Oper::Sub)),
+        Some('*') => '*'.value(Token::Oper(Oper::Mul)),
+        Some('/') => '/'.value(Token::Oper(Oper::Div)),
         _ => fail,
     }
     .parse_next(i)

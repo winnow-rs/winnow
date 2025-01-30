@@ -88,6 +88,8 @@ where
 ///
 /// To lookahead and only advance on success, see [`opt`].
 ///
+/// To peek just a token (i.e. `peek(opt(any))`), see [`peek_token`][crate::token::peek_token].
+///
 /// # Example
 ///
 /// ```rust

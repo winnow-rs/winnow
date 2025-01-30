@@ -82,6 +82,52 @@ where
     })
 }
 
+/// Get the next token, if present, without advancing the input
+///
+/// To peek with a [`Parser`], see [`peek`][crate::combiantor::peek].
+///
+/// # Effective Signature
+///
+/// Assuming you are parsing a `&str` [Stream]:
+/// ```rust
+/// # use winnow::prelude::*;;
+/// pub fn peek_any(input: &mut &str) -> ModalResult<Option<char>>
+/// # {
+/// #     winnow::token::peek_any.parse_next(input)
+/// # }
+/// ```
+///
+/// # Example
+///
+/// ```rust
+/// # use winnow::prelude::*;
+/// # use winnow::combinator::dispatch;
+/// # use winnow::combinator::fail;
+/// use winnow::token::peek_any;
+///
+/// fn bool<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
+///     dispatch!(peek_any;
+///         Some('t') => "true",
+///         Some('f') => "false",
+///         _ => fail,
+///     )
+///     .parse_next(input)
+/// }
+///
+/// assert_eq!(bool.parse_peek("true;"), Ok((";", "true")));
+/// assert!(bool.parse_peek("123;").is_err());
+/// ```
+#[doc(alias = "look_ahead")]
+#[doc(alias = "rewind")]
+#[doc(alias = "peek_token")]
+pub fn peek_any<Input, Error>(input: &mut Input) -> Result<Option<<Input as Stream>::Token>, Error>
+where
+    Input: Stream,
+    Error: ParserError<Input>,
+{
+    trace("peek_any", move |input: &mut Input| Ok(input.peek_token())).parse_next(input)
+}
+
 /// Recognizes a literal
 ///
 /// The input data will be compared to the literal combinator's argument and will return the part of
