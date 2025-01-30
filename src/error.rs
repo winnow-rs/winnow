@@ -1157,7 +1157,7 @@ impl<I: Stream + Clone + fmt::Display, C: fmt::Display> fmt::Display for TreeErr
 
 /// Deprecated
 ///
-/// For error typse, use [`EmptyError`] instead
+/// For en error type, consider [`EmptyError`] instead
 ///
 /// For creating an error, use [`ParserError::from_input`], [`InputError::at`]
 #[rustfmt::skip]
