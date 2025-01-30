@@ -3,6 +3,20 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+- Deprecate `ParserError::from_error_kind` in favor of `ParserError::from_input`
+- Deprecate `InputError::new` in favor of `InputError::at`
+- Deprecate `ErrorKind`
+  - If used as an error, consider `EmptyError`
+  - For `ParserError::append`, just add an `#[allow(deprecated)]`
+
+### Features
+
+- Add `EmptyError` which is like `()` but compatible with `Parser::parse`
+- Add `ParserError::from_input` to help with the transition to 0.7
+- Add `InputError::at` to help with the transition to 0.7
+
 ## [0.6.25] - 2025-01-27
 
 ### Compatibility
