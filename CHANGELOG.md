@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.6.26] - 2025-01-30
+
 ### Compatibility
 
 - Deprecate `ParserError::from_error_kind` in favor of `ParserError::from_input`
@@ -2476,7 +2478,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.25...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.6.26...HEAD
+[0.6.26]: https://github.com/winnow-rs/winnow/compare/v0.6.25...v0.6.26
 [0.6.25]: https://github.com/winnow-rs/winnow/compare/v0.6.24...v0.6.25
 [0.6.24]: https://github.com/winnow-rs/winnow/compare/v0.6.23...v0.6.24
 [0.6.23]: https://github.com/winnow-rs/winnow/compare/v0.6.22...v0.6.23
