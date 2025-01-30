@@ -91,7 +91,7 @@ where
 /// Assuming you are parsing a `&str` [Stream]:
 /// ```rust
 /// # use winnow::prelude::*;;
-/// pub fn peek_any(input: &mut &str) -> ModalResult<Option<char>>
+/// pub fn peek_any(input: &mut &str) -> ModalResult<char>
 /// # {
 /// #     winnow::token::peek_any.parse_next(input)
 /// # }
@@ -107,8 +107,8 @@ where
 ///
 /// fn bool<'i>(input: &mut &'i str) -> ModalResult<&'i str> {
 ///     dispatch!(peek_any;
-///         Some('t') => "true",
-///         Some('f') => "false",
+///         't' => "true",
+///         'f' => "false",
 ///         _ => fail,
 ///     )
 ///     .parse_next(input)
@@ -120,12 +120,21 @@ where
 #[doc(alias = "look_ahead")]
 #[doc(alias = "rewind")]
 #[doc(alias = "peek_token")]
-pub fn peek_any<Input, Error>(input: &mut Input) -> Result<Option<<Input as Stream>::Token>, Error>
+pub fn peek_any<Input, Error>(input: &mut Input) -> Result<<Input as Stream>::Token, Error>
 where
-    Input: Stream,
+    Input: StreamIsPartial + Stream,
     Error: ParserError<Input>,
 {
-    trace("peek_any", move |input: &mut Input| Ok(input.peek_token())).parse_next(input)
+    trace("peek_any", move |input: &mut Input| {
+        input.peek_token().ok_or_else(|| {
+            if <Input as StreamIsPartial>::is_partial_supported() && input.is_partial() {
+                ParserError::incomplete(input, Needed::new(1))
+            } else {
+                ParserError::from_input(input)
+            }
+        })
+    })
+    .parse_next(input)
 }
 
 /// Recognizes a literal

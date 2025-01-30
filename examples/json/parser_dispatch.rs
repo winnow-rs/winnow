@@ -44,15 +44,15 @@ fn json_value<'i, E: ParserError<Stream<'i>> + AddContext<Stream<'i>, StrContext
     // `dispatch` gives you `match`-like behavior compared to `alt` successively trying different
     // implementations.
     dispatch!(peek_any;
-        Some('n') => null.value(JsonValue::Null),
-        Some('t') => true_.map(JsonValue::Boolean),
-        Some('f') => false_.map(JsonValue::Boolean),
-        Some('"') => string.map(JsonValue::Str),
-        Some('+') => float.map(JsonValue::Num),
-        Some('-') => float.map(JsonValue::Num),
-        Some('0'..='9') => float.map(JsonValue::Num),
-        Some('[') => array.map(JsonValue::Array),
-        Some('{') => object.map(JsonValue::Object),
+        'n' => null.value(JsonValue::Null),
+        't' => true_.map(JsonValue::Boolean),
+        'f' => false_.map(JsonValue::Boolean),
+        '"' => string.map(JsonValue::Str),
+        '+' => float.map(JsonValue::Num),
+        '-' => float.map(JsonValue::Num),
+        '0'..='9' => float.map(JsonValue::Num),
+        '[' => array.map(JsonValue::Array),
+        '{' => object.map(JsonValue::Object),
         _ => fail,
     )
     .parse_next(input)

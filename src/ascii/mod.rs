@@ -1489,7 +1489,7 @@ where
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
-    dispatch! {peek_any.map(|t| t.map(AsChar::as_char));
+    dispatch! {opt(peek_any.map(AsChar::as_char));
         Some('N') | Some('n') => Caseless("nan").void(),
         Some('+') | Some('-') => (any, take_unsigned_float_or_exceptions).void(),
         _ => take_unsigned_float_or_exceptions,
@@ -1509,7 +1509,7 @@ where
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
-    dispatch! {peek_any.map(|t| t.map(AsChar::as_char));
+    dispatch! {opt(peek_any.map(AsChar::as_char));
         Some('I') | Some('i') => (Caseless("inf"), opt(Caseless("inity"))).void(),
         Some('.') => ('.', digit1, take_exp).void(),
         _ => (digit1, opt(('.', opt(digit1))), take_exp).void(),
@@ -1527,7 +1527,7 @@ where
     <I as Stream>::IterOffsets: Clone,
     I: AsBStr,
 {
-    dispatch! {peek_any.map(|t| t.map(AsChar::as_char));
+    dispatch! {opt(peek_any.map(AsChar::as_char));
         Some('E') | Some('e') => (one_of(['e', 'E']), opt(one_of(['+', '-'])), digit1).void(),
         _ => empty,
     }
