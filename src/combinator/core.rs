@@ -361,7 +361,7 @@ where
     ParserIterator {
         parser,
         input,
-        state: Some(State::Running),
+        state: State::Running,
         o: Default::default(),
     }
 }
@@ -374,7 +374,7 @@ where
 {
     parser: F,
     input: I,
-    state: Option<State<E>>,
+    state: State<E>,
     o: core::marker::PhantomData<O>,
 }
 
@@ -385,8 +385,8 @@ where
     E: ParserError<I>,
 {
     /// Returns the remaining input if parsing was successful, or the error if we encountered an error.
-    pub fn finish(mut self) -> Result<(I, ()), E> {
-        match self.state.take().unwrap() {
+    pub fn finish(self) -> Result<(I, ()), E> {
+        match self.state {
             State::Running | State::Done => Ok((self.input, ())),
             State::Cut(e) => Err(e),
         }
@@ -402,21 +402,21 @@ where
     type Item = O;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if let State::Running = self.state.take().unwrap() {
+        if matches!(self.state, State::Running) {
             let start = self.input.checkpoint();
 
             match self.parser.parse_next(&mut self.input) {
                 Ok(o) => {
-                    self.state = Some(State::Running);
+                    self.state = State::Running;
                     Some(o)
                 }
                 Err(e) if e.is_backtrack() => {
                     self.input.reset(&start);
-                    self.state = Some(State::Done);
+                    self.state = State::Done;
                     None
                 }
                 Err(e) => {
-                    self.state = Some(State::Cut(e));
+                    self.state = State::Cut(e);
                     None
                 }
             }
