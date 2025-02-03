@@ -173,7 +173,7 @@ impl<E> ErrMode<E> {
 
     /// Unwrap the mode, returning the underlying error
     ///
-    /// Returns `Err(self)`` for [`ErrMode::Incomplete`]
+    /// Returns `Err(self)` for [`ErrMode::Incomplete`]
     #[inline(always)]
     pub fn into_inner(self) -> Result<E, Self> {
         match self {
