@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Don't panic when calling `.next()`, `.next()`, `.finish()` on `iterator`
+
 ## [0.7.0] - 2025-01-30
 
 ### Migration Guide
