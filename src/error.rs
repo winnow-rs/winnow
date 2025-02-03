@@ -173,7 +173,7 @@ impl<E> ErrMode<E> {
 
     /// Unwrap the mode, returning the underlying error
     ///
-    /// Returns `None` for [`ErrMode::Incomplete`]
+    /// Returns `Err(self)`` for [`ErrMode::Incomplete`]
     #[inline(always)]
     pub fn into_inner(self) -> Result<E, Self> {
         match self {
@@ -225,7 +225,6 @@ impl<I: Stream, E: ParserError<I>> ParserError<I> for ErrMode<E> {
         matches!(self, ErrMode::Backtrack(_))
     }
 
-    /// Unwrap the mode, returning the underlying error
     #[inline(always)]
     fn into_inner(self) -> Result<Self::Inner, Self> {
         match self {
