@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.7.2] - 2025-02-10
+
 ### Fixes
 
 - Make `Range` `Copy`able
@@ -2541,7 +2543,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.2...HEAD
+[0.7.2]: https://github.com/winnow-rs/winnow/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/winnow-rs/winnow/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/winnow-rs/winnow/compare/v0.6.26...v0.7.0
 [0.6.26]: https://github.com/winnow-rs/winnow/compare/v0.6.25...v0.6.26
