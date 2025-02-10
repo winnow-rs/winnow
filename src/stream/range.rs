@@ -26,7 +26,7 @@
 /// let parser: Vec<_> = repeat(5..=8, inner).parse_next(input).unwrap();
 /// # }
 /// ```
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Copy, Clone)]
 pub struct Range {
     pub(crate) start_inclusive: usize,
     pub(crate) end_inclusive: Option<usize>,
