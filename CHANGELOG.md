@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Make `Range` `Copy`able
+
 ## [0.7.1] - 2025-02-03
 
 ### Fixes
