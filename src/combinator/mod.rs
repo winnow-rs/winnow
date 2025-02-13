@@ -165,6 +165,8 @@ mod debug;
 mod multi;
 mod sequence;
 
+pub mod expression;
+
 #[cfg(test)]
 mod tests;
 
