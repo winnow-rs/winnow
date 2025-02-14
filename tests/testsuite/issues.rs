@@ -305,7 +305,19 @@ fn issue_848_overflow_incomplete_bits_to_bytes() {
 
         bits(bytes(take)).parse_next(input)
     }
-    assert_parse!(parser.parse_peek(Partial::new(&b""[..])), str![]);
+    assert_parse!(parser.parse_peek(Partial::new(&b""[..])), str![[r#"
+Err(
+    Cut(
+        InputError {
+            input: Partial {
+                input: [],
+                partial: true,
+            },
+        },
+    ),
+)
+
+"#]]);
 }
 
 #[test]
