@@ -2070,7 +2070,19 @@ Err(
         }
 
         let input = "7";
-        assert_parse!(escaped_string.parse_peek(input), str![]);
+        assert_parse!(
+            escaped_string.parse_peek(input),
+            str![[r#"
+Err(
+    Cut(
+        InputError {
+            input: "7",
+        },
+    ),
+)
+
+"#]]
+        );
     }
 
     // issue #1336 "take_escaped hangs if normal parser accepts empty"
@@ -2085,7 +2097,19 @@ Err(
         }
 
         let input = "a7";
-        assert_parse!(escaped_string.parse_peek(input), str![]);
+        assert_parse!(
+            escaped_string.parse_peek(input),
+            str![[r#"
+Err(
+    Cut(
+        InputError {
+            input: "7",
+        },
+    ),
+)
+
+"#]]
+        );
     }
 
     #[test]
@@ -2110,7 +2134,19 @@ Err(
         }
 
         let input = r#""""#;
-        assert_parse!(unquote.parse_peek(input), str![]);
+        assert_parse!(
+            unquote.parse_peek(input),
+            str![[r#"
+Err(
+    Cut(
+        InputError {
+            input: "/"",
+        },
+    ),
+)
+
+"#]]
+        );
     }
 
     #[cfg(feature = "alloc")]
