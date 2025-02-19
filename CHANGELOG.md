@@ -3,6 +3,10 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Features
+
+- Add `ParseError::char_span`
+
 ## [0.7.2] - 2025-02-10
 
 ### Fixes
