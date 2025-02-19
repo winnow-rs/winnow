@@ -1263,6 +1263,8 @@ impl<I, E> ParseError<I, E> {
 
     /// The location in [`ParseError::input`] where parsing failed
     ///
+    /// To get the span for the `char` this points to, see [`ParseError::char_span`].
+    ///
     /// <div class="warning">
     ///
     /// **Note:** This is an offset, not an index, and may point to the end of input
@@ -1285,6 +1287,48 @@ impl<I, E> ParseError<I, E> {
     pub fn into_inner(self) -> E {
         self.inner
     }
+}
+
+impl<I: AsBStr, E> ParseError<I, E> {
+    /// The byte indices for the `char` at [`ParseError::offset`]
+    #[inline]
+    pub fn char_span(&self) -> crate::lib::std::ops::Range<usize> {
+        char_boundary(self.input.as_bstr(), self.offset())
+    }
+}
+
+fn char_boundary(input: &[u8], offset: usize) -> crate::lib::std::ops::Range<usize> {
+    let len = input.len();
+    if offset == len {
+        return offset..offset;
+    }
+
+    let start = (0..(offset + 1).min(len))
+        .rev()
+        .find(|i| {
+            input
+                .get(*i)
+                .copied()
+                .map(is_utf8_char_boundary)
+                .unwrap_or(false)
+        })
+        .unwrap_or(0);
+    let end = (offset + 1..len)
+        .find(|i| {
+            input
+                .get(*i)
+                .copied()
+                .map(is_utf8_char_boundary)
+                .unwrap_or(false)
+        })
+        .unwrap_or(len);
+    start..end
+}
+
+/// Taken from `core::num`
+const fn is_utf8_char_boundary(b: u8) -> bool {
+    // This is bit magic equivalent to: b < 128 || b >= 192
+    (b as i8) >= -0x40
 }
 
 impl<I, E> core::fmt::Display for ParseError<I, E>
@@ -1382,6 +1426,52 @@ fn translate_position(input: &[u8], index: usize) -> (usize, usize) {
     let column = column + column_offset;
 
     (line, column)
+}
+
+#[cfg(test)]
+mod test_char_boundary {
+    use super::*;
+
+    #[test]
+    fn ascii() {
+        let input = "hi";
+        let cases = [(0, 0..1), (1, 1..2), (2, 2..2)];
+        for (offset, expected) in cases {
+            assert_eq!(
+                char_boundary(input.as_bytes(), offset),
+                expected,
+                "input={input:?}, offset={offset:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn utf8() {
+        let input = "βèƒôřè";
+        assert_eq!(input.len(), 12);
+        let cases = [
+            (0, 0..2),
+            (1, 0..2),
+            (2, 2..4),
+            (3, 2..4),
+            (4, 4..6),
+            (5, 4..6),
+            (6, 6..8),
+            (7, 6..8),
+            (8, 8..10),
+            (9, 8..10),
+            (10, 10..12),
+            (11, 10..12),
+            (12, 12..12),
+        ];
+        for (offset, expected) in cases {
+            assert_eq!(
+                char_boundary(input.as_bytes(), offset),
+                expected,
+                "input={input:?}, offset={offset:?}"
+            );
+        }
+    }
 }
 
 #[cfg(test)]
