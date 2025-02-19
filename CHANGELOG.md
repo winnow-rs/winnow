@@ -3,6 +3,8 @@
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [0.7.3] - 2025-02-19
+
 ### Features
 
 - Add `ParseError::char_span`
@@ -2547,7 +2549,8 @@ Considering the number of changes since the last release, this version can conta
 - closure syntax change
 
 <!-- next-url -->
-[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.2...HEAD
+[Unreleased]: https://github.com/winnow-rs/winnow/compare/v0.7.3...HEAD
+[0.7.3]: https://github.com/winnow-rs/winnow/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/winnow-rs/winnow/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/winnow-rs/winnow/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/winnow-rs/winnow/compare/v0.6.26...v0.7.0
